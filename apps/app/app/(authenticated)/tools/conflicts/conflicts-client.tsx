@@ -37,20 +37,19 @@ import {
   CheckCircle2,
   ChevronDown,
   Clock,
-  ExternalLink,
   Loader2,
+  MapPin,
   Package,
   RefreshCw,
   ShieldAlert,
   Users,
   Wrench,
-  MapPin,
   XCircle,
   Zap,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
 import { apiFetch } from "@/app/lib/api";
 
 // ---------------------------------------------------------------------------
@@ -300,8 +299,8 @@ function ConflictCard({ conflict }: { conflict: Conflict }) {
           </div>
           <div className="flex flex-shrink-0 flex-wrap gap-1.5">
             <Badge
-              variant={severityVariant(conflict.severity)}
               className="gap-1"
+              variant={severityVariant(conflict.severity)}
             >
               {severityIcon(conflict.severity)}
               {conflict.severity}
@@ -315,9 +314,9 @@ function ConflictCard({ conflict }: { conflict: Conflict }) {
         <div className="flex flex-wrap gap-2">
           {conflict.affectedEntities.map((entity) => (
             <Badge
+              className="gap-1"
               key={`${entity.type}-${entity.id}`}
               variant="secondary"
-              className="gap-1"
             >
               {entityIcon(entity.type)}
               {entity.name}
@@ -337,9 +336,9 @@ function ConflictCard({ conflict }: { conflict: Conflict }) {
 
         {/* Resolution options */}
         {hasResolutions && (
-          <Collapsible open={expanded} onOpenChange={setExpanded}>
+          <Collapsible onOpenChange={setExpanded} open={expanded}>
             <CollapsibleTrigger asChild>
-              <Button variant="ghost" size="sm" className="gap-1.5">
+              <Button className="gap-1.5" size="sm" variant="ghost">
                 <ChevronDown
                   className={`h-3.5 w-3.5 transition-transform ${expanded ? "rotate-180" : ""}`}
                 />
@@ -349,10 +348,7 @@ function ConflictCard({ conflict }: { conflict: Conflict }) {
             </CollapsibleTrigger>
             <CollapsibleContent className="mt-2 space-y-2">
               {conflict.resolutionOptions!.map((option, i) => (
-                <div
-                  key={i}
-                  className="rounded-md border p-3"
-                >
+                <div className="rounded-md border p-3" key={i}>
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2">
                       <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
@@ -370,9 +366,9 @@ function ConflictCard({ conflict }: { conflict: Conflict }) {
                     </span>
                     {option.affectedEntities.map((entity) => (
                       <Badge
+                        className="gap-1 text-xs"
                         key={`${entity.type}-${entity.id}`}
                         variant="outline"
-                        className="gap-1 text-xs"
                       >
                         {entityIcon(entity.type)}
                         {entity.name}
@@ -454,9 +450,7 @@ export function ConflictsClient() {
     if (!result) return [];
     const tabConfig = TAB_CONFIG.find((t) => t.value === activeTab);
     if (!tabConfig || activeTab === "all") return result.conflicts;
-    return result.conflicts.filter((c) =>
-      tabConfig.types.includes(c.type)
-    );
+    return result.conflicts.filter((c) => tabConfig.types.includes(c.type));
   }, [result, activeTab]);
 
   const filteredSummary = useMemo(() => {
@@ -474,8 +468,8 @@ export function ConflictsClient() {
     <div className="space-y-6">
       {/* Tabs */}
       <Tabs
-        value={activeTab}
         onValueChange={(v) => setActiveTab(v as ConflictTab)}
+        value={activeTab}
       >
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <TabsList>
@@ -483,9 +477,9 @@ export function ConflictsClient() {
               const TabIcon = tab.icon;
               return (
                 <TabsTrigger
+                  className="gap-1.5"
                   key={tab.value}
                   value={tab.value}
-                  className="gap-1.5"
                 >
                   <TabIcon className="h-3.5 w-3.5" />
                   {tab.label}
@@ -494,7 +488,7 @@ export function ConflictsClient() {
             })}
           </TabsList>
 
-          <Button onClick={detectConflicts} disabled={loading}>
+          <Button disabled={loading} onClick={detectConflicts}>
             {loading ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : (
@@ -506,9 +500,9 @@ export function ConflictsClient() {
 
         {TAB_CONFIG.map((tab) => (
           <TabsContent
+            className="mt-6 space-y-6"
             key={tab.value}
             value={tab.value}
-            className="mt-6 space-y-6"
           >
             {/* Error */}
             {error && (
@@ -531,7 +525,7 @@ export function ConflictsClient() {
                         Some detectors had issues
                       </p>
                       {result.warnings.map((w, i) => (
-                        <p key={i} className="text-xs text-amber-700">
+                        <p className="text-xs text-amber-700" key={i}>
                           {w.message}
                         </p>
                       ))}
@@ -545,33 +539,33 @@ export function ConflictsClient() {
             {result && (
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
                 <StatCard
+                  icon={ShieldAlert}
                   label="Total"
                   value={filteredSummary.total}
-                  icon={ShieldAlert}
                 />
                 <StatCard
+                  color="text-red-600"
+                  icon={XCircle}
                   label="Critical"
                   value={filteredSummary.critical}
-                  icon={XCircle}
-                  color="text-red-600"
                 />
                 <StatCard
+                  color="text-orange-600"
+                  icon={AlertTriangle}
                   label="High"
                   value={filteredSummary.high}
-                  icon={AlertTriangle}
-                  color="text-orange-600"
                 />
                 <StatCard
+                  color="text-yellow-600"
+                  icon={AlertCircle}
                   label="Medium"
                   value={filteredSummary.medium}
-                  icon={AlertCircle}
-                  color="text-yellow-600"
                 />
                 <StatCard
+                  color="text-green-600"
+                  icon={CheckCircle2}
                   label="Low"
                   value={filteredSummary.low}
-                  icon={CheckCircle2}
-                  color="text-green-600"
                 />
               </div>
             )}
@@ -580,7 +574,7 @@ export function ConflictsClient() {
             {filteredConflicts.length > 0 && (
               <div className="space-y-4">
                 {filteredConflicts.map((conflict) => (
-                  <ConflictCard key={conflict.id} conflict={conflict} />
+                  <ConflictCard conflict={conflict} key={conflict.id} />
                 ))}
               </div>
             )}
@@ -591,7 +585,9 @@ export function ConflictsClient() {
                 <CardContent className="flex flex-col items-center gap-2 py-12">
                   <CheckCircle2 className="h-10 w-10 text-green-500" />
                   <p className="text-sm font-medium text-green-700">
-                    No {tab.value === "all" ? "" : tab.label.toLowerCase() + " "}conflicts detected
+                    No{" "}
+                    {tab.value === "all" ? "" : tab.label.toLowerCase() + " "}
+                    conflicts detected
                   </p>
                   <p className="text-sm text-muted-foreground">
                     All clear for the next 14 days. Run detection again after
@@ -602,7 +598,7 @@ export function ConflictsClient() {
             )}
 
             {/* Initial empty state */}
-            {!result && !loading && !error && (
+            {!(result || loading || error) && (
               <Card>
                 <CardContent className="flex flex-col items-center gap-2 py-16">
                   <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
@@ -623,8 +619,7 @@ export function ConflictsClient() {
             {/* Analyzed timestamp */}
             {result?.analyzedAt && (
               <p className="text-center text-xs text-muted-foreground">
-                Analyzed at{" "}
-                {new Date(result.analyzedAt).toLocaleString()}
+                Analyzed at {new Date(result.analyzedAt).toLocaleString()}
               </p>
             )}
           </TabsContent>

@@ -81,9 +81,9 @@ const baseCase = {
   isDisputed: false,
   isEscalatedToLegal: false,
   hasPaymentPlan: false,
-  originalAmount: 10000,
+  originalAmount: 10_000,
   collectedAmount: 0,
-  outstandingAmount: 10000,
+  outstandingAmount: 10_000,
   daysOverdue: 30,
   notes: null,
   assignedTo: null,
@@ -220,7 +220,7 @@ describe("PATCH /api/accounting/collections/cases/[id]", () => {
       mocks.caseFindFirstMock.mockResolvedValue(baseCase);
 
       const response = await PATCH(
-        makeRequest({ action: "recordPayment", amount: 10000 }),
+        makeRequest({ action: "recordPayment", amount: 10_000 }),
         { params }
       );
 
@@ -228,7 +228,7 @@ describe("PATCH /api/accounting/collections/cases/[id]", () => {
       expect(mocks.caseUpdateMock).toHaveBeenCalledWith(
         expect.objectContaining({
           data: expect.objectContaining({
-            collectedAmount: 10000,
+            collectedAmount: 10_000,
             outstandingAmount: 0,
             status: "PAID",
           }),
@@ -240,7 +240,7 @@ describe("PATCH /api/accounting/collections/cases/[id]", () => {
       mocks.caseFindFirstMock.mockResolvedValue(baseCase);
 
       const response = await PATCH(
-        makeRequest({ action: "recordPayment", amount: 12000 }),
+        makeRequest({ action: "recordPayment", amount: 12_000 }),
         { params }
       );
 
@@ -456,7 +456,7 @@ describe("PATCH /api/accounting/collections/cases/[id]", () => {
       await PATCH(
         makeRequest({
           action: "writeOff",
-          amount: 12000,
+          amount: 12_000,
           reason: "bankruptcy",
           approvedBy: APPROVER_ID,
         }),

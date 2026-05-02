@@ -6,8 +6,8 @@ const ToolsAutofillReportsPage = () => (
     <div className="space-y-0.5">
       <h1 className="text-3xl font-bold tracking-tight">Autofill Reports</h1>
       <p className="text-muted-foreground">
-        Generate structured reports from events, parse documents for autofill, and
-        review kitchen waste analytics.
+        Generate structured reports from events, parse documents for autofill,
+        and review kitchen waste analytics.
       </p>
     </div>
     <Separator />

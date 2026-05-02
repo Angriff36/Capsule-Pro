@@ -37,7 +37,7 @@ const { modelStubs, mockDatabase } = vi.hoisted(() => {
         }
         return stubs[prop];
       },
-    },
+    }
   );
 
   return { modelStubs: stubs, mockDatabase: db };
@@ -46,8 +46,10 @@ const { modelStubs, mockDatabase } = vi.hoisted(() => {
 vi.mock("@repo/database", () => ({
   database: mockDatabase,
   Prisma: {
-    sql: (strings: TemplateStringsArray, ...values: unknown[]) =>
-      ({ strings, values }),
+    sql: (strings: TemplateStringsArray, ...values: unknown[]) => ({
+      strings,
+      values,
+    }),
     empty: { strings: [""], values: [] },
     raw: (s: string) => s,
   },
@@ -78,27 +80,35 @@ const { auth } = await import("@repo/auth/server");
 const { getTenantIdForOrg } = await import("@/app/lib/tenant");
 const { createManifestRuntime } = await import("@/lib/manifest-runtime");
 
-// Route imports (after mocks are set up)
-import { GET as listTimeEntries } from "@/app/api/timecards/entries/list/route";
-import { GET as getTimeEntry } from "@/app/api/timecards/entries/[id]/route";
-import { POST as clockIn } from "@/app/api/timecards/entries/commands/clock-in/route";
-import { POST as clockOut } from "@/app/api/timecards/entries/commands/clock-out/route";
-import { POST as addEntry } from "@/app/api/timecards/entries/commands/add-entry/route";
-import { GET as listEditRequests } from "@/app/api/timecards/edit-requests/list/route";
 import { GET as getEditRequest } from "@/app/api/timecards/edit-requests/[id]/route";
 import { POST as approveEditRequest } from "@/app/api/timecards/edit-requests/commands/approve/route";
 import { POST as rejectEditRequest } from "@/app/api/timecards/edit-requests/commands/reject/route";
-import { GET as listTimeOffRequests } from "@/app/api/timecards/time-off-requests/list/route";
+import { GET as listEditRequests } from "@/app/api/timecards/edit-requests/list/route";
+import { GET as getTimeEntry } from "@/app/api/timecards/entries/[id]/route";
+import { POST as addEntry } from "@/app/api/timecards/entries/commands/add-entry/route";
+import { POST as clockIn } from "@/app/api/timecards/entries/commands/clock-in/route";
+import { POST as clockOut } from "@/app/api/timecards/entries/commands/clock-out/route";
+// Route imports (after mocks are set up)
+import { GET as listTimeEntries } from "@/app/api/timecards/entries/list/route";
 import { GET as getTimeOffRequest } from "@/app/api/timecards/time-off-requests/[id]/route";
 import { POST as approveTimeOff } from "@/app/api/timecards/time-off-requests/commands/approve/route";
 import { POST as rejectTimeOff } from "@/app/api/timecards/time-off-requests/commands/reject/route";
+import { GET as listTimeOffRequests } from "@/app/api/timecards/time-off-requests/list/route";
 
 // Convenience accessors through the Proxy (auto-creates stubs on first access)
 const db = {
-  get timeEntry() { return mockDatabase.timeEntry; },
-  get timecardEditRequest() { return mockDatabase.timecardEditRequest; },
-  get employeeTimeOffRequest() { return mockDatabase.employeeTimeOffRequest; },
-  get user() { return mockDatabase.user; },
+  get timeEntry() {
+    return mockDatabase.timeEntry;
+  },
+  get timecardEditRequest() {
+    return mockDatabase.timecardEditRequest;
+  },
+  get employeeTimeOffRequest() {
+    return mockDatabase.employeeTimeOffRequest;
+  },
+  get user() {
+    return mockDatabase.user;
+  },
 };
 
 const TEST_TENANT_ID = "00000000-0000-0000-0000-000000000001";
@@ -194,7 +204,7 @@ describe("Timecards API", () => {
       } as never);
 
       const request = new NextRequest(
-        "http://localhost/api/timecards/entries/list",
+        "http://localhost/api/timecards/entries/list"
       );
       const response = await listTimeEntries(request);
 
@@ -208,7 +218,7 @@ describe("Timecards API", () => {
       vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
 
       const request = new NextRequest(
-        "http://localhost/api/timecards/entries/list",
+        "http://localhost/api/timecards/entries/list"
       );
       const response = await listTimeEntries(request);
 
@@ -231,7 +241,7 @@ describe("Timecards API", () => {
       db.timeEntry.findMany.mockResolvedValue(mockEntries as never);
 
       const request = new NextRequest(
-        "http://localhost/api/timecards/entries/list",
+        "http://localhost/api/timecards/entries/list"
       );
       const response = await listTimeEntries(request);
 
@@ -245,7 +255,7 @@ describe("Timecards API", () => {
       db.timeEntry.findMany.mockResolvedValue([]);
 
       const request = new NextRequest(
-        "http://localhost/api/timecards/entries/list",
+        "http://localhost/api/timecards/entries/list"
       );
       await listTimeEntries(request);
 
@@ -255,7 +265,7 @@ describe("Timecards API", () => {
             tenantId: TEST_TENANT_ID,
             deleted_at: null,
           },
-        }),
+        })
       );
     });
 
@@ -263,14 +273,14 @@ describe("Timecards API", () => {
       db.timeEntry.findMany.mockResolvedValue([]);
 
       const request = new NextRequest(
-        "http://localhost/api/timecards/entries/list",
+        "http://localhost/api/timecards/entries/list"
       );
       await listTimeEntries(request);
 
       expect(db.timeEntry.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           orderBy: { createdAt: "desc" },
-        }),
+        })
       );
     });
 
@@ -278,7 +288,7 @@ describe("Timecards API", () => {
       db.timeEntry.findMany.mockResolvedValue([]);
 
       const request = new NextRequest(
-        "http://localhost/api/timecards/entries/list",
+        "http://localhost/api/timecards/entries/list"
       );
       const response = await listTimeEntries(request);
 
@@ -290,11 +300,11 @@ describe("Timecards API", () => {
 
     it("should return 500 on database error", async () => {
       db.timeEntry.findMany.mockRejectedValue(
-        new Error("Database connection failed"),
+        new Error("Database connection failed")
       );
 
       const request = new NextRequest(
-        "http://localhost/api/timecards/entries/list",
+        "http://localhost/api/timecards/entries/list"
       );
       const response = await listTimeEntries(request);
 
@@ -313,7 +323,7 @@ describe("Timecards API", () => {
       db.timeEntry.findFirst.mockResolvedValue(mockEntry as never);
 
       const request = new NextRequest(
-        "http://localhost/api/timecards/entries/entry-001",
+        "http://localhost/api/timecards/entries/entry-001"
       );
       const response = await getTimeEntry(request, {
         params: Promise.resolve({ id: "entry-001" }),
@@ -329,7 +339,7 @@ describe("Timecards API", () => {
       db.timeEntry.findFirst.mockResolvedValue(null);
 
       const request = new NextRequest(
-        "http://localhost/api/timecards/entries/nonexistent",
+        "http://localhost/api/timecards/entries/nonexistent"
       );
       const response = await getTimeEntry(request, {
         params: Promise.resolve({ id: "nonexistent" }),
@@ -345,7 +355,7 @@ describe("Timecards API", () => {
       db.timeEntry.findFirst.mockResolvedValue(null);
 
       const request = new NextRequest(
-        "http://localhost/api/timecards/entries/entry-001",
+        "http://localhost/api/timecards/entries/entry-001"
       );
       await getTimeEntry(request, {
         params: Promise.resolve({ id: "entry-001" }),
@@ -358,7 +368,7 @@ describe("Timecards API", () => {
             tenantId: TEST_TENANT_ID,
             deleted_at: null,
           },
-        }),
+        })
       );
     });
 
@@ -369,7 +379,7 @@ describe("Timecards API", () => {
       } as never);
 
       const request = new NextRequest(
-        "http://localhost/api/timecards/entries/entry-001",
+        "http://localhost/api/timecards/entries/entry-001"
       );
       const response = await getTimeEntry(request, {
         params: Promise.resolve({ id: "entry-001" }),
@@ -402,7 +412,7 @@ describe("Timecards API", () => {
         {
           method: "POST",
           body: JSON.stringify({ employeeId: "emp-001" }),
-        },
+        }
       );
       const response = await clockIn(request);
 
@@ -417,7 +427,7 @@ describe("Timecards API", () => {
         {
           method: "POST",
           body: JSON.stringify({ employeeId: "emp-001" }),
-        },
+        }
       );
       const response = await clockIn(request);
 
@@ -432,7 +442,7 @@ describe("Timecards API", () => {
         {
           method: "POST",
           body: JSON.stringify({ employeeId: "emp-001" }),
-        },
+        }
       );
       const response = await clockIn(request);
 
@@ -453,7 +463,7 @@ describe("Timecards API", () => {
         {
           method: "POST",
           body: JSON.stringify({ employeeId: "emp-001" }),
-        },
+        }
       );
       const response = await clockIn(request);
 
@@ -465,7 +475,7 @@ describe("Timecards API", () => {
       expect(mockRunCommand).toHaveBeenCalledWith(
         "clockIn",
         expect.objectContaining({ employeeId: "emp-001" }),
-        { entityName: "TimeEntry" },
+        { entityName: "TimeEntry" }
       );
     });
 
@@ -480,7 +490,7 @@ describe("Timecards API", () => {
         {
           method: "POST",
           body: JSON.stringify({ employeeId: "emp-001" }),
-        },
+        }
       );
       const response = await clockIn(request);
 
@@ -504,7 +514,7 @@ describe("Timecards API", () => {
         {
           method: "POST",
           body: JSON.stringify({ employeeId: "emp-001" }),
-        },
+        }
       );
       const response = await clockIn(request);
 
@@ -512,7 +522,7 @@ describe("Timecards API", () => {
       const body = await response.json();
       expect(body.message).toContain("Guard 0 failed");
       expect(body.message).toContain(
-        "Employee already has an active time entry",
+        "Employee already has an active time entry"
       );
     });
 
@@ -527,7 +537,7 @@ describe("Timecards API", () => {
         {
           method: "POST",
           body: JSON.stringify({ employeeId: "invalid" }),
-        },
+        }
       );
       const response = await clockIn(request);
 
@@ -544,7 +554,7 @@ describe("Timecards API", () => {
         {
           method: "POST",
           body: JSON.stringify({ employeeId: "emp-001" }),
-        },
+        }
       );
       const response = await clockIn(request);
 
@@ -575,7 +585,7 @@ describe("Timecards API", () => {
         {
           method: "POST",
           body: JSON.stringify({ id: "entry-001" }),
-        },
+        }
       );
       const response = await clockOut(request);
 
@@ -590,7 +600,7 @@ describe("Timecards API", () => {
         {
           method: "POST",
           body: JSON.stringify({ id: "entry-001" }),
-        },
+        }
       );
       const response = await clockOut(request);
 
@@ -609,7 +619,7 @@ describe("Timecards API", () => {
         {
           method: "POST",
           body: JSON.stringify({ id: "entry-001" }),
-        },
+        }
       );
       const response = await clockOut(request);
 
@@ -621,7 +631,7 @@ describe("Timecards API", () => {
       expect(mockRunCommand).toHaveBeenCalledWith(
         "clockOut",
         expect.objectContaining({ id: "entry-001" }),
-        { entityName: "TimeEntry" },
+        { entityName: "TimeEntry" }
       );
     });
 
@@ -639,7 +649,7 @@ describe("Timecards API", () => {
         {
           method: "POST",
           body: JSON.stringify({ id: "entry-001" }),
-        },
+        }
       );
       const response = await clockOut(request);
 
@@ -660,7 +670,7 @@ describe("Timecards API", () => {
         {
           method: "POST",
           body: JSON.stringify({ id: "entry-001" }),
-        },
+        }
       );
       const response = await clockOut(request);
 
@@ -678,7 +688,7 @@ describe("Timecards API", () => {
         {
           method: "POST",
           body: JSON.stringify({ id: "entry-001" }),
-        },
+        }
       );
       const response = await clockOut(request);
 
@@ -713,7 +723,7 @@ describe("Timecards API", () => {
             clockIn: "2026-04-28T09:00:00Z",
             clockOut: "2026-04-28T17:00:00Z",
           }),
-        },
+        }
       );
       const response = await addEntry(request);
 
@@ -737,7 +747,7 @@ describe("Timecards API", () => {
             clockOut: "2026-04-28T17:00:00Z",
             breakMinutes: 30,
           }),
-        },
+        }
       );
       const response = await addEntry(request);
 
@@ -749,7 +759,7 @@ describe("Timecards API", () => {
       expect(mockRunCommand).toHaveBeenCalledWith(
         "addEntry",
         expect.objectContaining({ employeeId: "emp-001" }),
-        { entityName: "TimeEntry" },
+        { entityName: "TimeEntry" }
       );
     });
 
@@ -771,7 +781,7 @@ describe("Timecards API", () => {
             clockIn: "2026-04-28T17:00:00Z",
             clockOut: "2026-04-28T09:00:00Z",
           }),
-        },
+        }
       );
       const response = await addEntry(request);
 
@@ -790,7 +800,7 @@ describe("Timecards API", () => {
       } as never);
 
       const request = new NextRequest(
-        "http://localhost/api/timecards/edit-requests/list",
+        "http://localhost/api/timecards/edit-requests/list"
       );
       const response = await listEditRequests(request);
 
@@ -804,7 +814,7 @@ describe("Timecards API", () => {
       vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
 
       const request = new NextRequest(
-        "http://localhost/api/timecards/edit-requests/list",
+        "http://localhost/api/timecards/edit-requests/list"
       );
       const response = await listEditRequests(request);
 
@@ -823,7 +833,7 @@ describe("Timecards API", () => {
       db.timecardEditRequest.findMany.mockResolvedValue(mockRequests as never);
 
       const request = new NextRequest(
-        "http://localhost/api/timecards/edit-requests/list",
+        "http://localhost/api/timecards/edit-requests/list"
       );
       const response = await listEditRequests(request);
 
@@ -837,7 +847,7 @@ describe("Timecards API", () => {
       db.timecardEditRequest.findMany.mockResolvedValue([]);
 
       const request = new NextRequest(
-        "http://localhost/api/timecards/edit-requests/list",
+        "http://localhost/api/timecards/edit-requests/list"
       );
       await listEditRequests(request);
 
@@ -846,7 +856,7 @@ describe("Timecards API", () => {
           where: {
             tenantId: TEST_TENANT_ID,
           },
-        }),
+        })
       );
     });
 
@@ -854,24 +864,24 @@ describe("Timecards API", () => {
       db.timecardEditRequest.findMany.mockResolvedValue([]);
 
       const request = new NextRequest(
-        "http://localhost/api/timecards/edit-requests/list",
+        "http://localhost/api/timecards/edit-requests/list"
       );
       await listEditRequests(request);
 
       expect(db.timecardEditRequest.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           orderBy: { createdAt: "desc" },
-        }),
+        })
       );
     });
 
     it("should return 500 on database error", async () => {
       db.timecardEditRequest.findMany.mockRejectedValue(
-        new Error("Database connection failed"),
+        new Error("Database connection failed")
       );
 
       const request = new NextRequest(
-        "http://localhost/api/timecards/edit-requests/list",
+        "http://localhost/api/timecards/edit-requests/list"
       );
       const response = await listEditRequests(request);
 
@@ -890,7 +900,7 @@ describe("Timecards API", () => {
       db.timecardEditRequest.findFirst.mockResolvedValue(mockRequest as never);
 
       const request = new NextRequest(
-        "http://localhost/api/timecards/edit-requests/edit-001",
+        "http://localhost/api/timecards/edit-requests/edit-001"
       );
       const response = await getEditRequest(request, {
         params: Promise.resolve({ id: "edit-001" }),
@@ -906,7 +916,7 @@ describe("Timecards API", () => {
       db.timecardEditRequest.findFirst.mockResolvedValue(null);
 
       const request = new NextRequest(
-        "http://localhost/api/timecards/edit-requests/nonexistent",
+        "http://localhost/api/timecards/edit-requests/nonexistent"
       );
       const response = await getEditRequest(request, {
         params: Promise.resolve({ id: "nonexistent" }),
@@ -922,7 +932,7 @@ describe("Timecards API", () => {
       db.timecardEditRequest.findFirst.mockResolvedValue(null);
 
       const request = new NextRequest(
-        "http://localhost/api/timecards/edit-requests/edit-001",
+        "http://localhost/api/timecards/edit-requests/edit-001"
       );
       await getEditRequest(request, {
         params: Promise.resolve({ id: "edit-001" }),
@@ -934,7 +944,7 @@ describe("Timecards API", () => {
             id: "edit-001",
             tenantId: TEST_TENANT_ID,
           },
-        }),
+        })
       );
     });
 
@@ -945,7 +955,7 @@ describe("Timecards API", () => {
       } as never);
 
       const request = new NextRequest(
-        "http://localhost/api/timecards/edit-requests/edit-001",
+        "http://localhost/api/timecards/edit-requests/edit-001"
       );
       const response = await getEditRequest(request, {
         params: Promise.resolve({ id: "edit-001" }),
@@ -978,7 +988,7 @@ describe("Timecards API", () => {
         {
           method: "POST",
           body: JSON.stringify({ id: "edit-001" }),
-        },
+        }
       );
       const response = await approveEditRequest(request);
 
@@ -997,7 +1007,7 @@ describe("Timecards API", () => {
         {
           method: "POST",
           body: JSON.stringify({ id: "edit-001" }),
-        },
+        }
       );
       const response = await approveEditRequest(request);
 
@@ -1009,7 +1019,7 @@ describe("Timecards API", () => {
       expect(mockRunCommand).toHaveBeenCalledWith(
         "approve",
         expect.objectContaining({ id: "edit-001" }),
-        { entityName: "TimecardEditRequest" },
+        { entityName: "TimecardEditRequest" }
       );
     });
 
@@ -1024,7 +1034,7 @@ describe("Timecards API", () => {
         {
           method: "POST",
           body: JSON.stringify({ id: "edit-001" }),
-        },
+        }
       );
       const response = await approveEditRequest(request);
 
@@ -1048,7 +1058,7 @@ describe("Timecards API", () => {
         {
           method: "POST",
           body: JSON.stringify({ id: "edit-001" }),
-        },
+        }
       );
       const response = await approveEditRequest(request);
 
@@ -1069,7 +1079,7 @@ describe("Timecards API", () => {
         {
           method: "POST",
           body: JSON.stringify({ id: "nonexistent" }),
-        },
+        }
       );
       const response = await approveEditRequest(request);
 
@@ -1086,7 +1096,7 @@ describe("Timecards API", () => {
         {
           method: "POST",
           body: JSON.stringify({ id: "edit-001" }),
-        },
+        }
       );
       const response = await approveEditRequest(request);
 
@@ -1117,7 +1127,7 @@ describe("Timecards API", () => {
         {
           method: "POST",
           body: JSON.stringify({ id: "edit-001" }),
-        },
+        }
       );
       const response = await rejectEditRequest(request);
 
@@ -1136,7 +1146,7 @@ describe("Timecards API", () => {
         {
           method: "POST",
           body: JSON.stringify({ id: "edit-001", reason: "Not justified" }),
-        },
+        }
       );
       const response = await rejectEditRequest(request);
 
@@ -1148,7 +1158,7 @@ describe("Timecards API", () => {
       expect(mockRunCommand).toHaveBeenCalledWith(
         "reject",
         expect.objectContaining({ id: "edit-001", reason: "Not justified" }),
-        { entityName: "TimecardEditRequest" },
+        { entityName: "TimecardEditRequest" }
       );
     });
 
@@ -1163,7 +1173,7 @@ describe("Timecards API", () => {
         {
           method: "POST",
           body: JSON.stringify({ id: "edit-001" }),
-        },
+        }
       );
       const response = await rejectEditRequest(request);
 
@@ -1180,7 +1190,7 @@ describe("Timecards API", () => {
         {
           method: "POST",
           body: JSON.stringify({ id: "edit-001" }),
-        },
+        }
       );
       const response = await rejectEditRequest(request);
 
@@ -1197,7 +1207,7 @@ describe("Timecards API", () => {
       } as never);
 
       const request = new NextRequest(
-        "http://localhost/api/timecards/time-off-requests/list",
+        "http://localhost/api/timecards/time-off-requests/list"
       );
       const response = await listTimeOffRequests(request);
 
@@ -1211,7 +1221,7 @@ describe("Timecards API", () => {
       vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
 
       const request = new NextRequest(
-        "http://localhost/api/timecards/time-off-requests/list",
+        "http://localhost/api/timecards/time-off-requests/list"
       );
       const response = await listTimeOffRequests(request);
 
@@ -1232,10 +1242,12 @@ describe("Timecards API", () => {
         }),
       ];
 
-      db.employeeTimeOffRequest.findMany.mockResolvedValue(mockRequests as never);
+      db.employeeTimeOffRequest.findMany.mockResolvedValue(
+        mockRequests as never
+      );
 
       const request = new NextRequest(
-        "http://localhost/api/timecards/time-off-requests/list",
+        "http://localhost/api/timecards/time-off-requests/list"
       );
       const response = await listTimeOffRequests(request);
 
@@ -1249,7 +1261,7 @@ describe("Timecards API", () => {
       db.employeeTimeOffRequest.findMany.mockResolvedValue([]);
 
       const request = new NextRequest(
-        "http://localhost/api/timecards/time-off-requests/list",
+        "http://localhost/api/timecards/time-off-requests/list"
       );
       await listTimeOffRequests(request);
 
@@ -1259,7 +1271,7 @@ describe("Timecards API", () => {
             tenant_id: TEST_TENANT_ID,
             deleted_at: null,
           },
-        }),
+        })
       );
     });
 
@@ -1267,24 +1279,24 @@ describe("Timecards API", () => {
       db.employeeTimeOffRequest.findMany.mockResolvedValue([]);
 
       const request = new NextRequest(
-        "http://localhost/api/timecards/time-off-requests/list",
+        "http://localhost/api/timecards/time-off-requests/list"
       );
       await listTimeOffRequests(request);
 
       expect(db.employeeTimeOffRequest.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           orderBy: { created_at: "desc" },
-        }),
+        })
       );
     });
 
     it("should return 500 on database error", async () => {
       db.employeeTimeOffRequest.findMany.mockRejectedValue(
-        new Error("Database connection failed"),
+        new Error("Database connection failed")
       );
 
       const request = new NextRequest(
-        "http://localhost/api/timecards/time-off-requests/list",
+        "http://localhost/api/timecards/time-off-requests/list"
       );
       const response = await listTimeOffRequests(request);
 
@@ -1300,10 +1312,12 @@ describe("Timecards API", () => {
     it("should return a single time-off request by ID", async () => {
       const mockRequest = createMockTimeOffRequest({ id: "tor-001" });
 
-      db.employeeTimeOffRequest.findFirst.mockResolvedValue(mockRequest as never);
+      db.employeeTimeOffRequest.findFirst.mockResolvedValue(
+        mockRequest as never
+      );
 
       const request = new NextRequest(
-        "http://localhost/api/timecards/time-off-requests/tor-001",
+        "http://localhost/api/timecards/time-off-requests/tor-001"
       );
       const response = await getTimeOffRequest(request, {
         params: Promise.resolve({ id: "tor-001" }),
@@ -1319,7 +1333,7 @@ describe("Timecards API", () => {
       db.employeeTimeOffRequest.findFirst.mockResolvedValue(null);
 
       const request = new NextRequest(
-        "http://localhost/api/timecards/time-off-requests/nonexistent",
+        "http://localhost/api/timecards/time-off-requests/nonexistent"
       );
       const response = await getTimeOffRequest(request, {
         params: Promise.resolve({ id: "nonexistent" }),
@@ -1335,7 +1349,7 @@ describe("Timecards API", () => {
       db.employeeTimeOffRequest.findFirst.mockResolvedValue(null);
 
       const request = new NextRequest(
-        "http://localhost/api/timecards/time-off-requests/tor-001",
+        "http://localhost/api/timecards/time-off-requests/tor-001"
       );
       await getTimeOffRequest(request, {
         params: Promise.resolve({ id: "tor-001" }),
@@ -1348,7 +1362,7 @@ describe("Timecards API", () => {
             tenant_id: TEST_TENANT_ID,
             deleted_at: null,
           },
-        }),
+        })
       );
     });
 
@@ -1359,7 +1373,7 @@ describe("Timecards API", () => {
       } as never);
 
       const request = new NextRequest(
-        "http://localhost/api/timecards/time-off-requests/tor-001",
+        "http://localhost/api/timecards/time-off-requests/tor-001"
       );
       const response = await getTimeOffRequest(request, {
         params: Promise.resolve({ id: "tor-001" }),
@@ -1392,7 +1406,7 @@ describe("Timecards API", () => {
         {
           method: "POST",
           body: JSON.stringify({ id: "tor-001" }),
-        },
+        }
       );
       const response = await approveTimeOff(request);
 
@@ -1411,7 +1425,7 @@ describe("Timecards API", () => {
         {
           method: "POST",
           body: JSON.stringify({ id: "tor-001" }),
-        },
+        }
       );
       const response = await approveTimeOff(request);
 
@@ -1423,7 +1437,7 @@ describe("Timecards API", () => {
       expect(mockRunCommand).toHaveBeenCalledWith(
         "approve",
         expect.objectContaining({ id: "tor-001" }),
-        { entityName: "TimeOffRequest" },
+        { entityName: "TimeOffRequest" }
       );
     });
 
@@ -1438,7 +1452,7 @@ describe("Timecards API", () => {
         {
           method: "POST",
           body: JSON.stringify({ id: "tor-001" }),
-        },
+        }
       );
       const response = await approveTimeOff(request);
 
@@ -1462,7 +1476,7 @@ describe("Timecards API", () => {
         {
           method: "POST",
           body: JSON.stringify({ id: "tor-001" }),
-        },
+        }
       );
       const response = await approveTimeOff(request);
 
@@ -1479,7 +1493,7 @@ describe("Timecards API", () => {
         {
           method: "POST",
           body: JSON.stringify({ id: "tor-001" }),
-        },
+        }
       );
       const response = await approveTimeOff(request);
 
@@ -1510,7 +1524,7 @@ describe("Timecards API", () => {
         {
           method: "POST",
           body: JSON.stringify({ id: "tor-001" }),
-        },
+        }
       );
       const response = await rejectTimeOff(request);
 
@@ -1532,7 +1546,7 @@ describe("Timecards API", () => {
             id: "tor-001",
             reason: "Insufficient staffing",
           }),
-        },
+        }
       );
       const response = await rejectTimeOff(request);
 
@@ -1547,7 +1561,7 @@ describe("Timecards API", () => {
           id: "tor-001",
           reason: "Insufficient staffing",
         }),
-        { entityName: "TimeOffRequest" },
+        { entityName: "TimeOffRequest" }
       );
     });
 
@@ -1562,7 +1576,7 @@ describe("Timecards API", () => {
         {
           method: "POST",
           body: JSON.stringify({ id: "tor-001" }),
-        },
+        }
       );
       const response = await rejectTimeOff(request);
 
@@ -1582,7 +1596,7 @@ describe("Timecards API", () => {
         {
           method: "POST",
           body: JSON.stringify({ id: "nonexistent" }),
-        },
+        }
       );
       const response = await rejectTimeOff(request);
 
@@ -1599,7 +1613,7 @@ describe("Timecards API", () => {
         {
           method: "POST",
           body: JSON.stringify({ id: "tor-001" }),
-        },
+        }
       );
       const response = await rejectTimeOff(request);
 

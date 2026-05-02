@@ -71,7 +71,7 @@ const baseSchedule = {
   status: "PENDING",
   totalAmount: { toString: () => "10000.00" },
   recognizedAmount: 0,
-  remainingAmount: 10000,
+  remainingAmount: 10_000,
   completedMilestones: 0,
   totalMilestones: 4,
   recognitionPeriod: "MONTHLY",
@@ -175,10 +175,9 @@ describe("PATCH /api/accounting/revenue-recognition/schedules/[id]", () => {
     it("rejects zero or negative amounts", async () => {
       mocks.scheduleFindFirstMock.mockResolvedValue(baseSchedule);
 
-      const r1 = await PATCH(
-        makeRequest({ action: "recognize", amount: 0 }),
-        { params }
-      );
+      const r1 = await PATCH(makeRequest({ action: "recognize", amount: 0 }), {
+        params,
+      });
       const r2 = await PATCH(
         makeRequest({ action: "recognize", amount: -100 }),
         { params }
@@ -268,7 +267,7 @@ describe("PATCH /api/accounting/revenue-recognition/schedules/[id]", () => {
         {
           ...baseSchedule,
           status: "COMPLETED",
-          recognizedAmount: 10000,
+          recognizedAmount: 10_000,
           remainingAmount: 0,
           completedMilestones: 4,
           completedAt,
@@ -323,7 +322,7 @@ describe("PATCH /api/accounting/revenue-recognition/schedules/[id]", () => {
       mocks.scheduleFindFirstMock.mockResolvedValue({
         ...baseSchedule,
         status: "COMPLETED",
-        recognizedAmount: 10000,
+        recognizedAmount: 10_000,
         remainingAmount: 0,
       });
       mocks.lineFindFirstMock.mockResolvedValue({
@@ -416,19 +415,19 @@ describe("PATCH /api/accounting/revenue-recognition/schedules/[id]", () => {
       });
       mocks.scheduleUpdateMock.mockResolvedValue({
         ...baseSchedule,
-        totalAmount: 12000,
+        totalAmount: 12_000,
         recognizedAmount: 3000,
         remainingAmount: 9000,
       });
 
       const response = await PATCH(
-        makeRequest({ action: "adjust", totalAmount: 12000 }),
+        makeRequest({ action: "adjust", totalAmount: 12_000 }),
         { params }
       );
 
       expect(response.status).toBe(200);
       const dataArg = mocks.scheduleUpdateMock.mock.calls[0][0].data;
-      expect(dataArg.totalAmount).toBe(12000);
+      expect(dataArg.totalAmount).toBe(12_000);
       expect(dataArg.remainingAmount).toBe(9000); // 12000 - 3000 already recognized
     });
 

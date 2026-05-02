@@ -70,7 +70,9 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     // Verify schedule exists and belongs to tenant
     const existing = await database.revenueRecognitionSchedule.findFirst({
       where: { tenantId, id, deletedAt: null },
-      include: { lines: { where: { deletedAt: null }, orderBy: { sequence: "asc" } } },
+      include: {
+        lines: { where: { deletedAt: null }, orderBy: { sequence: "asc" } },
+      },
     });
 
     if (!existing) {
@@ -94,7 +96,9 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       const updated = await database.revenueRecognitionSchedule.update({
         where: { tenantId_id: { tenantId, id } },
         data: { status: "IN_PROGRESS", updatedAt: new Date() },
-        include: { lines: { where: { deletedAt: null }, orderBy: { sequence: "asc" } } },
+        include: {
+          lines: { where: { deletedAt: null }, orderBy: { sequence: "asc" } },
+        },
       });
 
       return NextResponse.json({ data: updated });
@@ -133,7 +137,8 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
             amount,
             recognizedAt: new Date(body.recognizedAt || new Date()),
             status: "RECOGNIZED",
-            description: body.description || `Recognition ${existing.lines.length + 1}`,
+            description:
+              body.description || `Recognition ${existing.lines.length + 1}`,
             metadata: body.metadata ?? {},
           },
         }),
@@ -147,7 +152,9 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
             completedAt: isComplete ? new Date() : null,
             updatedAt: new Date(),
           },
-          include: { lines: { where: { deletedAt: null }, orderBy: { sequence: "asc" } } },
+          include: {
+            lines: { where: { deletedAt: null }, orderBy: { sequence: "asc" } },
+          },
         }),
       ]);
 
@@ -194,7 +201,9 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
             completedAt: null,
             updatedAt: new Date(),
           },
-          include: { lines: { where: { deletedAt: null }, orderBy: { sequence: "asc" } } },
+          include: {
+            lines: { where: { deletedAt: null }, orderBy: { sequence: "asc" } },
+          },
         }),
       ]);
 
@@ -213,7 +222,9 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       const updated = await database.revenueRecognitionSchedule.update({
         where: { tenantId_id: { tenantId, id } },
         data: { status: "CANCELLED", updatedAt: new Date() },
-        include: { lines: { where: { deletedAt: null }, orderBy: { sequence: "asc" } } },
+        include: {
+          lines: { where: { deletedAt: null }, orderBy: { sequence: "asc" } },
+        },
       });
 
       return NextResponse.json({ data: updated });
@@ -221,7 +232,8 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
 
     // Action: Adjust schedule amounts
     if (action === "adjust") {
-      const newTotal = body.totalAmount !== undefined ? Number(body.totalAmount) : null;
+      const newTotal =
+        body.totalAmount !== undefined ? Number(body.totalAmount) : null;
 
       if (newTotal !== null && newTotal <= 0) {
         return NextResponse.json(
@@ -256,7 +268,9 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       const updated = await database.revenueRecognitionSchedule.update({
         where: { tenantId_id: { tenantId, id } },
         data: updates,
-        include: { lines: { where: { deletedAt: null }, orderBy: { sequence: "asc" } } },
+        include: {
+          lines: { where: { deletedAt: null }, orderBy: { sequence: "asc" } },
+        },
       });
 
       return NextResponse.json({ data: updated });
@@ -280,7 +294,9 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     const updated = await database.revenueRecognitionSchedule.update({
       where: { tenantId_id: { tenantId, id } },
       data: { ...updates, updatedAt: new Date() },
-      include: { lines: { where: { deletedAt: null }, orderBy: { sequence: "asc" } } },
+      include: {
+        lines: { where: { deletedAt: null }, orderBy: { sequence: "asc" } },
+      },
     });
 
     return NextResponse.json({ data: updated });

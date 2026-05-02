@@ -9,8 +9,8 @@
 
 import { NextRequest } from "next/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { GET } from "@/app/api/knowledge-base/entries/list/route";
 import { POST } from "@/app/api/knowledge-base/entries/commands/create/route";
+import { GET } from "@/app/api/knowledge-base/entries/list/route";
 
 // ---------------------------------------------------------------------------
 // Mocks
@@ -47,7 +47,7 @@ vi.mock("@/lib/manifest-response", async () => {
           success: true,
           ...(typeof data === "object" && data !== null ? data : { data }),
         },
-        { status },
+        { status }
       ),
     manifestErrorResponse: (message: string, status: number) =>
       NextResponse.json({ success: false, message }, { status }),
@@ -84,7 +84,7 @@ function makeAuthedUser() {
 function makeGetRequest(params: Record<string, string> = {}) {
   const qs = new URLSearchParams(params).toString();
   return new NextRequest(
-    `http://localhost/api/knowledge-base/entries/list?${qs}`,
+    `http://localhost/api/knowledge-base/entries/list?${qs}`
   );
 }
 
@@ -95,7 +95,7 @@ function makePostRequest(body: Record<string, unknown>) {
       method: "POST",
       body: JSON.stringify(body),
       headers: { "Content-Type": "application/json" },
-    },
+    }
   );
 }
 

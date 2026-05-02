@@ -228,29 +228,29 @@ export default function WasteLoggingMobilePage() {
   );
 
   return (
-    <>
+    <div className="editorial-surface-reset flex min-h-0 flex-1 flex-col bg-canvas text-foreground">
       <Header page="Log Waste" pages={["Kitchen Ops"]} />
 
       {!isOnline && (
-        <div className="flex items-center justify-center gap-2 bg-amber-500 px-4 py-2">
-          <WifiOff className="h-4 w-4 text-white" />
-          <span className="font-medium text-white">
+        <div className="flex items-center justify-center gap-2 border-b border-hairline bg-soft-stone px-4 py-2">
+          <WifiOff className="h-4 w-4 shrink-0 text-muted-foreground" />
+          <span className="font-medium text-ink">
             You're offline. Entry will sync when you reconnect.
           </span>
         </div>
       )}
 
       {syncQueue.length > 0 && (
-        <div className="flex items-center justify-center gap-2 bg-blue-500 px-4 py-2">
-          <Wifi className="h-4 w-4 text-white" />
-          <span className="font-medium text-white">
+        <div className="flex items-center justify-center gap-2 border-b border-hairline bg-pale-blue/50 px-4 py-2">
+          <Wifi className="h-4 w-4 shrink-0 text-action-blue" />
+          <span className="font-medium text-ink">
             {syncQueue.length} entry pending sync
           </span>
         </div>
       )}
 
-      <div className="flex flex-1 flex-col p-4">
-        <Card className="mb-4">
+      <div className="flex min-h-0 flex-1 flex-col p-4">
+        <Card className="mb-4 border-hairline">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-lg">
               <Trash2 className="h-5 w-5 text-rose-600" />
@@ -310,7 +310,7 @@ export default function WasteLoggingMobilePage() {
                     value={formData.quantity || ""}
                   />
                   {selectedItem && (
-                    <span className="text-slate-600 text-sm">
+                    <span className="text-muted-foreground text-sm">
                       {selectedItem.unit}
                     </span>
                   )}
@@ -392,16 +392,17 @@ export default function WasteLoggingMobilePage() {
 
               {/* Summary */}
               {selectedItem && selectedReason && formData.quantity > 0 && (
-                <div className="rounded-lg bg-slate-50 p-3">
-                  <p className="text-slate-600 text-sm">
+                <div className="rounded-lg border border-hairline bg-soft-stone p-3">
+                  <p className="text-muted-foreground text-sm">
                     Logging:{" "}
-                    <strong>
+                    <strong className="text-ink">
                       {formData.quantity} {selectedItem.unit}
                     </strong>{" "}
-                    of <strong>{selectedItem.name}</strong>
+                    of <strong className="text-ink">{selectedItem.name}</strong>
                   </p>
-                  <p className="text-slate-600 text-sm">
-                    Reason: <strong>{selectedReason.name}</strong>
+                  <p className="text-muted-foreground text-sm">
+                    Reason:{" "}
+                    <strong className="text-ink">{selectedReason.name}</strong>
                   </p>
                 </div>
               )}
@@ -417,7 +418,7 @@ export default function WasteLoggingMobilePage() {
 
               {/* Submit Button */}
               <Button
-                className="h-14 w-full text-lg font-bold"
+                className="h-14 w-full bg-ink font-bold text-lg text-white hover:bg-ink/90"
                 disabled={isLoading}
                 type="submit"
               >
@@ -427,6 +428,6 @@ export default function WasteLoggingMobilePage() {
           </CardContent>
         </Card>
       </div>
-    </>
+    </div>
   );
 }

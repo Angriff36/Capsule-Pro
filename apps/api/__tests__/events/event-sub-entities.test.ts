@@ -77,7 +77,10 @@ const TEST_CONTRACT_ID = "ct000000-0000-4000-a000-000000000030";
 // Helpers
 // ---------------------------------------------------------------------------
 
-function createMockRequest(url: string, options: RequestInit = {}): NextRequest {
+function createMockRequest(
+  url: string,
+  options: RequestInit = {}
+): NextRequest {
   if (options.body && !options.headers) {
     options.headers = { "Content-Type": "application/json" };
   }
@@ -110,7 +113,10 @@ function setupNoTenant() {
   vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
 }
 
-function setupSuccessResult(data: Record<string, unknown>, events: Array<{ type: string; payload?: Record<string, unknown> }> = []) {
+function setupSuccessResult(
+  data: Record<string, unknown>,
+  events: Array<{ type: string; payload?: Record<string, unknown> }> = []
+) {
   mockRunCommand.mockResolvedValueOnce({
     success: true,
     result: data,
@@ -236,12 +242,18 @@ describe("Event Sub-Entities API Integration Tests", () => {
     describe("POST /api/eventguest/create - success", () => {
       it("creates a guest and returns 200 with result and events", async () => {
         setupAuth();
-        setupSuccessResult(mockGuest, [{ type: "GuestCreated", payload: { id: TEST_GUEST_ID } }]);
+        setupSuccessResult(mockGuest, [
+          { type: "GuestCreated", payload: { id: TEST_GUEST_ID } },
+        ]);
 
         const { POST } = await import("@/app/api/eventguest/create/route");
         const req = createMockRequest(`${GUEST_BASE}/create`, {
           method: "POST",
-          body: JSON.stringify({ eventId: TEST_EVENT_ID, name: "Jane Doe", email: "jane@example.com" }),
+          body: JSON.stringify({
+            eventId: TEST_EVENT_ID,
+            name: "Jane Doe",
+            email: "jane@example.com",
+          }),
         });
 
         const res = await POST(req);
@@ -252,7 +264,11 @@ describe("Event Sub-Entities API Integration Tests", () => {
         expect(body.result.id).toBe(TEST_GUEST_ID);
         expect(body.events).toHaveLength(1);
         expect(body.events[0].type).toBe("GuestCreated");
-        expect(mockRunCommand).toHaveBeenCalledWith("create", expect.any(Object), { entityName: "EventGuest" });
+        expect(mockRunCommand).toHaveBeenCalledWith(
+          "create",
+          expect.any(Object),
+          { entityName: "EventGuest" }
+        );
       });
     });
 
@@ -274,7 +290,11 @@ describe("Event Sub-Entities API Integration Tests", () => {
         expect(res.status).toBe(200);
         expect(body.success).toBe(true);
         expect(body.result.rsvpStatus).toBe("confirmed");
-        expect(mockRunCommand).toHaveBeenCalledWith("update", expect.any(Object), { entityName: "EventGuest" });
+        expect(mockRunCommand).toHaveBeenCalledWith(
+          "update",
+          expect.any(Object),
+          { entityName: "EventGuest" }
+        );
       });
     });
 
@@ -296,7 +316,11 @@ describe("Event Sub-Entities API Integration Tests", () => {
         expect(res.status).toBe(200);
         expect(body.success).toBe(true);
         expect(body.result.deletedAt).not.toBeNull();
-        expect(mockRunCommand).toHaveBeenCalledWith("softDelete", expect.any(Object), { entityName: "EventGuest" });
+        expect(mockRunCommand).toHaveBeenCalledWith(
+          "softDelete",
+          expect.any(Object),
+          { entityName: "EventGuest" }
+        );
       });
     });
 
@@ -323,7 +347,10 @@ describe("Event Sub-Entities API Integration Tests", () => {
         setupAuth();
         mockRunCommand.mockResolvedValueOnce({
           success: false,
-          policyDenial: { policyName: "guestManagerOnly", formatted: "Not authorized" },
+          policyDenial: {
+            policyName: "guestManagerOnly",
+            formatted: "Not authorized",
+          },
         });
 
         const { POST } = await import("@/app/api/eventguest/create/route");
@@ -403,7 +430,9 @@ describe("Event Sub-Entities API Integration Tests", () => {
         setupAuth();
         setupSuccessResult(mockGuest);
 
-        const { createManifestRuntime } = await import("@/lib/manifest-runtime");
+        const { createManifestRuntime } = await import(
+          "@/lib/manifest-runtime"
+        );
         const { POST } = await import("@/app/api/eventguest/create/route");
         const req = createMockRequest(`${GUEST_BASE}/create`, {
           method: "POST",
@@ -441,7 +470,10 @@ describe("Event Sub-Entities API Integration Tests", () => {
         const { POST } = await import("@/app/api/eventstaff/assign/route");
         const req = createMockRequest(`${STAFF_BASE}/assign`, {
           method: "POST",
-          body: JSON.stringify({ eventId: TEST_EVENT_ID, userId: TEST_USER_ID }),
+          body: JSON.stringify({
+            eventId: TEST_EVENT_ID,
+            userId: TEST_USER_ID,
+          }),
         });
         const res = await POST(req);
         expect(res.status).toBe(401);
@@ -486,12 +518,18 @@ describe("Event Sub-Entities API Integration Tests", () => {
     describe("POST /api/eventstaff/assign - success", () => {
       it("assigns staff to an event and returns 200", async () => {
         setupAuth();
-        setupSuccessResult(mockStaff, [{ type: "StaffAssigned", payload: { id: TEST_STAFF_ID } }]);
+        setupSuccessResult(mockStaff, [
+          { type: "StaffAssigned", payload: { id: TEST_STAFF_ID } },
+        ]);
 
         const { POST } = await import("@/app/api/eventstaff/assign/route");
         const req = createMockRequest(`${STAFF_BASE}/assign`, {
           method: "POST",
-          body: JSON.stringify({ eventId: TEST_EVENT_ID, userId: TEST_USER_ID, role: "server" }),
+          body: JSON.stringify({
+            eventId: TEST_EVENT_ID,
+            userId: TEST_USER_ID,
+            role: "server",
+          }),
         });
 
         const res = await POST(req);
@@ -502,7 +540,11 @@ describe("Event Sub-Entities API Integration Tests", () => {
         expect(body.result.id).toBe(TEST_STAFF_ID);
         expect(body.result.role).toBe("server");
         expect(body.events[0].type).toBe("StaffAssigned");
-        expect(mockRunCommand).toHaveBeenCalledWith("assign", expect.any(Object), { entityName: "EventStaff" });
+        expect(mockRunCommand).toHaveBeenCalledWith(
+          "assign",
+          expect.any(Object),
+          { entityName: "EventStaff" }
+        );
       });
     });
 
@@ -524,7 +566,11 @@ describe("Event Sub-Entities API Integration Tests", () => {
         expect(res.status).toBe(200);
         expect(body.success).toBe(true);
         expect(body.result.removedAt).not.toBeNull();
-        expect(mockRunCommand).toHaveBeenCalledWith("unassign", expect.any(Object), { entityName: "EventStaff" });
+        expect(mockRunCommand).toHaveBeenCalledWith(
+          "unassign",
+          expect.any(Object),
+          { entityName: "EventStaff" }
+        );
       });
     });
 
@@ -547,7 +593,10 @@ describe("Event Sub-Entities API Integration Tests", () => {
         setupAuth();
         mockRunCommand.mockResolvedValueOnce({
           success: false,
-          policyDenial: { policyName: "eventManagerOnly", formatted: "Not an event manager" },
+          policyDenial: {
+            policyName: "eventManagerOnly",
+            formatted: "Not an event manager",
+          },
         });
 
         const { POST } = await import("@/app/api/eventstaff/assign/route");
@@ -602,7 +651,10 @@ describe("Event Sub-Entities API Integration Tests", () => {
         const { POST } = await import("@/app/api/eventdish/create/route");
         const req = createMockRequest(`${DISH_BASE}/create`, {
           method: "POST",
-          body: JSON.stringify({ eventId: TEST_EVENT_ID, dishId: TEST_DISH_ID }),
+          body: JSON.stringify({
+            eventId: TEST_EVENT_ID,
+            dishId: TEST_DISH_ID,
+          }),
         });
         const res = await POST(req);
         expect(res.status).toBe(401);
@@ -647,12 +699,18 @@ describe("Event Sub-Entities API Integration Tests", () => {
     describe("POST /api/eventdish/create - success", () => {
       it("adds a dish to an event and returns 200", async () => {
         setupAuth();
-        setupSuccessResult(mockEventDish, [{ type: "DishAdded", payload: { id: TEST_EVENT_DISH_ID } }]);
+        setupSuccessResult(mockEventDish, [
+          { type: "DishAdded", payload: { id: TEST_EVENT_DISH_ID } },
+        ]);
 
         const { POST } = await import("@/app/api/eventdish/create/route");
         const req = createMockRequest(`${DISH_BASE}/create`, {
           method: "POST",
-          body: JSON.stringify({ eventId: TEST_EVENT_ID, dishId: TEST_DISH_ID, quantity: 50 }),
+          body: JSON.stringify({
+            eventId: TEST_EVENT_ID,
+            dishId: TEST_DISH_ID,
+            quantity: 50,
+          }),
         });
 
         const res = await POST(req);
@@ -662,7 +720,11 @@ describe("Event Sub-Entities API Integration Tests", () => {
         expect(body.success).toBe(true);
         expect(body.result.dishId).toBe(TEST_DISH_ID);
         expect(body.result.quantity).toBe(50);
-        expect(mockRunCommand).toHaveBeenCalledWith("create", expect.any(Object), { entityName: "EventDish" });
+        expect(mockRunCommand).toHaveBeenCalledWith(
+          "create",
+          expect.any(Object),
+          { entityName: "EventDish" }
+        );
       });
     });
 
@@ -682,7 +744,11 @@ describe("Event Sub-Entities API Integration Tests", () => {
 
         expect(res.status).toBe(200);
         expect(body.success).toBe(true);
-        expect(mockRunCommand).toHaveBeenCalledWith("remove", expect.any(Object), { entityName: "EventDish" });
+        expect(mockRunCommand).toHaveBeenCalledWith(
+          "remove",
+          expect.any(Object),
+          { entityName: "EventDish" }
+        );
       });
     });
 
@@ -705,7 +771,10 @@ describe("Event Sub-Entities API Integration Tests", () => {
         setupAuth();
         mockRunCommand.mockResolvedValueOnce({
           success: false,
-          policyDenial: { policyName: "chefOnly", formatted: "Only chefs can remove dishes" },
+          policyDenial: {
+            policyName: "chefOnly",
+            formatted: "Only chefs can remove dishes",
+          },
         });
 
         const { POST } = await import("@/app/api/eventdish/remove/route");
@@ -814,12 +883,17 @@ describe("Event Sub-Entities API Integration Tests", () => {
     describe("POST /api/eventreport/create - success", () => {
       it("creates a report and returns 200", async () => {
         setupAuth();
-        setupSuccessResult(mockReport, [{ type: "ReportCreated", payload: { id: TEST_REPORT_ID } }]);
+        setupSuccessResult(mockReport, [
+          { type: "ReportCreated", payload: { id: TEST_REPORT_ID } },
+        ]);
 
         const { POST } = await import("@/app/api/eventreport/create/route");
         const req = createMockRequest(`${REPORT_BASE}/create`, {
           method: "POST",
-          body: JSON.stringify({ eventId: TEST_EVENT_ID, title: "Post-Event Analysis" }),
+          body: JSON.stringify({
+            eventId: TEST_EVENT_ID,
+            title: "Post-Event Analysis",
+          }),
         });
 
         const res = await POST(req);
@@ -829,14 +903,22 @@ describe("Event Sub-Entities API Integration Tests", () => {
         expect(body.success).toBe(true);
         expect(body.result.id).toBe(TEST_REPORT_ID);
         expect(body.result.status).toBe("draft");
-        expect(mockRunCommand).toHaveBeenCalledWith("create", expect.any(Object), { entityName: "EventReport" });
+        expect(mockRunCommand).toHaveBeenCalledWith(
+          "create",
+          expect.any(Object),
+          { entityName: "EventReport" }
+        );
       });
     });
 
     describe("POST /api/eventreport/submit - success", () => {
       it("submits a report and returns 200", async () => {
         setupAuth();
-        const submitted = { ...mockReport, status: "submitted", submittedAt: new Date("2026-02-02") };
+        const submitted = {
+          ...mockReport,
+          status: "submitted",
+          submittedAt: new Date("2026-02-02"),
+        };
         setupSuccessResult(submitted, [{ type: "ReportSubmitted" }]);
 
         const { POST } = await import("@/app/api/eventreport/submit/route");
@@ -851,14 +933,22 @@ describe("Event Sub-Entities API Integration Tests", () => {
         expect(res.status).toBe(200);
         expect(body.success).toBe(true);
         expect(body.result.status).toBe("submitted");
-        expect(mockRunCommand).toHaveBeenCalledWith("submit", expect.any(Object), { entityName: "EventReport" });
+        expect(mockRunCommand).toHaveBeenCalledWith(
+          "submit",
+          expect.any(Object),
+          { entityName: "EventReport" }
+        );
       });
     });
 
     describe("POST /api/eventreport/approve - success", () => {
       it("approves a report and returns 200", async () => {
         setupAuth();
-        const approved = { ...mockReport, status: "approved", approvedAt: new Date("2026-02-03") };
+        const approved = {
+          ...mockReport,
+          status: "approved",
+          approvedAt: new Date("2026-02-03"),
+        };
         setupSuccessResult(approved);
 
         const { POST } = await import("@/app/api/eventreport/approve/route");
@@ -873,14 +963,22 @@ describe("Event Sub-Entities API Integration Tests", () => {
         expect(res.status).toBe(200);
         expect(body.success).toBe(true);
         expect(body.result.status).toBe("approved");
-        expect(mockRunCommand).toHaveBeenCalledWith("approve", expect.any(Object), { entityName: "EventReport" });
+        expect(mockRunCommand).toHaveBeenCalledWith(
+          "approve",
+          expect.any(Object),
+          { entityName: "EventReport" }
+        );
       });
     });
 
     describe("POST /api/eventreport/complete - success", () => {
       it("completes a report and returns 200", async () => {
         setupAuth();
-        const completed = { ...mockReport, status: "completed", completedAt: new Date("2026-02-04") };
+        const completed = {
+          ...mockReport,
+          status: "completed",
+          completedAt: new Date("2026-02-04"),
+        };
         setupSuccessResult(completed);
 
         const { POST } = await import("@/app/api/eventreport/complete/route");
@@ -895,7 +993,11 @@ describe("Event Sub-Entities API Integration Tests", () => {
         expect(res.status).toBe(200);
         expect(body.success).toBe(true);
         expect(body.result.status).toBe("completed");
-        expect(mockRunCommand).toHaveBeenCalledWith("complete", expect.any(Object), { entityName: "EventReport" });
+        expect(mockRunCommand).toHaveBeenCalledWith(
+          "complete",
+          expect.any(Object),
+          { entityName: "EventReport" }
+        );
       });
     });
 
@@ -918,7 +1020,10 @@ describe("Event Sub-Entities API Integration Tests", () => {
         setupAuth();
         mockRunCommand.mockResolvedValueOnce({
           success: false,
-          policyDenial: { policyName: "managerOnly", formatted: "Only managers can approve" },
+          policyDenial: {
+            policyName: "managerOnly",
+            formatted: "Only managers can approve",
+          },
         });
 
         const { POST } = await import("@/app/api/eventreport/approve/route");
@@ -935,7 +1040,10 @@ describe("Event Sub-Entities API Integration Tests", () => {
         setupAuth();
         mockRunCommand.mockResolvedValueOnce({
           success: false,
-          guardFailure: { index: 0, formatted: "Report must be in draft status" },
+          guardFailure: {
+            index: 0,
+            formatted: "Report must be in draft status",
+          },
         });
 
         const { POST } = await import("@/app/api/eventreport/submit/route");
@@ -977,7 +1085,7 @@ describe("Event Sub-Entities API Integration Tests", () => {
       tenantId: TEST_TENANT_ID,
       id: TEST_PROFITABILITY_ID,
       eventId: TEST_EVENT_ID,
-      totalRevenue: 15000,
+      totalRevenue: 15_000,
       totalCost: 8500,
       grossProfit: 6500,
       profitMargin: 43.33,
@@ -989,7 +1097,9 @@ describe("Event Sub-Entities API Integration Tests", () => {
     describe("Authentication gating", () => {
       it("create returns 401 when unauthenticated", async () => {
         setupUnauthenticated();
-        const { POST } = await import("@/app/api/eventprofitability/create/route");
+        const { POST } = await import(
+          "@/app/api/eventprofitability/create/route"
+        );
         const req = createMockRequest(`${PROFIT_BASE}/create`, {
           method: "POST",
           body: JSON.stringify({ eventId: TEST_EVENT_ID }),
@@ -1000,7 +1110,9 @@ describe("Event Sub-Entities API Integration Tests", () => {
 
       it("update returns 401 when unauthenticated", async () => {
         setupUnauthenticated();
-        const { POST } = await import("@/app/api/eventprofitability/update/route");
+        const { POST } = await import(
+          "@/app/api/eventprofitability/update/route"
+        );
         const req = createMockRequest(`${PROFIT_BASE}/update`, {
           method: "POST",
           body: JSON.stringify({ id: TEST_PROFITABILITY_ID }),
@@ -1011,7 +1123,9 @@ describe("Event Sub-Entities API Integration Tests", () => {
 
       it("recalculate returns 401 when unauthenticated", async () => {
         setupUnauthenticated();
-        const { POST } = await import("@/app/api/eventprofitability/recalculate/route");
+        const { POST } = await import(
+          "@/app/api/eventprofitability/recalculate/route"
+        );
         const req = createMockRequest(`${PROFIT_BASE}/recalculate`, {
           method: "POST",
           body: JSON.stringify({ id: TEST_PROFITABILITY_ID }),
@@ -1024,7 +1138,9 @@ describe("Event Sub-Entities API Integration Tests", () => {
     describe("Tenant resolution", () => {
       it("create returns 400 when tenant not found", async () => {
         setupNoTenant();
-        const { POST } = await import("@/app/api/eventprofitability/create/route");
+        const { POST } = await import(
+          "@/app/api/eventprofitability/create/route"
+        );
         const req = createMockRequest(`${PROFIT_BASE}/create`, {
           method: "POST",
           body: JSON.stringify({ eventId: TEST_EVENT_ID }),
@@ -1035,7 +1151,9 @@ describe("Event Sub-Entities API Integration Tests", () => {
 
       it("recalculate returns 400 when tenant not found", async () => {
         setupNoTenant();
-        const { POST } = await import("@/app/api/eventprofitability/recalculate/route");
+        const { POST } = await import(
+          "@/app/api/eventprofitability/recalculate/route"
+        );
         const req = createMockRequest(`${PROFIT_BASE}/recalculate`, {
           method: "POST",
           body: JSON.stringify({ id: TEST_PROFITABILITY_ID }),
@@ -1048,9 +1166,13 @@ describe("Event Sub-Entities API Integration Tests", () => {
     describe("POST /api/eventprofitability/create - success", () => {
       it("creates a profitability record and returns 200", async () => {
         setupAuth();
-        setupSuccessResult(mockProfitability, [{ type: "ProfitabilityCalculated" }]);
+        setupSuccessResult(mockProfitability, [
+          { type: "ProfitabilityCalculated" },
+        ]);
 
-        const { POST } = await import("@/app/api/eventprofitability/create/route");
+        const { POST } = await import(
+          "@/app/api/eventprofitability/create/route"
+        );
         const req = createMockRequest(`${PROFIT_BASE}/create`, {
           method: "POST",
           body: JSON.stringify({ eventId: TEST_EVENT_ID }),
@@ -1063,20 +1185,33 @@ describe("Event Sub-Entities API Integration Tests", () => {
         expect(body.success).toBe(true);
         expect(body.result.grossProfit).toBe(6500);
         expect(body.result.profitMargin).toBeCloseTo(43.33);
-        expect(mockRunCommand).toHaveBeenCalledWith("create", expect.any(Object), { entityName: "EventProfitability" });
+        expect(mockRunCommand).toHaveBeenCalledWith(
+          "create",
+          expect.any(Object),
+          { entityName: "EventProfitability" }
+        );
       });
     });
 
     describe("POST /api/eventprofitability/update - success", () => {
       it("updates a profitability record and returns 200", async () => {
         setupAuth();
-        const updated = { ...mockProfitability, totalRevenue: 18000, grossProfit: 9500 };
+        const updated = {
+          ...mockProfitability,
+          totalRevenue: 18_000,
+          grossProfit: 9500,
+        };
         setupSuccessResult(updated);
 
-        const { POST } = await import("@/app/api/eventprofitability/update/route");
+        const { POST } = await import(
+          "@/app/api/eventprofitability/update/route"
+        );
         const req = createMockRequest(`${PROFIT_BASE}/update`, {
           method: "POST",
-          body: JSON.stringify({ id: TEST_PROFITABILITY_ID, totalRevenue: 18000 }),
+          body: JSON.stringify({
+            id: TEST_PROFITABILITY_ID,
+            totalRevenue: 18_000,
+          }),
         });
 
         const res = await POST(req);
@@ -1084,18 +1219,31 @@ describe("Event Sub-Entities API Integration Tests", () => {
 
         expect(res.status).toBe(200);
         expect(body.success).toBe(true);
-        expect(body.result.totalRevenue).toBe(18000);
-        expect(mockRunCommand).toHaveBeenCalledWith("update", expect.any(Object), { entityName: "EventProfitability" });
+        expect(body.result.totalRevenue).toBe(18_000);
+        expect(mockRunCommand).toHaveBeenCalledWith(
+          "update",
+          expect.any(Object),
+          { entityName: "EventProfitability" }
+        );
       });
     });
 
     describe("POST /api/eventprofitability/recalculate - success", () => {
       it("recalculates profitability and returns 200", async () => {
         setupAuth();
-        const recalculated = { ...mockProfitability, grossProfit: 7000, profitMargin: 46.67, calculatedAt: new Date("2026-02-05") };
-        setupSuccessResult(recalculated, [{ type: "ProfitabilityRecalculated" }]);
+        const recalculated = {
+          ...mockProfitability,
+          grossProfit: 7000,
+          profitMargin: 46.67,
+          calculatedAt: new Date("2026-02-05"),
+        };
+        setupSuccessResult(recalculated, [
+          { type: "ProfitabilityRecalculated" },
+        ]);
 
-        const { POST } = await import("@/app/api/eventprofitability/recalculate/route");
+        const { POST } = await import(
+          "@/app/api/eventprofitability/recalculate/route"
+        );
         const req = createMockRequest(`${PROFIT_BASE}/recalculate`, {
           method: "POST",
           body: JSON.stringify({ id: TEST_PROFITABILITY_ID }),
@@ -1107,7 +1255,11 @@ describe("Event Sub-Entities API Integration Tests", () => {
         expect(res.status).toBe(200);
         expect(body.success).toBe(true);
         expect(body.result.grossProfit).toBe(7000);
-        expect(mockRunCommand).toHaveBeenCalledWith("recalculate", expect.any(Object), { entityName: "EventProfitability" });
+        expect(mockRunCommand).toHaveBeenCalledWith(
+          "recalculate",
+          expect.any(Object),
+          { entityName: "EventProfitability" }
+        );
       });
     });
 
@@ -1116,7 +1268,9 @@ describe("Event Sub-Entities API Integration Tests", () => {
         setupAuth();
         mockRunCommand.mockRejectedValueOnce(new Error("DB error"));
 
-        const { POST } = await import("@/app/api/eventprofitability/create/route");
+        const { POST } = await import(
+          "@/app/api/eventprofitability/create/route"
+        );
         const req = createMockRequest(`${PROFIT_BASE}/create`, {
           method: "POST",
           body: JSON.stringify({ eventId: TEST_EVENT_ID }),
@@ -1130,10 +1284,15 @@ describe("Event Sub-Entities API Integration Tests", () => {
         setupAuth();
         mockRunCommand.mockResolvedValueOnce({
           success: false,
-          policyDenial: { policyName: "financeOnly", formatted: "Finance access required" },
+          policyDenial: {
+            policyName: "financeOnly",
+            formatted: "Finance access required",
+          },
         });
 
-        const { POST } = await import("@/app/api/eventprofitability/update/route");
+        const { POST } = await import(
+          "@/app/api/eventprofitability/update/route"
+        );
         const req = createMockRequest(`${PROFIT_BASE}/update`, {
           method: "POST",
           body: JSON.stringify({ id: TEST_PROFITABILITY_ID }),
@@ -1160,7 +1319,7 @@ describe("Event Sub-Entities API Integration Tests", () => {
       totalStaff: 15,
       totalDishes: 8,
       budgetUsed: 7500,
-      budgetTotal: 10000,
+      budgetTotal: 10_000,
       status: "in_progress",
       generatedAt: new Date("2026-02-01"),
       createdAt: new Date("2026-01-20"),
@@ -1244,14 +1403,22 @@ describe("Event Sub-Entities API Integration Tests", () => {
         expect(body.success).toBe(true);
         expect(body.result.totalGuests).toBe(120);
         expect(body.result.confirmedGuests).toBe(95);
-        expect(mockRunCommand).toHaveBeenCalledWith("create", expect.any(Object), { entityName: "EventSummary" });
+        expect(mockRunCommand).toHaveBeenCalledWith(
+          "create",
+          expect.any(Object),
+          { entityName: "EventSummary" }
+        );
       });
     });
 
     describe("POST /api/eventsummary/update - success", () => {
       it("updates a summary and returns 200", async () => {
         setupAuth();
-        const updated = { ...mockSummary, totalGuests: 150, confirmedGuests: 110 };
+        const updated = {
+          ...mockSummary,
+          totalGuests: 150,
+          confirmedGuests: 110,
+        };
         setupSuccessResult(updated);
 
         const { POST } = await import("@/app/api/eventsummary/update/route");
@@ -1266,14 +1433,22 @@ describe("Event Sub-Entities API Integration Tests", () => {
         expect(res.status).toBe(200);
         expect(body.success).toBe(true);
         expect(body.result.totalGuests).toBe(150);
-        expect(mockRunCommand).toHaveBeenCalledWith("update", expect.any(Object), { entityName: "EventSummary" });
+        expect(mockRunCommand).toHaveBeenCalledWith(
+          "update",
+          expect.any(Object),
+          { entityName: "EventSummary" }
+        );
       });
     });
 
     describe("POST /api/eventsummary/refresh - success", () => {
       it("refreshes a summary and returns 200", async () => {
         setupAuth();
-        const refreshed = { ...mockSummary, totalGuests: 130, generatedAt: new Date("2026-02-05") };
+        const refreshed = {
+          ...mockSummary,
+          totalGuests: 130,
+          generatedAt: new Date("2026-02-05"),
+        };
         setupSuccessResult(refreshed, [{ type: "SummaryRefreshed" }]);
 
         const { POST } = await import("@/app/api/eventsummary/refresh/route");
@@ -1288,7 +1463,11 @@ describe("Event Sub-Entities API Integration Tests", () => {
         expect(res.status).toBe(200);
         expect(body.success).toBe(true);
         expect(body.result.totalGuests).toBe(130);
-        expect(mockRunCommand).toHaveBeenCalledWith("refresh", expect.any(Object), { entityName: "EventSummary" });
+        expect(mockRunCommand).toHaveBeenCalledWith(
+          "refresh",
+          expect.any(Object),
+          { entityName: "EventSummary" }
+        );
       });
     });
 
@@ -1351,10 +1530,15 @@ describe("Event Sub-Entities API Integration Tests", () => {
     describe("Authentication gating", () => {
       it("create returns 401 when unauthenticated", async () => {
         setupUnauthenticated();
-        const { POST } = await import("@/app/api/eventimportworkflow/create/route");
+        const { POST } = await import(
+          "@/app/api/eventimportworkflow/create/route"
+        );
         const req = createMockRequest(`${WF_BASE}/create`, {
           method: "POST",
-          body: JSON.stringify({ eventId: TEST_EVENT_ID, source: "csv_upload" }),
+          body: JSON.stringify({
+            eventId: TEST_EVENT_ID,
+            source: "csv_upload",
+          }),
         });
         const res = await POST(req);
         expect(res.status).toBe(401);
@@ -1362,7 +1546,9 @@ describe("Event Sub-Entities API Integration Tests", () => {
 
       it("cancel returns 401 when unauthenticated", async () => {
         setupUnauthenticated();
-        const { POST } = await import("@/app/api/eventimportworkflow/cancel/route");
+        const { POST } = await import(
+          "@/app/api/eventimportworkflow/cancel/route"
+        );
         const req = createMockRequest(`${WF_BASE}/cancel`, {
           method: "POST",
           body: JSON.stringify({ id: TEST_WORKFLOW_ID }),
@@ -1373,7 +1559,9 @@ describe("Event Sub-Entities API Integration Tests", () => {
 
       it("start-extracting returns 401 when unauthenticated", async () => {
         setupUnauthenticated();
-        const { POST } = await import("@/app/api/eventimportworkflow/start-extracting/route");
+        const { POST } = await import(
+          "@/app/api/eventimportworkflow/start-extracting/route"
+        );
         const req = createMockRequest(`${WF_BASE}/start-extracting`, {
           method: "POST",
           body: JSON.stringify({ id: TEST_WORKFLOW_ID }),
@@ -1384,7 +1572,9 @@ describe("Event Sub-Entities API Integration Tests", () => {
 
       it("complete-activating returns 401 when unauthenticated", async () => {
         setupUnauthenticated();
-        const { POST } = await import("@/app/api/eventimportworkflow/complete-activating/route");
+        const { POST } = await import(
+          "@/app/api/eventimportworkflow/complete-activating/route"
+        );
         const req = createMockRequest(`${WF_BASE}/complete-activating`, {
           method: "POST",
           body: JSON.stringify({ id: TEST_WORKFLOW_ID }),
@@ -1398,7 +1588,9 @@ describe("Event Sub-Entities API Integration Tests", () => {
     describe("Tenant resolution", () => {
       it("create returns 400 when tenant not found", async () => {
         setupNoTenant();
-        const { POST } = await import("@/app/api/eventimportworkflow/create/route");
+        const { POST } = await import(
+          "@/app/api/eventimportworkflow/create/route"
+        );
         const req = createMockRequest(`${WF_BASE}/create`, {
           method: "POST",
           body: JSON.stringify({ eventId: TEST_EVENT_ID }),
@@ -1409,7 +1601,9 @@ describe("Event Sub-Entities API Integration Tests", () => {
 
       it("pause returns 400 when tenant not found", async () => {
         setupNoTenant();
-        const { POST } = await import("@/app/api/eventimportworkflow/pause/route");
+        const { POST } = await import(
+          "@/app/api/eventimportworkflow/pause/route"
+        );
         const req = createMockRequest(`${WF_BASE}/pause`, {
           method: "POST",
           body: JSON.stringify({ id: TEST_WORKFLOW_ID }),
@@ -1425,10 +1619,16 @@ describe("Event Sub-Entities API Integration Tests", () => {
         setupAuth();
         setupSuccessResult(mockWorkflow, [{ type: "ImportWorkflowCreated" }]);
 
-        const { POST } = await import("@/app/api/eventimportworkflow/create/route");
+        const { POST } = await import(
+          "@/app/api/eventimportworkflow/create/route"
+        );
         const req = createMockRequest(`${WF_BASE}/create`, {
           method: "POST",
-          body: JSON.stringify({ eventId: TEST_EVENT_ID, source: "csv_upload", fileName: "guest-list.csv" }),
+          body: JSON.stringify({
+            eventId: TEST_EVENT_ID,
+            source: "csv_upload",
+            fileName: "guest-list.csv",
+          }),
         });
 
         const res = await POST(req);
@@ -1438,7 +1638,11 @@ describe("Event Sub-Entities API Integration Tests", () => {
         expect(body.success).toBe(true);
         expect(body.result.id).toBe(TEST_WORKFLOW_ID);
         expect(body.result.status).toBe("created");
-        expect(mockRunCommand).toHaveBeenCalledWith("create", expect.any(Object), { entityName: "EventImportWorkflow" });
+        expect(mockRunCommand).toHaveBeenCalledWith(
+          "create",
+          expect.any(Object),
+          { entityName: "EventImportWorkflow" }
+        );
       });
     });
 
@@ -1448,10 +1652,15 @@ describe("Event Sub-Entities API Integration Tests", () => {
         const cancelled = { ...mockWorkflow, status: "cancelled" };
         setupSuccessResult(cancelled);
 
-        const { POST } = await import("@/app/api/eventimportworkflow/cancel/route");
+        const { POST } = await import(
+          "@/app/api/eventimportworkflow/cancel/route"
+        );
         const req = createMockRequest(`${WF_BASE}/cancel`, {
           method: "POST",
-          body: JSON.stringify({ id: TEST_WORKFLOW_ID, reason: "User cancelled" }),
+          body: JSON.stringify({
+            id: TEST_WORKFLOW_ID,
+            reason: "User cancelled",
+          }),
         });
 
         const res = await POST(req);
@@ -1460,20 +1669,33 @@ describe("Event Sub-Entities API Integration Tests", () => {
         expect(res.status).toBe(200);
         expect(body.success).toBe(true);
         expect(body.result.status).toBe("cancelled");
-        expect(mockRunCommand).toHaveBeenCalledWith("cancel", expect.any(Object), { entityName: "EventImportWorkflow" });
+        expect(mockRunCommand).toHaveBeenCalledWith(
+          "cancel",
+          expect.any(Object),
+          { entityName: "EventImportWorkflow" }
+        );
       });
     });
 
     describe("POST /api/eventimportworkflow/fail - success", () => {
       it("marks a workflow as failed and returns 200", async () => {
         setupAuth();
-        const failed = { ...mockWorkflow, status: "failed", errorMessage: "Parse error" };
+        const failed = {
+          ...mockWorkflow,
+          status: "failed",
+          errorMessage: "Parse error",
+        };
         setupSuccessResult(failed);
 
-        const { POST } = await import("@/app/api/eventimportworkflow/fail/route");
+        const { POST } = await import(
+          "@/app/api/eventimportworkflow/fail/route"
+        );
         const req = createMockRequest(`${WF_BASE}/fail`, {
           method: "POST",
-          body: JSON.stringify({ id: TEST_WORKFLOW_ID, errorMessage: "Parse error" }),
+          body: JSON.stringify({
+            id: TEST_WORKFLOW_ID,
+            errorMessage: "Parse error",
+          }),
         });
 
         const res = await POST(req);
@@ -1482,7 +1704,11 @@ describe("Event Sub-Entities API Integration Tests", () => {
         expect(res.status).toBe(200);
         expect(body.success).toBe(true);
         expect(body.result.status).toBe("failed");
-        expect(mockRunCommand).toHaveBeenCalledWith("fail", expect.any(Object), { entityName: "EventImportWorkflow" });
+        expect(mockRunCommand).toHaveBeenCalledWith(
+          "fail",
+          expect.any(Object),
+          { entityName: "EventImportWorkflow" }
+        );
       });
     });
 
@@ -1492,7 +1718,9 @@ describe("Event Sub-Entities API Integration Tests", () => {
         const paused = { ...mockWorkflow, status: "paused" };
         setupSuccessResult(paused);
 
-        const { POST } = await import("@/app/api/eventimportworkflow/pause/route");
+        const { POST } = await import(
+          "@/app/api/eventimportworkflow/pause/route"
+        );
         const req = createMockRequest(`${WF_BASE}/pause`, {
           method: "POST",
           body: JSON.stringify({ id: TEST_WORKFLOW_ID }),
@@ -1504,7 +1732,11 @@ describe("Event Sub-Entities API Integration Tests", () => {
         expect(res.status).toBe(200);
         expect(body.success).toBe(true);
         expect(body.result.status).toBe("paused");
-        expect(mockRunCommand).toHaveBeenCalledWith("pause", expect.any(Object), { entityName: "EventImportWorkflow" });
+        expect(mockRunCommand).toHaveBeenCalledWith(
+          "pause",
+          expect.any(Object),
+          { entityName: "EventImportWorkflow" }
+        );
       });
     });
 
@@ -1514,7 +1746,9 @@ describe("Event Sub-Entities API Integration Tests", () => {
         const resumed = { ...mockWorkflow, status: "extracting" };
         setupSuccessResult(resumed);
 
-        const { POST } = await import("@/app/api/eventimportworkflow/resume/route");
+        const { POST } = await import(
+          "@/app/api/eventimportworkflow/resume/route"
+        );
         const req = createMockRequest(`${WF_BASE}/resume`, {
           method: "POST",
           body: JSON.stringify({ id: TEST_WORKFLOW_ID }),
@@ -1525,17 +1759,27 @@ describe("Event Sub-Entities API Integration Tests", () => {
 
         expect(res.status).toBe(200);
         expect(body.success).toBe(true);
-        expect(mockRunCommand).toHaveBeenCalledWith("resume", expect.any(Object), { entityName: "EventImportWorkflow" });
+        expect(mockRunCommand).toHaveBeenCalledWith(
+          "resume",
+          expect.any(Object),
+          { entityName: "EventImportWorkflow" }
+        );
       });
     });
 
     describe("POST /api/eventimportworkflow/retry - success", () => {
       it("retries a workflow and returns 200", async () => {
         setupAuth();
-        const retried = { ...mockWorkflow, status: "extracting", errorMessage: null };
+        const retried = {
+          ...mockWorkflow,
+          status: "extracting",
+          errorMessage: null,
+        };
         setupSuccessResult(retried);
 
-        const { POST } = await import("@/app/api/eventimportworkflow/retry/route");
+        const { POST } = await import(
+          "@/app/api/eventimportworkflow/retry/route"
+        );
         const req = createMockRequest(`${WF_BASE}/retry`, {
           method: "POST",
           body: JSON.stringify({ id: TEST_WORKFLOW_ID }),
@@ -1546,19 +1790,47 @@ describe("Event Sub-Entities API Integration Tests", () => {
 
         expect(res.status).toBe(200);
         expect(body.success).toBe(true);
-        expect(mockRunCommand).toHaveBeenCalledWith("retry", expect.any(Object), { entityName: "EventImportWorkflow" });
+        expect(mockRunCommand).toHaveBeenCalledWith(
+          "retry",
+          expect.any(Object),
+          { entityName: "EventImportWorkflow" }
+        );
       });
     });
 
     // -- Success: phase transition commands (start*/complete* pairs) --
     const phaseTransitions = [
-      { dir: "start-extracting", cmd: "startExtracting", targetStatus: "extracting" },
-      { dir: "complete-extraction", cmd: "completeExtraction", targetStatus: "extraction_complete" },
+      {
+        dir: "start-extracting",
+        cmd: "startExtracting",
+        targetStatus: "extracting",
+      },
+      {
+        dir: "complete-extraction",
+        cmd: "completeExtraction",
+        targetStatus: "extraction_complete",
+      },
       { dir: "start-parsing", cmd: "startParsing", targetStatus: "parsing" },
-      { dir: "start-validating", cmd: "startValidating", targetStatus: "validating" },
-      { dir: "start-proposing", cmd: "startProposing", targetStatus: "proposing" },
-      { dir: "start-reserving", cmd: "startReserving", targetStatus: "reserving" },
-      { dir: "start-activating", cmd: "startActivating", targetStatus: "activating" },
+      {
+        dir: "start-validating",
+        cmd: "startValidating",
+        targetStatus: "validating",
+      },
+      {
+        dir: "start-proposing",
+        cmd: "startProposing",
+        targetStatus: "proposing",
+      },
+      {
+        dir: "start-reserving",
+        cmd: "startReserving",
+        targetStatus: "reserving",
+      },
+      {
+        dir: "start-activating",
+        cmd: "startActivating",
+        targetStatus: "activating",
+      },
     ] as const;
 
     for (const phase of phaseTransitions) {
@@ -1568,7 +1840,9 @@ describe("Event Sub-Entities API Integration Tests", () => {
           const updated = { ...mockWorkflow, status: phase.targetStatus };
           setupSuccessResult(updated);
 
-          const { POST } = await import(`@/app/api/eventimportworkflow/${phase.dir}/route`);
+          const { POST } = await import(
+            `@/app/api/eventimportworkflow/${phase.dir}/route`
+          );
           const req = createMockRequest(`${WF_BASE}/${phase.dir}`, {
             method: "POST",
             body: JSON.stringify({ id: TEST_WORKFLOW_ID }),
@@ -1580,17 +1854,41 @@ describe("Event Sub-Entities API Integration Tests", () => {
           expect(res.status).toBe(200);
           expect(body.success).toBe(true);
           expect(body.result.status).toBe(phase.targetStatus);
-          expect(mockRunCommand).toHaveBeenCalledWith(phase.cmd, expect.any(Object), { entityName: "EventImportWorkflow" });
+          expect(mockRunCommand).toHaveBeenCalledWith(
+            phase.cmd,
+            expect.any(Object),
+            { entityName: "EventImportWorkflow" }
+          );
         });
       });
     }
 
     const completeTransitions = [
-      { dir: "complete-parsing", cmd: "completeParsing", targetStatus: "parsing_complete" },
-      { dir: "complete-validation", cmd: "completeValidation", targetStatus: "validation_complete" },
-      { dir: "complete-proposing", cmd: "completeProposing", targetStatus: "proposing_complete" },
-      { dir: "complete-reserving", cmd: "completeReserving", targetStatus: "reserving_complete" },
-      { dir: "complete-activating", cmd: "completeActivating", targetStatus: "activated" },
+      {
+        dir: "complete-parsing",
+        cmd: "completeParsing",
+        targetStatus: "parsing_complete",
+      },
+      {
+        dir: "complete-validation",
+        cmd: "completeValidation",
+        targetStatus: "validation_complete",
+      },
+      {
+        dir: "complete-proposing",
+        cmd: "completeProposing",
+        targetStatus: "proposing_complete",
+      },
+      {
+        dir: "complete-reserving",
+        cmd: "completeReserving",
+        targetStatus: "reserving_complete",
+      },
+      {
+        dir: "complete-activating",
+        cmd: "completeActivating",
+        targetStatus: "activated",
+      },
     ] as const;
 
     for (const phase of completeTransitions) {
@@ -1600,7 +1898,9 @@ describe("Event Sub-Entities API Integration Tests", () => {
           const updated = { ...mockWorkflow, status: phase.targetStatus };
           setupSuccessResult(updated);
 
-          const { POST } = await import(`@/app/api/eventimportworkflow/${phase.dir}/route`);
+          const { POST } = await import(
+            `@/app/api/eventimportworkflow/${phase.dir}/route`
+          );
           const req = createMockRequest(`${WF_BASE}/${phase.dir}`, {
             method: "POST",
             body: JSON.stringify({ id: TEST_WORKFLOW_ID }),
@@ -1612,7 +1912,11 @@ describe("Event Sub-Entities API Integration Tests", () => {
           expect(res.status).toBe(200);
           expect(body.success).toBe(true);
           expect(body.result.status).toBe(phase.targetStatus);
-          expect(mockRunCommand).toHaveBeenCalledWith(phase.cmd, expect.any(Object), { entityName: "EventImportWorkflow" });
+          expect(mockRunCommand).toHaveBeenCalledWith(
+            phase.cmd,
+            expect.any(Object),
+            { entityName: "EventImportWorkflow" }
+          );
         });
       });
     }
@@ -1623,7 +1927,9 @@ describe("Event Sub-Entities API Integration Tests", () => {
         setupAuth();
         mockRunCommand.mockRejectedValueOnce(new Error("DB error"));
 
-        const { POST } = await import("@/app/api/eventimportworkflow/create/route");
+        const { POST } = await import(
+          "@/app/api/eventimportworkflow/create/route"
+        );
         const req = createMockRequest(`${WF_BASE}/create`, {
           method: "POST",
           body: JSON.stringify({ eventId: TEST_EVENT_ID }),
@@ -1637,10 +1943,15 @@ describe("Event Sub-Entities API Integration Tests", () => {
         setupAuth();
         mockRunCommand.mockResolvedValueOnce({
           success: false,
-          policyDenial: { policyName: "importManagerOnly", formatted: "Not authorized for import" },
+          policyDenial: {
+            policyName: "importManagerOnly",
+            formatted: "Not authorized for import",
+          },
         });
 
-        const { POST } = await import("@/app/api/eventimportworkflow/start-extracting/route");
+        const { POST } = await import(
+          "@/app/api/eventimportworkflow/start-extracting/route"
+        );
         const req = createMockRequest(`${WF_BASE}/start-extracting`, {
           method: "POST",
           body: JSON.stringify({ id: TEST_WORKFLOW_ID }),
@@ -1657,7 +1968,9 @@ describe("Event Sub-Entities API Integration Tests", () => {
           guardFailure: { index: 0, formatted: "Parsing not started" },
         });
 
-        const { POST } = await import("@/app/api/eventimportworkflow/complete-parsing/route");
+        const { POST } = await import(
+          "@/app/api/eventimportworkflow/complete-parsing/route"
+        );
         const req = createMockRequest(`${WF_BASE}/complete-parsing`, {
           method: "POST",
           body: JSON.stringify({ id: TEST_WORKFLOW_ID }),
@@ -1674,7 +1987,9 @@ describe("Event Sub-Entities API Integration Tests", () => {
           error: "Workflow not found",
         });
 
-        const { POST } = await import("@/app/api/eventimportworkflow/cancel/route");
+        const { POST } = await import(
+          "@/app/api/eventimportworkflow/cancel/route"
+        );
         const req = createMockRequest(`${WF_BASE}/cancel`, {
           method: "POST",
           body: JSON.stringify({ id: TEST_WORKFLOW_ID }),
@@ -1691,8 +2006,12 @@ describe("Event Sub-Entities API Integration Tests", () => {
         setupAuth();
         setupSuccessResult(mockWorkflow);
 
-        const { createManifestRuntime } = await import("@/lib/manifest-runtime");
-        const { POST } = await import("@/app/api/eventimportworkflow/create/route");
+        const { createManifestRuntime } = await import(
+          "@/lib/manifest-runtime"
+        );
+        const { POST } = await import(
+          "@/app/api/eventimportworkflow/create/route"
+        );
         const req = createMockRequest(`${WF_BASE}/create`, {
           method: "POST",
           body: JSON.stringify({ eventId: TEST_EVENT_ID }),
@@ -1731,10 +2050,15 @@ describe("Event Sub-Entities API Integration Tests", () => {
     describe("Authentication gating", () => {
       it("create returns 401 when unauthenticated", async () => {
         setupUnauthenticated();
-        const { POST } = await import("@/app/api/contractsignature/create/route");
+        const { POST } = await import(
+          "@/app/api/contractsignature/create/route"
+        );
         const req = createMockRequest(`${SIG_BASE}/create`, {
           method: "POST",
-          body: JSON.stringify({ contractId: TEST_CONTRACT_ID, signerName: "John" }),
+          body: JSON.stringify({
+            contractId: TEST_CONTRACT_ID,
+            signerName: "John",
+          }),
         });
         const res = await POST(req);
         expect(res.status).toBe(401);
@@ -1745,7 +2069,9 @@ describe("Event Sub-Entities API Integration Tests", () => {
 
       it("soft-delete returns 401 when unauthenticated", async () => {
         setupUnauthenticated();
-        const { POST } = await import("@/app/api/contractsignature/soft-delete/route");
+        const { POST } = await import(
+          "@/app/api/contractsignature/soft-delete/route"
+        );
         const req = createMockRequest(`${SIG_BASE}/soft-delete`, {
           method: "POST",
           body: JSON.stringify({ id: TEST_SIGNATURE_ID }),
@@ -1758,7 +2084,9 @@ describe("Event Sub-Entities API Integration Tests", () => {
     describe("Tenant resolution", () => {
       it("create returns 400 when tenant not found", async () => {
         setupNoTenant();
-        const { POST } = await import("@/app/api/contractsignature/create/route");
+        const { POST } = await import(
+          "@/app/api/contractsignature/create/route"
+        );
         const req = createMockRequest(`${SIG_BASE}/create`, {
           method: "POST",
           body: JSON.stringify({ contractId: TEST_CONTRACT_ID }),
@@ -1772,7 +2100,9 @@ describe("Event Sub-Entities API Integration Tests", () => {
 
       it("soft-delete returns 400 when tenant not found", async () => {
         setupNoTenant();
-        const { POST } = await import("@/app/api/contractsignature/soft-delete/route");
+        const { POST } = await import(
+          "@/app/api/contractsignature/soft-delete/route"
+        );
         const req = createMockRequest(`${SIG_BASE}/soft-delete`, {
           method: "POST",
           body: JSON.stringify({ id: TEST_SIGNATURE_ID }),
@@ -1785,9 +2115,13 @@ describe("Event Sub-Entities API Integration Tests", () => {
     describe("POST /api/contractsignature/create - success", () => {
       it("creates a signature and returns 200 with result and events", async () => {
         setupAuth();
-        setupSuccessResult(mockSignature, [{ type: "ContractSigned", payload: { id: TEST_SIGNATURE_ID } }]);
+        setupSuccessResult(mockSignature, [
+          { type: "ContractSigned", payload: { id: TEST_SIGNATURE_ID } },
+        ]);
 
-        const { POST } = await import("@/app/api/contractsignature/create/route");
+        const { POST } = await import(
+          "@/app/api/contractsignature/create/route"
+        );
         const req = createMockRequest(`${SIG_BASE}/create`, {
           method: "POST",
           body: JSON.stringify({
@@ -1806,7 +2140,11 @@ describe("Event Sub-Entities API Integration Tests", () => {
         expect(body.result.id).toBe(TEST_SIGNATURE_ID);
         expect(body.result.signerName).toBe("John Smith");
         expect(body.events[0].type).toBe("ContractSigned");
-        expect(mockRunCommand).toHaveBeenCalledWith("create", expect.any(Object), { entityName: "ContractSignature" });
+        expect(mockRunCommand).toHaveBeenCalledWith(
+          "create",
+          expect.any(Object),
+          { entityName: "ContractSignature" }
+        );
       });
     });
 
@@ -1816,7 +2154,9 @@ describe("Event Sub-Entities API Integration Tests", () => {
         const deleted = { ...mockSignature, deletedAt: new Date("2026-02-05") };
         setupSuccessResult(deleted);
 
-        const { POST } = await import("@/app/api/contractsignature/soft-delete/route");
+        const { POST } = await import(
+          "@/app/api/contractsignature/soft-delete/route"
+        );
         const req = createMockRequest(`${SIG_BASE}/soft-delete`, {
           method: "POST",
           body: JSON.stringify({ id: TEST_SIGNATURE_ID }),
@@ -1828,7 +2168,11 @@ describe("Event Sub-Entities API Integration Tests", () => {
         expect(res.status).toBe(200);
         expect(body.success).toBe(true);
         expect(body.result.deletedAt).not.toBeNull();
-        expect(mockRunCommand).toHaveBeenCalledWith("softDelete", expect.any(Object), { entityName: "ContractSignature" });
+        expect(mockRunCommand).toHaveBeenCalledWith(
+          "softDelete",
+          expect.any(Object),
+          { entityName: "ContractSignature" }
+        );
       });
     });
 
@@ -1837,7 +2181,9 @@ describe("Event Sub-Entities API Integration Tests", () => {
         setupAuth();
         mockRunCommand.mockRejectedValueOnce(new Error("DB error"));
 
-        const { POST } = await import("@/app/api/contractsignature/create/route");
+        const { POST } = await import(
+          "@/app/api/contractsignature/create/route"
+        );
         const req = createMockRequest(`${SIG_BASE}/create`, {
           method: "POST",
           body: JSON.stringify({ contractId: TEST_CONTRACT_ID }),
@@ -1854,10 +2200,15 @@ describe("Event Sub-Entities API Integration Tests", () => {
         setupAuth();
         mockRunCommand.mockResolvedValueOnce({
           success: false,
-          policyDenial: { policyName: "authorizedSignerOnly", formatted: "Not an authorized signer" },
+          policyDenial: {
+            policyName: "authorizedSignerOnly",
+            formatted: "Not an authorized signer",
+          },
         });
 
-        const { POST } = await import("@/app/api/contractsignature/create/route");
+        const { POST } = await import(
+          "@/app/api/contractsignature/create/route"
+        );
         const req = createMockRequest(`${SIG_BASE}/create`, {
           method: "POST",
           body: JSON.stringify({ contractId: TEST_CONTRACT_ID }),
@@ -1873,10 +2224,15 @@ describe("Event Sub-Entities API Integration Tests", () => {
         setupAuth();
         mockRunCommand.mockResolvedValueOnce({
           success: false,
-          guardFailure: { index: 0, formatted: "Cannot delete verified signature" },
+          guardFailure: {
+            index: 0,
+            formatted: "Cannot delete verified signature",
+          },
         });
 
-        const { POST } = await import("@/app/api/contractsignature/soft-delete/route");
+        const { POST } = await import(
+          "@/app/api/contractsignature/soft-delete/route"
+        );
         const req = createMockRequest(`${SIG_BASE}/soft-delete`, {
           method: "POST",
           body: JSON.stringify({ id: TEST_SIGNATURE_ID }),
@@ -1895,7 +2251,9 @@ describe("Event Sub-Entities API Integration Tests", () => {
           error: "Contract not found",
         });
 
-        const { POST } = await import("@/app/api/contractsignature/create/route");
+        const { POST } = await import(
+          "@/app/api/contractsignature/create/route"
+        );
         const req = createMockRequest(`${SIG_BASE}/create`, {
           method: "POST",
           body: JSON.stringify({ contractId: TEST_CONTRACT_ID }),
@@ -1914,7 +2272,9 @@ describe("Event Sub-Entities API Integration Tests", () => {
           error: null,
         });
 
-        const { POST } = await import("@/app/api/contractsignature/create/route");
+        const { POST } = await import(
+          "@/app/api/contractsignature/create/route"
+        );
         const req = createMockRequest(`${SIG_BASE}/create`, {
           method: "POST",
           body: JSON.stringify({ contractId: TEST_CONTRACT_ID }),
@@ -1929,7 +2289,9 @@ describe("Event Sub-Entities API Integration Tests", () => {
       it("create returns 500 when request body is invalid JSON", async () => {
         setupAuth();
 
-        const { POST } = await import("@/app/api/contractsignature/create/route");
+        const { POST } = await import(
+          "@/app/api/contractsignature/create/route"
+        );
         const req = createMockRequest(`${SIG_BASE}/create`, {
           method: "POST",
           body: "not-valid-json{{{",
@@ -1949,8 +2311,12 @@ describe("Event Sub-Entities API Integration Tests", () => {
         setupAuth();
         setupSuccessResult(mockSignature);
 
-        const { createManifestRuntime } = await import("@/lib/manifest-runtime");
-        const { POST } = await import("@/app/api/contractsignature/create/route");
+        const { createManifestRuntime } = await import(
+          "@/lib/manifest-runtime"
+        );
+        const { POST } = await import(
+          "@/app/api/contractsignature/create/route"
+        );
         const req = createMockRequest(`${SIG_BASE}/create`, {
           method: "POST",
           body: JSON.stringify({ contractId: TEST_CONTRACT_ID }),
@@ -1970,7 +2336,9 @@ describe("Event Sub-Entities API Integration Tests", () => {
         setupAuth();
         setupSuccessResult(mockSignature, [{ type: "ContractSigned" }]);
 
-        const { POST } = await import("@/app/api/contractsignature/create/route");
+        const { POST } = await import(
+          "@/app/api/contractsignature/create/route"
+        );
         const req = createMockRequest(`${SIG_BASE}/create`, {
           method: "POST",
           body: JSON.stringify({ contractId: TEST_CONTRACT_ID }),
@@ -1992,7 +2360,9 @@ describe("Event Sub-Entities API Integration Tests", () => {
           error: "Something went wrong",
         });
 
-        const { POST } = await import("@/app/api/contractsignature/soft-delete/route");
+        const { POST } = await import(
+          "@/app/api/contractsignature/soft-delete/route"
+        );
         const req = createMockRequest(`${SIG_BASE}/soft-delete`, {
           method: "POST",
           body: JSON.stringify({ id: TEST_SIGNATURE_ID }),

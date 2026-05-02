@@ -1,5 +1,20 @@
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
+import {
+  CommandBand,
+  CommandBandBody,
+  CommandBandHeader,
+  CommandBandLede,
+  DisplayHeading,
+  MetricBand,
+  MetricCell,
+  MetricDelta,
+  MetricLabel,
+  MetricValue,
+  MonoLabel,
+  OperationalColumn,
+  SectionHeader,
+} from "@repo/design-system/components/blocks/page-shell";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -8,14 +23,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@repo/design-system/components/ui/dropdown-menu";
-import {
-  Empty,
-  EmptyContent,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from "@repo/design-system/components/ui/empty";
 import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   Table,
@@ -26,14 +33,12 @@ import {
   TableRow,
 } from "@repo/design-system/components/ui/table";
 import {
-  CalculatorIcon,
   CheckCircleIcon,
   ChefHatIcon,
   Clock,
   DollarSignIcon,
   PackageIcon,
   SettingsIcon,
-  TrendingUpIcon,
   UtensilsIcon,
 } from "lucide-react";
 import Link from "next/link";
@@ -53,6 +58,8 @@ import {
   getCostingSummaryStats,
   getVendorRecipeCostSummary,
 } from "./costing-actions";
+import { getDishMarginTierClasses } from "./lib/dish-margin-tier";
+import { getRecipeMarginCellClass } from "./lib/recipe-costing-styles";
 import { getMenus } from "./menus/actions";
 import { RecipeEditButton } from "./recipe-edit-button";
 import { RecipeFavoriteButton } from "./recipe-favorite-button";
@@ -430,6 +437,70 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
     return;
   })();
 
+  const hubStats = [
+    {
+      label: "Recipes",
+      value: String(recipeTotals?.count ?? 0),
+      note: "Production builds",
+    },
+    {
+      label: "Dishes",
+      value: String(dishTotals?.count ?? 0),
+      note: "Client-facing",
+    },
+    {
+      label: "Menus",
+      value: String(menuTotals?.count ?? 0),
+      note: "Composed sets",
+    },
+    {
+      label: "Ingredients",
+      value: String(ingredientTotals?.count ?? 0),
+      note: "Raw inventory",
+    },
+  ];
+
+  const catalogHead: Record<
+    string,
+    { eyebrow: string; title: string; description: string; count: string }
+  > = {
+    recipes: {
+      eyebrow: "Recipes",
+      title: "Recipe collection",
+      description:
+        "Ingredients, yields, and timing for every production build.",
+      count: `${recipeTotals?.count ?? 0} recipes`,
+    },
+    dishes: {
+      eyebrow: "Dishes",
+      title: "Dish library",
+      description: "Pricing, dietary tags, and plating for sellable plates.",
+      count: `${dishTotals?.count ?? 0} dishes`,
+    },
+    ingredients: {
+      eyebrow: "Ingredients",
+      title: "Ingredient library",
+      description: "Allergens, units, and categories for raw items.",
+      count: `${ingredientTotals?.count ?? 0} ingredients`,
+    },
+    menus: {
+      eyebrow: "Menus",
+      title: "Menu collection",
+      description: "Bundles of dishes for events and tastings.",
+      count: `${menuTotals?.count ?? 0} menus`,
+    },
+    costing: {
+      eyebrow: "Costing",
+      title: "Margin analysis",
+      description: "Vendor recipe costs against sell price.",
+      count: costingSummary.length
+        ? `${costingSummary.length} rows`
+        : "No vendor costs",
+    },
+  };
+
+  const head = catalogHead[activeTab] ?? catalogHead.recipes;
+
   const getDishMargin = (dish: DishRow) => {
     if (!(dish.price_per_person && dish.cost_per_person)) {
       return null;
@@ -450,7 +521,10 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                 <SettingsIcon className="size-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent
+              align="end"
+              className="editorial-surface-reset"
+            >
               <DropdownMenuItem asChild>
                 <Link href="/kitchen/recipes/cleanup">Cleanup imports</Link>
               </DropdownMenuItem>
@@ -464,8 +538,34 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
       <Separator />
       <RecipesRealtime tenantId={tenantId} userId={userId} />
       {activeTab === "recipes" && <RecipesPageClient />}
-      <div className="flex flex-1 flex-col gap-10 bg-white px-6 pt-8 pb-24 text-[#0d0d0d] sm:px-10 lg:px-12">
-        <div className="rounded-[24px] border border-[rgba(0,0,0,0.05)] bg-white p-6 shadow-[rgba(0,0,0,0.03)_0px_2px_4px] sm:p-8">
+
+      <CommandBand>
+        <CommandBandHeader>
+          <div className="space-y-4">
+            <MonoLabel tone="dark">Kitchen / Library</MonoLabel>
+            <DisplayHeading size="md">Recipes, dishes & menus</DisplayHeading>
+            <CommandBandLede>
+              One operational library for production builds, sellable dishes,
+              composed menus, and raw ingredients — costing stays on the same
+              canvas.
+            </CommandBandLede>
+          </div>
+        </CommandBandHeader>
+        <CommandBandBody>
+          <MetricBand>
+            {hubStats.map((m) => (
+              <MetricCell key={m.label}>
+                <MetricLabel>{m.label}</MetricLabel>
+                <MetricValue>{m.value}</MetricValue>
+                <div className="text-white/55 text-xs">{m.note}</div>
+              </MetricCell>
+            ))}
+          </MetricBand>
+        </CommandBandBody>
+      </CommandBand>
+
+      <OperationalColumn className="min-w-0 gap-10 pb-20">
+        <section className="rounded-[22px] border border-hairline bg-soft-stone p-6 sm:p-8">
           <RecipesToolbar
             activeTab={activeTab}
             initialCategory={category}
@@ -475,48 +575,28 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
             primaryAction={primaryAction}
             tabs={tabs}
           />
-        </div>
+        </section>
 
         <section className="space-y-6">
-          <div className="flex flex-wrap items-baseline justify-between gap-3 border-b border-[rgba(0,0,0,0.05)] pb-4">
-            <div className="space-y-2">
-              <p className="font-mono text-[12px] font-medium uppercase tracking-[0.6px] text-[#666666]">
-                {activeTab === "recipes" && "Kitchen / Recipes"}
-                {activeTab === "dishes" && "Kitchen / Dishes"}
-                {activeTab === "ingredients" && "Kitchen / Ingredients"}
-                {activeTab === "menus" && "Kitchen / Menus"}
-                {activeTab === "costing" && "Kitchen / Costing"}
-              </p>
-              <h2 className="font-semibold text-[40px] leading-[1.1] tracking-[-0.8px] text-[#0d0d0d]">
-                {activeTab === "recipes" && "Recipe Collection"}
-                {activeTab === "dishes" && "Dish Library"}
-                {activeTab === "ingredients" && "Ingredient Library"}
-                {activeTab === "menus" && "Menu Collection"}
-                {activeTab === "costing" && "Costing Analysis"}
-              </h2>
-            </div>
-            <span className="inline-flex items-center rounded-full border border-[rgba(0,0,0,0.05)] bg-[#fafafa] px-3 py-1 font-mono text-[12px] font-medium uppercase tracking-[0.6px] text-[#333333]">
-              {activeTab === "recipes" && `${recipeTotals?.count ?? 0} recipes`}
-              {activeTab === "dishes" && `${dishTotals?.count ?? 0} dishes`}
-              {activeTab === "ingredients" &&
-                `${ingredientTotals?.count ?? 0} ingredients`}
-              {activeTab === "menus" && `${menuTotals?.count ?? 0} menus`}
-              {activeTab === "costing" && "Live margins"}
-            </span>
-          </div>
-          <div className="rounded-[24px] border border-[rgba(0,0,0,0.05)] bg-white p-6 shadow-[rgba(0,0,0,0.03)_0px_2px_4px] sm:p-8">
+          <SectionHeader
+            count={head.count}
+            description={head.description}
+            eyebrow={head.eyebrow}
+            title={head.title}
+          />
+          <div className="rounded-[22px] border border-hairline bg-canvas p-6 sm:p-8">
             {activeTab === "recipes" && (
               <div className="space-y-3">
                 {recipes.length === 0 ? (
-                  <div className="flex flex-col items-center gap-5 rounded-[16px] border border-[rgba(0,0,0,0.05)] bg-[#fafafa] px-6 py-16 text-center">
-                    <span className="inline-flex size-12 items-center justify-center rounded-full border border-[rgba(0,0,0,0.05)] bg-white text-[#0fa76e]">
+                  <div className="flex flex-col items-center gap-5 rounded-[16px] border border-hairline bg-soft-stone px-6 py-16 text-center">
+                    <span className="inline-flex size-12 items-center justify-center rounded-full border border-hairline bg-canvas text-deep-green">
                       <ChefHatIcon className="size-5" />
                     </span>
                     <div className="space-y-2">
-                      <h3 className="font-semibold text-[24px] leading-[1.3] tracking-[-0.24px] text-[#0d0d0d]">
+                      <h3 className="font-semibold text-[24px] leading-[1.3] tracking-[-0.24px] text-foreground">
                         Create your first recipe
                       </h3>
-                      <p className="mx-auto max-w-md text-[16px] leading-[1.5] text-[#666666]">
+                      <p className="mx-auto max-w-md text-[16px] leading-[1.5] text-muted-foreground">
                         Start building your recipe collection. Recipes can be
                         reused across multiple dishes, prep lists, and events to
                         streamline your kitchen operations.
@@ -524,7 +604,7 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                     </div>
                     <Button
                       asChild
-                      className="rounded-full bg-[#0d0d0d] px-6 py-2 text-[15px] font-medium text-white shadow-[rgba(0,0,0,0.06)_0px_1px_2px] hover:bg-[#0d0d0d]/90"
+                      className="rounded-full bg-ink px-6 py-2 text-[15px] font-medium text-white hover:bg-ink/90"
                     >
                       <Link href="/kitchen/recipes/new">Create new recipe</Link>
                     </Button>
@@ -535,33 +615,18 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                     type="recipes"
                   >
                     {recipes.map((recipe) => {
-                      const categoryColors: Record<string, string> = {
-                        appetizer: "bg-[#c37d0d]",
-                        "main course": "bg-[#0fa76e]",
-                        main: "bg-[#0fa76e]",
-                        dessert: "bg-[#d45656]",
-                        side: "bg-[#3772cf]",
-                        beverage: "bg-[#888888]",
-                      };
-                      const accentColor = recipe.category
-                        ? categoryColors[recipe.category.toLowerCase()] ||
-                          "bg-[#18E299]"
-                        : "bg-[#18E299]";
-
-                      // Compact row layout for all recipes (Galley-style)
                       return (
                         <Link
-                          className="group flex items-center gap-4 rounded-[16px] border border-[rgba(0,0,0,0.05)] bg-white p-4 shadow-[rgba(0,0,0,0.03)_0px_2px_4px] transition-all hover:border-[rgba(0,0,0,0.08)] hover:bg-[#fafafa]"
+                          className="group flex items-center gap-4 rounded-[16px] border border-hairline bg-canvas p-4 transition-colors hover:border-ink/25 hover:bg-soft-stone/60"
                           data-testid="recipe-card"
                           href={`/kitchen/recipes/${recipe.id}`}
                           key={recipe.id}
                         >
-                          {/* Selection checkbox */}
                           <ItemCheckbox id={recipe.id} />
 
-                          {/* Colored accent bar */}
                           <div
-                            className={`h-10 w-1 rounded-full ${accentColor}`}
+                            aria-hidden
+                            className="h-10 w-0.5 shrink-0 rounded-full bg-ink/15"
                           />
 
                           {/* Recipe name - primary info */}
@@ -571,7 +636,7 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                               recipeId={recipe.id}
                             />
                             {recipe.description && (
-                              <div className="truncate text-[14px] text-[#666666]">
+                              <div className="truncate text-[14px] text-muted-foreground">
                                 {recipe.description}
                               </div>
                             )}
@@ -579,13 +644,16 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
 
                           {/* Category badge */}
                           {recipe.category && (
-                            <Badge className="shrink-0 rounded-full border-0 bg-[#d4fae8] px-3 py-1 font-mono text-[12px] font-medium uppercase tracking-[0.6px] text-[#0fa76e]">
+                            <Badge
+                              className="shrink-0 font-normal"
+                              variant="outline"
+                            >
                               {recipe.category}
                             </Badge>
                           )}
 
                           {/* Time info */}
-                          <div className="flex shrink-0 items-center gap-3 font-mono text-[12px] uppercase tracking-[0.6px] text-[#666666]">
+                          <div className="flex shrink-0 items-center gap-3 font-mono text-[12px] uppercase tracking-[0.6px] text-muted-foreground">
                             {recipe.prep_time_minutes ? (
                               <span className="flex items-center gap-1">
                                 <Clock className="h-3 w-3" />
@@ -602,14 +670,14 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
 
                           {/* Counts */}
                           <div className="flex shrink-0 items-center gap-4 text-[13px]">
-                            <span className="text-[#666666]">
-                              <span className="font-semibold text-[#0d0d0d]">
+                            <span className="text-muted-foreground">
+                              <span className="font-semibold text-foreground">
                                 {recipe.ingredient_count}
                               </span>{" "}
                               ing
                             </span>
                             {recipe.dish_count > 0 && (
-                              <span className="font-medium text-[#0fa76e]">
+                              <span className="font-medium text-ink tabular-nums">
                                 {recipe.dish_count} dish
                                 {recipe.dish_count > 1 ? "es" : ""}
                               </span>
@@ -656,29 +724,30 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
             )}
 
             {activeTab === "dishes" && (
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {dishes.length === 0 ? (
-                  <Empty className="bg-card/50">
-                    <EmptyHeader>
-                      <EmptyMedia variant="icon">
-                        <UtensilsIcon />
-                      </EmptyMedia>
-                      <EmptyTitle>Build your first dish</EmptyTitle>
-                      <EmptyDescription>
+                  <div className="flex flex-col items-center gap-5 rounded-[16px] border border-hairline bg-soft-stone px-6 py-16 text-center">
+                    <span className="inline-flex size-12 items-center justify-center rounded-full border border-hairline bg-canvas text-deep-green">
+                      <UtensilsIcon className="size-5" />
+                    </span>
+                    <div className="space-y-2">
+                      <h3 className="font-normal text-[24px] leading-[1.3] tracking-[-0.24px] text-ink">
+                        Build your first dish
+                      </h3>
+                      <p className="mx-auto max-w-md text-[16px] leading-[1.5] text-muted-foreground">
                         Transform recipes into marketable dishes with pricing,
-                        dietary information, and presentation details. Dishes
-                        are what clients see on menus and what gets scheduled
-                        for events.
-                      </EmptyDescription>
-                    </EmptyHeader>
-                    <EmptyContent>
-                      <Button asChild>
-                        <Link href="/kitchen/recipes/dishes/new">
-                          Create New Dish
-                        </Link>
-                      </Button>
-                    </EmptyContent>
-                  </Empty>
+                        dietary information, and presentation details.
+                      </p>
+                    </div>
+                    <Button
+                      asChild
+                      className="rounded-full bg-ink px-6 py-2 text-[15px] font-medium text-white hover:bg-ink/90"
+                    >
+                      <Link href="/kitchen/recipes/dishes/new">
+                        Create new dish
+                      </Link>
+                    </Button>
+                  </div>
                 ) : (
                   <SelectableList
                     items={dishes.map((d) => ({ id: d.id, name: d.name }))}
@@ -686,53 +755,38 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                   >
                     {dishes.map((dish) => {
                       const margin = getDishMargin(dish);
-                      // Use brand colors for margin indicators
-                      const marginColor =
-                        margin !== null
-                          ? margin >= 60
-                            ? "text-[var(--brand-leafy-green)]"
-                            : margin >= 40
-                              ? "text-[var(--brand-golden-zest)]"
-                              : "text-[var(--brand-spiced-orange)]"
-                          : "text-muted-foreground";
-                      const marginBg =
-                        margin !== null
-                          ? margin >= 60
-                            ? "bg-[var(--brand-leafy-green)]"
-                            : margin >= 40
-                              ? "bg-[var(--brand-golden-zest)]"
-                              : "bg-[var(--brand-spiced-orange)]"
-                          : "bg-muted-foreground";
+                      const marginTier = getDishMarginTierClasses(margin);
                       return (
                         <Link
-                          className="group flex items-center gap-3 p-3 border border-border/50 hover:border-border hover:bg-muted/30 transition-colors"
+                          className="group flex items-center gap-4 rounded-[16px] border border-hairline bg-canvas p-4 transition-colors hover:border-ink/25 hover:bg-soft-stone/60"
                           href={`/kitchen/recipes/dishes/${dish.id}`}
                           key={dish.id}
                         >
-                          {/* Selection checkbox */}
                           <ItemCheckbox id={dish.id} />
 
-                          {/* Margin indicator bar */}
-                          <div className={`w-1 h-10 rounded-sm ${marginBg}`} />
+                          <div
+                            aria-hidden
+                            className={`h-10 w-0.5 shrink-0 rounded-full ${marginTier.barClass}`}
+                          />
 
-                          {/* Dish name and recipe link */}
-                          <div className="flex-1 min-w-0">
+                          <div className="min-w-0 flex-1">
                             <InlineDishName dishId={dish.id} name={dish.name} />
-                            <div className="text-xs text-muted-foreground">
+                            <div className="text-[14px] text-muted-foreground">
                               {dish.recipe_name ?? (
                                 <span className="italic">Unlinked</span>
                               )}
                             </div>
                           </div>
 
-                          {/* Category badge */}
                           {dish.category && (
-                            <Badge className="bg-[var(--brand-avocado-mash)]/20 text-[var(--brand-leafy-green)] border-0 text-xs font-medium shrink-0">
+                            <Badge
+                              className="shrink-0 font-normal"
+                              variant="outline"
+                            >
                               {dish.category}
                             </Badge>
                           )}
 
-                          {/* Dietary tags */}
                           {dish.dietary_tags &&
                             dish.dietary_tags.length > 0 && (
                               <DietaryBadges
@@ -742,13 +796,12 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                               />
                             )}
 
-                          {/* Cost data - prominent with brand colors */}
-                          <div className="flex items-center gap-4 text-xs shrink-0">
+                          <div className="flex shrink-0 items-center gap-4 font-mono text-[12px] text-muted-foreground">
                             <div className="text-center">
-                              <div className="text-muted-foreground text-[10px] uppercase">
+                              <div className="text-[10px] uppercase tracking-wide">
                                 Cost
                               </div>
-                              <div className="font-semibold text-foreground">
+                              <div className="font-sans font-medium text-ink">
                                 {dish.cost_per_person
                                   ? currencyFormatter.format(
                                       dish.cost_per_person
@@ -757,41 +810,43 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                               </div>
                             </div>
                             <div className="text-center">
-                              <div className="text-muted-foreground text-[10px] uppercase">
+                              <div className="text-[10px] uppercase tracking-wide">
                                 Price
                               </div>
-                              <InlineDishPrice
-                                dishId={dish.id}
-                                price={
-                                  dish.price_per_person?.toString() ?? null
-                                }
-                              />
+                              <div className="font-sans font-medium text-ink">
+                                <InlineDishPrice
+                                  dishId={dish.id}
+                                  price={
+                                    dish.price_per_person?.toString() ?? null
+                                  }
+                                />
+                              </div>
                             </div>
-                            <div className="text-center min-w-[50px]">
-                              <div className="text-muted-foreground text-[10px] uppercase">
+                            <div className="min-w-[50px] text-center">
+                              <div className="text-[10px] uppercase tracking-wide">
                                 Margin
                               </div>
-                              <div className={`font-bold ${marginColor}`}>
+                              <div
+                                className={`font-sans font-semibold ${marginTier.textClass}`}
+                              >
                                 {formatPercent(margin)}
                               </div>
                             </div>
                           </div>
 
-                          {/* Event/prep counts */}
-                          <div className="flex items-center gap-3 text-xs text-muted-foreground shrink-0">
+                          <div className="flex shrink-0 items-center gap-3 text-[13px] text-muted-foreground">
                             <span>{dish.event_count} events</span>
                             <span>{dish.prep_task_count} prep</span>
                           </div>
 
-                          {/* Status */}
-                          <div className="flex items-center gap-1 text-xs shrink-0">
+                          <div className="flex shrink-0 items-center gap-1 text-[13px]">
                             <CheckCircleIcon
-                              className={`size-3.5 ${dish.is_active ? "text-[var(--brand-leafy-green)]" : "text-muted-foreground"}`}
+                              className={`size-3.5 ${dish.is_active ? "text-deep-green" : "text-muted-foreground"}`}
                             />
                             <span
                               className={
                                 dish.is_active
-                                  ? "text-[var(--brand-leafy-green)] font-medium"
+                                  ? "font-medium text-deep-green"
                                   : "text-muted-foreground"
                               }
                             >
@@ -799,8 +854,7 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                             </span>
                           </div>
 
-                          {/* Delete */}
-                          <div className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                          <div className="flex shrink-0 items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
                             <SingleDeleteButton
                               id={dish.id}
                               name={dish.name}
@@ -816,124 +870,129 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
             )}
 
             {activeTab === "ingredients" && (
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {ingredients.length === 0 ? (
-                  <Empty className="bg-card/50">
-                    <EmptyHeader>
-                      <EmptyMedia variant="icon">
-                        <PackageIcon />
-                      </EmptyMedia>
-                      <EmptyTitle>Add your ingredients</EmptyTitle>
-                      <EmptyDescription>
+                  <div className="flex flex-col items-center gap-5 rounded-[16px] border border-hairline bg-soft-stone px-6 py-16 text-center">
+                    <span className="inline-flex size-12 items-center justify-center rounded-full border border-hairline bg-canvas text-deep-green">
+                      <PackageIcon className="size-5" />
+                    </span>
+                    <div className="space-y-2">
+                      <h3 className="font-normal text-[24px] leading-[1.3] tracking-[-0.24px] text-ink">
+                        Add your ingredients
+                      </h3>
+                      <p className="mx-auto max-w-md text-[16px] leading-[1.5] text-muted-foreground">
                         Build your ingredient library with units, categories,
-                        and allergen information. This ensures accurate recipe
-                        scaling and helps with dietary restrictions and cost
-                        calculations.
-                      </EmptyDescription>
-                    </EmptyHeader>
-                    <EmptyContent>
-                      <Button asChild>
-                        <Link href="/kitchen/recipes/ingredients/new">
-                          Add Ingredient
-                        </Link>
-                      </Button>
-                    </EmptyContent>
-                  </Empty>
-                ) : (
-                  ingredients.map((ingredient) => (
-                    <div
-                      className="group flex items-center gap-3 p-3 border border-border/50 hover:border-border hover:bg-muted/30 transition-colors"
-                      key={ingredient.id}
-                    >
-                      {/* Status indicator */}
-                      <div
-                        className={`w-1 h-10 rounded-sm ${ingredient.is_active ? "bg-[var(--brand-leafy-green)]" : "bg-muted-foreground/50"}`}
-                      />
-
-                      {/* Ingredient name */}
-                      <div className="flex-1 min-w-0">
-                        <div className="font-medium text-sm text-foreground truncate">
-                          {ingredient.name}
-                        </div>
-                      </div>
-
-                      {/* Category badge */}
-                      {ingredient.category && (
-                        <Badge className="bg-[var(--brand-avocado-mash)]/20 text-[var(--brand-leafy-green)] border-0 text-xs font-medium shrink-0">
-                          {ingredient.category}
-                        </Badge>
-                      )}
-
-                      {/* Allergens */}
-                      {(ingredient.allergens ?? []).length > 0 && (
-                        <div className="flex gap-1 shrink-0">
-                          {(ingredient.allergens ?? [])
-                            .slice(0, 3)
-                            .map((allergen) => (
-                              <Badge
-                                className="text-xs border-[var(--brand-spiced-orange)]/50 text-[var(--brand-spiced-orange)]"
-                                key={allergen}
-                                variant="outline"
-                              >
-                                {allergen}
-                              </Badge>
-                            ))}
-                        </div>
-                      )}
-
-                      {/* Unit */}
-                      <div className="text-xs text-muted-foreground shrink-0">
-                        <span className="text-[10px] uppercase">Unit:</span>{" "}
-                        <span className="font-medium">
-                          {ingredient.unit_code ?? "-"}
-                        </span>
-                      </div>
-
-                      {/* Status */}
-                      <div className="flex items-center gap-1 text-xs shrink-0">
-                        <CheckCircleIcon
-                          className={`size-3.5 ${ingredient.is_active ? "text-[var(--brand-leafy-green)]" : "text-muted-foreground"}`}
-                        />
-                        <span
-                          className={
-                            ingredient.is_active
-                              ? "text-[var(--brand-leafy-green)] font-medium"
-                              : "text-muted-foreground"
-                          }
-                        >
-                          {ingredient.is_active ? "Active" : "Paused"}
-                        </span>
-                      </div>
+                        and allergen information for accurate scaling and cost
+                        data.
+                      </p>
                     </div>
-                  ))
+                    <Button
+                      asChild
+                      className="rounded-full bg-ink px-6 py-2 text-[15px] font-medium text-white hover:bg-ink/90"
+                    >
+                      <Link href="/kitchen/recipes/ingredients/new">
+                        Add ingredient
+                      </Link>
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {ingredients.map((ingredient) => (
+                      <div
+                        className="group flex items-center gap-4 rounded-[16px] border border-hairline bg-canvas px-4 py-3 transition-colors hover:border-ink/25 hover:bg-soft-stone/60"
+                        key={ingredient.id}
+                      >
+                        <div
+                          aria-hidden
+                          className={`h-10 w-0.5 shrink-0 rounded-full ${ingredient.is_active ? "bg-deep-green" : "bg-muted-foreground/50"}`}
+                        />
+
+                        <div className="min-w-0 flex-1 truncate">
+                          <div className="truncate font-medium text-[15px] text-ink">
+                            {ingredient.name}
+                          </div>
+                        </div>
+
+                        {ingredient.category && (
+                          <Badge
+                            className="shrink-0 font-normal"
+                            variant="outline"
+                          >
+                            {ingredient.category}
+                          </Badge>
+                        )}
+
+                        {(ingredient.allergens ?? []).length > 0 && (
+                          <div className="flex shrink-0 flex-wrap gap-1">
+                            {(ingredient.allergens ?? [])
+                              .slice(0, 3)
+                              .map((allergen) => (
+                                <Badge
+                                  className="font-normal text-xs text-coral border-coral-soft"
+                                  key={allergen}
+                                  variant="outline"
+                                >
+                                  {allergen}
+                                </Badge>
+                              ))}
+                          </div>
+                        )}
+
+                        <div className="shrink-0 font-mono text-[12px] text-muted-foreground">
+                          <span className="text-[10px] uppercase tracking-wide">
+                            Unit
+                          </span>{" "}
+                          <span className="font-sans font-medium text-ink">
+                            {ingredient.unit_code ?? "—"}
+                          </span>
+                        </div>
+
+                        <div className="flex shrink-0 items-center gap-1 text-[13px]">
+                          <CheckCircleIcon
+                            className={`size-3.5 ${ingredient.is_active ? "text-deep-green" : "text-muted-foreground"}`}
+                          />
+                          <span
+                            className={
+                              ingredient.is_active
+                                ? "font-medium text-deep-green"
+                                : "text-muted-foreground"
+                            }
+                          >
+                            {ingredient.is_active ? "Active" : "Paused"}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 )}
               </div>
             )}
 
             {activeTab === "menus" && (
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+              <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
                 {menus.length === 0 ? (
-                  <Empty className="bg-card/50">
-                    <EmptyHeader>
-                      <EmptyMedia variant="icon">
-                        <UtensilsIcon />
-                      </EmptyMedia>
-                      <EmptyTitle>Create your first menu</EmptyTitle>
-                      <EmptyDescription>
-                        Build curated menu collections that group dishes
-                        together for events. Each menu can include pricing
-                        tiers, dietary breakdowns, and be customized for
-                        different client needs.
-                      </EmptyDescription>
-                    </EmptyHeader>
-                    <EmptyContent>
-                      <Button asChild>
-                        <Link href="/kitchen/recipes/menus/new">
-                          Create New Menu
-                        </Link>
-                      </Button>
-                    </EmptyContent>
-                  </Empty>
+                  <div className="col-span-full flex flex-col items-center gap-5 rounded-[16px] border border-hairline bg-soft-stone px-6 py-16 text-center">
+                    <span className="inline-flex size-12 items-center justify-center rounded-full border border-hairline bg-canvas text-deep-green">
+                      <UtensilsIcon className="size-5" />
+                    </span>
+                    <div className="space-y-2">
+                      <h3 className="font-normal text-[24px] leading-[1.3] tracking-[-0.24px] text-ink">
+                        Create your first menu
+                      </h3>
+                      <p className="mx-auto max-w-md text-[16px] leading-[1.5] text-muted-foreground">
+                        Curate dishes into bundles for events, tastings, and
+                        client proposals.
+                      </p>
+                    </div>
+                    <Button
+                      asChild
+                      className="rounded-full bg-ink px-6 py-2 text-[15px] font-medium text-white hover:bg-ink/90"
+                    >
+                      <Link href="/kitchen/recipes/menus/new">
+                        Create new menu
+                      </Link>
+                    </Button>
+                  </div>
                 ) : (
                   menus.map((menu) => (
                     <MenuCard
@@ -955,141 +1014,118 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
             )}
 
             {activeTab === "costing" && (
-              <div className="space-y-6">
-                {/* Summary Stat Cards - always show, with zeroes if no data */}
-                <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
-                  <div className="p-4 border border-border/50 bg-card">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs font-medium uppercase text-muted-foreground tracking-wide">
-                        Avg Food Cost
-                      </span>
-                      <CalculatorIcon className="h-4 w-4 text-[var(--brand-golden-zest)]" />
-                    </div>
-                    <div className="text-2xl font-bold text-[var(--brand-golden-zest)]">
+              <div className="space-y-8">
+                <MetricBand cols={4} surface="light">
+                  <MetricCell surface="light">
+                    <MetricLabel surface="light">Avg food cost</MetricLabel>
+                    <MetricValue
+                      className="text-4xl sm:text-[2.75rem]"
+                      surface="light"
+                    >
                       {costingStats
                         ? formatPercent(costingStats.avgFoodCostPercent)
-                        : "-"}
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Target: &lt;35%
-                    </p>
-                  </div>
-                  <div className="p-4 border border-border/50 bg-card">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs font-medium uppercase text-muted-foreground tracking-wide">
-                        Total Recipe Value
-                      </span>
-                      <DollarSignIcon className="h-4 w-4 text-[var(--brand-golden-zest)]" />
-                    </div>
-                    <div className="text-2xl font-bold text-[var(--brand-golden-zest)]">
+                        : "—"}
+                    </MetricValue>
+                    <MetricDelta surface="light">Target below 35%</MetricDelta>
+                  </MetricCell>
+                  <MetricCell surface="light">
+                    <MetricLabel surface="light">Recipe value</MetricLabel>
+                    <MetricValue
+                      className="text-4xl sm:text-[2.75rem]"
+                      surface="light"
+                    >
                       {costingStats
                         ? currencyFormatter.format(
                             costingStats.totalRecipeValue
                           )
                         : currencyFormatter.format(0)}
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-1">
+                    </MetricValue>
+                    <MetricDelta surface="light">
                       {costingStats?.recipesWithCostData ?? 0} of{" "}
-                      {costingStats?.totalRecipes ?? dishes.length} recipes
-                    </p>
-                  </div>
-                  <div className="p-4 border border-border/50 bg-card">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs font-medium uppercase text-muted-foreground tracking-wide">
-                        Highest Margin
-                      </span>
-                      <TrendingUpIcon className="h-4 w-4 text-[var(--brand-leafy-green)]" />
-                    </div>
-                    <div className="text-2xl font-bold text-[var(--brand-leafy-green)]">
+                      {costingStats?.totalRecipes ?? dishes.length} with data
+                    </MetricDelta>
+                  </MetricCell>
+                  <MetricCell surface="light">
+                    <MetricLabel surface="light">Highest margin</MetricLabel>
+                    <MetricValue
+                      className="text-deep-green text-4xl sm:text-[2.75rem]"
+                      surface="light"
+                    >
                       {costingStats?.highestMarginDish
                         ? formatPercent(costingStats.highestMarginDish.margin)
-                        : "-"}
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-1 truncate">
-                      {costingStats?.highestMarginDish?.name ?? "-"}
-                    </p>
-                  </div>
-                  <div className="p-4 border border-border/50 bg-card">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs font-medium uppercase text-muted-foreground tracking-wide">
-                        Cost Alerts
-                      </span>
-                      <Badge
-                        className={`h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs ${
-                          (costingStats?.highFoodCostAlerts ?? 0) > 0
-                            ? "bg-[var(--brand-spiced-orange)] text-white border-[var(--brand-spiced-orange)]"
-                            : "bg-[var(--brand-leafy-green)] text-white border-[var(--brand-leafy-green)]"
-                        }`}
-                        variant="outline"
-                      >
-                        {costingStats?.highFoodCostAlerts ?? 0}
-                      </Badge>
-                    </div>
-                    <div
-                      className={`text-2xl font-bold ${
+                        : "—"}
+                    </MetricValue>
+                    <MetricDelta className="truncate" surface="light">
+                      {costingStats?.highestMarginDish?.name ?? "—"}
+                    </MetricDelta>
+                  </MetricCell>
+                  <MetricCell surface="light">
+                    <MetricLabel surface="light">Cost alerts</MetricLabel>
+                    <MetricValue
+                      className={
                         (costingStats?.highFoodCostAlerts ?? 0) > 0
-                          ? "text-[var(--brand-spiced-orange)]"
-                          : "text-[var(--brand-leafy-green)]"
-                      }`}
+                          ? "text-coral text-4xl sm:text-[2.75rem]"
+                          : "text-deep-green text-4xl sm:text-[2.75rem]"
+                      }
+                      surface="light"
                     >
                       {(costingStats?.highFoodCostAlerts ?? 0) > 0
-                        ? "Action Needed"
-                        : "All Good"}
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {costingStats?.highFoodCostAlerts ?? 0} recipes over 35%
-                      threshold
-                    </p>
-                  </div>
-                </div>
+                        ? "Action"
+                        : "Clear"}
+                    </MetricValue>
+                    <MetricDelta surface="light">
+                      {(costingStats?.highFoodCostAlerts ?? 0) > 0
+                        ? `${costingStats?.highFoodCostAlerts ?? 0} over 35%`
+                        : "Within threshold"}
+                    </MetricDelta>
+                  </MetricCell>
+                </MetricBand>
 
-                {/* Recipe Cost Analysis Table */}
-                <div className="border border-border/50 bg-card">
-                  <div className="p-4 border-b border-border/50">
-                    <h3 className="font-semibold text-sm">
-                      Recipe Cost Analysis
+                <div className="overflow-hidden rounded-[22px] border border-hairline bg-canvas">
+                  <div className="border-b border-hairline px-6 py-5">
+                    <h3 className="font-normal text-lg tracking-[-0.01em] text-ink">
+                      Recipe cost analysis
                     </h3>
-                    <p className="text-xs text-muted-foreground">
-                      Compare recipe costs, margins, and identify high food cost
-                      items
+                    <p className="mt-1 text-[14px] text-muted-foreground">
+                      Compare costs, margins, and high food-cost items.
                     </p>
                   </div>
-                  <div className="p-4">
+                  <div className="p-6">
                     {costingSummary.length === 0 ? (
-                      <div className="py-8 text-center text-muted-foreground">
-                        <DollarSignIcon className="mx-auto mb-4 h-12 w-12 opacity-50" />
-                        <p className="text-lg font-medium">
-                          No vendor cost data available
+                      <div className="py-10 text-center text-muted-foreground">
+                        <DollarSignIcon className="mx-auto mb-4 h-12 w-12 opacity-40" />
+                        <p className="font-medium text-ink text-lg">
+                          No vendor cost data
                         </p>
-                        <p className="text-sm">
-                          Add vendor pricing to ingredients to see recipe cost
-                          analysis.
+                        <p className="mt-1 text-sm">
+                          Add vendor pricing to ingredients to populate this
+                          view.
                         </p>
                       </div>
                     ) : (
                       <>
                         <Table>
                           <TableHeader>
-                            <TableRow className="border-b border-border/50 hover:bg-transparent">
-                              <TableHead className="text-xs uppercase text-muted-foreground font-medium">
+                            <TableRow className="border-b border-hairline hover:bg-transparent">
+                              <TableHead className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
                                 Recipe
                               </TableHead>
-                              <TableHead className="text-right text-xs uppercase text-muted-foreground font-medium">
-                                Cost/Yield
+                              <TableHead className="text-right font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                                Cost / yield
                               </TableHead>
-                              <TableHead className="text-right text-xs uppercase text-muted-foreground font-medium">
-                                Menu Price
+                              <TableHead className="text-right font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                                Menu price
                               </TableHead>
-                              <TableHead className="text-right text-xs uppercase text-muted-foreground font-medium">
-                                Food Cost %
+                              <TableHead className="text-right font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                                Food cost %
                               </TableHead>
-                              <TableHead className="text-right text-xs uppercase text-muted-foreground font-medium">
+                              <TableHead className="text-right font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
                                 Margin
                               </TableHead>
-                              <TableHead className="text-xs uppercase text-muted-foreground font-medium">
+                              <TableHead className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
                                 Ingredients
                               </TableHead>
-                              <TableHead className="text-xs uppercase text-muted-foreground font-medium">
+                              <TableHead className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
                                 Status
                               </TableHead>
                               <TableHead />
@@ -1102,72 +1138,69 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                               const isHighFoodCost =
                                 foodCostPercent !== null &&
                                 foodCostPercent > 35;
+                              const marginCellClass =
+                                getRecipeMarginCellClass(margin);
 
                               return (
                                 <TableRow
-                                  className="border-b border-border/30"
+                                  className="border-b border-hairline/80 last:border-b-0"
                                   key={recipe.recipeId}
                                 >
                                   <TableCell>
                                     <div>
-                                      <div className="font-medium text-sm">
+                                      <div className="font-medium text-[15px] text-ink">
                                         {recipe.recipeName}
                                       </div>
-                                      <div className="text-muted-foreground text-xs">
-                                        Yield: {recipe.yieldQuantity}{" "}
+                                      <div className="text-[13px] text-muted-foreground">
+                                        Yield {recipe.yieldQuantity}{" "}
                                         {recipe.yieldUnit ?? "units"}
                                       </div>
                                     </div>
                                   </TableCell>
-                                  <TableCell className="text-right font-medium text-[var(--brand-golden-zest)]">
+                                  <TableCell className="text-right font-medium text-action-blue">
                                     {currencyFormatter.format(
                                       recipe.costPerYield
                                     )}
                                   </TableCell>
-                                  <TableCell className="text-right font-medium">
+                                  <TableCell className="text-right font-medium text-ink">
                                     {recipe.menuPrice
                                       ? currencyFormatter.format(
                                           recipe.menuPrice
                                         )
-                                      : "-"}
+                                      : "—"}
                                   </TableCell>
                                   <TableCell className="text-right">
                                     <div className="flex items-center justify-end gap-2">
                                       <span
                                         className={
                                           isHighFoodCost
-                                            ? "text-[var(--brand-spiced-orange)] font-semibold"
-                                            : "text-[var(--brand-leafy-green)] font-medium"
+                                            ? "font-semibold text-coral"
+                                            : "font-medium text-deep-green"
                                         }
                                       >
                                         {formatPercent(foodCostPercent)}
                                       </span>
-                                      {isHighFoodCost && (
-                                        <Badge className="bg-[var(--brand-spiced-orange)] text-white border-0 text-xs">
+                                      {isHighFoodCost ? (
+                                        <Badge className="border-0 bg-coral px-2 text-xs text-white">
                                           Alert
                                         </Badge>
-                                      )}
+                                      ) : null}
                                     </div>
                                   </TableCell>
                                   <TableCell className="text-right">
-                                    <span
-                                      className={
-                                        margin !== null && margin > 50
-                                          ? "text-[var(--brand-leafy-green)] font-semibold"
-                                          : margin !== null && margin < 30
-                                            ? "text-[var(--brand-spiced-orange)] font-semibold"
-                                            : "text-[var(--brand-golden-zest)] font-medium"
-                                      }
-                                    >
+                                    <span className={marginCellClass}>
                                       {formatPercent(margin)}
                                     </span>
                                   </TableCell>
-                                  <TableCell className="text-center text-sm">
+                                  <TableCell className="text-center text-[14px] text-ink tabular-nums">
                                     {recipe.ingredientCount}
                                   </TableCell>
                                   <TableCell>
                                     {recipe.lastCalculated ? (
-                                      <Badge className="bg-[var(--brand-leafy-green)]/10 text-[var(--brand-leafy-green)] border-[var(--brand-leafy-green)]/30 text-xs">
+                                      <Badge
+                                        className="border-deep-green/30 bg-deep-green/10 text-xs text-deep-green"
+                                        variant="outline"
+                                      >
                                         Calculated
                                       </Badge>
                                     ) : (
@@ -1182,7 +1215,7 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                                   <TableCell>
                                     <Button
                                       asChild
-                                      className="text-[var(--brand-leafy-green)] hover:text-[var(--brand-leafy-green)] hover:bg-[var(--brand-leafy-green)]/10"
+                                      className="text-deep-green hover:bg-deep-green/10 hover:text-deep-green"
                                       size="sm"
                                       variant="ghost"
                                     >
@@ -1199,27 +1232,25 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                           </TableBody>
                         </Table>
 
-                        {/* Lowest Margin Alert */}
                         {costingStats?.lowestMarginDish &&
                           costingStats.lowestMarginDish.margin < 30 && (
-                            <div className="mt-4 p-4 border border-[var(--brand-spiced-orange)]/50 bg-[var(--brand-spiced-orange)]/5">
-                              <div className="flex items-center gap-2 mb-1">
-                                <Badge className="bg-[var(--brand-spiced-orange)] text-white border-0 text-xs">
-                                  Low Margin Alert
+                            <div className="mt-6 rounded-[16px] border border-coral/40 bg-coral/5 px-5 py-4">
+                              <div className="mb-1 flex flex-wrap items-center gap-2">
+                                <Badge className="border-0 bg-coral text-xs text-white">
+                                  Low margin
                                 </Badge>
-                                <span className="font-semibold text-sm">
+                                <span className="font-medium text-[15px] text-ink">
                                   {costingStats.lowestMarginDish.name}
                                 </span>
                               </div>
-                              <p className="text-xs text-muted-foreground">
-                                This recipe has a margin of{" "}
-                                <span className="text-[var(--brand-spiced-orange)] font-medium">
+                              <p className="text-[13px] text-muted-foreground">
+                                Margin{" "}
+                                <span className="font-medium text-coral">
                                   {formatPercent(
                                     costingStats.lowestMarginDish.margin
                                   )}
                                 </span>
-                                . Consider reviewing ingredient costs or
-                                adjusting menu price.
+                                . Review ingredient costs or menu pricing.
                               </p>
                             </div>
                           )}
@@ -1231,7 +1262,7 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
             )}
           </div>
         </section>
-      </div>
+      </OperationalColumn>
     </>
   );
 };

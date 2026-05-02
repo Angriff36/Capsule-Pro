@@ -42,7 +42,7 @@ describe("Staffing Recommendations API", () => {
 
     it("applies buffet multiplier (1x)", async () => {
       const res = await POST(
-        postRequest({ guestCount: 54, serviceStyle: "buffet" }),
+        postRequest({ guestCount: 54, serviceStyle: "buffet" })
       );
       const { recommendation } = await res.json();
 
@@ -53,7 +53,7 @@ describe("Staffing Recommendations API", () => {
 
     it("applies plated multiplier (1.2x)", async () => {
       const res = await POST(
-        postRequest({ guestCount: 54, serviceStyle: "plated" }),
+        postRequest({ guestCount: 54, serviceStyle: "plated" })
       );
       const { recommendation } = await res.json();
 
@@ -63,7 +63,7 @@ describe("Staffing Recommendations API", () => {
 
     it("applies family_style multiplier (1.1x)", async () => {
       const res = await POST(
-        postRequest({ guestCount: 54, serviceStyle: "family_style" }),
+        postRequest({ guestCount: 54, serviceStyle: "family_style" })
       );
       const { recommendation } = await res.json();
 
@@ -73,7 +73,7 @@ describe("Staffing Recommendations API", () => {
 
     it("applies cocktail multiplier (0.9x)", async () => {
       const res = await POST(
-        postRequest({ guestCount: 54, serviceStyle: "cocktail" }),
+        postRequest({ guestCount: 54, serviceStyle: "cocktail" })
       );
       const { recommendation } = await res.json();
 
@@ -83,7 +83,7 @@ describe("Staffing Recommendations API", () => {
 
     it("applies food_truck multiplier (0.75x)", async () => {
       const res = await POST(
-        postRequest({ guestCount: 54, serviceStyle: "food_truck" }),
+        postRequest({ guestCount: 54, serviceStyle: "food_truck" })
       );
       const { recommendation } = await res.json();
 
@@ -93,7 +93,7 @@ describe("Staffing Recommendations API", () => {
 
     it("defaults to multiplier 1 for unknown service style", async () => {
       const res = await POST(
-        postRequest({ guestCount: 54, serviceStyle: "mystery" }),
+        postRequest({ guestCount: 54, serviceStyle: "mystery" })
       );
       const { recommendation } = await res.json();
 
@@ -106,7 +106,7 @@ describe("Staffing Recommendations API", () => {
 
     it("computes correct role counts for a small event", async () => {
       const res = await POST(
-        postRequest({ guestCount: 10, serviceStyle: "buffet", duration: 5 }),
+        postRequest({ guestCount: 10, serviceStyle: "buffet", duration: 5 })
       );
       const { recommendation } = await res.json();
 
@@ -151,7 +151,7 @@ describe("Staffing Recommendations API", () => {
           guestCount: 10,
           serviceStyle: "buffet",
           duration,
-        }),
+        })
       );
       const { recommendation } = await res.json();
 
@@ -163,7 +163,7 @@ describe("Staffing Recommendations API", () => {
 
       const expected = roles.reduce(
         (sum, r) => sum + r.count * r.hourlyRate * r.hoursNeeded,
-        0,
+        0
       );
 
       expect(recommendation.totalLaborCost).toBe(expected);
@@ -175,7 +175,7 @@ describe("Staffing Recommendations API", () => {
 
     it("scales roles up for large guest counts", async () => {
       const res = await POST(
-        postRequest({ guestCount: 500, serviceStyle: "buffet" }),
+        postRequest({ guestCount: 500, serviceStyle: "buffet" })
       );
       const { recommendation } = await res.json();
 
@@ -201,7 +201,7 @@ describe("Staffing Recommendations API", () => {
 
     it("includes plated-specific server notes", async () => {
       const res = await POST(
-        postRequest({ guestCount: 50, serviceStyle: "plated" }),
+        postRequest({ guestCount: 50, serviceStyle: "plated" })
       );
       const { recommendation } = await res.json();
 
@@ -216,7 +216,7 @@ describe("Staffing Recommendations API", () => {
 
     it("includes cocktail-specific server notes", async () => {
       const res = await POST(
-        postRequest({ guestCount: 50, serviceStyle: "cocktail" }),
+        postRequest({ guestCount: 50, serviceStyle: "cocktail" })
       );
       const { recommendation } = await res.json();
 
@@ -226,14 +226,12 @@ describe("Staffing Recommendations API", () => {
           notes: string;
         }>
       ).find((r) => r.role === "server")!;
-      expect(server.notes).toBe(
-        "Lean service team with stronger bar support",
-      );
+      expect(server.notes).toBe("Lean service team with stronger bar support");
     });
 
     it("includes default server notes for buffet and other styles", async () => {
       const res = await POST(
-        postRequest({ guestCount: 50, serviceStyle: "buffet" }),
+        postRequest({ guestCount: 50, serviceStyle: "buffet" })
       );
       const { recommendation } = await res.json();
 
@@ -254,7 +252,7 @@ describe("Staffing Recommendations API", () => {
           guestCount: 30,
           eventType: "wedding",
           serviceStyle: "family_style",
-        }),
+        })
       );
       const { recommendation } = await res.json();
 
@@ -272,7 +270,7 @@ describe("Staffing Recommendations API", () => {
           guestCount: 60,
           eventType: "gala",
           duration: 8,
-        }),
+        })
       );
       const { recommendation } = await res.json();
 
@@ -314,18 +312,14 @@ describe("Staffing Recommendations API", () => {
     // ── Validation: duration ──────────────────────────────────────
 
     it("returns 400 when duration is 0", async () => {
-      const res = await POST(
-        postRequest({ guestCount: 50, duration: 0 }),
-      );
+      const res = await POST(postRequest({ guestCount: 50, duration: 0 }));
       expect(res.status).toBe(400);
       const body = await res.json();
       expect(body.error).toBe("Duration must be greater than 0");
     });
 
     it("returns 400 when duration is negative", async () => {
-      const res = await POST(
-        postRequest({ guestCount: 50, duration: -3 }),
-      );
+      const res = await POST(postRequest({ guestCount: 50, duration: -3 }));
       expect(res.status).toBe(400);
     });
 
@@ -338,7 +332,7 @@ describe("Staffing Recommendations API", () => {
           method: "POST",
           body: "not-json",
           headers: { "Content-Type": "application/json" },
-        },
+        }
       );
       const res = await POST(req);
       expect(res.status).toBe(500);

@@ -10,7 +10,7 @@ export const ModuleHeader = () => {
   const activeModuleKey = getModuleKeyFromPathname(pathname);
 
   return (
-    <div className="border-border border-b bg-background/95 px-6 py-3">
+    <div className="border-hairline border-b bg-background/95 px-6 py-3 backdrop-blur">
       <div className="flex flex-wrap items-center gap-2">
         {modules.map((module) => {
           const isActive = module.key === activeModuleKey;

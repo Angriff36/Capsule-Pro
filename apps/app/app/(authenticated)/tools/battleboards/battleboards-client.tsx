@@ -610,9 +610,7 @@ function BoardDetailView({
                     </TableCell>
                     <TableCell>
                       <Badge
-                        variant={
-                          CARD_STATUS_VARIANT[card.status] ?? "outline"
-                        }
+                        variant={CARD_STATUS_VARIANT[card.status] ?? "outline"}
                       >
                         {card.status}
                       </Badge>
@@ -916,13 +914,13 @@ export function BattleboardsClient() {
         <>
           {/* Stats */}
           <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-            <StatCard icon={LayoutGrid} label="Total Boards" value={totalBoards} />
-            <StatCard icon={LayoutList} label="Active" value={activeBoards} />
             <StatCard
-              icon={Copy}
-              label="Templates"
-              value={templateBoards}
+              icon={LayoutGrid}
+              label="Total Boards"
+              value={totalBoards}
             />
+            <StatCard icon={LayoutList} label="Active" value={activeBoards} />
+            <StatCard icon={Copy} label="Templates" value={templateBoards} />
             <StatCard
               icon={StickyNote}
               label="Total Cards"
@@ -962,8 +960,8 @@ export function BattleboardsClient() {
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {boards.map((board) => (
                 <BoardCard
-                  key={board.id}
                   board={board}
+                  key={board.id}
                   onDelete={() => handleDeleteRequest(board)}
                   onEdit={() => handleEdit(board)}
                   onView={() => handleView(board)}

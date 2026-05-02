@@ -17,7 +17,7 @@
 
 import { database } from "@repo/database";
 import { NextRequest } from "next/server";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // --- Mocks ---
 
@@ -37,7 +37,7 @@ vi.mock("@/lib/manifest-response", async () => {
           success: true,
           ...(typeof data === "object" && data !== null ? data : { data }),
         },
-        { status },
+        { status }
       ),
     manifestErrorResponse: (message: string, status: number) =>
       NextResponse.json({ success: false, message }, { status }),
@@ -62,9 +62,8 @@ vi.mock("@/lib/pagination", () => ({
 }));
 
 vi.mock("@/lib/database", async () => {
-  const mod = await vi.importActual<typeof import("@repo/database")>(
-    "@repo/database",
-  );
+  const mod =
+    await vi.importActual<typeof import("@repo/database")>("@repo/database");
   return mod;
 });
 
@@ -76,38 +75,34 @@ const { createManifestRuntime } = await import("@/lib/manifest-runtime");
 
 // --- Route imports ---
 
-// Search
-import { GET as searchGet } from "@/app/api/search/route";
-
 // Documents
 import { POST as docVersionCreate } from "@/app/api/documents/versions/commands/create/route";
 import { POST as docVersionRestore } from "@/app/api/documents/versions/commands/restore/route";
 import { GET as docVersionList } from "@/app/api/documents/versions/list/route";
-
-// Workflow (manifest)
-import { POST as workflowCreate } from "@/app/api/workflow/create/route";
-import { POST as workflowUpdate } from "@/app/api/workflow/update/route";
-import { POST as workflowActivate } from "@/app/api/workflow/activate/route";
-import { POST as workflowDeactivate } from "@/app/api/workflow/deactivate/route";
-
-// Workforce Optimization (manifest)
-import { POST as wfOptCreate } from "@/app/api/workforceoptimization/create/route";
-import { POST as wfOptStart } from "@/app/api/workforceoptimization/start/route";
-import { POST as wfOptComplete } from "@/app/api/workforceoptimization/complete/route";
-import { POST as wfOptFail } from "@/app/api/workforceoptimization/fail/route";
-
-// Kitchen Tasks (manifest)
-import { POST as ktCreate } from "@/app/api/kitchentask/create/route";
+import { POST as ktAddTag } from "@/app/api/kitchentask/add-tag/route";
 import { POST as ktCancel } from "@/app/api/kitchentask/cancel/route";
 import { POST as ktClaim } from "@/app/api/kitchentask/claim/route";
 import { POST as ktComplete } from "@/app/api/kitchentask/complete/route";
-import { POST as ktStart } from "@/app/api/kitchentask/start/route";
-import { POST as ktRelease } from "@/app/api/kitchentask/release/route";
+// Kitchen Tasks (manifest)
+import { POST as ktCreate } from "@/app/api/kitchentask/create/route";
 import { POST as ktReassign } from "@/app/api/kitchentask/reassign/route";
-import { POST as ktAddTag } from "@/app/api/kitchentask/add-tag/route";
+import { POST as ktRelease } from "@/app/api/kitchentask/release/route";
 import { POST as ktRemoveTag } from "@/app/api/kitchentask/remove-tag/route";
+import { POST as ktStart } from "@/app/api/kitchentask/start/route";
 import { POST as ktUpdateComplexity } from "@/app/api/kitchentask/update-complexity/route";
 import { POST as ktUpdatePriority } from "@/app/api/kitchentask/update-priority/route";
+// Search
+import { GET as searchGet } from "@/app/api/search/route";
+import { POST as workflowActivate } from "@/app/api/workflow/activate/route";
+// Workflow (manifest)
+import { POST as workflowCreate } from "@/app/api/workflow/create/route";
+import { POST as workflowDeactivate } from "@/app/api/workflow/deactivate/route";
+import { POST as workflowUpdate } from "@/app/api/workflow/update/route";
+import { POST as wfOptComplete } from "@/app/api/workforceoptimization/complete/route";
+// Workforce Optimization (manifest)
+import { POST as wfOptCreate } from "@/app/api/workforceoptimization/create/route";
+import { POST as wfOptFail } from "@/app/api/workforceoptimization/fail/route";
+import { POST as wfOptStart } from "@/app/api/workforceoptimization/start/route";
 
 // --- Constants ---
 
@@ -120,14 +115,14 @@ const TEST_ORG_ID = "org_operations_test";
 
 function createMockRequest(
   url: string,
-  options: RequestInit = {},
+  options: RequestInit = {}
 ): NextRequest {
   if (options.body && !options.headers) {
     options.headers = { "Content-Type": "application/json" };
   }
   return new NextRequest(
     new URL(url, "http://localhost:3000"),
-    options as ConstructorParameters<typeof NextRequest>[1],
+    options as ConstructorParameters<typeof NextRequest>[1]
   );
 }
 
@@ -153,7 +148,7 @@ function mockNoTenant() {
 
 function mockSuccessfulRunCommand(
   result: unknown = { id: "test-id" },
-  emittedEvents: unknown[] = [],
+  emittedEvents: unknown[] = []
 ) {
   vi.mocked(createManifestRuntime).mockResolvedValue({
     runCommand: vi.fn().mockResolvedValue({
@@ -253,7 +248,7 @@ describe("Search API", () => {
     vi.mocked(database.knowledgeBaseEntry.count).mockResolvedValue(0);
 
     const req = createMockRequest(
-      "http://localhost:3000/api/search?q=acme&page=1&limit=10",
+      "http://localhost:3000/api/search?q=acme&page=1&limit=10"
     );
     const res = await searchGet(req);
     expect(res.status).toBe(200);
@@ -287,7 +282,7 @@ describe("Search API", () => {
     vi.mocked(database.event.count).mockResolvedValue(1);
 
     const req = createMockRequest(
-      "http://localhost:3000/api/search?q=acme&type=events",
+      "http://localhost:3000/api/search?q=acme&type=events"
     );
     const res = await searchGet(req);
     expect(res.status).toBe(200);
@@ -307,12 +302,13 @@ describe("Search API", () => {
     vi.mocked(database.event.count).mockResolvedValue(0);
 
     const req = createMockRequest(
-      "http://localhost:3000/api/search?q=test&type=events",
+      "http://localhost:3000/api/search?q=test&type=events"
     );
     await searchGet(req);
 
     // Verify the findMany call uses tenantId in the where clause
-    const findManyCall = vi.mocked(database.event.findMany).mock.calls[0][0] as {
+    const findManyCall = vi.mocked(database.event.findMany).mock
+      .calls[0][0] as {
       where: { tenantId: string; deletedAt: unknown };
     };
     expect(findManyCall.where.tenantId).toBe(TEST_TENANT_ID);
@@ -325,11 +321,12 @@ describe("Search API", () => {
     vi.mocked(database.event.count).mockResolvedValue(0);
 
     const req = createMockRequest(
-      "http://localhost:3000/api/search?q=test&type=events&limit=999",
+      "http://localhost:3000/api/search?q=test&type=events&limit=999"
     );
     await searchGet(req);
 
-    const findManyCall = vi.mocked(database.event.findMany).mock.calls[0][0] as {
+    const findManyCall = vi.mocked(database.event.findMany).mock
+      .calls[0][0] as {
       take: number;
     };
     expect(findManyCall.take).toBe(50);
@@ -338,11 +335,11 @@ describe("Search API", () => {
   it("returns 500 when database throws an error", async () => {
     mockAuth();
     vi.mocked(database.event.findMany).mockRejectedValue(
-      new Error("DB connection lost"),
+      new Error("DB connection lost")
     );
 
     const req = createMockRequest(
-      "http://localhost:3000/api/search?q=test&type=events",
+      "http://localhost:3000/api/search?q=test&type=events"
     );
     const res = await searchGet(req);
     expect(res.status).toBe(500);
@@ -372,7 +369,7 @@ describe("Document Versions - Create", () => {
           documentId: "doc-1",
           content: "test content",
         }),
-      },
+      }
     );
     const res = await docVersionCreate(req);
     expect(res.status).toBe(401);
@@ -389,7 +386,7 @@ describe("Document Versions - Create", () => {
           documentId: "doc-1",
           content: "test",
         }),
-      },
+      }
     );
     const res = await docVersionCreate(req);
     expect(res.status).toBe(400);
@@ -404,7 +401,7 @@ describe("Document Versions - Create", () => {
       {
         method: "POST",
         body: JSON.stringify({ documentType: "contract" }),
-      },
+      }
     );
     const res = await docVersionCreate(req);
     expect(res.status).toBe(400);
@@ -434,7 +431,7 @@ describe("Document Versions - Create", () => {
 
     vi.mocked(database.documentVersion.findFirst).mockResolvedValue(null);
     vi.mocked(database.documentVersion.create).mockResolvedValue(
-      versionData as never,
+      versionData as never
     );
 
     const req = createMockRequest(
@@ -446,7 +443,7 @@ describe("Document Versions - Create", () => {
           documentId: "doc-1",
           content: "Initial content",
         }),
-      },
+      }
     );
     const res = await docVersionCreate(req);
     expect(res.status).toBe(200);
@@ -482,7 +479,7 @@ describe("Document Versions - Create", () => {
           content: "Updated",
           changeSummary: "Fourth version",
         }),
-      },
+      }
     );
     await docVersionCreate(req);
 
@@ -494,7 +491,7 @@ describe("Document Versions - Create", () => {
   it("returns 500 on database error", async () => {
     mockAuth();
     vi.mocked(database.documentVersion.findFirst).mockRejectedValue(
-      new Error("DB error"),
+      new Error("DB error")
     );
 
     const req = createMockRequest(
@@ -506,7 +503,7 @@ describe("Document Versions - Create", () => {
           documentId: "doc-1",
           content: "test",
         }),
-      },
+      }
     );
     const res = await docVersionCreate(req);
     expect(res.status).toBe(500);
@@ -529,7 +526,7 @@ describe("Document Versions - Create", () => {
           documentId: "doc-1",
           content: "test",
         }),
-      },
+      }
     );
     await docVersionCreate(req);
 
@@ -557,7 +554,7 @@ describe("Document Versions - Restore", () => {
       {
         method: "POST",
         body: JSON.stringify({ versionId: "ver-1" }),
-      },
+      }
     );
     const res = await docVersionRestore(req);
     expect(res.status).toBe(401);
@@ -570,7 +567,7 @@ describe("Document Versions - Restore", () => {
       {
         method: "POST",
         body: JSON.stringify({}),
-      },
+      }
     );
     const res = await docVersionRestore(req);
     expect(res.status).toBe(400);
@@ -587,7 +584,7 @@ describe("Document Versions - Restore", () => {
       {
         method: "POST",
         body: JSON.stringify({ versionId: "nonexistent" }),
-      },
+      }
     );
     const res = await docVersionRestore(req);
     expect(res.status).toBe(404);
@@ -630,7 +627,7 @@ describe("Document Versions - Restore", () => {
       .mockResolvedValueOnce(originalVersion as never)
       .mockResolvedValueOnce({ versionNumber: 3 } as never);
     vi.mocked(database.documentVersion.create).mockResolvedValue(
-      restoredVersion as never,
+      restoredVersion as never
     );
 
     const req = createMockRequest(
@@ -638,7 +635,7 @@ describe("Document Versions - Restore", () => {
       {
         method: "POST",
         body: JSON.stringify({ versionId: "ver-2" }),
-      },
+      }
     );
     const res = await docVersionRestore(req);
     expect(res.status).toBe(200);
@@ -656,7 +653,7 @@ describe("Document Versions - Restore", () => {
   it("returns 500 on database error", async () => {
     mockAuth();
     vi.mocked(database.documentVersion.findFirst).mockRejectedValue(
-      new Error("DB error"),
+      new Error("DB error")
     );
 
     const req = createMockRequest(
@@ -664,7 +661,7 @@ describe("Document Versions - Restore", () => {
       {
         method: "POST",
         body: JSON.stringify({ versionId: "ver-1" }),
-      },
+      }
     );
     const res = await docVersionRestore(req);
     expect(res.status).toBe(500);
@@ -679,7 +676,7 @@ describe("Document Versions - Restore", () => {
       {
         method: "POST",
         body: JSON.stringify({ versionId: "ver-1" }),
-      },
+      }
     );
     await docVersionRestore(req);
 
@@ -697,7 +694,7 @@ describe("Document Versions - List", () => {
   it("returns 401 when unauthenticated", async () => {
     mockUnauthed();
     const req = createMockRequest(
-      "http://localhost:3000/api/documents/versions/list?documentType=contract&documentId=doc-1",
+      "http://localhost:3000/api/documents/versions/list?documentType=contract&documentId=doc-1"
     );
     const res = await docVersionList(req);
     expect(res.status).toBe(401);
@@ -706,7 +703,7 @@ describe("Document Versions - List", () => {
   it("returns 400 when documentType or documentId missing", async () => {
     mockAuth();
     const req = createMockRequest(
-      "http://localhost:3000/api/documents/versions/list?documentType=contract",
+      "http://localhost:3000/api/documents/versions/list?documentType=contract"
     );
     const res = await docVersionList(req);
     expect(res.status).toBe(400);
@@ -743,11 +740,11 @@ describe("Document Versions - List", () => {
     ];
 
     vi.mocked(database.documentVersion.findMany).mockResolvedValue(
-      versions as never,
+      versions as never
     );
 
     const req = createMockRequest(
-      "http://localhost:3000/api/documents/versions/list?documentType=contract&documentId=doc-1&limit=10&offset=0",
+      "http://localhost:3000/api/documents/versions/list?documentType=contract&documentId=doc-1&limit=10&offset=0"
     );
     const res = await docVersionList(req);
     expect(res.status).toBe(200);
@@ -762,7 +759,7 @@ describe("Document Versions - List", () => {
     vi.mocked(database.documentVersion.findMany).mockResolvedValue([]);
 
     const req = createMockRequest(
-      "http://localhost:3000/api/documents/versions/list?documentType=contract&documentId=doc-1",
+      "http://localhost:3000/api/documents/versions/list?documentType=contract&documentId=doc-1"
     );
     await docVersionList(req);
 
@@ -774,11 +771,11 @@ describe("Document Versions - List", () => {
   it("returns 500 on database error", async () => {
     mockAuth();
     vi.mocked(database.documentVersion.findMany).mockRejectedValue(
-      new Error("DB error"),
+      new Error("DB error")
     );
 
     const req = createMockRequest(
-      "http://localhost:3000/api/documents/versions/list?documentType=contract&documentId=doc-1",
+      "http://localhost:3000/api/documents/versions/list?documentType=contract&documentId=doc-1"
     );
     const res = await docVersionList(req);
     expect(res.status).toBe(500);
@@ -825,10 +822,10 @@ describe("Workflow Commands", () => {
     describe(`Workflow.${cmd.name}`, () => {
       it("returns 401 when unauthenticated", async () => {
         mockUnauthed();
-        const req = createMockRequest(
-          `http://localhost:3000${cmd.url}`,
-          { method: "POST", body: JSON.stringify({}) },
-        );
+        const req = createMockRequest(`http://localhost:3000${cmd.url}`, {
+          method: "POST",
+          body: JSON.stringify({}),
+        });
         const res = await cmd.handler(req);
         expect(res.status).toBe(401);
         const body = await parseJson(res);
@@ -837,10 +834,10 @@ describe("Workflow Commands", () => {
 
       it("returns 400 when tenant not found", async () => {
         mockNoTenant();
-        const req = createMockRequest(
-          `http://localhost:3000${cmd.url}`,
-          { method: "POST", body: JSON.stringify({}) },
-        );
+        const req = createMockRequest(`http://localhost:3000${cmd.url}`, {
+          method: "POST",
+          body: JSON.stringify({}),
+        });
         const res = await cmd.handler(req);
         expect(res.status).toBe(400);
         const body = await parseJson(res);
@@ -855,13 +852,10 @@ describe("Workflow Commands", () => {
           { type: "WorkflowCreated", payload: { id: "wf-1" } },
         ]);
 
-        const req = createMockRequest(
-          `http://localhost:3000${cmd.url}`,
-          {
-            method: "POST",
-            body: JSON.stringify({ name: "Test Workflow" }),
-          },
-        );
+        const req = createMockRequest(`http://localhost:3000${cmd.url}`, {
+          method: "POST",
+          body: JSON.stringify({ name: "Test Workflow" }),
+        });
         const res = await cmd.handler(req);
         expect(res.status).toBe(200);
         const body = await parseJson(res);
@@ -874,10 +868,10 @@ describe("Workflow Commands", () => {
         mockAuth();
         mockPolicyDenialRunCommand("AdminOnly");
 
-        const req = createMockRequest(
-          `http://localhost:3000${cmd.url}`,
-          { method: "POST", body: JSON.stringify({}) },
-        );
+        const req = createMockRequest(`http://localhost:3000${cmd.url}`, {
+          method: "POST",
+          body: JSON.stringify({}),
+        });
         const res = await cmd.handler(req);
         expect(res.status).toBe(403);
         const body = await parseJson(res);
@@ -888,10 +882,10 @@ describe("Workflow Commands", () => {
         mockAuth();
         mockGuardFailureRunCommand(1, "Name is required");
 
-        const req = createMockRequest(
-          `http://localhost:3000${cmd.url}`,
-          { method: "POST", body: JSON.stringify({}) },
-        );
+        const req = createMockRequest(`http://localhost:3000${cmd.url}`, {
+          method: "POST",
+          body: JSON.stringify({}),
+        });
         const res = await cmd.handler(req);
         expect(res.status).toBe(422);
         const body = await parseJson(res);
@@ -902,10 +896,10 @@ describe("Workflow Commands", () => {
         mockAuth();
         mockFailedRunCommand("Invalid state transition");
 
-        const req = createMockRequest(
-          `http://localhost:3000${cmd.url}`,
-          { method: "POST", body: JSON.stringify({}) },
-        );
+        const req = createMockRequest(`http://localhost:3000${cmd.url}`, {
+          method: "POST",
+          body: JSON.stringify({}),
+        });
         const res = await cmd.handler(req);
         expect(res.status).toBe(400);
         const body = await parseJson(res);
@@ -915,13 +909,13 @@ describe("Workflow Commands", () => {
       it("returns 500 on unexpected error", async () => {
         mockAuth();
         vi.mocked(createManifestRuntime).mockRejectedValue(
-          new Error("DB connection lost"),
+          new Error("DB connection lost")
         );
 
-        const req = createMockRequest(
-          `http://localhost:3000${cmd.url}`,
-          { method: "POST", body: JSON.stringify({}) },
-        );
+        const req = createMockRequest(`http://localhost:3000${cmd.url}`, {
+          method: "POST",
+          body: JSON.stringify({}),
+        });
         const res = await cmd.handler(req);
         expect(res.status).toBe(500);
       });
@@ -930,13 +924,14 @@ describe("Workflow Commands", () => {
         mockAuth();
         mockSuccessfulRunCommand({ id: "wf-1" });
 
-        const req = createMockRequest(
-          `http://localhost:3000${cmd.url}`,
-          { method: "POST", body: JSON.stringify({ name: "test" }) },
-        );
+        const req = createMockRequest(`http://localhost:3000${cmd.url}`, {
+          method: "POST",
+          body: JSON.stringify({ name: "test" }),
+        });
         await cmd.handler(req);
 
-        const runtimeCall = vi.mocked(createManifestRuntime).mock.calls[0][0] as {
+        const runtimeCall = vi.mocked(createManifestRuntime).mock
+          .calls[0][0] as {
           user: { id: string; tenantId: string };
         };
         expect(runtimeCall.user.tenantId).toBe(TEST_TENANT_ID);
@@ -982,20 +977,20 @@ describe("Workforce Optimization Commands", () => {
     describe(`WorkforceOptimization.${cmd.name}`, () => {
       it("returns 401 when unauthenticated", async () => {
         mockUnauthed();
-        const req = createMockRequest(
-          `http://localhost:3000${cmd.url}`,
-          { method: "POST", body: JSON.stringify({}) },
-        );
+        const req = createMockRequest(`http://localhost:3000${cmd.url}`, {
+          method: "POST",
+          body: JSON.stringify({}),
+        });
         const res = await cmd.handler(req);
         expect(res.status).toBe(401);
       });
 
       it("returns 400 when tenant not found", async () => {
         mockNoTenant();
-        const req = createMockRequest(
-          `http://localhost:3000${cmd.url}`,
-          { method: "POST", body: JSON.stringify({}) },
-        );
+        const req = createMockRequest(`http://localhost:3000${cmd.url}`, {
+          method: "POST",
+          body: JSON.stringify({}),
+        });
         const res = await cmd.handler(req);
         expect(res.status).toBe(400);
       });
@@ -1008,10 +1003,10 @@ describe("Workforce Optimization Commands", () => {
         };
         mockSuccessfulRunCommand(commandResult);
 
-        const req = createMockRequest(
-          `http://localhost:3000${cmd.url}`,
-          { method: "POST", body: JSON.stringify({ name: "Optimization run" }) },
-        );
+        const req = createMockRequest(`http://localhost:3000${cmd.url}`, {
+          method: "POST",
+          body: JSON.stringify({ name: "Optimization run" }),
+        });
         const res = await cmd.handler(req);
         expect(res.status).toBe(200);
         const body = await parseJson(res);
@@ -1023,10 +1018,10 @@ describe("Workforce Optimization Commands", () => {
         mockAuth();
         mockPolicyDenialRunCommand("ManagerOnly");
 
-        const req = createMockRequest(
-          `http://localhost:3000${cmd.url}`,
-          { method: "POST", body: JSON.stringify({}) },
-        );
+        const req = createMockRequest(`http://localhost:3000${cmd.url}`, {
+          method: "POST",
+          body: JSON.stringify({}),
+        });
         const res = await cmd.handler(req);
         expect(res.status).toBe(403);
       });
@@ -1035,10 +1030,10 @@ describe("Workforce Optimization Commands", () => {
         mockAuth();
         mockGuardFailureRunCommand(0, "instanceId required");
 
-        const req = createMockRequest(
-          `http://localhost:3000${cmd.url}`,
-          { method: "POST", body: JSON.stringify({}) },
-        );
+        const req = createMockRequest(`http://localhost:3000${cmd.url}`, {
+          method: "POST",
+          body: JSON.stringify({}),
+        });
         const res = await cmd.handler(req);
         expect(res.status).toBe(422);
       });
@@ -1047,10 +1042,10 @@ describe("Workforce Optimization Commands", () => {
         mockAuth();
         mockFailedRunCommand("Already completed");
 
-        const req = createMockRequest(
-          `http://localhost:3000${cmd.url}`,
-          { method: "POST", body: JSON.stringify({}) },
-        );
+        const req = createMockRequest(`http://localhost:3000${cmd.url}`, {
+          method: "POST",
+          body: JSON.stringify({}),
+        });
         const res = await cmd.handler(req);
         expect(res.status).toBe(400);
       });
@@ -1058,13 +1053,13 @@ describe("Workforce Optimization Commands", () => {
       it("returns 500 on unexpected error", async () => {
         mockAuth();
         vi.mocked(createManifestRuntime).mockRejectedValue(
-          new Error("Runtime exploded"),
+          new Error("Runtime exploded")
         );
 
-        const req = createMockRequest(
-          `http://localhost:3000${cmd.url}`,
-          { method: "POST", body: JSON.stringify({}) },
-        );
+        const req = createMockRequest(`http://localhost:3000${cmd.url}`, {
+          method: "POST",
+          body: JSON.stringify({}),
+        });
         const res = await cmd.handler(req);
         expect(res.status).toBe(500);
       });
@@ -1073,13 +1068,14 @@ describe("Workforce Optimization Commands", () => {
         mockAuth();
         mockSuccessfulRunCommand({ id: "wfo-1" });
 
-        const req = createMockRequest(
-          `http://localhost:3000${cmd.url}`,
-          { method: "POST", body: JSON.stringify({}) },
-        );
+        const req = createMockRequest(`http://localhost:3000${cmd.url}`, {
+          method: "POST",
+          body: JSON.stringify({}),
+        });
         await cmd.handler(req);
 
-        const runtimeCall = vi.mocked(createManifestRuntime).mock.calls[0][0] as {
+        const runtimeCall = vi.mocked(createManifestRuntime).mock
+          .calls[0][0] as {
           user: { tenantId: string };
         };
         expect(runtimeCall.user.tenantId).toBe(TEST_TENANT_ID);
@@ -1159,20 +1155,20 @@ describe("Kitchen Task Commands", () => {
     describe(`KitchenTask.${cmd.name}`, () => {
       it("returns 401 when unauthenticated", async () => {
         mockUnauthed();
-        const req = createMockRequest(
-          `http://localhost:3000${cmd.url}`,
-          { method: "POST", body: JSON.stringify({}) },
-        );
+        const req = createMockRequest(`http://localhost:3000${cmd.url}`, {
+          method: "POST",
+          body: JSON.stringify({}),
+        });
         const res = await cmd.handler(req);
         expect(res.status).toBe(401);
       });
 
       it("returns 400 when tenant not found", async () => {
         mockNoTenant();
-        const req = createMockRequest(
-          `http://localhost:3000${cmd.url}`,
-          { method: "POST", body: JSON.stringify({}) },
-        );
+        const req = createMockRequest(`http://localhost:3000${cmd.url}`, {
+          method: "POST",
+          body: JSON.stringify({}),
+        });
         const res = await cmd.handler(req);
         expect(res.status).toBe(400);
       });
@@ -1182,16 +1178,13 @@ describe("Kitchen Task Commands", () => {
         const commandResult = { id: "kt-1", status: "created" };
         mockSuccessfulRunCommand(commandResult, []);
 
-        const req = createMockRequest(
-          `http://localhost:3000${cmd.url}`,
-          {
-            method: "POST",
-            body: JSON.stringify({
-              instanceId: "kt-1",
-              title: "Prep vegetables",
-            }),
-          },
-        );
+        const req = createMockRequest(`http://localhost:3000${cmd.url}`, {
+          method: "POST",
+          body: JSON.stringify({
+            instanceId: "kt-1",
+            title: "Prep vegetables",
+          }),
+        });
         const res = await cmd.handler(req);
         expect(res.status).toBe(200);
         const body = await parseJson(res);
@@ -1203,10 +1196,10 @@ describe("Kitchen Task Commands", () => {
         mockAuth();
         mockPolicyDenialRunCommand("KitchenStaffOnly");
 
-        const req = createMockRequest(
-          `http://localhost:3000${cmd.url}`,
-          { method: "POST", body: JSON.stringify({}) },
-        );
+        const req = createMockRequest(`http://localhost:3000${cmd.url}`, {
+          method: "POST",
+          body: JSON.stringify({}),
+        });
         const res = await cmd.handler(req);
         expect(res.status).toBe(403);
         const body = await parseJson(res);
@@ -1217,10 +1210,10 @@ describe("Kitchen Task Commands", () => {
         mockAuth();
         mockGuardFailureRunCommand(2, "Task must be in pending state");
 
-        const req = createMockRequest(
-          `http://localhost:3000${cmd.url}`,
-          { method: "POST", body: JSON.stringify({}) },
-        );
+        const req = createMockRequest(`http://localhost:3000${cmd.url}`, {
+          method: "POST",
+          body: JSON.stringify({}),
+        });
         const res = await cmd.handler(req);
         expect(res.status).toBe(422);
         const body = await parseJson(res);
@@ -1231,10 +1224,10 @@ describe("Kitchen Task Commands", () => {
         mockAuth();
         mockFailedRunCommand("Task not found");
 
-        const req = createMockRequest(
-          `http://localhost:3000${cmd.url}`,
-          { method: "POST", body: JSON.stringify({}) },
-        );
+        const req = createMockRequest(`http://localhost:3000${cmd.url}`, {
+          method: "POST",
+          body: JSON.stringify({}),
+        });
         const res = await cmd.handler(req);
         expect(res.status).toBe(400);
         const body = await parseJson(res);
@@ -1244,13 +1237,13 @@ describe("Kitchen Task Commands", () => {
       it("returns 500 on unexpected error", async () => {
         mockAuth();
         vi.mocked(createManifestRuntime).mockRejectedValue(
-          new Error("Unexpected"),
+          new Error("Unexpected")
         );
 
-        const req = createMockRequest(
-          `http://localhost:3000${cmd.url}`,
-          { method: "POST", body: JSON.stringify({}) },
-        );
+        const req = createMockRequest(`http://localhost:3000${cmd.url}`, {
+          method: "POST",
+          body: JSON.stringify({}),
+        });
         const res = await cmd.handler(req);
         expect(res.status).toBe(500);
       });
@@ -1259,13 +1252,14 @@ describe("Kitchen Task Commands", () => {
         mockAuth();
         mockSuccessfulRunCommand({ id: "kt-1" });
 
-        const req = createMockRequest(
-          `http://localhost:3000${cmd.url}`,
-          { method: "POST", body: JSON.stringify({}) },
-        );
+        const req = createMockRequest(`http://localhost:3000${cmd.url}`, {
+          method: "POST",
+          body: JSON.stringify({}),
+        });
         await cmd.handler(req);
 
-        const runtimeCall = vi.mocked(createManifestRuntime).mock.calls[0][0] as {
+        const runtimeCall = vi.mocked(createManifestRuntime).mock
+          .calls[0][0] as {
           user: { id: string; tenantId: string };
         };
         expect(runtimeCall.user.tenantId).toBe(TEST_TENANT_ID);
@@ -1290,7 +1284,7 @@ describe("Tenant Isolation Across Operations", () => {
     vi.mocked(database.event.count).mockResolvedValue(0);
 
     const req = createMockRequest(
-      "http://localhost:3000/api/search?q=test&type=events",
+      "http://localhost:3000/api/search?q=test&type=events"
     );
     await searchGet(req);
 
@@ -1315,7 +1309,7 @@ describe("Tenant Isolation Across Operations", () => {
           documentId: "doc-1",
           content: "test",
         }),
-      },
+      }
     );
     await docVersionCreate(req);
 
@@ -1329,13 +1323,10 @@ describe("Tenant Isolation Across Operations", () => {
     mockAuth();
     mockSuccessfulRunCommand({ id: "wf-1" });
 
-    const req = createMockRequest(
-      "http://localhost:3000/api/workflow/create",
-      {
-        method: "POST",
-        body: JSON.stringify({ name: "test" }),
-      },
-    );
+    const req = createMockRequest("http://localhost:3000/api/workflow/create", {
+      method: "POST",
+      body: JSON.stringify({ name: "test" }),
+    });
     await workflowCreate(req);
 
     const runtimeCall = vi.mocked(createManifestRuntime).mock.calls[0][0] as {
@@ -1353,7 +1344,7 @@ describe("Tenant Isolation Across Operations", () => {
       {
         method: "POST",
         body: JSON.stringify({ title: "prep" }),
-      },
+      }
     );
     await ktCreate(req);
 
@@ -1372,7 +1363,7 @@ describe("Tenant Isolation Across Operations", () => {
       {
         method: "POST",
         body: JSON.stringify({ name: "opt-run" }),
-      },
+      }
     );
     await wfOptCreate(req);
 

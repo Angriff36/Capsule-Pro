@@ -30,6 +30,10 @@ import type * as React from "react";
  *   </PageCanvas>
  */
 
+/** Light paper shell; semantic colors re-scoped via .editorial-surface-reset (dark-mode safe). */
+const OPERATIONAL_SHELL_CLASS =
+  "editorial-surface-reset flex flex-1 flex-col gap-12 bg-background px-4 pt-2 pb-28 text-foreground sm:px-6 lg:px-10";
+
 /* -------------------------------------------------------------------------- */
 /*  Outer canvas                                                              */
 /* -------------------------------------------------------------------------- */
@@ -37,10 +41,7 @@ import type * as React from "react";
 function PageCanvas({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
-      className={cn(
-        "flex flex-1 flex-col gap-8 bg-canvas px-4 pt-0 pb-10 sm:px-6 lg:px-10",
-        className
-      )}
+      className={cn(OPERATIONAL_SHELL_CLASS, className)}
       data-slot="page-canvas"
       {...props}
     />
@@ -59,10 +60,10 @@ function MonoLabel({ className, tone = "muted", ...props }: MonoLabelProps) {
   return (
     <span
       className={cn(
-        "font-mono text-[11px] uppercase tracking-[0.28em]",
-        tone === "dark" && "text-white/60",
-        tone === "light" && "text-white",
-        tone === "muted" && "text-muted-foreground",
+        "font-mono uppercase tracking-[0.28em]",
+        tone === "dark" && "text-[12px] text-white/60",
+        tone === "muted" && "text-[11px] text-muted-foreground",
+        tone === "light" && "text-[11px] text-white",
         className
       )}
       data-slot="mono-label"
@@ -89,7 +90,7 @@ function DisplayHeading({
   return (
     <Tag
       className={cn(
-        "font-normal leading-[1.05] tracking-[-0.02em]",
+        "font-display font-normal leading-[1.05] tracking-[-0.02em]",
         size === "lg" && "text-4xl sm:text-5xl",
         size === "md" && "text-3xl sm:text-4xl",
         className
@@ -116,7 +117,7 @@ function CommandBand({
   return (
     <section
       className={cn(
-        "relative overflow-hidden rounded-[22px] border px-6 py-10 text-white sm:px-10 sm:py-14",
+        "relative flex flex-col gap-10 overflow-hidden rounded-[22px] border px-6 py-10 text-white sm:px-10 sm:py-14",
         tone === "deep-green" && "border-deep-green bg-deep-green",
         tone === "navy" && "border-dark-navy bg-dark-navy",
         tone === "ink" && "border-ink bg-ink",
@@ -135,7 +136,7 @@ function CommandBandHeader({
   return (
     <header
       className={cn(
-        "flex flex-wrap items-start justify-between gap-6",
+        "flex flex-wrap items-end justify-between gap-6 lg:gap-8",
         className
       )}
       data-slot="command-band-header"
@@ -147,7 +148,7 @@ function CommandBandHeader({
 function CommandBandBody({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
-      className={cn("mt-8 space-y-8", className)}
+      className={cn("space-y-8", className)}
       data-slot="command-band-body"
       {...props}
     />
@@ -223,7 +224,7 @@ function MetricCell({
   return (
     <div
       className={cn(
-        "flex flex-col gap-3 p-6",
+        "flex flex-col gap-4 p-6",
         surface === "dark" ? "bg-deep-green text-white" : "bg-canvas text-ink",
         className
       )}
@@ -242,7 +243,7 @@ function MetricLabel({
     <div
       className={cn(
         "font-mono text-[11px] uppercase tracking-[0.28em]",
-        surface === "dark" ? "text-white/60" : "text-muted-foreground",
+        surface === "dark" ? "text-white/55" : "text-muted-foreground",
         className
       )}
       data-slot="metric-label"
@@ -259,7 +260,7 @@ function MetricValue({
   return (
     <div
       className={cn(
-        "font-normal text-3xl leading-[1.05] tracking-[-0.02em] sm:text-4xl",
+        "font-normal text-5xl leading-none tracking-[-0.02em]",
         surface === "dark" ? "text-white" : "text-ink",
         className
       )}
@@ -277,8 +278,8 @@ function MetricDelta({
   return (
     <div
       className={cn(
-        "text-xs",
-        surface === "dark" ? "text-white/70" : "text-muted-foreground",
+        "text-[12px] leading-relaxed",
+        surface === "dark" ? "text-white/55" : "text-muted-foreground",
         className
       )}
       data-slot="metric-delta"
@@ -299,9 +300,8 @@ function PageBody({ className, variant = "single", ...props }: PageBodyProps) {
   return (
     <div
       className={cn(
-        "grid gap-8",
-        variant === "rail" &&
-          "lg:grid-cols-[minmax(280px,320px)_minmax(0,1fr)]",
+        "grid gap-10",
+        variant === "rail" && "lg:grid-cols-[300px_1fr]",
         className
       )}
       data-slot="page-body"
@@ -392,25 +392,30 @@ function SectionHeader({
       data-slot="section-header"
       {...props}
     >
-      <div className="space-y-2">
+      <div>
         {eyebrow ? (
           <div className="font-mono text-[11px] uppercase tracking-[0.28em] text-muted-foreground">
             {eyebrow}
           </div>
         ) : null}
-        <h3 className="flex items-center gap-2 font-normal text-2xl leading-[1.1] tracking-[-0.01em] text-ink sm:text-3xl">
+        <h3
+          className={cn(
+            "flex items-center gap-2 font-normal text-3xl leading-tight tracking-[-0.01em] text-ink",
+            eyebrow ? "mt-1" : null
+          )}
+        >
           {icon ? <span className="text-muted-foreground">{icon}</span> : null}
           {title}
         </h3>
         {description ? (
-          <p className="max-w-2xl text-sm text-muted-foreground">
+          <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-muted-foreground">
             {description}
           </p>
         ) : null}
       </div>
       <div className="flex items-center gap-3">
         {count !== undefined && count !== null ? (
-          <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+          <span className="rounded-full border border-hairline bg-canvas px-3 py-1 font-mono text-[11px] uppercase tracking-[0.18em] text-ink">
             {count}
           </span>
         ) : null}
@@ -486,6 +491,195 @@ function StatusPill({ className, ...props }: React.ComponentProps<"span">) {
 }
 
 /* -------------------------------------------------------------------------- */
+/*  Kitchen Dashboard parity — events › kitchen-dashboard layout chrome        */
+/* -------------------------------------------------------------------------- */
+
+/** Editorial canvas alias — identical shell to PageCanvas */
+function KitchenOperationalCanvas({
+  className,
+  ...props
+}: React.ComponentProps<"div">) {
+  return (
+    <div
+      className={cn(OPERATIONAL_SHELL_CLASS, className)}
+      data-slot="kitchen-operational-canvas"
+      {...props}
+    />
+  );
+}
+
+interface KitchenOperationalHeroProps {
+  eyebrow: string;
+  title: React.ReactNode;
+  lede: React.ReactNode;
+  actions?: React.ReactNode;
+  /** Optional row beneath the headline (e.g. quick-filter toggles) */
+  ancillaryRow?: React.ReactNode;
+  /** Typically `<KitchenOperationalMetricTiles>...</KitchenOperationalMetricTiles>` */
+  metrics: React.ReactNode;
+}
+
+/** Forest-green hero strip — parity with events › kitchen-dashboard */
+function KitchenOperationalHero({
+  eyebrow,
+  title,
+  lede,
+  actions,
+  ancillaryRow,
+  metrics,
+}: KitchenOperationalHeroProps) {
+  return (
+    <section
+      className="overflow-hidden rounded-[22px] border border-[#003c33] bg-[#003c33] text-white"
+      data-slot="kitchen-operational-hero"
+    >
+      <div className="space-y-10 px-6 py-10 sm:px-10 sm:py-14">
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+          <div className="max-w-2xl space-y-4">
+            <p className="font-mono text-[12px] uppercase tracking-[0.28em] text-white/60">
+              {eyebrow}
+            </p>
+            <h2 className="font-display font-normal text-4xl leading-[1.05] tracking-[-0.02em] sm:text-5xl">
+              {title}
+            </h2>
+            <p className="max-w-xl text-base leading-relaxed text-white/70">
+              {lede}
+            </p>
+          </div>
+          {actions !== undefined ? (
+            <div className="flex flex-wrap items-center gap-3">{actions}</div>
+          ) : null}
+        </div>
+        {ancillaryRow !== undefined ? ancillaryRow : null}
+        {metrics}
+      </div>
+    </section>
+  );
+}
+
+function KitchenOperationalMetricTiles({
+  className,
+  children,
+}: {
+  className?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section
+      className={cn(
+        "grid gap-px overflow-hidden rounded-[16px] border border-white/15 bg-white/15 sm:grid-cols-2 xl:grid-cols-4",
+        className
+      )}
+      data-slot="kitchen-operational-metric-tiles"
+    >
+      {children}
+    </section>
+  );
+}
+
+type KitchenOperationalMetricAccent = "default" | "coral";
+
+function KitchenOperationalMetricTile({
+  label,
+  value,
+  caption,
+  accent = "default",
+}: {
+  label: string;
+  value: React.ReactNode;
+  caption: string;
+  accent?: KitchenOperationalMetricAccent;
+}) {
+  return (
+    <div className="flex flex-col gap-4 bg-[#003c33] p-6">
+      <p
+        className={cn(
+          "font-mono text-[11px] uppercase tracking-[0.28em]",
+          accent === "coral" ? "text-[#ffad9b]" : "text-white/55"
+        )}
+      >
+        {label}
+      </p>
+      <p
+        className={cn(
+          "font-normal text-5xl leading-none tracking-[-0.02em]",
+          accent === "coral" ? "text-[#ff7759]" : "text-white"
+        )}
+      >
+        {value}
+      </p>
+      <p className="text-[12px] text-white/55">{caption}</p>
+    </div>
+  );
+}
+
+function KitchenDashboardFilterAside({
+  className,
+  children,
+  ...props
+}: React.ComponentProps<"aside">) {
+  return (
+    <aside className={cn("w-full min-w-0", className)} {...props}>
+      <div className="sticky top-6 rounded-[16px] border border-hairline bg-soft-stone p-6">
+        <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-muted-foreground">
+          Filters
+        </p>
+        <h3 className="mt-2 font-normal text-2xl leading-tight tracking-[-0.01em] text-ink">
+          Refine the view.
+        </h3>
+        <div className="mt-6 border-hairline border-t pt-6">{children}</div>
+      </div>
+    </aside>
+  );
+}
+
+interface KitchenOperationalSectionLeadProps {
+  eyebrow: string;
+  title: string;
+  subtitle?: React.ReactNode;
+  countBadge?: React.ReactNode;
+}
+
+/** Section title row matching kitchen-dashboard "Live operations / In window now" rhythm */
+function KitchenOperationalSectionLead({
+  className,
+  eyebrow,
+  title,
+  subtitle,
+  countBadge,
+}: KitchenOperationalSectionLeadProps &
+  Pick<React.ComponentProps<"div">, "className">) {
+  return (
+    <div
+      className={cn(
+        "flex flex-wrap items-end justify-between gap-4 border-hairline border-b pb-4",
+        className
+      )}
+      data-slot="kitchen-section-lead"
+    >
+      <div>
+        <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-muted-foreground">
+          {eyebrow}
+        </p>
+        <h3 className="mt-1 font-normal text-3xl leading-tight tracking-[-0.01em] text-ink">
+          {title}
+        </h3>
+        {subtitle !== undefined ? (
+          <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-muted-foreground">
+            {subtitle}
+          </p>
+        ) : null}
+      </div>
+      {countBadge !== undefined ? (
+        <span className="rounded-full border border-hairline bg-canvas px-3 py-1 font-mono text-[11px] uppercase tracking-[0.18em] text-ink">
+          {countBadge}
+        </span>
+      ) : null}
+    </div>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
 
 export {
   PageCanvas,
@@ -510,4 +704,10 @@ export {
   OperationalRow,
   OperationalLine,
   StatusPill,
+  KitchenOperationalCanvas,
+  KitchenOperationalHero,
+  KitchenOperationalMetricTile,
+  KitchenOperationalMetricTiles,
+  KitchenDashboardFilterAside,
+  KitchenOperationalSectionLead,
 };

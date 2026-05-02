@@ -90,8 +90,8 @@ export function KitchenNavigation() {
   const pathname = usePathname() ?? "";
 
   return (
-    <nav className="border-slate-200 border-b bg-white/50 backdrop-blur-sm">
-      <div className="flex flex-wrap items-center gap-2 px-6 py-3">
+    <nav className="-mx-4 border-hairline border-b bg-background/50 px-4 backdrop-blur-sm sm:-mx-6 sm:px-6 lg:-mx-10 lg:px-10">
+      <div className="flex flex-wrap items-center gap-2 py-3">
         {navigationItems.map((item) => {
           const Icon = item.icon;
           const isActive =

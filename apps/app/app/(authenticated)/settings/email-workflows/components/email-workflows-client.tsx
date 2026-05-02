@@ -1,12 +1,5 @@
 "use client";
 
-import {
-  TRIGGER_TYPE_LABELS,
-  deleteEmailWorkflow,
-  getEmailWorkflows,
-  toggleEmailWorkflow,
-} from "../actions";
-import type { EmailTriggerType, EmailWorkflowRow } from "../actions";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Card } from "@repo/design-system/components/ui/card";
@@ -22,9 +15,7 @@ import { Input } from "@repo/design-system/components/ui/input";
 import {
   Select,
   SelectContent,
-  SelectGroup,
   SelectItem,
-  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
@@ -38,9 +29,6 @@ import {
   TableRow,
 } from "@repo/design-system/components/ui/table";
 import {
-  ArrowDownIcon,
-  ArrowUpIcon,
-  CalendarIcon,
   FilterIcon,
   Loader2Icon,
   MailIcon,
@@ -54,6 +42,13 @@ import {
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+import type { EmailTriggerType, EmailWorkflowRow } from "../actions";
+import {
+  deleteEmailWorkflow,
+  getEmailWorkflows,
+  TRIGGER_TYPE_LABELS,
+  toggleEmailWorkflow,
+} from "../actions";
 
 export function EmailWorkflowsClient() {
   const [workflows, setWorkflows] = useState<EmailWorkflowRow[]>([]);
@@ -61,7 +56,9 @@ export function EmailWorkflowsClient() {
   const [search, setSearch] = useState("");
   const [triggerFilter, setTriggerFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [deleteTarget, setDeleteTarget] = useState<EmailWorkflowRow | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<EmailWorkflowRow | null>(
+    null
+  );
   const [deleting, setDeleting] = useState(false);
   const [togglingId, setTogglingId] = useState<string | null>(null);
 
@@ -70,7 +67,8 @@ export function EmailWorkflowsClient() {
     try {
       const filters: Parameters<typeof getEmailWorkflows>[0] = {};
       if (search) filters.search = search;
-      if (triggerFilter !== "all") filters.triggerType = triggerFilter as EmailTriggerType;
+      if (triggerFilter !== "all")
+        filters.triggerType = triggerFilter as EmailTriggerType;
       if (statusFilter === "active") filters.isActive = true;
       if (statusFilter === "inactive") filters.isActive = false;
 
@@ -286,7 +284,8 @@ export function EmailWorkflowsClient() {
                     </TableCell>
                     <TableCell>
                       <Badge variant="outline">
-                        {TRIGGER_TYPE_LABELS[workflow.triggerType] ?? workflow.triggerType}
+                        {TRIGGER_TYPE_LABELS[workflow.triggerType] ??
+                          workflow.triggerType}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-muted-foreground">
@@ -301,7 +300,9 @@ export function EmailWorkflowsClient() {
                     </TableCell>
                     <TableCell className="text-muted-foreground">
                       {workflow.lastTriggeredAt
-                        ? new Date(workflow.lastTriggeredAt).toLocaleDateString()
+                        ? new Date(
+                            workflow.lastTriggeredAt
+                          ).toLocaleDateString()
                         : "Never"}
                     </TableCell>
                     <TableCell className="text-right">
@@ -324,7 +325,9 @@ export function EmailWorkflowsClient() {
                           size="sm"
                           variant="ghost"
                         >
-                          <Link href={`/settings/email-workflows/${workflow.id}`}>
+                          <Link
+                            href={`/settings/email-workflows/${workflow.id}`}
+                          >
                             <PencilIcon className="h-4 w-4" />
                           </Link>
                         </Button>
@@ -358,8 +361,8 @@ export function EmailWorkflowsClient() {
           <DialogHeader>
             <DialogTitle>Delete workflow?</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete "{deleteTarget?.name}"? This action
-              cannot be undone. The workflow will be permanently removed.
+              Are you sure you want to delete "{deleteTarget?.name}"? This
+              action cannot be undone. The workflow will be permanently removed.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -371,7 +374,9 @@ export function EmailWorkflowsClient() {
               onClick={handleDelete}
               variant="destructive"
             >
-              {deleting && <Loader2Icon className="h-4 w-4 mr-2 animate-spin" />}
+              {deleting && (
+                <Loader2Icon className="h-4 w-4 mr-2 animate-spin" />
+              )}
               Delete
             </Button>
           </DialogFooter>

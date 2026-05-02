@@ -298,10 +298,7 @@ function generateFallbackTasks(
   ];
 
   const groups: TaskGroup[] = [];
-  const categoryGroups = new Map<
-    string,
-    typeof eventDishes
-  >();
+  const categoryGroups = new Map<string, typeof eventDishes>();
 
   for (const ed of eventDishes) {
     if (!ed.dish) continue;
@@ -323,8 +320,7 @@ function generateFallbackTasks(
     ) {
       stationType = "hot-line";
       stationName =
-        stations.find((s) => s.stationType === "hot-line")?.name ??
-        "Hot Line";
+        stations.find((s) => s.stationType === "hot-line")?.name ?? "Hot Line";
     } else if (
       category.toLowerCase().includes("cold") ||
       category.toLowerCase().includes("salad") ||
@@ -460,16 +456,10 @@ export async function POST(request: Request) {
 
     if (error instanceof Error) {
       if (error.message === "Event not found") {
-        return NextResponse.json(
-          { message: error.message },
-          { status: 404 }
-        );
+        return NextResponse.json({ message: error.message }, { status: 404 });
       }
       if (error.message.includes("must have")) {
-        return NextResponse.json(
-          { message: error.message },
-          { status: 400 }
-        );
+        return NextResponse.json({ message: error.message }, { status: 400 });
       }
     }
 

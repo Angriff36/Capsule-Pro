@@ -28,23 +28,22 @@ import {
   TabsTrigger,
 } from "@repo/design-system/components/ui/tabs";
 import {
+  AlertCircle,
   AlertTriangle,
   ArrowRight,
   Brain,
   Calendar,
   CheckCircle2,
   Clock,
-  ExternalLink,
+  FileText,
   Lightbulb,
+  ListChecks,
   Loader2,
   Sparkles,
-  AlertCircle,
-  FileText,
-  ListChecks,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
 import { apiFetch } from "@/app/lib/api";
 import { BulkTaskGeneratorTab } from "./bulk-task-generator";
 
@@ -264,7 +263,9 @@ function SuggestionsTab() {
   );
 
   const activeSuggestions = data?.suggestions.filter((s) => !s.dismissed) ?? [];
-  const highCount = activeSuggestions.filter((s) => s.priority === "high").length;
+  const highCount = activeSuggestions.filter(
+    (s) => s.priority === "high"
+  ).length;
 
   return (
     <div className="space-y-6">
@@ -276,16 +277,16 @@ function SuggestionsTab() {
             {TIMEFRAMES.map((tf) => (
               <Button
                 key={tf.value}
-                variant={timeframe === tf.value ? "default" : "outline"}
-                size="sm"
                 onClick={() => setTimeframe(tf.value)}
+                size="sm"
+                variant={timeframe === tf.value ? "default" : "outline"}
               >
                 {tf.label}
               </Button>
             ))}
           </div>
         </div>
-        <Button onClick={fetchSuggestions} disabled={loading}>
+        <Button disabled={loading} onClick={fetchSuggestions}>
           {loading ? (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
           ) : (
@@ -309,24 +310,24 @@ function SuggestionsTab() {
       {data?.context && (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <StatCard
+            icon={Lightbulb}
             label="Total Suggestions"
             value={activeSuggestions.length}
-            icon={Lightbulb}
           />
           <StatCard
+            icon={AlertTriangle}
             label="High Priority"
             value={highCount}
-            icon={AlertTriangle}
           />
           <StatCard
+            icon={Calendar}
             label="Events"
             value={data.context.totalEvents}
-            icon={Calendar}
           />
           <StatCard
+            icon={Clock}
             label="Incomplete Tasks"
             value={data.context.incompleteTasks}
-            icon={Clock}
           />
         </div>
       )}
@@ -363,8 +364,8 @@ function SuggestionsTab() {
                 <CardTitle className="text-base">{suggestion.title}</CardTitle>
                 <div className="flex flex-wrap gap-1.5">
                   <Badge
-                    variant={priorityVariant(suggestion.priority)}
                     className="gap-1"
+                    variant={priorityVariant(suggestion.priority)}
                   >
                     {priorityIcon(suggestion.priority)}
                     {suggestion.priority}
@@ -389,9 +390,9 @@ function SuggestionsTab() {
               </p>
               {suggestion.action.type === "navigate" && (
                 <Button
+                  onClick={() => handleAction(suggestion.action)}
                   size="sm"
                   variant="outline"
-                  onClick={() => handleAction(suggestion.action)}
                 >
                   <ArrowRight className="mr-1.5 h-3.5 w-3.5" />
                   Take Action
@@ -410,7 +411,7 @@ function SuggestionsTab() {
       )}
 
       {/* Empty initial state */}
-      {!data && !loading && !error && (
+      {!(data || loading || error) && (
         <Card>
           <CardContent className="flex flex-col items-center gap-2 py-16">
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
@@ -418,8 +419,8 @@ function SuggestionsTab() {
             </div>
             <p className="mt-2 text-sm font-medium">No suggestions yet</p>
             <p className="text-sm text-muted-foreground">
-              Select a timeframe and click &quot;Generate Suggestions&quot; to get
-              AI-powered recommendations.
+              Select a timeframe and click &quot;Generate Suggestions&quot; to
+              get AI-powered recommendations.
             </p>
           </CardContent>
         </Card>
@@ -448,7 +449,9 @@ function EventSummariesTab() {
     setError(null);
     setSummary(null);
     try {
-      const res = await apiFetch(`/api/ai/summaries/${encodeURIComponent(trimmed)}`);
+      const res = await apiFetch(
+        `/api/ai/summaries/${encodeURIComponent(trimmed)}`
+      );
       if (!res.ok) {
         throw new Error(`Request failed with status ${res.status}`);
       }
@@ -473,17 +476,17 @@ function EventSummariesTab() {
           <Label htmlFor="event-id-input">Event ID</Label>
           <Input
             id="event-id-input"
-            placeholder="Enter event ID..."
-            value={eventId}
             onChange={(e) => setEventId(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter") {
                 generateSummary();
               }
             }}
+            placeholder="Enter event ID..."
+            value={eventId}
           />
         </div>
-        <Button onClick={generateSummary} disabled={loading}>
+        <Button disabled={loading} onClick={generateSummary}>
           {loading ? (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
           ) : (
@@ -511,7 +514,8 @@ function EventSummariesTab() {
             <div className="text-center">
               <p className="text-sm font-medium">Generating summary...</p>
               <p className="text-xs text-muted-foreground">
-                This may take a few seconds while the AI analyzes the event data.
+                This may take a few seconds while the AI analyzes the event
+                data.
               </p>
             </div>
           </CardContent>
@@ -539,7 +543,7 @@ function EventSummariesTab() {
                     })}
                   </CardDescription>
                 </div>
-                <Badge variant="outline" className="gap-1">
+                <Badge className="gap-1" variant="outline">
                   <Sparkles className="h-3 w-3" />
                   {summary.model}
                 </Badge>
@@ -569,7 +573,7 @@ function EventSummariesTab() {
               <CardContent>
                 <ul className="space-y-2">
                   {summary.highlights.map((highlight, i) => (
-                    <li key={i} className="flex items-start gap-2 text-sm">
+                    <li className="flex items-start gap-2 text-sm" key={i}>
                       <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-green-600" />
                       <span>{highlight}</span>
                     </li>
@@ -592,8 +596,8 @@ function EventSummariesTab() {
                 <ul className="space-y-2">
                   {summary.criticalInfo.map((info, i) => (
                     <li
-                      key={i}
                       className="flex items-start gap-2 text-sm text-amber-900"
+                      key={i}
                     >
                       <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-600" />
                       <span>{info}</span>
@@ -607,7 +611,7 @@ function EventSummariesTab() {
       )}
 
       {/* Empty initial state */}
-      {!summary && !loading && !error && (
+      {!(summary || loading || error) && (
         <Card>
           <CardContent className="flex flex-col items-center gap-2 py-16">
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
@@ -615,8 +619,8 @@ function EventSummariesTab() {
             </div>
             <p className="mt-2 text-sm font-medium">No summary generated</p>
             <p className="text-sm text-muted-foreground">
-              Enter an event ID and click &quot;Generate Summary&quot; to create an
-              AI-powered event summary.
+              Enter an event ID and click &quot;Generate Summary&quot; to create
+              an AI-powered event summary.
             </p>
           </CardContent>
         </Card>
@@ -631,31 +635,31 @@ function EventSummariesTab() {
 
 export function AiClient() {
   return (
-    <Tabs defaultValue="suggestions" className="w-full">
+    <Tabs className="w-full" defaultValue="suggestions">
       <TabsList>
-        <TabsTrigger value="suggestions" className="gap-1.5">
+        <TabsTrigger className="gap-1.5" value="suggestions">
           <Lightbulb className="h-3.5 w-3.5" />
           AI Suggestions
         </TabsTrigger>
-        <TabsTrigger value="summaries" className="gap-1.5">
+        <TabsTrigger className="gap-1.5" value="summaries">
           <FileText className="h-3.5 w-3.5" />
           Event Summaries
         </TabsTrigger>
-        <TabsTrigger value="bulk-tasks" className="gap-1.5">
+        <TabsTrigger className="gap-1.5" value="bulk-tasks">
           <ListChecks className="h-3.5 w-3.5" />
           Task Generator
         </TabsTrigger>
       </TabsList>
 
-      <TabsContent value="suggestions" className="mt-6">
+      <TabsContent className="mt-6" value="suggestions">
         <SuggestionsTab />
       </TabsContent>
 
-      <TabsContent value="summaries" className="mt-6">
+      <TabsContent className="mt-6" value="summaries">
         <EventSummariesTab />
       </TabsContent>
 
-      <TabsContent value="bulk-tasks" className="mt-6">
+      <TabsContent className="mt-6" value="bulk-tasks">
         <BulkTaskGeneratorTab />
       </TabsContent>
     </Tabs>

@@ -39,11 +39,11 @@ const { getTenantIdForOrg, requireCurrentUser } = await import(
 
 // --- Route imports ---
 
-import { POST as createTransfer } from "@/app/api/inventory/transfers/commands/create/route";
 import { POST as approveTransfer } from "@/app/api/inventory/transfers/commands/approve/route";
 import { POST as cancelTransfer } from "@/app/api/inventory/transfers/commands/cancel/route";
-import { POST as shipTransfer } from "@/app/api/inventory/transfers/commands/ship/route";
+import { POST as createTransfer } from "@/app/api/inventory/transfers/commands/create/route";
 import { POST as receiveTransfer } from "@/app/api/inventory/transfers/commands/receive/route";
+import { POST as shipTransfer } from "@/app/api/inventory/transfers/commands/ship/route";
 import { GET as listTransfers } from "@/app/api/inventory/transfers/list/route";
 
 // --- Constants ---
@@ -126,7 +126,11 @@ describe("Inventory Transfers API", () => {
 
       const request = buildPostRequest(
         "http://localhost/api/inventory/transfers/commands/create",
-        { fromLocationId: "a", toLocationId: "b", items: [{ itemId: "i1", quantity: 1 }] },
+        {
+          fromLocationId: "a",
+          toLocationId: "b",
+          items: [{ itemId: "i1", quantity: 1 }],
+        }
       );
       const response = await createTransfer(request);
 
@@ -140,7 +144,7 @@ describe("Inventory Transfers API", () => {
 
       const request = buildPostRequest(
         "http://localhost/api/inventory/transfers/commands/create",
-        { toLocationId: "b", items: [{ itemId: "i1", quantity: 1 }] },
+        { toLocationId: "b", items: [{ itemId: "i1", quantity: 1 }] }
       );
       const response = await createTransfer(request);
 
@@ -154,7 +158,7 @@ describe("Inventory Transfers API", () => {
 
       const request = buildPostRequest(
         "http://localhost/api/inventory/transfers/commands/create",
-        { fromLocationId: "a", items: [{ itemId: "i1", quantity: 1 }] },
+        { fromLocationId: "a", items: [{ itemId: "i1", quantity: 1 }] }
       );
       const response = await createTransfer(request);
 
@@ -168,7 +172,7 @@ describe("Inventory Transfers API", () => {
 
       const request = buildPostRequest(
         "http://localhost/api/inventory/transfers/commands/create",
-        { fromLocationId: "a", toLocationId: "b", items: [] },
+        { fromLocationId: "a", toLocationId: "b", items: [] }
       );
       const response = await createTransfer(request);
 
@@ -182,7 +186,7 @@ describe("Inventory Transfers API", () => {
 
       const request = buildPostRequest(
         "http://localhost/api/inventory/transfers/commands/create",
-        { fromLocationId: "a", toLocationId: "b", items: "not-array" },
+        { fromLocationId: "a", toLocationId: "b", items: "not-array" }
       );
       const response = await createTransfer(request);
 
@@ -194,9 +198,11 @@ describe("Inventory Transfers API", () => {
     it("creates a transfer with zero-padded transferNumber and persists items in a transaction", async () => {
       mockCurrentUser();
 
-      const transferCreateMock = vi.fn().mockResolvedValue(
-        createMockTransfer({ transferNumber: "TRF-000004" }),
-      );
+      const transferCreateMock = vi
+        .fn()
+        .mockResolvedValue(
+          createMockTransfer({ transferNumber: "TRF-000004" })
+        );
       const itemCreateMock = vi.fn().mockResolvedValue({});
       vi.mocked(database.inventoryTransfer.count).mockResolvedValue(3 as never);
       vi.mocked(database.$transaction).mockImplementation(
@@ -206,7 +212,7 @@ describe("Inventory Transfers API", () => {
             inventoryTransferItem: { create: itemCreateMock },
           };
           return await (fn as (t: unknown) => unknown)(tx);
-        },
+        }
       );
 
       const request = buildPostRequest(
@@ -219,7 +225,7 @@ describe("Inventory Transfers API", () => {
             { itemId: "i1", quantity: 5, notes: "n1" },
             { itemId: "i2", quantity: 2 },
           ],
-        },
+        }
       );
       const response = await createTransfer(request);
 
@@ -253,7 +259,7 @@ describe("Inventory Transfers API", () => {
     it("returns 500 on database error", async () => {
       mockCurrentUser();
       vi.mocked(database.inventoryTransfer.count).mockRejectedValue(
-        new Error("DB down"),
+        new Error("DB down")
       );
 
       const request = buildPostRequest(
@@ -262,7 +268,7 @@ describe("Inventory Transfers API", () => {
           fromLocationId: "a",
           toLocationId: "b",
           items: [{ itemId: "i1", quantity: 1 }],
-        },
+        }
       );
       const response = await createTransfer(request);
 
@@ -282,7 +288,7 @@ describe("Inventory Transfers API", () => {
 
       const request = buildPostRequest(
         "http://localhost/api/inventory/transfers/commands/approve",
-        { transferId: "t1" },
+        { transferId: "t1" }
       );
       const response = await approveTransfer(request);
 
@@ -300,7 +306,7 @@ describe("Inventory Transfers API", () => {
 
       const request = buildPostRequest(
         "http://localhost/api/inventory/transfers/commands/approve",
-        { transferId: "t1" },
+        { transferId: "t1" }
       );
       const response = await approveTransfer(request);
 
@@ -314,7 +320,7 @@ describe("Inventory Transfers API", () => {
 
       const request = buildPostRequest(
         "http://localhost/api/inventory/transfers/commands/approve",
-        {},
+        {}
       );
       const response = await approveTransfer(request);
 
@@ -326,12 +332,12 @@ describe("Inventory Transfers API", () => {
     it("returns 404 when transfer not found", async () => {
       mockAuthOrg();
       vi.mocked(database.inventoryTransfer.findFirst).mockResolvedValue(
-        null as never,
+        null as never
       );
 
       const request = buildPostRequest(
         "http://localhost/api/inventory/transfers/commands/approve",
-        { transferId: "missing" },
+        { transferId: "missing" }
       );
       const response = await approveTransfer(request);
 
@@ -343,12 +349,12 @@ describe("Inventory Transfers API", () => {
     it("returns 400 when transfer is not pending", async () => {
       mockAuthOrg();
       vi.mocked(database.inventoryTransfer.findFirst).mockResolvedValue(
-        createMockTransfer({ status: "approved" }) as never,
+        createMockTransfer({ status: "approved" }) as never
       );
 
       const request = buildPostRequest(
         "http://localhost/api/inventory/transfers/commands/approve",
-        { transferId: "t1" },
+        { transferId: "t1" }
       );
       const response = await approveTransfer(request);
 
@@ -360,19 +366,19 @@ describe("Inventory Transfers API", () => {
     it("approves a pending transfer and stamps approvedAt", async () => {
       mockAuthOrg();
       vi.mocked(database.inventoryTransfer.findFirst).mockResolvedValue(
-        createMockTransfer({ status: "pending" }) as never,
+        createMockTransfer({ status: "pending" }) as never
       );
       const updated = createMockTransfer({
         status: "approved",
         approvedAt: new Date("2026-04-02"),
       });
       vi.mocked(database.inventoryTransfer.update).mockResolvedValue(
-        updated as never,
+        updated as never
       );
 
       const request = buildPostRequest(
         "http://localhost/api/inventory/transfers/commands/approve",
-        { transferId: "transfer-001" },
+        { transferId: "transfer-001" }
       );
       const response = await approveTransfer(request);
 
@@ -383,24 +389,26 @@ describe("Inventory Transfers API", () => {
 
       expect(database.inventoryTransfer.update).toHaveBeenCalledWith(
         expect.objectContaining({
-          where: { tenantId_id: { tenantId: TEST_TENANT_ID, id: "transfer-001" } },
+          where: {
+            tenantId_id: { tenantId: TEST_TENANT_ID, id: "transfer-001" },
+          },
           data: expect.objectContaining({
             status: "approved",
             approvedAt: expect.any(Date),
           }),
-        }),
+        })
       );
     });
 
     it("returns 500 on database error", async () => {
       mockAuthOrg();
       vi.mocked(database.inventoryTransfer.findFirst).mockRejectedValue(
-        new Error("boom"),
+        new Error("boom")
       );
 
       const request = buildPostRequest(
         "http://localhost/api/inventory/transfers/commands/approve",
-        { transferId: "t1" },
+        { transferId: "t1" }
       );
       const response = await approveTransfer(request);
 
@@ -418,7 +426,7 @@ describe("Inventory Transfers API", () => {
 
       const request = buildPostRequest(
         "http://localhost/api/inventory/transfers/commands/ship",
-        { transferId: "t1" },
+        { transferId: "t1" }
       );
       const response = await shipTransfer(request);
 
@@ -434,7 +442,7 @@ describe("Inventory Transfers API", () => {
 
       const request = buildPostRequest(
         "http://localhost/api/inventory/transfers/commands/ship",
-        { transferId: "t1" },
+        { transferId: "t1" }
       );
       const response = await shipTransfer(request);
 
@@ -446,7 +454,7 @@ describe("Inventory Transfers API", () => {
 
       const request = buildPostRequest(
         "http://localhost/api/inventory/transfers/commands/ship",
-        {},
+        {}
       );
       const response = await shipTransfer(request);
 
@@ -456,12 +464,12 @@ describe("Inventory Transfers API", () => {
     it("returns 404 when transfer not found", async () => {
       mockAuthOrg();
       vi.mocked(database.inventoryTransfer.findFirst).mockResolvedValue(
-        null as never,
+        null as never
       );
 
       const request = buildPostRequest(
         "http://localhost/api/inventory/transfers/commands/ship",
-        { transferId: "missing" },
+        { transferId: "missing" }
       );
       const response = await shipTransfer(request);
 
@@ -471,12 +479,12 @@ describe("Inventory Transfers API", () => {
     it("returns 400 when transfer is not approved", async () => {
       mockAuthOrg();
       vi.mocked(database.inventoryTransfer.findFirst).mockResolvedValue(
-        createMockTransfer({ status: "pending" }) as never,
+        createMockTransfer({ status: "pending" }) as never
       );
 
       const request = buildPostRequest(
         "http://localhost/api/inventory/transfers/commands/ship",
-        { transferId: "t1" },
+        { transferId: "t1" }
       );
       const response = await shipTransfer(request);
 
@@ -486,30 +494,32 @@ describe("Inventory Transfers API", () => {
     it("ships an approved transfer and stamps shippedAt", async () => {
       mockAuthOrg();
       vi.mocked(database.inventoryTransfer.findFirst).mockResolvedValue(
-        createMockTransfer({ status: "approved" }) as never,
+        createMockTransfer({ status: "approved" }) as never
       );
       vi.mocked(database.inventoryTransfer.update).mockResolvedValue(
         createMockTransfer({
           status: "in_transit",
           shippedAt: new Date(),
-        }) as never,
+        }) as never
       );
 
       const request = buildPostRequest(
         "http://localhost/api/inventory/transfers/commands/ship",
-        { transferId: "transfer-001" },
+        { transferId: "transfer-001" }
       );
       const response = await shipTransfer(request);
 
       expect(response.status).toBe(200);
       expect(database.inventoryTransfer.update).toHaveBeenCalledWith(
         expect.objectContaining({
-          where: { tenantId_id: { tenantId: TEST_TENANT_ID, id: "transfer-001" } },
+          where: {
+            tenantId_id: { tenantId: TEST_TENANT_ID, id: "transfer-001" },
+          },
           data: expect.objectContaining({
             status: "in_transit",
             shippedAt: expect.any(Date),
           }),
-        }),
+        })
       );
     });
   });
@@ -524,7 +534,7 @@ describe("Inventory Transfers API", () => {
 
       const request = buildPostRequest(
         "http://localhost/api/inventory/transfers/commands/receive",
-        { transferId: "t1" },
+        { transferId: "t1" }
       );
       const response = await receiveTransfer(request);
 
@@ -540,7 +550,7 @@ describe("Inventory Transfers API", () => {
 
       const request = buildPostRequest(
         "http://localhost/api/inventory/transfers/commands/receive",
-        { transferId: "t1" },
+        { transferId: "t1" }
       );
       const response = await receiveTransfer(request);
 
@@ -552,7 +562,7 @@ describe("Inventory Transfers API", () => {
 
       const request = buildPostRequest(
         "http://localhost/api/inventory/transfers/commands/receive",
-        {},
+        {}
       );
       const response = await receiveTransfer(request);
 
@@ -562,12 +572,12 @@ describe("Inventory Transfers API", () => {
     it("returns 404 when transfer not found", async () => {
       mockAuthOrg();
       vi.mocked(database.inventoryTransfer.findFirst).mockResolvedValue(
-        null as never,
+        null as never
       );
 
       const request = buildPostRequest(
         "http://localhost/api/inventory/transfers/commands/receive",
-        { transferId: "missing" },
+        { transferId: "missing" }
       );
       const response = await receiveTransfer(request);
 
@@ -577,12 +587,12 @@ describe("Inventory Transfers API", () => {
     it("returns 400 when transfer is not in_transit", async () => {
       mockAuthOrg();
       vi.mocked(database.inventoryTransfer.findFirst).mockResolvedValue(
-        createMockTransfer({ status: "approved" }) as never,
+        createMockTransfer({ status: "approved" }) as never
       );
 
       const request = buildPostRequest(
         "http://localhost/api/inventory/transfers/commands/receive",
-        { transferId: "t1" },
+        { transferId: "t1" }
       );
       const response = await receiveTransfer(request);
 
@@ -597,12 +607,12 @@ describe("Inventory Transfers API", () => {
           fromLocationId: "loc-from",
           toLocationId: "loc-to",
           status: "in_transit",
-        }) as never,
+        }) as never
       );
 
-      const transferUpdateMock = vi.fn().mockResolvedValue(
-        createMockTransfer({ status: "completed" }),
-      );
+      const transferUpdateMock = vi
+        .fn()
+        .mockResolvedValue(createMockTransfer({ status: "completed" }));
       const itemUpdateManyMock = vi.fn().mockResolvedValue({ count: 1 });
       const txCreateMock = vi.fn().mockResolvedValue({});
 
@@ -614,7 +624,7 @@ describe("Inventory Transfers API", () => {
             inventoryTransaction: { create: txCreateMock },
           };
           return await (fn as (t: unknown) => unknown)(tx);
-        },
+        }
       );
 
       const request = buildPostRequest(
@@ -625,7 +635,7 @@ describe("Inventory Transfers API", () => {
             { itemId: "i1", receivedQuantity: 5 },
             { itemId: "i2", receivedQuantity: 3 },
           ],
-        },
+        }
       );
       const response = await receiveTransfer(request);
 
@@ -638,7 +648,7 @@ describe("Inventory Transfers API", () => {
       const positiveCalls = txCreateMock.mock.calls.filter(
         (call) =>
           (call[0] as { data: { transactionType: string } }).data
-            .transactionType === "transfer_in",
+            .transactionType === "transfer_in"
       );
       expect(positiveCalls.length).toBe(2);
       const firstPositive = positiveCalls[0][0] as {
@@ -651,7 +661,7 @@ describe("Inventory Transfers API", () => {
       const negativeCalls = txCreateMock.mock.calls.filter(
         (call) =>
           (call[0] as { data: { transactionType: string } }).data
-            .transactionType === "transfer_out",
+            .transactionType === "transfer_out"
       );
       expect(negativeCalls.length).toBe(2);
       const firstNegative = negativeCalls[0][0] as {
@@ -669,19 +679,19 @@ describe("Inventory Transfers API", () => {
             status: "completed",
             receivedAt: expect.any(Date),
           }),
-        }),
+        })
       );
     });
 
     it("handles empty receivedItems gracefully", async () => {
       mockAuthOrg();
       vi.mocked(database.inventoryTransfer.findFirst).mockResolvedValue(
-        createMockTransfer({ status: "in_transit" }) as never,
+        createMockTransfer({ status: "in_transit" }) as never
       );
 
-      const transferUpdateMock = vi.fn().mockResolvedValue(
-        createMockTransfer({ status: "completed" }),
-      );
+      const transferUpdateMock = vi
+        .fn()
+        .mockResolvedValue(createMockTransfer({ status: "completed" }));
       const txCreateMock = vi.fn().mockResolvedValue({});
       vi.mocked(database.$transaction).mockImplementation(
         async (fn: unknown) => {
@@ -691,12 +701,12 @@ describe("Inventory Transfers API", () => {
             inventoryTransaction: { create: txCreateMock },
           };
           return await (fn as (t: unknown) => unknown)(tx);
-        },
+        }
       );
 
       const request = buildPostRequest(
         "http://localhost/api/inventory/transfers/commands/receive",
-        { transferId: "transfer-001", receivedItems: [] },
+        { transferId: "transfer-001", receivedItems: [] }
       );
       const response = await receiveTransfer(request);
 
@@ -717,7 +727,7 @@ describe("Inventory Transfers API", () => {
 
       const request = buildPostRequest(
         "http://localhost/api/inventory/transfers/commands/cancel",
-        { transferId: "t1" },
+        { transferId: "t1" }
       );
       const response = await cancelTransfer(request);
 
@@ -733,7 +743,7 @@ describe("Inventory Transfers API", () => {
 
       const request = buildPostRequest(
         "http://localhost/api/inventory/transfers/commands/cancel",
-        { transferId: "t1" },
+        { transferId: "t1" }
       );
       const response = await cancelTransfer(request);
 
@@ -745,7 +755,7 @@ describe("Inventory Transfers API", () => {
 
       const request = buildPostRequest(
         "http://localhost/api/inventory/transfers/commands/cancel",
-        {},
+        {}
       );
       const response = await cancelTransfer(request);
 
@@ -755,12 +765,12 @@ describe("Inventory Transfers API", () => {
     it("returns 404 when transfer not found", async () => {
       mockAuthOrg();
       vi.mocked(database.inventoryTransfer.findFirst).mockResolvedValue(
-        null as never,
+        null as never
       );
 
       const request = buildPostRequest(
         "http://localhost/api/inventory/transfers/commands/cancel",
-        { transferId: "missing" },
+        { transferId: "missing" }
       );
       const response = await cancelTransfer(request);
 
@@ -770,12 +780,12 @@ describe("Inventory Transfers API", () => {
     it("returns 400 when transfer is in_transit (illegal cancel)", async () => {
       mockAuthOrg();
       vi.mocked(database.inventoryTransfer.findFirst).mockResolvedValue(
-        createMockTransfer({ status: "in_transit" }) as never,
+        createMockTransfer({ status: "in_transit" }) as never
       );
 
       const request = buildPostRequest(
         "http://localhost/api/inventory/transfers/commands/cancel",
-        { transferId: "t1" },
+        { transferId: "t1" }
       );
       const response = await cancelTransfer(request);
 
@@ -785,12 +795,12 @@ describe("Inventory Transfers API", () => {
     it("returns 400 when transfer is already completed", async () => {
       mockAuthOrg();
       vi.mocked(database.inventoryTransfer.findFirst).mockResolvedValue(
-        createMockTransfer({ status: "completed" }) as never,
+        createMockTransfer({ status: "completed" }) as never
       );
 
       const request = buildPostRequest(
         "http://localhost/api/inventory/transfers/commands/cancel",
-        { transferId: "t1" },
+        { transferId: "t1" }
       );
       const response = await cancelTransfer(request);
 
@@ -800,15 +810,15 @@ describe("Inventory Transfers API", () => {
     it("cancels a pending transfer and appends reason to notes", async () => {
       mockAuthOrg();
       vi.mocked(database.inventoryTransfer.findFirst).mockResolvedValue(
-        createMockTransfer({ status: "pending", notes: "original" }) as never,
+        createMockTransfer({ status: "pending", notes: "original" }) as never
       );
       vi.mocked(database.inventoryTransfer.update).mockResolvedValue(
-        createMockTransfer({ status: "cancelled" }) as never,
+        createMockTransfer({ status: "cancelled" }) as never
       );
 
       const request = buildPostRequest(
         "http://localhost/api/inventory/transfers/commands/cancel",
-        { transferId: "transfer-001", reason: "wrong location" },
+        { transferId: "transfer-001", reason: "wrong location" }
       );
       const response = await cancelTransfer(request);
 
@@ -816,25 +826,25 @@ describe("Inventory Transfers API", () => {
       const updateCall = vi.mocked(database.inventoryTransfer.update).mock
         .calls[0][0];
       expect((updateCall as { data: { status: string } }).data.status).toBe(
-        "cancelled",
+        "cancelled"
       );
-      expect(
-        (updateCall as { data: { notes: string } }).data.notes,
-      ).toContain("wrong location");
+      expect((updateCall as { data: { notes: string } }).data.notes).toContain(
+        "wrong location"
+      );
     });
 
     it("cancels an approved transfer", async () => {
       mockAuthOrg();
       vi.mocked(database.inventoryTransfer.findFirst).mockResolvedValue(
-        createMockTransfer({ status: "approved" }) as never,
+        createMockTransfer({ status: "approved" }) as never
       );
       vi.mocked(database.inventoryTransfer.update).mockResolvedValue(
-        createMockTransfer({ status: "cancelled" }) as never,
+        createMockTransfer({ status: "cancelled" }) as never
       );
 
       const request = buildPostRequest(
         "http://localhost/api/inventory/transfers/commands/cancel",
-        { transferId: "transfer-001" },
+        { transferId: "transfer-001" }
       );
       const response = await cancelTransfer(request);
 
@@ -851,7 +861,7 @@ describe("Inventory Transfers API", () => {
       vi.mocked(auth).mockResolvedValue({ userId: null, orgId: null } as never);
 
       const request = new NextRequest(
-        "http://localhost/api/inventory/transfers/list",
+        "http://localhost/api/inventory/transfers/list"
       );
       const response = await listTransfers(request);
 
@@ -866,7 +876,7 @@ describe("Inventory Transfers API", () => {
       vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
 
       const request = new NextRequest(
-        "http://localhost/api/inventory/transfers/list",
+        "http://localhost/api/inventory/transfers/list"
       );
       const response = await listTransfers(request);
 
@@ -875,13 +885,13 @@ describe("Inventory Transfers API", () => {
 
     it("returns transfers with default pagination (limit=50, offset=0)", async () => {
       mockAuthOrg();
-      vi.mocked(database.inventoryTransfer.findMany).mockResolvedValue(
-        [createMockTransfer()] as never,
-      );
+      vi.mocked(database.inventoryTransfer.findMany).mockResolvedValue([
+        createMockTransfer(),
+      ] as never);
       vi.mocked(database.inventoryTransfer.count).mockResolvedValue(1 as never);
 
       const request = new NextRequest(
-        "http://localhost/api/inventory/transfers/list",
+        "http://localhost/api/inventory/transfers/list"
       );
       const response = await listTransfers(request);
 
@@ -902,19 +912,19 @@ describe("Inventory Transfers API", () => {
           skip: 0,
           include: { items: true },
           orderBy: { requestedAt: "desc" },
-        }),
+        })
       );
     });
 
     it("applies status, fromLocationId, toLocationId filters", async () => {
       mockAuthOrg();
       vi.mocked(database.inventoryTransfer.findMany).mockResolvedValue(
-        [] as never,
+        [] as never
       );
       vi.mocked(database.inventoryTransfer.count).mockResolvedValue(0 as never);
 
       const request = new NextRequest(
-        "http://localhost/api/inventory/transfers/list?status=pending&fromLocationId=loc-a&toLocationId=loc-b",
+        "http://localhost/api/inventory/transfers/list?status=pending&fromLocationId=loc-a&toLocationId=loc-b"
       );
       await listTransfers(request);
 
@@ -925,19 +935,19 @@ describe("Inventory Transfers API", () => {
             fromLocationId: "loc-a",
             toLocationId: "loc-b",
           }),
-        }),
+        })
       );
     });
 
     it("clamps limit at MAX_LIMIT=200", async () => {
       mockAuthOrg();
       vi.mocked(database.inventoryTransfer.findMany).mockResolvedValue(
-        [] as never,
+        [] as never
       );
       vi.mocked(database.inventoryTransfer.count).mockResolvedValue(0 as never);
 
       const request = new NextRequest(
-        "http://localhost/api/inventory/transfers/list?limit=999999",
+        "http://localhost/api/inventory/transfers/list?limit=999999"
       );
       const response = await listTransfers(request);
 
@@ -949,11 +959,11 @@ describe("Inventory Transfers API", () => {
     it("returns 500 on database error", async () => {
       mockAuthOrg();
       vi.mocked(database.inventoryTransfer.findMany).mockRejectedValue(
-        new Error("DB down"),
+        new Error("DB down")
       );
 
       const request = new NextRequest(
-        "http://localhost/api/inventory/transfers/list",
+        "http://localhost/api/inventory/transfers/list"
       );
       const response = await listTransfers(request);
 

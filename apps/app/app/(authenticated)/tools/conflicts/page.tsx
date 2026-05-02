@@ -10,7 +10,9 @@ export default function ConflictsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Conflict Detection</h1>
+        <h1 className="text-2xl font-bold tracking-tight">
+          Conflict Detection
+        </h1>
         <p className="text-muted-foreground">
           Identify and resolve conflicts across employees, equipment, inventory,
           and venues before they become operational issues.

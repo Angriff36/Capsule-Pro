@@ -18,12 +18,6 @@
 
 import { NextRequest } from "next/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-
-import { POST as leadArchive } from "@/app/api/lead/archive/route";
-import { POST as leadConvertToClient } from "@/app/api/lead/convert-to-client/route";
-import { POST as leadCreate } from "@/app/api/lead/create/route";
-import { POST as leadDisqualify } from "@/app/api/lead/disqualify/route";
-import { POST as leadUpdate } from "@/app/api/lead/update/route";
 import { POST as contactCreate } from "@/app/api/clientcontact/create/route";
 import { POST as contactRemove } from "@/app/api/clientcontact/remove/route";
 import { POST as contactSetPrimary } from "@/app/api/clientcontact/set-primary/route";
@@ -34,6 +28,11 @@ import { POST as interactionUpdate } from "@/app/api/clientinteraction/update/ro
 import { POST as preferenceCreate } from "@/app/api/clientpreference/create/route";
 import { POST as preferenceRemove } from "@/app/api/clientpreference/remove/route";
 import { POST as preferenceUpdate } from "@/app/api/clientpreference/update/route";
+import { POST as leadArchive } from "@/app/api/lead/archive/route";
+import { POST as leadConvertToClient } from "@/app/api/lead/convert-to-client/route";
+import { POST as leadCreate } from "@/app/api/lead/create/route";
+import { POST as leadDisqualify } from "@/app/api/lead/disqualify/route";
+import { POST as leadUpdate } from "@/app/api/lead/update/route";
 
 // Mock dependencies
 vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
@@ -150,8 +149,11 @@ describe("CRM Extended API", () => {
 
         expect(mockRunCommand).toHaveBeenCalledWith(
           "create",
-          expect.objectContaining({ name: "Acme Lead", email: "acme@lead.com" }),
-          { entityName: "Lead" },
+          expect.objectContaining({
+            name: "Acme Lead",
+            email: "acme@lead.com",
+          }),
+          { entityName: "Lead" }
         );
       });
 
@@ -162,7 +164,9 @@ describe("CRM Extended API", () => {
           emittedEvents: [],
         });
 
-        const request = makeRequest("/api/lead/create", { name: "Tenant Check" });
+        const request = makeRequest("/api/lead/create", {
+          name: "Tenant Check",
+        });
         await leadCreate(request);
 
         expect(createManifestRuntime).toHaveBeenCalledWith({
@@ -176,7 +180,9 @@ describe("CRM Extended API", () => {
           policyDenial: { policyName: "SalesTeamOnly" },
         });
 
-        const request = makeRequest("/api/lead/create", { name: "Denied Lead" });
+        const request = makeRequest("/api/lead/create", {
+          name: "Denied Lead",
+        });
         const response = await leadCreate(request);
 
         expect(response.status).toBe(403);
@@ -272,7 +278,7 @@ describe("CRM Extended API", () => {
         expect(mockRunCommand).toHaveBeenCalledWith(
           "update",
           expect.objectContaining({ id: "lead-001", name: "Updated Lead" }),
-          { entityName: "Lead" },
+          { entityName: "Lead" }
         );
       });
 
@@ -326,7 +332,7 @@ describe("CRM Extended API", () => {
         expect(mockRunCommand).toHaveBeenCalledWith(
           "archive",
           expect.objectContaining({ id: "lead-001" }),
-          { entityName: "Lead" },
+          { entityName: "Lead" }
         );
       });
 
@@ -396,7 +402,7 @@ describe("CRM Extended API", () => {
         expect(mockRunCommand).toHaveBeenCalledWith(
           "disqualify",
           expect.objectContaining({ id: "lead-003", reason: "No budget" }),
-          { entityName: "Lead" },
+          { entityName: "Lead" }
         );
       });
 
@@ -480,7 +486,7 @@ describe("CRM Extended API", () => {
         expect(mockRunCommand).toHaveBeenCalledWith(
           "convertToClient",
           expect.objectContaining({ id: "lead-004" }),
-          { entityName: "Lead" },
+          { entityName: "Lead" }
         );
       });
 
@@ -619,7 +625,7 @@ describe("CRM Extended API", () => {
             clientId: "client-001",
             name: "Jane Smith",
           }),
-          { entityName: "ClientContact" },
+          { entityName: "ClientContact" }
         );
       });
 
@@ -736,7 +742,11 @@ describe("CRM Extended API", () => {
       it("should update a client contact through manifest runtime", async () => {
         mockRunCommand.mockResolvedValue({
           success: true,
-          result: { id: "contact-001", name: "Updated Name", email: "new@test.com" },
+          result: {
+            id: "contact-001",
+            name: "Updated Name",
+            email: "new@test.com",
+          },
           emittedEvents: [{ type: "ClientContactUpdated" }],
         });
 
@@ -754,7 +764,7 @@ describe("CRM Extended API", () => {
         expect(mockRunCommand).toHaveBeenCalledWith(
           "update",
           expect.objectContaining({ id: "contact-001", name: "Updated Name" }),
-          { entityName: "ClientContact" },
+          { entityName: "ClientContact" }
         );
       });
 
@@ -817,7 +827,7 @@ describe("CRM Extended API", () => {
         expect(mockRunCommand).toHaveBeenCalledWith(
           "setPrimary",
           expect.objectContaining({ id: "contact-001" }),
-          { entityName: "ClientContact" },
+          { entityName: "ClientContact" }
         );
       });
 
@@ -893,7 +903,7 @@ describe("CRM Extended API", () => {
         expect(mockRunCommand).toHaveBeenCalledWith(
           "remove",
           expect.objectContaining({ id: "contact-001" }),
-          { entityName: "ClientContact" },
+          { entityName: "ClientContact" }
         );
       });
 
@@ -1001,7 +1011,7 @@ describe("CRM Extended API", () => {
             clientId: "client-001",
             type: "email",
           }),
-          { entityName: "ClientInteraction" },
+          { entityName: "ClientInteraction" }
         );
       });
 
@@ -1136,8 +1146,11 @@ describe("CRM Extended API", () => {
 
         expect(mockRunCommand).toHaveBeenCalledWith(
           "update",
-          expect.objectContaining({ id: "interaction-001", notes: "Updated notes" }),
-          { entityName: "ClientInteraction" },
+          expect.objectContaining({
+            id: "interaction-001",
+            notes: "Updated notes",
+          }),
+          { entityName: "ClientInteraction" }
         );
       });
 
@@ -1209,7 +1222,7 @@ describe("CRM Extended API", () => {
             id: "interaction-001",
             outcome: "positive",
           }),
-          { entityName: "ClientInteraction" },
+          { entityName: "ClientInteraction" }
         );
       });
 
@@ -1345,7 +1358,7 @@ describe("CRM Extended API", () => {
             category: "dietary",
             value: "vegetarian",
           }),
-          { entityName: "ClientPreference" },
+          { entityName: "ClientPreference" }
         );
       });
 
@@ -1482,7 +1495,7 @@ describe("CRM Extended API", () => {
         expect(mockRunCommand).toHaveBeenCalledWith(
           "update",
           expect.objectContaining({ id: "pref-001", value: "vegan" }),
-          { entityName: "ClientPreference" },
+          { entityName: "ClientPreference" }
         );
       });
 
@@ -1558,7 +1571,7 @@ describe("CRM Extended API", () => {
         expect(mockRunCommand).toHaveBeenCalledWith(
           "remove",
           expect.objectContaining({ id: "pref-001" }),
-          { entityName: "ClientPreference" },
+          { entityName: "ClientPreference" }
         );
       });
 

@@ -1,19 +1,12 @@
 "use client";
 
+import { PageCanvas } from "@repo/design-system/components/blocks/page-shell";
 import {
   Alert,
   AlertDescription,
   AlertTitle,
 } from "@repo/design-system/components/ui/alert";
-import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@repo/design-system/components/ui/card";
 import { Checkbox } from "@repo/design-system/components/ui/checkbox";
 import {
   Drawer,
@@ -38,7 +31,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
-import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   Sheet,
   SheetContent,
@@ -665,7 +657,7 @@ export const KitchenDashboardClient = ({
 
   if (events.length === 0) {
     return (
-      <div className="flex flex-1 flex-col gap-8 bg-white p-4 pt-2 text-[#17171c]">
+      <PageCanvas className="gap-8 pb-14">
         <section className="rounded-[22px] border border-dashed border-[#d9d9dd] bg-[#eeece7] px-8 py-16 sm:px-16 sm:py-20">
           <div className="mx-auto flex max-w-2xl flex-col items-start gap-6">
             <span className="inline-flex size-12 items-center justify-center rounded-full border border-[#d9d9dd] bg-white text-[#003c33]">
@@ -674,7 +666,7 @@ export const KitchenDashboardClient = ({
             <p className="font-mono text-[12px] uppercase tracking-[0.28em] text-[#75758a]">
               Kitchen operations / empty
             </p>
-            <h2 className="text-4xl font-normal leading-[1.05] tracking-[-0.02em] text-[#17171c] sm:text-5xl">
+            <h2 className="font-display text-4xl font-normal leading-[1.05] tracking-[-0.02em] text-foreground sm:text-5xl">
               No events yet.
             </h2>
             <p className="max-w-lg text-base leading-relaxed text-[#454553]">
@@ -700,12 +692,12 @@ export const KitchenDashboardClient = ({
             </div>
           </div>
         </section>
-      </div>
+      </PageCanvas>
     );
   }
 
   return (
-    <div className="flex flex-1 flex-col gap-12 bg-white p-4 pt-2 pb-28 text-[#17171c]">
+    <PageCanvas>
       <section className="overflow-hidden rounded-[22px] border border-[#003c33] bg-[#003c33] text-white">
         <div className="space-y-10 px-6 py-10 sm:px-10 sm:py-14">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
@@ -713,7 +705,7 @@ export const KitchenDashboardClient = ({
               <p className="font-mono text-[12px] uppercase tracking-[0.28em] text-white/60">
                 Kitchen operations / control room
               </p>
-              <h2 className="text-4xl font-normal leading-[1.05] tracking-[-0.02em] sm:text-5xl">
+              <h2 className="font-display text-4xl font-normal leading-[1.05] tracking-[-0.02em] sm:text-5xl">
                 Today &amp; the next 24 hours.
               </h2>
               <p className="max-w-xl text-base leading-relaxed text-white/70">
@@ -896,7 +888,10 @@ export const KitchenDashboardClient = ({
           {!dateRangeInvalid && filteredEvents.length === 0 && (
             <div className="rounded-[22px] border border-dashed border-[#d9d9dd] bg-white px-8 py-16">
               <div className="mx-auto flex max-w-md flex-col items-center gap-4 text-center">
-                <CalendarDays className="size-8 text-[#75758a]" strokeWidth={1.25} />
+                <CalendarDays
+                  className="size-8 text-[#75758a]"
+                  strokeWidth={1.25}
+                />
                 <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-[#75758a]">
                   No matches
                 </p>
@@ -1028,7 +1023,8 @@ export const KitchenDashboardClient = ({
                               <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-[13px] text-[#616161]">
                                 <span className="flex items-center gap-1.5">
                                   <MapPin className="size-3.5" />
-                                  {event.venueName?.trim() || "No venue assigned"}
+                                  {event.venueName?.trim() ||
+                                    "No venue assigned"}
                                 </span>
                                 <span className="flex items-center gap-1.5">
                                   <Users className="size-3.5" />
@@ -1151,7 +1147,9 @@ export const KitchenDashboardClient = ({
                                       <p className="text-[16px] font-normal tracking-[-0.005em] text-[#17171c]">
                                         {event.title}
                                       </p>
-                                      <span className={operationalBadge.className}>
+                                      <span
+                                        className={operationalBadge.className}
+                                      >
                                         {operationalBadge.label}
                                       </span>
                                       <span className="rounded-full border border-[#d9d9dd] bg-white px-2.5 py-0.5 font-mono text-[11px] uppercase tracking-[0.18em] capitalize text-[#616161]">
@@ -1285,7 +1283,8 @@ export const KitchenDashboardClient = ({
                                 </span>
                                 <span className="flex items-center gap-1.5">
                                   <MapPin className="size-3.5" />
-                                  {event.venueName?.trim() || "No venue assigned"}
+                                  {event.venueName?.trim() ||
+                                    "No venue assigned"}
                                 </span>
                                 <span className="flex items-center gap-1.5">
                                   <Users className="size-3.5" />
@@ -1394,7 +1393,8 @@ export const KitchenDashboardClient = ({
                           Location
                         </dt>
                         <dd className="text-right font-medium text-[#17171c]">
-                          {selectedEvent.venueName?.trim() || "No venue assigned"}
+                          {selectedEvent.venueName?.trim() ||
+                            "No venue assigned"}
                         </dd>
                       </div>
                       {selectedEvent.venueAddress && (
@@ -1584,6 +1584,6 @@ export const KitchenDashboardClient = ({
           <Link href="/events/new">New event</Link>
         </Button>
       </div>
-    </div>
+    </PageCanvas>
   );
 };

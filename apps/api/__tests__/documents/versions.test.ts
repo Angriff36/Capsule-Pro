@@ -95,7 +95,7 @@ function makePostRequest(body: Record<string, unknown>): NextRequest {
 function makeGetRequest(params: Record<string, string>): NextRequest {
   const qs = new URLSearchParams(params).toString();
   return new NextRequest(
-    `http://localhost:3000/api/documents/versions/list?${qs}`,
+    `http://localhost:3000/api/documents/versions/list?${qs}`
   );
 }
 
@@ -161,7 +161,7 @@ describe("Document Versioning API Routes", () => {
           documentType: "recipe",
           documentId: TEST_DOC_ID,
           content: { title: "Test" },
-        }),
+        })
       );
       const data = await res.json();
 
@@ -184,7 +184,7 @@ describe("Document Versioning API Routes", () => {
           documentType: "recipe",
           documentId: TEST_DOC_ID,
           content: { title: "Test" },
-        }),
+        })
       );
       const data = await res.json();
 
@@ -202,7 +202,7 @@ describe("Document Versioning API Routes", () => {
         makePostRequest({
           documentId: TEST_DOC_ID,
           content: { title: "Test" },
-        }),
+        })
       );
       const data = await res.json();
 
@@ -220,7 +220,7 @@ describe("Document Versioning API Routes", () => {
         makePostRequest({
           documentType: "recipe",
           content: { title: "Test" },
-        }),
+        })
       );
       const data = await res.json();
 
@@ -238,7 +238,7 @@ describe("Document Versioning API Routes", () => {
         makePostRequest({
           documentType: "recipe",
           documentId: TEST_DOC_ID,
-        }),
+        })
       );
       const data = await res.json();
 
@@ -252,7 +252,7 @@ describe("Document Versioning API Routes", () => {
       // No existing versions -> findFirst returns null
       mockDocumentVersion.findFirst.mockResolvedValue(null);
       mockDocumentVersion.create.mockResolvedValue(
-        createMockVersion({ versionNumber: 1 }),
+        createMockVersion({ versionNumber: 1 })
       );
 
       const { POST } = await import(
@@ -263,7 +263,7 @@ describe("Document Versioning API Routes", () => {
           documentType: "recipe",
           documentId: TEST_DOC_ID,
           content: { title: "Test" },
-        }),
+        })
       );
       const data = await res.json();
 
@@ -285,7 +285,7 @@ describe("Document Versioning API Routes", () => {
       expect(mockDocumentVersion.create).toHaveBeenCalledWith(
         expect.objectContaining({
           data: expect.objectContaining({ versionNumber: 1 }),
-        }),
+        })
       );
     });
 
@@ -297,7 +297,7 @@ describe("Document Versioning API Routes", () => {
         versionNumber: 3,
       });
       mockDocumentVersion.create.mockResolvedValue(
-        createMockVersion({ versionNumber: 4 }),
+        createMockVersion({ versionNumber: 4 })
       );
 
       const { POST } = await import(
@@ -309,7 +309,7 @@ describe("Document Versioning API Routes", () => {
           documentId: TEST_DOC_ID,
           content: { title: "Updated" },
           changeSummary: "Major revision",
-        }),
+        })
       );
       const data = await res.json();
 
@@ -320,7 +320,7 @@ describe("Document Versioning API Routes", () => {
             versionNumber: 4,
             changeSummary: "Major revision",
           }),
-        }),
+        })
       );
     });
 
@@ -331,7 +331,7 @@ describe("Document Versioning API Routes", () => {
         versionNumber: 2,
       });
       mockDocumentVersion.create.mockResolvedValue(
-        createMockVersion({ versionNumber: 3 }),
+        createMockVersion({ versionNumber: 3 })
       );
 
       const { POST } = await import(
@@ -342,7 +342,7 @@ describe("Document Versioning API Routes", () => {
           documentType: "recipe",
           documentId: TEST_DOC_ID,
           content: { title: "Updated" },
-        }),
+        })
       );
 
       expect(res.status).toBe(200);
@@ -351,7 +351,7 @@ describe("Document Versioning API Routes", () => {
           data: expect.objectContaining({
             changeSummary: "Version 3",
           }),
-        }),
+        })
       );
     });
 
@@ -369,7 +369,7 @@ describe("Document Versioning API Routes", () => {
           documentType: "recipe",
           documentId: TEST_DOC_ID,
           content: { title: "Test" },
-        }),
+        })
       );
       const data = await res.json();
 
@@ -386,7 +386,7 @@ describe("Document Versioning API Routes", () => {
               },
             },
           },
-        }),
+        })
       );
       expect(data.version.createdBy).toBeDefined();
     });
@@ -395,7 +395,7 @@ describe("Document Versioning API Routes", () => {
       mockAuthenticated();
 
       mockDocumentVersion.findFirst.mockRejectedValue(
-        new Error("Connection refused"),
+        new Error("Connection refused")
       );
 
       const { POST } = await import(
@@ -406,7 +406,7 @@ describe("Document Versioning API Routes", () => {
           documentType: "recipe",
           documentId: TEST_DOC_ID,
           content: { title: "Test" },
-        }),
+        })
       );
       const data = await res.json();
 
@@ -457,9 +457,7 @@ describe("Document Versioning API Routes", () => {
       const { POST } = await import(
         "@/app/api/documents/versions/commands/restore/route"
       );
-      const res = await POST(
-        makePostRequest({ versionId: "nonexistent-id" }),
-      );
+      const res = await POST(makePostRequest({ versionId: "nonexistent-id" }));
       const data = await res.json();
 
       expect(res.status).toBe(404);
@@ -487,7 +485,7 @@ describe("Document Versioning API Routes", () => {
           versionNumber: 6,
           content: { title: "Old Title", body: "Old content" },
           changeSummary: "Restored from version 2",
-        }),
+        })
       );
 
       const { POST } = await import(
@@ -517,7 +515,7 @@ describe("Document Versioning API Routes", () => {
             documentId: TEST_DOC_ID,
             createdById: TEST_USER_ID,
           }),
-        }),
+        })
       );
 
       expect(data.version.versionNumber).toBe(6);
@@ -541,7 +539,7 @@ describe("Document Versioning API Routes", () => {
           versionNumber: 1,
           content: { title: "Original" },
           changeSummary: "Restored from version 1",
-        }),
+        })
       );
 
       const { POST } = await import(
@@ -555,7 +553,7 @@ describe("Document Versioning API Routes", () => {
           data: expect.objectContaining({
             versionNumber: 1,
           }),
-        }),
+        })
       );
     });
 
@@ -563,15 +561,13 @@ describe("Document Versioning API Routes", () => {
       mockAuthenticated();
 
       mockDocumentVersion.findFirst.mockRejectedValue(
-        new Error("Database timeout"),
+        new Error("Database timeout")
       );
 
       const { POST } = await import(
         "@/app/api/documents/versions/commands/restore/route"
       );
-      const res = await POST(
-        makePostRequest({ versionId: TEST_VERSION_ID }),
-      );
+      const res = await POST(makePostRequest({ versionId: TEST_VERSION_ID }));
       const data = await res.json();
 
       expect(res.status).toBe(500);
@@ -590,14 +586,12 @@ describe("Document Versioning API Routes", () => {
         userId: null,
       } as never);
 
-      const { GET } = await import(
-        "@/app/api/documents/versions/list/route"
-      );
+      const { GET } = await import("@/app/api/documents/versions/list/route");
       const res = await GET(
         makeGetRequest({
           documentType: "recipe",
           documentId: TEST_DOC_ID,
-        }),
+        })
       );
       const data = await res.json();
 
@@ -612,14 +606,12 @@ describe("Document Versioning API Routes", () => {
       } as never);
       vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
 
-      const { GET } = await import(
-        "@/app/api/documents/versions/list/route"
-      );
+      const { GET } = await import("@/app/api/documents/versions/list/route");
       const res = await GET(
         makeGetRequest({
           documentType: "recipe",
           documentId: TEST_DOC_ID,
-        }),
+        })
       );
       const data = await res.json();
 
@@ -630,12 +622,8 @@ describe("Document Versioning API Routes", () => {
     it("returns 400 when documentType is missing", async () => {
       mockAuthenticated();
 
-      const { GET } = await import(
-        "@/app/api/documents/versions/list/route"
-      );
-      const res = await GET(
-        makeGetRequest({ documentId: TEST_DOC_ID }),
-      );
+      const { GET } = await import("@/app/api/documents/versions/list/route");
+      const res = await GET(makeGetRequest({ documentId: TEST_DOC_ID }));
       const data = await res.json();
 
       expect(res.status).toBe(400);
@@ -645,12 +633,8 @@ describe("Document Versioning API Routes", () => {
     it("returns 400 when documentId is missing", async () => {
       mockAuthenticated();
 
-      const { GET } = await import(
-        "@/app/api/documents/versions/list/route"
-      );
-      const res = await GET(
-        makeGetRequest({ documentType: "recipe" }),
-      );
+      const { GET } = await import("@/app/api/documents/versions/list/route");
+      const res = await GET(makeGetRequest({ documentType: "recipe" }));
       const data = await res.json();
 
       expect(res.status).toBe(400);
@@ -668,14 +652,12 @@ describe("Document Versioning API Routes", () => {
 
       mockDocumentVersion.findMany.mockResolvedValue(versions);
 
-      const { GET } = await import(
-        "@/app/api/documents/versions/list/route"
-      );
+      const { GET } = await import("@/app/api/documents/versions/list/route");
       const res = await GET(
         makeGetRequest({
           documentType: "recipe",
           documentId: TEST_DOC_ID,
-        }),
+        })
       );
       const data = await res.json();
 
@@ -691,7 +673,7 @@ describe("Document Versioning API Routes", () => {
             documentId: TEST_DOC_ID,
           },
           orderBy: { versionNumber: "desc" },
-        }),
+        })
       );
     });
 
@@ -700,14 +682,12 @@ describe("Document Versioning API Routes", () => {
 
       mockDocumentVersion.findMany.mockResolvedValue([]);
 
-      const { GET } = await import(
-        "@/app/api/documents/versions/list/route"
-      );
+      const { GET } = await import("@/app/api/documents/versions/list/route");
       const res = await GET(
         makeGetRequest({
           documentType: "recipe",
           documentId: TEST_DOC_ID,
-        }),
+        })
       );
       const data = await res.json();
 
@@ -719,7 +699,7 @@ describe("Document Versioning API Routes", () => {
         expect.objectContaining({
           take: 50,
           skip: 0,
-        }),
+        })
       );
     });
 
@@ -728,16 +708,14 @@ describe("Document Versioning API Routes", () => {
 
       mockDocumentVersion.findMany.mockResolvedValue([]);
 
-      const { GET } = await import(
-        "@/app/api/documents/versions/list/route"
-      );
+      const { GET } = await import("@/app/api/documents/versions/list/route");
       const res = await GET(
         makeGetRequest({
           documentType: "recipe",
           documentId: TEST_DOC_ID,
           limit: "10",
           offset: "20",
-        }),
+        })
       );
       const data = await res.json();
 
@@ -749,7 +727,7 @@ describe("Document Versioning API Routes", () => {
         expect.objectContaining({
           take: 10,
           skip: 20,
-        }),
+        })
       );
     });
 
@@ -758,14 +736,12 @@ describe("Document Versioning API Routes", () => {
 
       mockDocumentVersion.findMany.mockResolvedValue([createMockVersion()]);
 
-      const { GET } = await import(
-        "@/app/api/documents/versions/list/route"
-      );
+      const { GET } = await import("@/app/api/documents/versions/list/route");
       const res = await GET(
         makeGetRequest({
           documentType: "recipe",
           documentId: TEST_DOC_ID,
-        }),
+        })
       );
 
       expect(res.status).toBe(200);
@@ -781,7 +757,7 @@ describe("Document Versioning API Routes", () => {
               },
             },
           },
-        }),
+        })
       );
     });
 
@@ -790,14 +766,12 @@ describe("Document Versioning API Routes", () => {
 
       mockDocumentVersion.findMany.mockResolvedValue([]);
 
-      const { GET } = await import(
-        "@/app/api/documents/versions/list/route"
-      );
+      const { GET } = await import("@/app/api/documents/versions/list/route");
       const res = await GET(
         makeGetRequest({
           documentType: "menu",
           documentId: "menu-9999",
-        }),
+        })
       );
       const data = await res.json();
 
@@ -809,17 +783,15 @@ describe("Document Versioning API Routes", () => {
       mockAuthenticated();
 
       mockDocumentVersion.findMany.mockRejectedValue(
-        new Error("Connection pool exhausted"),
+        new Error("Connection pool exhausted")
       );
 
-      const { GET } = await import(
-        "@/app/api/documents/versions/list/route"
-      );
+      const { GET } = await import("@/app/api/documents/versions/list/route");
       const res = await GET(
         makeGetRequest({
           documentType: "recipe",
           documentId: TEST_DOC_ID,
-        }),
+        })
       );
       const data = await res.json();
 

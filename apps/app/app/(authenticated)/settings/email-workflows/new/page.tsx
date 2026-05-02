@@ -1,12 +1,5 @@
 "use client";
 
-import {
-  TRIGGER_TYPE_GROUPS,
-  TRIGGER_TYPE_LABELS,
-  createEmailWorkflow,
-  getAvailableTemplates,
-} from "../actions";
-import type { EmailTriggerType } from "../actions";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
@@ -31,6 +24,13 @@ import { ArrowLeftIcon, Loader2Icon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import type { EmailTriggerType } from "../actions";
+import {
+  createEmailWorkflow,
+  getAvailableTemplates,
+  TRIGGER_TYPE_GROUPS,
+  TRIGGER_TYPE_LABELS,
+} from "../actions";
 
 interface TemplateOption {
   id: string;
@@ -53,9 +53,11 @@ export default function NewEmailWorkflowPage() {
   const [isActive, setIsActive] = useState(true);
 
   useEffect(() => {
-    getAvailableTemplates().then(setTemplates).catch(() => {
-      toast.error("Failed to load email templates");
-    });
+    getAvailableTemplates()
+      .then(setTemplates)
+      .catch(() => {
+        toast.error("Failed to load email templates");
+      });
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -170,12 +172,17 @@ export default function NewEmailWorkflowPage() {
 
             <div className="space-y-2">
               <Label htmlFor="template">Email Template</Label>
-              <Select onValueChange={setEmailTemplateId} value={emailTemplateId}>
+              <Select
+                onValueChange={setEmailTemplateId}
+                value={emailTemplateId}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select a template..." />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">No template (raw trigger only)</SelectItem>
+                  <SelectItem value="none">
+                    No template (raw trigger only)
+                  </SelectItem>
                   {templates.map((t) => (
                     <SelectItem key={t.id} value={t.id}>
                       {t.name} ({t.template_type})
@@ -203,7 +210,9 @@ export default function NewEmailWorkflowPage() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="client">Client associated with trigger</SelectItem>
+                  <SelectItem value="client">
+                    Client associated with trigger
+                  </SelectItem>
                   <SelectItem value="assigned_user">
                     User assigned to the entity
                   </SelectItem>
@@ -235,14 +244,16 @@ export default function NewEmailWorkflowPage() {
                 className="font-mono text-sm"
                 id="triggerConfig"
                 onChange={(e) => setTriggerConfig(e.target.value)}
-                placeholder='{}'
+                placeholder="{}"
                 rows={4}
                 value={triggerConfig}
               />
               <p className="text-xs text-muted-foreground">
-                Additional conditions for when this trigger fires. Leave as {`
+                Additional conditions for when this trigger fires. Leave as{" "}
+                {`
 {}
-`} for default behavior.
+`}{" "}
+                for default behavior.
               </p>
             </div>
 

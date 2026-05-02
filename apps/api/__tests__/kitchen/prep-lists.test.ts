@@ -49,7 +49,7 @@ vi.mock("@/lib/manifest-response", async () => {
           success: true,
           ...(typeof data === "object" && data !== null ? data : { data }),
         },
-        { status },
+        { status }
       ),
     manifestErrorResponse: (message: string, status: number) =>
       NextResponse.json({ success: false, message }, { status }),
@@ -170,7 +170,9 @@ function samplePrepListItem(overrides: Record<string, unknown> = {}) {
   } as Record<string, unknown>;
 }
 
-function mockRuntimeSuccess(result: Record<string, unknown> = { id: TEST_PREP_LIST_ID }) {
+function mockRuntimeSuccess(
+  result: Record<string, unknown> = { id: TEST_PREP_LIST_ID }
+) {
   vi.mocked(createManifestRuntime).mockResolvedValue({
     runCommand: vi.fn().mockResolvedValue({
       success: true,
@@ -232,13 +234,17 @@ describe("Prep Lists API", () => {
     });
 
     it("returns paginated prep lists with default pagination", async () => {
-      vi.mocked(database.prepList.findMany).mockResolvedValue(
-        [samplePrepList()] as never,
-      );
+      vi.mocked(database.prepList.findMany).mockResolvedValue([
+        samplePrepList(),
+      ] as never);
       vi.mocked(database.prepList.count).mockResolvedValue(1 as never);
-      vi.mocked(database.event.findMany).mockResolvedValue(
-        [{ id: TEST_EVENT_ID, title: "Wedding", eventDate: new Date("2026-05-01") }] as never,
-      );
+      vi.mocked(database.event.findMany).mockResolvedValue([
+        {
+          id: TEST_EVENT_ID,
+          title: "Wedding",
+          eventDate: new Date("2026-05-01"),
+        },
+      ] as never);
 
       const { GET } = await import("@/app/api/kitchen/prep-lists/route");
       const res = await GET(makeRequest("/api/kitchen/prep-lists"));
@@ -267,14 +273,14 @@ describe("Prep Lists API", () => {
 
       const { GET } = await import("@/app/api/kitchen/prep-lists/route");
       await GET(
-        makeRequest(`/api/kitchen/prep-lists?eventId=${TEST_EVENT_ID}`),
+        makeRequest(`/api/kitchen/prep-lists?eventId=${TEST_EVENT_ID}`)
       );
 
       const ands = findManyAndClauses();
       expect(
         ands.some(
-          (c) => (c as Record<string, unknown>).eventId === TEST_EVENT_ID,
-        ),
+          (c) => (c as Record<string, unknown>).eventId === TEST_EVENT_ID
+        )
       ).toBe(true);
     });
 
@@ -288,7 +294,7 @@ describe("Prep Lists API", () => {
 
       const ands = findManyAndClauses();
       expect(
-        ands.some((c) => (c as Record<string, unknown>).status === "active"),
+        ands.some((c) => (c as Record<string, unknown>).status === "active")
       ).toBe(true);
     });
 
@@ -307,7 +313,7 @@ describe("Prep Lists API", () => {
             | { contains: string; mode: string }
             | undefined;
           return name?.contains === "wedding" && name?.mode === "insensitive";
-        }),
+        })
       ).toBe(true);
     });
 
@@ -315,15 +321,15 @@ describe("Prep Lists API", () => {
       vi.mocked(database.prepListItem.findMany).mockResolvedValue([
         { prepListId: TEST_PREP_LIST_ID },
       ] as never);
-      vi.mocked(database.prepList.findMany).mockResolvedValue(
-        [samplePrepList()] as never,
-      );
+      vi.mocked(database.prepList.findMany).mockResolvedValue([
+        samplePrepList(),
+      ] as never);
       vi.mocked(database.prepList.count).mockResolvedValue(1 as never);
       vi.mocked(database.event.findMany).mockResolvedValue([] as never);
 
       const { GET } = await import("@/app/api/kitchen/prep-lists/route");
       const res = await GET(
-        makeRequest("/api/kitchen/prep-lists?station=station-1"),
+        makeRequest("/api/kitchen/prep-lists?station=station-1")
       );
 
       expect(res.status).toBe(200);
@@ -335,7 +341,7 @@ describe("Prep Lists API", () => {
             | { in: string[] }
             | undefined;
           return id?.in?.includes(TEST_PREP_LIST_ID);
-        }),
+        })
       ).toBe(true);
     });
 
@@ -344,7 +350,7 @@ describe("Prep Lists API", () => {
 
       const { GET } = await import("@/app/api/kitchen/prep-lists/route");
       const res = await GET(
-        makeRequest("/api/kitchen/prep-lists?station=empty-station"),
+        makeRequest("/api/kitchen/prep-lists?station=empty-station")
       );
 
       expect(res.status).toBe(200);
@@ -363,7 +369,7 @@ describe("Prep Lists API", () => {
 
       const { GET } = await import("@/app/api/kitchen/prep-lists/route");
       const res = await GET(
-        makeRequest("/api/kitchen/prep-lists?page=2&limit=10"),
+        makeRequest("/api/kitchen/prep-lists?page=2&limit=10")
       );
       const body = await res.json();
 
@@ -374,7 +380,7 @@ describe("Prep Lists API", () => {
         totalPages: 5,
       });
       expect(database.prepList.findMany).toHaveBeenCalledWith(
-        expect.objectContaining({ take: 10, skip: 10 }),
+        expect.objectContaining({ take: 10, skip: 10 })
       );
     });
 
@@ -387,13 +393,13 @@ describe("Prep Lists API", () => {
       await GET(makeRequest("/api/kitchen/prep-lists?limit=999"));
 
       expect(database.prepList.findMany).toHaveBeenCalledWith(
-        expect.objectContaining({ take: 100 }),
+        expect.objectContaining({ take: 100 })
       );
     });
 
     it("returns 500 on unexpected database error", async () => {
       vi.mocked(database.prepList.findMany).mockRejectedValue(
-        new Error("DB down") as never,
+        new Error("DB down") as never
       );
 
       const { GET } = await import("@/app/api/kitchen/prep-lists/route");
@@ -410,7 +416,7 @@ describe("Prep Lists API", () => {
     it("delegates to executeManifestCommand with PrepList.create", async () => {
       const { NextResponse } = await import("next/server");
       vi.mocked(executeManifestCommand).mockResolvedValue(
-        NextResponse.json({ success: true, result: { id: TEST_PREP_LIST_ID } }),
+        NextResponse.json({ success: true, result: { id: TEST_PREP_LIST_ID } })
       );
 
       const { POST } = await import("@/app/api/kitchen/prep-lists/route");
@@ -433,7 +439,7 @@ describe("Prep Lists API", () => {
       const { GET } = await import("@/app/api/kitchen/prep-lists/[id]/route");
       const res = await GET(
         makeRequest(`/api/kitchen/prep-lists/${TEST_PREP_LIST_ID}`),
-        { params: Promise.resolve({ id: TEST_PREP_LIST_ID }) },
+        { params: Promise.resolve({ id: TEST_PREP_LIST_ID }) }
       );
 
       expect(res.status).toBe(401);
@@ -447,7 +453,7 @@ describe("Prep Lists API", () => {
       const { GET } = await import("@/app/api/kitchen/prep-lists/[id]/route");
       const res = await GET(
         makeRequest(`/api/kitchen/prep-lists/${TEST_PREP_LIST_ID}`),
-        { params: Promise.resolve({ id: TEST_PREP_LIST_ID }) },
+        { params: Promise.resolve({ id: TEST_PREP_LIST_ID }) }
       );
 
       expect(res.status).toBe(404);
@@ -457,22 +463,37 @@ describe("Prep Lists API", () => {
 
     it("returns prep list with grouped station items", async () => {
       vi.mocked(database.prepList.findFirst).mockResolvedValue(
-        samplePrepList() as never,
+        samplePrepList() as never
       );
       vi.mocked(database.event.findFirst).mockResolvedValue({
         title: "Wedding",
         eventDate: new Date("2026-05-01"),
       } as never);
       vi.mocked(database.prepListItem.findMany).mockResolvedValue([
-        samplePrepListItem({ id: "item-1", stationId: "s1", stationName: "Pastry", sortOrder: 0 }),
-        samplePrepListItem({ id: "item-2", stationId: "s1", stationName: "Pastry", sortOrder: 1 }),
-        samplePrepListItem({ id: "item-3", stationId: "s2", stationName: "Grill", sortOrder: 0 }),
+        samplePrepListItem({
+          id: "item-1",
+          stationId: "s1",
+          stationName: "Pastry",
+          sortOrder: 0,
+        }),
+        samplePrepListItem({
+          id: "item-2",
+          stationId: "s1",
+          stationName: "Pastry",
+          sortOrder: 1,
+        }),
+        samplePrepListItem({
+          id: "item-3",
+          stationId: "s2",
+          stationName: "Grill",
+          sortOrder: 0,
+        }),
       ] as never);
 
       const { GET } = await import("@/app/api/kitchen/prep-lists/[id]/route");
       const res = await GET(
         makeRequest(`/api/kitchen/prep-lists/${TEST_PREP_LIST_ID}`),
-        { params: Promise.resolve({ id: TEST_PREP_LIST_ID }) },
+        { params: Promise.resolve({ id: TEST_PREP_LIST_ID }) }
       );
 
       expect(res.status).toBe(200);
@@ -488,18 +509,26 @@ describe("Prep Lists API", () => {
 
     it("groups items by stationName when stationId is null", async () => {
       vi.mocked(database.prepList.findFirst).mockResolvedValue(
-        samplePrepList() as never,
+        samplePrepList() as never
       );
       vi.mocked(database.event.findFirst).mockResolvedValue(null as never);
       vi.mocked(database.prepListItem.findMany).mockResolvedValue([
-        samplePrepListItem({ id: "item-a", stationId: null, stationName: "Cold Line" }),
-        samplePrepListItem({ id: "item-b", stationId: null, stationName: "Cold Line" }),
+        samplePrepListItem({
+          id: "item-a",
+          stationId: null,
+          stationName: "Cold Line",
+        }),
+        samplePrepListItem({
+          id: "item-b",
+          stationId: null,
+          stationName: "Cold Line",
+        }),
       ] as never);
 
       const { GET } = await import("@/app/api/kitchen/prep-lists/[id]/route");
       const res = await GET(
         makeRequest(`/api/kitchen/prep-lists/${TEST_PREP_LIST_ID}`),
-        { params: Promise.resolve({ id: TEST_PREP_LIST_ID }) },
+        { params: Promise.resolve({ id: TEST_PREP_LIST_ID }) }
       );
 
       const body = await res.json();
@@ -511,13 +540,13 @@ describe("Prep Lists API", () => {
 
     it("returns 500 on unexpected error", async () => {
       vi.mocked(database.prepList.findFirst).mockRejectedValue(
-        new Error("Boom") as never,
+        new Error("Boom") as never
       );
 
       const { GET } = await import("@/app/api/kitchen/prep-lists/[id]/route");
       const res = await GET(
         makeRequest(`/api/kitchen/prep-lists/${TEST_PREP_LIST_ID}`),
-        { params: Promise.resolve({ id: TEST_PREP_LIST_ID }) },
+        { params: Promise.resolve({ id: TEST_PREP_LIST_ID }) }
       );
 
       expect(res.status).toBe(500);
@@ -531,14 +560,13 @@ describe("Prep Lists API", () => {
     it("delegates to executeManifestCommand with PrepList.update", async () => {
       const { NextResponse } = await import("next/server");
       vi.mocked(executeManifestCommand).mockResolvedValue(
-        NextResponse.json({ success: true, result: { id: TEST_PREP_LIST_ID } }),
+        NextResponse.json({ success: true, result: { id: TEST_PREP_LIST_ID } })
       );
 
       const { PATCH } = await import("@/app/api/kitchen/prep-lists/[id]/route");
-      const req = postRequest(
-        `/api/kitchen/prep-lists/${TEST_PREP_LIST_ID}`,
-        { name: "Updated" },
-      );
+      const req = postRequest(`/api/kitchen/prep-lists/${TEST_PREP_LIST_ID}`, {
+        name: "Updated",
+      });
       await PATCH(req, { params: Promise.resolve({ id: TEST_PREP_LIST_ID }) });
 
       expect(executeManifestCommand).toHaveBeenCalledWith(
@@ -547,14 +575,14 @@ describe("Prep Lists API", () => {
           entityName: "PrepList",
           commandName: "update",
           params: { id: TEST_PREP_LIST_ID },
-        }),
+        })
       );
 
       // Validate transformBody injects id into body
       const callArg = vi.mocked(executeManifestCommand).mock.calls[0][1];
       const transformed = callArg.transformBody?.(
         { name: "Updated" },
-        { userId: TEST_USER_ID, tenantId: TEST_TENANT_ID, role: "admin" },
+        { userId: TEST_USER_ID, tenantId: TEST_TENANT_ID, role: "admin" }
       );
       expect(transformed).toEqual({ name: "Updated", id: TEST_PREP_LIST_ID });
     });
@@ -565,16 +593,15 @@ describe("Prep Lists API", () => {
     it("delegates to executeManifestCommand with PrepList.cancel", async () => {
       const { NextResponse } = await import("next/server");
       vi.mocked(executeManifestCommand).mockResolvedValue(
-        NextResponse.json({ success: true, result: { id: TEST_PREP_LIST_ID } }),
+        NextResponse.json({ success: true, result: { id: TEST_PREP_LIST_ID } })
       );
 
       const { DELETE } = await import(
         "@/app/api/kitchen/prep-lists/[id]/route"
       );
-      const req = makeRequest(
-        `/api/kitchen/prep-lists/${TEST_PREP_LIST_ID}`,
-        { method: "DELETE" },
-      );
+      const req = makeRequest(`/api/kitchen/prep-lists/${TEST_PREP_LIST_ID}`, {
+        method: "DELETE",
+      });
       await DELETE(req, {
         params: Promise.resolve({ id: TEST_PREP_LIST_ID }),
       });
@@ -585,14 +612,14 @@ describe("Prep Lists API", () => {
           entityName: "PrepList",
           commandName: "cancel",
           params: { id: TEST_PREP_LIST_ID },
-        }),
+        })
       );
 
       // Validate transformBody synthesizes cancel payload using user context
       const callArg = vi.mocked(executeManifestCommand).mock.calls[0][1];
       const transformed = callArg.transformBody?.(
         {},
-        { userId: TEST_USER_ID, tenantId: TEST_TENANT_ID, role: "admin" },
+        { userId: TEST_USER_ID, tenantId: TEST_TENANT_ID, role: "admin" }
       );
       expect(transformed).toEqual({
         id: TEST_PREP_LIST_ID,
@@ -695,117 +722,120 @@ describe("Prep Lists API", () => {
     },
   ];
 
-  describe.each(COMMANDS)(
-    "POST $path",
-    ({ name, runtimeName, path, routePath, sampleBody }) => {
-      it(`returns 401 when unauthenticated [${name}]`, async () => {
-        unauthed();
-        const mod = await import(routePath);
-        const res = await mod.POST(postRequest(path, sampleBody));
+  describe.each(COMMANDS)("POST $path", ({
+    name,
+    runtimeName,
+    path,
+    routePath,
+    sampleBody,
+  }) => {
+    it(`returns 401 when unauthenticated [${name}]`, async () => {
+      unauthed();
+      const mod = await import(routePath);
+      const res = await mod.POST(postRequest(path, sampleBody));
 
-        expect(res.status).toBe(401);
-        const body = await res.json();
-        expect(body.message).toBe("Unauthorized");
+      expect(res.status).toBe(401);
+      const body = await res.json();
+      expect(body.message).toBe("Unauthorized");
+    });
+
+    it(`returns 400 when tenant cannot be resolved [${name}]`, async () => {
+      vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
+
+      const mod = await import(routePath);
+      const res = await mod.POST(postRequest(path, sampleBody));
+
+      expect(res.status).toBe(400);
+      const body = await res.json();
+      expect(body.message).toBe("Tenant not found");
+    });
+
+    it(`returns 200 with result and events on success [${name}]`, async () => {
+      mockRuntimeSuccess({
+        id: TEST_PREP_LIST_ID,
+        status: name === "deactivate" ? "draft" : "active",
       });
 
-      it(`returns 400 when tenant cannot be resolved [${name}]`, async () => {
-        vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
+      const mod = await import(routePath);
+      const res = await mod.POST(postRequest(path, sampleBody));
 
-        const mod = await import(routePath);
-        const res = await mod.POST(postRequest(path, sampleBody));
+      expect(res.status).toBe(200);
+      const body = await res.json();
+      expect(body.success).toBe(true);
+      expect(body.result.id).toBe(TEST_PREP_LIST_ID);
+      expect(body.events).toHaveLength(1);
 
-        expect(res.status).toBe(400);
-        const body = await res.json();
-        expect(body.message).toBe("Tenant not found");
+      // Verify runtime was invoked with the right command + entity
+      const runtimeCall = vi.mocked(createManifestRuntime).mock.calls[0][0];
+      expect(runtimeCall).toEqual({
+        user: { id: TEST_USER_ID, tenantId: TEST_TENANT_ID },
       });
+    });
 
-      it(`returns 200 with result and events on success [${name}]`, async () => {
-        mockRuntimeSuccess({
-          id: TEST_PREP_LIST_ID,
-          status: name === "deactivate" ? "draft" : "active",
-        });
+    it(`returns 403 on policy denial [${name}]`, async () => {
+      mockRuntimePolicyDenial("adminOnly");
 
-        const mod = await import(routePath);
-        const res = await mod.POST(postRequest(path, sampleBody));
+      const mod = await import(routePath);
+      const res = await mod.POST(postRequest(path, sampleBody));
 
-        expect(res.status).toBe(200);
-        const body = await res.json();
-        expect(body.success).toBe(true);
-        expect(body.result.id).toBe(TEST_PREP_LIST_ID);
-        expect(body.events).toHaveLength(1);
+      expect(res.status).toBe(403);
+      const body = await res.json();
+      expect(body.message).toContain("Access denied");
+      expect(body.message).toContain("adminOnly");
+    });
 
-        // Verify runtime was invoked with the right command + entity
-        const runtimeCall = vi.mocked(createManifestRuntime).mock.calls[0][0];
-        expect(runtimeCall).toEqual({
-          user: { id: TEST_USER_ID, tenantId: TEST_TENANT_ID },
-        });
+    it(`returns 422 on guard failure [${name}]`, async () => {
+      mockRuntimeGuardFailure(0, "id is required");
+
+      const mod = await import(routePath);
+      const res = await mod.POST(postRequest(path, sampleBody));
+
+      expect(res.status).toBe(422);
+      const body = await res.json();
+      expect(body.message).toContain("Guard 0 failed");
+      expect(body.message).toContain("id is required");
+    });
+
+    it(`returns 400 on generic command failure [${name}]`, async () => {
+      mockRuntimeFailure("State transition not allowed");
+
+      const mod = await import(routePath);
+      const res = await mod.POST(postRequest(path, sampleBody));
+
+      expect(res.status).toBe(400);
+      const body = await res.json();
+      expect(body.message).toBe("State transition not allowed");
+    });
+
+    it(`returns 500 when runtime throws [${name}]`, async () => {
+      vi.mocked(createManifestRuntime).mockRejectedValue(
+        new Error("Runtime explosion") as never
+      );
+
+      const mod = await import(routePath);
+      const res = await mod.POST(postRequest(path, sampleBody));
+
+      expect(res.status).toBe(500);
+      const body = await res.json();
+      expect(body.message).toBe("Internal server error");
+    });
+
+    it(`passes correct command name + entity to runtime [${name}]`, async () => {
+      const runCommand = vi.fn().mockResolvedValue({
+        success: true,
+        result: { id: TEST_PREP_LIST_ID },
+        emittedEvents: [],
       });
+      vi.mocked(createManifestRuntime).mockResolvedValue({
+        runCommand,
+      } as never);
 
-      it(`returns 403 on policy denial [${name}]`, async () => {
-        mockRuntimePolicyDenial("adminOnly");
+      const mod = await import(routePath);
+      await mod.POST(postRequest(path, sampleBody));
 
-        const mod = await import(routePath);
-        const res = await mod.POST(postRequest(path, sampleBody));
-
-        expect(res.status).toBe(403);
-        const body = await res.json();
-        expect(body.message).toContain("Access denied");
-        expect(body.message).toContain("adminOnly");
+      expect(runCommand).toHaveBeenCalledWith(runtimeName, sampleBody, {
+        entityName: "PrepList",
       });
-
-      it(`returns 422 on guard failure [${name}]`, async () => {
-        mockRuntimeGuardFailure(0, "id is required");
-
-        const mod = await import(routePath);
-        const res = await mod.POST(postRequest(path, sampleBody));
-
-        expect(res.status).toBe(422);
-        const body = await res.json();
-        expect(body.message).toContain("Guard 0 failed");
-        expect(body.message).toContain("id is required");
-      });
-
-      it(`returns 400 on generic command failure [${name}]`, async () => {
-        mockRuntimeFailure("State transition not allowed");
-
-        const mod = await import(routePath);
-        const res = await mod.POST(postRequest(path, sampleBody));
-
-        expect(res.status).toBe(400);
-        const body = await res.json();
-        expect(body.message).toBe("State transition not allowed");
-      });
-
-      it(`returns 500 when runtime throws [${name}]`, async () => {
-        vi.mocked(createManifestRuntime).mockRejectedValue(
-          new Error("Runtime explosion") as never,
-        );
-
-        const mod = await import(routePath);
-        const res = await mod.POST(postRequest(path, sampleBody));
-
-        expect(res.status).toBe(500);
-        const body = await res.json();
-        expect(body.message).toBe("Internal server error");
-      });
-
-      it(`passes correct command name + entity to runtime [${name}]`, async () => {
-        const runCommand = vi.fn().mockResolvedValue({
-          success: true,
-          result: { id: TEST_PREP_LIST_ID },
-          emittedEvents: [],
-        });
-        vi.mocked(createManifestRuntime).mockResolvedValue({
-          runCommand,
-        } as never);
-
-        const mod = await import(routePath);
-        await mod.POST(postRequest(path, sampleBody));
-
-        expect(runCommand).toHaveBeenCalledWith(runtimeName, sampleBody, {
-          entityName: "PrepList",
-        });
-      });
-    },
-  );
+    });
+  });
 });

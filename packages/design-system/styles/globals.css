@@ -285,6 +285,31 @@
   --tw-prose-invert-td-borders: var(--color-border);
 }
 
+/*
+ * Editorial main column — light paper tokens under html.dark so shadcn and
+ * Tailwind foreground/muted-* stay readable on bg-canvas (dark theme global
+ * uses light text + light muted, which clashes with the forced editorial column).
+ */
+.editorial-surface-reset {
+  --background: var(--ds-canvas);
+  --foreground: var(--ds-ink);
+  --card: var(--ds-canvas);
+  --card-foreground: var(--ds-ink);
+  --popover: var(--ds-canvas);
+  --popover-foreground: var(--ds-ink);
+  --primary: var(--ds-primary);
+  --primary-foreground: var(--ds-canvas);
+  --secondary: var(--ds-soft-stone);
+  --secondary-foreground: var(--ds-ink);
+  --muted: var(--ds-soft-stone);
+  --muted-foreground: var(--ds-body-muted);
+  --accent: var(--ds-soft-stone);
+  --accent-foreground: var(--ds-ink);
+  --border: var(--ds-hairline);
+  --input: var(--ds-border-light);
+  --ring: var(--ds-focus-blue);
+}
+
 /* ─── DESIGN.md helpers ────────────────────────────────────────────────
    Cohere-derived patterns: mono section labels, dark feature bands, and
    editorial chip styles. Keep these as utilities so pages can opt in

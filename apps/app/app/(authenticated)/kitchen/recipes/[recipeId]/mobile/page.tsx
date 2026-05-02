@@ -26,19 +26,19 @@ const MobileRecipePage = async ({
   const recipeId = resolvedParams.recipeId;
 
   return (
-    <>
-      <header className="sticky top-0 z-50 flex items-center gap-3 border-b bg-background/95 px-4 py-3 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <div className="editorial-surface-reset flex min-h-0 flex-1 flex-col bg-canvas text-foreground">
+      <header className="sticky top-0 z-50 flex items-center gap-3 border-b border-hairline bg-background/95 px-4 py-3 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <Link
-          className="rounded-full p-2 hover:bg-muted"
+          className="rounded-full p-2 hover:bg-soft-stone"
           href={`/kitchen/recipes/${recipeId}`}
         >
           <ArrowLeft className="h-5 w-5" />
         </Link>
-        <h1 className="text-lg font-semibold">Recipe Viewer</h1>
+        <h1 className="text-lg font-semibold text-ink">Recipe Viewer</h1>
       </header>
 
       <MobileRecipeClient recipeId={recipeId} tenantId={tenantId} />
-    </>
+    </div>
   );
 };
 

@@ -38,7 +38,10 @@ const priorityConfig: Record<
 > = {
   high: { color: "bg-red-50 text-red-700 border-red-200", icon: AlertTriangle },
   medium: { color: "bg-amber-50 text-amber-700 border-amber-200", icon: Clock },
-  low: { color: "bg-blue-50 text-blue-700 border-blue-200", icon: Sparkles },
+  low: {
+    color: "border-hairline bg-pale-blue/40 text-action-blue",
+    icon: Sparkles,
+  },
 };
 
 export function SuggestionsPanel({
@@ -57,10 +60,10 @@ export function SuggestionsPanel({
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex items-center justify-between border-b bg-muted/50 px-4 py-3">
+      <div className="flex items-center justify-between border-b border-hairline bg-soft-stone/40 px-4 py-3">
         <div className="flex items-center gap-2">
-          <Sparkles className="h-4 w-4 text-purple-600" />
-          <h2 className="font-semibold text-sm">
+          <Sparkles className="h-4 w-4 text-action-blue" />
+          <h2 className="font-semibold text-ink text-sm">
             AI Suggestions ({suggestions.length})
           </h2>
         </div>
@@ -117,7 +120,7 @@ export function SuggestionsPanel({
 
               return (
                 <Card
-                  className="overflow-hidden transition-all duration-200 hover:shadow-md"
+                  className="overflow-hidden border-hairline transition-colors duration-200 hover:bg-soft-stone/20"
                   key={suggestion.id}
                 >
                   <CardHeader className="space-y-2 pb-3">

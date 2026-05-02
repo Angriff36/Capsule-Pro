@@ -8,9 +8,9 @@
 import { database } from "@repo/database";
 import { NextRequest } from "next/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { GET as listPeriods } from "@/app/api/payroll/periods/list/route";
 import { GET as getPeriod } from "@/app/api/payroll/periods/[id]/route";
 import { POST as createPeriod } from "@/app/api/payroll/periods/commands/create/route";
+import { GET as listPeriods } from "@/app/api/payroll/periods/list/route";
 
 // Mock dependencies
 vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
@@ -70,7 +70,9 @@ describe("Payroll Periods API", () => {
         orgId: null,
       } as never);
 
-      const request = new NextRequest("http://localhost/api/payroll/periods/list");
+      const request = new NextRequest(
+        "http://localhost/api/payroll/periods/list"
+      );
       const response = await listPeriods(request);
 
       expect(response.status).toBe(401);
@@ -82,7 +84,9 @@ describe("Payroll Periods API", () => {
     it("should return 400 when tenant not found", async () => {
       vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
 
-      const request = new NextRequest("http://localhost/api/payroll/periods/list");
+      const request = new NextRequest(
+        "http://localhost/api/payroll/periods/list"
+      );
       const response = await listPeriods(request);
 
       expect(response.status).toBe(400);
@@ -106,7 +110,9 @@ describe("Payroll Periods API", () => {
         mockPeriods as never
       );
 
-      const request = new NextRequest("http://localhost/api/payroll/periods/list");
+      const request = new NextRequest(
+        "http://localhost/api/payroll/periods/list"
+      );
       const response = await listPeriods(request);
 
       expect(response.status).toBe(200);
@@ -120,7 +126,9 @@ describe("Payroll Periods API", () => {
         [] as never
       );
 
-      const request = new NextRequest("http://localhost/api/payroll/periods/list");
+      const request = new NextRequest(
+        "http://localhost/api/payroll/periods/list"
+      );
       await listPeriods(request);
 
       expect(database.payroll_periods.findMany).toHaveBeenCalledWith(
@@ -138,7 +146,9 @@ describe("Payroll Periods API", () => {
         [] as never
       );
 
-      const request = new NextRequest("http://localhost/api/payroll/periods/list");
+      const request = new NextRequest(
+        "http://localhost/api/payroll/periods/list"
+      );
       await listPeriods(request);
 
       expect(database.payroll_periods.findMany).toHaveBeenCalledWith(
@@ -153,7 +163,9 @@ describe("Payroll Periods API", () => {
         new Error("Database connection failed")
       );
 
-      const request = new NextRequest("http://localhost/api/payroll/periods/list");
+      const request = new NextRequest(
+        "http://localhost/api/payroll/periods/list"
+      );
       const response = await listPeriods(request);
 
       expect(response.status).toBe(500);

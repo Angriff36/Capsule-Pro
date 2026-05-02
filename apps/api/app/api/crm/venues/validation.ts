@@ -30,9 +30,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function isVenueType(value: unknown): value is VenueType {
-  return (
-    typeof value === "string" && VENUE_TYPES.includes(value as VenueType)
-  );
+  return typeof value === "string" && VENUE_TYPES.includes(value as VenueType);
 }
 
 function validateOptionalString(
@@ -116,7 +114,10 @@ export function validateCreateVenueRequest(
 ): asserts body is CreateVenueInput {
   invariant(isRecord(body), "Request body must be an object");
 
-  invariant(typeof body.name === "string", "name is required and must be a string");
+  invariant(
+    typeof body.name === "string",
+    "name is required and must be a string"
+  );
   invariant(body.name.trim().length > 0, "name must not be empty");
   invariant(body.name.length <= 200, "name must be at most 200 characters");
 

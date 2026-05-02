@@ -70,24 +70,14 @@ function formatHour(h: number): string {
   return `${h.toFixed(1)}h`;
 }
 
-function getCoverageColor(pct: number): string {
+function getCoverageMeta(pct: number): { text: string; bar: string } {
   if (pct >= 90) {
-    return "text-emerald-600";
+    return { text: "text-deep-green", bar: "bg-deep-green" };
   }
   if (pct >= 70) {
-    return "text-amber-600";
+    return { text: "text-muted-foreground", bar: "bg-muted-foreground/40" };
   }
-  return "text-coral";
-}
-
-function getCoverageBar(pct: number): string {
-  if (pct >= 90) {
-    return "bg-emerald-500";
-  }
-  if (pct >= 70) {
-    return "bg-amber-500";
-  }
-  return "bg-coral";
+  return { text: "text-coral", bar: "bg-coral" };
 }
 
 export default function StaffingOverviewPage() {
@@ -223,7 +213,7 @@ export default function StaffingOverviewPage() {
                 </div>
                 <div className="h-3 w-full overflow-hidden rounded-full bg-soft-stone">
                   <div
-                    className={`h-3 rounded-full transition-all ${getCoverageBar(coveragePct)}`}
+                    className={`h-3 rounded-full transition-all ${getCoverageMeta(coveragePct).bar}`}
                     style={{ width: `${coveragePct}%` }}
                   />
                 </div>
@@ -254,14 +244,14 @@ export default function StaffingOverviewPage() {
                             {loc.location_name}
                           </span>
                           <span
-                            className={`font-mono text-xs ${getCoverageColor(loc.coverage_pct)}`}
+                            className={`font-mono text-xs ${getCoverageMeta(loc.coverage_pct).text}`}
                           >
                             {loc.coverage_pct}%
                           </span>
                         </div>
                         <div className="h-2 w-full overflow-hidden rounded-full bg-soft-stone">
                           <div
-                            className={`h-2 rounded-full ${getCoverageBar(loc.coverage_pct)}`}
+                            className={`h-2 rounded-full ${getCoverageMeta(loc.coverage_pct).bar}`}
                             style={{ width: `${loc.coverage_pct}%` }}
                           />
                         </div>
@@ -314,7 +304,7 @@ export default function StaffingOverviewPage() {
                           </div>
                           <div className="h-2 flex-1 overflow-hidden rounded-full bg-soft-stone">
                             <div
-                              className={`h-2 rounded-full ${getCoverageBar(pct)}`}
+                              className={`h-2 rounded-full ${getCoverageMeta(pct).bar}`}
                               style={{ width: `${pct}%` }}
                             />
                           </div>

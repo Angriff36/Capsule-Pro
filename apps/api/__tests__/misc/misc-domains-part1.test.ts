@@ -30,19 +30,17 @@ vi.mock("@repo/database", () => ({
     $disconnect: vi.fn(),
   },
   Prisma: {
-    sql: vi.fn(
-      (strings: TemplateStringsArray, ...values: unknown[]) => ({
-        strings,
-        values,
-        get sql() {
-          return strings.reduce(
-            (acc: string, str: string, i: number) =>
-              acc + str + (values[i] !== undefined ? String(values[i]) : ""),
-            "",
-          );
-        },
-      }),
-    ),
+    sql: vi.fn((strings: TemplateStringsArray, ...values: unknown[]) => ({
+      strings,
+      values,
+      get sql() {
+        return strings.reduce(
+          (acc: string, str: string, i: number) =>
+            acc + str + (values[i] !== undefined ? String(values[i]) : ""),
+          ""
+        );
+      },
+    })),
     join: vi.fn(),
     empty: {},
   },
@@ -65,16 +63,15 @@ vi.mock("@/lib/manifest-response", async () => {
           success: true,
           ...(typeof data === "object" && data !== null ? data : { data }),
         },
-        { status },
+        { status }
       ),
     manifestErrorResponse: (message: string, status: number) =>
       NextResponse.json({ success: false, message }, { status }),
   };
 });
 vi.mock("@/lib/database", async () => {
-  const mod = await vi.importActual<typeof import("@repo/database")>(
-    "@repo/database",
-  );
+  const mod =
+    await vi.importActual<typeof import("@repo/database")>("@repo/database");
   return mod;
 });
 
@@ -93,68 +90,33 @@ const { database } = await import("@repo/database");
 
 // Container
 import { POST as containerCreate } from "@/app/api/container/create/route";
+import { POST as containerDeactivate } from "@/app/api/container/deactivate/route";
 import { POST as containerUpdate } from "@/app/api/container/update/route";
-import {
-  POST as containerDeactivate,
-} from "@/app/api/container/deactivate/route";
 
 // Cycle Count Records
-import {
-  POST as ccrCreate,
-} from "@/app/api/cyclecountrecord/create/route";
-import {
-  POST as ccrUpdate,
-} from "@/app/api/cyclecountrecord/update/route";
-import {
-  POST as ccrRemove,
-} from "@/app/api/cyclecountrecord/remove/route";
-import {
-  POST as ccrVerify,
-} from "@/app/api/cyclecountrecord/verify/route";
-
+import { POST as ccrCreate } from "@/app/api/cyclecountrecord/create/route";
+import { POST as ccrRemove } from "@/app/api/cyclecountrecord/remove/route";
+import { POST as ccrUpdate } from "@/app/api/cyclecountrecord/update/route";
+import { POST as ccrVerify } from "@/app/api/cyclecountrecord/verify/route";
+import { POST as ccsCancel } from "@/app/api/cyclecountsession/cancel/route";
+import { POST as ccsComplete } from "@/app/api/cyclecountsession/complete/route";
 // Cycle Count Sessions
-import {
-  POST as ccsCreate,
-} from "@/app/api/cyclecountsession/create/route";
-import {
-  POST as ccsStart,
-} from "@/app/api/cyclecountsession/start/route";
-import {
-  POST as ccsComplete,
-} from "@/app/api/cyclecountsession/complete/route";
-import {
-  POST as ccsFinalize,
-} from "@/app/api/cyclecountsession/finalize/route";
-import {
-  POST as ccsCancel,
-} from "@/app/api/cyclecountsession/cancel/route";
+import { POST as ccsCreate } from "@/app/api/cyclecountsession/create/route";
+import { POST as ccsFinalize } from "@/app/api/cyclecountsession/finalize/route";
+import { POST as ccsStart } from "@/app/api/cyclecountsession/start/route";
 
 // Locations
 import { GET as locationsList } from "@/app/api/locations/route";
-
+import { POST as overrideAuditAuthorize } from "@/app/api/overrideaudit/authorize/route";
 // Override Audit
-import {
-  POST as overrideAuditCreate,
-} from "@/app/api/overrideaudit/create/route";
-import {
-  POST as overrideAuditAuthorize,
-} from "@/app/api/overrideaudit/authorize/route";
+import { POST as overrideAuditCreate } from "@/app/api/overrideaudit/create/route";
 
 // Performance Prediction
-import {
-  POST as perfPredictionCreate,
-} from "@/app/api/performanceprediction/create/route";
-
+import { POST as perfPredictionCreate } from "@/app/api/performanceprediction/create/route";
+import { POST as varianceReportApprove } from "@/app/api/variancereport/approve/route";
 // Variance Reports
-import {
-  POST as varianceReportCreate,
-} from "@/app/api/variancereport/create/route";
-import {
-  POST as varianceReportReview,
-} from "@/app/api/variancereport/review/route";
-import {
-  POST as varianceReportApprove,
-} from "@/app/api/variancereport/approve/route";
+import { POST as varianceReportCreate } from "@/app/api/variancereport/create/route";
+import { POST as varianceReportReview } from "@/app/api/variancereport/review/route";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -203,7 +165,7 @@ async function assertManifestCommandRoute(
   path: string,
   command: string,
   entityName: string,
-  body: Record<string, unknown>,
+  body: Record<string, unknown>
 ) {
   const mockRunCommand = vi.fn();
 
@@ -250,7 +212,7 @@ async function assertManifestCommandRoute(
   expect(mockRunCommand).toHaveBeenCalledWith(
     command,
     expect.objectContaining(body),
-    { entityName },
+    { entityName }
   );
   expect(createManifestRuntime).toHaveBeenCalledWith({
     user: { id: TEST_USER_ID, tenantId: TEST_TENANT_ID },
@@ -378,7 +340,7 @@ describe("Misc Domains Part 1", () => {
           "container/create",
           "create",
           "Container",
-          { name: "Pallet Box A", capacity: 100 },
+          { name: "Pallet Box A", capacity: 100 }
         );
       });
     });
@@ -390,7 +352,7 @@ describe("Misc Domains Part 1", () => {
           "container/update",
           "update",
           "Container",
-          { id: "container-001", name: "Updated Box" },
+          { id: "container-001", name: "Updated Box" }
         );
       });
     });
@@ -402,7 +364,7 @@ describe("Misc Domains Part 1", () => {
           "container/deactivate",
           "deactivate",
           "Container",
-          { id: "container-001" },
+          { id: "container-001" }
         );
       });
     });
@@ -420,7 +382,7 @@ describe("Misc Domains Part 1", () => {
           "cyclecountrecord/create",
           "create",
           "CycleCountRecord",
-          { sessionId: "session-001", itemId: "item-001", countedQty: 50 },
+          { sessionId: "session-001", itemId: "item-001", countedQty: 50 }
         );
       });
     });
@@ -432,7 +394,7 @@ describe("Misc Domains Part 1", () => {
           "cyclecountrecord/update",
           "update",
           "CycleCountRecord",
-          { id: "record-001", countedQty: 75 },
+          { id: "record-001", countedQty: 75 }
         );
       });
     });
@@ -444,7 +406,7 @@ describe("Misc Domains Part 1", () => {
           "cyclecountrecord/remove",
           "remove",
           "CycleCountRecord",
-          { id: "record-001" },
+          { id: "record-001" }
         );
       });
     });
@@ -456,7 +418,7 @@ describe("Misc Domains Part 1", () => {
           "cyclecountrecord/verify",
           "verify",
           "CycleCountRecord",
-          { id: "record-001", verifiedBy: "user-002" },
+          { id: "record-001", verifiedBy: "user-002" }
         );
       });
     });
@@ -474,7 +436,7 @@ describe("Misc Domains Part 1", () => {
           "cyclecountsession/create",
           "create",
           "CycleCountSession",
-          { locationId: "loc-001", scheduledDate: "2026-05-01" },
+          { locationId: "loc-001", scheduledDate: "2026-05-01" }
         );
       });
     });
@@ -486,7 +448,7 @@ describe("Misc Domains Part 1", () => {
           "cyclecountsession/start",
           "start",
           "CycleCountSession",
-          { id: "session-001" },
+          { id: "session-001" }
         );
       });
     });
@@ -498,7 +460,7 @@ describe("Misc Domains Part 1", () => {
           "cyclecountsession/complete",
           "complete",
           "CycleCountSession",
-          { id: "session-001" },
+          { id: "session-001" }
         );
       });
     });
@@ -510,7 +472,7 @@ describe("Misc Domains Part 1", () => {
           "cyclecountsession/finalize",
           "finalize",
           "CycleCountSession",
-          { id: "session-001" },
+          { id: "session-001" }
         );
       });
     });
@@ -522,7 +484,7 @@ describe("Misc Domains Part 1", () => {
           "cyclecountsession/cancel",
           "cancel",
           "CycleCountSession",
-          { id: "session-001", reason: "Inventory recount needed" },
+          { id: "session-001", reason: "Inventory recount needed" }
         );
       });
     });
@@ -594,9 +556,7 @@ describe("Misc Domains Part 1", () => {
 
     it("returns locations list for authenticated user", async () => {
       makeAuthedUser();
-      vi.mocked(database.$queryRaw).mockResolvedValue(
-        mockLocations as never,
-      );
+      vi.mocked(database.$queryRaw).mockResolvedValue(mockLocations as never);
 
       const req = new NextRequest("http://localhost/api/locations");
       const res = await locationsList(req);
@@ -622,12 +582,12 @@ describe("Misc Domains Part 1", () => {
 
     it("filters active locations when isActive=true", async () => {
       makeAuthedUser();
-      vi.mocked(database.$queryRaw).mockResolvedValue(
-        [mockLocations[0]] as never,
-      );
+      vi.mocked(database.$queryRaw).mockResolvedValue([
+        mockLocations[0],
+      ] as never);
 
       const req = new NextRequest(
-        "http://localhost/api/locations?isActive=true",
+        "http://localhost/api/locations?isActive=true"
       );
       const res = await locationsList(req);
 
@@ -651,7 +611,7 @@ describe("Misc Domains Part 1", () => {
     it("returns 500 on database error", async () => {
       makeAuthedUser();
       vi.mocked(database.$queryRaw).mockRejectedValue(
-        new Error("DB connection lost"),
+        new Error("DB connection lost")
       );
 
       const req = new NextRequest("http://localhost/api/locations");
@@ -665,9 +625,7 @@ describe("Misc Domains Part 1", () => {
     it("enforces tenant isolation — only returns locations for user's tenant", async () => {
       // First call: tenant A
       makeAuthedUser(TEST_TENANT_ID);
-      vi.mocked(database.$queryRaw).mockResolvedValue(
-        mockLocations as never,
-      );
+      vi.mocked(database.$queryRaw).mockResolvedValue(mockLocations as never);
 
       const reqA = new NextRequest("http://localhost/api/locations");
       const resA = await locationsList(reqA);
@@ -698,7 +656,7 @@ describe("Misc Domains Part 1", () => {
           "overrideaudit/create",
           "create",
           "OverrideAudit",
-          { reason: "Emergency override", entityType: "Schedule" },
+          { reason: "Emergency override", entityType: "Schedule" }
         );
       });
     });
@@ -710,7 +668,7 @@ describe("Misc Domains Part 1", () => {
           "overrideaudit/authorize",
           "authorize",
           "OverrideAudit",
-          { id: "audit-001", authorizedBy: "admin-001" },
+          { id: "audit-001", authorizedBy: "admin-001" }
         );
       });
     });
@@ -732,7 +690,7 @@ describe("Misc Domains Part 1", () => {
             employeeId: "emp-001",
             predictionDate: "2026-05-15",
             metrics: { productivity: 0.85, quality: 0.92 },
-          },
+          }
         );
       });
     });
@@ -754,7 +712,7 @@ describe("Misc Domains Part 1", () => {
             periodStart: "2026-04-01",
             periodEnd: "2026-04-30",
             category: "food_cost",
-          },
+          }
         );
       });
     });
@@ -770,7 +728,7 @@ describe("Misc Domains Part 1", () => {
             id: "report-001",
             reviewerId: "user-002",
             notes: "Reviewed variance — within tolerance",
-          },
+          }
         );
       });
     });
@@ -782,7 +740,7 @@ describe("Misc Domains Part 1", () => {
           "variancereport/approve",
           "approve",
           "VarianceReport",
-          { id: "report-001", approverId: "admin-001" },
+          { id: "report-001", approverId: "admin-001" }
         );
       });
     });

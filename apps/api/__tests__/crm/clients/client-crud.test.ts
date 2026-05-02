@@ -8,10 +8,10 @@
 
 import { NextRequest } from "next/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { POST as createClient } from "@/app/api/client/create/route";
-import { POST as updateClient } from "@/app/api/client/update/route";
 import { POST as archiveClient } from "@/app/api/client/archive/route";
+import { POST as createClient } from "@/app/api/client/create/route";
 import { POST as reactivateClient } from "@/app/api/client/reactivate/route";
+import { POST as updateClient } from "@/app/api/client/update/route";
 
 // Mock dependencies
 vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
@@ -322,10 +322,13 @@ describe("Client CRUD API", () => {
         emittedEvents: [{ type: "ClientReactivated" }],
       });
 
-      const request = new NextRequest("http://localhost/api/client/reactivate", {
-        method: "POST",
-        body: JSON.stringify({ id: "client-001" }),
-      });
+      const request = new NextRequest(
+        "http://localhost/api/client/reactivate",
+        {
+          method: "POST",
+          body: JSON.stringify({ id: "client-001" }),
+        }
+      );
       const response = await reactivateClient(request);
 
       expect(response.status).toBe(200);
@@ -345,10 +348,13 @@ describe("Client CRUD API", () => {
         orgId: null,
       } as never);
 
-      const request = new NextRequest("http://localhost/api/client/reactivate", {
-        method: "POST",
-        body: JSON.stringify({ id: "client-001" }),
-      });
+      const request = new NextRequest(
+        "http://localhost/api/client/reactivate",
+        {
+          method: "POST",
+          body: JSON.stringify({ id: "client-001" }),
+        }
+      );
       const response = await reactivateClient(request);
 
       expect(response.status).toBe(401);
@@ -363,10 +369,13 @@ describe("Client CRUD API", () => {
         },
       });
 
-      const request = new NextRequest("http://localhost/api/client/reactivate", {
-        method: "POST",
-        body: JSON.stringify({ id: "client-001" }),
-      });
+      const request = new NextRequest(
+        "http://localhost/api/client/reactivate",
+        {
+          method: "POST",
+          body: JSON.stringify({ id: "client-001" }),
+        }
+      );
       const response = await reactivateClient(request);
 
       expect(response.status).toBe(422);

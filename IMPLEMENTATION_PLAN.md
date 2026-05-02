@@ -1,6 +1,6 @@
 # Capsule-Pro Implementation Plan — Live Queue
 
-> **Last updated:** 2026-05-01 (procurement vendors API surface test coverage added — 45 tests, 7 routes). **Convention:** this file is the **live queue only**. Completed pass write-ups are archived, not appended here. See the **Archive Map** at the bottom for history.
+> **Last updated:** 2026-05-02 (editorial / DESIGN parity followups queued — see Open followups). **Convention:** this file is the **live queue only**. Completed pass write-ups are archived, not appended here. See the **Archive Map** at the bottom for history.
 
 **ULTIMATE GOAL:** Every UI button, modal, and form must actually work when clicked.
 
@@ -387,6 +387,18 @@ All 33 placeholder occurrences across 12 event files replaced with consistent, u
 - **725 routes in manifest** vs **710 route directories in filesystem** — 15 route gap
 - **6 quarantined manifests** in `manifests-disabled/`: digital-twin, facility, knowledge-base, payment-reconciliation, prep-task-dependency, quality-control
 - **111 entities lack documentation** (expected in `docs/entities/`)
+
+---
+
+## Open followups — editorial / DESIGN surfaces
+
+**Problem:** With `html.dark` on the shell, global `--foreground` / `--muted-foreground` implied dark chrome while the main column stays light (paper); fix is token rescoping (`.editorial-surface-reset` in `packages/design-system/styles/globals.css`) and DESIGN utilities, not font swaps.
+
+**Done (foundation + partial Kitchen):** Portaled primitives carry editorial reset (`SheetContent`, `DialogContent`, `SelectContent`, `PopoverContent`, `DropdownMenuContent` in `packages/design-system/components/ui/`). Kitchen: mobile recipe/detail tabs, recipe edit sheet, prep-lists/waste mobile, production board, task card, suggestions panel (as of 2026-05-02 handoff).
+
+**Still to burn down:** Kitchen — `allergens/*`, `menu-builder-editor.tsx`, other recipe modals (`edit-dish-dialog`, …), `kitchen-dashboard`, remaining `slate-` / `dark:` / white `shadow-sm` under `apps/app/app/(authenticated)/kitchen`. Authenticated areas outside Kitchen — `PageCanvas` + editorial wrapper (Option B) for scheduling, tools, payroll, settings, etc.
+
+**Hygiene:** Redundant per-route `editorial-surface-reset` on portal `*Content` can be dropped when touching call sites (defaults now in design-system). `SelectTrigger` still uses `dark:` in `select.tsx` — separate pass if triggers look wrong on paper.
 
 ---
 

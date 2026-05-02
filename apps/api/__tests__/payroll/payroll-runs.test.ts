@@ -8,8 +8,8 @@
 import { database } from "@repo/database";
 import { NextRequest } from "next/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { GET as listRuns } from "@/app/api/payroll/runs/list/route";
 import { GET as getRun } from "@/app/api/payroll/runs/[id]/route";
+import { GET as listRuns } from "@/app/api/payroll/runs/list/route";
 
 // Mock dependencies
 vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
@@ -30,9 +30,9 @@ function createMockRun(overrides: Record<string, unknown> = {}) {
     tenant_id: TEST_TENANT_ID,
     period_id: "period-001",
     status: "pending",
-    total_gross: 15000.0,
+    total_gross: 15_000.0,
     total_deductions: 3500.0,
-    total_net: 11500.0,
+    total_net: 11_500.0,
     employee_count: 10,
     processed_at: null,
     created_at: new Date("2026-01-15"),
@@ -105,9 +105,7 @@ describe("Payroll Runs API", () => {
     });
 
     it("should filter by tenant_id and exclude soft-deleted", async () => {
-      vi.mocked(database.payroll_runs.findMany).mockResolvedValue(
-        [] as never
-      );
+      vi.mocked(database.payroll_runs.findMany).mockResolvedValue([] as never);
 
       const request = new NextRequest("http://localhost/api/payroll/runs/list");
       await listRuns(request);
@@ -123,9 +121,7 @@ describe("Payroll Runs API", () => {
     });
 
     it("should order results by created_at descending", async () => {
-      vi.mocked(database.payroll_runs.findMany).mockResolvedValue(
-        [] as never
-      );
+      vi.mocked(database.payroll_runs.findMany).mockResolvedValue([] as never);
 
       const request = new NextRequest("http://localhost/api/payroll/runs/list");
       await listRuns(request);
@@ -152,9 +148,7 @@ describe("Payroll Runs API", () => {
     });
 
     it("should return empty array when no runs exist", async () => {
-      vi.mocked(database.payroll_runs.findMany).mockResolvedValue(
-        [] as never
-      );
+      vi.mocked(database.payroll_runs.findMany).mockResolvedValue([] as never);
 
       const request = new NextRequest("http://localhost/api/payroll/runs/list");
       const response = await listRuns(request);
@@ -171,7 +165,7 @@ describe("Payroll Runs API", () => {
       const mockRun = createMockRun({
         id: "run-001",
         status: "completed",
-        total_net: 11500.0,
+        total_net: 11_500.0,
       });
 
       vi.mocked(database.payroll_runs.findFirst).mockResolvedValue(

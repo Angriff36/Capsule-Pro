@@ -45,9 +45,8 @@ vi.mock("@/app/lib/tenant", () => ({
 }));
 vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn() }));
 vi.mock("@/lib/database", async () => {
-  const mod = await vi.importActual<typeof import("@repo/database")>(
-    "@repo/database",
-  );
+  const mod =
+    await vi.importActual<typeof import("@repo/database")>("@repo/database");
   return mod;
 });
 
@@ -124,7 +123,7 @@ function getCountArgs(): { where: Record<string, unknown> } {
 }
 
 function makeActivity(
-  overrides: Record<string, unknown> = {},
+  overrides: Record<string, unknown> = {}
 ): Record<string, unknown> {
   return {
     id: "act-001",
@@ -229,7 +228,7 @@ describe("Activity Feed API", () => {
         ];
         vi.mocked(database.activityFeed.count).mockResolvedValue(2);
         vi.mocked(database.activityFeed.findMany).mockResolvedValue(
-          acts as never,
+          acts as never
         );
 
         const response = await getList(makeListRequest());
@@ -246,11 +245,11 @@ describe("Activity Feed API", () => {
         const acts = [makeActivity({ id: "act-1" })];
         vi.mocked(database.activityFeed.count).mockResolvedValue(50);
         vi.mocked(database.activityFeed.findMany).mockResolvedValue(
-          acts as never,
+          acts as never
         );
 
         const response = await getList(
-          makeListRequest({ limit: "1", offset: "0" }),
+          makeListRequest({ limit: "1", offset: "0" })
         );
 
         const body = await response.json();
@@ -297,7 +296,7 @@ describe("Activity Feed API", () => {
             importance: "high",
             sourceType: "ui",
             correlationId: "corr-99",
-          }),
+          })
         );
 
         const findCall = getFindManyArgs();
@@ -405,7 +404,7 @@ describe("Activity Feed API", () => {
         vi.mocked(database.activityFeed.findMany).mockResolvedValue([]);
 
         await getList(
-          makeListRequest({ limit: "not-a-number", offset: "also-bad" }),
+          makeListRequest({ limit: "not-a-number", offset: "also-bad" })
         );
 
         const findCall = getFindManyArgs();
@@ -446,7 +445,7 @@ describe("Activity Feed API", () => {
         mockAuth();
         vi.mocked(database.activityFeed.count).mockResolvedValue(10);
         vi.mocked(database.activityFeed.findMany).mockRejectedValue(
-          new Error("findMany failed"),
+          new Error("findMany failed")
         );
 
         const response = await getList(makeListRequest());
@@ -466,7 +465,7 @@ describe("Activity Feed API", () => {
         mockUnauthenticated();
 
         const request = new NextRequest(
-          "http://localhost/api/activity-feed/stats",
+          "http://localhost/api/activity-feed/stats"
         );
         const response = await getStats(request);
 
@@ -480,7 +479,7 @@ describe("Activity Feed API", () => {
         mockNoTenant();
 
         const request = new NextRequest(
-          "http://localhost/api/activity-feed/stats",
+          "http://localhost/api/activity-feed/stats"
         );
         const response = await getStats(request);
 
@@ -515,7 +514,7 @@ describe("Activity Feed API", () => {
           ]);
 
         const request = new NextRequest(
-          "http://localhost/api/activity-feed/stats",
+          "http://localhost/api/activity-feed/stats"
         );
         const response = await getStats(request);
 
@@ -557,7 +556,7 @@ describe("Activity Feed API", () => {
           .mockResolvedValueOnce([]);
 
         const request = new NextRequest(
-          "http://localhost/api/activity-feed/stats",
+          "http://localhost/api/activity-feed/stats"
         );
         const response = await getStats(request);
 
@@ -589,7 +588,7 @@ describe("Activity Feed API", () => {
           .mockResolvedValueOnce([]);
 
         const request = new NextRequest(
-          "http://localhost/api/activity-feed/stats",
+          "http://localhost/api/activity-feed/stats"
         );
         const response = await getStats(request);
 
@@ -606,7 +605,7 @@ describe("Activity Feed API", () => {
         vi.mocked(database.$queryRaw).mockRejectedValueOnce(dbError);
 
         const request = new NextRequest(
-          "http://localhost/api/activity-feed/stats",
+          "http://localhost/api/activity-feed/stats"
         );
         const response = await getStats(request);
 
@@ -627,7 +626,7 @@ describe("Activity Feed API", () => {
           .mockRejectedValueOnce(new Error("byType query failed"));
 
         const request = new NextRequest(
-          "http://localhost/api/activity-feed/stats",
+          "http://localhost/api/activity-feed/stats"
         );
         const response = await getStats(request);
 
@@ -644,7 +643,7 @@ describe("Activity Feed API", () => {
           .mockRejectedValueOnce(new Error("byEntity query failed"));
 
         const request = new NextRequest(
-          "http://localhost/api/activity-feed/stats",
+          "http://localhost/api/activity-feed/stats"
         );
         const response = await getStats(request);
 

@@ -721,10 +721,7 @@ export const ShipmentsPageClient = () => {
                 <h3 className="text-lg font-semibold">
                   Packing List ({selectedShipment.total_items} items)
                 </h3>
-                <Button
-                  onClick={() => setIsAddItemModalOpen(true)}
-                  size="sm"
-                >
+                <Button onClick={() => setIsAddItemModalOpen(true)} size="sm">
                   <PlusIcon className="mr-2 h-4 w-4" />
                   Add Item
                 </Button>
@@ -1058,7 +1055,7 @@ export const ShipmentsPageClient = () => {
       </Dialog>
 
       {/* Add Item Modal */}
-      <Dialog open={isAddItemModalOpen} onOpenChange={setIsAddItemModalOpen}>
+      <Dialog onOpenChange={setIsAddItemModalOpen} open={isAddItemModalOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Add Item to Shipment</DialogTitle>
@@ -1070,10 +1067,10 @@ export const ShipmentsPageClient = () => {
             <div className="space-y-2">
               <Label>Item</Label>
               <Select
-                value={addItemForm.item_id}
                 onValueChange={(v) =>
                   setAddItemForm((f) => ({ ...f, item_id: v }))
                 }
+                value={addItemForm.item_id}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select item" />
@@ -1092,40 +1089,40 @@ export const ShipmentsPageClient = () => {
               <div className="space-y-2">
                 <Label>Quantity</Label>
                 <Input
-                  type="number"
                   min={1}
-                  value={addItemForm.quantity_shipped || ""}
                   onChange={(e) =>
                     setAddItemForm((f) => ({
                       ...f,
                       quantity_shipped: Number(e.target.value),
                     }))
                   }
+                  type="number"
+                  value={addItemForm.quantity_shipped || ""}
                 />
               </div>
               <div className="space-y-2">
                 <Label>Unit Cost</Label>
                 <Input
-                  type="number"
                   min={0}
-                  step={0.01}
-                  value={addItemForm.unit_cost || ""}
                   onChange={(e) =>
                     setAddItemForm((f) => ({
                       ...f,
                       unit_cost: Number(e.target.value),
                     }))
                   }
+                  step={0.01}
+                  type="number"
+                  value={addItemForm.unit_cost || ""}
                 />
               </div>
             </div>
             <div className="space-y-2">
               <Label>Condition</Label>
               <Select
-                value={addItemForm.condition}
                 onValueChange={(v) =>
                   setAddItemForm((f) => ({ ...f, condition: v }))
                 }
+                value={addItemForm.condition}
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -1140,7 +1137,6 @@ export const ShipmentsPageClient = () => {
             <div className="space-y-2">
               <Label>Lot Number</Label>
               <Input
-                value={addItemForm.lot_number}
                 onChange={(e) =>
                   setAddItemForm((f) => ({
                     ...f,
@@ -1148,12 +1144,12 @@ export const ShipmentsPageClient = () => {
                   }))
                 }
                 placeholder="Optional"
+                value={addItemForm.lot_number}
               />
             </div>
             <div className="space-y-2">
               <Label>Condition Notes</Label>
               <Input
-                value={addItemForm.condition_notes}
                 onChange={(e) =>
                   setAddItemForm((f) => ({
                     ...f,
@@ -1161,13 +1157,14 @@ export const ShipmentsPageClient = () => {
                   }))
                 }
                 placeholder="Optional"
+                value={addItemForm.condition_notes}
               />
             </div>
           </div>
           <DialogFooter>
             <Button
-              variant="outline"
               onClick={() => setIsAddItemModalOpen(false)}
+              variant="outline"
             >
               Cancel
             </Button>

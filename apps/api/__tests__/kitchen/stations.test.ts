@@ -29,8 +29,11 @@ vi.mock("@/lib/manifest-response", async () => {
   return {
     manifestSuccessResponse: (data: unknown, status = 200) =>
       NextResponse.json(
-        { success: true, ...(typeof data === "object" && data !== null ? data : { data }) },
-        { status },
+        {
+          success: true,
+          ...(typeof data === "object" && data !== null ? data : { data }),
+        },
+        { status }
       ),
     manifestErrorResponse: (message: string, status: number) =>
       NextResponse.json({ success: false, message }, { status }),
@@ -41,7 +44,8 @@ vi.mock("@/lib/manifest-response", async () => {
 // We alias it to the same `database` mock from @repo/database so both import
 // paths resolve to the same object.
 vi.mock("@/lib/database", async () => {
-  const mod = await vi.importActual<typeof import("@repo/database")>("@repo/database");
+  const mod =
+    await vi.importActual<typeof import("@repo/database")>("@repo/database");
   return mod;
 });
 
@@ -53,15 +57,15 @@ const { createManifestRuntime } = await import("@/lib/manifest-runtime");
 
 // --- Route imports ---
 
-import { POST as createStation } from "@/app/api/station/create/route";
+import { GET as getStationDetail } from "@/app/api/kitchen/stations/[id]/route";
+import { GET as getStationsList } from "@/app/api/kitchen/stations/route";
 import { POST as activateStation } from "@/app/api/station/activate/route";
-import { POST as deactivateStation } from "@/app/api/station/deactivate/route";
 import { POST as assignTask } from "@/app/api/station/assign-task/route";
+import { POST as createStation } from "@/app/api/station/create/route";
+import { POST as deactivateStation } from "@/app/api/station/deactivate/route";
 import { POST as removeTask } from "@/app/api/station/remove-task/route";
 import { POST as updateCapacity } from "@/app/api/station/update-capacity/route";
 import { POST as updateEquipment } from "@/app/api/station/update-equipment/route";
-import { GET as getStationsList } from "@/app/api/kitchen/stations/route";
-import { GET as getStationDetail } from "@/app/api/kitchen/stations/[id]/route";
 
 // --- Constants ---
 
@@ -72,13 +76,16 @@ const TEST_STATION_ID = "s0000000-0000-4000-a000-000000000001";
 
 // --- Helpers ---
 
-function createMockRequest(url: string, options: RequestInit = {}): NextRequest {
+function createMockRequest(
+  url: string,
+  options: RequestInit = {}
+): NextRequest {
   if (options.body && !options.headers) {
     options.headers = { "Content-Type": "application/json" };
   }
   return new NextRequest(
     new URL(url, "http://localhost:3000"),
-    options as ConstructorParameters<typeof NextRequest>[1],
+    options as ConstructorParameters<typeof NextRequest>[1]
   );
 }
 
@@ -90,7 +97,10 @@ function mockAuth() {
   vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
 }
 
-function mockSuccessfulRunCommand(result: unknown = { id: TEST_STATION_ID }, emittedEvents: unknown[] = []) {
+function mockSuccessfulRunCommand(
+  result: unknown = { id: TEST_STATION_ID },
+  emittedEvents: unknown[] = []
+) {
   vi.mocked(createManifestRuntime).mockResolvedValue({
     runCommand: vi.fn().mockResolvedValue({
       success: true,
@@ -162,13 +172,19 @@ describe("Kitchen Stations API", () => {
 
   describe("Authentication", () => {
     it("returns 401 when user is not authenticated (no userId)", async () => {
-      vi.mocked(auth).mockResolvedValue({ orgId: TEST_ORG_ID, userId: null } as never);
+      vi.mocked(auth).mockResolvedValue({
+        orgId: TEST_ORG_ID,
+        userId: null,
+      } as never);
       vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
 
-      const req = createMockRequest("http://localhost:3000/api/station/create", {
-        method: "POST",
-        body: JSON.stringify({ name: "Grill Station" }),
-      });
+      const req = createMockRequest(
+        "http://localhost:3000/api/station/create",
+        {
+          method: "POST",
+          body: JSON.stringify({ name: "Grill Station" }),
+        }
+      );
 
       const res = await createStation(req);
       expect(res.status).toBe(401);
@@ -178,25 +194,37 @@ describe("Kitchen Stations API", () => {
     });
 
     it("returns 401 when orgId is missing", async () => {
-      vi.mocked(auth).mockResolvedValue({ orgId: null, userId: TEST_USER_ID } as never);
+      vi.mocked(auth).mockResolvedValue({
+        orgId: null,
+        userId: TEST_USER_ID,
+      } as never);
 
-      const req = createMockRequest("http://localhost:3000/api/station/activate", {
-        method: "POST",
-        body: JSON.stringify({ id: TEST_STATION_ID }),
-      });
+      const req = createMockRequest(
+        "http://localhost:3000/api/station/activate",
+        {
+          method: "POST",
+          body: JSON.stringify({ id: TEST_STATION_ID }),
+        }
+      );
 
       const res = await activateStation(req);
       expect(res.status).toBe(401);
     });
 
     it("returns 400 when tenant is not found for org", async () => {
-      vi.mocked(auth).mockResolvedValue({ orgId: TEST_ORG_ID, userId: TEST_USER_ID } as never);
+      vi.mocked(auth).mockResolvedValue({
+        orgId: TEST_ORG_ID,
+        userId: TEST_USER_ID,
+      } as never);
       vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
 
-      const req = createMockRequest("http://localhost:3000/api/station/create", {
-        method: "POST",
-        body: JSON.stringify({ name: "Grill Station" }),
-      });
+      const req = createMockRequest(
+        "http://localhost:3000/api/station/create",
+        {
+          method: "POST",
+          body: JSON.stringify({ name: "Grill Station" }),
+        }
+      );
 
       const res = await createStation(req);
       expect(res.status).toBe(400);
@@ -212,17 +240,25 @@ describe("Kitchen Stations API", () => {
   describe("POST /api/station/create", () => {
     it("creates a station and returns 200 with result and events", async () => {
       mockAuth();
-      const emittedEvents = [{ type: "StationCreated", stationId: TEST_STATION_ID }];
-      mockSuccessfulRunCommand({ id: TEST_STATION_ID, name: "Grill Station" }, emittedEvents);
+      const emittedEvents = [
+        { type: "StationCreated", stationId: TEST_STATION_ID },
+      ];
+      mockSuccessfulRunCommand(
+        { id: TEST_STATION_ID, name: "Grill Station" },
+        emittedEvents
+      );
 
-      const req = createMockRequest("http://localhost:3000/api/station/create", {
-        method: "POST",
-        body: JSON.stringify({
-          name: "Grill Station",
-          stationType: "cooking",
-          capacitySimultaneousTasks: 5,
-        }),
-      });
+      const req = createMockRequest(
+        "http://localhost:3000/api/station/create",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            name: "Grill Station",
+            stationType: "cooking",
+            capacitySimultaneousTasks: 5,
+          }),
+        }
+      );
 
       const res = await createStation(req);
       expect(res.status).toBe(200);
@@ -236,12 +272,17 @@ describe("Kitchen Stations API", () => {
 
     it("returns 500 when an unexpected error is thrown", async () => {
       mockAuth();
-      vi.mocked(createManifestRuntime).mockRejectedValue(new Error("DB connection lost"));
+      vi.mocked(createManifestRuntime).mockRejectedValue(
+        new Error("DB connection lost")
+      );
 
-      const req = createMockRequest("http://localhost:3000/api/station/create", {
-        method: "POST",
-        body: JSON.stringify({ name: "Fail Station" }),
-      });
+      const req = createMockRequest(
+        "http://localhost:3000/api/station/create",
+        {
+          method: "POST",
+          body: JSON.stringify({ name: "Fail Station" }),
+        }
+      );
 
       const res = await createStation(req);
       expect(res.status).toBe(500);
@@ -259,10 +300,13 @@ describe("Kitchen Stations API", () => {
       mockAuth();
       mockSuccessfulRunCommand({ id: TEST_STATION_ID, isActive: true });
 
-      const req = createMockRequest("http://localhost:3000/api/station/activate", {
-        method: "POST",
-        body: JSON.stringify({ id: TEST_STATION_ID }),
-      });
+      const req = createMockRequest(
+        "http://localhost:3000/api/station/activate",
+        {
+          method: "POST",
+          body: JSON.stringify({ id: TEST_STATION_ID }),
+        }
+      );
 
       const res = await activateStation(req);
       expect(res.status).toBe(200);
@@ -276,10 +320,13 @@ describe("Kitchen Stations API", () => {
       mockAuth();
       mockSuccessfulRunCommand({ id: TEST_STATION_ID, isActive: false });
 
-      const req = createMockRequest("http://localhost:3000/api/station/deactivate", {
-        method: "POST",
-        body: JSON.stringify({ id: TEST_STATION_ID }),
-      });
+      const req = createMockRequest(
+        "http://localhost:3000/api/station/deactivate",
+        {
+          method: "POST",
+          body: JSON.stringify({ id: TEST_STATION_ID }),
+        }
+      );
 
       const res = await deactivateStation(req);
       expect(res.status).toBe(200);
@@ -297,10 +344,16 @@ describe("Kitchen Stations API", () => {
       mockAuth();
       mockSuccessfulRunCommand({ id: TEST_STATION_ID, taskId: "task-001" });
 
-      const req = createMockRequest("http://localhost:3000/api/station/assign-task", {
-        method: "POST",
-        body: JSON.stringify({ stationId: TEST_STATION_ID, taskId: "task-001" }),
-      });
+      const req = createMockRequest(
+        "http://localhost:3000/api/station/assign-task",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            stationId: TEST_STATION_ID,
+            taskId: "task-001",
+          }),
+        }
+      );
 
       const res = await assignTask(req);
       expect(res.status).toBe(200);
@@ -312,12 +365,22 @@ describe("Kitchen Stations API", () => {
   describe("POST /api/station/remove-task", () => {
     it("removes a task from a station", async () => {
       mockAuth();
-      mockSuccessfulRunCommand({ id: TEST_STATION_ID, taskId: "task-001", removed: true });
-
-      const req = createMockRequest("http://localhost:3000/api/station/remove-task", {
-        method: "POST",
-        body: JSON.stringify({ stationId: TEST_STATION_ID, taskId: "task-001" }),
+      mockSuccessfulRunCommand({
+        id: TEST_STATION_ID,
+        taskId: "task-001",
+        removed: true,
       });
+
+      const req = createMockRequest(
+        "http://localhost:3000/api/station/remove-task",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            stationId: TEST_STATION_ID,
+            taskId: "task-001",
+          }),
+        }
+      );
 
       const res = await removeTask(req);
       expect(res.status).toBe(200);
@@ -333,12 +396,21 @@ describe("Kitchen Stations API", () => {
   describe("POST /api/station/update-capacity", () => {
     it("updates the capacity of a station", async () => {
       mockAuth();
-      mockSuccessfulRunCommand({ id: TEST_STATION_ID, capacitySimultaneousTasks: 10 });
-
-      const req = createMockRequest("http://localhost:3000/api/station/update-capacity", {
-        method: "POST",
-        body: JSON.stringify({ id: TEST_STATION_ID, capacitySimultaneousTasks: 10 }),
+      mockSuccessfulRunCommand({
+        id: TEST_STATION_ID,
+        capacitySimultaneousTasks: 10,
       });
+
+      const req = createMockRequest(
+        "http://localhost:3000/api/station/update-capacity",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            id: TEST_STATION_ID,
+            capacitySimultaneousTasks: 10,
+          }),
+        }
+      );
 
       const res = await updateCapacity(req);
       expect(res.status).toBe(200);
@@ -350,12 +422,21 @@ describe("Kitchen Stations API", () => {
   describe("POST /api/station/update-equipment", () => {
     it("updates the equipment list of a station", async () => {
       mockAuth();
-      mockSuccessfulRunCommand({ id: TEST_STATION_ID, equipmentList: ["grill", "oven", "blender"] });
-
-      const req = createMockRequest("http://localhost:3000/api/station/update-equipment", {
-        method: "POST",
-        body: JSON.stringify({ id: TEST_STATION_ID, equipmentList: ["grill", "oven", "blender"] }),
+      mockSuccessfulRunCommand({
+        id: TEST_STATION_ID,
+        equipmentList: ["grill", "oven", "blender"],
       });
+
+      const req = createMockRequest(
+        "http://localhost:3000/api/station/update-equipment",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            id: TEST_STATION_ID,
+            equipmentList: ["grill", "oven", "blender"],
+          }),
+        }
+      );
 
       const res = await updateEquipment(req);
       expect(res.status).toBe(200);
@@ -373,10 +454,13 @@ describe("Kitchen Stations API", () => {
       mockAuth();
       mockPolicyDenialRunCommand("StationWritePolicy");
 
-      const req = createMockRequest("http://localhost:3000/api/station/create", {
-        method: "POST",
-        body: JSON.stringify({ name: "Unauthorized Station" }),
-      });
+      const req = createMockRequest(
+        "http://localhost:3000/api/station/create",
+        {
+          method: "POST",
+          body: JSON.stringify({ name: "Unauthorized Station" }),
+        }
+      );
 
       const res = await createStation(req);
       expect(res.status).toBe(403);
@@ -387,28 +471,42 @@ describe("Kitchen Stations API", () => {
 
     it("returns 422 on guard failure", async () => {
       mockAuth();
-      mockGuardFailureRunCommand(0, "capacitySimultaneousTasks must be positive");
+      mockGuardFailureRunCommand(
+        0,
+        "capacitySimultaneousTasks must be positive"
+      );
 
-      const req = createMockRequest("http://localhost:3000/api/station/update-capacity", {
-        method: "POST",
-        body: JSON.stringify({ id: TEST_STATION_ID, capacitySimultaneousTasks: -1 }),
-      });
+      const req = createMockRequest(
+        "http://localhost:3000/api/station/update-capacity",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            id: TEST_STATION_ID,
+            capacitySimultaneousTasks: -1,
+          }),
+        }
+      );
 
       const res = await updateCapacity(req);
       expect(res.status).toBe(422);
       const body = await res.json();
       expect(body.message).toContain("Guard 0 failed");
-      expect(body.message).toContain("capacitySimultaneousTasks must be positive");
+      expect(body.message).toContain(
+        "capacitySimultaneousTasks must be positive"
+      );
     });
 
     it("returns 400 on generic command failure", async () => {
       mockAuth();
       mockFailedRunCommand("Station name is required");
 
-      const req = createMockRequest("http://localhost:3000/api/station/create", {
-        method: "POST",
-        body: JSON.stringify({}),
-      });
+      const req = createMockRequest(
+        "http://localhost:3000/api/station/create",
+        {
+          method: "POST",
+          body: JSON.stringify({}),
+        }
+      );
 
       const res = await createStation(req);
       expect(res.status).toBe(400);
@@ -427,14 +525,22 @@ describe("Kitchen Stations API", () => {
 
       const mockStations = [
         createMockStation({ id: "s-001", name: "Grill Station" }),
-        createMockStation({ id: "s-002", name: "Prep Station", stationType: "prep" }),
+        createMockStation({
+          id: "s-002",
+          name: "Prep Station",
+          stationType: "prep",
+        }),
       ];
 
-      vi.mocked(database.station.findMany).mockResolvedValue(mockStations as never);
+      vi.mocked(database.station.findMany).mockResolvedValue(
+        mockStations as never
+      );
       vi.mocked(database.station.count).mockResolvedValue(2);
       vi.mocked(database.prepListItem.count).mockResolvedValue(3);
 
-      const req = createMockRequest("http://localhost:3000/api/kitchen/stations");
+      const req = createMockRequest(
+        "http://localhost:3000/api/kitchen/stations"
+      );
       const res = await getStationsList(req);
 
       expect(res.status).toBe(200);
@@ -454,7 +560,9 @@ describe("Kitchen Stations API", () => {
       vi.mocked(database.station.findMany).mockResolvedValue([] as never);
       vi.mocked(database.station.count).mockResolvedValue(0);
 
-      const req = createMockRequest("http://localhost:3000/api/kitchen/stations?stationType=cooking");
+      const req = createMockRequest(
+        "http://localhost:3000/api/kitchen/stations?stationType=cooking"
+      );
       await getStationsList(req);
 
       expect(database.station.findMany).toHaveBeenCalledWith(
@@ -464,7 +572,7 @@ describe("Kitchen Stations API", () => {
               expect.objectContaining({ stationType: "cooking" }),
             ]),
           }),
-        }),
+        })
       );
     });
 
@@ -473,7 +581,9 @@ describe("Kitchen Stations API", () => {
       vi.mocked(database.station.findMany).mockResolvedValue([] as never);
       vi.mocked(database.station.count).mockResolvedValue(0);
 
-      const req = createMockRequest("http://localhost:3000/api/kitchen/stations?isActive=true");
+      const req = createMockRequest(
+        "http://localhost:3000/api/kitchen/stations?isActive=true"
+      );
       await getStationsList(req);
 
       expect(database.station.findMany).toHaveBeenCalledWith(
@@ -483,7 +593,7 @@ describe("Kitchen Stations API", () => {
               expect.objectContaining({ isActive: true }),
             ]),
           }),
-        }),
+        })
       );
     });
 
@@ -492,7 +602,9 @@ describe("Kitchen Stations API", () => {
       vi.mocked(database.station.findMany).mockResolvedValue([] as never);
       vi.mocked(database.station.count).mockResolvedValue(0);
 
-      const req = createMockRequest("http://localhost:3000/api/kitchen/stations?search=grill");
+      const req = createMockRequest(
+        "http://localhost:3000/api/kitchen/stations?search=grill"
+      );
       await getStationsList(req);
 
       expect(database.station.findMany).toHaveBeenCalledWith(
@@ -504,7 +616,7 @@ describe("Kitchen Stations API", () => {
               }),
             ]),
           }),
-        }),
+        })
       );
     });
 
@@ -513,20 +625,29 @@ describe("Kitchen Stations API", () => {
       vi.mocked(database.station.findMany).mockResolvedValue([] as never);
       vi.mocked(database.station.count).mockResolvedValue(50);
 
-      const req = createMockRequest("http://localhost:3000/api/kitchen/stations?page=3&limit=10");
+      const req = createMockRequest(
+        "http://localhost:3000/api/kitchen/stations?page=3&limit=10"
+      );
       const res = await getStationsList(req);
 
       const body = await res.json();
-      expect(body.pagination).toEqual({ page: 3, limit: 10, total: 50, totalPages: 5 });
+      expect(body.pagination).toEqual({
+        page: 3,
+        limit: 10,
+        total: 50,
+        totalPages: 5,
+      });
       expect(database.station.findMany).toHaveBeenCalledWith(
-        expect.objectContaining({ take: 10, skip: 20 }),
+        expect.objectContaining({ take: 10, skip: 20 })
       );
     });
 
     it("returns 401 for unauthenticated requests", async () => {
       vi.mocked(auth).mockResolvedValue({ orgId: null } as never);
 
-      const req = createMockRequest("http://localhost:3000/api/kitchen/stations");
+      const req = createMockRequest(
+        "http://localhost:3000/api/kitchen/stations"
+      );
       const res = await getStationsList(req);
 
       expect(res.status).toBe(401);
@@ -534,9 +655,13 @@ describe("Kitchen Stations API", () => {
 
     it("returns 500 on database error", async () => {
       mockAuth();
-      vi.mocked(database.station.findMany).mockRejectedValue(new Error("DB error"));
+      vi.mocked(database.station.findMany).mockRejectedValue(
+        new Error("DB error")
+      );
 
-      const req = createMockRequest("http://localhost:3000/api/kitchen/stations");
+      const req = createMockRequest(
+        "http://localhost:3000/api/kitchen/stations"
+      );
       const res = await getStationsList(req);
 
       expect(res.status).toBe(500);
@@ -547,7 +672,9 @@ describe("Kitchen Stations API", () => {
       vi.mocked(database.station.findMany).mockResolvedValue([] as never);
       vi.mocked(database.station.count).mockResolvedValue(0);
 
-      const req = createMockRequest("http://localhost:3000/api/kitchen/stations");
+      const req = createMockRequest(
+        "http://localhost:3000/api/kitchen/stations"
+      );
       await getStationsList(req);
 
       expect(database.station.findMany).toHaveBeenCalledWith(
@@ -557,7 +684,7 @@ describe("Kitchen Stations API", () => {
               expect.objectContaining({ tenantId: TEST_TENANT_ID }),
             ]),
           }),
-        }),
+        })
       );
     });
   });
@@ -570,9 +697,13 @@ describe("Kitchen Stations API", () => {
     it("returns a station by ID", async () => {
       mockAuth();
       const mockStation = createMockStation();
-      vi.mocked(database.station.findFirst).mockResolvedValue(mockStation as never);
+      vi.mocked(database.station.findFirst).mockResolvedValue(
+        mockStation as never
+      );
 
-      const req = createMockRequest(`http://localhost:3000/api/kitchen/stations/${TEST_STATION_ID}`);
+      const req = createMockRequest(
+        `http://localhost:3000/api/kitchen/stations/${TEST_STATION_ID}`
+      );
       const res = await getStationDetail(req, {
         params: Promise.resolve({ id: TEST_STATION_ID }),
       });
@@ -587,7 +718,9 @@ describe("Kitchen Stations API", () => {
       mockAuth();
       vi.mocked(database.station.findFirst).mockResolvedValue(null);
 
-      const req = createMockRequest("http://localhost:3000/api/kitchen/stations/nonexistent-id");
+      const req = createMockRequest(
+        "http://localhost:3000/api/kitchen/stations/nonexistent-id"
+      );
       const res = await getStationDetail(req, {
         params: Promise.resolve({ id: "nonexistent-id" }),
       });
@@ -602,7 +735,9 @@ describe("Kitchen Stations API", () => {
       vi.mocked(database.station.findFirst).mockResolvedValue(null);
 
       const otherTenantStationId = "x0000000-0000-4000-a000-000000000099";
-      const req = createMockRequest(`http://localhost:3000/api/kitchen/stations/${otherTenantStationId}`);
+      const req = createMockRequest(
+        `http://localhost:3000/api/kitchen/stations/${otherTenantStationId}`
+      );
       await getStationDetail(req, {
         params: Promise.resolve({ id: otherTenantStationId }),
       });
@@ -613,14 +748,16 @@ describe("Kitchen Stations API", () => {
             id: otherTenantStationId,
             tenantId: TEST_TENANT_ID,
           }),
-        }),
+        })
       );
     });
 
     it("returns 401 when unauthenticated", async () => {
       vi.mocked(auth).mockResolvedValue({ orgId: null, userId: null } as never);
 
-      const req = createMockRequest(`http://localhost:3000/api/kitchen/stations/${TEST_STATION_ID}`);
+      const req = createMockRequest(
+        `http://localhost:3000/api/kitchen/stations/${TEST_STATION_ID}`
+      );
       const res = await getStationDetail(req, {
         params: Promise.resolve({ id: TEST_STATION_ID }),
       });
@@ -630,9 +767,13 @@ describe("Kitchen Stations API", () => {
 
     it("returns 500 on database error", async () => {
       mockAuth();
-      vi.mocked(database.station.findFirst).mockRejectedValue(new Error("Connection refused"));
+      vi.mocked(database.station.findFirst).mockRejectedValue(
+        new Error("Connection refused")
+      );
 
-      const req = createMockRequest(`http://localhost:3000/api/kitchen/stations/${TEST_STATION_ID}`);
+      const req = createMockRequest(
+        `http://localhost:3000/api/kitchen/stations/${TEST_STATION_ID}`
+      );
       const res = await getStationDetail(req, {
         params: Promise.resolve({ id: TEST_STATION_ID }),
       });

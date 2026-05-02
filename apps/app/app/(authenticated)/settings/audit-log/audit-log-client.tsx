@@ -134,9 +134,7 @@ function formatTableName(name: string): string {
 function JsonPreview({ label, data }: { label: string; data: unknown }) {
   if (!data) {
     return (
-      <div className="text-sm italic text-muted-foreground">
-        {label}: None
-      </div>
+      <div className="text-sm italic text-muted-foreground">{label}: None</div>
     );
   }
 
@@ -167,8 +165,7 @@ function DetailDialog({ entry }: { entry: AuditLogEntry }) {
         <DialogHeader>
           <DialogTitle>Change Details</DialogTitle>
           <DialogDescription>
-            {formatAction(entry.action)}{" "}
-            {formatTableName(entry.tableName)}
+            {formatAction(entry.action)} {formatTableName(entry.tableName)}
             {entry.performedByName && ` by ${entry.performedByName}`}
           </DialogDescription>
         </DialogHeader>
@@ -200,8 +197,7 @@ function DetailDialog({ entry }: { entry: AuditLogEntry }) {
                 {formatTableName(entry.tableName)}
               </div>
               <div>
-                <span className="font-medium">Schema:</span>{" "}
-                {entry.tableSchema}
+                <span className="font-medium">Schema:</span> {entry.tableSchema}
               </div>
             </div>
             <Separator />
@@ -251,7 +247,8 @@ export function AuditLogClient() {
 
       if (!res.ok) {
         toast.error("Failed to load audit log", {
-          description: (data as { message?: string }).message || "Unknown error",
+          description:
+            (data as { message?: string }).message || "Unknown error",
         });
         return;
       }
@@ -264,7 +261,9 @@ export function AuditLogClient() {
       // Populate table name options on first load or when they come back
       if (auditData.tableNames.length > 0) {
         setTableNames((prev) =>
-          prev.length >= auditData.tableNames.length ? prev : auditData.tableNames
+          prev.length >= auditData.tableNames.length
+            ? prev
+            : auditData.tableNames
         );
       }
     } catch {
@@ -296,15 +295,12 @@ export function AuditLogClient() {
     []
   );
 
-  const handleSearchSubmit = useCallback(
-    (e: React.FormEvent) => {
-      e.preventDefault();
-      // Filter by performed_by is handled server-side via the API
-      // For now, search is client-side post-filter
-      setPage(1);
-    },
-    []
-  );
+  const handleSearchSubmit = useCallback((e: React.FormEvent) => {
+    e.preventDefault();
+    // Filter by performed_by is handled server-side via the API
+    // For now, search is client-side post-filter
+    setPage(1);
+  }, []);
 
   // Client-side search filter on displayed results
   const filteredEntries = search.trim()

@@ -84,7 +84,7 @@ export const RecipesToolbar = ({
   }, []);
 
   const triggerClass =
-    "h-10 min-w-[140px] gap-2 rounded-full border border-[rgba(0,0,0,0.08)] bg-white px-4 font-medium text-[13px] text-[#0d0d0d] shadow-none transition-colors hover:border-[rgba(0,0,0,0.16)] focus:ring-2 focus:ring-[#18E299]/40 focus:ring-offset-0 data-[placeholder]:text-[#666666]";
+    "h-10 min-w-[140px] gap-2 rounded-full border border-border bg-background px-4 font-medium text-[13px] text-foreground shadow-none transition-colors hover:border-ink/20 focus:ring-2 focus:ring-ring/40 focus:ring-offset-0 data-[placeholder]:text-muted-foreground";
 
   return (
     <div className="flex flex-col gap-5">
@@ -93,11 +93,11 @@ export const RecipesToolbar = ({
           onValueChange={(value) => updateParams({ tab: value })}
           value={activeTab}
         >
-          <TabsList className="h-auto gap-1 rounded-full border border-[rgba(0,0,0,0.05)] bg-[#fafafa] p-1">
+          <TabsList className="h-auto gap-1 rounded-full border border-hairline bg-soft-stone p-1">
             {tabs.map((tab) => (
               <TabsTrigger
                 aria-controls={`${tabsId}-content-${tab.value}`}
-                className="h-8 rounded-full border-0 bg-transparent px-4 font-medium text-[13px] text-[#666666] transition-colors hover:text-[#0d0d0d] data-[state=active]:bg-[#0d0d0d] data-[state=active]:text-white data-[state=active]:shadow-[rgba(0,0,0,0.06)_0px_1px_2px]"
+                className="h-8 rounded-full border-0 bg-transparent px-4 font-medium text-[13px] text-muted-foreground transition-colors hover:text-foreground data-[state=active]:bg-ink data-[state=active]:text-white"
                 id={`${tabsId}-trigger-${tab.value}`}
                 key={tab.value}
                 value={tab.value}
@@ -117,7 +117,7 @@ export const RecipesToolbar = ({
         {primaryAction ? (
           <Button
             asChild
-            className="h-10 gap-2 rounded-full bg-[#0d0d0d] px-5 font-medium text-[13px] text-white shadow-[rgba(0,0,0,0.06)_0px_1px_2px] transition-colors hover:bg-[#0d0d0d]/90"
+            className="h-10 gap-2 rounded-full bg-ink px-5 font-medium text-[13px] text-white transition-colors hover:bg-ink/90"
           >
             <Link href={primaryAction.href}>
               <PlusIcon size={14} />
@@ -135,11 +135,11 @@ export const RecipesToolbar = ({
       >
         <div className="relative min-w-[240px] flex-1">
           <SearchIcon
-            className="absolute top-1/2 left-4 size-4 -translate-y-1/2 text-[#666666]"
+            className="absolute top-1/2 left-4 size-4 -translate-y-1/2 text-muted-foreground"
             size={16}
           />
           <Input
-            className="h-10 rounded-full border-[rgba(0,0,0,0.08)] bg-white pl-10 text-[13px] text-[#0d0d0d] placeholder:text-[#666666] focus-visible:border-[#18E299] focus-visible:ring-2 focus-visible:ring-[#18E299]/40 focus-visible:ring-offset-0"
+            className="h-10 rounded-full border-border bg-background pl-10 text-[13px] text-foreground placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:ring-offset-0"
             name="q"
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Search recipes, dishes, or ingredients"
@@ -159,10 +159,10 @@ export const RecipesToolbar = ({
                 id="recipes-filter-category"
                 size="default"
               >
-                <FilterIcon className="text-[#666666]" size={14} />
+                <FilterIcon className="text-muted-foreground" size={14} />
                 <SelectValue placeholder="Category" />
               </SelectTrigger>
-              <SelectContent className="rounded-[16px] border-[rgba(0,0,0,0.05)] shadow-[rgba(0,0,0,0.06)_0px_4px_12px]">
+              <SelectContent className="editorial-surface-reset z-50 rounded-[16px] border border-border bg-popover shadow-md">
                 <SelectItem value="all">All categories</SelectItem>
                 <SelectItem value="main course">Main course</SelectItem>
                 <SelectItem value="appetizer">Appetizer</SelectItem>
@@ -183,7 +183,7 @@ export const RecipesToolbar = ({
               >
                 <SelectValue placeholder="Dietary" />
               </SelectTrigger>
-              <SelectContent className="rounded-[16px] border-[rgba(0,0,0,0.05)] shadow-[rgba(0,0,0,0.06)_0px_4px_12px]">
+              <SelectContent className="editorial-surface-reset z-50 rounded-[16px] border border-border bg-popover shadow-md">
                 <SelectItem value="all">Dietary</SelectItem>
                 <SelectItem value="gf">Gluten free</SelectItem>
                 <SelectItem value="v">Vegetarian</SelectItem>
@@ -203,7 +203,7 @@ export const RecipesToolbar = ({
               >
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
-              <SelectContent className="rounded-[16px] border-[rgba(0,0,0,0.05)] shadow-[rgba(0,0,0,0.06)_0px_4px_12px]">
+              <SelectContent className="editorial-surface-reset z-50 rounded-[16px] border border-border bg-popover shadow-md">
                 <SelectItem value="all">Status</SelectItem>
                 <SelectItem value="active">Active</SelectItem>
                 <SelectItem value="inactive">Paused</SelectItem>
@@ -212,13 +212,13 @@ export const RecipesToolbar = ({
           </>
         ) : (
           <>
-            <div className="h-10 min-w-[140px] rounded-full border border-[rgba(0,0,0,0.08)] bg-white" />
-            <div className="h-10 min-w-[140px] rounded-full border border-[rgba(0,0,0,0.08)] bg-white" />
-            <div className="h-10 min-w-[140px] rounded-full border border-[rgba(0,0,0,0.08)] bg-white" />
+            <div className="h-10 min-w-[140px] rounded-full border border-border bg-background" />
+            <div className="h-10 min-w-[140px] rounded-full border border-border bg-background" />
+            <div className="h-10 min-w-[140px] rounded-full border border-border bg-background" />
           </>
         )}
         <Button
-          className="h-10 rounded-full border border-[rgba(0,0,0,0.08)] bg-white px-5 font-medium text-[13px] text-[#0d0d0d] shadow-none transition-colors hover:border-[rgba(0,0,0,0.16)] hover:bg-[#fafafa]"
+          className="h-10 rounded-full border border-border bg-background px-5 font-medium text-[13px] text-foreground shadow-none transition-colors hover:border-ink/20 hover:bg-soft-stone"
           type="submit"
           variant="outline"
         >

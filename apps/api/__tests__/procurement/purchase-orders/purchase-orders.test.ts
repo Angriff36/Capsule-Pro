@@ -20,9 +20,9 @@
  * mock; routes that issue raw SQL are exercised through database.$queryRaw.
  */
 
+import { database } from "@repo/database";
 import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { database } from "@repo/database";
 
 // ---------------------------------------------------------------------------
 // Mocks
@@ -35,9 +35,8 @@ vi.mock("@/app/lib/tenant", () => ({
 }));
 vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn() }));
 vi.mock("@/lib/database", async () => {
-  const mod = await vi.importActual<typeof import("@repo/database")>(
-    "@repo/database",
-  );
+  const mod =
+    await vi.importActual<typeof import("@repo/database")>("@repo/database");
   return mod;
 });
 
@@ -83,7 +82,7 @@ function noTenant() {
 
 function makeRequest(
   url: string,
-  init: { method?: string; body?: unknown } = {},
+  init: { method?: string; body?: unknown } = {}
 ): NextRequest {
   const headers: Record<string, string> = {};
   let body: BodyInit | undefined;
@@ -150,7 +149,7 @@ describe("Procurement Purchase Orders API", () => {
         "@/app/api/procurement/purchase-orders/list/route"
       );
       const res = await GET(
-        makeRequest("http://localhost/api/procurement/purchase-orders/list"),
+        makeRequest("http://localhost/api/procurement/purchase-orders/list")
       );
       expect(res.status).toBe(401);
     });
@@ -161,7 +160,7 @@ describe("Procurement Purchase Orders API", () => {
         "@/app/api/procurement/purchase-orders/list/route"
       );
       const res = await GET(
-        makeRequest("http://localhost/api/procurement/purchase-orders/list"),
+        makeRequest("http://localhost/api/procurement/purchase-orders/list")
       );
       expect(res.status).toBe(400);
     });
@@ -174,7 +173,9 @@ describe("Procurement Purchase Orders API", () => {
           { quantityOrdered: 5, quantityReceived: 5 },
         ],
       });
-      vi.mocked(database.purchaseOrder.findMany).mockResolvedValue([po] as never);
+      vi.mocked(database.purchaseOrder.findMany).mockResolvedValue([
+        po,
+      ] as never);
       vi.mocked(database.inventorySupplier.findMany).mockResolvedValue([
         { id: VENDOR_ID, name: "Acme Foods" },
       ] as never);
@@ -183,7 +184,7 @@ describe("Procurement Purchase Orders API", () => {
         "@/app/api/procurement/purchase-orders/list/route"
       );
       const res = await GET(
-        makeRequest("http://localhost/api/procurement/purchase-orders/list"),
+        makeRequest("http://localhost/api/procurement/purchase-orders/list")
       );
       const body = await res.json();
 
@@ -204,15 +205,17 @@ describe("Procurement Purchase Orders API", () => {
     it("filters by status when ?status=approved is provided", async () => {
       authOk();
       vi.mocked(database.purchaseOrder.findMany).mockResolvedValue([] as never);
-      vi.mocked(database.inventorySupplier.findMany).mockResolvedValue([] as never);
+      vi.mocked(database.inventorySupplier.findMany).mockResolvedValue(
+        [] as never
+      );
 
       const { GET } = await import(
         "@/app/api/procurement/purchase-orders/list/route"
       );
       await GET(
         makeRequest(
-          "http://localhost/api/procurement/purchase-orders/list?status=approved",
-        ),
+          "http://localhost/api/procurement/purchase-orders/list?status=approved"
+        )
       );
 
       expect(database.purchaseOrder.findMany).toHaveBeenCalledWith(
@@ -222,57 +225,62 @@ describe("Procurement Purchase Orders API", () => {
             deletedAt: null,
             status: "approved",
           }),
-        }),
+        })
       );
     });
 
     it("does NOT filter by status when ?status=all is passed", async () => {
       authOk();
       vi.mocked(database.purchaseOrder.findMany).mockResolvedValue([] as never);
-      vi.mocked(database.inventorySupplier.findMany).mockResolvedValue([] as never);
+      vi.mocked(database.inventorySupplier.findMany).mockResolvedValue(
+        [] as never
+      );
 
       const { GET } = await import(
         "@/app/api/procurement/purchase-orders/list/route"
       );
       await GET(
         makeRequest(
-          "http://localhost/api/procurement/purchase-orders/list?status=all",
-        ),
+          "http://localhost/api/procurement/purchase-orders/list?status=all"
+        )
       );
 
-      const call = vi.mocked(database.purchaseOrder.findMany).mock.calls[0]?.[0];
+      const call = vi.mocked(database.purchaseOrder.findMany).mock
+        .calls[0]?.[0];
       expect(call?.where).not.toHaveProperty("status");
     });
 
     it("excludes soft-deleted POs (deletedAt: null filter)", async () => {
       authOk();
       vi.mocked(database.purchaseOrder.findMany).mockResolvedValue([] as never);
-      vi.mocked(database.inventorySupplier.findMany).mockResolvedValue([] as never);
+      vi.mocked(database.inventorySupplier.findMany).mockResolvedValue(
+        [] as never
+      );
 
       const { GET } = await import(
         "@/app/api/procurement/purchase-orders/list/route"
       );
       await GET(
-        makeRequest("http://localhost/api/procurement/purchase-orders/list"),
+        makeRequest("http://localhost/api/procurement/purchase-orders/list")
       );
 
       expect(database.purchaseOrder.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({ deletedAt: null }),
-        }),
+        })
       );
     });
 
     it("returns 500 with sanitized message on database error", async () => {
       authOk();
       vi.mocked(database.purchaseOrder.findMany).mockRejectedValue(
-        new Error("connection lost"),
+        new Error("connection lost")
       );
       const { GET } = await import(
         "@/app/api/procurement/purchase-orders/list/route"
       );
       const res = await GET(
-        makeRequest("http://localhost/api/procurement/purchase-orders/list"),
+        makeRequest("http://localhost/api/procurement/purchase-orders/list")
       );
       expect(res.status).toBe(500);
       const body = await res.json();
@@ -284,13 +292,15 @@ describe("Procurement Purchase Orders API", () => {
       vi.mocked(database.purchaseOrder.findMany).mockResolvedValue([
         makePO(),
       ] as never);
-      vi.mocked(database.inventorySupplier.findMany).mockResolvedValue([] as never);
+      vi.mocked(database.inventorySupplier.findMany).mockResolvedValue(
+        [] as never
+      );
 
       const { GET } = await import(
         "@/app/api/procurement/purchase-orders/list/route"
       );
       const res = await GET(
-        makeRequest("http://localhost/api/procurement/purchase-orders/list"),
+        makeRequest("http://localhost/api/procurement/purchase-orders/list")
       );
       const body = await res.json();
       expect(body.orders[0].vendor_name).toBeNull();
@@ -307,22 +317,28 @@ describe("Procurement Purchase Orders API", () => {
         "@/app/api/procurement/purchase-orders/[id]/route"
       );
       const res = await GET(
-        makeRequest(`http://localhost/api/procurement/purchase-orders/${PO_ID}`),
-        { params: Promise.resolve({ id: PO_ID }) },
+        makeRequest(
+          `http://localhost/api/procurement/purchase-orders/${PO_ID}`
+        ),
+        { params: Promise.resolve({ id: PO_ID }) }
       );
       expect(res.status).toBe(401);
     });
 
     it("returns 404 when PO does not exist", async () => {
       authOk();
-      vi.mocked(database.purchaseOrder.findFirst).mockResolvedValue(null as never);
+      vi.mocked(database.purchaseOrder.findFirst).mockResolvedValue(
+        null as never
+      );
 
       const { GET } = await import(
         "@/app/api/procurement/purchase-orders/[id]/route"
       );
       const res = await GET(
-        makeRequest(`http://localhost/api/procurement/purchase-orders/${PO_ID}`),
-        { params: Promise.resolve({ id: PO_ID }) },
+        makeRequest(
+          `http://localhost/api/procurement/purchase-orders/${PO_ID}`
+        ),
+        { params: Promise.resolve({ id: PO_ID }) }
       );
       expect(res.status).toBe(404);
     });
@@ -330,7 +346,9 @@ describe("Procurement Purchase Orders API", () => {
     it("returns the PO with vendorName, items, and item enrichment", async () => {
       authOk();
       const po = makePO({ items: undefined });
-      vi.mocked(database.purchaseOrder.findFirst).mockResolvedValue(po as never);
+      vi.mocked(database.purchaseOrder.findFirst).mockResolvedValue(
+        po as never
+      );
       vi.mocked(database.inventorySupplier.findFirst).mockResolvedValue({
         name: "Acme Foods",
       } as never);
@@ -364,8 +382,10 @@ describe("Procurement Purchase Orders API", () => {
         "@/app/api/procurement/purchase-orders/[id]/route"
       );
       const res = await GET(
-        makeRequest(`http://localhost/api/procurement/purchase-orders/${PO_ID}`),
-        { params: Promise.resolve({ id: PO_ID }) },
+        makeRequest(
+          `http://localhost/api/procurement/purchase-orders/${PO_ID}`
+        ),
+        { params: Promise.resolve({ id: PO_ID }) }
       );
       const body = await res.json();
 
@@ -380,16 +400,22 @@ describe("Procurement Purchase Orders API", () => {
     it("returns vendorName: null when PO has no vendorId", async () => {
       authOk();
       const po = makePO({ vendorId: null, items: undefined });
-      vi.mocked(database.purchaseOrder.findFirst).mockResolvedValue(po as never);
-      vi.mocked(database.purchaseOrderItem.findMany).mockResolvedValue([] as never);
+      vi.mocked(database.purchaseOrder.findFirst).mockResolvedValue(
+        po as never
+      );
+      vi.mocked(database.purchaseOrderItem.findMany).mockResolvedValue(
+        [] as never
+      );
       vi.mocked(database.inventoryItem.findMany).mockResolvedValue([] as never);
 
       const { GET } = await import(
         "@/app/api/procurement/purchase-orders/[id]/route"
       );
       const res = await GET(
-        makeRequest(`http://localhost/api/procurement/purchase-orders/${PO_ID}`),
-        { params: Promise.resolve({ id: PO_ID }) },
+        makeRequest(
+          `http://localhost/api/procurement/purchase-orders/${PO_ID}`
+        ),
+        { params: Promise.resolve({ id: PO_ID }) }
       );
       const body = await res.json();
       expect(body.order.vendorName).toBeNull();
@@ -409,8 +435,8 @@ describe("Procurement Purchase Orders API", () => {
       const res = await POST(
         makeRequest(
           "http://localhost/api/procurement/purchase-orders/commands/create",
-          { body: { vendorId: VENDOR_ID, items: [{}] } },
-        ),
+          { body: { vendorId: VENDOR_ID, items: [{}] } }
+        )
       );
       expect(res.status).toBe(401);
     });
@@ -429,8 +455,8 @@ describe("Procurement Purchase Orders API", () => {
                 { itemId: ITEM_ID, quantityOrdered: 1, unitCost: 1, unitId: 1 },
               ],
             },
-          },
-        ),
+          }
+        )
       );
       expect(res.status).toBe(400);
       const body = await res.json();
@@ -445,8 +471,8 @@ describe("Procurement Purchase Orders API", () => {
       const res = await POST(
         makeRequest(
           "http://localhost/api/procurement/purchase-orders/commands/create",
-          { body: { vendorId: VENDOR_ID, items: [] } },
-        ),
+          { body: { vendorId: VENDOR_ID, items: [] } }
+        )
       );
       expect(res.status).toBe(400);
     });
@@ -489,8 +515,8 @@ describe("Procurement Purchase Orders API", () => {
                 { itemId: ITEM_ID, quantityOrdered: 4, unitCost: 5, unitId: 1 },
               ],
             },
-          },
-        ),
+          }
+        )
       );
 
       expect(res.status).toBe(200);
@@ -521,8 +547,8 @@ describe("Procurement Purchase Orders API", () => {
                 { itemId: ITEM_ID, quantityOrdered: 1, unitCost: 1, unitId: 1 },
               ],
             },
-          },
-        ),
+          }
+        )
       );
       expect(res.status).toBe(500);
     });
@@ -540,8 +566,8 @@ describe("Procurement Purchase Orders API", () => {
       const res = await POST(
         makeRequest(
           "http://localhost/api/procurement/purchase-orders/commands/update-status",
-          { body: { orderId: PO_ID, status: "approved" } },
-        ),
+          { body: { orderId: PO_ID, status: "approved" } }
+        )
       );
       expect(res.status).toBe(401);
     });
@@ -554,8 +580,8 @@ describe("Procurement Purchase Orders API", () => {
       const res = await POST(
         makeRequest(
           "http://localhost/api/procurement/purchase-orders/commands/update-status",
-          { body: { orderId: PO_ID } },
-        ),
+          { body: { orderId: PO_ID } }
+        )
       );
       expect(res.status).toBe(400);
     });
@@ -572,8 +598,8 @@ describe("Procurement Purchase Orders API", () => {
       const res = await POST(
         makeRequest(
           "http://localhost/api/procurement/purchase-orders/commands/update-status",
-          { body: { orderId: PO_ID, status: "approved" } },
-        ),
+          { body: { orderId: PO_ID, status: "approved" } }
+        )
       );
       expect(res.status).toBe(404);
     });
@@ -590,12 +616,14 @@ describe("Procurement Purchase Orders API", () => {
       const res = await POST(
         makeRequest(
           "http://localhost/api/procurement/purchase-orders/commands/update-status",
-          { body: { orderId: PO_ID, status: "ordered" } },
-        ),
+          { body: { orderId: PO_ID, status: "ordered" } }
+        )
       );
       expect(res.status).toBe(400);
       const body = await res.json();
-      expect(body.message).toMatch(/Cannot transition from received to ordered/);
+      expect(body.message).toMatch(
+        /Cannot transition from received to ordered/
+      );
     });
 
     it("rejects illegal transitions (draft → received)", async () => {
@@ -610,8 +638,8 @@ describe("Procurement Purchase Orders API", () => {
       const res = await POST(
         makeRequest(
           "http://localhost/api/procurement/purchase-orders/commands/update-status",
-          { body: { orderId: PO_ID, status: "received" } },
-        ),
+          { body: { orderId: PO_ID, status: "received" } }
+        )
       );
       expect(res.status).toBe(400);
     });
@@ -632,8 +660,8 @@ describe("Procurement Purchase Orders API", () => {
       const res = await POST(
         makeRequest(
           "http://localhost/api/procurement/purchase-orders/commands/update-status",
-          { body: { orderId: PO_ID, status: "submitted" } },
-        ),
+          { body: { orderId: PO_ID, status: "submitted" } }
+        )
       );
       expect(res.status).toBe(200);
       const body = await res.json();
@@ -656,8 +684,8 @@ describe("Procurement Purchase Orders API", () => {
       const res = await POST(
         makeRequest(
           "http://localhost/api/procurement/purchase-orders/commands/update-status",
-          { body: { orderId: PO_ID, status: "approved" } },
-        ),
+          { body: { orderId: PO_ID, status: "approved" } }
+        )
       );
       expect(res.status).toBe(200);
     });
@@ -678,8 +706,8 @@ describe("Procurement Purchase Orders API", () => {
       const res = await POST(
         makeRequest(
           "http://localhost/api/procurement/purchase-orders/commands/update-status",
-          { body: { orderId: PO_ID, status: "rejected" } },
-        ),
+          { body: { orderId: PO_ID, status: "rejected" } }
+        )
       );
       expect(res.status).toBe(200);
     });
@@ -700,8 +728,8 @@ describe("Procurement Purchase Orders API", () => {
       const res = await POST(
         makeRequest(
           "http://localhost/api/procurement/purchase-orders/commands/update-status",
-          { body: { orderId: PO_ID, status: "ordered" } },
-        ),
+          { body: { orderId: PO_ID, status: "ordered" } }
+        )
       );
       expect(res.status).toBe(200);
     });
@@ -718,8 +746,8 @@ describe("Procurement Purchase Orders API", () => {
       const res = await POST(
         makeRequest(
           "http://localhost/api/procurement/purchase-orders/commands/update-status",
-          { body: { orderId: PO_ID, status: "approved" } },
-        ),
+          { body: { orderId: PO_ID, status: "approved" } }
+        )
       );
       expect(res.status).toBe(400);
     });
@@ -738,8 +766,8 @@ describe("Procurement Purchase Orders API", () => {
       const res = await POST(
         makeRequest(
           "http://localhost/api/procurement/purchase-orders/commands/update-status",
-          { body: { orderId: PO_ID, status: "submitted" } },
-        ),
+          { body: { orderId: PO_ID, status: "submitted" } }
+        )
       );
       expect(res.status).toBe(500);
     });
@@ -757,8 +785,8 @@ describe("Procurement Purchase Orders API", () => {
       const res = await POST(
         makeRequest(
           "http://localhost/api/procurement/purchase-orders/commands/receive",
-          { body: { orderId: PO_ID, items: [{ itemId: POI_ID }] } },
-        ),
+          { body: { orderId: PO_ID, items: [{ itemId: POI_ID }] } }
+        )
       );
       expect(res.status).toBe(401);
     });
@@ -771,8 +799,8 @@ describe("Procurement Purchase Orders API", () => {
       const res = await POST(
         makeRequest(
           "http://localhost/api/procurement/purchase-orders/commands/receive",
-          { body: { orderId: PO_ID } },
-        ),
+          { body: { orderId: PO_ID } }
+        )
       );
       expect(res.status).toBe(400);
     });
@@ -799,8 +827,8 @@ describe("Procurement Purchase Orders API", () => {
                 { itemId: POI_ID, quantityOrdered: 10, quantityReceived: 4 },
               ],
             },
-          },
-        ),
+          }
+        )
       );
       expect(res.status).toBe(200);
       const body = await res.json();
@@ -830,8 +858,8 @@ describe("Procurement Purchase Orders API", () => {
                 { itemId: POI_ID, quantityOrdered: 10, quantityReceived: 10 },
               ],
             },
-          },
-        ),
+          }
+        )
       );
       expect(res.status).toBe(200);
       const body = await res.json();
@@ -860,8 +888,8 @@ describe("Procurement Purchase Orders API", () => {
                 { itemId: POI_ID, quantityOrdered: 10, quantityReceived: 0 },
               ],
             },
-          },
-        ),
+          }
+        )
       );
       expect(res.status).toBe(200);
       // Only 2 calls: poi update + remaining count (no inventory update for qty=0)
@@ -873,7 +901,9 @@ describe("Procurement Purchase Orders API", () => {
       const queryRaw = vi.mocked(database.$queryRaw);
       queryRaw.mockReset();
       // Only the remaining-count query should run (all items skipped)
-      queryRaw.mockResolvedValueOnce([{ count: 0 }]).mockResolvedValueOnce([{}]);
+      queryRaw
+        .mockResolvedValueOnce([{ count: 0 }])
+        .mockResolvedValueOnce([{}]);
 
       const { POST } = await import(
         "@/app/api/procurement/purchase-orders/commands/receive/route"
@@ -889,8 +919,8 @@ describe("Procurement Purchase Orders API", () => {
                 { itemId: POI_ID, quantityReceived: null }, // null qty
               ],
             },
-          },
-        ),
+          }
+        )
       );
       expect(res.status).toBe(200);
     });
@@ -914,8 +944,8 @@ describe("Procurement Purchase Orders API", () => {
                 { itemId: POI_ID, quantityOrdered: 10, quantityReceived: 4 },
               ],
             },
-          },
-        ),
+          }
+        )
       );
       expect(res.status).toBe(500);
     });

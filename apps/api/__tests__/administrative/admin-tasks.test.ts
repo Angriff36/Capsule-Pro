@@ -62,7 +62,7 @@ vi.mock("@/lib/manifest-response", async () => {
           success: true,
           ...(typeof data === "object" && data !== null ? data : { data }),
         },
-        { status },
+        { status }
       ),
     manifestErrorResponse: (message: string, status: number) =>
       NextResponse.json({ success: false, message }, { status }),
@@ -91,8 +91,6 @@ const { createManifestRuntime } = await import("@/lib/manifest-runtime");
 
 // --- Route imports ---
 
-import { GET as getTasksList } from "@/app/api/administrative/tasks/route";
-import { POST as postTaskRoot } from "@/app/api/administrative/tasks/route";
 import {
   DELETE as deleteTask,
   GET as getTaskDetail,
@@ -100,6 +98,10 @@ import {
 } from "@/app/api/administrative/tasks/[id]/route";
 import { POST as createTaskCommand } from "@/app/api/administrative/tasks/commands/create/route";
 import { GET as getTasksManifestList } from "@/app/api/administrative/tasks/list/route";
+import {
+  GET as getTasksList,
+  POST as postTaskRoot,
+} from "@/app/api/administrative/tasks/route";
 
 // --- Constants ---
 
@@ -122,7 +124,10 @@ function makeRequest(url: string, options: RequestInit = {}): NextRequest {
   if (options.body && !options.headers) {
     options.headers = { "Content-Type": "application/json" };
   }
-  return new NextRequest(new URL(url, "http://localhost:3000"), options as never);
+  return new NextRequest(
+    new URL(url, "http://localhost:3000"),
+    options as never
+  );
 }
 
 function sampleTask(overrides: Record<string, unknown> = {}) {
@@ -170,7 +175,7 @@ describe("Admin Task API", () => {
       vi.mocked(auth).mockResolvedValue({ orgId: null } as never);
 
       const response = await getTasksList(
-        makeRequest("/api/administrative/tasks"),
+        makeRequest("/api/administrative/tasks")
       );
       expect(response.status).toBe(401);
 
@@ -184,7 +189,7 @@ describe("Admin Task API", () => {
       vi.mocked(database.adminTask.findMany).mockResolvedValue(tasks as never);
 
       const response = await getTasksList(
-        makeRequest("/api/administrative/tasks"),
+        makeRequest("/api/administrative/tasks")
       );
       expect(response.status).toBe(200);
 
@@ -202,20 +207,17 @@ describe("Admin Task API", () => {
       vi.mocked(database.adminTask.count).mockResolvedValue(0);
       vi.mocked(database.adminTask.findMany).mockResolvedValue([]);
 
-      await getTasksList(
-        makeRequest("/api/administrative/tasks?status=todo"),
-      );
+      await getTasksList(makeRequest("/api/administrative/tasks?status=todo"));
 
       const findManyMock = vi.mocked(database.adminTask.findMany);
-      const where = findManyMock.mock.calls[0][0] as Record<
-        string,
-        unknown
-      >;
-      const andClauses = (where.where
-        ? (where.where as { AND: unknown[] }).AND
-        : (where as { AND: unknown[] }).AND) as unknown[];
+      const where = findManyMock.mock.calls[0][0] as Record<string, unknown>;
+      const andClauses = (
+        where.where
+          ? (where.where as { AND: unknown[] }).AND
+          : (where as { AND: unknown[] }).AND
+      ) as unknown[];
       expect(
-        andClauses.some((c) => (c as Record<string, unknown>).status === "todo"),
+        andClauses.some((c) => (c as Record<string, unknown>).status === "todo")
       ).toBe(true);
     });
 
@@ -224,21 +226,20 @@ describe("Admin Task API", () => {
       vi.mocked(database.adminTask.findMany).mockResolvedValue([]);
 
       await getTasksList(
-        makeRequest("/api/administrative/tasks?priority=high"),
+        makeRequest("/api/administrative/tasks?priority=high")
       );
 
       const findManyMock = vi.mocked(database.adminTask.findMany);
-      const where = findManyMock.mock.calls[0][0] as Record<
-        string,
-        unknown
-      >;
-      const andClauses = (where.where
-        ? (where.where as { AND: unknown[] }).AND
-        : (where as { AND: unknown[] }).AND) as unknown[];
+      const where = findManyMock.mock.calls[0][0] as Record<string, unknown>;
+      const andClauses = (
+        where.where
+          ? (where.where as { AND: unknown[] }).AND
+          : (where as { AND: unknown[] }).AND
+      ) as unknown[];
       expect(
         andClauses.some(
-          (c) => (c as Record<string, unknown>).priority === "high",
-        ),
+          (c) => (c as Record<string, unknown>).priority === "high"
+        )
       ).toBe(true);
     });
 
@@ -247,21 +248,20 @@ describe("Admin Task API", () => {
       vi.mocked(database.adminTask.findMany).mockResolvedValue([]);
 
       await getTasksList(
-        makeRequest("/api/administrative/tasks?category=general"),
+        makeRequest("/api/administrative/tasks?category=general")
       );
 
       const findManyMock = vi.mocked(database.adminTask.findMany);
-      const where = findManyMock.mock.calls[0][0] as Record<
-        string,
-        unknown
-      >;
-      const andClauses = (where.where
-        ? (where.where as { AND: unknown[] }).AND
-        : (where as { AND: unknown[] }).AND) as unknown[];
+      const where = findManyMock.mock.calls[0][0] as Record<string, unknown>;
+      const andClauses = (
+        where.where
+          ? (where.where as { AND: unknown[] }).AND
+          : (where as { AND: unknown[] }).AND
+      ) as unknown[];
       expect(
         andClauses.some(
-          (c) => (c as Record<string, unknown>).category === "general",
-        ),
+          (c) => (c as Record<string, unknown>).category === "general"
+        )
       ).toBe(true);
     });
 
@@ -271,27 +271,24 @@ describe("Admin Task API", () => {
       const assigneeId = "11111111-1111-4111-a111-111111111111";
 
       const response = await getTasksList(
-        makeRequest(
-          `/api/administrative/tasks?assignedTo=${assigneeId}`,
-        ),
+        makeRequest(`/api/administrative/tasks?assignedTo=${assigneeId}`)
       );
       expect(response.status).toBe(200);
 
       const findManyMock = vi.mocked(database.adminTask.findMany);
       const callArgs = findManyMock.mock.calls[0][0] as Record<string, unknown>;
-      const andClauses = (
-        (callArgs.where ?? callArgs) as { AND: unknown[] }
-      ).AND as unknown[];
+      const andClauses = ((callArgs.where ?? callArgs) as { AND: unknown[] })
+        .AND as unknown[];
       expect(
         andClauses.some(
-          (c) => (c as Record<string, unknown>).assignedTo === assigneeId,
-        ),
+          (c) => (c as Record<string, unknown>).assignedTo === assigneeId
+        )
       ).toBe(true);
     });
 
     it("should return 400 for invalid query parameters", async () => {
       const response = await getTasksList(
-        makeRequest("/api/administrative/tasks?status=INVALID_STATUS"),
+        makeRequest("/api/administrative/tasks?status=INVALID_STATUS")
       );
       expect(response.status).toBe(400);
 
@@ -302,7 +299,7 @@ describe("Admin Task API", () => {
 
     it("should return 400 for invalid limit parameter", async () => {
       const response = await getTasksList(
-        makeRequest("/api/administrative/tasks?limit=0"),
+        makeRequest("/api/administrative/tasks?limit=0")
       );
       expect(response.status).toBe(400);
     });
@@ -312,7 +309,7 @@ describe("Admin Task API", () => {
       vi.mocked(database.adminTask.findMany).mockResolvedValue([]);
 
       const response = await getTasksList(
-        makeRequest("/api/administrative/tasks?limit=10"),
+        makeRequest("/api/administrative/tasks?limit=10")
       );
       const body = await response.json();
       expect(body.pagination.totalPages).toBe(5);
@@ -323,14 +320,14 @@ describe("Admin Task API", () => {
       vi.mocked(database.adminTask.findMany).mockResolvedValue([]);
 
       await getTasksList(
-        makeRequest("/api/administrative/tasks?page=3&limit=5"),
+        makeRequest("/api/administrative/tasks?page=3&limit=5")
       );
 
       expect(database.adminTask.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           skip: 10, // (3-1)*5
           take: 5,
-        }),
+        })
       );
     });
 
@@ -338,27 +335,24 @@ describe("Admin Task API", () => {
       vi.mocked(database.adminTask.count).mockResolvedValue(0);
       vi.mocked(database.adminTask.findMany).mockResolvedValue([]);
 
-      await getTasksList(
-        makeRequest("/api/administrative/tasks"),
-      );
+      await getTasksList(makeRequest("/api/administrative/tasks"));
 
       const findManyMock = vi.mocked(database.adminTask.findMany);
-      const where = findManyMock.mock.calls[0][0] as Record<
-        string,
-        unknown
-      >;
-      const andClauses = (where.where
-        ? (where.where as { AND: unknown[] }).AND
-        : (where as { AND: unknown[] }).AND) as unknown[];
+      const where = findManyMock.mock.calls[0][0] as Record<string, unknown>;
+      const andClauses = (
+        where.where
+          ? (where.where as { AND: unknown[] }).AND
+          : (where as { AND: unknown[] }).AND
+      ) as unknown[];
       expect(
         andClauses.some(
-          (c) => (c as Record<string, unknown>).tenantId === TEST_TENANT_ID,
-        ),
+          (c) => (c as Record<string, unknown>).tenantId === TEST_TENANT_ID
+        )
       ).toBe(true);
       expect(
         andClauses.some(
-          (c) => (c as Record<string, unknown>).deletedAt === null,
-        ),
+          (c) => (c as Record<string, unknown>).deletedAt === null
+        )
       ).toBe(true);
     });
   });
@@ -370,7 +364,7 @@ describe("Admin Task API", () => {
 
       const response = await getTaskDetail(
         makeRequest(`/api/administrative/tasks/${TEST_TASK_ID}`),
-        { params: Promise.resolve({ id: TEST_TASK_ID }) },
+        { params: Promise.resolve({ id: TEST_TASK_ID }) }
       );
       expect(response.status).toBe(401);
     });
@@ -381,7 +375,7 @@ describe("Admin Task API", () => {
 
       const response = await getTaskDetail(
         makeRequest(`/api/administrative/tasks/${TEST_TASK_ID}`),
-        { params: Promise.resolve({ id: TEST_TASK_ID }) },
+        { params: Promise.resolve({ id: TEST_TASK_ID }) }
       );
       expect(response.status).toBe(200);
 
@@ -397,7 +391,7 @@ describe("Admin Task API", () => {
 
       const response = await getTaskDetail(
         makeRequest(`/api/administrative/tasks/${TEST_TASK_ID}`),
-        { params: Promise.resolve({ id: TEST_TASK_ID }) },
+        { params: Promise.resolve({ id: TEST_TASK_ID }) }
       );
       expect(response.status).toBe(404);
 
@@ -410,7 +404,7 @@ describe("Admin Task API", () => {
 
       await getTaskDetail(
         makeRequest(`/api/administrative/tasks/${TEST_TASK_ID}`),
-        { params: Promise.resolve({ id: TEST_TASK_ID }) },
+        { params: Promise.resolve({ id: TEST_TASK_ID }) }
       );
 
       expect(database.adminTask.findFirst).toHaveBeenCalledWith({
@@ -431,7 +425,7 @@ describe("Admin Task API", () => {
       vi.mocked(executeManifestCommand).mockResolvedValue(
         new Response(JSON.stringify({ success: true }), {
           headers: { "Content-Type": "application/json" },
-        }),
+        })
       );
 
       await patchTask(
@@ -439,7 +433,7 @@ describe("Admin Task API", () => {
           method: "PATCH",
           body: JSON.stringify({ status: "todo" }),
         }),
-        { params: Promise.resolve({ id: TEST_TASK_ID }) },
+        { params: Promise.resolve({ id: TEST_TASK_ID }) }
       );
 
       expect(executeManifestCommand).toHaveBeenCalledWith(
@@ -448,7 +442,7 @@ describe("Admin Task API", () => {
           entityName: "AdminTask",
           commandName: "moveToTodo",
           params: { id: TEST_TASK_ID },
-        }),
+        })
       );
     });
 
@@ -456,7 +450,7 @@ describe("Admin Task API", () => {
       vi.mocked(executeManifestCommand).mockResolvedValue(
         new Response(JSON.stringify({ success: true }), {
           headers: { "Content-Type": "application/json" },
-        }),
+        })
       );
 
       await patchTask(
@@ -464,7 +458,7 @@ describe("Admin Task API", () => {
           method: "PATCH",
           body: JSON.stringify({ status: "in_progress" }),
         }),
-        { params: Promise.resolve({ id: TEST_TASK_ID }) },
+        { params: Promise.resolve({ id: TEST_TASK_ID }) }
       );
 
       expect(executeManifestCommand).toHaveBeenCalledWith(
@@ -472,7 +466,7 @@ describe("Admin Task API", () => {
         expect.objectContaining({
           entityName: "AdminTask",
           commandName: "startProgress",
-        }),
+        })
       );
     });
 
@@ -480,7 +474,7 @@ describe("Admin Task API", () => {
       vi.mocked(executeManifestCommand).mockResolvedValue(
         new Response(JSON.stringify({ success: true }), {
           headers: { "Content-Type": "application/json" },
-        }),
+        })
       );
 
       await patchTask(
@@ -488,7 +482,7 @@ describe("Admin Task API", () => {
           method: "PATCH",
           body: JSON.stringify({ status: "done" }),
         }),
-        { params: Promise.resolve({ id: TEST_TASK_ID }) },
+        { params: Promise.resolve({ id: TEST_TASK_ID }) }
       );
 
       expect(executeManifestCommand).toHaveBeenCalledWith(
@@ -496,7 +490,7 @@ describe("Admin Task API", () => {
         expect.objectContaining({
           entityName: "AdminTask",
           commandName: "complete",
-        }),
+        })
       );
     });
 
@@ -504,7 +498,7 @@ describe("Admin Task API", () => {
       vi.mocked(executeManifestCommand).mockResolvedValue(
         new Response(JSON.stringify({ success: true }), {
           headers: { "Content-Type": "application/json" },
-        }),
+        })
       );
 
       await patchTask(
@@ -512,7 +506,7 @@ describe("Admin Task API", () => {
           method: "PATCH",
           body: JSON.stringify({ status: "cancelled" }),
         }),
-        { params: Promise.resolve({ id: TEST_TASK_ID }) },
+        { params: Promise.resolve({ id: TEST_TASK_ID }) }
       );
 
       expect(executeManifestCommand).toHaveBeenCalledWith(
@@ -520,7 +514,7 @@ describe("Admin Task API", () => {
         expect.objectContaining({
           entityName: "AdminTask",
           commandName: "cancel",
-        }),
+        })
       );
     });
 
@@ -528,7 +522,7 @@ describe("Admin Task API", () => {
       vi.mocked(executeManifestCommand).mockResolvedValue(
         new Response(JSON.stringify({ success: true }), {
           headers: { "Content-Type": "application/json" },
-        }),
+        })
       );
 
       await patchTask(
@@ -536,7 +530,7 @@ describe("Admin Task API", () => {
           method: "PATCH",
           body: JSON.stringify({ status: "backlog" }),
         }),
-        { params: Promise.resolve({ id: TEST_TASK_ID }) },
+        { params: Promise.resolve({ id: TEST_TASK_ID }) }
       );
 
       expect(executeManifestCommand).toHaveBeenCalledWith(
@@ -544,7 +538,7 @@ describe("Admin Task API", () => {
         expect.objectContaining({
           entityName: "AdminTask",
           commandName: "reopen",
-        }),
+        })
       );
     });
 
@@ -554,7 +548,7 @@ describe("Admin Task API", () => {
           method: "PATCH",
           body: JSON.stringify({ status: "invalid_status" }),
         }),
-        { params: Promise.resolve({ id: TEST_TASK_ID }) },
+        { params: Promise.resolve({ id: TEST_TASK_ID }) }
       );
       expect(response.status).toBe(400);
 
@@ -566,7 +560,7 @@ describe("Admin Task API", () => {
       vi.mocked(executeManifestCommand).mockResolvedValue(
         new Response(JSON.stringify({ success: true }), {
           headers: { "Content-Type": "application/json" },
-        }),
+        })
       );
 
       await patchTask(
@@ -574,7 +568,7 @@ describe("Admin Task API", () => {
           method: "PATCH",
           body: JSON.stringify({ title: "Updated Title" }),
         }),
-        { params: Promise.resolve({ id: TEST_TASK_ID }) },
+        { params: Promise.resolve({ id: TEST_TASK_ID }) }
       );
 
       expect(executeManifestCommand).toHaveBeenCalledWith(
@@ -583,7 +577,7 @@ describe("Admin Task API", () => {
           entityName: "AdminTask",
           commandName: "update",
           params: { id: TEST_TASK_ID },
-        }),
+        })
       );
     });
   });
@@ -594,14 +588,14 @@ describe("Admin Task API", () => {
       vi.mocked(executeManifestCommand).mockResolvedValue(
         new Response(JSON.stringify({ success: true }), {
           headers: { "Content-Type": "application/json" },
-        }),
+        })
       );
 
       await deleteTask(
         makeRequest(`/api/administrative/tasks/${TEST_TASK_ID}`, {
           method: "DELETE",
         }),
-        { params: Promise.resolve({ id: TEST_TASK_ID }) },
+        { params: Promise.resolve({ id: TEST_TASK_ID }) }
       );
 
       expect(executeManifestCommand).toHaveBeenCalledWith(
@@ -610,7 +604,7 @@ describe("Admin Task API", () => {
           entityName: "AdminTask",
           commandName: "softDelete",
           params: { id: TEST_TASK_ID },
-        }),
+        })
       );
     });
   });
@@ -621,7 +615,7 @@ describe("Admin Task API", () => {
       vi.mocked(executeManifestCommand).mockResolvedValue(
         new Response(JSON.stringify({ success: true, result: {} }), {
           headers: { "Content-Type": "application/json" },
-        }),
+        })
       );
 
       const body = { title: "New Task", description: "Task description" };
@@ -637,7 +631,7 @@ describe("Admin Task API", () => {
         expect.objectContaining({
           entityName: "AdminTask",
           commandName: "create",
-        }),
+        })
       );
     });
 
@@ -645,7 +639,7 @@ describe("Admin Task API", () => {
       vi.mocked(executeManifestCommand).mockResolvedValue(
         new Response(JSON.stringify({ success: true, result: {} }), {
           headers: { "Content-Type": "application/json" },
-        }),
+        })
       );
 
       const body = { title: "New Task" };
@@ -663,7 +657,7 @@ describe("Admin Task API", () => {
           userId: TEST_USER_ID,
           tenantId: TEST_TENANT_ID,
           role: "admin",
-        },
+        }
       );
       expect(transformed.createdBy).toBe(TEST_USER_ID);
       expect(transformed.status).toBe("backlog");
@@ -691,13 +685,10 @@ describe("Admin Task API", () => {
         userId: null,
       } as never);
 
-      const request = makeRequest(
-        "/api/administrative/tasks/commands/create",
-        {
-          method: "POST",
-          body: JSON.stringify({ title: "New Task" }),
-        },
-      );
+      const request = makeRequest("/api/administrative/tasks/commands/create", {
+        method: "POST",
+        body: JSON.stringify({ title: "New Task" }),
+      });
       const response = await createTaskCommand(request);
 
       expect(response.status).toBe(401);
@@ -709,13 +700,10 @@ describe("Admin Task API", () => {
     it("should return 400 when user is not found in database", async () => {
       vi.mocked(database.user.findFirst).mockResolvedValue(null);
 
-      const request = makeRequest(
-        "/api/administrative/tasks/commands/create",
-        {
-          method: "POST",
-          body: JSON.stringify({ title: "New Task" }),
-        },
-      );
+      const request = makeRequest("/api/administrative/tasks/commands/create", {
+        method: "POST",
+        body: JSON.stringify({ title: "New Task" }),
+      });
       const response = await createTaskCommand(request);
 
       expect(response.status).toBe(400);
@@ -730,13 +718,10 @@ describe("Admin Task API", () => {
         emittedEvents: [],
       });
 
-      const request = makeRequest(
-        "/api/administrative/tasks/commands/create",
-        {
-          method: "POST",
-          body: JSON.stringify({ title: "New Task", priority: "high" }),
-        },
-      );
+      const request = makeRequest("/api/administrative/tasks/commands/create", {
+        method: "POST",
+        body: JSON.stringify({ title: "New Task", priority: "high" }),
+      });
       const response = await createTaskCommand(request);
 
       expect(response.status).toBe(200);
@@ -751,13 +736,10 @@ describe("Admin Task API", () => {
         policyDenial: { policyName: "AdminOnly" },
       });
 
-      const request = makeRequest(
-        "/api/administrative/tasks/commands/create",
-        {
-          method: "POST",
-          body: JSON.stringify({ title: "New Task" }),
-        },
-      );
+      const request = makeRequest("/api/administrative/tasks/commands/create", {
+        method: "POST",
+        body: JSON.stringify({ title: "New Task" }),
+      });
       const response = await createTaskCommand(request);
 
       expect(response.status).toBe(403);
@@ -772,13 +754,10 @@ describe("Admin Task API", () => {
         guardFailure: { index: 1, formatted: "Title too short" },
       });
 
-      const request = makeRequest(
-        "/api/administrative/tasks/commands/create",
-        {
-          method: "POST",
-          body: JSON.stringify({ title: "A" }),
-        },
-      );
+      const request = makeRequest("/api/administrative/tasks/commands/create", {
+        method: "POST",
+        body: JSON.stringify({ title: "A" }),
+      });
       const response = await createTaskCommand(request);
 
       expect(response.status).toBe(422);
@@ -793,13 +772,10 @@ describe("Admin Task API", () => {
         error: "Something went wrong",
       });
 
-      const request = makeRequest(
-        "/api/administrative/tasks/commands/create",
-        {
-          method: "POST",
-          body: JSON.stringify({ title: "New Task" }),
-        },
-      );
+      const request = makeRequest("/api/administrative/tasks/commands/create", {
+        method: "POST",
+        body: JSON.stringify({ title: "New Task" }),
+      });
       const response = await createTaskCommand(request);
 
       expect(response.status).toBe(400);
@@ -810,13 +786,10 @@ describe("Admin Task API", () => {
     it("should return 500 on unexpected exception", async () => {
       mockRunCommand.mockRejectedValue(new Error("DB connection lost"));
 
-      const request = makeRequest(
-        "/api/administrative/tasks/commands/create",
-        {
-          method: "POST",
-          body: JSON.stringify({ title: "New Task" }),
-        },
-      );
+      const request = makeRequest("/api/administrative/tasks/commands/create", {
+        method: "POST",
+        body: JSON.stringify({ title: "New Task" }),
+      });
       const response = await createTaskCommand(request);
 
       expect(response.status).toBe(500);
@@ -831,13 +804,10 @@ describe("Admin Task API", () => {
         emittedEvents: [],
       });
 
-      const request = makeRequest(
-        "/api/administrative/tasks/commands/create",
-        {
-          method: "POST",
-          body: JSON.stringify({ title: "New Task" }),
-        },
-      );
+      const request = makeRequest("/api/administrative/tasks/commands/create", {
+        method: "POST",
+        body: JSON.stringify({ title: "New Task" }),
+      });
       await createTaskCommand(request);
 
       expect(createManifestRuntime).toHaveBeenCalledWith({
@@ -858,13 +828,10 @@ describe("Admin Task API", () => {
       });
 
       const payload = { title: "New Task", priority: "urgent" };
-      const request = makeRequest(
-        "/api/administrative/tasks/commands/create",
-        {
-          method: "POST",
-          body: JSON.stringify(payload),
-        },
-      );
+      const request = makeRequest("/api/administrative/tasks/commands/create", {
+        method: "POST",
+        body: JSON.stringify(payload),
+      });
       await createTaskCommand(request);
 
       expect(mockRunCommand).toHaveBeenCalledWith("create", payload, {
@@ -882,7 +849,7 @@ describe("Admin Task API", () => {
       } as never);
 
       const response = await getTasksManifestList(
-        makeRequest("/api/administrative/tasks/list"),
+        makeRequest("/api/administrative/tasks/list")
       );
       expect(response.status).toBe(401);
 
@@ -896,7 +863,7 @@ describe("Admin Task API", () => {
       vi.mocked(database.adminTask.findMany).mockResolvedValue(tasks as never);
 
       const response = await getTasksManifestList(
-        makeRequest("/api/administrative/tasks/list?limit=10&offset=0"),
+        makeRequest("/api/administrative/tasks/list?limit=10&offset=0")
       );
       expect(response.status).toBe(200);
 
@@ -910,9 +877,7 @@ describe("Admin Task API", () => {
     it("should filter by tenantId and exclude soft-deleted tasks", async () => {
       vi.mocked(database.adminTask.findMany).mockResolvedValue([]);
 
-      await getTasksManifestList(
-        makeRequest("/api/administrative/tasks/list"),
-      );
+      await getTasksManifestList(makeRequest("/api/administrative/tasks/list"));
 
       expect(database.adminTask.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -920,17 +885,17 @@ describe("Admin Task API", () => {
             tenantId: TEST_TENANT_ID,
             deletedAt: null,
           },
-        }),
+        })
       );
     });
 
     it("should return 500 on database error", async () => {
       vi.mocked(database.adminTask.findMany).mockRejectedValue(
-        new Error("DB error"),
+        new Error("DB error")
       );
 
       const response = await getTasksManifestList(
-        makeRequest("/api/administrative/tasks/list"),
+        makeRequest("/api/administrative/tasks/list")
       );
       expect(response.status).toBe(500);
 

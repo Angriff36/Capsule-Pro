@@ -1,7 +1,16 @@
 "use client";
 
+import {
+  KitchenDashboardFilterAside,
+  KitchenOperationalCanvas,
+  KitchenOperationalHero,
+  KitchenOperationalMetricTile,
+  KitchenOperationalMetricTiles,
+  KitchenOperationalSectionLead,
+} from "@repo/design-system/components/blocks/page-shell";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Input } from "@repo/design-system/components/ui/input";
+import { Label } from "@repo/design-system/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -9,7 +18,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
-import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   Table,
   TableBody,
@@ -18,14 +26,16 @@ import {
   TableHeader,
   TableRow,
 } from "@repo/design-system/components/ui/table";
+import { cn } from "@repo/design-system/lib/utils";
 import {
   type ColumnDef,
   flexRender,
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { FilterIcon, Loader2Icon, PlusIcon } from "lucide-react";
+import { Loader2Icon, PlusIcon } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
+import type { ReactNode } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import type { DayOfWeek } from "@/app/lib/staff/availability/types";
@@ -194,11 +204,11 @@ export function AvailabilityClient() {
       accessorKey: "employee",
       header: "Employee",
       cell: ({ row }) => (
-        <div>
-          <div className="font-medium">
+        <div className="min-w-0">
+          <div className="truncate font-medium text-ink">
             {row.original.employee_first_name} {row.original.employee_last_name}
           </div>
-          <div className="text-sm text-muted-foreground">
+          <div className="truncate text-muted-foreground text-xs">
             {row.original.employee_email}
           </div>
         </div>
@@ -217,7 +227,11 @@ export function AvailabilityClient() {
           "Friday",
           "Saturday",
         ];
-        return <div>{days[row.original.day_of_week]}</div>;
+        return (
+          <span className="font-medium text-ink text-sm">
+            {days[row.original.day_of_week]}
+          </span>
+        );
       },
     },
     {
@@ -225,11 +239,11 @@ export function AvailabilityClient() {
       header: "Time",
       cell: ({ row }) => (
         <div>
-          <div>
-            {formatTime(new Date(`2000-01-01T${row.original.start_time}`))} -{" "}
+          <div className="font-medium text-ink text-sm tabular-nums">
+            {formatTime(new Date(`2000-01-01T${row.original.start_time}`))} –{" "}
             {formatTime(new Date(`2000-01-01T${row.original.end_time}`))}
           </div>
-          <div className="text-sm text-muted-foreground">
+          <div className="text-muted-foreground text-xs">
             {row.original.is_available ? "Available" : "Unavailable"}
           </div>
         </div>
@@ -238,7 +252,11 @@ export function AvailabilityClient() {
     {
       accessorKey: "effective_from",
       header: "Effective From",
-      cell: ({ row }) => <div>{formatDate(row.original.effective_from)}</div>,
+      cell: ({ row }) => (
+        <span className="text-ink text-sm">
+          {formatDate(row.original.effective_from)}
+        </span>
+      ),
     },
     {
       accessorKey: "effective_until",
@@ -259,223 +277,274 @@ export function AvailabilityClient() {
     getCoreRowModel: getCoreRowModel(),
   });
 
+  let tableBody: ReactNode;
+  if (loading) {
+    tableBody = (
+      <TableRow className="hover:bg-transparent">
+        <TableCell className="h-28 text-center" colSpan={columns.length}>
+          <Loader2Icon className="mx-auto size-8 animate-spin text-muted-foreground" />
+        </TableCell>
+      </TableRow>
+    );
+  } else if (availability.length === 0) {
+    tableBody = (
+      <TableRow className="hover:bg-transparent">
+        <TableCell
+          className="h-28 text-center text-muted-foreground text-sm"
+          colSpan={columns.length}
+        >
+          No rows match. Add availability or loosen filters.
+        </TableCell>
+      </TableRow>
+    );
+  } else {
+    tableBody = table.getRowModel().rows.map((row) => (
+      <TableRow
+        className={cn(
+          "cursor-pointer border-hairline border-b transition-colors",
+          "hover:bg-soft-stone/40"
+        )}
+        key={row.id}
+        onClick={() => handleRowClick(row.original)}
+      >
+        {row.getVisibleCells().map((cell) => (
+          <TableCell className="align-middle" key={cell.id}>
+            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+          </TableCell>
+        ))}
+      </TableRow>
+    ));
+  }
+
+  const hasActiveFilters =
+    Boolean(filters.employeeId) ||
+    filters.dayOfWeek !== undefined ||
+    Boolean(filters.effectiveDate) ||
+    filters.isActive !== undefined;
+
+  let availabilityFilterSelectValue = "__all__";
+  if (filters.isActive === true) {
+    availabilityFilterSelectValue = "true";
+  } else if (filters.isActive === false) {
+    availabilityFilterSelectValue = "false";
+  }
+
   return (
-    <div className="flex flex-col gap-8">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Availability</h1>
-          <p className="text-muted-foreground">
-            Manage employee availability and time-off requests.
-          </p>
-        </div>
-        <Button onClick={() => setCreateModalOpen(true)}>
-          <PlusIcon className="size-4 mr-2" />
-          New Availability
-        </Button>
-      </div>
-
-      <Separator />
-
-      {/* Filters */}
-      <section>
-        <h2 className="text-sm font-medium text-muted-foreground mb-4">
-          Filters
-        </h2>
-        <div className="flex items-center gap-4 p-4 border rounded-lg bg-muted/30">
-          <FilterIcon className="size-4 text-muted-foreground" />
-          <Select
-            onValueChange={(value) =>
-              handleFilterChange("employeeId", value === "__all__" ? "" : value)
-            }
-            value={filters.employeeId || "__all__"}
+    <KitchenOperationalCanvas>
+      <KitchenOperationalHero
+        actions={
+          <Button
+            className="rounded-full bg-white px-5 text-[13px] font-medium text-[#17171c] hover:bg-white/90"
+            onClick={() => setCreateModalOpen(true)}
+            size="sm"
           >
-            <SelectTrigger className="w-[200px]">
-              <SelectValue placeholder="Filter by employee" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="__all__">All employees</SelectItem>
-              {employees.map((emp) => (
-                <SelectItem key={emp.id} value={emp.id}>
-                  {emp.first_name} {emp.last_name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Select
-            onValueChange={(value) =>
-              handleFilterChange(
-                "dayOfWeek",
-                value && value !== "__all__"
-                  ? Number.parseInt(value, 10)
-                  : undefined
-              )
-            }
-            value={filters.dayOfWeek?.toString() || "__all__"}
-          >
-            <SelectTrigger className="w-[200px]">
-              <SelectValue placeholder="Filter by day" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="__all__">All days</SelectItem>
-              <SelectItem value="0">Sunday</SelectItem>
-              <SelectItem value="1">Monday</SelectItem>
-              <SelectItem value="2">Tuesday</SelectItem>
-              <SelectItem value="3">Wednesday</SelectItem>
-              <SelectItem value="4">Thursday</SelectItem>
-              <SelectItem value="5">Friday</SelectItem>
-              <SelectItem value="6">Saturday</SelectItem>
-            </SelectContent>
-          </Select>
-          <Input
-            className="max-w-[150px]"
-            onChange={(e) =>
-              handleFilterChange("effectiveDate", e.target.value)
-            }
-            type="date"
-            value={filters.effectiveDate}
-          />
-          <Select
-            onValueChange={(value) =>
-              handleFilterChange(
-                "isActive",
-                value === "__all__" ? undefined : value === "true"
-              )
-            }
-          >
-            <SelectTrigger className="w-[150px]">
-              <SelectValue placeholder="Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="__all__">All</SelectItem>
-              <SelectItem value="true">Available</SelectItem>
-              <SelectItem value="false">Unavailable</SelectItem>
-            </SelectContent>
-          </Select>
-          {(filters.employeeId ||
-            filters.dayOfWeek !== undefined ||
-            filters.effectiveDate ||
-            filters.isActive !== undefined) && (
-            <Button
-              onClick={() =>
-                setFilters({
-                  employeeId: "",
-                  dayOfWeek: undefined,
-                  effectiveDate: "",
-                  isActive: undefined,
-                })
-              }
-              size="sm"
-              variant="ghost"
-            >
-              Clear filters
-            </Button>
-          )}
-        </div>
-      </section>
+            <PlusIcon className="mr-2 size-4" />
+            New availability
+          </Button>
+        }
+        eyebrow="Scheduling / Availability"
+        lede="Recurring weekly windows plus effective ranges. Rows open the edit drawer for overrides."
+        metrics={
+          <KitchenOperationalMetricTiles className="xl:grid-cols-3">
+            <KitchenOperationalMetricTile
+              caption="Matching filters"
+              label="Entries"
+              value={pagination.total}
+            />
+            <KitchenOperationalMetricTile
+              caption="Rows on this page"
+              label="Visible now"
+              value={availability.length}
+            />
+            <KitchenOperationalMetricTile
+              caption="For assignment planning"
+              label="Employees"
+              value={employees.length}
+            />
+          </KitchenOperationalMetricTiles>
+        }
+        title="Team availability patterns"
+      />
 
-      {/* Table */}
-      <section>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-sm font-medium text-muted-foreground">
-            Availability ({pagination.total})
-          </h2>
-        </div>
-        <div className="border rounded-lg">
-          <Table>
-            <TableHeader>
-              {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                    </TableHead>
+      <div className="grid gap-10 lg:grid-cols-[300px_1fr]">
+        <KitchenDashboardFilterAside>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label className="text-ink text-xs">Employee</Label>
+              <Select
+                onValueChange={(value) =>
+                  handleFilterChange(
+                    "employeeId",
+                    value === "__all__" ? "" : value
+                  )
+                }
+                value={filters.employeeId || "__all__"}
+              >
+                <SelectTrigger className="bg-canvas w-full">
+                  <SelectValue placeholder="All employees" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__all__">All employees</SelectItem>
+                  {employees.map((emp) => (
+                    <SelectItem key={emp.id} value={emp.id}>
+                      {emp.first_name} {emp.last_name}
+                    </SelectItem>
                   ))}
-                </TableRow>
-              ))}
-            </TableHeader>
-            <TableBody>
-              {loading ? (
-                <TableRow>
-                  <TableCell
-                    className="h-24 text-center"
-                    colSpan={columns.length}
-                  >
-                    <Loader2Icon className="size-8 animate-spin mx-auto text-muted-foreground" />
-                  </TableCell>
-                </TableRow>
-              ) : availability.length === 0 ? (
-                <TableRow>
-                  <TableCell
-                    className="h-24 text-center text-muted-foreground"
-                    colSpan={columns.length}
-                  >
-                    No availability entries found. Create a new availability
-                    entry to get started.
-                  </TableCell>
-                </TableRow>
-              ) : (
-                table.getRowModel().rows.map((row) => (
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label className="text-ink text-xs">Weekday</Label>
+              <Select
+                onValueChange={(value) =>
+                  handleFilterChange(
+                    "dayOfWeek",
+                    value && value !== "__all__"
+                      ? Number.parseInt(value, 10)
+                      : undefined
+                  )
+                }
+                value={filters.dayOfWeek?.toString() || "__all__"}
+              >
+                <SelectTrigger className="bg-canvas w-full">
+                  <SelectValue placeholder="All days" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__all__">All days</SelectItem>
+                  <SelectItem value="0">Sunday</SelectItem>
+                  <SelectItem value="1">Monday</SelectItem>
+                  <SelectItem value="2">Tuesday</SelectItem>
+                  <SelectItem value="3">Wednesday</SelectItem>
+                  <SelectItem value="4">Thursday</SelectItem>
+                  <SelectItem value="5">Friday</SelectItem>
+                  <SelectItem value="6">Saturday</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label className="text-ink text-xs" htmlFor="av-eff">
+                Effective on
+              </Label>
+              <Input
+                className="bg-canvas"
+                id="av-eff"
+                onChange={(e) =>
+                  handleFilterChange("effectiveDate", e.target.value)
+                }
+                type="date"
+                value={filters.effectiveDate}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-ink text-xs">Availability</Label>
+              <Select
+                onValueChange={(value) =>
+                  handleFilterChange(
+                    "isActive",
+                    value === "__all__" ? undefined : value === "true"
+                  )
+                }
+                value={availabilityFilterSelectValue}
+              >
+                <SelectTrigger className="bg-canvas w-full">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__all__">All</SelectItem>
+                  <SelectItem value="true">Available</SelectItem>
+                  <SelectItem value="false">Unavailable</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            {hasActiveFilters ? (
+              <Button
+                className="w-full"
+                onClick={() =>
+                  setFilters({
+                    employeeId: "",
+                    dayOfWeek: undefined,
+                    effectiveDate: "",
+                    isActive: undefined,
+                  })
+                }
+                size="sm"
+                variant="outline"
+              >
+                Clear filters
+              </Button>
+            ) : null}
+          </div>
+        </KitchenDashboardFilterAside>
+
+        <div className="min-w-0 space-y-10">
+          <KitchenOperationalSectionLead
+            countBadge={`${pagination.total} rows · page ${pagination.page} / ${Math.max(pagination.totalPages, 1)}`}
+            eyebrow="Operations"
+            subtitle="Sortable grid of availability rules. Availability status is muted under the shift window."
+            title="Availability ledger"
+          />
+          <div className="overflow-hidden rounded-[22px] border border-hairline bg-canvas">
+            <Table>
+              <TableHeader>
+                {table.getHeaderGroups().map((headerGroup) => (
                   <TableRow
-                    className="cursor-pointer hover:bg-muted/50"
-                    key={row.id}
-                    onClick={() => handleRowClick(row.original)}
+                    className="border-hairline bg-soft-stone/50 hover:bg-soft-stone/50"
+                    key={headerGroup.id}
                   >
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id}>
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
-                        )}
-                      </TableCell>
+                    {headerGroup.headers.map((header) => (
+                      <TableHead
+                        className="font-mono text-[11px] text-muted-foreground uppercase tracking-[0.2em]"
+                        key={header.id}
+                      >
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(
+                              header.column.columnDef.header,
+                              header.getContext()
+                            )}
+                      </TableHead>
                     ))}
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </div>
-      </section>
-
-      {/* Pagination */}
-      {pagination.totalPages > 1 && (
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">
-            Showing {(pagination.page - 1) * pagination.limit + 1} to{" "}
-            {Math.min(pagination.page * pagination.limit, pagination.total)} of{" "}
-            {pagination.total} availability records
-          </p>
-          <div className="flex gap-2">
-            <Button
-              disabled={pagination.page === 1}
-              onClick={() =>
-                setPagination((prev) => ({ ...prev, page: prev.page - 1 }))
-              }
-              size="sm"
-              variant="outline"
-            >
-              Previous
-            </Button>
-            <Button
-              disabled={pagination.page === pagination.totalPages}
-              onClick={() =>
-                setPagination((prev) => ({ ...prev, page: prev.page + 1 }))
-              }
-              size="sm"
-              variant="outline"
-            >
-              Next
-            </Button>
+                ))}
+              </TableHeader>
+              <TableBody>{tableBody}</TableBody>
+            </Table>
           </div>
-        </div>
-      )}
 
-      {/* Detail Modal */}
+          {pagination.totalPages > 1 ? (
+            <div className="flex flex-wrap items-center justify-between gap-4 border-hairline border-t pt-4">
+              <p className="text-muted-foreground text-sm">
+                Showing {(pagination.page - 1) * pagination.limit + 1}–
+                {Math.min(pagination.page * pagination.limit, pagination.total)}{" "}
+                of {pagination.total}
+              </p>
+              <div className="flex gap-2">
+                <Button
+                  disabled={pagination.page === 1}
+                  onClick={() =>
+                    setPagination((prev) => ({ ...prev, page: prev.page - 1 }))
+                  }
+                  size="sm"
+                  variant="outline"
+                >
+                  Previous
+                </Button>
+                <Button
+                  disabled={pagination.page === pagination.totalPages}
+                  onClick={() =>
+                    setPagination((prev) => ({ ...prev, page: prev.page + 1 }))
+                  }
+                  size="sm"
+                  variant="outline"
+                >
+                  Next
+                </Button>
+              </div>
+            </div>
+          ) : null}
+        </div>
+      </div>
+
       <AvailabilityDetailModal
         availability={selectedAvailability}
         onClose={() => {
@@ -490,13 +559,17 @@ export function AvailabilityClient() {
         open={modalOpen}
       />
 
-      {/* Create Modal */}
       {createModalOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-background rounded-lg shadow-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6">
-            <div className="mb-4">
-              <h2 className="text-2xl font-bold">Create New Availability</h2>
-              <p className="text-muted-foreground">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-[22px] border border-hairline bg-canvas p-8">
+            <div className="mb-6 space-y-2">
+              <div className="font-mono text-[11px] text-muted-foreground uppercase tracking-[0.28em]">
+                Scheduling
+              </div>
+              <h2 className="font-normal text-2xl text-ink tracking-[-0.02em] sm:text-3xl">
+                New availability
+              </h2>
+              <p className="text-muted-foreground text-sm">
                 Add an availability entry for an employee.
               </p>
             </div>
@@ -510,6 +583,6 @@ export function AvailabilityClient() {
           </div>
         </div>
       )}
-    </div>
+    </KitchenOperationalCanvas>
   );
 }

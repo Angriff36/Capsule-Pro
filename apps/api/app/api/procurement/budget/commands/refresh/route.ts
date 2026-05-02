@@ -94,8 +94,8 @@ export async function POST(request: NextRequest) {
           alertsGenerated++;
         }
       } else if (utilizationPct >= warningPct) {
-        const existingWarning =
-          await database.procurementBudgetAlert.findFirst({
+        const existingWarning = await database.procurementBudgetAlert.findFirst(
+          {
             where: {
               tenantId,
               budgetId: budget.id,
@@ -104,7 +104,8 @@ export async function POST(request: NextRequest) {
               isAcknowledged: false,
               deletedAt: null,
             },
-          });
+          }
+        );
         if (!existingWarning) {
           await database.procurementBudgetAlert.create({
             data: {

@@ -47,6 +47,22 @@ const formatPriceRange = (
   return "Price TBD";
 };
 
+function formatGuestRange(
+  minGuests: number | null,
+  maxGuests: number | null
+): string {
+  if (minGuests && maxGuests) {
+    return `${minGuests}-${maxGuests}`;
+  }
+  if (minGuests) {
+    return `${minGuests}+`;
+  }
+  if (maxGuests) {
+    return `Up to ${maxGuests}`;
+  }
+  return "—";
+}
+
 export const MenuCard = ({
   id,
   name,
@@ -82,54 +98,58 @@ export const MenuCard = ({
 
   return (
     <Link href={`/kitchen/recipes/menus/${id}`}>
-      <Card className="group overflow-hidden shadow-sm transition-all duration-200 hover:translate-y-[-4px] hover:shadow-md">
+      <Card className="group h-full overflow-hidden rounded-[22px] border-hairline bg-soft-stone shadow-none transition-colors hover:border-ink/20">
         <CardHeader className="space-y-2">
-          <div className="flex items-start justify-between">
-            <CardTitle className="font-semibold text-lg leading-tight">
+          <div className="flex items-start justify-between gap-3">
+            <CardTitle className="font-normal text-xl leading-snug tracking-[-0.01em] text-ink">
               {name}
             </CardTitle>
-            <div className="flex items-center gap-1 text-emerald-600">
+            <div
+              className={`flex shrink-0 items-center gap-1 ${isActive ? "text-deep-green" : "text-muted-foreground"}`}
+            >
               <CheckCircleIcon className="size-4" />
-              <span className="text-xs font-medium">
-                {isActive ? "Active" : "Inactive"}
+              <span className="font-mono text-[11px] uppercase tracking-[0.2em]">
+                {isActive ? "Live" : "Paused"}
               </span>
             </div>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            {category ? <Badge variant="secondary">{category}</Badge> : null}
-            <Badge variant="outline">
+            {category ? (
+              <Badge className="font-normal" variant="outline">
+                {category}
+              </Badge>
+            ) : null}
+            <Badge className="font-normal" variant="outline">
               <UsersIcon className="mr-1 size-3" />
               {dishCount} dish{dishCount !== 1 ? "es" : ""}
             </Badge>
           </div>
 
           {description && (
-            <p className="line-clamp-2 text-muted-foreground text-sm">
+            <p className="line-clamp-2 text-muted-foreground text-sm leading-relaxed">
               {description}
             </p>
           )}
         </CardHeader>
 
-        <CardContent className="space-y-3">
+        <CardContent className="space-y-3 border-t border-hairline/80 pt-4">
           <div className="flex items-center gap-4 text-sm">
             <div>
-              <div className="text-muted-foreground">Price</div>
-              <div className="font-semibold text-sm">
+              <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+                Price
+              </div>
+              <div className="font-medium text-ink">
                 {formatPriceRange(basePrice, pricePerPerson)}
               </div>
             </div>
             {(minGuests || maxGuests) && (
               <div>
-                <div className="text-muted-foreground">Guests</div>
-                <div className="font-semibold text-sm">
-                  {minGuests && maxGuests
-                    ? `${minGuests}-${maxGuests}`
-                    : minGuests
-                      ? `${minGuests}+`
-                      : maxGuests
-                        ? `Up to ${maxGuests}`
-                        : "-"}
+                <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+                  Guests
+                </div>
+                <div className="font-medium text-ink">
+                  {formatGuestRange(minGuests, maxGuests)}
                 </div>
               </div>
             )}
@@ -139,7 +159,11 @@ export const MenuCard = ({
           {allDietaryTags.length > 0 && (
             <div className="flex flex-wrap gap-1">
               {allDietaryTags.slice(0, 3).map((tag) => (
-                <Badge className="bg-green-100 text-green-800" key={tag}>
+                <Badge
+                  className="border-pale-green bg-pale-green/80 font-normal text-ink"
+                  key={tag}
+                  variant="outline"
+                >
                   {tag}
                 </Badge>
               ))}
@@ -155,7 +179,11 @@ export const MenuCard = ({
           {allAllergens.length > 0 && (
             <div className="flex flex-wrap gap-1">
               {allAllergens.slice(0, 2).map((allergen) => (
-                <Badge className="text-xs" key={allergen} variant="destructive">
+                <Badge
+                  className="border-coral-soft text-xs font-normal text-coral"
+                  key={allergen}
+                  variant="outline"
+                >
                   {allergen}
                 </Badge>
               ))}

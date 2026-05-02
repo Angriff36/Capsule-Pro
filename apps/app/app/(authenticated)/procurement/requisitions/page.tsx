@@ -1,13 +1,24 @@
 "use client";
 
+import {
+  CommandBand,
+  CommandBandActions,
+  CommandBandBody,
+  CommandBandHeader,
+  CommandBandLede,
+  DisplayHeading,
+  MetricBand,
+  MetricCell,
+  MetricLabel,
+  MetricValue,
+  MonoLabel,
+  OperationalColumn,
+  OperationalRow,
+  PageCanvas,
+  SectionHeader,
+} from "@repo/design-system/components/blocks/page-shell";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@repo/design-system/components/ui/card";
 import { Input } from "@repo/design-system/components/ui/input";
 import {
   Tabs,
@@ -78,170 +89,200 @@ export default function RequisitionsPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center p-8">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
+      <PageCanvas>
+        <div className="flex flex-1 items-center justify-center py-24">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </PageCanvas>
     );
   }
 
+  const workflowMetrics = (
+    ["pending_manager", "pending_finance", "approved", "rejected"] as const
+  ).map((status) => {
+    const config = REQ_STATUS_CONFIG[status];
+    const count = requisitions.filter((r) => r.status === status).length;
+    return { status, config, count };
+  });
+
   return (
-    <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
-      <div className="flex items-center justify-between">
-        <div className="space-y-0.5">
-          <h1 className="text-3xl font-bold tracking-tight">
-            Purchase Requisitions
-          </h1>
-          <p className="text-muted-foreground">
-            Create and manage purchase requests for your operation.
-          </p>
-        </div>
-        <Link href="/procurement/requisitions/new">
-          <Button>
-            <Plus className="h-4 w-4 mr-2" />
-            New Requisition
-          </Button>
-        </Link>
-      </div>
+    <PageCanvas>
+      <CommandBand>
+        <CommandBandHeader>
+          <div className="space-y-4">
+            <MonoLabel tone="dark">Procurement / Requisitions</MonoLabel>
+            <DisplayHeading size="md">Purchase requests</DisplayHeading>
+            <CommandBandLede>
+              Track drafting, dual approval, and conversions to purchase orders.
+              Search and filter without leaving this board.
+            </CommandBandLede>
+          </div>
+          <CommandBandActions>
+            <Button asChild size="default" variant="on-dark">
+              <Link href="/procurement/requisitions/new">
+                <Plus className="mr-2 h-4 w-4" />
+                New requisition
+              </Link>
+            </Button>
+          </CommandBandActions>
+        </CommandBandHeader>
+        <CommandBandBody>
+          <MetricBand>
+            {workflowMetrics.map(({ status, config, count }) => {
+              let footnote = "Awaiting finance";
+              if (status === "approved") {
+                footnote = "Ready for PO conversion";
+              } else if (status === "rejected") {
+                footnote = "Archived without PO";
+              } else if (status === "pending_manager") {
+                footnote = "Awaiting manager";
+              }
 
-      {/* Summary */}
-      <div className="grid gap-4 md:grid-cols-4">
-        {(
-          [
-            "pending_manager",
-            "pending_finance",
-            "approved",
-            "rejected",
-          ] as const
-        ).map((status) => {
-          const config = REQ_STATUS_CONFIG[status];
-          const count = requisitions.filter((r) => r.status === status).length;
-          return (
-            <Card key={status}>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  {config.label}
-                </CardTitle>
-                <config.icon className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{count}</div>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
+              return (
+                <MetricCell key={status}>
+                  <div className="flex items-start justify-between gap-2">
+                    <MetricLabel>{config.label}</MetricLabel>
+                    <config.icon aria-hidden className="size-4 text-white/60" />
+                  </div>
+                  <MetricValue>{String(count)}</MetricValue>
+                  <div className="text-xs text-white/55">{footnote}</div>
+                </MetricCell>
+              );
+            })}
+          </MetricBand>
+        </CommandBandBody>
+      </CommandBand>
 
-      {/* Search */}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input
-          className="pl-10"
-          onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Search by requisition # or department..."
-          value={searchQuery}
+      <OperationalColumn>
+        <SectionHeader
+          count={`${filtered.length} in this tab`}
+          description="Filter by workflow state, then open a row for approvals and line items."
+          eyebrow="Operational list"
+          title="Requisition queue"
         />
-      </div>
 
-      {/* Tabs & List */}
-      <Tabs onValueChange={setActiveTab} value={activeTab}>
-        <TabsList>
-          <TabsTrigger value="all">All ({requisitions.length})</TabsTrigger>
-          {(
-            [
-              "draft",
-              "pending_manager",
-              "pending_finance",
-              "approved",
-              "rejected",
-              "converted",
-              "cancelled",
-            ] as const
-          ).map((s) => {
-            const count = requisitions.filter((r) => r.status === s).length;
-            return count > 0 ? (
-              <TabsTrigger key={s} value={s}>
-                {REQ_STATUS_CONFIG[s].label} ({count})
+        <section className="rounded-[22px] border border-hairline bg-soft-stone p-6 sm:p-8">
+          <div className="relative">
+            <Search className="-translate-y-1/2 absolute top-1/2 left-4 h-4 w-4 text-muted-foreground" />
+            <Input
+              className="rounded-[16px] border-hairline bg-canvas pl-10"
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search by requisition # or department…"
+              value={searchQuery}
+            />
+          </div>
+          <Tabs className="mt-6" onValueChange={setActiveTab} value={activeTab}>
+            <TabsList className="h-auto w-full flex-wrap justify-start gap-1 rounded-[16px] border border-hairline bg-canvas p-1">
+              <TabsTrigger
+                className="rounded-full data-[state=active]:bg-ink data-[state=active]:text-white"
+                value="all"
+              >
+                All ({requisitions.length})
               </TabsTrigger>
-            ) : null;
-          })}
-        </TabsList>
-        <TabsContent value={activeTab}>
-          {filtered.length === 0 ? (
-            <Card>
-              <CardContent className="py-12 text-center text-muted-foreground">
-                <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>No requisitions found.</p>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="space-y-3">
-              {filtered.map((req) => {
-                const config =
-                  REQ_STATUS_CONFIG[req.status] || REQ_STATUS_CONFIG.draft;
-                const Icon = config.icon;
-                const priorityConfig =
-                  PRIORITY_CONFIG[req.priority] || PRIORITY_CONFIG.normal;
-                return (
-                  <Card
-                    className="hover:shadow-sm transition-shadow"
-                    key={req.id}
+              {(
+                [
+                  "draft",
+                  "pending_manager",
+                  "pending_finance",
+                  "approved",
+                  "rejected",
+                  "converted",
+                  "cancelled",
+                ] as const
+              ).map((s) => {
+                const count = requisitions.filter((r) => r.status === s).length;
+                return count > 0 ? (
+                  <TabsTrigger
+                    className="rounded-full data-[state=active]:bg-ink data-[state=active]:text-white"
+                    key={s}
+                    value={s}
                   >
-                    <CardContent className="p-4">
-                      <div className="flex items-center gap-4">
-                        <div
-                          className={`flex h-10 w-10 items-center justify-center rounded-full ${config.color}`}
-                        >
-                          <Icon className="h-5 w-5" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <Link
-                              className="font-semibold hover:underline"
-                              href={`/procurement/requisitions/${req.id}`}
-                            >
-                              {req.requisitionNumber}
-                            </Link>
-                            <Badge className={config.color}>
-                              {config.label}
-                            </Badge>
-                            <Badge
-                              className={priorityConfig.color}
-                              variant="outline"
-                            >
-                              {priorityConfig.label}
-                            </Badge>
-                          </div>
-                          <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                            {req.department && <span>{req.department}</span>}
-                            <span className="flex items-center gap-1">
-                              <DollarSign className="h-3 w-3" />
-                              {formatCurrency(Number(req.estimatedTotal))}
-                            </span>
-                            <span>
-                              Requested: {formatDateShort(req.requestDate)}
-                            </span>
-                            {req.requiredBy && (
-                              <span>
-                                Needed by: {formatDateShort(req.requiredBy)}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                        <Link href={`/procurement/requisitions/${req.id}`}>
-                          <Button size="sm" variant="outline">
-                            <Eye className="h-4 w-4 mr-1" />
-                            View
-                          </Button>
-                        </Link>
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
+                    {REQ_STATUS_CONFIG[s].label} ({count})
+                  </TabsTrigger>
+                ) : null;
               })}
-            </div>
-          )}
-        </TabsContent>
-      </Tabs>
-    </div>
+            </TabsList>
+            <TabsContent className="mt-6" value={activeTab}>
+              {filtered.length === 0 ? (
+                <div className="rounded-[22px] border border-dashed border-hairline bg-canvas px-6 py-16 text-center">
+                  <FileText className="mx-auto mb-4 h-12 w-12 text-muted-foreground opacity-60" />
+                  <p className="text-muted-foreground">
+                    No requisitions match this view.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {filtered.map((req) => {
+                    const config =
+                      REQ_STATUS_CONFIG[req.status] || REQ_STATUS_CONFIG.draft;
+                    const Icon = config.icon;
+                    const priorityConfig =
+                      PRIORITY_CONFIG[req.priority] || PRIORITY_CONFIG.normal;
+                    return (
+                      <OperationalRow
+                        className="p-5"
+                        density="compact"
+                        interactive
+                        key={req.id}
+                      >
+                        <div className="flex flex-wrap items-center gap-4">
+                          <div
+                            className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-hairline ${config.color}`}
+                          >
+                            <Icon className="h-5 w-5" />
+                          </div>
+                          <div className="min-w-0 flex-1 space-y-1">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <Link
+                                className="font-medium text-base text-ink hover:underline"
+                                href={`/procurement/requisitions/${req.id}`}
+                              >
+                                {req.requisitionNumber}
+                              </Link>
+                              <Badge className="font-normal" variant="outline">
+                                {config.label}
+                              </Badge>
+                              <Badge
+                                className="font-normal opacity-90"
+                                variant="secondary"
+                              >
+                                {priorityConfig.label}
+                              </Badge>
+                            </div>
+                            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
+                              {req.department ? (
+                                <span>{req.department}</span>
+                              ) : null}
+                              <span className="flex items-center gap-1 tabular-nums">
+                                <DollarSign className="h-3 w-3" />
+                                {formatCurrency(Number(req.estimatedTotal))}
+                              </span>
+                              <span>
+                                Requested {formatDateShort(req.requestDate)}
+                              </span>
+                              {req.requiredBy ? (
+                                <span>
+                                  Need by {formatDateShort(req.requiredBy)}
+                                </span>
+                              ) : null}
+                            </div>
+                          </div>
+                          <Button asChild size="sm" variant="outline">
+                            <Link href={`/procurement/requisitions/${req.id}`}>
+                              <Eye className="mr-1 h-4 w-4" />
+                              View
+                            </Link>
+                          </Button>
+                        </div>
+                      </OperationalRow>
+                    );
+                  })}
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
+        </section>
+      </OperationalColumn>
+    </PageCanvas>
   );
 }

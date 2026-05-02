@@ -15,7 +15,7 @@
 
 import { database } from "@repo/database";
 import { NextRequest } from "next/server";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // ---------------------------------------------------------------------------
 // Mocks — these routes do NOT use auth(); they are public token-based
@@ -24,7 +24,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn() }));
 
 vi.mock("@/lib/database", async () => {
-  const mod = await vi.importActual<typeof import("@repo/database")>("@repo/database");
+  const mod =
+    await vi.importActual<typeof import("@repo/database")>("@repo/database");
   return mod;
 });
 
@@ -32,21 +33,19 @@ vi.mock("@/lib/database", async () => {
 // Route handlers — imported after mocks are in place
 // ---------------------------------------------------------------------------
 
-const contractGet = (await import(
-  "@/app/api/public/contracts/[token]/route"
-)).GET;
+const contractGet = (await import("@/app/api/public/contracts/[token]/route"))
+  .GET;
 
-const contractSign = (await import(
-  "@/app/api/public/contracts/[token]/sign/route"
-)).POST;
+const contractSign = (
+  await import("@/app/api/public/contracts/[token]/sign/route")
+).POST;
 
-const proposalGet = (await import(
-  "@/app/api/public/proposals/[token]/route"
-)).GET;
+const proposalGet = (await import("@/app/api/public/proposals/[token]/route"))
+  .GET;
 
-const proposalRespond = (await import(
-  "@/app/api/public/proposals/[token]/respond/route"
-)).POST;
+const proposalRespond = (
+  await import("@/app/api/public/proposals/[token]/respond/route")
+).POST;
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -144,7 +143,7 @@ describe("GET /api/public/contracts/[token]", () => {
 
     // First findFirst call — the main contract query
     vi.mocked(database.eventContract.findFirst)
-      .mockResolvedValueOnce(contract)          // main select
+      .mockResolvedValueOnce(contract) // main select
       .mockResolvedValueOnce({ id: EVENT_ID } as never) // eventId lookup
       .mockResolvedValueOnce({ id: CLIENT_ID } as never); // clientId lookup
 
@@ -172,7 +171,9 @@ describe("GET /api/public/contracts/[token]", () => {
       },
     ] as never);
 
-    vi.mocked(database.account.findFirst).mockResolvedValueOnce({ name: "Best Catering Co" } as never);
+    vi.mocked(database.account.findFirst).mockResolvedValueOnce({
+      name: "Best Catering Co",
+    } as never);
 
     const res = await contractGet(
       mockContractGetRequest(TOKEN),
@@ -305,11 +306,15 @@ describe("POST /api/public/contracts/[token]/sign", () => {
     } as never);
 
     const res = await contractSign(
-      mockSignRequest(TOKEN, {
-        signatureData: "data:image/png;base64,abc123",
-        signerName: "Jane Doe",
-        signerEmail: "jane@acme.com",
-      }, { "x-forwarded-for": "203.0.113.50, 70.41.3.18" }),
+      mockSignRequest(
+        TOKEN,
+        {
+          signatureData: "data:image/png;base64,abc123",
+          signerName: "Jane Doe",
+          signerEmail: "jane@acme.com",
+        },
+        { "x-forwarded-for": "203.0.113.50, 70.41.3.18" }
+      ),
       makeParams(TOKEN)
     );
 
@@ -398,7 +403,9 @@ describe("POST /api/public/contracts/[token]/sign", () => {
 
     expect(res.status).toBe(410);
     const json = await res.json();
-    expect(json.message).toBe("This contract has expired and can no longer be signed");
+    expect(json.message).toBe(
+      "This contract has expired and can no longer be signed"
+    );
   });
 
   it("returns 400 when contract is already signed", async () => {
@@ -444,7 +451,9 @@ describe("POST /api/public/contracts/[token]/sign", () => {
 
     expect(res.status).toBe(400);
     const json = await res.json();
-    expect(json.message).toBe("This contract is cancelled and cannot be signed");
+    expect(json.message).toBe(
+      "This contract is cancelled and cannot be signed"
+    );
   });
 
   it("falls back to x-real-ip when x-forwarded-for is absent", async () => {
@@ -463,13 +472,20 @@ describe("POST /api/public/contracts/[token]/sign", () => {
       signedAt: new Date("2025-06-15"),
     } as never);
 
-    vi.mocked(database.eventContract.update).mockResolvedValueOnce({ id: CONTRACT_ID, status: "signed" } as never);
+    vi.mocked(database.eventContract.update).mockResolvedValueOnce({
+      id: CONTRACT_ID,
+      status: "signed",
+    } as never);
 
     await contractSign(
-      mockSignRequest(TOKEN, {
-        signatureData: "data:image/png;base64,abc123",
-        signerName: "Jane Doe",
-      }, { "x-real-ip": "10.0.0.1" }),
+      mockSignRequest(
+        TOKEN,
+        {
+          signatureData: "data:image/png;base64,abc123",
+          signerName: "Jane Doe",
+        },
+        { "x-real-ip": "10.0.0.1" }
+      ),
       makeParams(TOKEN)
     );
 
@@ -533,7 +549,9 @@ describe("GET /api/public/proposals/[token]", () => {
   } as never;
 
   it("returns 200 with proposal details, line items, client, and event", async () => {
-    vi.mocked(database.proposal.findFirst).mockResolvedValueOnce(proposalRecord);
+    vi.mocked(database.proposal.findFirst).mockResolvedValueOnce(
+      proposalRecord
+    );
 
     vi.mocked(database.proposalLineItem.findMany).mockResolvedValueOnce([
       {
@@ -569,7 +587,9 @@ describe("GET /api/public/proposals/[token]", () => {
         },
       ]);
 
-    vi.mocked(database.account.findFirst).mockResolvedValueOnce({ name: "Best Catering Co" } as never);
+    vi.mocked(database.account.findFirst).mockResolvedValueOnce({
+      name: "Best Catering Co",
+    } as never);
 
     vi.mocked(database.proposal.update).mockResolvedValueOnce({
       id: PROPOSAL_ID,
@@ -593,12 +613,16 @@ describe("GET /api/public/proposals/[token]", () => {
   });
 
   it("updates viewedAt and transitions status from 'sent' to 'viewed' on first view", async () => {
-    vi.mocked(database.proposal.findFirst).mockResolvedValueOnce(proposalRecord);
+    vi.mocked(database.proposal.findFirst).mockResolvedValueOnce(
+      proposalRecord
+    );
     vi.mocked(database.proposalLineItem.findMany).mockResolvedValueOnce([]);
     vi.mocked(database.$queryRaw)
       .mockResolvedValueOnce([]) // client
       .mockResolvedValueOnce([]); // event
-    vi.mocked(database.account.findFirst).mockResolvedValueOnce({ name: "Test Org" } as never);
+    vi.mocked(database.account.findFirst).mockResolvedValueOnce({
+      name: "Test Org",
+    } as never);
     vi.mocked(database.proposal.update).mockResolvedValueOnce({
       id: PROPOSAL_ID,
       status: "viewed",
@@ -645,12 +669,16 @@ describe("GET /api/public/proposals/[token]", () => {
       eventId: EVENT_ID,
     } as never;
 
-    vi.mocked(database.proposal.findFirst).mockResolvedValueOnce(viewedProposal);
+    vi.mocked(database.proposal.findFirst).mockResolvedValueOnce(
+      viewedProposal
+    );
     vi.mocked(database.proposalLineItem.findMany).mockResolvedValueOnce([]);
     vi.mocked(database.$queryRaw)
       .mockResolvedValueOnce([])
       .mockResolvedValueOnce([]);
-    vi.mocked(database.account.findFirst).mockResolvedValueOnce({ name: "Test Org" } as never);
+    vi.mocked(database.account.findFirst).mockResolvedValueOnce({
+      name: "Test Org",
+    } as never);
 
     await proposalGet(mockProposalGetRequest(TOKEN), makeParams(TOKEN));
 
@@ -718,7 +746,9 @@ describe("GET /api/public/proposals/[token]", () => {
       eventId: EVENT_ID,
     } as never;
 
-    vi.mocked(database.proposal.findFirst).mockResolvedValueOnce(proposalNoClient);
+    vi.mocked(database.proposal.findFirst).mockResolvedValueOnce(
+      proposalNoClient
+    );
     vi.mocked(database.proposalLineItem.findMany).mockResolvedValueOnce([]);
     // clientId is null so no client $queryRaw call happens.
     // $queryRaw call order: lead (if !client && leadId), then event (if eventId)
@@ -740,7 +770,9 @@ describe("GET /api/public/proposals/[token]", () => {
           venue_name: "Grand Ballroom",
         },
       ]);
-    vi.mocked(database.account.findFirst).mockResolvedValueOnce({ name: "Test Org" } as never);
+    vi.mocked(database.account.findFirst).mockResolvedValueOnce({
+      name: "Test Org",
+    } as never);
     vi.mocked(database.proposal.update).mockResolvedValueOnce({
       id: PROPOSAL_ID,
       status: "viewed",

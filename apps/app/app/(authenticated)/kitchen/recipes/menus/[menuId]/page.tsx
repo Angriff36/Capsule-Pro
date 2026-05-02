@@ -78,7 +78,7 @@ export default async function MenuDetailPage({
   });
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-0 flex-1 flex-col">
       <Header page={menu.name} pages={["Kitchen Ops", "Recipes", "Menus"]} />
 
       <main className="flex-1 p-6">

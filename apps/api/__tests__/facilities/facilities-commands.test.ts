@@ -10,18 +10,17 @@
 import { database } from "@repo/database";
 import { NextRequest } from "next/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-
+import { POST as createArea } from "@/app/api/facilities/areas/commands/create/route";
+import { POST as deleteArea } from "@/app/api/facilities/areas/commands/delete/route";
+import { POST as editArea } from "@/app/api/facilities/areas/commands/edit/route";
+import { GET as listAreas } from "@/app/api/facilities/areas/list/route";
 // Route imports
 import { POST as createFacility } from "@/app/api/facilities/commands/create/route";
-import { POST as editFacility } from "@/app/api/facilities/commands/edit/route";
 import { POST as deleteFacility } from "@/app/api/facilities/commands/delete/route";
-import { POST as createArea } from "@/app/api/facilities/areas/commands/create/route";
-import { POST as editArea } from "@/app/api/facilities/areas/commands/edit/route";
-import { POST as deleteArea } from "@/app/api/facilities/areas/commands/delete/route";
-import { GET as listAreas } from "@/app/api/facilities/areas/list/route";
-import { GET as listWorkOrders } from "@/app/api/facilities/work-orders/list/route";
+import { POST as editFacility } from "@/app/api/facilities/commands/edit/route";
 import { POST as createWorkOrder } from "@/app/api/facilities/work-orders/commands/create/route";
 import { POST as updateWorkOrderStatus } from "@/app/api/facilities/work-orders/commands/update-status/route";
+import { GET as listWorkOrders } from "@/app/api/facilities/work-orders/list/route";
 
 // Mock dependencies
 vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
@@ -45,7 +44,7 @@ const TEST_ORG_ID = "org_facilities_cmd_test";
 
 function createNextRequest(
   url: string,
-  body?: Record<string, unknown>,
+  body?: Record<string, unknown>
 ): NextRequest {
   const init: RequestInit = {};
   if (body !== undefined) {
@@ -53,7 +52,10 @@ function createNextRequest(
     init.headers = { "Content-Type": "application/json" };
     init.body = JSON.stringify(body);
   }
-  return new NextRequest(url, init as ConstructorParameters<typeof NextRequest>[1]);
+  return new NextRequest(
+    url,
+    init as ConstructorParameters<typeof NextRequest>[1]
+  );
 }
 
 function createMockFacility(overrides: Record<string, unknown> = {}) {
@@ -156,9 +158,12 @@ describe("Facilities Command Routes", () => {
         orgId: null,
       } as never);
 
-      const req = createNextRequest("http://localhost/api/facilities/commands/create", {
-        name: "Test Facility",
-      });
+      const req = createNextRequest(
+        "http://localhost/api/facilities/commands/create",
+        {
+          name: "Test Facility",
+        }
+      );
       const res = await createFacility(req);
 
       expect(res.status).toBe(401);
@@ -170,9 +175,12 @@ describe("Facilities Command Routes", () => {
     it("should return 400 when tenant not found", async () => {
       vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
 
-      const req = createNextRequest("http://localhost/api/facilities/commands/create", {
-        name: "Test Facility",
-      });
+      const req = createNextRequest(
+        "http://localhost/api/facilities/commands/create",
+        {
+          name: "Test Facility",
+        }
+      );
       const res = await createFacility(req);
 
       expect(res.status).toBe(400);
@@ -182,9 +190,12 @@ describe("Facilities Command Routes", () => {
     });
 
     it("should return 400 when name is missing", async () => {
-      const req = createNextRequest("http://localhost/api/facilities/commands/create", {
-        code: "FAC-001",
-      });
+      const req = createNextRequest(
+        "http://localhost/api/facilities/commands/create",
+        {
+          code: "FAC-001",
+        }
+      );
       const res = await createFacility(req);
 
       expect(res.status).toBe(400);
@@ -194,9 +205,12 @@ describe("Facilities Command Routes", () => {
     });
 
     it("should return 400 when name is empty string", async () => {
-      const req = createNextRequest("http://localhost/api/facilities/commands/create", {
-        name: "   ",
-      });
+      const req = createNextRequest(
+        "http://localhost/api/facilities/commands/create",
+        {
+          name: "   ",
+        }
+      );
       const res = await createFacility(req);
 
       expect(res.status).toBe(400);
@@ -209,18 +223,21 @@ describe("Facilities Command Routes", () => {
       const mockFacility = createMockFacility();
       vi.mocked(database.$queryRaw).mockResolvedValue([mockFacility]);
 
-      const req = createNextRequest("http://localhost/api/facilities/commands/create", {
-        name: "Main Kitchen",
-        code: "MK-001",
-        facilityType: "kitchen",
-        addressLine1: "123 Main St",
-        city: "Springfield",
-        state: "IL",
-        postalCode: "62701",
-        country: "US",
-        phone: "+1-555-0100",
-        notes: "Primary commissary",
-      });
+      const req = createNextRequest(
+        "http://localhost/api/facilities/commands/create",
+        {
+          name: "Main Kitchen",
+          code: "MK-001",
+          facilityType: "kitchen",
+          addressLine1: "123 Main St",
+          city: "Springfield",
+          state: "IL",
+          postalCode: "62701",
+          country: "US",
+          phone: "+1-555-0100",
+          notes: "Primary commissary",
+        }
+      );
       const res = await createFacility(req);
 
       expect(res.status).toBe(200);
@@ -234,10 +251,13 @@ describe("Facilities Command Routes", () => {
       const mockFacility = createMockFacility({ facility_type: "other" });
       vi.mocked(database.$queryRaw).mockResolvedValue([mockFacility]);
 
-      const req = createNextRequest("http://localhost/api/facilities/commands/create", {
-        name: "Test Facility",
-        facilityType: "invalid_type",
-      });
+      const req = createNextRequest(
+        "http://localhost/api/facilities/commands/create",
+        {
+          name: "Test Facility",
+          facilityType: "invalid_type",
+        }
+      );
       const res = await createFacility(req);
 
       expect(res.status).toBe(200);
@@ -245,16 +265,25 @@ describe("Facilities Command Routes", () => {
     });
 
     it("should accept valid facilityType values", async () => {
-      const validTypes = ["kitchen", "warehouse", "commissary", "office", "other"];
+      const validTypes = [
+        "kitchen",
+        "warehouse",
+        "commissary",
+        "office",
+        "other",
+      ];
       for (const fType of validTypes) {
         vi.mocked(database.$queryRaw).mockResolvedValue([
           createMockFacility({ facility_type: fType }),
         ]);
 
-        const req = createNextRequest("http://localhost/api/facilities/commands/create", {
-          name: `Facility ${fType}`,
-          facilityType: fType,
-        });
+        const req = createNextRequest(
+          "http://localhost/api/facilities/commands/create",
+          {
+            name: `Facility ${fType}`,
+            facilityType: fType,
+          }
+        );
         const res = await createFacility(req);
 
         expect(res.status).toBe(200);
@@ -262,11 +291,16 @@ describe("Facilities Command Routes", () => {
     });
 
     it("should return 500 on database error", async () => {
-      vi.mocked(database.$queryRaw).mockRejectedValue(new Error("DB connection lost"));
+      vi.mocked(database.$queryRaw).mockRejectedValue(
+        new Error("DB connection lost")
+      );
 
-      const req = createNextRequest("http://localhost/api/facilities/commands/create", {
-        name: "Main Kitchen",
-      });
+      const req = createNextRequest(
+        "http://localhost/api/facilities/commands/create",
+        {
+          name: "Main Kitchen",
+        }
+      );
       const res = await createFacility(req);
 
       expect(res.status).toBe(500);
@@ -284,10 +318,13 @@ describe("Facilities Command Routes", () => {
         orgId: null,
       } as never);
 
-      const req = createNextRequest("http://localhost/api/facilities/commands/edit", {
-        facilityId: "fac-001",
-        name: "Updated",
-      });
+      const req = createNextRequest(
+        "http://localhost/api/facilities/commands/edit",
+        {
+          facilityId: "fac-001",
+          name: "Updated",
+        }
+      );
       const res = await editFacility(req);
 
       expect(res.status).toBe(401);
@@ -296,19 +333,25 @@ describe("Facilities Command Routes", () => {
     it("should return 400 when tenant not found", async () => {
       vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
 
-      const req = createNextRequest("http://localhost/api/facilities/commands/edit", {
-        facilityId: "fac-001",
-        name: "Updated",
-      });
+      const req = createNextRequest(
+        "http://localhost/api/facilities/commands/edit",
+        {
+          facilityId: "fac-001",
+          name: "Updated",
+        }
+      );
       const res = await editFacility(req);
 
       expect(res.status).toBe(400);
     });
 
     it("should return 400 when facilityId is missing", async () => {
-      const req = createNextRequest("http://localhost/api/facilities/commands/edit", {
-        name: "Updated Name",
-      });
+      const req = createNextRequest(
+        "http://localhost/api/facilities/commands/edit",
+        {
+          name: "Updated Name",
+        }
+      );
       const res = await editFacility(req);
 
       expect(res.status).toBe(400);
@@ -321,10 +364,13 @@ describe("Facilities Command Routes", () => {
       const updated = createMockFacility({ name: "Updated Kitchen" });
       vi.mocked(database.$queryRaw).mockResolvedValue([updated]);
 
-      const req = createNextRequest("http://localhost/api/facilities/commands/edit", {
-        facilityId: "fac-001",
-        name: "Updated Kitchen",
-      });
+      const req = createNextRequest(
+        "http://localhost/api/facilities/commands/edit",
+        {
+          facilityId: "fac-001",
+          name: "Updated Kitchen",
+        }
+      );
       const res = await editFacility(req);
 
       expect(res.status).toBe(200);
@@ -336,10 +382,13 @@ describe("Facilities Command Routes", () => {
     it("should return 404 when facility not found (no rows updated)", async () => {
       vi.mocked(database.$queryRaw).mockResolvedValue([]);
 
-      const req = createNextRequest("http://localhost/api/facilities/commands/edit", {
-        facilityId: "nonexistent-id",
-        name: "Ghost",
-      });
+      const req = createNextRequest(
+        "http://localhost/api/facilities/commands/edit",
+        {
+          facilityId: "nonexistent-id",
+          name: "Ghost",
+        }
+      );
       const res = await editFacility(req);
 
       expect(res.status).toBe(404);
@@ -351,10 +400,13 @@ describe("Facilities Command Routes", () => {
     it("should return 500 on database error", async () => {
       vi.mocked(database.$queryRaw).mockRejectedValue(new Error("Timeout"));
 
-      const req = createNextRequest("http://localhost/api/facilities/commands/edit", {
-        facilityId: "fac-001",
-        name: "Updated",
-      });
+      const req = createNextRequest(
+        "http://localhost/api/facilities/commands/edit",
+        {
+          facilityId: "fac-001",
+          name: "Updated",
+        }
+      );
       const res = await editFacility(req);
 
       expect(res.status).toBe(500);
@@ -371,9 +423,12 @@ describe("Facilities Command Routes", () => {
         orgId: null,
       } as never);
 
-      const req = createNextRequest("http://localhost/api/facilities/commands/delete", {
-        facilityId: "fac-001",
-      });
+      const req = createNextRequest(
+        "http://localhost/api/facilities/commands/delete",
+        {
+          facilityId: "fac-001",
+        }
+      );
       const res = await deleteFacility(req);
 
       expect(res.status).toBe(401);
@@ -382,16 +437,22 @@ describe("Facilities Command Routes", () => {
     it("should return 400 when tenant not found", async () => {
       vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
 
-      const req = createNextRequest("http://localhost/api/facilities/commands/delete", {
-        facilityId: "fac-001",
-      });
+      const req = createNextRequest(
+        "http://localhost/api/facilities/commands/delete",
+        {
+          facilityId: "fac-001",
+        }
+      );
       const res = await deleteFacility(req);
 
       expect(res.status).toBe(400);
     });
 
     it("should return 400 when facilityId is missing", async () => {
-      const req = createNextRequest("http://localhost/api/facilities/commands/delete", {});
+      const req = createNextRequest(
+        "http://localhost/api/facilities/commands/delete",
+        {}
+      );
       const res = await deleteFacility(req);
 
       expect(res.status).toBe(400);
@@ -403,9 +464,12 @@ describe("Facilities Command Routes", () => {
     it("should soft-delete facility and return success", async () => {
       vi.mocked(database.$queryRaw).mockResolvedValue(undefined);
 
-      const req = createNextRequest("http://localhost/api/facilities/commands/delete", {
-        facilityId: "fac-001",
-      });
+      const req = createNextRequest(
+        "http://localhost/api/facilities/commands/delete",
+        {
+          facilityId: "fac-001",
+        }
+      );
       const res = await deleteFacility(req);
 
       expect(res.status).toBe(200);
@@ -417,9 +481,12 @@ describe("Facilities Command Routes", () => {
     it("should call $queryRaw with UPDATE SET deleted_at", async () => {
       vi.mocked(database.$queryRaw).mockResolvedValue(undefined);
 
-      const req = createNextRequest("http://localhost/api/facilities/commands/delete", {
-        facilityId: "fac-001",
-      });
+      const req = createNextRequest(
+        "http://localhost/api/facilities/commands/delete",
+        {
+          facilityId: "fac-001",
+        }
+      );
       await deleteFacility(req);
 
       expect(database.$queryRaw).toHaveBeenCalledTimes(1);
@@ -428,9 +495,12 @@ describe("Facilities Command Routes", () => {
     it("should return 500 on database error", async () => {
       vi.mocked(database.$queryRaw).mockRejectedValue(new Error("DB error"));
 
-      const req = createNextRequest("http://localhost/api/facilities/commands/delete", {
-        facilityId: "fac-001",
-      });
+      const req = createNextRequest(
+        "http://localhost/api/facilities/commands/delete",
+        {
+          facilityId: "fac-001",
+        }
+      );
       const res = await deleteFacility(req);
 
       expect(res.status).toBe(500);
@@ -462,9 +532,12 @@ describe("Facility Areas Command Routes", () => {
         orgId: null,
       } as never);
 
-      const req = createNextRequest("http://localhost/api/facilities/areas/commands/create", {
-        name: "Prep Area",
-      });
+      const req = createNextRequest(
+        "http://localhost/api/facilities/areas/commands/create",
+        {
+          name: "Prep Area",
+        }
+      );
       const res = await createArea(req);
 
       expect(res.status).toBe(401);
@@ -476,18 +549,24 @@ describe("Facility Areas Command Routes", () => {
     it("should return 400 when tenant not found", async () => {
       vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
 
-      const req = createNextRequest("http://localhost/api/facilities/areas/commands/create", {
-        name: "Prep Area",
-      });
+      const req = createNextRequest(
+        "http://localhost/api/facilities/areas/commands/create",
+        {
+          name: "Prep Area",
+        }
+      );
       const res = await createArea(req);
 
       expect(res.status).toBe(400);
     });
 
     it("should return 400 when name is missing", async () => {
-      const req = createNextRequest("http://localhost/api/facilities/areas/commands/create", {
-        code: "PA-001",
-      });
+      const req = createNextRequest(
+        "http://localhost/api/facilities/areas/commands/create",
+        {
+          code: "PA-001",
+        }
+      );
       const res = await createArea(req);
 
       expect(res.status).toBe(400);
@@ -504,15 +583,18 @@ describe("Facility Areas Command Routes", () => {
         .mockResolvedValueOnce([]) // no duplicate
         .mockResolvedValueOnce([mockArea]); // insert result
 
-      const req = createNextRequest("http://localhost/api/facilities/areas/commands/create", {
-        venueId: "fac-001",
-        name: "Prep Area",
-        code: "PA-001",
-        areaType: "prep",
-        floor: 1,
-        description: "Main prep area",
-        squareFeet: 1200,
-      });
+      const req = createNextRequest(
+        "http://localhost/api/facilities/areas/commands/create",
+        {
+          venueId: "fac-001",
+          name: "Prep Area",
+          code: "PA-001",
+          areaType: "prep",
+          floor: 1,
+          description: "Main prep area",
+          squareFeet: 1200,
+        }
+      );
       const res = await createArea(req);
 
       expect(res.status).toBe(200);
@@ -525,13 +607,18 @@ describe("Facility Areas Command Routes", () => {
     it("should return 400 when area code already exists", async () => {
       // First call: duplicate check returns existing row
       // Second call should never be reached
-      vi.mocked(database.$queryRaw).mockResolvedValueOnce([{ id: "area-existing" }]);
+      vi.mocked(database.$queryRaw).mockResolvedValueOnce([
+        { id: "area-existing" },
+      ]);
 
-      const req = createNextRequest("http://localhost/api/facilities/areas/commands/create", {
-        venueId: "fac-001",
-        name: "Duplicate Area",
-        code: "PA-001",
-      });
+      const req = createNextRequest(
+        "http://localhost/api/facilities/areas/commands/create",
+        {
+          venueId: "fac-001",
+          name: "Duplicate Area",
+          code: "PA-001",
+        }
+      );
       const res = await createArea(req);
 
       expect(res.status).toBe(400);
@@ -545,11 +632,14 @@ describe("Facility Areas Command Routes", () => {
       // No code provided, so only one $queryRaw call (the INSERT)
       vi.mocked(database.$queryRaw).mockResolvedValue([mockArea]);
 
-      const req = createNextRequest("http://localhost/api/facilities/areas/commands/create", {
-        venueId: "fac-001",
-        name: "Mystery Area",
-        areaType: "nonexistent_type",
-      });
+      const req = createNextRequest(
+        "http://localhost/api/facilities/areas/commands/create",
+        {
+          venueId: "fac-001",
+          name: "Mystery Area",
+          areaType: "nonexistent_type",
+        }
+      );
       const res = await createArea(req);
 
       expect(res.status).toBe(200);
@@ -573,11 +663,14 @@ describe("Facility Areas Command Routes", () => {
           createMockArea({ area_type: aType }),
         ]);
 
-        const req = createNextRequest("http://localhost/api/facilities/areas/commands/create", {
-          venueId: "fac-001",
-          name: `Area ${aType}`,
-          areaType: aType,
-        });
+        const req = createNextRequest(
+          "http://localhost/api/facilities/areas/commands/create",
+          {
+            venueId: "fac-001",
+            name: `Area ${aType}`,
+            areaType: aType,
+          }
+        );
         const res = await createArea(req);
 
         expect(res.status).toBe(200);
@@ -588,10 +681,13 @@ describe("Facility Areas Command Routes", () => {
       const mockArea = createMockArea({ code: null });
       vi.mocked(database.$queryRaw).mockResolvedValue([mockArea]);
 
-      const req = createNextRequest("http://localhost/api/facilities/areas/commands/create", {
-        venueId: "fac-001",
-        name: "No Code Area",
-      });
+      const req = createNextRequest(
+        "http://localhost/api/facilities/areas/commands/create",
+        {
+          venueId: "fac-001",
+          name: "No Code Area",
+        }
+      );
       const res = await createArea(req);
 
       expect(res.status).toBe(200);
@@ -602,10 +698,13 @@ describe("Facility Areas Command Routes", () => {
     it("should return 500 on database error", async () => {
       vi.mocked(database.$queryRaw).mockRejectedValue(new Error("DB failure"));
 
-      const req = createNextRequest("http://localhost/api/facilities/areas/commands/create", {
-        venueId: "fac-001",
-        name: "Prep Area",
-      });
+      const req = createNextRequest(
+        "http://localhost/api/facilities/areas/commands/create",
+        {
+          venueId: "fac-001",
+          name: "Prep Area",
+        }
+      );
       const res = await createArea(req);
 
       expect(res.status).toBe(500);
@@ -622,10 +721,13 @@ describe("Facility Areas Command Routes", () => {
         orgId: null,
       } as never);
 
-      const req = createNextRequest("http://localhost/api/facilities/areas/commands/edit", {
-        areaId: "area-001",
-        name: "Updated",
-      });
+      const req = createNextRequest(
+        "http://localhost/api/facilities/areas/commands/edit",
+        {
+          areaId: "area-001",
+          name: "Updated",
+        }
+      );
       const res = await editArea(req);
 
       expect(res.status).toBe(401);
@@ -634,19 +736,25 @@ describe("Facility Areas Command Routes", () => {
     it("should return 400 when tenant not found", async () => {
       vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
 
-      const req = createNextRequest("http://localhost/api/facilities/areas/commands/edit", {
-        areaId: "area-001",
-        name: "Updated",
-      });
+      const req = createNextRequest(
+        "http://localhost/api/facilities/areas/commands/edit",
+        {
+          areaId: "area-001",
+          name: "Updated",
+        }
+      );
       const res = await editArea(req);
 
       expect(res.status).toBe(400);
     });
 
     it("should return 400 when areaId is missing", async () => {
-      const req = createNextRequest("http://localhost/api/facilities/areas/commands/edit", {
-        name: "Updated",
-      });
+      const req = createNextRequest(
+        "http://localhost/api/facilities/areas/commands/edit",
+        {
+          name: "Updated",
+        }
+      );
       const res = await editArea(req);
 
       expect(res.status).toBe(400);
@@ -659,10 +767,13 @@ describe("Facility Areas Command Routes", () => {
       const updated = createMockArea({ name: "Updated Prep Area" });
       vi.mocked(database.$queryRaw).mockResolvedValue([updated]);
 
-      const req = createNextRequest("http://localhost/api/facilities/areas/commands/edit", {
-        areaId: "area-001",
-        name: "Updated Prep Area",
-      });
+      const req = createNextRequest(
+        "http://localhost/api/facilities/areas/commands/edit",
+        {
+          areaId: "area-001",
+          name: "Updated Prep Area",
+        }
+      );
       const res = await editArea(req);
 
       expect(res.status).toBe(200);
@@ -674,10 +785,13 @@ describe("Facility Areas Command Routes", () => {
     it("should return 404 when area not found", async () => {
       vi.mocked(database.$queryRaw).mockResolvedValue([]);
 
-      const req = createNextRequest("http://localhost/api/facilities/areas/commands/edit", {
-        areaId: "nonexistent",
-        name: "Ghost",
-      });
+      const req = createNextRequest(
+        "http://localhost/api/facilities/areas/commands/edit",
+        {
+          areaId: "nonexistent",
+          name: "Ghost",
+        }
+      );
       const res = await editArea(req);
 
       expect(res.status).toBe(404);
@@ -687,12 +801,17 @@ describe("Facility Areas Command Routes", () => {
     });
 
     it("should return 500 on database error", async () => {
-      vi.mocked(database.$queryRaw).mockRejectedValue(new Error("Connection lost"));
+      vi.mocked(database.$queryRaw).mockRejectedValue(
+        new Error("Connection lost")
+      );
 
-      const req = createNextRequest("http://localhost/api/facilities/areas/commands/edit", {
-        areaId: "area-001",
-        name: "Updated",
-      });
+      const req = createNextRequest(
+        "http://localhost/api/facilities/areas/commands/edit",
+        {
+          areaId: "area-001",
+          name: "Updated",
+        }
+      );
       const res = await editArea(req);
 
       expect(res.status).toBe(500);
@@ -707,9 +826,12 @@ describe("Facility Areas Command Routes", () => {
         orgId: null,
       } as never);
 
-      const req = createNextRequest("http://localhost/api/facilities/areas/commands/delete", {
-        areaId: "area-001",
-      });
+      const req = createNextRequest(
+        "http://localhost/api/facilities/areas/commands/delete",
+        {
+          areaId: "area-001",
+        }
+      );
       const res = await deleteArea(req);
 
       expect(res.status).toBe(401);
@@ -718,16 +840,22 @@ describe("Facility Areas Command Routes", () => {
     it("should return 400 when tenant not found", async () => {
       vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
 
-      const req = createNextRequest("http://localhost/api/facilities/areas/commands/delete", {
-        areaId: "area-001",
-      });
+      const req = createNextRequest(
+        "http://localhost/api/facilities/areas/commands/delete",
+        {
+          areaId: "area-001",
+        }
+      );
       const res = await deleteArea(req);
 
       expect(res.status).toBe(400);
     });
 
     it("should return 400 when areaId is missing", async () => {
-      const req = createNextRequest("http://localhost/api/facilities/areas/commands/delete", {});
+      const req = createNextRequest(
+        "http://localhost/api/facilities/areas/commands/delete",
+        {}
+      );
       const res = await deleteArea(req);
 
       expect(res.status).toBe(400);
@@ -739,9 +867,12 @@ describe("Facility Areas Command Routes", () => {
     it("should soft-delete area and return success", async () => {
       vi.mocked(database.$queryRaw).mockResolvedValue(undefined);
 
-      const req = createNextRequest("http://localhost/api/facilities/areas/commands/delete", {
-        areaId: "area-001",
-      });
+      const req = createNextRequest(
+        "http://localhost/api/facilities/areas/commands/delete",
+        {
+          areaId: "area-001",
+        }
+      );
       const res = await deleteArea(req);
 
       expect(res.status).toBe(200);
@@ -752,9 +883,12 @@ describe("Facility Areas Command Routes", () => {
     it("should return 500 on database error", async () => {
       vi.mocked(database.$queryRaw).mockRejectedValue(new Error("DB error"));
 
-      const req = createNextRequest("http://localhost/api/facilities/areas/commands/delete", {
-        areaId: "area-001",
-      });
+      const req = createNextRequest(
+        "http://localhost/api/facilities/areas/commands/delete",
+        {
+          areaId: "area-001",
+        }
+      );
       const res = await deleteArea(req);
 
       expect(res.status).toBe(500);
@@ -806,7 +940,11 @@ describe("Facility Areas List Route", () => {
     it("should return areas for authenticated user", async () => {
       const mockAreas = [
         createMockArea({ id: "area-1", name: "Prep Area" }),
-        createMockArea({ id: "area-2", name: "Storage Room", area_type: "storage" }),
+        createMockArea({
+          id: "area-2",
+          name: "Storage Room",
+          area_type: "storage",
+        }),
       ];
       vi.mocked(database.$queryRaw).mockResolvedValue(mockAreas);
 
@@ -833,7 +971,7 @@ describe("Facility Areas List Route", () => {
       vi.mocked(database.$queryRaw).mockResolvedValue([]);
 
       const req = new NextRequest(
-        "http://localhost/api/facilities/areas/list?limit=10&offset=20",
+        "http://localhost/api/facilities/areas/list?limit=10&offset=20"
       );
       const res = await listAreas(req);
 
@@ -859,7 +997,7 @@ describe("Facility Areas List Route", () => {
       vi.mocked(database.$queryRaw).mockResolvedValue([]);
 
       const req = new NextRequest(
-        "http://localhost/api/facilities/areas/list?venueId=fac-001",
+        "http://localhost/api/facilities/areas/list?venueId=fac-001"
       );
       const res = await listAreas(req);
 
@@ -912,7 +1050,9 @@ describe("Work Orders List Route", () => {
         orgId: null,
       } as never);
 
-      const req = new NextRequest("http://localhost/api/facilities/work-orders/list");
+      const req = new NextRequest(
+        "http://localhost/api/facilities/work-orders/list"
+      );
       const res = await listWorkOrders(req);
 
       expect(res.status).toBe(401);
@@ -924,7 +1064,9 @@ describe("Work Orders List Route", () => {
     it("should return 400 when tenant not found", async () => {
       vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
 
-      const req = new NextRequest("http://localhost/api/facilities/work-orders/list");
+      const req = new NextRequest(
+        "http://localhost/api/facilities/work-orders/list"
+      );
       const res = await listWorkOrders(req);
 
       expect(res.status).toBe(400);
@@ -933,11 +1075,17 @@ describe("Work Orders List Route", () => {
     it("should return work orders for authenticated user", async () => {
       const mockOrders = [
         createMockWorkOrder({ id: "wo-1", title: "Fix oven" }),
-        createMockWorkOrder({ id: "wo-2", title: "Replace filter", priority: "low" }),
+        createMockWorkOrder({
+          id: "wo-2",
+          title: "Replace filter",
+          priority: "low",
+        }),
       ];
       vi.mocked(database.$queryRaw).mockResolvedValue(mockOrders);
 
-      const req = new NextRequest("http://localhost/api/facilities/work-orders/list");
+      const req = new NextRequest(
+        "http://localhost/api/facilities/work-orders/list"
+      );
       const res = await listWorkOrders(req);
 
       expect(res.status).toBe(200);
@@ -949,7 +1097,9 @@ describe("Work Orders List Route", () => {
     it("should default status filter to 'open'", async () => {
       vi.mocked(database.$queryRaw).mockResolvedValue([]);
 
-      const req = new NextRequest("http://localhost/api/facilities/work-orders/list");
+      const req = new NextRequest(
+        "http://localhost/api/facilities/work-orders/list"
+      );
       await listWorkOrders(req);
 
       expect(database.$queryRaw).toHaveBeenCalled();
@@ -959,7 +1109,7 @@ describe("Work Orders List Route", () => {
       vi.mocked(database.$queryRaw).mockResolvedValue([]);
 
       const req = new NextRequest(
-        "http://localhost/api/facilities/work-orders/list?priority=critical",
+        "http://localhost/api/facilities/work-orders/list?priority=critical"
       );
       const res = await listWorkOrders(req);
 
@@ -970,7 +1120,7 @@ describe("Work Orders List Route", () => {
       vi.mocked(database.$queryRaw).mockResolvedValue([]);
 
       const req = new NextRequest(
-        "http://localhost/api/facilities/work-orders/list?areaId=area-001",
+        "http://localhost/api/facilities/work-orders/list?areaId=area-001"
       );
       const res = await listWorkOrders(req);
 
@@ -981,7 +1131,7 @@ describe("Work Orders List Route", () => {
       vi.mocked(database.$queryRaw).mockResolvedValue([]);
 
       const req = new NextRequest(
-        "http://localhost/api/facilities/work-orders/list?workOrderType=preventive",
+        "http://localhost/api/facilities/work-orders/list?workOrderType=preventive"
       );
       const res = await listWorkOrders(req);
 
@@ -991,7 +1141,9 @@ describe("Work Orders List Route", () => {
     it("should return empty array when no work orders exist", async () => {
       vi.mocked(database.$queryRaw).mockResolvedValue([]);
 
-      const req = new NextRequest("http://localhost/api/facilities/work-orders/list");
+      const req = new NextRequest(
+        "http://localhost/api/facilities/work-orders/list"
+      );
       const res = await listWorkOrders(req);
 
       expect(res.status).toBe(200);
@@ -1002,7 +1154,9 @@ describe("Work Orders List Route", () => {
     it("should return 500 on database error", async () => {
       vi.mocked(database.$queryRaw).mockRejectedValue(new Error("SQL fail"));
 
-      const req = new NextRequest("http://localhost/api/facilities/work-orders/list");
+      const req = new NextRequest(
+        "http://localhost/api/facilities/work-orders/list"
+      );
       const res = await listWorkOrders(req);
 
       expect(res.status).toBe(500);
@@ -1034,9 +1188,12 @@ describe("Work Orders Command Routes", () => {
         orgId: null,
       } as never);
 
-      const req = createNextRequest("http://localhost/api/facilities/work-orders/commands/create", {
-        title: "Fix oven",
-      });
+      const req = createNextRequest(
+        "http://localhost/api/facilities/work-orders/commands/create",
+        {
+          title: "Fix oven",
+        }
+      );
       const res = await createWorkOrder(req);
 
       expect(res.status).toBe(401);
@@ -1048,19 +1205,25 @@ describe("Work Orders Command Routes", () => {
     it("should return 400 when tenant not found", async () => {
       vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
 
-      const req = createNextRequest("http://localhost/api/facilities/work-orders/commands/create", {
-        title: "Fix oven",
-      });
+      const req = createNextRequest(
+        "http://localhost/api/facilities/work-orders/commands/create",
+        {
+          title: "Fix oven",
+        }
+      );
       const res = await createWorkOrder(req);
 
       expect(res.status).toBe(400);
     });
 
     it("should return 400 when title is missing", async () => {
-      const req = createNextRequest("http://localhost/api/facilities/work-orders/commands/create", {
-        workOrderType: "corrective",
-        priority: "medium",
-      });
+      const req = createNextRequest(
+        "http://localhost/api/facilities/work-orders/commands/create",
+        {
+          workOrderType: "corrective",
+          priority: "medium",
+        }
+      );
       const res = await createWorkOrder(req);
 
       expect(res.status).toBe(400);
@@ -1070,10 +1233,13 @@ describe("Work Orders Command Routes", () => {
     });
 
     it("should return 400 when workOrderType is invalid", async () => {
-      const req = createNextRequest("http://localhost/api/facilities/work-orders/commands/create", {
-        title: "Fix oven",
-        workOrderType: "invalid_type",
-      });
+      const req = createNextRequest(
+        "http://localhost/api/facilities/work-orders/commands/create",
+        {
+          title: "Fix oven",
+          workOrderType: "invalid_type",
+        }
+      );
       const res = await createWorkOrder(req);
 
       expect(res.status).toBe(400);
@@ -1087,11 +1253,14 @@ describe("Work Orders Command Routes", () => {
     });
 
     it("should return 400 when priority is invalid", async () => {
-      const req = createNextRequest("http://localhost/api/facilities/work-orders/commands/create", {
-        title: "Fix oven",
-        workOrderType: "corrective",
-        priority: "super_urgent",
-      });
+      const req = createNextRequest(
+        "http://localhost/api/facilities/work-orders/commands/create",
+        {
+          title: "Fix oven",
+          workOrderType: "corrective",
+          priority: "super_urgent",
+        }
+      );
       const res = await createWorkOrder(req);
 
       expect(res.status).toBe(400);
@@ -1111,13 +1280,16 @@ describe("Work Orders Command Routes", () => {
         .mockResolvedValueOnce(mockCountResult)
         .mockResolvedValueOnce([mockWO]);
 
-      const req = createNextRequest("http://localhost/api/facilities/work-orders/commands/create", {
-        areaId: "area-001",
-        workOrderType: "corrective",
-        priority: "medium",
-        title: "Fix oven door",
-        description: "Hinge is broken",
-      });
+      const req = createNextRequest(
+        "http://localhost/api/facilities/work-orders/commands/create",
+        {
+          areaId: "area-001",
+          workOrderType: "corrective",
+          priority: "medium",
+          title: "Fix oven door",
+          description: "Hinge is broken",
+        }
+      );
       const res = await createWorkOrder(req);
 
       expect(res.status).toBe(200);
@@ -1129,16 +1301,21 @@ describe("Work Orders Command Routes", () => {
 
     it("should auto-generate work_order_number in WO-YYYY-NNNNN format", async () => {
       const mockCountResult = [{ count: 4 }];
-      const mockWO = createMockWorkOrder({ work_order_number: "WO-2026-00005" });
+      const mockWO = createMockWorkOrder({
+        work_order_number: "WO-2026-00005",
+      });
       vi.mocked(database.$queryRaw)
         .mockResolvedValueOnce(mockCountResult)
         .mockResolvedValueOnce([mockWO]);
 
-      const req = createNextRequest("http://localhost/api/facilities/work-orders/commands/create", {
-        title: "New WO",
-        workOrderType: "corrective",
-        priority: "medium",
-      });
+      const req = createNextRequest(
+        "http://localhost/api/facilities/work-orders/commands/create",
+        {
+          title: "New WO",
+          workOrderType: "corrective",
+          priority: "medium",
+        }
+      );
       const res = await createWorkOrder(req);
 
       expect(res.status).toBe(200);
@@ -1147,17 +1324,27 @@ describe("Work Orders Command Routes", () => {
     });
 
     it("should accept all valid workOrderType values", async () => {
-      const validTypes = ["preventive", "corrective", "emergency", "inspection"];
+      const validTypes = [
+        "preventive",
+        "corrective",
+        "emergency",
+        "inspection",
+      ];
       for (const wType of validTypes) {
         vi.mocked(database.$queryRaw)
           .mockResolvedValueOnce([{ count: 0 }])
-          .mockResolvedValueOnce([createMockWorkOrder({ work_order_type: wType })]);
+          .mockResolvedValueOnce([
+            createMockWorkOrder({ work_order_type: wType }),
+          ]);
 
-        const req = createNextRequest("http://localhost/api/facilities/work-orders/commands/create", {
-          title: `WO ${wType}`,
-          workOrderType: wType,
-          priority: "medium",
-        });
+        const req = createNextRequest(
+          "http://localhost/api/facilities/work-orders/commands/create",
+          {
+            title: `WO ${wType}`,
+            workOrderType: wType,
+            priority: "medium",
+          }
+        );
         const res = await createWorkOrder(req);
 
         expect(res.status).toBe(200);
@@ -1171,11 +1358,14 @@ describe("Work Orders Command Routes", () => {
           .mockResolvedValueOnce([{ count: 0 }])
           .mockResolvedValueOnce([createMockWorkOrder({ priority: prio })]);
 
-        const req = createNextRequest("http://localhost/api/facilities/work-orders/commands/create", {
-          title: `WO ${prio}`,
-          workOrderType: "corrective",
-          priority: prio,
-        });
+        const req = createNextRequest(
+          "http://localhost/api/facilities/work-orders/commands/create",
+          {
+            title: `WO ${prio}`,
+            workOrderType: "corrective",
+            priority: prio,
+          }
+        );
         const res = await createWorkOrder(req);
 
         expect(res.status).toBe(200);
@@ -1192,9 +1382,12 @@ describe("Work Orders Command Routes", () => {
         .mockResolvedValueOnce([{ count: 0 }])
         .mockResolvedValueOnce([mockWO]);
 
-      const req = createNextRequest("http://localhost/api/facilities/work-orders/commands/create", {
-        title: "Default WO",
-      });
+      const req = createNextRequest(
+        "http://localhost/api/facilities/work-orders/commands/create",
+        {
+          title: "Default WO",
+        }
+      );
       const res = await createWorkOrder(req);
 
       expect(res.status).toBe(200);
@@ -1204,11 +1397,14 @@ describe("Work Orders Command Routes", () => {
     it("should return 500 on database error", async () => {
       vi.mocked(database.$queryRaw).mockRejectedValue(new Error("DB down"));
 
-      const req = createNextRequest("http://localhost/api/facilities/work-orders/commands/create", {
-        title: "Fix oven",
-        workOrderType: "corrective",
-        priority: "medium",
-      });
+      const req = createNextRequest(
+        "http://localhost/api/facilities/work-orders/commands/create",
+        {
+          title: "Fix oven",
+          workOrderType: "corrective",
+          priority: "medium",
+        }
+      );
       const res = await createWorkOrder(req);
 
       expect(res.status).toBe(500);
@@ -1225,10 +1421,13 @@ describe("Work Orders Command Routes", () => {
         orgId: null,
       } as never);
 
-      const req = createNextRequest("http://localhost/api/facilities/work-orders/commands/update-status", {
-        workOrderId: "wo-001",
-        status: "in_progress",
-      });
+      const req = createNextRequest(
+        "http://localhost/api/facilities/work-orders/commands/update-status",
+        {
+          workOrderId: "wo-001",
+          status: "in_progress",
+        }
+      );
       const res = await updateWorkOrderStatus(req);
 
       expect(res.status).toBe(401);
@@ -1240,19 +1439,25 @@ describe("Work Orders Command Routes", () => {
     it("should return 400 when tenant not found", async () => {
       vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
 
-      const req = createNextRequest("http://localhost/api/facilities/work-orders/commands/update-status", {
-        workOrderId: "wo-001",
-        status: "in_progress",
-      });
+      const req = createNextRequest(
+        "http://localhost/api/facilities/work-orders/commands/update-status",
+        {
+          workOrderId: "wo-001",
+          status: "in_progress",
+        }
+      );
       const res = await updateWorkOrderStatus(req);
 
       expect(res.status).toBe(400);
     });
 
     it("should return 400 when workOrderId is missing", async () => {
-      const req = createNextRequest("http://localhost/api/facilities/work-orders/commands/update-status", {
-        status: "in_progress",
-      });
+      const req = createNextRequest(
+        "http://localhost/api/facilities/work-orders/commands/update-status",
+        {
+          status: "in_progress",
+        }
+      );
       const res = await updateWorkOrderStatus(req);
 
       expect(res.status).toBe(400);
@@ -1262,10 +1467,13 @@ describe("Work Orders Command Routes", () => {
     });
 
     it("should return 400 when status is invalid", async () => {
-      const req = createNextRequest("http://localhost/api/facilities/work-orders/commands/update-status", {
-        workOrderId: "wo-001",
-        status: "bogus_status",
-      });
+      const req = createNextRequest(
+        "http://localhost/api/facilities/work-orders/commands/update-status",
+        {
+          workOrderId: "wo-001",
+          status: "bogus_status",
+        }
+      );
       const res = await updateWorkOrderStatus(req);
 
       expect(res.status).toBe(400);
@@ -1284,10 +1492,13 @@ describe("Work Orders Command Routes", () => {
       // First query: existence check returns empty
       vi.mocked(database.$queryRaw).mockResolvedValueOnce([]);
 
-      const req = createNextRequest("http://localhost/api/facilities/work-orders/commands/update-status", {
-        workOrderId: "nonexistent",
-        status: "in_progress",
-      });
+      const req = createNextRequest(
+        "http://localhost/api/facilities/work-orders/commands/update-status",
+        {
+          workOrderId: "nonexistent",
+          status: "in_progress",
+        }
+      );
       const res = await updateWorkOrderStatus(req);
 
       expect(res.status).toBe(404);
@@ -1304,10 +1515,13 @@ describe("Work Orders Command Routes", () => {
         .mockResolvedValueOnce(existingWO)
         .mockResolvedValueOnce([updatedWO]);
 
-      const req = createNextRequest("http://localhost/api/facilities/work-orders/commands/update-status", {
-        workOrderId: "wo-001",
-        status: "in_progress",
-      });
+      const req = createNextRequest(
+        "http://localhost/api/facilities/work-orders/commands/update-status",
+        {
+          workOrderId: "wo-001",
+          status: "in_progress",
+        }
+      );
       const res = await updateWorkOrderStatus(req);
 
       expect(res.status).toBe(200);
@@ -1334,10 +1548,13 @@ describe("Work Orders Command Routes", () => {
           .mockResolvedValueOnce(existingWO)
           .mockResolvedValueOnce([updatedWO]);
 
-        const req = createNextRequest("http://localhost/api/facilities/work-orders/commands/update-status", {
-          workOrderId: "wo-001",
-          status,
-        });
+        const req = createNextRequest(
+          "http://localhost/api/facilities/work-orders/commands/update-status",
+          {
+            workOrderId: "wo-001",
+            status,
+          }
+        );
         const res = await updateWorkOrderStatus(req);
 
         expect(res.status).toBe(200);
@@ -1360,14 +1577,17 @@ describe("Work Orders Command Routes", () => {
         .mockResolvedValueOnce(existingWO)
         .mockResolvedValueOnce([updatedWO]);
 
-      const req = createNextRequest("http://localhost/api/facilities/work-orders/commands/update-status", {
-        workOrderId: "wo-001",
-        status: "completed",
-        laborHours: 3.5,
-        partsCost: 150.0,
-        laborCost: 350.0,
-        notes: "All fixed",
-      });
+      const req = createNextRequest(
+        "http://localhost/api/facilities/work-orders/commands/update-status",
+        {
+          workOrderId: "wo-001",
+          status: "completed",
+          laborHours: 3.5,
+          partsCost: 150.0,
+          laborCost: 350.0,
+          notes: "All fixed",
+        }
+      );
       const res = await updateWorkOrderStatus(req);
 
       expect(res.status).toBe(200);
@@ -1378,10 +1598,13 @@ describe("Work Orders Command Routes", () => {
     it("should return 500 on database error", async () => {
       vi.mocked(database.$queryRaw).mockRejectedValue(new Error("DB failure"));
 
-      const req = createNextRequest("http://localhost/api/facilities/work-orders/commands/update-status", {
-        workOrderId: "wo-001",
-        status: "completed",
-      });
+      const req = createNextRequest(
+        "http://localhost/api/facilities/work-orders/commands/update-status",
+        {
+          workOrderId: "wo-001",
+          status: "completed",
+        }
+      );
       const res = await updateWorkOrderStatus(req);
 
       expect(res.status).toBe(500);

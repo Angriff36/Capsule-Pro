@@ -7,7 +7,7 @@
  */
 
 import { auth } from "@repo/auth/server";
-import { Prisma, database } from "@repo/database";
+import { database, Prisma } from "@repo/database";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { InvariantError, invariant } from "@/app/lib/invariant";
@@ -40,10 +40,7 @@ export async function GET(
     });
 
     if (!venue) {
-      return NextResponse.json(
-        { message: "Venue not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ message: "Venue not found" }, { status: 404 });
     }
 
     const eventCount = await database.event.count({
@@ -105,10 +102,7 @@ export async function PUT(
     });
 
     if (!existing) {
-      return NextResponse.json(
-        { message: "Venue not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ message: "Venue not found" }, { status: 404 });
     }
 
     const venue = await database.venue.update({
@@ -221,10 +215,7 @@ export async function DELETE(
     });
 
     if (!existing) {
-      return NextResponse.json(
-        { message: "Venue not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ message: "Venue not found" }, { status: 404 });
     }
 
     const activeEvents = await database.event.count({

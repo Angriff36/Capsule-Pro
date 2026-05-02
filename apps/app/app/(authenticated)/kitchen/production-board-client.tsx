@@ -87,16 +87,16 @@ function KitchenClock() {
   // During SSR and initial client render, show placeholder to avoid hydration mismatch
   if (!time) {
     return (
-      <div className="flex items-center gap-2 font-medium text-slate-600 text-sm">
-        <Clock className="h-4 w-4" />
+      <div className="flex items-center gap-2 font-medium text-muted-foreground text-sm">
+        <Clock className="h-4 w-4 shrink-0" />
         <span suppressHydrationWarning>--:--:--</span>
       </div>
     );
   }
 
   return (
-    <div className="flex items-center gap-2 font-medium text-slate-600 text-sm">
-      <Clock className="h-4 w-4" />
+    <div className="flex items-center gap-2 font-medium text-muted-foreground text-sm">
+      <Clock className="h-4 w-4 shrink-0" />
       <span suppressHydrationWarning>{format(time, "h:mm:ss a")}</span>
     </div>
   );
@@ -104,13 +104,13 @@ function KitchenClock() {
 
 function WeatherWidget() {
   return (
-    <div className="flex items-center gap-3 rounded-lg bg-white px-3 py-2 shadow-sm ring-1 ring-slate-100">
-      <div className="flex items-center gap-1.5 text-amber-500">
+    <div className="flex items-center gap-3 rounded-lg border border-hairline bg-card px-3 py-2">
+      <div className="flex items-center gap-1.5 text-amber-600">
         <Sun className="h-5 w-5" />
       </div>
       <div className="hidden sm:block">
-        <div className="font-medium text-slate-600 text-xs">Production Board</div>
-        <div className="text-slate-400 text-xs">Kitchen operations</div>
+        <div className="font-medium text-ink text-xs">Production Board</div>
+        <div className="text-muted-foreground text-xs">Kitchen operations</div>
       </div>
     </div>
   );
@@ -133,9 +133,9 @@ function DateNavigator({
       >
         <ChevronLeft className="h-4 w-4" />
       </Button>
-      <div className="flex items-center gap-2 rounded-lg bg-white px-4 py-2 shadow-sm ring-1 ring-slate-100">
-        <Calendar className="h-4 w-4 text-slate-400" />
-        <span className="font-medium text-slate-700">
+      <div className="flex items-center gap-2 rounded-lg border border-hairline bg-card px-4 py-2">
+        <Calendar className="h-4 w-4 shrink-0 text-muted-foreground" />
+        <span className="font-medium text-foreground">
           {formatDateLabel(selectedDate)}
         </span>
       </div>
@@ -148,7 +148,7 @@ function DateNavigator({
         <ChevronRight className="h-4 w-4" />
       </Button>
       <Button
-        className="ml-1 h-8 text-slate-500 hover:text-slate-700"
+        className="ml-1 h-8 text-muted-foreground hover:text-foreground"
         onClick={() => onDateChange(new Date())}
         size="sm"
         variant="ghost"
@@ -180,8 +180,8 @@ function StatsSidebar({
       label: "Total Tasks",
       value: totalTasks,
       icon: Circle,
-      color: "text-slate-600",
-      bgColor: "bg-slate-100",
+      color: "text-muted-foreground",
+      bgColor: "bg-soft-stone",
     },
     {
       label: "Completed",
@@ -209,33 +209,33 @@ function StatsSidebar({
   return (
     <div className="space-y-4">
       {/* Progress Card */}
-      <Card className="border-slate-200 shadow-sm">
+      <Card className="border-hairline">
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 font-semibold text-sm">
-            <TrendingUp className="h-4 w-4 text-slate-500" />
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
             Shift Progress
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-slate-600">Completion Rate</span>
-              <span className="font-semibold text-slate-800">
-                {completionRate}%
-              </span>
+              <span className="text-muted-foreground">Completion Rate</span>
+              <span className="font-semibold text-ink">{completionRate}%</span>
             </div>
             <Progress className="h-2" value={completionRate} />
           </div>
           <div className="grid grid-cols-2 gap-3">
             {stats.slice(0, 2).map((stat) => (
               <div
-                className="rounded-lg bg-slate-50 p-3 text-center"
+                className="rounded-lg bg-soft-stone p-3 text-center"
                 key={stat.label}
               >
                 <div className={`font-bold text-2xl ${stat.color}`}>
                   {stat.value}
                 </div>
-                <div className="text-slate-500 text-xs">{stat.label}</div>
+                <div className="text-muted-foreground text-xs">
+                  {stat.label}
+                </div>
               </div>
             ))}
           </div>
@@ -243,30 +243,32 @@ function StatsSidebar({
       </Card>
 
       {/* Quick Stats */}
-      <Card className="border-slate-200 shadow-sm">
+      <Card className="border-hairline">
         <CardHeader className="pb-3">
           <CardTitle className="font-semibold text-sm">Quick Stats</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           {stats.slice(2).map((stat) => (
             <div
-              className="flex items-center justify-between rounded-lg p-2 transition-colors hover:bg-slate-50"
+              className="flex items-center justify-between rounded-lg p-2 transition-colors hover:bg-soft-stone/80"
               key={stat.label}
             >
               <div className="flex items-center gap-3">
                 <div className={`rounded-md p-1.5 ${stat.bgColor}`}>
                   <stat.icon className={`h-4 w-4 ${stat.color}`} />
                 </div>
-                <span className="text-slate-600 text-sm">{stat.label}</span>
+                <span className="text-muted-foreground text-sm">
+                  {stat.label}
+                </span>
               </div>
-              <span className="font-semibold text-slate-800">{stat.value}</span>
+              <span className="font-semibold text-ink">{stat.value}</span>
             </div>
           ))}
         </CardContent>
       </Card>
 
       {/* Team Activity */}
-      <Card className="border-slate-200 shadow-sm">
+      <Card className="border-hairline">
         <CardHeader className="pb-3">
           <CardTitle className="font-semibold text-sm">Team Activity</CardTitle>
         </CardHeader>
@@ -296,13 +298,13 @@ function TaskColumn({
   iconColor: string;
 }) {
   return (
-    <div className="flex flex-col rounded-2xl bg-slate-50/50 p-4">
+    <div className="flex flex-col rounded-2xl bg-soft-stone/50 p-4">
       <div className="mb-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className={`rounded-lg p-1.5 ${iconColor}`}>
             <Icon className="h-4 w-4" />
           </div>
-          <h3 className="font-semibold text-slate-700">{title}</h3>
+          <h3 className="font-semibold text-foreground">{title}</h3>
         </div>
         <Badge className="font-medium text-xs" variant="secondary">
           {count}
@@ -310,9 +312,9 @@ function TaskColumn({
       </div>
       <div className="flex-1 space-y-3 overflow-y-auto">
         {tasks.length === 0 ? (
-          <div className="flex h-32 flex-col items-center justify-center rounded-xl border-2 border-slate-200 border-dashed text-center">
-            <Icon className="h-6 w-6 text-slate-300" />
-            <p className="mt-2 text-slate-400 text-sm">No tasks</p>
+          <div className="flex h-32 flex-col items-center justify-center rounded-xl border border-dashed border-hairline text-center">
+            <Icon className="h-6 w-6 text-muted-foreground/50" />
+            <p className="mt-2 text-muted-foreground text-sm">No tasks</p>
           </div>
         ) : (
           tasks.map((task) => (
@@ -390,9 +392,9 @@ export function ProductionBoardClient({
   const _currentStation = STATIONS.find((s) => s.id === selectedStation);
 
   return (
-    <div className="flex min-h-screen flex-col bg-slate-50">
+    <div className="flex min-h-0 flex-1 flex-col bg-canvas">
       {/* Header */}
-      <header className="sticky top-0 z-10 border-slate-200 border-b bg-white/80 backdrop-blur-md">
+      <header className="sticky top-0 z-10 border-hairline border-b bg-background/80 backdrop-blur-md">
         <div className="flex flex-col gap-4 px-6 py-4">
           {/* Top Row: Date Navigation and Actions */}
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -422,7 +424,7 @@ export function ProductionBoardClient({
                 )}
               </Button>
               <Button
-                className="gap-2 bg-slate-900 text-white hover:bg-slate-800"
+                className="gap-2 bg-ink text-white hover:bg-ink/90"
                 onClick={handleCreateTask}
               >
                 <Plus className="h-4 w-4" />
@@ -434,7 +436,7 @@ export function ProductionBoardClient({
           {/* Bottom Row: Station Tabs and Search */}
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             {/* Station Tabs */}
-            <div className="flex items-center gap-1 overflow-x-auto rounded-xl bg-slate-100 p-1">
+            <div className="flex items-center gap-1 overflow-x-auto rounded-xl bg-soft-stone p-1">
               {STATIONS.map((station) => {
                 const Icon = station.icon;
                 const isActive = selectedStation === station.id;
@@ -442,8 +444,8 @@ export function ProductionBoardClient({
                   <button
                     className={`flex items-center gap-2 rounded-lg px-4 py-2 font-medium text-sm transition-all ${
                       isActive
-                        ? "bg-white text-slate-900 shadow-sm"
-                        : "text-slate-500 hover:text-slate-700"
+                        ? "bg-background text-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
                     }`}
                     key={station.id}
                     onClick={() => setSelectedStation(station.id)}
@@ -457,7 +459,7 @@ export function ProductionBoardClient({
 
             {/* Search */}
             <div className="relative w-full sm:w-72">
-              <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 className="pl-10"
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -534,7 +536,7 @@ export function ProductionBoardClient({
           {/* Stats Sidebar / Suggestions Panel */}
           <aside className="space-y-4">
             {showSuggestions ? (
-              <Card className="border-slate-200 shadow-sm">
+              <Card className="border-hairline">
                 <SuggestionsPanel
                   isLoading={suggestionsLoading}
                   onAction={handleAction}
@@ -555,21 +557,21 @@ export function ProductionBoardClient({
                 />
                 {/* AI Suggestions teaser */}
                 {suggestions.length > 0 && (
-                  <Card className="border-purple-200 bg-purple-50/50 shadow-sm">
+                  <Card className="border-hairline bg-pale-blue/35">
                     <CardHeader className="pb-3">
-                      <CardTitle className="flex items-center gap-2 font-semibold text-sm text-purple-900">
-                        <Lightbulb className="h-4 w-4 text-purple-600" />
+                      <CardTitle className="flex items-center gap-2 font-semibold text-action-blue text-sm">
+                        <Lightbulb className="h-4 w-4" />
                         AI Suggestions Available
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-3">
-                      <p className="text-purple-700 text-xs">
+                      <p className="text-muted-foreground text-xs">
                         You have {suggestions.length} suggestion
                         {suggestions.length !== 1 ? "s" : ""} that could help
                         optimize your kitchen operations.
                       </p>
                       <Button
-                        className="w-full bg-purple-600 text-white hover:bg-purple-700"
+                        className="w-full bg-ink text-white hover:bg-ink/90"
                         onClick={() => setShowSuggestions(true)}
                         size="sm"
                       >

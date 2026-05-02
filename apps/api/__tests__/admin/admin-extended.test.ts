@@ -59,7 +59,7 @@ vi.mock("@/lib/manifest-response", async () => {
           success: true,
           ...(typeof data === "object" && data !== null ? data : { data }),
         },
-        { status },
+        { status }
       ),
     manifestErrorResponse: (message: string, status: number) =>
       NextResponse.json({ success: false, message }, { status }),
@@ -95,8 +95,8 @@ import { POST as sessionMarkCreated } from "@/app/api/aieventsetupsession/mark-c
 import { POST as sessionParse } from "@/app/api/aieventsetupsession/parse/route";
 import { POST as sessionUpdateConfidence } from "@/app/api/aieventsetupsession/update-confidence/route";
 import { POST as alertsConfigCreate } from "@/app/api/alertsconfig/create/route";
-import { POST as alertsConfigUpdate } from "@/app/api/alertsconfig/update/route";
 import { POST as alertsConfigRemove } from "@/app/api/alertsconfig/remove/route";
+import { POST as alertsConfigUpdate } from "@/app/api/alertsconfig/update/route";
 import { POST as allergenAcknowledge } from "@/app/api/allergenwarning/acknowledge/route";
 import { POST as allergenApplyOverride } from "@/app/api/allergenwarning/apply-override/route";
 import { POST as allergenCreate } from "@/app/api/allergenwarning/create/route";
@@ -123,7 +123,10 @@ function makeRequest(url: string, options: RequestInit = {}): NextRequest {
   if (options.body && !options.headers) {
     options.headers = { "Content-Type": "application/json" };
   }
-  return new NextRequest(new URL(url, "http://localhost:3000"), options as never);
+  return new NextRequest(
+    new URL(url, "http://localhost:3000"),
+    options as never
+  );
 }
 
 function makeRuntime(mockRunCommand: ReturnType<typeof vi.fn>) {
@@ -177,7 +180,7 @@ describe("Admin Extended API", () => {
         vi.mocked(auth).mockResolvedValue({ orgId: null } as never);
 
         const response = await getActivityFeedList(
-          makeRequest("/api/activity-feed/list"),
+          makeRequest("/api/activity-feed/list")
         );
         expect(response.status).toBe(401);
 
@@ -190,7 +193,7 @@ describe("Admin Extended API", () => {
         vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
 
         const response = await getActivityFeedList(
-          makeRequest("/api/activity-feed/list"),
+          makeRequest("/api/activity-feed/list")
         );
         expect(response.status).toBe(400);
 
@@ -202,13 +205,18 @@ describe("Admin Extended API", () => {
       it("should return activities with default pagination", async () => {
         const activities = [
           sampleActivity(),
-          sampleActivity({ id: "activity-002", activityType: "task_completed" }),
+          sampleActivity({
+            id: "activity-002",
+            activityType: "task_completed",
+          }),
         ];
         vi.mocked(database.activityFeed.count).mockResolvedValue(2);
-        vi.mocked(database.activityFeed.findMany).mockResolvedValue(activities as never);
+        vi.mocked(database.activityFeed.findMany).mockResolvedValue(
+          activities as never
+        );
 
         const response = await getActivityFeedList(
-          makeRequest("/api/activity-feed/list"),
+          makeRequest("/api/activity-feed/list")
         );
         expect(response.status).toBe(200);
 
@@ -225,8 +233,11 @@ describe("Admin Extended API", () => {
 
         await getActivityFeedList(makeRequest("/api/activity-feed/list"));
 
-        const whereArg = vi.mocked(database.activityFeed.findMany).mock.calls[0][0] as Record<string, unknown>;
-        expect(whereArg.where).toEqual(expect.objectContaining({ tenantId: TEST_TENANT_ID }));
+        const whereArg = vi.mocked(database.activityFeed.findMany).mock
+          .calls[0][0] as Record<string, unknown>;
+        expect(whereArg.where).toEqual(
+          expect.objectContaining({ tenantId: TEST_TENANT_ID })
+        );
       });
 
       it("should apply activityType filter", async () => {
@@ -234,10 +245,11 @@ describe("Admin Extended API", () => {
         vi.mocked(database.activityFeed.findMany).mockResolvedValue([]);
 
         await getActivityFeedList(
-          makeRequest("/api/activity-feed/list?activityType=event_created"),
+          makeRequest("/api/activity-feed/list?activityType=event_created")
         );
 
-        const whereArg = vi.mocked(database.activityFeed.findMany).mock.calls[0][0] as Record<string, unknown>;
+        const whereArg = vi.mocked(database.activityFeed.findMany).mock
+          .calls[0][0] as Record<string, unknown>;
         const where = whereArg.where as Record<string, unknown>;
         expect(where.activityType).toBe("event_created");
       });
@@ -247,10 +259,11 @@ describe("Admin Extended API", () => {
         vi.mocked(database.activityFeed.findMany).mockResolvedValue([]);
 
         await getActivityFeedList(
-          makeRequest("/api/activity-feed/list?importance=high"),
+          makeRequest("/api/activity-feed/list?importance=high")
         );
 
-        const whereArg = vi.mocked(database.activityFeed.findMany).mock.calls[0][0] as Record<string, unknown>;
+        const whereArg = vi.mocked(database.activityFeed.findMany).mock
+          .calls[0][0] as Record<string, unknown>;
         const where = whereArg.where as Record<string, unknown>;
         expect(where.importance).toBe("high");
       });
@@ -260,10 +273,11 @@ describe("Admin Extended API", () => {
         vi.mocked(database.activityFeed.findMany).mockResolvedValue([]);
 
         await getActivityFeedList(
-          makeRequest("/api/activity-feed/list?entityType=Event"),
+          makeRequest("/api/activity-feed/list?entityType=Event")
         );
 
-        const whereArg = vi.mocked(database.activityFeed.findMany).mock.calls[0][0] as Record<string, unknown>;
+        const whereArg = vi.mocked(database.activityFeed.findMany).mock
+          .calls[0][0] as Record<string, unknown>;
         const where = whereArg.where as Record<string, unknown>;
         expect(where.entityType).toBe("Event");
       });
@@ -273,10 +287,11 @@ describe("Admin Extended API", () => {
         vi.mocked(database.activityFeed.findMany).mockResolvedValue([]);
 
         await getActivityFeedList(
-          makeRequest("/api/activity-feed/list?entityId=event-123"),
+          makeRequest("/api/activity-feed/list?entityId=event-123")
         );
 
-        const whereArg = vi.mocked(database.activityFeed.findMany).mock.calls[0][0] as Record<string, unknown>;
+        const whereArg = vi.mocked(database.activityFeed.findMany).mock
+          .calls[0][0] as Record<string, unknown>;
         const where = whereArg.where as Record<string, unknown>;
         expect(where.entityId).toBe("event-123");
       });
@@ -286,10 +301,11 @@ describe("Admin Extended API", () => {
         vi.mocked(database.activityFeed.findMany).mockResolvedValue([]);
 
         await getActivityFeedList(
-          makeRequest("/api/activity-feed/list?performedBy=user-123"),
+          makeRequest("/api/activity-feed/list?performedBy=user-123")
         );
 
-        const whereArg = vi.mocked(database.activityFeed.findMany).mock.calls[0][0] as Record<string, unknown>;
+        const whereArg = vi.mocked(database.activityFeed.findMany).mock
+          .calls[0][0] as Record<string, unknown>;
         const where = whereArg.where as Record<string, unknown>;
         expect(where.performedBy).toBe("user-123");
       });
@@ -299,10 +315,11 @@ describe("Admin Extended API", () => {
         vi.mocked(database.activityFeed.findMany).mockResolvedValue([]);
 
         await getActivityFeedList(
-          makeRequest("/api/activity-feed/list?sourceType=ai"),
+          makeRequest("/api/activity-feed/list?sourceType=ai")
         );
 
-        const whereArg = vi.mocked(database.activityFeed.findMany).mock.calls[0][0] as Record<string, unknown>;
+        const whereArg = vi.mocked(database.activityFeed.findMany).mock
+          .calls[0][0] as Record<string, unknown>;
         const where = whereArg.where as Record<string, unknown>;
         expect(where.sourceType).toBe("ai");
       });
@@ -312,10 +329,11 @@ describe("Admin Extended API", () => {
         vi.mocked(database.activityFeed.findMany).mockResolvedValue([]);
 
         await getActivityFeedList(
-          makeRequest("/api/activity-feed/list?correlationId=corr-123"),
+          makeRequest("/api/activity-feed/list?correlationId=corr-123")
         );
 
-        const whereArg = vi.mocked(database.activityFeed.findMany).mock.calls[0][0] as Record<string, unknown>;
+        const whereArg = vi.mocked(database.activityFeed.findMany).mock
+          .calls[0][0] as Record<string, unknown>;
         const where = whereArg.where as Record<string, unknown>;
         expect(where.correlationId).toBe("corr-123");
       });
@@ -325,10 +343,13 @@ describe("Admin Extended API", () => {
         vi.mocked(database.activityFeed.findMany).mockResolvedValue([]);
 
         await getActivityFeedList(
-          makeRequest("/api/activity-feed/list?startDate=2026-01-01&endDate=2026-04-30"),
+          makeRequest(
+            "/api/activity-feed/list?startDate=2026-01-01&endDate=2026-04-30"
+          )
         );
 
-        const whereArg = vi.mocked(database.activityFeed.findMany).mock.calls[0][0] as Record<string, unknown>;
+        const whereArg = vi.mocked(database.activityFeed.findMany).mock
+          .calls[0][0] as Record<string, unknown>;
         const where = whereArg.where as Record<string, unknown>;
         expect(where.createdAt).toBeDefined();
       });
@@ -338,11 +359,11 @@ describe("Admin Extended API", () => {
         vi.mocked(database.activityFeed.findMany).mockResolvedValue([]);
 
         await getActivityFeedList(
-          makeRequest("/api/activity-feed/list?limit=10&offset=20"),
+          makeRequest("/api/activity-feed/list?limit=10&offset=20")
         );
 
         expect(database.activityFeed.findMany).toHaveBeenCalledWith(
-          expect.objectContaining({ take: 10, skip: 20 }),
+          expect.objectContaining({ take: 10, skip: 20 })
         );
       });
 
@@ -351,32 +372,36 @@ describe("Admin Extended API", () => {
         vi.mocked(database.activityFeed.findMany).mockResolvedValue([]);
 
         await getActivityFeedList(
-          makeRequest("/api/activity-feed/list?limit=500"),
+          makeRequest("/api/activity-feed/list?limit=500")
         );
 
         expect(database.activityFeed.findMany).toHaveBeenCalledWith(
-          expect.objectContaining({ take: 200 }),
+          expect.objectContaining({ take: 200 })
         );
       });
 
       it("should calculate hasMore correctly", async () => {
         vi.mocked(database.activityFeed.count).mockResolvedValue(50);
         vi.mocked(database.activityFeed.findMany).mockResolvedValue(
-          Array.from({ length: 10 }, (_, i) => sampleActivity({ id: `act-${i}` })) as never,
+          Array.from({ length: 10 }, (_, i) =>
+            sampleActivity({ id: `act-${i}` })
+          ) as never
         );
 
         const response = await getActivityFeedList(
-          makeRequest("/api/activity-feed/list?limit=10&offset=0"),
+          makeRequest("/api/activity-feed/list?limit=10&offset=0")
         );
         const body = await response.json();
         expect(body.hasMore).toBe(true);
       });
 
       it("should return 500 on database error", async () => {
-        vi.mocked(database.activityFeed.count).mockRejectedValue(new Error("DB error"));
+        vi.mocked(database.activityFeed.count).mockRejectedValue(
+          new Error("DB error")
+        );
 
         const response = await getActivityFeedList(
-          makeRequest("/api/activity-feed/list"),
+          makeRequest("/api/activity-feed/list")
         );
         expect(response.status).toBe(500);
 
@@ -387,12 +412,17 @@ describe("Admin Extended API", () => {
 
       it("should only return activities for the correct tenant", async () => {
         vi.mocked(database.activityFeed.count).mockResolvedValue(1);
-        vi.mocked(database.activityFeed.findMany).mockResolvedValue([sampleActivity()] as never);
+        vi.mocked(database.activityFeed.findMany).mockResolvedValue([
+          sampleActivity(),
+        ] as never);
 
         await getActivityFeedList(makeRequest("/api/activity-feed/list"));
 
-        const whereArg = vi.mocked(database.activityFeed.count).mock.calls[0][0] as Record<string, unknown>;
-        expect(whereArg.where).toEqual(expect.objectContaining({ tenantId: TEST_TENANT_ID }));
+        const whereArg = vi.mocked(database.activityFeed.count).mock
+          .calls[0][0] as Record<string, unknown>;
+        expect(whereArg.where).toEqual(
+          expect.objectContaining({ tenantId: TEST_TENANT_ID })
+        );
       });
     });
 
@@ -401,7 +431,7 @@ describe("Admin Extended API", () => {
         vi.mocked(auth).mockResolvedValue({ orgId: null } as never);
 
         const response = await getActivityFeedStats(
-          makeRequest("/api/activity-feed/stats"),
+          makeRequest("/api/activity-feed/stats")
         );
         expect(response.status).toBe(401);
       });
@@ -410,7 +440,7 @@ describe("Admin Extended API", () => {
         vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
 
         const response = await getActivityFeedStats(
-          makeRequest("/api/activity-feed/stats"),
+          makeRequest("/api/activity-feed/stats")
         );
         expect(response.status).toBe(400);
       });
@@ -418,7 +448,11 @@ describe("Admin Extended API", () => {
       it("should return stats on success", async () => {
         vi.mocked(database.$queryRaw)
           .mockResolvedValueOnce([
-            { total_activities: BigInt(100), today_count: BigInt(5), week_count: BigInt(25) },
+            {
+              total_activities: BigInt(100),
+              today_count: BigInt(5),
+              week_count: BigInt(25),
+            },
           ] as never)
           .mockResolvedValueOnce([
             { activity_type: "event_created", count: BigInt(50) },
@@ -430,7 +464,7 @@ describe("Admin Extended API", () => {
           ] as never);
 
         const response = await getActivityFeedStats(
-          makeRequest("/api/activity-feed/stats"),
+          makeRequest("/api/activity-feed/stats")
         );
         expect(response.status).toBe(200);
 
@@ -439,7 +473,10 @@ describe("Admin Extended API", () => {
         expect(body.stats.totalActivities).toBe(100);
         expect(body.stats.todayCount).toBe(5);
         expect(body.stats.weekCount).toBe(25);
-        expect(body.stats.byType).toEqual({ event_created: 50, task_completed: 30 });
+        expect(body.stats.byType).toEqual({
+          event_created: 50,
+          task_completed: 30,
+        });
         expect(body.stats.byEntity).toEqual({ Event: 60, Task: 40 });
       });
 
@@ -447,7 +484,7 @@ describe("Admin Extended API", () => {
         vi.mocked(database.$queryRaw).mockRejectedValue(new Error("DB error"));
 
         const response = await getActivityFeedStats(
-          makeRequest("/api/activity-feed/stats"),
+          makeRequest("/api/activity-feed/stats")
         );
         expect(response.status).toBe(500);
 
@@ -472,14 +509,20 @@ describe("Admin Extended API", () => {
       label: string,
       handler: (req: NextRequest) => Promise<Response>,
       commandName: string,
-      body: Record<string, unknown>,
+      body: Record<string, unknown>
     ) {
       describe(label, () => {
         it("should return 401 for unauthenticated requests", async () => {
-          vi.mocked(auth).mockResolvedValue({ orgId: null, userId: null } as never);
+          vi.mocked(auth).mockResolvedValue({
+            orgId: null,
+            userId: null,
+          } as never);
 
           const response = await handler(
-            makeRequest("/api/test", { method: "POST", body: JSON.stringify(body) }),
+            makeRequest("/api/test", {
+              method: "POST",
+              body: JSON.stringify(body),
+            })
           );
           expect(response.status).toBe(401);
 
@@ -492,7 +535,10 @@ describe("Admin Extended API", () => {
           vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
 
           const response = await handler(
-            makeRequest("/api/test", { method: "POST", body: JSON.stringify(body) }),
+            makeRequest("/api/test", {
+              method: "POST",
+              body: JSON.stringify(body),
+            })
           );
           expect(response.status).toBe(400);
 
@@ -509,7 +555,10 @@ describe("Admin Extended API", () => {
           });
 
           const response = await handler(
-            makeRequest("/api/test", { method: "POST", body: JSON.stringify(body) }),
+            makeRequest("/api/test", {
+              method: "POST",
+              body: JSON.stringify(body),
+            })
           );
           expect(response.status).toBe(200);
 
@@ -527,7 +576,10 @@ describe("Admin Extended API", () => {
           });
 
           await handler(
-            makeRequest("/api/test", { method: "POST", body: JSON.stringify(body) }),
+            makeRequest("/api/test", {
+              method: "POST",
+              body: JSON.stringify(body),
+            })
           );
 
           expect(mockRunCommand).toHaveBeenCalledWith(commandName, body, {
@@ -543,7 +595,10 @@ describe("Admin Extended API", () => {
           });
 
           await handler(
-            makeRequest("/api/test", { method: "POST", body: JSON.stringify(body) }),
+            makeRequest("/api/test", {
+              method: "POST",
+              body: JSON.stringify(body),
+            })
           );
 
           expect(createManifestRuntime).toHaveBeenCalledWith({
@@ -558,7 +613,10 @@ describe("Admin Extended API", () => {
           });
 
           const response = await handler(
-            makeRequest("/api/test", { method: "POST", body: JSON.stringify(body) }),
+            makeRequest("/api/test", {
+              method: "POST",
+              body: JSON.stringify(body),
+            })
           );
           expect(response.status).toBe(403);
 
@@ -575,7 +633,10 @@ describe("Admin Extended API", () => {
           });
 
           const response = await handler(
-            makeRequest("/api/test", { method: "POST", body: JSON.stringify(body) }),
+            makeRequest("/api/test", {
+              method: "POST",
+              body: JSON.stringify(body),
+            })
           );
           expect(response.status).toBe(422);
 
@@ -592,7 +653,10 @@ describe("Admin Extended API", () => {
           });
 
           const response = await handler(
-            makeRequest("/api/test", { method: "POST", body: JSON.stringify(body) }),
+            makeRequest("/api/test", {
+              method: "POST",
+              body: JSON.stringify(body),
+            })
           );
           expect(response.status).toBe(400);
 
@@ -605,7 +669,10 @@ describe("Admin Extended API", () => {
           mockRunCommand.mockRejectedValue(new Error("Runtime crashed"));
 
           const response = await handler(
-            makeRequest("/api/test", { method: "POST", body: JSON.stringify(body) }),
+            makeRequest("/api/test", {
+              method: "POST",
+              body: JSON.stringify(body),
+            })
           );
           expect(response.status).toBe(500);
 
@@ -622,13 +689,16 @@ describe("Admin Extended API", () => {
           });
 
           await handler(
-            makeRequest("/api/test", { method: "POST", body: JSON.stringify(body) }),
+            makeRequest("/api/test", {
+              method: "POST",
+              body: JSON.stringify(body),
+            })
           );
 
           expect(createManifestRuntime).toHaveBeenCalledWith(
             expect.objectContaining({
               user: expect.objectContaining({ tenantId: TEST_TENANT_ID }),
-            }),
+            })
           );
         });
       });
@@ -657,8 +727,11 @@ describe("Admin Extended API", () => {
       const response = await aiEventSetupParse(
         makeRequest("/api/ai-event-setup/parse", {
           method: "POST",
-          body: JSON.stringify({ originalInput: "Plan a wedding for 100 guests on March 25th at the Grand Ballroom" }),
-        }),
+          body: JSON.stringify({
+            originalInput:
+              "Plan a wedding for 100 guests on March 25th at the Grand Ballroom",
+          }),
+        })
       );
       expect(response.status).toBe(401);
     });
@@ -670,7 +743,7 @@ describe("Admin Extended API", () => {
         makeRequest("/api/ai-event-setup/parse", {
           method: "POST",
           body: JSON.stringify({ originalInput: "wedding for 50 guests" }),
-        }),
+        })
       );
       expect(response.status).toBe(400);
     });
@@ -680,7 +753,7 @@ describe("Admin Extended API", () => {
         makeRequest("/api/ai-event-setup/parse", {
           method: "POST",
           body: JSON.stringify({}),
-        }),
+        })
       );
       expect(response.status).toBe(400);
 
@@ -694,7 +767,7 @@ describe("Admin Extended API", () => {
         makeRequest("/api/ai-event-setup/parse", {
           method: "POST",
           body: JSON.stringify({ originalInput: "   " }),
-        }),
+        })
       );
       expect(response.status).toBe(400);
     });
@@ -704,9 +777,10 @@ describe("Admin Extended API", () => {
         makeRequest("/api/ai-event-setup/parse", {
           method: "POST",
           body: JSON.stringify({
-            originalInput: "Plan a wedding for 150 guests on June 15th at the Grand Ballroom",
+            originalInput:
+              "Plan a wedding for 150 guests on June 15th at the Grand Ballroom",
           }),
-        }),
+        })
       );
       expect(response.status).toBe(200);
 
@@ -729,7 +803,7 @@ describe("Admin Extended API", () => {
           body: JSON.stringify({
             originalInput: "Corporate meeting for 30 people next week",
           }),
-        }),
+        })
       );
       expect(response.status).toBe(200);
 
@@ -746,7 +820,7 @@ describe("Admin Extended API", () => {
           body: JSON.stringify({
             originalInput: "Birthday party for 25 guests",
           }),
-        }),
+        })
       );
       expect(response.status).toBe(200);
 
@@ -763,7 +837,7 @@ describe("Admin Extended API", () => {
           body: JSON.stringify({
             originalInput: "Something fun",
           }),
-        }),
+        })
       );
       expect(response.status).toBe(200);
 
@@ -779,7 +853,7 @@ describe("Admin Extended API", () => {
           body: JSON.stringify({
             originalInput: "a party",
           }),
-        }),
+        })
       );
       expect(response.status).toBe(200);
 
@@ -797,9 +871,10 @@ describe("Admin Extended API", () => {
         makeRequest("/api/ai-event-setup/parse", {
           method: "POST",
           body: JSON.stringify({
-            originalInput: "Plan a wedding for 100 guests on March 25th at the Ritz Hotel",
+            originalInput:
+              "Plan a wedding for 100 guests on March 25th at the Ritz Hotel",
           }),
-        }),
+        })
       );
       expect(response.status).toBe(200);
 
@@ -816,7 +891,7 @@ describe("Admin Extended API", () => {
             originalInput: "event tomorrow",
             referenceDate: "2026-06-01T00:00:00Z",
           }),
-        }),
+        })
       );
       expect(response.status).toBe(200);
 
@@ -835,7 +910,7 @@ describe("Admin Extended API", () => {
         makeRequest("/api/ai-event-setup/parse", {
           method: "POST",
           body: JSON.stringify({ originalInput: "test" }),
-        }),
+        })
       );
       expect(response.status).toBe(500);
 
@@ -859,14 +934,20 @@ describe("Admin Extended API", () => {
       label: string,
       handler: (req: NextRequest) => Promise<Response>,
       commandName: string,
-      body: Record<string, unknown>,
+      body: Record<string, unknown>
     ) {
       describe(label, () => {
         it("should return 401 for unauthenticated requests", async () => {
-          vi.mocked(auth).mockResolvedValue({ orgId: null, userId: null } as never);
+          vi.mocked(auth).mockResolvedValue({
+            orgId: null,
+            userId: null,
+          } as never);
 
           const response = await handler(
-            makeRequest("/api/test", { method: "POST", body: JSON.stringify(body) }),
+            makeRequest("/api/test", {
+              method: "POST",
+              body: JSON.stringify(body),
+            })
           );
           expect(response.status).toBe(401);
         });
@@ -875,7 +956,10 @@ describe("Admin Extended API", () => {
           vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
 
           const response = await handler(
-            makeRequest("/api/test", { method: "POST", body: JSON.stringify(body) }),
+            makeRequest("/api/test", {
+              method: "POST",
+              body: JSON.stringify(body),
+            })
           );
           expect(response.status).toBe(400);
         });
@@ -888,7 +972,10 @@ describe("Admin Extended API", () => {
           });
 
           const response = await handler(
-            makeRequest("/api/test", { method: "POST", body: JSON.stringify(body) }),
+            makeRequest("/api/test", {
+              method: "POST",
+              body: JSON.stringify(body),
+            })
           );
           expect(response.status).toBe(200);
 
@@ -904,7 +991,10 @@ describe("Admin Extended API", () => {
           });
 
           await handler(
-            makeRequest("/api/test", { method: "POST", body: JSON.stringify(body) }),
+            makeRequest("/api/test", {
+              method: "POST",
+              body: JSON.stringify(body),
+            })
           );
 
           expect(mockRunCommand).toHaveBeenCalledWith(commandName, body, {
@@ -920,7 +1010,10 @@ describe("Admin Extended API", () => {
           });
 
           await handler(
-            makeRequest("/api/test", { method: "POST", body: JSON.stringify(body) }),
+            makeRequest("/api/test", {
+              method: "POST",
+              body: JSON.stringify(body),
+            })
           );
 
           expect(createManifestRuntime).toHaveBeenCalledWith({
@@ -935,7 +1028,10 @@ describe("Admin Extended API", () => {
           });
 
           const response = await handler(
-            makeRequest("/api/test", { method: "POST", body: JSON.stringify(body) }),
+            makeRequest("/api/test", {
+              method: "POST",
+              body: JSON.stringify(body),
+            })
           );
           expect(response.status).toBe(403);
 
@@ -950,7 +1046,10 @@ describe("Admin Extended API", () => {
           });
 
           const response = await handler(
-            makeRequest("/api/test", { method: "POST", body: JSON.stringify(body) }),
+            makeRequest("/api/test", {
+              method: "POST",
+              body: JSON.stringify(body),
+            })
           );
           expect(response.status).toBe(422);
 
@@ -965,7 +1064,10 @@ describe("Admin Extended API", () => {
           });
 
           const response = await handler(
-            makeRequest("/api/test", { method: "POST", body: JSON.stringify(body) }),
+            makeRequest("/api/test", {
+              method: "POST",
+              body: JSON.stringify(body),
+            })
           );
           expect(response.status).toBe(400);
 
@@ -977,7 +1079,10 @@ describe("Admin Extended API", () => {
           mockRunCommand.mockRejectedValue(new Error("Runtime exploded"));
 
           const response = await handler(
-            makeRequest("/api/test", { method: "POST", body: JSON.stringify(body) }),
+            makeRequest("/api/test", {
+              method: "POST",
+              body: JSON.stringify(body),
+            })
           );
           expect(response.status).toBe(500);
         });
@@ -990,7 +1095,10 @@ describe("Admin Extended API", () => {
           });
 
           await handler(
-            makeRequest("/api/test", { method: "POST", body: JSON.stringify(body) }),
+            makeRequest("/api/test", {
+              method: "POST",
+              body: JSON.stringify(body),
+            })
           );
 
           const callArg = vi.mocked(createManifestRuntime).mock.calls[0][0] as {
@@ -1018,10 +1126,15 @@ describe("Admin Extended API", () => {
       originalInput: "wedding for 50 guests",
     });
 
-    testSessionCommand("POST update-confidence", sessionUpdateConfidence, "updateConfidence", {
-      instanceId: "session-001",
-      confidence: 0.95,
-    });
+    testSessionCommand(
+      "POST update-confidence",
+      sessionUpdateConfidence,
+      "updateConfidence",
+      {
+        instanceId: "session-001",
+        confidence: 0.95,
+      }
+    );
   });
 
   // =====================================================================
@@ -1038,14 +1151,20 @@ describe("Admin Extended API", () => {
       label: string,
       handler: (req: NextRequest) => Promise<Response>,
       commandName: string,
-      body: Record<string, unknown>,
+      body: Record<string, unknown>
     ) {
       describe(label, () => {
         it("should return 401 for unauthenticated requests", async () => {
-          vi.mocked(auth).mockResolvedValue({ orgId: null, userId: null } as never);
+          vi.mocked(auth).mockResolvedValue({
+            orgId: null,
+            userId: null,
+          } as never);
 
           const response = await handler(
-            makeRequest("/api/test", { method: "POST", body: JSON.stringify(body) }),
+            makeRequest("/api/test", {
+              method: "POST",
+              body: JSON.stringify(body),
+            })
           );
           expect(response.status).toBe(401);
         });
@@ -1054,7 +1173,10 @@ describe("Admin Extended API", () => {
           vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
 
           const response = await handler(
-            makeRequest("/api/test", { method: "POST", body: JSON.stringify(body) }),
+            makeRequest("/api/test", {
+              method: "POST",
+              body: JSON.stringify(body),
+            })
           );
           expect(response.status).toBe(400);
         });
@@ -1067,7 +1189,10 @@ describe("Admin Extended API", () => {
           });
 
           const response = await handler(
-            makeRequest("/api/test", { method: "POST", body: JSON.stringify(body) }),
+            makeRequest("/api/test", {
+              method: "POST",
+              body: JSON.stringify(body),
+            })
           );
           expect(response.status).toBe(200);
 
@@ -1084,7 +1209,10 @@ describe("Admin Extended API", () => {
           });
 
           await handler(
-            makeRequest("/api/test", { method: "POST", body: JSON.stringify(body) }),
+            makeRequest("/api/test", {
+              method: "POST",
+              body: JSON.stringify(body),
+            })
           );
 
           expect(mockRunCommand).toHaveBeenCalledWith(commandName, body, {
@@ -1100,7 +1228,10 @@ describe("Admin Extended API", () => {
           });
 
           await handler(
-            makeRequest("/api/test", { method: "POST", body: JSON.stringify(body) }),
+            makeRequest("/api/test", {
+              method: "POST",
+              body: JSON.stringify(body),
+            })
           );
 
           expect(createManifestRuntime).toHaveBeenCalledWith({
@@ -1115,7 +1246,10 @@ describe("Admin Extended API", () => {
           });
 
           const response = await handler(
-            makeRequest("/api/test", { method: "POST", body: JSON.stringify(body) }),
+            makeRequest("/api/test", {
+              method: "POST",
+              body: JSON.stringify(body),
+            })
           );
           expect(response.status).toBe(403);
 
@@ -1130,7 +1264,10 @@ describe("Admin Extended API", () => {
           });
 
           const response = await handler(
-            makeRequest("/api/test", { method: "POST", body: JSON.stringify(body) }),
+            makeRequest("/api/test", {
+              method: "POST",
+              body: JSON.stringify(body),
+            })
           );
           expect(response.status).toBe(422);
 
@@ -1145,7 +1282,10 @@ describe("Admin Extended API", () => {
           });
 
           const response = await handler(
-            makeRequest("/api/test", { method: "POST", body: JSON.stringify(body) }),
+            makeRequest("/api/test", {
+              method: "POST",
+              body: JSON.stringify(body),
+            })
           );
           expect(response.status).toBe(400);
 
@@ -1157,7 +1297,10 @@ describe("Admin Extended API", () => {
           mockRunCommand.mockRejectedValue(new Error("DB error"));
 
           const response = await handler(
-            makeRequest("/api/test", { method: "POST", body: JSON.stringify(body) }),
+            makeRequest("/api/test", {
+              method: "POST",
+              body: JSON.stringify(body),
+            })
           );
           expect(response.status).toBe(500);
 
@@ -1173,7 +1316,10 @@ describe("Admin Extended API", () => {
           });
 
           await handler(
-            makeRequest("/api/test", { method: "POST", body: JSON.stringify(body) }),
+            makeRequest("/api/test", {
+              method: "POST",
+              body: JSON.stringify(body),
+            })
           );
 
           const callArg = vi.mocked(createManifestRuntime).mock.calls[0][0] as {
@@ -1214,14 +1360,20 @@ describe("Admin Extended API", () => {
       label: string,
       handler: (req: NextRequest) => Promise<Response>,
       commandName: string,
-      body: Record<string, unknown>,
+      body: Record<string, unknown>
     ) {
       describe(label, () => {
         it("should return 401 for unauthenticated requests", async () => {
-          vi.mocked(auth).mockResolvedValue({ orgId: null, userId: null } as never);
+          vi.mocked(auth).mockResolvedValue({
+            orgId: null,
+            userId: null,
+          } as never);
 
           const response = await handler(
-            makeRequest("/api/test", { method: "POST", body: JSON.stringify(body) }),
+            makeRequest("/api/test", {
+              method: "POST",
+              body: JSON.stringify(body),
+            })
           );
           expect(response.status).toBe(401);
         });
@@ -1230,7 +1382,10 @@ describe("Admin Extended API", () => {
           vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
 
           const response = await handler(
-            makeRequest("/api/test", { method: "POST", body: JSON.stringify(body) }),
+            makeRequest("/api/test", {
+              method: "POST",
+              body: JSON.stringify(body),
+            })
           );
           expect(response.status).toBe(400);
         });
@@ -1243,7 +1398,10 @@ describe("Admin Extended API", () => {
           });
 
           const response = await handler(
-            makeRequest("/api/test", { method: "POST", body: JSON.stringify(body) }),
+            makeRequest("/api/test", {
+              method: "POST",
+              body: JSON.stringify(body),
+            })
           );
           expect(response.status).toBe(200);
 
@@ -1260,7 +1418,10 @@ describe("Admin Extended API", () => {
           });
 
           await handler(
-            makeRequest("/api/test", { method: "POST", body: JSON.stringify(body) }),
+            makeRequest("/api/test", {
+              method: "POST",
+              body: JSON.stringify(body),
+            })
           );
 
           expect(mockRunCommand).toHaveBeenCalledWith(commandName, body, {
@@ -1276,7 +1437,10 @@ describe("Admin Extended API", () => {
           });
 
           await handler(
-            makeRequest("/api/test", { method: "POST", body: JSON.stringify(body) }),
+            makeRequest("/api/test", {
+              method: "POST",
+              body: JSON.stringify(body),
+            })
           );
 
           expect(createManifestRuntime).toHaveBeenCalledWith({
@@ -1291,7 +1455,10 @@ describe("Admin Extended API", () => {
           });
 
           const response = await handler(
-            makeRequest("/api/test", { method: "POST", body: JSON.stringify(body) }),
+            makeRequest("/api/test", {
+              method: "POST",
+              body: JSON.stringify(body),
+            })
           );
           expect(response.status).toBe(403);
 
@@ -1307,7 +1474,10 @@ describe("Admin Extended API", () => {
           });
 
           const response = await handler(
-            makeRequest("/api/test", { method: "POST", body: JSON.stringify(body) }),
+            makeRequest("/api/test", {
+              method: "POST",
+              body: JSON.stringify(body),
+            })
           );
           expect(response.status).toBe(422);
 
@@ -1323,7 +1493,10 @@ describe("Admin Extended API", () => {
           });
 
           const response = await handler(
-            makeRequest("/api/test", { method: "POST", body: JSON.stringify(body) }),
+            makeRequest("/api/test", {
+              method: "POST",
+              body: JSON.stringify(body),
+            })
           );
           expect(response.status).toBe(400);
 
@@ -1338,7 +1511,10 @@ describe("Admin Extended API", () => {
           });
 
           const response = await handler(
-            makeRequest("/api/test", { method: "POST", body: JSON.stringify(body) }),
+            makeRequest("/api/test", {
+              method: "POST",
+              body: JSON.stringify(body),
+            })
           );
           expect(response.status).toBe(400);
 
@@ -1350,7 +1526,10 @@ describe("Admin Extended API", () => {
           mockRunCommand.mockRejectedValue(new Error("Unexpected failure"));
 
           const response = await handler(
-            makeRequest("/api/test", { method: "POST", body: JSON.stringify(body) }),
+            makeRequest("/api/test", {
+              method: "POST",
+              body: JSON.stringify(body),
+            })
           );
           expect(response.status).toBe(500);
 
@@ -1366,7 +1545,10 @@ describe("Admin Extended API", () => {
           });
 
           await handler(
-            makeRequest("/api/test", { method: "POST", body: JSON.stringify(body) }),
+            makeRequest("/api/test", {
+              method: "POST",
+              body: JSON.stringify(body),
+            })
           );
 
           const callArg = vi.mocked(createManifestRuntime).mock.calls[0][0] as {
@@ -1377,15 +1559,25 @@ describe("Admin Extended API", () => {
       });
     }
 
-    testAllergenCommand("POST acknowledge", allergenAcknowledge, "acknowledge", {
-      instanceId: "allergen-001",
-      acknowledgedBy: TEST_USER_ID,
-    });
+    testAllergenCommand(
+      "POST acknowledge",
+      allergenAcknowledge,
+      "acknowledge",
+      {
+        instanceId: "allergen-001",
+        acknowledgedBy: TEST_USER_ID,
+      }
+    );
 
-    testAllergenCommand("POST apply-override", allergenApplyOverride, "applyOverride", {
-      instanceId: "allergen-001",
-      overrideReason: "False positive confirmed by chef",
-    });
+    testAllergenCommand(
+      "POST apply-override",
+      allergenApplyOverride,
+      "applyOverride",
+      {
+        instanceId: "allergen-001",
+        overrideReason: "False positive confirmed by chef",
+      }
+    );
 
     testAllergenCommand("POST create", allergenCreate, "create", {
       allergenType: "peanut",

@@ -1,8 +1,17 @@
 "use client";
 
+import {
+  KitchenDashboardFilterAside,
+  KitchenOperationalCanvas,
+  KitchenOperationalHero,
+  KitchenOperationalMetricTile,
+  KitchenOperationalMetricTiles,
+  KitchenOperationalSectionLead,
+} from "@repo/design-system/components/blocks/page-shell";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Input } from "@repo/design-system/components/ui/input";
+import { Label } from "@repo/design-system/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -10,7 +19,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
-import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   Table,
   TableBody,
@@ -19,14 +27,16 @@ import {
   TableHeader,
   TableRow,
 } from "@repo/design-system/components/ui/table";
+import { cn } from "@repo/design-system/lib/utils";
 import {
   type ColumnDef,
   flexRender,
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { FilterIcon, Loader2Icon, PlusIcon } from "lucide-react";
+import { Loader2Icon, PlusIcon } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
+import type { ReactNode } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import type {
@@ -169,11 +179,11 @@ export function TimeOffClient() {
       accessorKey: "employee",
       header: "Employee",
       cell: ({ row }) => (
-        <div>
-          <div className="font-medium">
+        <div className="min-w-0">
+          <div className="truncate font-medium text-ink">
             {row.original.employee_first_name} {row.original.employee_last_name}
           </div>
-          <div className="text-sm text-muted-foreground">
+          <div className="truncate text-muted-foreground text-xs">
             {row.original.employee_email}
           </div>
         </div>
@@ -184,13 +194,14 @@ export function TimeOffClient() {
       header: "Date Range",
       cell: ({ row }) => (
         <div>
-          <div>{formatDate(row.original.start_date)}</div>
-          <div className="text-sm text-muted-foreground">
-            to {formatDate(row.original.end_date)}
+          <div className="font-medium text-ink text-sm">
+            {formatDate(row.original.start_date)}
           </div>
-          <div className="text-sm text-muted-foreground">
-            ({calculateDuration(row.original.start_date, row.original.end_date)}
-            )
+          <div className="text-muted-foreground text-xs">
+            through {formatDate(row.original.end_date)}
+          </div>
+          <div className="text-muted-foreground text-xs tabular-nums">
+            {calculateDuration(row.original.start_date, row.original.end_date)}
           </div>
         </div>
       ),
@@ -199,7 +210,7 @@ export function TimeOffClient() {
       accessorKey: "request_type",
       header: "Type",
       cell: ({ row }) => (
-        <Badge variant="outline">
+        <Badge className="font-normal" variant="secondary">
           {row.original.request_type
             .replace("_", " ")
             .replace("LEAVE", " Leave")}
@@ -231,9 +242,9 @@ export function TimeOffClient() {
       accessorKey: "created_at",
       header: "Requested",
       cell: ({ row }) => (
-        <div className="text-sm">
+        <span className="text-muted-foreground text-sm tabular-nums">
           {formatDate(new Date(row.original.created_at))}
-        </div>
+        </span>
       ),
     },
   ];
@@ -244,248 +255,311 @@ export function TimeOffClient() {
     getCoreRowModel: getCoreRowModel(),
   });
 
+  let tableBody: ReactNode;
+  if (loading) {
+    tableBody = (
+      <TableRow className="hover:bg-transparent">
+        <TableCell className="h-28 text-center" colSpan={columns.length}>
+          <Loader2Icon className="mx-auto size-8 animate-spin text-muted-foreground" />
+        </TableCell>
+      </TableRow>
+    );
+  } else if (timeOffRequests.length === 0) {
+    tableBody = (
+      <TableRow className="hover:bg-transparent">
+        <TableCell
+          className="h-28 text-center text-muted-foreground text-sm"
+          colSpan={columns.length}
+        >
+          No requests match filters. Submit a{" "}
+          <span className="text-ink">new request</span> or clear filters.
+        </TableCell>
+      </TableRow>
+    );
+  } else {
+    tableBody = table.getRowModel().rows.map((row) => (
+      <TableRow
+        className={cn(
+          "cursor-pointer border-hairline border-b transition-colors",
+          "hover:bg-soft-stone/40"
+        )}
+        key={row.id}
+        onClick={() => handleRowClick(row.original)}
+      >
+        {row.getVisibleCells().map((cell) => (
+          <TableCell className="align-middle" key={cell.id}>
+            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+          </TableCell>
+        ))}
+      </TableRow>
+    ));
+  }
+
+  const pendingOnPage = timeOffRequests.filter(
+    (r) => r.status === "PENDING"
+  ).length;
+
+  const hasActiveFilters =
+    Boolean(filters.startDate) ||
+    Boolean(filters.endDate) ||
+    Boolean(filters.employeeId) ||
+    Boolean(filters.locationId) ||
+    Boolean(filters.status) ||
+    Boolean(filters.type);
+
   return (
-    <div className="flex flex-col gap-8">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">
-            Time Off Requests
-          </h1>
-          <p className="text-muted-foreground">
-            Manage employee time off requests, vacations, and absences.
-          </p>
-        </div>
-        <Button onClick={() => setCreateModalOpen(true)}>
-          <PlusIcon className="size-4 mr-2" />
-          New Request
-        </Button>
-      </div>
+    <KitchenOperationalCanvas>
+      <KitchenOperationalHero
+        actions={
+          <Button
+            className="rounded-full bg-white px-5 text-[13px] font-medium text-[#17171c] hover:bg-white/90"
+            onClick={() => setCreateModalOpen(true)}
+            size="sm"
+          >
+            <PlusIcon className="mr-2 size-4" />
+            New request
+          </Button>
+        }
+        eyebrow="Scheduling / Time off"
+        lede="Vacation, sick, and other leave flows. Filter by teammate, status, or window—the row opens approvals and notes."
+        metrics={
+          <KitchenOperationalMetricTiles className="xl:grid-cols-3">
+            <KitchenOperationalMetricTile
+              caption="Across filters"
+              label="Total requests"
+              value={pagination.total}
+            />
+            <KitchenOperationalMetricTile
+              accent="coral"
+              caption="Need review soon"
+              label="Pending (this page)"
+              value={pendingOnPage}
+            />
+            <KitchenOperationalMetricTile
+              caption="For coverage planning"
+              label="Employees"
+              value={employees.length}
+            />
+          </KitchenOperationalMetricTiles>
+        }
+        title="Absence ledger"
+      />
 
-      <Separator />
-
-      {/* Filters */}
-      <section>
-        <h2 className="text-sm font-medium text-muted-foreground mb-4">
-          Filters
-        </h2>
-        <div className="flex items-center gap-4 p-4 border rounded-lg bg-muted/30">
-          <FilterIcon className="size-4 text-muted-foreground" />
-          <Input
-            className="max-w-[150px]"
-            onChange={(e) => handleFilterChange("startDate", e.target.value)}
-            placeholder="Start date"
-            type="date"
-            value={filters.startDate}
-          />
-          <Input
-            className="max-w-[150px]"
-            onChange={(e) => handleFilterChange("endDate", e.target.value)}
-            placeholder="End date"
-            type="date"
-            value={filters.endDate}
-          />
-          <Select
-            onValueChange={(value) =>
-              handleFilterChange("employeeId", value === "__all__" ? "" : value)
-            }
-            value={filters.employeeId || "__all__"}
-          >
-            <SelectTrigger className="w-[200px]">
-              <SelectValue placeholder="Filter by employee" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="__all__">All employees</SelectItem>
-              {employees.map((emp) => (
-                <SelectItem key={emp.id} value={emp.id}>
-                  {emp.first_name} {emp.last_name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Select
-            onValueChange={(value) =>
-              handleFilterChange("locationId", value === "__all__" ? "" : value)
-            }
-            value={filters.locationId || "__all__"}
-          >
-            <SelectTrigger className="w-[200px]">
-              <SelectValue placeholder="Filter by location" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="__all__">All locations</SelectItem>
-              {locations.map((loc) => (
-                <SelectItem key={loc.id} value={loc.id}>
-                  {loc.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Select
-            onValueChange={(value) =>
-              handleFilterChange("status", value === "__all__" ? "" : value)
-            }
-            value={filters.status || "__all__"}
-          >
-            <SelectTrigger className="w-[150px]">
-              <SelectValue placeholder="Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="__all__">All statuses</SelectItem>
-              <SelectItem value="PENDING">Pending</SelectItem>
-              <SelectItem value="APPROVED">Approved</SelectItem>
-              <SelectItem value="REJECTED">Rejected</SelectItem>
-              <SelectItem value="CANCELLED">Cancelled</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select
-            onValueChange={(value) =>
-              handleFilterChange("type", value === "__all__" ? "" : value)
-            }
-            value={filters.type || "__all__"}
-          >
-            <SelectTrigger className="w-[150px]">
-              <SelectValue placeholder="Type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="__all__">All types</SelectItem>
-              <SelectItem value="VACATION">Vacation</SelectItem>
-              <SelectItem value="SICK_LEAVE">Sick Leave</SelectItem>
-              <SelectItem value="PERSONAL_DAY">Personal Day</SelectItem>
-              <SelectItem value="BEREAVEMENT">Bereavement</SelectItem>
-              <SelectItem value="MATERNITY_LEAVE">Maternity Leave</SelectItem>
-              <SelectItem value="PATERNITY_LEAVE">Paternity Leave</SelectItem>
-              <SelectItem value="OTHER">Other</SelectItem>
-            </SelectContent>
-          </Select>
-          {(filters.startDate ||
-            filters.endDate ||
-            filters.employeeId ||
-            filters.locationId ||
-            filters.status ||
-            filters.type) && (
-            <Button
-              onClick={() =>
-                setFilters({
-                  startDate: "",
-                  endDate: "",
-                  employeeId: "",
-                  locationId: "",
-                  status: "",
-                  type: "",
-                })
-              }
-              size="sm"
-              variant="ghost"
-            >
-              Clear filters
-            </Button>
-          )}
-        </div>
-      </section>
-
-      {/* Table */}
-      <section>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-sm font-medium text-muted-foreground">
-            Time Off Requests ({pagination.total})
-          </h2>
-        </div>
-        <div className="border rounded-lg">
-          <Table>
-            <TableHeader>
-              {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                    </TableHead>
+      <div className="grid gap-10 lg:grid-cols-[300px_1fr]">
+        <KitchenDashboardFilterAside>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label className="text-ink text-xs" htmlFor="to-start">
+                Start
+              </Label>
+              <Input
+                className="bg-canvas"
+                id="to-start"
+                onChange={(e) =>
+                  handleFilterChange("startDate", e.target.value)
+                }
+                type="date"
+                value={filters.startDate}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-ink text-xs" htmlFor="to-end">
+                End
+              </Label>
+              <Input
+                className="bg-canvas"
+                id="to-end"
+                onChange={(e) => handleFilterChange("endDate", e.target.value)}
+                type="date"
+                value={filters.endDate}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-ink text-xs">Employee</Label>
+              <Select
+                onValueChange={(value) =>
+                  handleFilterChange(
+                    "employeeId",
+                    value === "__all__" ? "" : value
+                  )
+                }
+                value={filters.employeeId || "__all__"}
+              >
+                <SelectTrigger className="bg-canvas w-full">
+                  <SelectValue placeholder="All employees" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__all__">All employees</SelectItem>
+                  {employees.map((emp) => (
+                    <SelectItem key={emp.id} value={emp.id}>
+                      {emp.first_name} {emp.last_name}
+                    </SelectItem>
                   ))}
-                </TableRow>
-              ))}
-            </TableHeader>
-            <TableBody>
-              {loading ? (
-                <TableRow>
-                  <TableCell
-                    className="h-24 text-center"
-                    colSpan={columns.length}
-                  >
-                    <Loader2Icon className="size-8 animate-spin mx-auto text-muted-foreground" />
-                  </TableCell>
-                </TableRow>
-              ) : timeOffRequests.length === 0 ? (
-                <TableRow>
-                  <TableCell
-                    className="h-24 text-center text-muted-foreground"
-                    colSpan={columns.length}
-                  >
-                    No time off requests found. Create a new request to get
-                    started.
-                  </TableCell>
-                </TableRow>
-              ) : (
-                table.getRowModel().rows.map((row) => (
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label className="text-ink text-xs">Location</Label>
+              <Select
+                onValueChange={(value) =>
+                  handleFilterChange(
+                    "locationId",
+                    value === "__all__" ? "" : value
+                  )
+                }
+                value={filters.locationId || "__all__"}
+              >
+                <SelectTrigger className="bg-canvas w-full">
+                  <SelectValue placeholder="All locations" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__all__">All locations</SelectItem>
+                  {locations.map((loc) => (
+                    <SelectItem key={loc.id} value={loc.id}>
+                      {loc.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label className="text-ink text-xs">Status</Label>
+              <Select
+                onValueChange={(value) =>
+                  handleFilterChange("status", value === "__all__" ? "" : value)
+                }
+                value={filters.status || "__all__"}
+              >
+                <SelectTrigger className="bg-canvas w-full">
+                  <SelectValue placeholder="All statuses" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__all__">All statuses</SelectItem>
+                  <SelectItem value="PENDING">Pending</SelectItem>
+                  <SelectItem value="APPROVED">Approved</SelectItem>
+                  <SelectItem value="REJECTED">Rejected</SelectItem>
+                  <SelectItem value="CANCELLED">Cancelled</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label className="text-ink text-xs">Type</Label>
+              <Select
+                onValueChange={(value) =>
+                  handleFilterChange("type", value === "__all__" ? "" : value)
+                }
+                value={filters.type || "__all__"}
+              >
+                <SelectTrigger className="bg-canvas w-full">
+                  <SelectValue placeholder="All types" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__all__">All types</SelectItem>
+                  <SelectItem value="VACATION">Vacation</SelectItem>
+                  <SelectItem value="SICK_LEAVE">Sick Leave</SelectItem>
+                  <SelectItem value="PERSONAL_DAY">Personal Day</SelectItem>
+                  <SelectItem value="BEREAVEMENT">Bereavement</SelectItem>
+                  <SelectItem value="MATERNITY_LEAVE">
+                    Maternity Leave
+                  </SelectItem>
+                  <SelectItem value="PATERNITY_LEAVE">
+                    Paternity Leave
+                  </SelectItem>
+                  <SelectItem value="OTHER">Other</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            {hasActiveFilters ? (
+              <Button
+                className="w-full"
+                onClick={() =>
+                  setFilters({
+                    startDate: "",
+                    endDate: "",
+                    employeeId: "",
+                    locationId: "",
+                    status: "",
+                    type: "",
+                  })
+                }
+                size="sm"
+                variant="outline"
+              >
+                Clear filters
+              </Button>
+            ) : null}
+          </div>
+        </KitchenDashboardFilterAside>
+
+        <div className="min-w-0 space-y-10">
+          <KitchenOperationalSectionLead
+            countBadge={`${pagination.total} rows · page ${pagination.page} / ${Math.max(pagination.totalPages, 1)}`}
+            eyebrow="Operations"
+            subtitle="Statuses stay secondary to the teammate name—open a row for the full timeline."
+            title="Time-off queue"
+          />
+          <div className="overflow-hidden rounded-[22px] border border-hairline bg-canvas">
+            <Table>
+              <TableHeader>
+                {table.getHeaderGroups().map((headerGroup) => (
                   <TableRow
-                    className="cursor-pointer hover:bg-muted/50"
-                    key={row.id}
-                    onClick={() => handleRowClick(row.original)}
+                    className="border-hairline bg-soft-stone/50 hover:bg-soft-stone/50"
+                    key={headerGroup.id}
                   >
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id}>
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
-                        )}
-                      </TableCell>
+                    {headerGroup.headers.map((header) => (
+                      <TableHead
+                        className="font-mono text-[11px] text-muted-foreground uppercase tracking-[0.2em]"
+                        key={header.id}
+                      >
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(
+                              header.column.columnDef.header,
+                              header.getContext()
+                            )}
+                      </TableHead>
                     ))}
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </div>
-      </section>
-
-      {/* Pagination */}
-      {pagination.totalPages > 1 && (
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">
-            Showing {(pagination.page - 1) * pagination.limit + 1} to{" "}
-            {Math.min(pagination.page * pagination.limit, pagination.total)} of{" "}
-            {pagination.total} time off requests
-          </p>
-          <div className="flex gap-2">
-            <Button
-              disabled={pagination.page === 1}
-              onClick={() =>
-                setPagination((prev) => ({ ...prev, page: prev.page - 1 }))
-              }
-              size="sm"
-              variant="outline"
-            >
-              Previous
-            </Button>
-            <Button
-              disabled={pagination.page === pagination.totalPages}
-              onClick={() =>
-                setPagination((prev) => ({ ...prev, page: prev.page + 1 }))
-              }
-              size="sm"
-              variant="outline"
-            >
-              Next
-            </Button>
+                ))}
+              </TableHeader>
+              <TableBody>{tableBody}</TableBody>
+            </Table>
           </div>
-        </div>
-      )}
 
-      {/* Detail Modal */}
+          {pagination.totalPages > 1 ? (
+            <div className="flex flex-wrap items-center justify-between gap-4 border-hairline border-t pt-4">
+              <p className="text-muted-foreground text-sm">
+                Showing {(pagination.page - 1) * pagination.limit + 1}–
+                {Math.min(pagination.page * pagination.limit, pagination.total)}{" "}
+                of {pagination.total}
+              </p>
+              <div className="flex gap-2">
+                <Button
+                  disabled={pagination.page === 1}
+                  onClick={() =>
+                    setPagination((prev) => ({ ...prev, page: prev.page - 1 }))
+                  }
+                  size="sm"
+                  variant="outline"
+                >
+                  Previous
+                </Button>
+                <Button
+                  disabled={pagination.page === pagination.totalPages}
+                  onClick={() =>
+                    setPagination((prev) => ({ ...prev, page: prev.page + 1 }))
+                  }
+                  size="sm"
+                  variant="outline"
+                >
+                  Next
+                </Button>
+              </div>
+            </div>
+          ) : null}
+        </div>
+      </div>
+
       <TimeOffDetailModal
         onClose={() => {
           setModalOpen(false);
@@ -500,16 +574,18 @@ export function TimeOffClient() {
         timeOffRequest={selectedTimeOff}
       />
 
-      {/* Create Modal */}
       {createModalOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-background rounded-lg shadow-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6">
-            <div className="mb-4">
-              <h2 className="text-2xl font-bold">
-                Create New Time Off Request
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-[22px] border border-hairline bg-canvas p-8">
+            <div className="mb-6 space-y-2">
+              <div className="font-mono text-[11px] text-muted-foreground uppercase tracking-[0.28em]">
+                Scheduling
+              </div>
+              <h2 className="font-normal text-2xl text-ink tracking-[-0.02em] sm:text-3xl">
+                New time-off request
               </h2>
-              <p className="text-muted-foreground">
-                Submit a new time off request.
+              <p className="text-muted-foreground text-sm">
+                Submit a new time-off request for approval.
               </p>
             </div>
             <TimeOffForm
@@ -522,6 +598,6 @@ export function TimeOffClient() {
           </div>
         </div>
       )}
-    </div>
+    </KitchenOperationalCanvas>
   );
 }

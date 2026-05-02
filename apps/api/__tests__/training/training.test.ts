@@ -60,37 +60,36 @@ vi.mock("@sentry/nextjs", () => ({
 }));
 
 import { database } from "@repo/database";
+
 const queryRawMock = database.$queryRaw as unknown as ReturnType<typeof vi.fn>;
+
 import { auth } from "@repo/auth/server";
-import { getTenantIdForOrg, requireCurrentUser } from "@/app/lib/tenant";
-import { createManifestRuntime } from "@/lib/manifest-runtime";
-import { executeManifestCommand } from "@/lib/manifest-command-handler";
-
-// Route handlers
-import {
-  GET as listModules,
-  POST as createModuleViaHandler,
-} from "@/app/api/training/modules/route";
-import { GET as listModulesAutogen } from "@/app/api/training/modules/list/route";
-import {
-  GET as getModule,
-  PUT as updateModule,
-  DELETE as deleteModule,
-} from "@/app/api/training/modules/[id]/route";
-import { POST as createModuleCommand } from "@/app/api/training/modules/commands/create/route";
-import { POST as updateModuleCommand } from "@/app/api/training/modules/commands/update/route";
-import { POST as softDeleteModuleCommand } from "@/app/api/training/modules/commands/soft-delete/route";
-
-import {
-  GET as listAssignments,
-  POST as createAssignmentViaHandler,
-} from "@/app/api/training/assignments/route";
-import { GET as listAssignmentsAutogen } from "@/app/api/training/assignments/list/route";
 import { GET as getAssignment } from "@/app/api/training/assignments/[id]/route";
 import { POST as createAssignmentCommand } from "@/app/api/training/assignments/commands/create/route";
 import { POST as softDeleteAssignmentCommand } from "@/app/api/training/assignments/commands/soft-delete/route";
-
+import { GET as listAssignmentsAutogen } from "@/app/api/training/assignments/list/route";
+import {
+  POST as createAssignmentViaHandler,
+  GET as listAssignments,
+} from "@/app/api/training/assignments/route";
 import { POST as completeTraining } from "@/app/api/training/complete/route";
+import {
+  DELETE as deleteModule,
+  GET as getModule,
+  PUT as updateModule,
+} from "@/app/api/training/modules/[id]/route";
+import { POST as createModuleCommand } from "@/app/api/training/modules/commands/create/route";
+import { POST as softDeleteModuleCommand } from "@/app/api/training/modules/commands/soft-delete/route";
+import { POST as updateModuleCommand } from "@/app/api/training/modules/commands/update/route";
+import { GET as listModulesAutogen } from "@/app/api/training/modules/list/route";
+// Route handlers
+import {
+  POST as createModuleViaHandler,
+  GET as listModules,
+} from "@/app/api/training/modules/route";
+import { getTenantIdForOrg, requireCurrentUser } from "@/app/lib/tenant";
+import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { createManifestRuntime } from "@/lib/manifest-runtime";
 
 const TEST_TENANT_ID = "00000000-0000-0000-0000-000000000001";
 const TEST_USER_ID = "user_training_test";
@@ -206,9 +205,7 @@ describe("Training API", () => {
         orgId: null,
       } as never);
 
-      const request = new NextRequest(
-        "http://localhost/api/training/modules"
-      );
+      const request = new NextRequest("http://localhost/api/training/modules");
       const response = await listModules(request);
 
       expect(response.status).toBe(401);
@@ -229,9 +226,7 @@ describe("Training API", () => {
         return [{ count: BigInt(2) }] as never;
       });
 
-      const request = new NextRequest(
-        "http://localhost/api/training/modules"
-      );
+      const request = new NextRequest("http://localhost/api/training/modules");
       const response = await listModules(request);
 
       expect(response.status).toBe(200);
@@ -286,9 +281,7 @@ describe("Training API", () => {
         return [{ count: BigInt(0) }] as never;
       });
 
-      const request = new NextRequest(
-        "http://localhost/api/training/modules"
-      );
+      const request = new NextRequest("http://localhost/api/training/modules");
       const response = await listModules(request);
 
       expect(response.status).toBe(200);
@@ -310,9 +303,7 @@ describe("Training API", () => {
         return [{ count: BigInt(1) }] as never;
       });
 
-      const request = new NextRequest(
-        "http://localhost/api/training/modules"
-      );
+      const request = new NextRequest("http://localhost/api/training/modules");
       const response = await listModules(request);
 
       expect(response.status).toBe(200);
@@ -512,16 +503,13 @@ describe("Training API", () => {
       );
       vi.mocked(executeManifestCommand).mockResolvedValue(mockResponse);
 
-      const request = new NextRequest(
-        "http://localhost/api/training/modules",
-        {
-          method: "POST",
-          body: JSON.stringify({
-            title: "New Module",
-            contentType: "video",
-          }),
-        }
-      );
+      const request = new NextRequest("http://localhost/api/training/modules", {
+        method: "POST",
+        body: JSON.stringify({
+          title: "New Module",
+          contentType: "video",
+        }),
+      });
       const response = await createModuleViaHandler(request);
 
       expect(response.status).toBe(200);
@@ -538,19 +526,16 @@ describe("Training API", () => {
     });
 
     it("should pass transformBody with defaults", async () => {
-      const mockResponse = new Response(
-        JSON.stringify({ success: true }),
-        { status: 200, headers: { "Content-Type": "application/json" } }
-      );
+      const mockResponse = new Response(JSON.stringify({ success: true }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
       vi.mocked(executeManifestCommand).mockResolvedValue(mockResponse);
 
-      const request = new NextRequest(
-        "http://localhost/api/training/modules",
-        {
-          method: "POST",
-          body: JSON.stringify({ title: "My Module" }),
-        }
-      );
+      const request = new NextRequest("http://localhost/api/training/modules", {
+        method: "POST",
+        body: JSON.stringify({ title: "My Module" }),
+      });
       await createModuleViaHandler(request);
 
       const callArgs = vi.mocked(executeManifestCommand).mock.calls[0][1];
@@ -573,10 +558,10 @@ describe("Training API", () => {
   // =======================================================================
   describe("PUT /api/training/modules/[id] (via executeManifestCommand)", () => {
     it("should delegate to executeManifestCommand with correct params", async () => {
-      const mockResponse = new Response(
-        JSON.stringify({ success: true }),
-        { status: 200, headers: { "Content-Type": "application/json" } }
-      );
+      const mockResponse = new Response(JSON.stringify({ success: true }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
       vi.mocked(executeManifestCommand).mockResolvedValue(mockResponse);
 
       const request = new NextRequest(
@@ -607,10 +592,10 @@ describe("Training API", () => {
   // =======================================================================
   describe("DELETE /api/training/modules/[id] (via executeManifestCommand)", () => {
     it("should delegate to executeManifestCommand with softDelete", async () => {
-      const mockResponse = new Response(
-        JSON.stringify({ success: true }),
-        { status: 200, headers: { "Content-Type": "application/json" } }
-      );
+      const mockResponse = new Response(JSON.stringify({ success: true }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
       vi.mocked(executeManifestCommand).mockResolvedValue(mockResponse);
 
       const request = new NextRequest(
@@ -1272,10 +1257,10 @@ describe("Training API", () => {
   // =======================================================================
   describe("POST /api/training/assignments (via executeManifestCommand)", () => {
     it("should delegate to executeManifestCommand", async () => {
-      const mockResponse = new Response(
-        JSON.stringify({ success: true }),
-        { status: 200, headers: { "Content-Type": "application/json" } }
-      );
+      const mockResponse = new Response(JSON.stringify({ success: true }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
       vi.mocked(executeManifestCommand).mockResolvedValue(mockResponse);
 
       const request = new NextRequest(
@@ -1301,10 +1286,10 @@ describe("Training API", () => {
     });
 
     it("should pass transformBody with assignedBy from context", async () => {
-      const mockResponse = new Response(
-        JSON.stringify({ success: true }),
-        { status: 200, headers: { "Content-Type": "application/json" } }
-      );
+      const mockResponse = new Response(JSON.stringify({ success: true }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
       vi.mocked(executeManifestCommand).mockResolvedValue(mockResponse);
 
       const request = new NextRequest(

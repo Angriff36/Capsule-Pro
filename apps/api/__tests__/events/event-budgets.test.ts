@@ -44,14 +44,13 @@ vi.mock("@sentry/nextjs", () => ({
 
 // Import mocked modules
 import { auth } from "@repo/auth/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { createManifestRuntime } from "@/lib/manifest-runtime";
-
+import { POST as approvePOST } from "@/app/api/eventbudget/approve/route";
 // Import route handlers
 import { POST as createPOST } from "@/app/api/eventbudget/create/route";
-import { POST as updatePOST } from "@/app/api/eventbudget/update/route";
-import { POST as approvePOST } from "@/app/api/eventbudget/approve/route";
 import { POST as finalizePOST } from "@/app/api/eventbudget/finalize/route";
+import { POST as updatePOST } from "@/app/api/eventbudget/update/route";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { createManifestRuntime } from "@/lib/manifest-runtime";
 
 // Test constants
 const TEST_TENANT_ID = "a0000000-0000-4000-a000-000000000001";
@@ -667,7 +666,9 @@ describe("EventBudget Command Routes", () => {
       mockRunCommand.mockResolvedValue({
         success: true,
         result: finalizedResult,
-        emittedEvents: [{ type: "EventBudgetFinalized", data: finalizedResult }],
+        emittedEvents: [
+          { type: "EventBudgetFinalized", data: finalizedResult },
+        ],
       });
 
       const request = createMockRequest(

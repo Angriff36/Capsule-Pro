@@ -9,7 +9,7 @@
  */
 
 import { auth } from "@repo/auth/server";
-import { Prisma, database } from "@repo/database";
+import { database, Prisma } from "@repo/database";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { InvariantError } from "@/app/lib/invariant";

@@ -12,29 +12,39 @@
 import { database } from "@repo/database";
 import { NextRequest } from "next/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-
-// --- Direct route handlers (use requireCurrentUser + withRateLimit) ---
-import { DELETE as deleteApiKey, GET as getApiKey, PUT as updateApiKey } from "@/app/api/settings/api-keys/[id]/route";
 import { POST as revokeApiKey } from "@/app/api/settings/api-keys/[id]/revoke/route";
 import { POST as rotateApiKey } from "@/app/api/settings/api-keys/[id]/rotate/route";
+// --- Direct route handlers (use requireCurrentUser + withRateLimit) ---
+import {
+  DELETE as deleteApiKey,
+  GET as getApiKey,
+  PUT as updateApiKey,
+} from "@/app/api/settings/api-keys/[id]/route";
 import { POST as commandCreateApiKey } from "@/app/api/settings/api-keys/commands/create/route";
 import { POST as commandRecordUsage } from "@/app/api/settings/api-keys/commands/record-usage/route";
 import { POST as commandRevokeApiKey } from "@/app/api/settings/api-keys/commands/revoke/route";
 import { POST as commandSoftDeleteApiKey } from "@/app/api/settings/api-keys/commands/soft-delete/route";
 import { POST as commandUpdateApiKey } from "@/app/api/settings/api-keys/commands/update/route";
-import { GET as listApiKeysRoot, POST as createApiKeyRoot } from "@/app/api/settings/api-keys/route";
-
-// --- Audit log ---
-import { GET as getAuditLog } from "@/app/api/settings/audit-log/route";
-
-// --- Rate limits (use auth + getTenantIdForOrg directly) ---
-import { GET as getRateLimitDetail, PATCH as updateRateLimit, DELETE as deleteRateLimit } from "@/app/api/settings/rate-limits/[id]/route";
-import { GET as getRateLimitAnalytics } from "@/app/api/settings/rate-limits/analytics/route";
-import { GET as getRateLimitEvents } from "@/app/api/settings/rate-limits/events/route";
-import { GET as listRateLimits, POST as createRateLimit } from "@/app/api/settings/rate-limits/route";
-
 // --- Manifest-generated list ---
 import { GET as listApiKeysManifest } from "@/app/api/settings/api-keys/list/route";
+import {
+  POST as createApiKeyRoot,
+  GET as listApiKeysRoot,
+} from "@/app/api/settings/api-keys/route";
+// --- Audit log ---
+import { GET as getAuditLog } from "@/app/api/settings/audit-log/route";
+// --- Rate limits (use auth + getTenantIdForOrg directly) ---
+import {
+  DELETE as deleteRateLimit,
+  GET as getRateLimitDetail,
+  PATCH as updateRateLimit,
+} from "@/app/api/settings/rate-limits/[id]/route";
+import { GET as getRateLimitAnalytics } from "@/app/api/settings/rate-limits/analytics/route";
+import { GET as getRateLimitEvents } from "@/app/api/settings/rate-limits/events/route";
+import {
+  POST as createRateLimit,
+  GET as listRateLimits,
+} from "@/app/api/settings/rate-limits/route";
 
 // Mock dependencies
 vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
@@ -91,7 +101,9 @@ vi.mock("@sentry/nextjs", () => ({
 }));
 
 const { auth } = await import("@repo/auth/server");
-const { getTenantIdForOrg, requireCurrentUser } = await import("@/app/lib/tenant");
+const { getTenantIdForOrg, requireCurrentUser } = await import(
+  "@/app/lib/tenant"
+);
 const { createManifestRuntime } = await import("@/lib/manifest-runtime");
 const { generateApiKey } = await import("@/app/lib/api-key-service");
 
@@ -136,7 +148,7 @@ function createMockRateLimitConfig(overrides: Record<string, unknown> = {}) {
     tenantId: TEST_TENANT_ID,
     name: "Default Rate Limit",
     endpointPattern: "/api/.*",
-    windowMs: 60000,
+    windowMs: 60_000,
     maxRequests: 100,
     burstAllowance: 10,
     priority: 0,
@@ -180,7 +192,9 @@ describe("Settings API", () => {
   // =====================================================================
   describe("API Keys", () => {
     beforeEach(() => {
-      vi.mocked(requireCurrentUser).mockResolvedValue(createMockCurrentUser() as never);
+      vi.mocked(requireCurrentUser).mockResolvedValue(
+        createMockCurrentUser() as never
+      );
     });
 
     // --------------------------------------------------------- LIST (root)
@@ -191,9 +205,13 @@ describe("Settings API", () => {
           createMockApiKey({ id: "key-2", name: "Staging Key" }),
         ];
 
-        vi.mocked(database.apiKey.findMany).mockResolvedValue(mockKeys as never);
+        vi.mocked(database.apiKey.findMany).mockResolvedValue(
+          mockKeys as never
+        );
 
-        const request = new NextRequest("http://localhost/api/settings/api-keys");
+        const request = new NextRequest(
+          "http://localhost/api/settings/api-keys"
+        );
         const response = await listApiKeysRoot(request);
 
         expect(response.status).toBe(200);
@@ -205,7 +223,9 @@ describe("Settings API", () => {
       it("should exclude soft-deleted keys and order by created_at desc", async () => {
         vi.mocked(database.apiKey.findMany).mockResolvedValue([] as never);
 
-        const request = new NextRequest("http://localhost/api/settings/api-keys");
+        const request = new NextRequest(
+          "http://localhost/api/settings/api-keys"
+        );
         await listApiKeysRoot(request);
 
         expect(database.apiKey.findMany).toHaveBeenCalledWith(
@@ -222,17 +242,25 @@ describe("Settings API", () => {
       it("should exclude hashedKey from the select for security", async () => {
         vi.mocked(database.apiKey.findMany).mockResolvedValue([] as never);
 
-        const request = new NextRequest("http://localhost/api/settings/api-keys");
+        const request = new NextRequest(
+          "http://localhost/api/settings/api-keys"
+        );
         await listApiKeysRoot(request);
 
-        const call = vi.mocked(database.apiKey.findMany).mock.calls[0][0] as { select: Record<string, boolean> };
+        const call = vi.mocked(database.apiKey.findMany).mock.calls[0][0] as {
+          select: Record<string, boolean>;
+        };
         expect(call.select.hashedKey).toBeUndefined();
       });
 
       it("should return 500 when requireCurrentUser throws", async () => {
-        vi.mocked(requireCurrentUser).mockRejectedValue(new Error("Auth failed") as never);
+        vi.mocked(requireCurrentUser).mockRejectedValue(
+          new Error("Auth failed") as never
+        );
 
-        const request = new NextRequest("http://localhost/api/settings/api-keys");
+        const request = new NextRequest(
+          "http://localhost/api/settings/api-keys"
+        );
         const response = await listApiKeysRoot(request);
 
         expect(response.status).toBe(500);
@@ -259,10 +287,13 @@ describe("Settings API", () => {
           createdAt: new Date("2026-01-01"),
         } as never);
 
-        const request = new NextRequest("http://localhost/api/settings/api-keys", {
-          method: "POST",
-          body: JSON.stringify({ name: "My Key", scopes: ["read"] }),
-        });
+        const request = new NextRequest(
+          "http://localhost/api/settings/api-keys",
+          {
+            method: "POST",
+            body: JSON.stringify({ name: "My Key", scopes: ["read"] }),
+          }
+        );
         const response = await createApiKeyRoot(request);
 
         expect(response.status).toBe(201);
@@ -273,10 +304,13 @@ describe("Settings API", () => {
       });
 
       it("should return 400 when name is missing", async () => {
-        const request = new NextRequest("http://localhost/api/settings/api-keys", {
-          method: "POST",
-          body: JSON.stringify({ scopes: ["read"] }),
-        });
+        const request = new NextRequest(
+          "http://localhost/api/settings/api-keys",
+          {
+            method: "POST",
+            body: JSON.stringify({ scopes: ["read"] }),
+          }
+        );
         const response = await createApiKeyRoot(request);
 
         expect(response.status).toBe(400);
@@ -285,10 +319,13 @@ describe("Settings API", () => {
       });
 
       it("should return 400 when name is not a string", async () => {
-        const request = new NextRequest("http://localhost/api/settings/api-keys", {
-          method: "POST",
-          body: JSON.stringify({ name: 123 }),
-        });
+        const request = new NextRequest(
+          "http://localhost/api/settings/api-keys",
+          {
+            method: "POST",
+            body: JSON.stringify({ name: 123 }),
+          }
+        );
         const response = await createApiKeyRoot(request);
 
         expect(response.status).toBe(400);
@@ -299,10 +336,13 @@ describe("Settings API", () => {
           createMockApiKey({ name: "Duplicate Key" }) as never
         );
 
-        const request = new NextRequest("http://localhost/api/settings/api-keys", {
-          method: "POST",
-          body: JSON.stringify({ name: "Duplicate Key" }),
-        });
+        const request = new NextRequest(
+          "http://localhost/api/settings/api-keys",
+          {
+            method: "POST",
+            body: JSON.stringify({ name: "Duplicate Key" }),
+          }
+        );
         const response = await createApiKeyRoot(request);
 
         expect(response.status).toBe(409);
@@ -311,9 +351,12 @@ describe("Settings API", () => {
       });
 
       it("should handle empty body gracefully", async () => {
-        const request = new NextRequest("http://localhost/api/settings/api-keys", {
-          method: "POST",
-        });
+        const request = new NextRequest(
+          "http://localhost/api/settings/api-keys",
+          {
+            method: "POST",
+          }
+        );
         const response = await createApiKeyRoot(request);
 
         // Empty body means no name, should 400
@@ -321,12 +364,17 @@ describe("Settings API", () => {
       });
 
       it("should return 500 on database error", async () => {
-        vi.mocked(database.apiKey.findFirst).mockRejectedValue(new Error("DB error") as never);
+        vi.mocked(database.apiKey.findFirst).mockRejectedValue(
+          new Error("DB error") as never
+        );
 
-        const request = new NextRequest("http://localhost/api/settings/api-keys", {
-          method: "POST",
-          body: JSON.stringify({ name: "Key" }),
-        });
+        const request = new NextRequest(
+          "http://localhost/api/settings/api-keys",
+          {
+            method: "POST",
+            body: JSON.stringify({ name: "Key" }),
+          }
+        );
         const response = await createApiKeyRoot(request);
 
         expect(response.status).toBe(500);
@@ -342,7 +390,9 @@ describe("Settings API", () => {
           createMockApiKey({ id: "key-001" }) as never
         );
 
-        const request = new NextRequest("http://localhost/api/settings/api-keys/key-001");
+        const request = new NextRequest(
+          "http://localhost/api/settings/api-keys/key-001"
+        );
         const response = await getApiKey(request, {
           params: Promise.resolve({ id: "key-001" }),
         });
@@ -356,7 +406,9 @@ describe("Settings API", () => {
       it("should return 404 when key not found", async () => {
         vi.mocked(database.apiKey.findFirst).mockResolvedValue(null as never);
 
-        const request = new NextRequest("http://localhost/api/settings/api-keys/nonexistent");
+        const request = new NextRequest(
+          "http://localhost/api/settings/api-keys/nonexistent"
+        );
         const response = await getApiKey(request, {
           params: Promise.resolve({ id: "nonexistent" }),
         });
@@ -369,7 +421,9 @@ describe("Settings API", () => {
       it("should enforce tenant isolation on detail queries", async () => {
         vi.mocked(database.apiKey.findFirst).mockResolvedValue(null as never);
 
-        const request = new NextRequest("http://localhost/api/settings/api-keys/key-001");
+        const request = new NextRequest(
+          "http://localhost/api/settings/api-keys/key-001"
+        );
         await getApiKey(request, {
           params: Promise.resolve({ id: "key-001" }),
         });
@@ -385,9 +439,13 @@ describe("Settings API", () => {
       });
 
       it("should return 500 on database error", async () => {
-        vi.mocked(database.apiKey.findFirst).mockRejectedValue(new Error("DB crash") as never);
+        vi.mocked(database.apiKey.findFirst).mockRejectedValue(
+          new Error("DB crash") as never
+        );
 
-        const request = new NextRequest("http://localhost/api/settings/api-keys/key-001");
+        const request = new NextRequest(
+          "http://localhost/api/settings/api-keys/key-001"
+        );
         const response = await getApiKey(request, {
           params: Promise.resolve({ id: "key-001" }),
         });
@@ -417,10 +475,13 @@ describe("Settings API", () => {
           updatedAt: new Date("2026-01-02"),
         } as never);
 
-        const request = new NextRequest("http://localhost/api/settings/api-keys/key-001", {
-          method: "PUT",
-          body: JSON.stringify({ name: "Updated Key" }),
-        });
+        const request = new NextRequest(
+          "http://localhost/api/settings/api-keys/key-001",
+          {
+            method: "PUT",
+            body: JSON.stringify({ name: "Updated Key" }),
+          }
+        );
         const response = await updateApiKey(request, {
           params: Promise.resolve({ id: "key-001" }),
         });
@@ -433,10 +494,13 @@ describe("Settings API", () => {
       it("should return 404 when key not found or soft-deleted", async () => {
         vi.mocked(database.apiKey.findFirst).mockResolvedValue(null as never);
 
-        const request = new NextRequest("http://localhost/api/settings/api-keys/bad-id", {
-          method: "PUT",
-          body: JSON.stringify({ name: "New Name" }),
-        });
+        const request = new NextRequest(
+          "http://localhost/api/settings/api-keys/bad-id",
+          {
+            method: "PUT",
+            body: JSON.stringify({ name: "New Name" }),
+          }
+        );
         const response = await updateApiKey(request, {
           params: Promise.resolve({ id: "bad-id" }),
         });
@@ -449,10 +513,13 @@ describe("Settings API", () => {
           createMockApiKey({ deletedAt: new Date() }) as never
         );
 
-        const request = new NextRequest("http://localhost/api/settings/api-keys/key-001", {
-          method: "PUT",
-          body: JSON.stringify({ name: "New Name" }),
-        });
+        const request = new NextRequest(
+          "http://localhost/api/settings/api-keys/key-001",
+          {
+            method: "PUT",
+            body: JSON.stringify({ name: "New Name" }),
+          }
+        );
         const response = await updateApiKey(request, {
           params: Promise.resolve({ id: "key-001" }),
         });
@@ -465,10 +532,13 @@ describe("Settings API", () => {
           createMockApiKey({ revokedAt: new Date() }) as never
         );
 
-        const request = new NextRequest("http://localhost/api/settings/api-keys/key-001", {
-          method: "PUT",
-          body: JSON.stringify({ name: "New Name" }),
-        });
+        const request = new NextRequest(
+          "http://localhost/api/settings/api-keys/key-001",
+          {
+            method: "PUT",
+            body: JSON.stringify({ name: "New Name" }),
+          }
+        );
         const response = await updateApiKey(request, {
           params: Promise.resolve({ id: "key-001" }),
         });
@@ -483,10 +553,13 @@ describe("Settings API", () => {
           createMockApiKey({ id: "key-001" }) as never
         );
 
-        const request = new NextRequest("http://localhost/api/settings/api-keys/key-001", {
-          method: "PUT",
-          body: JSON.stringify({}),
-        });
+        const request = new NextRequest(
+          "http://localhost/api/settings/api-keys/key-001",
+          {
+            method: "PUT",
+            body: JSON.stringify({}),
+          }
+        );
         const response = await updateApiKey(request, {
           params: Promise.resolve({ id: "key-001" }),
         });
@@ -498,13 +571,20 @@ describe("Settings API", () => {
 
       it("should return 409 when renaming to an existing name", async () => {
         vi.mocked(database.apiKey.findFirst)
-          .mockResolvedValueOnce(createMockApiKey({ id: "key-001", name: "Original" }) as never)
-          .mockResolvedValueOnce(createMockApiKey({ id: "key-002", name: "Duplicate" }) as never);
+          .mockResolvedValueOnce(
+            createMockApiKey({ id: "key-001", name: "Original" }) as never
+          )
+          .mockResolvedValueOnce(
+            createMockApiKey({ id: "key-002", name: "Duplicate" }) as never
+          );
 
-        const request = new NextRequest("http://localhost/api/settings/api-keys/key-001", {
-          method: "PUT",
-          body: JSON.stringify({ name: "Duplicate" }),
-        });
+        const request = new NextRequest(
+          "http://localhost/api/settings/api-keys/key-001",
+          {
+            method: "PUT",
+            body: JSON.stringify({ name: "Duplicate" }),
+          }
+        );
         const response = await updateApiKey(request, {
           params: Promise.resolve({ id: "key-001" }),
         });
@@ -523,9 +603,12 @@ describe("Settings API", () => {
         );
         vi.mocked(database.apiKey.update).mockResolvedValue({} as never);
 
-        const request = new NextRequest("http://localhost/api/settings/api-keys/key-001", {
-          method: "DELETE",
-        });
+        const request = new NextRequest(
+          "http://localhost/api/settings/api-keys/key-001",
+          {
+            method: "DELETE",
+          }
+        );
         const response = await deleteApiKey(request, {
           params: Promise.resolve({ id: "key-001" }),
         });
@@ -552,9 +635,12 @@ describe("Settings API", () => {
       it("should return 404 for non-existent or already-deleted key", async () => {
         vi.mocked(database.apiKey.findFirst).mockResolvedValue(null as never);
 
-        const request = new NextRequest("http://localhost/api/settings/api-keys/nonexistent", {
-          method: "DELETE",
-        });
+        const request = new NextRequest(
+          "http://localhost/api/settings/api-keys/nonexistent",
+          {
+            method: "DELETE",
+          }
+        );
         const response = await deleteApiKey(request, {
           params: Promise.resolve({ id: "nonexistent" }),
         });
@@ -576,9 +662,12 @@ describe("Settings API", () => {
           revokedAt: new Date("2026-01-20"),
         } as never);
 
-        const request = new NextRequest("http://localhost/api/settings/api-keys/key-001/revoke", {
-          method: "POST",
-        });
+        const request = new NextRequest(
+          "http://localhost/api/settings/api-keys/key-001/revoke",
+          {
+            method: "POST",
+          }
+        );
         const response = await revokeApiKey(request, {
           params: Promise.resolve({ id: "key-001" }),
         });
@@ -592,9 +681,12 @@ describe("Settings API", () => {
       it("should return 404 when key not found", async () => {
         vi.mocked(database.apiKey.findUnique).mockResolvedValue(null as never);
 
-        const request = new NextRequest("http://localhost/api/settings/api-keys/key-001/revoke", {
-          method: "POST",
-        });
+        const request = new NextRequest(
+          "http://localhost/api/settings/api-keys/key-001/revoke",
+          {
+            method: "POST",
+          }
+        );
         const response = await revokeApiKey(request, {
           params: Promise.resolve({ id: "key-001" }),
         });
@@ -607,9 +699,12 @@ describe("Settings API", () => {
           createMockApiKey({ revokedAt: new Date() }) as never
         );
 
-        const request = new NextRequest("http://localhost/api/settings/api-keys/key-001/revoke", {
-          method: "POST",
-        });
+        const request = new NextRequest(
+          "http://localhost/api/settings/api-keys/key-001/revoke",
+          {
+            method: "POST",
+          }
+        );
         const response = await revokeApiKey(request, {
           params: Promise.resolve({ id: "key-001" }),
         });
@@ -624,9 +719,12 @@ describe("Settings API", () => {
           createMockApiKey({ deletedAt: new Date() }) as never
         );
 
-        const request = new NextRequest("http://localhost/api/settings/api-keys/key-001/revoke", {
-          method: "POST",
-        });
+        const request = new NextRequest(
+          "http://localhost/api/settings/api-keys/key-001/revoke",
+          {
+            method: "POST",
+          }
+        );
         const response = await revokeApiKey(request, {
           params: Promise.resolve({ id: "key-001" }),
         });
@@ -658,9 +756,12 @@ describe("Settings API", () => {
           updatedAt: new Date("2026-01-20"),
         } as never);
 
-        const request = new NextRequest("http://localhost/api/settings/api-keys/key-001/rotate", {
-          method: "POST",
-        });
+        const request = new NextRequest(
+          "http://localhost/api/settings/api-keys/key-001/rotate",
+          {
+            method: "POST",
+          }
+        );
         const response = await rotateApiKey(request, {
           params: Promise.resolve({ id: "key-001" }),
         });
@@ -674,9 +775,12 @@ describe("Settings API", () => {
       it("should return 404 when key not found", async () => {
         vi.mocked(database.apiKey.findUnique).mockResolvedValue(null as never);
 
-        const request = new NextRequest("http://localhost/api/settings/api-keys/key-001/rotate", {
-          method: "POST",
-        });
+        const request = new NextRequest(
+          "http://localhost/api/settings/api-keys/key-001/rotate",
+          {
+            method: "POST",
+          }
+        );
         const response = await rotateApiKey(request, {
           params: Promise.resolve({ id: "key-001" }),
         });
@@ -689,9 +793,12 @@ describe("Settings API", () => {
           createMockApiKey({ revokedAt: new Date() }) as never
         );
 
-        const request = new NextRequest("http://localhost/api/settings/api-keys/key-001/rotate", {
-          method: "POST",
-        });
+        const request = new NextRequest(
+          "http://localhost/api/settings/api-keys/key-001/rotate",
+          {
+            method: "POST",
+          }
+        );
         const response = await rotateApiKey(request, {
           params: Promise.resolve({ id: "key-001" }),
         });
@@ -721,7 +828,9 @@ describe("Settings API", () => {
         orgId: null,
       } as never);
 
-      const request = new NextRequest("http://localhost/api/settings/api-keys/list");
+      const request = new NextRequest(
+        "http://localhost/api/settings/api-keys/list"
+      );
       const response = await listApiKeysManifest(request);
 
       expect(response.status).toBe(401);
@@ -733,7 +842,9 @@ describe("Settings API", () => {
     it("should return 400 when tenant not found", async () => {
       vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
 
-      const request = new NextRequest("http://localhost/api/settings/api-keys/list");
+      const request = new NextRequest(
+        "http://localhost/api/settings/api-keys/list"
+      );
       const response = await listApiKeysManifest(request);
 
       expect(response.status).toBe(400);
@@ -744,7 +855,9 @@ describe("Settings API", () => {
     it("should return API keys ordered by created_at desc", async () => {
       vi.mocked(database.apiKey.findMany).mockResolvedValue([] as never);
 
-      const request = new NextRequest("http://localhost/api/settings/api-keys/list");
+      const request = new NextRequest(
+        "http://localhost/api/settings/api-keys/list"
+      );
       await listApiKeysManifest(request);
 
       expect(database.apiKey.findMany).toHaveBeenCalledWith(
@@ -756,9 +869,13 @@ describe("Settings API", () => {
     });
 
     it("should return 500 on database error", async () => {
-      vi.mocked(database.apiKey.findMany).mockRejectedValue(new Error("DB fail") as never);
+      vi.mocked(database.apiKey.findMany).mockRejectedValue(
+        new Error("DB fail") as never
+      );
 
-      const request = new NextRequest("http://localhost/api/settings/api-keys/list");
+      const request = new NextRequest(
+        "http://localhost/api/settings/api-keys/list"
+      );
       const response = await listApiKeysManifest(request);
 
       expect(response.status).toBe(500);
@@ -799,10 +916,13 @@ describe("Settings API", () => {
           emittedEvents: [],
         });
 
-        const request = new NextRequest("http://localhost/api/settings/api-keys/commands/create", {
-          method: "POST",
-          body: JSON.stringify({ name: "Runtime Key" }),
-        });
+        const request = new NextRequest(
+          "http://localhost/api/settings/api-keys/commands/create",
+          {
+            method: "POST",
+            body: JSON.stringify({ name: "Runtime Key" }),
+          }
+        );
         const response = await commandCreateApiKey(request);
 
         expect(response.status).toBe(200);
@@ -817,10 +937,13 @@ describe("Settings API", () => {
           orgId: null,
         } as never);
 
-        const request = new NextRequest("http://localhost/api/settings/api-keys/commands/create", {
-          method: "POST",
-          body: JSON.stringify({ name: "Test" }),
-        });
+        const request = new NextRequest(
+          "http://localhost/api/settings/api-keys/commands/create",
+          {
+            method: "POST",
+            body: JSON.stringify({ name: "Test" }),
+          }
+        );
         const response = await commandCreateApiKey(request);
 
         expect(response.status).toBe(401);
@@ -829,10 +952,13 @@ describe("Settings API", () => {
       it("should return 400 when user not found in database", async () => {
         vi.mocked(database.user.findFirst).mockResolvedValue(null as never);
 
-        const request = new NextRequest("http://localhost/api/settings/api-keys/commands/create", {
-          method: "POST",
-          body: JSON.stringify({ name: "Test" }),
-        });
+        const request = new NextRequest(
+          "http://localhost/api/settings/api-keys/commands/create",
+          {
+            method: "POST",
+            body: JSON.stringify({ name: "Test" }),
+          }
+        );
         const response = await commandCreateApiKey(request);
 
         expect(response.status).toBe(400);
@@ -846,10 +972,13 @@ describe("Settings API", () => {
           policyDenial: { policyName: "AdminOnlyPolicy" },
         });
 
-        const request = new NextRequest("http://localhost/api/settings/api-keys/commands/create", {
-          method: "POST",
-          body: JSON.stringify({ name: "Denied Key" }),
-        });
+        const request = new NextRequest(
+          "http://localhost/api/settings/api-keys/commands/create",
+          {
+            method: "POST",
+            body: JSON.stringify({ name: "Denied Key" }),
+          }
+        );
         const response = await commandCreateApiKey(request);
 
         expect(response.status).toBe(403);
@@ -864,10 +993,13 @@ describe("Settings API", () => {
           guardFailure: { index: 0, formatted: "Name is required" },
         });
 
-        const request = new NextRequest("http://localhost/api/settings/api-keys/commands/create", {
-          method: "POST",
-          body: JSON.stringify({}),
-        });
+        const request = new NextRequest(
+          "http://localhost/api/settings/api-keys/commands/create",
+          {
+            method: "POST",
+            body: JSON.stringify({}),
+          }
+        );
         const response = await commandCreateApiKey(request);
 
         expect(response.status).toBe(422);
@@ -881,10 +1013,13 @@ describe("Settings API", () => {
           error: "Invalid payload",
         });
 
-        const request = new NextRequest("http://localhost/api/settings/api-keys/commands/create", {
-          method: "POST",
-          body: JSON.stringify({}),
-        });
+        const request = new NextRequest(
+          "http://localhost/api/settings/api-keys/commands/create",
+          {
+            method: "POST",
+            body: JSON.stringify({}),
+          }
+        );
         const response = await commandCreateApiKey(request);
 
         expect(response.status).toBe(400);
@@ -895,10 +1030,13 @@ describe("Settings API", () => {
       it("should return 500 on runtime crash", async () => {
         mockRunCommand.mockRejectedValue(new Error("Runtime crash"));
 
-        const request = new NextRequest("http://localhost/api/settings/api-keys/commands/create", {
-          method: "POST",
-          body: JSON.stringify({ name: "Crash" }),
-        });
+        const request = new NextRequest(
+          "http://localhost/api/settings/api-keys/commands/create",
+          {
+            method: "POST",
+            body: JSON.stringify({ name: "Crash" }),
+          }
+        );
         const response = await commandCreateApiKey(request);
 
         expect(response.status).toBe(500);
@@ -914,16 +1052,23 @@ describe("Settings API", () => {
           emittedEvents: [],
         });
 
-        const request = new NextRequest("http://localhost/api/settings/api-keys/commands/revoke", {
-          method: "POST",
-          body: JSON.stringify({ id: "key-001" }),
-        });
+        const request = new NextRequest(
+          "http://localhost/api/settings/api-keys/commands/revoke",
+          {
+            method: "POST",
+            body: JSON.stringify({ id: "key-001" }),
+          }
+        );
         const response = await commandRevokeApiKey(request);
 
         expect(response.status).toBe(200);
-        expect(mockRunCommand).toHaveBeenCalledWith("revoke", expect.anything(), {
-          entityName: "ApiKey",
-        });
+        expect(mockRunCommand).toHaveBeenCalledWith(
+          "revoke",
+          expect.anything(),
+          {
+            entityName: "ApiKey",
+          }
+        );
       });
 
       it("should return 401 for unauthenticated requests", async () => {
@@ -932,10 +1077,13 @@ describe("Settings API", () => {
           orgId: null,
         } as never);
 
-        const request = new NextRequest("http://localhost/api/settings/api-keys/commands/revoke", {
-          method: "POST",
-          body: JSON.stringify({ id: "key-001" }),
-        });
+        const request = new NextRequest(
+          "http://localhost/api/settings/api-keys/commands/revoke",
+          {
+            method: "POST",
+            body: JSON.stringify({ id: "key-001" }),
+          }
+        );
         const response = await commandRevokeApiKey(request);
 
         expect(response.status).toBe(401);
@@ -951,16 +1099,23 @@ describe("Settings API", () => {
           emittedEvents: [],
         });
 
-        const request = new NextRequest("http://localhost/api/settings/api-keys/commands/update", {
-          method: "POST",
-          body: JSON.stringify({ id: "key-001", name: "Updated" }),
-        });
+        const request = new NextRequest(
+          "http://localhost/api/settings/api-keys/commands/update",
+          {
+            method: "POST",
+            body: JSON.stringify({ id: "key-001", name: "Updated" }),
+          }
+        );
         const response = await commandUpdateApiKey(request);
 
         expect(response.status).toBe(200);
-        expect(mockRunCommand).toHaveBeenCalledWith("update", expect.anything(), {
-          entityName: "ApiKey",
-        });
+        expect(mockRunCommand).toHaveBeenCalledWith(
+          "update",
+          expect.anything(),
+          {
+            entityName: "ApiKey",
+          }
+        );
       });
     });
 
@@ -983,9 +1138,13 @@ describe("Settings API", () => {
         const response = await commandSoftDeleteApiKey(request);
 
         expect(response.status).toBe(200);
-        expect(mockRunCommand).toHaveBeenCalledWith("softDelete", expect.anything(), {
-          entityName: "ApiKey",
-        });
+        expect(mockRunCommand).toHaveBeenCalledWith(
+          "softDelete",
+          expect.anything(),
+          {
+            entityName: "ApiKey",
+          }
+        );
       });
     });
 
@@ -1008,9 +1167,13 @@ describe("Settings API", () => {
         const response = await commandRecordUsage(request);
 
         expect(response.status).toBe(200);
-        expect(mockRunCommand).toHaveBeenCalledWith("recordUsage", expect.anything(), {
-          entityName: "ApiKey",
-        });
+        expect(mockRunCommand).toHaveBeenCalledWith(
+          "recordUsage",
+          expect.anything(),
+          {
+            entityName: "ApiKey",
+          }
+        );
       });
 
       it("should return 500 on unexpected error", async () => {
@@ -1050,9 +1213,13 @@ describe("Settings API", () => {
           createMockRateLimitConfig({ id: "rl-2", name: "API Specific" }),
         ];
 
-        vi.mocked(database.rateLimitConfig.findMany).mockResolvedValue(mockConfigs as never);
+        vi.mocked(database.rateLimitConfig.findMany).mockResolvedValue(
+          mockConfigs as never
+        );
 
-        const request = new NextRequest("http://localhost/api/settings/rate-limits");
+        const request = new NextRequest(
+          "http://localhost/api/settings/rate-limits"
+        );
         const response = await listRateLimits(request);
 
         expect(response.status).toBe(200);
@@ -1067,7 +1234,9 @@ describe("Settings API", () => {
           orgId: null,
         } as never);
 
-        const request = new NextRequest("http://localhost/api/settings/rate-limits");
+        const request = new NextRequest(
+          "http://localhost/api/settings/rate-limits"
+        );
         const response = await listRateLimits(request);
 
         expect(response.status).toBe(401);
@@ -1079,16 +1248,22 @@ describe("Settings API", () => {
       it("should return 400 when tenant not found", async () => {
         vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
 
-        const request = new NextRequest("http://localhost/api/settings/rate-limits");
+        const request = new NextRequest(
+          "http://localhost/api/settings/rate-limits"
+        );
         const response = await listRateLimits(request);
 
         expect(response.status).toBe(400);
       });
 
       it("should order by priority desc then created_at desc", async () => {
-        vi.mocked(database.rateLimitConfig.findMany).mockResolvedValue([] as never);
+        vi.mocked(database.rateLimitConfig.findMany).mockResolvedValue(
+          [] as never
+        );
 
-        const request = new NextRequest("http://localhost/api/settings/rate-limits");
+        const request = new NextRequest(
+          "http://localhost/api/settings/rate-limits"
+        );
         await listRateLimits(request);
 
         expect(database.rateLimitConfig.findMany).toHaveBeenCalledWith(
@@ -1103,7 +1278,9 @@ describe("Settings API", () => {
           new Error("DB error") as never
         );
 
-        const request = new NextRequest("http://localhost/api/settings/rate-limits");
+        const request = new NextRequest(
+          "http://localhost/api/settings/rate-limits"
+        );
         const response = await listRateLimits(request);
 
         expect(response.status).toBe(500);
@@ -1117,7 +1294,7 @@ describe("Settings API", () => {
           id: "rl-new",
           name: "New Limit",
           endpointPattern: "/api/test",
-          windowMs: 60000,
+          windowMs: 60_000,
           maxRequests: 100,
           burstAllowance: 10,
           priority: 0,
@@ -1125,32 +1302,38 @@ describe("Settings API", () => {
           createdAt: new Date("2026-01-01"),
         } as never);
 
-        const request = new NextRequest("http://localhost/api/settings/rate-limits", {
-          method: "POST",
-          body: JSON.stringify({
-            name: "New Limit",
-            endpointPattern: "/api/test",
-            windowMs: 60000,
-            maxRequests: 100,
-          }),
-        });
+        const request = new NextRequest(
+          "http://localhost/api/settings/rate-limits",
+          {
+            method: "POST",
+            body: JSON.stringify({
+              name: "New Limit",
+              endpointPattern: "/api/test",
+              windowMs: 60_000,
+              maxRequests: 100,
+            }),
+          }
+        );
         const response = await createRateLimit(request);
 
         expect(response.status).toBe(201);
         const body = await response.json();
         expect(body.name).toBe("New Limit");
-        expect(body.windowMs).toBe(60000);
+        expect(body.windowMs).toBe(60_000);
       });
 
       it("should return 400 when name is missing", async () => {
-        const request = new NextRequest("http://localhost/api/settings/rate-limits", {
-          method: "POST",
-          body: JSON.stringify({
-            endpointPattern: "/api/test",
-            windowMs: 60000,
-            maxRequests: 100,
-          }),
-        });
+        const request = new NextRequest(
+          "http://localhost/api/settings/rate-limits",
+          {
+            method: "POST",
+            body: JSON.stringify({
+              endpointPattern: "/api/test",
+              windowMs: 60_000,
+              maxRequests: 100,
+            }),
+          }
+        );
         const response = await createRateLimit(request);
 
         expect(response.status).toBe(400);
@@ -1159,14 +1342,17 @@ describe("Settings API", () => {
       });
 
       it("should return 400 when endpointPattern is missing", async () => {
-        const request = new NextRequest("http://localhost/api/settings/rate-limits", {
-          method: "POST",
-          body: JSON.stringify({
-            name: "Test",
-            windowMs: 60000,
-            maxRequests: 100,
-          }),
-        });
+        const request = new NextRequest(
+          "http://localhost/api/settings/rate-limits",
+          {
+            method: "POST",
+            body: JSON.stringify({
+              name: "Test",
+              windowMs: 60_000,
+              maxRequests: 100,
+            }),
+          }
+        );
         const response = await createRateLimit(request);
 
         expect(response.status).toBe(400);
@@ -1175,15 +1361,18 @@ describe("Settings API", () => {
       });
 
       it("should return 400 when windowMs is invalid", async () => {
-        const request = new NextRequest("http://localhost/api/settings/rate-limits", {
-          method: "POST",
-          body: JSON.stringify({
-            name: "Test",
-            endpointPattern: "/api/test",
-            windowMs: -1,
-            maxRequests: 100,
-          }),
-        });
+        const request = new NextRequest(
+          "http://localhost/api/settings/rate-limits",
+          {
+            method: "POST",
+            body: JSON.stringify({
+              name: "Test",
+              endpointPattern: "/api/test",
+              windowMs: -1,
+              maxRequests: 100,
+            }),
+          }
+        );
         const response = await createRateLimit(request);
 
         expect(response.status).toBe(400);
@@ -1192,15 +1381,18 @@ describe("Settings API", () => {
       });
 
       it("should return 400 when maxRequests is invalid", async () => {
-        const request = new NextRequest("http://localhost/api/settings/rate-limits", {
-          method: "POST",
-          body: JSON.stringify({
-            name: "Test",
-            endpointPattern: "/api/test",
-            windowMs: 60000,
-            maxRequests: 0,
-          }),
-        });
+        const request = new NextRequest(
+          "http://localhost/api/settings/rate-limits",
+          {
+            method: "POST",
+            body: JSON.stringify({
+              name: "Test",
+              endpointPattern: "/api/test",
+              windowMs: 60_000,
+              maxRequests: 0,
+            }),
+          }
+        );
         const response = await createRateLimit(request);
 
         expect(response.status).toBe(400);
@@ -1209,15 +1401,18 @@ describe("Settings API", () => {
       });
 
       it("should return 400 for invalid regex pattern", async () => {
-        const request = new NextRequest("http://localhost/api/settings/rate-limits", {
-          method: "POST",
-          body: JSON.stringify({
-            name: "Test",
-            endpointPattern: "([invalid",
-            windowMs: 60000,
-            maxRequests: 100,
-          }),
-        });
+        const request = new NextRequest(
+          "http://localhost/api/settings/rate-limits",
+          {
+            method: "POST",
+            body: JSON.stringify({
+              name: "Test",
+              endpointPattern: "([invalid",
+              windowMs: 60_000,
+              maxRequests: 100,
+            }),
+          }
+        );
         const response = await createRateLimit(request);
 
         expect(response.status).toBe(400);
@@ -1231,10 +1426,18 @@ describe("Settings API", () => {
           orgId: null,
         } as never);
 
-        const request = new NextRequest("http://localhost/api/settings/rate-limits", {
-          method: "POST",
-          body: JSON.stringify({ name: "Test", endpointPattern: "/api/test", windowMs: 60000, maxRequests: 100 }),
-        });
+        const request = new NextRequest(
+          "http://localhost/api/settings/rate-limits",
+          {
+            method: "POST",
+            body: JSON.stringify({
+              name: "Test",
+              endpointPattern: "/api/test",
+              windowMs: 60_000,
+              maxRequests: 100,
+            }),
+          }
+        );
         const response = await createRateLimit(request);
 
         expect(response.status).toBe(401);
@@ -1248,7 +1451,9 @@ describe("Settings API", () => {
           createMockRateLimitConfig({ id: "rl-001" }) as never
         );
 
-        const request = new NextRequest("http://localhost/api/settings/rate-limits/rl-001");
+        const request = new NextRequest(
+          "http://localhost/api/settings/rate-limits/rl-001"
+        );
         const response = await getRateLimitDetail(request, {
           params: Promise.resolve({ id: "rl-001" }),
         });
@@ -1260,9 +1465,13 @@ describe("Settings API", () => {
       });
 
       it("should return 404 when config not found", async () => {
-        vi.mocked(database.rateLimitConfig.findFirst).mockResolvedValue(null as never);
+        vi.mocked(database.rateLimitConfig.findFirst).mockResolvedValue(
+          null as never
+        );
 
-        const request = new NextRequest("http://localhost/api/settings/rate-limits/nonexistent");
+        const request = new NextRequest(
+          "http://localhost/api/settings/rate-limits/nonexistent"
+        );
         const response = await getRateLimitDetail(request, {
           params: Promise.resolve({ id: "nonexistent" }),
         });
@@ -1273,9 +1482,13 @@ describe("Settings API", () => {
       });
 
       it("should enforce tenant isolation", async () => {
-        vi.mocked(database.rateLimitConfig.findFirst).mockResolvedValue(null as never);
+        vi.mocked(database.rateLimitConfig.findFirst).mockResolvedValue(
+          null as never
+        );
 
-        const request = new NextRequest("http://localhost/api/settings/rate-limits/rl-001");
+        const request = new NextRequest(
+          "http://localhost/api/settings/rate-limits/rl-001"
+        );
         await getRateLimitDetail(request, {
           params: Promise.resolve({ id: "rl-001" }),
         });
@@ -1302,7 +1515,7 @@ describe("Settings API", () => {
           id: "rl-001",
           name: "Updated Limit",
           endpointPattern: "/api/.*",
-          windowMs: 120000,
+          windowMs: 120_000,
           maxRequests: 200,
           burstAllowance: 20,
           priority: 1,
@@ -1310,10 +1523,13 @@ describe("Settings API", () => {
           updatedAt: new Date("2026-01-20"),
         } as never);
 
-        const request = new NextRequest("http://localhost/api/settings/rate-limits/rl-001", {
-          method: "PATCH",
-          body: JSON.stringify({ maxRequests: 200, windowMs: 120000 }),
-        });
+        const request = new NextRequest(
+          "http://localhost/api/settings/rate-limits/rl-001",
+          {
+            method: "PATCH",
+            body: JSON.stringify({ maxRequests: 200, windowMs: 120_000 }),
+          }
+        );
         const response = await updateRateLimit(request, {
           params: Promise.resolve({ id: "rl-001" }),
         });
@@ -1324,12 +1540,17 @@ describe("Settings API", () => {
       });
 
       it("should return 404 when config not found", async () => {
-        vi.mocked(database.rateLimitConfig.findFirst).mockResolvedValue(null as never);
+        vi.mocked(database.rateLimitConfig.findFirst).mockResolvedValue(
+          null as never
+        );
 
-        const request = new NextRequest("http://localhost/api/settings/rate-limits/nonexistent", {
-          method: "PATCH",
-          body: JSON.stringify({ maxRequests: 200 }),
-        });
+        const request = new NextRequest(
+          "http://localhost/api/settings/rate-limits/nonexistent",
+          {
+            method: "PATCH",
+            body: JSON.stringify({ maxRequests: 200 }),
+          }
+        );
         const response = await updateRateLimit(request, {
           params: Promise.resolve({ id: "nonexistent" }),
         });
@@ -1342,10 +1563,13 @@ describe("Settings API", () => {
           createMockRateLimitConfig({ id: "rl-001" }) as never
         );
 
-        const request = new NextRequest("http://localhost/api/settings/rate-limits/rl-001", {
-          method: "PATCH",
-          body: JSON.stringify({ windowMs: -100 }),
-        });
+        const request = new NextRequest(
+          "http://localhost/api/settings/rate-limits/rl-001",
+          {
+            method: "PATCH",
+            body: JSON.stringify({ windowMs: -100 }),
+          }
+        );
         const response = await updateRateLimit(request, {
           params: Promise.resolve({ id: "rl-001" }),
         });
@@ -1360,10 +1584,13 @@ describe("Settings API", () => {
           createMockRateLimitConfig({ id: "rl-001" }) as never
         );
 
-        const request = new NextRequest("http://localhost/api/settings/rate-limits/rl-001", {
-          method: "PATCH",
-          body: JSON.stringify({ maxRequests: -5 }),
-        });
+        const request = new NextRequest(
+          "http://localhost/api/settings/rate-limits/rl-001",
+          {
+            method: "PATCH",
+            body: JSON.stringify({ maxRequests: -5 }),
+          }
+        );
         const response = await updateRateLimit(request, {
           params: Promise.resolve({ id: "rl-001" }),
         });
@@ -1378,10 +1605,13 @@ describe("Settings API", () => {
           createMockRateLimitConfig({ id: "rl-001" }) as never
         );
 
-        const request = new NextRequest("http://localhost/api/settings/rate-limits/rl-001", {
-          method: "PATCH",
-          body: JSON.stringify({ endpointPattern: "  " }),
-        });
+        const request = new NextRequest(
+          "http://localhost/api/settings/rate-limits/rl-001",
+          {
+            method: "PATCH",
+            body: JSON.stringify({ endpointPattern: "  " }),
+          }
+        );
         const response = await updateRateLimit(request, {
           params: Promise.resolve({ id: "rl-001" }),
         });
@@ -1399,7 +1629,7 @@ describe("Settings API", () => {
           id: "rl-001",
           name: "Updated",
           endpointPattern: "/api/.*",
-          windowMs: 60000,
+          windowMs: 60_000,
           maxRequests: 100,
           burstAllowance: 10,
           priority: 0,
@@ -1407,15 +1637,22 @@ describe("Settings API", () => {
           updatedAt: new Date("2026-01-20"),
         } as never);
 
-        const request = new NextRequest("http://localhost/api/settings/rate-limits/rl-001", {
-          method: "PATCH",
-          body: JSON.stringify({ name: "Updated", maliciousField: "should-be-ignored" }),
-        });
+        const request = new NextRequest(
+          "http://localhost/api/settings/rate-limits/rl-001",
+          {
+            method: "PATCH",
+            body: JSON.stringify({
+              name: "Updated",
+              maliciousField: "should-be-ignored",
+            }),
+          }
+        );
         await updateRateLimit(request, {
           params: Promise.resolve({ id: "rl-001" }),
         });
 
-        const updateCall = vi.mocked(database.rateLimitConfig.update).mock.calls[0][0] as {
+        const updateCall = vi.mocked(database.rateLimitConfig.update).mock
+          .calls[0][0] as {
           data: Record<string, unknown>;
         };
         expect(updateCall.data).not.toHaveProperty("maliciousField");
@@ -1428,11 +1665,16 @@ describe("Settings API", () => {
         vi.mocked(database.rateLimitConfig.findFirst).mockResolvedValue(
           createMockRateLimitConfig({ id: "rl-001" }) as never
         );
-        vi.mocked(database.rateLimitConfig.update).mockResolvedValue({} as never);
+        vi.mocked(database.rateLimitConfig.update).mockResolvedValue(
+          {} as never
+        );
 
-        const request = new NextRequest("http://localhost/api/settings/rate-limits/rl-001", {
-          method: "DELETE",
-        });
+        const request = new NextRequest(
+          "http://localhost/api/settings/rate-limits/rl-001",
+          {
+            method: "DELETE",
+          }
+        );
         const response = await deleteRateLimit(request, {
           params: Promise.resolve({ id: "rl-001" }),
         });
@@ -1448,11 +1690,16 @@ describe("Settings API", () => {
       });
 
       it("should return 404 when config not found", async () => {
-        vi.mocked(database.rateLimitConfig.findFirst).mockResolvedValue(null as never);
+        vi.mocked(database.rateLimitConfig.findFirst).mockResolvedValue(
+          null as never
+        );
 
-        const request = new NextRequest("http://localhost/api/settings/rate-limits/nonexistent", {
-          method: "DELETE",
-        });
+        const request = new NextRequest(
+          "http://localhost/api/settings/rate-limits/nonexistent",
+          {
+            method: "DELETE",
+          }
+        );
         const response = await deleteRateLimit(request, {
           params: Promise.resolve({ id: "nonexistent" }),
         });
@@ -1466,9 +1713,12 @@ describe("Settings API", () => {
           orgId: null,
         } as never);
 
-        const request = new NextRequest("http://localhost/api/settings/rate-limits/rl-001", {
-          method: "DELETE",
-        });
+        const request = new NextRequest(
+          "http://localhost/api/settings/rate-limits/rl-001",
+          {
+            method: "DELETE",
+          }
+        );
         const response = await deleteRateLimit(request, {
           params: Promise.resolve({ id: "rl-001" }),
         });
@@ -1501,7 +1751,9 @@ describe("Settings API", () => {
             { endpoint: "/api/test", _count: 150 },
           ] as never);
 
-        const request = new NextRequest("http://localhost/api/settings/rate-limits/analytics");
+        const request = new NextRequest(
+          "http://localhost/api/settings/rate-limits/analytics"
+        );
         const response = await getRateLimitAnalytics(request);
 
         expect(response.status).toBe(200);
@@ -1519,14 +1771,18 @@ describe("Settings API", () => {
           orgId: null,
         } as never);
 
-        const request = new NextRequest("http://localhost/api/settings/rate-limits/analytics");
+        const request = new NextRequest(
+          "http://localhost/api/settings/rate-limits/analytics"
+        );
         const response = await getRateLimitAnalytics(request);
 
         expect(response.status).toBe(401);
       });
 
       it("should accept startDate and endDate query params", async () => {
-        vi.mocked(database.rateLimitUsage.groupBy).mockResolvedValue([] as never);
+        vi.mocked(database.rateLimitUsage.groupBy).mockResolvedValue(
+          [] as never
+        );
         vi.mocked(database.rateLimitUsage.aggregate).mockResolvedValue({
           _sum: { requestCount: null, blockedCount: null },
         } as never);
@@ -1541,8 +1797,12 @@ describe("Settings API", () => {
 
         expect(response.status).toBe(200);
         const body = await response.json();
-        expect(body.analytics.period.start).toBe(new Date("2026-01-01").toISOString());
-        expect(body.analytics.period.end).toBe(new Date("2026-01-31").toISOString());
+        expect(body.analytics.period.start).toBe(
+          new Date("2026-01-01").toISOString()
+        );
+        expect(body.analytics.period.end).toBe(
+          new Date("2026-01-31").toISOString()
+        );
       });
 
       it("should return 500 on database error", async () => {
@@ -1550,7 +1810,9 @@ describe("Settings API", () => {
           new Error("DB fail") as never
         );
 
-        const request = new NextRequest("http://localhost/api/settings/rate-limits/analytics");
+        const request = new NextRequest(
+          "http://localhost/api/settings/rate-limits/analytics"
+        );
         const response = await getRateLimitAnalytics(request);
 
         expect(response.status).toBe(500);
@@ -1560,7 +1822,9 @@ describe("Settings API", () => {
     // ------------------------------------------------ EVENTS
     describe("GET /api/settings/rate-limits/events", () => {
       it("should return paginated rate limit events", async () => {
-        vi.mocked(database.rateLimitEvent.count).mockResolvedValue(100 as never);
+        vi.mocked(database.rateLimitEvent.count).mockResolvedValue(
+          100 as never
+        );
         vi.mocked(database.rateLimitEvent.findMany).mockResolvedValue([
           {
             id: "evt-001",
@@ -1579,7 +1843,9 @@ describe("Settings API", () => {
           },
         ] as never);
 
-        const request = new NextRequest("http://localhost/api/settings/rate-limits/events?page=1&limit=10");
+        const request = new NextRequest(
+          "http://localhost/api/settings/rate-limits/events?page=1&limit=10"
+        );
         const response = await getRateLimitEvents(request);
 
         expect(response.status).toBe(200);
@@ -1598,7 +1864,9 @@ describe("Settings API", () => {
           orgId: null,
         } as never);
 
-        const request = new NextRequest("http://localhost/api/settings/rate-limits/events");
+        const request = new NextRequest(
+          "http://localhost/api/settings/rate-limits/events"
+        );
         const response = await getRateLimitEvents(request);
 
         expect(response.status).toBe(401);
@@ -1606,7 +1874,9 @@ describe("Settings API", () => {
 
       it("should apply allowed filter", async () => {
         vi.mocked(database.rateLimitEvent.count).mockResolvedValue(0 as never);
-        vi.mocked(database.rateLimitEvent.findMany).mockResolvedValue([] as never);
+        vi.mocked(database.rateLimitEvent.findMany).mockResolvedValue(
+          [] as never
+        );
 
         const request = new NextRequest(
           "http://localhost/api/settings/rate-limits/events?allowed=false"
@@ -1622,7 +1892,9 @@ describe("Settings API", () => {
 
       it("should cap limit at 200", async () => {
         vi.mocked(database.rateLimitEvent.count).mockResolvedValue(0 as never);
-        vi.mocked(database.rateLimitEvent.findMany).mockResolvedValue([] as never);
+        vi.mocked(database.rateLimitEvent.findMany).mockResolvedValue(
+          [] as never
+        );
 
         const request = new NextRequest(
           "http://localhost/api/settings/rate-limits/events?limit=500"
@@ -1638,9 +1910,13 @@ describe("Settings API", () => {
 
       it("should default page to 1 and limit to 50", async () => {
         vi.mocked(database.rateLimitEvent.count).mockResolvedValue(0 as never);
-        vi.mocked(database.rateLimitEvent.findMany).mockResolvedValue([] as never);
+        vi.mocked(database.rateLimitEvent.findMany).mockResolvedValue(
+          [] as never
+        );
 
-        const request = new NextRequest("http://localhost/api/settings/rate-limits/events");
+        const request = new NextRequest(
+          "http://localhost/api/settings/rate-limits/events"
+        );
         await getRateLimitEvents(request);
 
         expect(database.rateLimitEvent.findMany).toHaveBeenCalledWith(
@@ -1656,7 +1932,9 @@ describe("Settings API", () => {
           new Error("DB fail") as never
         );
 
-        const request = new NextRequest("http://localhost/api/settings/rate-limits/events");
+        const request = new NextRequest(
+          "http://localhost/api/settings/rate-limits/events"
+        );
         const response = await getRateLimitEvents(request);
 
         expect(response.status).toBe(500);
@@ -1669,7 +1947,9 @@ describe("Settings API", () => {
   // =====================================================================
   describe("Audit Log", () => {
     beforeEach(() => {
-      vi.mocked(requireCurrentUser).mockResolvedValue(createMockCurrentUser() as never);
+      vi.mocked(requireCurrentUser).mockResolvedValue(
+        createMockCurrentUser() as never
+      );
     });
 
     it("should return paginated audit log entries", async () => {
@@ -1680,7 +1960,10 @@ describe("Settings API", () => {
 
       vi.mocked(database.audit_log.findMany)
         .mockResolvedValueOnce(mockLogs as never) // actual query
-        .mockResolvedValueOnce([{ table_name: "api_keys" }, { table_name: "users" }] as never); // distinct tables
+        .mockResolvedValueOnce([
+          { table_name: "api_keys" },
+          { table_name: "users" },
+        ] as never); // distinct tables
       vi.mocked(database.audit_log.count).mockResolvedValue(2 as never);
       vi.mocked(database.user.findMany).mockResolvedValue([
         {
@@ -1691,7 +1974,9 @@ describe("Settings API", () => {
         },
       ] as never);
 
-      const request = new NextRequest("http://localhost/api/settings/audit-log?page=1&limit=50");
+      const request = new NextRequest(
+        "http://localhost/api/settings/audit-log?page=1&limit=50"
+      );
       const response = await getAuditLog(request);
 
       expect(response.status).toBe(200);
@@ -1706,7 +1991,9 @@ describe("Settings API", () => {
 
     it("should resolve performed_by user names", async () => {
       vi.mocked(database.audit_log.findMany)
-        .mockResolvedValueOnce([createMockAuditLogEntry({ performed_by: TEST_USER_ID })] as never)
+        .mockResolvedValueOnce([
+          createMockAuditLogEntry({ performed_by: TEST_USER_ID }),
+        ] as never)
         .mockResolvedValueOnce([] as never);
       vi.mocked(database.audit_log.count).mockResolvedValue(1 as never);
       vi.mocked(database.user.findMany).mockResolvedValue([
@@ -1718,7 +2005,9 @@ describe("Settings API", () => {
         },
       ] as never);
 
-      const request = new NextRequest("http://localhost/api/settings/audit-log");
+      const request = new NextRequest(
+        "http://localhost/api/settings/audit-log"
+      );
       const response = await getAuditLog(request);
 
       expect(response.status).toBe(200);
@@ -1733,7 +2022,9 @@ describe("Settings API", () => {
         .mockResolvedValueOnce([] as never);
       vi.mocked(database.audit_log.count).mockResolvedValue(0 as never);
 
-      const request = new NextRequest("http://localhost/api/settings/audit-log?action=update");
+      const request = new NextRequest(
+        "http://localhost/api/settings/audit-log?action=update"
+      );
       await getAuditLog(request);
 
       expect(database.audit_log.findMany).toHaveBeenCalledWith(
@@ -1752,10 +2043,16 @@ describe("Settings API", () => {
         .mockResolvedValueOnce([] as never);
       vi.mocked(database.audit_log.count).mockResolvedValue(0 as never);
 
-      const request = new NextRequest("http://localhost/api/settings/audit-log?action=invalid");
+      const request = new NextRequest(
+        "http://localhost/api/settings/audit-log?action=invalid"
+      );
       await getAuditLog(request);
 
-      const where = (vi.mocked(database.audit_log.findMany).mock.calls[0][0] as { where: Record<string, unknown> }).where;
+      const where = (
+        vi.mocked(database.audit_log.findMany).mock.calls[0][0] as {
+          where: Record<string, unknown>;
+        }
+      ).where;
       expect(where).not.toHaveProperty("action");
     });
 
@@ -1765,7 +2062,9 @@ describe("Settings API", () => {
         .mockResolvedValueOnce([] as never);
       vi.mocked(database.audit_log.count).mockResolvedValue(0 as never);
 
-      const request = new NextRequest("http://localhost/api/settings/audit-log?table_name=api_keys");
+      const request = new NextRequest(
+        "http://localhost/api/settings/audit-log?table_name=api_keys"
+      );
       await getAuditLog(request);
 
       expect(database.audit_log.findMany).toHaveBeenCalledWith(
@@ -1803,10 +2102,13 @@ describe("Settings API", () => {
         .mockResolvedValueOnce([] as never);
       vi.mocked(database.audit_log.count).mockResolvedValue(0 as never);
 
-      const request = new NextRequest("http://localhost/api/settings/audit-log?limit=500");
+      const request = new NextRequest(
+        "http://localhost/api/settings/audit-log?limit=500"
+      );
       await getAuditLog(request);
 
-      const firstCall = vi.mocked(database.audit_log.findMany).mock.calls[0][0] as {
+      const firstCall = vi.mocked(database.audit_log.findMany).mock
+        .calls[0][0] as {
         take: number;
       };
       expect(firstCall.take).toBe(200);
@@ -1814,11 +2116,15 @@ describe("Settings API", () => {
 
     it("should handle entries with null performed_by", async () => {
       vi.mocked(database.audit_log.findMany)
-        .mockResolvedValueOnce([createMockAuditLogEntry({ performed_by: null })] as never)
+        .mockResolvedValueOnce([
+          createMockAuditLogEntry({ performed_by: null }),
+        ] as never)
         .mockResolvedValueOnce([] as never);
       vi.mocked(database.audit_log.count).mockResolvedValue(1 as never);
 
-      const request = new NextRequest("http://localhost/api/settings/audit-log");
+      const request = new NextRequest(
+        "http://localhost/api/settings/audit-log"
+      );
       const response = await getAuditLog(request);
 
       expect(response.status).toBe(200);
@@ -1828,9 +2134,13 @@ describe("Settings API", () => {
     });
 
     it("should return 500 when requireCurrentUser throws", async () => {
-      vi.mocked(requireCurrentUser).mockRejectedValue(new Error("Auth required") as never);
+      vi.mocked(requireCurrentUser).mockRejectedValue(
+        new Error("Auth required") as never
+      );
 
-      const request = new NextRequest("http://localhost/api/settings/audit-log");
+      const request = new NextRequest(
+        "http://localhost/api/settings/audit-log"
+      );
       const response = await getAuditLog(request);
 
       expect(response.status).toBe(500);
@@ -1844,7 +2154,9 @@ describe("Settings API", () => {
         .mockResolvedValueOnce([] as never);
       vi.mocked(database.audit_log.count).mockResolvedValue(0 as never);
 
-      const request = new NextRequest("http://localhost/api/settings/audit-log");
+      const request = new NextRequest(
+        "http://localhost/api/settings/audit-log"
+      );
       await getAuditLog(request);
 
       expect(database.audit_log.findMany).toHaveBeenCalledWith(

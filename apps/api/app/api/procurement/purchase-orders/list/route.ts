@@ -62,7 +62,7 @@ export async function GET(request: NextRequest) {
     const shaped = orders.map((po) => {
       const items = po.items ?? [];
       const pendingItems = items.filter(
-        (i) => Number(i.quantityReceived) < Number(i.quantityOrdered),
+        (i) => Number(i.quantityReceived) < Number(i.quantityOrdered)
       ).length;
       return {
         id: po.id,

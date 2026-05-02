@@ -82,7 +82,7 @@ vi.mock("@/lib/manifest-response", async () => {
           success: true,
           ...(typeof data === "object" && data !== null ? data : { data }),
         },
-        { status },
+        { status }
       ),
     manifestErrorResponse: (message: string, status: number) =>
       NextResponse.json({ success: false, message }, { status }),
@@ -157,7 +157,7 @@ function rootFindManyArg(): { where: { AND: unknown[] } } {
 }
 
 function mockRuntimeSuccess(
-  result: Record<string, unknown> = { id: TEST_RECIPE_ID },
+  result: Record<string, unknown> = { id: TEST_RECIPE_ID }
 ) {
   vi.mocked(createManifestRuntime).mockResolvedValue({
     runCommand: vi.fn().mockResolvedValue({
@@ -213,7 +213,7 @@ describe("Recipes API", () => {
       unauthed();
       const { GET } = await import("@/app/api/kitchen/recipes/route");
       const res = await GET(
-        makeRequest("/api/kitchen/recipes") as unknown as Request,
+        makeRequest("/api/kitchen/recipes") as unknown as Request
       );
 
       expect(res.status).toBe(401);
@@ -229,7 +229,7 @@ describe("Recipes API", () => {
 
       const { GET } = await import("@/app/api/kitchen/recipes/route");
       const res = await GET(
-        makeRequest("/api/kitchen/recipes") as unknown as Request,
+        makeRequest("/api/kitchen/recipes") as unknown as Request
       );
 
       expect(res.status).toBe(200);
@@ -264,7 +264,7 @@ describe("Recipes API", () => {
 
       const { GET } = await import("@/app/api/kitchen/recipes/route");
       await GET(
-        makeRequest("/api/kitchen/recipes?category=sauce") as unknown as Request,
+        makeRequest("/api/kitchen/recipes?category=sauce") as unknown as Request
       );
 
       expect(rootFindManyArg().where.AND).toContainEqual({ category: "sauce" });
@@ -277,8 +277,8 @@ describe("Recipes API", () => {
       const { GET } = await import("@/app/api/kitchen/recipes/route");
       await GET(
         makeRequest(
-          "/api/kitchen/recipes?cuisineType=italian",
-        ) as unknown as Request,
+          "/api/kitchen/recipes?cuisineType=italian"
+        ) as unknown as Request
       );
 
       expect(rootFindManyArg().where.AND).toContainEqual({
@@ -292,12 +292,12 @@ describe("Recipes API", () => {
 
       const { GET } = await import("@/app/api/kitchen/recipes/route");
       await GET(
-        makeRequest(
-          "/api/kitchen/recipes?search=Caesar",
-        ) as unknown as Request,
+        makeRequest("/api/kitchen/recipes?search=Caesar") as unknown as Request
       );
 
-      const ands = rootFindManyArg().where.AND as Array<Record<string, unknown>>;
+      const ands = rootFindManyArg().where.AND as Array<
+        Record<string, unknown>
+      >;
       const orClause = ands.find((c) => "OR" in c) as { OR: unknown[] };
       expect(orClause).toBeDefined();
       // Pin both fields + insensitive-mode + lower-cased search term.
@@ -313,9 +313,7 @@ describe("Recipes API", () => {
 
       const { GET } = await import("@/app/api/kitchen/recipes/route");
       await GET(
-        makeRequest(
-          "/api/kitchen/recipes?tag=staff-meal",
-        ) as unknown as Request,
+        makeRequest("/api/kitchen/recipes?tag=staff-meal") as unknown as Request
       );
 
       expect(rootFindManyArg().where.AND).toContainEqual({
@@ -329,9 +327,7 @@ describe("Recipes API", () => {
 
       const { GET } = await import("@/app/api/kitchen/recipes/route");
       await GET(
-        makeRequest(
-          "/api/kitchen/recipes?isActive=true",
-        ) as unknown as Request,
+        makeRequest("/api/kitchen/recipes?isActive=true") as unknown as Request
       );
 
       expect(rootFindManyArg().where.AND).toContainEqual({ isActive: true });
@@ -343,9 +339,7 @@ describe("Recipes API", () => {
 
       const { GET } = await import("@/app/api/kitchen/recipes/route");
       await GET(
-        makeRequest(
-          "/api/kitchen/recipes?isActive=false",
-        ) as unknown as Request,
+        makeRequest("/api/kitchen/recipes?isActive=false") as unknown as Request
       );
 
       // Pin: regex match on the AND clause — a regression that compares the
@@ -359,9 +353,7 @@ describe("Recipes API", () => {
 
       const { GET } = await import("@/app/api/kitchen/recipes/route");
       await GET(
-        makeRequest(
-          "/api/kitchen/recipes?limit=999999",
-        ) as unknown as Request,
+        makeRequest("/api/kitchen/recipes?limit=999999") as unknown as Request
       );
 
       const arg = vi.mocked(database.recipe.findMany).mock.calls[0][0] as {
@@ -378,7 +370,7 @@ describe("Recipes API", () => {
 
       const { GET } = await import("@/app/api/kitchen/recipes/route");
       await GET(
-        makeRequest("/api/kitchen/recipes?limit=0") as unknown as Request,
+        makeRequest("/api/kitchen/recipes?limit=0") as unknown as Request
       );
 
       const arg = vi.mocked(database.recipe.findMany).mock.calls[0][0] as {
@@ -394,8 +386,8 @@ describe("Recipes API", () => {
       const { GET } = await import("@/app/api/kitchen/recipes/route");
       await GET(
         makeRequest(
-          "/api/kitchen/recipes?page=3&limit=10",
-        ) as unknown as Request,
+          "/api/kitchen/recipes?page=3&limit=10"
+        ) as unknown as Request
       );
 
       const arg = vi.mocked(database.recipe.findMany).mock.calls[0][0] as {
@@ -408,12 +400,12 @@ describe("Recipes API", () => {
 
     it("returns 500 on unexpected DB error", async () => {
       vi.mocked(database.recipe.findMany).mockRejectedValue(
-        new Error("DB explosion") as never,
+        new Error("DB explosion") as never
       );
 
       const { GET } = await import("@/app/api/kitchen/recipes/route");
       const res = await GET(
-        makeRequest("/api/kitchen/recipes") as unknown as Request,
+        makeRequest("/api/kitchen/recipes") as unknown as Request
       );
 
       expect(res.status).toBe(500);
@@ -480,7 +472,7 @@ describe("Recipes API", () => {
 
       const { GET } = await import("@/app/api/kitchen/recipes/list/route");
       const res = await GET(
-        makeRequest("/api/kitchen/recipes/list?limit=10000"),
+        makeRequest("/api/kitchen/recipes/list?limit=10000")
       );
 
       expect(res.status).toBe(200);
@@ -492,7 +484,7 @@ describe("Recipes API", () => {
 
     it("returns 500 on unexpected runtime error", async () => {
       vi.mocked(database.recipe.findMany).mockRejectedValue(
-        new Error("DB explosion") as never,
+        new Error("DB explosion") as never
       );
 
       const { GET } = await import("@/app/api/kitchen/recipes/list/route");
@@ -533,13 +525,13 @@ describe("Recipes API", () => {
 
     it("returns 200 with recipe when found", async () => {
       vi.mocked(database.recipe.findFirst).mockResolvedValue(
-        sampleRecipe() as never,
+        sampleRecipe() as never
       );
 
       const { GET } = await import("@/app/api/kitchen/recipes/[id]/route");
       const res = await GET(
         makeRequest(`/api/kitchen/recipes/${TEST_RECIPE_ID}`),
-        { params: Promise.resolve({ id: TEST_RECIPE_ID }) },
+        { params: Promise.resolve({ id: TEST_RECIPE_ID }) }
       );
 
       expect(res.status).toBe(200);
@@ -565,7 +557,7 @@ describe("Recipes API", () => {
       const { GET } = await import("@/app/api/kitchen/recipes/[id]/route");
       const res = await GET(
         makeRequest(`/api/kitchen/recipes/${TEST_RECIPE_ID}`),
-        { params: Promise.resolve({ id: TEST_RECIPE_ID }) },
+        { params: Promise.resolve({ id: TEST_RECIPE_ID }) }
       );
 
       expect(res.status).toBe(404);
@@ -575,13 +567,13 @@ describe("Recipes API", () => {
 
     it("returns 500 on unexpected DB error", async () => {
       vi.mocked(database.recipe.findFirst).mockRejectedValue(
-        new Error("DB explosion") as never,
+        new Error("DB explosion") as never
       );
 
       const { GET } = await import("@/app/api/kitchen/recipes/[id]/route");
       const res = await GET(
         makeRequest(`/api/kitchen/recipes/${TEST_RECIPE_ID}`),
-        { params: Promise.resolve({ id: TEST_RECIPE_ID }) },
+        { params: Promise.resolve({ id: TEST_RECIPE_ID }) }
       );
 
       expect(res.status).toBe(500);
@@ -638,141 +630,144 @@ describe("Recipes API", () => {
     },
   ];
 
-  describe.each(COMMANDS)(
-    "POST $path",
-    ({ name, runtimeName, path, routePath, sampleBody }) => {
-      it(`returns 401 when unauthenticated [${name}]`, async () => {
-        unauthed();
-        const mod = await import(routePath);
-        const res = await mod.POST(postRequest(path, sampleBody));
+  describe.each(COMMANDS)("POST $path", ({
+    name,
+    runtimeName,
+    path,
+    routePath,
+    sampleBody,
+  }) => {
+    it(`returns 401 when unauthenticated [${name}]`, async () => {
+      unauthed();
+      const mod = await import(routePath);
+      const res = await mod.POST(postRequest(path, sampleBody));
 
-        expect(res.status).toBe(401);
-        const body = await res.json();
-        expect(body.message).toBe("Unauthorized");
+      expect(res.status).toBe(401);
+      const body = await res.json();
+      expect(body.message).toBe("Unauthorized");
+    });
+
+    it(`returns 400 when tenant cannot be resolved [${name}]`, async () => {
+      vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
+
+      const mod = await import(routePath);
+      const res = await mod.POST(postRequest(path, sampleBody));
+
+      expect(res.status).toBe(400);
+      const body = await res.json();
+      expect(body.message).toBe("Tenant not found");
+    });
+
+    it(`returns 200 with result + events on success [${name}]`, async () => {
+      mockRuntimeSuccess({ id: TEST_RECIPE_ID, name: "Caesar Dressing" });
+
+      const mod = await import(routePath);
+      const res = await mod.POST(postRequest(path, sampleBody));
+
+      expect(res.status).toBe(200);
+      const body = await res.json();
+      expect(body.success).toBe(true);
+      expect(body.result.id).toBe(TEST_RECIPE_ID);
+      expect(body.events).toHaveLength(1);
+
+      // Pin the user-context shape: clerk userId is forwarded directly
+      // (no database.user.findFirst lookup). A regression that adds an
+      // internal-user resolution would surface here.
+      const runtimeCall = vi.mocked(createManifestRuntime).mock.calls[0][0];
+      expect(runtimeCall).toEqual({
+        user: {
+          id: TEST_CLERK_ID,
+          tenantId: TEST_TENANT_ID,
+        },
+      });
+    });
+
+    it(`returns 403 on policy denial [${name}]`, async () => {
+      mockRuntimePolicyDenial("ChefsCanEditRecipes");
+
+      const mod = await import(routePath);
+      const res = await mod.POST(postRequest(path, sampleBody));
+
+      expect(res.status).toBe(403);
+      const body = await res.json();
+      expect(body.message).toBe("Access denied: ChefsCanEditRecipes");
+      // Pin: this domain's policy denial does NOT include `role=` suffix.
+      expect(body.message).not.toContain("role=");
+    });
+
+    it(`returns 422 on guard failure [${name}]`, async () => {
+      mockRuntimeGuardFailure(0, "name must not be empty");
+
+      const mod = await import(routePath);
+      const res = await mod.POST(postRequest(path, sampleBody));
+
+      expect(res.status).toBe(422);
+      const body = await res.json();
+      expect(body.message).toContain("Guard 0 failed");
+      expect(body.message).toContain("name must not be empty");
+    });
+
+    it(`returns 400 on generic command failure [${name}]`, async () => {
+      mockRuntimeFailure("Recipe is already active");
+
+      const mod = await import(routePath);
+      const res = await mod.POST(postRequest(path, sampleBody));
+
+      expect(res.status).toBe(400);
+      const body = await res.json();
+      expect(body.message).toBe("Recipe is already active");
+    });
+
+    it(`returns 400 with default message when error is null [${name}]`, async () => {
+      vi.mocked(createManifestRuntime).mockResolvedValue({
+        runCommand: vi.fn().mockResolvedValue({ success: false }),
+      } as never);
+
+      const mod = await import(routePath);
+      const res = await mod.POST(postRequest(path, sampleBody));
+
+      expect(res.status).toBe(400);
+      const body = await res.json();
+      expect(body.message).toBe("Command failed");
+    });
+
+    it(`returns 500 when runtime throws [${name}]`, async () => {
+      vi.mocked(createManifestRuntime).mockRejectedValue(
+        new Error("Runtime explosion") as never
+      );
+
+      const mod = await import(routePath);
+      const res = await mod.POST(postRequest(path, sampleBody));
+
+      expect(res.status).toBe(500);
+      const body = await res.json();
+      expect(body.message).toBe("Internal server error");
+    });
+
+    it(`passes correct command name + entity (no instanceId) to runtime [${name}]`, async () => {
+      const runCommand = vi.fn().mockResolvedValue({
+        success: true,
+        result: { id: TEST_RECIPE_ID },
+        emittedEvents: [],
+      });
+      vi.mocked(createManifestRuntime).mockResolvedValue({
+        runCommand,
+      } as never);
+
+      const mod = await import(routePath);
+      await mod.POST(postRequest(path, sampleBody));
+
+      // Pin the exact 3-arg shape: all 4 commands are entity-scoped, so
+      // no `instanceId` is passed even for stateful verbs (activate /
+      // deactivate / update). Runtime resolves the instance from body.id.
+      // Adding `instanceId: body.id` here would double-route at best.
+      expect(runCommand).toHaveBeenCalledWith(runtimeName, sampleBody, {
+        entityName: "Recipe",
       });
 
-      it(`returns 400 when tenant cannot be resolved [${name}]`, async () => {
-        vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
-
-        const mod = await import(routePath);
-        const res = await mod.POST(postRequest(path, sampleBody));
-
-        expect(res.status).toBe(400);
-        const body = await res.json();
-        expect(body.message).toBe("Tenant not found");
-      });
-
-      it(`returns 200 with result + events on success [${name}]`, async () => {
-        mockRuntimeSuccess({ id: TEST_RECIPE_ID, name: "Caesar Dressing" });
-
-        const mod = await import(routePath);
-        const res = await mod.POST(postRequest(path, sampleBody));
-
-        expect(res.status).toBe(200);
-        const body = await res.json();
-        expect(body.success).toBe(true);
-        expect(body.result.id).toBe(TEST_RECIPE_ID);
-        expect(body.events).toHaveLength(1);
-
-        // Pin the user-context shape: clerk userId is forwarded directly
-        // (no database.user.findFirst lookup). A regression that adds an
-        // internal-user resolution would surface here.
-        const runtimeCall = vi.mocked(createManifestRuntime).mock.calls[0][0];
-        expect(runtimeCall).toEqual({
-          user: {
-            id: TEST_CLERK_ID,
-            tenantId: TEST_TENANT_ID,
-          },
-        });
-      });
-
-      it(`returns 403 on policy denial [${name}]`, async () => {
-        mockRuntimePolicyDenial("ChefsCanEditRecipes");
-
-        const mod = await import(routePath);
-        const res = await mod.POST(postRequest(path, sampleBody));
-
-        expect(res.status).toBe(403);
-        const body = await res.json();
-        expect(body.message).toBe("Access denied: ChefsCanEditRecipes");
-        // Pin: this domain's policy denial does NOT include `role=` suffix.
-        expect(body.message).not.toContain("role=");
-      });
-
-      it(`returns 422 on guard failure [${name}]`, async () => {
-        mockRuntimeGuardFailure(0, "name must not be empty");
-
-        const mod = await import(routePath);
-        const res = await mod.POST(postRequest(path, sampleBody));
-
-        expect(res.status).toBe(422);
-        const body = await res.json();
-        expect(body.message).toContain("Guard 0 failed");
-        expect(body.message).toContain("name must not be empty");
-      });
-
-      it(`returns 400 on generic command failure [${name}]`, async () => {
-        mockRuntimeFailure("Recipe is already active");
-
-        const mod = await import(routePath);
-        const res = await mod.POST(postRequest(path, sampleBody));
-
-        expect(res.status).toBe(400);
-        const body = await res.json();
-        expect(body.message).toBe("Recipe is already active");
-      });
-
-      it(`returns 400 with default message when error is null [${name}]`, async () => {
-        vi.mocked(createManifestRuntime).mockResolvedValue({
-          runCommand: vi.fn().mockResolvedValue({ success: false }),
-        } as never);
-
-        const mod = await import(routePath);
-        const res = await mod.POST(postRequest(path, sampleBody));
-
-        expect(res.status).toBe(400);
-        const body = await res.json();
-        expect(body.message).toBe("Command failed");
-      });
-
-      it(`returns 500 when runtime throws [${name}]`, async () => {
-        vi.mocked(createManifestRuntime).mockRejectedValue(
-          new Error("Runtime explosion") as never,
-        );
-
-        const mod = await import(routePath);
-        const res = await mod.POST(postRequest(path, sampleBody));
-
-        expect(res.status).toBe(500);
-        const body = await res.json();
-        expect(body.message).toBe("Internal server error");
-      });
-
-      it(`passes correct command name + entity (no instanceId) to runtime [${name}]`, async () => {
-        const runCommand = vi.fn().mockResolvedValue({
-          success: true,
-          result: { id: TEST_RECIPE_ID },
-          emittedEvents: [],
-        });
-        vi.mocked(createManifestRuntime).mockResolvedValue({
-          runCommand,
-        } as never);
-
-        const mod = await import(routePath);
-        await mod.POST(postRequest(path, sampleBody));
-
-        // Pin the exact 3-arg shape: all 4 commands are entity-scoped, so
-        // no `instanceId` is passed even for stateful verbs (activate /
-        // deactivate / update). Runtime resolves the instance from body.id.
-        // Adding `instanceId: body.id` here would double-route at best.
-        expect(runCommand).toHaveBeenCalledWith(runtimeName, sampleBody, {
-          entityName: "Recipe",
-        });
-
-        const callArgs = runCommand.mock.calls[0];
-        expect(callArgs).toHaveLength(3);
-        expect(callArgs[2]).not.toHaveProperty("instanceId");
-      });
-    },
-  );
+      const callArgs = runCommand.mock.calls[0];
+      expect(callArgs).toHaveLength(3);
+      expect(callArgs[2]).not.toHaveProperty("instanceId");
+    });
+  });
 });

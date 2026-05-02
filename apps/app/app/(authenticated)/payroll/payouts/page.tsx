@@ -1,6 +1,5 @@
 "use client";
 
-import { apiFetch } from "@/app/lib/api";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -27,15 +26,16 @@ import {
   TableRow,
 } from "@repo/design-system/components/ui/table";
 import {
+  AlertCircle,
+  CheckCircle2,
+  Clock,
+  DollarSign,
   Loader2,
   RefreshCw,
-  DollarSign,
-  Clock,
-  CheckCircle2,
-  AlertCircle,
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { apiFetch } from "@/app/lib/api";
 
 interface PayrollRun {
   id: string;
@@ -58,7 +58,10 @@ interface PayrollRun {
 
 type StatusFilter = "all" | "pending" | "processing" | "approved" | "paid";
 
-const STATUS_BADGE_VARIANT: Record<string, "default" | "secondary" | "outline" | "destructive"> = {
+const STATUS_BADGE_VARIANT: Record<
+  string,
+  "default" | "secondary" | "outline" | "destructive"
+> = {
   pending: "outline",
   processing: "secondary",
   completed: "secondary",
@@ -143,7 +146,7 @@ const PayrollPayoutsPage = () => {
             Manage payout channels and statuses for payroll runs.
           </p>
         </div>
-        <Button variant="outline" size="sm" onClick={loadRuns}>
+        <Button onClick={loadRuns} size="sm" variant="outline">
           <RefreshCw className="mr-2 h-4 w-4" />
           Refresh
         </Button>
@@ -193,8 +196,8 @@ const PayrollPayoutsPage = () => {
       {/* Filter */}
       <div className="flex items-center gap-4">
         <Select
-          value={statusFilter}
           onValueChange={(v) => setStatusFilter(v as StatusFilter)}
+          value={statusFilter}
         >
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Filter by status" />
@@ -260,7 +263,11 @@ const PayrollPayoutsPage = () => {
                         {formatCurrency(run.totalNet)}
                       </TableCell>
                       <TableCell>
-                        <Badge variant={STATUS_BADGE_VARIANT[run.status] ?? "outline"}>
+                        <Badge
+                          variant={
+                            STATUS_BADGE_VARIANT[run.status] ?? "outline"
+                          }
+                        >
                           {STATUS_LABEL[run.status] ?? run.status}
                         </Badge>
                       </TableCell>

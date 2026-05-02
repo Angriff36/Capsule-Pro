@@ -55,9 +55,7 @@ export async function GET(request: NextRequest) {
       vehicle_id: d.vehicleId,
       notes: d.notes,
       created_at: d.createdAt,
-      vehicle_name: d.vehicle
-        ? `${d.vehicle.make} ${d.vehicle.model}`
-        : null,
+      vehicle_name: d.vehicle ? `${d.vehicle.make} ${d.vehicle.model}` : null,
       plate_number: d.vehicle?.plateNumber ?? null,
     }));
 

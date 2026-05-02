@@ -8,8 +8,8 @@
 import { database } from "@repo/database";
 import { NextRequest } from "next/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { GET as listDeductions } from "@/app/api/payroll/deductions/list/route";
 import { GET as getDeduction } from "@/app/api/payroll/deductions/[id]/route";
+import { GET as listDeductions } from "@/app/api/payroll/deductions/list/route";
 
 // Mock dependencies
 vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));

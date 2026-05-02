@@ -770,116 +770,119 @@ describe("Prep Tasks API", () => {
     },
   ];
 
-  describe.each(COMMANDS)(
-    "POST $path",
-    ({ name, runtimeName, path, routePath, sampleBody }) => {
-      it(`returns 401 when unauthenticated [${name}]`, async () => {
-        unauthed();
-        const mod = await import(routePath);
-        const res = await mod.POST(postRequest(path, sampleBody));
+  describe.each(COMMANDS)("POST $path", ({
+    name,
+    runtimeName,
+    path,
+    routePath,
+    sampleBody,
+  }) => {
+    it(`returns 401 when unauthenticated [${name}]`, async () => {
+      unauthed();
+      const mod = await import(routePath);
+      const res = await mod.POST(postRequest(path, sampleBody));
 
-        expect(res.status).toBe(401);
-        const body = await res.json();
-        expect(body.message).toBe("Unauthorized");
+      expect(res.status).toBe(401);
+      const body = await res.json();
+      expect(body.message).toBe("Unauthorized");
+    });
+
+    it(`returns 400 when tenant cannot be resolved [${name}]`, async () => {
+      vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
+
+      const mod = await import(routePath);
+      const res = await mod.POST(postRequest(path, sampleBody));
+
+      expect(res.status).toBe(400);
+      const body = await res.json();
+      expect(body.message).toBe("Tenant not found");
+    });
+
+    it(`returns 200 with result and events on success [${name}]`, async () => {
+      mockRuntimeSuccess({ id: TEST_PREP_TASK_ID, status: "pending" });
+
+      const mod = await import(routePath);
+      const res = await mod.POST(postRequest(path, sampleBody));
+
+      expect(res.status).toBe(200);
+      const body = await res.json();
+      expect(body.success).toBe(true);
+      expect(body.result.id).toBe(TEST_PREP_TASK_ID);
+      expect(body.events).toHaveLength(1);
+
+      // Pin the user context shape — a regression dropping userId or
+      // tenantId would silently break command authorization at runtime.
+      const runtimeCall = vi.mocked(createManifestRuntime).mock.calls[0][0];
+      expect(runtimeCall).toEqual({
+        user: { id: TEST_USER_ID, tenantId: TEST_TENANT_ID },
       });
+    });
 
-      it(`returns 400 when tenant cannot be resolved [${name}]`, async () => {
-        vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
+    it(`returns 403 on policy denial [${name}]`, async () => {
+      mockRuntimePolicyDenial("kitchenStaffOnly");
 
-        const mod = await import(routePath);
-        const res = await mod.POST(postRequest(path, sampleBody));
+      const mod = await import(routePath);
+      const res = await mod.POST(postRequest(path, sampleBody));
 
-        expect(res.status).toBe(400);
-        const body = await res.json();
-        expect(body.message).toBe("Tenant not found");
+      expect(res.status).toBe(403);
+      const body = await res.json();
+      expect(body.message).toContain("Access denied");
+      expect(body.message).toContain("kitchenStaffOnly");
+    });
+
+    it(`returns 422 on guard failure [${name}]`, async () => {
+      mockRuntimeGuardFailure(0, "id is required");
+
+      const mod = await import(routePath);
+      const res = await mod.POST(postRequest(path, sampleBody));
+
+      expect(res.status).toBe(422);
+      const body = await res.json();
+      expect(body.message).toContain("Guard 0 failed");
+      expect(body.message).toContain("id is required");
+    });
+
+    it(`returns 400 on generic command failure [${name}]`, async () => {
+      mockRuntimeFailure("Illegal state transition");
+
+      const mod = await import(routePath);
+      const res = await mod.POST(postRequest(path, sampleBody));
+
+      expect(res.status).toBe(400);
+      const body = await res.json();
+      expect(body.message).toBe("Illegal state transition");
+    });
+
+    it(`returns 500 when runtime throws [${name}]`, async () => {
+      vi.mocked(createManifestRuntime).mockRejectedValue(
+        new Error("Runtime explosion") as never
+      );
+
+      const mod = await import(routePath);
+      const res = await mod.POST(postRequest(path, sampleBody));
+
+      expect(res.status).toBe(500);
+      const body = await res.json();
+      expect(body.message).toBe("Internal server error");
+    });
+
+    it(`forwards correct camelCase command name + entity to runtime [${name}]`, async () => {
+      const runCommand = vi.fn().mockResolvedValue({
+        success: true,
+        result: { id: TEST_PREP_TASK_ID },
+        emittedEvents: [],
       });
+      vi.mocked(createManifestRuntime).mockResolvedValue({
+        runCommand,
+      } as never);
 
-      it(`returns 200 with result and events on success [${name}]`, async () => {
-        mockRuntimeSuccess({ id: TEST_PREP_TASK_ID, status: "pending" });
+      const mod = await import(routePath);
+      await mod.POST(postRequest(path, sampleBody));
 
-        const mod = await import(routePath);
-        const res = await mod.POST(postRequest(path, sampleBody));
-
-        expect(res.status).toBe(200);
-        const body = await res.json();
-        expect(body.success).toBe(true);
-        expect(body.result.id).toBe(TEST_PREP_TASK_ID);
-        expect(body.events).toHaveLength(1);
-
-        // Pin the user context shape — a regression dropping userId or
-        // tenantId would silently break command authorization at runtime.
-        const runtimeCall = vi.mocked(createManifestRuntime).mock.calls[0][0];
-        expect(runtimeCall).toEqual({
-          user: { id: TEST_USER_ID, tenantId: TEST_TENANT_ID },
-        });
+      // Pinned: kebab-case URL slug -> camelCase runtime name.
+      expect(runCommand).toHaveBeenCalledWith(runtimeName, sampleBody, {
+        entityName: "PrepTask",
       });
-
-      it(`returns 403 on policy denial [${name}]`, async () => {
-        mockRuntimePolicyDenial("kitchenStaffOnly");
-
-        const mod = await import(routePath);
-        const res = await mod.POST(postRequest(path, sampleBody));
-
-        expect(res.status).toBe(403);
-        const body = await res.json();
-        expect(body.message).toContain("Access denied");
-        expect(body.message).toContain("kitchenStaffOnly");
-      });
-
-      it(`returns 422 on guard failure [${name}]`, async () => {
-        mockRuntimeGuardFailure(0, "id is required");
-
-        const mod = await import(routePath);
-        const res = await mod.POST(postRequest(path, sampleBody));
-
-        expect(res.status).toBe(422);
-        const body = await res.json();
-        expect(body.message).toContain("Guard 0 failed");
-        expect(body.message).toContain("id is required");
-      });
-
-      it(`returns 400 on generic command failure [${name}]`, async () => {
-        mockRuntimeFailure("Illegal state transition");
-
-        const mod = await import(routePath);
-        const res = await mod.POST(postRequest(path, sampleBody));
-
-        expect(res.status).toBe(400);
-        const body = await res.json();
-        expect(body.message).toBe("Illegal state transition");
-      });
-
-      it(`returns 500 when runtime throws [${name}]`, async () => {
-        vi.mocked(createManifestRuntime).mockRejectedValue(
-          new Error("Runtime explosion") as never
-        );
-
-        const mod = await import(routePath);
-        const res = await mod.POST(postRequest(path, sampleBody));
-
-        expect(res.status).toBe(500);
-        const body = await res.json();
-        expect(body.message).toBe("Internal server error");
-      });
-
-      it(`forwards correct camelCase command name + entity to runtime [${name}]`, async () => {
-        const runCommand = vi.fn().mockResolvedValue({
-          success: true,
-          result: { id: TEST_PREP_TASK_ID },
-          emittedEvents: [],
-        });
-        vi.mocked(createManifestRuntime).mockResolvedValue({
-          runCommand,
-        } as never);
-
-        const mod = await import(routePath);
-        await mod.POST(postRequest(path, sampleBody));
-
-        // Pinned: kebab-case URL slug -> camelCase runtime name.
-        expect(runCommand).toHaveBeenCalledWith(runtimeName, sampleBody, {
-          entityName: "PrepTask",
-        });
-      });
-    }
-  );
+    });
+  });
 });

@@ -34,16 +34,15 @@ vi.mock("@/lib/manifest-response", async () => {
           success: true,
           ...(typeof data === "object" && data !== null ? data : { data }),
         },
-        { status },
+        { status }
       ),
     manifestErrorResponse: (message: string, status: number) =>
       NextResponse.json({ success: false, message }, { status }),
   };
 });
 vi.mock("@/lib/database", async () => {
-  const mod = await vi.importActual<typeof import("@repo/database")>(
-    "@repo/database",
-  );
+  const mod =
+    await vi.importActual<typeof import("@repo/database")>("@repo/database");
   return mod;
 });
 vi.mock("@/lib/manifest-runtime", () => ({
@@ -58,36 +57,31 @@ const { createManifestRuntime } = await import("@/lib/manifest-runtime");
 
 // --- Route imports ---
 
+// MenuDish
+import { POST as menuDishCreate } from "@/app/api/menudish/create/route";
+import { POST as menuDishRemove } from "@/app/api/menudish/remove/route";
+import { POST as menuDishUpdateCourse } from "@/app/api/menudish/update-course/route";
 // ProposalLineItem
 import { POST as proposalLineItemCreate } from "@/app/api/proposallineitem/create/route";
 import { POST as proposalLineItemRemove } from "@/app/api/proposallineitem/remove/route";
 import { POST as proposalLineItemUpdate } from "@/app/api/proposallineitem/update/route";
-
 // PurchaseOrderItem
 import { POST as purchaseOrderItemCreate } from "@/app/api/purchaseorderitem/create/route";
 import { POST as purchaseOrderItemRemove } from "@/app/api/purchaseorderitem/remove/route";
 import { POST as purchaseOrderItemUpdate } from "@/app/api/purchaseorderitem/update/route";
-
+import { POST as sampleDataClear } from "@/app/api/sampledata/clear/route";
+import { POST as sampleDataReseed } from "@/app/api/sampledata/reseed/route";
 // SampleData
 import { POST as sampleDataSeed } from "@/app/api/sampledata/seed/route";
-import { POST as sampleDataReseed } from "@/app/api/sampledata/reseed/route";
-import { POST as sampleDataClear } from "@/app/api/sampledata/clear/route";
-
 // ScheduleShift
 import { POST as scheduleShiftCreate } from "@/app/api/scheduleshift/create/route";
 import { POST as scheduleShiftRemove } from "@/app/api/scheduleshift/remove/route";
 import { POST as scheduleShiftUpdate } from "@/app/api/scheduleshift/update/route";
-
 // User Preferences
 import {
   GET as userPreferencesGet,
   POST as userPreferencesPost,
 } from "@/app/api/user-preferences/route";
-
-// MenuDish
-import { POST as menuDishCreate } from "@/app/api/menudish/create/route";
-import { POST as menuDishRemove } from "@/app/api/menudish/remove/route";
-import { POST as menuDishUpdateCourse } from "@/app/api/menudish/update-course/route";
 
 // --- Constants ---
 
@@ -109,7 +103,7 @@ function mockAuth() {
 function makeRequest(
   url: string,
   body: Record<string, unknown> = {},
-  method = "POST",
+  method = "POST"
 ) {
   return new NextRequest(url, {
     method,
@@ -130,7 +124,7 @@ function testManifestCommandRoute(
   handler: (req: NextRequest) => Promise<Response>,
   urlPath: string,
   entityName: string,
-  commandName: string,
+  commandName: string
 ) {
   describe(label, () => {
     const mockRunCommand = vi.fn();
@@ -178,10 +172,7 @@ function testManifestCommandRoute(
       });
 
       const payload = { id: "test-id", name: "Test payload" };
-      const request = makeRequest(
-        `http://localhost/api/${urlPath}`,
-        payload,
-      );
+      const request = makeRequest(`http://localhost/api/${urlPath}`, payload);
       const response = await handler(request);
 
       expect(response.status).toBe(200);
@@ -193,7 +184,7 @@ function testManifestCommandRoute(
       expect(mockRunCommand).toHaveBeenCalledWith(
         commandName,
         expect.objectContaining(payload),
-        { entityName },
+        { entityName }
       );
     });
 
@@ -346,7 +337,7 @@ describe("ProposalLineItem API", () => {
     proposalLineItemCreate,
     "proposallineitem/create",
     "ProposalLineItem",
-    "create",
+    "create"
   );
 
   testManifestCommandRoute(
@@ -354,7 +345,7 @@ describe("ProposalLineItem API", () => {
     proposalLineItemRemove,
     "proposallineitem/remove",
     "ProposalLineItem",
-    "remove",
+    "remove"
   );
 
   testManifestCommandRoute(
@@ -362,7 +353,7 @@ describe("ProposalLineItem API", () => {
     proposalLineItemUpdate,
     "proposallineitem/update",
     "ProposalLineItem",
-    "update",
+    "update"
   );
 
   describe("Entity-specific verification", () => {
@@ -429,7 +420,7 @@ describe("PurchaseOrderItem API", () => {
     purchaseOrderItemCreate,
     "purchaseorderitem/create",
     "PurchaseOrderItem",
-    "create",
+    "create"
   );
 
   testManifestCommandRoute(
@@ -437,7 +428,7 @@ describe("PurchaseOrderItem API", () => {
     purchaseOrderItemRemove,
     "purchaseorderitem/remove",
     "PurchaseOrderItem",
-    "remove",
+    "remove"
   );
 
   testManifestCommandRoute(
@@ -445,7 +436,7 @@ describe("PurchaseOrderItem API", () => {
     purchaseOrderItemUpdate,
     "purchaseorderitem/update",
     "PurchaseOrderItem",
-    "update",
+    "update"
   );
 
   describe("Entity-specific verification", () => {
@@ -509,7 +500,7 @@ describe("SampleData API", () => {
     sampleDataSeed,
     "sampledata/seed",
     "SampleData",
-    "seed",
+    "seed"
   );
 
   testManifestCommandRoute(
@@ -517,7 +508,7 @@ describe("SampleData API", () => {
     sampleDataReseed,
     "sampledata/reseed",
     "SampleData",
-    "reseed",
+    "reseed"
   );
 
   testManifestCommandRoute(
@@ -525,7 +516,7 @@ describe("SampleData API", () => {
     sampleDataClear,
     "sampledata/clear",
     "SampleData",
-    "clear",
+    "clear"
   );
 
   describe("Entity-specific verification", () => {
@@ -578,7 +569,7 @@ describe("ScheduleShift API", () => {
     scheduleShiftCreate,
     "scheduleshift/create",
     "ScheduleShift",
-    "create",
+    "create"
   );
 
   testManifestCommandRoute(
@@ -586,7 +577,7 @@ describe("ScheduleShift API", () => {
     scheduleShiftRemove,
     "scheduleshift/remove",
     "ScheduleShift",
-    "remove",
+    "remove"
   );
 
   testManifestCommandRoute(
@@ -594,7 +585,7 @@ describe("ScheduleShift API", () => {
     scheduleShiftUpdate,
     "scheduleshift/update",
     "ScheduleShift",
-    "update",
+    "update"
   );
 
   describe("Entity-specific verification", () => {
@@ -649,7 +640,7 @@ describe("MenuDish API", () => {
     menuDishCreate,
     "menudish/create",
     "MenuDish",
-    "create",
+    "create"
   );
 
   testManifestCommandRoute(
@@ -657,7 +648,7 @@ describe("MenuDish API", () => {
     menuDishRemove,
     "menudish/remove",
     "MenuDish",
-    "remove",
+    "remove"
   );
 
   testManifestCommandRoute(
@@ -665,7 +656,7 @@ describe("MenuDish API", () => {
     menuDishUpdateCourse,
     "menudish/update-course",
     "MenuDish",
-    "updateCourse",
+    "updateCourse"
   );
 
   describe("Entity-specific verification", () => {
@@ -706,16 +697,19 @@ describe("MenuDish API", () => {
         emittedEvents: [],
       });
 
-      const request = makeRequest("http://localhost/api/menudish/update-course", {
-        id: "md-001",
-        courseId: "course-1",
-      });
+      const request = makeRequest(
+        "http://localhost/api/menudish/update-course",
+        {
+          id: "md-001",
+          courseId: "course-1",
+        }
+      );
       await menuDishUpdateCourse(request);
 
       expect(mockRunCommand).toHaveBeenCalledWith(
         "updateCourse",
         expect.objectContaining({ id: "md-001", courseId: "course-1" }),
-        { entityName: "MenuDish" },
+        { entityName: "MenuDish" }
       );
     });
   });
@@ -743,7 +737,7 @@ describe("User Preferences API", () => {
       } as never);
 
       const request = new NextRequest(
-        "http://localhost/api/user-preferences?userId=user-1",
+        "http://localhost/api/user-preferences?userId=user-1"
       );
       const response = await userPreferencesGet(request);
 
@@ -756,7 +750,7 @@ describe("User Preferences API", () => {
       vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
 
       const request = new NextRequest(
-        "http://localhost/api/user-preferences?userId=user-1",
+        "http://localhost/api/user-preferences?userId=user-1"
       );
       const response = await userPreferencesGet(request);
 
@@ -766,9 +760,7 @@ describe("User Preferences API", () => {
     });
 
     it("should return 400 when userId is missing", async () => {
-      const request = new NextRequest(
-        "http://localhost/api/user-preferences",
-      );
+      const request = new NextRequest("http://localhost/api/user-preferences");
       const response = await userPreferencesGet(request);
 
       expect(response.status).toBe(400);
@@ -797,12 +789,10 @@ describe("User Preferences API", () => {
           updated_at: new Date("2026-01-01"),
         },
       ];
-      vi.mocked(database.$queryRaw).mockResolvedValue(
-        mockPreferences as never,
-      );
+      vi.mocked(database.$queryRaw).mockResolvedValue(mockPreferences as never);
 
       const request = new NextRequest(
-        `http://localhost/api/user-preferences?userId=${TEST_USER_ID}`,
+        `http://localhost/api/user-preferences?userId=${TEST_USER_ID}`
       );
       const response = await userPreferencesGet(request);
 
@@ -818,7 +808,7 @@ describe("User Preferences API", () => {
       vi.mocked(database.$queryRaw).mockResolvedValue([] as never);
 
       const request = new NextRequest(
-        `http://localhost/api/user-preferences?userId=${TEST_USER_ID}&category=ui`,
+        `http://localhost/api/user-preferences?userId=${TEST_USER_ID}&category=ui`
       );
       await userPreferencesGet(request);
 
@@ -829,7 +819,7 @@ describe("User Preferences API", () => {
       vi.mocked(database.$queryRaw).mockResolvedValue([] as never);
 
       const request = new NextRequest(
-        `http://localhost/api/user-preferences?userId=${TEST_USER_ID}`,
+        `http://localhost/api/user-preferences?userId=${TEST_USER_ID}`
       );
       const response = await userPreferencesGet(request);
 
@@ -840,11 +830,11 @@ describe("User Preferences API", () => {
 
     it("should return 500 on database error", async () => {
       vi.mocked(database.$queryRaw).mockRejectedValue(
-        new Error("Connection refused"),
+        new Error("Connection refused")
       );
 
       const request = new NextRequest(
-        `http://localhost/api/user-preferences?userId=${TEST_USER_ID}`,
+        `http://localhost/api/user-preferences?userId=${TEST_USER_ID}`
       );
       const response = await userPreferencesGet(request);
 
@@ -857,7 +847,7 @@ describe("User Preferences API", () => {
       vi.mocked(database.$queryRaw).mockResolvedValue([] as never);
 
       const request = new NextRequest(
-        `http://localhost/api/user-preferences?userId=${TEST_USER_ID}`,
+        `http://localhost/api/user-preferences?userId=${TEST_USER_ID}`
       );
       await userPreferencesGet(request);
 
@@ -878,7 +868,7 @@ describe("User Preferences API", () => {
         {
           preferenceKey: "theme",
           preferenceValue: "dark",
-        },
+        }
       );
       const response = await userPreferencesPost(request);
 
@@ -895,7 +885,7 @@ describe("User Preferences API", () => {
         {
           preferenceKey: "theme",
           preferenceValue: "dark",
-        },
+        }
       );
       const response = await userPreferencesPost(request);
 
@@ -909,7 +899,7 @@ describe("User Preferences API", () => {
         `http://localhost/api/user-preferences?userId=${TEST_USER_ID}`,
         {
           preferenceValue: "dark",
-        },
+        }
       );
       const response = await userPreferencesPost(request);
 
@@ -923,7 +913,7 @@ describe("User Preferences API", () => {
         `http://localhost/api/user-preferences?userId=${TEST_USER_ID}`,
         {
           preferenceKey: "theme",
-        },
+        }
       );
       const response = await userPreferencesPost(request);
 
@@ -933,13 +923,10 @@ describe("User Preferences API", () => {
     });
 
     it("should return 400 when userId query param is missing", async () => {
-      const request = makeRequest(
-        "http://localhost/api/user-preferences",
-        {
-          preferenceKey: "theme",
-          preferenceValue: "dark",
-        },
-      );
+      const request = makeRequest("http://localhost/api/user-preferences", {
+        preferenceKey: "theme",
+        preferenceValue: "dark",
+      });
       const response = await userPreferencesPost(request);
 
       expect(response.status).toBe(400);
@@ -957,7 +944,7 @@ describe("User Preferences API", () => {
           preferenceValue: "dark",
           category: "ui",
           notes: "User prefers dark mode",
-        },
+        }
       );
       const response = await userPreferencesPost(request);
 
@@ -976,7 +963,7 @@ describe("User Preferences API", () => {
         {
           preferenceKey: "notifications",
           preferenceValue: true,
-        },
+        }
       );
       const response = await userPreferencesPost(request);
 
@@ -987,7 +974,7 @@ describe("User Preferences API", () => {
 
     it("should return 500 on database error", async () => {
       vi.mocked(database.$executeRaw).mockRejectedValue(
-        new Error("Write conflict"),
+        new Error("Write conflict")
       );
 
       const request = makeRequest(
@@ -995,7 +982,7 @@ describe("User Preferences API", () => {
         {
           preferenceKey: "theme",
           preferenceValue: "light",
-        },
+        }
       );
       const response = await userPreferencesPost(request);
 
@@ -1012,7 +999,7 @@ describe("User Preferences API", () => {
         {
           preferenceKey: "timezone",
           preferenceValue: "UTC",
-        },
+        }
       );
       await userPreferencesPost(request);
 
@@ -1087,7 +1074,7 @@ describe("Cross-cutting: malformed request body", () => {
         method: "POST",
         body: "not valid json {{{",
         headers: { "Content-Type": "application/json" },
-      },
+      }
     );
     const response = await userPreferencesPost(request);
 
@@ -1115,7 +1102,7 @@ describe("Cross-cutting: auth and tenant exceptions", () => {
 
     const request = makeRequest(
       "http://localhost/api/proposallineitem/create",
-      { id: "test" },
+      { id: "test" }
     );
     const response = await proposalLineItemCreate(request);
 
@@ -1131,12 +1118,12 @@ describe("Cross-cutting: auth and tenant exceptions", () => {
       orgId: TEST_ORG_ID,
     } as never);
     vi.mocked(getTenantIdForOrg).mockRejectedValue(
-      new Error("Tenant lookup failed"),
+      new Error("Tenant lookup failed")
     );
 
     const request = makeRequest(
       "http://localhost/api/purchaseorderitem/create",
-      { id: "test" },
+      { id: "test" }
     );
     const response = await purchaseOrderItemCreate(request);
 
@@ -1150,7 +1137,7 @@ describe("Cross-cutting: auth and tenant exceptions", () => {
     vi.mocked(auth).mockRejectedValue(new Error("Auth service down"));
 
     const request = new NextRequest(
-      `http://localhost/api/user-preferences?userId=${TEST_USER_ID}`,
+      `http://localhost/api/user-preferences?userId=${TEST_USER_ID}`
     );
     const response = await userPreferencesGet(request);
 
@@ -1164,7 +1151,7 @@ describe("Cross-cutting: auth and tenant exceptions", () => {
 
     const request = makeRequest(
       `http://localhost/api/user-preferences?userId=${TEST_USER_ID}`,
-      { preferenceKey: "theme", preferenceValue: "dark" },
+      { preferenceKey: "theme", preferenceValue: "dark" }
     );
     const response = await userPreferencesPost(request);
 

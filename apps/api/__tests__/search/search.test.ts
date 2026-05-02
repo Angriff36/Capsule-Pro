@@ -30,14 +30,15 @@ vi.mock("@/lib/manifest-response", async () => {
           success: true,
           ...(typeof data === "object" && data !== null ? data : { data }),
         },
-        { status },
+        { status }
       ),
     manifestErrorResponse: (message: string, status: number) =>
       NextResponse.json({ success: false, message }, { status }),
   };
 });
 vi.mock("@/lib/database", async () => {
-  const mod = await vi.importActual<typeof import("@repo/database")>("@repo/database");
+  const mod =
+    await vi.importActual<typeof import("@repo/database")>("@repo/database");
   return mod;
 });
 
@@ -55,7 +56,9 @@ const TEST_ORG_ID = "org_search_test";
 
 function makeRequest(params: Record<string, string> = {}) {
   const qs = new URLSearchParams(params).toString();
-  const url = qs ? `http://localhost/api/search?${qs}` : "http://localhost/api/search";
+  const url = qs
+    ? `http://localhost/api/search?${qs}`
+    : "http://localhost/api/search";
   return new NextRequest(url);
 }
 
@@ -288,9 +291,13 @@ describe("Global Search API — GET /api/search", () => {
 
     it("computes total as sum of all group totals", async () => {
       mockAllModelsEmpty();
-      vi.mocked(database.event.findMany).mockResolvedValue([{ id: "e1" }] as never);
+      vi.mocked(database.event.findMany).mockResolvedValue([
+        { id: "e1" },
+      ] as never);
       vi.mocked(database.event.count).mockResolvedValue(3);
-      vi.mocked(database.client.findMany).mockResolvedValue([{ id: "c1" }] as never);
+      vi.mocked(database.client.findMany).mockResolvedValue([
+        { id: "c1" },
+      ] as never);
       vi.mocked(database.client.count).mockResolvedValue(2);
       vi.mocked(database.clientContact.count).mockResolvedValue(0);
       vi.mocked(database.venue.count).mockResolvedValue(0);
@@ -350,7 +357,9 @@ describe("Global Search API — GET /api/search", () => {
       ] as never);
       vi.mocked(database.inventoryItem.count).mockResolvedValue(1);
 
-      const response = await GET(makeRequest({ q: "flour", type: "inventory" }));
+      const response = await GET(
+        makeRequest({ q: "flour", type: "inventory" })
+      );
       const body = await response.json();
 
       expect(database.inventoryItem.findMany).toHaveBeenCalled();
@@ -359,7 +368,9 @@ describe("Global Search API — GET /api/search", () => {
     });
 
     it("returns empty groups when type does not match any known entity", async () => {
-      const response = await GET(makeRequest({ q: "test", type: "nonexistent" }));
+      const response = await GET(
+        makeRequest({ q: "test", type: "nonexistent" })
+      );
       const body = await response.json();
 
       expect(response.status).toBe(200);
@@ -388,14 +399,17 @@ describe("Global Search API — GET /api/search", () => {
       vi.mocked(database.event.findMany).mockResolvedValue([]);
       vi.mocked(database.event.count).mockResolvedValue(25);
 
-      const response = await GET(makeRequest({ q: "test", type: "events", page: "3", limit: "5" }));
+      const response = await GET(
+        makeRequest({ q: "test", type: "events", page: "3", limit: "5" })
+      );
       const body = await response.json();
 
       expect(body.page).toBe(3);
       expect(body.limit).toBe(5);
 
       // Verify skip = (page - 1) * limit = 10
-      const findManyCall = vi.mocked(database.event.findMany).mock.calls[0][0] as {
+      const findManyCall = vi.mocked(database.event.findMany).mock
+        .calls[0][0] as {
         skip?: number;
         take?: number;
       };
@@ -444,7 +458,10 @@ describe("Global Search API — GET /api/search", () => {
       expect(body.total).toBe(0);
       // All 6 entity groups should be present
       expect(Object.keys(body.groups)).toHaveLength(6);
-      for (const group of Object.values(body.groups) as { total: number; items: unknown[] }[]) {
+      for (const group of Object.values(body.groups) as {
+        total: number;
+        items: unknown[];
+      }[]) {
         expect(group.total).toBe(0);
         expect(group.items).toEqual([]);
       }
@@ -454,8 +471,12 @@ describe("Global Search API — GET /api/search", () => {
   // ---------------------------------------------------------------- Error handling
   describe("error handling", () => {
     it("returns 500 when a database query throws", async () => {
-      vi.mocked(database.event.findMany).mockRejectedValue(new Error("DB connection lost"));
-      vi.mocked(database.event.count).mockRejectedValue(new Error("DB connection lost"));
+      vi.mocked(database.event.findMany).mockRejectedValue(
+        new Error("DB connection lost")
+      );
+      vi.mocked(database.event.count).mockRejectedValue(
+        new Error("DB connection lost")
+      );
 
       const response = await GET(makeRequest({ q: "test" }));
       const body = await response.json();

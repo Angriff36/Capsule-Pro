@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
       select: { id: true, firstName: true, lastName: true },
     });
     const userMap = new Map(
-      users.map((u) => [u.id, `${u.firstName} ${u.lastName}`]),
+      users.map((u) => [u.id, `${u.firstName} ${u.lastName}`])
     );
 
     const shaped = reviews.map((r) => ({

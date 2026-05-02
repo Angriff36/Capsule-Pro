@@ -318,18 +318,26 @@ function MemberDetailDialog({
 // Main Client Component
 // ---------------------------------------------------------------------------
 
-export function TeamClient({ members: initialMembers }: { members: TeamMemberRow[] }) {
+export function TeamClient({
+  members: initialMembers,
+}: {
+  members: TeamMemberRow[];
+}) {
   const [members, setMembers] = useState<TeamMemberRow[]>(initialMembers);
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
+  const [statusFilter, setStatusFilter] = useState<
+    "all" | "active" | "inactive"
+  >("all");
 
   // Dialog state
   const [detailMember, setDetailMember] = useState<TeamMemberRow | null>(null);
-  const [roleDialogMember, setRoleDialogMember] = useState<TeamMemberRow | null>(null);
+  const [roleDialogMember, setRoleDialogMember] =
+    useState<TeamMemberRow | null>(null);
   const [selectedRole, setSelectedRole] = useState("");
   const [roleLoading, setRoleLoading] = useState(false);
 
-  const [deactivateMember, setDeactivateMember] = useState<TeamMemberRow | null>(null);
+  const [deactivateMember, setDeactivateMember] =
+    useState<TeamMemberRow | null>(null);
   const [deactivateLoading, setDeactivateLoading] = useState(false);
 
   // -------------------------------------------------------------------------
@@ -388,7 +396,10 @@ export function TeamClient({ members: initialMembers }: { members: TeamMemberRow
       const res = await apiFetch("/api/user/update-role", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: roleDialogMember.id, role: selectedRole }),
+        body: JSON.stringify({
+          userId: roleDialogMember.id,
+          role: selectedRole,
+        }),
       });
 
       if (!res.ok) {
@@ -396,7 +407,9 @@ export function TeamClient({ members: initialMembers }: { members: TeamMemberRow
         throw new Error(data.error || "Failed to update role");
       }
 
-      toast.success(`${formatName(roleDialogMember)} role updated to ${formatRole(selectedRole)}`);
+      toast.success(
+        `${formatName(roleDialogMember)} role updated to ${formatRole(selectedRole)}`
+      );
 
       // Optimistic update
       setMembers((prev) =>
@@ -442,7 +455,9 @@ export function TeamClient({ members: initialMembers }: { members: TeamMemberRow
 
       setDeactivateMember(null);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to deactivate user");
+      toast.error(
+        err instanceof Error ? err.message : "Failed to deactivate user"
+      );
     } finally {
       setDeactivateLoading(false);
     }
@@ -471,7 +486,9 @@ export function TeamClient({ members: initialMembers }: { members: TeamMemberRow
               <UserCheck className="h-4 w-4 text-green-600" />
               <CardDescription>Active</CardDescription>
             </div>
-            <CardTitle className="text-2xl text-green-600">{activeCount}</CardTitle>
+            <CardTitle className="text-2xl text-green-600">
+              {activeCount}
+            </CardTitle>
           </CardHeader>
         </Card>
         <Card>
@@ -491,7 +508,9 @@ export function TeamClient({ members: initialMembers }: { members: TeamMemberRow
               <ShieldAlert className="h-4 w-4 text-destructive" />
               <CardDescription>Admins</CardDescription>
             </div>
-            <CardTitle className="text-2xl text-destructive">{adminCount}</CardTitle>
+            <CardTitle className="text-2xl text-destructive">
+              {adminCount}
+            </CardTitle>
           </CardHeader>
         </Card>
       </div>
@@ -508,7 +527,9 @@ export function TeamClient({ members: initialMembers }: { members: TeamMemberRow
           />
         </div>
         <Select
-          onValueChange={(v) => setStatusFilter(v as "all" | "active" | "inactive")}
+          onValueChange={(v) =>
+            setStatusFilter(v as "all" | "active" | "inactive")
+          }
           value={statusFilter}
         >
           <SelectTrigger className="w-40">
@@ -542,7 +563,10 @@ export function TeamClient({ members: initialMembers }: { members: TeamMemberRow
             <CardDescription>
               {filteredMembers.length}{" "}
               {filteredMembers.length === 1 ? "member" : "members"}
-              {(search || statusFilter !== "all") ? " matching filters" : " on this account"}.
+              {search || statusFilter !== "all"
+                ? " matching filters"
+                : " on this account"}
+              .
             </CardDescription>
           </CardHeader>
           <CardContent className="p-0">
@@ -565,7 +589,9 @@ export function TeamClient({ members: initialMembers }: { members: TeamMemberRow
                         <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
                           {getInitials(member)}
                         </div>
-                        <span className="font-medium">{formatName(member)}</span>
+                        <span className="font-medium">
+                          {formatName(member)}
+                        </span>
                       </div>
                     </TableCell>
                     <TableCell className="text-muted-foreground">
@@ -577,7 +603,9 @@ export function TeamClient({ members: initialMembers }: { members: TeamMemberRow
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <Badge variant={member.isActive ? "default" : "secondary"}>
+                      <Badge
+                        variant={member.isActive ? "default" : "secondary"}
+                      >
                         {member.isActive ? "Active" : "Inactive"}
                       </Badge>
                     </TableCell>
@@ -589,8 +617,8 @@ export function TeamClient({ members: initialMembers }: { members: TeamMemberRow
                         <Button
                           onClick={() => setDetailMember(member)}
                           size="sm"
-                          variant="ghost"
                           title="View details"
+                          variant="ghost"
                         >
                           <Eye className="h-4 w-4" />
                         </Button>
@@ -598,8 +626,8 @@ export function TeamClient({ members: initialMembers }: { members: TeamMemberRow
                           <Button
                             onClick={() => handleOpenRoleDialog(member)}
                             size="sm"
-                            variant="ghost"
                             title="Change role"
+                            variant="ghost"
                           >
                             <Shield className="h-4 w-4" />
                           </Button>
@@ -608,8 +636,8 @@ export function TeamClient({ members: initialMembers }: { members: TeamMemberRow
                           <Button
                             onClick={() => setDeactivateMember(member)}
                             size="sm"
-                            variant="ghost"
                             title="Deactivate member"
+                            variant="ghost"
                           >
                             <UserMinus className="h-4 w-4 text-destructive" />
                           </Button>

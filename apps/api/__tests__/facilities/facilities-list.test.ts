@@ -9,8 +9,8 @@
 import { database } from "@repo/database";
 import { NextRequest } from "next/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { GET as listFacilities } from "@/app/api/facilities/list/route";
 import { GET as listAssets } from "@/app/api/facilities/assets/list/route";
+import { GET as listFacilities } from "@/app/api/facilities/list/route";
 
 // Mock dependencies
 vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
@@ -58,7 +58,7 @@ function createMockAsset(overrides: Record<string, unknown> = {}) {
     manufacturer: "Vulcan",
     model: "VGX-36",
     purchase_date: new Date("2025-06-01"),
-    purchase_cost: 15000.0,
+    purchase_cost: 15_000.0,
     warranty_expiry: new Date("2027-06-01"),
     status: "active",
     area_id: "area-001",

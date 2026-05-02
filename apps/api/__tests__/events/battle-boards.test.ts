@@ -67,7 +67,7 @@ vi.mock("@/lib/manifest-response", async () => {
           success: true,
           ...(typeof data === "object" && data !== null ? data : { data }),
         },
-        { status },
+        { status }
       ),
     manifestErrorResponse: (message: string, status: number) =>
       NextResponse.json({ success: false, message }, { status }),
@@ -135,7 +135,7 @@ function postRequest(url: string, body: unknown = {}): NextRequest {
 }
 
 function mockRuntimeSuccess(
-  result: Record<string, unknown> = { id: TEST_BATTLE_BOARD_ID },
+  result: Record<string, unknown> = { id: TEST_BATTLE_BOARD_ID }
 ) {
   vi.mocked(createManifestRuntime).mockResolvedValue({
     runCommand: vi.fn().mockResolvedValue({
@@ -207,7 +207,7 @@ describe("Battle Boards API", () => {
         { id: TEST_BATTLE_BOARD_ID, status: "draft", eventId: TEST_EVENT_ID },
       ];
       vi.mocked(database.battleBoard.findMany).mockResolvedValue(
-        fakeBoards as never,
+        fakeBoards as never
       );
       vi.mocked(database.battleBoard.count).mockResolvedValue(1 as never);
 
@@ -243,7 +243,7 @@ describe("Battle Boards API", () => {
       expect(database.battleBoard.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({ eventId: TEST_EVENT_ID }),
-        }),
+        })
       );
     });
 
@@ -257,7 +257,7 @@ describe("Battle Boards API", () => {
       expect(database.battleBoard.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({ status: "voting" }),
-        }),
+        })
       );
     });
 
@@ -269,7 +269,7 @@ describe("Battle Boards API", () => {
       await mod.GET(getRequest(`${URL_BASE}?page=3&limit=10`));
 
       expect(database.battleBoard.findMany).toHaveBeenCalledWith(
-        expect.objectContaining({ take: 10, skip: 20 }),
+        expect.objectContaining({ take: 10, skip: 20 })
       );
     });
 
@@ -281,7 +281,7 @@ describe("Battle Boards API", () => {
       await mod.GET(getRequest(`${URL_BASE}?limit=500`));
 
       expect(database.battleBoard.findMany).toHaveBeenCalledWith(
-        expect.objectContaining({ take: 100 }),
+        expect.objectContaining({ take: 100 })
       );
     });
 
@@ -293,7 +293,7 @@ describe("Battle Boards API", () => {
       await mod.GET(getRequest(`${URL_BASE}?limit=0`));
 
       expect(database.battleBoard.findMany).toHaveBeenCalledWith(
-        expect.objectContaining({ take: 1 }),
+        expect.objectContaining({ take: 1 })
       );
     });
 
@@ -311,7 +311,7 @@ describe("Battle Boards API", () => {
 
     it("returns 500 when Prisma query throws", async () => {
       vi.mocked(database.battleBoard.findMany).mockRejectedValue(
-        new Error("DB explosion") as never,
+        new Error("DB explosion") as never
       );
 
       const mod = await import(ROUTE);
@@ -335,8 +335,8 @@ describe("Battle Boards API", () => {
       vi.mocked(executeManifestCommand).mockResolvedValue(
         NextResponse.json(
           { success: true, result: { id: TEST_BATTLE_BOARD_ID } },
-          { status: 200 },
-        ) as never,
+          { status: 200 }
+        ) as never
       );
 
       const req = postRequest(URL_BASE, { eventId: TEST_EVENT_ID });
@@ -355,8 +355,8 @@ describe("Battle Boards API", () => {
       vi.mocked(executeManifestCommand).mockResolvedValue(
         NextResponse.json(
           { success: false, message: "delegated failure" },
-          { status: 422 },
-        ) as never,
+          { status: 422 }
+        ) as never
       );
 
       const mod = await import(ROUTE);
@@ -444,157 +444,160 @@ describe("Battle Boards API", () => {
     },
   ];
 
-  describe.each(COMMANDS)(
-    "POST $path",
-    ({ name, runtimeName, path, routePath, sampleBody }) => {
-      it(`returns 401 when unauthenticated [${name}]`, async () => {
-        unauthed();
-        const mod = await import(routePath);
-        const res = await mod.POST(postRequest(path, sampleBody));
+  describe.each(COMMANDS)("POST $path", ({
+    name,
+    runtimeName,
+    path,
+    routePath,
+    sampleBody,
+  }) => {
+    it(`returns 401 when unauthenticated [${name}]`, async () => {
+      unauthed();
+      const mod = await import(routePath);
+      const res = await mod.POST(postRequest(path, sampleBody));
 
-        expect(res.status).toBe(401);
-        const body = await res.json();
-        expect(body.message).toBe("Unauthorized");
+      expect(res.status).toBe(401);
+      const body = await res.json();
+      expect(body.message).toBe("Unauthorized");
+    });
+
+    it(`returns 400 when tenant cannot be resolved [${name}]`, async () => {
+      vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
+
+      const mod = await import(routePath);
+      const res = await mod.POST(postRequest(path, sampleBody));
+
+      expect(res.status).toBe(400);
+      const body = await res.json();
+      expect(body.message).toBe("Tenant not found");
+    });
+
+    it(`returns 400 when internal user cannot be resolved [${name}]`, async () => {
+      vi.mocked(database.user.findFirst).mockResolvedValue(null as never);
+
+      const mod = await import(routePath);
+      const res = await mod.POST(postRequest(path, sampleBody));
+
+      expect(res.status).toBe(400);
+      const body = await res.json();
+      expect(body.message).toBe("User not found in database");
+    });
+
+    it(`returns 200 with result and events on success [${name}]`, async () => {
+      mockRuntimeSuccess({ id: TEST_BATTLE_BOARD_ID });
+
+      const mod = await import(routePath);
+      const res = await mod.POST(postRequest(path, sampleBody));
+
+      expect(res.status).toBe(200);
+      const body = await res.json();
+      expect(body.success).toBe(true);
+      expect(body.result.id).toBe(TEST_BATTLE_BOARD_ID);
+      expect(body.events).toHaveLength(1);
+
+      // Verify runtime received correct user context
+      const runtimeCall = vi.mocked(createManifestRuntime).mock.calls[0][0];
+      expect(runtimeCall).toEqual({
+        user: {
+          id: TEST_USER_ID,
+          tenantId: TEST_TENANT_ID,
+          role: TEST_USER_ROLE,
+        },
+        entityName: "BattleBoard",
       });
+    });
 
-      it(`returns 400 when tenant cannot be resolved [${name}]`, async () => {
-        vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
+    it(`returns 403 on policy denial [${name}]`, async () => {
+      mockRuntimePolicyDenial("adminOnly");
 
-        const mod = await import(routePath);
-        const res = await mod.POST(postRequest(path, sampleBody));
+      const mod = await import(routePath);
+      const res = await mod.POST(postRequest(path, sampleBody));
 
-        expect(res.status).toBe(400);
-        const body = await res.json();
-        expect(body.message).toBe("Tenant not found");
+      expect(res.status).toBe(403);
+      const body = await res.json();
+      expect(body.message).toContain("Access denied");
+      expect(body.message).toContain("adminOnly");
+      expect(body.message).toContain(`role=${TEST_USER_ROLE}`);
+    });
+
+    it(`returns 422 on guard failure [${name}]`, async () => {
+      mockRuntimeGuardFailure(0, "id is required");
+
+      const mod = await import(routePath);
+      const res = await mod.POST(postRequest(path, sampleBody));
+
+      expect(res.status).toBe(422);
+      const body = await res.json();
+      expect(body.message).toContain("Guard 0 failed");
+      expect(body.message).toContain("id is required");
+    });
+
+    it(`returns 400 on generic command failure [${name}]`, async () => {
+      mockRuntimeFailure("State transition not allowed");
+
+      const mod = await import(routePath);
+      const res = await mod.POST(postRequest(path, sampleBody));
+
+      expect(res.status).toBe(400);
+      const body = await res.json();
+      expect(body.message).toBe("State transition not allowed");
+    });
+
+    it(`returns 400 with default message when error is null [${name}]`, async () => {
+      vi.mocked(createManifestRuntime).mockResolvedValue({
+        runCommand: vi.fn().mockResolvedValue({ success: false }),
+      } as never);
+
+      const mod = await import(routePath);
+      const res = await mod.POST(postRequest(path, sampleBody));
+
+      expect(res.status).toBe(400);
+      const body = await res.json();
+      expect(body.message).toBe("Command failed");
+    });
+
+    it(`returns 500 when runtime throws [${name}]`, async () => {
+      vi.mocked(createManifestRuntime).mockRejectedValue(
+        new Error("Runtime explosion") as never
+      );
+
+      const mod = await import(routePath);
+      const res = await mod.POST(postRequest(path, sampleBody));
+
+      expect(res.status).toBe(500);
+      const body = await res.json();
+      expect(body.message).toBe("Internal server error");
+    });
+
+    it(`passes correct command name + entity to runtime [${name}]`, async () => {
+      const runCommand = vi.fn().mockResolvedValue({
+        success: true,
+        result: { id: TEST_BATTLE_BOARD_ID },
+        emittedEvents: [],
       });
+      vi.mocked(createManifestRuntime).mockResolvedValue({
+        runCommand,
+      } as never);
 
-      it(`returns 400 when internal user cannot be resolved [${name}]`, async () => {
-        vi.mocked(database.user.findFirst).mockResolvedValue(null as never);
+      const mod = await import(routePath);
+      await mod.POST(postRequest(path, sampleBody));
 
-        const mod = await import(routePath);
-        const res = await mod.POST(postRequest(path, sampleBody));
-
-        expect(res.status).toBe(400);
-        const body = await res.json();
-        expect(body.message).toBe("User not found in database");
+      expect(runCommand).toHaveBeenCalledWith(runtimeName, sampleBody, {
+        entityName: "BattleBoard",
       });
+    });
 
-      it(`returns 200 with result and events on success [${name}]`, async () => {
-        mockRuntimeSuccess({ id: TEST_BATTLE_BOARD_ID });
+    it(`scopes user lookup to tenant + clerk id [${name}]`, async () => {
+      mockRuntimeSuccess();
 
-        const mod = await import(routePath);
-        const res = await mod.POST(postRequest(path, sampleBody));
+      const mod = await import(routePath);
+      await mod.POST(postRequest(path, sampleBody));
 
-        expect(res.status).toBe(200);
-        const body = await res.json();
-        expect(body.success).toBe(true);
-        expect(body.result.id).toBe(TEST_BATTLE_BOARD_ID);
-        expect(body.events).toHaveLength(1);
-
-        // Verify runtime received correct user context
-        const runtimeCall = vi.mocked(createManifestRuntime).mock.calls[0][0];
-        expect(runtimeCall).toEqual({
-          user: {
-            id: TEST_USER_ID,
-            tenantId: TEST_TENANT_ID,
-            role: TEST_USER_ROLE,
-          },
-          entityName: "BattleBoard",
-        });
+      expect(database.user.findFirst).toHaveBeenCalledWith({
+        where: {
+          AND: [{ tenantId: TEST_TENANT_ID }, { authUserId: TEST_CLERK_ID }],
+        },
       });
-
-      it(`returns 403 on policy denial [${name}]`, async () => {
-        mockRuntimePolicyDenial("adminOnly");
-
-        const mod = await import(routePath);
-        const res = await mod.POST(postRequest(path, sampleBody));
-
-        expect(res.status).toBe(403);
-        const body = await res.json();
-        expect(body.message).toContain("Access denied");
-        expect(body.message).toContain("adminOnly");
-        expect(body.message).toContain(`role=${TEST_USER_ROLE}`);
-      });
-
-      it(`returns 422 on guard failure [${name}]`, async () => {
-        mockRuntimeGuardFailure(0, "id is required");
-
-        const mod = await import(routePath);
-        const res = await mod.POST(postRequest(path, sampleBody));
-
-        expect(res.status).toBe(422);
-        const body = await res.json();
-        expect(body.message).toContain("Guard 0 failed");
-        expect(body.message).toContain("id is required");
-      });
-
-      it(`returns 400 on generic command failure [${name}]`, async () => {
-        mockRuntimeFailure("State transition not allowed");
-
-        const mod = await import(routePath);
-        const res = await mod.POST(postRequest(path, sampleBody));
-
-        expect(res.status).toBe(400);
-        const body = await res.json();
-        expect(body.message).toBe("State transition not allowed");
-      });
-
-      it(`returns 400 with default message when error is null [${name}]`, async () => {
-        vi.mocked(createManifestRuntime).mockResolvedValue({
-          runCommand: vi.fn().mockResolvedValue({ success: false }),
-        } as never);
-
-        const mod = await import(routePath);
-        const res = await mod.POST(postRequest(path, sampleBody));
-
-        expect(res.status).toBe(400);
-        const body = await res.json();
-        expect(body.message).toBe("Command failed");
-      });
-
-      it(`returns 500 when runtime throws [${name}]`, async () => {
-        vi.mocked(createManifestRuntime).mockRejectedValue(
-          new Error("Runtime explosion") as never,
-        );
-
-        const mod = await import(routePath);
-        const res = await mod.POST(postRequest(path, sampleBody));
-
-        expect(res.status).toBe(500);
-        const body = await res.json();
-        expect(body.message).toBe("Internal server error");
-      });
-
-      it(`passes correct command name + entity to runtime [${name}]`, async () => {
-        const runCommand = vi.fn().mockResolvedValue({
-          success: true,
-          result: { id: TEST_BATTLE_BOARD_ID },
-          emittedEvents: [],
-        });
-        vi.mocked(createManifestRuntime).mockResolvedValue({
-          runCommand,
-        } as never);
-
-        const mod = await import(routePath);
-        await mod.POST(postRequest(path, sampleBody));
-
-        expect(runCommand).toHaveBeenCalledWith(runtimeName, sampleBody, {
-          entityName: "BattleBoard",
-        });
-      });
-
-      it(`scopes user lookup to tenant + clerk id [${name}]`, async () => {
-        mockRuntimeSuccess();
-
-        const mod = await import(routePath);
-        await mod.POST(postRequest(path, sampleBody));
-
-        expect(database.user.findFirst).toHaveBeenCalledWith({
-          where: {
-            AND: [{ tenantId: TEST_TENANT_ID }, { authUserId: TEST_CLERK_ID }],
-          },
-        });
-      });
-    },
-  );
+    });
+  });
 });

@@ -29,14 +29,12 @@ import {
   AlertCircle,
   AlertTriangle,
   CheckCircle2,
-  ChefHat,
   Clock,
   ListChecks,
   Loader2,
   PencilIcon,
   PlusIcon,
   Sparkles,
-  TrashIcon,
   XIcon,
 } from "lucide-react";
 import { useCallback, useState } from "react";
@@ -187,9 +185,7 @@ function EditTaskDialog({
                 id="edit-mins"
                 min={5}
                 onChange={(e) =>
-                  setEstimatedMinutes(
-                    Number.parseInt(e.target.value) || 30
-                  )
+                  setEstimatedMinutes(Number.parseInt(e.target.value) || 30)
                 }
                 type="number"
                 value={estimatedMinutes}
@@ -270,17 +266,17 @@ function TaskCard({
     >
       <input
         checked={selected}
+        className="h-4 w-4 shrink-0"
         onChange={onToggle}
         type="checkbox"
-        className="h-4 w-4 shrink-0"
       />
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
           <p className="text-sm font-medium truncate">{task.name}</p>
-          <Badge variant={priorityColor(task.priority)} className="text-xs">
+          <Badge className="text-xs" variant={priorityColor(task.priority)}>
             P{task.priority}
           </Badge>
-          <Badge variant="outline" className="text-xs">
+          <Badge className="text-xs" variant="outline">
             {TASK_TYPE_LABELS[task.taskType] ?? task.taskType}
           </Badge>
         </div>
@@ -291,8 +287,7 @@ function TaskCard({
             {task.estimatedMinutes}m
           </span>
           <span>
-            Due: {offsetLabel(task.dueByOffsetDays, eventDate)}{" "}
-            {task.dueByTime}
+            Due: {offsetLabel(task.dueByOffsetDays, eventDate)} {task.dueByTime}
           </span>
           <span>Qty: {task.quantityTotal}</span>
         </div>
@@ -322,16 +317,13 @@ export function BulkTaskGeneratorTab() {
   const [data, setData] = useState<GenerateResponse | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [removedIds, setRemovedIds] = useState<Set<string>>(new Set());
-  const [editedTasks, setEditedTasks] = useState<
-    Map<string, GeneratedTask>
-  >(new Map());
-  const [editingTask, setEditingTask] = useState<GeneratedTask | null>(
-    null
+  const [editedTasks, setEditedTasks] = useState<Map<string, GeneratedTask>>(
+    new Map()
   );
+  const [editingTask, setEditingTask] = useState<GeneratedTask | null>(null);
 
   // Flatten all tasks, applying edits and removals
-  const allTasks =
-    data?.taskGroups.flatMap((g) => g.tasks) ?? [];
+  const allTasks = data?.taskGroups.flatMap((g) => g.tasks) ?? [];
   const effectiveTasks = allTasks
     .filter((t) => !removedIds.has(t.id))
     .map((t) => editedTasks.get(t.id) ?? t);
@@ -372,9 +364,7 @@ export function BulkTaskGeneratorTab() {
       setData(json);
 
       // Auto-select all tasks
-      const allIds = json.taskGroups.flatMap((g) =>
-        g.tasks.map((t) => t.id)
-      );
+      const allIds = json.taskGroups.flatMap((g) => g.tasks.map((t) => t.id));
       setSelectedIds(new Set(allIds));
       toast.success(
         `Generated ${allIds.length} task${allIds.length !== 1 ? "s" : ""}`
@@ -545,7 +535,10 @@ export function BulkTaskGeneratorTab() {
         <Card className="border-amber-200 bg-amber-50/50">
           <CardContent className="p-4">
             {data.warnings.map((w, i) => (
-              <div key={i} className="flex items-center gap-2 text-sm text-amber-800">
+              <div
+                className="flex items-center gap-2 text-sm text-amber-800"
+                key={i}
+              >
                 <AlertTriangle className="h-4 w-4 shrink-0 text-amber-600" />
                 <span>{w}</span>
               </div>
@@ -562,9 +555,7 @@ export function BulkTaskGeneratorTab() {
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle className="text-lg">
-                    {data.eventTitle}
-                  </CardTitle>
+                  <CardTitle className="text-lg">{data.eventTitle}</CardTitle>
                   <CardDescription className="mt-1">
                     {new Date(data.eventDate).toLocaleDateString(undefined, {
                       weekday: "long",
@@ -576,7 +567,7 @@ export function BulkTaskGeneratorTab() {
                     {effectiveTasks.length} tasks
                   </CardDescription>
                 </div>
-                <Badge variant="outline" className="gap-1">
+                <Badge className="gap-1" variant="outline">
                   <Sparkles className="h-3 w-3" />
                   {data.model}
                 </Badge>
@@ -621,7 +612,7 @@ export function BulkTaskGeneratorTab() {
                       {STATION_TYPE_ICONS[group.stationType] ?? "\uD83D\uDCCB"}
                     </span>
                     {group.stationName}
-                    <Badge variant="secondary" className="ml-auto text-xs">
+                    <Badge className="ml-auto text-xs" variant="secondary">
                       {group.tasks.length} task
                       {group.tasks.length !== 1 ? "s" : ""}
                     </Badge>
@@ -647,18 +638,16 @@ export function BulkTaskGeneratorTab() {
       )}
 
       {/* Empty initial state */}
-      {!data && !generating && !error && (
+      {!(data || generating || error) && (
         <Card>
           <CardContent className="flex flex-col items-center gap-2 py-16">
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
               <ListChecks className="h-6 w-6 text-muted-foreground" />
             </div>
-            <p className="mt-2 text-sm font-medium">
-              No tasks generated yet
-            </p>
+            <p className="mt-2 text-sm font-medium">No tasks generated yet</p>
             <p className="text-sm text-muted-foreground">
-              Enter an event ID and click &quot;Generate Tasks&quot; to
-              create an AI-powered task plan.
+              Enter an event ID and click &quot;Generate Tasks&quot; to create
+              an AI-powered task plan.
             </p>
           </CardContent>
         </Card>

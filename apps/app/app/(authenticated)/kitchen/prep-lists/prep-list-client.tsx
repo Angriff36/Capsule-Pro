@@ -488,15 +488,15 @@ export function PrepListClient({
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-slate-50">
-      <header className="sticky top-0 z-10 border-slate-200 border-b bg-white/80 backdrop-blur-md">
+    <div className="flex min-h-0 flex-1 flex-col bg-canvas">
+      <header className="sticky top-0 z-10 border-hairline border-b bg-background/80 backdrop-blur-md">
         <div className="flex flex-col gap-4 px-6 py-4">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="font-bold text-2xl text-slate-900">
+              <h1 className="font-bold text-2xl text-foreground">
                 {prepList.eventTitle}
               </h1>
-              <div className="flex items-center gap-4 text-slate-600 text-sm">
+              <div className="flex items-center gap-4 text-muted-foreground text-sm">
                 <div className="flex items-center gap-1.5">
                   <Calendar className="h-4 w-4" />
                   {format(new Date(prepList.eventDate), "MMM d, yyyy")}
@@ -558,7 +558,7 @@ export function PrepListClient({
             <div className="flex flex-wrap items-center gap-4">
               <div className="flex items-center gap-2">
                 <label
-                  className="font-medium text-slate-700 text-sm"
+                  className="font-medium text-foreground text-sm"
                   htmlFor="event-select"
                 >
                   Event:
@@ -583,7 +583,7 @@ export function PrepListClient({
 
               <div className="flex items-center gap-2">
                 <label
-                  className="font-medium text-slate-700 text-sm"
+                  className="font-medium text-foreground text-sm"
                   htmlFor="batch-size"
                 >
                   Batch Size:
@@ -597,12 +597,12 @@ export function PrepListClient({
                   type="number"
                   value={batchMultiplier}
                 />
-                <span className="text-slate-500 text-sm">×</span>
+                <span className="text-muted-foreground text-sm">×</span>
               </div>
 
               <div className="flex items-center gap-2">
                 <label
-                  className="font-medium text-slate-700 text-sm"
+                  className="font-medium text-foreground text-sm"
                   htmlFor="dietary-restrictions"
                 >
                   Dietary:

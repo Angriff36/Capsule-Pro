@@ -31,7 +31,7 @@ vi.mock("@/lib/manifest-response", async () => {
           success: true,
           ...(typeof data === "object" && data !== null ? data : { data }),
         },
-        { status },
+        { status }
       ),
     manifestErrorResponse: (message: string, status: number) =>
       NextResponse.json({ success: false, message }, { status }),
@@ -40,29 +40,26 @@ vi.mock("@/lib/manifest-response", async () => {
 // Alias @/lib/database to the same mock surface as @repo/database so routes
 // that import via either path resolve to the same object.
 vi.mock("@/lib/database", async () => {
-  const mod = await vi.importActual<typeof import("@repo/database")>(
-    "@repo/database",
-  );
+  const mod =
+    await vi.importActual<typeof import("@repo/database")>("@repo/database");
   return mod;
 });
 
 // --- Import mocked modules ---
 
 const { auth } = await import("@repo/auth/server");
-const { getTenantIdForOrg, requireTenantId } = await import(
-  "@/app/lib/tenant"
-);
+const { getTenantIdForOrg, requireTenantId } = await import("@/app/lib/tenant");
 
 // --- Route imports ---
 
-import { GET as listDrivers } from "@/app/api/logistics/drivers/list/route";
 import { POST as createDriver } from "@/app/api/logistics/drivers/commands/create/route";
 import { POST as deleteDriver } from "@/app/api/logistics/drivers/commands/delete/route";
-import { GET as listVehicles } from "@/app/api/logistics/vehicles/list/route";
+import { GET as listDrivers } from "@/app/api/logistics/drivers/list/route";
+import { POST as createRoute } from "@/app/api/logistics/routes/commands/create/route";
+import { GET as listRoutes } from "@/app/api/logistics/routes/list/route";
 import { POST as createVehicle } from "@/app/api/logistics/vehicles/commands/create/route";
 import { POST as deleteVehicle } from "@/app/api/logistics/vehicles/commands/delete/route";
-import { GET as listRoutes } from "@/app/api/logistics/routes/list/route";
-import { POST as createRoute } from "@/app/api/logistics/routes/commands/create/route";
+import { GET as listVehicles } from "@/app/api/logistics/vehicles/list/route";
 
 // --- Constants ---
 
@@ -115,7 +112,7 @@ function createMockVehicle(overrides: Record<string, unknown> = {}) {
     capacity_weight: 2000,
     capacity_volume: 15,
     fuel_type: "diesel",
-    mileage: 15000,
+    mileage: 15_000,
     status: "available",
     notes: null,
     created_at: new Date("2026-01-01"),
@@ -167,7 +164,7 @@ describe("Logistics API", () => {
       } as never);
 
       const request = new NextRequest(
-        "http://localhost/api/logistics/drivers/list",
+        "http://localhost/api/logistics/drivers/list"
       );
       const response = await listDrivers(request);
 
@@ -182,7 +179,7 @@ describe("Logistics API", () => {
       vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
 
       const request = new NextRequest(
-        "http://localhost/api/logistics/drivers/list",
+        "http://localhost/api/logistics/drivers/list"
       );
       const response = await listDrivers(request);
 
@@ -205,11 +202,11 @@ describe("Logistics API", () => {
       ];
 
       vi.mocked(database.driver.findMany).mockResolvedValue(
-        mockDrivers as never,
+        mockDrivers as never
       );
 
       const request = new NextRequest(
-        "http://localhost/api/logistics/drivers/list",
+        "http://localhost/api/logistics/drivers/list"
       );
       const response = await listDrivers(request);
 
@@ -230,7 +227,7 @@ describe("Logistics API", () => {
       vi.mocked(database.driver.findMany).mockResolvedValue([] as never);
 
       const request = new NextRequest(
-        "http://localhost/api/logistics/drivers/list",
+        "http://localhost/api/logistics/drivers/list"
       );
       await listDrivers(request);
 
@@ -240,7 +237,7 @@ describe("Logistics API", () => {
             tenantId: TEST_TENANT_ID,
             deletedAt: null,
           }),
-        }),
+        })
       );
     });
 
@@ -249,7 +246,7 @@ describe("Logistics API", () => {
       vi.mocked(database.driver.findMany).mockResolvedValue([] as never);
 
       const request = new NextRequest(
-        "http://localhost/api/logistics/drivers/list?status=available",
+        "http://localhost/api/logistics/drivers/list?status=available"
       );
       await listDrivers(request);
 
@@ -258,7 +255,7 @@ describe("Logistics API", () => {
           where: expect.objectContaining({
             status: "available",
           }),
-        }),
+        })
       );
     });
 
@@ -267,25 +264,25 @@ describe("Logistics API", () => {
       vi.mocked(database.driver.findMany).mockResolvedValue([] as never);
 
       const request = new NextRequest(
-        "http://localhost/api/logistics/drivers/list",
+        "http://localhost/api/logistics/drivers/list"
       );
       await listDrivers(request);
 
       expect(database.driver.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           orderBy: { name: "asc" },
-        }),
+        })
       );
     });
 
     it("returns 500 on database error", async () => {
       mockAuth();
       vi.mocked(database.driver.findMany).mockRejectedValue(
-        new Error("Connection refused"),
+        new Error("Connection refused")
       );
 
       const request = new NextRequest(
-        "http://localhost/api/logistics/drivers/list",
+        "http://localhost/api/logistics/drivers/list"
       );
       const response = await listDrivers(request);
 
@@ -313,7 +310,7 @@ describe("Logistics API", () => {
           method: "POST",
           body: JSON.stringify({ name: "Test Driver" }),
           headers: { "Content-Type": "application/json" },
-        },
+        }
       );
       const response = await createDriver(request);
 
@@ -330,7 +327,7 @@ describe("Logistics API", () => {
           method: "POST",
           body: JSON.stringify({ name: "Test Driver" }),
           headers: { "Content-Type": "application/json" },
-        },
+        }
       );
       const response = await createDriver(request);
 
@@ -348,7 +345,7 @@ describe("Logistics API", () => {
           method: "POST",
           body: JSON.stringify({ phone: "+1-555-0000" }),
           headers: { "Content-Type": "application/json" },
-        },
+        }
       );
       const response = await createDriver(request);
 
@@ -365,9 +362,7 @@ describe("Logistics API", () => {
         status: "available",
         createdAt: new Date("2026-04-01"),
       };
-      vi.mocked(database.driver.create).mockResolvedValue(
-        mockResult as never,
-      );
+      vi.mocked(database.driver.create).mockResolvedValue(mockResult as never);
 
       const request = new NextRequest(
         "http://localhost/api/logistics/drivers/commands/create",
@@ -383,7 +378,7 @@ describe("Logistics API", () => {
             notes: "Experienced driver",
           }),
           headers: { "Content-Type": "application/json" },
-        },
+        }
       );
       const response = await createDriver(request);
 
@@ -400,14 +395,14 @@ describe("Logistics API", () => {
             name: "Jane Doe",
             status: "available",
           }),
-        }),
+        })
       );
     });
 
     it("returns 500 on database error", async () => {
       mockAuth();
       vi.mocked(database.driver.create).mockRejectedValue(
-        new Error("Unique constraint violation"),
+        new Error("Unique constraint violation")
       );
 
       const request = new NextRequest(
@@ -416,7 +411,7 @@ describe("Logistics API", () => {
           method: "POST",
           body: JSON.stringify({ name: "Crash Driver" }),
           headers: { "Content-Type": "application/json" },
-        },
+        }
       );
       const response = await createDriver(request);
 
@@ -444,7 +439,7 @@ describe("Logistics API", () => {
           method: "POST",
           body: JSON.stringify({ driverId: "driver-001" }),
           headers: { "Content-Type": "application/json" },
-        },
+        }
       );
       const response = await deleteDriver(request);
 
@@ -460,7 +455,7 @@ describe("Logistics API", () => {
           method: "POST",
           body: JSON.stringify({}),
           headers: { "Content-Type": "application/json" },
-        },
+        }
       );
       const response = await deleteDriver(request);
 
@@ -479,7 +474,7 @@ describe("Logistics API", () => {
           method: "POST",
           body: JSON.stringify({ driverId: "driver-001" }),
           headers: { "Content-Type": "application/json" },
-        },
+        }
       );
       const response = await deleteDriver(request);
 
@@ -499,7 +494,7 @@ describe("Logistics API", () => {
     it("returns 500 on database error", async () => {
       mockAuth();
       vi.mocked(database.driver.update).mockRejectedValue(
-        new Error("Record not found"),
+        new Error("Record not found")
       );
 
       const request = new NextRequest(
@@ -508,7 +503,7 @@ describe("Logistics API", () => {
           method: "POST",
           body: JSON.stringify({ driverId: "driver-999" }),
           headers: { "Content-Type": "application/json" },
-        },
+        }
       );
       const response = await deleteDriver(request);
 
@@ -528,7 +523,7 @@ describe("Logistics API", () => {
       } as never);
 
       const request = new NextRequest(
-        "http://localhost/api/logistics/vehicles/list",
+        "http://localhost/api/logistics/vehicles/list"
       );
       const response = await listVehicles(request);
 
@@ -543,7 +538,7 @@ describe("Logistics API", () => {
       vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
 
       const request = new NextRequest(
-        "http://localhost/api/logistics/vehicles/list",
+        "http://localhost/api/logistics/vehicles/list"
       );
       const response = await listVehicles(request);
 
@@ -566,7 +561,7 @@ describe("Logistics API", () => {
       vi.mocked(database.$queryRaw).mockResolvedValue(mockVehicles);
 
       const request = new NextRequest(
-        "http://localhost/api/logistics/vehicles/list",
+        "http://localhost/api/logistics/vehicles/list"
       );
       const response = await listVehicles(request);
 
@@ -583,7 +578,7 @@ describe("Logistics API", () => {
       vi.mocked(database.$queryRaw).mockResolvedValue([]);
 
       const request = new NextRequest(
-        "http://localhost/api/logistics/vehicles/list",
+        "http://localhost/api/logistics/vehicles/list"
       );
       await listVehicles(request);
 
@@ -595,7 +590,7 @@ describe("Logistics API", () => {
       vi.mocked(database.$queryRaw).mockResolvedValue([]);
 
       const request = new NextRequest(
-        "http://localhost/api/logistics/vehicles/list",
+        "http://localhost/api/logistics/vehicles/list"
       );
       const response = await listVehicles(request);
 
@@ -607,11 +602,11 @@ describe("Logistics API", () => {
     it("returns 500 on database error", async () => {
       mockAuth();
       vi.mocked(database.$queryRaw).mockRejectedValue(
-        new Error("SQL syntax error"),
+        new Error("SQL syntax error")
       );
 
       const request = new NextRequest(
-        "http://localhost/api/logistics/vehicles/list",
+        "http://localhost/api/logistics/vehicles/list"
       );
       const response = await listVehicles(request);
 
@@ -626,7 +621,7 @@ describe("Logistics API", () => {
       vi.mocked(database.$queryRaw).mockResolvedValue([]);
 
       const request = new NextRequest(
-        "http://localhost/api/logistics/vehicles/list",
+        "http://localhost/api/logistics/vehicles/list"
       );
       const response = await listVehicles(request);
 
@@ -653,7 +648,7 @@ describe("Logistics API", () => {
           method: "POST",
           body: JSON.stringify({ make: "Ford", model: "Transit" }),
           headers: { "Content-Type": "application/json" },
-        },
+        }
       );
       const response = await createVehicle(request);
 
@@ -669,7 +664,7 @@ describe("Logistics API", () => {
           method: "POST",
           body: JSON.stringify({ year: 2024 }),
           headers: { "Content-Type": "application/json" },
-        },
+        }
       );
       const response = await createVehicle(request);
 
@@ -687,7 +682,7 @@ describe("Logistics API", () => {
           method: "POST",
           body: JSON.stringify({ make: "Ford" }),
           headers: { "Content-Type": "application/json" },
-        },
+        }
       );
       const response = await createVehicle(request);
 
@@ -721,7 +716,7 @@ describe("Logistics API", () => {
             notes: "New delivery van",
           }),
           headers: { "Content-Type": "application/json" },
-        },
+        }
       );
       const response = await createVehicle(request);
 
@@ -738,7 +733,7 @@ describe("Logistics API", () => {
     it("returns 500 on database error", async () => {
       mockAuth();
       vi.mocked(database.$queryRaw).mockRejectedValue(
-        new Error("Foreign key violation"),
+        new Error("Foreign key violation")
       );
 
       const request = new NextRequest(
@@ -747,7 +742,7 @@ describe("Logistics API", () => {
           method: "POST",
           body: JSON.stringify({ make: "Ford", model: "Transit" }),
           headers: { "Content-Type": "application/json" },
-        },
+        }
       );
       const response = await createVehicle(request);
 
@@ -772,7 +767,7 @@ describe("Logistics API", () => {
           method: "POST",
           body: JSON.stringify({ vehicleId: "vehicle-001" }),
           headers: { "Content-Type": "application/json" },
-        },
+        }
       );
       const response = await deleteVehicle(request);
 
@@ -788,7 +783,7 @@ describe("Logistics API", () => {
           method: "POST",
           body: JSON.stringify({}),
           headers: { "Content-Type": "application/json" },
-        },
+        }
       );
       const response = await deleteVehicle(request);
 
@@ -807,7 +802,7 @@ describe("Logistics API", () => {
           method: "POST",
           body: JSON.stringify({ vehicleId: "vehicle-001" }),
           headers: { "Content-Type": "application/json" },
-        },
+        }
       );
       const response = await deleteVehicle(request);
 
@@ -821,7 +816,7 @@ describe("Logistics API", () => {
     it("returns 500 on database error", async () => {
       mockAuth();
       vi.mocked(database.$queryRaw).mockRejectedValue(
-        new Error("Connection timeout"),
+        new Error("Connection timeout")
       );
 
       const request = new NextRequest(
@@ -830,7 +825,7 @@ describe("Logistics API", () => {
           method: "POST",
           body: JSON.stringify({ vehicleId: "vehicle-999" }),
           headers: { "Content-Type": "application/json" },
-        },
+        }
       );
       const response = await deleteVehicle(request);
 
@@ -854,11 +849,11 @@ describe("Logistics API", () => {
         }),
       ];
       vi.mocked(database.deliveryRoute.findMany).mockResolvedValue(
-        mockRoutes as never,
+        mockRoutes as never
       );
 
       const request = new NextRequest(
-        "http://localhost/api/logistics/routes/list",
+        "http://localhost/api/logistics/routes/list"
       );
       const response = await listRoutes(request);
 
@@ -870,12 +865,10 @@ describe("Logistics API", () => {
 
     it("filters by status from query params", async () => {
       vi.mocked(requireTenantId).mockResolvedValue(TEST_TENANT_ID);
-      vi.mocked(database.deliveryRoute.findMany).mockResolvedValue(
-        [] as never,
-      );
+      vi.mocked(database.deliveryRoute.findMany).mockResolvedValue([] as never);
 
       const request = new NextRequest(
-        "http://localhost/api/logistics/routes/list?status=planned",
+        "http://localhost/api/logistics/routes/list?status=planned"
       );
       await listRoutes(request);
 
@@ -884,18 +877,16 @@ describe("Logistics API", () => {
           where: expect.objectContaining({
             status: "planned",
           }),
-        }),
+        })
       );
     });
 
     it("filters by date from query params", async () => {
       vi.mocked(requireTenantId).mockResolvedValue(TEST_TENANT_ID);
-      vi.mocked(database.deliveryRoute.findMany).mockResolvedValue(
-        [] as never,
-      );
+      vi.mocked(database.deliveryRoute.findMany).mockResolvedValue([] as never);
 
       const request = new NextRequest(
-        "http://localhost/api/logistics/routes/list?date=2026-04-15",
+        "http://localhost/api/logistics/routes/list?date=2026-04-15"
       );
       await listRoutes(request);
 
@@ -904,18 +895,16 @@ describe("Logistics API", () => {
           where: expect.objectContaining({
             scheduledDate: expect.any(Date),
           }),
-        }),
+        })
       );
     });
 
     it("excludes soft-deleted routes", async () => {
       vi.mocked(requireTenantId).mockResolvedValue(TEST_TENANT_ID);
-      vi.mocked(database.deliveryRoute.findMany).mockResolvedValue(
-        [] as never,
-      );
+      vi.mocked(database.deliveryRoute.findMany).mockResolvedValue([] as never);
 
       const request = new NextRequest(
-        "http://localhost/api/logistics/routes/list",
+        "http://localhost/api/logistics/routes/list"
       );
       await listRoutes(request);
 
@@ -924,18 +913,18 @@ describe("Logistics API", () => {
           where: expect.objectContaining({
             deletedAt: null,
           }),
-        }),
+        })
       );
     });
 
     it("returns 500 on database error", async () => {
       vi.mocked(requireTenantId).mockResolvedValue(TEST_TENANT_ID);
       vi.mocked(database.deliveryRoute.findMany).mockRejectedValue(
-        new Error("Connection refused"),
+        new Error("Connection refused")
       );
 
       const request = new NextRequest(
-        "http://localhost/api/logistics/routes/list",
+        "http://localhost/api/logistics/routes/list"
       );
       const response = await listRoutes(request);
 
@@ -946,12 +935,10 @@ describe("Logistics API", () => {
 
     it("returns empty routes array when none exist", async () => {
       vi.mocked(requireTenantId).mockResolvedValue(TEST_TENANT_ID);
-      vi.mocked(database.deliveryRoute.findMany).mockResolvedValue(
-        [] as never,
-      );
+      vi.mocked(database.deliveryRoute.findMany).mockResolvedValue([] as never);
 
       const request = new NextRequest(
-        "http://localhost/api/logistics/routes/list",
+        "http://localhost/api/logistics/routes/list"
       );
       const response = await listRoutes(request);
 
@@ -971,7 +958,7 @@ describe("Logistics API", () => {
 
       // No existing routes
       vi.mocked(database.deliveryRoute.findFirst).mockResolvedValue(
-        null as never,
+        null as never
       );
 
       const mockCreated = createMockRoute({
@@ -981,7 +968,7 @@ describe("Logistics API", () => {
         stops: [],
       });
       vi.mocked(database.deliveryRoute.create).mockResolvedValue(
-        mockCreated as never,
+        mockCreated as never
       );
 
       const request = new NextRequest(
@@ -993,7 +980,7 @@ describe("Logistics API", () => {
             scheduledDate: "2026-04-20",
           }),
           headers: { "Content-Type": "application/json" },
-        },
+        }
       );
       const response = await createRoute(request);
 
@@ -1007,7 +994,7 @@ describe("Logistics API", () => {
             tenantId: TEST_TENANT_ID,
             routeNumber: "RT-000001",
           }),
-        }),
+        })
       );
     });
 
@@ -1023,7 +1010,7 @@ describe("Logistics API", () => {
         routeNumber: "RT-000004",
       });
       vi.mocked(database.deliveryRoute.create).mockResolvedValue(
-        mockCreated as never,
+        mockCreated as never
       );
 
       const request = new NextRequest(
@@ -1032,7 +1019,7 @@ describe("Logistics API", () => {
           method: "POST",
           body: JSON.stringify({ name: "Next Route" }),
           headers: { "Content-Type": "application/json" },
-        },
+        }
       );
       const response = await createRoute(request);
 
@@ -1045,14 +1032,14 @@ describe("Logistics API", () => {
           data: expect.objectContaining({
             routeNumber: "RT-000004",
           }),
-        }),
+        })
       );
     });
 
     it("creates route with nested stops", async () => {
       vi.mocked(requireTenantId).mockResolvedValue(TEST_TENANT_ID);
       vi.mocked(database.deliveryRoute.findFirst).mockResolvedValue(
-        null as never,
+        null as never
       );
 
       const mockCreated = createMockRoute({
@@ -1064,7 +1051,7 @@ describe("Logistics API", () => {
         ],
       });
       vi.mocked(database.deliveryRoute.create).mockResolvedValue(
-        mockCreated as never,
+        mockCreated as never
       );
 
       const request = new NextRequest(
@@ -1079,7 +1066,7 @@ describe("Logistics API", () => {
             ],
           }),
           headers: { "Content-Type": "application/json" },
-        },
+        }
       );
       const response = await createRoute(request);
 
@@ -1103,14 +1090,14 @@ describe("Logistics API", () => {
               ]),
             }),
           }),
-        }),
+        })
       );
     });
 
     it("uses default name when name not provided", async () => {
       vi.mocked(requireTenantId).mockResolvedValue(TEST_TENANT_ID);
       vi.mocked(database.deliveryRoute.findFirst).mockResolvedValue(
-        null as never,
+        null as never
       );
 
       const mockCreated = createMockRoute({
@@ -1118,7 +1105,7 @@ describe("Logistics API", () => {
         name: "Route RT-000005",
       });
       vi.mocked(database.deliveryRoute.create).mockResolvedValue(
-        mockCreated as never,
+        mockCreated as never
       );
 
       const request = new NextRequest(
@@ -1127,7 +1114,7 @@ describe("Logistics API", () => {
           method: "POST",
           body: JSON.stringify({}),
           headers: { "Content-Type": "application/json" },
-        },
+        }
       );
       await createRoute(request);
 
@@ -1136,14 +1123,14 @@ describe("Logistics API", () => {
           data: expect.objectContaining({
             name: expect.stringContaining("RT-"),
           }),
-        }),
+        })
       );
     });
 
     it("returns 500 on database error", async () => {
       vi.mocked(requireTenantId).mockResolvedValue(TEST_TENANT_ID);
       vi.mocked(database.deliveryRoute.findFirst).mockRejectedValue(
-        new Error("Connection refused"),
+        new Error("Connection refused")
       );
 
       const request = new NextRequest(
@@ -1152,7 +1139,7 @@ describe("Logistics API", () => {
           method: "POST",
           body: JSON.stringify({ name: "Fail Route" }),
           headers: { "Content-Type": "application/json" },
-        },
+        }
       );
       const response = await createRoute(request);
 

@@ -65,10 +65,7 @@ vi.mock("@sentry/nextjs", () => ({
 }));
 
 import { NextRequest } from "next/server";
-import {
-  DELETE,
-  PATCH,
-} from "@/app/api/accounting/invoices/[id]/route";
+import { DELETE, PATCH } from "@/app/api/accounting/invoices/[id]/route";
 
 const baseInvoice = {
   tenantId: TENANT_ID,
@@ -261,10 +258,9 @@ describe("PATCH /api/accounting/invoices/[id] — action dispatcher", () => {
         status: "PAID",
       });
 
-      await PATCH(
-        makePatchRequest({ action: "apply-payment", amount: 1100 }),
-        { params }
-      );
+      await PATCH(makePatchRequest({ action: "apply-payment", amount: 1100 }), {
+        params,
+      });
 
       const dataArg = mocks.invoiceUpdateMock.mock.calls[0][0].data;
       // newAmountDue = 1000 - 1100 = -100, must be clamped to 0

@@ -1,15 +1,6 @@
 "use client";
 
 import {
-  TRIGGER_TYPE_GROUPS,
-  TRIGGER_TYPE_LABELS,
-  deleteEmailWorkflow,
-  getAvailableTemplates,
-  getEmailWorkflowById,
-  updateEmailWorkflow,
-} from "../actions";
-import type { EmailTriggerType } from "../actions";
-import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -44,18 +35,31 @@ import { ArrowLeftIcon, Loader2Icon, TrashIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import type { EmailTriggerType } from "../actions";
+import {
+  deleteEmailWorkflow,
+  getAvailableTemplates,
+  getEmailWorkflowById,
+  TRIGGER_TYPE_GROUPS,
+  TRIGGER_TYPE_LABELS,
+  updateEmailWorkflow,
+} from "../actions";
 
 export default function EditEmailWorkflowPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const { id } = params ? { id: (params as unknown as { id: string }).id } : { id: "" };
+  const { id } = params
+    ? { id: (params as unknown as { id: string }).id }
+    : { id: "" };
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const [templates, setTemplates] = useState<{ id: string; name: string; template_type: string }[]>([]);
+  const [templates, setTemplates] = useState<
+    { id: string; name: string; template_type: string }[]
+  >([]);
 
   const [name, setName] = useState("");
   const [triggerType, setTriggerType] = useState<string>("");
@@ -179,9 +183,7 @@ export default function EditEmailWorkflowPage({
             Back
           </Button>
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">
-              Edit Workflow
-            </h1>
+            <h1 className="text-3xl font-bold tracking-tight">Edit Workflow</h1>
             <p className="text-muted-foreground mt-1">{name}</p>
           </div>
         </div>
@@ -256,7 +258,10 @@ export default function EditEmailWorkflowPage({
 
             <div className="space-y-2">
               <Label htmlFor="template">Email Template</Label>
-              <Select onValueChange={setEmailTemplateId} value={emailTemplateId}>
+              <Select
+                onValueChange={setEmailTemplateId}
+                value={emailTemplateId}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>

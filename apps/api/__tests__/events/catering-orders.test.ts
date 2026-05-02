@@ -6,7 +6,7 @@
  */
 
 import { NextRequest } from "next/server";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // ---------------------------------------------------------------------------
 // Mocks — single shared database mock for both import paths
@@ -73,14 +73,14 @@ const TEST_EVENT_ID = "e0000000-0000-4000-a000-000000000001";
 
 function createMockRequest(
   url: string,
-  options: RequestInit = {},
+  options: RequestInit = {}
 ): NextRequest {
   if (options.body && !options.headers) {
     options.headers = { "Content-Type": "application/json" };
   }
   return new NextRequest(
     new URL(url, "http://localhost:3000"),
-    options as ConstructorParameters<typeof NextRequest>[1],
+    options as ConstructorParameters<typeof NextRequest>[1]
   );
 }
 
@@ -121,9 +121,7 @@ function setupAuthMocks(userOverrides = {}) {
     userId: TEST_CLERK_ID,
   } as any);
   vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-  mockDb.user.findFirst.mockResolvedValue(
-    createMockUser(userOverrides) as any,
-  );
+  mockDb.user.findFirst.mockResolvedValue(createMockUser(userOverrides) as any);
 }
 
 /** Setup manifest runtime mock for a successful command result */
@@ -206,9 +204,7 @@ describe("Catering Orders API", () => {
     let GET_list: typeof import("@/app/api/events/catering-orders/list/route").GET;
 
     beforeEach(async () => {
-      const mod = await import(
-        "@/app/api/events/catering-orders/list/route"
-      );
+      const mod = await import("@/app/api/events/catering-orders/list/route");
       GET_list = mod.GET;
     });
 
@@ -223,12 +219,10 @@ describe("Catering Orders API", () => {
       ];
 
       setupAuthMocks();
-      mockDb.cateringOrder.findMany.mockResolvedValue(
-        mockOrders as never,
-      );
+      mockDb.cateringOrder.findMany.mockResolvedValue(mockOrders as never);
 
       const request = createMockRequest(
-        "http://localhost:3000/api/events/catering-orders/list",
+        "http://localhost:3000/api/events/catering-orders/list"
       );
       const response = await GET_list(request);
       const data = await response.json();
@@ -245,7 +239,7 @@ describe("Catering Orders API", () => {
       mockDb.cateringOrder.findMany.mockResolvedValue([]);
 
       const request = createMockRequest(
-        "http://localhost:3000/api/events/catering-orders/list",
+        "http://localhost:3000/api/events/catering-orders/list"
       );
       await GET_list(request);
 
@@ -255,7 +249,7 @@ describe("Catering Orders API", () => {
             tenantId: TEST_TENANT_ID,
             deletedAt: null,
           }),
-        }),
+        })
       );
     });
 
@@ -264,14 +258,14 @@ describe("Catering Orders API", () => {
       mockDb.cateringOrder.findMany.mockResolvedValue([]);
 
       const request = createMockRequest(
-        "http://localhost:3000/api/events/catering-orders/list",
+        "http://localhost:3000/api/events/catering-orders/list"
       );
       await GET_list(request);
 
       expect(mockDb.cateringOrder.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({ deletedAt: null }),
-        }),
+        })
       );
     });
 
@@ -279,7 +273,7 @@ describe("Catering Orders API", () => {
       vi.mocked(auth).mockResolvedValue({ orgId: null, userId: null } as any);
 
       const request = createMockRequest(
-        "http://localhost:3000/api/events/catering-orders/list",
+        "http://localhost:3000/api/events/catering-orders/list"
       );
       const response = await GET_list(request);
       const data = await response.json();
@@ -297,7 +291,7 @@ describe("Catering Orders API", () => {
       vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
 
       const request = createMockRequest(
-        "http://localhost:3000/api/events/catering-orders/list",
+        "http://localhost:3000/api/events/catering-orders/list"
       );
       const response = await GET_list(request);
       const data = await response.json();
@@ -310,11 +304,11 @@ describe("Catering Orders API", () => {
     it("should return 500 on database error", async () => {
       setupAuthMocks();
       mockDb.cateringOrder.findMany.mockRejectedValue(
-        new Error("DB connection lost"),
+        new Error("DB connection lost")
       );
 
       const request = createMockRequest(
-        "http://localhost:3000/api/events/catering-orders/list",
+        "http://localhost:3000/api/events/catering-orders/list"
       );
       const response = await GET_list(request);
       const data = await response.json();
@@ -331,13 +325,11 @@ describe("Catering Orders API", () => {
   describe("GET /api/events/catering-orders/[id]", () => {
     let GET_detail: (
       request: NextRequest,
-      ctx: { params: Promise<{ id: string }> },
+      ctx: { params: Promise<{ id: string }> }
     ) => Promise<Response>;
 
     beforeEach(async () => {
-      const mod = await import(
-        "@/app/api/events/catering-orders/[id]/route"
-      );
+      const mod = await import("@/app/api/events/catering-orders/[id]/route");
       GET_detail = mod.GET;
     });
 
@@ -345,12 +337,10 @@ describe("Catering Orders API", () => {
       const mockOrder = createMockCateringOrder();
 
       setupAuthMocks();
-      mockDb.cateringOrder.findUnique.mockResolvedValue(
-        mockOrder as never,
-      );
+      mockDb.cateringOrder.findUnique.mockResolvedValue(mockOrder as never);
 
       const request = createMockRequest(
-        `http://localhost:3000/api/events/catering-orders/${TEST_ORDER_ID}`,
+        `http://localhost:3000/api/events/catering-orders/${TEST_ORDER_ID}`
       );
       const response = await GET_detail(request, {
         params: Promise.resolve({ id: TEST_ORDER_ID }),
@@ -364,12 +354,10 @@ describe("Catering Orders API", () => {
 
     it("should enforce tenant isolation on detail queries", async () => {
       setupAuthMocks();
-      mockDb.cateringOrder.findUnique.mockResolvedValue(
-        null as never,
-      );
+      mockDb.cateringOrder.findUnique.mockResolvedValue(null as never);
 
       const request = createMockRequest(
-        `http://localhost:3000/api/events/catering-orders/${TEST_ORDER_ID}`,
+        `http://localhost:3000/api/events/catering-orders/${TEST_ORDER_ID}`
       );
       await GET_detail(request, {
         params: Promise.resolve({ id: TEST_ORDER_ID }),
@@ -381,18 +369,16 @@ describe("Catering Orders API", () => {
             id: TEST_ORDER_ID,
             tenantId: TEST_TENANT_ID,
           }),
-        }),
+        })
       );
     });
 
     it("should return 404 when order does not exist", async () => {
       setupAuthMocks();
-      mockDb.cateringOrder.findUnique.mockResolvedValue(
-        null as never,
-      );
+      mockDb.cateringOrder.findUnique.mockResolvedValue(null as never);
 
       const request = createMockRequest(
-        `http://localhost:3000/api/events/catering-orders/nonexistent-id`,
+        "http://localhost:3000/api/events/catering-orders/nonexistent-id"
       );
       const response = await GET_detail(request, {
         params: Promise.resolve({ id: "nonexistent-id" }),
@@ -408,7 +394,7 @@ describe("Catering Orders API", () => {
       vi.mocked(auth).mockResolvedValue({ orgId: null, userId: null } as any);
 
       const request = createMockRequest(
-        `http://localhost:3000/api/events/catering-orders/${TEST_ORDER_ID}`,
+        `http://localhost:3000/api/events/catering-orders/${TEST_ORDER_ID}`
       );
       const response = await GET_detail(request, {
         params: Promise.resolve({ id: TEST_ORDER_ID }),
@@ -422,12 +408,10 @@ describe("Catering Orders API", () => {
 
     it("should return 500 on database error", async () => {
       setupAuthMocks();
-      mockDb.cateringOrder.findUnique.mockRejectedValue(
-        new Error("DB error"),
-      );
+      mockDb.cateringOrder.findUnique.mockRejectedValue(new Error("DB error"));
 
       const request = createMockRequest(
-        `http://localhost:3000/api/events/catering-orders/${TEST_ORDER_ID}`,
+        `http://localhost:3000/api/events/catering-orders/${TEST_ORDER_ID}`
       );
       const response = await GET_detail(request, {
         params: Promise.resolve({ id: TEST_ORDER_ID }),
@@ -465,7 +449,7 @@ describe("Catering Orders API", () => {
 
       const request = createMockRequest(
         "http://localhost:3000/api/events/catering-orders/commands/create",
-        { method: "POST", body: JSON.stringify(body) },
+        { method: "POST", body: JSON.stringify(body) }
       );
       const response = await POST_create(request);
       const data = await response.json();
@@ -486,7 +470,7 @@ describe("Catering Orders API", () => {
         {
           method: "POST",
           body: JSON.stringify({ eventId: TEST_EVENT_ID }),
-        },
+        }
       );
       await POST_create(request);
 
@@ -504,7 +488,7 @@ describe("Catering Orders API", () => {
             role: "manager",
           }),
           entityName: "CateringOrder",
-        }),
+        })
       );
 
       expect(runCommand).toHaveBeenCalledWith("create", expect.any(Object), {
@@ -520,7 +504,7 @@ describe("Catering Orders API", () => {
         {
           method: "POST",
           body: JSON.stringify({ eventId: TEST_EVENT_ID }),
-        },
+        }
       );
       const response = await POST_create(request);
       const data = await response.json();
@@ -539,7 +523,7 @@ describe("Catering Orders API", () => {
         {
           method: "POST",
           body: JSON.stringify({ eventId: TEST_EVENT_ID }),
-        },
+        }
       );
       const response = await POST_create(request);
       const data = await response.json();
@@ -558,7 +542,7 @@ describe("Catering Orders API", () => {
         {
           method: "POST",
           body: JSON.stringify({ eventId: TEST_EVENT_ID }),
-        },
+        }
       );
       const response = await POST_create(request);
       const data = await response.json();
@@ -578,7 +562,7 @@ describe("Catering Orders API", () => {
         {
           method: "POST",
           body: JSON.stringify({ eventId: TEST_EVENT_ID }),
-        },
+        }
       );
       const response = await POST_create(request);
       const data = await response.json();
@@ -597,7 +581,7 @@ describe("Catering Orders API", () => {
         {
           method: "POST",
           body: JSON.stringify({ eventId: TEST_EVENT_ID }),
-        },
+        }
       );
       const response = await POST_create(request);
       const data = await response.json();
@@ -609,16 +593,14 @@ describe("Catering Orders API", () => {
 
     it("should return 500 on unexpected error", async () => {
       setupAuthMocks();
-      mockDb.user.findFirst.mockRejectedValue(
-        new Error("DB down"),
-      );
+      mockDb.user.findFirst.mockRejectedValue(new Error("DB down"));
 
       const request = createMockRequest(
         "http://localhost:3000/api/events/catering-orders/commands/create",
         {
           method: "POST",
           body: JSON.stringify({ eventId: TEST_EVENT_ID }),
-        },
+        }
       );
       const response = await POST_create(request);
       const data = await response.json();
@@ -654,7 +636,7 @@ describe("Catering Orders API", () => {
 
       const request = createMockRequest(
         "http://localhost:3000/api/events/catering-orders/commands/update",
-        { method: "POST", body: JSON.stringify(body) },
+        { method: "POST", body: JSON.stringify(body) }
       );
       const response = await POST_update(request);
       const data = await response.json();
@@ -672,14 +654,14 @@ describe("Catering Orders API", () => {
 
       const request = createMockRequest(
         "http://localhost:3000/api/events/catering-orders/commands/update",
-        { method: "POST", body: JSON.stringify(body) },
+        { method: "POST", body: JSON.stringify(body) }
       );
       await POST_update(request);
 
       expect(runCommand).toHaveBeenCalledWith(
         "update",
         expect.objectContaining({ clientName: "New Client" }),
-        { entityName: "CateringOrder" },
+        { entityName: "CateringOrder" }
       );
     });
 
@@ -691,7 +673,7 @@ describe("Catering Orders API", () => {
         {
           method: "POST",
           body: JSON.stringify({ instanceId: TEST_ORDER_ID }),
-        },
+        }
       );
       const response = await POST_update(request);
 
@@ -720,7 +702,7 @@ describe("Catering Orders API", () => {
 
       const request = createMockRequest(
         "http://localhost:3000/api/events/catering-orders/commands/confirm",
-        { method: "POST", body: JSON.stringify(body) },
+        { method: "POST", body: JSON.stringify(body) }
       );
       const response = await POST_confirm(request);
       const data = await response.json();
@@ -739,7 +721,7 @@ describe("Catering Orders API", () => {
         {
           method: "POST",
           body: JSON.stringify({ instanceId: TEST_ORDER_ID }),
-        },
+        }
       );
       const response = await POST_confirm(request);
       const data = await response.json();
@@ -756,7 +738,7 @@ describe("Catering Orders API", () => {
         {
           method: "POST",
           body: JSON.stringify({ instanceId: TEST_ORDER_ID }),
-        },
+        }
       );
       const response = await POST_confirm(request);
 
@@ -788,7 +770,7 @@ describe("Catering Orders API", () => {
 
       const request = createMockRequest(
         "http://localhost:3000/api/events/catering-orders/commands/cancel",
-        { method: "POST", body: JSON.stringify(body) },
+        { method: "POST", body: JSON.stringify(body) }
       );
       const response = await POST_cancel(request);
       const data = await response.json();
@@ -807,7 +789,7 @@ describe("Catering Orders API", () => {
         {
           method: "POST",
           body: JSON.stringify({ instanceId: TEST_ORDER_ID }),
-        },
+        }
       );
       const response = await POST_cancel(request);
 
@@ -822,7 +804,7 @@ describe("Catering Orders API", () => {
         {
           method: "POST",
           body: JSON.stringify({ instanceId: TEST_ORDER_ID }),
-        },
+        }
       );
       const response = await POST_cancel(request);
 
@@ -851,7 +833,7 @@ describe("Catering Orders API", () => {
 
       const request = createMockRequest(
         "http://localhost:3000/api/events/catering-orders/commands/start-prep",
-        { method: "POST", body: JSON.stringify(body) },
+        { method: "POST", body: JSON.stringify(body) }
       );
       const response = await POST_startPrep(request);
       const data = await response.json();
@@ -869,14 +851,14 @@ describe("Catering Orders API", () => {
 
       const request = createMockRequest(
         "http://localhost:3000/api/events/catering-orders/commands/start-prep",
-        { method: "POST", body: JSON.stringify(body) },
+        { method: "POST", body: JSON.stringify(body) }
       );
       await POST_startPrep(request);
 
       expect(runCommand).toHaveBeenCalledWith(
         "startPrep",
         expect.objectContaining({ instanceId: TEST_ORDER_ID }),
-        { entityName: "CateringOrder" },
+        { entityName: "CateringOrder" }
       );
     });
 
@@ -888,7 +870,7 @@ describe("Catering Orders API", () => {
         {
           method: "POST",
           body: JSON.stringify({ instanceId: TEST_ORDER_ID }),
-        },
+        }
       );
       const response = await POST_startPrep(request);
 
@@ -917,7 +899,7 @@ describe("Catering Orders API", () => {
 
       const request = createMockRequest(
         "http://localhost:3000/api/events/catering-orders/commands/mark-complete",
-        { method: "POST", body: JSON.stringify(body) },
+        { method: "POST", body: JSON.stringify(body) }
       );
       const response = await POST_markComplete(request);
       const data = await response.json();
@@ -935,14 +917,14 @@ describe("Catering Orders API", () => {
 
       const request = createMockRequest(
         "http://localhost:3000/api/events/catering-orders/commands/mark-complete",
-        { method: "POST", body: JSON.stringify(body) },
+        { method: "POST", body: JSON.stringify(body) }
       );
       await POST_markComplete(request);
 
       expect(runCommand).toHaveBeenCalledWith(
         "markComplete",
         expect.objectContaining({ instanceId: TEST_ORDER_ID }),
-        { entityName: "CateringOrder" },
+        { entityName: "CateringOrder" }
       );
     });
 
@@ -955,7 +937,7 @@ describe("Catering Orders API", () => {
         {
           method: "POST",
           body: JSON.stringify({ instanceId: TEST_ORDER_ID }),
-        },
+        }
       );
       const response = await POST_markComplete(request);
       const data = await response.json();
@@ -972,7 +954,7 @@ describe("Catering Orders API", () => {
         {
           method: "POST",
           body: JSON.stringify({ instanceId: TEST_ORDER_ID }),
-        },
+        }
       );
       const response = await POST_markComplete(request);
 

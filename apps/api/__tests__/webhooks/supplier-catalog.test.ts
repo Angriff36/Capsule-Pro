@@ -16,9 +16,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn() }));
 vi.mock("@/lib/database", async () => {
-  const mod = await vi.importActual<typeof import("@repo/database")>(
-    "@repo/database",
-  );
+  const mod =
+    await vi.importActual<typeof import("@repo/database")>("@repo/database");
   return mod;
 });
 vi.mock("@repo/supplier-connectors", () => {
@@ -102,7 +101,7 @@ function mockEnvSecret(connectorId: string, secret: string | undefined) {
 
 function createPostRequest(
   payload: unknown,
-  headers: Record<string, string> = {},
+  headers: Record<string, string> = {}
 ) {
   const body = JSON.stringify(payload);
   return new Request("http://localhost/api/webhooks/supplier-catalog", {
@@ -147,7 +146,7 @@ describe("Supplier Catalog Webhook", () => {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: "not-valid-json{{{",
-        },
+        }
       );
 
       const response = await POST(request);
@@ -214,7 +213,7 @@ describe("Supplier Catalog Webhook", () => {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body,
-        },
+        }
       );
 
       const response = await POST(request);
@@ -308,13 +307,13 @@ describe("Supplier Catalog Webhook", () => {
       const upsertCall = vi.mocked(database.vendorCatalog.upsert).mock
         .calls[0][0];
       expect(upsertCall.where.tenantId_supplierId_itemNumber!.tenantId).toBe(
-        TEST_TENANT_ID,
+        TEST_TENANT_ID
       );
       expect(upsertCall.where.tenantId_supplierId_itemNumber!.supplierId).toBe(
-        TEST_SUPPLIER_ID,
+        TEST_SUPPLIER_ID
       );
       expect(upsertCall.where.tenantId_supplierId_itemNumber!.itemNumber).toBe(
-        "SKU-001",
+        "SKU-001"
       );
       expect(upsertCall.create.itemName).toBe("Tomato Sauce");
       expect(upsertCall.create.baseUnitCost).toBe(12.5);
@@ -415,7 +414,7 @@ describe("Supplier Catalog Webhook", () => {
       expect(response.status).toBe(200);
       // Verify the env key was looked up correctly
       expect(process.env.SUPPLIER_CHARLIES_PRODUCE_WEBHOOK_SECRET).toBe(
-        "cp-secret-123",
+        "cp-secret-123"
       );
     });
   });

@@ -11,10 +11,10 @@
 
 import { NextRequest } from "next/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { POST as createSchedule } from "@/app/api/schedule/create/route";
-import { POST as updateSchedule } from "@/app/api/schedule/update/route";
 import { POST as closeSchedule } from "@/app/api/schedule/close/route";
+import { POST as createSchedule } from "@/app/api/schedule/create/route";
 import { POST as releaseSchedule } from "@/app/api/schedule/release/route";
+import { POST as updateSchedule } from "@/app/api/schedule/update/route";
 
 // Mock dependencies
 vi.mock("@repo/database", () => ({
@@ -699,14 +699,11 @@ describe("Schedule Command API", () => {
     });
 
     it("should handle malformed JSON body gracefully", async () => {
-      const request = new NextRequest(
-        "http://localhost/api/schedule/create",
-        {
-          method: "POST",
-          body: "not valid json {{{",
-          headers: { "Content-Type": "application/json" },
-        }
-      );
+      const request = new NextRequest("http://localhost/api/schedule/create", {
+        method: "POST",
+        body: "not valid json {{{",
+        headers: { "Content-Type": "application/json" },
+      });
       const response = await createSchedule(request);
 
       expect(response.status).toBe(500);

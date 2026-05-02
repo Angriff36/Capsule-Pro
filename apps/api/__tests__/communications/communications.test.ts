@@ -8,31 +8,28 @@
 import { database } from "@repo/database";
 import { NextRequest } from "next/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-
-// Email template routes
-import { GET as listEmailTemplates } from "@/app/api/communications/email-templates/list/route";
 import { GET as getEmailTemplate } from "@/app/api/communications/email-templates/[id]/route";
 import { POST as createEmailTemplate } from "@/app/api/communications/email-templates/commands/create/route";
-import { POST as updateEmailTemplate } from "@/app/api/communications/email-templates/commands/update/route";
 import { POST as softDeleteEmailTemplate } from "@/app/api/communications/email-templates/commands/soft-delete/route";
-
-// Email workflow routes
-import { GET as listEmailWorkflows } from "@/app/api/communications/email-workflows/list/route";
+import { POST as updateEmailTemplate } from "@/app/api/communications/email-templates/commands/update/route";
+// Email template routes
+import { GET as listEmailTemplates } from "@/app/api/communications/email-templates/list/route";
 import { GET as getEmailWorkflow } from "@/app/api/communications/email-workflows/[id]/route";
 import { POST as createEmailWorkflow } from "@/app/api/communications/email-workflows/commands/create/route";
-import { POST as updateEmailWorkflow } from "@/app/api/communications/email-workflows/commands/update/route";
 import { POST as softDeleteEmailWorkflow } from "@/app/api/communications/email-workflows/commands/soft-delete/route";
-
-// SMS automation rule routes
+import { POST as updateEmailWorkflow } from "@/app/api/communications/email-workflows/commands/update/route";
+// Email workflow routes
+import { GET as listEmailWorkflows } from "@/app/api/communications/email-workflows/list/route";
 import {
-  GET as listSmsRules,
-  POST as createSmsRule,
-} from "@/app/api/communications/sms/automation-rules/route";
-import {
+  DELETE as deleteSmsRule,
   GET as getSmsRule,
   PATCH as patchSmsRule,
-  DELETE as deleteSmsRule,
 } from "@/app/api/communications/sms/automation-rules/[id]/route";
+// SMS automation rule routes
+import {
+  POST as createSmsRule,
+  GET as listSmsRules,
+} from "@/app/api/communications/sms/automation-rules/route";
 
 // Mock dependencies
 vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
@@ -145,7 +142,7 @@ describe("Communications - Email Templates", () => {
       } as never);
 
       const request = new NextRequest(
-        "http://localhost/api/communications/email-templates/list",
+        "http://localhost/api/communications/email-templates/list"
       );
       const response = await listEmailTemplates(request);
 
@@ -159,7 +156,7 @@ describe("Communications - Email Templates", () => {
       vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
 
       const request = new NextRequest(
-        "http://localhost/api/communications/email-templates/list",
+        "http://localhost/api/communications/email-templates/list"
       );
       const response = await listEmailTemplates(request);
 
@@ -176,11 +173,11 @@ describe("Communications - Email Templates", () => {
       ];
 
       vi.mocked(database.email_templates.findMany).mockResolvedValue(
-        mockTemplates as never,
+        mockTemplates as never
       );
 
       const request = new NextRequest(
-        "http://localhost/api/communications/email-templates/list",
+        "http://localhost/api/communications/email-templates/list"
       );
       const response = await listEmailTemplates(request);
 
@@ -192,11 +189,11 @@ describe("Communications - Email Templates", () => {
 
     it("should filter by tenant_id and exclude soft-deleted", async () => {
       vi.mocked(database.email_templates.findMany).mockResolvedValue(
-        [] as never,
+        [] as never
       );
 
       const request = new NextRequest(
-        "http://localhost/api/communications/email-templates/list",
+        "http://localhost/api/communications/email-templates/list"
       );
       await listEmailTemplates(request);
 
@@ -206,34 +203,34 @@ describe("Communications - Email Templates", () => {
             tenant_id: TEST_TENANT_ID,
             deleted_at: null,
           },
-        }),
+        })
       );
     });
 
     it("should order results by created_at descending", async () => {
       vi.mocked(database.email_templates.findMany).mockResolvedValue(
-        [] as never,
+        [] as never
       );
 
       const request = new NextRequest(
-        "http://localhost/api/communications/email-templates/list",
+        "http://localhost/api/communications/email-templates/list"
       );
       await listEmailTemplates(request);
 
       expect(database.email_templates.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           orderBy: { created_at: "desc" },
-        }),
+        })
       );
     });
 
     it("should return 500 on database error", async () => {
       vi.mocked(database.email_templates.findMany).mockRejectedValue(
-        new Error("Database connection failed"),
+        new Error("Database connection failed")
       );
 
       const request = new NextRequest(
-        "http://localhost/api/communications/email-templates/list",
+        "http://localhost/api/communications/email-templates/list"
       );
       const response = await listEmailTemplates(request);
 
@@ -250,11 +247,11 @@ describe("Communications - Email Templates", () => {
       const mockTemplate = createMockEmailTemplate({ id: "tmpl-001" });
 
       vi.mocked(database.email_templates.findFirst).mockResolvedValue(
-        mockTemplate as never,
+        mockTemplate as never
       );
 
       const request = new NextRequest(
-        "http://localhost/api/communications/email-templates/tmpl-001",
+        "http://localhost/api/communications/email-templates/tmpl-001"
       );
       const response = await getEmailTemplate(request, {
         params: Promise.resolve({ id: "tmpl-001" }),
@@ -268,11 +265,11 @@ describe("Communications - Email Templates", () => {
 
     it("should return 404 when template not found", async () => {
       vi.mocked(database.email_templates.findFirst).mockResolvedValue(
-        null as never,
+        null as never
       );
 
       const request = new NextRequest(
-        "http://localhost/api/communications/email-templates/nonexistent",
+        "http://localhost/api/communications/email-templates/nonexistent"
       );
       const response = await getEmailTemplate(request, {
         params: Promise.resolve({ id: "nonexistent" }),
@@ -286,11 +283,11 @@ describe("Communications - Email Templates", () => {
 
     it("should enforce tenant isolation on detail queries", async () => {
       vi.mocked(database.email_templates.findFirst).mockResolvedValue(
-        null as never,
+        null as never
       );
 
       const request = new NextRequest(
-        "http://localhost/api/communications/email-templates/tmpl-001",
+        "http://localhost/api/communications/email-templates/tmpl-001"
       );
       await getEmailTemplate(request, {
         params: Promise.resolve({ id: "tmpl-001" }),
@@ -303,7 +300,7 @@ describe("Communications - Email Templates", () => {
             tenant_id: TEST_TENANT_ID,
             deleted_at: null,
           },
-        }),
+        })
       );
     });
 
@@ -314,7 +311,7 @@ describe("Communications - Email Templates", () => {
       } as never);
 
       const request = new NextRequest(
-        "http://localhost/api/communications/email-templates/tmpl-001",
+        "http://localhost/api/communications/email-templates/tmpl-001"
       );
       const response = await getEmailTemplate(request, {
         params: Promise.resolve({ id: "tmpl-001" }),
@@ -336,7 +333,7 @@ describe("Communications - Email Templates", () => {
       } as never);
 
       vi.mocked(database.user.findFirst).mockResolvedValue(
-        createMockUser() as never,
+        createMockUser() as never
       );
     });
 
@@ -351,7 +348,7 @@ describe("Communications - Email Templates", () => {
         {
           method: "POST",
           body: JSON.stringify({ name: "Test Template" }),
-        },
+        }
       );
       const response = await createEmailTemplate(request);
 
@@ -366,7 +363,7 @@ describe("Communications - Email Templates", () => {
         {
           method: "POST",
           body: JSON.stringify({ name: "Test Template" }),
-        },
+        }
       );
       const response = await createEmailTemplate(request);
 
@@ -379,7 +376,10 @@ describe("Communications - Email Templates", () => {
         result: { id: "tmpl-new" },
         emittedEvents: [],
       });
-      mockCreateInstance.mockResolvedValue({ id: "tmpl-new", name: "New Template" });
+      mockCreateInstance.mockResolvedValue({
+        id: "tmpl-new",
+        name: "New Template",
+      });
 
       const request = new NextRequest(
         "http://localhost/api/communications/email-templates/commands/create",
@@ -390,7 +390,7 @@ describe("Communications - Email Templates", () => {
             subject: "Hello",
             body: "<p>Content</p>",
           }),
-        },
+        }
       );
       const response = await createEmailTemplate(request);
 
@@ -402,11 +402,11 @@ describe("Communications - Email Templates", () => {
       expect(mockRunCommand).toHaveBeenCalledWith(
         "create",
         expect.objectContaining({ name: "New Template" }),
-        { entityName: "EmailTemplate" },
+        { entityName: "EmailTemplate" }
       );
       expect(mockCreateInstance).toHaveBeenCalledWith(
         "EmailTemplate",
-        expect.objectContaining({ tenantId: TEST_TENANT_ID }),
+        expect.objectContaining({ tenantId: TEST_TENANT_ID })
       );
     });
 
@@ -421,7 +421,7 @@ describe("Communications - Email Templates", () => {
         {
           method: "POST",
           body: JSON.stringify({ name: "Unauthorized Template" }),
-        },
+        }
       );
       const response = await createEmailTemplate(request);
 
@@ -445,7 +445,7 @@ describe("Communications - Email Templates", () => {
         {
           method: "POST",
           body: JSON.stringify({ name: "" }),
-        },
+        }
       );
       const response = await createEmailTemplate(request);
 
@@ -467,7 +467,7 @@ describe("Communications - Email Templates", () => {
         {
           method: "POST",
           body: JSON.stringify({ name: "Template" }),
-        },
+        }
       );
       const response = await createEmailTemplate(request);
 
@@ -484,7 +484,7 @@ describe("Communications - Email Templates", () => {
         {
           method: "POST",
           body: JSON.stringify({ name: "Crash Template" }),
-        },
+        }
       );
       const response = await createEmailTemplate(request);
 
@@ -499,7 +499,7 @@ describe("Communications - Email Templates", () => {
         {
           method: "POST",
           body: JSON.stringify({ name: "Orphan User Template" }),
-        },
+        }
       );
       const response = await createEmailTemplate(request);
 
@@ -519,7 +519,7 @@ describe("Communications - Email Templates", () => {
       } as never);
 
       vi.mocked(database.user.findFirst).mockResolvedValue(
-        createMockUser() as never,
+        createMockUser() as never
       );
     });
 
@@ -535,7 +535,7 @@ describe("Communications - Email Templates", () => {
         {
           method: "POST",
           body: JSON.stringify({ id: "tmpl-001", name: "Updated" }),
-        },
+        }
       );
       const response = await updateEmailTemplate(request);
 
@@ -556,7 +556,7 @@ describe("Communications - Email Templates", () => {
         {
           method: "POST",
           body: JSON.stringify({ id: "tmpl-001" }),
-        },
+        }
       );
       const response = await updateEmailTemplate(request);
 
@@ -574,7 +574,7 @@ describe("Communications - Email Templates", () => {
         {
           method: "POST",
           body: JSON.stringify({ id: "tmpl-001", subject: "" }),
-        },
+        }
       );
       const response = await updateEmailTemplate(request);
 
@@ -592,7 +592,7 @@ describe("Communications - Email Templates", () => {
         {
           method: "POST",
           body: JSON.stringify({ id: "tmpl-001" }),
-        },
+        }
       );
       const response = await updateEmailTemplate(request);
 
@@ -609,7 +609,7 @@ describe("Communications - Email Templates", () => {
         {
           method: "POST",
           body: JSON.stringify({ id: "tmpl-001" }),
-        },
+        }
       );
       const response = await updateEmailTemplate(request);
 
@@ -627,7 +627,7 @@ describe("Communications - Email Templates", () => {
         {
           method: "POST",
           body: JSON.stringify({ id: "tmpl-001" }),
-        },
+        }
       );
       const response = await updateEmailTemplate(request);
 
@@ -645,7 +645,7 @@ describe("Communications - Email Templates", () => {
       } as never);
 
       vi.mocked(database.user.findFirst).mockResolvedValue(
-        createMockUser() as never,
+        createMockUser() as never
       );
     });
 
@@ -661,7 +661,7 @@ describe("Communications - Email Templates", () => {
         {
           method: "POST",
           body: JSON.stringify({ id: "tmpl-001" }),
-        },
+        }
       );
       const response = await softDeleteEmailTemplate(request);
 
@@ -672,7 +672,7 @@ describe("Communications - Email Templates", () => {
       expect(mockRunCommand).toHaveBeenCalledWith(
         "softDelete",
         expect.objectContaining({ id: "tmpl-001" }),
-        { entityName: "EmailTemplate" },
+        { entityName: "EmailTemplate" }
       );
     });
 
@@ -687,7 +687,7 @@ describe("Communications - Email Templates", () => {
         {
           method: "POST",
           body: JSON.stringify({ id: "tmpl-001" }),
-        },
+        }
       );
       const response = await softDeleteEmailTemplate(request);
 
@@ -705,7 +705,7 @@ describe("Communications - Email Templates", () => {
         {
           method: "POST",
           body: JSON.stringify({ id: "tmpl-001" }),
-        },
+        }
       );
       const response = await softDeleteEmailTemplate(request);
 
@@ -741,7 +741,7 @@ describe("Communications - Email Workflows", () => {
       } as never);
 
       const request = new NextRequest(
-        "http://localhost/api/communications/email-workflows/list",
+        "http://localhost/api/communications/email-workflows/list"
       );
       const response = await listEmailWorkflows(request);
 
@@ -755,7 +755,7 @@ describe("Communications - Email Workflows", () => {
       vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
 
       const request = new NextRequest(
-        "http://localhost/api/communications/email-workflows/list",
+        "http://localhost/api/communications/email-workflows/list"
       );
       const response = await listEmailWorkflows(request);
 
@@ -772,11 +772,11 @@ describe("Communications - Email Workflows", () => {
       ];
 
       vi.mocked(database.emailWorkflow.findMany).mockResolvedValue(
-        mockWorkflows as never,
+        mockWorkflows as never
       );
 
       const request = new NextRequest(
-        "http://localhost/api/communications/email-workflows/list",
+        "http://localhost/api/communications/email-workflows/list"
       );
       const response = await listEmailWorkflows(request);
 
@@ -787,12 +787,10 @@ describe("Communications - Email Workflows", () => {
     });
 
     it("should filter by tenantId and exclude soft-deleted", async () => {
-      vi.mocked(database.emailWorkflow.findMany).mockResolvedValue(
-        [] as never,
-      );
+      vi.mocked(database.emailWorkflow.findMany).mockResolvedValue([] as never);
 
       const request = new NextRequest(
-        "http://localhost/api/communications/email-workflows/list",
+        "http://localhost/api/communications/email-workflows/list"
       );
       await listEmailWorkflows(request);
 
@@ -802,34 +800,32 @@ describe("Communications - Email Workflows", () => {
             tenantId: TEST_TENANT_ID,
             deletedAt: null,
           },
-        }),
+        })
       );
     });
 
     it("should order results by createdAt descending", async () => {
-      vi.mocked(database.emailWorkflow.findMany).mockResolvedValue(
-        [] as never,
-      );
+      vi.mocked(database.emailWorkflow.findMany).mockResolvedValue([] as never);
 
       const request = new NextRequest(
-        "http://localhost/api/communications/email-workflows/list",
+        "http://localhost/api/communications/email-workflows/list"
       );
       await listEmailWorkflows(request);
 
       expect(database.emailWorkflow.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           orderBy: { createdAt: "desc" },
-        }),
+        })
       );
     });
 
     it("should return 500 on database error", async () => {
       vi.mocked(database.emailWorkflow.findMany).mockRejectedValue(
-        new Error("Database connection failed"),
+        new Error("Database connection failed")
       );
 
       const request = new NextRequest(
-        "http://localhost/api/communications/email-workflows/list",
+        "http://localhost/api/communications/email-workflows/list"
       );
       const response = await listEmailWorkflows(request);
 
@@ -846,11 +842,11 @@ describe("Communications - Email Workflows", () => {
       const mockWorkflow = createMockEmailWorkflow({ id: "wf-001" });
 
       vi.mocked(database.emailWorkflow.findFirst).mockResolvedValue(
-        mockWorkflow as never,
+        mockWorkflow as never
       );
 
       const request = new NextRequest(
-        "http://localhost/api/communications/email-workflows/wf-001",
+        "http://localhost/api/communications/email-workflows/wf-001"
       );
       const response = await getEmailWorkflow(request, {
         params: Promise.resolve({ id: "wf-001" }),
@@ -864,11 +860,11 @@ describe("Communications - Email Workflows", () => {
 
     it("should return 404 when workflow not found", async () => {
       vi.mocked(database.emailWorkflow.findFirst).mockResolvedValue(
-        null as never,
+        null as never
       );
 
       const request = new NextRequest(
-        "http://localhost/api/communications/email-workflows/nonexistent",
+        "http://localhost/api/communications/email-workflows/nonexistent"
       );
       const response = await getEmailWorkflow(request, {
         params: Promise.resolve({ id: "nonexistent" }),
@@ -882,11 +878,11 @@ describe("Communications - Email Workflows", () => {
 
     it("should enforce tenant isolation on detail queries", async () => {
       vi.mocked(database.emailWorkflow.findFirst).mockResolvedValue(
-        null as never,
+        null as never
       );
 
       const request = new NextRequest(
-        "http://localhost/api/communications/email-workflows/wf-001",
+        "http://localhost/api/communications/email-workflows/wf-001"
       );
       await getEmailWorkflow(request, {
         params: Promise.resolve({ id: "wf-001" }),
@@ -899,7 +895,7 @@ describe("Communications - Email Workflows", () => {
             tenantId: TEST_TENANT_ID,
             deletedAt: null,
           },
-        }),
+        })
       );
     });
 
@@ -910,7 +906,7 @@ describe("Communications - Email Workflows", () => {
       } as never);
 
       const request = new NextRequest(
-        "http://localhost/api/communications/email-workflows/wf-001",
+        "http://localhost/api/communications/email-workflows/wf-001"
       );
       const response = await getEmailWorkflow(request, {
         params: Promise.resolve({ id: "wf-001" }),
@@ -930,7 +926,7 @@ describe("Communications - Email Workflows", () => {
       } as never);
 
       vi.mocked(database.user.findFirst).mockResolvedValue(
-        createMockUser() as never,
+        createMockUser() as never
       );
     });
 
@@ -949,7 +945,7 @@ describe("Communications - Email Workflows", () => {
             name: "New Workflow",
             triggerType: "event_signup",
           }),
-        },
+        }
       );
       const response = await createEmailWorkflow(request);
 
@@ -961,7 +957,7 @@ describe("Communications - Email Workflows", () => {
       expect(mockRunCommand).toHaveBeenCalledWith(
         "create",
         expect.objectContaining({ name: "New Workflow" }),
-        { entityName: "EmailWorkflow" },
+        { entityName: "EmailWorkflow" }
       );
     });
 
@@ -976,7 +972,7 @@ describe("Communications - Email Workflows", () => {
         {
           method: "POST",
           body: JSON.stringify({ name: "Unauthorized Workflow" }),
-        },
+        }
       );
       const response = await createEmailWorkflow(request);
 
@@ -999,7 +995,7 @@ describe("Communications - Email Workflows", () => {
         {
           method: "POST",
           body: JSON.stringify({ name: "" }),
-        },
+        }
       );
       const response = await createEmailWorkflow(request);
 
@@ -1019,7 +1015,7 @@ describe("Communications - Email Workflows", () => {
         {
           method: "POST",
           body: JSON.stringify({}),
-        },
+        }
       );
       const response = await createEmailWorkflow(request);
 
@@ -1036,7 +1032,7 @@ describe("Communications - Email Workflows", () => {
         {
           method: "POST",
           body: JSON.stringify({ name: "Crash Workflow" }),
-        },
+        }
       );
       const response = await createEmailWorkflow(request);
 
@@ -1051,7 +1047,7 @@ describe("Communications - Email Workflows", () => {
         {
           method: "POST",
           body: JSON.stringify({ name: "Orphan Workflow" }),
-        },
+        }
       );
       const response = await createEmailWorkflow(request);
 
@@ -1071,7 +1067,7 @@ describe("Communications - Email Workflows", () => {
         {
           method: "POST",
           body: JSON.stringify({ name: "Test" }),
-        },
+        }
       );
       const response = await createEmailWorkflow(request);
 
@@ -1089,7 +1085,7 @@ describe("Communications - Email Workflows", () => {
       } as never);
 
       vi.mocked(database.user.findFirst).mockResolvedValue(
-        createMockUser() as never,
+        createMockUser() as never
       );
     });
 
@@ -1105,7 +1101,7 @@ describe("Communications - Email Workflows", () => {
         {
           method: "POST",
           body: JSON.stringify({ id: "wf-001", name: "Updated Workflow" }),
-        },
+        }
       );
       const response = await updateEmailWorkflow(request);
 
@@ -1126,7 +1122,7 @@ describe("Communications - Email Workflows", () => {
         {
           method: "POST",
           body: JSON.stringify({ id: "wf-001" }),
-        },
+        }
       );
       const response = await updateEmailWorkflow(request);
 
@@ -1141,7 +1137,7 @@ describe("Communications - Email Workflows", () => {
         {
           method: "POST",
           body: JSON.stringify({ id: "wf-001" }),
-        },
+        }
       );
       const response = await updateEmailWorkflow(request);
 
@@ -1159,7 +1155,7 @@ describe("Communications - Email Workflows", () => {
         {
           method: "POST",
           body: JSON.stringify({ id: "wf-001" }),
-        },
+        }
       );
       const response = await updateEmailWorkflow(request);
 
@@ -1177,7 +1173,7 @@ describe("Communications - Email Workflows", () => {
       } as never);
 
       vi.mocked(database.user.findFirst).mockResolvedValue(
-        createMockUser() as never,
+        createMockUser() as never
       );
     });
 
@@ -1193,7 +1189,7 @@ describe("Communications - Email Workflows", () => {
         {
           method: "POST",
           body: JSON.stringify({ id: "wf-001" }),
-        },
+        }
       );
       const response = await softDeleteEmailWorkflow(request);
 
@@ -1204,7 +1200,7 @@ describe("Communications - Email Workflows", () => {
       expect(mockRunCommand).toHaveBeenCalledWith(
         "softDelete",
         expect.objectContaining({ id: "wf-001" }),
-        { entityName: "EmailWorkflow" },
+        { entityName: "EmailWorkflow" }
       );
     });
 
@@ -1219,7 +1215,7 @@ describe("Communications - Email Workflows", () => {
         {
           method: "POST",
           body: JSON.stringify({ id: "wf-001" }),
-        },
+        }
       );
       const response = await softDeleteEmailWorkflow(request);
 
@@ -1237,7 +1233,7 @@ describe("Communications - Email Workflows", () => {
         {
           method: "POST",
           body: JSON.stringify({ id: "wf-001" }),
-        },
+        }
       );
       const response = await softDeleteEmailWorkflow(request);
 
@@ -1257,7 +1253,7 @@ describe("Communications - Email Workflows", () => {
         {
           method: "POST",
           body: JSON.stringify({ id: "wf-001" }),
-        },
+        }
       );
       const response = await softDeleteEmailWorkflow(request);
 
@@ -1293,7 +1289,7 @@ describe("Communications - SMS Automation Rules", () => {
       } as never);
 
       const request = new NextRequest(
-        "http://localhost/api/communications/sms/automation-rules",
+        "http://localhost/api/communications/sms/automation-rules"
       );
       const response = await listSmsRules(request);
 
@@ -1307,7 +1303,7 @@ describe("Communications - SMS Automation Rules", () => {
       vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
 
       const request = new NextRequest(
-        "http://localhost/api/communications/sms/automation-rules",
+        "http://localhost/api/communications/sms/automation-rules"
       );
       const response = await listSmsRules(request);
 
@@ -1324,12 +1320,12 @@ describe("Communications - SMS Automation Rules", () => {
       ];
 
       vi.mocked(database.sms_automation_rules.findMany).mockResolvedValue(
-        mockRules as never,
+        mockRules as never
       );
       vi.mocked(database.sms_automation_rules.count).mockResolvedValue(2);
 
       const request = new NextRequest(
-        "http://localhost/api/communications/sms/automation-rules",
+        "http://localhost/api/communications/sms/automation-rules"
       );
       const response = await listSmsRules(request);
 
@@ -1348,13 +1344,13 @@ describe("Communications - SMS Automation Rules", () => {
     it("should map snake_case database fields to camelCase in response", async () => {
       const mockRule = createMockSmsRule({ id: "rule-001" });
 
-      vi.mocked(database.sms_automation_rules.findMany).mockResolvedValue(
-        [mockRule] as never,
-      );
+      vi.mocked(database.sms_automation_rules.findMany).mockResolvedValue([
+        mockRule,
+      ] as never);
       vi.mocked(database.sms_automation_rules.count).mockResolvedValue(1);
 
       const request = new NextRequest(
-        "http://localhost/api/communications/sms/automation-rules",
+        "http://localhost/api/communications/sms/automation-rules"
       );
       const response = await listSmsRules(request);
       const body = await response.json();
@@ -1369,12 +1365,12 @@ describe("Communications - SMS Automation Rules", () => {
 
     it("should filter by tenant_id and exclude soft-deleted", async () => {
       vi.mocked(database.sms_automation_rules.findMany).mockResolvedValue(
-        [] as never,
+        [] as never
       );
       vi.mocked(database.sms_automation_rules.count).mockResolvedValue(0);
 
       const request = new NextRequest(
-        "http://localhost/api/communications/sms/automation-rules",
+        "http://localhost/api/communications/sms/automation-rules"
       );
       await listSmsRules(request);
 
@@ -1384,57 +1380,57 @@ describe("Communications - SMS Automation Rules", () => {
       };
 
       expect(database.sms_automation_rules.findMany).toHaveBeenCalledWith(
-        expect.objectContaining({ where: expectedWhere }),
+        expect.objectContaining({ where: expectedWhere })
       );
       expect(database.sms_automation_rules.count).toHaveBeenCalledWith(
-        expect.objectContaining({ where: expectedWhere }),
+        expect.objectContaining({ where: expectedWhere })
       );
     });
 
     it("should filter by isActive when query param provided", async () => {
       vi.mocked(database.sms_automation_rules.findMany).mockResolvedValue(
-        [] as never,
+        [] as never
       );
       vi.mocked(database.sms_automation_rules.count).mockResolvedValue(0);
 
       const request = new NextRequest(
-        "http://localhost/api/communications/sms/automation-rules?isActive=true",
+        "http://localhost/api/communications/sms/automation-rules?isActive=true"
       );
       await listSmsRules(request);
 
       expect(database.sms_automation_rules.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({ is_active: true }),
-        }),
+        })
       );
     });
 
     it("should filter by triggerType when query param provided", async () => {
       vi.mocked(database.sms_automation_rules.findMany).mockResolvedValue(
-        [] as never,
+        [] as never
       );
       vi.mocked(database.sms_automation_rules.count).mockResolvedValue(0);
 
       const request = new NextRequest(
-        "http://localhost/api/communications/sms/automation-rules?triggerType=shift_scheduled",
+        "http://localhost/api/communications/sms/automation-rules?triggerType=shift_scheduled"
       );
       await listSmsRules(request);
 
       expect(database.sms_automation_rules.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({ trigger_type: "shift_scheduled" }),
-        }),
+        })
       );
     });
 
     it("should apply pagination with limit and offset", async () => {
       vi.mocked(database.sms_automation_rules.findMany).mockResolvedValue(
-        [] as never,
+        [] as never
       );
       vi.mocked(database.sms_automation_rules.count).mockResolvedValue(100);
 
       const request = new NextRequest(
-        "http://localhost/api/communications/sms/automation-rules?limit=10&offset=20",
+        "http://localhost/api/communications/sms/automation-rules?limit=10&offset=20"
       );
       const response = await listSmsRules(request);
       const body = await response.json();
@@ -1443,7 +1439,7 @@ describe("Communications - SMS Automation Rules", () => {
         expect.objectContaining({
           take: 10,
           skip: 20,
-        }),
+        })
       );
       expect(body.pagination).toEqual({
         total: 100,
@@ -1455,29 +1451,29 @@ describe("Communications - SMS Automation Rules", () => {
 
     it("should order by priority ascending then created_at descending", async () => {
       vi.mocked(database.sms_automation_rules.findMany).mockResolvedValue(
-        [] as never,
+        [] as never
       );
       vi.mocked(database.sms_automation_rules.count).mockResolvedValue(0);
 
       const request = new NextRequest(
-        "http://localhost/api/communications/sms/automation-rules",
+        "http://localhost/api/communications/sms/automation-rules"
       );
       await listSmsRules(request);
 
       expect(database.sms_automation_rules.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           orderBy: [{ priority: "asc" }, { created_at: "desc" }],
-        }),
+        })
       );
     });
 
     it("should return 500 on database error", async () => {
       vi.mocked(database.sms_automation_rules.findMany).mockRejectedValue(
-        new Error("Database connection failed"),
+        new Error("Database connection failed")
       );
 
       const request = new NextRequest(
-        "http://localhost/api/communications/sms/automation-rules",
+        "http://localhost/api/communications/sms/automation-rules"
       );
       const response = await listSmsRules(request);
 
@@ -1494,11 +1490,11 @@ describe("Communications - SMS Automation Rules", () => {
       const mockRule = createMockSmsRule({ id: "rule-001" });
 
       vi.mocked(database.sms_automation_rules.findFirst).mockResolvedValue(
-        mockRule as never,
+        mockRule as never
       );
 
       const request = new NextRequest(
-        "http://localhost/api/communications/sms/automation-rules/rule-001",
+        "http://localhost/api/communications/sms/automation-rules/rule-001"
       );
       const response = await getSmsRule(request, {
         params: Promise.resolve({ id: "rule-001" }),
@@ -1514,11 +1510,11 @@ describe("Communications - SMS Automation Rules", () => {
 
     it("should return 404 when rule not found", async () => {
       vi.mocked(database.sms_automation_rules.findFirst).mockResolvedValue(
-        null as never,
+        null as never
       );
 
       const request = new NextRequest(
-        "http://localhost/api/communications/sms/automation-rules/nonexistent",
+        "http://localhost/api/communications/sms/automation-rules/nonexistent"
       );
       const response = await getSmsRule(request, {
         params: Promise.resolve({ id: "nonexistent" }),
@@ -1532,11 +1528,11 @@ describe("Communications - SMS Automation Rules", () => {
 
     it("should enforce tenant isolation on detail queries", async () => {
       vi.mocked(database.sms_automation_rules.findFirst).mockResolvedValue(
-        null as never,
+        null as never
       );
 
       const request = new NextRequest(
-        "http://localhost/api/communications/sms/automation-rules/rule-001",
+        "http://localhost/api/communications/sms/automation-rules/rule-001"
       );
       await getSmsRule(request, {
         params: Promise.resolve({ id: "rule-001" }),
@@ -1549,7 +1545,7 @@ describe("Communications - SMS Automation Rules", () => {
             tenant_id: TEST_TENANT_ID,
             deleted_at: null,
           },
-        }),
+        })
       );
     });
 
@@ -1560,7 +1556,7 @@ describe("Communications - SMS Automation Rules", () => {
       } as never);
 
       const request = new NextRequest(
-        "http://localhost/api/communications/sms/automation-rules/rule-001",
+        "http://localhost/api/communications/sms/automation-rules/rule-001"
       );
       const response = await getSmsRule(request, {
         params: Promise.resolve({ id: "rule-001" }),
@@ -1571,11 +1567,11 @@ describe("Communications - SMS Automation Rules", () => {
 
     it("should return 500 on database error", async () => {
       vi.mocked(database.sms_automation_rules.findFirst).mockRejectedValue(
-        new Error("Database connection failed"),
+        new Error("Database connection failed")
       );
 
       const request = new NextRequest(
-        "http://localhost/api/communications/sms/automation-rules/rule-001",
+        "http://localhost/api/communications/sms/automation-rules/rule-001"
       );
       const response = await getSmsRule(request, {
         params: Promise.resolve({ id: "rule-001" }),
@@ -1609,7 +1605,7 @@ describe("Communications - SMS Automation Rules", () => {
         {
           method: "POST",
           body: JSON.stringify({ name: "Test Rule", triggerType: "test" }),
-        },
+        }
       );
       const response = await createSmsRule(request);
 
@@ -1622,7 +1618,7 @@ describe("Communications - SMS Automation Rules", () => {
         {
           method: "POST",
           body: JSON.stringify({ triggerType: "shift_scheduled" }),
-        },
+        }
       );
       const response = await createSmsRule(request);
 
@@ -1638,7 +1634,7 @@ describe("Communications - SMS Automation Rules", () => {
         {
           method: "POST",
           body: JSON.stringify({ name: "Test Rule" }),
-        },
+        }
       );
       const response = await createSmsRule(request);
 
@@ -1660,7 +1656,7 @@ describe("Communications - SMS Automation Rules", () => {
         {
           method: "POST",
           body: JSON.stringify({ name: "Test Rule", triggerType: "test" }),
-        },
+        }
       );
       const response = await createSmsRule(request);
 
@@ -1685,7 +1681,7 @@ describe("Communications - SMS Automation Rules", () => {
       });
 
       vi.mocked(database.sms_automation_rules.create).mockResolvedValue(
-        createdRule as never,
+        createdRule as never
       );
 
       const request = new NextRequest(
@@ -1697,7 +1693,7 @@ describe("Communications - SMS Automation Rules", () => {
             triggerType: "shift_scheduled",
             customMessage: "Your shift starts soon!",
           }),
-        },
+        }
       );
       const response = await createSmsRule(request);
 
@@ -1710,7 +1706,7 @@ describe("Communications - SMS Automation Rules", () => {
       expect(mockRunCommand).toHaveBeenCalledWith(
         "create",
         expect.objectContaining({ name: "New Rule" }),
-        { entityName: "SmsAutomationRule" },
+        { entityName: "SmsAutomationRule" }
       );
 
       expect(database.sms_automation_rules.create).toHaveBeenCalledWith(
@@ -1720,7 +1716,7 @@ describe("Communications - SMS Automation Rules", () => {
             name: "New Rule",
             trigger_type: "shift_scheduled",
           }),
-        }),
+        })
       );
     });
 
@@ -1739,7 +1735,7 @@ describe("Communications - SMS Automation Rules", () => {
       });
 
       vi.mocked(database.sms_automation_rules.create).mockResolvedValue(
-        createdRule as never,
+        createdRule as never
       );
 
       const request = new NextRequest(
@@ -1751,7 +1747,7 @@ describe("Communications - SMS Automation Rules", () => {
             triggerType: "event_signup",
             templateId: "tmpl-001",
           }),
-        },
+        }
       );
       const response = await createSmsRule(request);
 
@@ -1765,7 +1761,7 @@ describe("Communications - SMS Automation Rules", () => {
           data: expect.objectContaining({
             template_id: "tmpl-001",
           }),
-        }),
+        })
       );
     });
 
@@ -1784,7 +1780,7 @@ describe("Communications - SMS Automation Rules", () => {
       });
 
       vi.mocked(database.sms_automation_rules.create).mockResolvedValue(
-        createdRule as never,
+        createdRule as never
       );
 
       const request = new NextRequest(
@@ -1796,7 +1792,7 @@ describe("Communications - SMS Automation Rules", () => {
             triggerType: "shift_scheduled",
             customMessage: "Hello",
           }),
-        },
+        }
       );
       await createSmsRule(request);
 
@@ -1807,7 +1803,7 @@ describe("Communications - SMS Automation Rules", () => {
             is_active: true,
             priority: 100,
           }),
-        }),
+        })
       );
     });
 
@@ -1826,7 +1822,7 @@ describe("Communications - SMS Automation Rules", () => {
             triggerType: "test",
             customMessage: "hi",
           }),
-        },
+        }
       );
       const response = await createSmsRule(request);
 
@@ -1850,7 +1846,7 @@ describe("Communications - SMS Automation Rules", () => {
             triggerType: "invalid",
             customMessage: "hi",
           }),
-        },
+        }
       );
       const response = await createSmsRule(request);
 
@@ -1871,7 +1867,7 @@ describe("Communications - SMS Automation Rules", () => {
             triggerType: "test",
             customMessage: "hi",
           }),
-        },
+        }
       );
       const response = await createSmsRule(request);
 
@@ -1893,7 +1889,7 @@ describe("Communications - SMS Automation Rules", () => {
       const existingRule = createMockSmsRule({ id: "rule-001" });
 
       vi.mocked(database.sms_automation_rules.findFirst).mockResolvedValue(
-        existingRule as never,
+        existingRule as never
       );
 
       mockRunCommand.mockResolvedValue({
@@ -1909,7 +1905,7 @@ describe("Communications - SMS Automation Rules", () => {
       });
 
       vi.mocked(database.sms_automation_rules.update).mockResolvedValue(
-        updatedRule as never,
+        updatedRule as never
       );
 
       const request = new NextRequest(
@@ -1917,7 +1913,7 @@ describe("Communications - SMS Automation Rules", () => {
         {
           method: "PATCH",
           body: JSON.stringify({ name: "Updated Rule", priority: 5 }),
-        },
+        }
       );
       const response = await patchSmsRule(request, {
         params: Promise.resolve({ id: "rule-001" }),
@@ -1932,13 +1928,13 @@ describe("Communications - SMS Automation Rules", () => {
       expect(mockRunCommand).toHaveBeenCalledWith(
         "update",
         expect.objectContaining({ id: "rule-001", name: "Updated Rule" }),
-        { entityName: "SmsAutomationRule", instanceId: "rule-001" },
+        { entityName: "SmsAutomationRule", instanceId: "rule-001" }
       );
     });
 
     it("should return 404 when rule not found for update", async () => {
       vi.mocked(database.sms_automation_rules.findFirst).mockResolvedValue(
-        null as never,
+        null as never
       );
 
       const request = new NextRequest(
@@ -1946,7 +1942,7 @@ describe("Communications - SMS Automation Rules", () => {
         {
           method: "PATCH",
           body: JSON.stringify({ name: "Updated" }),
-        },
+        }
       );
       const response = await patchSmsRule(request, {
         params: Promise.resolve({ id: "nonexistent" }),
@@ -1959,7 +1955,7 @@ describe("Communications - SMS Automation Rules", () => {
 
     it("should return 403 on policy denial for update", async () => {
       vi.mocked(database.sms_automation_rules.findFirst).mockResolvedValue(
-        createMockSmsRule() as never,
+        createMockSmsRule() as never
       );
 
       mockRunCommand.mockResolvedValue({
@@ -1972,7 +1968,7 @@ describe("Communications - SMS Automation Rules", () => {
         {
           method: "PATCH",
           body: JSON.stringify({ name: "Updated" }),
-        },
+        }
       );
       const response = await patchSmsRule(request, {
         params: Promise.resolve({ id: "rule-001" }),
@@ -1983,7 +1979,7 @@ describe("Communications - SMS Automation Rules", () => {
 
     it("should return 422 on guard failure for update", async () => {
       vi.mocked(database.sms_automation_rules.findFirst).mockResolvedValue(
-        createMockSmsRule() as never,
+        createMockSmsRule() as never
       );
 
       mockRunCommand.mockResolvedValue({
@@ -1996,7 +1992,7 @@ describe("Communications - SMS Automation Rules", () => {
         {
           method: "PATCH",
           body: JSON.stringify({ priority: -1 }),
-        },
+        }
       );
       const response = await patchSmsRule(request, {
         params: Promise.resolve({ id: "rule-001" }),
@@ -2016,7 +2012,7 @@ describe("Communications - SMS Automation Rules", () => {
         {
           method: "PATCH",
           body: JSON.stringify({ name: "Updated" }),
-        },
+        }
       );
       const response = await patchSmsRule(request, {
         params: Promise.resolve({ id: "rule-001" }),
@@ -2027,7 +2023,7 @@ describe("Communications - SMS Automation Rules", () => {
 
     it("should return 500 on unexpected error", async () => {
       vi.mocked(database.sms_automation_rules.findFirst).mockRejectedValue(
-        new Error("Database crash"),
+        new Error("Database crash")
       );
 
       const request = new NextRequest(
@@ -2035,7 +2031,7 @@ describe("Communications - SMS Automation Rules", () => {
         {
           method: "PATCH",
           body: JSON.stringify({ name: "Updated" }),
-        },
+        }
       );
       const response = await patchSmsRule(request, {
         params: Promise.resolve({ id: "rule-001" }),
@@ -2057,7 +2053,7 @@ describe("Communications - SMS Automation Rules", () => {
 
     it("should soft delete an SMS rule through manifest runtime and database", async () => {
       vi.mocked(database.sms_automation_rules.findFirst).mockResolvedValue(
-        createMockSmsRule() as never,
+        createMockSmsRule() as never
       );
 
       mockRunCommand.mockResolvedValue({
@@ -2067,12 +2063,12 @@ describe("Communications - SMS Automation Rules", () => {
       });
 
       vi.mocked(database.sms_automation_rules.update).mockResolvedValue(
-        createMockSmsRule() as never,
+        createMockSmsRule() as never
       );
 
       const request = new NextRequest(
         "http://localhost/api/communications/sms/automation-rules/rule-001",
-        { method: "DELETE" },
+        { method: "DELETE" }
       );
       const response = await deleteSmsRule(request, {
         params: Promise.resolve({ id: "rule-001" }),
@@ -2085,28 +2081,30 @@ describe("Communications - SMS Automation Rules", () => {
       expect(mockRunCommand).toHaveBeenCalledWith(
         "softDelete",
         { id: "rule-001" },
-        { entityName: "SmsAutomationRule", instanceId: "rule-001" },
+        { entityName: "SmsAutomationRule", instanceId: "rule-001" }
       );
 
       expect(database.sms_automation_rules.update).toHaveBeenCalledWith(
         expect.objectContaining({
-          where: { tenant_id_id: { tenant_id: TEST_TENANT_ID, id: "rule-001" } },
+          where: {
+            tenant_id_id: { tenant_id: TEST_TENANT_ID, id: "rule-001" },
+          },
           data: expect.objectContaining({
             deleted_at: expect.any(Date),
             is_active: false,
           }),
-        }),
+        })
       );
     });
 
     it("should return 404 when rule not found for delete", async () => {
       vi.mocked(database.sms_automation_rules.findFirst).mockResolvedValue(
-        null as never,
+        null as never
       );
 
       const request = new NextRequest(
         "http://localhost/api/communications/sms/automation-rules/nonexistent",
-        { method: "DELETE" },
+        { method: "DELETE" }
       );
       const response = await deleteSmsRule(request, {
         params: Promise.resolve({ id: "nonexistent" }),
@@ -2119,7 +2117,7 @@ describe("Communications - SMS Automation Rules", () => {
 
     it("should return 403 on policy denial for delete", async () => {
       vi.mocked(database.sms_automation_rules.findFirst).mockResolvedValue(
-        createMockSmsRule() as never,
+        createMockSmsRule() as never
       );
 
       mockRunCommand.mockResolvedValue({
@@ -2129,7 +2127,7 @@ describe("Communications - SMS Automation Rules", () => {
 
       const request = new NextRequest(
         "http://localhost/api/communications/sms/automation-rules/rule-001",
-        { method: "DELETE" },
+        { method: "DELETE" }
       );
       const response = await deleteSmsRule(request, {
         params: Promise.resolve({ id: "rule-001" }),
@@ -2140,7 +2138,7 @@ describe("Communications - SMS Automation Rules", () => {
 
     it("should return 422 on guard failure for delete", async () => {
       vi.mocked(database.sms_automation_rules.findFirst).mockResolvedValue(
-        createMockSmsRule() as never,
+        createMockSmsRule() as never
       );
 
       mockRunCommand.mockResolvedValue({
@@ -2150,7 +2148,7 @@ describe("Communications - SMS Automation Rules", () => {
 
       const request = new NextRequest(
         "http://localhost/api/communications/sms/automation-rules/rule-001",
-        { method: "DELETE" },
+        { method: "DELETE" }
       );
       const response = await deleteSmsRule(request, {
         params: Promise.resolve({ id: "rule-001" }),
@@ -2169,7 +2167,7 @@ describe("Communications - SMS Automation Rules", () => {
 
       const request = new NextRequest(
         "http://localhost/api/communications/sms/automation-rules/rule-001",
-        { method: "DELETE" },
+        { method: "DELETE" }
       );
       const response = await deleteSmsRule(request, {
         params: Promise.resolve({ id: "rule-001" }),
@@ -2180,12 +2178,12 @@ describe("Communications - SMS Automation Rules", () => {
 
     it("should return 500 on unexpected error", async () => {
       vi.mocked(database.sms_automation_rules.findFirst).mockRejectedValue(
-        new Error("Database crash"),
+        new Error("Database crash")
       );
 
       const request = new NextRequest(
         "http://localhost/api/communications/sms/automation-rules/rule-001",
-        { method: "DELETE" },
+        { method: "DELETE" }
       );
       const response = await deleteSmsRule(request, {
         params: Promise.resolve({ id: "rule-001" }),

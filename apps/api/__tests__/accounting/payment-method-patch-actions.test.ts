@@ -111,10 +111,9 @@ describe("PATCH /api/accounting/payment-methods/[id] — action dispatcher", () 
   it("returns 404 when payment method does not exist", async () => {
     mocks.pmFindFirstMock.mockResolvedValue(null);
 
-    const response = await PATCH(
-      makeRequest({ action: "mark-as-default" }),
-      { params }
-    );
+    const response = await PATCH(makeRequest({ action: "mark-as-default" }), {
+      params,
+    });
 
     expect(response.status).toBe(404);
     expect(mocks.pmUpdateMock).not.toHaveBeenCalled();
@@ -159,10 +158,9 @@ describe("PATCH /api/accounting/payment-methods/[id] — action dispatcher", () 
         isDefault: true,
       });
 
-      const response = await PATCH(
-        makeRequest({ action: "mark-as-default" }),
-        { params }
-      );
+      const response = await PATCH(makeRequest({ action: "mark-as-default" }), {
+        params,
+      });
 
       expect(response.status).toBe(200);
 
@@ -209,10 +207,9 @@ describe("PATCH /api/accounting/payment-methods/[id] — action dispatcher", () 
         isDefault: true,
       });
 
-      const response = await PATCH(
-        makeRequest({ action: "mark-as-default" }),
-        { params }
-      );
+      const response = await PATCH(makeRequest({ action: "mark-as-default" }), {
+        params,
+      });
       const body = await response.json();
 
       expect(body.displayInfo).toBe("VISA •••• 4242");
@@ -253,10 +250,9 @@ describe("PATCH /api/accounting/payment-methods/[id] — action dispatcher", () 
         status: "FLAGGED",
       });
 
-      const response = await PATCH(
-        makeRequest({ action: "flag-for-fraud" }),
-        { params }
-      );
+      const response = await PATCH(makeRequest({ action: "flag-for-fraud" }), {
+        params,
+      });
 
       expect(response.status).toBe(200);
       const dataArg = mocks.pmUpdateMock.mock.calls[0][0].data;

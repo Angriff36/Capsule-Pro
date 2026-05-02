@@ -36,7 +36,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
-import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   Table,
   TableBody,
@@ -291,7 +290,9 @@ function EventReportsTab() {
   }, [selectedEventId, loadReports]);
 
   const totalReports = reports.length;
-  const completedReports = reports.filter((r) => r.status === "complete").length;
+  const completedReports = reports.filter(
+    (r) => r.status === "complete"
+  ).length;
   const draftReports = reports.filter((r) => r.status === "draft").length;
 
   if (loading) {
@@ -402,12 +403,12 @@ function EventReportsTab() {
               <Label htmlFor="event-id">Event ID</Label>
               <Input
                 id="event-id"
-                placeholder="Enter event ID..."
-                value={selectedEventId}
                 onChange={(e) => setSelectedEventId(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") handleCreate();
                 }}
+                placeholder="Enter event ID..."
+                value={selectedEventId}
               />
               <p className="text-xs text-muted-foreground">
                 Enter the ID of the event to generate a report for.
@@ -415,10 +416,7 @@ function EventReportsTab() {
             </div>
           </div>
           <DialogFooter>
-            <Button
-              onClick={() => setDialogOpen(false)}
-              variant="outline"
-            >
+            <Button onClick={() => setDialogOpen(false)} variant="outline">
               Cancel
             </Button>
             <Button disabled={creating} onClick={handleCreate}>
@@ -496,14 +494,11 @@ function DocumentParserTab() {
     }
   }, [file]);
 
-  const handleApplySection = useCallback(
-    (section: string) => {
-      toast.success(`${section} data applied to event form`, {
-        description: "Navigate to the event editor to review the changes.",
-      });
-    },
-    []
-  );
+  const handleApplySection = useCallback((section: string) => {
+    toast.success(`${section} data applied to event form`, {
+      description: "Navigate to the event editor to review the changes.",
+    });
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -798,7 +793,7 @@ function DocumentParserTab() {
       )}
 
       {/* Empty Initial State */}
-      {!parsed && !error && !parsing && (
+      {!(parsed || error || parsing) && (
         <Card>
           <CardContent className="flex flex-col items-center gap-2 py-16">
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
@@ -875,7 +870,7 @@ function WasteReportsTab() {
             </SelectContent>
           </Select>
         </div>
-        <Button onClick={loadReport} disabled={loading}>
+        <Button disabled={loading} onClick={loadReport}>
           {loading ? (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
           ) : (
@@ -906,24 +901,24 @@ function WasteReportsTab() {
       {summary && (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <StatCard
+            icon={TrendingDown}
             label="Total Waste Cost"
             value={formatCurrency(summary.totalCost)}
-            icon={TrendingDown}
           />
           <StatCard
+            icon={BarChart3}
             label="Total Quantity"
             value={summary.totalQuantity.toString()}
-            icon={BarChart3}
           />
           <StatCard
+            icon={FileText}
             label="Entry Count"
             value={summary.entryCount.toString()}
-            icon={FileText}
           />
           <StatCard
+            icon={Clock}
             label="Avg Cost / Entry"
             value={formatCurrency(summary.avgCostPerEntry)}
-            icon={Clock}
           />
         </div>
       )}
@@ -968,8 +963,8 @@ function WasteReportsTab() {
             <div className="flex flex-wrap gap-4">
               {trends.map((t) => (
                 <div
-                  key={t.period}
                   className="flex flex-col items-center gap-1 rounded-md border px-4 py-2"
+                  key={t.period}
                 >
                   <span className="text-xs text-muted-foreground">
                     {t.period}
@@ -1030,7 +1025,7 @@ function WasteReportsTab() {
       )}
 
       {/* Empty State */}
-      {!loading && !error && entries.length === 0 && !wasteData && (
+      {!(loading || error) && entries.length === 0 && !wasteData && (
         <Card>
           <CardContent className="flex flex-col items-center gap-2 py-16">
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
@@ -1054,31 +1049,31 @@ function WasteReportsTab() {
 
 export function AutofillReportsClient() {
   return (
-    <Tabs defaultValue="event-reports" className="w-full">
+    <Tabs className="w-full" defaultValue="event-reports">
       <TabsList>
-        <TabsTrigger value="event-reports" className="gap-1.5">
+        <TabsTrigger className="gap-1.5" value="event-reports">
           <FileText className="h-3.5 w-3.5" />
           Event Reports
         </TabsTrigger>
-        <TabsTrigger value="document-parser" className="gap-1.5">
+        <TabsTrigger className="gap-1.5" value="document-parser">
           <Sparkles className="h-3.5 w-3.5" />
           Document Parser
         </TabsTrigger>
-        <TabsTrigger value="waste-reports" className="gap-1.5">
+        <TabsTrigger className="gap-1.5" value="waste-reports">
           <BarChart3 className="h-3.5 w-3.5" />
           Waste Reports
         </TabsTrigger>
       </TabsList>
 
-      <TabsContent value="event-reports" className="mt-6">
+      <TabsContent className="mt-6" value="event-reports">
         <EventReportsTab />
       </TabsContent>
 
-      <TabsContent value="document-parser" className="mt-6">
+      <TabsContent className="mt-6" value="document-parser">
         <DocumentParserTab />
       </TabsContent>
 
-      <TabsContent value="waste-reports" className="mt-6">
+      <TabsContent className="mt-6" value="waste-reports">
         <WasteReportsTab />
       </TabsContent>
     </Tabs>

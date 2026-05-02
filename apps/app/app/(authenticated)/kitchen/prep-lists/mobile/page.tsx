@@ -54,11 +54,11 @@ interface PrepList {
 }
 
 const stationColors: Record<string, string> = {
-  "Hot Line": "bg-orange-100 text-orange-800 border-orange-200",
-  "Cold Station": "bg-cyan-100 text-cyan-800 border-cyan-200",
-  Pastry: "bg-amber-100 text-amber-800 border-amber-200",
-  Prep: "bg-slate-100 text-slate-800 border-slate-200",
-  "Garde Manger": "bg-emerald-100 text-emerald-800 border-emerald-200",
+  "Hot Line": "border-orange-200 bg-orange-50 text-orange-900",
+  "Cold Station": "border-cyan-200 bg-cyan-50 text-cyan-900",
+  Pastry: "border-amber-200 bg-amber-50 text-amber-900",
+  Prep: "border-hairline bg-soft-stone text-ink",
+  "Garde Manger": "border-emerald-200 bg-emerald-50 text-emerald-900",
 };
 
 function getPrepDateLabel(date: string): { label: string; isUrgent: boolean } {
@@ -140,21 +140,21 @@ export default function PrepListsMobilePage() {
     .filter((item) => item.status === "completed").length;
 
   return (
-    <>
+    <div className="editorial-surface-reset flex min-h-0 flex-1 flex-col bg-canvas text-foreground">
       <Header page="Prep Lists" pages={["Kitchen Ops"]} />
 
       {!isOnline && (
-        <div className="flex items-center justify-center gap-2 bg-amber-500 px-4 py-2">
-          <WifiOff className="h-4 w-4 text-white" />
-          <span className="font-medium text-white">
+        <div className="flex items-center justify-center gap-2 border-b border-hairline bg-soft-stone px-4 py-2">
+          <WifiOff className="h-4 w-4 shrink-0 text-muted-foreground" />
+          <span className="font-medium text-ink">
             You're offline. Some features may be unavailable.
           </span>
         </div>
       )}
 
-      <div className="flex flex-1 flex-col p-4">
+      <div className="flex min-h-0 flex-1 flex-col p-4">
         {/* Summary card */}
-        <Card className="mb-4 bg-slate-50">
+        <Card className="mb-4 border-hairline bg-soft-stone">
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="text-lg">
@@ -183,12 +183,12 @@ export default function PrepListsMobilePage() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="h-5 w-5 text-emerald-600" />
-                <span className="text-sm text-slate-600">
+                <span className="text-sm text-muted-foreground">
                   {completedItems} / {totalItems} items complete
                 </span>
               </div>
               {totalItems > 0 && (
-                <div className="text-sm font-medium text-slate-900">
+                <div className="font-medium text-ink text-sm">
                   {Math.round((completedItems / totalItems) * 100)}%
                 </div>
               )}
@@ -200,7 +200,7 @@ export default function PrepListsMobilePage() {
         {prepLists.map((list) => {
           const eventDate = parseISO(list.event.eventDate);
           return (
-            <Card className="mb-3" key={list.id}>
+            <Card className="mb-3 border-hairline" key={list.id}>
               <CardHeader className="pb-2">
                 <CardTitle className="text-base">{list.event.name}</CardTitle>
                 <CardDescription className="flex items-center gap-3 text-sm">
@@ -218,13 +218,13 @@ export default function PrepListsMobilePage() {
           );
         })}
 
-        <Separator className="my-4" />
+        <Separator className="my-4 bg-hairline" />
 
         {/* Items by station */}
         {Object.keys(itemsByStation).length === 0 ? (
           <div className="flex flex-1 flex-col items-center justify-center py-12">
             <CheckCircle2 className="mb-4 h-16 w-16 text-emerald-500" />
-            <p className="text-center text-slate-600">
+            <p className="text-center text-muted-foreground">
               No prep items right now!
             </p>
           </div>
@@ -232,12 +232,9 @@ export default function PrepListsMobilePage() {
           Object.entries(itemsByStation).map(([station, items]) => (
             <div className="mb-6" key={station}>
               <div className="mb-3 flex items-center gap-2">
-                <h3 className="text-lg font-bold text-slate-900">{station}</h3>
+                <h3 className="text-lg font-bold text-ink">{station}</h3>
                 <Badge
-                  className={`text-xs ${
-                    stationColors[station] ||
-                    "bg-slate-100 text-slate-800 border-slate-200"
-                  }`}
+                  className={`border text-xs ${stationColors[station] || "border-hairline bg-soft-stone text-ink"}`}
                 >
                   {items.length} item{items.length !== 1 ? "s" : ""}
                 </Badge>
@@ -252,22 +249,24 @@ export default function PrepListsMobilePage() {
                     className={`mb-2 border-2 ${
                       prepDateLabel.isUrgent && !isCompleted
                         ? "border-rose-300"
-                        : "border-slate-200"
-                    } ${isCompleted ? "bg-slate-50" : "bg-white"}`}
+                        : "border-hairline"
+                    } ${isCompleted ? "bg-soft-stone/50" : "bg-card"}`}
                     key={item.id}
                   >
                     <CardContent className="p-4">
                       <div className="mb-2 flex items-start justify-between">
                         <div className="flex-1">
                           <h4
-                            className={`font-semibold text-slate-900 ${
-                              isCompleted ? "line-through text-slate-500" : ""
+                            className={`font-semibold text-ink ${
+                              isCompleted
+                                ? "text-muted-foreground line-through"
+                                : ""
                             }`}
                           >
                             {item.itemName}
                           </h4>
                           {item.recipe && (
-                            <p className="text-slate-600 text-sm">
+                            <p className="text-muted-foreground text-sm">
                               Recipe: {item.recipe.name}
                             </p>
                           )}
@@ -279,7 +278,7 @@ export default function PrepListsMobilePage() {
 
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                          <span className="rounded-lg bg-slate-100 px-3 py-1 text-sm font-bold text-slate-900">
+                          <span className="rounded-lg bg-soft-stone px-3 py-1 font-bold text-ink text-sm">
                             {item.quantity} {item.unit}
                           </span>
                           <Badge
@@ -296,7 +295,7 @@ export default function PrepListsMobilePage() {
                       </div>
 
                       {item.notes && (
-                        <p className="mt-2 text-slate-600 text-sm">
+                        <p className="mt-2 text-muted-foreground text-sm">
                           Note: {item.notes}
                         </p>
                       )}
@@ -308,6 +307,6 @@ export default function PrepListsMobilePage() {
           ))
         )}
       </div>
-    </>
+    </div>
   );
 }

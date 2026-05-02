@@ -58,7 +58,10 @@ const TEST_CONTRACT_ID = "d0000000-0000-4000-a000-000000000001";
 // Helpers
 // ---------------------------------------------------------------------------
 
-function createMockRequest(url: string, options: RequestInit = {}): NextRequest {
+function createMockRequest(
+  url: string,
+  options: RequestInit = {}
+): NextRequest {
   if (options.body && !options.headers) {
     options.headers = { "Content-Type": "application/json" };
   }
@@ -136,10 +139,13 @@ describe("EventContract Command Routes", () => {
     it("create returns 401 when unauthenticated", async () => {
       setupUnauthenticated();
       const { POST } = await import("@/app/api/eventcontract/create/route");
-      const req = createMockRequest("http://localhost:3000/api/eventcontract/create", {
-        method: "POST",
-        body: JSON.stringify({ eventId: TEST_EVENT_ID }),
-      });
+      const req = createMockRequest(
+        "http://localhost:3000/api/eventcontract/create",
+        {
+          method: "POST",
+          body: JSON.stringify({ eventId: TEST_EVENT_ID }),
+        }
+      );
       const res = await POST(req);
       expect(res.status).toBe(401);
       const body = await res.json();
@@ -150,10 +156,13 @@ describe("EventContract Command Routes", () => {
     it("update returns 401 when unauthenticated", async () => {
       setupUnauthenticated();
       const { POST } = await import("@/app/api/eventcontract/update/route");
-      const req = createMockRequest("http://localhost:3000/api/eventcontract/update", {
-        method: "POST",
-        body: JSON.stringify({ id: TEST_CONTRACT_ID }),
-      });
+      const req = createMockRequest(
+        "http://localhost:3000/api/eventcontract/update",
+        {
+          method: "POST",
+          body: JSON.stringify({ id: TEST_CONTRACT_ID }),
+        }
+      );
       const res = await POST(req);
       expect(res.status).toBe(401);
       const body = await res.json();
@@ -164,10 +173,13 @@ describe("EventContract Command Routes", () => {
     it("sign returns 401 when unauthenticated", async () => {
       setupUnauthenticated();
       const { POST } = await import("@/app/api/eventcontract/sign/route");
-      const req = createMockRequest("http://localhost:3000/api/eventcontract/sign", {
-        method: "POST",
-        body: JSON.stringify({ id: TEST_CONTRACT_ID }),
-      });
+      const req = createMockRequest(
+        "http://localhost:3000/api/eventcontract/sign",
+        {
+          method: "POST",
+          body: JSON.stringify({ id: TEST_CONTRACT_ID }),
+        }
+      );
       const res = await POST(req);
       expect(res.status).toBe(401);
     });
@@ -181,10 +193,13 @@ describe("EventContract Command Routes", () => {
     it("create returns 400 when tenant not found", async () => {
       setupNoTenant();
       const { POST } = await import("@/app/api/eventcontract/create/route");
-      const req = createMockRequest("http://localhost:3000/api/eventcontract/create", {
-        method: "POST",
-        body: JSON.stringify({ eventId: TEST_EVENT_ID }),
-      });
+      const req = createMockRequest(
+        "http://localhost:3000/api/eventcontract/create",
+        {
+          method: "POST",
+          body: JSON.stringify({ eventId: TEST_EVENT_ID }),
+        }
+      );
       const res = await POST(req);
       expect(res.status).toBe(400);
       const body = await res.json();
@@ -195,10 +210,13 @@ describe("EventContract Command Routes", () => {
     it("cancel returns 400 when tenant not found", async () => {
       setupNoTenant();
       const { POST } = await import("@/app/api/eventcontract/cancel/route");
-      const req = createMockRequest("http://localhost:3000/api/eventcontract/cancel", {
-        method: "POST",
-        body: JSON.stringify({ id: TEST_CONTRACT_ID }),
-      });
+      const req = createMockRequest(
+        "http://localhost:3000/api/eventcontract/cancel",
+        {
+          method: "POST",
+          body: JSON.stringify({ id: TEST_CONTRACT_ID }),
+        }
+      );
       const res = await POST(req);
       expect(res.status).toBe(400);
       const body = await res.json();
@@ -217,23 +235,28 @@ describe("EventContract Command Routes", () => {
       mockRunCommand.mockResolvedValueOnce({
         success: true,
         result: contract,
-        emittedEvents: [{ type: "ContractCreated", payload: { id: TEST_CONTRACT_ID } }],
+        emittedEvents: [
+          { type: "ContractCreated", payload: { id: TEST_CONTRACT_ID } },
+        ],
       });
 
       const { POST } = await import("@/app/api/eventcontract/create/route");
-      const req = createMockRequest("http://localhost:3000/api/eventcontract/create", {
-        method: "POST",
-        body: JSON.stringify({
-          eventId: TEST_EVENT_ID,
-          clientId: TEST_CLIENT_ID,
-          contractNumber: "CTR-2026-001",
-          title: "Annual Gala Agreement",
-          documentUrl: "https://example.com/contract.pdf",
-          documentType: "pdf",
-          notes: "Standard terms",
-          expiresAt: Date.now(),
-        }),
-      });
+      const req = createMockRequest(
+        "http://localhost:3000/api/eventcontract/create",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            eventId: TEST_EVENT_ID,
+            clientId: TEST_CLIENT_ID,
+            contractNumber: "CTR-2026-001",
+            title: "Annual Gala Agreement",
+            documentUrl: "https://example.com/contract.pdf",
+            documentType: "pdf",
+            notes: "Standard terms",
+            expiresAt: Date.now(),
+          }),
+        }
+      );
 
       const res = await POST(req);
       const body = await res.json();
@@ -246,16 +269,23 @@ describe("EventContract Command Routes", () => {
       expect(body.events[0].type).toBe("ContractCreated");
 
       // Verify runtime was called with correct entity name and user context
-      expect(mockRunCommand).toHaveBeenCalledWith("create", expect.any(Object), {
-        entityName: "EventContract",
-      });
+      expect(mockRunCommand).toHaveBeenCalledWith(
+        "create",
+        expect.any(Object),
+        {
+          entityName: "EventContract",
+        }
+      );
     });
   });
 
   describe("POST /api/eventcontract/update — success", () => {
     it("updates a contract and returns 200", async () => {
       setupAuth();
-      const updated = createMockContract({ title: "Updated Gala Agreement", status: "sent" });
+      const updated = createMockContract({
+        title: "Updated Gala Agreement",
+        status: "sent",
+      });
       mockRunCommand.mockResolvedValueOnce({
         success: true,
         result: updated,
@@ -263,13 +293,16 @@ describe("EventContract Command Routes", () => {
       });
 
       const { POST } = await import("@/app/api/eventcontract/update/route");
-      const req = createMockRequest("http://localhost:3000/api/eventcontract/update", {
-        method: "POST",
-        body: JSON.stringify({
-          id: TEST_CONTRACT_ID,
-          title: "Updated Gala Agreement",
-        }),
-      });
+      const req = createMockRequest(
+        "http://localhost:3000/api/eventcontract/update",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            id: TEST_CONTRACT_ID,
+            title: "Updated Gala Agreement",
+          }),
+        }
+      );
 
       const res = await POST(req);
       const body = await res.json();
@@ -277,9 +310,13 @@ describe("EventContract Command Routes", () => {
       expect(res.status).toBe(200);
       expect(body.success).toBe(true);
       expect(body.result.title).toBe("Updated Gala Agreement");
-      expect(mockRunCommand).toHaveBeenCalledWith("update", expect.any(Object), {
-        entityName: "EventContract",
-      });
+      expect(mockRunCommand).toHaveBeenCalledWith(
+        "update",
+        expect.any(Object),
+        {
+          entityName: "EventContract",
+        }
+      );
     });
   });
 
@@ -290,14 +327,19 @@ describe("EventContract Command Routes", () => {
       mockRunCommand.mockResolvedValueOnce({
         success: true,
         result: sent,
-        emittedEvents: [{ type: "ContractSent", payload: { id: TEST_CONTRACT_ID } }],
+        emittedEvents: [
+          { type: "ContractSent", payload: { id: TEST_CONTRACT_ID } },
+        ],
       });
 
       const { POST } = await import("@/app/api/eventcontract/send/route");
-      const req = createMockRequest("http://localhost:3000/api/eventcontract/send", {
-        method: "POST",
-        body: JSON.stringify({ id: TEST_CONTRACT_ID }),
-      });
+      const req = createMockRequest(
+        "http://localhost:3000/api/eventcontract/send",
+        {
+          method: "POST",
+          body: JSON.stringify({ id: TEST_CONTRACT_ID }),
+        }
+      );
 
       const res = await POST(req);
       const body = await res.json();
@@ -318,19 +360,24 @@ describe("EventContract Command Routes", () => {
       mockRunCommand.mockResolvedValueOnce({
         success: true,
         result: signed,
-        emittedEvents: [{ type: "ContractSigned", payload: { id: TEST_CONTRACT_ID } }],
+        emittedEvents: [
+          { type: "ContractSigned", payload: { id: TEST_CONTRACT_ID } },
+        ],
       });
 
       const { POST } = await import("@/app/api/eventcontract/sign/route");
-      const req = createMockRequest("http://localhost:3000/api/eventcontract/sign", {
-        method: "POST",
-        body: JSON.stringify({
-          id: TEST_CONTRACT_ID,
-          signerName: "Jane Doe",
-          signerEmail: "jane@example.com",
-          signatureData: "base64signature",
-        }),
-      });
+      const req = createMockRequest(
+        "http://localhost:3000/api/eventcontract/sign",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            id: TEST_CONTRACT_ID,
+            signerName: "Jane Doe",
+            signerEmail: "jane@example.com",
+            signatureData: "base64signature",
+          }),
+        }
+      );
 
       const res = await POST(req);
       const body = await res.json();
@@ -355,10 +402,16 @@ describe("EventContract Command Routes", () => {
       });
 
       const { POST } = await import("@/app/api/eventcontract/cancel/route");
-      const req = createMockRequest("http://localhost:3000/api/eventcontract/cancel", {
-        method: "POST",
-        body: JSON.stringify({ id: TEST_CONTRACT_ID, reason: "Client request" }),
-      });
+      const req = createMockRequest(
+        "http://localhost:3000/api/eventcontract/cancel",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            id: TEST_CONTRACT_ID,
+            reason: "Client request",
+          }),
+        }
+      );
 
       const res = await POST(req);
       const body = await res.json();
@@ -366,9 +419,13 @@ describe("EventContract Command Routes", () => {
       expect(res.status).toBe(200);
       expect(body.success).toBe(true);
       expect(body.result.status).toBe("cancelled");
-      expect(mockRunCommand).toHaveBeenCalledWith("cancel", expect.any(Object), {
-        entityName: "EventContract",
-      });
+      expect(mockRunCommand).toHaveBeenCalledWith(
+        "cancel",
+        expect.any(Object),
+        {
+          entityName: "EventContract",
+        }
+      );
     });
   });
 
@@ -383,10 +440,13 @@ describe("EventContract Command Routes", () => {
       });
 
       const { POST } = await import("@/app/api/eventcontract/expire/route");
-      const req = createMockRequest("http://localhost:3000/api/eventcontract/expire", {
-        method: "POST",
-        body: JSON.stringify({ id: TEST_CONTRACT_ID }),
-      });
+      const req = createMockRequest(
+        "http://localhost:3000/api/eventcontract/expire",
+        {
+          method: "POST",
+          body: JSON.stringify({ id: TEST_CONTRACT_ID }),
+        }
+      );
 
       const res = await POST(req);
       const body = await res.json();
@@ -394,9 +454,13 @@ describe("EventContract Command Routes", () => {
       expect(res.status).toBe(200);
       expect(body.success).toBe(true);
       expect(body.result.status).toBe("expired");
-      expect(mockRunCommand).toHaveBeenCalledWith("expire", expect.any(Object), {
-        entityName: "EventContract",
-      });
+      expect(mockRunCommand).toHaveBeenCalledWith(
+        "expire",
+        expect.any(Object),
+        {
+          entityName: "EventContract",
+        }
+      );
     });
   });
 
@@ -410,11 +474,16 @@ describe("EventContract Command Routes", () => {
         emittedEvents: [],
       });
 
-      const { POST } = await import("@/app/api/eventcontract/mark-viewed/route");
-      const req = createMockRequest("http://localhost:3000/api/eventcontract/mark-viewed", {
-        method: "POST",
-        body: JSON.stringify({ id: TEST_CONTRACT_ID }),
-      });
+      const { POST } = await import(
+        "@/app/api/eventcontract/mark-viewed/route"
+      );
+      const req = createMockRequest(
+        "http://localhost:3000/api/eventcontract/mark-viewed",
+        {
+          method: "POST",
+          body: JSON.stringify({ id: TEST_CONTRACT_ID }),
+        }
+      );
 
       const res = await POST(req);
       const body = await res.json();
@@ -422,9 +491,13 @@ describe("EventContract Command Routes", () => {
       expect(res.status).toBe(200);
       expect(body.success).toBe(true);
       expect(body.result.status).toBe("viewed");
-      expect(mockRunCommand).toHaveBeenCalledWith("markViewed", expect.any(Object), {
-        entityName: "EventContract",
-      });
+      expect(mockRunCommand).toHaveBeenCalledWith(
+        "markViewed",
+        expect.any(Object),
+        {
+          entityName: "EventContract",
+        }
+      );
     });
   });
 
@@ -440,11 +513,16 @@ describe("EventContract Command Routes", () => {
         emittedEvents: [],
       });
 
-      const { POST } = await import("@/app/api/eventcontract/soft-delete/route");
-      const req = createMockRequest("http://localhost:3000/api/eventcontract/soft-delete", {
-        method: "POST",
-        body: JSON.stringify({ id: TEST_CONTRACT_ID }),
-      });
+      const { POST } = await import(
+        "@/app/api/eventcontract/soft-delete/route"
+      );
+      const req = createMockRequest(
+        "http://localhost:3000/api/eventcontract/soft-delete",
+        {
+          method: "POST",
+          body: JSON.stringify({ id: TEST_CONTRACT_ID }),
+        }
+      );
 
       const res = await POST(req);
       const body = await res.json();
@@ -452,9 +530,13 @@ describe("EventContract Command Routes", () => {
       expect(res.status).toBe(200);
       expect(body.success).toBe(true);
       expect(body.result.deletedAt).not.toBeNull();
-      expect(mockRunCommand).toHaveBeenCalledWith("softDelete", expect.any(Object), {
-        entityName: "EventContract",
-      });
+      expect(mockRunCommand).toHaveBeenCalledWith(
+        "softDelete",
+        expect.any(Object),
+        {
+          entityName: "EventContract",
+        }
+      );
     });
   });
 
@@ -474,10 +556,16 @@ describe("EventContract Command Routes", () => {
       });
 
       const { POST } = await import("@/app/api/eventcontract/create/route");
-      const req = createMockRequest("http://localhost:3000/api/eventcontract/create", {
-        method: "POST",
-        body: JSON.stringify({ eventId: TEST_EVENT_ID, clientId: TEST_CLIENT_ID }),
-      });
+      const req = createMockRequest(
+        "http://localhost:3000/api/eventcontract/create",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            eventId: TEST_EVENT_ID,
+            clientId: TEST_CLIENT_ID,
+          }),
+        }
+      );
 
       const res = await POST(req);
       const body = await res.json();
@@ -499,10 +587,13 @@ describe("EventContract Command Routes", () => {
       });
 
       const { POST } = await import("@/app/api/eventcontract/sign/route");
-      const req = createMockRequest("http://localhost:3000/api/eventcontract/sign", {
-        method: "POST",
-        body: JSON.stringify({ id: TEST_CONTRACT_ID }),
-      });
+      const req = createMockRequest(
+        "http://localhost:3000/api/eventcontract/sign",
+        {
+          method: "POST",
+          body: JSON.stringify({ id: TEST_CONTRACT_ID }),
+        }
+      );
 
       const res = await POST(req);
       const body = await res.json();
@@ -529,10 +620,13 @@ describe("EventContract Command Routes", () => {
       });
 
       const { POST } = await import("@/app/api/eventcontract/send/route");
-      const req = createMockRequest("http://localhost:3000/api/eventcontract/send", {
-        method: "POST",
-        body: JSON.stringify({ id: TEST_CONTRACT_ID }),
-      });
+      const req = createMockRequest(
+        "http://localhost:3000/api/eventcontract/send",
+        {
+          method: "POST",
+          body: JSON.stringify({ id: TEST_CONTRACT_ID }),
+        }
+      );
 
       const res = await POST(req);
       const body = await res.json();
@@ -554,10 +648,13 @@ describe("EventContract Command Routes", () => {
       });
 
       const { POST } = await import("@/app/api/eventcontract/cancel/route");
-      const req = createMockRequest("http://localhost:3000/api/eventcontract/cancel", {
-        method: "POST",
-        body: JSON.stringify({ id: TEST_CONTRACT_ID }),
-      });
+      const req = createMockRequest(
+        "http://localhost:3000/api/eventcontract/cancel",
+        {
+          method: "POST",
+          body: JSON.stringify({ id: TEST_CONTRACT_ID }),
+        }
+      );
 
       const res = await POST(req);
       const body = await res.json();
@@ -581,10 +678,13 @@ describe("EventContract Command Routes", () => {
       });
 
       const { POST } = await import("@/app/api/eventcontract/update/route");
-      const req = createMockRequest("http://localhost:3000/api/eventcontract/update", {
-        method: "POST",
-        body: JSON.stringify({ id: TEST_CONTRACT_ID, title: "New Title" }),
-      });
+      const req = createMockRequest(
+        "http://localhost:3000/api/eventcontract/update",
+        {
+          method: "POST",
+          body: JSON.stringify({ id: TEST_CONTRACT_ID, title: "New Title" }),
+        }
+      );
 
       const res = await POST(req);
       const body = await res.json();
@@ -602,10 +702,13 @@ describe("EventContract Command Routes", () => {
       });
 
       const { POST } = await import("@/app/api/eventcontract/expire/route");
-      const req = createMockRequest("http://localhost:3000/api/eventcontract/expire", {
-        method: "POST",
-        body: JSON.stringify({ id: TEST_CONTRACT_ID }),
-      });
+      const req = createMockRequest(
+        "http://localhost:3000/api/eventcontract/expire",
+        {
+          method: "POST",
+          body: JSON.stringify({ id: TEST_CONTRACT_ID }),
+        }
+      );
 
       const res = await POST(req);
       const body = await res.json();
@@ -623,13 +726,18 @@ describe("EventContract Command Routes", () => {
   describe("Internal server error (500)", () => {
     it("returns 500 when runtime throws an exception", async () => {
       setupAuth();
-      mockRunCommand.mockRejectedValueOnce(new Error("Database connection lost"));
+      mockRunCommand.mockRejectedValueOnce(
+        new Error("Database connection lost")
+      );
 
       const { POST } = await import("@/app/api/eventcontract/create/route");
-      const req = createMockRequest("http://localhost:3000/api/eventcontract/create", {
-        method: "POST",
-        body: JSON.stringify({ eventId: TEST_EVENT_ID }),
-      });
+      const req = createMockRequest(
+        "http://localhost:3000/api/eventcontract/create",
+        {
+          method: "POST",
+          body: JSON.stringify({ eventId: TEST_EVENT_ID }),
+        }
+      );
 
       const res = await POST(req);
       const body = await res.json();
@@ -644,10 +752,13 @@ describe("EventContract Command Routes", () => {
 
       const { POST } = await import("@/app/api/eventcontract/create/route");
       // Pass non-JSON body to trigger parse error
-      const req = createMockRequest("http://localhost:3000/api/eventcontract/create", {
-        method: "POST",
-        body: "not-valid-json{{{",
-      });
+      const req = createMockRequest(
+        "http://localhost:3000/api/eventcontract/create",
+        {
+          method: "POST",
+          body: "not-valid-json{{{",
+        }
+      );
 
       const res = await POST(req);
       const body = await res.json();
@@ -673,10 +784,13 @@ describe("EventContract Command Routes", () => {
       });
 
       const { POST } = await import("@/app/api/eventcontract/create/route");
-      const req = createMockRequest("http://localhost:3000/api/eventcontract/create", {
-        method: "POST",
-        body: JSON.stringify({ eventId: TEST_EVENT_ID }),
-      });
+      const req = createMockRequest(
+        "http://localhost:3000/api/eventcontract/create",
+        {
+          method: "POST",
+          body: JSON.stringify({ eventId: TEST_EVENT_ID }),
+        }
+      );
 
       await POST(req);
 
@@ -701,10 +815,13 @@ describe("EventContract Command Routes", () => {
       });
 
       const { POST } = await import("@/app/api/eventcontract/create/route");
-      const req = createMockRequest("http://localhost:3000/api/eventcontract/create", {
-        method: "POST",
-        body: JSON.stringify({ eventId: TEST_EVENT_ID }),
-      });
+      const req = createMockRequest(
+        "http://localhost:3000/api/eventcontract/create",
+        {
+          method: "POST",
+          body: JSON.stringify({ eventId: TEST_EVENT_ID }),
+        }
+      );
 
       const res = await POST(req);
       const body = await res.json();
@@ -722,11 +839,16 @@ describe("EventContract Command Routes", () => {
         error: "Something went wrong",
       });
 
-      const { POST } = await import("@/app/api/eventcontract/mark-viewed/route");
-      const req = createMockRequest("http://localhost:3000/api/eventcontract/mark-viewed", {
-        method: "POST",
-        body: JSON.stringify({ id: TEST_CONTRACT_ID }),
-      });
+      const { POST } = await import(
+        "@/app/api/eventcontract/mark-viewed/route"
+      );
+      const req = createMockRequest(
+        "http://localhost:3000/api/eventcontract/mark-viewed",
+        {
+          method: "POST",
+          body: JSON.stringify({ id: TEST_CONTRACT_ID }),
+        }
+      );
 
       const res = await POST(req);
       const body = await res.json();

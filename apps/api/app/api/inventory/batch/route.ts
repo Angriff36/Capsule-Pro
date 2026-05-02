@@ -158,10 +158,12 @@ export async function POST(request: NextRequest) {
         updatedAt: new Date(),
       };
       if (updates.category !== undefined) data.category = updates.category;
-      if (updates.fsa_status !== undefined) data.fsa_status = updates.fsa_status;
+      if (updates.fsa_status !== undefined)
+        data.fsa_status = updates.fsa_status;
       if (updates.tags !== undefined) data.tags = updates.tags;
       if (updates.unit_cost !== undefined) data.unitCost = updates.unit_cost;
-      if (updates.reorder_level !== undefined) data.reorder_level = updates.reorder_level;
+      if (updates.reorder_level !== undefined)
+        data.reorder_level = updates.reorder_level;
 
       if (Object.keys(data).length === 1) {
         return NextResponse.json(

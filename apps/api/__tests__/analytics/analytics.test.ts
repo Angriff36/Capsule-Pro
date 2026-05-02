@@ -204,7 +204,7 @@ describe("Analytics API", () => {
       vi.mocked(auth).mockResolvedValue({ orgId: null } as never);
 
       const response = await getFinanceAnalytics(
-        makeRequest("/api/analytics/finance"),
+        makeRequest("/api/analytics/finance")
       );
       expect(response.status).toBe(401);
 
@@ -216,7 +216,7 @@ describe("Analytics API", () => {
       setupFinanceMocks();
 
       const response = await getFinanceAnalytics(
-        makeRequest("/api/analytics/finance"),
+        makeRequest("/api/analytics/finance")
       );
       expect(response.status).toBe(200);
 
@@ -232,7 +232,7 @@ describe("Analytics API", () => {
       setupFinanceMocks();
 
       const response = await getFinanceAnalytics(
-        makeRequest("/api/analytics/finance"),
+        makeRequest("/api/analytics/finance")
       );
       const body = await response.json();
 
@@ -249,7 +249,7 @@ describe("Analytics API", () => {
       setupFinanceMocks();
 
       const response = await getFinanceAnalytics(
-        makeRequest("/api/analytics/finance"),
+        makeRequest("/api/analytics/finance")
       );
       const body = await response.json();
 
@@ -262,7 +262,7 @@ describe("Analytics API", () => {
       setupFinanceMocks();
 
       const response = await getFinanceAnalytics(
-        makeRequest("/api/analytics/finance"),
+        makeRequest("/api/analytics/finance")
       );
       const body = await response.json();
 
@@ -278,7 +278,7 @@ describe("Analytics API", () => {
       setupFinanceMocks();
 
       const response = await getFinanceAnalytics(
-        makeRequest("/api/analytics/finance"),
+        makeRequest("/api/analytics/finance")
       );
       const body = await response.json();
 
@@ -297,7 +297,7 @@ describe("Analytics API", () => {
       setupFinanceMocks();
 
       const response = await getFinanceAnalytics(
-        makeRequest("/api/analytics/finance?period=90d"),
+        makeRequest("/api/analytics/finance?period=90d")
       );
       const body = await response.json();
       expect(body.summary.period).toBe("90d");
@@ -308,7 +308,7 @@ describe("Analytics API", () => {
 
       const locId = "loc-001";
       const response = await getFinanceAnalytics(
-        makeRequest(`/api/analytics/finance?locationId=${locId}`),
+        makeRequest(`/api/analytics/finance?locationId=${locId}`)
       );
       const body = await response.json();
       expect(body.summary.locationId).toBe(locId);
@@ -316,11 +316,11 @@ describe("Analytics API", () => {
 
     it("should return 500 on database error", async () => {
       vi.mocked(database.$queryRaw).mockRejectedValue(
-        new Error("DB connection lost"),
+        new Error("DB connection lost")
       );
 
       const response = await getFinanceAnalytics(
-        makeRequest("/api/analytics/finance"),
+        makeRequest("/api/analytics/finance")
       );
       expect(response.status).toBe(500);
 
@@ -337,7 +337,7 @@ describe("Analytics API", () => {
       vi.mocked(database.budgetAlert.findMany).mockResolvedValue([]);
 
       const response = await getFinanceAnalytics(
-        makeRequest("/api/analytics/finance"),
+        makeRequest("/api/analytics/finance")
       );
       expect(response.status).toBe(200);
 
@@ -366,13 +366,13 @@ describe("Analytics API", () => {
       ]);
 
       const response = await getFinanceAnalytics(
-        makeRequest("/api/analytics/finance"),
+        makeRequest("/api/analytics/finance")
       );
       const body = await response.json();
 
       expect(body.financeAlerts).toHaveLength(1);
       expect(body.financeAlerts[0].message).toContain(
-        "Budget overrun detected",
+        "Budget overrun detected"
       );
       expect(body.financeAlerts[0].severity).toBe("High");
     });
@@ -404,7 +404,7 @@ describe("Analytics API", () => {
       vi.mocked(auth).mockResolvedValue({ orgId: null } as never);
 
       const response = await getKitchenAnalytics(
-        makeRequest("/api/analytics/kitchen"),
+        makeRequest("/api/analytics/kitchen")
       );
       expect(response.status).toBe(401);
     });
@@ -413,7 +413,7 @@ describe("Analytics API", () => {
       setupKitchenMocks();
 
       const response = await getKitchenAnalytics(
-        makeRequest("/api/analytics/kitchen"),
+        makeRequest("/api/analytics/kitchen")
       );
       expect(response.status).toBe(200);
 
@@ -428,7 +428,7 @@ describe("Analytics API", () => {
       setupKitchenMocks();
 
       const response = await getKitchenAnalytics(
-        makeRequest("/api/analytics/kitchen"),
+        makeRequest("/api/analytics/kitchen")
       );
       const body = await response.json();
 
@@ -448,7 +448,7 @@ describe("Analytics API", () => {
       setupKitchenMocks();
 
       const response = await getKitchenAnalytics(
-        makeRequest("/api/analytics/kitchen"),
+        makeRequest("/api/analytics/kitchen")
       );
       const body = await response.json();
 
@@ -467,7 +467,7 @@ describe("Analytics API", () => {
       setupKitchenMocks();
 
       const response = await getKitchenAnalytics(
-        makeRequest("/api/analytics/kitchen"),
+        makeRequest("/api/analytics/kitchen")
       );
       const body = await response.json();
 
@@ -487,7 +487,7 @@ describe("Analytics API", () => {
       setupKitchenMocks();
 
       const response = await getKitchenAnalytics(
-        makeRequest("/api/analytics/kitchen"),
+        makeRequest("/api/analytics/kitchen")
       );
       const body = await response.json();
 
@@ -502,11 +502,11 @@ describe("Analytics API", () => {
 
     it("should return 500 on database error", async () => {
       vi.mocked(database.$queryRaw).mockRejectedValue(
-        new Error("Connection refused"),
+        new Error("Connection refused")
       );
 
       const response = await getKitchenAnalytics(
-        makeRequest("/api/analytics/kitchen"),
+        makeRequest("/api/analytics/kitchen")
       );
       expect(response.status).toBe(500);
 
@@ -518,7 +518,7 @@ describe("Analytics API", () => {
       setupKitchenMocks();
 
       const response = await getKitchenAnalytics(
-        makeRequest("/api/analytics/kitchen?period=7d"),
+        makeRequest("/api/analytics/kitchen?period=7d")
       );
       const body = await response.json();
       expect(body.summary.period).toBe("7d");
@@ -536,7 +536,7 @@ describe("Analytics API", () => {
       vi.mocked(database.wasteEntry.count).mockResolvedValue(0);
 
       const response = await getKitchenAnalytics(
-        makeRequest("/api/analytics/kitchen"),
+        makeRequest("/api/analytics/kitchen")
       );
       expect(response.status).toBe(200);
 
@@ -563,7 +563,7 @@ describe("Analytics API", () => {
       vi.mocked(auth).mockResolvedValue({ orgId: null } as never);
 
       const response = await getStaffSummary(
-        makeRequest("/api/analytics/staff/summary"),
+        makeRequest("/api/analytics/staff/summary")
       );
       expect(response.status).toBe(401);
 
@@ -575,7 +575,7 @@ describe("Analytics API", () => {
       setupStaffMocks();
 
       const response = await getStaffSummary(
-        makeRequest("/api/analytics/staff/summary"),
+        makeRequest("/api/analytics/staff/summary")
       );
       expect(response.status).toBe(200);
 
@@ -595,7 +595,7 @@ describe("Analytics API", () => {
       setupStaffMocks();
 
       const response = await getStaffSummary(
-        makeRequest("/api/analytics/staff/summary"),
+        makeRequest("/api/analytics/staff/summary")
       );
       const body = await response.json();
 
@@ -611,13 +611,13 @@ describe("Analytics API", () => {
       setupStaffMocks();
 
       const response = await getStaffSummary(
-        makeRequest("/api/analytics/staff/summary"),
+        makeRequest("/api/analytics/staff/summary")
       );
       const body = await response.json();
 
       expect(body.topPerformers).toHaveLength(4);
       const categories = body.topPerformers.map(
-        (p: { category: string }) => p.category,
+        (p: { category: string }) => p.category
       );
       expect(categories).toContain("Task Completion");
       expect(categories).toContain("Quality");
@@ -629,7 +629,7 @@ describe("Analytics API", () => {
       setupStaffMocks();
 
       const response = await getStaffSummary(
-        makeRequest("/api/analytics/staff/summary"),
+        makeRequest("/api/analytics/staff/summary")
       );
       const body = await response.json();
 
@@ -645,7 +645,7 @@ describe("Analytics API", () => {
       setupStaffMocks();
 
       const response = await getStaffSummary(
-        makeRequest("/api/analytics/staff/summary"),
+        makeRequest("/api/analytics/staff/summary")
       );
       const body = await response.json();
 
@@ -657,19 +657,15 @@ describe("Analytics API", () => {
     });
 
     it("should return 500 on database error", async () => {
-      vi.mocked(database.$queryRaw).mockRejectedValue(
-        new Error("Timeout"),
-      );
+      vi.mocked(database.$queryRaw).mockRejectedValue(new Error("Timeout"));
 
       const response = await getStaffSummary(
-        makeRequest("/api/analytics/staff/summary"),
+        makeRequest("/api/analytics/staff/summary")
       );
       expect(response.status).toBe(500);
 
       const body = await response.json();
-      expect(body.message).toBe(
-        "Failed to fetch employee performance summary",
-      );
+      expect(body.message).toBe("Failed to fetch employee performance summary");
     });
 
     it("should handle empty employee data gracefully", async () => {
@@ -678,7 +674,7 @@ describe("Analytics API", () => {
         .mockResolvedValueOnce([]); // no trends
 
       const response = await getStaffSummary(
-        makeRequest("/api/analytics/staff/summary"),
+        makeRequest("/api/analytics/staff/summary")
       );
       expect(response.status).toBe(200);
 
@@ -696,7 +692,7 @@ describe("Analytics API", () => {
       setupStaffMocks();
 
       const response = await getStaffSummary(
-        makeRequest("/api/analytics/staff/summary"),
+        makeRequest("/api/analytics/staff/summary")
       );
       const body = await response.json();
       // Default period is 3m; verify the route processed successfully
@@ -731,7 +727,7 @@ describe("Analytics API", () => {
         .mockResolvedValueOnce(sampleMonthlyTrends);
 
       const response = await getStaffSummary(
-        makeRequest("/api/analytics/staff/summary"),
+        makeRequest("/api/analytics/staff/summary")
       );
       const body = await response.json();
 

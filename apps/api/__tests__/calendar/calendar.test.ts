@@ -8,8 +8,8 @@
 
 import { NextRequest } from "next/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { GET } from "@/app/api/calendar/route";
 import { PATCH } from "@/app/api/calendar/reschedule/route";
+import { GET } from "@/app/api/calendar/route";
 
 // ---------------------------------------------------------------------------
 // Mocks
@@ -177,7 +177,7 @@ describe("GET /api/calendar", () => {
 
   it("should return 500 when tenant resolution fails", async () => {
     vi.mocked(getTenantIdForOrg).mockRejectedValue(
-      new Error("Tenant error") as never,
+      new Error("Tenant error") as never
     );
 
     const req = makeGetRequest({
@@ -469,7 +469,7 @@ describe("GET /api/calendar", () => {
     mockEventFindMany.mockResolvedValue([]);
     mockScheduleShiftFindMany.mockResolvedValue([makeDbShift()]);
     vi.mocked(database.employeeTimeOffRequest.findMany).mockRejectedValue(
-      new Error("TimeOff DB down"),
+      new Error("TimeOff DB down")
     );
 
     const req = makeGetRequest({
@@ -606,7 +606,9 @@ describe("PATCH /api/calendar/reschedule", () => {
 
     expect(res.status).toBe(400);
     const body = await res.json();
-    expect(body.error).toBe("Missing required fields: eventId, eventType, newDate");
+    expect(body.error).toBe(
+      "Missing required fields: eventId, eventType, newDate"
+    );
   });
 
   it("should return 400 when eventType is missing", async () => {
@@ -618,7 +620,9 @@ describe("PATCH /api/calendar/reschedule", () => {
 
     expect(res.status).toBe(400);
     const body = await res.json();
-    expect(body.error).toBe("Missing required fields: eventId, eventType, newDate");
+    expect(body.error).toBe(
+      "Missing required fields: eventId, eventType, newDate"
+    );
   });
 
   it("should return 400 when newDate is missing", async () => {
@@ -630,7 +634,9 @@ describe("PATCH /api/calendar/reschedule", () => {
 
     expect(res.status).toBe(400);
     const body = await res.json();
-    expect(body.error).toBe("Missing required fields: eventId, eventType, newDate");
+    expect(body.error).toBe(
+      "Missing required fields: eventId, eventType, newDate"
+    );
   });
 
   it("should return 400 for invalid eventType", async () => {
@@ -728,8 +734,12 @@ describe("PATCH /api/calendar/reschedule", () => {
       shift_end: new Date("2026-05-10T22:30:00Z"),
     });
     mockScheduleShiftFindFirst.mockResolvedValue(existingShift);
-    mockScheduleShiftUpdate.mockImplementation((args: Record<string, unknown>) =>
-      Promise.resolve({ ...existingShift, ...(args.data as Record<string, unknown>) }),
+    mockScheduleShiftUpdate.mockImplementation(
+      (args: Record<string, unknown>) =>
+        Promise.resolve({
+          ...existingShift,
+          ...(args.data as Record<string, unknown>),
+        })
     );
 
     const req = makePatchRequest({

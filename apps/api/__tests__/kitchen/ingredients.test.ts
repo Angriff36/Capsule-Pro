@@ -54,9 +54,7 @@ function mockRuntimeSuccess(
     runCommand: vi.fn().mockResolvedValue({
       success: true,
       result,
-      emittedEvents: [
-        { type: "IngredientCreated", entityId: result.id },
-      ],
+      emittedEvents: [{ type: "IngredientCreated", entityId: result.id }],
     }),
   } as never);
 }
@@ -241,9 +239,7 @@ describe("Ingredient API Routes", () => {
       mockRuntimeFailure("Ingredient not found");
 
       const { POST } = await import("@/app/api/ingredient/update/route");
-      const res = await POST(
-        makeRequest({ id: "ingredient-999", name: "X" })
-      );
+      const res = await POST(makeRequest({ id: "ingredient-999", name: "X" }));
       const data = await res.json();
 
       expect(res.status).toBe(400);

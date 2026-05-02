@@ -69,10 +69,10 @@
  *   - `captureException` (Sentry — pinned so 500 paths stay observable)
  */
 
-import { NextRequest } from "next/server";
-import { beforeEach, describe, expect, it, vi } from "vitest";
 import { database } from "@repo/database";
 import { captureException } from "@sentry/nextjs";
+import { NextRequest } from "next/server";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // ---------------------------------------------------------------------------
 // Mocks
@@ -85,9 +85,8 @@ vi.mock("@/app/lib/tenant", () => ({
 }));
 vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn() }));
 vi.mock("@/lib/database", async () => {
-  const mod = await vi.importActual<typeof import("@repo/database")>(
-    "@repo/database",
-  );
+  const mod =
+    await vi.importActual<typeof import("@repo/database")>("@repo/database");
   return mod;
 });
 
@@ -129,7 +128,7 @@ function noTenant() {
 
 function makeRequest(
   url: string,
-  init: { method?: string; body?: unknown } = {},
+  init: { method?: string; body?: unknown } = {}
 ): NextRequest {
   const headers: Record<string, string> = {};
   let body: BodyInit | undefined;
@@ -188,22 +187,18 @@ describe("Procurement Vendors API", () => {
   describe("GET /list", () => {
     it("returns 401 when unauthenticated", async () => {
       authMissing();
-      const { GET } = await import(
-        "@/app/api/procurement/vendors/list/route"
-      );
+      const { GET } = await import("@/app/api/procurement/vendors/list/route");
       const res = await GET(
-        makeRequest("http://localhost/api/procurement/vendors/list"),
+        makeRequest("http://localhost/api/procurement/vendors/list")
       );
       expect(res.status).toBe(401);
     });
 
     it("returns 400 when tenant cannot be resolved", async () => {
       noTenant();
-      const { GET } = await import(
-        "@/app/api/procurement/vendors/list/route"
-      );
+      const { GET } = await import("@/app/api/procurement/vendors/list/route");
       const res = await GET(
-        makeRequest("http://localhost/api/procurement/vendors/list"),
+        makeRequest("http://localhost/api/procurement/vendors/list")
       );
       expect(res.status).toBe(400);
     });
@@ -214,11 +209,9 @@ describe("Procurement Vendors API", () => {
         makeVendor(),
       ] as never);
 
-      const { GET } = await import(
-        "@/app/api/procurement/vendors/list/route"
-      );
+      const { GET } = await import("@/app/api/procurement/vendors/list/route");
       const res = await GET(
-        makeRequest("http://localhost/api/procurement/vendors/list"),
+        makeRequest("http://localhost/api/procurement/vendors/list")
       );
       const body = await res.json();
 
@@ -253,16 +246,12 @@ describe("Procurement Vendors API", () => {
     it("threads search filter into a tenant-scoped OR clause", async () => {
       authOk();
       vi.mocked(database.inventorySupplier.findMany).mockResolvedValue(
-        [] as never,
+        [] as never
       );
 
-      const { GET } = await import(
-        "@/app/api/procurement/vendors/list/route"
-      );
+      const { GET } = await import("@/app/api/procurement/vendors/list/route");
       await GET(
-        makeRequest(
-          "http://localhost/api/procurement/vendors/list?search=acme",
-        ),
+        makeRequest("http://localhost/api/procurement/vendors/list?search=acme")
       );
 
       const call = vi.mocked(database.inventorySupplier.findMany).mock
@@ -277,22 +266,18 @@ describe("Procurement Vendors API", () => {
             { email: { contains: "acme", mode: "insensitive" } },
             { supplier_number: { contains: "acme", mode: "insensitive" } },
           ],
-        }),
+        })
       );
     });
 
     it("does NOT add an OR clause when search is omitted", async () => {
       authOk();
       vi.mocked(database.inventorySupplier.findMany).mockResolvedValue(
-        [] as never,
+        [] as never
       );
 
-      const { GET } = await import(
-        "@/app/api/procurement/vendors/list/route"
-      );
-      await GET(
-        makeRequest("http://localhost/api/procurement/vendors/list"),
-      );
+      const { GET } = await import("@/app/api/procurement/vendors/list/route");
+      await GET(makeRequest("http://localhost/api/procurement/vendors/list"));
 
       const call = vi.mocked(database.inventorySupplier.findMany).mock
         .calls[0]?.[0];
@@ -302,16 +287,14 @@ describe("Procurement Vendors API", () => {
     it("clamps limit to MAX_LIMIT=200 and threads into Prisma take", async () => {
       authOk();
       vi.mocked(database.inventorySupplier.findMany).mockResolvedValue(
-        [] as never,
+        [] as never
       );
 
-      const { GET } = await import(
-        "@/app/api/procurement/vendors/list/route"
-      );
+      const { GET } = await import("@/app/api/procurement/vendors/list/route");
       const res = await GET(
         makeRequest(
-          "http://localhost/api/procurement/vendors/list?limit=999999&offset=42",
-        ),
+          "http://localhost/api/procurement/vendors/list?limit=999999&offset=42"
+        )
       );
       const body = await res.json();
 
@@ -326,15 +309,11 @@ describe("Procurement Vendors API", () => {
     it("orders by name asc and includes the soft-delete-aware count selects", async () => {
       authOk();
       vi.mocked(database.inventorySupplier.findMany).mockResolvedValue(
-        [] as never,
+        [] as never
       );
 
-      const { GET } = await import(
-        "@/app/api/procurement/vendors/list/route"
-      );
-      await GET(
-        makeRequest("http://localhost/api/procurement/vendors/list"),
-      );
+      const { GET } = await import("@/app/api/procurement/vendors/list/route");
+      await GET(makeRequest("http://localhost/api/procurement/vendors/list"));
 
       const call = vi.mocked(database.inventorySupplier.findMany).mock
         .calls[0]?.[0];
@@ -354,14 +333,12 @@ describe("Procurement Vendors API", () => {
     it("captures Sentry and returns 500 on database error", async () => {
       authOk();
       vi.mocked(database.inventorySupplier.findMany).mockRejectedValue(
-        new Error("boom"),
+        new Error("boom")
       );
 
-      const { GET } = await import(
-        "@/app/api/procurement/vendors/list/route"
-      );
+      const { GET } = await import("@/app/api/procurement/vendors/list/route");
       const res = await GET(
-        makeRequest("http://localhost/api/procurement/vendors/list"),
+        makeRequest("http://localhost/api/procurement/vendors/list")
       );
 
       expect(res.status).toBe(500);
@@ -375,28 +352,20 @@ describe("Procurement Vendors API", () => {
   describe("GET /[id]", () => {
     it("returns 401 when unauthenticated", async () => {
       authMissing();
-      const { GET } = await import(
-        "@/app/api/procurement/vendors/[id]/route"
-      );
+      const { GET } = await import("@/app/api/procurement/vendors/[id]/route");
       const res = await GET(
-        makeRequest(
-          `http://localhost/api/procurement/vendors/${VENDOR_ID}`,
-        ),
-        { params: Promise.resolve({ id: VENDOR_ID }) },
+        makeRequest(`http://localhost/api/procurement/vendors/${VENDOR_ID}`),
+        { params: Promise.resolve({ id: VENDOR_ID }) }
       );
       expect(res.status).toBe(401);
     });
 
     it("returns 400 when tenant cannot be resolved", async () => {
       noTenant();
-      const { GET } = await import(
-        "@/app/api/procurement/vendors/[id]/route"
-      );
+      const { GET } = await import("@/app/api/procurement/vendors/[id]/route");
       const res = await GET(
-        makeRequest(
-          `http://localhost/api/procurement/vendors/${VENDOR_ID}`,
-        ),
-        { params: Promise.resolve({ id: VENDOR_ID }) },
+        makeRequest(`http://localhost/api/procurement/vendors/${VENDOR_ID}`),
+        { params: Promise.resolve({ id: VENDOR_ID }) }
       );
       expect(res.status).toBe(400);
     });
@@ -404,17 +373,13 @@ describe("Procurement Vendors API", () => {
     it("returns 404 when the vendor does not exist", async () => {
       authOk();
       vi.mocked(database.inventorySupplier.findFirst).mockResolvedValue(
-        null as never,
+        null as never
       );
 
-      const { GET } = await import(
-        "@/app/api/procurement/vendors/[id]/route"
-      );
+      const { GET } = await import("@/app/api/procurement/vendors/[id]/route");
       const res = await GET(
-        makeRequest(
-          `http://localhost/api/procurement/vendors/${VENDOR_ID}`,
-        ),
-        { params: Promise.resolve({ id: VENDOR_ID }) },
+        makeRequest(`http://localhost/api/procurement/vendors/${VENDOR_ID}`),
+        { params: Promise.resolve({ id: VENDOR_ID }) }
       );
       expect(res.status).toBe(404);
     });
@@ -432,18 +397,14 @@ describe("Procurement Vendors API", () => {
         ],
       };
       vi.mocked(database.inventorySupplier.findFirst).mockResolvedValue(
-        vendor as never,
+        vendor as never
       );
       vi.mocked(database.vendorCatalog.count).mockResolvedValue(12 as never);
 
-      const { GET } = await import(
-        "@/app/api/procurement/vendors/[id]/route"
-      );
+      const { GET } = await import("@/app/api/procurement/vendors/[id]/route");
       const res = await GET(
-        makeRequest(
-          `http://localhost/api/procurement/vendors/${VENDOR_ID}`,
-        ),
-        { params: Promise.resolve({ id: VENDOR_ID }) },
+        makeRequest(`http://localhost/api/procurement/vendors/${VENDOR_ID}`),
+        { params: Promise.resolve({ id: VENDOR_ID }) }
       );
       const body = await res.json();
 
@@ -457,7 +418,7 @@ describe("Procurement Vendors API", () => {
       expect(database.inventorySupplier.findFirst).toHaveBeenCalledWith(
         expect.objectContaining({
           where: { tenantId: TEST_TENANT_ID, id: VENDOR_ID, deletedAt: null },
-        }),
+        })
       );
 
       // Pin the catalog count guard: includes isActive=true
@@ -474,17 +435,13 @@ describe("Procurement Vendors API", () => {
     it("captures Sentry and returns 500 on Prisma throw", async () => {
       authOk();
       vi.mocked(database.inventorySupplier.findFirst).mockRejectedValue(
-        new Error("connection lost"),
+        new Error("connection lost")
       );
 
-      const { GET } = await import(
-        "@/app/api/procurement/vendors/[id]/route"
-      );
+      const { GET } = await import("@/app/api/procurement/vendors/[id]/route");
       const res = await GET(
-        makeRequest(
-          `http://localhost/api/procurement/vendors/${VENDOR_ID}`,
-        ),
-        { params: Promise.resolve({ id: VENDOR_ID }) },
+        makeRequest(`http://localhost/api/procurement/vendors/${VENDOR_ID}`),
+        { params: Promise.resolve({ id: VENDOR_ID }) }
       );
 
       expect(res.status).toBe(500);
@@ -504,8 +461,8 @@ describe("Procurement Vendors API", () => {
       const res = await POST(
         makeRequest(
           "http://localhost/api/procurement/vendors/commands/create",
-          { body: { name: "X" } },
-        ),
+          { body: { name: "X" } }
+        )
       );
       expect(res.status).toBe(401);
     });
@@ -518,8 +475,8 @@ describe("Procurement Vendors API", () => {
       const res = await POST(
         makeRequest(
           "http://localhost/api/procurement/vendors/commands/create",
-          { body: { name: "X" } },
-        ),
+          { body: { name: "X" } }
+        )
       );
       expect(res.status).toBe(400);
     });
@@ -532,8 +489,8 @@ describe("Procurement Vendors API", () => {
       const res = await POST(
         makeRequest(
           "http://localhost/api/procurement/vendors/commands/create",
-          { body: {} },
-        ),
+          { body: {} }
+        )
       );
       expect(res.status).toBe(400);
       const body = await res.json();
@@ -559,8 +516,8 @@ describe("Procurement Vendors API", () => {
       const res = await POST(
         makeRequest(
           "http://localhost/api/procurement/vendors/commands/create",
-          { body: { name: "New Vendor" } },
-        ),
+          { body: { name: "New Vendor" } }
+        )
       );
       const body = await res.json();
 
@@ -575,7 +532,11 @@ describe("Procurement Vendors API", () => {
       vi.mocked(database.$queryRaw)
         .mockResolvedValueOnce([{ count: 0 }] as never) // count → VND-0001
         .mockResolvedValueOnce([
-          { id: VENDOR_ID, supplier_number: "VND-0001", name: "Primary Vendor" },
+          {
+            id: VENDOR_ID,
+            supplier_number: "VND-0001",
+            name: "Primary Vendor",
+          },
         ] as never)
         .mockResolvedValueOnce([] as never); // INSERT vendor_contacts
 
@@ -591,8 +552,8 @@ describe("Procurement Vendors API", () => {
               contactPerson: "Jane Doe",
               email: "jane@vendor.test",
             },
-          },
-        ),
+          }
+        )
       );
       expect(res.status).toBe(200);
       // 3 calls: count + vendor INSERT + vendor_contacts INSERT
@@ -613,8 +574,8 @@ describe("Procurement Vendors API", () => {
       const res = await POST(
         makeRequest(
           "http://localhost/api/procurement/vendors/commands/create",
-          { body: { name: "Vendor", contactPerson: "Jane Doe" } }, // no email or phone
-        ),
+          { body: { name: "Vendor", contactPerson: "Jane Doe" } } // no email or phone
+        )
       );
       expect(res.status).toBe(200);
       expect(database.$queryRaw).toHaveBeenCalledTimes(2);
@@ -632,8 +593,8 @@ describe("Procurement Vendors API", () => {
       const res = await POST(
         makeRequest(
           "http://localhost/api/procurement/vendors/commands/create",
-          { body: { name: "X" } },
-        ),
+          { body: { name: "X" } }
+        )
       );
       expect(res.status).toBe(500);
     });
@@ -651,8 +612,8 @@ describe("Procurement Vendors API", () => {
       const res = await POST(
         makeRequest(
           "http://localhost/api/procurement/vendors/commands/update",
-          { body: { vendorId: VENDOR_ID, name: "Renamed" } },
-        ),
+          { body: { vendorId: VENDOR_ID, name: "Renamed" } }
+        )
       );
       expect(res.status).toBe(401);
     });
@@ -665,8 +626,8 @@ describe("Procurement Vendors API", () => {
       const res = await POST(
         makeRequest(
           "http://localhost/api/procurement/vendors/commands/update",
-          { body: { name: "Renamed" } },
-        ),
+          { body: { name: "Renamed" } }
+        )
       );
       expect(res.status).toBe(400);
       const body = await res.json();
@@ -683,8 +644,8 @@ describe("Procurement Vendors API", () => {
       const res = await POST(
         makeRequest(
           "http://localhost/api/procurement/vendors/commands/update",
-          { body: { vendorId: VENDOR_ID, name: "Renamed" } },
-        ),
+          { body: { vendorId: VENDOR_ID, name: "Renamed" } }
+        )
       );
       expect(res.status).toBe(404);
     });
@@ -708,8 +669,8 @@ describe("Procurement Vendors API", () => {
       const res = await POST(
         makeRequest(
           "http://localhost/api/procurement/vendors/commands/update",
-          { body: { vendorId: VENDOR_ID, name: "Renamed" } },
-        ),
+          { body: { vendorId: VENDOR_ID, name: "Renamed" } }
+        )
       );
       const body = await res.json();
 
@@ -728,8 +689,8 @@ describe("Procurement Vendors API", () => {
       const res = await POST(
         makeRequest(
           "http://localhost/api/procurement/vendors/commands/update",
-          { body: { vendorId: VENDOR_ID, name: "Renamed" } },
-        ),
+          { body: { vendorId: VENDOR_ID, name: "Renamed" } }
+        )
       );
       expect(res.status).toBe(500);
       expect(captureException).toHaveBeenCalled();
@@ -748,8 +709,8 @@ describe("Procurement Vendors API", () => {
       const res = await POST(
         makeRequest(
           "http://localhost/api/procurement/vendors/commands/delete",
-          { body: { vendorId: VENDOR_ID } },
-        ),
+          { body: { vendorId: VENDOR_ID } }
+        )
       );
       expect(res.status).toBe(401);
     });
@@ -762,8 +723,8 @@ describe("Procurement Vendors API", () => {
       const res = await POST(
         makeRequest(
           "http://localhost/api/procurement/vendors/commands/delete",
-          { body: {} },
-        ),
+          { body: {} }
+        )
       );
       expect(res.status).toBe(400);
     });
@@ -780,8 +741,8 @@ describe("Procurement Vendors API", () => {
       const res = await POST(
         makeRequest(
           "http://localhost/api/procurement/vendors/commands/delete",
-          { body: { vendorId: VENDOR_ID } },
-        ),
+          { body: { vendorId: VENDOR_ID } }
+        )
       );
       const body = await res.json();
 
@@ -805,8 +766,8 @@ describe("Procurement Vendors API", () => {
       const res = await POST(
         makeRequest(
           "http://localhost/api/procurement/vendors/commands/delete",
-          { body: { vendorId: VENDOR_ID } },
-        ),
+          { body: { vendorId: VENDOR_ID } }
+        )
       );
       const body = await res.json();
 
@@ -827,8 +788,8 @@ describe("Procurement Vendors API", () => {
       const res = await POST(
         makeRequest(
           "http://localhost/api/procurement/vendors/commands/delete",
-          { body: { vendorId: VENDOR_ID } },
-        ),
+          { body: { vendorId: VENDOR_ID } }
+        )
       );
       expect(res.status).toBe(404);
     });
@@ -846,8 +807,8 @@ describe("Procurement Vendors API", () => {
       const res = await POST(
         makeRequest(
           "http://localhost/api/procurement/vendors/commands/add-contact",
-          { body: { vendorId: VENDOR_ID, contactName: "Jane" } },
-        ),
+          { body: { vendorId: VENDOR_ID, contactName: "Jane" } }
+        )
       );
       expect(res.status).toBe(401);
     });
@@ -860,8 +821,8 @@ describe("Procurement Vendors API", () => {
       const res = await POST(
         makeRequest(
           "http://localhost/api/procurement/vendors/commands/add-contact",
-          { body: { vendorId: VENDOR_ID } },
-        ),
+          { body: { vendorId: VENDOR_ID } }
+        )
       );
       expect(res.status).toBe(400);
     });
@@ -876,8 +837,8 @@ describe("Procurement Vendors API", () => {
       const res = await POST(
         makeRequest(
           "http://localhost/api/procurement/vendors/commands/add-contact",
-          { body: { vendorId: VENDOR_ID, contactName: "Jane" } },
-        ),
+          { body: { vendorId: VENDOR_ID, contactName: "Jane" } }
+        )
       );
       expect(res.status).toBe(404);
     });
@@ -902,8 +863,8 @@ describe("Procurement Vendors API", () => {
               contactName: "Jane",
               isPrimary: false,
             },
-          },
-        ),
+          }
+        )
       );
       expect(res.status).toBe(200);
       // 2 calls — existence + INSERT (no clear-primary UPDATE)
@@ -931,8 +892,8 @@ describe("Procurement Vendors API", () => {
               contactName: "Jane",
               isPrimary: true,
             },
-          },
-        ),
+          }
+        )
       );
       expect(res.status).toBe(200);
       // 3 calls in this exact order: existence → clear-primary → INSERT
@@ -951,8 +912,8 @@ describe("Procurement Vendors API", () => {
       const res = await POST(
         makeRequest(
           "http://localhost/api/procurement/vendors/commands/add-contact",
-          { body: { vendorId: VENDOR_ID, contactName: "Jane" } },
-        ),
+          { body: { vendorId: VENDOR_ID, contactName: "Jane" } }
+        )
       );
       expect(res.status).toBe(500);
     });
@@ -968,12 +929,9 @@ describe("Procurement Vendors API", () => {
         "@/app/api/procurement/vendors/commands/rate/route"
       );
       const res = await POST(
-        makeRequest(
-          "http://localhost/api/procurement/vendors/commands/rate",
-          {
-            body: { vendorId: VENDOR_ID, category: "overall", rating: 4 },
-          },
-        ),
+        makeRequest("http://localhost/api/procurement/vendors/commands/rate", {
+          body: { vendorId: VENDOR_ID, category: "overall", rating: 4 },
+        })
       );
       expect(res.status).toBe(401);
     });
@@ -984,10 +942,9 @@ describe("Procurement Vendors API", () => {
         "@/app/api/procurement/vendors/commands/rate/route"
       );
       const res = await POST(
-        makeRequest(
-          "http://localhost/api/procurement/vendors/commands/rate",
-          { body: { category: "overall", rating: 4 } },
-        ),
+        makeRequest("http://localhost/api/procurement/vendors/commands/rate", {
+          body: { category: "overall", rating: 4 },
+        })
       );
       expect(res.status).toBe(400);
     });
@@ -998,10 +955,9 @@ describe("Procurement Vendors API", () => {
         "@/app/api/procurement/vendors/commands/rate/route"
       );
       const res = await POST(
-        makeRequest(
-          "http://localhost/api/procurement/vendors/commands/rate",
-          { body: { vendorId: VENDOR_ID, category: "vibes", rating: 4 } },
-        ),
+        makeRequest("http://localhost/api/procurement/vendors/commands/rate", {
+          body: { vendorId: VENDOR_ID, category: "vibes", rating: 4 },
+        })
       );
       expect(res.status).toBe(400);
       const body = await res.json();
@@ -1014,10 +970,9 @@ describe("Procurement Vendors API", () => {
         "@/app/api/procurement/vendors/commands/rate/route"
       );
       const res = await POST(
-        makeRequest(
-          "http://localhost/api/procurement/vendors/commands/rate",
-          { body: { vendorId: VENDOR_ID, category: "overall", rating: 9 } },
-        ),
+        makeRequest("http://localhost/api/procurement/vendors/commands/rate", {
+          body: { vendorId: VENDOR_ID, category: "overall", rating: 9 },
+        })
       );
       expect(res.status).toBe(400);
     });
@@ -1025,26 +980,25 @@ describe("Procurement Vendors API", () => {
     it("returns 404 when the vendor does not exist", async () => {
       authOk();
       vi.mocked(database.inventorySupplier.findFirst).mockResolvedValue(
-        null as never,
+        null as never
       );
 
       const { POST } = await import(
         "@/app/api/procurement/vendors/commands/rate/route"
       );
       const res = await POST(
-        makeRequest(
-          "http://localhost/api/procurement/vendors/commands/rate",
-          { body: { vendorId: VENDOR_ID, category: "overall", rating: 4 } },
-        ),
+        makeRequest("http://localhost/api/procurement/vendors/commands/rate", {
+          body: { vendorId: VENDOR_ID, category: "overall", rating: 4 },
+        })
       );
       expect(res.status).toBe(404);
     });
 
     it("non-overall rating: creates rating row but does NOT touch the supplier aggregate", async () => {
       authOk();
-      vi.mocked(database.inventorySupplier.findFirst).mockResolvedValue(
-        { id: VENDOR_ID } as never,
-      );
+      vi.mocked(database.inventorySupplier.findFirst).mockResolvedValue({
+        id: VENDOR_ID,
+      } as never);
       vi.mocked(database.vendorRating.create).mockResolvedValue({
         id: "rating-1",
         category: "delivery",
@@ -1057,10 +1011,9 @@ describe("Procurement Vendors API", () => {
         "@/app/api/procurement/vendors/commands/rate/route"
       );
       const res = await POST(
-        makeRequest(
-          "http://localhost/api/procurement/vendors/commands/rate",
-          { body: { vendorId: VENDOR_ID, category: "delivery", rating: 4 } },
-        ),
+        makeRequest("http://localhost/api/procurement/vendors/commands/rate", {
+          body: { vendorId: VENDOR_ID, category: "delivery", rating: 4 },
+        })
       );
       expect(res.status).toBe(200);
       expect(database.vendorRating.create).toHaveBeenCalledTimes(1);
@@ -1071,9 +1024,9 @@ describe("Procurement Vendors API", () => {
 
     it("overall rating: creates row, recomputes avg, writes aggregate back to supplier", async () => {
       authOk();
-      vi.mocked(database.inventorySupplier.findFirst).mockResolvedValue(
-        { id: VENDOR_ID } as never,
-      );
+      vi.mocked(database.inventorySupplier.findFirst).mockResolvedValue({
+        id: VENDOR_ID,
+      } as never);
       vi.mocked(database.vendorRating.create).mockResolvedValue({
         id: "rating-1",
         category: "overall",
@@ -1085,24 +1038,21 @@ describe("Procurement Vendors API", () => {
         _avg: { rating: 4.5 },
       } as never);
       vi.mocked(database.inventorySupplier.update).mockResolvedValue(
-        {} as never,
+        {} as never
       );
 
       const { POST } = await import(
         "@/app/api/procurement/vendors/commands/rate/route"
       );
       const res = await POST(
-        makeRequest(
-          "http://localhost/api/procurement/vendors/commands/rate",
-          {
-            body: {
-              vendorId: VENDOR_ID,
-              category: "overall",
-              rating: 5,
-              comment: "great",
-            },
+        makeRequest("http://localhost/api/procurement/vendors/commands/rate", {
+          body: {
+            vendorId: VENDOR_ID,
+            category: "overall",
+            rating: 5,
+            comment: "great",
           },
-        ),
+        })
       );
       const body = await res.json();
 
@@ -1127,9 +1077,9 @@ describe("Procurement Vendors API", () => {
 
     it("overall rating with null avg: skips supplier update", async () => {
       authOk();
-      vi.mocked(database.inventorySupplier.findFirst).mockResolvedValue(
-        { id: VENDOR_ID } as never,
-      );
+      vi.mocked(database.inventorySupplier.findFirst).mockResolvedValue({
+        id: VENDOR_ID,
+      } as never);
       vi.mocked(database.vendorRating.create).mockResolvedValue({
         id: "rating-1",
         category: "overall",
@@ -1145,10 +1095,9 @@ describe("Procurement Vendors API", () => {
         "@/app/api/procurement/vendors/commands/rate/route"
       );
       const res = await POST(
-        makeRequest(
-          "http://localhost/api/procurement/vendors/commands/rate",
-          { body: { vendorId: VENDOR_ID, category: "overall", rating: 5 } },
-        ),
+        makeRequest("http://localhost/api/procurement/vendors/commands/rate", {
+          body: { vendorId: VENDOR_ID, category: "overall", rating: 5 },
+        })
       );
       expect(res.status).toBe(200);
       expect(database.inventorySupplier.update).not.toHaveBeenCalled();
@@ -1157,17 +1106,16 @@ describe("Procurement Vendors API", () => {
     it("captures Sentry and returns 500 when Prisma throws", async () => {
       authOk();
       vi.mocked(database.inventorySupplier.findFirst).mockRejectedValue(
-        new Error("boom"),
+        new Error("boom")
       );
 
       const { POST } = await import(
         "@/app/api/procurement/vendors/commands/rate/route"
       );
       const res = await POST(
-        makeRequest(
-          "http://localhost/api/procurement/vendors/commands/rate",
-          { body: { vendorId: VENDOR_ID, category: "overall", rating: 4 } },
-        ),
+        makeRequest("http://localhost/api/procurement/vendors/commands/rate", {
+          body: { vendorId: VENDOR_ID, category: "overall", rating: 4 },
+        })
       );
       expect(res.status).toBe(500);
       expect(captureException).toHaveBeenCalled();

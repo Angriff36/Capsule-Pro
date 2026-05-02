@@ -67,7 +67,11 @@ const priorityConfig = {
     dot: "bg-emerald-500",
   },
   9: { label: "Minimal", color: "bg-teal-500 text-white", dot: "bg-teal-500" },
-  10: { label: "None", color: "bg-slate-400 text-white", dot: "bg-slate-400" },
+  10: {
+    label: "None",
+    color: "bg-slate-soft text-white",
+    dot: "bg-slate-soft",
+  },
 };
 
 const statusConfig = {
@@ -75,15 +79,15 @@ const statusConfig = {
     label: "Open",
     variant: "secondary" as const,
     icon: Clock,
-    bgColor: "bg-slate-100",
-    textColor: "text-slate-600",
+    bgColor: "bg-soft-stone",
+    textColor: "text-muted-foreground",
   },
   pending: {
     label: "Pending",
     variant: "secondary" as const,
     icon: Clock,
-    bgColor: "bg-slate-100",
-    textColor: "text-slate-600",
+    bgColor: "bg-soft-stone",
+    textColor: "text-muted-foreground",
   },
   in_progress: {
     label: "In Progress",
@@ -110,15 +114,15 @@ const statusConfig = {
     label: "Cancelled",
     variant: "secondary" as const,
     icon: ChevronRight,
-    bgColor: "bg-slate-100",
-    textColor: "text-slate-400",
+    bgColor: "bg-soft-stone",
+    textColor: "text-muted-foreground/80",
   },
   canceled: {
     label: "Canceled",
     variant: "secondary" as const,
     icon: ChevronRight,
-    bgColor: "bg-slate-100",
-    textColor: "text-slate-400",
+    bgColor: "bg-soft-stone",
+    textColor: "text-muted-foreground/80",
   },
 };
 
@@ -199,7 +203,7 @@ function formatDueStatus(dueDate: Date | null): {
   if (diffHours < 4) {
     return {
       label: `Due in ${diffHours}h`,
-      className: "text-slate-600 bg-slate-50",
+      className: "text-muted-foreground bg-soft-stone",
       isOverdue: false,
       isUrgent: false,
     };
@@ -207,7 +211,7 @@ function formatDueStatus(dueDate: Date | null): {
 
   return {
     label: format(due, "h:mm a"),
-    className: "text-slate-500 bg-slate-50",
+    className: "text-muted-foreground bg-soft-stone",
     isOverdue: false,
     isUrgent: false,
   };
@@ -349,14 +353,16 @@ export function TaskCard({
 
   if (compact) {
     return (
-      <div className="group flex items-center gap-3 rounded-lg border border-slate-200 bg-white p-3 shadow-sm transition-all hover:border-slate-300 hover:shadow-md">
+      <div className="group flex items-center gap-3 rounded-lg border border-hairline bg-card p-3 transition-all hover:bg-soft-stone/40">
         <div className={`h-2 w-2 shrink-0 rounded-full ${priority.dot}`} />
         <div className="min-w-0 flex-1">
-          <p className="truncate font-medium text-slate-800 text-sm">
+          <p className="truncate font-medium text-foreground text-sm">
             {task.title}
           </p>
           {task.summary && (
-            <p className="truncate text-slate-500 text-xs">{task.summary}</p>
+            <p className="truncate text-muted-foreground text-xs">
+              {task.summary}
+            </p>
           )}
         </div>
         {dueStatus && (
@@ -383,8 +389,8 @@ export function TaskCard({
 
   return (
     <div
-      className={`group relative overflow-hidden rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition-all hover:border-slate-300 hover:shadow-md ${
-        dueStatus?.isUrgent ? "ring-1 ring-rose-200" : ""
+      className={`group relative overflow-hidden rounded-xl border border-hairline bg-card p-4 transition-all hover:border-hairline/80 ${
+        dueStatus?.isUrgent ? "ring-1 ring-rose-200/80" : ""
       }`}
     >
       {/* Priority indicator bar */}
@@ -394,11 +400,11 @@ export function TaskCard({
         {/* Header */}
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0 flex-1">
-            <h4 className="line-clamp-1 font-semibold text-slate-800">
+            <h4 className="line-clamp-1 font-semibold text-foreground">
               {task.title}
             </h4>
             {task.summary && (
-              <p className="mt-1 line-clamp-2 text-slate-500 text-sm">
+              <p className="mt-1 line-clamp-2 text-muted-foreground text-sm">
                 {task.summary}
               </p>
             )}
@@ -411,7 +417,7 @@ export function TaskCard({
                 size="icon"
                 variant="ghost"
               >
-                <MoreVertical className="h-4 w-4 text-slate-400" />
+                <MoreVertical className="h-4 w-4 text-muted-foreground" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
@@ -465,7 +471,7 @@ export function TaskCard({
             <div className="flex -space-x-2">
               {assignedUsers.slice(0, 3).map((claim, index) => (
                 <Avatar
-                  className="h-7 w-7 border-2 border-white"
+                  className="h-7 w-7 border-2 border-canvas"
                   key={claim.user?.id || index}
                 >
                   <AvatarImage src={claim.user?.avatarUrl || undefined} />
@@ -479,12 +485,12 @@ export function TaskCard({
                 </Avatar>
               ))}
               {assignedUsers.length > 3 && (
-                <div className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-white bg-slate-100 font-medium text-slate-600 text-xs">
+                <div className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-canvas bg-soft-stone font-medium text-ink text-xs">
                   +{assignedUsers.length - 3}
                 </div>
               )}
             </div>
-            <span className="text-slate-500 text-xs">
+            <span className="text-muted-foreground text-xs">
               {getAssignedUserLabel(assignedUsers)}
             </span>
           </div>
@@ -495,7 +501,7 @@ export function TaskCard({
           {(task.status === "open" || task.status === "pending") &&
             !userClaim && (
               <Button
-                className="w-full gap-2 bg-slate-900 text-white hover:bg-slate-800"
+                className="w-full gap-2 bg-ink text-white hover:bg-ink/90"
                 disabled={isLoading}
                 onClick={handleClaim}
                 size="sm"

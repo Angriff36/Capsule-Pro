@@ -56,10 +56,7 @@ export async function POST(request: Request) {
     });
 
     if (!event) {
-      return NextResponse.json(
-        { message: "Event not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ message: "Event not found" }, { status: 404 });
     }
 
     if (!event.locationId) {

@@ -176,9 +176,7 @@ describe("Dish API Routes", () => {
       vi.mocked(auth).mockResolvedValue({ orgId: null, userId: null } as never);
 
       const { POST } = await import("@/app/api/dish/update/route");
-      const res = await POST(
-        makeRequest({ id: "dish-001", name: "Updated" })
-      );
+      const res = await POST(makeRequest({ id: "dish-001", name: "Updated" }));
       const data = await res.json();
 
       expect(res.status).toBe(401);

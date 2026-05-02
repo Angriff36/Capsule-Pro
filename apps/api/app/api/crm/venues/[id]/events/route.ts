@@ -41,10 +41,7 @@ export async function GET(
     });
 
     if (!venue) {
-      return NextResponse.json(
-        { message: "Venue not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ message: "Venue not found" }, { status: 404 });
     }
 
     const searchParams = request.nextUrl.searchParams;

@@ -785,7 +785,9 @@ describe("GET /api/integrations/goodshuffle/events", () => {
     const { GET } = await import(
       "@/app/api/integrations/goodshuffle/events/route"
     );
-    const res = await GET(makeGetRequest("/api/integrations/goodshuffle/events"));
+    const res = await GET(
+      makeGetRequest("/api/integrations/goodshuffle/events")
+    );
     expect(res.status).toBe(401);
   });
 
@@ -794,7 +796,9 @@ describe("GET /api/integrations/goodshuffle/events", () => {
     const { GET } = await import(
       "@/app/api/integrations/goodshuffle/events/route"
     );
-    const res = await GET(makeGetRequest("/api/integrations/goodshuffle/events"));
+    const res = await GET(
+      makeGetRequest("/api/integrations/goodshuffle/events")
+    );
     expect(res.status).toBe(401);
   });
 
@@ -805,7 +809,9 @@ describe("GET /api/integrations/goodshuffle/events", () => {
     const { GET } = await import(
       "@/app/api/integrations/goodshuffle/events/route"
     );
-    const res = await GET(makeGetRequest("/api/integrations/goodshuffle/events"));
+    const res = await GET(
+      makeGetRequest("/api/integrations/goodshuffle/events")
+    );
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body).toEqual({ syncs: [], total: 0, limit: 50, offset: 0 });
@@ -866,7 +872,9 @@ describe("GET /api/integrations/goodshuffle/events", () => {
     const { GET } = await import(
       "@/app/api/integrations/goodshuffle/events/route"
     );
-    const res = await GET(makeGetRequest("/api/integrations/goodshuffle/events"));
+    const res = await GET(
+      makeGetRequest("/api/integrations/goodshuffle/events")
+    );
     expect(res.status).toBe(500);
     expect(mocks.captureExceptionMock).toHaveBeenCalledWith(err);
   });

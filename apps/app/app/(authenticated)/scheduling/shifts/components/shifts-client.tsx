@@ -1,8 +1,17 @@
 "use client";
 
+import {
+  KitchenDashboardFilterAside,
+  KitchenOperationalCanvas,
+  KitchenOperationalHero,
+  KitchenOperationalMetricTile,
+  KitchenOperationalMetricTiles,
+  KitchenOperationalSectionLead,
+} from "@repo/design-system/components/blocks/page-shell";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Input } from "@repo/design-system/components/ui/input";
+import { Label } from "@repo/design-system/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -10,7 +19,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
-import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   Table,
   TableBody,
@@ -19,20 +27,16 @@ import {
   TableHeader,
   TableRow,
 } from "@repo/design-system/components/ui/table";
+import { cn } from "@repo/design-system/lib/utils";
 import {
   type ColumnDef,
   flexRender,
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import {
-  FilterIcon,
-  Loader2Icon,
-  PlusIcon,
-  UserCheckIcon,
-  UsersIcon,
-} from "lucide-react";
+import { Loader2Icon, PlusIcon, UserCheckIcon, UsersIcon } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
+import type { ReactNode } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { getEmployees, getLocations, getShifts } from "../actions";
@@ -206,11 +210,11 @@ export function ShiftsClient() {
       accessorKey: "employee",
       header: "Employee",
       cell: ({ row }) => (
-        <div>
-          <div className="font-medium">
+        <div className="min-w-0">
+          <div className="truncate font-medium text-ink">
             {row.original.employee_first_name} {row.original.employee_last_name}
           </div>
-          <div className="text-sm text-muted-foreground">
+          <div className="truncate text-muted-foreground text-xs">
             {row.original.employee_email}
           </div>
         </div>
@@ -219,18 +223,22 @@ export function ShiftsClient() {
     {
       accessorKey: "shift_start",
       header: "Date",
-      cell: ({ row }) => <div>{formatDate(row.original.shift_start)}</div>,
+      cell: ({ row }) => (
+        <div className="text-ink text-sm">
+          {formatDate(row.original.shift_start)}
+        </div>
+      ),
     },
     {
       accessorKey: "time",
       header: "Time",
       cell: ({ row }) => (
         <div>
-          <div>
-            {formatTime(row.original.shift_start)} -{" "}
+          <div className="font-medium text-ink text-sm tabular-nums">
+            {formatTime(row.original.shift_start)} –{" "}
             {formatTime(row.original.shift_end)}
           </div>
-          <div className="text-sm text-muted-foreground">
+          <div className="text-muted-foreground text-xs tabular-nums">
             {calculateDuration(
               row.original.shift_start,
               row.original.shift_end
@@ -242,7 +250,9 @@ export function ShiftsClient() {
     {
       accessorKey: "location_name",
       header: "Location",
-      cell: ({ row }) => row.original.location_name,
+      cell: ({ row }) => (
+        <span className="text-ink text-sm">{row.original.location_name}</span>
+      ),
     },
     {
       accessorKey: "role_during_shift",
@@ -259,12 +269,12 @@ export function ShiftsClient() {
       header: "",
       cell: ({ row }) => (
         <Button
-          className="text-primary hover:text-primary"
+          className="text-ink hover:bg-soft-stone/60"
           onClick={(e) => handleAutoAssignClick(row.original, e)}
           size="sm"
           variant="ghost"
         >
-          <UserCheckIcon className="h-4 w-4 mr-1" />
+          <UserCheckIcon className="mr-1 size-4" />
           Assign
         </Button>
       ),
@@ -277,207 +287,272 @@ export function ShiftsClient() {
     getCoreRowModel: getCoreRowModel(),
   });
 
+  let tableBody: ReactNode;
+  if (loading) {
+    tableBody = (
+      <TableRow className="hover:bg-transparent">
+        <TableCell className="h-28 text-center" colSpan={columns.length}>
+          <Loader2Icon className="mx-auto size-8 animate-spin text-muted-foreground" />
+        </TableCell>
+      </TableRow>
+    );
+  } else if (shifts.length === 0) {
+    tableBody = (
+      <TableRow className="hover:bg-transparent">
+        <TableCell
+          className="h-28 text-center text-muted-foreground text-sm"
+          colSpan={columns.length}
+        >
+          No shifts match these filters. Open{" "}
+          <span className="text-ink">New shift</span> or widen the date range.
+        </TableCell>
+      </TableRow>
+    );
+  } else {
+    tableBody = table.getRowModel().rows.map((row) => (
+      <TableRow
+        className={cn(
+          "cursor-pointer border-hairline border-b transition-colors",
+          "hover:bg-soft-stone/40"
+        )}
+        key={row.id}
+        onClick={() => handleRowClick(row.original)}
+      >
+        {row.getVisibleCells().map((cell) => (
+          <TableCell className="align-middle" key={cell.id}>
+            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+          </TableCell>
+        ))}
+      </TableRow>
+    ));
+  }
+
+  const hasActiveFilters = Boolean(
+    filters.startDate ||
+      filters.endDate ||
+      filters.employeeId ||
+      filters.locationId
+  );
+
   return (
-    <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
-      {/* Header */}
-      <div className="space-y-0.5">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Shifts</h1>
-            <p className="text-muted-foreground">
-              Manage employee shifts by role, station, and event.
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
+    <KitchenOperationalCanvas>
+      <KitchenOperationalHero
+        actions={
+          <>
             <Button
+              className="rounded-full border border-white/30 bg-transparent px-5 text-[13px] font-medium text-white hover:bg-white/10 hover:text-white"
               onClick={() => setBulkAssignmentModalOpen(true)}
+              size="sm"
               variant="outline"
             >
-              <UsersIcon className="h-4 w-4 mr-2" />
-              Bulk Assign
+              <UsersIcon className="mr-2 size-4" />
+              Bulk assign
             </Button>
-            <Button onClick={() => setCreateModalOpen(true)}>
-              <PlusIcon className="h-4 w-4 mr-2" />
-              New Shift
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      <Separator />
-
-      {/* Filters Section */}
-      <section className="space-y-4">
-        <h2 className="text-sm font-medium text-muted-foreground">Filters</h2>
-        <div className="flex items-center gap-4 p-4 border rounded-lg bg-muted/30">
-          <FilterIcon className="h-4 w-4 text-muted-foreground" />
-          <Input
-            className="max-w-[150px]"
-            onChange={(e) => handleFilterChange("startDate", e.target.value)}
-            type="date"
-            value={filters.startDate}
-          />
-          <Input
-            className="max-w-[150px]"
-            onChange={(e) => handleFilterChange("endDate", e.target.value)}
-            type="date"
-            value={filters.endDate}
-          />
-          <Select
-            onValueChange={(value) =>
-              handleFilterChange("employeeId", value === "__all__" ? "" : value)
-            }
-            value={filters.employeeId || "__all__"}
-          >
-            <SelectTrigger className="w-[200px]">
-              <SelectValue placeholder="Filter by employee" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="__all__">All employees</SelectItem>
-              {employees.map((emp) => (
-                <SelectItem key={emp.id} value={emp.id}>
-                  {emp.first_name} {emp.last_name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Select
-            onValueChange={(value) =>
-              handleFilterChange("locationId", value === "__all__" ? "" : value)
-            }
-            value={filters.locationId || "__all__"}
-          >
-            <SelectTrigger className="w-[200px]">
-              <SelectValue placeholder="Filter by location" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="__all__">All locations</SelectItem>
-              {locations.map((loc) => (
-                <SelectItem key={loc.id} value={loc.id}>
-                  {loc.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          {(filters.startDate ||
-            filters.endDate ||
-            filters.employeeId ||
-            filters.locationId) && (
             <Button
-              onClick={() =>
-                setFilters({
-                  startDate: "",
-                  endDate: "",
-                  employeeId: "",
-                  locationId: "",
-                })
-              }
+              className="rounded-full bg-white px-5 text-[13px] font-medium text-[#17171c] hover:bg-white/90"
+              onClick={() => setCreateModalOpen(true)}
               size="sm"
-              variant="ghost"
             >
-              Clear filters
+              <PlusIcon className="mr-2 size-4" />
+              New shift
             </Button>
-          )}
-        </div>
-      </section>
+          </>
+        }
+        eyebrow="Scheduling / Shifts"
+        lede="Filter by window, teammate, or site. Click a row for detail, overrides, or auto-assignment."
+        metrics={
+          <KitchenOperationalMetricTiles>
+            <KitchenOperationalMetricTile
+              caption="In database for this query"
+              label="Total shifts"
+              value={pagination.total}
+            />
+            <KitchenOperationalMetricTile
+              caption="Rows on this page"
+              label="Visible now"
+              value={shifts.length}
+            />
+            <KitchenOperationalMetricTile
+              caption="Eligible roster"
+              label="Employees"
+              value={employees.length}
+            />
+            <KitchenOperationalMetricTile
+              caption="Sites in filter list"
+              label="Locations"
+              value={locations.length}
+            />
+          </KitchenOperationalMetricTiles>
+        }
+        title="Shift roster"
+      />
 
-      {/* Shifts Table Section */}
-      <section className="space-y-4">
-        <h2 className="text-sm font-medium text-muted-foreground">
-          Shifts ({pagination.total})
-        </h2>
-        <div className="border rounded-lg">
-          <Table>
-            <TableHeader>
-              {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                    </TableHead>
+      <div className="grid gap-10 lg:grid-cols-[300px_1fr]">
+        <KitchenDashboardFilterAside>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label className="text-ink text-xs" htmlFor="flt-start">
+                Start date
+              </Label>
+              <Input
+                className="bg-canvas"
+                id="flt-start"
+                onChange={(e) =>
+                  handleFilterChange("startDate", e.target.value)
+                }
+                type="date"
+                value={filters.startDate}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-ink text-xs" htmlFor="flt-end">
+                End date
+              </Label>
+              <Input
+                className="bg-canvas"
+                id="flt-end"
+                onChange={(e) => handleFilterChange("endDate", e.target.value)}
+                type="date"
+                value={filters.endDate}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-ink text-xs">Employee</Label>
+              <Select
+                onValueChange={(value) =>
+                  handleFilterChange(
+                    "employeeId",
+                    value === "__all__" ? "" : value
+                  )
+                }
+                value={filters.employeeId || "__all__"}
+              >
+                <SelectTrigger className="bg-canvas w-full">
+                  <SelectValue placeholder="All employees" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__all__">All employees</SelectItem>
+                  {employees.map((emp) => (
+                    <SelectItem key={emp.id} value={emp.id}>
+                      {emp.first_name} {emp.last_name}
+                    </SelectItem>
                   ))}
-                </TableRow>
-              ))}
-            </TableHeader>
-            <TableBody>
-              {loading ? (
-                <TableRow>
-                  <TableCell
-                    className="h-24 text-center"
-                    colSpan={columns.length}
-                  >
-                    <Loader2Icon className="h-8 w-8 animate-spin mx-auto text-muted-foreground" />
-                  </TableCell>
-                </TableRow>
-              ) : shifts.length === 0 ? (
-                <TableRow>
-                  <TableCell
-                    className="h-24 text-center text-muted-foreground"
-                    colSpan={columns.length}
-                  >
-                    No shifts found. Create a new shift to get started.
-                  </TableCell>
-                </TableRow>
-              ) : (
-                table.getRowModel().rows.map((row) => (
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label className="text-ink text-xs">Location</Label>
+              <Select
+                onValueChange={(value) =>
+                  handleFilterChange(
+                    "locationId",
+                    value === "__all__" ? "" : value
+                  )
+                }
+                value={filters.locationId || "__all__"}
+              >
+                <SelectTrigger className="bg-canvas w-full">
+                  <SelectValue placeholder="All locations" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__all__">All locations</SelectItem>
+                  {locations.map((loc) => (
+                    <SelectItem key={loc.id} value={loc.id}>
+                      {loc.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            {hasActiveFilters ? (
+              <Button
+                className="w-full"
+                onClick={() =>
+                  setFilters({
+                    startDate: "",
+                    endDate: "",
+                    employeeId: "",
+                    locationId: "",
+                  })
+                }
+                size="sm"
+                variant="outline"
+              >
+                Clear filters
+              </Button>
+            ) : null}
+          </div>
+        </KitchenDashboardFilterAside>
+
+        <div className="min-w-0 space-y-10">
+          <KitchenOperationalSectionLead
+            countBadge={`${pagination.total} shifts · page ${pagination.page} / ${Math.max(pagination.totalPages, 1)}`}
+            eyebrow="Operations"
+            subtitle="Shift placements with role context. Select a row to open the detail drawer."
+            title="Scheduled shifts"
+          />
+
+          <div className="overflow-hidden rounded-[22px] border border-hairline bg-canvas">
+            <Table>
+              <TableHeader>
+                {table.getHeaderGroups().map((headerGroup) => (
                   <TableRow
-                    className="cursor-pointer hover:bg-muted/50"
-                    key={row.id}
-                    onClick={() => handleRowClick(row.original)}
+                    className="border-hairline bg-soft-stone/50 hover:bg-soft-stone/50"
+                    key={headerGroup.id}
                   >
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id}>
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
-                        )}
-                      </TableCell>
+                    {headerGroup.headers.map((header) => (
+                      <TableHead
+                        className="font-mono text-[11px] text-muted-foreground uppercase tracking-[0.2em]"
+                        key={header.id}
+                      >
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(
+                              header.column.columnDef.header,
+                              header.getContext()
+                            )}
+                      </TableHead>
                     ))}
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </div>
-      </section>
-
-      {/* Pagination */}
-      {pagination.totalPages > 1 && (
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">
-            Showing {(pagination.page - 1) * pagination.limit + 1} to{" "}
-            {Math.min(pagination.page * pagination.limit, pagination.total)} of{" "}
-            {pagination.total} shifts
-          </p>
-          <div className="flex gap-2">
-            <Button
-              disabled={pagination.page === 1}
-              onClick={() =>
-                setPagination((prev) => ({ ...prev, page: prev.page - 1 }))
-              }
-              size="sm"
-              variant="outline"
-            >
-              Previous
-            </Button>
-            <Button
-              disabled={pagination.page === pagination.totalPages}
-              onClick={() =>
-                setPagination((prev) => ({ ...prev, page: prev.page + 1 }))
-              }
-              size="sm"
-              variant="outline"
-            >
-              Next
-            </Button>
+                ))}
+              </TableHeader>
+              <TableBody>{tableBody}</TableBody>
+            </Table>
           </div>
+
+          {pagination.totalPages > 1 ? (
+            <div className="flex flex-wrap items-center justify-between gap-4 border-hairline border-t pt-4">
+              <p className="text-muted-foreground text-sm">
+                Showing {(pagination.page - 1) * pagination.limit + 1}–
+                {Math.min(pagination.page * pagination.limit, pagination.total)}{" "}
+                of {pagination.total}
+              </p>
+              <div className="flex gap-2">
+                <Button
+                  disabled={pagination.page === 1}
+                  onClick={() =>
+                    setPagination((prev) => ({ ...prev, page: prev.page - 1 }))
+                  }
+                  size="sm"
+                  variant="outline"
+                >
+                  Previous
+                </Button>
+                <Button
+                  disabled={pagination.page === pagination.totalPages}
+                  onClick={() =>
+                    setPagination((prev) => ({ ...prev, page: prev.page + 1 }))
+                  }
+                  size="sm"
+                  variant="outline"
+                >
+                  Next
+                </Button>
+              </div>
+            </div>
+          ) : null}
         </div>
-      )}
+      </div>
 
       {/* Detail Modal */}
       <ShiftDetailModal
@@ -496,11 +571,16 @@ export function ShiftsClient() {
 
       {/* Create Modal */}
       {createModalOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-background rounded-lg shadow-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6">
-            <div className="mb-4">
-              <h2 className="text-2xl font-bold">Create New Shift</h2>
-              <p className="text-muted-foreground">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-[22px] border border-hairline bg-canvas p-8">
+            <div className="mb-6 space-y-2">
+              <div className="font-mono text-[11px] text-muted-foreground uppercase tracking-[0.28em]">
+                Scheduling
+              </div>
+              <h2 className="font-normal text-2xl text-ink tracking-[-0.02em] sm:text-3xl">
+                Create shift
+              </h2>
+              <p className="text-muted-foreground text-sm">
                 Add a new shift to the schedule.
               </p>
             </div>
@@ -548,6 +628,6 @@ export function ShiftsClient() {
         }}
         open={bulkAssignmentModalOpen}
       />
-    </div>
+    </KitchenOperationalCanvas>
   );
 }

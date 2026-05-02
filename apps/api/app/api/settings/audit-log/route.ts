@@ -99,7 +99,8 @@ export const GET = withRateLimit(
             u.id,
             {
               email: u.email,
-              name: [u.firstName, u.lastName].filter(Boolean).join(" ") || u.email,
+              name:
+                [u.firstName, u.lastName].filter(Boolean).join(" ") || u.email,
             },
           ])
         );
@@ -123,10 +124,10 @@ export const GET = withRateLimit(
         newValues: log.new_values,
         performedBy: log.performed_by,
         performedByName: log.performed_by
-          ? userMap[log.performed_by]?.name ?? null
+          ? (userMap[log.performed_by]?.name ?? null)
           : null,
         performedByEmail: log.performed_by
-          ? userMap[log.performed_by]?.email ?? null
+          ? (userMap[log.performed_by]?.email ?? null)
           : null,
         ipAddress: log.ip_address,
         userAgent: log.user_agent,

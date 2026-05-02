@@ -8,7 +8,6 @@
  *   auth -> tenant lookup -> createManifestRuntime -> runCommand
  */
 
-import { database } from "@repo/database";
 import { NextRequest } from "next/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -29,7 +28,7 @@ vi.mock("@/lib/manifest-response", async () => {
           success: true,
           ...(typeof data === "object" && data !== null ? data : { data }),
         },
-        { status },
+        { status }
       ),
     manifestErrorResponse: (message: string, status: number) =>
       NextResponse.json({ success: false, message }, { status }),
@@ -40,7 +39,7 @@ vi.mock("@/lib/manifest-response", async () => {
 const mockRunCommand = vi.fn();
 vi.mock("@/lib/manifest-runtime", () => ({
   createManifestRuntime: vi.fn(() =>
-    Promise.resolve({ runCommand: mockRunCommand }),
+    Promise.resolve({ runCommand: mockRunCommand })
   ),
 }));
 
@@ -49,6 +48,10 @@ const { auth } = await import("@repo/auth/server");
 const { getTenantIdForOrg } = await import("@/app/lib/tenant");
 const { createManifestRuntime } = await import("@/lib/manifest-runtime");
 
+// BulkOrderRule
+import { POST as bulkOrderCreate } from "@/app/api/bulkorderrule/create/route";
+import { POST as bulkOrderSoftDelete } from "@/app/api/bulkorderrule/soft-delete/route";
+import { POST as bulkOrderUpdate } from "@/app/api/bulkorderrule/update/route";
 // Import route handlers
 // InventorySupplier
 import { POST as supplierCreate } from "@/app/api/inventorysupplier/create/route";
@@ -60,10 +63,6 @@ import { POST as transactionCreate } from "@/app/api/inventorytransaction/create
 import { POST as pricingTierCreate } from "@/app/api/pricingtier/create/route";
 import { POST as pricingTierSoftDelete } from "@/app/api/pricingtier/soft-delete/route";
 import { POST as pricingTierUpdate } from "@/app/api/pricingtier/update/route";
-// BulkOrderRule
-import { POST as bulkOrderCreate } from "@/app/api/bulkorderrule/create/route";
-import { POST as bulkOrderSoftDelete } from "@/app/api/bulkorderrule/soft-delete/route";
-import { POST as bulkOrderUpdate } from "@/app/api/bulkorderrule/update/route";
 // VendorCatalog
 import { POST as vendorCatalogCreate } from "@/app/api/vendorcatalog/create/route";
 import { POST as vendorCatalogSoftDelete } from "@/app/api/vendorcatalog/soft-delete/route";
@@ -205,16 +204,14 @@ describe("Inventory Extended API", () => {
         expect(createManifestRuntime).toHaveBeenCalledWith({
           user: { id: TEST_USER_ID, tenantId: TEST_TENANT_ID },
         });
-        expect(mockRunCommand).toHaveBeenCalledWith(
-          "create",
-          supplierData,
-          { entityName: "InventorySupplier" },
-        );
+        expect(mockRunCommand).toHaveBeenCalledWith("create", supplierData, {
+          entityName: "InventorySupplier",
+        });
       });
 
       it("should return 500 on runtime error", async () => {
         vi.mocked(getTenantIdForOrg).mockRejectedValue(
-          new Error("DB down") as never,
+          new Error("DB down") as never
         );
 
         const response = await supplierCreate(makeRequest(supplierData));
@@ -226,7 +223,7 @@ describe("Inventory Extended API", () => {
 
       it("should return 403 on policy denial", async () => {
         mockRunCommand.mockResolvedValue(
-          policyDenialResult("SupplierWritePolicy"),
+          policyDenialResult("SupplierWritePolicy")
         );
 
         const response = await supplierCreate(makeRequest(supplierData));
@@ -239,7 +236,7 @@ describe("Inventory Extended API", () => {
 
       it("should return 422 on guard failure", async () => {
         mockRunCommand.mockResolvedValue(
-          guardFailureResult(0, "name is required"),
+          guardFailureResult(0, "name is required")
         );
 
         const response = await supplierCreate(makeRequest(supplierData));
@@ -268,7 +265,7 @@ describe("Inventory Extended API", () => {
         } as never);
 
         const response = await supplierDeactivate(
-          makeRequest({ id: "supplier-001" }),
+          makeRequest({ id: "supplier-001" })
         );
         expect(response.status).toBe(401);
       });
@@ -277,7 +274,7 @@ describe("Inventory Extended API", () => {
         vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
 
         const response = await supplierDeactivate(
-          makeRequest({ id: "supplier-001" }),
+          makeRequest({ id: "supplier-001" })
         );
         expect(response.status).toBe(400);
         const body = await response.json();
@@ -289,7 +286,7 @@ describe("Inventory Extended API", () => {
         mockRunCommand.mockResolvedValue(successResult(deactivated));
 
         const response = await supplierDeactivate(
-          makeRequest({ id: "supplier-001" }),
+          makeRequest({ id: "supplier-001" })
         );
         expect(response.status).toBe(200);
         const body = await response.json();
@@ -305,7 +302,7 @@ describe("Inventory Extended API", () => {
         expect(mockRunCommand).toHaveBeenCalledWith(
           "deactivate",
           { id: "supplier-001" },
-          { entityName: "InventorySupplier" },
+          { entityName: "InventorySupplier" }
         );
       });
 
@@ -313,7 +310,7 @@ describe("Inventory Extended API", () => {
         mockRunCommand.mockRejectedValue(new Error("Runtime crash") as never);
 
         const response = await supplierDeactivate(
-          makeRequest({ id: "supplier-001" }),
+          makeRequest({ id: "supplier-001" })
         );
         expect(response.status).toBe(500);
         const body = await response.json();
@@ -339,7 +336,7 @@ describe("Inventory Extended API", () => {
         } as never);
 
         const response = await supplierUpdate(
-          makeRequest({ id: "supplier-001", name: "Updated" }),
+          makeRequest({ id: "supplier-001", name: "Updated" })
         );
         expect(response.status).toBe(401);
       });
@@ -348,7 +345,7 @@ describe("Inventory Extended API", () => {
         vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
 
         const response = await supplierUpdate(
-          makeRequest({ id: "supplier-001", name: "Updated" }),
+          makeRequest({ id: "supplier-001", name: "Updated" })
         );
         expect(response.status).toBe(400);
         const body = await response.json();
@@ -360,7 +357,7 @@ describe("Inventory Extended API", () => {
         mockRunCommand.mockResolvedValue(successResult(updated));
 
         const response = await supplierUpdate(
-          makeRequest({ id: "supplier-001", name: "Updated Produce Co" }),
+          makeRequest({ id: "supplier-001", name: "Updated Produce Co" })
         );
         expect(response.status).toBe(200);
         const body = await response.json();
@@ -374,18 +371,16 @@ describe("Inventory Extended API", () => {
         const updateBody = { id: "supplier-001", name: "Updated" };
         await supplierUpdate(makeRequest(updateBody));
 
-        expect(mockRunCommand).toHaveBeenCalledWith(
-          "update",
-          updateBody,
-          { entityName: "InventorySupplier" },
-        );
+        expect(mockRunCommand).toHaveBeenCalledWith("update", updateBody, {
+          entityName: "InventorySupplier",
+        });
       });
 
       it("should return 500 on unexpected error", async () => {
         mockRunCommand.mockRejectedValue(new Error("Runtime error") as never);
 
         const response = await supplierUpdate(
-          makeRequest({ id: "supplier-001", name: "Updated" }),
+          makeRequest({ id: "supplier-001", name: "Updated" })
         );
         expect(response.status).toBe(500);
         const body = await response.json();
@@ -417,9 +412,7 @@ describe("Inventory Extended API", () => {
           orgId: null,
         } as never);
 
-        const response = await transactionCreate(
-          makeRequest(transactionData),
-        );
+        const response = await transactionCreate(makeRequest(transactionData));
         expect(response.status).toBe(401);
         const body = await response.json();
         expect(body.success).toBe(false);
@@ -429,9 +422,7 @@ describe("Inventory Extended API", () => {
       it("should return 400 when tenant not found", async () => {
         vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
 
-        const response = await transactionCreate(
-          makeRequest(transactionData),
-        );
+        const response = await transactionCreate(makeRequest(transactionData));
         expect(response.status).toBe(400);
         const body = await response.json();
         expect(body.success).toBe(false);
@@ -441,9 +432,7 @@ describe("Inventory Extended API", () => {
       it("should create transaction and return success", async () => {
         mockRunCommand.mockResolvedValue(successResult(transactionData));
 
-        const response = await transactionCreate(
-          makeRequest(transactionData),
-        );
+        const response = await transactionCreate(makeRequest(transactionData));
         expect(response.status).toBe(200);
         const body = await response.json();
         expect(body.success).toBe(true);
@@ -456,19 +445,15 @@ describe("Inventory Extended API", () => {
 
         await transactionCreate(makeRequest(transactionData));
 
-        expect(mockRunCommand).toHaveBeenCalledWith(
-          "create",
-          transactionData,
-          { entityName: "InventoryTransaction" },
-        );
+        expect(mockRunCommand).toHaveBeenCalledWith("create", transactionData, {
+          entityName: "InventoryTransaction",
+        });
       });
 
       it("should return 500 on runtime error", async () => {
         mockRunCommand.mockRejectedValue(new Error("DB error") as never);
 
-        const response = await transactionCreate(
-          makeRequest(transactionData),
-        );
+        const response = await transactionCreate(makeRequest(transactionData));
         expect(response.status).toBe(500);
         const body = await response.json();
         expect(body.message).toBe("Internal server error");
@@ -476,12 +461,10 @@ describe("Inventory Extended API", () => {
 
       it("should return 403 on policy denial", async () => {
         mockRunCommand.mockResolvedValue(
-          policyDenialResult("TransactionWritePolicy"),
+          policyDenialResult("TransactionWritePolicy")
         );
 
-        const response = await transactionCreate(
-          makeRequest(transactionData),
-        );
+        const response = await transactionCreate(makeRequest(transactionData));
         expect(response.status).toBe(403);
         const body = await response.json();
         expect(body.message).toContain("Access denied");
@@ -490,12 +473,10 @@ describe("Inventory Extended API", () => {
 
       it("should return 422 on guard failure", async () => {
         mockRunCommand.mockResolvedValue(
-          guardFailureResult(1, "quantity must be positive"),
+          guardFailureResult(1, "quantity must be positive")
         );
 
-        const response = await transactionCreate(
-          makeRequest(transactionData),
-        );
+        const response = await transactionCreate(makeRequest(transactionData));
         expect(response.status).toBe(422);
         const body = await response.json();
         expect(body.message).toContain("Guard 1 failed");
@@ -566,11 +547,9 @@ describe("Inventory Extended API", () => {
 
         await pricingTierCreate(makeRequest(tierData));
 
-        expect(mockRunCommand).toHaveBeenCalledWith(
-          "create",
-          tierData,
-          { entityName: "PricingTier" },
-        );
+        expect(mockRunCommand).toHaveBeenCalledWith("create", tierData, {
+          entityName: "PricingTier",
+        });
       });
 
       it("should return 500 on unexpected error", async () => {
@@ -583,9 +562,7 @@ describe("Inventory Extended API", () => {
       });
 
       it("should return 400 on command failure", async () => {
-        mockRunCommand.mockResolvedValue(
-          errorResult("Tier already exists"),
-        );
+        mockRunCommand.mockResolvedValue(errorResult("Tier already exists"));
 
         const response = await pricingTierCreate(makeRequest(tierData));
         expect(response.status).toBe(400);
@@ -602,7 +579,7 @@ describe("Inventory Extended API", () => {
         } as never);
 
         const response = await pricingTierSoftDelete(
-          makeRequest({ id: "tier-001" }),
+          makeRequest({ id: "tier-001" })
         );
         expect(response.status).toBe(401);
       });
@@ -611,7 +588,7 @@ describe("Inventory Extended API", () => {
         vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
 
         const response = await pricingTierSoftDelete(
-          makeRequest({ id: "tier-001" }),
+          makeRequest({ id: "tier-001" })
         );
         expect(response.status).toBe(400);
         const body = await response.json();
@@ -623,7 +600,7 @@ describe("Inventory Extended API", () => {
         mockRunCommand.mockResolvedValue(successResult(deleted));
 
         const response = await pricingTierSoftDelete(
-          makeRequest({ id: "tier-001" }),
+          makeRequest({ id: "tier-001" })
         );
         expect(response.status).toBe(200);
         const body = await response.json();
@@ -638,7 +615,7 @@ describe("Inventory Extended API", () => {
         expect(mockRunCommand).toHaveBeenCalledWith(
           "softDelete",
           { id: "tier-001" },
-          { entityName: "PricingTier" },
+          { entityName: "PricingTier" }
         );
       });
 
@@ -646,7 +623,7 @@ describe("Inventory Extended API", () => {
         mockRunCommand.mockRejectedValue(new Error("DB error") as never);
 
         const response = await pricingTierSoftDelete(
-          makeRequest({ id: "tier-001" }),
+          makeRequest({ id: "tier-001" })
         );
         expect(response.status).toBe(500);
       });
@@ -670,7 +647,7 @@ describe("Inventory Extended API", () => {
         } as never);
 
         const response = await pricingTierUpdate(
-          makeRequest({ id: "tier-001", discountPercent: 10 }),
+          makeRequest({ id: "tier-001", discountPercent: 10 })
         );
         expect(response.status).toBe(401);
       });
@@ -679,7 +656,7 @@ describe("Inventory Extended API", () => {
         vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
 
         const response = await pricingTierUpdate(
-          makeRequest({ id: "tier-001", discountPercent: 10 }),
+          makeRequest({ id: "tier-001", discountPercent: 10 })
         );
         expect(response.status).toBe(400);
       });
@@ -689,7 +666,7 @@ describe("Inventory Extended API", () => {
         mockRunCommand.mockResolvedValue(successResult(updated));
 
         const response = await pricingTierUpdate(
-          makeRequest({ id: "tier-001", discountPercent: 10 }),
+          makeRequest({ id: "tier-001", discountPercent: 10 })
         );
         expect(response.status).toBe(200);
         const body = await response.json();
@@ -703,18 +680,16 @@ describe("Inventory Extended API", () => {
         const updateBody = { id: "tier-001", discountPercent: 10 };
         await pricingTierUpdate(makeRequest(updateBody));
 
-        expect(mockRunCommand).toHaveBeenCalledWith(
-          "update",
-          updateBody,
-          { entityName: "PricingTier" },
-        );
+        expect(mockRunCommand).toHaveBeenCalledWith("update", updateBody, {
+          entityName: "PricingTier",
+        });
       });
 
       it("should return 500 on unexpected error", async () => {
         mockRunCommand.mockRejectedValue(new Error("Oops") as never);
 
         const response = await pricingTierUpdate(
-          makeRequest({ id: "tier-001", discountPercent: 10 }),
+          makeRequest({ id: "tier-001", discountPercent: 10 })
         );
         expect(response.status).toBe(500);
       });
@@ -775,11 +750,9 @@ describe("Inventory Extended API", () => {
 
         await bulkOrderCreate(makeRequest(ruleData));
 
-        expect(mockRunCommand).toHaveBeenCalledWith(
-          "create",
-          ruleData,
-          { entityName: "BulkOrderRule" },
-        );
+        expect(mockRunCommand).toHaveBeenCalledWith("create", ruleData, {
+          entityName: "BulkOrderRule",
+        });
       });
 
       it("should return 500 on runtime error", async () => {
@@ -792,9 +765,7 @@ describe("Inventory Extended API", () => {
       });
 
       it("should return 403 on policy denial", async () => {
-        mockRunCommand.mockResolvedValue(
-          policyDenialResult("BulkOrderPolicy"),
-        );
+        mockRunCommand.mockResolvedValue(policyDenialResult("BulkOrderPolicy"));
 
         const response = await bulkOrderCreate(makeRequest(ruleData));
         expect(response.status).toBe(403);
@@ -805,7 +776,7 @@ describe("Inventory Extended API", () => {
 
       it("should return 422 on guard failure", async () => {
         mockRunCommand.mockResolvedValue(
-          guardFailureResult(0, "minQuantity must be > 0"),
+          guardFailureResult(0, "minQuantity must be > 0")
         );
 
         const response = await bulkOrderCreate(makeRequest(ruleData));
@@ -816,7 +787,7 @@ describe("Inventory Extended API", () => {
 
       it("should return 400 on generic command failure", async () => {
         mockRunCommand.mockResolvedValue(
-          errorResult("Overlapping rule exists"),
+          errorResult("Overlapping rule exists")
         );
 
         const response = await bulkOrderCreate(makeRequest(ruleData));
@@ -834,7 +805,7 @@ describe("Inventory Extended API", () => {
         } as never);
 
         const response = await bulkOrderSoftDelete(
-          makeRequest({ id: "rule-001" }),
+          makeRequest({ id: "rule-001" })
         );
         expect(response.status).toBe(401);
       });
@@ -843,7 +814,7 @@ describe("Inventory Extended API", () => {
         vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
 
         const response = await bulkOrderSoftDelete(
-          makeRequest({ id: "rule-001" }),
+          makeRequest({ id: "rule-001" })
         );
         expect(response.status).toBe(400);
         const body = await response.json();
@@ -855,7 +826,7 @@ describe("Inventory Extended API", () => {
         mockRunCommand.mockResolvedValue(successResult(deleted));
 
         const response = await bulkOrderSoftDelete(
-          makeRequest({ id: "rule-001" }),
+          makeRequest({ id: "rule-001" })
         );
         expect(response.status).toBe(200);
         const body = await response.json();
@@ -870,7 +841,7 @@ describe("Inventory Extended API", () => {
         expect(mockRunCommand).toHaveBeenCalledWith(
           "softDelete",
           { id: "rule-001" },
-          { entityName: "BulkOrderRule" },
+          { entityName: "BulkOrderRule" }
         );
       });
 
@@ -878,7 +849,7 @@ describe("Inventory Extended API", () => {
         mockRunCommand.mockRejectedValue(new Error("Error") as never);
 
         const response = await bulkOrderSoftDelete(
-          makeRequest({ id: "rule-001" }),
+          makeRequest({ id: "rule-001" })
         );
         expect(response.status).toBe(500);
       });
@@ -902,7 +873,7 @@ describe("Inventory Extended API", () => {
         } as never);
 
         const response = await bulkOrderUpdate(
-          makeRequest({ id: "rule-001", discountPercent: 20 }),
+          makeRequest({ id: "rule-001", discountPercent: 20 })
         );
         expect(response.status).toBe(401);
       });
@@ -911,7 +882,7 @@ describe("Inventory Extended API", () => {
         vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
 
         const response = await bulkOrderUpdate(
-          makeRequest({ id: "rule-001", discountPercent: 20 }),
+          makeRequest({ id: "rule-001", discountPercent: 20 })
         );
         expect(response.status).toBe(400);
       });
@@ -921,7 +892,7 @@ describe("Inventory Extended API", () => {
         mockRunCommand.mockResolvedValue(successResult(updated));
 
         const response = await bulkOrderUpdate(
-          makeRequest({ id: "rule-001", discountPercent: 20 }),
+          makeRequest({ id: "rule-001", discountPercent: 20 })
         );
         expect(response.status).toBe(200);
         const body = await response.json();
@@ -935,18 +906,16 @@ describe("Inventory Extended API", () => {
         const updateBody = { id: "rule-001", discountPercent: 20 };
         await bulkOrderUpdate(makeRequest(updateBody));
 
-        expect(mockRunCommand).toHaveBeenCalledWith(
-          "update",
-          updateBody,
-          { entityName: "BulkOrderRule" },
-        );
+        expect(mockRunCommand).toHaveBeenCalledWith("update", updateBody, {
+          entityName: "BulkOrderRule",
+        });
       });
 
       it("should return 500 on unexpected error", async () => {
         mockRunCommand.mockRejectedValue(new Error("Fail") as never);
 
         const response = await bulkOrderUpdate(
-          makeRequest({ id: "rule-001", discountPercent: 20 }),
+          makeRequest({ id: "rule-001", discountPercent: 20 })
         );
         expect(response.status).toBe(500);
       });
@@ -1009,11 +978,9 @@ describe("Inventory Extended API", () => {
 
         await vendorCatalogCreate(makeRequest(catalogData));
 
-        expect(mockRunCommand).toHaveBeenCalledWith(
-          "create",
-          catalogData,
-          { entityName: "VendorCatalog" },
-        );
+        expect(mockRunCommand).toHaveBeenCalledWith("create", catalogData, {
+          entityName: "VendorCatalog",
+        });
       });
 
       it("should return 500 on runtime error", async () => {
@@ -1027,7 +994,7 @@ describe("Inventory Extended API", () => {
 
       it("should return 403 on policy denial", async () => {
         mockRunCommand.mockResolvedValue(
-          policyDenialResult("VendorCatalogWritePolicy"),
+          policyDenialResult("VendorCatalogWritePolicy")
         );
 
         const response = await vendorCatalogCreate(makeRequest(catalogData));
@@ -1039,7 +1006,7 @@ describe("Inventory Extended API", () => {
 
       it("should return 422 on guard failure", async () => {
         mockRunCommand.mockResolvedValue(
-          guardFailureResult(2, "price must be positive"),
+          guardFailureResult(2, "price must be positive")
         );
 
         const response = await vendorCatalogCreate(makeRequest(catalogData));
@@ -1050,7 +1017,7 @@ describe("Inventory Extended API", () => {
 
       it("should return 400 on generic command failure", async () => {
         mockRunCommand.mockResolvedValue(
-          errorResult("Duplicate catalog entry"),
+          errorResult("Duplicate catalog entry")
         );
 
         const response = await vendorCatalogCreate(makeRequest(catalogData));
@@ -1068,7 +1035,7 @@ describe("Inventory Extended API", () => {
         } as never);
 
         const response = await vendorCatalogSoftDelete(
-          makeRequest({ id: "catalog-001" }),
+          makeRequest({ id: "catalog-001" })
         );
         expect(response.status).toBe(401);
       });
@@ -1077,7 +1044,7 @@ describe("Inventory Extended API", () => {
         vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
 
         const response = await vendorCatalogSoftDelete(
-          makeRequest({ id: "catalog-001" }),
+          makeRequest({ id: "catalog-001" })
         );
         expect(response.status).toBe(400);
         const body = await response.json();
@@ -1092,7 +1059,7 @@ describe("Inventory Extended API", () => {
         mockRunCommand.mockResolvedValue(successResult(deleted));
 
         const response = await vendorCatalogSoftDelete(
-          makeRequest({ id: "catalog-001" }),
+          makeRequest({ id: "catalog-001" })
         );
         expect(response.status).toBe(200);
         const body = await response.json();
@@ -1107,7 +1074,7 @@ describe("Inventory Extended API", () => {
         expect(mockRunCommand).toHaveBeenCalledWith(
           "softDelete",
           { id: "catalog-001" },
-          { entityName: "VendorCatalog" },
+          { entityName: "VendorCatalog" }
         );
       });
 
@@ -1115,7 +1082,7 @@ describe("Inventory Extended API", () => {
         mockRunCommand.mockRejectedValue(new Error("Fail") as never);
 
         const response = await vendorCatalogSoftDelete(
-          makeRequest({ id: "catalog-001" }),
+          makeRequest({ id: "catalog-001" })
         );
         expect(response.status).toBe(500);
       });
@@ -1139,7 +1106,7 @@ describe("Inventory Extended API", () => {
         } as never);
 
         const response = await vendorCatalogUpdate(
-          makeRequest({ id: "catalog-001", price: 14.99 }),
+          makeRequest({ id: "catalog-001", price: 14.99 })
         );
         expect(response.status).toBe(401);
       });
@@ -1148,7 +1115,7 @@ describe("Inventory Extended API", () => {
         vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
 
         const response = await vendorCatalogUpdate(
-          makeRequest({ id: "catalog-001", price: 14.99 }),
+          makeRequest({ id: "catalog-001", price: 14.99 })
         );
         expect(response.status).toBe(400);
       });
@@ -1158,7 +1125,7 @@ describe("Inventory Extended API", () => {
         mockRunCommand.mockResolvedValue(successResult(updated));
 
         const response = await vendorCatalogUpdate(
-          makeRequest({ id: "catalog-001", price: 14.99 }),
+          makeRequest({ id: "catalog-001", price: 14.99 })
         );
         expect(response.status).toBe(200);
         const body = await response.json();
@@ -1172,18 +1139,16 @@ describe("Inventory Extended API", () => {
         const updateBody = { id: "catalog-001", price: 14.99 };
         await vendorCatalogUpdate(makeRequest(updateBody));
 
-        expect(mockRunCommand).toHaveBeenCalledWith(
-          "update",
-          updateBody,
-          { entityName: "VendorCatalog" },
-        );
+        expect(mockRunCommand).toHaveBeenCalledWith("update", updateBody, {
+          entityName: "VendorCatalog",
+        });
       });
 
       it("should return 500 on unexpected error", async () => {
         mockRunCommand.mockRejectedValue(new Error("Fail") as never);
 
         const response = await vendorCatalogUpdate(
-          makeRequest({ id: "catalog-001", price: 14.99 }),
+          makeRequest({ id: "catalog-001", price: 14.99 })
         );
         expect(response.status).toBe(500);
       });
@@ -1200,16 +1165,12 @@ describe("Inventory Extended API", () => {
         userId: "user_other",
         orgId: "org_other",
       } as never);
-      vi.mocked(getTenantIdForOrg).mockResolvedValue(
-        OTHER_TENANT_ID as never,
-      );
+      vi.mocked(getTenantIdForOrg).mockResolvedValue(OTHER_TENANT_ID as never);
       mockRunCommand.mockResolvedValue(
-        successResult({ id: "supplier-other", tenantId: OTHER_TENANT_ID }),
+        successResult({ id: "supplier-other", tenantId: OTHER_TENANT_ID })
       );
 
-      await supplierCreate(
-        makeRequest({ name: "Other Org Supplier" }),
-      );
+      await supplierCreate(makeRequest({ name: "Other Org Supplier" }));
 
       expect(createManifestRuntime).toHaveBeenCalledWith({
         user: { id: "user_other", tenantId: OTHER_TENANT_ID },
@@ -1223,11 +1184,11 @@ describe("Inventory Extended API", () => {
           id: "txn-a",
           tenantId: TEST_TENANT_ID,
           type: "INBOUND",
-        }),
+        })
       );
 
       const response = await transactionCreate(
-        makeRequest({ itemId: "item-1", type: "INBOUND", quantity: 10 }),
+        makeRequest({ itemId: "item-1", type: "INBOUND", quantity: 10 })
       );
       const body = await response.json();
 
@@ -1250,7 +1211,7 @@ describe("Inventory Extended API", () => {
           supplierId: "supplier-001",
           itemId: "item-001",
           price: 9.99,
-        }),
+        })
       );
 
       expect(response.status).toBe(401);

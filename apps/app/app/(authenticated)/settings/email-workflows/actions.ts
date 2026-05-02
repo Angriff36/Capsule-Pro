@@ -1,8 +1,8 @@
 "use server";
 
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import type { email_trigger_type } from "@repo/database";
+import { database } from "@repo/database";
 import { revalidatePath } from "next/cache";
 import { invariant } from "@/app/lib/invariant";
 import { getTenantId } from "@/app/lib/tenant";
@@ -29,11 +29,7 @@ export const TRIGGER_TYPE_GROUPS: {
 }[] = [
   {
     label: "Event Triggers",
-    types: [
-      "event_confirmed",
-      "event_canceled",
-      "event_completed",
-    ],
+    types: ["event_confirmed", "event_canceled", "event_completed"],
   },
   {
     label: "Task Triggers",
@@ -86,7 +82,11 @@ export interface UpdateEmailWorkflowInput {
 }
 
 export async function getEmailWorkflows(
-  filters: { search?: string; triggerType?: EmailTriggerType; isActive?: boolean } = {}
+  filters: {
+    search?: string;
+    triggerType?: EmailTriggerType;
+    isActive?: boolean;
+  } = {}
 ) {
   const { orgId } = await auth();
   invariant(orgId, "Unauthorized");
@@ -216,12 +216,14 @@ export async function updateEmailWorkflow(
   const data: Record<string, unknown> = {};
   if (input.name !== undefined) data.name = input.name;
   if (input.triggerType !== undefined) data.triggerType = input.triggerType;
-  if (input.triggerConfig !== undefined) data.triggerConfig = input.triggerConfig;
+  if (input.triggerConfig !== undefined)
+    data.triggerConfig = input.triggerConfig;
   if (input.emailTemplateId !== undefined) {
     data.emailTemplateId = input.emailTemplateId;
     data.emailTemplateTenantId = input.emailTemplateId ? tenantId : null;
   }
-  if (input.recipientConfig !== undefined) data.recipientConfig = input.recipientConfig;
+  if (input.recipientConfig !== undefined)
+    data.recipientConfig = input.recipientConfig;
   if (input.isActive !== undefined) data.isActive = input.isActive;
 
   const workflow = await database.emailWorkflow.update({

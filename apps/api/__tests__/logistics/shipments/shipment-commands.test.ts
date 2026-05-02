@@ -414,7 +414,7 @@ describe("Shipment Command Routes — success paths", () => {
     const body = {
       id: TEST_SHIPMENT_ID,
       userId: TEST_USER_ID,
-      scheduledDate: 1735689600000,
+      scheduledDate: 1_735_689_600_000,
     };
     const response = await POST(
       createMockRequest("http://localhost:3000/test", {
@@ -426,7 +426,7 @@ describe("Shipment Command Routes — success paths", () => {
     expect(response.status).toBe(200);
     expect(runCommand).toHaveBeenCalledWith(
       "schedule",
-      expect.objectContaining({ scheduledDate: 1735689600000 }),
+      expect.objectContaining({ scheduledDate: 1_735_689_600_000 }),
       expect.objectContaining({ instanceId: TEST_SHIPMENT_ID })
     );
   });
@@ -810,9 +810,7 @@ describe("GET /api/shipments/shipment-items/list", () => {
     const { GET } = await import(
       "@/app/api/shipments/shipment-items/list/route"
     );
-    const response = await GET(
-      createMockRequest("http://localhost:3000/test")
-    );
+    const response = await GET(createMockRequest("http://localhost:3000/test"));
 
     expect(response.status).toBe(401);
   });
@@ -827,9 +825,7 @@ describe("GET /api/shipments/shipment-items/list", () => {
     const { GET } = await import(
       "@/app/api/shipments/shipment-items/list/route"
     );
-    const response = await GET(
-      createMockRequest("http://localhost:3000/test")
-    );
+    const response = await GET(createMockRequest("http://localhost:3000/test"));
 
     expect(response.status).toBe(400);
   });
@@ -848,9 +844,7 @@ describe("GET /api/shipments/shipment-items/list", () => {
     const { GET } = await import(
       "@/app/api/shipments/shipment-items/list/route"
     );
-    const response = await GET(
-      createMockRequest("http://localhost:3000/test")
-    );
+    const response = await GET(createMockRequest("http://localhost:3000/test"));
     const data = await response.json();
 
     expect(response.status).toBe(200);
@@ -877,9 +871,7 @@ describe("GET /api/shipments/shipment-items/list", () => {
     const { GET } = await import(
       "@/app/api/shipments/shipment-items/list/route"
     );
-    const response = await GET(
-      createMockRequest("http://localhost:3000/test")
-    );
+    const response = await GET(createMockRequest("http://localhost:3000/test"));
 
     expect(response.status).toBe(500);
   });

@@ -22,7 +22,6 @@ export const RecipeEditButton = ({
   return (
     <Button
       aria-label={`Edit ${recipeName}`}
-      className="text-white"
       onClick={handleClick}
       size="sm"
       type="button"

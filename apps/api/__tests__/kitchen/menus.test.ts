@@ -46,7 +46,9 @@ function mockAuthenticated() {
   vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID as never);
 }
 
-function mockRuntimeSuccess(result: Record<string, unknown> = { id: "menu-001" }) {
+function mockRuntimeSuccess(
+  result: Record<string, unknown> = { id: "menu-001" }
+) {
   vi.mocked(createManifestRuntime).mockResolvedValue({
     runCommand: vi.fn().mockResolvedValue({
       success: true,
@@ -197,9 +199,7 @@ describe("Menu API Routes", () => {
       vi.mocked(auth).mockResolvedValue({ orgId: null, userId: null } as never);
 
       const { POST } = await import("@/app/api/menu/update/route");
-      const res = await POST(
-        makeRequest({ id: "menu-001", name: "Updated" })
-      );
+      const res = await POST(makeRequest({ id: "menu-001", name: "Updated" }));
       const data = await res.json();
 
       expect(res.status).toBe(401);

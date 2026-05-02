@@ -309,7 +309,7 @@ function StepCard({ step, index }: { step: RecipeStepDisplay; index: number }) {
   return (
     <Card
       className={`relative overflow-hidden transition-all ${
-        isCCP ? "border-amber-300 dark:border-amber-700" : ""
+        isCCP ? "border-amber-300" : ""
       }`}
     >
       {/* CCP indicator bar at top */}
@@ -348,7 +348,7 @@ function StepCard({ step, index }: { step: RecipeStepDisplay; index: number }) {
               )}
               {hasTemp && (
                 <Badge
-                  className={`gap-1 ${isCCP ? "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200" : ""}`}
+                  className={`gap-1 ${isCCP ? "border-amber-200 bg-amber-50 text-amber-900" : ""}`}
                   variant={isCCP ? "outline" : "secondary"}
                 >
                   <Thermometer className="h-3 w-3" />
@@ -406,7 +406,7 @@ function StepCard({ step, index }: { step: RecipeStepDisplay; index: number }) {
 
             {/* CCP verification checkbox */}
             {isCCP && (
-              <div className="mt-3 flex items-center gap-2 rounded-md border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-950/20">
+              <div className="mt-3 flex items-center gap-2 rounded-md border border-amber-200 bg-amber-50 p-3">
                 <button
                   className={`flex h-5 w-5 items-center justify-center rounded border-2 ${
                     tempVerified
@@ -418,7 +418,7 @@ function StepCard({ step, index }: { step: RecipeStepDisplay; index: number }) {
                 >
                   {tempVerified && <CheckCircle2 className="h-3 w-3" />}
                 </button>
-                <span className="text-sm text-amber-700 dark:text-amber-400">
+                <span className="text-sm text-amber-900">
                   Temperature verified:{" "}
                   {formatTemperature(
                     step.temperature_value,

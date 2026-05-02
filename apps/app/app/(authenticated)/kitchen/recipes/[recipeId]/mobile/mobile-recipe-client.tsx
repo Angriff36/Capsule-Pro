@@ -445,10 +445,10 @@ export const MobileRecipeClient = ({
   const progress = ((currentStep + 1) / recipe.steps.length) * 100;
 
   return (
-    <div className="flex min-h-screen flex-col pb-safe">
+    <div className="flex min-h-0 flex-1 flex-col pb-safe">
       {/* Offline/Cache Status Indicator */}
       {isFromCache && (
-        <div className="flex items-center justify-between border-b bg-amber-50 px-4 py-2 text-amber-800 dark:bg-amber-950/30 dark:text-amber-200">
+        <div className="flex items-center justify-between border-b border-hairline bg-amber-50 px-4 py-2 text-amber-900">
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2 text-sm">
               <WifiOff className="h-4 w-4" />
@@ -457,7 +457,7 @@ export const MobileRecipeClient = ({
               </span>
             </div>
             {!isOnline && (
-              <span className="text-xs text-amber-600 dark:text-amber-400">
+              <span className="text-xs text-amber-900/75">
                 Last synced{" "}
                 {new Date(
                   Number.parseInt(
@@ -484,7 +484,7 @@ export const MobileRecipeClient = ({
       )}
 
       {/* Progress Bar */}
-      <div className="border-b bg-background px-4 py-3">
+      <div className="border-b border-hairline bg-background px-4 py-3">
         <div className="mb-2 flex items-center justify-between text-sm">
           <span className="font-medium">
             Step {currentStep + 1} of {recipe.steps.length}
@@ -496,8 +496,8 @@ export const MobileRecipeClient = ({
         <Progress className="h-2" value={progress} />
       </div>
 
-      <Tabs className="flex-1" defaultValue="steps">
-        <TabsList className="sticky top-[60px] z-40 grid w-full grid-cols-3 rounded-none border-b bg-background">
+      <Tabs className="flex min-h-0 flex-1 flex-col" defaultValue="steps">
+        <TabsList className="sticky top-[60px] z-40 grid w-full grid-cols-3 rounded-none border-b border-hairline bg-background">
           <TabsTrigger
             className="rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary"
             value="steps"
@@ -541,9 +541,9 @@ export const MobileRecipeClient = ({
               </div>
 
               {currentStepData.tips && (
-                <div className="flex gap-2 rounded-lg bg-amber-50 p-3 dark:bg-amber-950/30">
-                  <Info className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-500" />
-                  <p className="text-sm text-amber-800 dark:text-amber-200">
+                <div className="flex gap-2 rounded-lg border border-amber-200/80 bg-amber-50/90 p-3">
+                  <Info className="mt-0.5 h-4 w-4 shrink-0 text-amber-700" />
+                  <p className="text-sm text-amber-900">
                     {currentStepData.tips}
                   </p>
                 </div>
@@ -551,11 +551,11 @@ export const MobileRecipeClient = ({
 
               {currentStepData.equipmentNeeded &&
                 currentStepData.equipmentNeeded.length > 0 && (
-                  <div className="flex gap-2 rounded-lg bg-blue-50 p-3 dark:bg-blue-950/30">
-                    <Wrench className="mt-0.5 h-4 w-4 shrink-0 text-blue-600 dark:text-blue-500" />
-                    <div className="text-sm text-blue-800 dark:text-blue-200">
+                  <div className="flex gap-2 rounded-lg border border-hairline bg-pale-blue/50 p-3">
+                    <Wrench className="mt-0.5 h-4 w-4 shrink-0 text-action-blue" />
+                    <div className="text-sm text-ink">
                       <p className="font-medium">Equipment needed:</p>
-                      <p className="text-blue-700 dark:text-blue-300">
+                      <p className="text-muted-foreground">
                         {currentStepData.equipmentNeeded.join(", ")}
                       </p>
                     </div>
@@ -692,7 +692,7 @@ export const MobileRecipeClient = ({
               <div className="space-y-3">
                 {ingredients.map((ingredient) => (
                   <div
-                    className="flex items-start justify-between rounded-lg border p-3"
+                    className="flex items-start justify-between rounded-lg border border-hairline p-3"
                     key={ingredient.id}
                   >
                     <div className="flex-1">
@@ -745,7 +745,7 @@ export const MobileRecipeClient = ({
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
-                <div className="flex items-center gap-3 rounded-lg border p-4">
+                <div className="flex items-center gap-3 rounded-lg border border-hairline p-4">
                   <Clock className="h-5 w-5 text-primary" />
                   <div>
                     <p className="text-sm text-muted-foreground">Prep Time</p>
@@ -754,7 +754,7 @@ export const MobileRecipeClient = ({
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3 rounded-lg border p-4">
+                <div className="flex items-center gap-3 rounded-lg border border-hairline p-4">
                   <Clock className="h-5 w-5 text-primary" />
                   <div>
                     <p className="text-sm text-muted-foreground">Cook Time</p>
@@ -766,7 +766,7 @@ export const MobileRecipeClient = ({
               </div>
 
               {recipe.yieldQuantity && (
-                <div className="rounded-lg border p-4">
+                <div className="rounded-lg border border-hairline p-4">
                   <p className="text-sm text-muted-foreground">Yield</p>
                   <p className="text-lg font-semibold">
                     {recipe.yieldQuantity} {recipe.yieldUnit || ""}
@@ -775,7 +775,7 @@ export const MobileRecipeClient = ({
               )}
 
               {recipe.totalDuration > 0 && (
-                <div className="rounded-lg border p-4">
+                <div className="rounded-lg border border-hairline p-4">
                   <p className="text-sm text-muted-foreground">
                     Total Timed Steps
                   </p>

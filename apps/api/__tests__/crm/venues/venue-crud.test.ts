@@ -18,24 +18,22 @@
 import { database } from "@repo/database";
 import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-
-import {
-  GET as listVenues,
-  POST as createVenue,
-} from "@/app/api/crm/venues/route";
+import { GET as listVenueEvents } from "@/app/api/crm/venues/[id]/events/route";
 import {
   DELETE as deleteVenue,
   GET as getVenue,
   PUT as updateVenue,
 } from "@/app/api/crm/venues/[id]/route";
-import { GET as listVenueEvents } from "@/app/api/crm/venues/[id]/events/route";
+import {
+  POST as createVenue,
+  GET as listVenues,
+} from "@/app/api/crm/venues/route";
 
 // --- Mocks --------------------------------------------------------------
 
 vi.mock("@repo/database", async () => {
-  const actual = await vi.importActual<typeof import("@repo/database")>(
-    "@repo/database"
-  );
+  const actual =
+    await vi.importActual<typeof import("@repo/database")>("@repo/database");
   return {
     ...actual,
     database: {
@@ -287,9 +285,10 @@ describe("PUT /api/crm/venues/[id]", () => {
   it("only writes provided fields", async () => {
     const fake = makeFakeVenue();
     vi.mocked(database.venue.findFirst).mockResolvedValue(fake as never);
-    vi.mocked(database.venue.update).mockResolvedValue(
-      { ...fake, capacity: 999 } as never
-    );
+    vi.mocked(database.venue.update).mockResolvedValue({
+      ...fake,
+      capacity: 999,
+    } as never);
 
     const req = new NextRequest("http://localhost/api/crm/venues/x", {
       method: "PUT",
@@ -312,7 +311,9 @@ describe("DELETE /api/crm/venues/[id]", () => {
   it("returns 404 when venue does not exist", async () => {
     vi.mocked(database.venue.findFirst).mockResolvedValue(null);
     const res = await deleteVenue(
-      new NextRequest("http://localhost/api/crm/venues/x", { method: "DELETE" }),
+      new NextRequest("http://localhost/api/crm/venues/x", {
+        method: "DELETE",
+      }),
       { params: paramsOf(VENUE_ID) }
     );
     expect(res.status).toBe(404);
@@ -325,7 +326,9 @@ describe("DELETE /api/crm/venues/[id]", () => {
     vi.mocked(database.event.count).mockResolvedValue(3 as never);
 
     const res = await deleteVenue(
-      new NextRequest("http://localhost/api/crm/venues/x", { method: "DELETE" }),
+      new NextRequest("http://localhost/api/crm/venues/x", {
+        method: "DELETE",
+      }),
       { params: paramsOf(VENUE_ID) }
     );
     expect(res.status).toBe(409);
@@ -344,7 +347,9 @@ describe("DELETE /api/crm/venues/[id]", () => {
     );
 
     const res = await deleteVenue(
-      new NextRequest("http://localhost/api/crm/venues/x", { method: "DELETE" }),
+      new NextRequest("http://localhost/api/crm/venues/x", {
+        method: "DELETE",
+      }),
       { params: paramsOf(VENUE_ID) }
     );
     expect(res.status).toBe(200);
@@ -370,7 +375,9 @@ describe("GET /api/crm/venues/[id]/events", () => {
   });
 
   it("returns events filtered by status with pagination", async () => {
-    vi.mocked(database.venue.findFirst).mockResolvedValue({ id: VENUE_ID } as never);
+    vi.mocked(database.venue.findFirst).mockResolvedValue({
+      id: VENUE_ID,
+    } as never);
     vi.mocked(database.event.findMany).mockResolvedValue([] as never);
     vi.mocked(database.event.count).mockResolvedValue(0 as never);
 

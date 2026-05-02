@@ -20,9 +20,8 @@ vi.mock("@/app/lib/tenant", () => ({
 }));
 vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn() }));
 vi.mock("@/lib/database", async () => {
-  const mod = await vi.importActual<typeof import("@repo/database")>(
-    "@repo/database",
-  );
+  const mod =
+    await vi.importActual<typeof import("@repo/database")>("@repo/database");
   return mod;
 });
 
@@ -51,9 +50,7 @@ function mockAuth() {
   vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
 }
 
-function createMockLocation(
-  overrides: Record<string, unknown> = {},
-) {
+function createMockLocation(overrides: Record<string, unknown> = {}) {
   return {
     id: "loc-001",
     name: "Main Kitchen",
@@ -167,7 +164,7 @@ describe("Locations API", () => {
       vi.mocked(database.$queryRaw).mockResolvedValue(activeLocations);
 
       const request = new NextRequest(
-        "http://localhost/api/locations?isActive=true",
+        "http://localhost/api/locations?isActive=true"
       );
       const response = await GET(request);
 
@@ -183,7 +180,7 @@ describe("Locations API", () => {
       vi.mocked(database.$queryRaw).mockResolvedValue([]);
 
       const request = new NextRequest(
-        "http://localhost/api/locations?isActive=false",
+        "http://localhost/api/locations?isActive=false"
       );
       const response = await GET(request);
 
@@ -275,7 +272,7 @@ describe("Locations API", () => {
     it("should return 500 on database error", async () => {
       mockAuth();
       vi.mocked(database.$queryRaw).mockRejectedValue(
-        new Error("Connection refused"),
+        new Error("Connection refused")
       );
 
       const request = new NextRequest("http://localhost/api/locations");
