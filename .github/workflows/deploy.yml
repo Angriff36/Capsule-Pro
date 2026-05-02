@@ -126,7 +126,7 @@ jobs:
           vercel-token: ${{ env.VERCEL_TOKEN }}
           vercel-org-id: ${{ env.VERCEL_ORG_ID }}
           vercel-project-id: ${{ env.VERCEL_APP_PROJECT_ID }}
-          vercel-version: 47.2.2
+          vercel-version: 53.1.0
           working-directory: ./apps/app
           vercel-args: '--prod'
 
@@ -136,7 +136,7 @@ jobs:
           vercel-token: ${{ env.VERCEL_TOKEN }}
           vercel-org-id: ${{ env.VERCEL_ORG_ID }}
           vercel-project-id: ${{ env.VERCEL_API_PROJECT_ID }}
-          vercel-version: 47.2.2
+          vercel-version: 53.1.0
           working-directory: ./apps/api
           vercel-args: '--prod'
 
@@ -146,7 +146,7 @@ jobs:
           vercel-token: ${{ env.VERCEL_TOKEN }}
           vercel-org-id: ${{ env.VERCEL_ORG_ID }}
           vercel-project-id: ${{ env.VERCEL_DOCS_PROJECT_ID }}
-          vercel-version: 47.2.2
+          vercel-version: 53.1.0
           working-directory: ./apps/docs
           vercel-args: '--prod'
 
@@ -156,7 +156,7 @@ jobs:
           vercel-token: ${{ env.VERCEL_TOKEN }}
           vercel-org-id: ${{ env.VERCEL_ORG_ID }}
           vercel-project-id: ${{ env.VERCEL_WEB_PROJECT_ID }}
-          vercel-version: 47.2.2
+          vercel-version: 53.1.0
           working-directory: ./apps/web
           vercel-args: '--prod'
 
