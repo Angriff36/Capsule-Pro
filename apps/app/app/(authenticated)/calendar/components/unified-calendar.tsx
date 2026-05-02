@@ -85,6 +85,7 @@ interface UnifiedCalendarProps {
   initialEvents?: CalendarEvent[];
   initialShifts?: unknown[];
   initialTimeOff?: unknown[];
+  initialDate?: Date;
 }
 
 // Color scheme for different event types
@@ -212,9 +213,10 @@ export function UnifiedCalendar({
   initialEvents = [],
   initialShifts: _initialShifts = [],
   initialTimeOff: _initialTimeOff = [],
+  initialDate,
 }: UnifiedCalendarProps) {
   const router = useRouter();
-  const [currentDate, setCurrentDate] = useState(new Date());
+  const [currentDate, setCurrentDate] = useState(initialDate ?? new Date());
   const [view, setView] = useState<"month" | "week" | "day">("month");
   const [events, setEvents] = useState<CalendarEvent[]>(initialEvents);
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(

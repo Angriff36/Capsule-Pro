@@ -14,7 +14,7 @@ describe("Payroll landing page", () => {
       screen
         .getByRole("link", { name: /review approvals/i })
         .getAttribute("href")
-    ).toBe("/payroll/overview");
+    ).toBe("/payroll/approvals");
     expect(
       screen.getByRole("link", { name: /open payouts/i }).getAttribute("href")
     ).toBe("/payroll/payouts");

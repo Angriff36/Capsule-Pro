@@ -65,6 +65,7 @@ describe("UnifiedCalendar", () => {
 
     render(
       <UnifiedCalendar
+        initialDate={eventDate}
         initialEvents={[
           {
             id: "evt-1",

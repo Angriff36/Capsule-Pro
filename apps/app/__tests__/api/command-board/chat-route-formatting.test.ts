@@ -22,10 +22,10 @@ describe("formatStructuredAgentResponseForDisplay", () => {
     expect(text).toContain(
       "The event creation request failed due to an invalid format, while the menu creation was successful."
     );
-    expect(text).toContain("Actions taken:");
     expect(text).toContain("Errors:");
     expect(text).toContain("Next steps:");
-    expect(text).toContain("- Attempted to create a new event.");
+    expect(text).not.toContain("Actions taken:");
+    expect(text).not.toContain("- Attempted to create a new event.");
     expect(text).not.toContain('"summary"');
     expect(text.trim().startsWith("{")).toBe(false);
   });
