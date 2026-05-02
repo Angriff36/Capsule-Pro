@@ -53,6 +53,9 @@ jobs:
       - name: Install dependencies
         run: bash scripts/ensure-github-packages-npmrc.sh && pnpm install --frozen-lockfile
 
+      - name: Generate Prisma client
+        run: pnpm prisma:check
+
       - name: Run linting
         run: pnpm run check
 
