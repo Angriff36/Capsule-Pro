@@ -127,7 +127,6 @@ jobs:
           vercel-org-id: ${{ env.VERCEL_ORG_ID }}
           vercel-project-id: ${{ env.VERCEL_APP_PROJECT_ID }}
           vercel-version: 53.1.0
-          working-directory: ./apps/app
           vercel-args: '--prod'
 
       - name: Deploy to Vercel (API)
@@ -137,7 +136,6 @@ jobs:
           vercel-org-id: ${{ env.VERCEL_ORG_ID }}
           vercel-project-id: ${{ env.VERCEL_API_PROJECT_ID }}
           vercel-version: 53.1.0
-          working-directory: ./apps/api
           vercel-args: '--prod'
 
       - name: Deploy to Vercel (Docs)
@@ -147,7 +145,6 @@ jobs:
           vercel-org-id: ${{ env.VERCEL_ORG_ID }}
           vercel-project-id: ${{ env.VERCEL_DOCS_PROJECT_ID }}
           vercel-version: 53.1.0
-          working-directory: ./apps/docs
           vercel-args: '--prod'
 
       - name: Deploy to Vercel (Web)
@@ -157,7 +154,6 @@ jobs:
           vercel-org-id: ${{ env.VERCEL_ORG_ID }}
           vercel-project-id: ${{ env.VERCEL_WEB_PROJECT_ID }}
           vercel-version: 53.1.0
-          working-directory: ./apps/web
           vercel-args: '--prod'
 
   notify-failing-dependabot:
