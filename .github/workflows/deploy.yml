@@ -37,6 +37,9 @@ jobs:
     if: needs.check-dependabot.outputs.has-failing-dependabot == 'false'
     env:
       NPM_TOKEN: ${{ secrets.PKG_AUTH_TOKEN }}
+      SKIP_ENV_VALIDATION: true
+      NEXT_PUBLIC_CLERK_SIGN_IN_URL: "/sign-in"
+      NEXT_PUBLIC_CLERK_SIGN_UP_URL: "/sign-up"
       RESEND_FROM: "noreply@ci-build.local"
       RESEND_TOKEN: "re_dummy"
 
