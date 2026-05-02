@@ -28,17 +28,30 @@
 
 ## Recently remediated (2026-05-02 implementation pass — Opus)
 
-First implementation commit since `f64946fe4`. All four §0 foundation sub-claims that landed below were FAIL in audit pass #12 (priorities 2/4/5/6) and are now PASS:
+Implementation commits since `f64946fe4`. All §0 foundation sub-claims listed below are now PASS:
 
 - **§0.1 DONE** — `--radius-xs: 4px` token added to `packages/design-system/styles/globals.css` between the radius-scale comment block and `--radius-sm`. Completes the 4 → 8 → 16 → 22 → 30 → 32 scale.
 - **§0.4 DONE (2026-05-02 — Opus pass #2)** — 11 missing typographic utilities added to `packages/design-system/styles/globals.css` (lines 420–534): `ds-hero-display` (96/1.0/-0.02em), `ds-product-display` (72/1.0/-0.02em), `ds-section-display` (60/1.0/-0.02em), `ds-section-heading` (48/1.2/-0.01em), `ds-card-heading` (32/1.2/-0.01em), `ds-feature-heading` (24/1.3/0), `ds-body-large` (18/1.4/0), `ds-body` (16/1.5/0), `ds-button` (14/1.71/0 weight 500), `ds-caption` (14/1.4/0 muted), `ds-micro` (12/1.4/0 muted). All sizes/weights/line-heights/letter-spacing match the DESIGN.md hierarchy table at lines 261–274 exactly. Display utilities pull `--font-display` with `--font-sans` fallback; body/caption/micro pull `--font-sans` directly. Complements the 13 existing `ds-*` operational utilities — total now 24. **Why this matters:** modules currently inline `text-3xl font-bold` (114 occurrences across 106 files per §3.6). Now they have canonical utilities to migrate to, paving the road for the §3.6 sweep.
+- **§0.5 DONE (2026-05-02 — Opus pass #3)** — All 11 missing flagship Cohere components authored in `packages/design-system/components/blocks/`:
+  - `announcement-bar.tsx` — black bar (h-9, micro typography), optional inline CTA via `linkComponent` injection.
+  - `hero-photo-card.tsx` — canvas card, `rounded-media` (22px), aspect-[4/3] media slot + optional `overlay` for nested AgentConsoleCard composition.
+  - `agent-console-card.tsx` — near-black `#17171c` body, `rounded-md` (8px), 24px padding, optional eyebrow + status pills row + heading.
+  - `dark-feature-band.tsx` — `cva` with `tone="deep-green"|"navy"` and `align="start"|"center"` variants. `rounded-media` (22px), 80px padding equivalent (`py-16 md:py-20`), section-heading display type.
+  - `navy-feature-band.tsx` — thin re-export of `NavyFeatureBand` so callers can declare intent at the import site without picking a tone variant.
+  - `trust-logo-strip.tsx` — canvas band with mono-label eyebrow, responsive 2/3/4/6-column grid, monochrome wordmarks fall back from caller-supplied `node`.
+  - `capability-card.tsx` — canvas card, `rounded-xs` (4px), 24px padding, icon → heading → body, optional `meta` mono label, becomes a focusable link when `href` is supplied.
+  - `product-card.tsx` — soft-stone surface, `rounded-md` (8px), 32px padding, card-heading display, check-glyph bullet list, near-black pill CTA.
+  - `blog-filter-chip.tsx` — `cva` with `tone="coral"|"active"|"ghost"` + `selected` shortcut. Renders as a button with `aria-pressed` when `onSelect` is supplied; otherwise renders as a static span.
+  - `research-table.tsx` — hairline-ruled list rows: title (body-large, optional link) → optional taxonomy pills (center) → metadata (caption, right-aligned).
+  - `contact-form-card.tsx` — canvas card, `rounded-media` (22px), 32px padding, owns header + form body slot + submit pill button + optional footnote. Form fields are caller-supplied so the package does not couple to a specific schema/validation library.
+  - `footer-newsletter.tsx` — near-black surface, coral mono label, single email field with circular arrow submit button, optional micro footnote. **Why this matters:** unblocks §2A landing-page rebuilds (Pages 33–69) and §4 missing features that need editorial cards. **Validation:** `pnpm --filter @repo/design-system typecheck` + `pnpm --filter app typecheck` both clean; `pnpm dlx ultracite check` clean (12 files, 0 errors, 0 warnings) on the new files.
 - **§0.7 DONE** — `tone` prop added to `<Card>` via `cva` in `packages/design-system/components/ui/card.tsx`. Variants: `canvas` (default, white bg), `soft-stone`, `ink`. Renders `data-tone` attribute. Matches the cva pattern already established in Button/Badge/ButtonGroup/Empty so the surface is consistent. New `cardVariants` and `CardProps` type exported.
 - **§0.9 DONE** — `packages/auth/index.ts` barrel created. Re-exports `SignIn` and `SignUp` only; `server`/`client`/`proxy`/`keys`/`provider` continue to be imported via dedicated subpaths because they are environment-scoped (`server-only`) and would poison the barrel if combined.
 - **§0.11 DONE** — `ModuleLanding` extracted to `packages/design-system/components/blocks/module-landing.tsx`. Design-system version takes a `linkComponent?` injection slot defaulting to a plain `<a>`, so the package does not import `next/link` (would violate the package-boundary rules in AGENTS.md). The local `apps/app/app/(authenticated)/components/module-landing.tsx` is now a 45-line wrapper that injects `next/link` as the `linkComponent` prop, so the 4 existing call sites (settings, tools, logistics, payroll) keep their existing import path with zero changes.
 
 **Validation:** `pnpm --filter app typecheck`, `pnpm --filter @repo/design-system typecheck`, `pnpm --filter @repo/auth typecheck` all clean. `pnpm --filter app test` → 31 files / 243 tests pass (re-verified after §0.4).
 
-Top execution priorities re-sorted accordingly: items 2/3/4/5/6 below are now PASS; the remaining 7 priorities (§0.5, §3.10, §5, §4, §3.6/§3.7/§3.8/§3.11/§3.12, §6.4, §2 demotion) advance up the queue.
+Top execution priorities re-sorted accordingly: items 1/2/3/4/5/6 below are now PASS; the remaining 6 priorities (§3.10, §5, §4, §3.6/§3.7/§3.8/§3.11/§3.12, §6.4, §2 demotion) advance up the queue.
 
 ---
 
@@ -92,16 +105,16 @@ Pass #12 is another **stability re-check** — confirmed `git log f64946fe4..HEA
 
 ### Top execution priorities heading into next pass (sorted by impact / unblocking)
 
-1. **§0.5 Author 11 missing flagship Cohere components** in `packages/design-system/components/blocks/` (hero-photo-card, agent-console-card, capability-card, dark-feature-band, navy-feature-band, product-card, blog-filter-chip, research-table, contact-form-card, footer-newsletter, announcement-bar). Highest leverage — unblocks §2A landings + §4 missing features.
-2. **§0.1 Add `--radius-xs: 4px` token** to `packages/design-system/styles/globals.css` (single-line addition, completes radius scale).
-3. **§0.4 Add 11 typography utilities** as `@utility ds-*` classes (display-xl, display-lg, display-md, etc. per `DESIGN.md`).
-4. **§0.7 Add `tone` prop to `<Card>`** in `packages/design-system/components/ui/card.tsx` (canvas/soft-stone/ink variants per `DESIGN.md`).
-5. **§0.11 Extract `ModuleLanding` to `packages/design-system/components/blocks/module-landing.tsx`** so all 4 importers consume the shared primitive.
-6. **§0.9 Add `packages/auth/index.ts` barrel** re-exporting `sign-in.tsx` / `sign-up.tsx`.
+1. **§0.5 DONE (2026-05-02 — Opus pass #3).** All 11 flagship components authored in `packages/design-system/components/blocks/`. See "Recently remediated" above for per-file detail. Unblocks §2A landings + §4 missing features.
+2. **§0.1 DONE.** `--radius-xs: 4px` token added.
+3. **§0.4 DONE.** 11 typography utilities added.
+4. **§0.7 DONE.** `tone` prop added to `<Card>`.
+5. **§0.11 DONE.** `ModuleLanding` extracted to `packages/design-system`.
+6. **§0.9 DONE.** `packages/auth/index.ts` barrel created.
 7. **§3.10 Resolve 7 boundary violations** in shared packages importing `next/*` (`design-system/lib/fonts.ts`, `design-system/components/blocks/{getting-started-checklist,manifest-test-playground}.tsx`, `design-system/components/ui/chart.tsx`, `feature-flags/access.ts`, `internationalization/proxy.ts`, `analytics/provider.tsx`).
 8. **§5 Author 9 missing specs** (5.1–5.9): facilities, knowledge-base, quality-control, payment-reconciliation, digital-twin, prep-task-dependency, command-board UI, event-timeline, integrations (nowsta/goodshuffle/quickbooks).
 9. **§4 Build 24 MISSING directories** — prioritize Command Board (§4.1), Event Timeline (§4.5), Event Budget (§4.4), CRM Segmentation (§4.22), Mobile Timeclock (§4.27).
-10. **§3.6/§3.7/§3.8/§3.11/§3.12 cross-cutting sweep** — 114 text-3xl + 66 shadows + 375 pastels + 183 bare-Card + 4 tab-strips. Mechanical refactors after §0.5/§0.7 land.
+10. **§3.6/§3.7/§3.8/§3.11/§3.12 cross-cutting sweep** — 114 text-3xl + 66 shadows + 375 pastels + 183 bare-Card + 4 tab-strips. Mechanical refactors now that §0.5 / §0.7 have landed.
 11. **§6.4 cleanup** — `git commit` 71 staged deletions + remove 37 `test/` artifacts.
 12. **§2 demote events/page.tsx to 2B** + remove `Header` legacy import on line 33.
 
