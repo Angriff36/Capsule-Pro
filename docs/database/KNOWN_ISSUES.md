@@ -2,7 +2,7 @@
 
 **Database schema problems, TODOs, and future improvements**
 
-Last updated: 2025-01-30
+Last updated: 2026-05-02
 
 ## Summary
 
@@ -350,6 +350,80 @@ tenantId  String   @map("tenant_id") @db.Uuid
 - [ ] Document rollback procedures
 - [ ] Add rollback testing to migration workflow
 - [ ] Create emergency rollback runbook
+
+---
+
+## Worked Example: Migration Divergence + Naming Mismatch (2026-05-02)
+
+**Status**: ✅ RESOLVED — recovery completed without data loss. Read this before
+authoring any migration that touches `tenant_staff` or any PascalCase table.
+
+**What broke**:
+
+`pnpm db:deploy` failed with `P3018: relation "tenant_staff.users" does not exist`
+on migration `20260429140000_add_rls_missing_tables`. Two compounding issues:
+
+1. **Naming mismatch (root cause)**. The migration's hand-written SQL used
+   `"tenant_staff"."users"`, but the Prisma schema declares
+   `model User { … @@map("employees") @@schema("tenant_staff") }`. The
+   actual table is `tenant_staff.employees`. Prisma had no chance to catch
+   this — `pnpm db:deploy` doesn't validate raw SQL against the schema,
+   only `pnpm db:dev` does (via the shadow database).
+2. **Bookkeeping divergence**. `_prisma_migrations` had 3 rows for migration
+   folders that no longer existed on disk
+   (`20260306010000_expense_workflow`, two `repair_drift` rows). One folder
+   (`20260314124800_repair_drift`) was recoverable from `git stash@{5}`.
+   The other two were unrecoverable.
+
+**A second mismatch surfaced** after the first patch deployed: the same
+migration referenced `"tenant_staff"."employee_deductions"` but
+`model EmployeeDeduction` has **no** `@@map` directive — so the actual
+table is `tenant_staff.EmployeeDeduction` (PascalCase, because Prisma
+defaults to model name verbatim).
+
+**Recovery path (no data loss)**:
+
+1. Patched the migration SQL to use the real table names
+   (`tenant_staff.employees`, `tenant_staff.EmployeeDeduction`) plus all
+   policy/trigger names that referenced them.
+2. Recovered the missing `20260314124800_repair_drift` folder from the
+   untracked stash tree:
+   `git show stash@{5}^3:packages/database/prisma/migrations/20260314124800_repair_drift/migration.sql > <path>`
+   (untracked stash files live at `stash@{N}^3`, not in the main stash tree).
+3. Marked the failed migration rolled-back via
+   `pnpm migrate:resolve --rolled-back 20260429140000_add_rls_missing_tables`.
+4. Deleted the 2 unrecoverable bookkeeping rows from `_prisma_migrations`
+   (verified `applied_steps_count = 0` first; required explicit user
+   approval per Prisma's history-edit guidance).
+5. Re-ran `pnpm db:deploy` → all 3 pending migrations applied; `pnpm db:check`
+   exit 0; `migrate status` shows "Database schema is up to date!" (85
+   migrations).
+
+**Lessons applied**:
+
+- 4 PascalCase outliers locked in with `@@map`: `Tenant`, `ActivityFeed`,
+  `EmployeeDeduction`, `OutboxEvent`. This makes future hand-written SQL
+  fail at the schema layer (you'll see the explicit `@@map("EmployeeDeduction")`
+  in the schema before grepping for the table) and pre-empts the same
+  inconsistency from spreading.
+- `CLAUDE.md` now has a "Database & Migrations" section pointing at
+  `docs/database/CONTRIBUTING.md` with hard rules: never hand-author
+  migration folders, always check `@@map` before writing raw SQL, never
+  edit applied migrations, restoration before deletion when
+  `_prisma_migrations` is corrupt.
+
+**Pre-flight checklist for raw-SQL migrations**:
+
+- [ ] Every `"<schema>"."<table>"` in your SQL matches a real table — confirm
+      via `\d <schema>.<table>` or
+      `SELECT … FROM information_schema.tables WHERE …`.
+- [ ] For each Prisma model you touch, grep its block for `@@map(`. If
+      present, the table name is the value. If absent, the table name is the
+      model name verbatim (PascalCase if the model is PascalCase).
+- [ ] Author the migration via `pnpm db:dev --create-only --name <name>`.
+      Hand-written folders bypass Prisma's shadow-DB validation that would
+      have caught both mismatches above at authoring time.
+- [ ] Run `pnpm db:check` after `pnpm db:deploy`, not just before.
 
 ---
 

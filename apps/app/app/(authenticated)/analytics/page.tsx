@@ -1,14 +1,24 @@
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
-import { Badge } from "@repo/design-system/components/ui/badge";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@repo/design-system/components/ui/card";
-import { Separator } from "@repo/design-system/components/ui/separator";
+  CommandBand,
+  CommandBandActions,
+  CommandBandBody,
+  CommandBandHeader,
+  CommandBandLede,
+  DisplayHeading,
+  MetricBand,
+  MetricCell,
+  MetricDelta,
+  MetricLabel,
+  MetricValue,
+  MonoLabel,
+  OperationalColumn,
+  PageCanvas,
+  SectionHeader,
+} from "@repo/design-system/components/blocks/page-shell";
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
 import {
   Table,
   TableBody,
@@ -17,6 +27,7 @@ import {
   TableHeader,
   TableRow,
 } from "@repo/design-system/components/ui/table";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTenantIdForOrg } from "../../lib/tenant";
 
@@ -31,6 +42,22 @@ const percentFormatter = new Intl.NumberFormat("en-US", {
   maximumFractionDigits: 0,
 });
 
+const Unavailable = () => (
+  <PageCanvas>
+    <CommandBand>
+      <CommandBandHeader>
+        <div className="space-y-4">
+          <MonoLabel tone="dark">Operations / Analytics</MonoLabel>
+          <DisplayHeading>Analytics unavailable</DisplayHeading>
+          <CommandBandLede>
+            Unable to load analytics data right now. Please try again later.
+          </CommandBandLede>
+        </div>
+      </CommandBandHeader>
+    </CommandBand>
+  </PageCanvas>
+);
+
 const AnalyticsPage = async () => {
   const { orgId } = await auth();
 
@@ -42,14 +69,7 @@ const AnalyticsPage = async () => {
   try {
     tenantId = await getTenantIdForOrg(orgId);
   } catch {
-    return (
-      <div className="flex flex-1 flex-col items-center justify-center gap-4 p-8">
-        <h1 className="text-2xl font-bold">Analytics Unavailable</h1>
-        <p className="text-muted-foreground">
-          Unable to load analytics data. Please try again later.
-        </p>
-      </div>
-    );
+    return <Unavailable />;
   }
 
   const now = new Date();
@@ -245,14 +265,7 @@ const AnalyticsPage = async () => {
       ),
     ]);
   } catch {
-    return (
-      <div className="flex flex-1 flex-col items-center justify-center gap-4 p-8">
-        <h1 className="text-2xl font-bold">Analytics Unavailable</h1>
-        <p className="text-muted-foreground">
-          Unable to load analytics data. Please try again later.
-        </p>
-      </div>
-    );
+    return <Unavailable />;
   }
 
   const currentRevenue = Number(currentRevenueRows[0]?.total_revenue ?? 0);
@@ -304,130 +317,146 @@ const AnalyticsPage = async () => {
   const followUpCompletionRate =
     followUpTotal > 0 ? followUpCompleted / followUpTotal : 0;
 
-  const performanceCards = [
+  const heroStats = [
     {
-      title: "Weekly revenue",
+      label: "Weekly revenue",
       value: currencyFormatter.format(currentRevenue),
-      detail:
+      delta:
         previousRevenue > 0
           ? `${revenueChangePct >= 0 ? "+" : ""}${revenueChangePct.toFixed(1)}% vs. last week`
-          : "No prior week data",
-      trend: revenueChangePct >= 0 ? ("up" as const) : ("down" as const),
+          : null,
+      note: previousRevenue > 0 ? null : "No prior week data",
     },
     {
-      title: "Labor budget utilization",
+      label: "Labor utilization",
       value: `${laborUtilization.toFixed(0)}%`,
-      detail:
+      delta:
         previousLaborBudget > 0
-          ? `${laborChangePct >= 0 ? "+" : ""}${laborChangePct.toFixed(1)} pts vs. last period`
-          : "No prior period data",
-      trend: laborChangePct <= 0 ? ("up" as const) : ("down" as const),
+          ? `${laborChangePct >= 0 ? "+" : ""}${laborChangePct.toFixed(1)} pts vs. prior`
+          : null,
+      note: previousLaborBudget > 0 ? null : "No prior data",
     },
     {
-      title: "Waste cost change",
-      value: `${wasteChangePct.toFixed(0)}%`,
-      detail:
-        previousWasteCost > 0
-          ? "Compared to previous 30 days"
-          : "No prior period data",
-      trend: wasteChangePct <= 0 ? ("up" as const) : ("down" as const),
+      label: "Waste cost change",
+      value: `${wasteChangePct >= 0 ? "+" : ""}${wasteChangePct.toFixed(0)}%`,
+      delta: previousWasteCost > 0 ? "30-day window" : null,
+      note: previousWasteCost > 0 ? null : "No prior data",
+    },
+    {
+      label: "Avg gross margin",
+      value: `${avgMarginPct.toFixed(1)}%`,
+      delta: "Last 30 days",
+      note: null as string | null,
     },
   ];
 
   const focusMetrics = [
     {
-      title: "Profit margin",
-      value: `${avgMarginPct.toFixed(1)}%`,
-      description: "Average gross margin (last 30 days)",
-    },
-    {
       title: "Service completion",
       value: percentFormatter.format(completionRate),
-      description: "Events completed in the last 30 days",
+      description: `${completedEvents} of ${totalEvents} events in last 30 days.`,
     },
     {
       title: "Follow-up completion",
       value: percentFormatter.format(followUpCompletionRate),
-      description: "Client follow-ups completed in the last 30 days",
+      description: `${followUpCompleted} of ${followUpTotal} CRM follow-ups closed.`,
+    },
+    {
+      title: "Avg gross margin",
+      value: `${avgMarginPct.toFixed(1)}%`,
+      description: "Across event profitability rows in the last 30 days.",
     },
   ];
 
-  const statusVariantMap: Record<string, "secondary" | "outline"> = {
-    confirmed: "secondary",
-    completed: "secondary",
-    canceled: "outline",
-    cancelled: "outline",
-    tentative: "outline",
+  const statusBadge = (status: string) => {
+    const normalized = status.toLowerCase();
+    if (normalized === "completed" || normalized === "confirmed") {
+      return <Badge variant="success">{status}</Badge>;
+    }
+    if (normalized === "canceled" || normalized === "cancelled") {
+      return <Badge variant="coral">{status}</Badge>;
+    }
+    return <Badge variant="secondary">{status}</Badge>;
   };
 
   return (
-    <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
-      <div className="space-y-0.5">
-        <h1 className="text-3xl font-bold tracking-tight">
-          Operational Insights
-        </h1>
-        <p className="text-muted-foreground">
-          A single dashboard for events, kitchen, and finance performance.
-        </p>
-      </div>
+    <PageCanvas>
+      <CommandBand>
+        <CommandBandHeader>
+          <div className="space-y-4">
+            <MonoLabel tone="dark">Operations / Analytics</MonoLabel>
+            <DisplayHeading>The numbers that move the operation</DisplayHeading>
+            <CommandBandLede>
+              Revenue, labor, waste, and margin in one cockpit. Pivot from a
+              weekly trend to the events driving it without losing context.
+            </CommandBandLede>
+          </div>
+          <CommandBandActions>
+            <Button
+              asChild
+              className="border-white/25 bg-transparent text-white hover:bg-white/10"
+              size="sm"
+              variant="outline"
+            >
+              <Link href="/analytics/clients">Client analytics</Link>
+            </Button>
+            <Button asChild size="default" variant="on-dark">
+              <Link href="/analytics/financial">Financial detail</Link>
+            </Button>
+          </CommandBandActions>
+        </CommandBandHeader>
 
-      <Separator />
+        <CommandBandBody>
+          <MetricBand>
+            {heroStats.map((item) => (
+              <MetricCell key={item.label}>
+                <MetricLabel>{item.label}</MetricLabel>
+                <MetricValue>{item.value}</MetricValue>
+                {item.delta ? <MetricDelta>{item.delta}</MetricDelta> : null}
+                {item.note ? (
+                  <div className="text-white/55 text-xs">{item.note}</div>
+                ) : null}
+              </MetricCell>
+            ))}
+          </MetricBand>
+        </CommandBandBody>
+      </CommandBand>
 
-      <section className="space-y-4">
-        <h2 className="text-sm font-medium text-muted-foreground">
-          Performance Overview
-        </h2>
-        <div className="grid gap-6 md:grid-cols-3">
-          {performanceCards.map((card) => (
-            <Card key={card.title}>
-              <CardHeader>
-                <CardDescription>{card.title}</CardDescription>
-                <CardTitle className="text-2xl">{card.value}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center gap-1.5">
-                  <span className="text-xs">
-                    {card.trend === "up" ? "↑" : "↓"}
-                  </span>
-                  <span className="text-muted-foreground text-xs">
-                    {card.detail}
-                  </span>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </section>
-
-      <section className="space-y-4">
-        <h2 className="text-sm font-medium text-muted-foreground">
-          Focus Metrics
-        </h2>
-        <div className="grid gap-6 md:grid-cols-3">
-          {focusMetrics.map((metric) => (
-            <Card key={metric.title}>
-              <CardHeader>
-                <CardDescription className="capitalize">
-                  {metric.title.toLowerCase()}
-                </CardDescription>
-                <CardTitle className="text-2xl">{metric.value}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground text-xs">
+      <OperationalColumn>
+        <section className="space-y-4">
+          <SectionHeader
+            description="Trailing 30-day operating health, tracked against prior periods."
+            eyebrow="Focus metrics"
+            title="Operational pulse"
+          />
+          <div className="grid gap-4 md:grid-cols-3">
+            {focusMetrics.map((metric) => (
+              <div
+                className="rounded-[22px] border border-hairline bg-canvas p-6"
+                key={metric.title}
+              >
+                <p className="font-mono text-[11px] text-muted-foreground uppercase tracking-[0.22em]">
+                  {metric.title}
+                </p>
+                <p className="mt-3 font-medium text-3xl text-ink tracking-[-0.01em]">
+                  {metric.value}
+                </p>
+                <p className="mt-3 text-muted-foreground text-sm leading-relaxed">
                   {metric.description}
                 </p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </section>
+              </div>
+            ))}
+          </div>
+        </section>
 
-      <section className="space-y-4">
-        <h2 className="text-sm font-medium text-muted-foreground">
-          Top Events This Week
-        </h2>
-        <Card>
-          <CardContent className="overflow-x-auto p-0">
+        <section className="space-y-4">
+          <SectionHeader
+            count={`${topEvents.length} events`}
+            description="Sorted by revenue. Click through for full profitability detail."
+            eyebrow="This week"
+            title="Top events"
+          />
+          <div className="overflow-hidden rounded-[22px] border border-hairline bg-canvas">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -441,7 +470,7 @@ const AnalyticsPage = async () => {
                 {topEvents.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={4}>
-                      <div className="py-6 text-center text-sm text-muted-foreground">
+                      <div className="py-6 text-center text-muted-foreground text-sm">
                         No events scheduled this week.
                       </div>
                     </TableCell>
@@ -449,33 +478,27 @@ const AnalyticsPage = async () => {
                 ) : (
                   topEvents.map((event) => (
                     <TableRow key={event.id}>
-                      <TableCell className="font-medium">
+                      <TableCell className="font-medium text-ink">
                         {event.title}
                       </TableCell>
-                      <TableCell className="text-right">
+                      <TableCell className="text-right font-medium text-ink">
                         {currencyFormatter.format(Number(event.revenue ?? 0))}
                       </TableCell>
-                      <TableCell className="text-right">
+                      <TableCell className="text-right text-muted-foreground">
                         {event.margin_pct === null
-                          ? "N/A"
+                          ? "—"
                           : `${Number(event.margin_pct).toFixed(0)}%`}
                       </TableCell>
-                      <TableCell>
-                        <Badge
-                          variant={statusVariantMap[event.status] ?? "outline"}
-                        >
-                          {event.status}
-                        </Badge>
-                      </TableCell>
+                      <TableCell>{statusBadge(event.status)}</TableCell>
                     </TableRow>
                   ))
                 )}
               </TableBody>
             </Table>
-          </CardContent>
-        </Card>
-      </section>
-    </div>
+          </div>
+        </section>
+      </OperationalColumn>
+    </PageCanvas>
   );
 };
 

@@ -1,7 +1,14 @@
-import { Button } from "@repo/design-system/components/ui/button";
-import { Card, CardContent } from "@repo/design-system/components/ui/card";
-import { Separator } from "@repo/design-system/components/ui/separator";
-import { ArrowRightIcon, type LucideIcon } from "lucide-react";
+import {
+  CommandBand,
+  CommandBandHeader,
+  CommandBandLede,
+  DisplayHeading,
+  MonoLabel,
+  OperationalColumn,
+  PageCanvas,
+  SectionHeader,
+} from "@repo/design-system/components/blocks/page-shell";
+import { ArrowUpRight, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 
 interface ModuleLandingFeature {
@@ -16,74 +23,104 @@ interface ModuleLandingProperties {
   title: string;
   summary: string;
   highlights: Array<string | ModuleLandingFeature>;
+  eyebrow?: string;
 }
 
 export const ModuleLanding = ({
   title,
   summary,
   highlights,
+  eyebrow,
 }: ModuleLandingProperties) => (
-  <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
-    {/* Page Header */}
-    <div className="space-y-0.5">
-      <h1 className="text-3xl font-bold tracking-tight">{title}</h1>
-      <p className="text-muted-foreground">{summary}</p>
-    </div>
+  <PageCanvas>
+    <CommandBand>
+      <CommandBandHeader>
+        <div className="space-y-4">
+          <MonoLabel tone="dark">
+            {eyebrow ?? `Operations / ${title}`}
+          </MonoLabel>
+          <DisplayHeading>{title}</DisplayHeading>
+          <CommandBandLede>{summary}</CommandBandLede>
+        </div>
+      </CommandBandHeader>
+    </CommandBand>
 
-    <Separator />
+    <OperationalColumn>
+      <section className="space-y-6">
+        <SectionHeader
+          count={`${highlights.length} workspaces`}
+          description="Pick a workspace to get into the work."
+          eyebrow="Workspaces"
+          title="Where to next"
+        />
 
-    {/* Features Overview Section */}
-    <section className="space-y-4">
-      <h2 className="text-sm font-medium text-muted-foreground">
-        Features Overview
-      </h2>
-      <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-        {highlights.map((item) => {
-          if (typeof item === "string") {
-            return (
-              <Card key={item}>
-                <CardContent className="p-6">
-                  <p className="text-muted-foreground text-sm">{item}</p>
-                </CardContent>
-              </Card>
-            );
-          }
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {highlights.map((item) => {
+            if (typeof item === "string") {
+              return (
+                <div
+                  className="rounded-[22px] border border-hairline bg-canvas p-6"
+                  key={item}
+                >
+                  <p className="text-muted-foreground text-sm leading-relaxed">
+                    {item}
+                  </p>
+                </div>
+              );
+            }
 
-          const Icon = item.icon;
-
-          return (
-            <Card key={item.title}>
-              <CardContent className="flex h-full flex-col gap-4 p-6">
-                <div className="flex items-start gap-3">
+            const Icon = item.icon;
+            const inner = (
+              <>
+                <div className="flex items-start justify-between gap-3">
                   {Icon ? (
-                    <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                    <div className="flex size-10 items-center justify-center rounded-full border border-hairline bg-soft-stone text-ink">
                       <Icon className="size-5" />
                     </div>
+                  ) : (
+                    <div />
+                  )}
+                  {item.href ? (
+                    <ArrowUpRight className="size-4 translate-x-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-ink" />
                   ) : null}
-                  <div className="space-y-1.5">
-                    <h3 className="font-medium text-foreground">
-                      {item.title}
-                    </h3>
-                    <p className="text-muted-foreground text-sm">
-                      {item.description}
-                    </p>
-                  </div>
                 </div>
+                <h3 className="mt-6 font-medium text-ink text-lg leading-tight">
+                  {item.title}
+                </h3>
+                <p className="mt-2 text-muted-foreground text-sm leading-relaxed">
+                  {item.description}
+                </p>
                 {item.href && item.actionLabel ? (
-                  <div className="mt-auto">
-                    <Button asChild size="sm" variant="outline">
-                      <Link href={item.href}>
-                        {item.actionLabel}
-                        <ArrowRightIcon className="ml-2 size-4" />
-                      </Link>
-                    </Button>
+                  <div className="mt-4 inline-flex items-center gap-1 font-mono text-[11px] text-ink uppercase tracking-[0.22em]">
+                    {item.actionLabel}
                   </div>
                 ) : null}
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
-    </section>
-  </div>
+              </>
+            );
+
+            if (item.href) {
+              return (
+                <Link
+                  className="group block rounded-[22px] border border-hairline bg-canvas p-6 transition-colors hover:border-ink"
+                  href={item.href}
+                  key={item.title}
+                >
+                  {inner}
+                </Link>
+              );
+            }
+
+            return (
+              <div
+                className="rounded-[22px] border border-hairline bg-canvas p-6"
+                key={item.title}
+              >
+                {inner}
+              </div>
+            );
+          })}
+        </div>
+      </section>
+    </OperationalColumn>
+  </PageCanvas>
 );

@@ -1,18 +1,34 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
-import { Button } from "@repo/design-system/components/ui/button";
 import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@repo/design-system/components/ui/card";
+  CommandBand,
+  CommandBandActions,
+  CommandBandBody,
+  CommandBandHeader,
+  CommandBandLede,
+  DisplayHeading,
+  MetricBand,
+  MetricCell,
+  MetricLabel,
+  MetricValue,
+  MonoLabel,
+  OperationalColumn,
+  PageCanvas,
+  SectionHeader,
+} from "@repo/design-system/components/blocks/page-shell";
+import { Button } from "@repo/design-system/components/ui/button";
 import {
   Tabs,
   TabsList,
   TabsTrigger,
 } from "@repo/design-system/components/ui/tabs";
-import { addMonths, endOfMonth, startOfMonth, subMonths } from "date-fns";
+import {
+  addMonths,
+  endOfMonth,
+  format,
+  startOfMonth,
+  subMonths,
+} from "date-fns";
 import { RefreshCw } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -189,6 +205,31 @@ const CalendarPage = async () => {
     (e) => e.type === "event" && e.start >= today
   ).length;
 
+  const rangeLabel = `${format(start, "MMM d")} – ${format(end, "MMM d, yyyy")}`;
+
+  const stats = [
+    {
+      label: "Total events",
+      value: String(eventCount),
+      note: `${upcomingEvents} upcoming`,
+    },
+    {
+      label: "Scheduled shifts",
+      value: String(shiftCount),
+      note: "This period",
+    },
+    {
+      label: "Time off",
+      value: String(timeOffCount),
+      note: "Approved requests",
+    },
+    {
+      label: "All items",
+      value: String(events.length),
+      note: "On calendar",
+    },
+  ];
+
   return (
     <>
       <Header page="Calendar" pages={[]}>
@@ -200,65 +241,76 @@ const CalendarPage = async () => {
               <TabsTrigger value="schedule">Schedule</TabsTrigger>
             </TabsList>
           </Tabs>
-          <Link href="/calendar/sync">
-            <Button size="sm" variant="outline">
+          <Button asChild size="sm" variant="ghost">
+            <Link href="/calendar/sync">
               <RefreshCw className="mr-2 h-4 w-4" />
               Sync
-            </Button>
-          </Link>
+            </Link>
+          </Button>
         </div>
       </Header>
 
-      <div className="flex flex-1 flex-col p-4 pt-0 gap-4">
-        {/* Summary Cards */}
-        <div className="grid gap-4 md:grid-cols-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Total Events
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{eventCount}</div>
-              <p className="text-xs text-muted-foreground">
-                {upcomingEvents} upcoming
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Scheduled Shifts
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{shiftCount}</div>
-              <p className="text-xs text-muted-foreground">This period</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Time Off</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{timeOffCount}</div>
-              <p className="text-xs text-muted-foreground">Approved requests</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Items</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{events.length}</div>
-              <p className="text-xs text-muted-foreground">On calendar</p>
-            </CardContent>
-          </Card>
-        </div>
+      <PageCanvas>
+        <CommandBand>
+          <CommandBandHeader>
+            <div className="space-y-4">
+              <MonoLabel tone="dark">Operations / Calendar</MonoLabel>
+              <DisplayHeading>Every shift, event, and request</DisplayHeading>
+              <CommandBandLede>
+                A unified view of events, scheduled shifts, and time-off
+                requests across the operation. Pivot between calendar, list, and
+                schedule lenses to find conflicts before they ship.
+              </CommandBandLede>
+              <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-3 py-1 font-mono text-[11px] text-white/70 uppercase tracking-[0.2em]">
+                {rangeLabel}
+              </div>
+            </div>
+            <CommandBandActions>
+              <Button
+                asChild
+                className="border-white/25 bg-transparent text-white hover:bg-white/10"
+                size="sm"
+                variant="outline"
+              >
+                <Link href="/calendar/sync">
+                  <RefreshCw className="mr-2 h-4 w-4" />
+                  Sync sources
+                </Link>
+              </Button>
+              <Button asChild size="default" variant="on-dark">
+                <Link href="/events/new">New event</Link>
+              </Button>
+            </CommandBandActions>
+          </CommandBandHeader>
 
-        {/* Unified Calendar */}
-        <UnifiedCalendar initialEvents={events} tenantId={tenantId} />
-      </div>
+          <CommandBandBody>
+            <MetricBand>
+              {stats.map((item) => (
+                <MetricCell key={item.label}>
+                  <MetricLabel>{item.label}</MetricLabel>
+                  <MetricValue>{item.value}</MetricValue>
+                  <div className="text-white/55 text-xs">{item.note}</div>
+                </MetricCell>
+              ))}
+            </MetricBand>
+          </CommandBandBody>
+        </CommandBand>
+
+        <OperationalColumn>
+          <section className="space-y-6">
+            <SectionHeader
+              count={`${events.length} items in window`}
+              description="Three-month rolling window. Drag-select to create, click to inspect."
+              eyebrow="Unified view"
+              title="Calendar"
+            />
+
+            <div className="rounded-[22px] border border-hairline bg-canvas p-4 sm:p-6">
+              <UnifiedCalendar initialEvents={events} tenantId={tenantId} />
+            </div>
+          </section>
+        </OperationalColumn>
+      </PageCanvas>
     </>
   );
 };

@@ -1,5 +1,21 @@
 "use client";
 
+import {
+  CommandBand,
+  CommandBandActions,
+  CommandBandBody,
+  CommandBandHeader,
+  CommandBandLede,
+  DisplayHeading,
+  MetricBand,
+  MetricCell,
+  MetricLabel,
+  MetricValue,
+  MonoLabel,
+  OperationalColumn,
+  PageCanvas,
+  SectionHeader,
+} from "@repo/design-system/components/blocks/page-shell";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
   Dialog,
@@ -19,7 +35,7 @@ import {
   SelectValue,
 } from "@repo/design-system/components/ui/select";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
-import { FileText, Loader2, Plus, Search } from "lucide-react";
+import { ArrowUpRight, FileText, Loader2, Plus, Search } from "lucide-react";
 import { useEffect, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
 
@@ -135,95 +151,177 @@ export default function KnowledgeBaseClient() {
     }
   };
 
+  const totalEntries = entries.length;
+  const taggedEntries = entries.filter(
+    (e) => e.tags && e.tags.length > 0
+  ).length;
+  const draftCount = entries.filter((e) => e.status !== "published").length;
+
+  const stats = [
+    {
+      label: "Articles",
+      value: String(totalEntries),
+      note: search || selectedCategory ? "In current view" : "Published",
+    },
+    {
+      label: "Categories",
+      value: String(categories.length),
+      note: "Distinct buckets",
+    },
+    {
+      label: "Tagged",
+      value: String(taggedEntries),
+      note: "With searchable tags",
+    },
+    {
+      label: "Drafts",
+      value: String(draftCount),
+      note: "Not yet published",
+    },
+  ];
+
   return (
-    <div className="p-6">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Knowledge Base</h1>
-          <p className="text-gray-600 mt-1">
-            Staff training materials and documentation
-          </p>
-        </div>
-        <Button onClick={() => setShowCreateDialog(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          New Article
-        </Button>
-      </div>
-
-      {/* Search and Filter Bar */}
-      <div className="flex gap-4 mb-6">
-        <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-          <input
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search knowledge base..."
-            type="text"
-            value={search}
-          />
-        </div>
-        <select
-          className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-          onChange={(e) => setSelectedCategory(e.target.value || null)}
-          value={selectedCategory || ""}
-        >
-          <option value="">All Categories</option>
-          {categories.map((cat) => (
-            <option key={cat} value={cat}>
-              {cat}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      {/* Entries Grid */}
-      {loading ? (
-        <div className="text-center py-12 text-gray-500">Loading...</div>
-      ) : entries.length === 0 ? (
-        <div className="text-center py-12 text-gray-500">
-          <FileText className="mx-auto h-12 w-12 text-gray-400" />
-          <p className="mt-2">No entries found</p>
-        </div>
-      ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {entries.map((entry) => (
-            <a
-              className="block p-4 bg-white border border-gray-200 rounded-lg hover:shadow-md transition-shadow"
-              href={`/knowledge-base/${entry.slug}`}
-              key={entry.id}
+    <PageCanvas>
+      <CommandBand>
+        <CommandBandHeader>
+          <div className="space-y-4">
+            <MonoLabel tone="dark">Operations / Knowledge base</MonoLabel>
+            <DisplayHeading>Training, SOPs, and house playbooks</DisplayHeading>
+            <CommandBandLede>
+              The single library for staff training and operating procedures.
+              Tag, search, and ship articles your team can find without
+              guessing.
+            </CommandBandLede>
+          </div>
+          <CommandBandActions>
+            <Button
+              onClick={() => setShowCreateDialog(true)}
+              size="default"
+              variant="on-dark"
             >
-              <h3 className="font-semibold text-gray-900 mb-1">
-                {entry.title}
-              </h3>
-              {entry.category && (
-                <span className="inline-block px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full mb-2">
-                  {entry.category}
-                </span>
-              )}
-              {entry.content && (
-                <p className="text-sm text-gray-600 line-clamp-3">
-                  {entry.content.slice(0, 150)}...
-                </p>
-              )}
-              {entry.tags && entry.tags.length > 0 && (
-                <div className="flex flex-wrap gap-1 mt-2">
-                  {entry.tags.slice(0, 3).map((tag) => (
-                    <span className="text-xs text-gray-500" key={tag}>
-                      #{tag}
-                    </span>
-                  ))}
-                </div>
-              )}
-            </a>
-          ))}
-        </div>
-      )}
+              <Plus className="mr-2 h-4 w-4" />
+              New article
+            </Button>
+          </CommandBandActions>
+        </CommandBandHeader>
 
-      {/* Create Article Dialog */}
+        <CommandBandBody>
+          <MetricBand>
+            {stats.map((item) => (
+              <MetricCell key={item.label}>
+                <MetricLabel>{item.label}</MetricLabel>
+                <MetricValue>{item.value}</MetricValue>
+                <div className="text-white/55 text-xs">{item.note}</div>
+              </MetricCell>
+            ))}
+          </MetricBand>
+        </CommandBandBody>
+      </CommandBand>
+
+      <OperationalColumn>
+        <section className="space-y-6">
+          <SectionHeader
+            count={`${totalEntries} articles`}
+            description="Search across the library or filter by category."
+            eyebrow="Library"
+            title="Articles"
+          />
+
+          <div className="flex flex-col gap-3 rounded-[22px] border border-hairline bg-canvas p-4 sm:flex-row sm:items-center">
+            <div className="relative flex-1">
+              <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                aria-label="Search knowledge base"
+                className="pl-9"
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search knowledge base..."
+                type="text"
+                value={search}
+              />
+            </div>
+            <Select
+              onValueChange={(v) =>
+                setSelectedCategory(v === "__all" ? null : v)
+              }
+              value={selectedCategory ?? "__all"}
+            >
+              <SelectTrigger className="sm:w-56">
+                <SelectValue placeholder="All categories" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__all">All categories</SelectItem>
+                {categories.map((cat) => (
+                  <SelectItem key={cat} value={cat}>
+                    {cat}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {loading ? (
+            <div className="rounded-[22px] border border-hairline bg-canvas p-12 text-center text-muted-foreground text-sm">
+              Loading articles...
+            </div>
+          ) : entries.length === 0 ? (
+            <div className="rounded-[22px] border border-hairline bg-canvas p-12 text-center">
+              <FileText className="mx-auto h-10 w-10 text-muted-foreground" />
+              <p className="mt-3 font-medium text-ink text-sm">
+                No articles found
+              </p>
+              <p className="mt-1 text-muted-foreground text-sm">
+                Adjust your filters, or publish your first article.
+              </p>
+            </div>
+          ) : (
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {entries.map((entry) => (
+                <a
+                  className="group block rounded-[22px] border border-hairline bg-canvas p-6 transition-colors hover:border-ink"
+                  href={`/knowledge-base/${entry.slug}`}
+                  key={entry.id}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    {entry.category ? (
+                      <span className="font-mono text-[11px] text-muted-foreground uppercase tracking-[0.22em]">
+                        {entry.category}
+                      </span>
+                    ) : (
+                      <span />
+                    )}
+                    <ArrowUpRight className="h-4 w-4 text-muted-foreground transition-colors group-hover:text-ink" />
+                  </div>
+                  <h3 className="mt-4 font-medium text-ink text-lg leading-tight">
+                    {entry.title}
+                  </h3>
+                  {entry.content ? (
+                    <p className="mt-2 text-muted-foreground text-sm leading-relaxed line-clamp-3">
+                      {entry.content.slice(0, 180)}...
+                    </p>
+                  ) : null}
+                  {entry.tags && entry.tags.length > 0 ? (
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      {entry.tags.slice(0, 4).map((tag) => (
+                        <span
+                          className="rounded-full border border-hairline px-2 py-0.5 text-muted-foreground text-xs"
+                          key={tag}
+                        >
+                          #{tag}
+                        </span>
+                      ))}
+                    </div>
+                  ) : null}
+                </a>
+              ))}
+            </div>
+          )}
+        </section>
+      </OperationalColumn>
+
       <Dialog onOpenChange={setShowCreateDialog} open={showCreateDialog}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Create New Article</DialogTitle>
+            <DialogTitle>Create new article</DialogTitle>
             <DialogDescription>
               Add a new article to the knowledge base for staff training.
             </DialogDescription>
@@ -246,7 +344,7 @@ export default function KnowledgeBaseClient() {
                       }));
                     }
                   }}
-                  placeholder="e.g., How to Handle Customer Complaints"
+                  placeholder="e.g., How to handle customer complaints"
                   required
                   value={createForm.title}
                 />
@@ -336,12 +434,12 @@ export default function KnowledgeBaseClient() {
                 type="submit"
               >
                 {creating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Create Article
+                Create article
               </Button>
             </DialogFooter>
           </form>
         </DialogContent>
       </Dialog>
-    </div>
+    </PageCanvas>
   );
 }

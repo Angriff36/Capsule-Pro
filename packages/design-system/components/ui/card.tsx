@@ -1,11 +1,17 @@
 import { cn } from "@repo/design-system/lib/utils";
 import type * as React from "react";
 
+/**
+ * Card per DESIGN.md: white canvas with a 16-22px radius, hairline border,
+ * and NO drop shadow. Depth comes from surface alternation, not elevation.
+ * Pages that need an editorial dark band should compose <DarkBand> wrappers
+ * (use `bg-deep-green text-canvas rounded-[22px]`) rather than inverting Card.
+ */
 function Card({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       className={cn(
-        "bg-card text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm",
+        "bg-card text-card-foreground flex flex-col gap-6 rounded-card border border-card-border py-6",
         className
       )}
       data-slot="card"

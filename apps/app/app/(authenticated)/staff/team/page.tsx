@@ -1,15 +1,24 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import {
+  CommandBand,
+  CommandBandActions,
+  CommandBandBody,
+  CommandBandHeader,
+  CommandBandLede,
+  DisplayHeading,
+  MetricBand,
+  MetricCell,
+  MetricLabel,
+  MetricValue,
+  MonoLabel,
+  OperationalColumn,
+  PageBody,
+  PageCanvas,
+  SectionHeader,
+} from "@repo/design-system/components/blocks/page-shell";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@repo/design-system/components/ui/card";
-import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   Table,
   TableBody,
@@ -81,108 +90,164 @@ const StaffTeamPage = async () => {
     },
   });
 
+  const activeCount = employees.filter((e) => e.isActive).length;
+  const inactiveCount = employees.length - activeCount;
+  const fullTimeCount = employees.filter(
+    (e) => e.employmentType === "full_time"
+  ).length;
+
+  const stats = [
+    {
+      label: "Total staff",
+      value: String(employees.length),
+      note: "On account",
+    },
+    {
+      label: "Active",
+      value: String(activeCount),
+      note: "Schedulable",
+    },
+    {
+      label: "Inactive",
+      value: String(inactiveCount),
+      note: "Archived or paused",
+    },
+    {
+      label: "Full-time",
+      value: String(fullTimeCount),
+      note: "Of total roster",
+    },
+  ];
+
   return (
-    <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
+    <PageCanvas>
       <AutoRegisterStaff />
 
-      <div className="space-y-0.5">
-        <h1 className="text-3xl font-bold tracking-tight">Team</h1>
-        <p className="text-muted-foreground">
-          Manage staff profiles, roles, and assignments.
-        </p>
-      </div>
+      <CommandBand>
+        <CommandBandHeader>
+          <div className="space-y-4">
+            <MonoLabel tone="dark">Operations / Staff</MonoLabel>
+            <DisplayHeading>Roster, roles, and reach</DisplayHeading>
+            <CommandBandLede>
+              The team in one place. Profiles drive scheduling, payroll, and
+              event assignments — keep them current and the rest follows.
+            </CommandBandLede>
+          </div>
+          <CommandBandActions>
+            <Button asChild size="default" variant="on-dark">
+              <a href="#add-staff">Add staff</a>
+            </Button>
+          </CommandBandActions>
+        </CommandBandHeader>
 
-      <Separator />
+        <CommandBandBody>
+          <MetricBand>
+            {stats.map((item) => (
+              <MetricCell key={item.label}>
+                <MetricLabel>{item.label}</MetricLabel>
+                <MetricValue>{item.value}</MetricValue>
+                <div className="text-white/55 text-xs">{item.note}</div>
+              </MetricCell>
+            ))}
+          </MetricBand>
+        </CommandBandBody>
+      </CommandBand>
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
-        <Card>
-          <CardHeader>
-            <CardTitle>Staff Directory</CardTitle>
-            <CardDescription>
-              {employees.length} staff members on this account.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="p-0">
+      <PageBody variant="rail">
+        <OperationalColumn>
+          <section className="space-y-6">
+            <SectionHeader
+              count={`${employees.length} staff`}
+              description="Sorted by date added — newest first."
+              eyebrow="Directory"
+              title="Staff"
+            />
+
             {employees.length === 0 ? (
-              <div className="p-6 text-sm text-muted-foreground">
+              <div className="rounded-[22px] border border-hairline bg-canvas p-10 text-center text-muted-foreground text-sm">
                 No staff members yet. Add your first team member to get started.
               </div>
             ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Role</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Employment</TableHead>
-                    <TableHead>Added</TableHead>
-                    <TableHead className="w-[120px]">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {employees.map((employee) => (
-                    <TableRow key={employee.id}>
-                      <TableCell className="font-medium">
-                        {formatName(employee)}
-                      </TableCell>
-                      <TableCell>{employee.email}</TableCell>
-                      <TableCell>
-                        <Badge variant="secondary">
-                          {formatEnum(employee.role)}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          variant={employee.isActive ? "outline" : "secondary"}
-                        >
-                          {employee.isActive ? "Active" : "Inactive"}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        {formatEnum(employee.employmentType)}
-                      </TableCell>
-                      <TableCell>
-                        {dateFormatter.format(employee.createdAt)}
-                      </TableCell>
-                      <TableCell>
-                        <EditStaffDialog
-                          employee={{
-                            id: employee.id,
-                            email: employee.email,
-                            firstName: employee.firstName,
-                            lastName: employee.lastName,
-                            role: employee.role,
-                            isActive: employee.isActive,
-                            employmentType: employee.employmentType,
-                          }}
-                        >
-                          <Button size="sm" variant="outline">
-                            Edit
-                          </Button>
-                        </EditStaffDialog>
-                      </TableCell>
+              <div className="overflow-hidden rounded-[22px] border border-hairline bg-canvas">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Role</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Employment</TableHead>
+                      <TableHead>Added</TableHead>
+                      <TableHead className="w-[120px]">Actions</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {employees.map((employee) => (
+                      <TableRow key={employee.id}>
+                        <TableCell className="font-medium text-ink">
+                          {formatName(employee)}
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {employee.email}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="secondary">
+                            {formatEnum(employee.role)}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            variant={
+                              employee.isActive ? "success" : "secondary"
+                            }
+                          >
+                            {employee.isActive ? "Active" : "Inactive"}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          {formatEnum(employee.employmentType)}
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {dateFormatter.format(employee.createdAt)}
+                        </TableCell>
+                        <TableCell>
+                          <EditStaffDialog
+                            employee={{
+                              id: employee.id,
+                              email: employee.email,
+                              firstName: employee.firstName,
+                              lastName: employee.lastName,
+                              role: employee.role,
+                              isActive: employee.isActive,
+                              employmentType: employee.employmentType,
+                            }}
+                          >
+                            <Button size="sm" variant="outline">
+                              Edit
+                            </Button>
+                          </EditStaffDialog>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
             )}
-          </CardContent>
-        </Card>
+          </section>
+        </OperationalColumn>
 
-        <Card className="h-fit">
-          <CardHeader>
-            <CardTitle>Add Staff</CardTitle>
-            <CardDescription>
-              Create a staff profile so they can be assigned and scheduled.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
+        <aside className="space-y-6" id="add-staff">
+          <SectionHeader
+            description="Create a profile so they can be assigned and scheduled."
+            eyebrow="Add staff"
+            title="New profile"
+          />
+          <div className="rounded-[22px] border border-hairline bg-canvas p-6">
             <AddStaffForm />
-          </CardContent>
-        </Card>
-      </div>
-    </div>
+          </div>
+        </aside>
+      </PageBody>
+    </PageCanvas>
   );
 };
 

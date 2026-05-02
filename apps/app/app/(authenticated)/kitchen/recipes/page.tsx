@@ -464,8 +464,8 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
       <Separator />
       <RecipesRealtime tenantId={tenantId} userId={userId} />
       {activeTab === "recipes" && <RecipesPageClient />}
-      <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
-        <div className="border border-border/50 bg-card/80">
+      <div className="flex flex-1 flex-col gap-10 bg-white px-6 pt-8 pb-24 text-[#0d0d0d] sm:px-10 lg:px-12">
+        <div className="rounded-[24px] border border-[rgba(0,0,0,0.05)] bg-white p-6 shadow-[rgba(0,0,0,0.03)_0px_2px_4px] sm:p-8">
           <RecipesToolbar
             activeTab={activeTab}
             initialCategory={category}
@@ -477,48 +477,58 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
           />
         </div>
 
-        <section>
-          <div className="flex items-center gap-3 mb-3">
-            <div className="h-5 w-1 rounded-sm bg-[var(--brand-leafy-green)]" />
-            <h2 className="font-semibold text-sm text-foreground uppercase tracking-wide">
-              {activeTab === "recipes" && "Recipe Collection"}
-              {activeTab === "dishes" && "Dish Library"}
-              {activeTab === "ingredients" && "Ingredient Library"}
-              {activeTab === "menus" && "Menu Collection"}
-              {activeTab === "costing" && "Costing Analysis"}
-            </h2>
-            <span className="text-xs text-muted-foreground font-medium">
+        <section className="space-y-6">
+          <div className="flex flex-wrap items-baseline justify-between gap-3 border-b border-[rgba(0,0,0,0.05)] pb-4">
+            <div className="space-y-2">
+              <p className="font-mono text-[12px] font-medium uppercase tracking-[0.6px] text-[#666666]">
+                {activeTab === "recipes" && "Kitchen / Recipes"}
+                {activeTab === "dishes" && "Kitchen / Dishes"}
+                {activeTab === "ingredients" && "Kitchen / Ingredients"}
+                {activeTab === "menus" && "Kitchen / Menus"}
+                {activeTab === "costing" && "Kitchen / Costing"}
+              </p>
+              <h2 className="font-semibold text-[40px] leading-[1.1] tracking-[-0.8px] text-[#0d0d0d]">
+                {activeTab === "recipes" && "Recipe Collection"}
+                {activeTab === "dishes" && "Dish Library"}
+                {activeTab === "ingredients" && "Ingredient Library"}
+                {activeTab === "menus" && "Menu Collection"}
+                {activeTab === "costing" && "Costing Analysis"}
+              </h2>
+            </div>
+            <span className="inline-flex items-center rounded-full border border-[rgba(0,0,0,0.05)] bg-[#fafafa] px-3 py-1 font-mono text-[12px] font-medium uppercase tracking-[0.6px] text-[#333333]">
               {activeTab === "recipes" && `${recipeTotals?.count ?? 0} recipes`}
               {activeTab === "dishes" && `${dishTotals?.count ?? 0} dishes`}
               {activeTab === "ingredients" &&
                 `${ingredientTotals?.count ?? 0} ingredients`}
               {activeTab === "menus" && `${menuTotals?.count ?? 0} menus`}
+              {activeTab === "costing" && "Live margins"}
             </span>
           </div>
-          <div className="border border-border/50 bg-card p-4">
+          <div className="rounded-[24px] border border-[rgba(0,0,0,0.05)] bg-white p-6 shadow-[rgba(0,0,0,0.03)_0px_2px_4px] sm:p-8">
             {activeTab === "recipes" && (
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {recipes.length === 0 ? (
-                  <Empty className="bg-card/50">
-                    <EmptyHeader>
-                      <EmptyMedia variant="icon">
-                        <ChefHatIcon />
-                      </EmptyMedia>
-                      <EmptyTitle>Create your first recipe</EmptyTitle>
-                      <EmptyDescription>
+                  <div className="flex flex-col items-center gap-5 rounded-[16px] border border-[rgba(0,0,0,0.05)] bg-[#fafafa] px-6 py-16 text-center">
+                    <span className="inline-flex size-12 items-center justify-center rounded-full border border-[rgba(0,0,0,0.05)] bg-white text-[#0fa76e]">
+                      <ChefHatIcon className="size-5" />
+                    </span>
+                    <div className="space-y-2">
+                      <h3 className="font-semibold text-[24px] leading-[1.3] tracking-[-0.24px] text-[#0d0d0d]">
+                        Create your first recipe
+                      </h3>
+                      <p className="mx-auto max-w-md text-[16px] leading-[1.5] text-[#666666]">
                         Start building your recipe collection. Recipes can be
                         reused across multiple dishes, prep lists, and events to
                         streamline your kitchen operations.
-                      </EmptyDescription>
-                    </EmptyHeader>
-                    <EmptyContent>
-                      <Button asChild>
-                        <Link href="/kitchen/recipes/new">
-                          Create New Recipe
-                        </Link>
-                      </Button>
-                    </EmptyContent>
-                  </Empty>
+                      </p>
+                    </div>
+                    <Button
+                      asChild
+                      className="rounded-full bg-[#0d0d0d] px-6 py-2 text-[15px] font-medium text-white shadow-[rgba(0,0,0,0.06)_0px_1px_2px] hover:bg-[#0d0d0d]/90"
+                    >
+                      <Link href="/kitchen/recipes/new">Create new recipe</Link>
+                    </Button>
+                  </div>
                 ) : (
                   <SelectableList
                     items={recipes.map((r) => ({ id: r.id, name: r.name }))}
@@ -526,22 +536,22 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                   >
                     {recipes.map((recipe) => {
                       const categoryColors: Record<string, string> = {
-                        appetizer: "bg-amber-500",
-                        "main course": "bg-emerald-600",
-                        main: "bg-emerald-600",
-                        dessert: "bg-rose-400",
-                        side: "bg-sky-400",
-                        beverage: "bg-violet-400",
+                        appetizer: "bg-[#c37d0d]",
+                        "main course": "bg-[#0fa76e]",
+                        main: "bg-[#0fa76e]",
+                        dessert: "bg-[#d45656]",
+                        side: "bg-[#3772cf]",
+                        beverage: "bg-[#888888]",
                       };
                       const accentColor = recipe.category
                         ? categoryColors[recipe.category.toLowerCase()] ||
-                          "bg-[var(--brand-leafy-green)]"
-                        : "bg-[var(--brand-leafy-green)]";
+                          "bg-[#18E299]"
+                        : "bg-[#18E299]";
 
                       // Compact row layout for all recipes (Galley-style)
                       return (
                         <Link
-                          className="group flex items-center gap-3 p-3 border border-border/50 hover:border-border hover:bg-muted/30 transition-colors"
+                          className="group flex items-center gap-4 rounded-[16px] border border-[rgba(0,0,0,0.05)] bg-white p-4 shadow-[rgba(0,0,0,0.03)_0px_2px_4px] transition-all hover:border-[rgba(0,0,0,0.08)] hover:bg-[#fafafa]"
                           data-testid="recipe-card"
                           href={`/kitchen/recipes/${recipe.id}`}
                           key={recipe.id}
@@ -551,17 +561,17 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
 
                           {/* Colored accent bar */}
                           <div
-                            className={`w-1 h-10 rounded-sm ${accentColor}`}
+                            className={`h-10 w-1 rounded-full ${accentColor}`}
                           />
 
                           {/* Recipe name - primary info */}
-                          <div className="flex-1 min-w-0">
+                          <div className="min-w-0 flex-1">
                             <InlineRecipeName
                               name={recipe.name}
                               recipeId={recipe.id}
                             />
                             {recipe.description && (
-                              <div className="text-xs text-muted-foreground truncate">
+                              <div className="truncate text-[14px] text-[#666666]">
                                 {recipe.description}
                               </div>
                             )}
@@ -569,13 +579,13 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
 
                           {/* Category badge */}
                           {recipe.category && (
-                            <Badge className="bg-[var(--brand-avocado-mash)]/20 text-[var(--brand-leafy-green)] border-0 text-xs font-medium shrink-0">
+                            <Badge className="shrink-0 rounded-full border-0 bg-[#d4fae8] px-3 py-1 font-mono text-[12px] font-medium uppercase tracking-[0.6px] text-[#0fa76e]">
                               {recipe.category}
                             </Badge>
                           )}
 
                           {/* Time info */}
-                          <div className="flex items-center gap-3 text-xs text-muted-foreground shrink-0">
+                          <div className="flex shrink-0 items-center gap-3 font-mono text-[12px] uppercase tracking-[0.6px] text-[#666666]">
                             {recipe.prep_time_minutes ? (
                               <span className="flex items-center gap-1">
                                 <Clock className="h-3 w-3" />
@@ -591,15 +601,15 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                           </div>
 
                           {/* Counts */}
-                          <div className="flex items-center gap-4 text-xs shrink-0">
-                            <span className="text-muted-foreground">
-                              <span className="font-semibold text-foreground">
+                          <div className="flex shrink-0 items-center gap-4 text-[13px]">
+                            <span className="text-[#666666]">
+                              <span className="font-semibold text-[#0d0d0d]">
                                 {recipe.ingredient_count}
                               </span>{" "}
                               ing
                             </span>
                             {recipe.dish_count > 0 && (
-                              <span className="text-[var(--brand-spiced-orange)] font-medium">
+                              <span className="font-medium text-[#0fa76e]">
                                 {recipe.dish_count} dish
                                 {recipe.dish_count > 1 ? "es" : ""}
                               </span>
@@ -621,7 +631,7 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                             )}
 
                           {/* Actions */}
-                          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                          <div className="flex shrink-0 items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
                             <RecipeQuickRename
                               recipeId={recipe.id}
                               recipeName={recipe.name}

@@ -7,52 +7,76 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --brand-charcoal: #1e1c1a;
-  --brand-almost-white: #f7f4ef;
-  --brand-avocado-mash: #a9b388;
-  --brand-leafy-green: #3f4a39;
-  --brand-spiced-orange: #c66b2b;
-  --brand-golden-zest: #e2a13b;
+  /* DESIGN.md (Cohere) palette. Brand-* aliases retained for backward-compatibility. */
+  --ds-primary: #17171c; /* near-black primary */
+  --ds-ink: #212121; /* default body text */
+  --ds-canvas: #ffffff; /* page surface */
+  --ds-soft-stone: #eeece7; /* warm neutral surface */
+  --ds-deep-green: #003c33; /* dark-feature-band */
+  --ds-dark-navy: #071829; /* alt dark band */
+  --ds-pale-green: #edfce9; /* wash */
+  --ds-pale-blue: #f1f5ff; /* wash */
+  --ds-hairline: #d9d9dd; /* list rule */
+  --ds-border-light: #e5e7eb; /* secondary divider */
+  --ds-card-border: #f2f2f2; /* softest container line */
+  --ds-muted: #93939f; /* muted metadata */
+  --ds-slate: #75758a; /* tertiary */
+  --ds-body-muted: #616161; /* readable muted body */
+  --ds-action-blue: #1863dc; /* editorial link */
+  --ds-focus-blue: #4c6ee6; /* focus ring */
+  --ds-form-focus: #9b60aa; /* input focus */
+  --ds-coral: #ff7759; /* taxonomy chip */
+  --ds-coral-soft: #ffad9b; /* soft chip border */
+  --ds-error: #b30000; /* validation */
 
-  --background: var(--brand-almost-white);
-  --foreground: var(--brand-charcoal);
-  --card: #ffffff;
-  --card-foreground: var(--brand-charcoal);
-  --popover: #ffffff;
-  --popover-foreground: var(--brand-charcoal);
-  --primary: var(--brand-leafy-green);
-  --primary-foreground: var(--brand-almost-white);
-  --secondary: var(--brand-avocado-mash);
-  --secondary-foreground: var(--brand-charcoal);
-  --muted: #efe9e0;
-  --muted-foreground: #6d685f;
-  --accent: var(--brand-spiced-orange);
-  --accent-foreground: var(--brand-almost-white);
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: #f7f4ef;
-  --success: #4b5a40;
-  --success-foreground: #f7f4ef;
+  /* Backward-compat brand aliases (do not remove — many components reference these) */
+  --brand-charcoal: var(--ds-primary);
+  --brand-almost-white: var(--ds-canvas);
+  --brand-avocado-mash: var(--ds-soft-stone);
+  --brand-leafy-green: var(--ds-deep-green);
+  --brand-spiced-orange: var(--ds-coral);
+  --brand-golden-zest: var(--ds-action-blue);
+
+  --background: var(--ds-canvas);
+  --foreground: var(--ds-ink);
+  --card: var(--ds-canvas);
+  --card-foreground: var(--ds-ink);
+  --popover: var(--ds-canvas);
+  --popover-foreground: var(--ds-ink);
+  --primary: var(--ds-primary);
+  --primary-foreground: var(--ds-canvas);
+  --secondary: var(--ds-soft-stone);
+  --secondary-foreground: var(--ds-ink);
+  --muted: var(--ds-soft-stone);
+  --muted-foreground: var(--ds-body-muted);
+  --accent: var(--ds-soft-stone);
+  --accent-foreground: var(--ds-ink);
+  --destructive: var(--ds-error);
+  --destructive-foreground: var(--ds-canvas);
+  --success: var(--ds-deep-green);
+  --success-foreground: var(--ds-canvas);
   --warning: #b4791b;
-  --warning-foreground: #f7f4ef;
-  --info: #1a6b8a;
-  --info-foreground: #f7f4ef;
-  --border: #e0d7cc;
-  --input: #e0d7cc;
-  --ring: var(--brand-golden-zest);
-  --chart-1: var(--brand-spiced-orange);
-  --chart-2: var(--brand-leafy-green);
-  --chart-3: var(--brand-avocado-mash);
-  --chart-4: var(--brand-golden-zest);
-  --chart-5: var(--brand-charcoal);
+  --warning-foreground: var(--ds-canvas);
+  --info: var(--ds-action-blue);
+  --info-foreground: var(--ds-canvas);
+  --border: var(--ds-hairline);
+  --input: var(--ds-border-light);
+  --ring: var(--ds-focus-blue);
+  --chart-1: var(--ds-deep-green);
+  --chart-2: var(--ds-action-blue);
+  --chart-3: var(--ds-coral);
+  --chart-4: var(--ds-dark-navy);
+  --chart-5: var(--ds-muted);
   --radius: 0.625rem;
-  --sidebar: var(--brand-charcoal);
-  --sidebar-foreground: var(--brand-almost-white);
-  --sidebar-primary: var(--brand-leafy-green);
-  --sidebar-primary-foreground: var(--brand-almost-white);
-  --sidebar-accent: #2b2927;
-  --sidebar-accent-foreground: var(--brand-almost-white);
-  --sidebar-border: #2f2d2b;
-  --sidebar-ring: var(--brand-golden-zest);
+  /* Sidebar = command/control surface → deep green band per DESIGN.md */
+  --sidebar: var(--ds-deep-green);
+  --sidebar-foreground: var(--ds-canvas);
+  --sidebar-primary: var(--ds-canvas);
+  --sidebar-primary-foreground: var(--ds-deep-green);
+  --sidebar-accent: #04524a;
+  --sidebar-accent-foreground: var(--ds-canvas);
+  --sidebar-border: #04524a;
+  --sidebar-ring: var(--ds-focus-blue);
 
   --font-weight-normal: 400;
   --font-weight-medium: 500;
@@ -60,44 +84,45 @@
 }
 
 .dark {
-  --background: var(--brand-charcoal);
-  --foreground: var(--brand-almost-white);
-  --card: #262321;
-  --card-foreground: var(--brand-almost-white);
-  --popover: #262321;
-  --popover-foreground: var(--brand-almost-white);
-  --primary: var(--brand-golden-zest);
-  --primary-foreground: var(--brand-charcoal);
-  --secondary: var(--brand-leafy-green);
-  --secondary-foreground: var(--brand-almost-white);
-  --muted: #2b2826;
-  --muted-foreground: #c5bfb4;
-  --accent: var(--brand-spiced-orange);
-  --accent-foreground: var(--brand-charcoal);
-  --destructive: oklch(0.396 0.141 25.723);
-  --destructive-foreground: #f7f4ef;
-  --success: #6b7a4f;
-  --success-foreground: #1e1c1a;
+  /* Dark mode reuses DESIGN.md primary near-black + canvas inversion. */
+  --background: var(--ds-primary);
+  --foreground: var(--ds-canvas);
+  --card: #1f1f24;
+  --card-foreground: var(--ds-canvas);
+  --popover: #1f1f24;
+  --popover-foreground: var(--ds-canvas);
+  --primary: var(--ds-canvas);
+  --primary-foreground: var(--ds-primary);
+  --secondary: #26262c;
+  --secondary-foreground: var(--ds-canvas);
+  --muted: #26262c;
+  --muted-foreground: #c5c5cf;
+  --accent: #26262c;
+  --accent-foreground: var(--ds-canvas);
+  --destructive: var(--ds-error);
+  --destructive-foreground: var(--ds-canvas);
+  --success: #4a9d6f;
+  --success-foreground: var(--ds-canvas);
   --warning: #c98a1e;
-  --warning-foreground: #1e1c1a;
-  --info: #2a9ab8;
-  --info-foreground: #1e1c1a;
-  --border: #332f2c;
-  --input: #332f2c;
-  --ring: var(--brand-golden-zest);
-  --chart-1: var(--brand-golden-zest);
-  --chart-2: var(--brand-spiced-orange);
-  --chart-3: var(--brand-avocado-mash);
-  --chart-4: var(--brand-leafy-green);
-  --chart-5: var(--brand-almost-white);
-  --sidebar: #191715;
-  --sidebar-foreground: var(--brand-almost-white);
-  --sidebar-primary: var(--brand-golden-zest);
-  --sidebar-primary-foreground: var(--brand-charcoal);
-  --sidebar-accent: #2b2826;
-  --sidebar-accent-foreground: var(--brand-almost-white);
-  --sidebar-border: #2f2d2b;
-  --sidebar-ring: var(--brand-golden-zest);
+  --warning-foreground: var(--ds-primary);
+  --info: var(--ds-focus-blue);
+  --info-foreground: var(--ds-canvas);
+  --border: #2f2f37;
+  --input: #2f2f37;
+  --ring: var(--ds-focus-blue);
+  --chart-1: var(--ds-canvas);
+  --chart-2: var(--ds-focus-blue);
+  --chart-3: var(--ds-coral);
+  --chart-4: #4a9d6f;
+  --chart-5: var(--ds-muted);
+  --sidebar: #0a0a0e;
+  --sidebar-foreground: var(--ds-canvas);
+  --sidebar-primary: var(--ds-canvas);
+  --sidebar-primary-foreground: var(--ds-primary);
+  --sidebar-accent: #1f1f24;
+  --sidebar-accent-foreground: var(--ds-canvas);
+  --sidebar-border: #2f2f37;
+  --sidebar-ring: var(--ds-focus-blue);
 }
 
 @theme inline {
@@ -143,10 +168,28 @@
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
   --color-success: var(--success);
+  /* DESIGN.md raw palette utilities (bg-deep-green, text-coral, border-hairline, ...) */
+  --color-deep-green: var(--ds-deep-green);
+  --color-dark-navy: var(--ds-dark-navy);
+  --color-soft-stone: var(--ds-soft-stone);
+  --color-pale-green: var(--ds-pale-green);
+  --color-pale-blue: var(--ds-pale-blue);
+  --color-canvas: var(--ds-canvas);
+  --color-ink: var(--ds-ink);
+  --color-coral: var(--ds-coral);
+  --color-coral-soft: var(--ds-coral-soft);
+  --color-action-blue: var(--ds-action-blue);
+  --color-hairline: var(--ds-hairline);
+  --color-card-border: var(--ds-card-border);
+  --color-slate-soft: var(--ds-slate);
+  /* DESIGN.md radius scale (rounded-pill, rounded-card, rounded-media, ...) */
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+  --radius-card: 16px;
+  --radius-media: 22px;
+  --radius-pill: 32px;
   --animate-accordion-down: accordion-down 0.2s ease-out;
   --animate-accordion-up: accordion-up 0.2s ease-out;
 
@@ -240,4 +283,110 @@
   --tw-prose-invert-pre-bg: var(--color-background);
   --tw-prose-invert-th-borders: var(--color-border);
   --tw-prose-invert-td-borders: var(--color-border);
+}
+
+/* ─── DESIGN.md helpers ────────────────────────────────────────────────
+   Cohere-derived patterns: mono section labels, dark feature bands, and
+   editorial chip styles. Keep these as utilities so pages can opt in
+   without editing component internals. */
+
+@utility ds-mono-label {
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: 12px;
+  line-height: 1.4;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ds-slate);
+}
+
+@utility ds-section-eyebrow {
+  /* Small uppercase section labels above big headings */
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+}
+
+@utility ds-display-heading {
+  /* Confident card-heading scale (32-48px) used for page titles */
+  font-family: var(--font-display, var(--font-sans));
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 400;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--ds-ink);
+}
+
+@utility ds-page-canvas {
+  background-color: var(--ds-canvas);
+  color: var(--ds-ink);
+}
+
+@utility ds-dark-band {
+  background-color: var(--ds-deep-green);
+  color: var(--ds-canvas);
+  border-radius: 22px;
+}
+
+@utility ds-navy-band {
+  background-color: var(--ds-dark-navy);
+  color: var(--ds-canvas);
+  border-radius: 22px;
+}
+
+@utility ds-card-flat {
+  /* Restrained card per DESIGN.md: subtle border, no shadow */
+  background-color: var(--ds-canvas);
+  color: var(--ds-ink);
+  border: 1px solid var(--ds-card-border);
+  border-radius: 16px;
+}
+
+@utility ds-row-rule {
+  /* Editorial list row separator (research-table style) */
+  border-bottom: 1px solid var(--ds-hairline);
+}
+
+@utility ds-meta {
+  color: var(--ds-muted);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+@utility ds-meta-strong {
+  color: var(--ds-body-muted);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+@utility ds-chip {
+  /* Outlined pill — research filter style */
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  border: 1px solid var(--ds-hairline);
+  border-radius: 30px;
+  padding: 4px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ds-ink);
+  background: transparent;
+  transition:
+    background-color 120ms ease,
+    border-color 120ms ease;
+}
+
+@utility ds-chip-active {
+  border-color: var(--ds-primary);
+  background-color: var(--ds-primary);
+  color: var(--ds-canvas);
+}
+
+@utility ds-chip-coral {
+  /* Editorial taxonomy chip */
+  border-color: var(--ds-coral-soft);
+  color: var(--ds-coral);
+  background-color: transparent;
 }

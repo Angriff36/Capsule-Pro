@@ -1,26 +1,32 @@
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
 import {
+  CommandBand,
+  CommandBandActions,
+  CommandBandBody,
+  CommandBandHeader,
+  CommandBandLede,
+  DisplayHeading,
+  MetricBand,
+  MetricCell,
+  MetricDelta,
+  MetricLabel,
+  MetricValue,
+  MonoLabel,
+  OperationalColumn,
+  OperationalRow,
+  PageCanvas,
+  SectionHeader,
+  StatusPill,
+} from "@repo/design-system/components/blocks/page-shell";
+import {
   Avatar,
   AvatarFallback,
   AvatarImage,
 } from "@repo/design-system/components/ui/avatar";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@repo/design-system/components/ui/card";
 import { Input } from "@repo/design-system/components/ui/input";
-import { Separator } from "@repo/design-system/components/ui/separator";
-import {
-  Tabs,
-  TabsList,
-  TabsTrigger,
-} from "@repo/design-system/components/ui/tabs";
 import {
   BellIcon,
   CalendarCheckIcon,
@@ -88,6 +94,18 @@ const formatTime = (value: Date) =>
     hour: "2-digit",
     minute: "2-digit",
   });
+
+const formatRangeLabel = (start: Date, end: Date) => {
+  const sameMonth = start.getMonth() === end.getMonth();
+  const left = start.toLocaleDateString("en-US", {
+    month: "long",
+    day: "numeric",
+  });
+  const right = sameMonth
+    ? end.toLocaleDateString("en-US", { day: "numeric" })
+    : end.toLocaleDateString("en-US", { month: "long", day: "numeric" });
+  return `${left} – ${right}, ${end.getFullYear()}`;
+};
 
 const formatName = (first?: string | null, last?: string | null) =>
   [first, last].filter(Boolean).join(" ") || "Unassigned";
@@ -362,207 +380,256 @@ const SchedulingPage = async () => {
       staff_count: 0,
       open_count: 0,
     };
-    const badges = [];
-    if (summary.staff_count > 0) {
-      badges.push(`${summary.staff_count} Staff`);
-    }
-    if (summary.shift_count > 0) {
-      badges.push(`${summary.shift_count} Shifts`);
-    }
-    if (summary.open_count > 0) {
-      badges.push(`${summary.open_count} Open`);
-    }
     return {
       label: formatDayLabel(date),
-      badges,
+      isToday: date.toDateString() === now.toDateString(),
+      staffCount: summary.staff_count,
+      shiftCount: summary.shift_count,
+      openCount: summary.open_count,
     };
   });
 
   const stats = [
     {
-      label: "Total Staff",
-      value: currentStaff?.count ?? 0,
+      label: "Active staff",
+      value: String(currentStaff?.count ?? 0),
       delta: formatDelta(currentStaff?.count ?? 0, previousStaff?.count ?? 0),
-      note: "Active employees",
+      note: "On the roster",
       icon: UsersIcon,
-      tone: "bg-primary/10 text-primary",
     },
     {
-      label: "Hours Scheduled",
+      label: "Hours scheduled",
       value: `${Math.round(currentHours?.hours ?? 0)}h`,
       delta: formatDelta(currentHours?.hours ?? 0, previousHours?.hours ?? 0),
-      note: `${shiftTotals?.shift_count ?? 0} shifts scheduled`,
+      note: `${shiftTotals?.shift_count ?? 0} shifts placed`,
       icon: ClockIcon,
-      tone: "bg-secondary/20 text-secondary-foreground",
     },
     {
-      label: "Open Shifts",
-      value: openShifts?.count ?? 0,
+      label: "Open shifts",
+      value: String(openShifts?.count ?? 0),
       delta: formatDelta(
         openShifts?.count ?? 0,
         previousOpenShifts?.count ?? 0
       ),
-      note: "Unassigned shifts",
+      note: "Awaiting claim",
       icon: CalendarCheckIcon,
-      tone: "bg-accent/15 text-accent-foreground",
     },
     {
-      label: "Projected Cost",
+      label: "Projected labor",
       value: currencyFormatter.format(currentCost?.cost ?? 0),
       delta: formatDelta(currentCost?.cost ?? 0, previousCost?.cost ?? 0),
-      note: "Scheduled labor cost",
+      note: "This week",
       icon: WalletIcon,
-      tone: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-200",
     },
   ];
 
+  const rangeLabel = formatRangeLabel(weekStart, addDays(weekStart, 6));
+
   return (
-    <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
+    <PageCanvas>
       <SchedulingRealtime tenantId={tenantId} userId={userId} />
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div className="space-y-0.5">
-          <h1 className="font-bold text-3xl tracking-tight text-foreground">
-            Dashboard
-          </h1>
-          <p className="text-muted-foreground">
-            Welcome back. You have scheduling activity for this week.
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          <div className="relative min-w-[260px]">
-            <SearchIcon className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-            <Input className="pr-12 pl-9" placeholder="Search anything..." />
-            <span className="absolute top-1/2 right-3 -translate-y-1/2 rounded-md border bg-background px-2 py-1 text-muted-foreground text-xs">
-              ⌘K
+
+      <CommandBand>
+        <CommandBandHeader>
+          <div className="space-y-4">
+            <MonoLabel tone="dark">Scheduling / Overview</MonoLabel>
+            <DisplayHeading>This week at a glance</DisplayHeading>
+            <CommandBandLede>
+              Coverage, open shifts, and labor cost across the rolling week.
+              Built from active rosters and live open-shift bids.
+            </CommandBandLede>
+          </div>
+          <CommandBandActions>
+            <div className="relative w-full max-w-[280px] sm:w-[280px]">
+              <SearchIcon className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-white/60" />
+              <Input
+                className="border-white/25 bg-transparent pr-12 pl-9 text-white placeholder:text-white/50 focus-visible:border-white/60 focus-visible:ring-white/20"
+                placeholder="Search shifts, people, roles…"
+              />
+              <span className="absolute top-1/2 right-3 -translate-y-1/2 rounded-md border border-white/25 px-2 py-1 font-mono text-[10px] text-white/70 uppercase tracking-[0.18em]">
+                ⌘K
+              </span>
+            </div>
+            <Button
+              aria-label="Notifications"
+              className="border-white/25 bg-transparent text-white hover:bg-white/10"
+              size="icon"
+              variant="outline"
+            >
+              <BellIcon className="size-4" />
+            </Button>
+            <Button size="default" variant="on-dark">
+              <PlusIcon className="size-4" />
+              Add shift
+            </Button>
+          </CommandBandActions>
+        </CommandBandHeader>
+
+        <CommandBandBody>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="rounded-full bg-white px-3.5 py-1 font-mono text-[11px] text-deep-green uppercase tracking-[0.18em]">
+              {rangeLabel}
+            </span>
+            <span className="rounded-full border border-white/25 px-3.5 py-1 font-mono text-[11px] text-white/80 uppercase tracking-[0.18em]">
+              Week
+            </span>
+            <span className="rounded-full border border-white/25 px-3.5 py-1 font-mono text-[11px] text-white/60 uppercase tracking-[0.18em]">
+              Month
             </span>
           </div>
-          <Button size="icon" variant="outline">
-            <BellIcon className="size-4" />
-          </Button>
-        </div>
-      </div>
 
-      <Separator />
-
-      <section className="space-y-4">
-        <h2 className="font-medium text-sm text-muted-foreground">
-          Performance Overview
-        </h2>
-        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-          {stats.map((item) => (
-            <Card className="shadow-sm" key={item.label}>
-              <CardHeader className="flex flex-row items-start justify-between space-y-0">
-                <div>
-                  <CardDescription>{item.label}</CardDescription>
-                  <CardTitle className="text-2xl">{item.value}</CardTitle>
-                  <p className="text-muted-foreground text-xs">{item.note}</p>
+          <MetricBand>
+            {stats.map((item) => (
+              <MetricCell key={item.label}>
+                <div className="flex items-start justify-between gap-3">
+                  <MetricLabel>{item.label}</MetricLabel>
+                  <item.icon
+                    aria-hidden="true"
+                    className="size-4 text-white/60"
+                  />
                 </div>
-                <div
-                  className={`flex size-10 items-center justify-center rounded-xl ${item.tone}`}
+                <MetricValue>{item.value}</MetricValue>
+                <MetricDelta>
+                  <span className="font-medium">{item.delta}</span>
+                  <span className="ml-2 text-white/50">{item.note}</span>
+                </MetricDelta>
+              </MetricCell>
+            ))}
+          </MetricBand>
+        </CommandBandBody>
+      </CommandBand>
+
+      <OperationalColumn>
+        <section className="space-y-6">
+          <SectionHeader
+            actions={
+              <Button size="sm" variant="default">
+                <PlusIcon className="size-4" />
+                Add shift
+              </Button>
+            }
+            count={`${shiftTotals?.shift_count ?? 0} shifts · ${shiftTotals?.staff_count ?? 0} people`}
+            description="Coverage by day, including open shifts that have not been claimed."
+            eyebrow="Cadence"
+            title="Schedule cadence"
+          />
+
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-7">
+            {scheduleDays.map((day) => {
+              const empty =
+                day.staffCount === 0 &&
+                day.shiftCount === 0 &&
+                day.openCount === 0;
+              return (
+                <article
+                  className={
+                    day.isToday
+                      ? "rounded-[16px] border border-ink bg-canvas p-4"
+                      : "rounded-[16px] border border-hairline bg-canvas p-4"
+                  }
+                  key={day.label}
                 >
-                  <item.icon className="size-5" />
-                </div>
-              </CardHeader>
-              <CardContent>
-                <span className="text-xs font-medium">{item.delta}</span>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </section>
-
-      <section className="space-y-4">
-        <h2 className="font-medium text-sm text-muted-foreground">
-          Schedule Overview
-        </h2>
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
-          <div className="grid gap-6">
-            <Card className="shadow-sm">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0">
-                <div>
-                  <CardTitle>Upcoming Schedule</CardTitle>
-                  <CardDescription>
-                    Keep coverage balanced across departments.
-                  </CardDescription>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Tabs defaultValue="week">
-                    <TabsList>
-                      <TabsTrigger value="week">Week</TabsTrigger>
-                      <TabsTrigger value="month">Month</TabsTrigger>
-                    </TabsList>
-                  </Tabs>
-                  <Button size="sm">
-                    <PlusIcon className="size-4" />
-                    Add Shift
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-7 gap-3 text-sm">
-                  {scheduleDays.map((day) => (
-                    <div
-                      className="rounded-xl border bg-muted/30 p-3"
-                      key={day.label}
-                    >
-                      <div className="font-medium text-muted-foreground text-xs">
-                        {day.label}
-                      </div>
-                      <div className="mt-3 grid gap-2">
-                        {day.badges.length === 0 ? (
-                          <Badge className="justify-center" variant="outline">
-                            No shifts
-                          </Badge>
-                        ) : (
-                          day.badges.map((shift) => (
-                            <Badge
-                              className="justify-center"
-                              key={`${day.label}-${shift}`}
-                              variant={
-                                shift.includes("Open") ? "outline" : "secondary"
-                              }
-                            >
-                              {shift}
-                            </Badge>
-                          ))
-                        )}
-                      </div>
+                  <div className="flex items-center justify-between">
+                    <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
+                      {day.label}
                     </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="shadow-sm">
-              <CardHeader>
-                <CardTitle>Happening Today</CardTitle>
-                <CardDescription>
-                  Live shift start times and staff coverage.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="grid gap-4">
-                {happeningToday.length === 0 ? (
-                  <div className="rounded-xl border bg-muted/20 p-4 text-muted-foreground text-sm">
-                    No shifts scheduled for today.
+                    {day.isToday ? <StatusPill>Today</StatusPill> : null}
                   </div>
-                ) : (
-                  happeningToday.map((item) => (
-                    <div
-                      className="flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-background p-3"
-                      key={`${item.shift_start.toISOString()}-${item.first_name ?? "unknown"}`}
-                    >
-                      <div className="flex items-center gap-4">
-                        <div className="font-semibold text-muted-foreground text-sm">
-                          {formatTime(item.shift_start)}
+                  <div className="mt-3 space-y-1.5 text-sm text-ink">
+                    {empty ? (
+                      <span className="text-muted-foreground text-xs">
+                        No shifts
+                      </span>
+                    ) : (
+                      <>
+                        {day.staffCount > 0 ? (
+                          <div className="flex items-baseline justify-between">
+                            <span className="text-muted-foreground text-xs">
+                              Staff
+                            </span>
+                            <span className="font-medium tabular-nums">
+                              {day.staffCount}
+                            </span>
+                          </div>
+                        ) : null}
+                        {day.shiftCount > 0 ? (
+                          <div className="flex items-baseline justify-between">
+                            <span className="text-muted-foreground text-xs">
+                              Shifts
+                            </span>
+                            <span className="font-medium tabular-nums">
+                              {day.shiftCount}
+                            </span>
+                          </div>
+                        ) : null}
+                        {day.openCount > 0 ? (
+                          <div className="flex items-baseline justify-between">
+                            <span className="text-muted-foreground text-xs">
+                              Open
+                            </span>
+                            <Badge variant="warning">{day.openCount}</Badge>
+                          </div>
+                        ) : null}
+                      </>
+                    )}
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        </section>
+
+        <section className="space-y-6">
+          <SectionHeader
+            count={`${happeningToday.length} on deck`}
+            description="Live view of shift starts and currently uncovered slots."
+            eyebrow="Live"
+            title="Happening today"
+          />
+
+          {happeningToday.length === 0 ? (
+            <OperationalRow density="compact">
+              <p className="text-sm text-muted-foreground">
+                No shifts scheduled for today. Use{" "}
+                <span className="text-ink">Add shift</span> to fill the day.
+              </p>
+            </OperationalRow>
+          ) : (
+            <div className="space-y-3">
+              {happeningToday.map((item) => {
+                const assigned = Boolean(item.first_name || item.last_name);
+                return (
+                  <OperationalRow
+                    density="compact"
+                    interactive
+                    key={`${item.shift_start.toISOString()}-${item.first_name ?? "open"}`}
+                  >
+                    <div className="flex flex-wrap items-center justify-between gap-4">
+                      <div className="flex items-center gap-5">
+                        <div className="flex flex-col">
+                          <span className="font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
+                            Start
+                          </span>
+                          <span className="font-medium text-ink text-lg tabular-nums">
+                            {formatTime(item.shift_start)}
+                          </span>
                         </div>
-                        <div>
-                          <div className="font-medium text-foreground">
+                        <div className="h-10 w-px bg-hairline" />
+                        <div className="space-y-1">
+                          <div className="font-medium text-ink">
                             {item.role ?? "Scheduled shift"}
                           </div>
-                          <div className="flex items-center gap-1 text-muted-foreground text-xs">
-                            <Badge variant="outline">
-                              {formatName(item.first_name, item.last_name)}
-                            </Badge>
+                          <div className="flex items-center gap-2">
+                            {assigned ? (
+                              <StatusPill>
+                                {formatName(item.first_name, item.last_name)}
+                              </StatusPill>
+                            ) : (
+                              <Badge variant="warning">Unclaimed</Badge>
+                            )}
+                            <span className="text-muted-foreground text-xs tabular-nums">
+                              ends {formatTime(item.shift_end)}
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -570,88 +637,85 @@ const SchedulingPage = async () => {
                         Edit
                       </Button>
                     </div>
-                  ))
-                )}
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      <section className="space-y-4">
-        <h2 className="font-medium text-sm text-muted-foreground">
-          Live Leaderboard
-        </h2>
-        <Card className="shadow-sm">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="flex items-center gap-2">
-                  <SparklesIcon className="size-5 text-primary" />
-                  Shift Battle Arena
-                </CardTitle>
-                <CardDescription>
-                  Real-time, first-come shift claiming with power-ups.
-                </CardDescription>
-              </div>
-              <Badge className="bg-primary/10 text-primary">Game Mode</Badge>
+                  </OperationalRow>
+                );
+              })}
             </div>
-          </CardHeader>
-          <CardContent className="grid gap-4">
-            <div className="rounded-xl border bg-muted/40 p-4">
-              <div className="flex items-center justify-between font-medium text-sm">
-                <span className="text-muted-foreground">
-                  Live Battle Royale
-                </span>
-                <span className="text-primary">This Week</span>
-              </div>
-              <div className="mt-4 grid gap-4">
-                {leaderboard.length === 0 ? (
-                  <div className="rounded-xl border bg-background p-4 text-muted-foreground text-sm">
-                    No shift activity yet this week.
-                  </div>
-                ) : (
-                  leaderboard.map((person, index) => (
-                    <div className="flex gap-3" key={person.employee_id}>
-                      <div className="font-semibold text-muted-foreground text-sm">
+          )}
+        </section>
+
+        <section className="space-y-6">
+          <SectionHeader
+            actions={
+              <Button size="sm" variant="outline">
+                View leaderboard
+              </Button>
+            }
+            count="Top 3"
+            description="First-come shift claiming, ranked by completed shifts this week."
+            eyebrow="Battle arena"
+            title={
+              <span className="inline-flex items-center gap-2">
+                <SparklesIcon className="size-5 text-coral" />
+                Shift battle arena
+              </span>
+            }
+          />
+
+          {leaderboard.length === 0 ? (
+            <OperationalRow density="compact">
+              <p className="text-sm text-muted-foreground">
+                No shift activity yet this week. The board fills as people claim
+                open shifts.
+              </p>
+            </OperationalRow>
+          ) : (
+            <div className="grid gap-3 sm:grid-cols-3">
+              {leaderboard.map((person, index) => {
+                const fullName = formatName(
+                  person.first_name,
+                  person.last_name
+                );
+                return (
+                  <OperationalRow
+                    density="comfortable"
+                    key={person.employee_id}
+                  >
+                    <div className="flex items-center gap-4">
+                      <span className="font-mono text-2xl tabular-nums text-muted-foreground">
                         #{index + 1}
-                      </div>
-                      <Avatar>
-                        <AvatarImage
-                          alt={formatName(person.first_name, person.last_name)}
-                          src=""
-                        />
-                        <AvatarFallback>
-                          {formatName(
-                            person.first_name,
-                            person.last_name
-                          ).slice(0, 2)}
-                        </AvatarFallback>
+                      </span>
+                      <Avatar className="size-12">
+                        <AvatarImage alt={fullName} src="" />
+                        <AvatarFallback>{fullName.slice(0, 2)}</AvatarFallback>
                       </Avatar>
-                      <div className="flex-1">
-                        <div className="font-medium text-foreground">
-                          {formatName(person.first_name, person.last_name)}
+                      <div className="min-w-0 flex-1">
+                        <div className="truncate font-medium text-ink">
+                          {fullName}
                         </div>
-                        <div className="text-muted-foreground text-xs">
+                        <div className="text-muted-foreground text-xs tabular-nums">
                           {person.shift_count} shifts this week
-                        </div>
-                        <div className="mt-2 flex flex-wrap gap-2">
-                          {person.role ? (
-                            <Badge variant="secondary">{person.role}</Badge>
-                          ) : null}
-                          <Badge variant="outline">Top performer</Badge>
                         </div>
                       </div>
                     </div>
-                  ))
-                )}
-              </div>
+                    <div className="mt-4 flex flex-wrap gap-1.5">
+                      {person.role ? (
+                        <Badge variant="default">{person.role}</Badge>
+                      ) : null}
+                      {index === 0 ? (
+                        <Badge variant="success">Lead</Badge>
+                      ) : (
+                        <Badge variant="outline">Top performer</Badge>
+                      )}
+                    </div>
+                  </OperationalRow>
+                );
+              })}
             </div>
-            <Button variant="outline">View full leaderboard</Button>
-          </CardContent>
-        </Card>
-      </section>
-    </div>
+          )}
+        </section>
+      </OperationalColumn>
+    </PageCanvas>
   );
 };
 

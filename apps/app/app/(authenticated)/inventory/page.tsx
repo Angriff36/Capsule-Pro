@@ -1,5 +1,19 @@
 import {
+  CommandBand,
+  CommandBandActions,
+  CommandBandHeader,
+  CommandBandLede,
+  DisplayHeading,
+  MonoLabel,
+  OperationalColumn,
+  PageCanvas,
+  SectionHeader,
+} from "@repo/design-system/components/blocks/page-shell";
+import { Button } from "@repo/design-system/components/ui/button";
+import type { LucideIcon } from "lucide-react";
+import {
   ArrowLeftRight,
+  ArrowUpRight,
   BarChart3,
   ChefHat,
   Package,
@@ -9,115 +23,120 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
+interface InventoryNavItem {
+  href: string;
+  label: string;
+  description: string;
+  icon: LucideIcon;
+}
+
+const navItems: InventoryNavItem[] = [
+  {
+    href: "/inventory/items",
+    label: "Items",
+    description: "Search, create, and manage inventory items across locations.",
+    icon: Package,
+  },
+  {
+    href: "/inventory/levels",
+    label: "Stock levels",
+    description: "Monitor on-hand quantities and low-stock alerts.",
+    icon: BarChart3,
+  },
+  {
+    href: "/inventory/transfers",
+    label: "Transfers",
+    description: "Move stock between locations and events.",
+    icon: ArrowLeftRight,
+  },
+  {
+    href: "/inventory/recipe-costs",
+    label: "Recipe costs",
+    description: "Calculate and manage recipe-level costing.",
+    icon: ChefHat,
+  },
+  {
+    href: "/inventory/forecasts",
+    label: "Forecasts",
+    description: "Usage forecasting and reorder suggestions.",
+    icon: TrendingUp,
+  },
+  {
+    href: "/inventory/import",
+    label: "Import",
+    description: "Bulk-import items from CSV.",
+    icon: Upload,
+  },
+  {
+    href: "/inventory/scanner",
+    label: "Scanner",
+    description: "Scan barcodes to look up or count items in the field.",
+    icon: ScanBarcode,
+  },
+];
+
 const InventoryPage = () => (
-  <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
-    <div className="space-y-0.5">
-      <h1 className="text-3xl font-bold tracking-tight">Inventory</h1>
-      <p className="text-muted-foreground">
-        Manage stock levels, items, recipes, transfers, and forecasting.
-      </p>
-    </div>
-
-    <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-7">
-      <Link href="/inventory/items">
-        <div className="group rounded-lg border bg-card p-6 transition-colors hover:bg-accent cursor-pointer">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100 text-blue-600 dark:bg-blue-950 dark:text-blue-400">
-              <Package className="h-5 w-5" />
-            </div>
-            <h3 className="font-semibold">Items</h3>
-          </div>
-          <p className="text-sm text-muted-foreground">
-            Search, create, and manage inventory items.
-          </p>
+  <PageCanvas>
+    <CommandBand>
+      <CommandBandHeader>
+        <div className="space-y-4">
+          <MonoLabel tone="dark">Operations / Inventory</MonoLabel>
+          <DisplayHeading>Stock, costs, and movement</DisplayHeading>
+          <CommandBandLede>
+            Manage stock levels, items, recipes, transfers, and forecasting in
+            one place. Pick a workspace to get into the work.
+          </CommandBandLede>
         </div>
-      </Link>
+        <CommandBandActions>
+          <Button
+            asChild
+            className="border-white/25 bg-transparent text-white hover:bg-white/10"
+            size="sm"
+            variant="outline"
+          >
+            <Link href="/inventory/scanner">Scan barcode</Link>
+          </Button>
+          <Button asChild size="default" variant="on-dark">
+            <Link href="/inventory/items">Open items</Link>
+          </Button>
+        </CommandBandActions>
+      </CommandBandHeader>
+    </CommandBand>
 
-      <Link href="/inventory/levels">
-        <div className="group rounded-lg border bg-card p-6 transition-colors hover:bg-accent cursor-pointer">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-100 text-emerald-600 dark:bg-emerald-950 dark:text-emerald-400">
-              <BarChart3 className="h-5 w-5" />
-            </div>
-            <h3 className="font-semibold">Stock Levels</h3>
-          </div>
-          <p className="text-sm text-muted-foreground">
-            Monitor stock levels and low-stock alerts.
-          </p>
-        </div>
-      </Link>
+    <OperationalColumn>
+      <section className="space-y-6">
+        <SectionHeader
+          count={`${navItems.length} workspaces`}
+          description="Each workspace is a focused tool. Pair items + levels for stock, recipes + forecasts for kitchen planning."
+          eyebrow="Workspaces"
+          title="Open a workspace"
+        />
 
-      <Link href="/inventory/transfers">
-        <div className="group rounded-lg border bg-card p-6 transition-colors hover:bg-accent cursor-pointer">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-100 text-purple-600 dark:bg-purple-950 dark:text-purple-400">
-              <ArrowLeftRight className="h-5 w-5" />
-            </div>
-            <h3 className="font-semibold">Transfers</h3>
-          </div>
-          <p className="text-sm text-muted-foreground">
-            Transfer stock between locations and events.
-          </p>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {navItems.map(({ href, label, description, icon: Icon }) => (
+            <Link
+              className="group block rounded-[22px] border border-hairline bg-canvas p-6 transition-colors hover:border-ink"
+              href={href}
+              key={href}
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex size-10 items-center justify-center rounded-full border border-hairline bg-soft-stone text-ink">
+                  <Icon className="size-5" />
+                </div>
+                <ArrowUpRight className="size-4 translate-x-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-ink" />
+              </div>
+              <h3 className="mt-6 font-medium text-ink text-lg leading-tight">
+                {label}
+              </h3>
+              <p className="mt-2 text-muted-foreground text-sm leading-relaxed">
+                {description}
+              </p>
+            </Link>
+          ))}
         </div>
-      </Link>
-
-      <Link href="/inventory/recipe-costs">
-        <div className="group rounded-lg border bg-card p-6 transition-colors hover:bg-accent cursor-pointer">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-100 text-amber-600 dark:bg-amber-950 dark:text-amber-400">
-              <ChefHat className="h-5 w-5" />
-            </div>
-            <h3 className="font-semibold">Recipe Costs</h3>
-          </div>
-          <p className="text-sm text-muted-foreground">
-            Calculate and manage recipe costing.
-          </p>
-        </div>
-      </Link>
-
-      <Link href="/inventory/forecasts">
-        <div className="group rounded-lg border bg-card p-6 transition-colors hover:bg-accent cursor-pointer">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-cyan-100 text-cyan-600 dark:bg-cyan-950 dark:text-cyan-400">
-              <TrendingUp className="h-5 w-5" />
-            </div>
-            <h3 className="font-semibold">Forecasts</h3>
-          </div>
-          <p className="text-sm text-muted-foreground">
-            Usage forecasting and reorder suggestions.
-          </p>
-        </div>
-      </Link>
-
-      <Link href="/inventory/import">
-        <div className="group rounded-lg border bg-card p-6 transition-colors hover:bg-accent cursor-pointer">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-100 text-orange-600 dark:bg-orange-950 dark:text-orange-400">
-              <Upload className="h-5 w-5" />
-            </div>
-            <h3 className="font-semibold">Import</h3>
-          </div>
-          <p className="text-sm text-muted-foreground">
-            Bulk import items from CSV.
-          </p>
-        </div>
-      </Link>
-
-      <Link href="/inventory/scanner">
-        <div className="group rounded-lg border bg-card p-6 transition-colors hover:bg-accent cursor-pointer">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-pink-100 text-pink-600 dark:bg-pink-950 dark:text-pink-400">
-              <ScanBarcode className="h-5 w-5" />
-            </div>
-            <h3 className="font-semibold">Scanner</h3>
-          </div>
-          <p className="text-sm text-muted-foreground">
-            Scan barcodes to look up or count items.
-          </p>
-        </div>
-      </Link>
-    </div>
-  </div>
+      </section>
+    </OperationalColumn>
+  </PageCanvas>
 );
 
 export default InventoryPage;

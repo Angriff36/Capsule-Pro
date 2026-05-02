@@ -12,6 +12,50 @@ Operational rules (build commands, validation, manifest persistence, planning fi
 
 ---
 
+## Database & Migrations
+
+**Canonical doc:** `docs/database/CONTRIBUTING.md` — schema-change workflow, table/migration documentation templates, and rollback rules. **Read it before any schema or migration work.** Supplementary references: `docs/database/README.md` (architecture), `docs/database/SCHEMAS.md` (per-schema overview), `docs/database/KNOWN_ISSUES.md` (active gotchas).
+
+### Hard rules (non-negotiable)
+
+1. **Never hand-author a `migrations/<ts>_name/migration.sql` folder.** Use `pnpm db:dev --create-only --name <name>` (which wraps `pnpm --filter @repo/database exec prisma migrate dev --create-only --name <name>`) so the shadow DB validates every table reference at authoring time. Hand-written SQL skips validation and is the #1 cause of failed `db:deploy` runs (`P3018`, "relation does not exist").
+2. **Verify table names against `schema.prisma` before writing raw SQL.** Naming is **not** consistently snake_case in this repo. Examples that have burned past sessions:
+   - `model User` → `@@map("employees")` → table is `tenant_staff.employees`, NOT `users`
+   - `model EmployeeDeduction` → no `@@map` → table is `tenant_staff.EmployeeDeduction` (PascalCase), NOT `employee_deductions`
+   Always `grep -n "@@map\|model <Name>" packages/database/prisma/schema.prisma` for any model whose table you reference. If the model has no `@@map`, the table name is the PascalCase model name verbatim.
+3. **Existing migrations are immutable.** Never edit a committed migration file — add a new one. The only exception is repairing a migration that is in a failed state on the dev DB *before* it has been applied anywhere else; in that case mark it rolled-back (`pnpm migrate:resolve --rolled-back <name>`), patch the SQL, and redeploy.
+4. **Never run `prisma db push`** (disabled in this repo) and **never run `prisma migrate reset`** without explicit user confirmation — it drops all data.
+5. **`pnpm db:repair` creates untracked folders.** If you run it, `git add` the new folder *immediately* and commit. Auto-stash hooks will eat untracked migration folders and leave orphan rows in `_prisma_migrations`. If you see stash@{N} entries containing `*_repair_drift/`, that's how migration folders get lost.
+
+### Standard workflow (from `docs/database/CONTRIBUTING.md`, copied here for visibility)
+
+Use the repo's wrapper scripts — not raw `pnpm prisma`. The wrappers ensure correct workspace filtering, pass through `--schema`, and run drift checks in the right order.
+
+```
+1. pnpm db:check                                      # detect drift first
+2. edit packages/database/prisma/schema.prisma        # source of truth
+3. pnpm db:dev --create-only --name X                 # generate + validate SQL via shadow DB
+4. review the generated migration                     # verify it does what you intend
+5. pnpm db:deploy                                     # apply to current DB
+6. pnpm db:check                                      # confirm zero drift
+7. commit schema + migration folder + any docs in one commit
+```
+
+`pnpm migrate` runs steps 1–3 chained (`db:check && prisma:format && prisma:check && db:dev`) but **omits `--create-only`**, so it auto-applies the generated migration. Use it only when you don't need a review-before-apply step. `pnpm migrate:status` is the wrapper for `prisma migrate status`; `pnpm migrate:resolve` for `prisma migrate resolve`.
+
+### Recovery cheatsheet (when things are already broken)
+
+- **`P3009` "failed migrations in target database":** run `pnpm migrate:resolve --rolled-back <name>`, fix the SQL, redeploy.
+- **`_prisma_migrations` row exists but folder is missing:** **first** try to restore the folder. Check `git stash list` for `*_repair_drift/` (folder may be in `stash@{N}^3` untracked tree, recover with `git show stash@{N}^3:<path> > <path>`). Also check unreachable git blobs (`git fsck --unreachable`) and other dev clones. **Restoring the file is always the preferred fix** — Prisma's official guidance is to repair migration histories by restoring/reverting migration files, not by editing `_prisma_migrations`.
+- **`_prisma_migrations` row truly unrecoverable** (folder lost from every clone, stash, and reachable/unreachable history): deleting the row is a last resort. **Required before any DELETE:**
+   1. Manually verify the row has `rolled_back_at` set OR `applied_steps_count = 0` OR you have audited the schema and confirmed the migration's effects are already baked into a later migration. Capture the verification query output.
+   2. Get explicit user approval — never delete `_prisma_migrations` rows autonomously.
+   3. Run the DELETE inside a transaction so you can roll back if anything looks wrong.
+   Prefer restoring the file over deleting the row in every ambiguous case.
+- **Table-name mismatch in raw SQL:** grep schema for `@@map`, fix the migration SQL, mark rolled-back via `pnpm migrate:resolve --rolled-back <name>`, redeploy.
+
+---
+
 ## Workflow Orchestration
 
 ### 1. Plan Node Default
@@ -154,12 +198,7 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[pre-compact bridge — saved before context compaction]
-Files (1):
-  apps/api/test/mocks/@repo/database.ts (edit)
-Manual bridge:
-[proactive bridge @ 78% context — saved before compacting]
-Files (1):
-  apps/api/test/mocks/@repo/database.ts (edit)
+[Emergency bridge — running bridge was not updated]
+Files: packages/database/prisma/schema.prisma (edit), docs/database/KNOWN_ISSUES.md (edit), apps/app/app/(authenticated)/kitchen/allergen-warning-test/page.tsx (edit)
 
 # === END COGNILAYER ===

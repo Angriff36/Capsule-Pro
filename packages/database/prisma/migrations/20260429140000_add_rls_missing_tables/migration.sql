@@ -928,29 +928,29 @@ CREATE TRIGGER "purchase_order_items_prevent_tenant_mutation"
 -- ╚══════════════════════════════════════════════════════════════════════════════
 
 -- ============================================================================
--- tenant_staff.users
+-- tenant_staff.employees (Prisma model: User; @@map("employees"))
 -- tenant_id: UUID | deleted_at: YES | updated_at: YES
 -- ============================================================================
 
-ALTER TABLE "tenant_staff"."users" ENABLE ROW LEVEL SECURITY;
-ALTER TABLE "tenant_staff"."users" FORCE ROW LEVEL SECURITY;
+ALTER TABLE "tenant_staff"."employees" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "tenant_staff"."employees" FORCE ROW LEVEL SECURITY;
 
-DROP POLICY IF EXISTS "users_select" ON "tenant_staff"."users";
-CREATE POLICY "users_select" ON "tenant_staff"."users"
+DROP POLICY IF EXISTS "employees_select" ON "tenant_staff"."employees";
+CREATE POLICY "employees_select" ON "tenant_staff"."employees"
     FOR SELECT USING (
         "tenant_id" = (auth.jwt() ->> 'tenant_id')::uuid
         AND "deleted_at" IS NULL
     );
 
-DROP POLICY IF EXISTS "users_insert" ON "tenant_staff"."users";
-CREATE POLICY "users_insert" ON "tenant_staff"."users"
+DROP POLICY IF EXISTS "employees_insert" ON "tenant_staff"."employees";
+CREATE POLICY "employees_insert" ON "tenant_staff"."employees"
     FOR INSERT WITH CHECK (
         "tenant_id" = (auth.jwt() ->> 'tenant_id')::uuid
         AND "tenant_id" IS NOT NULL
     );
 
-DROP POLICY IF EXISTS "users_update" ON "tenant_staff"."users";
-CREATE POLICY "users_update" ON "tenant_staff"."users"
+DROP POLICY IF EXISTS "employees_update" ON "tenant_staff"."employees";
+CREATE POLICY "employees_update" ON "tenant_staff"."employees"
     FOR UPDATE USING (
         "tenant_id" = (auth.jwt() ->> 'tenant_id')::uuid
         AND "deleted_at" IS NULL
@@ -958,24 +958,24 @@ CREATE POLICY "users_update" ON "tenant_staff"."users"
         "tenant_id" = (auth.jwt() ->> 'tenant_id')::uuid
     );
 
-DROP POLICY IF EXISTS "users_delete" ON "tenant_staff"."users";
-CREATE POLICY "users_delete" ON "tenant_staff"."users"
+DROP POLICY IF EXISTS "employees_delete" ON "tenant_staff"."employees";
+CREATE POLICY "employees_delete" ON "tenant_staff"."employees"
     FOR DELETE USING (false);
 
-DROP POLICY IF EXISTS "users_service" ON "tenant_staff"."users";
-CREATE POLICY "users_service" ON "tenant_staff"."users"
+DROP POLICY IF EXISTS "employees_service" ON "tenant_staff"."employees";
+CREATE POLICY "employees_service" ON "tenant_staff"."employees"
     FOR ALL TO service_role
     USING (true)
     WITH CHECK (true);
 
-DROP TRIGGER IF EXISTS "users_update_timestamp" ON "tenant_staff"."users";
-CREATE TRIGGER "users_update_timestamp"
-    BEFORE UPDATE ON "tenant_staff"."users"
+DROP TRIGGER IF EXISTS "employees_update_timestamp" ON "tenant_staff"."employees";
+CREATE TRIGGER "employees_update_timestamp"
+    BEFORE UPDATE ON "tenant_staff"."employees"
     FOR EACH ROW EXECUTE FUNCTION "core"."fn_update_timestamp"();
 
-DROP TRIGGER IF EXISTS "users_prevent_tenant_mutation" ON "tenant_staff"."users";
-CREATE TRIGGER "users_prevent_tenant_mutation"
-    BEFORE UPDATE ON "tenant_staff"."users"
+DROP TRIGGER IF EXISTS "employees_prevent_tenant_mutation" ON "tenant_staff"."employees";
+CREATE TRIGGER "employees_prevent_tenant_mutation"
+    BEFORE UPDATE ON "tenant_staff"."employees"
     FOR EACH ROW EXECUTE FUNCTION "core"."fn_prevent_tenant_mutation"();
 
 -- ============================================================================
@@ -983,25 +983,25 @@ CREATE TRIGGER "users_prevent_tenant_mutation"
 -- tenant_id: UUID | deleted_at: YES | updated_at: YES
 -- ============================================================================
 
-ALTER TABLE "tenant_staff"."employee_deductions" ENABLE ROW LEVEL SECURITY;
-ALTER TABLE "tenant_staff"."employee_deductions" FORCE ROW LEVEL SECURITY;
+ALTER TABLE "tenant_staff"."EmployeeDeduction" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "tenant_staff"."EmployeeDeduction" FORCE ROW LEVEL SECURITY;
 
-DROP POLICY IF EXISTS "employee_deductions_select" ON "tenant_staff"."employee_deductions";
-CREATE POLICY "employee_deductions_select" ON "tenant_staff"."employee_deductions"
+DROP POLICY IF EXISTS "employee_deductions_select" ON "tenant_staff"."EmployeeDeduction";
+CREATE POLICY "employee_deductions_select" ON "tenant_staff"."EmployeeDeduction"
     FOR SELECT USING (
         "tenant_id" = (auth.jwt() ->> 'tenant_id')::uuid
         AND "deleted_at" IS NULL
     );
 
-DROP POLICY IF EXISTS "employee_deductions_insert" ON "tenant_staff"."employee_deductions";
-CREATE POLICY "employee_deductions_insert" ON "tenant_staff"."employee_deductions"
+DROP POLICY IF EXISTS "employee_deductions_insert" ON "tenant_staff"."EmployeeDeduction";
+CREATE POLICY "employee_deductions_insert" ON "tenant_staff"."EmployeeDeduction"
     FOR INSERT WITH CHECK (
         "tenant_id" = (auth.jwt() ->> 'tenant_id')::uuid
         AND "tenant_id" IS NOT NULL
     );
 
-DROP POLICY IF EXISTS "employee_deductions_update" ON "tenant_staff"."employee_deductions";
-CREATE POLICY "employee_deductions_update" ON "tenant_staff"."employee_deductions"
+DROP POLICY IF EXISTS "employee_deductions_update" ON "tenant_staff"."EmployeeDeduction";
+CREATE POLICY "employee_deductions_update" ON "tenant_staff"."EmployeeDeduction"
     FOR UPDATE USING (
         "tenant_id" = (auth.jwt() ->> 'tenant_id')::uuid
         AND "deleted_at" IS NULL
@@ -1009,24 +1009,24 @@ CREATE POLICY "employee_deductions_update" ON "tenant_staff"."employee_deduction
         "tenant_id" = (auth.jwt() ->> 'tenant_id')::uuid
     );
 
-DROP POLICY IF EXISTS "employee_deductions_delete" ON "tenant_staff"."employee_deductions";
-CREATE POLICY "employee_deductions_delete" ON "tenant_staff"."employee_deductions"
+DROP POLICY IF EXISTS "employee_deductions_delete" ON "tenant_staff"."EmployeeDeduction";
+CREATE POLICY "employee_deductions_delete" ON "tenant_staff"."EmployeeDeduction"
     FOR DELETE USING (false);
 
-DROP POLICY IF EXISTS "employee_deductions_service" ON "tenant_staff"."employee_deductions";
-CREATE POLICY "employee_deductions_service" ON "tenant_staff"."employee_deductions"
+DROP POLICY IF EXISTS "employee_deductions_service" ON "tenant_staff"."EmployeeDeduction";
+CREATE POLICY "employee_deductions_service" ON "tenant_staff"."EmployeeDeduction"
     FOR ALL TO service_role
     USING (true)
     WITH CHECK (true);
 
-DROP TRIGGER IF EXISTS "employee_deductions_update_timestamp" ON "tenant_staff"."employee_deductions";
+DROP TRIGGER IF EXISTS "employee_deductions_update_timestamp" ON "tenant_staff"."EmployeeDeduction";
 CREATE TRIGGER "employee_deductions_update_timestamp"
-    BEFORE UPDATE ON "tenant_staff"."employee_deductions"
+    BEFORE UPDATE ON "tenant_staff"."EmployeeDeduction"
     FOR EACH ROW EXECUTE FUNCTION "core"."fn_update_timestamp"();
 
-DROP TRIGGER IF EXISTS "employee_deductions_prevent_tenant_mutation" ON "tenant_staff"."employee_deductions";
+DROP TRIGGER IF EXISTS "employee_deductions_prevent_tenant_mutation" ON "tenant_staff"."EmployeeDeduction";
 CREATE TRIGGER "employee_deductions_prevent_tenant_mutation"
-    BEFORE UPDATE ON "tenant_staff"."employee_deductions"
+    BEFORE UPDATE ON "tenant_staff"."EmployeeDeduction"
     FOR EACH ROW EXECUTE FUNCTION "core"."fn_prevent_tenant_mutation"();
 
 -- ============================================================================

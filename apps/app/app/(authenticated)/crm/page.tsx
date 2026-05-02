@@ -1,14 +1,23 @@
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
-import { Badge } from "@repo/design-system/components/ui/badge";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@repo/design-system/components/ui/card";
-import { Separator } from "@repo/design-system/components/ui/separator";
+  CommandBand,
+  CommandBandActions,
+  CommandBandBody,
+  CommandBandHeader,
+  CommandBandLede,
+  DisplayHeading,
+  MetricBand,
+  MetricCell,
+  MetricLabel,
+  MetricValue,
+  MonoLabel,
+  OperationalColumn,
+  PageCanvas,
+  SectionHeader,
+} from "@repo/design-system/components/blocks/page-shell";
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
 import {
   Table,
   TableBody,
@@ -17,6 +26,7 @@ import {
   TableHeader,
   TableRow,
 } from "@repo/design-system/components/ui/table";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTenantIdForOrg } from "../../lib/tenant";
 import { getClientList } from "../analytics/clients/actions/get-client-ltv";
@@ -129,27 +139,32 @@ const CrmPage = async () => {
     proposalStats.draft + proposalStats.sent + proposalStats.viewed;
   const awaitingResponses = proposalStats.sent + proposalStats.viewed;
 
-  const clientMetrics = [
+  const stats = [
     {
       label: "Active clients",
       value: activeClients.toLocaleString(),
-      detail:
+      note:
         newClients > 0
-          ? `+${newClients} added this week`
+          ? `+${newClients} this week`
           : "No new clients this week",
     },
     {
       label: "Open proposals",
       value: openProposals.toLocaleString(),
-      detail:
+      note:
         awaitingResponses > 0
           ? `${awaitingResponses} awaiting response`
-          : "No proposals awaiting response",
+          : "Inbox clear",
     },
     {
       label: "Venue partners",
       value: venuePartners.toLocaleString(),
-      detail: "Active venues in the last 12 months",
+      note: "Active in last 12 months",
+    },
+    {
+      label: "Top LTV",
+      value: currencyFormatter.format(topClients[0]?.lifetimeValue ?? 0),
+      note: topClients[0]?.name ?? "No client revenue",
     },
   ];
 
@@ -160,7 +175,7 @@ const CrmPage = async () => {
     ltv: client.lifetimeValue,
     lastActivity: client.lastOrderDate
       ? dateFormatter.format(new Date(client.lastOrderDate))
-      : "N/A",
+      : "—",
   }));
 
   const communications = recentCommunications.map((note) => {
@@ -184,129 +199,147 @@ const CrmPage = async () => {
   });
 
   return (
-    <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
-      <div className="space-y-0.5">
-        <h1 className="text-3xl font-bold tracking-tight">CRM Overview</h1>
-        <p className="text-muted-foreground">
-          Centralize account health, pipeline, and communications in one place.
-        </p>
-      </div>
+    <PageCanvas>
+      <CommandBand>
+        <CommandBandHeader>
+          <div className="space-y-4">
+            <MonoLabel tone="dark">Operations / CRM</MonoLabel>
+            <DisplayHeading>
+              Accounts, pipeline, and conversations
+            </DisplayHeading>
+            <CommandBandLede>
+              Centralize relationship health, open proposals, and recent
+              communications. Spot the conversations to chase before they go
+              cold.
+            </CommandBandLede>
+          </div>
+          <CommandBandActions>
+            <Button
+              asChild
+              className="border-white/25 bg-transparent text-white hover:bg-white/10"
+              size="sm"
+              variant="outline"
+            >
+              <Link href="/crm/proposals">View proposals</Link>
+            </Button>
+            <Button asChild size="default" variant="on-dark">
+              <Link href="/crm/clients/new">New client</Link>
+            </Button>
+          </CommandBandActions>
+        </CommandBandHeader>
 
-      <Separator />
+        <CommandBandBody>
+          <MetricBand>
+            {stats.map((item) => (
+              <MetricCell key={item.label}>
+                <MetricLabel>{item.label}</MetricLabel>
+                <MetricValue>{item.value}</MetricValue>
+                <div className="text-white/55 text-xs">{item.note}</div>
+              </MetricCell>
+            ))}
+          </MetricBand>
+        </CommandBandBody>
+      </CommandBand>
 
-      <section className="space-y-4">
-        <h2 className="text-sm font-medium text-muted-foreground">
-          Performance Overview
-        </h2>
-        <div className="grid gap-6 md:grid-cols-3">
-          {clientMetrics.map((metric) => (
-            <Card key={metric.label}>
-              <CardHeader>
-                <CardDescription>{metric.label}</CardDescription>
-                <CardTitle>{metric.value}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">{metric.detail}</p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </section>
-
-      <section className="space-y-4">
-        <h2 className="text-sm font-medium text-muted-foreground">
-          Clients & Communications
-        </h2>
+      <OperationalColumn>
         <div className="grid gap-6 lg:grid-cols-2">
-          <Card>
-            <CardHeader>
-              <CardTitle>Top Clients (by LTV)</CardTitle>
-              <CardDescription>
-                Track who drives repeat business.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="overflow-x-auto">
-              <div className="rounded-md border">
-                <Table>
-                  <TableHeader>
+          <section className="space-y-4">
+            <SectionHeader
+              count={`${topClientRows.length} clients`}
+              description="Track who drives repeat business and lifetime value."
+              eyebrow="Top accounts"
+              title="Lifetime value"
+            />
+            <div className="overflow-hidden rounded-[22px] border border-hairline bg-canvas">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Client</TableHead>
+                    <TableHead className="text-right">Orders</TableHead>
+                    <TableHead className="text-right">LTV</TableHead>
+                    <TableHead>Last activity</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {topClientRows.length === 0 ? (
                     <TableRow>
-                      <TableHead>Client</TableHead>
-                      <TableHead className="text-right">Orders</TableHead>
-                      <TableHead className="text-right">LTV</TableHead>
-                      <TableHead>Last Activity</TableHead>
+                      <TableCell colSpan={4}>
+                        <div className="py-6 text-center text-muted-foreground text-sm">
+                          No client revenue yet.
+                        </div>
+                      </TableCell>
                     </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {topClientRows.length === 0 ? (
-                      <TableRow>
-                        <TableCell colSpan={4}>
-                          <div className="py-6 text-center text-sm text-muted-foreground">
-                            No client revenue yet.
-                          </div>
+                  ) : (
+                    topClientRows.map((client) => (
+                      <TableRow key={client.id}>
+                        <TableCell className="font-medium text-ink">
+                          {client.name}
+                        </TableCell>
+                        <TableCell className="text-right text-muted-foreground">
+                          {client.proposals}
+                        </TableCell>
+                        <TableCell className="text-right font-medium text-ink">
+                          {currencyFormatter.format(client.ltv)}
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {client.lastActivity}
                         </TableCell>
                       </TableRow>
-                    ) : (
-                      topClientRows.map((client) => (
-                        <TableRow key={client.id}>
-                          <TableCell>{client.name}</TableCell>
-                          <TableCell className="text-right">
-                            {client.proposals}
-                          </TableCell>
-                          <TableCell className="text-right">
-                            {currencyFormatter.format(client.ltv)}
-                          </TableCell>
-                          <TableCell>{client.lastActivity}</TableCell>
-                        </TableRow>
-                      ))
-                    )}
-                  </TableBody>
-                </Table>
-              </div>
-            </CardContent>
-          </Card>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          </section>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Recent Communications</CardTitle>
-              <CardDescription>
-                High-touch conversations this week.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
+          <section className="space-y-4">
+            <SectionHeader
+              count={`${communications.length} entries`}
+              description="High-touch conversations this week."
+              eyebrow="Communications"
+              title="Recent activity"
+            />
+            <div className="space-y-3">
               {communications.length === 0 ? (
-                <div className="rounded-lg border border-dashed border-border/70 px-4 py-6 text-center text-sm text-muted-foreground">
+                <div className="rounded-[22px] border border-hairline border-dashed bg-canvas px-4 py-10 text-center text-muted-foreground text-sm">
                   No recent communications logged.
                 </div>
               ) : (
                 communications.map((note) => (
                   <div
-                    className="rounded-lg border border-border/70 px-4 py-3"
+                    className="rounded-[22px] border border-hairline bg-canvas px-5 py-4"
                     key={note.id}
                   >
-                    <div className="flex items-center justify-between">
-                      <p className="text-sm font-semibold">{note.client}</p>
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="font-medium text-ink text-sm">
+                        {note.client}
+                      </p>
                       <Badge
                         variant={
-                          note.status === "Resolved" ? "secondary" : "outline"
+                          note.status === "Resolved"
+                            ? "success"
+                            : note.status === "Needs follow-up"
+                              ? "coral"
+                              : "secondary"
                         }
                       >
                         {note.status}
                       </Badge>
                     </div>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="mt-1 font-mono text-[11px] text-muted-foreground uppercase tracking-[0.2em]">
                       {note.channel}
                     </p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="mt-2 text-muted-foreground text-sm leading-relaxed">
                       {note.summary}
                     </p>
                   </div>
                 ))
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </section>
         </div>
-      </section>
-    </div>
+      </OperationalColumn>
+    </PageCanvas>
   );
 };
 

@@ -24,15 +24,6 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@repo/design-system/components/ui/drawer";
-import {
-  Empty,
-  EmptyContent,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from "@repo/design-system/components/ui/empty";
-import { GridBackground } from "@repo/design-system/components/ui/grid-background";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
 import {
@@ -100,16 +91,18 @@ const operationalStatusConfig: Record<
 > = {
   upcoming: {
     label: "Upcoming",
-    className: "bg-slate-950 text-white dark:bg-slate-50 dark:text-slate-900",
+    className:
+      "rounded-full border border-[#d9d9dd] bg-white px-2.5 py-0.5 font-mono text-[11px] uppercase tracking-[0.18em] text-[#17171c]",
   },
   live: {
     label: "Live",
     className:
-      "bg-emerald-500/90 text-white shadow-[0_0_20px_rgba(16,185,129,0.45)]",
+      "rounded-full border border-transparent bg-[#003c33] px-2.5 py-0.5 font-mono text-[11px] uppercase tracking-[0.18em] text-white",
   },
   finished: {
     label: "Finished",
-    className: "bg-muted text-foreground",
+    className:
+      "rounded-full border border-[#e5e7eb] bg-[#eeece7] px-2.5 py-0.5 font-mono text-[11px] uppercase tracking-[0.18em] text-[#616161]",
   },
 };
 
@@ -672,58 +665,65 @@ export const KitchenDashboardClient = ({
 
   if (events.length === 0) {
     return (
-      <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
-        <Empty>
-          <EmptyHeader>
-            <EmptyMedia variant="icon">
-              <CalendarDays />
-            </EmptyMedia>
-            <EmptyTitle>No events yet</EmptyTitle>
-            <EmptyDescription>
+      <div className="flex flex-1 flex-col gap-8 bg-white p-4 pt-2 text-[#17171c]">
+        <section className="rounded-[22px] border border-dashed border-[#d9d9dd] bg-[#eeece7] px-8 py-16 sm:px-16 sm:py-20">
+          <div className="mx-auto flex max-w-2xl flex-col items-start gap-6">
+            <span className="inline-flex size-12 items-center justify-center rounded-full border border-[#d9d9dd] bg-white text-[#003c33]">
+              <CalendarDays className="size-5" />
+            </span>
+            <p className="font-mono text-[12px] uppercase tracking-[0.28em] text-[#75758a]">
+              Kitchen operations / empty
+            </p>
+            <h2 className="text-4xl font-normal leading-[1.05] tracking-[-0.02em] text-[#17171c] sm:text-5xl">
+              No events yet.
+            </h2>
+            <p className="max-w-lg text-base leading-relaxed text-[#454553]">
               Create your first event to start running kitchen operations with
               real data.
-            </EmptyDescription>
-          </EmptyHeader>
-          <EmptyContent className="flex flex-wrap gap-2">
-            <Button asChild>
-              <Link href="/events/new">Create event</Link>
-            </Button>
-            <Button asChild variant="secondary">
-              <Link href="/events/import">Import events</Link>
-            </Button>
-          </EmptyContent>
-        </Empty>
+            </p>
+            <div className="flex flex-wrap items-center gap-2 pt-2">
+              <Button
+                asChild
+                className="rounded-full bg-[#17171c] px-5 text-[13px] font-medium text-white hover:bg-[#17171c]/90"
+                size="sm"
+              >
+                <Link href="/events/new">Create event</Link>
+              </Button>
+              <Button
+                asChild
+                className="rounded-full border border-[#d9d9dd] bg-white px-5 text-[13px] font-medium text-[#17171c] hover:bg-white/70"
+                size="sm"
+                variant="outline"
+              >
+                <Link href="/events/import">Import events</Link>
+              </Button>
+            </div>
+          </div>
+        </section>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-1 flex-col gap-8 p-4 pt-0 pb-28">
-      <section className="relative overflow-hidden rounded-2xl border bg-background/70 shadow-sm">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.18),_transparent_60%)]" />
-        <GridBackground
-          className="absolute inset-0"
-          fade
-          gridOpacity={0.2}
-          gridSize={36}
-          variant="dots"
-        />
-        <div className="relative z-10 space-y-6 p-6">
-          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-            <div>
-              <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
-                Kitchen operations control room
+    <div className="flex flex-1 flex-col gap-12 bg-white p-4 pt-2 pb-28 text-[#17171c]">
+      <section className="overflow-hidden rounded-[22px] border border-[#003c33] bg-[#003c33] text-white">
+        <div className="space-y-10 px-6 py-10 sm:px-10 sm:py-14">
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+            <div className="max-w-2xl space-y-4">
+              <p className="font-mono text-[12px] uppercase tracking-[0.28em] text-white/60">
+                Kitchen operations / control room
               </p>
-              <h2 className="mt-2 text-3xl font-bold tracking-tight">
-                Today + next 24 hours
+              <h2 className="text-4xl font-normal leading-[1.05] tracking-[-0.02em] sm:text-5xl">
+                Today &amp; the next 24 hours.
               </h2>
-              <p className="text-sm text-muted-foreground">
+              <p className="max-w-xl text-base leading-relaxed text-white/70">
                 Live service visibility, timeline control, and rapid actions
-                across events.
+                across events &mdash; in one quiet, deliberate view.
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-3">
               <ToggleGroup
+                className="rounded-full border border-white/20 bg-white/5 p-1"
                 onValueChange={(value) =>
                   setViewMode((value as ViewMode) || "timeline")
                 }
@@ -732,28 +732,47 @@ export const KitchenDashboardClient = ({
                 value={viewMode}
                 variant="outline"
               >
-                <ToggleGroupItem value="timeline">
+                <ToggleGroupItem
+                  className="rounded-full border-0 px-4 text-[13px] text-white/70 data-[state=on]:bg-white data-[state=on]:text-[#003c33]"
+                  value="timeline"
+                >
                   <LayoutGrid className="mr-1 size-3.5" />
                   Timeline
                 </ToggleGroupItem>
-                <ToggleGroupItem value="queue">
+                <ToggleGroupItem
+                  className="rounded-full border-0 px-4 text-[13px] text-white/70 data-[state=on]:bg-white data-[state=on]:text-[#003c33]"
+                  value="queue"
+                >
                   <List className="mr-1 size-3.5" />
                   Queue
                 </ToggleGroupItem>
               </ToggleGroup>
               <div className="hidden items-center gap-2 lg:flex">
-                <Button asChild size="sm" variant="outline">
+                <Button
+                  asChild
+                  className="rounded-full border border-white/30 bg-transparent px-5 text-[13px] font-medium text-white hover:bg-white/10 hover:text-white"
+                  size="sm"
+                  variant="outline"
+                >
                   <Link href="/events">All events</Link>
                 </Button>
-                <Button asChild size="sm" variant="secondary">
+                <Button
+                  asChild
+                  className="rounded-full bg-white px-5 text-[13px] font-medium text-[#17171c] hover:bg-white/90"
+                  size="sm"
+                >
                   <Link href="/events/import">Import</Link>
                 </Button>
               </div>
             </div>
           </div>
 
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="font-mono text-[11px] uppercase tracking-[0.28em] text-white/50">
+              Quick filters
+            </span>
             <ToggleGroup
+              className="flex flex-wrap gap-2"
               onValueChange={(value) =>
                 setActiveQuickFilters(value as QuickFilter[])
               }
@@ -762,88 +781,100 @@ export const KitchenDashboardClient = ({
               value={activeQuickFilters}
               variant="outline"
             >
-              <ToggleGroupItem value="live-now">
+              <ToggleGroupItem
+                className="rounded-full border border-white/25 bg-transparent px-3.5 py-1 text-[12px] text-white/80 data-[state=on]:border-transparent data-[state=on]:bg-white data-[state=on]:text-[#003c33]"
+                value="live-now"
+              >
                 <Activity className="mr-1 size-3.5" />
                 Live now
               </ToggleGroupItem>
-              <ToggleGroupItem value="starting-soon">
+              <ToggleGroupItem
+                className="rounded-full border border-white/25 bg-transparent px-3.5 py-1 text-[12px] text-white/80 data-[state=on]:border-transparent data-[state=on]:bg-white data-[state=on]:text-[#003c33]"
+                value="starting-soon"
+              >
                 <Clock className="mr-1 size-3.5" />
                 Starting soon
               </ToggleGroupItem>
-              <ToggleGroupItem value="high-capacity">
+              <ToggleGroupItem
+                className="rounded-full border border-white/25 bg-transparent px-3.5 py-1 text-[12px] text-white/80 data-[state=on]:border-transparent data-[state=on]:bg-white data-[state=on]:text-[#003c33]"
+                value="high-capacity"
+              >
                 <Users className="mr-1 size-3.5" />
                 High capacity
               </ToggleGroupItem>
-              <ToggleGroupItem value="sold-out">
+              <ToggleGroupItem
+                className="rounded-full border border-white/25 bg-transparent px-3.5 py-1 text-[12px] text-[#ffad9b] data-[state=on]:border-transparent data-[state=on]:bg-[#ff7759] data-[state=on]:text-white"
+                value="sold-out"
+              >
                 <Flame className="mr-1 size-3.5" />
                 Sold out
               </ToggleGroupItem>
             </ToggleGroup>
           </div>
 
-          <section className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
-            <Card className="border-transparent bg-background/70">
-              <CardHeader className="pb-2">
-                <CardDescription>Events today</CardDescription>
-                <CardTitle className="text-3xl">{metrics.totalToday}</CardTitle>
-              </CardHeader>
-              <CardContent className="text-xs text-muted-foreground">
-                Current day coverage
-              </CardContent>
-            </Card>
-            <Card className="border-transparent bg-background/70">
-              <CardHeader className="pb-2">
-                <CardDescription>Live now</CardDescription>
-                <CardTitle className="text-3xl">{metrics.liveNow}</CardTitle>
-              </CardHeader>
-              <CardContent className="text-xs text-muted-foreground">
-                Actively running
-              </CardContent>
-            </Card>
-            <Card className="border-transparent bg-background/70">
-              <CardHeader className="pb-2">
-                <CardDescription>Upcoming in 24h</CardDescription>
-                <CardTitle className="text-3xl">
-                  {metrics.upcoming24h}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="text-xs text-muted-foreground">
-                Next service window
-              </CardContent>
-            </Card>
-            <Card className="border-transparent bg-background/70">
-              <CardHeader className="pb-2">
-                <CardDescription>Sold out</CardDescription>
-                <CardTitle className="text-3xl">{metrics.soldOut}</CardTitle>
-              </CardHeader>
-              <CardContent className="text-xs text-muted-foreground">
+          <section className="grid gap-px overflow-hidden rounded-[16px] border border-white/15 bg-white/15 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="flex flex-col gap-4 bg-[#003c33] p-6">
+              <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-white/55">
+                Events today
+              </p>
+              <p className="text-5xl font-normal leading-none tracking-[-0.02em]">
+                {metrics.totalToday}
+              </p>
+              <p className="text-[12px] text-white/55">Current day coverage</p>
+            </div>
+            <div className="flex flex-col gap-4 bg-[#003c33] p-6">
+              <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-white/55">
+                Live now
+              </p>
+              <p className="text-5xl font-normal leading-none tracking-[-0.02em]">
+                {metrics.liveNow}
+              </p>
+              <p className="text-[12px] text-white/55">Actively running</p>
+            </div>
+            <div className="flex flex-col gap-4 bg-[#003c33] p-6">
+              <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-white/55">
+                Upcoming · 24h
+              </p>
+              <p className="text-5xl font-normal leading-none tracking-[-0.02em]">
+                {metrics.upcoming24h}
+              </p>
+              <p className="text-[12px] text-white/55">Next service window</p>
+            </div>
+            <div className="flex flex-col gap-4 bg-[#003c33] p-6">
+              <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-[#ffad9b]">
+                Sold out
+              </p>
+              <p className="text-5xl font-normal leading-none tracking-[-0.02em] text-[#ff7759]">
+                {metrics.soldOut}
+              </p>
+              <p className="text-[12px] text-white/55">
                 Tag-driven capacity alert
-              </CardContent>
-            </Card>
+              </p>
+            </div>
           </section>
         </div>
       </section>
 
-      <Separator />
-
-      <div className="grid gap-8 lg:grid-cols-[280px_1fr]">
+      <div className="grid gap-10 lg:grid-cols-[300px_1fr]">
         <aside className="hidden lg:block">
-          <Card className="border-muted/60 bg-background/60">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base">Filters</CardTitle>
-              <CardDescription>Refine the operational view.</CardDescription>
-            </CardHeader>
-            <CardContent>
+          <div className="sticky top-6 rounded-[16px] border border-[#d9d9dd] bg-[#eeece7] p-6">
+            <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-[#75758a]">
+              Filters
+            </p>
+            <h3 className="mt-2 text-2xl font-normal leading-tight tracking-[-0.01em] text-[#17171c]">
+              Refine the view.
+            </h3>
+            <div className="mt-6 border-t border-[#d9d9dd] pt-6">
               {mounted ? (
                 <FiltersPanel {...filtersPanelProps} />
               ) : (
                 <div className="space-y-5" />
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </aside>
 
-        <main className="flex flex-col gap-8">
+        <main className="flex flex-col gap-12">
           {dateRangeInvalid && (
             <Alert variant="destructive">
               <Clock />
@@ -863,48 +894,65 @@ export const KitchenDashboardClient = ({
           )}
 
           {!dateRangeInvalid && filteredEvents.length === 0 && (
-            <Card className="border-dashed">
-              <CardContent className="flex flex-col items-center gap-3 py-12 text-center">
-                <CalendarDays className="size-10 text-muted-foreground/70" />
-                <h3 className="text-lg font-semibold">
-                  No events match these filters
+            <div className="rounded-[22px] border border-dashed border-[#d9d9dd] bg-white px-8 py-16">
+              <div className="mx-auto flex max-w-md flex-col items-center gap-4 text-center">
+                <CalendarDays className="size-8 text-[#75758a]" strokeWidth={1.25} />
+                <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-[#75758a]">
+                  No matches
+                </p>
+                <h3 className="text-3xl font-normal leading-[1.1] tracking-[-0.02em] text-[#17171c]">
+                  Nothing matches these filters.
                 </h3>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-[15px] leading-relaxed text-[#616161]">
                   Adjust filters to reveal upcoming operational coverage.
                 </p>
-                <div className="flex flex-wrap gap-2">
-                  <Button onClick={handleResetFilters} variant="secondary">
+                <div className="mt-2 flex flex-wrap items-center justify-center gap-3">
+                  <Button
+                    className="rounded-full border border-[#17171c] bg-transparent px-5 text-[13px] font-medium text-[#17171c] hover:bg-[#17171c] hover:text-white"
+                    onClick={handleResetFilters}
+                    variant="outline"
+                  >
                     Reset filters
                   </Button>
-                  <Button asChild>
+                  <Button
+                    asChild
+                    className="rounded-full bg-[#17171c] px-5 text-[13px] font-medium text-white hover:bg-[#17171c]/90"
+                  >
                     <Link href="/events">View all events</Link>
                   </Button>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           )}
 
           {!dateRangeInvalid && filteredEvents.length > 0 && (
             <>
-              <section className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-medium text-muted-foreground">
-                    Live operations
-                  </h3>
-                  <Badge className="text-xs" variant="outline">
-                    {opsEvents.length} in window
-                  </Badge>
+              <section className="space-y-5">
+                <div className="flex items-end justify-between border-b border-[#d9d9dd] pb-4">
+                  <div>
+                    <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-[#75758a]">
+                      Live operations
+                    </p>
+                    <h3 className="mt-1 text-3xl font-normal leading-tight tracking-[-0.01em] text-[#17171c]">
+                      In window now.
+                    </h3>
+                  </div>
+                  <span className="rounded-full border border-[#d9d9dd] bg-white px-3 py-1 font-mono text-[11px] uppercase tracking-[0.18em] text-[#17171c]">
+                    {opsEvents.length} in 24h
+                  </span>
                 </div>
 
                 {opsEvents.length === 0 ? (
-                  <Card className="border-dashed">
-                    <CardContent className="flex items-center justify-between py-8 text-sm text-muted-foreground">
-                      No events are scheduled in the next 24 hours.
-                      <Button asChild size="sm" variant="secondary">
-                        <Link href="/events/new">Create event</Link>
-                      </Button>
-                    </CardContent>
-                  </Card>
+                  <div className="flex flex-wrap items-center justify-between gap-3 rounded-[16px] border border-dashed border-[#d9d9dd] bg-white px-6 py-6 text-[15px] text-[#616161]">
+                    No events are scheduled in the next 24 hours.
+                    <Button
+                      asChild
+                      className="rounded-full bg-[#17171c] px-5 text-[13px] font-medium text-white hover:bg-[#17171c]/90"
+                      size="sm"
+                    >
+                      <Link href="/events/new">Create event</Link>
+                    </Button>
+                  </div>
                 ) : (
                   <div className="grid gap-3">
                     {opsEvents.map((event, index) => {
@@ -923,7 +971,8 @@ export const KitchenDashboardClient = ({
                       return (
                         <div
                           className={cn(
-                            "group rounded-2xl border bg-background/80 p-4 transition-all hover:border-primary/40 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+                            "group rounded-[22px] border border-[#d9d9dd] bg-white p-6 transition-all hover:border-[#17171c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4c6ee6] focus-visible:ring-offset-2 focus-visible:ring-offset-white",
+                            event.isLive && "border-[#003c33] bg-[#edfce9]",
                             mounted
                               ? "opacity-100 translate-y-0"
                               : "opacity-0 translate-y-2"
@@ -947,81 +996,65 @@ export const KitchenDashboardClient = ({
                           style={{ transitionDelay: `${index * 40}ms` }}
                           tabIndex={0}
                         >
-                          <div className="flex flex-wrap items-center justify-between gap-3">
-                            <div className="flex min-w-[260px] flex-1 flex-col gap-2">
-                              <div className="flex items-center gap-2">
-                                <Badge
-                                  className={cn(
-                                    "text-xs",
-                                    operationalBadge.className
-                                  )}
-                                >
+                          <div className="flex flex-wrap items-start justify-between gap-4">
+                            <div className="flex min-w-[260px] flex-1 flex-col gap-3">
+                              <div className="flex flex-wrap items-center gap-2">
+                                <span className={operationalBadge.className}>
                                   {operationalBadge.label}
-                                </Badge>
+                                </span>
                                 {event.soldOut && (
-                                  <Badge
-                                    className="text-xs"
-                                    variant="destructive"
-                                  >
+                                  <span className="rounded-full border border-[#ff7759] bg-[#ff7759] px-2.5 py-0.5 font-mono text-[11px] uppercase tracking-[0.18em] text-white">
                                     Sold out
-                                  </Badge>
+                                  </span>
                                 )}
                                 {event.limited && (
-                                  <Badge
-                                    className="text-xs"
-                                    variant="secondary"
-                                  >
+                                  <span className="rounded-full border border-[#ffad9b] bg-white px-2.5 py-0.5 font-mono text-[11px] uppercase tracking-[0.18em] text-[#ff7759]">
                                     Limited
-                                  </Badge>
+                                  </span>
                                 )}
-                                <Badge
-                                  className="text-xs capitalize"
-                                  variant={statusVariant}
-                                >
+                                <span className="rounded-full border border-[#d9d9dd] bg-white px-2.5 py-0.5 font-mono text-[11px] uppercase tracking-[0.18em] capitalize text-[#616161]">
                                   {event.status}
-                                </Badge>
+                                </span>
                               </div>
                               <div>
-                                <p className="text-sm font-semibold">
+                                <p className="text-[20px] font-normal leading-tight tracking-[-0.01em] text-[#17171c]">
                                   {event.title}
                                 </p>
-                                <p className="text-xs text-muted-foreground">
+                                <p className="mt-1 text-[13px] text-[#75758a]">
                                   {event.eventType} ·{" "}
                                   {shortDateFormatter.format(event.eventDate)}
                                 </p>
                               </div>
-                              <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-                                <span className="flex items-center gap-1">
+                              <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-[13px] text-[#616161]">
+                                <span className="flex items-center gap-1.5">
                                   <MapPin className="size-3.5" />
                                   {event.venueName?.trim() || "No venue assigned"}
                                 </span>
-                                <span className="flex items-center gap-1">
+                                <span className="flex items-center gap-1.5">
                                   <Users className="size-3.5" />
                                   {event.guestCount} guests
                                 </span>
                               </div>
                             </div>
-                            <div className="flex flex-col items-end gap-2 text-xs">
-                              <span className="inline-flex items-center gap-1 text-muted-foreground">
+                            <div className="flex flex-col items-end gap-3">
+                              <span className="inline-flex items-center gap-1.5 font-mono text-[12px] uppercase tracking-[0.18em] text-[#75758a]">
                                 <Timer className="size-3.5" />
                                 {countdownLabel}
                               </span>
-                              <div className="flex items-center gap-2">
-                                <Button
-                                  asChild
-                                  onClick={(eventClick) =>
-                                    eventClick.stopPropagation()
-                                  }
-                                  size="sm"
-                                  variant="secondary"
-                                >
-                                  <Link href={`/events/${event.id}`}>
-                                    Open event
-                                  </Link>
-                                </Button>
-                                {/* Event lifecycle actions (mark started/finished) are omitted because
-                                   the current events API only supports full updates, not lifecycle transitions. */}
-                              </div>
+                              <Button
+                                asChild
+                                className="rounded-full bg-[#17171c] px-5 text-[13px] font-medium text-white hover:bg-[#17171c]/90"
+                                onClick={(eventClick) =>
+                                  eventClick.stopPropagation()
+                                }
+                                size="sm"
+                              >
+                                <Link href={`/events/${event.id}`}>
+                                  Open event
+                                </Link>
+                              </Button>
+                              {/* Event lifecycle actions (mark started/finished) are omitted because
+                                 the current events API only supports full updates, not lifecycle transitions. */}
                             </div>
                           </div>
                         </div>
@@ -1031,36 +1064,44 @@ export const KitchenDashboardClient = ({
                 )}
               </section>
 
-              <section className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-medium text-muted-foreground">
-                    {viewMode === "timeline" ? "Timeline view" : "Event queue"}
-                  </h3>
-                  <Badge className="text-xs" variant="outline">
+              <section className="space-y-5">
+                <div className="flex items-end justify-between border-b border-[#d9d9dd] pb-4">
+                  <div>
+                    <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-[#75758a]">
+                      {viewMode === "timeline" ? "Timeline" : "Queue"}
+                    </p>
+                    <h3 className="mt-1 text-3xl font-normal leading-tight tracking-[-0.01em] text-[#17171c]">
+                      {viewMode === "timeline"
+                        ? "Service days, sequenced."
+                        : "Every event, in line."}
+                    </h3>
+                  </div>
+                  <span className="rounded-full border border-[#d9d9dd] bg-white px-3 py-1 font-mono text-[11px] uppercase tracking-[0.18em] text-[#17171c]">
                     {filteredEvents.length} total
-                  </Badge>
+                  </span>
                 </div>
 
                 {viewMode === "timeline" ? (
-                  <div className="space-y-4">
+                  <div className="space-y-5">
                     {timelineGroups.map((group, groupIndex) => (
-                      <Card className="overflow-hidden" key={group.key}>
-                        <CardHeader className="border-b bg-muted/40 py-3">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <CardTitle className="text-base">
-                                {dateFormatter.format(group.date)}
-                              </CardTitle>
-                              <CardDescription className="text-xs">
-                                {group.items.length} scheduled
-                              </CardDescription>
-                            </div>
-                            <Badge className="text-xs" variant="secondary">
-                              All-day block
-                            </Badge>
+                      <div
+                        className="overflow-hidden rounded-[16px] border border-[#d9d9dd] bg-white"
+                        key={group.key}
+                      >
+                        <div className="flex items-center justify-between border-b border-[#d9d9dd] bg-[#eeece7] px-6 py-4">
+                          <div>
+                            <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-[#75758a]">
+                              {group.items.length} scheduled
+                            </p>
+                            <p className="mt-1 text-[22px] font-normal leading-tight tracking-[-0.01em] text-[#17171c]">
+                              {dateFormatter.format(group.date)}
+                            </p>
                           </div>
-                        </CardHeader>
-                        <CardContent className="space-y-3 pt-4">
+                          <span className="rounded-full border border-[#d9d9dd] bg-white px-3 py-1 font-mono text-[11px] uppercase tracking-[0.18em] text-[#616161]">
+                            All-day block
+                          </span>
+                        </div>
+                        <div className="space-y-0 p-2 sm:p-4">
                           {group.items.map((event, index) => {
                             const operationalBadge =
                               operationalStatusConfig[event.operationalStatus];
@@ -1072,10 +1113,10 @@ export const KitchenDashboardClient = ({
                             return (
                               <div
                                 className={cn(
-                                  "group relative rounded-xl border border-border/60 bg-background/70 p-4 transition-all hover:border-primary/40 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+                                  "group relative flex flex-wrap items-center justify-between gap-4 border-b border-[#d9d9dd] px-4 py-4 transition-colors last:border-b-0 hover:bg-[#f1f5ff]/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4c6ee6] focus-visible:ring-offset-2 focus-visible:ring-offset-white",
                                   mounted
                                     ? "opacity-100 translate-y-0"
-                                    : "opacity-0 translate-y-2"
+                                    : "opacity-0 translate-y-1"
                                 )}
                                 key={event.id}
                                 onClick={() => {
@@ -1098,93 +1139,83 @@ export const KitchenDashboardClient = ({
                                 }}
                                 tabIndex={0}
                               >
-                                <div className="flex flex-wrap items-center justify-between gap-3">
-                                  <div className="flex items-center gap-3">
-                                    <div className="flex h-10 w-10 items-center justify-center rounded-full border bg-muted/40">
-                                      <CalendarDays className="size-4 text-muted-foreground" />
-                                    </div>
-                                    <div>
-                                      <div className="flex flex-wrap items-center gap-2">
-                                        <p className="text-sm font-semibold">
-                                          {event.title}
-                                        </p>
-                                        <Badge
-                                          className={cn(
-                                            "text-xs",
-                                            operationalBadge.className
-                                          )}
-                                        >
-                                          {operationalBadge.label}
-                                        </Badge>
-                                        <Badge
-                                          className="text-xs capitalize"
-                                          variant={statusVariant}
-                                        >
-                                          {event.status}
-                                        </Badge>
-                                        {event.soldOut && (
-                                          <Badge
-                                            className="text-xs"
-                                            variant="destructive"
-                                          >
-                                            Sold out
-                                          </Badge>
-                                        )}
-                                        {event.limited && (
-                                          <Badge
-                                            className="text-xs"
-                                            variant="secondary"
-                                          >
-                                            Limited
-                                          </Badge>
-                                        )}
-                                      </div>
-                                      <p className="text-xs text-muted-foreground">
-                                        {event.eventType} ·{" "}
-                                        {event.venueName?.trim() ||
-                                          "No venue assigned"}
+                                <div className="flex items-center gap-4">
+                                  <div className="flex h-10 w-10 items-center justify-center rounded-full border border-[#d9d9dd] bg-white">
+                                    <CalendarDays
+                                      className="size-4 text-[#75758a]"
+                                      strokeWidth={1.5}
+                                    />
+                                  </div>
+                                  <div>
+                                    <div className="flex flex-wrap items-center gap-2">
+                                      <p className="text-[16px] font-normal tracking-[-0.005em] text-[#17171c]">
+                                        {event.title}
                                       </p>
+                                      <span className={operationalBadge.className}>
+                                        {operationalBadge.label}
+                                      </span>
+                                      <span className="rounded-full border border-[#d9d9dd] bg-white px-2.5 py-0.5 font-mono text-[11px] uppercase tracking-[0.18em] capitalize text-[#616161]">
+                                        {event.status}
+                                      </span>
+                                      {event.soldOut && (
+                                        <span className="rounded-full border border-[#ff7759] bg-[#ff7759] px-2.5 py-0.5 font-mono text-[11px] uppercase tracking-[0.18em] text-white">
+                                          Sold out
+                                        </span>
+                                      )}
+                                      {event.limited && (
+                                        <span className="rounded-full border border-[#ffad9b] bg-white px-2.5 py-0.5 font-mono text-[11px] uppercase tracking-[0.18em] text-[#ff7759]">
+                                          Limited
+                                        </span>
+                                      )}
                                     </div>
+                                    <p className="mt-1 text-[13px] text-[#75758a]">
+                                      {event.eventType} ·{" "}
+                                      {event.venueName?.trim() ||
+                                        "No venue assigned"}
+                                    </p>
                                   </div>
-                                  <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                                    <span className="flex items-center gap-1">
-                                      <Users className="size-3.5" />
-                                      {event.guestCount} guests
-                                    </span>
-                                    <span className="flex items-center gap-1">
-                                      <CalendarDays className="size-3.5" />
-                                      All-day
-                                    </span>
-                                    <Button
-                                      asChild
-                                      onClick={(eventClick) =>
-                                        eventClick.stopPropagation()
-                                      }
-                                      size="sm"
-                                      variant="ghost"
-                                    >
-                                      <Link href={`/events/${event.id}`}>
-                                        Open
-                                      </Link>
-                                    </Button>
-                                  </div>
+                                </div>
+                                <div className="flex items-center gap-5 text-[12px] text-[#616161]">
+                                  <span className="flex items-center gap-1.5">
+                                    <Users className="size-3.5" />
+                                    {event.guestCount} guests
+                                  </span>
+                                  <span className="hidden items-center gap-1.5 font-mono uppercase tracking-[0.18em] text-[#75758a] sm:flex">
+                                    <CalendarDays className="size-3.5" />
+                                    All-day
+                                  </span>
+                                  <Button
+                                    asChild
+                                    className="rounded-full px-4 text-[13px] font-medium text-[#1863dc] hover:bg-transparent hover:underline"
+                                    onClick={(eventClick) =>
+                                      eventClick.stopPropagation()
+                                    }
+                                    size="sm"
+                                    variant="ghost"
+                                  >
+                                    <Link href={`/events/${event.id}`}>
+                                      Open →
+                                    </Link>
+                                  </Button>
                                 </div>
                               </div>
                             );
                           })}
-                        </CardContent>
-                      </Card>
+                        </div>
+                      </div>
                     ))}
                   </div>
                 ) : (
-                  <Card>
-                    <CardHeader className="pb-3">
-                      <CardTitle className="text-base">Queue list</CardTitle>
-                      <CardDescription className="text-xs">
-                        Sorted by service date.
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
+                  <div className="overflow-hidden rounded-[16px] border border-[#d9d9dd] bg-white">
+                    <div className="border-b border-[#d9d9dd] bg-[#eeece7] px-6 py-4">
+                      <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-[#75758a]">
+                        Sorted by service date
+                      </p>
+                      <p className="mt-1 text-[22px] font-normal leading-tight tracking-[-0.01em] text-[#17171c]">
+                        Queue list
+                      </p>
+                    </div>
+                    <div className="divide-y divide-[#d9d9dd]">
                       {queueEvents.map((event, index) => {
                         const operationalBadge =
                           operationalStatusConfig[event.operationalStatus];
@@ -1201,10 +1232,10 @@ export const KitchenDashboardClient = ({
                         return (
                           <div
                             className={cn(
-                              "flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border/60 bg-background/70 px-4 py-3 transition-all hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+                              "flex flex-wrap items-center justify-between gap-4 px-6 py-5 transition-colors hover:bg-[#f1f5ff]/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4c6ee6] focus-visible:ring-offset-2 focus-visible:ring-offset-white",
                               mounted
                                 ? "opacity-100 translate-y-0"
-                                : "opacity-0 translate-y-2"
+                                : "opacity-0 translate-y-1"
                             )}
                             key={event.id}
                             onClick={() => {
@@ -1227,76 +1258,63 @@ export const KitchenDashboardClient = ({
                           >
                             <div className="min-w-[240px] flex-1">
                               <div className="flex flex-wrap items-center gap-2">
-                                <p className="text-sm font-semibold">
+                                <p className="text-[16px] font-normal tracking-[-0.005em] text-[#17171c]">
                                   {event.title}
                                 </p>
-                                <Badge
-                                  className={cn(
-                                    "text-xs",
-                                    operationalBadge.className
-                                  )}
-                                >
+                                <span className={operationalBadge.className}>
                                   {operationalBadge.label}
-                                </Badge>
-                                <Badge
-                                  className="text-xs capitalize"
-                                  variant={statusVariant}
-                                >
+                                </span>
+                                <span className="rounded-full border border-[#d9d9dd] bg-white px-2.5 py-0.5 font-mono text-[11px] uppercase tracking-[0.18em] capitalize text-[#616161]">
                                   {event.status}
-                                </Badge>
+                                </span>
                                 {event.soldOut && (
-                                  <Badge
-                                    className="text-xs"
-                                    variant="destructive"
-                                  >
+                                  <span className="rounded-full border border-[#ff7759] bg-[#ff7759] px-2.5 py-0.5 font-mono text-[11px] uppercase tracking-[0.18em] text-white">
                                     Sold out
-                                  </Badge>
+                                  </span>
                                 )}
                                 {event.limited && (
-                                  <Badge
-                                    className="text-xs"
-                                    variant="secondary"
-                                  >
+                                  <span className="rounded-full border border-[#ffad9b] bg-white px-2.5 py-0.5 font-mono text-[11px] uppercase tracking-[0.18em] text-[#ff7759]">
                                     Limited
-                                  </Badge>
+                                  </span>
                                 )}
                               </div>
-                              <div className="mt-1 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-                                <span className="flex items-center gap-1">
+                              <div className="mt-2 flex flex-wrap items-center gap-x-5 gap-y-1 text-[13px] text-[#616161]">
+                                <span className="flex items-center gap-1.5">
                                   <CalendarDays className="size-3.5" />
                                   {shortDateFormatter.format(event.eventDate)}
                                 </span>
-                                <span className="flex items-center gap-1">
+                                <span className="flex items-center gap-1.5">
                                   <MapPin className="size-3.5" />
                                   {event.venueName?.trim() || "No venue assigned"}
                                 </span>
-                                <span className="flex items-center gap-1">
+                                <span className="flex items-center gap-1.5">
                                   <Users className="size-3.5" />
                                   {event.guestCount} guests
                                 </span>
                               </div>
                             </div>
-                            <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                              <span className="flex items-center gap-1">
+                            <div className="flex items-center gap-5">
+                              <span className="hidden items-center gap-1.5 font-mono text-[12px] uppercase tracking-[0.18em] text-[#75758a] sm:flex">
                                 <Timer className="size-3.5" />
                                 {countdownLabel}
                               </span>
                               <Button
                                 asChild
+                                className="rounded-full px-4 text-[13px] font-medium text-[#1863dc] hover:bg-transparent hover:underline"
                                 onClick={(eventClick) =>
                                   eventClick.stopPropagation()
                                 }
                                 size="sm"
                                 variant="ghost"
                               >
-                                <Link href={`/events/${event.id}`}>Open</Link>
+                                <Link href={`/events/${event.id}`}>Open →</Link>
                               </Button>
                             </div>
                           </div>
                         );
                       })}
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </div>
                 )}
               </section>
             </>
@@ -1310,30 +1328,29 @@ export const KitchenDashboardClient = ({
           onOpenChange={setDrawerOpen}
           open={drawerOpen}
         >
-          <DrawerContent className="w-[420px] sm:max-w-md">
+          <DrawerContent className="w-[420px] border-l border-[#d9d9dd] bg-white text-[#17171c] sm:max-w-md">
             {selectedEvent ? (
               <>
-                <DrawerHeader>
-                  <DrawerTitle>{selectedEvent.title}</DrawerTitle>
-                  <DrawerDescription>
+                <DrawerHeader className="space-y-3 border-b border-[#d9d9dd] px-6 py-6">
+                  <p className="font-mono text-[12px] uppercase tracking-[0.28em] text-[#75758a]">
+                    {selectedEvent.eventNumber
+                      ? `Event / #${selectedEvent.eventNumber}`
+                      : "Event / detail"}
+                  </p>
+                  <DrawerTitle className="text-[28px] font-normal leading-[1.1] tracking-[-0.02em] text-[#17171c]">
+                    {selectedEvent.title}
+                  </DrawerTitle>
+                  <DrawerDescription className="sr-only">
                     {selectedEvent.eventNumber
                       ? `Event #${selectedEvent.eventNumber}`
                       : "No event number"}
                   </DrawerDescription>
-                  <div className="mt-3 flex flex-wrap items-center gap-2">
-                    <Badge
-                      className="text-xs capitalize"
-                      variant={
-                        statusVariantMap[
-                          selectedEvent.status as keyof typeof statusVariantMap
-                        ] ?? "outline"
-                      }
-                    >
+                  <div className="flex flex-wrap items-center gap-2 pt-1">
+                    <span className="rounded-full border border-[#d9d9dd] bg-white px-2.5 py-0.5 font-mono text-[11px] uppercase tracking-[0.18em] text-[#17171c]">
                       {selectedEvent.status}
-                    </Badge>
-                    <Badge
+                    </span>
+                    <span
                       className={cn(
-                        "text-xs",
                         operationalStatusConfig[selectedEvent.operationalStatus]
                           .className
                       )}
@@ -1342,103 +1359,126 @@ export const KitchenDashboardClient = ({
                         operationalStatusConfig[selectedEvent.operationalStatus]
                           .label
                       }
-                    </Badge>
+                    </span>
                     {selectedEvent.soldOut && (
-                      <Badge className="text-xs" variant="destructive">
+                      <span className="rounded-full border border-transparent bg-[#ff7759] px-2.5 py-0.5 font-mono text-[11px] uppercase tracking-[0.18em] text-white">
                         Sold out
-                      </Badge>
+                      </span>
                     )}
                     {selectedEvent.limited && (
-                      <Badge className="text-xs" variant="secondary">
+                      <span className="rounded-full border border-[#d9d9dd] bg-[#eeece7] px-2.5 py-0.5 font-mono text-[11px] uppercase tracking-[0.18em] text-[#454553]">
                         Limited
-                      </Badge>
+                      </span>
                     )}
                   </div>
                 </DrawerHeader>
-                <div className="space-y-4 px-4 pb-2">
-                  <div className="grid gap-3 rounded-xl border bg-muted/30 p-4 text-sm">
-                    <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">
-                        Service date
-                      </span>
-                      <span className="font-medium">
-                        {dateFormatter.format(selectedEvent.eventDate)}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">Time</span>
-                      <span className="font-medium">All-day</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">Location</span>
-                      <span className="font-medium">
-                        {selectedEvent.venueName?.trim() || "No venue assigned"}
-                      </span>
-                    </div>
-                    {selectedEvent.venueAddress && (
-                      <div className="flex items-center justify-between">
-                        <span className="text-muted-foreground">Address</span>
-                        <span className="font-medium">
-                          {selectedEvent.venueAddress}
-                        </span>
+                <div className="space-y-6 px-6 pt-6 pb-2">
+                  <div className="rounded-[16px] border border-[#d9d9dd] bg-[#eeece7]">
+                    <dl className="divide-y divide-[#d9d9dd]">
+                      <div className="flex items-center justify-between gap-4 px-4 py-3 text-sm">
+                        <dt className="font-mono text-[11px] uppercase tracking-[0.18em] text-[#75758a]">
+                          Service date
+                        </dt>
+                        <dd className="font-medium text-[#17171c]">
+                          {dateFormatter.format(selectedEvent.eventDate)}
+                        </dd>
                       </div>
-                    )}
-                    <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">Guests</span>
-                      {/* Capacity/RSVP fields are not available; guestCount is the only headcount signal. */}
-                      <span className="font-medium">
-                        {selectedEvent.guestCount}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">Event type</span>
-                      <span className="font-medium capitalize">
-                        {selectedEvent.eventType}
-                      </span>
-                    </div>
+                      <div className="flex items-center justify-between gap-4 px-4 py-3 text-sm">
+                        <dt className="font-mono text-[11px] uppercase tracking-[0.18em] text-[#75758a]">
+                          Time
+                        </dt>
+                        <dd className="font-medium text-[#17171c]">All-day</dd>
+                      </div>
+                      <div className="flex items-center justify-between gap-4 px-4 py-3 text-sm">
+                        <dt className="font-mono text-[11px] uppercase tracking-[0.18em] text-[#75758a]">
+                          Location
+                        </dt>
+                        <dd className="text-right font-medium text-[#17171c]">
+                          {selectedEvent.venueName?.trim() || "No venue assigned"}
+                        </dd>
+                      </div>
+                      {selectedEvent.venueAddress && (
+                        <div className="flex items-center justify-between gap-4 px-4 py-3 text-sm">
+                          <dt className="font-mono text-[11px] uppercase tracking-[0.18em] text-[#75758a]">
+                            Address
+                          </dt>
+                          <dd className="text-right font-medium text-[#17171c]">
+                            {selectedEvent.venueAddress}
+                          </dd>
+                        </div>
+                      )}
+                      <div className="flex items-center justify-between gap-4 px-4 py-3 text-sm">
+                        <dt className="font-mono text-[11px] uppercase tracking-[0.18em] text-[#75758a]">
+                          Guests
+                        </dt>
+                        {/* Capacity/RSVP fields are not available; guestCount is the only headcount signal. */}
+                        <dd className="font-medium text-[#17171c]">
+                          {selectedEvent.guestCount}
+                        </dd>
+                      </div>
+                      <div className="flex items-center justify-between gap-4 px-4 py-3 text-sm">
+                        <dt className="font-mono text-[11px] uppercase tracking-[0.18em] text-[#75758a]">
+                          Event type
+                        </dt>
+                        <dd className="font-medium capitalize text-[#17171c]">
+                          {selectedEvent.eventType}
+                        </dd>
+                      </div>
+                    </dl>
                   </div>
 
                   {selectedEvent.displayTags.length > 0 && (
-                    <div className="space-y-2">
-                      <h4 className="text-sm font-semibold">Tags</h4>
+                    <div className="space-y-3">
+                      <h4 className="font-mono text-[11px] uppercase tracking-[0.28em] text-[#75758a]">
+                        Tags
+                      </h4>
                       <div className="flex flex-wrap gap-2">
                         {selectedEvent.displayTags.map((tag) => (
-                          <Badge
-                            className="text-xs"
+                          <span
+                            className="rounded-full border border-[#d9d9dd] bg-white px-2.5 py-0.5 font-mono text-[11px] uppercase tracking-[0.18em] text-[#454553]"
                             key={tag}
-                            variant="outline"
                           >
                             {tag}
-                          </Badge>
+                          </span>
                         ))}
                       </div>
                     </div>
                   )}
 
                   {selectedEvent.notes && (
-                    <div className="space-y-2">
-                      <h4 className="text-sm font-semibold">Notes</h4>
-                      <p className="text-sm text-muted-foreground">
+                    <div className="space-y-3">
+                      <h4 className="font-mono text-[11px] uppercase tracking-[0.28em] text-[#75758a]">
+                        Notes
+                      </h4>
+                      <p className="text-sm leading-relaxed text-[#454553]">
                         {selectedEvent.notes}
                       </p>
                     </div>
                   )}
                 </div>
-                <DrawerFooter>
+                <DrawerFooter className="border-t border-[#d9d9dd] px-6 py-5">
                   <div className="grid gap-2">
-                    <Button asChild>
+                    <Button
+                      asChild
+                      className="rounded-full bg-[#17171c] text-[13px] font-medium text-white hover:bg-[#17171c]/90"
+                    >
                       <Link href={`/events/${selectedEvent.id}`}>
                         Open event
                       </Link>
                     </Button>
                     <Button
+                      className="rounded-full border border-[#d9d9dd] bg-white text-[13px] font-medium text-[#17171c] hover:bg-[#eeece7]"
                       onClick={() => handleCopyLink(selectedEvent.id)}
-                      variant="secondary"
+                      variant="outline"
                     >
                       <ClipboardCopy className="mr-2 size-4" />
                       Copy link
                     </Button>
-                    <Button asChild variant="outline">
+                    <Button
+                      asChild
+                      className="rounded-full border border-[#d9d9dd] bg-white text-[13px] font-medium text-[#17171c] hover:bg-[#eeece7]"
+                      variant="outline"
+                    >
                       <a
                         href={buildCalendarUrl(selectedEvent)}
                         rel="noreferrer"
@@ -1450,14 +1490,19 @@ export const KitchenDashboardClient = ({
                     </Button>
                   </div>
                   <DrawerClose asChild>
-                    <Button variant="ghost">Close</Button>
+                    <Button
+                      className="rounded-full text-[13px] font-medium text-[#75758a] hover:bg-transparent hover:text-[#17171c]"
+                      variant="ghost"
+                    >
+                      Close
+                    </Button>
                   </DrawerClose>
                   {/* Organizer, pricing, ticketing, and RSVP details are omitted because
                     the current event schema does not expose those fields. */}
                 </DrawerFooter>
               </>
             ) : (
-              <div className="flex h-full items-center justify-center p-6 text-sm text-muted-foreground">
+              <div className="flex h-full items-center justify-center p-6 font-mono text-[12px] uppercase tracking-[0.28em] text-[#75758a]">
                 Select an event to see details.
               </div>
             )}
@@ -1465,31 +1510,49 @@ export const KitchenDashboardClient = ({
         </Drawer>
       )}
 
-      <div className="fixed bottom-4 left-4 right-4 z-40 flex items-center justify-between gap-3 rounded-2xl border bg-background/80 p-3 shadow-lg backdrop-blur md:hidden">
+      <div className="fixed bottom-4 left-4 right-4 z-40 flex items-center justify-between gap-3 rounded-full border border-[#d9d9dd] bg-white/95 p-2 backdrop-blur md:hidden">
         {mounted ? (
           <Sheet onOpenChange={setFilterSheetOpen} open={filterSheetOpen}>
             <SheetTrigger asChild>
-              <Button size="sm" variant="outline">
+              <Button
+                className="rounded-full border border-[#d9d9dd] bg-white px-4 text-[13px] font-medium text-[#17171c] hover:bg-[#eeece7]"
+                size="sm"
+                variant="outline"
+              >
                 <Filter className="mr-2 size-4" />
                 Filters
               </Button>
             </SheetTrigger>
-            <SheetContent className="w-[340px]" side="right">
-              <SheetHeader>
-                <SheetTitle>Filters</SheetTitle>
+            <SheetContent
+              className="w-[340px] border-l border-[#d9d9dd] bg-white text-[#17171c]"
+              side="right"
+            >
+              <SheetHeader className="border-b border-[#d9d9dd] px-6 py-6">
+                <p className="font-mono text-[12px] uppercase tracking-[0.28em] text-[#75758a]">
+                  Filters
+                </p>
+                <SheetTitle className="text-[24px] font-normal leading-[1.1] tracking-[-0.02em] text-[#17171c]">
+                  Refine the view.
+                </SheetTitle>
               </SheetHeader>
-              <div className="mt-6">
+              <div className="mt-6 px-6">
                 <FiltersPanel {...filtersPanelProps} />
               </div>
             </SheetContent>
           </Sheet>
         ) : (
-          <Button disabled size="sm" variant="outline">
+          <Button
+            className="rounded-full border border-[#d9d9dd] bg-white px-4 text-[13px] font-medium text-[#75758a]"
+            disabled
+            size="sm"
+            variant="outline"
+          >
             <Filter className="mr-2 size-4" />
             Filters
           </Button>
         )}
         <ToggleGroup
+          className="rounded-full border border-[#d9d9dd] bg-[#eeece7] p-1"
           onValueChange={(value) =>
             setViewMode((value as ViewMode) || "timeline")
           }
@@ -1498,16 +1561,26 @@ export const KitchenDashboardClient = ({
           value={viewMode}
           variant="outline"
         >
-          <ToggleGroupItem value="timeline">
+          <ToggleGroupItem
+            className="rounded-full border-0 px-3 text-[12px] text-[#454553] data-[state=on]:bg-white data-[state=on]:text-[#17171c]"
+            value="timeline"
+          >
             <LayoutGrid className="mr-1 size-3.5" />
             Timeline
           </ToggleGroupItem>
-          <ToggleGroupItem value="queue">
+          <ToggleGroupItem
+            className="rounded-full border-0 px-3 text-[12px] text-[#454553] data-[state=on]:bg-white data-[state=on]:text-[#17171c]"
+            value="queue"
+          >
             <List className="mr-1 size-3.5" />
             Queue
           </ToggleGroupItem>
         </ToggleGroup>
-        <Button asChild size="sm">
+        <Button
+          asChild
+          className="rounded-full bg-[#17171c] px-4 text-[13px] font-medium text-white hover:bg-[#17171c]/90"
+          size="sm"
+        >
           <Link href="/events/new">New event</Link>
         </Button>
       </div>

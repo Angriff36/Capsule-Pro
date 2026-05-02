@@ -2893,6 +2893,7 @@ model Tenant {
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @default(now()) @db.Timestamptz(6)
 
+  @@map("Tenant")
   @@schema("platform")
 }
 
@@ -2983,6 +2984,7 @@ model ActivityFeed {
   @@index([tenantId, entityType, entityId])
   @@index([tenantId, performedBy, createdAt])
   @@index([tenantId, correlationId])
+  @@map("ActivityFeed")
   @@schema("tenant_admin")
 }
 
@@ -3684,6 +3686,7 @@ model EmployeeDeduction {
 
   @@id([tenant_id, id])
   @@index([employee_id], map: "employee_deductions_employee_idx")
+  @@map("EmployeeDeduction")
   @@schema("tenant_staff")
 }
 
@@ -4039,6 +4042,7 @@ model OutboxEvent {
   @@index([status, createdAt])
   @@index([tenantId])
   @@index([aggregateType, aggregateId])
+  @@map("OutboxEvent")
   @@schema("tenant")
 }
 

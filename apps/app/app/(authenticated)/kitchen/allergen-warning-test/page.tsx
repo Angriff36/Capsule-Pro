@@ -5,7 +5,12 @@
  * @domain Kitchen
  * @tags allergen, test, demo
  * @canonical false
+ *
+ * Marked "use client" because this page passes function props
+ * (onAcknowledge, onViewDetails) to AllergenWarningBanner — a client
+ * component. Function props cannot cross the server/client boundary.
  */
+"use client";
 
 import type { AllergenWarning } from "@repo/database";
 import {
