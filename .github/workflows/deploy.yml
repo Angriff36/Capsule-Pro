@@ -108,39 +108,51 @@ jobs:
       - name: Build all apps
         run: pnpm run build
 
+      - name: Load Vercel secrets
+        uses: bitwarden/sm-action@v2
+        with:
+          access_token: ${{ secrets.BW_ACCESS_TOKEN }}
+          secrets: |
+            9eac2295-b47e-405e-b1cd-b43e00214c72 > VERCEL_TOKEN
+            71c979f7-e59c-4370-872b-b43e002162d2 > VERCEL_ORG_ID
+            34b541ba-6111-4f9d-9745-b43e002190da > VERCEL_APP_PROJECT_ID
+            7b1173c2-ed67-4572-873a-b43e0021a4a5 > VERCEL_API_PROJECT_ID
+            e239cd88-7fb7-4c3b-ab42-b43e0021b4c8 > VERCEL_DOCS_PROJECT_ID
+            5e141ec7-b40d-4b83-8efa-b43e0021c700 > VERCEL_WEB_PROJECT_ID
+
       - name: Deploy to Vercel (App)
         uses: amondnet/vercel-action@v25
         with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_APP_PROJECT_ID }}
+          vercel-token: ${{ env.VERCEL_TOKEN }}
+          vercel-org-id: ${{ env.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ env.VERCEL_APP_PROJECT_ID }}
           working-directory: ./apps/app
           vercel-args: '--prod'
 
       - name: Deploy to Vercel (API)
         uses: amondnet/vercel-action@v25
         with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_API_PROJECT_ID }}
+          vercel-token: ${{ env.VERCEL_TOKEN }}
+          vercel-org-id: ${{ env.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ env.VERCEL_API_PROJECT_ID }}
           working-directory: ./apps/api
           vercel-args: '--prod'
 
       - name: Deploy to Vercel (Docs)
         uses: amondnet/vercel-action@v25
         with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_DOCS_PROJECT_ID }}
+          vercel-token: ${{ env.VERCEL_TOKEN }}
+          vercel-org-id: ${{ env.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ env.VERCEL_DOCS_PROJECT_ID }}
           working-directory: ./apps/docs
           vercel-args: '--prod'
 
       - name: Deploy to Vercel (Web)
         uses: amondnet/vercel-action@v25
         with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_WEB_PROJECT_ID }}
+          vercel-token: ${{ env.VERCEL_TOKEN }}
+          vercel-org-id: ${{ env.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ env.VERCEL_WEB_PROJECT_ID }}
           working-directory: ./apps/web
           vercel-args: '--prod'
 
