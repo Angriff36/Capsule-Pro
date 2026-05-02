@@ -198,7 +198,23 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[Emergency bridge — running bridge was not updated]
-Files: packages/database/prisma/schema.prisma (edit), docs/database/KNOWN_ISSUES.md (edit), apps/app/app/(authenticated)/kitchen/allergen-warning-test/page.tsx (edit)
+[pre-compact bridge — saved before context compaction]
+Files (7):
+  packages/design-system/components/blocks/manifest-test-playground.tsx (edit)
+  packages/design-system/components/ui/chart.tsx (edit)
+  packages/internationalization/proxy.ts (create)
+  packages/feature-flags/access.ts (create)
+  packages/design-system/components/blocks/getting-started-checklist.tsx (edit)
+  packages/analytics/provider.tsx (create)
+  apps/app/app/layout.tsx (edit)
+Manual bridge:
+[proactive bridge @ 77% context — saved before compacting]
+Files (6):
+  packages/design-system/components/blocks/manifest-test-playground.tsx (edit)
+  packages/design-system/components/ui/chart.tsx (edit)
+  packages/internationalization/proxy.ts (create)
+  packages/feature-flags/access.ts (create)
+  packages/design-system/components/blocks/getting-started-checklist.tsx (edit)
+  packages/analytics/provider.tsx (create)
 
 # === END COGNILAYER ===

@@ -1,9 +1,11 @@
 import { env } from "@/env";
 import "./styles.css";
+import { GoogleAnalytics } from "@next/third-parties/google";
 import { AnalyticsProvider } from "@repo/analytics/provider";
 import { DesignSystemProvider } from "@repo/design-system";
 import { Toaster } from "@repo/design-system/components/ui/sonner";
-import { fonts } from "@repo/design-system/lib/fonts";
+import { fonts } from "@/lib/fonts";
+import { Analytics as VercelAnalytics } from "@vercel/analytics/react";
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import ClerkProviderClient from "./clerk-provider.client";
@@ -50,6 +52,10 @@ const RootLayout = async ({ children }: RootLayoutProperties) => {
           {Toolbar && <Toolbar />}
           <Toaster />
         </ClerkProviderClient>
+        {process.env.NODE_ENV === "production" && <VercelAnalytics />}
+        {env.NEXT_PUBLIC_GA_MEASUREMENT_ID && (
+          <GoogleAnalytics gaId={env.NEXT_PUBLIC_GA_MEASUREMENT_ID} />
+        )}
       </body>
     </html>
   );

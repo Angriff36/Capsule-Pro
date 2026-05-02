@@ -1,8 +1,22 @@
 "use client";
 
 import { cn } from "@repo/design-system/lib/utils";
-import dynamic from "next/dynamic";
 import * as React from "react";
+
+// Framework-agnostic lazy loader for recharts components. Wraps React.lazy
+// in a Suspense boundary so callers don't need to provide one.
+function lazyRechartsComponent<P>(
+  loader: () => Promise<React.ComponentType<P>>
+): React.ComponentType<P> {
+  const Lazy = React.lazy(async () => ({ default: await loader() }));
+  return function LazyRechartsWrapper(props: P) {
+    return (
+      <React.Suspense fallback={null}>
+        <Lazy {...(props as React.JSX.IntrinsicAttributes & P)} />
+      </React.Suspense>
+    );
+  };
+}
 
 // Format: { THEME_NAME: CSS_SELECTOR }
 const THEMES = { light: "", dark: ".dark" } as const;
@@ -65,10 +79,9 @@ function useChart() {
 }
 
 // Lazy load recharts to keep it out of the initial bundle
-const ResponsiveContainer = dynamic(
-  () => import("recharts").then((mod) => mod.ResponsiveContainer),
-  { ssr: false }
-);
+const ResponsiveContainer = lazyRechartsComponent<
+  React.ComponentProps<"div"> & { children?: React.ReactNode }
+>(() => import("recharts").then((mod) => mod.ResponsiveContainer as never));
 
 function ChartContainer({
   id,
@@ -137,13 +150,11 @@ ${colorConfig
 };
 
 // Lazy load recharts Tooltip
-const ChartTooltip = dynamic(
-  () =>
-    import("recharts").then(
-      (mod) => mod.Tooltip as React.ComponentType<RechartsTooltipProps>
-    ),
-  { ssr: false }
-) as React.ComponentType<RechartsTooltipProps>;
+const ChartTooltip = lazyRechartsComponent<RechartsTooltipProps>(() =>
+  import("recharts").then(
+    (mod) => mod.Tooltip as React.ComponentType<RechartsTooltipProps>
+  )
+);
 
 function ChartTooltipContent({
   active,
@@ -311,13 +322,11 @@ function ChartTooltipContent({
 }
 
 // Lazy load recharts Legend
-const ChartLegend = dynamic(
-  () =>
-    import("recharts").then(
-      (mod) => mod.Legend as React.ComponentType<RechartsLegendProps>
-    ),
-  { ssr: false }
-) as React.ComponentType<RechartsLegendProps>;
+const ChartLegend = lazyRechartsComponent<RechartsLegendProps>(() =>
+  import("recharts").then(
+    (mod) => mod.Legend as React.ComponentType<RechartsLegendProps>
+  )
+);
 
 function ChartLegendContent({
   className,

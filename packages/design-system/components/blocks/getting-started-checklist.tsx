@@ -10,7 +10,6 @@ import {
   Rocket,
   Share2,
 } from "lucide-react";
-import Link from "next/link";
 import { useCallback, useState } from "react";
 import { cn } from "../../lib/utils";
 import { Button } from "../ui/button";
@@ -269,7 +268,7 @@ export function GettingStartedChecklist({
           <ul className="space-y-3">
             {items.map((item) => (
               <li key={item.id}>
-                <Link
+                <a
                   className={cn(
                     "group flex items-start gap-3 rounded-lg p-2 transition-colors hover:bg-muted/50",
                     item.completed && "opacity-60"
@@ -304,7 +303,7 @@ export function GettingStartedChecklist({
                       {item.icon}
                     </div>
                   )}
-                </Link>
+                </a>
               </li>
             ))}
           </ul>
@@ -356,14 +355,14 @@ export function GettingStartedChecklistCompact({
           .slice(0, 3)
           .map((item) => (
             <li key={item.id}>
-              <Link
+              <a
                 className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
                 href={item.href}
                 onClick={() => onItemClick?.(item)}
               >
                 <Circle className="size-3" />
                 <span className="truncate">{item.label}</span>
-              </Link>
+              </a>
             </li>
           ))}
       </ul>

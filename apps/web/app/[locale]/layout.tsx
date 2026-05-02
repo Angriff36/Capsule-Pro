@@ -1,11 +1,14 @@
 import "./styles.css";
+import { GoogleAnalytics } from "@next/third-parties/google";
+import { keys as analyticsKeys } from "@repo/analytics/keys";
 import { AnalyticsProvider } from "@repo/analytics/provider";
 import { Toolbar as CMSToolbar } from "@repo/cms/components/toolbar";
 import { DesignSystemProvider } from "@repo/design-system";
-import { fonts } from "@repo/design-system/lib/fonts";
+import { fonts } from "@/lib/fonts";
 import { cn } from "@repo/design-system/lib/utils";
 import { Toolbar } from "@repo/feature-flags/components/toolbar";
 import { getDictionary, isValidLocale } from "@repo/internationalization";
+import { Analytics as VercelAnalytics } from "@vercel/analytics/react";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 import { Footer } from "./components/footer";
@@ -27,6 +30,7 @@ const RootLayout = async ({ children, params }: RootLayoutProperties) => {
   }
 
   const dictionary = await getDictionary(locale);
+  const analyticsEnv = analyticsKeys();
 
   return (
     <html className={cn(fonts, "scroll-smooth")} lang={locale}>
@@ -40,6 +44,10 @@ const RootLayout = async ({ children, params }: RootLayoutProperties) => {
           <Toolbar />
           <CMSToolbar />
         </AnalyticsProvider>
+        {process.env.NODE_ENV === "production" && <VercelAnalytics />}
+        {analyticsEnv.NEXT_PUBLIC_GA_MEASUREMENT_ID && (
+          <GoogleAnalytics gaId={analyticsEnv.NEXT_PUBLIC_GA_MEASUREMENT_ID} />
+        )}
       </body>
     </html>
   );

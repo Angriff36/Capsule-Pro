@@ -1,12 +1,15 @@
 import { type ApiData, verifyAccess } from "flags";
-import { type NextRequest, NextResponse } from "next/server";
 import * as flags from "./index";
 
-export const getFlags = async (request: NextRequest) => {
+// Uses Web standard Request/Response so this module does not import directly
+// from `next/*`. NextRequest extends Request, so app routes can still pass
+// their NextRequest in unchanged. NextResponse.json is interchangeable with
+// Response.json from the framework's perspective.
+export const getFlags = async (request: Request): Promise<Response> => {
   const access = await verifyAccess(request.headers.get("Authorization"));
 
   if (!access) {
-    return NextResponse.json(null, { status: 401 });
+    return Response.json(null, { status: 401 });
   }
 
   const definitions = Object.fromEntries(
@@ -20,7 +23,5 @@ export const getFlags = async (request: NextRequest) => {
     ])
   );
 
-  return NextResponse.json<ApiData>({
-    definitions,
-  });
+  return Response.json({ definitions } satisfies ApiData);
 };

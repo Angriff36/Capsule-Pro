@@ -1,6 +1,5 @@
 import { match as matchLocale } from "@formatjs/intl-localematcher";
 import Negotiator from "negotiator";
-import type { NextRequest } from "next/server";
 import { createI18nMiddleware } from "next-international/middleware";
 import languine from "./languine.json" with { type: "json" };
 
@@ -10,7 +9,7 @@ const I18nMiddleware = createI18nMiddleware({
   locales,
   defaultLocale: "en",
   urlMappingStrategy: "rewriteDefault",
-  resolveLocaleFromRequest: (request: NextRequest) => {
+  resolveLocaleFromRequest: (request) => {
     const headers = Object.fromEntries(request.headers.entries());
     const negotiator = new Negotiator({ headers });
     const acceptedLanguages = negotiator.languages();
@@ -21,8 +20,12 @@ const I18nMiddleware = createI18nMiddleware({
   },
 });
 
-export const internationalizationMiddleware = (request: NextRequest) =>
-  I18nMiddleware(request);
+// Re-export the middleware. The request type is intentionally inferred from
+// next-international so this module does not import directly from `next/*`
+// (see AGENTS.md "Package Boundaries").
+export const internationalizationMiddleware: typeof I18nMiddleware = (
+  request
+) => I18nMiddleware(request);
 
 export const config = {
   matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],

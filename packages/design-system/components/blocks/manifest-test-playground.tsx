@@ -58,7 +58,6 @@ import {
   RotateCcw,
   X,
 } from "lucide-react";
-import Link from "next/link";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -890,13 +889,14 @@ export function ManifestTestPlayground({
           </ul>
           <p className="text-xs">
             See{" "}
-            <Link
+            <a
               className="text-primary hover:underline"
               href="https://github.com/angriff36/manifest"
+              rel="noopener noreferrer"
               target="_blank"
             >
               Manifest Specification
-            </Link>{" "}
+            </a>{" "}
             for details on command semantics.
           </p>
         </CardContent>

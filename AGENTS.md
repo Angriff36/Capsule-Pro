@@ -164,16 +164,12 @@ Shared packages (`packages/`) must be framework-agnostic:
 
 ### Known Violations (to remediate)
 
-- `packages/design-system/lib/fonts.ts` — imports `next/font/google`
-- `packages/design-system/components/ui/chart.tsx` — imports `next/dynamic`
-- `packages/design-system/components/blocks/manifest-test-playground.tsx` —
-  imports `next/link`
-- `packages/design-system/components/blocks/getting-started-checklist.tsx` —
-  imports `next/link`
-- `packages/feature-flags/access.ts` — imports `next/server`
-- `packages/internationalization/proxy.ts` — imports `next/server`
-- `packages/analytics/provider.tsx` — imports `@next/third-parties/google` +
-  `@vercel/analytics/react` (added 2026-04-24)
+All previously-known `next/*` boundary violations were resolved 2026-05-02. Shared
+packages no longer import `next/*` or `@next/*`. The two remaining matches under
+`packages/` are non-violations: a comment example in
+`packages/manifest-adapters/src/api-response.ts` and emitted-code string literals
+in `packages/manifest-runtime/src/manifest/projections/nextjs/generator.ts` (a
+code generator that produces Next.js route code as strings).
 
 React Native boundary: clean (no violations in web apps).
 
