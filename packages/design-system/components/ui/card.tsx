@@ -1,20 +1,47 @@
 import { cn } from "@repo/design-system/lib/utils";
+import { cva, type VariantProps } from "class-variance-authority";
 import type * as React from "react";
 
 /**
- * Card per DESIGN.md: white canvas with a 16-22px radius, hairline border,
- * and NO drop shadow. Depth comes from surface alternation, not elevation.
- * Pages that need an editorial dark band should compose <DarkBand> wrappers
- * (use `bg-deep-green text-canvas rounded-[22px]`) rather than inverting Card.
+ * Card per DESIGN.md (Cohere): white canvas with a 16-22px radius, hairline
+ * border, and NO drop shadow. Depth comes from surface alternation, not
+ * elevation.
+ *
+ * `tone` selects the surface treatment so callers don't have to hand-roll
+ * Tailwind classes for the three editorial surfaces:
+ *   - canvas     → default white card on canvas (most lists / detail panels)
+ *   - soft-stone → warm neutral surface (product cards, secondary panels)
+ *   - ink        → near-black surface for inset stat-callouts on light pages
+ *                  (text inverts to canvas)
+ *
+ * Use a higher-level wrapper (e.g. a `<DarkBand>` block) for full-bleed dark
+ * sections; `tone="ink"` is intended for an inset Card on a light page.
  */
-function Card({ className, ...props }: React.ComponentProps<"div">) {
+const cardVariants = cva(
+  "flex flex-col gap-6 rounded-card border py-6",
+  {
+    variants: {
+      tone: {
+        canvas: "bg-card text-card-foreground border-card-border",
+        "soft-stone": "bg-soft-stone text-ink border-hairline",
+        ink: "bg-ink text-canvas border-ink",
+      },
+    },
+    defaultVariants: {
+      tone: "canvas",
+    },
+  }
+);
+
+export type CardProps = React.ComponentProps<"div"> &
+  VariantProps<typeof cardVariants>;
+
+function Card({ className, tone, ...props }: CardProps) {
   return (
     <div
-      className={cn(
-        "bg-card text-card-foreground flex flex-col gap-6 rounded-card border border-card-border py-6",
-        className
-      )}
+      className={cn(cardVariants({ tone, className }))}
       data-slot="card"
+      data-tone={tone ?? "canvas"}
       {...props}
     />
   );
@@ -88,10 +115,11 @@ function CardFooter({ className, ...props }: React.ComponentProps<"div">) {
 
 export {
   Card,
-  CardHeader,
-  CardFooter,
-  CardTitle,
   CardAction,
-  CardDescription,
   CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+  cardVariants,
 };

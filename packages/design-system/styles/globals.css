@@ -183,6 +183,7 @@
   --color-card-border: var(--ds-card-border);
   --color-slate-soft: var(--ds-slate);
   /* DESIGN.md radius scale (rounded-pill, rounded-card, rounded-media, ...) */
+  --radius-xs: 4px;
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
