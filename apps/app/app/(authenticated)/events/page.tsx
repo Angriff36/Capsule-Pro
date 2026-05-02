@@ -30,7 +30,6 @@ import { CalendarDays } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTenantIdForOrg } from "../../lib/tenant";
-import { Header } from "../components/header";
 import { EventsList } from "./components/events-list";
 import { EventsPageWithSuggestions } from "./components/events-suggestions";
 import { EventsPageClient } from "./events-page-client";
@@ -105,22 +104,6 @@ const EventsPage = async () => {
 
   return (
     <>
-      <Header page="Events" pages={[]}>
-        <div className="flex items-center gap-2">
-          <Button asChild size="sm" variant="ghost">
-            <Link href="/events/reports">Reports</Link>
-          </Button>
-          <Button asChild size="sm" variant="ghost">
-            <Link href="/events/battle-boards">Battle boards</Link>
-          </Button>
-          <Button asChild size="sm" variant="ghost">
-            <Link href="/events/import">Import</Link>
-          </Button>
-          <Button asChild size="sm">
-            <Link href="/events/new">New event</Link>
-          </Button>
-        </div>
-      </Header>
       <EventsPageWithSuggestions tenantId={tenantId} />
       <EventsPageClient />
 
