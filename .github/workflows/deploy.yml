@@ -38,6 +38,7 @@ jobs:
     env:
       NPM_TOKEN: ${{ secrets.PKG_AUTH_TOKEN }}
       SKIP_ENV_VALIDATION: true
+      NODE_OPTIONS: "--max-old-space-size=8192"
       NEXT_PUBLIC_CLERK_SIGN_IN_URL: "/sign-in"
       NEXT_PUBLIC_CLERK_SIGN_UP_URL: "/sign-up"
       RESEND_FROM: "noreply@ci-build.local"
@@ -66,7 +67,7 @@ jobs:
 
       - name: Generate code for deployment
         run: |
-          pnpm run analyze
+          pnpm --filter @repo/cms build
           cd apps/web && npx basehub
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
