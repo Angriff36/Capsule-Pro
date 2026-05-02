@@ -416,3 +416,119 @@
   color: var(--ds-coral);
   background-color: transparent;
 }
+
+/* ─── DESIGN.md typography hierarchy ──────────────────────────────────
+   Direct utilities for each row of the DESIGN.md typography table
+   (lines 261–274). Use these instead of inline `text-3xl font-bold`
+   ad-hoc Tailwind so module shells consume the canonical scale.
+   Sizes / weights / line-heights / letter-spacing match the spec
+   exactly; pixel sizes encoded as rem (16px base) where possible. */
+
+@utility ds-hero-display {
+  /* 96 / 1.00 / -1.92px — home page declaration scale */
+  font-family: var(--font-display, var(--font-sans));
+  font-size: 6rem;
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--ds-ink);
+}
+
+@utility ds-product-display {
+  /* 72 / 1.00 / -1.44px — product and research hero headlines */
+  font-family: var(--font-display, var(--font-sans));
+  font-size: 4.5rem;
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--ds-ink);
+}
+
+@utility ds-section-display {
+  /* 60 / 1.00 / -1.2px — large product-page headings */
+  font-family: var(--font-sans);
+  font-size: 3.75rem;
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--ds-ink);
+}
+
+@utility ds-section-heading {
+  /* 48 / 1.20 / -0.48px — split hero and CTA headings */
+  font-family: var(--font-sans);
+  font-size: 3rem;
+  font-weight: 400;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: var(--ds-ink);
+}
+
+@utility ds-card-heading {
+  /* 32 / 1.20 / -0.32px — feature card and list section titles */
+  font-family: var(--font-sans);
+  font-size: 2rem;
+  font-weight: 400;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: var(--ds-ink);
+}
+
+@utility ds-feature-heading {
+  /* 24 / 1.30 / 0 — cards, filters, and article titles */
+  font-family: var(--font-sans);
+  font-size: 1.5rem;
+  font-weight: 400;
+  line-height: 1.3;
+  letter-spacing: 0;
+  color: var(--ds-ink);
+}
+
+@utility ds-body-large {
+  /* 18 / 1.40 / 0 — lead text and larger paragraphs */
+  font-family: var(--font-sans);
+  font-size: 1.125rem;
+  font-weight: 400;
+  line-height: 1.4;
+  letter-spacing: 0;
+  color: var(--ds-ink);
+}
+
+@utility ds-body {
+  /* 16 / 1.50 / 0 — default copy and link text */
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.5;
+  letter-spacing: 0;
+  color: var(--ds-ink);
+}
+
+@utility ds-button {
+  /* 14 / 1.71 / 0 / weight 500 — compact CTA labels */
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.71;
+  letter-spacing: 0;
+}
+
+@utility ds-caption {
+  /* 14 / 1.40 / 0 — metadata and small explanatory text */
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  font-weight: 400;
+  line-height: 1.4;
+  letter-spacing: 0;
+  color: var(--ds-muted);
+}
+
+@utility ds-micro {
+  /* 12 / 1.40 / 0 — footer, nav microcopy, and small links */
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 400;
+  line-height: 1.4;
+  letter-spacing: 0;
+  color: var(--ds-muted);
+}
