@@ -37,6 +37,8 @@ jobs:
     if: needs.check-dependabot.outputs.has-failing-dependabot == 'false'
     env:
       NPM_TOKEN: ${{ secrets.PKG_AUTH_TOKEN }}
+      RESEND_FROM: "noreply@ci-build.local"
+      RESEND_TOKEN: "re_dummy"
 
     steps:
       - name: Checkout code
