@@ -157,5 +157,55 @@ export function POST(request: NextRequest) {
   return executeManifestCommand(request, {
     entityName: "Shipment",
     commandName: "create",
+    transformBody: (body) => {
+      // Map snake_case client fields to camelCase manifest fields
+      const mapped: Record<string, unknown> = {};
+
+      // Convert all snake_case keys to camelCase
+      for (const [key, value] of Object.entries(body)) {
+        const camelKey = key.replace(/_([a-z])/g, (_: string, c: string) =>
+          c.toUpperCase()
+        );
+        mapped[camelKey] = value;
+      }
+
+      // Generate shipment number if empty/missing (guard requires non-empty)
+      if (
+        !mapped.shipmentNumber ||
+        String(mapped.shipmentNumber).trim() === ""
+      ) {
+        mapped.shipmentNumber = `SHP-${Date.now()}`;
+      }
+
+      // Convert date strings to epoch ms (manifest expects number type)
+      if (typeof mapped.scheduledDate === "string" && mapped.scheduledDate) {
+        mapped.scheduledDate = new Date(mapped.scheduledDate).getTime();
+      }
+      if (
+        typeof mapped.estimatedDeliveryDate === "string" &&
+        mapped.estimatedDeliveryDate
+      ) {
+        mapped.estimatedDeliveryDate = new Date(
+          mapped.estimatedDeliveryDate
+        ).getTime();
+      }
+
+      // Default missing required fields (manifest requires non-null string;
+      // PrismaStore converts empty string to null for nullable DB columns)
+      if (mapped.supplierId === undefined) mapped.supplierId = "";
+      if (mapped.locationId === undefined) mapped.locationId = "";
+      if (mapped.eventId === undefined) mapped.eventId = "";
+
+      // Coerce numeric fields
+      if (mapped.shippingCost !== undefined) {
+        mapped.shippingCost = Number(mapped.shippingCost);
+      }
+
+      console.log(
+        "[Shipment/POST] Transformed body:",
+        JSON.stringify({ ...mapped, scheduledDate: "<epoch>" })
+      );
+      return mapped;
+    },
   });
 }
