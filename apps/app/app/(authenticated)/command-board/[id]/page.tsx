@@ -48,18 +48,47 @@ const BoardDetailPage = async ({ params }: PageProps) => {
     notFound();
   }
 
-  const cards = await database.commandBoardCard.findMany({
-    where: { tenantId, boardId: id, deletedAt: null },
-    select: {
-      id: true,
-      title: true,
-      cardType: true,
-      status: true,
-      positionX: true,
-      positionY: true,
-    },
-    orderBy: { createdAt: "asc" },
-  });
+  const [cards, connections, groups] = await Promise.all([
+    database.commandBoardCard.findMany({
+      where: { tenantId, boardId: id, deletedAt: null },
+      select: {
+        id: true,
+        title: true,
+        cardType: true,
+        status: true,
+        positionX: true,
+        positionY: true,
+        width: true,
+        height: true,
+        color: true,
+        groupId: true,
+      },
+      orderBy: { createdAt: "asc" },
+    }),
+    database.commandBoardConnection.findMany({
+      where: { tenantId, boardId: id, deletedAt: null, visible: true },
+      select: {
+        id: true,
+        fromCardId: true,
+        toCardId: true,
+        relationshipType: true,
+        label: true,
+      },
+    }),
+    database.commandBoardGroup.findMany({
+      where: { tenantId, boardId: id, deletedAt: null },
+      select: {
+        id: true,
+        name: true,
+        color: true,
+        collapsed: true,
+        positionX: true,
+        positionY: true,
+        width: true,
+        height: true,
+      },
+    }),
+  ]);
 
   return (
     <PageCanvas>
@@ -84,6 +113,14 @@ const BoardDetailPage = async ({ params }: PageProps) => {
               {board.isTemplate ? (
                 <Badge variant="outline">Template</Badge>
               ) : null}
+              <Badge variant="outline">
+                {cards.length} card{cards.length !== 1 ? "s" : ""}
+              </Badge>
+              {groups.length > 0 ? (
+                <Badge variant="outline">
+                  {groups.length} group{groups.length !== 1 ? "s" : ""}
+                </Badge>
+              ) : null}
             </div>
           </div>
           <CommandBandActions>
@@ -100,7 +137,12 @@ const BoardDetailPage = async ({ params }: PageProps) => {
       </CommandBand>
 
       <OperationalColumn>
-        <BoardCanvas boardId={board.id} cards={cards} />
+        <BoardCanvas
+          boardId={board.id}
+          cards={cards}
+          connections={connections}
+          groups={groups}
+        />
       </OperationalColumn>
     </PageCanvas>
   );

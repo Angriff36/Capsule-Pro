@@ -47,3 +47,128 @@ export const createCommandBoard = async (formData: FormData) => {
   revalidatePath("/command-board");
   redirect(`/command-board/${id}`);
 };
+
+/** Move a card to new canvas coordinates. */
+export const moveCardAction = async (
+  cardId: string,
+  positionX: number,
+  positionY: number,
+) => {
+  const tenantId = await requireTenantId();
+
+  await database.commandBoardCard.update({
+    where: { tenantId_id: { tenantId, id: cardId } },
+    data: { positionX, positionY },
+  });
+};
+
+/** Bulk-update properties on multiple cards (status, color, cardType). */
+export const bulkUpdateCardsAction = async (
+  cardIds: string[],
+  updates: { status?: string; color?: string; cardType?: string },
+) => {
+  if (cardIds.length === 0) return;
+
+  const tenantId = await requireTenantId();
+
+  await database.commandBoardCard.updateMany({
+    where: { tenantId, id: { in: cardIds }, deletedAt: null },
+    data: updates,
+  });
+};
+
+/** Create a group and optionally assign cards to it. */
+export const createGroupAction = async (
+  boardId: string,
+  name: string,
+  color: string,
+  cardIds: string[],
+  positionX: number,
+  positionY: number,
+  width: number,
+  height: number,
+) => {
+  const tenantId = await requireTenantId();
+
+  const groupId = randomUUID();
+
+  await database.commandBoardGroup.create({
+    data: {
+      tenantId,
+      id: groupId,
+      boardId,
+      name,
+      color: color || null,
+      collapsed: false,
+      positionX,
+      positionY,
+      width,
+      height,
+    },
+  });
+
+  if (cardIds.length > 0) {
+    await database.commandBoardCard.updateMany({
+      where: { tenantId, id: { in: cardIds }, deletedAt: null },
+      data: { groupId },
+    });
+  }
+
+  return { id: groupId };
+};
+
+/** Remove cards from their group (set groupId to null). */
+export const ungroupCardsAction = async (cardIds: string[]) => {
+  if (cardIds.length === 0) return;
+
+  const tenantId = await requireTenantId();
+
+  await database.commandBoardCard.updateMany({
+    where: { tenantId, id: { in: cardIds }, deletedAt: null },
+    data: { groupId: null },
+  });
+};
+
+/** Assign cards to an existing group. */
+export const assignToGroupAction = async (
+  cardIds: string[],
+  groupId: string,
+) => {
+  if (cardIds.length === 0) return;
+
+  const tenantId = await requireTenantId();
+
+  await database.commandBoardCard.updateMany({
+    where: { tenantId, id: { in: cardIds }, deletedAt: null },
+    data: { groupId },
+  });
+};
+
+/** Toggle group collapsed state. */
+export const toggleGroupCollapseAction = async (
+  groupId: string,
+  collapsed: boolean,
+) => {
+  const tenantId = await requireTenantId();
+
+  await database.commandBoardGroup.update({
+    where: { tenantId_id: { tenantId, id: groupId } },
+    data: { collapsed },
+  });
+};
+
+/** Delete a group (soft delete) and unassign its cards. */
+export const deleteGroupAction = async (groupId: string) => {
+  const tenantId = await requireTenantId();
+  const now = new Date();
+
+  await database.commandBoardCard.updateMany({
+    where: { tenantId, groupId, deletedAt: null },
+    data: { groupId: null },
+  });
+
+  await database.commandBoardGroup.update({
+    where: { tenantId_id: { tenantId, id: groupId } },
+    data: { deletedAt: now },
+  });
+};

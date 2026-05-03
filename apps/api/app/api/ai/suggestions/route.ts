@@ -442,11 +442,11 @@ function generateFallbackSuggestions(
   today.setHours(0, 0, 0, 0);
 
   // Urgent tasks due within 24 hours
+  const now = Date.now();
   const urgentTasks = context.prepTasks.filter((t) => {
-    const daysUntilDue = Math.ceil(
-      (t.dueByDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
-    );
-    return daysUntilDue <= 1 && t.status !== "completed";
+    const hoursUntilDue =
+      (t.dueByDate.getTime() - now) / (1000 * 60 * 60);
+    return hoursUntilDue <= 24 && t.status !== "completed";
   });
 
   if (urgentTasks.length > 0) {
