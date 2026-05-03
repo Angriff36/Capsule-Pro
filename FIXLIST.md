@@ -8,7 +8,7 @@
 | 1 | accounting | `/accounting` | 🟢 ✅ | Accounting dashboard wired to live invoice/payment/account data | ✅ 2026-05-02 |
 | 2 | accounting | `/accounting/chart-of-accounts` | 🟢 ✅ | Server-rendered Prisma-backed chart of accounts list with tenant auth | ✅ 2026-05-02 |
 | 3 | accounting | `/accounting/payments` | 🟢 ✅ | Server-rendered tenant-scoped payment dashboard with Prisma metrics and recent payment list | ✅ 2026-05-02 |
-| 4 | administrative | `/administrative` | 🔴 ❌ | Static JSX | TODO |
+| 4 | administrative | `/administrative` | 🟢 ✅ | Server-rendered administrative dashboard with tenant-scoped event prep, metrics, and document import activity | ✅ 2026-05-03 |
 | 5 | administrative | `/administrative/chat` | 🔴 ❌ | Static JSX | TODO |
 | 6 | analytics | `/analytics/kitchen` | 🔴 ❌ | Static JSX | TODO |
 | 7 | analytics | `/analytics/events` | 🔴 ❌ | 9-line shell | TODO |
