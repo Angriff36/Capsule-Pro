@@ -15,6 +15,18 @@ import { randomUUID } from "crypto";
 
 // ── Facility ────────────────────────────────────────────────────────────────
 
+export async function getFacilities() {
+  const { orgId } = await auth();
+  invariant(orgId, "Unauthorized");
+  const tenantId = await getTenantId();
+
+  return database.facility.findMany({
+    where: { tenantId },
+    orderBy: { name: "asc" },
+  });
+}
+
+
 export async function createFacility(formData: FormData) {
   const { orgId } = await auth();
   invariant(orgId, "Unauthorized");

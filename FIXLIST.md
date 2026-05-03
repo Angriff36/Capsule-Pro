@@ -2,7 +2,7 @@
 
 **Total broken: 98** (85 dead shells + 13 form-only)
 **Generated:** 2026-05-02 | **Auto-fix cron:** every 10 min
-**Last fix:** 2026-05-03 — crm/segmentation (already functional)
+**Last fix:** 2026-05-03 — /facilities (wired server actions, replaced missing API call)
 
 | # | Module | Route | Type | Issue | Status |
 |---|--------|-------|------|-------|--------|
@@ -31,7 +31,7 @@
 | 23 | events | `/events/reports` | 🔴 ❌ | Static JSX | TODO |
 | 24 | events | `/events/reports/[reportId]` | 🔴 ❌ | Static JSX | TODO |
 | 25 | events | `/events/import` | 🔴 ❌ | Static JSX | TODO |
-| 26 | facilities | `/facilities` | 🟡 🔶 | Form, no server action | TODO |
+| 26 | facilities | `/facilities` | 🟢 ✅ | Wired createFacility + getFacilities server actions, replaced missing API call | ✅ 2026-05-03 |
 | 27 | facilities | `/facilities/schedules` | 🟡 🔶 | Form, no server action | TODO |
 | 28 | facilities | `/facilities/areas` | 🟡 🔶 | Form, no server action | TODO |
 | 29 | facilities | `/facilities/assets` | 🟡 🔶 | Form, no server action | TODO |

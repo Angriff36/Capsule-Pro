@@ -52,7 +52,7 @@ import {
   PageCanvas,
   SectionHeader,
 } from "@repo/design-system/components/blocks/page-shell";
-import { createFacility } from "./actions";
+import { createFacility, getFacilities } from "./actions";
 import { UpcomingMaintenanceWidget } from "./components/upcoming-maintenance-widget";
 
 interface Facility {
@@ -128,11 +128,8 @@ export default function FacilitiesPage() {
   const loadFacilities = async () => {
     setLoading(true);
     try {
-      const res = await apiFetch("/api/facilities/list?status=all");
-      const data = await res.json();
-      if (data.success) {
-        setFacilities(data.facilities || []);
-      }
+      const facilities = await getFacilities();
+      setFacilities(facilities || []);
     } catch {
       // Graceful fallback — empty list
     } finally {
