@@ -749,7 +749,7 @@ export default function BudgetPage() {
                               <span className="text-sm text-muted-foreground w-24 shrink-0">
                                 {monthLabel}
                               </span>
-                              <div className="flex-1 h-6 bg-gray-100 rounded relative overflow-hidden">
+                              <div className="flex-1 h-6 bg-muted/50 rounded relative overflow-hidden">
                                 <div
                                   className={`h-full rounded ${monthPct >= 15 ? "bg-blue-500" : "bg-blue-400"}`}
                                   style={{
@@ -770,7 +770,7 @@ export default function BudgetPage() {
                           <span className="text-sm font-medium w-24 shrink-0">
                             Total
                           </span>
-                          <div className="flex-1 h-6 bg-gray-100 rounded relative overflow-hidden">
+                          <div className="flex-1 h-6 bg-muted/50 rounded relative overflow-hidden">
                             <div
                               className={`h-full rounded ${
                                 detailData.spend.utilizationPct >= 100

@@ -129,14 +129,14 @@ const statusOptions = [
 ];
 
 const styleOptions = [
-  { value: "setup", label: "Setup", color: "bg-blue-100 text-blue-800" },
-  { value: "service", label: "Service", color: "bg-green-100 text-green-800" },
+  { value: "setup", label: "Setup", color: "bg-muted/50 text-foreground" },
+  { value: "service", label: "Service", color: "bg-muted/50 text-foreground" },
   {
     value: "breakdown",
     label: "Breakdown",
-    color: "bg-orange-100 text-orange-800",
+    color: "bg-muted/50 text-foreground",
   },
-  { value: "other", label: "Other", color: "bg-gray-100 text-gray-800" },
+  { value: "other", label: "Other", color: "bg-muted/50 text-foreground" },
 ];
 
 function asRecord(value: unknown): Record<string, unknown> {
@@ -555,7 +555,7 @@ export function BattleBoardEditorClient({
                   <TableBody>
                     {boardData.timeline.map((item, index) => (
                       <TableRow
-                        className={item.hl ? "bg-yellow-50" : ""}
+                        className={item.hl ? "bg-muted/50 border border-hairline" : ""}
                         key={index}
                       >
                         <TableCell>

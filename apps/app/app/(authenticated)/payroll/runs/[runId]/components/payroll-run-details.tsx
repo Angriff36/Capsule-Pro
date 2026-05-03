@@ -91,9 +91,9 @@ export default function PayrollRunDetails({ run }: PayrollRunDetailsProps) {
             <div className="space-y-1">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">Net Pay</span>
-                <DollarSignIcon className="h-4 w-4 text-green-600" />
+                <DollarSignIcon className="h-4 w-4 text-primary" />
               </div>
-              <p className="font-bold text-2xl text-green-600">
+              <p className="font-bold text-2xl text-primary">
                 {formatCurrency(run.totalNet)}
               </p>
             </div>
@@ -181,7 +181,7 @@ export default function PayrollRunDetails({ run }: PayrollRunDetailsProps) {
           <CardContent>
             <div className="grid gap-4 md:grid-cols-2">
               {run.approvedAt && (
-                <div className="rounded-md bg-green-50 dark:bg-green-950/20 p-4">
+                <div className="rounded-md bg-muted/50 p-4 border border-hairline">
                   <p className="text-muted-foreground text-sm mb-1">
                     Approved On
                   </p>
@@ -189,7 +189,7 @@ export default function PayrollRunDetails({ run }: PayrollRunDetailsProps) {
                 </div>
               )}
               {run.paidAt && (
-                <div className="rounded-md bg-blue-50 dark:bg-blue-950/20 p-4">
+                <div className="rounded-md bg-muted/50 p-4 border border-hairline">
                   <p className="text-muted-foreground text-sm mb-1">Paid On</p>
                   <p className="font-medium">{formatDate(run.paidAt)}</p>
                 </div>

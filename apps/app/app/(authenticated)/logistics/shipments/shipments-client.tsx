@@ -78,35 +78,35 @@ const STATUS_CONFIG: Record<
     icon: React.ComponentType<{ className?: string }>;
   }
 > = {
-  draft: { label: "Draft", color: "bg-gray-100 text-gray-700", icon: Package },
+  draft: { label: "Draft", color: "bg-muted/50 text-foreground", icon: Package },
   scheduled: {
     label: "Scheduled",
-    color: "bg-blue-100 text-blue-700",
+    color: "bg-muted/50 text-foreground",
     icon: Calendar,
   },
   preparing: {
     label: "Preparing",
-    color: "bg-amber-100 text-amber-700",
+    color: "bg-muted/50 text-foreground",
     icon: Clock,
   },
   in_transit: {
     label: "In Transit",
-    color: "bg-purple-100 text-purple-700",
+    color: "bg-muted/50 text-foreground",
     icon: Truck,
   },
   delivered: {
     label: "Delivered",
-    color: "bg-green-100 text-green-700",
+    color: "bg-muted/50 text-foreground",
     icon: CheckCircle2,
   },
   returned: {
     label: "Returned",
-    color: "bg-orange-100 text-orange-700",
+    color: "bg-muted/50 text-foreground",
     icon: AlertCircle,
   },
   cancelled: {
     label: "Cancelled",
-    color: "bg-red-100 text-red-700",
+    color: "bg-muted/50 text-foreground",
     icon: XCircle,
   },
 };

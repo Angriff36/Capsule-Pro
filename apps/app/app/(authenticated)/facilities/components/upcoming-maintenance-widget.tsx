@@ -97,13 +97,13 @@ export function UpcomingMaintenanceWidget({
   };
 
   const frequencyColors: Record<string, string> = {
-    daily: "bg-blue-100 text-blue-700",
-    weekly: "bg-cyan-100 text-cyan-700",
-    biweekly: "bg-teal-100 text-teal-700",
-    monthly: "bg-green-100 text-green-700",
-    quarterly: "bg-yellow-100 text-yellow-700",
-    semiannual: "bg-orange-100 text-orange-700",
-    annual: "bg-purple-100 text-purple-700",
+    daily: "bg-muted/50 text-foreground",
+    weekly: "bg-muted/50 text-foreground",
+    biweekly: "bg-muted/50 text-foreground",
+    monthly: "bg-muted/50 text-foreground",
+    quarterly: "bg-muted/50 text-foreground",
+    semiannual: "bg-muted/50 text-foreground",
+    annual: "bg-muted/50 text-foreground",
   };
 
   if (loading) {
@@ -188,11 +188,11 @@ export function UpcomingMaintenanceWidget({
 
               return (
                 <div
-                  className="flex items-center justify-between p-2 rounded-lg border bg-gray-50/50"
+                  className="flex items-center justify-between p-2 rounded-lg border bg-muted/20"
                   key={schedule.id}
                 >
                   <div className="flex items-center gap-2 min-w-0">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-blue-600">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted/50 text-muted-foreground">
                       <Wrench className="h-4 w-4" />
                     </div>
                     <div className="min-w-0">
@@ -219,7 +219,7 @@ export function UpcomingMaintenanceWidget({
                   <Badge
                     className={
                       frequencyColors[schedule.frequency] ||
-                      "bg-gray-100 text-gray-700"
+                      "bg-muted/20 text-muted-foreground"
                     }
                   >
                     {schedule.frequency}

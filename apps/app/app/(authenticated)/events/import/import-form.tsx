@@ -455,7 +455,7 @@ export function ImportForm() {
                   <div
                     className={`flex flex-col gap-1 rounded-lg border p-3 ${
                       result.battleBoardId
-                        ? "border-green-500 bg-green-50 dark:bg-green-950"
+                        ? "border-green-500 bg-muted/50"
                         : "border-muted"
                     }`}
                   >
@@ -481,7 +481,7 @@ export function ImportForm() {
                   <div
                     className={`flex flex-col gap-1 rounded-lg border p-3 ${
                       result.checklistId
-                        ? "border-green-500 bg-green-50 dark:bg-green-950"
+                        ? "border-green-500 bg-muted/50"
                         : "border-muted"
                     }`}
                   >

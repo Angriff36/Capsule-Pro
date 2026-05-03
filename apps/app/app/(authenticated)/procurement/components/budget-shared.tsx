@@ -130,7 +130,7 @@ export const UtilizationBar = ({
           </span>
         )}
       </div>
-      <div className="h-2 bg-gray-200 rounded-full overflow-hidden relative">
+      <div className="h-2 bg-muted/50 rounded-full overflow-hidden relative">
         {/* Warning threshold marker */}
         <div
           className="absolute top-0 h-full w-0.5 bg-amber-300 z-10"

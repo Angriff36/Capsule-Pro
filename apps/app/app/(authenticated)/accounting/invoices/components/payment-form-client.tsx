@@ -206,8 +206,8 @@ export function PaymentFormClient({
               <button
                 className={`flex items-center gap-2 p-3 border rounded-lg text-left transition-colors ${
                   methodType === method.value
-                    ? "border-blue-500 bg-blue-50"
-                    : "border-gray-200 hover:border-gray-300"
+                    ? "border-primary bg-muted/50"
+                    : "border-muted hover:border-muted-foreground"
                 }`}
                 key={method.value}
                 onClick={() => setMethodType(method.value)}

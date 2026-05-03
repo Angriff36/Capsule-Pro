@@ -364,8 +364,8 @@ export const ChartOfAccountsClient = () => {
                         <Badge
                           className={
                             account.is_active
-                              ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
-                              : "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200"
+                              ? "bg-muted/20 text-foreground"
+                              : "bg-muted/20 text-muted-foreground"
                           }
                           variant="outline"
                         >
@@ -383,7 +383,7 @@ export const ChartOfAccountsClient = () => {
                           </Button>
                           {account.is_active && (
                             <Button
-                              className="text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50"
+                              className="text-muted-foreground hover:text-foreground hover:bg-muted/20"
                               onClick={() => confirmDeactivate(account)}
                               size="sm"
                               variant="ghost"
@@ -450,7 +450,7 @@ export const ChartOfAccountsClient = () => {
         <DialogContent>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <AlertTriangle className="size-5 text-yellow-600" />
+              <AlertTriangle className="size-5 text-muted-foreground" />
               Deactivate Account?
             </DialogTitle>
             <DialogDescription>

@@ -532,11 +532,11 @@ export function BulkTaskGeneratorTab() {
 
       {/* Warnings */}
       {data?.warnings && data.warnings.length > 0 && (
-        <Card className="border-amber-200 bg-amber-50/50">
+        <Card className="border-hairline bg-muted/50">
           <CardContent className="p-4">
             {data.warnings.map((w, i) => (
               <div
-                className="flex items-center gap-2 text-sm text-amber-800"
+                className="flex items-center gap-2 text-sm text-foreground"
                 key={i}
               >
                 <AlertTriangle className="h-4 w-4 shrink-0 text-amber-600" />

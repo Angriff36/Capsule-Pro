@@ -349,12 +349,12 @@ export default function NutritionLabelsPage() {
 
                 {/* Unknown Ingredients Warning */}
                 {nutritionLabel.unknownIngredients.length > 0 && (
-                  <div className="mt-4 p-2 bg-yellow-50 border border-yellow-200 rounded text-xs">
-                    <div className="flex items-center gap-1 text-yellow-800 font-medium mb-1">
+                  <div className="mt-4 p-2 bg-muted/50 border border-hairline rounded text-xs">
+                    <div className="flex items-center gap-1 text-foreground font-medium mb-1">
                       <AlertTriangle className="h-3 w-3" />
                       Missing nutrition data
                     </div>
-                    <p className="text-yellow-700">
+                    <p className="text-muted-foreground">
                       Could not calculate nutrition for:{" "}
                       {nutritionLabel.unknownIngredients.join(", ")}
                     </p>

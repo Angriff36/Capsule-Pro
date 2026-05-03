@@ -76,22 +76,22 @@ const STATUS_CONFIG: Record<
 > = {
   dispatched: {
     label: "Dispatched",
-    color: "bg-gray-100 text-gray-700",
+    color: "bg-muted/50 text-foreground",
     icon: Package,
   },
   in_transit: {
     label: "In Transit",
-    color: "bg-blue-100 text-blue-700",
+    color: "bg-muted/50 text-foreground",
     icon: Truck,
   },
   arriving: {
     label: "Preparing",
-    color: "bg-amber-100 text-amber-700",
+    color: "bg-muted/50 text-foreground",
     icon: Navigation,
   },
   delivered: {
     label: "Delivered",
-    color: "bg-green-100 text-green-700",
+    color: "bg-muted/50 text-foreground",
     icon: CheckCircle2,
   },
 };
@@ -125,7 +125,7 @@ function MiniMap({ deliveries }: { deliveries: ActiveDelivery[] }) {
     (1 - (lat - bounds.minLat) / (bounds.maxLat - bounds.minLat)) * 100;
 
   return (
-    <div className="relative w-full h-full bg-gradient-to-br from-blue-50 to-blue-100 dark:from-slate-900 dark:to-slate-800 rounded-lg overflow-hidden">
+    <div className="relative w-full h-full bg-gradient-to-br from-muted/20 to-muted/50 dark:from-slate-900 dark:to-slate-800 rounded-lg overflow-hidden">
       <svg
         className="absolute inset-0 w-full h-full"
         preserveAspectRatio="none"
@@ -439,7 +439,7 @@ export default function TrackingPage() {
                     <button
                       className={`w-full text-left rounded-lg border p-3 transition-colors ${
                         isSelected
-                          ? "border-blue-300 bg-blue-50 dark:bg-blue-950/30"
+                          ? "border-primary bg-muted/50"
                           : "hover:bg-accent"
                       }`}
                       key={delivery.id}

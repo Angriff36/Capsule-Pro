@@ -219,10 +219,10 @@ export default function InventoryImportPage() {
               <div>
                 <h4 className="mb-2 font-medium text-sm">Required Columns</h4>
                 <div className="flex flex-wrap gap-1.5">
-                  <span className="rounded bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700 dark:bg-red-950 dark:text-red-400">
+                  <span className="rounded bg-muted/50 px-2 py-0.5 text-xs font-medium text-foreground">
                     item_number *
                   </span>
-                  <span className="rounded bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700 dark:bg-red-950 dark:text-red-400">
+                  <span className="rounded bg-muted/50 px-2 py-0.5 text-xs font-medium text-foreground">
                     name *
                   </span>
                 </div>
@@ -261,7 +261,7 @@ export default function InventoryImportPage() {
                     "other",
                   ].map((cat) => (
                     <span
-                      className="rounded bg-blue-50 px-1.5 py-0.5 text-xs text-blue-700 dark:bg-blue-950 dark:text-blue-400"
+                      className="rounded bg-muted/50 px-1.5 py-0.5 text-xs text-foreground"
                       key={cat}
                     >
                       {cat}
@@ -281,7 +281,7 @@ export default function InventoryImportPage() {
                     "exempt",
                   ].map((status) => (
                     <span
-                      className="rounded bg-green-50 px-1.5 py-0.5 text-xs text-green-700 dark:bg-green-950 dark:text-green-400"
+                      className="rounded bg-muted/50 px-1.5 py-0.5 text-xs text-foreground"
                       key={status}
                     >
                       {status.replace("_", " ")}

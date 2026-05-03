@@ -541,9 +541,9 @@ export default function MobileTimeClockPage() {
 
       {/* Offline indicator banner */}
       {!isOnline && (
-        <div className="flex items-center justify-center gap-2 bg-amber-500 px-4 py-2">
-          <WifiOff className="h-4 w-4 text-white" />
-          <span className="font-medium text-white">
+        <div className="flex items-center justify-center gap-2 bg-muted/50 px-4 py-2 border-b border-hairline">
+          <WifiOff className="h-4 w-4 text-foreground" />
+          <span className="font-medium text-foreground">
             You're offline. Actions will sync when you reconnect.
           </span>
         </div>
@@ -551,7 +551,7 @@ export default function MobileTimeClockPage() {
 
       {/* Error banner */}
       {error && (
-        <div className="flex items-center justify-between gap-2 bg-rose-500 px-4 py-2">
+        <div className="flex items-center justify-between gap-2 bg-destructive px-4 py-2">
           <div className="flex items-center gap-2">
             <AlertCircle className="h-4 w-4 text-white" />
             <span className="font-medium text-white">{error}</span>
@@ -569,9 +569,9 @@ export default function MobileTimeClockPage() {
 
       {/* Sync queue indicator */}
       {offlineQueue.length > 0 && (
-        <div className="flex items-center justify-center gap-2 bg-blue-500 px-4 py-2">
-          <AlertCircle className="h-4 w-4 text-white" />
-          <span className="font-medium text-white">
+        <div className="flex items-center justify-center gap-2 bg-muted/50 px-4 py-2 border-b border-hairline">
+          <AlertCircle className="h-4 w-4 text-foreground" />
+          <span className="font-medium text-foreground">
             {offlineQueue.length} action{offlineQueue.length > 1 ? "s" : ""}{" "}
             pending sync
           </span>
@@ -588,7 +588,7 @@ export default function MobileTimeClockPage() {
             </div>
             <div className="flex items-center gap-2">
               {isOnline ? (
-                <span className="flex items-center gap-1 text-emerald-600 text-sm">
+                <span className="flex items-center gap-1 text-green-600 text-sm">
                   <Wifi className="h-3 w-3" />
                   Online
                 </span>
@@ -619,7 +619,7 @@ export default function MobileTimeClockPage() {
                     </span>
                   )}
                 </div>
-                <div className="font-bold text-4xl text-slate-900">
+                <div className="font-bold text-4xl text-foreground">
                   {clockedInDuration}
                 </div>
                 {isOnBreak && breakStartTime && (
@@ -632,8 +632,8 @@ export default function MobileTimeClockPage() {
             ) : (
               <div>
                 <div className="mb-2 flex items-center justify-center gap-2">
-                  <Clock className="h-6 w-6 text-slate-400" />
-                  <span className="font-bold text-2xl text-slate-500">
+                  <Clock className="h-6 w-6 text-muted-foreground" />
+                  <span className="font-bold text-2xl text-muted-foreground">
                     Clocked Out
                   </span>
                 </div>
@@ -791,9 +791,9 @@ export default function MobileTimeClockPage() {
 
             {/* Location Warning */}
             {locationWarning && (
-              <div className="flex items-center gap-2 rounded-lg bg-amber-50 p-3 text-amber-800">
-                <AlertCircle className="h-4 w-4" />
-                <span className="text-sm">{locationWarning}</span>
+              <div className="flex items-center gap-2 rounded-lg bg-muted/50 p-3 border border-hairline">
+                <AlertCircle className="h-4 w-4 text-foreground" />
+                <span className="text-sm text-foreground">{locationWarning}</span>
               </div>
             )}
           </div>

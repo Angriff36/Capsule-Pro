@@ -92,24 +92,22 @@ const DISPATCH_STATUS_CONFIG: Record<
 > = {
   unassigned: {
     label: "Unassigned",
-    color:
-      "bg-orange-100 text-orange-700 dark:bg-orange-950 dark:text-orange-400",
+    color: "bg-muted/50 text-foreground dark:bg-muted/50",
     icon: AlertCircle,
   },
   assigned: {
     label: "Assigned",
-    color: "bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-400",
+    color: "bg-muted/50 text-foreground dark:bg-muted/50",
     icon: User,
   },
   in_progress: {
     label: "In Progress",
-    color:
-      "bg-yellow-100 text-yellow-700 dark:bg-yellow-950 dark:text-yellow-400",
+    color: "bg-muted/50 text-foreground dark:bg-muted/50",
     icon: Truck,
   },
   complete: {
     label: "Complete",
-    color: "bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-400",
+    color: "bg-muted/50 text-foreground dark:bg-muted/50",
     icon: CheckCircle2,
   },
 };
@@ -411,7 +409,7 @@ export default function DispatchPage() {
                         className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50"
                         key={driver.id}
                       >
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-100 text-green-600 dark:bg-green-950 dark:text-green-400">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted/50 text-foreground dark:bg-muted/50">
                           <User className="h-4 w-4" />
                         </div>
                         <div className="flex-1 min-w-0">

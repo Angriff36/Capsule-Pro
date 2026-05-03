@@ -211,8 +211,8 @@ export function DependencyAnalysisDialog({
                       <div
                         className={`flex items-center justify-between border rounded-lg p-3 ${
                           dep.node.isDeleted
-                            ? "bg-orange-50 border-orange-200"
-                            : "bg-blue-50 border-blue-200"
+                            ? "bg-muted/50 border-hairline"
+                            : "bg-muted/20 border-hairline"
                         }`}
                         key={dep.node.id}
                       >
@@ -232,7 +232,7 @@ export function DependencyAnalysisDialog({
                           </div>
                         </div>
                         <Badge
-                          className={dep.node.isDeleted ? "bg-orange-100" : ""}
+                          className={dep.node.isDeleted ? "bg-muted/50" : ""}
                           variant={dep.node.isDeleted ? "secondary" : "default"}
                         >
                           {dep.node.isDeleted ? "Deleted" : "Active"}

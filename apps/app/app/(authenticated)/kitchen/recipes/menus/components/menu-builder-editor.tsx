@@ -31,27 +31,27 @@ export const COURSES = [
   {
     id: "appetizer",
     label: "Appetizer",
-    color: "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200",
+    color: "bg-muted/50 text-foreground",
   },
   {
     id: "main",
     label: "Main Course",
-    color: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
+    color: "bg-muted/50 text-foreground",
   },
   {
     id: "dessert",
     label: "Dessert",
-    color: "bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-200",
+    color: "bg-muted/50 text-foreground",
   },
   {
     id: "beverage",
     label: "Beverage",
-    color: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
+    color: "bg-muted/20 text-foreground",
   },
   {
     id: "side",
     label: "Side",
-    color: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
+    color: "bg-muted/20 text-foreground",
   },
 ] as const;
 

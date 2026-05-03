@@ -285,7 +285,7 @@ export default function PODetailPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{receiveProgress}%</div>
-            <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
+            <div className="w-full bg-muted/50 rounded-full h-2 mt-1">
               <div
                 className={`h-2 rounded-full ${receiveProgress === 100 ? "bg-green-500" : "bg-blue-500"}`}
                 style={{ width: `${receiveProgress}%` }}

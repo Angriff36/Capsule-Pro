@@ -543,7 +543,7 @@ export default function ScannerPage() {
                     </TableCell>
                     <TableCell>
                       <Badge
-                        className={`text-xs ${entry.found ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}
+                        className={`text-xs ${entry.found ? "bg-muted/50 text-foreground" : "bg-muted/50 text-foreground"}`}
                         variant="outline"
                       >
                         {entry.found ? "Found" : "Not Found"}

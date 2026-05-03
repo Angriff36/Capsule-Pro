@@ -585,9 +585,9 @@ function EventSummariesTab() {
 
           {/* Critical Info */}
           {summary.criticalInfo.length > 0 && (
-            <Card className="border-amber-200 bg-amber-50/50">
+            <Card className="border-hairline bg-muted/50">
               <CardHeader className="pb-3">
-                <CardTitle className="flex items-center gap-2 text-sm font-medium text-amber-800">
+                <CardTitle className="flex items-center gap-2 text-sm font-medium text-foreground">
                   <AlertTriangle className="h-4 w-4 text-amber-600" />
                   Critical Information
                 </CardTitle>
@@ -596,7 +596,7 @@ function EventSummariesTab() {
                 <ul className="space-y-2">
                   {summary.criticalInfo.map((info, i) => (
                     <li
-                      className="flex items-start gap-2 text-sm text-amber-900"
+                      className="flex items-start gap-2 text-sm text-foreground"
                       key={i}
                     >
                       <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-600" />

@@ -822,14 +822,14 @@ export function GuestManagement({ eventId }: GuestManagementProps) {
                         className={`flex items-start gap-2 rounded-md p-3 ${
                           conflict.severity === "critical"
                             ? "bg-destructive/10 border border-destructive/20"
-                            : "bg-amber-50 border border-amber-200 dark:bg-amber-950/50"
+                            : "bg-muted/20 border border-hairline"
                         }`}
                         key={index}
                       >
                         {conflict.severity === "critical" ? (
                           <AlertCircleIcon className="size-4 flex-shrink-0 mt-0.5 text-destructive" />
                         ) : (
-                          <AlertTriangleIcon className="size-4 flex-shrink-0 mt-0.5 text-amber-600" />
+                          <AlertTriangleIcon className="size-4 flex-shrink-0 mt-0.5 text-muted-foreground" />
                         )}
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium">
@@ -1431,14 +1431,14 @@ export function GuestManagement({ eventId }: GuestManagementProps) {
                       className={`flex items-start gap-2 rounded-md p-3 ${
                         conflict.severity === "critical"
                           ? "bg-destructive/10 border border-destructive/20"
-                          : "bg-amber-50 border border-amber-200 dark:bg-amber-950/50"
+                          : "bg-muted/20 border border-hairline"
                       }`}
                       key={index}
                     >
                       {conflict.severity === "critical" ? (
                         <AlertCircleIcon className="size-4 flex-shrink-0 mt-0.5 text-destructive" />
                       ) : (
-                        <AlertTriangleIcon className="size-4 flex-shrink-0 mt-0.5 text-amber-600" />
+                        <AlertTriangleIcon className="size-4 flex-shrink-0 mt-0.5 text-muted-foreground" />
                       )}
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium">

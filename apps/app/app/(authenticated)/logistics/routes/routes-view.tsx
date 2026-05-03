@@ -66,19 +66,19 @@ interface DeliveryRoute {
 }
 
 const statusColors: Record<string, string> = {
-  draft: "bg-gray-100 text-gray-700",
-  optimized: "bg-blue-100 text-blue-700",
-  in_progress: "bg-yellow-100 text-yellow-700",
-  completed: "bg-green-100 text-green-700",
-  cancelled: "bg-red-100 text-red-700",
+  draft: "bg-muted/50 text-foreground",
+  optimized: "bg-muted/50 text-foreground",
+  in_progress: "bg-muted/50 text-foreground",
+  completed: "bg-muted/50 text-foreground",
+  cancelled: "bg-muted/50 text-foreground",
 };
 
 const stopStatusColors: Record<string, string> = {
-  pending: "bg-gray-100 text-gray-600",
-  in_transit: "bg-blue-100 text-blue-600",
-  arrived: "bg-yellow-100 text-yellow-600",
-  completed: "bg-green-100 text-green-600",
-  skipped: "bg-red-100 text-red-600",
+  pending: "bg-muted/50 text-foreground",
+  in_transit: "bg-muted/50 text-foreground",
+  arrived: "bg-muted/50 text-foreground",
+  completed: "bg-muted/50 text-foreground",
+  skipped: "bg-muted/50 text-foreground",
 };
 
 export function RoutesView() {

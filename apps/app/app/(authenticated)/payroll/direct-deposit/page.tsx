@@ -322,8 +322,8 @@ export default function DirectDepositPage() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <Landmark className="h-4 w-4 text-blue-700" />
+              <div className="p-2 bg-muted/50 rounded-lg">
+                <Landmark className="h-4 w-4 text-foreground" />
               </div>
               <div>
                 <p className="text-2xl font-bold">{totalAccounts}</p>
@@ -335,8 +335,8 @@ export default function DirectDepositPage() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <CheckCircle2 className="h-4 w-4 text-green-700" />
+              <div className="p-2 bg-muted/50 rounded-lg">
+                <CheckCircle2 className="h-4 w-4 text-foreground" />
               </div>
               <div>
                 <p className="text-2xl font-bold">{verifiedAccounts}</p>
@@ -348,8 +348,8 @@ export default function DirectDepositPage() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-amber-100 rounded-lg">
-                <Clock className="h-4 w-4 text-amber-700" />
+              <div className="p-2 bg-muted/50 rounded-lg">
+                <Clock className="h-4 w-4 text-foreground" />
               </div>
               <div>
                 <p className="text-2xl font-bold">{pendingAccounts}</p>
@@ -363,8 +363,8 @@ export default function DirectDepositPage() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-purple-100 rounded-lg">
-                <Users className="h-4 w-4 text-purple-700" />
+              <div className="p-2 bg-muted/50 rounded-lg">
+                <Users className="h-4 w-4 text-foreground" />
               </div>
               <div>
                 <p className="text-2xl font-bold">{directDepositEmployees}</p>
@@ -445,16 +445,12 @@ export default function DirectDepositPage() {
                       <div
                         className={`p-3 rounded-xl ${
                           account.status === "verified"
-                            ? "bg-green-50"
-                            : "bg-amber-50"
-                        }`}
+                            ? "bg-muted/50"
+                            : "bg-muted/20"
+                        } border border-hairline`}
                       >
                         <Landmark
-                          className={`h-5 w-5 ${
-                            account.status === "verified"
-                              ? "text-green-600"
-                              : "text-amber-600"
-                          }`}
+                          className={`h-5 w-5 text-foreground`}
                         />
                       </div>
                       <div className="min-w-0">
@@ -474,8 +470,8 @@ export default function DirectDepositPage() {
                           <Badge
                             className={
                               account.status === "verified"
-                                ? "bg-green-50 text-green-700"
-                                : "bg-amber-50 text-amber-700"
+                                ? "bg-muted/50 text-foreground"
+                                : "bg-muted/50 text-foreground"
                             }
                             variant={
                               account.status === "verified"
@@ -610,8 +606,8 @@ export default function DirectDepositPage() {
 
           <div className="space-y-4 py-2">
             {!(editingAccount || selectedEmployeeId) && (
-              <div className="rounded-lg border border-amber-200 bg-amber-50 p-3">
-                <div className="flex items-center gap-2 text-amber-800 text-sm">
+              <div className="rounded-lg border border-hairline bg-muted/50 p-3">
+                <div className="flex items-center gap-2 text-foreground text-sm">
                   <AlertTriangle className="h-4 w-4" />
                   Select an employee from the filter above before adding an
                   account.
@@ -762,7 +758,7 @@ export default function DirectDepositPage() {
             </div>
 
             {verifyMethod === "micro_deposit" && (
-              <div className="rounded-lg bg-muted p-3 text-xs text-muted-foreground">
+              <div className="rounded-lg bg-muted/20 p-3 border border-hairline text-xs text-muted-foreground">
                 Two small deposits (under $1.00) will be sent to this account.
                 The employee should verify the amounts in their bank statement.
               </div>

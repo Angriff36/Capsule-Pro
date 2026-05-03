@@ -475,7 +475,7 @@ export default function VendorsPage() {
             >
               <CardContent className="p-4">
                 <div className="flex items-center gap-4">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 text-blue-700">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted/50 text-foreground">
                     <Building2 className="h-5 w-5" />
                   </div>
                   <div className="flex-1 min-w-0">

@@ -333,7 +333,7 @@ export default function TaxSetupPage() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-red-100 text-red-600">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted/50 text-foreground">
                     <DollarSign className="h-5 w-5" />
                   </div>
                   <div>
@@ -358,8 +358,8 @@ export default function TaxSetupPage() {
             </CardHeader>
             <CardContent className="space-y-6">
               {brackets && (
-                <div className="p-3 bg-blue-50 dark:bg-blue-950/30 rounded-lg">
-                  <div className="flex items-center gap-2 text-sm text-blue-700 dark:text-blue-300">
+                <div className="p-3 bg-muted/20 rounded-lg border border-hairline">
+                  <div className="flex items-center gap-2 text-sm text-foreground">
                     <TrendingUp className="h-4 w-4" />
                     <span>
                       Tax Year {brackets.taxYear} — Brackets &amp; Standard
@@ -441,7 +441,7 @@ export default function TaxSetupPage() {
           <Card>
             <CardHeader>
               <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-100 text-green-600">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted/50 text-foreground">
                   <Shield className="h-5 w-5" />
                 </div>
                 <div>
@@ -552,7 +552,7 @@ export default function TaxSetupPage() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-100 text-purple-600">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted/50 text-foreground">
                     <Settings className="h-5 w-5" />
                   </div>
                   <div>
@@ -652,7 +652,7 @@ export default function TaxSetupPage() {
           <Card>
             <CardHeader>
               <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-100 text-amber-600">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted/50 text-foreground">
                   <Calculator className="h-5 w-5" />
                 </div>
                 <div>
@@ -816,15 +816,15 @@ export default function TaxSetupPage() {
       </Tabs>
 
       {/* Employee W-4 Note */}
-      <Card className="border-amber-200 bg-amber-50 dark:bg-amber-950/20">
+      <Card className="border border-hairline bg-muted/20">
         <CardContent className="pt-6">
           <div className="flex items-start gap-3">
-            <CheckCircle2 className="h-5 w-5 text-amber-600 mt-0.5" />
+            <CheckCircle2 className="h-5 w-5 text-primary mt-0.5" />
             <div>
-              <h3 className="font-medium text-amber-900 dark:text-amber-100">
+              <h3 className="font-medium text-foreground">
                 Employee W-4 Required
               </h3>
-              <p className="text-sm text-amber-700 dark:text-amber-300 mt-1">
+              <p className="text-sm text-muted-foreground mt-1">
                 Each employee&apos;s filing status and allowances are configured
                 in their profile. Tax withholding calculations use employee W-4
                 information during payroll processing. The payroll engine

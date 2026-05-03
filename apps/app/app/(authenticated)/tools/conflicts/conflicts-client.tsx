@@ -516,16 +516,16 @@ export function ConflictsClient() {
 
             {/* Warnings from detectors */}
             {result?.warnings && result.warnings.length > 0 && (
-              <Card className="border-amber-200 bg-amber-50/50">
+              <Card className="border-hairline bg-muted/50">
                 <CardContent className="p-4">
                   <div className="flex items-start gap-2">
                     <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
                     <div className="space-y-1">
-                      <p className="text-sm font-medium text-amber-800">
+                      <p className="text-sm font-medium text-foreground">
                         Some detectors had issues
                       </p>
                       {result.warnings.map((w, i) => (
-                        <p className="text-xs text-amber-700" key={i}>
+                        <p className="text-xs text-muted-foreground" key={i}>
                           {w.message}
                         </p>
                       ))}

@@ -1,6 +1,6 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@repo/design-system/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -8,7 +8,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from "@repo/design-system/components/ui/table";
 import type { UnifiedRequest } from "./page";
 
 const STATUS_COLOR: Record<string, "default" | "secondary" | "destructive" | "outline"> = {

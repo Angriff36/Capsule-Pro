@@ -333,7 +333,7 @@ export function PaymentListClient() {
       <Card className="overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="border-b bg-gray-50">
+            <thead className="border-b bg-muted/20">
               <tr>
                 {columns.map((col) => (
                   <th
@@ -347,7 +347,7 @@ export function PaymentListClient() {
             </thead>
             <tbody>
               {payments.map((payment) => (
-                <tr className="border-b hover:bg-gray-50" key={payment.id}>
+                <tr className="border-b hover:bg-muted/20" key={payment.id}>
                   {columns.map((col) => (
                     <td className="px-4 py-3" key={col.key}>
                       {col.render
