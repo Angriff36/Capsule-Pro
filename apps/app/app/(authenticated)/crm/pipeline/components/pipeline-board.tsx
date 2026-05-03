@@ -59,37 +59,37 @@ const STAGES: StageColumn[] = [
     id: "lead",
     title: "Lead",
     description: "New unqualified opportunities",
-    color: "bg-slate-100 dark:bg-slate-800",
+    color: "bg-muted/20 dark:bg-muted/20",
   },
   {
     id: "qualified",
     title: "Qualified",
     description: "Proposal sent to client",
-    color: "bg-blue-50 dark:bg-blue-950",
+    color: "bg-muted/20 dark:bg-muted/20",
   },
   {
     id: "proposal",
     title: "Proposal",
     description: "Client has viewed the proposal",
-    color: "bg-purple-50 dark:bg-purple-950",
+    color: "bg-muted/20 dark:bg-muted/20",
   },
   {
     id: "negotiation",
     title: "Negotiation",
     description: "Accepted, finalizing terms",
-    color: "bg-amber-50 dark:bg-amber-950",
+    color: "bg-muted/20 dark:bg-muted/20",
   },
   {
     id: "won",
     title: "Won",
     description: "Fully closed and confirmed",
-    color: "bg-green-50 dark:bg-green-950",
+    color: "bg-muted/20 dark:bg-muted/20",
   },
   {
     id: "lost",
     title: "Lost",
     description: "Proposal rejected or lost",
-    color: "bg-red-50 dark:bg-red-950",
+    color: "bg-muted/20 dark:bg-muted/20",
   },
 ];
 

@@ -58,11 +58,11 @@ export interface DragState {
 }
 
 export const TASK_STATUS_COLORS = {
-  not_started: "bg-slate-100 text-slate-700 border-slate-300",
-  in_progress: "bg-blue-50 text-blue-700 border-blue-300",
-  completed: "bg-green-50 text-green-700 border-green-300",
-  delayed: "bg-red-50 text-red-700 border-red-300",
-  blocked: "bg-orange-50 text-orange-700 border-orange-300",
+  not_started: "bg-muted/20 text-muted-foreground border-muted/50",
+  in_progress: "bg-muted/20 text-muted-foreground border-muted/50",
+  completed: "bg-muted/20 text-muted-foreground border-muted/50",
+  delayed: "bg-muted/20 text-muted-foreground border-muted/50",
+  blocked: "bg-muted/20 text-muted-foreground border-muted/50",
 } as const;
 
 export const TASK_STATUS_ICONS = {

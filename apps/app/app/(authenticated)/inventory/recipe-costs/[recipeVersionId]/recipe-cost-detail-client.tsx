@@ -319,7 +319,7 @@ export const RecipeCostDetailClient = ({
 
       {/* Scaled Cost Display */}
       {scaledCost && (
-        <Card className="border-blue-200 bg-blue-50 dark:bg-blue-950">
+        <Card className="border-primary bg-muted/20 dark:bg-muted/20">
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
               <ScaleIcon className="h-5 w-5" />
@@ -340,7 +340,7 @@ export const RecipeCostDetailClient = ({
               <div className="text-2xl">→</div>
               <div>
                 <p className="text-sm text-muted-foreground">Scaled Cost</p>
-                <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                <p className="text-2xl font-bold text-foreground">
                   {formatCurrency(scaledCost.scaled)}
                 </p>
               </div>
@@ -435,7 +435,7 @@ export const RecipeCostDetailClient = ({
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-2">
-                        <div className="w-16 bg-gray-200 rounded-full h-2">
+                        <div className="w-16 bg-muted/50 rounded-full h-2">
                           <div
                             className="bg-blue-600 h-2 rounded-full"
                             style={{

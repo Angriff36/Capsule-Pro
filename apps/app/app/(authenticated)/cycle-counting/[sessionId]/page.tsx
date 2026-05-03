@@ -188,7 +188,7 @@ export default async function SessionPage({
           ) : (
             <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
               <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+                <thead className="bg-muted/20">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Item Number
@@ -209,7 +209,7 @@ export default async function SessionPage({
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {records.map((record: CycleCountRecord) => (
-                    <tr className="hover:bg-gray-50" key={record.id}>
+                    <tr className="hover:bg-muted/20" key={record.id}>
                       <td className="px-6 py-4 whitespace-nowrap text-sm">
                         {record.itemNumber}
                       </td>

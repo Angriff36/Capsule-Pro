@@ -89,7 +89,7 @@ export function AssignmentSuggestionCard({
           </div>
         </div>
         {/* Score Bar */}
-        <div className="mt-2 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+        <div className="mt-2 h-2 bg-muted/50 dark:bg-gray-700 rounded-full overflow-hidden">
           <div
             className={`h-full ${getScoreBarColor(score)} transition-all duration-300`}
             style={{ width: getScoreBarWidth(score) }}

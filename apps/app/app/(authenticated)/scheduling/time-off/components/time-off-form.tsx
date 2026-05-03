@@ -506,14 +506,14 @@ export function TimeOffForm({
       )}
 
       {(conflicts.hasShiftConflicts || conflicts.hasTimeOffConflicts) && (
-        <div className="rounded-lg border border-orange-200 bg-orange-50 p-4">
+        <div className="rounded-lg border border-hairline bg-muted/50 p-4">
           <div className="flex gap-2">
-            <AlertTriangle className="h-5 w-5 text-orange-600" />
+            <AlertTriangle className="h-5 w-5 text-foreground" />
             <div className="flex-1">
-              <h4 className="font-semibold text-orange-900">
+              <h4 className="font-semibold text-foreground">
                 Potential Conflicts Detected
               </h4>
-              <p className="text-sm text-orange-800 mt-1">
+              <p className="text-sm text-muted-foreground mt-1">
                 {conflicts.hasShiftConflicts &&
                   "This employee has scheduled shifts during the requested period."}
                 {conflicts.hasTimeOffConflicts &&
@@ -521,7 +521,7 @@ export function TimeOffForm({
               </p>
 
               {conflicts.conflictingShifts && (
-                <div className="mt-2 text-xs text-orange-700">
+                <div className="mt-2 text-xs text-muted-foreground">
                   <strong>Conflicting Shifts:</strong>
                   {conflicts.conflictingShifts.map((shift) => (
                     <div key={shift.id}>
@@ -533,7 +533,7 @@ export function TimeOffForm({
               )}
 
               {conflicts.conflictingTimeOff && (
-                <div className="mt-2 text-xs text-orange-700">
+                <div className="mt-2 text-xs text-muted-foreground">
                   <strong>Conflicting Time-Off:</strong>
                   {conflicts.conflictingTimeOff.map((request) => (
                     <div key={request.id}>
@@ -553,7 +553,7 @@ export function TimeOffForm({
                   }
                 />
                 <Label
-                  className="text-sm text-orange-900"
+                  className="text-sm text-foreground"
                   htmlFor="requestAnyway"
                 >
                   Request Anyway (supervisor approval required)
@@ -565,17 +565,17 @@ export function TimeOffForm({
       )}
 
       {/* Information Banner */}
-      <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
+      <div className="rounded-lg border border-hairline bg-muted/20 p-4">
         <div className="flex gap-2">
-          <Info className="h-5 w-5 text-blue-600" />
+          <Info className="h-5 w-5 text-foreground" />
           <div className="flex-1">
-            <h4 className="font-semibold text-blue-900">Request Processing</h4>
-            <p className="text-sm text-blue-800 mt-1">
+            <h4 className="font-semibold text-foreground">Request Processing</h4>
+            <p className="text-sm text-muted-foreground mt-1">
               Time-off requests require manager approval. You'll receive
               notifications via email when your request is reviewed.
             </p>
             {duration > 0 && (
-              <p className="text-sm text-blue-800 mt-2">
+              <p className="text-sm text-muted-foreground mt-2">
                 <strong>Total request duration:</strong> {duration}{" "}
                 {duration === 1 ? "business day" : "business days"}
               </p>

@@ -72,21 +72,21 @@ const _getTypeBadgeVariant = (
 const getTypeColor = (type: TimeOffType): string => {
   switch (type) {
     case "VACATION":
-      return "bg-blue-100 text-blue-800 border-blue-200";
+      return "bg-muted/50 text-foreground border border-hairline";
     case "SICK_LEAVE":
-      return "bg-red-100 text-red-800 border-red-200";
+      return "bg-muted/50 text-foreground border border-hairline";
     case "PERSONAL_DAY":
-      return "bg-purple-100 text-purple-800 border-purple-200";
+      return "bg-muted/50 text-foreground border border-hairline";
     case "BEREAVEMENT":
-      return "bg-gray-100 text-gray-800 border-gray-200";
+      return "bg-muted/50 text-foreground border border-hairline";
     case "MATERNITY_LEAVE":
-      return "bg-pink-100 text-pink-800 border-pink-200";
+      return "bg-muted/50 text-foreground border border-hairline";
     case "PATERNITY_LEAVE":
-      return "bg-green-100 text-green-800 border-green-200";
+      return "bg-muted/50 text-foreground border border-hairline";
     case "OTHER":
-      return "bg-gray-100 text-gray-800 border-gray-200";
+      return "bg-muted/50 text-foreground border border-hairline";
     default:
-      return "bg-gray-100 text-gray-800 border-gray-200";
+      return "bg-muted/50 text-foreground border border-hairline";
   }
 };
 
@@ -253,7 +253,7 @@ export function TimeOffDetailModal({
 
           <div className="flex flex-col gap-6">
             {/* Employee Info */}
-            <div className="flex items-start gap-4 p-4 border rounded-lg bg-muted/30">
+            <div className="flex items-start gap-4 p-4 border rounded-lg bg-muted/20">
               <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
                 <UserIcon className="h-6 w-6 text-primary" />
               </div>
@@ -309,7 +309,7 @@ export function TimeOffDetailModal({
             </div>
 
             {/* Status */}
-            <div className="p-4 border rounded-lg bg-muted/30">
+            <div className="p-4 border rounded-lg bg-muted/20">
               <p className="text-sm text-muted-foreground mb-2">Status</p>
               <div className="flex items-center gap-2">
                 <Badge variant={getStatusBadgeVariant(timeOffRequest.status)}>
@@ -320,7 +320,7 @@ export function TimeOffDetailModal({
 
             {/* Reason */}
             {timeOffRequest.reason && (
-              <div className="p-4 border rounded-lg bg-muted/30">
+              <div className="p-4 border rounded-lg bg-muted/20">
                 <p className="text-sm text-muted-foreground mb-1">Reason</p>
                 <p className="text-sm">{timeOffRequest.reason}</p>
               </div>
@@ -329,11 +329,11 @@ export function TimeOffDetailModal({
             {/* Rejection Reason */}
             {timeOffRequest.status === "REJECTED" &&
               timeOffRequest.rejection_reason && (
-                <div className="p-4 border rounded-lg bg-red-50 border-red-200">
+                <div className="p-4 border rounded-lg bg-muted/50">
                   <p className="text-sm text-muted-foreground mb-1">
                     Rejection Reason
                   </p>
-                  <p className="text-sm text-red-800">
+                  <p className="text-sm text-foreground">
                     {timeOffRequest.rejection_reason}
                   </p>
                 </div>

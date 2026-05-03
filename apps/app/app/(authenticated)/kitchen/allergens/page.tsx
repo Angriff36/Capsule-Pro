@@ -636,7 +636,7 @@ export default function AllergenManagementPage() {
                                   </Badge>
                                 )}
                               </div>
-                              <div className="text-sm text-muted-foreground mt-2 p-2 bg-yellow-50 dark:bg-yellow-950 border border-yellow-200 dark:border-yellow-800 rounded">
+                              <div className="text-sm text-muted-foreground mt-2 p-2 bg-muted/50 border border-hairline rounded">
                                 <strong>Note:</strong> Recipe allergen
                                 management is not available. Allergens are
                                 managed at the dish level.

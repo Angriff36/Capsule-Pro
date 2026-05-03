@@ -305,7 +305,7 @@ export function BulkAssignmentModal({
         {hasData && !loading && (
           <>
             {/* Summary */}
-            <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
+            <div className="flex items-center justify-between p-4 bg-muted/20 rounded-lg border border-hairline">
               <div className="flex gap-6">
                 <div>
                   <div className="text-sm text-muted-foreground">
@@ -317,7 +317,7 @@ export function BulkAssignmentModal({
                   <div className="text-sm text-muted-foreground">
                     Auto-Assignable
                   </div>
-                  <div className="text-2xl font-bold text-green-600">
+                  <div className="text-2xl font-bold text-primary">
                     {data.summary.canAutoAssign}
                   </div>
                 </div>
@@ -333,7 +333,7 @@ export function BulkAssignmentModal({
                   <div className="text-sm text-muted-foreground">
                     No Suggestions
                   </div>
-                  <div className="text-2xl font-bold text-red-600">
+                  <div className="text-2xl font-bold text-muted-foreground">
                     {data.summary.noSuggestions}
                   </div>
                 </div>
@@ -431,7 +431,7 @@ export function BulkAssignmentModal({
                       </div>
                       <div className="flex items-center gap-2">
                         {canAutoAssign && (
-                          <Badge className="bg-green-100 text-green-800 border-green-200">
+                          <Badge className="bg-muted/50 text-foreground border border-hairline">
                             Auto-Ready
                           </Badge>
                         )}
@@ -446,7 +446,7 @@ export function BulkAssignmentModal({
 
                     {/* Expanded Content */}
                     {isExpanded && (
-                      <div className="p-3 border-t bg-muted/30">
+                      <div className="p-3 border-t bg-muted/20">
                         {result.laborBudgetWarning && (
                           <Alert className="mb-3" variant="destructive">
                             <AlertTriangleIcon className="h-4 w-4" />

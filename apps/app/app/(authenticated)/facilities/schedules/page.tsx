@@ -179,13 +179,13 @@ export default function SchedulesPage() {
   };
 
   const frequencyColors: Record<string, string> = {
-    daily: "bg-blue-100 text-blue-800",
-    weekly: "bg-cyan-100 text-cyan-800",
-    biweekly: "bg-teal-100 text-teal-800",
-    monthly: "bg-green-100 text-green-800",
-    quarterly: "bg-yellow-100 text-yellow-800",
-    semiannual: "bg-orange-100 text-orange-800",
-    annual: "bg-purple-100 text-purple-800",
+    daily: "bg-muted/50 text-foreground",
+    weekly: "bg-muted/50 text-foreground",
+    biweekly: "bg-muted/50 text-foreground",
+    monthly: "bg-muted/50 text-foreground",
+    quarterly: "bg-muted/50 text-foreground",
+    semiannual: "bg-muted/50 text-foreground",
+    annual: "bg-muted/50 text-foreground",
   };
 
   const now = new Date();
@@ -330,10 +330,10 @@ export default function SchedulesPage() {
                       <button
                         className={`
                           min-h-[80px] p-1 rounded-lg border text-left transition-colors
-                          ${isCurrentMonth ? "bg-white" : "bg-gray-50 text-muted-foreground"}
-                          ${isCurrentDay ? "ring-2 ring-primary" : "border-gray-200"}
+                          ${isCurrentMonth ? "bg-white" : "bg-muted/20 text-muted-foreground"}
+                          ${isCurrentDay ? "ring-2 ring-primary" : "border-hairline"}
                           ${isSelected ? "bg-primary/10 border-primary" : ""}
-                          hover:border-gray-300
+                          hover:border-hairline
                         `}
                         key={day.toISOString()}
                         onClick={() => setSelectedDate(day)}
@@ -349,7 +349,7 @@ export default function SchedulesPage() {
                               className={`text-[10px] px-1 py-0.5 rounded truncate ${
                                 hasOverdue
                                   ? "bg-red-100 text-red-700"
-                                  : "bg-blue-100 text-blue-700"
+                                  : "bg-muted/50 text-foreground"
                               }`}
                               key={s.id}
                               title={s.title}
@@ -390,14 +390,14 @@ export default function SchedulesPage() {
                       const isOverdue = new Date(s.nextDueAt) < now;
                       return (
                         <div
-                          className={`p-2 rounded border ${isOverdue ? "border-red-300 bg-red-50" : "border-gray-200"}`}
+                          className={`p-2 rounded border ${isOverdue ? "border-red-300 bg-red-50" : "border-hairline"}`}
                           key={s.id}
                         >
                           <div className="font-medium text-sm">{s.title}</div>
                           <div className="flex items-center gap-2 mt-1">
                             <Badge
                               className={
-                                frequencyColors[s.frequency] || "bg-gray-100"
+                                frequencyColors[s.frequency] || "bg-muted/20"
                               }
                             >
                               {s.frequency}
@@ -469,7 +469,7 @@ export default function SchedulesPage() {
                           Frequency
                         </span>
                         <span
-                          className={`text-xs px-2 py-1 rounded ${frequencyColors[schedule.frequency] || "bg-gray-100"}`}
+                          className={`text-xs px-2 py-1 rounded ${frequencyColors[schedule.frequency] || "bg-muted/20"}`}
                         >
                           {schedule.frequency}
                         </span>

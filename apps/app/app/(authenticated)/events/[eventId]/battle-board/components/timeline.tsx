@@ -797,7 +797,7 @@ export function Timeline({
 
                   {taskConflicts && (
                     <Badge
-                      className="absolute -top-1 -right-1 border-orange-300 bg-orange-50 px-1.5 py-0 text-orange-700 text-xs"
+                      className="absolute -top-1 -right-1 border-muted/50 bg-muted/50 px-1.5 py-0 text-foreground text-xs"
                       variant="outline"
                     >
                       CONFLICT

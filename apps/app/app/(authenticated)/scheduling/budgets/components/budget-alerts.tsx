@@ -289,7 +289,7 @@ export function BudgetAlerts() {
                       <div className="flex gap-1">
                         {alert.is_resolved && (
                           <Badge
-                            className="bg-green-50 text-green-700"
+                            className="bg-muted/50 text-foreground"
                             variant="outline"
                           >
                             Resolved
@@ -297,7 +297,7 @@ export function BudgetAlerts() {
                         )}
                         {alert.is_acknowledged && !alert.is_resolved && (
                           <Badge
-                            className="bg-blue-50 text-blue-700"
+                            className="bg-muted/50 text-foreground"
                             variant="outline"
                           >
                             Acknowledged
@@ -305,7 +305,7 @@ export function BudgetAlerts() {
                         )}
                         {!(alert.is_acknowledged || alert.is_resolved) && (
                           <Badge
-                            className="bg-red-50 text-red-700"
+                            className="bg-muted/50 text-foreground"
                             variant="outline"
                           >
                             New

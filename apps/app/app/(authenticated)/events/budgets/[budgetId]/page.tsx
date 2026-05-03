@@ -56,12 +56,12 @@ export const metadata: Metadata = {
 // ---------------------------------------------------------------------------
 
 const CATEGORY_COLORS: Record<string, string> = {
-  venue: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100",
-  catering: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-100",
-  beverages: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-100",
-  labor: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100",
-  equipment: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100",
-  other: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100",
+  venue: "bg-muted/50 text-foreground dark:bg-muted/50 dark:text-foreground",
+  catering: "bg-muted/50 text-foreground dark:bg-muted/50 dark:text-foreground",
+  beverages: "bg-muted/50 text-foreground dark:bg-muted/50 dark:text-foreground",
+  labor: "bg-muted/50 text-foreground dark:bg-muted/50 dark:text-foreground",
+  equipment: "bg-muted/50 text-foreground dark:bg-muted/50 dark:text-foreground",
+  other: "bg-muted/50 text-foreground dark:bg-muted/50 dark:text-foreground",
 };
 
 function fmtCurrency(amount: number): string {

@@ -42,7 +42,7 @@ function getRetentionColor(value: number): string {
     return "bg-amber-300/60";
   }
   if (value > 0) {
-    return "bg-amber-200/50";
+    return "bg-amber-500/80";
   }
   return "bg-muted/50";
 }
@@ -128,7 +128,7 @@ export function CohortAnalysis({ data, className }: CohortAnalysisProps) {
             <span>40-79%</span>
           </div>
           <div className="flex items-center gap-1">
-            <div className="h-3 w-3 rounded bg-amber-200/50" />
+            <div className="h-3 w-3 rounded bg-amber-500/80" />
             <span>&lt;40%</span>
           </div>
         </div>

@@ -54,11 +54,11 @@ interface PrepList {
 }
 
 const stationColors: Record<string, string> = {
-  "Hot Line": "border-orange-200 bg-orange-50 text-orange-900",
-  "Cold Station": "border-cyan-200 bg-cyan-50 text-cyan-900",
-  Pastry: "border-amber-200 bg-amber-50 text-amber-900",
+  "Hot Line": "border-hairline bg-muted/50 text-foreground",
+  "Cold Station": "border-hairline bg-muted/20 text-foreground",
+  Pastry: "border-hairline bg-muted/50 text-foreground",
   Prep: "border-hairline bg-soft-stone text-ink",
-  "Garde Manger": "border-emerald-200 bg-emerald-50 text-emerald-900",
+  "Garde Manger": "border-hairline bg-muted/20 text-foreground",
 };
 
 function getPrepDateLabel(date: string): { label: string; isUrgent: boolean } {

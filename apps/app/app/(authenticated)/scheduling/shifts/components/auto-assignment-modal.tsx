@@ -243,13 +243,13 @@ export function AutoAssignmentModal({
 
             {/* Quick Actions */}
             {data.canAutoAssign && data.bestMatch && (
-              <div className="flex items-center gap-2 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-700">
-                <CheckIcon className="h-5 w-5 text-green-600" />
+              <div className="flex items-center gap-2 p-3 bg-muted/20 rounded-lg border border-hairline">
+                <CheckIcon className="h-5 w-5 text-primary" />
                 <div className="flex-1">
-                  <div className="font-medium text-green-900 dark:text-green-100">
+                  <div className="font-medium text-foreground">
                     High Confidence Match Available
                   </div>
-                  <div className="text-sm text-green-700 dark:text-green-300">
+                  <div className="text-sm text-muted-foreground">
                     {formatEmployeeName(data.bestMatch.employee)} is the best
                     fit with a score of {Math.round(data.bestMatch.score)}
                   </div>

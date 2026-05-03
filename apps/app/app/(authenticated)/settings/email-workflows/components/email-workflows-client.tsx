@@ -149,8 +149,8 @@ export function EmailWorkflowsClient() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="p-4">
           <div className="flex items-center gap-3">
-            <div className="rounded-md bg-blue-100 p-2 dark:bg-blue-900/30">
-              <MailIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+            <div className="rounded-md bg-muted/50 p-2">
+              <MailIcon className="h-5 w-5 text-foreground" />
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Total Workflows</p>
@@ -160,8 +160,8 @@ export function EmailWorkflowsClient() {
         </Card>
         <Card className="p-4">
           <div className="flex items-center gap-3">
-            <div className="rounded-md bg-green-100 p-2 dark:bg-green-900/30">
-              <ZapIcon className="h-5 w-5 text-green-600 dark:text-green-400" />
+            <div className="rounded-md bg-muted/50 p-2">
+              <ZapIcon className="h-5 w-5 text-foreground" />
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Active</p>
@@ -171,8 +171,8 @@ export function EmailWorkflowsClient() {
         </Card>
         <Card className="p-4">
           <div className="flex items-center gap-3">
-            <div className="rounded-md bg-gray-100 p-2 dark:bg-gray-800/30">
-              <PowerIcon className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+            <div className="rounded-md bg-muted/50 p-2">
+              <PowerIcon className="h-5 w-5 text-foreground" />
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Inactive</p>

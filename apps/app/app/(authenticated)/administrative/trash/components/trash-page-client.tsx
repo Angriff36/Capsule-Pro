@@ -362,12 +362,12 @@ export function TrashPageClient({
       "Shipment",
     ];
 
-    if (eventEntities.includes(entity)) return "bg-blue-100 text-blue-800";
-    if (clientEntities.includes(entity)) return "bg-purple-100 text-purple-800";
-    if (kitchenEntities.includes(entity)) return "bg-green-100 text-green-800";
+    if (eventEntities.includes(entity)) return "bg-muted/50 text-foreground";
+    if (clientEntities.includes(entity)) return "bg-muted/50 text-foreground";
+    if (kitchenEntities.includes(entity)) return "bg-muted/50 text-foreground";
     if (inventoryEntities.includes(entity))
-      return "bg-orange-100 text-orange-800";
-    return "bg-gray-100 text-gray-800";
+      return "bg-muted/50 text-foreground";
+    return "bg-muted/50 text-foreground";
   };
 
   const formatDate = (dateString: string) => {

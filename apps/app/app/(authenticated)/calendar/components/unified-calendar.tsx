@@ -196,10 +196,10 @@ function DroppableDayCell({
       className={`
         border rounded-lg transition-colors
         ${view === "day" ? "min-h-[500px] p-4" : "min-h-[120px] p-2"}
-        ${isCurrentMonth ? "bg-white" : "bg-gray-50"}
-        ${isCurrentDay ? "ring-2 ring-emerald-500" : "border-gray-200"}
-        ${isActiveTarget ? "ring-2 ring-blue-400 bg-blue-50" : ""}
-        hover:border-gray-300
+        ${isCurrentMonth ? "bg-white" : "bg-muted/20"}
+        ${isCurrentDay ? "ring-2 ring-emerald-500" : "border-hairline"}
+        ${isActiveTarget ? "ring-2 ring-blue-400 bg-muted/20" : ""}
+        hover:border-hairline
       `}
       ref={setNodeRef}
     >
@@ -585,10 +585,10 @@ export function UnifiedCalendar({
       </div>
 
       {/* Check Availability Bar */}
-      <div className="flex items-center gap-4 p-4 border-b bg-emerald-50/50">
+      <div className="flex items-center gap-4 p-4 border-b bg-muted/50">
         <div className="flex items-center gap-2">
-          <Search className="w-4 h-4 text-emerald-600" />
-          <span className="text-sm font-medium text-emerald-700">
+          <Search className="w-4 h-4 text-foreground" />
+          <span className="text-sm font-medium text-foreground">
             Check Availability:
           </span>
         </div>
@@ -649,7 +649,7 @@ export function UnifiedCalendar({
       </div>
 
       {/* Filters & Search */}
-      <div className="flex items-center gap-4 p-4 border-b bg-gray-50/50">
+      <div className="flex items-center gap-4 p-4 border-b bg-muted/20">
         <div className="flex items-center gap-2">
           <Filter className="w-4 h-4 text-gray-500" />
           <span className="text-sm text-gray-500">Filters:</span>
@@ -882,7 +882,7 @@ export function UnifiedCalendar({
           </DialogHeader>
 
           <div className="space-y-4">
-            <div className="p-4 bg-gray-50 rounded-lg space-y-3">
+            <div className="p-4 bg-muted/20 rounded-lg space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-500">Event:</span>
                 <span className="font-medium">
@@ -938,16 +938,16 @@ export function UnifiedCalendarSkeleton() {
   return (
     <div className="p-4 space-y-4">
       <div className="flex items-center justify-between">
-        <div className="h-8 w-48 bg-gray-200 rounded animate-pulse" />
+        <div className="h-8 w-48 bg-muted/50 rounded animate-pulse" />
         <div className="flex gap-2">
-          <div className="h-8 w-20 bg-gray-200 rounded animate-pulse" />
-          <div className="h-8 w-20 bg-gray-200 rounded animate-pulse" />
+          <div className="h-8 w-20 bg-muted/50 rounded animate-pulse" />
+          <div className="h-8 w-20 bg-muted/50 rounded animate-pulse" />
         </div>
       </div>
       <div className="grid grid-cols-7 gap-1">
         {[...new Array(7)].map((_, i) => (
           <div
-            className="h-8 bg-gray-200 rounded animate-pulse"
+            className="h-8 bg-muted/50 rounded animate-pulse"
             key={`header-${i}`}
           />
         ))}
@@ -955,12 +955,12 @@ export function UnifiedCalendarSkeleton() {
       <div className="grid grid-cols-7 gap-1 auto-rows-fr min-h-[600px]">
         {[...new Array(35)].map((_, i) => (
           <div
-            className="border rounded-lg p-2 bg-gray-50 animate-pulse"
+            className="border rounded-lg p-2 bg-muted/20 animate-pulse"
             key={`cell-${i}`}
           >
-            <div className="h-6 w-6 bg-gray-200 rounded mb-2" />
-            <div className="h-4 w-full bg-gray-200 rounded mb-1" />
-            <div className="h-4 w-2/3 bg-gray-200 rounded" />
+            <div className="h-6 w-6 bg-muted/50 rounded mb-2" />
+            <div className="h-4 w-full bg-muted/50 rounded mb-1" />
+            <div className="h-4 w-2/3 bg-muted/50 rounded" />
           </div>
         ))}
       </div>

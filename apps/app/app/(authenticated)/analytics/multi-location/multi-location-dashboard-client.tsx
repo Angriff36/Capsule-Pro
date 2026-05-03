@@ -500,9 +500,9 @@ function MultiLocationDashboardClient({
             <Card
               className={`transition-colors ${
                 benchmark.status === "below"
-                  ? "border-red-200 bg-red-50/50 dark:border-red-900/50 dark:bg-red-950/20"
+                  ? "border-red-500/50 bg-muted/50 dark:border-red-500/50"
                   : benchmark.status === "near"
-                    ? "border-yellow-200 bg-yellow-50/50 dark:border-yellow-900/50 dark:bg-yellow-950/20"
+                    ? "border-yellow-500/50 bg-muted/50 dark:border-yellow-500/50"
                     : ""
               }`}
               key={benchmark.id}
@@ -568,10 +568,10 @@ function MultiLocationDashboardClient({
                       <span
                         className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium ${
                           index === 0
-                            ? "bg-yellow-100 text-yellow-700"
+                            ? "bg-muted/50 text-foreground"
                             : index === 1
-                              ? "bg-gray-100 text-gray-600"
-                              : "bg-orange-100 text-orange-700"
+                              ? "bg-muted/20 text-muted-foreground"
+                              : "bg-muted/30 text-muted-foreground"
                         }`}
                       >
                         {index + 1}
@@ -612,10 +612,10 @@ function MultiLocationDashboardClient({
                       <span
                         className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium ${
                           index === 0
-                            ? "bg-yellow-100 text-yellow-700"
+                            ? "bg-muted/50 text-foreground"
                             : index === 1
-                              ? "bg-gray-100 text-gray-600"
-                              : "bg-orange-100 text-orange-700"
+                              ? "bg-muted/20 text-muted-foreground"
+                              : "bg-muted/30 text-muted-foreground"
                         }`}
                       >
                         {index + 1}
@@ -656,10 +656,10 @@ function MultiLocationDashboardClient({
                       <span
                         className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium ${
                           index === 0
-                            ? "bg-yellow-100 text-yellow-700"
+                            ? "bg-muted/50 text-foreground"
                             : index === 1
-                              ? "bg-gray-100 text-gray-600"
-                              : "bg-orange-100 text-orange-700"
+                              ? "bg-muted/20 text-muted-foreground"
+                              : "bg-muted/30 text-muted-foreground"
                         }`}
                       >
                         {index + 1}
@@ -700,10 +700,10 @@ function MultiLocationDashboardClient({
                       <span
                         className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium ${
                           index === 0
-                            ? "bg-yellow-100 text-yellow-700"
+                            ? "bg-muted/50 text-foreground"
                             : index === 1
-                              ? "bg-gray-100 text-gray-600"
-                              : "bg-orange-100 text-orange-700"
+                              ? "bg-muted/20 text-muted-foreground"
+                              : "bg-muted/30 text-muted-foreground"
                         }`}
                       >
                         {index + 1}

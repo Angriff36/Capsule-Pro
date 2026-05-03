@@ -160,7 +160,7 @@ function StationCard({
                           )}
                         </div>
                         {ingredient.dietarySubstitutions.length > 0 && (
-                          <div className="mt-2 rounded-md bg-amber-50 p-2 text-amber-800 text-xs">
+                          <div className="mt-2 rounded-md bg-muted/50 p-2 text-foreground text-xs">
                             <strong>Substitution:</strong>{" "}
                             {ingredient.dietarySubstitutions.join("; ")}
                           </div>

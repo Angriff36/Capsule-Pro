@@ -93,22 +93,22 @@ const statusConfig = {
     label: "In Progress",
     variant: "default" as const,
     icon: ChevronRight,
-    bgColor: "bg-blue-100",
-    textColor: "text-blue-600",
+    bgColor: "bg-muted/50",
+    textColor: "text-foreground",
   },
   done: {
     label: "Done",
     variant: "default" as const,
     icon: ChevronRight,
-    bgColor: "bg-emerald-100",
-    textColor: "text-emerald-600",
+    bgColor: "bg-muted/50",
+    textColor: "text-foreground",
   },
   completed: {
     label: "Completed",
     variant: "default" as const,
     icon: ChevronRight,
-    bgColor: "bg-emerald-100",
-    textColor: "text-emerald-600",
+    bgColor: "bg-muted/50",
+    textColor: "text-foreground",
   },
   cancelled: {
     label: "Cancelled",
@@ -137,12 +137,12 @@ function getInitials(
 
 function getAvatarColor(name: string): string {
   const colors = [
-    "bg-blue-100 text-blue-600",
-    "bg-emerald-100 text-emerald-600",
-    "bg-violet-100 text-violet-600",
-    "bg-amber-100 text-amber-600",
-    "bg-rose-100 text-rose-600",
-    "bg-cyan-100 text-cyan-600",
+    "bg-muted/50 text-foreground",
+    "bg-muted/20 text-foreground",
+    "bg-muted/50 text-muted-foreground",
+    "bg-muted/20 text-muted-foreground",
+    "bg-muted/50 text-foreground",
+    "bg-muted/20 text-foreground",
   ];
   const index = name.charCodeAt(0) % colors.length;
   return colors[index];

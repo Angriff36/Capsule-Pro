@@ -105,7 +105,7 @@ function KitchenClock() {
 function WeatherWidget() {
   return (
     <div className="flex items-center gap-3 rounded-lg border border-hairline bg-card px-3 py-2">
-      <div className="flex items-center gap-1.5 text-amber-600">
+      <div className="flex items-center gap-1.5 text-foreground">
         <Sun className="h-5 w-5" />
       </div>
       <div className="hidden sm:block">
@@ -187,22 +187,22 @@ function StatsSidebar({
       label: "Completed",
       value: completedTasks,
       icon: CheckCircle2,
-      color: "text-emerald-600",
-      bgColor: "bg-emerald-100",
+      color: "text-foreground",
+      bgColor: "bg-muted/50",
     },
     {
       label: "In Progress",
       value: inProgressTasks,
       icon: Clock3,
-      color: "text-blue-600",
-      bgColor: "bg-blue-100",
+      color: "text-foreground",
+      bgColor: "bg-muted/20",
     },
     {
       label: "My Tasks",
       value: myTasks,
       icon: UserIcon,
-      color: "text-violet-600",
-      bgColor: "bg-violet-100",
+      color: "text-foreground",
+      bgColor: "bg-muted/50",
     },
   ];
 
@@ -509,7 +509,7 @@ export function ProductionBoardClient({
                   count={pendingTasks.length}
                   currentUserId={currentUserId}
                   icon={Circle}
-                  iconColor="bg-amber-100 text-amber-600"
+                  iconColor="bg-muted/50 text-foreground"
                   tasks={pendingTasks}
                   title="Pending"
                 />
@@ -517,7 +517,7 @@ export function ProductionBoardClient({
                   count={inProgressTasks.length}
                   currentUserId={currentUserId}
                   icon={Clock3}
-                  iconColor="bg-blue-100 text-blue-600"
+                  iconColor="bg-muted/20 text-foreground"
                   tasks={inProgressTasks}
                   title="In Progress"
                 />
@@ -525,7 +525,7 @@ export function ProductionBoardClient({
                   count={completedTasks.length}
                   currentUserId={currentUserId}
                   icon={CheckCircle2}
-                  iconColor="bg-emerald-100 text-emerald-600"
+                  iconColor="bg-muted/50 text-foreground"
                   tasks={completedTasks}
                   title="Completed"
                 />

@@ -36,10 +36,10 @@ const TYPE_LABELS: Record<FieldType, string> = {
 };
 
 const TYPE_COLORS: Record<FieldType, string> = {
-  quantitative: "bg-blue-100 text-blue-800",
-  nominal: "bg-green-100 text-green-800",
-  ordinal: "bg-amber-100 text-amber-800",
-  temporal: "bg-purple-100 text-purple-800",
+  quantitative: "bg-muted/50 text-foreground",
+  nominal: "bg-muted/20 text-muted-foreground",
+  ordinal: "bg-muted/20 text-muted-foreground",
+  temporal: "bg-muted/20 text-muted-foreground",
 };
 
 /**
