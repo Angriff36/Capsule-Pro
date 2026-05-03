@@ -1068,11 +1068,250 @@ describe("Email Templates Policy Tests", () => {
 });
 
 describe("Email Templates Integration Tests", () => {
-  // These tests would require a real database connection
-  // Marked as integration tests to be run separately
-  it.todo("should create, update, and delete template in sequence");
-  it.todo("should handle concurrent updates to the same template");
-  it.todo("should verify EmailTemplateCreated event is emitted");
-  it.todo("should verify EmailTemplateUpdated event is emitted");
-  it.todo("should verify EmailTemplateDeleted event is emitted");
+  let listPOST: typeof import("@/app/api/collaboration/notifications/email/templates/route").POST;
+  let detailPUT: typeof import("@/app/api/collaboration/notifications/email/templates/[id]/route").PUT;
+  let detailDELETE: typeof import("@/app/api/collaboration/notifications/email/templates/[id]/route").DELETE;
+
+  beforeEach(async () => {
+    vi.clearAllMocks();
+
+    const listRoute = await import(
+      "@/app/api/collaboration/notifications/email/templates/route"
+    );
+    const detailRoute = await import(
+      "@/app/api/collaboration/notifications/email/templates/[id]/route"
+    );
+
+    listPOST = listRoute.POST;
+    detailPUT = detailRoute.PUT;
+    detailDELETE = detailRoute.DELETE;
+  });
+
+  it("should create, update, and delete template in sequence", async () => {
+    // Step 1: Create
+    const createdTemplate = createMockTemplate({
+      id: "seq-template-id",
+      name: "Sequence Template",
+    });
+    vi.mocked(executeManifestCommand).mockResolvedValue(
+      new Response(JSON.stringify({ data: createdTemplate }), { status: 201 })
+    );
+
+    const createRequest = createMockRequest(
+      "/api/collaboration/notifications/email/templates",
+      {
+        method: "POST",
+        body: {
+          name: "Sequence Template",
+          templateType: "welcome",
+          subject: "Sequence Subject",
+          body: "Sequence body",
+        },
+      }
+    );
+    await listPOST(createRequest);
+
+    expect(executeManifestCommand).toHaveBeenCalledWith(
+      createRequest,
+      expect.objectContaining({
+        entityName: "EmailTemplate",
+        commandName: "create",
+      })
+    );
+
+    // Step 2: Update
+    vi.clearAllMocks();
+    const updatedTemplate = createMockTemplate({
+      id: "seq-template-id",
+      name: "Updated Sequence Template",
+    });
+    vi.mocked(executeManifestCommand).mockResolvedValue(
+      new Response(JSON.stringify({ data: updatedTemplate }), { status: 200 })
+    );
+
+    const updateRequest = createMockRequest(
+      "/api/collaboration/notifications/email/templates/seq-template-id",
+      {
+        method: "PUT",
+        body: { name: "Updated Sequence Template", subject: "Updated Subject" },
+      }
+    );
+    const updateContext = createMockContext("seq-template-id");
+    await detailPUT(updateRequest, updateContext);
+
+    expect(executeManifestCommand).toHaveBeenCalledWith(
+      updateRequest,
+      expect.objectContaining({
+        entityName: "EmailTemplate",
+        commandName: "update",
+        params: { id: "seq-template-id" },
+      })
+    );
+
+    // Step 3: Delete
+    vi.clearAllMocks();
+    vi.mocked(executeManifestCommand).mockResolvedValue(
+      new Response(JSON.stringify({ success: true }), { status: 200 })
+    );
+
+    const deleteRequest = createMockRequest(
+      "/api/collaboration/notifications/email/templates/seq-template-id",
+      { method: "DELETE" }
+    );
+    const deleteContext = createMockContext("seq-template-id");
+    await detailDELETE(deleteRequest, deleteContext);
+
+    expect(executeManifestCommand).toHaveBeenCalledWith(
+      deleteRequest,
+      expect.objectContaining({
+        entityName: "EmailTemplate",
+        commandName: "softDelete",
+        params: { id: "seq-template-id" },
+      })
+    );
+  });
+
+  it("should handle concurrent updates to the same template", async () => {
+    vi.mocked(executeManifestCommand).mockResolvedValue(
+      new Response(
+        JSON.stringify({ data: createMockTemplate({ name: "Concurrent Update" }) }),
+        { status: 200 }
+      )
+    );
+
+    const updateRequest1 = createMockRequest(
+      `/api/collaboration/notifications/email/templates/${TEST_TEMPLATE_ID}`,
+      {
+        method: "PUT",
+        body: { name: "Update A", subject: "Subject A" },
+      }
+    );
+    const updateRequest2 = createMockRequest(
+      `/api/collaboration/notifications/email/templates/${TEST_TEMPLATE_ID}`,
+      {
+        method: "PUT",
+        body: { name: "Update B", subject: "Subject B" },
+      }
+    );
+    const context = createMockContext(TEST_TEMPLATE_ID);
+
+    const [response1, response2] = await Promise.all([
+      detailPUT(updateRequest1, context),
+      detailPUT(updateRequest2, context),
+    ]);
+
+    expect(response1.status).toBe(200);
+    expect(response2.status).toBe(200);
+    expect(executeManifestCommand).toHaveBeenCalledTimes(2);
+  });
+
+  it("should verify EmailTemplateCreated event is emitted", async () => {
+    const createdTemplate = createMockTemplate({ id: "event-template-id" });
+    vi.mocked(executeManifestCommand).mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          success: true,
+          data: {
+            result: createdTemplate,
+            events: [{ type: "EmailTemplateCreated" }],
+          },
+        }),
+        { status: 201 }
+      )
+    );
+
+    const request = createMockRequest(
+      "/api/collaboration/notifications/email/templates",
+      {
+        method: "POST",
+        body: {
+          name: "Event Template",
+          templateType: "welcome",
+          subject: "Event Subject",
+          body: "Event body",
+        },
+      }
+    );
+
+    const response = await listPOST(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(201);
+    expect(data.data.events).toBeDefined();
+    expect(data.data.events).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ type: "EmailTemplateCreated" }),
+      ])
+    );
+  });
+
+  it("should verify EmailTemplateUpdated event is emitted", async () => {
+    const updatedTemplate = createMockTemplate({
+      name: "Event Updated Template",
+    });
+    vi.mocked(executeManifestCommand).mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          success: true,
+          data: {
+            result: updatedTemplate,
+            events: [{ type: "EmailTemplateUpdated" }],
+          },
+        }),
+        { status: 200 }
+      )
+    );
+
+    const request = createMockRequest(
+      `/api/collaboration/notifications/email/templates/${TEST_TEMPLATE_ID}`,
+      {
+        method: "PUT",
+        body: { name: "Event Updated Template", subject: "Updated Subject" },
+      }
+    );
+    const context = createMockContext(TEST_TEMPLATE_ID);
+
+    const response = await detailPUT(request, context);
+    const data = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(data.data.events).toBeDefined();
+    expect(data.data.events).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ type: "EmailTemplateUpdated" }),
+      ])
+    );
+  });
+
+  it("should verify EmailTemplateDeleted event is emitted", async () => {
+    vi.mocked(executeManifestCommand).mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          success: true,
+          data: {
+            result: { id: TEST_TEMPLATE_ID },
+            events: [{ type: "EmailTemplateSoftDeleted" }],
+          },
+        }),
+        { status: 200 }
+      )
+    );
+
+    const request = createMockRequest(
+      `/api/collaboration/notifications/email/templates/${TEST_TEMPLATE_ID}`,
+      { method: "DELETE" }
+    );
+    const context = createMockContext(TEST_TEMPLATE_ID);
+
+    const response = await detailDELETE(request, context);
+    const data = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(data.data.events).toBeDefined();
+    expect(data.data.events).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ type: "EmailTemplateSoftDeleted" }),
+      ])
+    );
+  });
 });

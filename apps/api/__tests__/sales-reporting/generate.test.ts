@@ -29,7 +29,7 @@
 
 import { describe, it } from "vitest";
 
-// biome-ignore lint/suspicious/noSkippedTests: PDF generation requires browser APIs unavailable in test environment; core logic tested in sales-reporting package
+// biome-ignore lint/suspicious/noSkippedTests: PDF generation requires browser APIs unavailable in test environment; core logic tested in sales-reporting package — tracked in #36
 describe.skip("POST /api/sales-reporting/generate", () => {
   it("should generate PDF reports from CSV data", () => {
     // This test is skipped because:
