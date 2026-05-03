@@ -15,35 +15,35 @@ export interface POStatusConfig {
 }
 
 export const STATUS_CONFIG: Record<string, POStatusConfig> = {
-  draft: { label: "Draft", color: "bg-gray-100 text-gray-700", icon: FileText },
+  draft: { label: "Draft", color: "bg-muted/50 text-foreground", icon: FileText },
   submitted: {
     label: "Submitted",
-    color: "bg-blue-100 text-blue-700",
+    color: "bg-muted/50 text-foreground",
     icon: Clock,
   },
   approved: {
     label: "Approved",
-    color: "bg-indigo-100 text-indigo-700",
+    color: "bg-muted/50 text-foreground",
     icon: CheckCircle2,
   },
   ordered: {
     label: "Ordered",
-    color: "bg-purple-100 text-purple-700",
+    color: "bg-muted/50 text-foreground",
     icon: Truck,
   },
   received: {
     label: "Received",
-    color: "bg-green-100 text-green-700",
+    color: "bg-muted/50 text-foreground",
     icon: Package,
   },
   cancelled: {
     label: "Cancelled",
-    color: "bg-red-100 text-red-700",
+    color: "bg-muted/50 text-foreground",
     icon: XCircle,
   },
   rejected: {
     label: "Rejected",
-    color: "bg-orange-100 text-orange-700",
+    color: "bg-muted/50 text-foreground",
     icon: AlertTriangle,
   },
 };

@@ -271,10 +271,9 @@ interface EventTemplateSelectorProps {
 }
 
 const categoryColors = {
-  social: "bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-200",
-  corporate: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
-  specialty:
-    "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
+  social: "bg-muted/50 text-foreground",
+  corporate: "bg-muted/50 text-foreground",
+  specialty: "bg-muted/50 text-foreground",
 };
 
 export function EventTemplateSelector({

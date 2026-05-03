@@ -75,9 +75,9 @@ const SECTION_CONFIG: Record<
 };
 
 const COLOR_VARIANTS = {
-  blue: "bg-blue-50 border-blue-200 text-blue-900",
-  green: "bg-green-50 border-green-200 text-green-900",
-  orange: "bg-orange-50 border-orange-200 text-orange-900",
+  blue: "border border-hairline bg-muted/20 text-foreground",
+  green: "border border-hairline bg-muted/20 text-foreground",
+  orange: "border border-hairline bg-muted/20 text-foreground",
 } as const;
 
 const _SECTION_COLORS = {
@@ -534,7 +534,7 @@ export function TaskBreakdownDisplay({
       )}
 
       {isGenerating && (
-        <Card className="border-purple-200 bg-purple-50">
+        <Card className="border border-hairline bg-muted/20">
           <CardContent className="py-4">
             <div className="flex items-center gap-3">
               <Spinner className="size-5 text-purple-500" />

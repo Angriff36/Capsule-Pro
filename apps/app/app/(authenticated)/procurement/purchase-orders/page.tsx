@@ -139,8 +139,8 @@ export default function PurchaseOrdersPage() {
 
       {/* Tabs & List */}
       <Tabs onValueChange={setActiveTab} value={activeTab}>
-        <TabsList>
-          <TabsTrigger value="all">All ({orders.length})</TabsTrigger>
+        <TabsList className="rounded-[16px] border border-hairline bg-canvas p-1">
+          <TabsTrigger className="data-[state=active]:bg-ink data-[state=active]:text-white rounded-[12px] px-4 py-1.5 text-sm font-medium transition-colors" value="all">All ({orders.length})</TabsTrigger>
           {(
             [
               "submitted",
@@ -152,7 +152,7 @@ export default function PurchaseOrdersPage() {
           ).map((s) => {
             const count = orders.filter((o) => o.status === s).length;
             return count > 0 ? (
-              <TabsTrigger key={s} value={s}>
+              <TabsTrigger className="data-[state=active]:bg-ink data-[state=active]:text-white rounded-[12px] px-4 py-1.5 text-sm font-medium transition-colors" key={s} value={s}>
                 {STATUS_CONFIG[s].label} ({count})
               </TabsTrigger>
             ) : null;

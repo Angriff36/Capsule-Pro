@@ -92,7 +92,7 @@ export function OperationsSection({
               </div>
               {staffingMatches ? (
                 <Badge
-                  className="bg-green-100 text-green-800"
+                  className="bg-muted/50 text-foreground"
                   variant="secondary"
                 >
                   <CheckIcon className="h-3 w-3 mr-1" />
@@ -100,7 +100,7 @@ export function OperationsSection({
                 </Badge>
               ) : (
                 <Badge
-                  className="bg-amber-100 text-amber-800"
+                  className="bg-muted/50 text-foreground"
                   variant="secondary"
                 >
                   {currentStaffCount}/{totalSuggestedStaff} assigned
