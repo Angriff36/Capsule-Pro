@@ -178,25 +178,38 @@ const CrmPage = async () => {
       : "—",
   }));
 
-  const communications = recentCommunications.map((note) => {
-    const followUpDue =
-      note.follow_up_date &&
-      !note.follow_up_completed &&
-      note.follow_up_date <= now;
-    const status = note.follow_up_completed
-      ? "Resolved"
-      : followUpDue
-        ? "Needs follow-up"
-        : "Waiting reply";
+  const resolveCommStatus = (note: {
+    follow_up_completed: boolean;
+    follow_up_date: Date | null;
+  }): "Resolved" | "Needs follow-up" | "Waiting reply" => {
+    if (note.follow_up_completed) {
+      return "Resolved";
+    }
+    if (note.follow_up_date && note.follow_up_date <= now) {
+      return "Needs follow-up";
+    }
+    return "Waiting reply";
+  };
 
-    return {
-      id: note.id,
-      client: note.client_name || "Unknown client",
-      channel: note.interaction_type,
-      summary: note.subject || note.description || "Interaction logged.",
-      status,
-    };
-  });
+  const communications = recentCommunications.map((note) => ({
+    id: note.id,
+    client: note.client_name || "Unknown client",
+    channel: note.interaction_type,
+    summary: note.subject || note.description || "Interaction logged.",
+    status: resolveCommStatus(note),
+  }));
+
+  const commStatusVariant = (
+    status: "Resolved" | "Needs follow-up" | "Waiting reply"
+  ): "success" | "coral" | "secondary" => {
+    if (status === "Resolved") {
+      return "success";
+    }
+    if (status === "Needs follow-up") {
+      return "coral";
+    }
+    return "secondary";
+  };
 
   return (
     <PageCanvas>
@@ -214,6 +227,14 @@ const CrmPage = async () => {
             </CommandBandLede>
           </div>
           <CommandBandActions>
+            <Button
+              asChild
+              className="border-white/25 bg-transparent text-white hover:bg-white/10"
+              size="sm"
+              variant="outline"
+            >
+              <Link href="/crm/segmentation">Segments</Link>
+            </Button>
             <Button
               asChild
               className="border-white/25 bg-transparent text-white hover:bg-white/10"
@@ -314,15 +335,7 @@ const CrmPage = async () => {
                       <p className="font-medium text-ink text-sm">
                         {note.client}
                       </p>
-                      <Badge
-                        variant={
-                          note.status === "Resolved"
-                            ? "success"
-                            : note.status === "Needs follow-up"
-                              ? "coral"
-                              : "secondary"
-                        }
-                      >
+                      <Badge variant={commStatusVariant(note.status)}>
                         {note.status}
                       </Badge>
                     </div>
