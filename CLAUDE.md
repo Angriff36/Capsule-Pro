@@ -199,9 +199,6 @@ Last: [first session]
 
 ## Last Session Bridge
 [pre-compact bridge — saved before context compaction]
-Files (3):
-  specs/staffing/SPEC.md (create)
-  specs/contracts/SPEC.md (edit)
-  specs/marketing/SPEC.md (edit)
+(no changes or facts recorded in this session segment)
 
 # === END COGNILAYER ===

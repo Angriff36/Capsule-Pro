@@ -26,6 +26,17 @@
 
 ---
 
+## Recently remediated (2026-05-02 implementation pass — Opus #13)
+
+Implementation commits since pass #12:
+
+- **§4.4 DONE — per-event budget sub-route** — new server component at `apps/app/app/(authenticated)/events/[eventId]/budget/page.tsx` (3.5K lines source). Composes `PageCanvas + CommandBand + CommandBandHeader + CommandBandActions + CommandBandLede + CommandBandBody + MetricBand + MetricCell + DisplayHeading + MonoLabel + OperationalColumn + SectionHeader` from `@repo/design-system/components/blocks/page-shell`. Fetches the most-recent non-deleted budget version + line items via Prisma ORM (`database.eventBudget.findFirst` with `lineItems` include). Renders 4 hero metrics (Total Budget / Actual Spend / Variance / Line items), a status pill row, and a research-table style list of line items with category badges and signed variance coloring (`text-coral` over budget, `text-success` under). Empty state when no budget exists yet (links to `/events/budgets?eventId=`). UUID gating + `notFound()` follow the `[eventId]/page.tsx` pattern. **Discoverability:** added a `Budget` button next to `Waitlist` in the existing event-details Header. **Validation:** `pnpm --filter app typecheck` clean (exit 0); `pnpm dlx ultracite check` on the new file → 0 errors / 0 warnings after refactoring 2 nested ternaries into named branches.
+- **§4.27 NOT MISSING — re-verified 2026-05-02 #13** — `apps/app/app/(authenticated)/staff/mobile/timeclock/page.tsx` is a 26KB client component with full clock-in/clock-out / break / GPS-fingerprint flows. Was incorrectly carried in the §4 MISSING list; pass #6 had already noted it as PRESENT but the canonical MISSING list at line 304 / TX-priority §10 still listed it. **Net effect: §4 MISSING count drops 24 → 22** (this pass shipped §4.4; §4.27 was already shipped and only needed list correction).
+
+**Validation:** `pnpm --filter app typecheck` clean (exit 0). Lint clean on the 2 touched files. No schema or migration changes.
+
+---
+
 ## Recently remediated (2026-05-02 implementation pass — Opus)
 
 Implementation commits since `f64946fe4`. All §0 foundation sub-claims listed below are now PASS:
