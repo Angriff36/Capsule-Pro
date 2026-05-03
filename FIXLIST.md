@@ -1,6 +1,6 @@
 # Capsule Pro Fix List
 
-**Total broken: 99** (86 dead shells + 13 form-only)
+**Total broken: 98** (85 dead shells + 13 form-only)
 **Generated:** 2026-05-02 | **Auto-fix cron:** every 10 min
 
 | # | Module | Route | Type | Issue | Status |
@@ -12,7 +12,7 @@
 | 5 | administrative | `/administrative/chat` | 🟢 ✅ | Tenant-scoped operational chat page already wired to auth, Prisma employee lookup, and live client chat UI | ✅ 2026-05-03 |
 | 6 | analytics | `/analytics/kitchen` | 🟢 ✅ | Server-rendered tenant-scoped kitchen analytics dashboard with live prep, waste, prep-list, and recipe data | ✅ 2026-05-03 |
 | 7 | analytics | `/analytics/events` | 🟢 ✅ | Server-rendered event analytics dashboard with live tenant event, budget, invoice, payment, and report data | ✅ 2026-05-03 |
-| 8 | analytics | `/analytics/sales` | 🔴 ❌ | 5-line shell | TODO |
+| 8 | analytics | `/analytics/sales` | 🟢 ✅ | Server-rendered tenant-scoped sales analytics with live lead, proposal, invoice, and payment data | ✅ 2026-05-03 |
 | 9 | analytics | `/analytics/finance` | 🔴 ❌ | 19-line shell | TODO |
 | 10 | analytics | `/analytics/staff` | 🔴 ❌ | 9-line shell | TODO |
 | 11 | analytics | `/analytics/multi-location` | 🔴 ❌ | Static JSX | TODO |
