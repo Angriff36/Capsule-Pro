@@ -711,7 +711,7 @@ export function BudgetSection({
   });
 
   return (
-    <Card className="border-border/70 shadow-sm">
+    <Card className="border-border/70">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-3">
           <div>
@@ -915,7 +915,7 @@ export function SuggestionsSection({
     : "No recommendations generated";
 
   return (
-    <Card className="border-border/70 shadow-sm">
+    <Card className="border-border/70">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-3">
           <div>
@@ -1058,7 +1058,7 @@ export function PrepListsSection({ prepLists }: PrepListsSectionProps) {
   if (prepLists.length === 0) return null;
 
   return (
-    <Card className="border-border/70 shadow-sm">
+    <Card className="border-border/70">
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-base">
           <ListChecksIcon className="size-4 text-emerald-600" />
@@ -1116,7 +1116,7 @@ export function PrepTasksSection({
   onOpenGenerateModal,
 }: PrepTasksSectionProps) {
   return (
-    <Card className="border-border/70 shadow-sm">
+    <Card className="border-border/70">
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-base">
           <ClipboardListIcon className="size-4 text-sky-600" />

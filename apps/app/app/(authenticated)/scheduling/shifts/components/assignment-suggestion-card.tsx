@@ -50,7 +50,7 @@ export function AssignmentSuggestionCard({
 
   return (
     <Card
-      className={`transition-all cursor-pointer hover:shadow-md ${
+      className={`transition-all cursor-pointer hover:border-primary/40 ${
         selected ? "ring-2 ring-primary" : ""
       } ${isBestMatch ? "border-green-500 border-2" : ""}`}
       onClick={onSelect}

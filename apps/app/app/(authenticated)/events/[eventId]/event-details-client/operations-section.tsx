@@ -78,7 +78,7 @@ export function OperationsSection({
     <section className="space-y-4">
       {/* Template Staffing Suggestions */}
       {templateStaffing && templateName && (
-        <Card className="border-border/70 shadow-sm">
+        <Card className="border-border/70">
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <div>
@@ -170,7 +170,7 @@ export function OperationsSection({
         </Card>
       )}
 
-      <Card className="border-border/70 shadow-sm">
+      <Card className="border-border/70">
         <CardHeader className="pb-3">
           <CardTitle className="text-lg">Operations control</CardTitle>
           <CardDescription>

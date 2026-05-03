@@ -24,7 +24,7 @@ import { Textarea } from "@repo/design-system/components/ui/textarea";
 import { Loader2, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
-import { createFacilityArea } from "../../actions";
+import { createFacilityArea } from "../actions";
 import { FacilitiesNavigation } from "../components/facilities-navigation";
 
 export default function AreasPage() {
@@ -71,7 +71,7 @@ export default function AreasPage() {
         squareFeet: createForm.squareFeet
           ? Number.parseInt(createForm.squareFeet)
           : undefined,
-        notes: createForm.description || undefined,
+        description: createForm.description || undefined,
       });
       await loadAreas();
       setShowCreateDialog(false);
@@ -118,7 +118,7 @@ export default function AreasPage() {
       <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
         <div className="flex items-center justify-between">
           <div className="space-y-0.5">
-            <h1 className="text-3xl font-bold tracking-tight">
+            <h1 className="text-2xl font-semibold tracking-tight">
               Facility Areas
             </h1>
             <p className="text-muted-foreground">

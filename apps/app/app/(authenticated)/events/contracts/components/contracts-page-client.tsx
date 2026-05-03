@@ -393,7 +393,7 @@ export const ContractsPageClient = ({
                 href={`/events/contracts/${contract.id}`}
                 key={`${contract.tenantId}-${contract.id}`}
               >
-                <Card className="h-full transition hover:border-primary/40 hover:shadow-md">
+                <Card className="h-full transition hover:border-primary/40">
                   <CardHeader className="gap-2">
                     <div className="flex items-start justify-between gap-2">
                       <CardDescription className="flex items-center gap-1.5">

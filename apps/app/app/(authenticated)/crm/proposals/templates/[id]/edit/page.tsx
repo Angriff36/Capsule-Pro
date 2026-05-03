@@ -249,7 +249,7 @@ export default function EditProposalTemplatePage() {
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Edit Template</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">Edit Template</h1>
           <p className="text-muted-foreground">Modify this proposal template</p>
         </div>
       </div>

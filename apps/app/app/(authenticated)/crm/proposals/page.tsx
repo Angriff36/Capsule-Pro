@@ -31,7 +31,7 @@ export default async function ProposalsPage({
     <div className="flex flex-col gap-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Proposals</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">Proposals</h1>
           <p className="text-muted-foreground">
             Manage client proposals and event estimates
           </p>

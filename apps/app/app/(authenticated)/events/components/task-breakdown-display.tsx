@@ -140,7 +140,7 @@ function TaskCard({ task, section, onComplete, onAssign }: TaskCardProps) {
     <Card
       className={`transition-all duration-200 ${
         isCompleted ? "opacity-50" : ""
-      } hover:shadow-md`}
+      } hover:border-primary/40`}
     >
       <CardContent className="p-4">
         <div className="flex items-start gap-3">

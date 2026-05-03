@@ -22,7 +22,6 @@ import { Trash2, Wifi, WifiOff } from "lucide-react";
 import { useEffect, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
 import { Header } from "../../../components/header";
-import { createWasteEntry } from "@/app/(authenticated)/kitchen/actions";
 
 interface WasteReason {
   id: string;
@@ -259,7 +258,7 @@ export default function WasteLoggingMobilePage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <form action={createWasteEntry} className="space-y-4" onSubmit={handleSubmit}>
+            <form className="space-y-4" onSubmit={handleSubmit}>
               {/* Item Selection */}
               <div className="space-y-2">
                 <Label htmlFor="item">

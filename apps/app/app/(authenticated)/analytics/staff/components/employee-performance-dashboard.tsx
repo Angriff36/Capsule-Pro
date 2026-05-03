@@ -89,7 +89,7 @@ export function EmployeePerformanceDashboard({
       <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
         <div className="flex items-center justify-between">
           <div className="space-y-0.5">
-            <h2 className="text-3xl font-bold tracking-tight">
+            <h2 className="text-2xl font-semibold tracking-tight">
               {metrics.firstName} {metrics.lastName}
             </h2>
             <p className="text-sm text-muted-foreground">
@@ -446,7 +446,7 @@ export function EmployeePerformanceDashboard({
     <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
       <div className="flex items-center justify-between">
         <div className="space-y-0.5">
-          <h2 className="text-3xl font-bold tracking-tight">
+          <h2 className="text-2xl font-semibold tracking-tight">
             Employee Performance Dashboard
           </h2>
         </div>

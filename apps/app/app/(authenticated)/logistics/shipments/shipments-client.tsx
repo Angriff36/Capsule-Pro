@@ -401,7 +401,7 @@ export function ShipmentsClient() {
 
                 return (
                   <Card
-                    className="hover:shadow-sm transition-shadow"
+                    className="hover:border-primary/40 transition-shadow"
                     key={shipment.id}
                   >
                     <CardContent className="p-4">

@@ -141,7 +141,7 @@ const PayrollPayoutsPage = () => {
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div className="space-y-0.5">
-          <h1 className="text-3xl font-bold tracking-tight">Payouts</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">Payouts</h1>
           <p className="text-muted-foreground">
             Manage payout channels and statuses for payroll runs.
           </p>

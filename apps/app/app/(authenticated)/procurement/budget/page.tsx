@@ -265,7 +265,7 @@ export default function BudgetPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="space-y-0.5">
-          <h1 className="text-3xl font-bold tracking-tight">Budget Tracking</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">Budget Tracking</h1>
           <p className="text-muted-foreground">
             Track procurement spend against budget allocations.
           </p>
@@ -560,7 +560,7 @@ export default function BudgetPage() {
 
               return (
                 <Card
-                  className={`cursor-pointer transition-all ${isSelected ? "ring-2 ring-blue-500 shadow-md" : "hover:shadow-sm"}`}
+                  className={`cursor-pointer transition-all ${isSelected ? "ring-2 ring-blue-500 border-primary" : "hover:border-primary/40"}`}
                   key={budget.id}
                   onClick={() => loadDetail(budget.id)}
                 >

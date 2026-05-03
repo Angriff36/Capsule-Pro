@@ -56,7 +56,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
-import { createPMSchedule } from "../../actions";
+import { createPMSchedule } from "../actions";
 import { FacilitiesNavigation } from "../components/facilities-navigation";
 
 interface Schedule {
@@ -156,7 +156,7 @@ export default function SchedulesPage() {
         title: createForm.title,
         description: createForm.description || undefined,
         frequency: createForm.frequency,
-        nextDueAt: createForm.nextDueDate || new Date().toISOString(),
+        nextDueAt: createForm.nextDueDate || new Date().toISOString().split("T")[0],
         estimatedHours: createForm.estimatedHours
           ? Number.parseFloat(createForm.estimatedHours)
           : undefined,
@@ -230,7 +230,7 @@ export default function SchedulesPage() {
       <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
         <div className="flex items-center justify-between">
           <div className="space-y-0.5">
-            <h1 className="text-3xl font-bold tracking-tight">PM Schedules</h1>
+            <h1 className="text-2xl font-semibold tracking-tight">PM Schedules</h1>
             <p className="text-muted-foreground">
               Preventive maintenance scheduling and tracking.
             </p>

@@ -222,7 +222,7 @@ export default function DispatchPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="space-y-0.5">
-          <h1 className="text-3xl font-bold tracking-tight">Dispatch Board</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">Dispatch Board</h1>
           <p className="text-muted-foreground">
             Assign drivers to routes and track today&apos;s deliveries.
           </p>
@@ -284,7 +284,7 @@ export default function DispatchPage() {
                   <div className="space-y-3">
                     {routes.map((route) => (
                       <Card
-                        className="hover:shadow-sm transition-shadow"
+                        className="hover:border-primary/40 transition-shadow"
                         key={route.id}
                       >
                         <CardContent className="p-4">

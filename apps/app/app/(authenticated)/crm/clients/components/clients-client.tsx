@@ -332,7 +332,7 @@ export function ClientsClient() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Clients</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">Clients</h1>
           <p className="text-muted-foreground">
             Manage your client relationships and contact information.
           </p>

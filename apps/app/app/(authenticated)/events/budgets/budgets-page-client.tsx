@@ -200,7 +200,7 @@ export function BudgetsPageClient() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Event Budgets</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">Event Budgets</h1>
           <p className="text-muted-foreground">
             Manage and track event budgets with line items
           </p>

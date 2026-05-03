@@ -148,7 +148,7 @@ const TrainingModulePage = async ({ params }: TrainingModulePageProps) => {
           </Button>
         </Link>
         <div className="flex-1 space-y-0.5">
-          <h1 className="text-3xl font-bold tracking-tight">{module.title}</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">{module.title}</h1>
           <p className="text-muted-foreground">
             {module.description || "No description provided."}
           </p>

@@ -87,6 +87,7 @@ async function requireAuth() {
   invariant(orgId, "Unauthorized");
 
   const user = await auth();
+  invariant(user.userId, "Unauthorized");
   const tenantId = await getTenantId();
   return { tenantId, userId: user.userId };
 }

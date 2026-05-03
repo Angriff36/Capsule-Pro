@@ -114,7 +114,7 @@ export default function NewVenuePage() {
           </Link>
         </Button>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">New Venue</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">New Venue</h1>
           <p className="text-muted-foreground">
             Add a new venue to your portfolio.
           </p>

@@ -13,6 +13,42 @@ import { invariant } from "@/app/lib/invariant";
 import { getTenantId } from "@/app/lib/tenant";
 import { randomUUID } from "crypto";
 
+// ── Facility ────────────────────────────────────────────────────────────────
+
+export async function createFacility(formData: FormData) {
+  const { orgId } = await auth();
+  invariant(orgId, "Unauthorized");
+  const tenantId = await getTenantId();
+
+  const name = formData.get("name") as string;
+  const code = formData.get("code") as string | null;
+  const facilityType = formData.get("facilityType") as string | null;
+  const addressLine1 = formData.get("addressLine1") as string | null;
+  const city = formData.get("city") as string | null;
+  const state = formData.get("state") as string | null;
+  const postalCode = formData.get("postalCode") as string | null;
+  const phone = formData.get("phone") as string | null;
+  const notes = formData.get("notes") as string | null;
+
+  await database.facility.create({
+    data: {
+      tenantId,
+      name: name?.trim() || "Untitled Facility",
+      code: code?.trim() || null,
+      facilityType: facilityType || "kitchen",
+      addressLine1: addressLine1?.trim() || null,
+      city: city?.trim() || null,
+      state: state?.trim() || null,
+      postalCode: postalCode?.trim() || null,
+      phone: phone?.trim() || null,
+      notes: notes?.trim() || null,
+      status: "active",
+    },
+  });
+
+  revalidatePath("/facilities");
+}
+
 // ── FacilityArea ────────────────────────────────────────────────────────────
 
 export interface CreateFacilityAreaInput {

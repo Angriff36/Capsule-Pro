@@ -120,7 +120,7 @@ export default function NewClientPage() {
           </Link>
         </Button>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">New Client</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">New Client</h1>
           <p className="text-muted-foreground">Add a new client to your CRM.</p>
         </div>
       </div>

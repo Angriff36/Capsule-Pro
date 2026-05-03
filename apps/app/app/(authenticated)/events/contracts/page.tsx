@@ -167,7 +167,7 @@ const ContractsPage = async () => {
       <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
         {/* Page Header */}
         <div className="flex flex-col gap-1">
-          <h1 className="text-3xl font-bold tracking-tight">Contracts</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">Contracts</h1>
           <p className="text-muted-foreground">
             Manage event contracts, track signatures, and monitor expiration
             dates

@@ -102,7 +102,7 @@ const BattleBoardsPage = async () => {
       <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
         {/* Page Header */}
         <div className="flex flex-col gap-1">
-          <h1 className="text-3xl font-bold tracking-tight">Battle Boards</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">Battle Boards</h1>
           <p className="text-muted-foreground">
             Print-ready event staff assignments and operational timelines
           </p>
@@ -202,7 +202,7 @@ const BattleBoardsPage = async () => {
                     href={`/events/battle-boards/${board.id}`}
                     key={board.id}
                   >
-                    <Card className="h-full transition hover:border-primary/40 hover:shadow-md">
+                    <Card className="h-full transition hover:border-primary/40">
                       <CardHeader className="gap-1">
                         <CardDescription className="flex items-center justify-between gap-2">
                           <span className="truncate">

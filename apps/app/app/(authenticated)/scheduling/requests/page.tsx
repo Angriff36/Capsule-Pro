@@ -48,7 +48,7 @@ const SchedulingRequestsPage = () => {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Request Queue</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Request Queue</h1>
         <p className="text-muted-foreground">
           Approve shift swaps, time-off requests, and preference changes.
         </p>

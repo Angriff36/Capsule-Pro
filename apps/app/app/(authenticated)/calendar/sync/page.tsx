@@ -194,7 +194,7 @@ export default function CalendarSyncPage() {
               <ArrowLeft className="h-4 w-4" />
             </Button>
           </Link>
-          <h1 className="text-3xl font-bold tracking-tight">Calendar Sync</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">Calendar Sync</h1>
         </div>
         <p className="text-muted-foreground">
           Connect external calendars to import events automatically.

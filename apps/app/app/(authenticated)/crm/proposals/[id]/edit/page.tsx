@@ -125,7 +125,7 @@ export default async function EditProposalPage({
           </Link>
         </Button>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Edit Proposal</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">Edit Proposal</h1>
           <p className="text-muted-foreground">
             Update proposal details and pricing
           </p>

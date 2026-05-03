@@ -137,7 +137,7 @@ export default function NutritionLabelsPage() {
   return (
     <div className="container mx-auto py-8 px-4 max-w-6xl">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold flex items-center gap-2">
+        <h1 className="text-2xl font-semibold tracking-tight flex items-center gap-2">
           <FileText className="h-8 w-8" />
           Nutrition Labels
         </h1>

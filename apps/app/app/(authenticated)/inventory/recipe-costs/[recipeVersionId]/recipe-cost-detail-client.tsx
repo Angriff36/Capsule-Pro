@@ -240,7 +240,7 @@ export const RecipeCostDetailClient = ({
           </a>
         </Button>
         <div className="flex-1">
-          <h1 className="text-3xl font-bold">{recipe.name}</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">{recipe.name}</h1>
           {recipe.description && (
             <p className="text-muted-foreground mt-1">{recipe.description}</p>
           )}

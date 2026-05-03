@@ -83,7 +83,7 @@ export default function AllergenWarningTestPage() {
   return (
     <div className="container mx-auto max-w-4xl space-y-8 p-6">
       <div>
-        <h1 className="text-3xl font-bold">Allergen Warning Banner Tests</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Allergen Warning Banner Tests</h1>
         <p className="text-muted-foreground mt-2">
           Visual test page for allergen warning components
         </p>

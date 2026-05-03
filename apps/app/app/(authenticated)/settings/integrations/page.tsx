@@ -1548,7 +1548,7 @@ export default function IntegrationsSettingsPage() {
   return (
     <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
       <div className="space-y-0.5">
-        <h1 className="text-3xl font-bold tracking-tight">Integrations</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Integrations</h1>
         <p className="text-muted-foreground">
           Configure external services and data connections.
         </p>
