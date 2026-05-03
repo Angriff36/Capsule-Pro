@@ -27,15 +27,17 @@ import { Textarea } from "@repo/design-system/components/ui/textarea";
 import {
   CalendarIcon,
   CheckIcon,
+  FilterIcon,
   MailIcon,
   MessageSquareIcon,
   PencilIcon,
   PhoneIcon,
   PlusIcon,
+  SearchIcon,
   Trash2Icon,
   UserIcon,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import {
   createClientInteraction,
@@ -81,17 +83,23 @@ export function CommunicationsTab({ clientId }: CommunicationsTabProps) {
     followUpDate: "",
   });
 
-  const fetchInteractions = async () => {
+  const [filterType, setFilterType] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const fetchInteractions = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await getClientInteractions(clientId);
+      const data = await getClientInteractions(clientId, 50, 0, {
+        interactionType: filterType !== "all" ? filterType : undefined,
+        search: searchQuery || undefined,
+      });
       setInteractions(data.data);
     } catch (_error) {
       toast.error("Failed to load communications");
     } finally {
       setLoading(false);
     }
-  };
+  }, [clientId, filterType, searchQuery]);
 
   useEffect(() => {
     fetchInteractions();
@@ -122,9 +130,7 @@ export function CommunicationsTab({ clientId }: CommunicationsTabProps) {
 
   const handleEdit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedInteraction) {
-      return;
-    }
+    if (!selectedInteraction) return;
 
     setSubmitting(true);
     try {
@@ -149,9 +155,7 @@ export function CommunicationsTab({ clientId }: CommunicationsTabProps) {
   };
 
   const handleDelete = async () => {
-    if (!selectedInteraction) {
-      return;
-    }
+    if (!selectedInteraction) return;
 
     setSubmitting(true);
     try {
@@ -245,10 +249,7 @@ export function CommunicationsTab({ clientId }: CommunicationsTabProps) {
                   className="w-full h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"
                   id="interactionType"
                   onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      interactionType: e.target.value,
-                    })
+                    setFormData({ ...formData, interactionType: e.target.value })
                   }
                   required
                   value={formData.interactionType}
@@ -315,6 +316,44 @@ export function CommunicationsTab({ clientId }: CommunicationsTabProps) {
         </Dialog>
       </div>
 
+      {/* Filter and Search Bar */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+        <div className="flex items-center gap-2">
+          <FilterIcon className="h-4 w-4 text-muted-foreground" />
+          <div className="flex gap-1 flex-wrap">
+            <Button
+              onClick={() => setFilterType("all")}
+              size="sm"
+              variant={filterType === "all" ? "default" : "outline"}
+              className="h-7 text-xs"
+            >
+              All
+            </Button>
+            {INTERACTION_TYPES.map((type) => (
+              <Button
+                key={type.value}
+                onClick={() => setFilterType(type.value)}
+                size="sm"
+                variant={filterType === type.value ? "default" : "outline"}
+                className="h-7 text-xs"
+              >
+                <type.icon className="h-3 w-3 mr-1" />
+                {type.label}
+              </Button>
+            ))}
+          </div>
+        </div>
+        <div className="relative flex-1 max-w-xs">
+          <SearchIcon className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            className="pl-9 h-9"
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search subject or description..."
+            value={searchQuery}
+          />
+        </div>
+      </div>
+
       {loading ? (
         <div className="text-center py-8 text-muted-foreground">
           Loading communications...
@@ -324,16 +363,21 @@ export function CommunicationsTab({ clientId }: CommunicationsTabProps) {
           <CardContent className="flex flex-col items-center justify-center py-12 text-center">
             <MessageSquareIcon className="h-12 w-12 text-muted-foreground mb-4" />
             <h3 className="text-lg font-semibold mb-2">
-              No communications yet
+              {filterType !== "all" || searchQuery
+                ? "No matching communications"
+                : "No communications yet"}
             </h3>
             <p className="text-muted-foreground mb-4">
-              Log your first interaction with this client to start tracking your
-              communication history.
+              {filterType !== "all" || searchQuery
+                ? "Try adjusting your filters or search terms."
+                : "Log your first interaction with this client to start tracking your communication history."}
             </p>
-            <Button onClick={() => setDialogOpen(true)}>
-              <PlusIcon className="h-4 w-4 mr-2" />
-              Log First Interaction
-            </Button>
+            {filterType === "all" && !searchQuery && (
+              <Button onClick={() => setDialogOpen(true)}>
+                <PlusIcon className="h-4 w-4 mr-2" />
+                Log First Interaction
+              </Button>
+            )}
           </CardContent>
         </Card>
       ) : (
@@ -352,13 +396,10 @@ export function CommunicationsTab({ clientId }: CommunicationsTabProps) {
                           {getInteractionLabel(interaction.interactionType)}
                         </span>
                         <Badge className="text-xs" variant="outline">
-                          {new Date(
-                            interaction.interactionDate
-                          ).toLocaleDateString("en-US", {
-                            month: "short",
-                            day: "numeric",
-                            year: "numeric",
-                          })}
+                          {new Date(interaction.interactionDate).toLocaleDateString(
+                            "en-US",
+                            { month: "short", day: "numeric", year: "numeric" }
+                          )}
                         </Badge>
                       </div>
                       <div className="flex items-center gap-1">
@@ -395,13 +436,10 @@ export function CommunicationsTab({ clientId }: CommunicationsTabProps) {
                         <div className="flex items-center gap-1 text-xs text-muted-foreground">
                           <CalendarIcon className="h-3 w-3" />
                           Follow-up:{" "}
-                          {new Date(
-                            interaction.followUpDate
-                          ).toLocaleDateString("en-US", {
-                            month: "short",
-                            day: "numeric",
-                            year: "numeric",
-                          })}
+                          {new Date(interaction.followUpDate).toLocaleDateString(
+                            "en-US",
+                            { month: "short", day: "numeric", year: "numeric" }
+                          )}
                           {!interaction.followUpCompleted && (
                             <Badge className="ml-2 text-xs" variant="secondary">
                               Pending
@@ -444,10 +482,7 @@ export function CommunicationsTab({ clientId }: CommunicationsTabProps) {
                 className="w-full h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"
                 id="edit-interactionType"
                 onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    interactionType: e.target.value,
-                  })
+                  setFormData({ ...formData, interactionType: e.target.value })
                 }
                 required
                 value={formData.interactionType}

@@ -548,12 +548,105 @@ export async function createClientContact(
 }
 
 /**
- * Get client interactions
+ * Update a client contact
+ */
+export async function updateClientContact(
+  clientId: string,
+  contactId: string,
+  input: Partial<CreateClientContactInput>
+) {
+  const { orgId } = await auth();
+  invariant(orgId, "Unauthorized");
+
+  const tenantId = await getTenantId();
+  invariant(clientId, "Client ID is required");
+  invariant(contactId, "Contact ID is required");
+
+  const existing = await database.clientContact.findFirst({
+    where: {
+      AND: [{ tenantId }, { id: contactId }, { clientId }, { deletedAt: null }],
+    },
+  });
+  invariant(existing, "Contact not found");
+
+  if (input.isPrimary) {
+    await database.clientContact.updateMany({
+      where: {
+        AND: [{ tenantId }, { clientId }, { isPrimary: true }, { deletedAt: null }],
+      },
+      data: { isPrimary: false },
+    });
+  }
+
+  if (input.isBillingContact) {
+    await database.clientContact.updateMany({
+      where: {
+        AND: [{ tenantId }, { clientId }, { isBillingContact: true }, { deletedAt: null }],
+      },
+      data: { isBillingContact: false },
+    });
+  }
+
+  const contact = await database.clientContact.update({
+    where: { tenantId_id: { tenantId, id: contactId } },
+    data: {
+      ...(input.first_name !== undefined && { first_name: input.first_name.trim() }),
+      ...(input.last_name !== undefined && { last_name: input.last_name.trim() }),
+      ...(input.title !== undefined && { title: input.title?.trim() || null }),
+      ...(input.email !== undefined && { email: input.email?.trim() || null }),
+      ...(input.phone !== undefined && { phone: input.phone?.trim() || null }),
+      ...(input.isPrimary !== undefined && { isPrimary: input.isPrimary }),
+      ...(input.isBillingContact !== undefined && { isBillingContact: input.isBillingContact }),
+    },
+  });
+
+  revalidatePath(`/crm/clients/${clientId}`);
+  return contact;
+}
+
+/**
+ * Delete a client contact (soft delete)
+ */
+export async function deleteClientContact(
+  clientId: string,
+  contactId: string
+) {
+  const { orgId } = await auth();
+  invariant(orgId, "Unauthorized");
+
+  const tenantId = await getTenantId();
+  invariant(clientId, "Client ID is required");
+  invariant(contactId, "Contact ID is required");
+
+  const existing = await database.clientContact.findFirst({
+    where: {
+      AND: [{ tenantId }, { id: contactId }, { clientId }, { deletedAt: null }],
+    },
+  });
+  invariant(existing, "Contact not found");
+
+  await database.clientContact.update({
+    where: { tenantId_id: { tenantId, id: contactId } },
+    data: { deletedAt: new Date() },
+  });
+
+  revalidatePath(`/crm/clients/${clientId}`);
+  return { success: true };
+}
+
+export interface ClientInteractionFilters {
+  interactionType?: string;
+  search?: string;
+}
+
+/**
+ * Get client interactions with optional filtering
  */
 export async function getClientInteractions(
   clientId: string,
   limit = 50,
-  offset = 0
+  offset = 0,
+  filters: ClientInteractionFilters = {}
 ) {
   const { orgId } = await auth();
   invariant(orgId, "Unauthorized");
@@ -561,19 +654,35 @@ export async function getClientInteractions(
   const tenantId = await getTenantId();
   invariant(clientId, "Client ID is required");
 
+  const andConditions: Record<string, unknown>[] = [
+    { tenantId },
+    { clientId },
+    { deletedAt: null },
+  ];
+
+  if (filters.interactionType) {
+    andConditions.push({ interactionType: filters.interactionType });
+  }
+
+  if (filters.search) {
+    const searchLower = filters.search.toLowerCase();
+    andConditions.push({
+      OR: [
+        { subject: { contains: searchLower, mode: "insensitive" } },
+        { description: { contains: searchLower, mode: "insensitive" } },
+      ],
+    });
+  }
+
   const interactions = await database.clientInteraction.findMany({
-    where: {
-      AND: [{ tenantId }, { clientId }, { deletedAt: null }],
-    },
+    where: { AND: andConditions },
     orderBy: [{ interactionDate: "desc" }],
     take: limit,
     skip: offset,
   });
 
   const totalCount = await database.clientInteraction.count({
-    where: {
-      AND: [{ tenantId }, { clientId }, { deletedAt: null }],
-    },
+    where: { AND: andConditions },
   });
 
   return {
@@ -798,4 +907,117 @@ export async function getClientEventHistory(
       total: totalCount,
     },
   };
+}
+
+// ---------------------------------------------------------------------------
+// Client Preferences CRUD
+// ---------------------------------------------------------------------------
+
+export interface CreateClientPreferenceInput {
+  preferenceType: string;
+  preferenceKey: string;
+  preferenceValue: string | number | boolean | Record<string, unknown> | unknown[];
+  notes?: string;
+}
+
+export interface UpdateClientPreferenceInput {
+  preferenceType?: string;
+  preferenceKey?: string;
+  preferenceValue?: string | number | boolean | Record<string, unknown> | unknown[];
+  notes?: string;
+}
+
+/**
+ * Create a client preference
+ */
+export async function createClientPreference(
+  clientId: string,
+  input: CreateClientPreferenceInput
+) {
+  const { orgId } = await auth();
+  invariant(orgId, "Unauthorized");
+
+  const tenantId = await getTenantId();
+  invariant(clientId, "Client ID is required");
+
+  const client = await database.client.findFirst({
+    where: { AND: [{ tenantId }, { id: clientId }, { deletedAt: null }] },
+  });
+  invariant(client, "Client not found");
+
+  const preference = await database.clientPreference.create({
+    data: {
+      tenantId,
+      clientId,
+      preferenceType: input.preferenceType.trim(),
+      preferenceKey: input.preferenceKey.trim(),
+      preferenceValue: input.preferenceValue as string,
+      notes: input.notes?.trim() || null,
+    },
+  });
+
+  revalidatePath(`/crm/clients/${clientId}`);
+  return preference;
+}
+
+/**
+ * Update a client preference
+ */
+export async function updateClientPreference(
+  clientId: string,
+  preferenceId: string,
+  input: UpdateClientPreferenceInput
+) {
+  const { orgId } = await auth();
+  invariant(orgId, "Unauthorized");
+
+  const tenantId = await getTenantId();
+  invariant(clientId, "Client ID is required");
+  invariant(preferenceId, "Preference ID is required");
+
+  const existing = await database.clientPreference.findFirst({
+    where: { AND: [{ tenantId }, { id: preferenceId }, { clientId }, { deletedAt: null }] },
+  });
+  invariant(existing, "Preference not found");
+
+  const preference = await database.clientPreference.update({
+    where: { tenantId_id: { tenantId, id: preferenceId } },
+    data: {
+      ...(input.preferenceType !== undefined && { preferenceType: input.preferenceType.trim() }),
+      ...(input.preferenceKey !== undefined && { preferenceKey: input.preferenceKey.trim() }),
+      ...(input.preferenceValue !== undefined && { preferenceValue: input.preferenceValue as string }),
+      ...(input.notes !== undefined && { notes: input.notes?.trim() || null }),
+    },
+  });
+
+  revalidatePath(`/crm/clients/${clientId}`);
+  return preference;
+}
+
+/**
+ * Delete a client preference (soft delete)
+ */
+export async function deleteClientPreference(
+  clientId: string,
+  preferenceId: string
+) {
+  const { orgId } = await auth();
+  invariant(orgId, "Unauthorized");
+
+  const tenantId = await getTenantId();
+  invariant(clientId, "Client ID is required");
+  invariant(preferenceId, "Preference ID is required");
+
+  const existing = await database.clientPreference.findFirst({
+    where: { AND: [{ tenantId }, { id: preferenceId }, { clientId }, { deletedAt: null }] },
+  });
+  invariant(existing, "Preference not found");
+
+  await database.clientPreference.update({
+    where: { tenantId_id: { tenantId, id: preferenceId } },
+    data: { deletedAt: new Date() },
+  });
+
+  revalidatePath(`/crm/clients/${clientId}`);
+  return { success: true };
 }
