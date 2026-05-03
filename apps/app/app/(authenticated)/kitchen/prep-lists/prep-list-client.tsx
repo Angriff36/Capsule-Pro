@@ -283,8 +283,6 @@ export function PrepListClient({
   const [batchMultiplier, setBatchMultiplier] = useState<number>(1);
   const [dietaryRestrictions, setDietaryRestrictions] = useState<string[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [_isSavingToDb, setIsSavingToDb] = useState(false);
   const [expandedStations, setExpandedStations] = useState<Set<string>>(
     new Set()
   );
@@ -391,79 +389,9 @@ export function PrepListClient({
     }
   }, [savedPrepListId, prepList]);
 
-  const handleSave = useCallback(async () => {
-    if (!prepList) {
-      return;
-    }
 
-    setIsSaving(true);
-    try {
-      const response = await apiFetch("/api/kitchen/prep-lists/save", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          eventId: prepList.eventId,
-          prepList,
-        }),
-      });
 
-      if (!response.ok) {
-        throw new Error("Failed to save prep list");
-      }
 
-      toast.success("Prep list saved", {
-        description: "Tasks created in Production Board",
-      });
-    } catch (error) {
-      captureException(error);
-      toast.error("Save failed", {
-        description: "Failed to save prep list to Production Board",
-      });
-    } finally {
-      setIsSaving(false);
-    }
-  }, [prepList]);
-
-  const _handleSaveToDatabase = useCallback(async () => {
-    if (!prepList) {
-      return;
-    }
-
-    setIsSavingToDb(true);
-    try {
-      const response = await apiFetch("/api/kitchen/prep-lists/save-db", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          eventId: prepList.eventId,
-          prepList,
-          name: `${prepList.eventTitle} - ${format(new Date(prepList.eventDate), "MMM d")} Prep List`,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to save prep list to database");
-      }
-
-      const { prepListId } = await response.json();
-      setSavedPrepListId(prepListId);
-
-      toast.success("Prep list saved to database", {
-        description: "You can now access this prep list anytime",
-        action: {
-          label: "View",
-          onClick: () => router.push(`/kitchen/prep-lists/${prepListId}`),
-        },
-      });
-    } catch (error) {
-      captureException(error);
-      toast.error("Save to database failed", {
-        description: "Failed to save prep list to database",
-      });
-    } finally {
-      setIsSavingToDb(false);
-    }
-  }, [prepList, router]);
 
   const toggleStation = (stationId: string) => {
     setExpandedStations((prev) => {
@@ -535,22 +463,7 @@ export function PrepListClient({
                 disabled={prepList.totalIngredients === 0}
                 prepList={prepList}
               />
-              <Button
-                disabled={isSaving || prepList.totalIngredients === 0}
-                onClick={handleSave}
-              >
-                {isSaving ? (
-                  <>
-                    <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                    Saving...
-                  </>
-                ) : (
-                  <>
-                    <Save className="mr-2 h-4 w-4" />
-                    Save to Production Board
-                  </>
-                )}
-              </Button>
+
             </div>
           </div>
 
