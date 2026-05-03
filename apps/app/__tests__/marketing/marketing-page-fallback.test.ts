@@ -24,8 +24,9 @@ import CampaignsPage from "../../app/(authenticated)/marketing/campaigns/page";
 import MarketingPage from "../../app/(authenticated)/marketing/page";
 
 describe("marketing pages without marketing models", () => {
-  it("does not crash on the marketing overview page", async () => {
-    await expect(MarketingPage()).resolves.toBeTruthy();
+  it("does not crash on the marketing overview page", () => {
+    const result = MarketingPage();
+    expect(result).toBeTruthy();
   });
 
   it("does not crash on the campaigns page", async () => {

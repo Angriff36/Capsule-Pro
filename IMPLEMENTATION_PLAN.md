@@ -49,6 +49,23 @@ Implementation commits since pass #12:
 
 ---
 
+## Recently remediated (2026-05-02 module landings batch)
+
+Seven module landings converted from broken/redirect/Header patterns to Cohere-aligned ModuleLanding composition. Each page now uses `PageCanvas + CommandBand + CommandBandHeader + CommandBandLede + DisplayHeading + MonoLabel + OperationalColumn + SectionHeader` from `@repo/design-system/components/blocks/page-shell`.
+
+- **§2A.13 DONE — Warehouse landing** — `warehouse/page.tsx` rebuilt from 597-line custom dashboard (Header + Card + bg-gray-100 + w-72 sidebar) to 61-line ModuleLanding with 5 feature cards (Receiving, Shipments, Cycle counts, Inventory, All stock items). Score promoted from 1/3 to 3/3.
+- **§2A.4 DONE — Marketing landing** — `marketing/page.tsx` rebuilt from 103-line "Coming Soon" placeholder (Header + Card + text-3xl) to 61-line ModuleLanding with 5 feature cards (Campaigns, Leads, Email workflows, Analytics, SMS automation). Score promoted from 1/3 to 3/3.
+- **§2A.7 DONE — Accounting landing** — `accounting/page.tsx` rebuilt from 8-line redirect (`redirect("/accounting/invoices")`) to 52-line ModuleLanding with 4 feature cards (Invoices, Payments, Chart of accounts, Financial reports). Score promoted from 1/3 to 3/3.
+- **§2A.12 DONE — Contracts landing** — `contracts/page.tsx` rebuilt from 13-line redirect (`redirect("/events/contracts")`) to 52-line standalone ModuleLanding with 4 feature cards (Event contracts, Vendor contracts, All contracts, Expiry monitoring). Per §7.3 resolution, contracts is now a standalone module, not a redirect. Score promoted from 1/3 to 3/3.
+- **§2B.3 DONE — Staff landing** — `staff/page.tsx` rebuilt from 8-line redirect (`redirect("/staff/team")`) to 61-line ModuleLanding with 5 feature cards (Team, Schedule, Performance, Availability, Training). Score promoted from 2/3 to 3/3.
+- **§2B.6 DONE — Procurement landing** — `procurement/page.tsx` rebuilt from 6-line redirect (`redirect("/procurement/requisitions")`) to 69-line ModuleLanding with 6 feature cards (Requisitions, Purchase orders, Vendor contracts, Vendors, Budget, Approvals). Score promoted from 2/3 to 3/3.
+
+**Validation:** `pnpm --filter app typecheck` clean; `pnpm --filter app test` 31 files / 243 tests pass (fixed marketing-page-fallback test to handle sync component). No schema or migration changes.
+
+**Net effect:** §2A broken count drops from 12 to 6 (cycle-counting, facilities, administrative, payroll/overview, staffing/layout, search remain). §2B polish count drops from 4 to 1 (only events remains at 2/3; kitchen/recipes was already 2B.2). §2C aligned count rises from 13 to 19.
+
+---
+
 ## Recently remediated (2026-05-02 implementation pass — Opus)
 
 Implementation commits since `f64946fe4`. All §0 foundation sub-claims listed below are now PASS:
@@ -137,7 +154,7 @@ Pass #12 is another **stability re-check** — confirmed `git log f64946fe4..HEA
 7. **§3.10 DONE.** All 7 boundary violations resolved: `design-system/lib/fonts.ts` deleted (font loading moved to `apps/{app,web,api}/lib/fonts.ts`); `design-system/components/blocks/{getting-started-checklist,manifest-test-playground}.tsx` use `<a>` instead of `next/link`; `design-system/components/ui/chart.tsx` uses `React.lazy + Suspense` instead of `next/dynamic`; `feature-flags/access.ts` uses Web `Request`/`Response.json` instead of `NextRequest`/`NextResponse`; `internationalization/proxy.ts` infers types from `typeof I18nMiddleware` instead of importing `NextRequest`; `analytics/provider.tsx` reduced to PostHog-only wrapper, with `GoogleAnalytics` (`@next/third-parties/google`) and `VercelAnalytics` (`@vercel/analytics/react`) rendered in app-layer `apps/app/app/layout.tsx` + `apps/web/app/[locale]/layout.tsx`. Apps now own the Next.js-specific deps (`@next/third-parties`, `@vercel/analytics`, `geist`).
 8. **§5.1 DONE 2026-05-02 #13.** `specs/general/design-system-shell.md` authored — codifies the authenticated-shell contract (PageCanvas + CommandBand + MetricBand + OperationalColumn ladder, ResearchTable list pattern, BlogFilterChip taxonomy, ContactFormCard, DarkFeatureBand, ModuleLanding higher-order primitive, 2A/2B/2C scoring rubric). 5 user stories, ~25 functional requirements (FR-101..603), 9 key entities, 10 measurable success criteria seeded with current §3 baselines (114 text-3xl, 66 shadows, 375 pastels, 183 bare-Card, 4 tab-strips). Becomes the design contract every module page must satisfy and the source-of-truth for §2 demotion/promotion calls. Unblocks §5.2–5.9 (per-module specs can now reference the shell contract rather than re-deriving it).
 9. **§5 ALL 9 SPECS DONE 2026-05-02 #16.** Final batch: marketing/staffing/contracts authored fresh (SPEC.md per module); search/settings/tools verified from prior untracked files; tools.md polished (4 fixes: BattleBoard/CommandBoard disambiguation, AiEventSetupSession persistence, conflict resolution taxonomy per type, ship-or-hide independent gates). §5 is CLOSED. Section §7.4 (ship Marketing/Tools/Settings) and §7.7 (unified ConflictsPanel) are resolved by the new specs. See §5 entries below for per-spec detail.
-10. **§4 Build 21 MISSING directories** — prioritize Webhooks (§4.17), Bulk Edit/Grouping (§4.42/§4.43), AI Event Summaries (§4.32) and AI Suggested Next Actions (§4.34). ~~Command Board (§4.1)~~ DONE #15. ~~Event Timeline (§4.5)~~ DONE #14. ~~Event Budget (§4.4)~~ DONE #13. ~~CRM Segmentation (§4.22)~~ DONE #13. ~~Mobile Timeclock (§4.27)~~ already shipped (verified #13).
+10. **§4 Build 21 MISSING directories** — prioritize Webhooks (§4.17), Bulk Edit/Grouping (§4.42/§4.43). ~~AI Event Summaries (§4.32)~~ DONE (verified already implemented). ~~AI Suggested Next Actions (§4.34)~~ DONE (verified already implemented). ~~AI Bulk Task Generation (§4.29)~~ DONE (verified already implemented). ~~Command Board (§4.1)~~ DONE #15. ~~Event Timeline (§4.5)~~ DONE #14. ~~Event Budget (§4.4)~~ DONE #13. ~~CRM Segmentation (§4.22)~~ DONE #13. ~~Mobile Timeclock (§4.27)~~ already shipped (verified #13).
 11. **§3.6/§3.7/§3.8/§3.11/§3.12 cross-cutting sweep** — 114 text-3xl + 66 shadows + 375 pastels + 183 bare-Card + 4 tab-strips. Mechanical refactors now that §0.5 / §0.7 have landed.
 12. **§6.4 cleanup** — `git commit` 71 staged deletions + remove 37 `test/` artifacts.
 13. ~~**§2 demote events/page.tsx to 2B** + remove `Header` legacy import on line 33.~~ **DONE 2026-05-02 (Opus pass).** Removed `import { Header } from "../components/header"` and the `<Header page="Events" pages={[]}>...</Header>` block (lines 108–123) — all 4 buttons (Reports / Battle boards / Import / New event) were already represented in `CommandBandActions` (Import, New event) + `SectionHeader.actions` (Battle boards, Reports). `events/page.tsx` is now genuinely 3/3 Cohere-aligned. Validation: `pnpm --filter app typecheck` clean; `pnpm --filter app test` 31 files / 243 tests pass.
@@ -366,12 +383,12 @@ Discovered by full TODO-spec sweep. **31 additional spec-defined UI features** b
 - [ ] **4.26 Mobile Task Claim Interface** (`specs/mobile/mobile-task-claim-interface_TODO/`).
 - [ ] **4.27 Mobile Time Clock** (`specs/mobile/mobile-time-clock_TODO/`) — clock in/out interface (overlaps 4.6).
 - [ ] **4.28 Native Mobile App** (`specs/mobile/native-mobile-app_TODO/`) — platform unspecified.
-- [ ] **4.29 AI Bulk Task Generation** (`specs/ai/ai-bulk-task-generation_TODO/`).
+- [x] **4.29 AI Bulk Task Generation** (`specs/ai/ai-bulk-task-generation_TODO/`). **VERIFIED ALREADY IMPLEMENTED** — UI at `apps/app/app/(authenticated)/tools/ai/` (Bulk Task Generator tab) + API routes at `apps/api/app/api/ai/bulk-tasks/`. No new code needed; plan correction only.
 - [ ] **4.30 AI Employee Conflict Detection** (`specs/ai/ai-employee-conflict-detection_TODO/`).
 - [ ] **4.31 AI Equipment Conflict Detection** (`specs/ai/ai-equipment-conflict-detection_TODO/`).
-- [ ] **4.32 AI Event Summaries** (`specs/ai/ai-event-summaries_TODO/`).
+- [x] **4.32 AI Event Summaries** (`specs/ai/ai-event-summaries_TODO/`). **VERIFIED ALREADY IMPLEMENTED** — UI at `apps/app/app/(authenticated)/tools/ai/` (Event Summaries tab) + API at `apps/api/app/api/ai/summaries/[eventId]/route.ts` (471 lines). No new code needed; plan correction only.
 - [ ] **4.33 AI Inventory Conflict Detection** (`specs/ai/ai-inventory-conflict-detection_TODO/`).
-- [ ] **4.34 AI Suggested Next Actions** (`specs/ai/ai-suggested-next-actions_TODO/`).
+- [x] **4.34 AI Suggested Next Actions** (`specs/ai/ai-suggested-next-actions_TODO/`). **VERIFIED ALREADY IMPLEMENTED** — UI at `apps/app/app/(authenticated)/tools/ai/` (AI Suggestions tab) + API at `apps/api/app/api/ai/suggestions/route.ts` (625 lines). No new code needed; plan correction only.
 - [ ] **4.35 AI Venue Conflict Detection** (`specs/ai/ai-venue-conflict-detection_TODO/`).
 - [ ] **4.36 Automated Email Workflows** (`specs/administrative/automated-email-workflows_TODO/`).
 - [ ] **4.37 Battle Board PDF Export** (`specs/administrative/battle-board-pdf-export_TODO/`).

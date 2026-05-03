@@ -1,7 +1,60 @@
-import { redirect } from "next/navigation";
+import {
+  CalendarDays,
+  Clock,
+  GraduationCap,
+  TrendingUp,
+  Users,
+} from "lucide-react";
+import { ModuleLanding } from "../components/module-landing";
 
-const StaffLandingPage = () => {
-  redirect("/staff/team");
-};
+const StaffPage = () => (
+  <ModuleLanding
+    eyebrow="Operations / Staff"
+    highlights={[
+      {
+        title: "Team",
+        description:
+          "Employee roster, roles, certifications, and contact information.",
+        href: "/staff/team",
+        actionLabel: "View team",
+        icon: Users,
+      },
+      {
+        title: "Schedule",
+        description:
+          "Weekly schedules, shift assignments, and calendar coordination.",
+        href: "/staff/schedule",
+        actionLabel: "View schedule",
+        icon: CalendarDays,
+      },
+      {
+        title: "Performance",
+        description:
+          "Employee performance metrics, reviews, and development tracking.",
+        href: "/staff/performance",
+        actionLabel: "View performance",
+        icon: TrendingUp,
+      },
+      {
+        title: "Availability",
+        description:
+          "Staff availability preferences, time-off requests, and blackout dates.",
+        href: "/staff/availability",
+        actionLabel: "Manage availability",
+        icon: Clock,
+      },
+      {
+        title: "Training",
+        description:
+          "Assign and track training modules, certifications, and compliance.",
+        href: "/staff/training",
+        actionLabel: "View training",
+        icon: GraduationCap,
+      },
+    ]}
+    summary="Team management, scheduling, performance, and training — your people operations hub."
+    title="Staff"
+  />
+);
 
-export default StaffLandingPage;
+export default StaffPage;
