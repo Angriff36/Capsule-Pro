@@ -26,6 +26,17 @@
 
 ---
 
+## Recently remediated (2026-05-02 implementation pass — Opus #14)
+
+Implementation commits since #13:
+
+- **§4.5 DONE — Event Timeline (run-of-show)** — new server component at `apps/app/app/(authenticated)/events/[eventId]/timeline/page.tsx` plus client component at `event-timeline-client.tsx` (inline form for adding items + optimistic toggle/delete + revert-on-error). Composes `PageCanvas + CommandBand + CommandBandHeader/Body/Actions + MetricBand + MonoLabel + DisplayHeading + OperationalColumn + SectionHeader` from `@repo/design-system/components/blocks/page-shell`. Hero stats: Items / Completed / Pending / Up next. Discoverability: added a `Timeline` link in the existing event-details Header next to `Budget`. Five new API routes under `apps/api/app/api/events/[eventId]/timeline/`: `route.ts` (GET list with completion summary) + `commands/{create-item,update-item,toggle-completed,delete-item}/route.ts`. All routes follow the existing `auth → UUID gate → tenantId → Prisma` pattern; deletes are soft (`deletedAt`); `timelineTime` is stored as `@db.Time(6)` and serialized via `Date.UTC(1970, 0, 1, hh, mm, ss)` to avoid timezone shifts on round-trip. Backed by the existing `EventTimeline` Prisma model (no schema/migration change required). **Validation:** new test file `apps/api/__tests__/events/event-timeline.test.ts` (20 tests covering 401/400/403/404 + happy paths for all 5 routes, including the toggle-pending `completedAt: null` reset). `pnpm --filter api test __tests__/events/event-timeline.test.ts` → 20 passed; `pnpm --filter api typecheck` clean; `pnpm --filter app typecheck` clean. **Net effect: §4 MISSING count drops 21 → 20.**
+- **§4.50 DONE — Scheduling Auto-Assignment (verification only)** — `apps/api/lib/staff/auto-assignment.ts` (681 lines) was already fully implemented as a constraint solver with 5-factor scoring (skills / seniority / availability / cost / role), conflict-detection CTE, labor-budget integration via `checkBudgetForShift`, confidence levels (high/medium/low), and both single (`autoAssignShift`) and bulk (`getAssignmentSuggestionsForMultipleShifts`) variants. 14 unit tests exist at `apps/api/__tests__/staff/auto-assignment.test.ts`. All 6 acceptance criteria from `specs/staff/scheduling-auto-assignment_TODO/SPEC.md` are met. **Net effect: §4 MISSING count drops 20 → 19.** This entry is a list correction — no new code in this pass.
+
+**Validation:** `pnpm --filter api typecheck` clean; `pnpm --filter app typecheck` clean; new event-timeline test file 20/20 passing. No schema or migration changes.
+
+---
+
 ## Recently remediated (2026-05-02 implementation pass — Opus #13)
 
 Implementation commits since pass #12:
@@ -313,7 +324,7 @@ Compiled from the specs survey. **All 50 spec directories re-verified to exist o
 > **#9 TRIAGE (2026-05-02):** Pass #9 re-classified all 50 §4 items more aggressively against current source. Counts: **MISSING = 24, STUB = 12, EXISTS = 14** (vs #8's 10 MISSING / 14 STUB / 16 EXISTS — net **+14 MISSING** as more items were demoted from STUB/EXISTS based on tighter criteria). Reclassification rules: (a) `tools/conflicts/{employee,equipment,inventory,venue}/` and `tools/ai/{event-summaries,suggested-next-actions,bulk-task-generation}/` are **MISSING** because the umbrella `tools/conflicts/` and `tools/ai/` dirs are flat with no per-domain subdirs; (b) `inventory/levels/`, `inventory/forecasts/`, `inventory/items/` are **STUB** (page.tsx <500B); (c) all 7 `settings/integrations/{nowsta,goodshuffle-event,goodshuffle-inventory,goodshuffle-invoicing,quickbooks-bill,quickbooks-invoice,quickbooks-payroll}/` are **MISSING** (only flat `settings/integrations/page.tsx` at 47KB exists). **Use #9 figures as authoritative going forward.** Pass-#5 figures preserved below for trajectory.
 >
 > **#5 TRIAGE (2026-05-02):** Pass #5 directory audit confirms exact status across all 50 §4 items. Counts: **EXISTS = 33, STUB (page.tsx without subdir scaffolding) = 7, MISSING = 9, PARTIAL = 6**. Detailed breakdown:
-> - **MISSING (7 — updated 2026-05-02 #13):** §4.1 Command Board, §4.5 Event Timeline, §4.17 Webhooks, §4.42 Bulk Edit, §4.43 Bulk Grouping, §4.50 Scheduling Auto-Assign — plus §4.32 AI Event Summaries / §4.34 AI Suggested Next Actions (no dedicated subdirs under `tools/ai/`). ~~§4.22 CRM Segmentation~~ DONE #13. ~~§4.27 Mobile Timeclock~~ already shipped.
+> - **MISSING (5 — updated 2026-05-02 #14):** §4.1 Command Board, §4.17 Webhooks, §4.42 Bulk Edit, §4.43 Bulk Grouping — plus §4.32 AI Event Summaries / §4.34 AI Suggested Next Actions (no dedicated subdirs under `tools/ai/`). ~~§4.5 Event Timeline~~ DONE #14. ~~§4.22 CRM Segmentation~~ DONE #13. ~~§4.27 Mobile Timeclock~~ already shipped. ~~§4.50 Scheduling Auto-Assign~~ verified DONE #14 (already implemented).
 > - **STUB (7):** §4.18 Nowsta, §4.39 Goodshuffle Event, §4.40 Goodshuffle Inventory, §4.41 Goodshuffle Invoicing, §4.47 QuickBooks Bill, §4.48 QuickBooks Invoice, §4.49 QuickBooks Payroll — all rolled into a single `settings/integrations/page.tsx` placeholder; each integration needs its own subdirectory + UI.
 > - **PARTIAL (6):** §4.25 Mobile Recipe Viewer, §4.30/§4.31/§4.33/§4.35 AI Conflict Detection (employee/equipment/inventory/venue — only the umbrella `tools/conflicts/` dir exists; per-domain split unverified).
 > - **EXISTS (28+):** §4.2–4.4, §4.6–4.16, §4.19–4.21, §4.23–4.24, §4.26, §4.28–4.29, §4.36–4.38, §4.44–4.46.
@@ -326,7 +337,7 @@ Compiled from the specs survey. **All 50 spec directories re-verified to exist o
 - [ ] **4.2 Event Budget Tracking** (`specs/kitchen/event-budget-tracking_TODO/`) — budget editor + variance chart + status indicator. Surface inside `events/{id}/budget` route.
 - [ ] **4.3 Event Contract Management** (`specs/kitchen/event-contract-management_TODO/`) — contract editor + signature capture + compliance dashboard. Folds into `events/contracts/`.
 - [ ] **4.4 Event Proposal Generation** (`specs/kitchen/event-proposal-generation_TODO/`) — proposal builder + PDF export + client preview. Currently CRM proposals page is generic.
-- [ ] **4.5 Event Timeline Builder** (`specs/kitchen/event-timeline-builder_TODO/`) — drag-drop timeline canvas. Major UI work.
+- [x] **4.5 Event Timeline Builder** (`specs/kitchen/event-timeline-builder_TODO/`) — **DONE 2026-05-02 #14** at `apps/app/app/(authenticated)/events/[eventId]/timeline/{page.tsx,event-timeline-client.tsx}` + 5 API routes under `apps/api/app/api/events/[eventId]/timeline/`. Run-of-show list view with hero metrics (Items / Completed / Pending / Up next), inline add form, optimistic toggle/delete with revert-on-error, soft-delete, soft-toggle (`completedAt` ↔ `null`). 20-test coverage at `__tests__/events/event-timeline.test.ts`. Drag-drop reordering not yet implemented (current implementation uses `sortOrder` increments via the update-item endpoint — drag UX is a follow-up).
 - [ ] **4.6 Payroll Timecard System** (`specs/staff/payroll-timecard-system_TODO/`) — clock in/out with geolocation + photo verification (mobile-heavy).
 - [ ] **4.7 Scheduling Shift CRUD** (`specs/staff/scheduling-shift-crud_TODO/`) — shift form + calendar/table + labor-budget sidebar.
 - [ ] **4.8 Scheduling Availability Tracking** (`specs/staff/scheduling-availability-tracking_TODO/`).
@@ -376,7 +387,7 @@ Discovered by full TODO-spec sweep. **31 additional spec-defined UI features** b
 - [ ] **4.47 QuickBooks Bill Export** (`specs/staff/quickbooks-bill-export_TODO/`).
 - [ ] **4.48 QuickBooks Invoice Export** (`specs/staff/quickbooks-invoice-export_TODO/`).
 - [ ] **4.49 QuickBooks Payroll Export** (`specs/staff/quickbooks-payroll-export_TODO/`).
-- [ ] **4.50 Scheduling Auto-Assignment** (`specs/staff/scheduling-auto-assignment_TODO/`).
+- [x] **4.50 Scheduling Auto-Assignment** (`specs/staff/scheduling-auto-assignment_TODO/`) — **DONE 2026-05-02 #14** (verification only — already implemented). `apps/api/lib/staff/auto-assignment.ts` (681 lines) implements full constraint solver with 5-factor scoring, conflict-detection CTE, labor-budget integration, confidence levels, and bulk variant. 14 unit tests at `apps/api/__tests__/staff/auto-assignment.test.ts`. All 6 spec acceptance criteria satisfied.
 
 > Note: `specs/manifest/manifest-kitchen-ops-rules-overrides_TODO/` is technical (manifest semantics), not user-facing UI — excluded from §4.
 

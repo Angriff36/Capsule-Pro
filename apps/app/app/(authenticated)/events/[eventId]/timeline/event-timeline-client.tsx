@@ -1,0 +1,337 @@
+"use client";
+
+import { Button } from "@repo/design-system/components/ui/button";
+import { Checkbox } from "@repo/design-system/components/ui/checkbox";
+import { Input } from "@repo/design-system/components/ui/input";
+import { Label } from "@repo/design-system/components/ui/label";
+import { Textarea } from "@repo/design-system/components/ui/textarea";
+import { useRouter } from "next/navigation";
+import { useState, useTransition } from "react";
+
+interface TimelineItem {
+  id: string;
+  timelineTime: string; // HH:MM
+  description: string;
+  responsibleRole: string | null;
+  isCompleted: boolean;
+  completedAt: string | null;
+  notes: string | null;
+  sortOrder: number;
+}
+
+interface EventTimelineClientProps {
+  eventId: string;
+  initialItems: TimelineItem[];
+}
+
+interface DraftItem {
+  timelineTime: string;
+  description: string;
+  responsibleRole: string;
+  notes: string;
+}
+
+const EMPTY_DRAFT: DraftItem = {
+  timelineTime: "",
+  description: "",
+  responsibleRole: "",
+  notes: "",
+};
+
+export function EventTimelineClient({
+  eventId,
+  initialItems,
+}: EventTimelineClientProps) {
+  const router = useRouter();
+  const [items, setItems] = useState<TimelineItem[]>(initialItems);
+  const [draft, setDraft] = useState<DraftItem>(EMPTY_DRAFT);
+  const [error, setError] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
+
+  const refresh = () => {
+    startTransition(() => {
+      router.refresh();
+    });
+  };
+
+  const handleAdd = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setError(null);
+
+    if (!draft.timelineTime || !draft.description.trim()) {
+      setError("Time and description are required");
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `/api/events/${eventId}/timeline/commands/create-item`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            timelineTime: draft.timelineTime,
+            description: draft.description.trim(),
+            responsibleRole: draft.responsibleRole.trim() || null,
+            notes: draft.notes.trim() || null,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        const data = (await response.json().catch(() => null)) as {
+          error?: string;
+        } | null;
+        setError(data?.error ?? "Failed to add item");
+        return;
+      }
+
+      const payload = (await response.json()) as { data: TimelineItem };
+      setItems((current) => mergeAndSort([...current, payload.data]));
+      setDraft(EMPTY_DRAFT);
+      refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Network error");
+    }
+  };
+
+  const handleToggle = async (itemId: string, isCompleted: boolean) => {
+    setError(null);
+    // Optimistic update
+    setItems((current) =>
+      current.map((item) =>
+        item.id === itemId
+          ? {
+              ...item,
+              isCompleted,
+              completedAt: isCompleted ? new Date().toISOString() : null,
+            }
+          : item
+      )
+    );
+
+    try {
+      const response = await fetch(
+        `/api/events/${eventId}/timeline/commands/toggle-completed`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ itemId, isCompleted }),
+        }
+      );
+
+      if (!response.ok) {
+        const data = (await response.json().catch(() => null)) as {
+          error?: string;
+        } | null;
+        setError(data?.error ?? "Failed to update item");
+        // Revert
+        setItems((current) =>
+          current.map((item) =>
+            item.id === itemId
+              ? { ...item, isCompleted: !isCompleted }
+              : item
+          )
+        );
+        return;
+      }
+
+      refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Network error");
+      setItems((current) =>
+        current.map((item) =>
+          item.id === itemId ? { ...item, isCompleted: !isCompleted } : item
+        )
+      );
+    }
+  };
+
+  const handleDelete = async (itemId: string) => {
+    setError(null);
+    const previous = items;
+    setItems((current) => current.filter((item) => item.id !== itemId));
+
+    try {
+      const response = await fetch(
+        `/api/events/${eventId}/timeline/commands/delete-item`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ itemId }),
+        }
+      );
+
+      if (!response.ok) {
+        const data = (await response.json().catch(() => null)) as {
+          error?: string;
+        } | null;
+        setError(data?.error ?? "Failed to remove item");
+        setItems(previous);
+        return;
+      }
+
+      refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Network error");
+      setItems(previous);
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <form
+        className="rounded-[22px] border border-hairline bg-canvas p-6"
+        onSubmit={handleAdd}
+      >
+        <p className="font-mono text-[11px] text-muted-foreground uppercase tracking-[0.22em]">
+          Add timeline item
+        </p>
+        <div className="mt-4 grid gap-4 md:grid-cols-[120px_1fr_180px]">
+          <div className="space-y-2">
+            <Label htmlFor="timeline-time">Time (24h)</Label>
+            <Input
+              id="timeline-time"
+              onChange={(event) =>
+                setDraft((prev) => ({
+                  ...prev,
+                  timelineTime: event.target.value,
+                }))
+              }
+              placeholder="14:30"
+              type="time"
+              value={draft.timelineTime}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="timeline-description">Description</Label>
+            <Input
+              id="timeline-description"
+              maxLength={200}
+              onChange={(event) =>
+                setDraft((prev) => ({
+                  ...prev,
+                  description: event.target.value,
+                }))
+              }
+              placeholder="Doors open / first course service / breakdown"
+              value={draft.description}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="timeline-role">Responsible role</Label>
+            <Input
+              id="timeline-role"
+              maxLength={80}
+              onChange={(event) =>
+                setDraft((prev) => ({
+                  ...prev,
+                  responsibleRole: event.target.value,
+                }))
+              }
+              placeholder="Captain, Chef, Bar lead"
+              value={draft.responsibleRole}
+            />
+          </div>
+        </div>
+        <div className="mt-4 space-y-2">
+          <Label htmlFor="timeline-notes">Notes (optional)</Label>
+          <Textarea
+            id="timeline-notes"
+            maxLength={500}
+            onChange={(event) =>
+              setDraft((prev) => ({ ...prev, notes: event.target.value }))
+            }
+            placeholder="Cue the playlist, dim the lights, etc."
+            rows={2}
+            value={draft.notes}
+          />
+        </div>
+        {error ? (
+          <p className="mt-3 text-coral text-sm" role="alert">
+            {error}
+          </p>
+        ) : null}
+        <div className="mt-4 flex justify-end">
+          <Button disabled={isPending} type="submit">
+            Add to timeline
+          </Button>
+        </div>
+      </form>
+
+      {items.length === 0 ? (
+        <div className="rounded-[22px] border border-hairline border-dashed bg-canvas p-10 text-center">
+          <p className="font-mono text-[11px] text-muted-foreground uppercase tracking-[0.22em]">
+            Empty
+          </p>
+          <p className="mt-3 text-ink text-sm leading-relaxed">
+            No timeline items yet. Add the first moment above to start sequencing
+            this event's run-of-show.
+          </p>
+        </div>
+      ) : (
+        <ol className="space-y-3">
+          {items.map((item) => (
+            <li
+              className="rounded-[22px] border border-hairline bg-canvas p-5"
+              key={item.id}
+            >
+              <div className="flex flex-wrap items-start gap-4">
+                <Checkbox
+                  aria-label={`Mark "${item.description}" complete`}
+                  checked={item.isCompleted}
+                  className="mt-1"
+                  onCheckedChange={(checked) =>
+                    handleToggle(item.id, checked === true)
+                  }
+                />
+                <div className="min-w-[64px] font-mono text-ink text-sm tabular-nums">
+                  {item.timelineTime}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p
+                    className={`text-ink text-sm leading-relaxed ${
+                      item.isCompleted
+                        ? "text-muted-foreground line-through"
+                        : ""
+                    }`}
+                  >
+                    {item.description}
+                  </p>
+                  {item.responsibleRole ? (
+                    <p className="mt-1 font-mono text-[11px] text-muted-foreground uppercase tracking-[0.18em]">
+                      {item.responsibleRole}
+                    </p>
+                  ) : null}
+                  {item.notes ? (
+                    <p className="mt-2 text-muted-foreground text-xs">
+                      {item.notes}
+                    </p>
+                  ) : null}
+                </div>
+                <Button
+                  className="text-coral hover:text-coral/80"
+                  onClick={() => handleDelete(item.id)}
+                  size="sm"
+                  type="button"
+                  variant="ghost"
+                >
+                  Remove
+                </Button>
+              </div>
+            </li>
+          ))}
+        </ol>
+      )}
+    </div>
+  );
+}
+
+function mergeAndSort(items: TimelineItem[]): TimelineItem[] {
+  return [...items].sort((a, b) => {
+    if (a.sortOrder !== b.sortOrder) return a.sortOrder - b.sortOrder;
+    if (a.timelineTime !== b.timelineTime)
+      return a.timelineTime.localeCompare(b.timelineTime);
+    return a.id.localeCompare(b.id);
+  });
+}

@@ -563,6 +563,11 @@
       "comment": "Uses executeManifestCommand \u2014 Waitlist commands (add-guest, promote, update-rsvp)"
     },
     {
+      "pattern": "^/api/events/[^/]+/timeline/commands/",
+      "methods": ["POST"],
+      "comment": "Direct Prisma \u2014 EventTimeline run-of-show commands (create-item, update-item, toggle-completed, delete-item) backing \u00a74.5 Event Timeline"
+    },
+    {
       "prefix": "/api/procurement/budget/commands/refresh",
       "methods": ["POST"],
       "comment": "Infrastructure: Budget spend refresh and alert generation"

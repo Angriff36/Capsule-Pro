@@ -199,6 +199,29 @@ Last: [first session]
 
 ## Last Session Bridge
 [pre-compact bridge — saved before context compaction]
-(no changes or facts recorded in this session segment)
+Files (10):
+  apps/api/app/api/events/[eventId]/timeline/route.ts (create)
+  apps/api/app/api/events/[eventId]/timeline/commands/create-item/route.ts (create)
+  apps/api/app/api/events/[eventId]/timeline/commands/update-item/route.ts (create)
+  apps/api/app/api/events/[eventId]/timeline/commands/toggle-completed/route.ts (create)
+  apps/api/app/api/events/[eventId]/timeline/commands/delete-item/route.ts (create)
+  apps/app/app/(authenticated)/events/[eventId]/timeline/page.tsx (create)
+  apps/app/app/(authenticated)/events/[eventId]/timeline/event-timeline-client.tsx (create)
+  apps/app/app/(authenticated)/events/[eventId]/page.tsx (edit)
+  apps/api/__tests__/events/event-timeline.test.ts (create)
+  apps/api/__tests__/events/event-timeline.test.ts (edit)
+Manual bridge:
+[proactive bridge @ 76% context — saved before compacting]
+Files (10):
+  apps/api/app/api/events/[eventId]/timeline/route.ts (create)
+  apps/api/app/api/events/[eventId]/timeline/commands/create-item/route.ts (create)
+  apps/api/app/api/events/[eventId]/timeline/commands/update-item/route.ts (create)
+  apps/api/app/api/events/[eventId]/timeline/commands/toggle-completed/route.ts (create)
+  apps/api/app/api/events/[eventId]/timeline/commands/delete-item/route.ts (create)
+  apps/app/app/(authenticated)/events/[eventId]/timeline/page.tsx (create)
+  apps/app/app/(authenticated)/events/[eventId]/timeline/event-timeline-client.tsx (create)
+  apps/app/app/(authenticated)/events/[eventId]/page.tsx (edit)
+  apps/api/__tests__/events/event-timeline.test.ts (create)
+  apps/api/__tests__/events/event-timeline.test.ts (edit)
 
 # === END COGNILAYER ===
