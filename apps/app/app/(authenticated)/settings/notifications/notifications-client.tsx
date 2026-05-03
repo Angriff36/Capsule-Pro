@@ -42,9 +42,11 @@ import {
   TabsTrigger,
 } from "@repo/design-system/components/ui/tabs";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
+import { Switch } from "@repo/design-system/components/ui/switch";
 import {
   AlertCircle,
   Bell,
+  BellRing,
   CheckCircle,
   Clock,
   Loader2,
@@ -120,6 +122,44 @@ const RECIPIENT_TYPES = [
   { value: "role_based", label: "Role Based" },
   { value: "manager", label: "Manager" },
   { value: "custom_phone", label: "Custom Phone" },
+] as const;
+
+const NOTIFICATION_CATEGORIES = [
+  {
+    label: "Tasks",
+    types: [
+      { value: "task_assigned", label: "Task Assigned" },
+      { value: "task_completed", label: "Task Completed" },
+      { value: "task_overdue", label: "Task Overdue" },
+    ],
+  },
+  {
+    label: "Scheduling",
+    types: [
+      { value: "shift_assigned", label: "Shift Assigned" },
+      { value: "shift_reminder", label: "Shift Reminder" },
+      { value: "shift_changed", label: "Shift Changed" },
+    ],
+  },
+  {
+    label: "Time Tracking",
+    types: [
+      { value: "clock_in_reminder", label: "Clock In Reminder" },
+      { value: "clock_out_reminder", label: "Clock Out Reminder" },
+    ],
+  },
+  {
+    label: "Kitchen",
+    types: [
+      { value: "prep_list_published", label: "Prep List Published" },
+    ],
+  },
+  {
+    label: "Inventory",
+    types: [
+      { value: "inventory_low", label: "Inventory Low" },
+    ],
+  },
 ] as const;
 
 // ---------------------------------------------------------------------------
@@ -974,10 +1014,222 @@ function SmsHistoryTab() {
 }
 
 // ---------------------------------------------------------------------------
+// SMS Preferences Tab
+// ---------------------------------------------------------------------------
+
+interface SmsPreference {
+  notificationType: string;
+  isEnabled: boolean;
+  channel: string;
+}
+
+function SmsPreferencesTab({ employeeId }: { employeeId: string }) {
+  const [preferences, setPreferences] = useState<Map<string, boolean>>(
+    new Map()
+  );
+  const [loading, setLoading] = useState(true);
+  const [togglingType, setTogglingType] = useState<string | null>(null);
+
+  const loadPreferences = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await apiFetch(
+        `/api/collaboration/notifications/sms/preferences?employeeId=${employeeId}`
+      );
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error("Failed to load SMS preferences");
+        return;
+      }
+      const map = new Map<string, boolean>();
+      for (const pref of data.preferences as SmsPreference[]) {
+        map.set(pref.notificationType, pref.isEnabled);
+      }
+      setPreferences(map);
+    } catch {
+      toast.error("Failed to load SMS preferences");
+    } finally {
+      setLoading(false);
+    }
+  }, [employeeId]);
+
+  useEffect(() => {
+    loadPreferences();
+  }, [loadPreferences]);
+
+  const handleToggle = useCallback(
+    async (notificationType: string, currentEnabled: boolean) => {
+      setTogglingType(notificationType);
+      try {
+        const res = await apiFetch(
+          "/api/collaboration/notifications/sms/preferences",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              employeeId,
+              notificationType,
+              isEnabled: !currentEnabled,
+            }),
+          }
+        );
+        const data = await res.json();
+        if (!res.ok) {
+          toast.error("Failed to update preference", {
+            description: data.error || "Unknown error",
+          });
+          return;
+        }
+        setPreferences((prev) => {
+          const next = new Map(prev);
+          next.set(notificationType, !currentEnabled);
+          return next;
+        });
+        toast.success(
+          currentEnabled
+            ? `Disabled SMS for ${notificationType.replace(/_/g, " ")}`
+            : `Enabled SMS for ${notificationType.replace(/_/g, " ")}`
+        );
+      } catch {
+        toast.error("Failed to update preference");
+      } finally {
+        setTogglingType(null);
+      }
+    },
+    [employeeId]
+  );
+
+  const totalTypes = NOTIFICATION_CATEGORIES.reduce(
+    (sum, cat) => sum + cat.types.length,
+    0
+  );
+  const enabledCount = Array.from(preferences.values()).filter(Boolean).length;
+  const disabledCount = totalTypes - enabledCount;
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Summary Cards */}
+      <div className="grid gap-4 sm:grid-cols-3">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardDescription>Notification Types</CardDescription>
+            <CardTitle className="text-2xl">{totalTypes}</CardTitle>
+          </CardHeader>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardDescription>Enabled</CardDescription>
+            <CardTitle className="text-2xl text-green-600">
+              {enabledCount}
+            </CardTitle>
+          </CardHeader>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardDescription>Disabled</CardDescription>
+            <CardTitle className="text-2xl text-muted-foreground">
+              {disabledCount}
+            </CardTitle>
+          </CardHeader>
+        </Card>
+      </div>
+
+      {/* Quick Actions */}
+      <div className="flex justify-end gap-2">
+        <Button
+          onClick={() => {
+            const allTypes = NOTIFICATION_CATEGORIES.flatMap((c) =>
+              c.types.map((t) => t.value)
+            );
+            for (const type of allTypes) {
+              if (!preferences.get(type)) {
+                handleToggle(type, false);
+              }
+            }
+          }}
+          size="sm"
+          variant="outline"
+        >
+          Enable All
+        </Button>
+        <Button
+          onClick={() => {
+            const allTypes = NOTIFICATION_CATEGORIES.flatMap((c) =>
+              c.types.map((t) => t.value)
+            );
+            for (const type of allTypes) {
+              if (preferences.get(type)) {
+                handleToggle(type, true);
+              }
+            }
+          }}
+          size="sm"
+          variant="outline"
+        >
+          Disable All
+        </Button>
+      </div>
+
+      {/* Preference Groups */}
+      <div className="space-y-4">
+        {NOTIFICATION_CATEGORIES.map((category) => (
+          <Card key={category.label}>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">{category.label}</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {category.types.map((type) => {
+                const isEnabled = preferences.get(type.value) ?? true;
+                return (
+                  <div
+                    className="flex items-center justify-between rounded-lg border p-3"
+                    key={type.value}
+                  >
+                    <div className="flex items-center gap-3">
+                      <BellRing className="h-4 w-4 text-muted-foreground" />
+                      <div>
+                        <p className="text-sm font-medium">{type.label}</p>
+                        <p className="text-xs text-muted-foreground">
+                          Receive SMS when{" "}
+                          {type.label.toLowerCase().replace(/^(a|an|the)\s/i, "")}
+                        </p>
+                      </div>
+                    </div>
+                    <Switch
+                      checked={isEnabled}
+                      disabled={togglingType === type.value}
+                      onCheckedChange={() =>
+                        handleToggle(type.value, isEnabled)
+                      }
+                    />
+                  </div>
+                );
+              })}
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Page
 // ---------------------------------------------------------------------------
 
-export function NotificationsClient() {
+export function NotificationsClient({
+  employeeId,
+}: {
+  employeeId: string;
+}) {
   return (
     <>
       <Separator />
@@ -987,6 +1239,10 @@ export function NotificationsClient() {
             <Zap className="h-4 w-4" />
             Automation Rules
           </TabsTrigger>
+          <TabsTrigger className="gap-2" value="preferences">
+            <BellRing className="h-4 w-4" />
+            Preferences
+          </TabsTrigger>
           <TabsTrigger className="gap-2" value="history">
             <MessageSquare className="h-4 w-4" />
             SMS History
@@ -994,6 +1250,9 @@ export function NotificationsClient() {
         </TabsList>
         <TabsContent value="automation">
           <AutomationRulesTab />
+        </TabsContent>
+        <TabsContent value="preferences">
+          <SmsPreferencesTab employeeId={employeeId} />
         </TabsContent>
         <TabsContent value="history">
           <SmsHistoryTab />
