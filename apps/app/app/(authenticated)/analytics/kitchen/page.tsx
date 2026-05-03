@@ -18,7 +18,7 @@ import {
   TableRow,
 } from "@repo/design-system/components/ui/table";
 import { notFound } from "next/navigation";
-import { getTenantIdForOrg } from "../../lib/tenant";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 const dateFormatter = new Intl.DateTimeFormat("en-US", {
   month: "short",

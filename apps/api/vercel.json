@@ -24,6 +24,10 @@
     {
       "path": "/api/cron/inventory-audit",
       "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/cron/contract-expiration-alerts",
+      "schedule": "0 7 * * *"
     }
   ]
 }
