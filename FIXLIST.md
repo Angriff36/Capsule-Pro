@@ -1,8 +1,8 @@
 # Capsule Pro Fix List
 
-**Total broken: 98** (85 dead shells + 13 form-only) — **48 remaining** (2026-05-03 audit verified 35+ entries already functional)
+**Total broken: 98** (85 dead shells + 13 form-only) — **47 remaining** (2026-05-03 audit verified 35+ entries already functional)
 **Generated:** 2026-05-02 | **Auto-fix cron:** every 10 min
-**Last fix:** 2026-05-03 — bulk FIXLIST audit: verified 35+ entries functional, updated status
+**Last fix:** 2026-05-03 — scheduling/requests: hardcoded JSX → server component with live time-off + timecard edit queries
 
 | # | Module | Route | Type | Issue | Status |
 |---|--------|-------|------|-------|--------|
@@ -77,7 +77,7 @@
 | 69 | procurement | `/procurement/purchase-orders/new` | 🟡 🔶 | Form, no server action | ✅ 2026-05-03 — createPurchaseOrder already wired |
 | 70 | scheduling | `/scheduling/shifts` | 🔴 ❌ | 18-line shell | TODO |
 | 71 | scheduling | `/scheduling/availability` | 🔴 ❌ | 18-line shell | TODO |
-| 72 | scheduling | `/scheduling/requests` | 🔴 ❌ | Static JSX | TODO |
+| 72 | scheduling | `/scheduling/requests` | 🟢 ✅ | Server component with live time-off + timecard edit queries from tenant_staff | ✅ 2026-05-03 |
 | 73 | scheduling | `/scheduling/budgets` | 🔴 ❌ | 7-line shell | TODO |
 | 74 | scheduling | `/scheduling/time-off` | 🔴 ❌ | 20-line shell | TODO |
 | 75 | scheduling | `/scheduling/settings/manifest-editor` | 🔴 ❌ | 5-line shell | TODO |
