@@ -1,16 +1,17 @@
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
-import { Card, CardContent } from "@repo/design-system/components/ui/card";
 import {
-  Empty,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from "@repo/design-system/components/ui/empty";
+  CommandBand,
+  CommandBandHeader,
+  CommandBandLede,
+  DisplayHeading,
+  MonoLabel,
+  OperationalColumn,
+  PageCanvas,
+  SectionHeader,
+} from "@repo/design-system/components/blocks/page-shell";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
-import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   Table,
   TableBody,
@@ -20,7 +21,6 @@ import {
   TableRow,
 } from "@repo/design-system/components/ui/table";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
-import { ClipboardListIcon } from "lucide-react";
 import { redirect } from "next/navigation";
 import {
   createCycleCountSession,
@@ -46,41 +46,44 @@ export default async function CycleCountingPage() {
   const sessions = await listCycleCountSessions();
 
   return (
-    <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
-      {/* Page Header */}
-      <div className="space-y-0.5">
-        <h1 className="text-3xl font-bold tracking-tight">Cycle Counting</h1>
-        <p className="text-muted-foreground">
-          Manage inventory cycle counts with automated variance tracking and
-          adjustments.
-        </p>
-      </div>
+    <PageCanvas>
+      <CommandBand>
+        <CommandBandHeader>
+          <div className="space-y-4">
+            <MonoLabel tone="dark">Inventory / Cycle Counting</MonoLabel>
+            <DisplayHeading>Cycle Counting</DisplayHeading>
+            <CommandBandLede>
+              Manage inventory cycle counts with automated variance tracking
+              and adjustments.
+            </CommandBandLede>
+          </div>
+        </CommandBandHeader>
+      </CommandBand>
 
-      <Separator />
+      <OperationalColumn>
+        <section className="space-y-6">
+          <SectionHeader
+            description="Start a new inventory cycle count session."
+            eyebrow="New Session"
+            title="Create Count"
+          />
+          <form
+            action={async (formData) => {
+              "use server";
+              const result = await createCycleCountSession({
+                locationId: "00000000-0000-0000-0000-000000000000",
+                sessionName: formData.get("sessionName") as string,
+                countType: "ad_hoc",
+                notes: (formData.get("notes") as string) || undefined,
+              });
 
-      {/* Create New Session Section */}
-      <section className="space-y-4">
-        <h2 className="text-sm font-medium text-muted-foreground">
-          Create New Session
-        </h2>
-        <Card>
-          <CardContent className="pt-6">
-            <form
-              action={async (formData) => {
-                "use server";
-                const result = await createCycleCountSession({
-                  locationId: "00000000-0000-0000-0000-000000000000",
-                  sessionName: formData.get("sessionName") as string,
-                  countType: "ad_hoc",
-                  notes: (formData.get("notes") as string) || undefined,
-                });
-
-                if (result.success) {
-                  redirect(`/cycle-counting/${result.session?.sessionId}`);
-                }
-              }}
-              className="space-y-6"
-            >
+              if (result.success) {
+                redirect(`/cycle-counting/${result.session?.sessionId}`);
+              }
+            }}
+            className="rounded-[22px] border border-hairline bg-canvas p-6"
+          >
+            <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="sessionName">Session Name</Label>
                 <Input
@@ -91,88 +94,87 @@ export default async function CycleCountingPage() {
                   type="text"
                 />
               </div>
-
               <div className="space-y-2">
                 <Label htmlFor="notes">Notes</Label>
                 <Textarea
                   id="notes"
                   name="notes"
                   placeholder="Optional notes..."
-                  rows={3}
+                  rows={1}
                 />
               </div>
+            </div>
+            <div className="mt-4 flex justify-end">
+              <Button type="submit">Create Session</Button>
+            </div>
+          </form>
+        </section>
 
-              <Button type="submit">Create New Session</Button>
-            </form>
-          </CardContent>
-        </Card>
-      </section>
+        <section className="space-y-4">
+          <SectionHeader
+            count={`${sessions.length} session${sessions.length !== 1 ? "s" : ""}`}
+            eyebrow="History"
+            title="Recent Sessions"
+          />
 
-      {/* Recent Sessions Section */}
-      <section className="space-y-4">
-        <h2 className="text-sm font-medium text-muted-foreground">
-          Recent Sessions
-        </h2>
-
-        {sessions.length === 0 ? (
-          <Empty>
-            <EmptyHeader>
-              <EmptyMedia variant="icon">
-                <ClipboardListIcon />
-              </EmptyMedia>
-              <EmptyTitle>No cycle count sessions found</EmptyTitle>
-              <EmptyDescription>
-                Create a new session to get started with inventory cycle
-                counting.
-              </EmptyDescription>
-            </EmptyHeader>
-          </Empty>
-        ) : (
-          <Card>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Session</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Variance</TableHead>
-                  <TableHead>Created</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {sessions.map((session) => (
-                  <TableRow key={session.id}>
-                    <TableCell className="font-medium">
-                      <a
-                        className="text-primary hover:underline"
-                        href={`/cycle-counting/${session.sessionId}`}
-                      >
-                        {session.sessionName}
-                      </a>
-                    </TableCell>
-                    <TableCell className="capitalize text-muted-foreground">
-                      {session.countType.replace("_", " ")}
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={statusVariantMap[session.status] ?? "outline"}
-                      >
-                        {statusLabelMap[session.status] ?? session.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      {session.variancePercentage.toFixed(2)}%
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {new Date(session.createdAt).toLocaleDateString()}
-                    </TableCell>
+          {sessions.length === 0 ? (
+            <div className="rounded-[22px] border border-hairline border-dashed bg-canvas p-10 text-center">
+              <p className="font-mono text-[11px] text-muted-foreground uppercase tracking-[0.22em]">
+                Empty
+              </p>
+              <p className="mt-3 text-ink text-sm leading-relaxed">
+                No cycle count sessions yet. Create your first session above.
+              </p>
+            </div>
+          ) : (
+            <div className="rounded-[22px] border border-hairline bg-canvas overflow-hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Session</TableHead>
+                    <TableHead>Type</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Variance</TableHead>
+                    <TableHead>Created</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </Card>
-        )}
-      </section>
-    </div>
+                </TableHeader>
+                <TableBody>
+                  {sessions.map((session) => (
+                    <TableRow key={session.id}>
+                      <TableCell className="font-medium">
+                        <a
+                          className="text-primary hover:underline"
+                          href={`/cycle-counting/${session.sessionId}`}
+                        >
+                          {session.sessionName}
+                        </a>
+                      </TableCell>
+                      <TableCell className="capitalize text-muted-foreground">
+                        {session.countType.replace("_", " ")}
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant={
+                            statusVariantMap[session.status] ?? "outline"
+                          }
+                        >
+                          {statusLabelMap[session.status] ?? session.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        {session.variancePercentage.toFixed(2)}%
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {new Date(session.createdAt).toLocaleDateString()}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </section>
+      </OperationalColumn>
+    </PageCanvas>
   );
 }

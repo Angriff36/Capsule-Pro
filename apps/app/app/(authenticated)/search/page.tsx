@@ -3,13 +3,6 @@
 import { analytics } from "@repo/analytics";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@repo/design-system/components/ui/card";
-import {
   Empty,
   EmptyDescription,
   EmptyHeader,
@@ -23,7 +16,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
-import { Separator } from "@repo/design-system/components/ui/separator";
 import { Skeleton } from "@repo/design-system/components/ui/skeleton";
 import {
   BookOpen,
@@ -40,7 +32,16 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
-import { Header } from "../components/header";
+import {
+  CommandBand,
+  CommandBandHeader,
+  CommandBandLede,
+  DisplayHeading,
+  MonoLabel,
+  OperationalColumn,
+  PageCanvas,
+  SectionHeader,
+} from "@repo/design-system/components/blocks/page-shell";
 
 const dateFormatter = new Intl.DateTimeFormat("en-US", {
   dateStyle: "medium",
@@ -73,13 +74,13 @@ const GROUP_CONFIG: Record<
     href: (item) => `/events/${item.id}`,
     title: (item) => (item.title as string) || `Event #${item.eventNumber}`,
     description: (item) => (
-      <CardDescription className="flex items-center gap-2">
+      <p className="flex items-center gap-2 text-sm text-muted-foreground">
         <CalendarDays className="size-4" />
         {item.eventDate
           ? dateFormatter.format(new Date(item.eventDate as string))
           : "No date"}
         {item.venueName ? ` · ${item.venueName}` : ""}
-      </CardDescription>
+      </p>
     ),
   },
   clients: {
@@ -91,10 +92,10 @@ const GROUP_CONFIG: Record<
       [item.first_name, item.last_name].filter(Boolean).join(" ") ||
       "Unknown Client",
     description: (item) => (
-      <CardDescription>
+      <p className="text-sm text-muted-foreground">
         {[item.first_name, item.last_name].filter(Boolean).join(" ")}
         {item.company_name ? ` · ${item.company_name}` : ""}
-      </CardDescription>
+      </p>
     ),
   },
   contacts: {
@@ -105,10 +106,10 @@ const GROUP_CONFIG: Record<
       [item.first_name, item.last_name].filter(Boolean).join(" ") ||
       "Unknown Contact",
     description: (item) => (
-      <CardDescription>
+      <p className="text-sm text-muted-foreground">
         {item.title ? `${item.title as string} · ` : ""}
         {(item.email as string) || (item.phone as string) || ""}
-      </CardDescription>
+      </p>
     ),
   },
   venues: {
@@ -117,10 +118,10 @@ const GROUP_CONFIG: Record<
     href: (item) => `/venues/${item.id}`,
     title: (item) => (item.name as string) || "Unknown Venue",
     description: (item) => (
-      <CardDescription>
+      <p className="text-sm text-muted-foreground">
         {[item.city, item.stateProvince].filter(Boolean).join(", ")}
         {item.venueType ? ` · ${item.venueType as string}` : ""}
-      </CardDescription>
+      </p>
     ),
   },
   inventory: {
@@ -130,10 +131,10 @@ const GROUP_CONFIG: Record<
     title: (item) =>
       `${item.name}${item.item_number ? ` (${item.item_number})` : ""}`,
     description: (item) => (
-      <CardDescription>
+      <p className="text-sm text-muted-foreground">
         {item.category as string}
         {item.unitOfMeasure ? ` · ${item.unitOfMeasure as string}` : ""}
-      </CardDescription>
+      </p>
     ),
   },
   knowledge: {
@@ -142,9 +143,9 @@ const GROUP_CONFIG: Record<
     href: (item) => `/knowledge/${item.slug}`,
     title: (item) => (item.title as string) || "Untitled",
     description: (item) => (
-      <CardDescription>
+      <p className="text-sm text-muted-foreground">
         {(item.category as string) || "General"}
-      </CardDescription>
+      </p>
     ),
   },
   tasks: {
@@ -156,11 +157,11 @@ const GROUP_CONFIG: Record<
     },
     title: (item) => (item.title as string) || "Untitled Task",
     description: (item) => (
-      <CardDescription>
+      <p className="text-sm text-muted-foreground">
         {(item.task_type as string) === "admin" ? "Admin" : "Kitchen"}
         {" · "}
         {item.status as string}
-      </CardDescription>
+      </p>
     ),
   },
 };
@@ -212,73 +213,71 @@ function SearchResults() {
 
   if (!q) {
     return (
-      <>
-        <Header page="Search" pages={["Building Your Application"]} />
-        <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
-          <Empty>
-            <EmptyMedia>
-              <BookOpen className="size-10 text-muted-foreground/50" />
-            </EmptyMedia>
-            <EmptyHeader>
-              <EmptyTitle>Search</EmptyTitle>
-              <EmptyDescription>
-                Use the search bar to enter a search term and browse results
-                across the app.
-              </EmptyDescription>
-            </EmptyHeader>
-          </Empty>
-        </div>
-      </>
+      <PageCanvas>
+        <CommandBand>
+          <CommandBandHeader>
+            <div className="space-y-4">
+              <MonoLabel tone="dark">Search</MonoLabel>
+              <DisplayHeading>Global Search</DisplayHeading>
+              <CommandBandLede>
+                Use the search bar to find events, clients, inventory, and more
+                across the entire application.
+              </CommandBandLede>
+            </div>
+          </CommandBandHeader>
+        </CommandBand>
+        <OperationalColumn>
+          <div className="rounded-[22px] border border-hairline border-dashed bg-canvas p-10 text-center">
+            <BookOpen className="mx-auto size-10 text-muted-foreground/50" />
+            <p className="mt-4 text-ink text-sm leading-relaxed">
+              Enter a search term in the global search bar to browse results
+              across the app.
+            </p>
+          </div>
+        </OperationalColumn>
+      </PageCanvas>
     );
   }
 
   return (
-    <>
-      <Header page="Search" pages={["Building Your Application"]} />
-      <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
-        <div className="flex items-center justify-between">
-          <div className="space-y-0.5">
-            <h1 className="text-3xl font-bold tracking-tight">
-              Search Results
-            </h1>
-            <p className="text-muted-foreground">
-              {loading ? (
-                "Searching..."
-              ) : data ? (
-                <>
-                  {data.total} result{data.total !== 1 ? "s" : ""} for &quot;{q}
-                  &quot;
-                </>
-              ) : (
-                <>Showing results for &quot;{q}&quot;</>
-              )}
-            </p>
+    <PageCanvas>
+      <CommandBand>
+        <CommandBandHeader>
+          <div className="space-y-4">
+            <MonoLabel tone="dark">Search</MonoLabel>
+            <DisplayHeading>Search Results</DisplayHeading>
+            <CommandBandLede>
+              {loading
+                ? "Searching..."
+                : data
+                  ? `${data.total} result${data.total !== 1 ? "s" : ""} for "${q}"`
+                  : `Showing results for "${q}"`}
+            </CommandBandLede>
           </div>
-          <div className="flex items-center gap-3">
-            <Select onValueChange={setTypeFilter} value={typeFilter}>
-              <SelectTrigger className="w-[160px]">
-                <SelectValue placeholder="Filter by type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All types</SelectItem>
-                {Object.entries(GROUP_CONFIG).map(([key, cfg]) => (
-                  <SelectItem key={key} value={key}>
-                    {cfg.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+        </CommandBandHeader>
+      </CommandBand>
+
+      <OperationalColumn>
+        <div className="flex items-center justify-end">
+          <Select onValueChange={setTypeFilter} value={typeFilter}>
+            <SelectTrigger className="w-[160px]">
+              <SelectValue placeholder="Filter by type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All types</SelectItem>
+              {Object.entries(GROUP_CONFIG).map(([key, cfg]) => (
+                <SelectItem key={key} value={key}>
+                  {cfg.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
-        <Separator />
-
         {error && (
-          <Card>
-            <CardContent className="flex items-center justify-center py-12">
-              <p className="text-destructive">{error}</p>
-            </CardContent>
-          </Card>
+          <div className="rounded-[22px] border border-hairline border-dashed bg-canvas p-10 text-center">
+            <p className="text-coral">{error}</p>
+          </div>
         )}
 
         {loading && (
@@ -296,14 +295,6 @@ function SearchResults() {
           </div>
         )}
 
-        {!loading && data && data.total === 0 && (
-          <Card>
-            <CardContent className="flex flex-col items-center justify-center py-12">
-              <p className="text-muted-foreground">No results found.</p>
-            </CardContent>
-          </Card>
-        )}
-
         {!loading &&
           data &&
           Object.entries(data.groups)
@@ -313,25 +304,24 @@ function SearchResults() {
               if (!config) return null;
               return (
                 <section className="space-y-4" key={groupKey}>
-                  <h2 className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                    {config.icon}
-                    {config.label} ({group.total})
-                  </h2>
-                  <div className="grid auto-rows-min gap-6 md:grid-cols-3">
+                  <SectionHeader
+                    count={`${group.total} result${group.total !== 1 ? "s" : ""}`}
+                    eyebrow={config.label}
+                    title={config.label}
+                  />
+                  <div className="grid auto-rows-min gap-4 md:grid-cols-3">
                     {group.items.map((item) => (
                       <Link
                         className="group"
                         href={config.href(item)}
                         key={`${item.tenantId}-${item.id}`}
                       >
-                        <Card className="h-full transition hover:border-primary/40 hover:shadow-md">
-                          <CardHeader>
-                            <CardTitle className="text-base line-clamp-2">
-                              {config.title(item)}
-                            </CardTitle>
-                            {config.description(item)}
-                          </CardHeader>
-                        </Card>
+                        <div className="h-full rounded-[22px] border border-hairline bg-canvas p-5 transition hover:border-primary/40">
+                          <p className="line-clamp-2 font-semibold">
+                            {config.title(item)}
+                          </p>
+                          {config.description(item)}
+                        </div>
                       </Link>
                     ))}
                   </div>
@@ -349,7 +339,7 @@ function SearchResults() {
                 size="sm"
                 variant="outline"
               >
-                <ChevronLeft className="size-4 mr-1" />
+                <ChevronLeft className="mr-1 size-4" />
                 Previous
               </Button>
               <span className="text-sm text-muted-foreground">
@@ -362,12 +352,12 @@ function SearchResults() {
                 variant="outline"
               >
                 Next
-                <ChevronRight className="size-4 ml-1" />
+                <ChevronRight className="ml-1 size-4" />
               </Button>
             </div>
           )}
-      </div>
-    </>
+      </OperationalColumn>
+    </PageCanvas>
   );
 }
 
@@ -375,13 +365,20 @@ export default function SearchPage() {
   return (
     <Suspense
       fallback={
-        <>
-          <Header page="Search" pages={["Building Your Application"]} />
-          <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
+        <PageCanvas>
+          <CommandBand>
+            <CommandBandHeader>
+              <div className="space-y-4">
+                <MonoLabel tone="dark">Search</MonoLabel>
+                <DisplayHeading>Search</DisplayHeading>
+                <CommandBandLede>Loading...</CommandBandLede>
+              </div>
+            </CommandBandHeader>
+          </CommandBand>
+          <OperationalColumn>
             <Skeleton className="h-8 w-48" />
-            <Skeleton className="h-px w-full" />
-          </div>
-        </>
+          </OperationalColumn>
+        </PageCanvas>
       }
     >
       <SearchResults />

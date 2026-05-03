@@ -3,18 +3,14 @@
 /**
  * Facilities Hub
  *
- * Lists every top-level facility (a building/site such as a commissary
- * kitchen, warehouse, or office) the tenant has registered, plus the four
- * domain links (Work Orders, PM Schedules, Areas, Assets). The "Add
- * Facility" CTA opens the create dialog and persists via
- * POST /api/facilities/commands/create — closing P0.2 of
- * IMPLEMENTATION_PLAN.md by giving the New Facility E2E backpressure spec
- * a real UI control + API + DB round trip to verify.
+ * Lists every top-level facility (building/site) the tenant has registered,
+ * plus the four domain links (Work Orders, PM Schedules, Areas, Assets).
+ * The "Add Facility" CTA opens the create dialog and persists via
+ * POST /api/facilities/commands/create.
  */
 
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
-import { Card, CardContent } from "@repo/design-system/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -45,6 +41,17 @@ import {
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
+import {
+  CommandBand,
+  CommandBandActions,
+  CommandBandHeader,
+  CommandBandLede,
+  DisplayHeading,
+  MonoLabel,
+  OperationalColumn,
+  PageCanvas,
+  SectionHeader,
+} from "@repo/design-system/components/blocks/page-shell";
 import { UpcomingMaintenanceWidget } from "./components/upcoming-maintenance-widget";
 
 interface Facility {
@@ -68,6 +75,33 @@ const FACILITY_TYPE_LABELS: Record<string, string> = {
   office: "Office",
   other: "Other",
 };
+
+const DOMAIN_LINKS = [
+  {
+    href: "/facilities/work-orders",
+    icon: Wrench,
+    label: "Work Orders",
+    description: "Report issues, track repairs, and manage maintenance tasks.",
+  },
+  {
+    href: "/facilities/schedules",
+    icon: Calendar,
+    label: "PM Schedules",
+    description: "Preventive maintenance scheduling with calendar view.",
+  },
+  {
+    href: "/facilities/areas",
+    icon: MapPin,
+    label: "Areas",
+    description: "Define and manage areas within your facility.",
+  },
+  {
+    href: "/facilities/assets",
+    icon: Package,
+    label: "Assets",
+    description: "Track equipment, warranties, and maintenance needs.",
+  },
+];
 
 export default function FacilitiesPage() {
   const [facilities, setFacilities] = useState<Facility[]>([]);
@@ -95,13 +129,11 @@ export default function FacilitiesPage() {
     try {
       const res = await apiFetch("/api/facilities/list?status=all");
       const data = await res.json();
-      // manifestSuccessResponse spreads the payload onto the envelope, so
-      // the canonical access path is `data.facilities`, NOT `data.data.facilities`.
       if (data.success) {
         setFacilities(data.facilities || []);
       }
-    } catch (e) {
-      console.error("Failed to load facilities:", e);
+    } catch {
+      // Graceful fallback — empty list
     } finally {
       setLoading(false);
     }
@@ -148,66 +180,74 @@ export default function FacilitiesPage() {
         await loadFacilities();
         setShowDialog(false);
       }
-    } catch (err) {
-      console.error("Failed to save facility:", err);
+    } catch {
+      // Graceful fallback
     } finally {
       setSaving(false);
     }
   };
 
   return (
-    <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
-      <div className="flex items-center justify-between">
-        <div className="space-y-0.5">
-          <h1 className="text-3xl font-bold tracking-tight">Facilities</h1>
-          <p className="text-muted-foreground">
-            Maintenance scheduling, work orders, and facility management.
-          </p>
-        </div>
-        <Button onClick={openCreate}>
-          <Plus className="h-4 w-4 mr-2" />
-          Add Facility
-        </Button>
-      </div>
-
-      {/* Upcoming Maintenance Widget */}
-      <UpcomingMaintenanceWidget />
-
-      {/* Facilities list — small/empty by design; the cards below are the
-          real navigation surface. The list exists so the create flow has a
-          place to render its result and so the E2E reload check has
-          something to assert against. */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xl font-semibold">Your Facilities</h2>
-          <Badge variant="secondary">{facilities.length}</Badge>
-        </div>
-
-        {loading ? (
-          <div className="flex items-center justify-center py-8">
-            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+    <PageCanvas>
+      <CommandBand>
+        <CommandBandHeader>
+          <div className="space-y-4">
+            <MonoLabel tone="dark">Facilities</MonoLabel>
+            <DisplayHeading>Facility Management</DisplayHeading>
+            <CommandBandLede>
+              Maintenance scheduling, work orders, and facility management.
+            </CommandBandLede>
           </div>
-        ) : facilities.length === 0 ? (
-          <Card>
-            <CardContent className="py-8 text-center text-muted-foreground">
-              <Building2 className="h-10 w-10 mx-auto mb-3 opacity-50" />
-              <p>
-                No facilities yet. Click "Add Facility" to register your first
-                site.
+          <CommandBandActions>
+            <Button
+              className="border-white/25 bg-transparent text-white hover:bg-white/10"
+              onClick={openCreate}
+              size="sm"
+              variant="outline"
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              Add Facility
+            </Button>
+          </CommandBandActions>
+        </CommandBandHeader>
+      </CommandBand>
+
+      <OperationalColumn>
+        <UpcomingMaintenanceWidget />
+
+        <section className="space-y-4">
+          <SectionHeader
+            count={`${facilities.length} site${facilities.length !== 1 ? "s" : ""}`}
+            description="Registered buildings and sites (kitchens, warehouses, offices)."
+            eyebrow="Sites"
+            title="Your Facilities"
+          />
+
+          {loading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            </div>
+          ) : facilities.length === 0 ? (
+            <div className="rounded-[22px] border border-hairline border-dashed bg-canvas p-10 text-center">
+              <Building2 className="mx-auto h-10 w-10 opacity-50" />
+              <p className="mt-3 text-ink text-sm leading-relaxed">
+                No facilities yet. Click &quot;Add Facility&quot; to register
+                your first site.
               </p>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-            {facilities.map((facility) => (
-              <Card key={facility.id}>
-                <CardContent className="p-4">
+            </div>
+          ) : (
+            <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+              {facilities.map((facility) => (
+                <div
+                  className="rounded-[22px] border border-hairline bg-canvas p-5"
+                  key={facility.id}
+                >
                   <div className="flex items-start gap-3">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-canvas text-ink border border-hairline">
                       <Building2 className="h-4 w-4" />
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1 flex-wrap">
+                    <div className="min-w-0 flex-1">
+                      <div className="mb-1 flex flex-wrap items-center gap-2">
                         <span className="font-semibold">{facility.name}</span>
                         <Badge variant="outline">
                           {FACILITY_TYPE_LABELS[facility.facility_type] ||
@@ -217,7 +257,7 @@ export default function FacilitiesPage() {
                           <Badge variant="secondary">{facility.code}</Badge>
                         ) : null}
                       </div>
-                      <div className="text-sm text-muted-foreground space-y-0.5">
+                      <div className="space-y-0.5 text-sm text-muted-foreground">
                         {facility.address_line1 ? (
                           <div>{facility.address_line1}</div>
                         ) : null}
@@ -235,70 +275,37 @@ export default function FacilitiesPage() {
                       </div>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+
+        <section className="space-y-4">
+          <SectionHeader
+            description="Navigate to facility sub-modules."
+            eyebrow="Modules"
+            title="Domain Links"
+          />
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {DOMAIN_LINKS.map((link) => (
+              <Link href={link.href} key={link.href}>
+                <div className="group rounded-[22px] border border-hairline bg-canvas p-5 transition-colors hover:bg-accent">
+                  <div className="mb-2 flex items-center gap-3">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-canvas text-ink border border-hairline">
+                      <link.icon className="h-4 w-4" />
+                    </div>
+                    <h3 className="font-semibold">{link.label}</h3>
+                  </div>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    {link.description}
+                  </p>
+                </div>
+              </Link>
             ))}
           </div>
-        )}
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Link href="/facilities/work-orders">
-          <div className="group rounded-lg border bg-card p-6 transition-colors hover:bg-accent cursor-pointer">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-100 text-amber-600 dark:bg-amber-950 dark:text-amber-400">
-                <Wrench className="h-5 w-5" />
-              </div>
-              <h3 className="font-semibold">Work Orders</h3>
-            </div>
-            <p className="text-sm text-muted-foreground">
-              Report issues, track repairs, and manage maintenance tasks.
-            </p>
-          </div>
-        </Link>
-
-        <Link href="/facilities/schedules">
-          <div className="group rounded-lg border bg-card p-6 transition-colors hover:bg-accent cursor-pointer">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100 text-blue-600 dark:bg-blue-950 dark:text-blue-400">
-                <Calendar className="h-5 w-5" />
-              </div>
-              <h3 className="font-semibold">PM Schedules</h3>
-            </div>
-            <p className="text-sm text-muted-foreground">
-              Preventive maintenance scheduling with calendar view.
-            </p>
-          </div>
-        </Link>
-
-        <Link href="/facilities/areas">
-          <div className="group rounded-lg border bg-card p-6 transition-colors hover:bg-accent cursor-pointer">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-100 text-emerald-600 dark:bg-emerald-950 dark:text-emerald-400">
-                <MapPin className="h-5 w-5" />
-              </div>
-              <h3 className="font-semibold">Areas</h3>
-            </div>
-            <p className="text-sm text-muted-foreground">
-              Define and manage areas within your facility.
-            </p>
-          </div>
-        </Link>
-
-        <Link href="/facilities/assets">
-          <div className="group rounded-lg border bg-card p-6 transition-colors hover:bg-accent cursor-pointer">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-100 text-purple-600 dark:bg-purple-950 dark:text-purple-400">
-                <Package className="h-5 w-5" />
-              </div>
-              <h3 className="font-semibold">Assets</h3>
-            </div>
-            <p className="text-sm text-muted-foreground">
-              Track equipment, warranties, and maintenance needs.
-            </p>
-          </div>
-        </Link>
-      </div>
+        </section>
+      </OperationalColumn>
 
       {/* Create Facility Dialog */}
       <Dialog onOpenChange={setShowDialog} open={showDialog}>
@@ -440,6 +447,6 @@ export default function FacilitiesPage() {
           </form>
         </DialogContent>
       </Dialog>
-    </div>
+    </PageCanvas>
   );
 }
