@@ -199,6 +199,6 @@ Last: [first session]
 
 ## Last Session Bridge
 [Emergency bridge — running bridge was not updated]
-Files: apps/app/app/(authenticated)/crm/clients/actions.ts (edit), apps/app/app/(authenticated)/analytics/staff/page.tsx (edit), IMPLEMENTATION_PLAN.md (edit)
+Files: apps/api/__tests__/email-templates/templates.test.ts (edit), apps/api/__tests__/inventory/forecasting.test.ts (edit), apps/api/__tests__/sales-reporting/generate.test.ts (edit), IMPLEMENTATION_PLAN.md (edit)
 
 # === END COGNILAYER ===
