@@ -3,7 +3,6 @@ import { database, Prisma } from "@repo/database";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { executeManifestCommand } from "@/lib/manifest-command-handler";
 import { likeContains } from "@/lib/sql-like";
 import type {
   ContentType,
@@ -146,20 +145,121 @@ export async function GET(request: Request) {
 /**
  * POST /api/training/modules
  * Create a new training module via manifest runtime.
+ *
+ * Uses runCommand for guard/policy validation then createInstance for
+ * actual DB persistence. executeManifestCommand only runs the command
+ * in-memory — it does NOT persist entities (same bug as email-templates).
  */
-export function POST(request: NextRequest) {
-  return executeManifestCommand(request, {
-    entityName: "TrainingModule",
-    commandName: "create",
-    transformBody: (body, ctx) => ({
+export async function POST(request: NextRequest) {
+  try {
+    const { orgId, userId: clerkId } = await auth();
+    if (!(clerkId && orgId)) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
+
+    const tenantId = await getTenantIdForOrg(orgId);
+    if (!tenantId) {
+      return NextResponse.json({ message: "Tenant not found" }, { status: 400 });
+    }
+
+    const currentUser = await database.user.findFirst({
+      where: { AND: [{ tenantId }, { authUserId: clerkId }] },
+    });
+    if (!currentUser) {
+      return NextResponse.json(
+        { message: "User not found in database" },
+        { status: 400 }
+      );
+    }
+
+    const body = await request.json();
+
+    const commandPayload = {
       ...body,
-      tenantId: ctx.tenantId,
-      createdBy: ctx.userId,
-      isActive: true,
+      createdBy: currentUser.id,
       contentType: body.contentType || body.content_type || "document",
-      isRequired: body.isRequired || body.is_required,
-      durationMinutes: body.durationMinutes || body.duration_minutes || 0,
-      contentUrl: body.contentUrl || body.content_url || "",
-    }),
-  });
+      isRequired: body.isRequired ?? body.is_required ?? false,
+      durationMinutes: body.durationMinutes ?? body.duration_minutes ?? 0,
+      contentUrl: body.contentUrl ?? body.content_url ?? "",
+    };
+
+    const { createManifestRuntime } = await import(
+      "@/lib/manifest-runtime"
+    );
+
+    const runtime = await createManifestRuntime({
+      user: {
+        id: currentUser.id,
+        tenantId,
+        role: currentUser.role,
+      },
+      entityName: "TrainingModule",
+    });
+
+    // Step 1: Validate via manifest runtime (guards, policies)
+    const result = await runtime.runCommand("create", commandPayload, {
+      entityName: "TrainingModule",
+    });
+
+    if (!result.success) {
+      if (result.policyDenial) {
+        return NextResponse.json(
+          {
+            message: `Access denied: ${result.policyDenial.policyName} (role=${currentUser.role})`,
+          },
+          { status: 403 }
+        );
+      }
+      if (result.guardFailure) {
+        return NextResponse.json(
+          {
+            message: `Guard ${result.guardFailure.index} failed: ${result.guardFailure.formatted}`,
+          },
+          { status: 422 }
+        );
+      }
+      return NextResponse.json(
+        { message: result.error ?? "Command failed" },
+        { status: 400 }
+      );
+    }
+
+    // Step 2: Persist via createInstance -> TrainingModulePrismaStore
+    const created = await runtime.createInstance("TrainingModule", {
+      tenantId,
+      ...commandPayload,
+    });
+
+    if (!created) {
+      return NextResponse.json(
+        {
+          message:
+            "Failed to create training module. Check that all required fields are valid.",
+        },
+        { status: 422 }
+      );
+    }
+
+    return NextResponse.json({
+      result: created,
+      events: result.emittedEvents,
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error("[training-module/create] Error:", error);
+    return NextResponse.json(
+      {
+        message:
+          message.includes("Invalid") || message.includes("required")
+            ? message
+            : "Internal server error",
+      },
+      {
+        status:
+          message.includes("Invalid") || message.includes("required")
+            ? 400
+            : 500,
+      }
+    );
+  }
 }
