@@ -8,10 +8,10 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { randomUUID } from "crypto";
 import { revalidatePath } from "next/cache";
 import { invariant } from "@/app/lib/invariant";
 import { getTenantId } from "@/app/lib/tenant";
-import { randomUUID } from "crypto";
 
 // ── Facility ────────────────────────────────────────────────────────────────
 
@@ -129,7 +129,9 @@ export async function createFacilityAsset(input: CreateFacilityAssetInput) {
       model: input.model?.trim() || null,
       purchaseDate: input.purchaseDate ? new Date(input.purchaseDate) : null,
       purchaseCost: input.purchaseCost ?? null,
-      warrantyExpiry: input.warrantyExpiry ? new Date(input.warrantyExpiry) : null,
+      warrantyExpiry: input.warrantyExpiry
+        ? new Date(input.warrantyExpiry)
+        : null,
       areaId: input.areaId || null,
       status: input.status || "active",
       notes: input.notes?.trim() || null,

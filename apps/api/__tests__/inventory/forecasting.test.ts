@@ -959,11 +959,7 @@ describe("Forecast Integration Tests", () => {
     // calculateDepletionForecast catches internal DB errors and returns a
     // zero-stock forecast instead of throwing, so batchCalculateForecasts
     // never sees the error. All 50 SKUs produce results.
-    const results = await batchCalculateForecasts(
-      TEST_TENANT_ID,
-      skus,
-      30
-    );
+    const results = await batchCalculateForecasts(TEST_TENANT_ID, skus, 30);
 
     expect(results).toBeInstanceOf(Map);
     // All 50 SKUs should be present (errors are caught internally)

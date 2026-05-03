@@ -196,7 +196,9 @@ export default function NewProposalTemplatePage() {
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">New Template</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">
+            New Template
+          </h1>
           <p className="text-muted-foreground">
             Create a reusable proposal template
           </p>

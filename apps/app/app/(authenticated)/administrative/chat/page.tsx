@@ -78,7 +78,9 @@ const AdministrativeChatPage = async () => {
   return (
     <div className="space-y-8">
       <div className="space-y-0.5">
-        <h1 className="text-2xl font-semibold tracking-tight">Operational Chat</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">
+          Operational Chat
+        </h1>
         <p className="text-muted-foreground">
           Keep teams aligned with context-aware threads.
         </p>

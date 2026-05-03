@@ -1,10 +1,10 @@
 "use client";
 
-import { cn } from "@repo/design-system/lib/utils";
 import {
   DisplayHeading,
   MonoLabel,
 } from "@repo/design-system/components/blocks/page-shell";
+import { cn } from "@repo/design-system/lib/utils";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
@@ -45,8 +45,7 @@ const StaffingLayout = ({ children }: StaffingLayoutProperties) => {
             {navigationItems.map((item) => {
               const isActive =
                 pathname === item.href ||
-                (item.href !== "/staffing" &&
-                  pathname?.startsWith(item.href));
+                (item.href !== "/staffing" && pathname?.startsWith(item.href));
               return (
                 <Link
                   className={cn(

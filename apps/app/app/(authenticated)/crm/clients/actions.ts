@@ -572,7 +572,12 @@ export async function updateClientContact(
   if (input.isPrimary) {
     await database.clientContact.updateMany({
       where: {
-        AND: [{ tenantId }, { clientId }, { isPrimary: true }, { deletedAt: null }],
+        AND: [
+          { tenantId },
+          { clientId },
+          { isPrimary: true },
+          { deletedAt: null },
+        ],
       },
       data: { isPrimary: false },
     });
@@ -581,7 +586,12 @@ export async function updateClientContact(
   if (input.isBillingContact) {
     await database.clientContact.updateMany({
       where: {
-        AND: [{ tenantId }, { clientId }, { isBillingContact: true }, { deletedAt: null }],
+        AND: [
+          { tenantId },
+          { clientId },
+          { isBillingContact: true },
+          { deletedAt: null },
+        ],
       },
       data: { isBillingContact: false },
     });
@@ -590,13 +600,19 @@ export async function updateClientContact(
   const contact = await database.clientContact.update({
     where: { tenantId_id: { tenantId, id: contactId } },
     data: {
-      ...(input.first_name !== undefined && { first_name: input.first_name.trim() }),
-      ...(input.last_name !== undefined && { last_name: input.last_name.trim() }),
+      ...(input.first_name !== undefined && {
+        first_name: input.first_name.trim(),
+      }),
+      ...(input.last_name !== undefined && {
+        last_name: input.last_name.trim(),
+      }),
       ...(input.title !== undefined && { title: input.title?.trim() || null }),
       ...(input.email !== undefined && { email: input.email?.trim() || null }),
       ...(input.phone !== undefined && { phone: input.phone?.trim() || null }),
       ...(input.isPrimary !== undefined && { isPrimary: input.isPrimary }),
-      ...(input.isBillingContact !== undefined && { isBillingContact: input.isBillingContact }),
+      ...(input.isBillingContact !== undefined && {
+        isBillingContact: input.isBillingContact,
+      }),
     },
   });
 
@@ -607,10 +623,7 @@ export async function updateClientContact(
 /**
  * Delete a client contact (soft delete)
  */
-export async function deleteClientContact(
-  clientId: string,
-  contactId: string
-) {
+export async function deleteClientContact(clientId: string, contactId: string) {
   const { orgId } = await auth();
   invariant(orgId, "Unauthorized");
 
@@ -916,14 +929,24 @@ export async function getClientEventHistory(
 export interface CreateClientPreferenceInput {
   preferenceType: string;
   preferenceKey: string;
-  preferenceValue: string | number | boolean | Record<string, unknown> | unknown[];
+  preferenceValue:
+    | string
+    | number
+    | boolean
+    | Record<string, unknown>
+    | unknown[];
   notes?: string;
 }
 
 export interface UpdateClientPreferenceInput {
   preferenceType?: string;
   preferenceKey?: string;
-  preferenceValue?: string | number | boolean | Record<string, unknown> | unknown[];
+  preferenceValue?:
+    | string
+    | number
+    | boolean
+    | Record<string, unknown>
+    | unknown[];
   notes?: string;
 }
 
@@ -976,16 +999,29 @@ export async function updateClientPreference(
   invariant(preferenceId, "Preference ID is required");
 
   const existing = await database.clientPreference.findFirst({
-    where: { AND: [{ tenantId }, { id: preferenceId }, { clientId }, { deletedAt: null }] },
+    where: {
+      AND: [
+        { tenantId },
+        { id: preferenceId },
+        { clientId },
+        { deletedAt: null },
+      ],
+    },
   });
   invariant(existing, "Preference not found");
 
   const preference = await database.clientPreference.update({
     where: { tenantId_id: { tenantId, id: preferenceId } },
     data: {
-      ...(input.preferenceType !== undefined && { preferenceType: input.preferenceType.trim() }),
-      ...(input.preferenceKey !== undefined && { preferenceKey: input.preferenceKey.trim() }),
-      ...(input.preferenceValue !== undefined && { preferenceValue: input.preferenceValue as string }),
+      ...(input.preferenceType !== undefined && {
+        preferenceType: input.preferenceType.trim(),
+      }),
+      ...(input.preferenceKey !== undefined && {
+        preferenceKey: input.preferenceKey.trim(),
+      }),
+      ...(input.preferenceValue !== undefined && {
+        preferenceValue: input.preferenceValue as string,
+      }),
       ...(input.notes !== undefined && { notes: input.notes?.trim() || null }),
     },
   });
@@ -1009,7 +1045,14 @@ export async function deleteClientPreference(
   invariant(preferenceId, "Preference ID is required");
 
   const existing = await database.clientPreference.findFirst({
-    where: { AND: [{ tenantId }, { id: preferenceId }, { clientId }, { deletedAt: null }] },
+    where: {
+      AND: [
+        { tenantId },
+        { id: preferenceId },
+        { clientId },
+        { deletedAt: null },
+      ],
+    },
   });
   invariant(existing, "Preference not found");
 

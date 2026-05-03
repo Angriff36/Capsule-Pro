@@ -55,11 +55,11 @@ import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
   type EventProfitabilityRecord,
-  type ProfitabilitySummary,
   formatCurrency,
   getMarginBadgeClass,
   getMarginColor,
   getVarianceColor,
+  type ProfitabilitySummary,
   recalculateProfitability,
 } from "../../../lib/use-event-profitability";
 
@@ -158,9 +158,7 @@ export const ProfitabilityPageClient = ({
       setRecalculatingId(id);
       try {
         await recalculateProfitability(id);
-        toast.success(
-          `Recalculated profitability for "${eventTitle}"`
-        );
+        toast.success(`Recalculated profitability for "${eventTitle}"`);
 
         // Re-fetch the full list from the server to get updated data
         const response = await fetch("/api/events/profitability/list");
@@ -213,9 +211,7 @@ export const ProfitabilityPageClient = ({
             <p className="text-muted-foreground text-xs">
               Budgeted: {formatCurrency(summary.totalBudgetedRevenue)}
               {revenueVariance !== 0 && (
-                <span
-                  className={`ml-1 ${getVarianceColor(revenueVariance)}`}
-                >
+                <span className={`ml-1 ${getVarianceColor(revenueVariance)}`}>
                   ({revenueVariance > 0 ? "+" : ""}
                   {formatCurrency(revenueVariance)})
                 </span>
@@ -237,9 +233,7 @@ export const ProfitabilityPageClient = ({
             <p className="text-muted-foreground text-xs">
               Budgeted: {formatCurrency(summary.totalBudgetedCost)}
               {costVariance !== 0 && (
-                <span
-                  className={`ml-1 ${getVarianceColor(costVariance * -1)}`}
-                >
+                <span className={`ml-1 ${getVarianceColor(costVariance * -1)}`}>
                   ({costVariance > 0 ? "+" : ""}
                   {formatCurrency(costVariance)})
                 </span>
@@ -285,9 +279,7 @@ export const ProfitabilityPageClient = ({
             >
               {summary.underperformingCount}
             </div>
-            <p className="text-muted-foreground text-xs">
-              Margin below 15%
-            </p>
+            <p className="text-muted-foreground text-xs">Margin below 15%</p>
           </CardContent>
         </Card>
       </div>
@@ -361,10 +353,7 @@ export const ProfitabilityPageClient = ({
           <p className="text-muted-foreground text-sm">
             Showing {paginatedRecords.length} of {filteredRecords.length}
             {filteredRecords.length !== localRecords.length && (
-              <span>
-                {" "}
-                (filtered from {localRecords.length} total)
-              </span>
+              <span> (filtered from {localRecords.length} total)</span>
             )}
           </p>
         </div>
@@ -408,8 +397,7 @@ export const ProfitabilityPageClient = ({
               <TableBody>
                 {paginatedRecords.map((record) => {
                   const isRecalculating = recalculatingId === record.id;
-                  const eventTitle =
-                    record.event?.title ?? "Unknown Event";
+                  const eventTitle = record.event?.title ?? "Unknown Event";
 
                   return (
                     <TableRow key={record.id}>
@@ -513,9 +501,7 @@ export const ProfitabilityPageClient = ({
               <div className="flex gap-2">
                 <Button
                   disabled={currentPage === 1}
-                  onClick={() =>
-                    setCurrentPage((p) => Math.max(1, p - 1))
-                  }
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                   size="sm"
                   variant="outline"
                 >

@@ -417,11 +417,23 @@ export default function WasteLoggingMobilePage() {
               )}
 
               {/* Hidden inputs for server action FormData serialization */}
-              <input type="hidden" name="inventoryItemId" value={formData.itemId} />
-              <input type="hidden" name="reasonId" value={formData.reasonId} />
-              <input type="hidden" name="quantity" value={formData.quantity || ""} />
-              <input type="hidden" name="locationId" value={formData.location} />
-              <input type="hidden" name="notes" value={formData.notes} />
+              <input
+                name="inventoryItemId"
+                type="hidden"
+                value={formData.itemId}
+              />
+              <input name="reasonId" type="hidden" value={formData.reasonId} />
+              <input
+                name="quantity"
+                type="hidden"
+                value={formData.quantity || ""}
+              />
+              <input
+                name="locationId"
+                type="hidden"
+                value={formData.location}
+              />
+              <input name="notes" type="hidden" value={formData.notes} />
 
               {/* Submit Button */}
               <Button

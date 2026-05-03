@@ -14,6 +14,7 @@ import {
   TabsList,
   TabsTrigger,
 } from "@repo/design-system/components/ui/tabs";
+import { format } from "date-fns";
 import {
   AlertTriangle,
   CheckCircle2,
@@ -23,7 +24,6 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { format } from "date-fns";
 import { getTenantIdForOrg } from "../../../lib/tenant";
 
 const checkTypeLabels: Record<string, string> = {
@@ -36,7 +36,10 @@ const checkTypeLabels: Record<string, string> = {
   transport: "Transport",
 };
 
-const checkStatusBadge: Record<string, "destructive" | "default" | "secondary" | "outline"> = {
+const checkStatusBadge: Record<
+  string,
+  "destructive" | "default" | "secondary" | "outline"
+> = {
   pending: "secondary",
   passed: "default",
   failed: "destructive",
@@ -52,7 +55,10 @@ const logTypeLabels: Record<string, string> = {
   cooling: "Cooling",
 };
 
-const severityBadge: Record<string, "destructive" | "default" | "secondary" | "outline"> = {
+const severityBadge: Record<
+  string,
+  "destructive" | "default" | "secondary" | "outline"
+> = {
   critical: "destructive",
   high: "destructive",
   medium: "secondary",
@@ -142,7 +148,10 @@ const QualityAssurancePage = async () => {
         <TabsContent className="space-y-4" value="checks">
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {Object.entries(checkTypeLabels).map(([type, label]) => {
-              const counts = checkTypeCounts.get(type) ?? { total: 0, pending: 0 };
+              const counts = checkTypeCounts.get(type) ?? {
+                total: 0,
+                pending: 0,
+              };
               return (
                 <Card
                   className="hover:border-primary/50 transition-colors"
@@ -264,7 +273,8 @@ const QualityAssurancePage = async () => {
                           }`}
                         />
                         <span className="font-medium capitalize">
-                          {logTypeLabels[log.logType] ?? log.logType.replace("_", " ")}
+                          {logTypeLabels[log.logType] ??
+                            log.logType.replace("_", " ")}
                         </span>
                         {log.itemName && (
                           <span className="text-sm text-muted-foreground">
@@ -308,9 +318,7 @@ const QualityAssurancePage = async () => {
               <Badge variant="destructive">{severityCounts.high} High</Badge>
             )}
             {severityCounts.medium > 0 && (
-              <Badge variant="secondary">
-                {severityCounts.medium} Medium
-              </Badge>
+              <Badge variant="secondary">{severityCounts.medium} Medium</Badge>
             )}
             {severityCounts.low > 0 && (
               <Badge variant="outline">{severityCounts.low} Low</Badge>
@@ -342,7 +350,8 @@ const QualityAssurancePage = async () => {
                         <div className="flex items-center gap-3 text-sm text-muted-foreground">
                           {action.dueDate && (
                             <span>
-                              Due: {format(new Date(action.dueDate), "MMM d, yyyy")}
+                              Due:{" "}
+                              {format(new Date(action.dueDate), "MMM d, yyyy")}
                             </span>
                           )}
                           <span>
@@ -353,13 +362,11 @@ const QualityAssurancePage = async () => {
                       </div>
                       <div className="flex items-center gap-2">
                         <Badge
-                          variant={
-                            severityBadge[action.severity] ?? "outline"
-                          }
+                          variant={severityBadge[action.severity] ?? "outline"}
                         >
                           {action.severity}
                         </Badge>
-                        <Button size="sm" variant="outline" asChild>
+                        <Button asChild size="sm" variant="outline">
                           <Link
                             href={`/kitchen/quality-assurance/${action.id}`}
                           >

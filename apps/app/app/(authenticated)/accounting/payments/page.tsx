@@ -1,4 +1,5 @@
 import { auth } from "@repo/auth/server";
+import { database } from "@repo/database";
 import {
   CommandBand,
   CommandBandActions,
@@ -17,7 +18,6 @@ import {
   StatusPill,
 } from "@repo/design-system/components/blocks/page-shell";
 import { Button } from "@repo/design-system/components/ui/button";
-import { database } from "@repo/database";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -43,11 +43,13 @@ function formatDate(value: Date | null) {
   return dateFormatter.format(value);
 }
 
-function getClientLabel(client: {
-  company_name: string | null;
-  first_name: string | null;
-  last_name: string | null;
-} | null) {
+function getClientLabel(
+  client: {
+    company_name: string | null;
+    first_name: string | null;
+    last_name: string | null;
+  } | null
+) {
   if (!client) return "No client";
 
   const personName = [client.first_name, client.last_name]
@@ -199,10 +201,10 @@ export default async function PaymentsPage() {
       <OperationalColumn>
         <section className="space-y-4">
           <SectionHeader
+            count={`${recentPayments.length} shown`}
+            description="A tenant-scoped list of recent payments with invoice, client, event, and settlement status."
             eyebrow="Cash"
             title="Latest payment records"
-            description="A tenant-scoped list of recent payments with invoice, client, event, and settlement status."
-            count={`${recentPayments.length} shown`}
           />
 
           {recentPayments.length === 0 ? (
@@ -239,11 +241,14 @@ export default async function PaymentsPage() {
                   <div className="space-y-1 text-muted-foreground">
                     <div>{payment.methodType.replaceAll("_", " ")}</div>
                     <div>
-                      {payment.completedAt ? "Completed" : "Recorded"} {formatDate(payment.completedAt ?? payment.createdAt)}
+                      {payment.completedAt ? "Completed" : "Recorded"}{" "}
+                      {formatDate(payment.completedAt ?? payment.createdAt)}
                     </div>
                   </div>
                   <div>
-                    <StatusPill>{payment.status.replaceAll("_", " ")}</StatusPill>
+                    <StatusPill>
+                      {payment.status.replaceAll("_", " ")}
+                    </StatusPill>
                   </div>
                   <div className="text-right font-medium text-ink">
                     {new Intl.NumberFormat("en-US", {

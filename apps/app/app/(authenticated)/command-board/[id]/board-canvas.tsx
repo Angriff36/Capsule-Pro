@@ -10,13 +10,7 @@ import {
 } from "@repo/design-system/components/ui/dialog";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
-import {
-  LayoutDashboard,
-  Maximize2,
-  Minimize2,
-  Search,
-  X,
-} from "lucide-react";
+import { LayoutDashboard, Maximize2, Minimize2, Search, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   assignToGroupAction,
@@ -202,10 +196,7 @@ export const BoardCanvas = ({
       }
 
       // Ctrl/Cmd+A: select all cards
-      if (
-        (event.ctrlKey || event.metaKey) &&
-        event.key.toLowerCase() === "a"
-      ) {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "a") {
         event.preventDefault();
         setSelectedIds(new Set(localCards.map((c) => c.id)));
         return;
@@ -264,7 +255,7 @@ export const BoardCanvas = ({
         offsetY: event.clientY - card.positionY,
       });
     },
-    [localCards],
+    [localCards]
   );
 
   const handleMouseMove = useCallback(
@@ -276,11 +267,11 @@ export const BoardCanvas = ({
 
       setLocalCards((prev) =>
         prev.map((c) =>
-          c.id === drag.cardId ? { ...c, positionX: newX, positionY: newY } : c,
-        ),
+          c.id === drag.cardId ? { ...c, positionX: newX, positionY: newY } : c
+        )
       );
     },
-    [drag],
+    [drag]
   );
 
   const handleMouseUp = useCallback(() => {
@@ -301,16 +292,13 @@ export const BoardCanvas = ({
   /*  Canvas background click (deselect)                                 */
   /* ------------------------------------------------------------------ */
 
-  const handleCanvasMouseDown = useCallback(
-    (event: React.MouseEvent) => {
-      // Only if clicking the canvas background, not a card
-      if ((event.target as HTMLElement).closest("[data-card-id]")) return;
-      if ((event.target as HTMLElement).closest("[data-group-id]")) return;
+  const handleCanvasMouseDown = useCallback((event: React.MouseEvent) => {
+    // Only if clicking the canvas background, not a card
+    if ((event.target as HTMLElement).closest("[data-card-id]")) return;
+    if ((event.target as HTMLElement).closest("[data-group-id]")) return;
 
-      setSelectedIds(new Set());
-    },
-    [],
-  );
+    setSelectedIds(new Set());
+  }, []);
 
   /* ------------------------------------------------------------------ */
   /*  Bulk operations                                                    */
@@ -331,9 +319,7 @@ export const BoardCanvas = ({
     try {
       // Optimistic local update
       setLocalCards((prev) =>
-        prev.map((c) =>
-          ids.includes(c.id) ? { ...c, ...updates } : c,
-        ),
+        prev.map((c) => (ids.includes(c.id) ? { ...c, ...updates } : c))
       );
 
       await bulkUpdateCardsAction(ids, updates);
@@ -370,7 +356,7 @@ export const BoardCanvas = ({
         minX,
         minY,
         maxX - minX,
-        maxY - minY,
+        maxY - minY
       );
 
       // Optimistic local update
@@ -387,9 +373,7 @@ export const BoardCanvas = ({
 
       setLocalGroups((prev) => [...prev, newGroup]);
       setLocalCards((prev) =>
-        prev.map((c) =>
-          ids.includes(c.id) ? { ...c, groupId: result.id } : c,
-        ),
+        prev.map((c) => (ids.includes(c.id) ? { ...c, groupId: result.id } : c))
       );
 
       setShowGroupDialog(false);
@@ -406,7 +390,7 @@ export const BoardCanvas = ({
 
     // Optimistic
     setLocalCards((prev) =>
-      prev.map((c) => (ids.includes(c.id) ? { ...c, groupId } : c)),
+      prev.map((c) => (ids.includes(c.id) ? { ...c, groupId } : c))
     );
 
     await assignToGroupAction(ids, groupId);
@@ -419,7 +403,7 @@ export const BoardCanvas = ({
 
     // Optimistic
     setLocalCards((prev) =>
-      prev.map((c) => (ids.includes(c.id) ? { ...c, groupId: null } : c)),
+      prev.map((c) => (ids.includes(c.id) ? { ...c, groupId: null } : c))
     );
 
     await ungroupCardsAction(ids);
@@ -434,8 +418,8 @@ export const BoardCanvas = ({
 
     setLocalGroups((prev) =>
       prev.map((g) =>
-        g.id === groupId ? { ...g, collapsed: newCollapsed } : g,
-      ),
+        g.id === groupId ? { ...g, collapsed: newCollapsed } : g
+      )
     );
 
     await toggleGroupCollapseAction(groupId, newCollapsed);
@@ -445,7 +429,7 @@ export const BoardCanvas = ({
     // Optimistic
     setLocalGroups((prev) => prev.filter((g) => g.id !== groupId));
     setLocalCards((prev) =>
-      prev.map((c) => (c.groupId === groupId ? { ...c, groupId: null } : c)),
+      prev.map((c) => (c.groupId === groupId ? { ...c, groupId: null } : c))
     );
 
     await deleteGroupAction(groupId);
@@ -466,7 +450,7 @@ export const BoardCanvas = ({
         {initialConnections.map((conn) => {
           const from = cardMap.get(conn.fromCardId);
           const to = cardMap.get(conn.toCardId);
-          if (!from || !to) return null;
+          if (!(from && to)) return null;
 
           // Hide connections if either card is in a collapsed group
           const fromGroup = localGroups.find((g) => g.id === from.groupId);
@@ -481,9 +465,9 @@ export const BoardCanvas = ({
           return (
             <g key={conn.id}>
               <line
+                className="text-muted-foreground/40"
                 stroke="currentColor"
                 strokeWidth={1.5}
-                className="text-muted-foreground/40"
                 x1={x1}
                 x2={x2}
                 y1={y1}
@@ -528,9 +512,9 @@ export const BoardCanvas = ({
 
     return (
       <div
+        className="absolute rounded-lg"
         data-group-id={group.id}
         key={group.id}
-        className="absolute rounded-lg"
         style={{
           left: group.positionX,
           top: group.positionY,
@@ -547,7 +531,9 @@ export const BoardCanvas = ({
           style={{
             height: headerHeight,
             backgroundColor: `${borderColor}15`,
-            borderBottom: group.collapsed ? "none" : `1px solid ${borderColor}30`,
+            borderBottom: group.collapsed
+              ? "none"
+              : `1px solid ${borderColor}30`,
           }}
         >
           <div className="flex items-center gap-2">
@@ -643,7 +629,7 @@ export const BoardCanvas = ({
 
     const ids = Array.from(selectedIds);
     const anyGrouped = ids.some(
-      (id) => localCards.find((c) => c.id === id)?.groupId,
+      (id) => localCards.find((c) => c.id === id)?.groupId
     );
 
     return (
@@ -686,7 +672,7 @@ export const BoardCanvas = ({
 
         {/* Apply */}
         <Button
-          disabled={applying || (!bulkStatus && !bulkColor)}
+          disabled={applying || !(bulkStatus || bulkColor)}
           onClick={handleBulkApply}
           size="sm"
           variant="default"
@@ -824,9 +810,9 @@ export const BoardCanvas = ({
       <div
         className="flex-1 overflow-auto bg-muted/20"
         onMouseDown={handleCanvasMouseDown}
+        onMouseLeave={handleMouseUp}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
         ref={canvasRef}
         role="application"
         style={{
@@ -849,7 +835,10 @@ export const BoardCanvas = ({
             </div>
           </div>
         ) : (
-          <div className="relative" style={{ minHeight: "100%", minWidth: "100%" }}>
+          <div
+            className="relative"
+            style={{ minHeight: "100%", minWidth: "100%" }}
+          >
             {/* Groups layer (z-0) */}
             {localGroups.map(renderGroup)}
 

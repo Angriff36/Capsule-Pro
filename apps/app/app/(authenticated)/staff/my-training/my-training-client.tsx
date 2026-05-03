@@ -3,12 +3,7 @@
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import { cn } from "@repo/design-system/lib/utils";
-import {
-  CheckCircle,
-  Clock,
-  ExternalLink,
-  FileText,
-} from "lucide-react";
+import { CheckCircle, Clock, ExternalLink, FileText } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -51,9 +46,7 @@ function daysUntilDue(dueDate: string | null): number | null {
   return Math.ceil((due.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
 }
 
-export function MyTrainingClient({
-  assignments,
-}: MyTrainingClientProperties) {
+export function MyTrainingClient({ assignments }: MyTrainingClientProperties) {
   const router = useRouter();
   const [loading, setLoading] = useState<string | null>(null);
 
@@ -79,7 +72,11 @@ export function MyTrainingClient({
       const response = await fetch("/api/training/complete", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "complete", assignmentId, passed: true }),
+        body: JSON.stringify({
+          action: "complete",
+          assignmentId,
+          passed: true,
+        }),
       });
       if (response.ok) {
         router.refresh();
@@ -114,7 +111,7 @@ export function MyTrainingClient({
           <div
             className={cn(
               "rounded-[22px] border border-hairline bg-canvas p-5 transition-colors",
-              isOverdue && "border-red-200",
+              isOverdue && "border-red-200"
             )}
             key={assignment.id}
           >
@@ -155,18 +152,14 @@ export function MyTrainingClient({
               </div>
 
               <div className="flex shrink-0 items-center gap-2">
-                {isOverdue && (
-                  <Badge variant="destructive">Overdue</Badge>
-                )}
+                {isOverdue && <Badge variant="destructive">Overdue</Badge>}
                 {isCompleted && (
                   <Badge variant="secondary">
                     <CheckCircle className="mr-1 h-3 w-3" />
                     Done
                   </Badge>
                 )}
-                {isInProgress && (
-                  <Badge variant="outline">In progress</Badge>
-                )}
+                {isInProgress && <Badge variant="outline">In progress</Badge>}
                 {assignment.status === "assigned" && (
                   <Button
                     className="bg-ink text-white hover:bg-ink/90"
@@ -206,7 +199,10 @@ export function MyTrainingClient({
                   <span
                     className={cn(
                       isOverdue && "text-red-600",
-                      !isOverdue && days !== null && days <= 3 && "text-amber-600",
+                      !isOverdue &&
+                        days !== null &&
+                        days <= 3 &&
+                        "text-amber-600"
                     )}
                   >
                     Due {formatDate(assignment.due_date)}

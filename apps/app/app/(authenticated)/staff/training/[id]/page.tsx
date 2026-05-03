@@ -307,7 +307,10 @@ const TrainingModulePage = async ({ params }: TrainingModulePageProps) => {
             <CardDescription>
               Employees assigned to this training module.
               {overdueCount > 0 && (
-                <Badge className="ml-2 bg-red-100 text-red-800" variant="outline">
+                <Badge
+                  className="ml-2 bg-red-100 text-red-800"
+                  variant="outline"
+                >
                   {overdueCount} overdue
                 </Badge>
               )}
@@ -344,7 +347,8 @@ const TrainingModulePage = async ({ params }: TrainingModulePageProps) => {
                               {assignment.employee_first_name &&
                               assignment.employee_last_name
                                 ? `${assignment.employee_first_name} ${assignment.employee_last_name}`
-                                : (assignment.employee_email ?? "All Employees")}
+                                : (assignment.employee_email ??
+                                  "All Employees")}
                             </div>
                             {assignment.employee_email && (
                               <div className="text-xs text-muted-foreground">
@@ -367,7 +371,10 @@ const TrainingModulePage = async ({ params }: TrainingModulePageProps) => {
                               {assignment.status.replace("_", " ")}
                             </Badge>
                             {overdue && (
-                              <Badge className="bg-red-100 text-red-800" variant="outline">
+                              <Badge
+                                className="bg-red-100 text-red-800"
+                                variant="outline"
+                              >
                                 Overdue
                               </Badge>
                             )}
@@ -376,7 +383,9 @@ const TrainingModulePage = async ({ params }: TrainingModulePageProps) => {
                         <TableCell>
                           {assignment.due_date ? (
                             <span
-                              className={overdue ? "text-red-600 font-medium" : ""}
+                              className={
+                                overdue ? "text-red-600 font-medium" : ""
+                              }
                             >
                               {formatDate(assignment.due_date)}
                             </span>

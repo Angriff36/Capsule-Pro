@@ -173,7 +173,11 @@ export default function DriversPage() {
         const res = await apiFetch("/api/logistics/drivers/commands/update", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ driverId: editing.id, ...form, vehicleId: form.vehicleId || null }),
+          body: JSON.stringify({
+            driverId: editing.id,
+            ...form,
+            vehicleId: form.vehicleId || null,
+          }),
         });
         if (res.ok) {
           toast.success("Driver updated successfully");
@@ -355,7 +359,11 @@ export default function DriversPage() {
                 : "Add a new delivery driver."}
             </DialogDescription>
           </DialogHeader>
-          <form action={createDriver} className="space-y-4" onSubmit={handleSave}>
+          <form
+            action={createDriver}
+            className="space-y-4"
+            onSubmit={handleSave}
+          >
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Name *</Label>

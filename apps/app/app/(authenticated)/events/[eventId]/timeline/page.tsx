@@ -151,9 +151,7 @@ const EventTimelinePage = async ({ params }: EventTimelinePageProps) => {
       <CommandBand>
         <CommandBandHeader>
           <div className="space-y-4">
-            <MonoLabel tone="dark">
-              Events / {eventLabel} / Timeline
-            </MonoLabel>
+            <MonoLabel tone="dark">Events / {eventLabel} / Timeline</MonoLabel>
             <DisplayHeading>{eventLabel} run-of-show</DisplayHeading>
             <CommandBandLede>
               {eventDate
@@ -197,7 +195,10 @@ const EventTimelinePage = async ({ params }: EventTimelinePageProps) => {
             eyebrow="Timeline"
             title="Run-of-show"
           />
-          <EventTimelineClient eventId={eventId} initialItems={serializedItems} />
+          <EventTimelineClient
+            eventId={eventId}
+            initialItems={serializedItems}
+          />
         </section>
       </OperationalColumn>
     </PageCanvas>

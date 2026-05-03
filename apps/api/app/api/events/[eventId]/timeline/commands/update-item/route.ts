@@ -121,7 +121,10 @@ export async function POST(
   }
 
   if (body.sortOrder !== undefined) {
-    if (typeof body.sortOrder !== "number" || !Number.isFinite(body.sortOrder)) {
+    if (
+      typeof body.sortOrder !== "number" ||
+      !Number.isFinite(body.sortOrder)
+    ) {
       return NextResponse.json(
         { error: "sortOrder must be a number" },
         { status: 400 }
@@ -131,10 +134,7 @@ export async function POST(
   }
 
   if (Object.keys(data).length === 0) {
-    return NextResponse.json(
-      { error: "No fields to update" },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: "No fields to update" }, { status: 400 });
   }
 
   const existing = await database.eventTimeline.findFirst({

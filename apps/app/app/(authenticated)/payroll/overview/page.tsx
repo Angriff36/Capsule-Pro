@@ -204,7 +204,9 @@ const PayrollOverviewPage = async () => {
     <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
       {/* Page Header */}
       <div className="space-y-0.5">
-        <h1 className="text-2xl font-semibold tracking-tight">Payroll Overview</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">
+          Payroll Overview
+        </h1>
         <p className="text-muted-foreground">
           Confirm totals, approvals, and risks before the next payout.
         </p>

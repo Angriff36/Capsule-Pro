@@ -1,9 +1,13 @@
 name: Deploy
 
+# Production only when you explicitly run this workflow (Actions → Deploy → Run workflow).
+# Git pushes do not deploy. Vercel Git integration builds are skipped via ignoreCommand in each vercel.json.
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
+
+concurrency:
+  group: deploy-production-manual
+  cancel-in-progress: true
 
 permissions:
   contents: read

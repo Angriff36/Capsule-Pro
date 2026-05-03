@@ -52,7 +52,7 @@ export const createCommandBoard = async (formData: FormData) => {
 export const moveCardAction = async (
   cardId: string,
   positionX: number,
-  positionY: number,
+  positionY: number
 ) => {
   const tenantId = await requireTenantId();
 
@@ -65,7 +65,7 @@ export const moveCardAction = async (
 /** Bulk-update properties on multiple cards (status, color, cardType). */
 export const bulkUpdateCardsAction = async (
   cardIds: string[],
-  updates: { status?: string; color?: string; cardType?: string },
+  updates: { status?: string; color?: string; cardType?: string }
 ) => {
   if (cardIds.length === 0) return;
 
@@ -86,7 +86,7 @@ export const createGroupAction = async (
   positionX: number,
   positionY: number,
   width: number,
-  height: number,
+  height: number
 ) => {
   const tenantId = await requireTenantId();
 
@@ -132,7 +132,7 @@ export const ungroupCardsAction = async (cardIds: string[]) => {
 /** Assign cards to an existing group. */
 export const assignToGroupAction = async (
   cardIds: string[],
-  groupId: string,
+  groupId: string
 ) => {
   if (cardIds.length === 0) return;
 
@@ -147,7 +147,7 @@ export const assignToGroupAction = async (
 /** Toggle group collapsed state. */
 export const toggleGroupCollapseAction = async (
   groupId: string,
-  collapsed: boolean,
+  collapsed: boolean
 ) => {
   const tenantId = await requireTenantId();
 

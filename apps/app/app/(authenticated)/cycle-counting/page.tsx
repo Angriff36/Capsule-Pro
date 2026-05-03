@@ -1,5 +1,3 @@
-import { Badge } from "@repo/design-system/components/ui/badge";
-import { Button } from "@repo/design-system/components/ui/button";
 import {
   CommandBand,
   CommandBandHeader,
@@ -10,6 +8,8 @@ import {
   PageCanvas,
   SectionHeader,
 } from "@repo/design-system/components/blocks/page-shell";
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
 import {
@@ -53,8 +53,8 @@ export default async function CycleCountingPage() {
             <MonoLabel tone="dark">Inventory / Cycle Counting</MonoLabel>
             <DisplayHeading>Cycle Counting</DisplayHeading>
             <CommandBandLede>
-              Manage inventory cycle counts with automated variance tracking
-              and adjustments.
+              Manage inventory cycle counts with automated variance tracking and
+              adjustments.
             </CommandBandLede>
           </div>
         </CommandBandHeader>

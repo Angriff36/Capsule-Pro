@@ -119,9 +119,7 @@ interface SerializedVendorContract {
   updatedAt: string;
 }
 
-type SerializedContract =
-  | SerializedEventContract
-  | SerializedVendorContract;
+type SerializedContract = SerializedEventContract | SerializedVendorContract;
 
 // ---------------------------------------------------------------------------
 // Status badge map
@@ -187,7 +185,11 @@ interface ContractDetailClientProps {
 // Event Contract Detail
 // ---------------------------------------------------------------------------
 
-function EventContractDetail({ contract }: { contract: SerializedEventContract }) {
+function EventContractDetail({
+  contract,
+}: {
+  contract: SerializedEventContract;
+}) {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   const executeCommand = useCallback(
@@ -207,21 +209,27 @@ function EventContractDetail({ contract }: { contract: SerializedEventContract }
         window.location.reload();
       } catch (err) {
         toast.error(
-          err instanceof Error ? err.message : `Failed to ${label.toLowerCase()}`,
+          err instanceof Error
+            ? err.message
+            : `Failed to ${label.toLowerCase()}`
         );
       } finally {
         setActionLoading(null);
       }
     },
-    [contract.id],
+    [contract.id]
   );
 
   // Action buttons by status
-  const statusActions: Array<{ label: string; command: string; icon: React.ReactNode }> = [];
+  const statusActions: Array<{
+    label: string;
+    command: string;
+    icon: React.ReactNode;
+  }> = [];
   if (contract.status === "draft") {
     statusActions.push({
       label: "Send",
-      command: `/api/events/contracts/commands/send`,
+      command: "/api/events/contracts/commands/send",
       icon: <Send className="mr-2 h-4 w-4" />,
     });
   }
@@ -253,17 +261,21 @@ function EventContractDetail({ contract }: { contract: SerializedEventContract }
     id: sig.id,
     title: (
       <div className="flex flex-col gap-1">
-        <span className="ds-body-large">{sig.signerName || "Unknown signer"}</span>
-        <span className="ds-caption text-ink/50">{sig.signerEmail || "\u2014"}</span>
+        <span className="ds-body-large">
+          {sig.signerName || "Unknown signer"}
+        </span>
+        <span className="ds-caption text-ink/50">
+          {sig.signerEmail || "\u2014"}
+        </span>
       </div>
     ),
     pills: sig.signedAt ? (
-      <Badge variant="secondary" className="gap-1">
+      <Badge className="gap-1" variant="secondary">
         <CheckCircle2 className="h-3 w-3" />
         Signed
       </Badge>
     ) : (
-      <Badge variant="outline" className="gap-1">
+      <Badge className="gap-1" variant="outline">
         <Clock className="h-3 w-3" />
         Pending
       </Badge>
@@ -274,7 +286,9 @@ function EventContractDetail({ contract }: { contract: SerializedEventContract }
           {sig.signedAt ? formatDateTime(sig.signedAt) : "\u2014"}
         </span>
         {sig.ipAddress && (
-          <span className="ds-mono text-xs text-ink/40">IP: {sig.ipAddress}</span>
+          <span className="ds-mono text-xs text-ink/40">
+            IP: {sig.ipAddress}
+          </span>
         )}
       </div>
     ),
@@ -286,7 +300,7 @@ function EventContractDetail({ contract }: { contract: SerializedEventContract }
       <div className="flex flex-wrap items-center gap-3">
         {statusBadge(contract.status)}
         {contract.contractNumber && (
-          <Badge variant="outline" className="gap-1">
+          <Badge className="gap-1" variant="outline">
             <FileText className="h-3 w-3" />
             {contract.contractNumber}
           </Badge>
@@ -295,29 +309,35 @@ function EventContractDetail({ contract }: { contract: SerializedEventContract }
           {statusActions.map((action) =>
             action.command ? (
               <Button
+                disabled={actionLoading !== null}
                 key={action.label}
                 onClick={() => executeCommand(action.command, action.label)}
-                disabled={actionLoading !== null}
                 size="sm"
               >
                 {action.icon}
-                {actionLoading === action.label ? "Processing..." : action.label}
+                {actionLoading === action.label
+                  ? "Processing..."
+                  : action.label}
               </Button>
-            ) : action.label === "View signing link" && contract.signingToken ? (
-              <Button key={action.label} asChild size="sm" variant="outline">
-                <Link href={`/sign/contract/${contract.signingToken}`} target="_blank">
+            ) : action.label === "View signing link" &&
+              contract.signingToken ? (
+              <Button asChild key={action.label} size="sm" variant="outline">
+                <Link
+                  href={`/sign/contract/${contract.signingToken}`}
+                  target="_blank"
+                >
                   {action.icon}
                   Signing Link
                 </Link>
               </Button>
             ) : action.label === "View document" && contract.documentUrl ? (
-              <Button key={action.label} asChild size="sm" variant="outline">
+              <Button asChild key={action.label} size="sm" variant="outline">
                 <a href={contract.documentUrl} rel="noopener" target="_blank">
                   {action.icon}
                   Open Document
                 </a>
               </Button>
-            ) : null,
+            ) : null
           )}
         </div>
       </div>
@@ -331,7 +351,9 @@ function EventContractDetail({ contract }: { contract: SerializedEventContract }
               <FileText className="h-5 w-5 text-primary" />
               Contract Information
             </CardTitle>
-            <CardDescription>Event contract details and parties</CardDescription>
+            <CardDescription>
+              Event contract details and parties
+            </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4">
             <div className="grid gap-1">
@@ -435,13 +457,17 @@ function EventContractDetail({ contract }: { contract: SerializedEventContract }
               <Pen className="h-5 w-5 text-primary" />
               Notes
             </CardTitle>
-            <CardDescription>Contract notes and internal comments</CardDescription>
+            <CardDescription>
+              Contract notes and internal comments
+            </CardDescription>
           </CardHeader>
           <CardContent>
             {contract.notes ? (
               <p className="whitespace-pre-wrap text-sm">{contract.notes}</p>
             ) : (
-              <p className="text-sm text-muted-foreground">No notes recorded.</p>
+              <p className="text-sm text-muted-foreground">
+                No notes recorded.
+              </p>
             )}
           </CardContent>
         </Card>
@@ -493,11 +519,19 @@ function EventContractDetail({ contract }: { contract: SerializedEventContract }
 // Vendor Contract Detail
 // ---------------------------------------------------------------------------
 
-function VendorContractDetail({ contract }: { contract: SerializedVendorContract }) {
+function VendorContractDetail({
+  contract,
+}: {
+  contract: SerializedVendorContract;
+}) {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   const executeCommand = useCallback(
-    async (commandPath: string, label: string, body?: Record<string, unknown>) => {
+    async (
+      commandPath: string,
+      label: string,
+      body?: Record<string, unknown>
+    ) => {
       setActionLoading(label);
       try {
         const res = await apiFetch(commandPath, {
@@ -513,13 +547,15 @@ function VendorContractDetail({ contract }: { contract: SerializedVendorContract
         window.location.reload();
       } catch (err) {
         toast.error(
-          err instanceof Error ? err.message : `Failed to ${label.toLowerCase()}`,
+          err instanceof Error
+            ? err.message
+            : `Failed to ${label.toLowerCase()}`
         );
       } finally {
         setActionLoading(null);
       }
     },
-    [contract.id],
+    [contract.id]
   );
 
   // Action buttons by status
@@ -534,7 +570,7 @@ function VendorContractDetail({ contract }: { contract: SerializedVendorContract
   if (contract.status === "draft") {
     statusActions.push({
       label: "Submit",
-      command: `/api/procurement/vendor-contracts/commands/submit`,
+      command: "/api/procurement/vendor-contracts/commands/submit",
       icon: <Send className="mr-2 h-4 w-4" />,
     });
   }
@@ -542,21 +578,21 @@ function VendorContractDetail({ contract }: { contract: SerializedVendorContract
     statusActions.push(
       {
         label: "Approve",
-        command: `/api/procurement/vendor-contracts/commands/approve`,
+        command: "/api/procurement/vendor-contracts/commands/approve",
         icon: <CheckCircle2 className="mr-2 h-4 w-4" />,
       },
       {
         label: "Reject",
-        command: `/api/procurement/vendor-contracts/commands/reject`,
+        command: "/api/procurement/vendor-contracts/commands/reject",
         icon: <XCircle className="mr-2 h-4 w-4" />,
         variant: "destructive",
-      },
+      }
     );
   }
   if (contract.status === "approved") {
     statusActions.push({
       label: "Activate",
-      command: `/api/procurement/vendor-contracts/commands/activate`,
+      command: "/api/procurement/vendor-contracts/commands/activate",
       icon: <ArrowRight className="mr-2 h-4 w-4" />,
     });
   }
@@ -564,16 +600,16 @@ function VendorContractDetail({ contract }: { contract: SerializedVendorContract
     statusActions.push(
       {
         label: "Renew",
-        command: `/api/procurement/vendor-contracts/commands/renew`,
+        command: "/api/procurement/vendor-contracts/commands/renew",
         icon: <RefreshCw className="mr-2 h-4 w-4" />,
         variant: "outline",
       },
       {
         label: "Terminate",
-        command: `/api/procurement/vendor-contracts/commands/terminate`,
+        command: "/api/procurement/vendor-contracts/commands/terminate",
         icon: <Gavel className="mr-2 h-4 w-4" />,
         variant: "destructive",
-      },
+      }
     );
   }
 
@@ -600,18 +636,22 @@ function VendorContractDetail({ contract }: { contract: SerializedVendorContract
       <div className="flex flex-wrap items-center gap-3">
         {statusBadge(contract.status)}
         {contract.contractNumber && (
-          <Badge variant="outline" className="gap-1">
+          <Badge className="gap-1" variant="outline">
             <FileText className="h-3 w-3" />
             {contract.contractNumber}
           </Badge>
         )}
-        <Badge variant="outline">{contract.contractTypeLabel || "General"}</Badge>
+        <Badge variant="outline">
+          {contract.contractTypeLabel || "General"}
+        </Badge>
         <div className="ml-auto flex items-center gap-2">
           {statusActions.map((action) => (
             <Button
-              key={action.label}
-              onClick={() => executeCommand(action.command, action.label, action.body)}
               disabled={actionLoading !== null}
+              key={action.label}
+              onClick={() =>
+                executeCommand(action.command, action.label, action.body)
+              }
               size="sm"
               variant={action.variant || "default"}
             >
@@ -773,7 +813,9 @@ function VendorContractDetail({ contract }: { contract: SerializedVendorContract
               <Shield className="h-5 w-5 text-primary" />
               Compliance & Performance
             </CardTitle>
-            <CardDescription>Vendor quality metrics and SLA tracking</CardDescription>
+            <CardDescription>
+              Vendor quality metrics and SLA tracking
+            </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4">
             {/* Compliance rows */}
@@ -783,7 +825,9 @@ function VendorContractDetail({ contract }: { contract: SerializedVendorContract
                   <Shield className="h-4 w-4 text-muted-foreground" />
                   Compliance score
                 </div>
-                <span className={`ds-mono text-sm font-medium ${complianceColor}`}>
+                <span
+                  className={`ds-mono text-sm font-medium ${complianceColor}`}
+                >
                   {contract.complianceScore !== null
                     ? `${contract.complianceScore}%`
                     : "\u2014"}
@@ -846,20 +890,21 @@ function VendorContractDetail({ contract }: { contract: SerializedVendorContract
                 <p className="text-sm">
                   <User className="mr-1 inline h-3 w-3" />
                   {contract.approvedBy}
-                  {contract.approvedAt && ` on ${formatDate(contract.approvedAt)}`}
+                  {contract.approvedAt &&
+                    ` on ${formatDate(contract.approvedAt)}`}
                 </p>
               </div>
             )}
 
             {/* SLA breach record action */}
             <Button
+              disabled={actionLoading !== null}
               onClick={() =>
                 executeCommand(
-                  `/api/procurement/vendor-contracts/commands/record-sla-breach`,
-                  "Record SLA breach",
+                  "/api/procurement/vendor-contracts/commands/record-sla-breach",
+                  "Record SLA breach"
                 )
               }
-              disabled={actionLoading !== null}
               size="sm"
               variant="outline"
             >
@@ -884,7 +929,9 @@ function VendorContractDetail({ contract }: { contract: SerializedVendorContract
             {contract.notes ? (
               <p className="whitespace-pre-wrap text-sm">{contract.notes}</p>
             ) : (
-              <p className="text-sm text-muted-foreground">No notes recorded.</p>
+              <p className="text-sm text-muted-foreground">
+                No notes recorded.
+              </p>
             )}
           </CardContent>
         </Card>

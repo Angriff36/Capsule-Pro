@@ -24,12 +24,7 @@ import {
 import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
-import {
-  PencilIcon,
-  PlusIcon,
-  TagIcon,
-  Trash2Icon,
-} from "lucide-react";
+import { PencilIcon, PlusIcon, TagIcon, Trash2Icon } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import {
@@ -71,12 +66,15 @@ const PREFERENCE_TYPES = [
 ];
 
 export function PreferencesTab({ client }: PreferencesTabProps) {
-  const [preferences, setPreferences] = useState<Preference[]>(client.preferences);
+  const [preferences, setPreferences] = useState<Preference[]>(
+    client.preferences
+  );
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [selectedPreference, setSelectedPreference] = useState<Preference | null>(null);
+  const [selectedPreference, setSelectedPreference] =
+    useState<Preference | null>(null);
 
   const [formData, setFormData] = useState({
     preferenceType: "General",
@@ -166,9 +164,10 @@ export function PreferencesTab({ client }: PreferencesTabProps) {
     setFormData({
       preferenceType: pref.preferenceType,
       preferenceKey: pref.preferenceKey,
-      preferenceValue: typeof pref.preferenceValue === "object"
-        ? JSON.stringify(pref.preferenceValue)
-        : String(pref.preferenceValue ?? ""),
+      preferenceValue:
+        typeof pref.preferenceValue === "object"
+          ? JSON.stringify(pref.preferenceValue)
+          : String(pref.preferenceValue ?? ""),
       notes: pref.notes || "",
     });
     setEditDialogOpen(true);
@@ -210,12 +209,16 @@ export function PreferencesTab({ client }: PreferencesTabProps) {
         <select
           className="w-full h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"
           id="preferenceType"
-          onChange={(e) => setFormData({ ...formData, preferenceType: e.target.value })}
+          onChange={(e) =>
+            setFormData({ ...formData, preferenceType: e.target.value })
+          }
           required
           value={formData.preferenceType}
         >
           {PREFERENCE_TYPES.map((type) => (
-            <option key={type} value={type}>{type}</option>
+            <option key={type} value={type}>
+              {type}
+            </option>
           ))}
         </select>
       </div>
@@ -223,7 +226,9 @@ export function PreferencesTab({ client }: PreferencesTabProps) {
         <Label htmlFor="preferenceKey">Key *</Label>
         <Input
           id="preferenceKey"
-          onChange={(e) => setFormData({ ...formData, preferenceKey: e.target.value })}
+          onChange={(e) =>
+            setFormData({ ...formData, preferenceKey: e.target.value })
+          }
           placeholder="e.g. dietary_restrictions, preferred_venue"
           required
           value={formData.preferenceKey}
@@ -233,7 +238,9 @@ export function PreferencesTab({ client }: PreferencesTabProps) {
         <Label htmlFor="preferenceValue">Value *</Label>
         <Textarea
           id="preferenceValue"
-          onChange={(e) => setFormData({ ...formData, preferenceValue: e.target.value })}
+          onChange={(e) =>
+            setFormData({ ...formData, preferenceValue: e.target.value })
+          }
           placeholder="e.g. Vegetarian, Hall A"
           required
           rows={2}
@@ -272,7 +279,14 @@ export function PreferencesTab({ client }: PreferencesTabProps) {
             <form className="space-y-4" onSubmit={handleCreate}>
               {preferenceFormFields}
               <DialogFooter className="gap-2">
-                <Button onClick={() => { setDialogOpen(false); resetForm(); }} type="button" variant="outline">
+                <Button
+                  onClick={() => {
+                    setDialogOpen(false);
+                    resetForm();
+                  }}
+                  type="button"
+                  variant="outline"
+                >
                   Cancel
                 </Button>
                 <Button disabled={submitting} type="submit">
@@ -290,7 +304,8 @@ export function PreferencesTab({ client }: PreferencesTabProps) {
             <TagIcon className="h-12 w-12 text-muted-foreground mb-4" />
             <h3 className="text-lg font-semibold mb-2">No preferences set</h3>
             <p className="text-muted-foreground mb-4">
-              Add preferences to track client-specific requirements and settings.
+              Add preferences to track client-specific requirements and
+              settings.
             </p>
             <Button onClick={() => setDialogOpen(true)}>
               <PlusIcon className="h-4 w-4 mr-2" />
@@ -332,7 +347,9 @@ export function PreferencesTab({ client }: PreferencesTabProps) {
                         {formatValue(pref.preferenceValue)}
                       </div>
                       {pref.notes && (
-                        <p className="text-xs text-muted-foreground mt-2">{pref.notes}</p>
+                        <p className="text-xs text-muted-foreground mt-2">
+                          {pref.notes}
+                        </p>
                       )}
                     </CardContent>
                   </Card>
@@ -352,7 +369,15 @@ export function PreferencesTab({ client }: PreferencesTabProps) {
           <form className="space-y-4" onSubmit={handleEdit}>
             {preferenceFormFields}
             <DialogFooter className="gap-2">
-              <Button onClick={() => { setEditDialogOpen(false); setSelectedPreference(null); resetForm(); }} type="button" variant="outline">
+              <Button
+                onClick={() => {
+                  setEditDialogOpen(false);
+                  setSelectedPreference(null);
+                  resetForm();
+                }}
+                type="button"
+                variant="outline"
+              >
                 Cancel
               </Button>
               <Button disabled={submitting} type="submit">
@@ -369,7 +394,9 @@ export function PreferencesTab({ client }: PreferencesTabProps) {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Preference?</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete the &ldquo;{selectedPreference?.preferenceKey}&rdquo; preference? This action cannot be undone.
+              Are you sure you want to delete the &ldquo;
+              {selectedPreference?.preferenceKey}&rdquo; preference? This action
+              cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

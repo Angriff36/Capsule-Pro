@@ -35,7 +35,9 @@ const purchaseOrderSchema = z.object({
     .string()
     .optional()
     .transform((v) => v || null),
-  items: z.array(purchaseOrderItemSchema).min(1, "At least one line item is required"),
+  items: z
+    .array(purchaseOrderItemSchema)
+    .min(1, "At least one line item is required"),
 });
 
 const purchaseRequisitionItemSchema = z.object({
@@ -61,7 +63,9 @@ const purchaseRequisitionSchema = z.object({
     .string()
     .optional()
     .transform((v) => v || null),
-  priority: z.enum(["low", "normal", "high", "urgent", "critical"]).default("normal"),
+  priority: z
+    .enum(["low", "normal", "high", "urgent", "critical"])
+    .default("normal"),
   notes: z
     .string()
     .optional()
@@ -76,7 +80,9 @@ const purchaseRequisitionSchema = z.object({
 // ---------------------------------------------------------------------------
 
 export type CreatePurchaseOrderInput = z.infer<typeof purchaseOrderSchema>;
-export type CreatePurchaseRequisitionInput = z.infer<typeof purchaseRequisitionSchema>;
+export type CreatePurchaseRequisitionInput = z.infer<
+  typeof purchaseRequisitionSchema
+>;
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -110,9 +116,7 @@ function generateRequisitionNumber(year: number, suffix: string): string {
  * This action accepts a typed input object (called from onSubmit) rather than
  * FormData, because the line items are managed in React state.
  */
-export async function createPurchaseOrder(
-  input: CreatePurchaseOrderInput
-) {
+export async function createPurchaseOrder(input: CreatePurchaseOrderInput) {
   const { tenantId, userId } = await requireAuth();
 
   const data = purchaseOrderSchema.parse(input);
@@ -215,5 +219,5 @@ export async function createPurchaseRequisition(
 
   revalidatePath("/procurement/requisitions");
   revalidatePath("/procurement");
-  redirect(`/procurement/requisitions`);
+  redirect("/procurement/requisitions");
 }

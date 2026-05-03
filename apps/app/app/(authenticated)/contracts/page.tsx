@@ -122,10 +122,10 @@ export default async function ContractsPage() {
   // Compute metrics
   const totalCount = unified.length;
   const activeCount = unified.filter(
-    (c) => c.status === "signed" || c.status === "active",
+    (c) => c.status === "signed" || c.status === "active"
   ).length;
   const awaitingSignatureCount = unified.filter(
-    (c) => c.status === "sent" || c.status === "submitted",
+    (c) => c.status === "sent" || c.status === "submitted"
   ).length;
 
   const thirtyDaysFromNow = new Date();

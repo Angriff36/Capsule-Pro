@@ -275,7 +275,9 @@ export default function ScannerPage() {
     <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
       {/* Page Header */}
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Barcode Scanner</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">
+          Barcode Scanner
+        </h1>
         <p className="text-muted-foreground">
           Scan barcodes to look up inventory items or count stock.
         </p>

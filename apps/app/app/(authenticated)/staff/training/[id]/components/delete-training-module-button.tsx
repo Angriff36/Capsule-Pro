@@ -63,8 +63,8 @@ export function DeleteTrainingModuleButton({
           <AlertDialogTitle>Delete Training Module</AlertDialogTitle>
           <AlertDialogDescription>
             Are you sure you want to delete &quot;{moduleTitle}&quot;? This
-            action cannot be undone. All assignments for this module will also be
-            removed.
+            action cannot be undone. All assignments for this module will also
+            be removed.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

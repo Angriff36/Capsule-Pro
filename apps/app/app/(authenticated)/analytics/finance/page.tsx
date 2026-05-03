@@ -42,11 +42,13 @@ const titleCase = (value: string) =>
     .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
     .join(" ");
 
-const formatClientName = (client: {
-  company_name: string | null;
-  first_name: string | null;
-  last_name: string | null;
-} | null) => {
+const formatClientName = (
+  client: {
+    company_name: string | null;
+    first_name: string | null;
+    last_name: string | null;
+  } | null
+) => {
   if (!client) {
     return "Unassigned";
   }
@@ -246,14 +248,18 @@ const AnalyticsFinancePage = async () => {
   const budgetedTotal = Number(budgetSummary._sum.totalBudgetAmount ?? 0);
   const actualBudgetTotal = Number(budgetSummary._sum.totalActualAmount ?? 0);
   const budgetVarianceTotal = Number(budgetSummary._sum.varianceAmount ?? 0);
-  const collectionRate = invoicedTotal > 0 ? (collectedTotal / invoicedTotal) * 100 : 0;
+  const collectionRate =
+    invoicedTotal > 0 ? (collectedTotal / invoicedTotal) * 100 : 0;
 
   return (
     <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
       <div className="space-y-0.5">
-        <h1 className="text-2xl font-semibold tracking-tight">Finance analytics</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">
+          Finance analytics
+        </h1>
         <p className="text-muted-foreground">
-          Live receivables, cash collection, and budget variance for the current tenant.
+          Live receivables, cash collection, and budget variance for the current
+          tenant.
         </p>
       </div>
 
@@ -263,7 +269,9 @@ const AnalyticsFinancePage = async () => {
         <Card>
           <CardHeader>
             <CardDescription>Total invoiced</CardDescription>
-            <CardTitle className="text-2xl">{currencyFormatter.format(invoicedTotal)}</CardTitle>
+            <CardTitle className="text-2xl">
+              {currencyFormatter.format(invoicedTotal)}
+            </CardTitle>
           </CardHeader>
           <CardContent className="text-muted-foreground text-sm">
             {invoiceSummary._count} invoices issued across accounting.
@@ -273,31 +281,42 @@ const AnalyticsFinancePage = async () => {
         <Card>
           <CardHeader>
             <CardDescription>Cash collected</CardDescription>
-            <CardTitle className="text-2xl">{currencyFormatter.format(collectedTotal)}</CardTitle>
+            <CardTitle className="text-2xl">
+              {currencyFormatter.format(collectedTotal)}
+            </CardTitle>
           </CardHeader>
           <CardContent className="text-muted-foreground text-sm">
-            {completedPaymentSummary._count} completed payments, {collectionRate.toFixed(1)}% collection rate.
+            {completedPaymentSummary._count} completed payments,{" "}
+            {collectionRate.toFixed(1)}% collection rate.
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
             <CardDescription>Open receivables</CardDescription>
-            <CardTitle className="text-2xl">{currencyFormatter.format(outstandingTotal)}</CardTitle>
+            <CardTitle className="text-2xl">
+              {currencyFormatter.format(outstandingTotal)}
+            </CardTitle>
           </CardHeader>
           <CardContent className="text-muted-foreground text-sm">
             {overdueSummary._count} overdue invoices totaling{" "}
-            {currencyFormatter.format(Number(overdueSummary._sum.amountDue ?? 0))}.
+            {currencyFormatter.format(
+              Number(overdueSummary._sum.amountDue ?? 0)
+            )}
+            .
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
             <CardDescription>Budget watch</CardDescription>
-            <CardTitle className="text-2xl">{currencyFormatter.format(budgetVarianceTotal)}</CardTitle>
+            <CardTitle className="text-2xl">
+              {currencyFormatter.format(budgetVarianceTotal)}
+            </CardTitle>
           </CardHeader>
           <CardContent className="text-muted-foreground text-sm">
-            {budgetSummary._count} budgets tracked · {revenueAccountCount} revenue and {expenseAccountCount} expense accounts active.
+            {budgetSummary._count} budgets tracked · {revenueAccountCount}{" "}
+            revenue and {expenseAccountCount} expense accounts active.
           </CardContent>
         </Card>
       </section>
@@ -307,12 +326,15 @@ const AnalyticsFinancePage = async () => {
           <CardHeader>
             <CardTitle>Budget posture</CardTitle>
             <CardDescription>
-              Compare planned event budgets against actual spend captured so far.
+              Compare planned event budgets against actual spend captured so
+              far.
             </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4 sm:grid-cols-3">
             <div className="rounded-lg border p-4">
-              <div className="text-muted-foreground text-sm">Planned budget</div>
+              <div className="text-muted-foreground text-sm">
+                Planned budget
+              </div>
               <div className="mt-2 text-2xl font-semibold">
                 {currencyFormatter.format(budgetedTotal)}
               </div>
@@ -344,7 +366,8 @@ const AnalyticsFinancePage = async () => {
           <CardHeader>
             <CardTitle>Finance shortcuts</CardTitle>
             <CardDescription>
-              Jump directly into the operational views that own the underlying records.
+              Jump directly into the operational views that own the underlying
+              records.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
@@ -353,21 +376,27 @@ const AnalyticsFinancePage = async () => {
               href="/accounting"
             >
               <div className="font-medium">Accounting overview</div>
-              <div className="text-muted-foreground">Invoices, payments, and ledger structure.</div>
+              <div className="text-muted-foreground">
+                Invoices, payments, and ledger structure.
+              </div>
             </Link>
             <Link
               className="block rounded-lg border p-3 transition-colors hover:bg-muted/40"
               href="/accounting/payments"
             >
               <div className="font-medium">Payments dashboard</div>
-              <div className="text-muted-foreground">Review settlement timing and method mix.</div>
+              <div className="text-muted-foreground">
+                Review settlement timing and method mix.
+              </div>
             </Link>
             <Link
               className="block rounded-lg border p-3 transition-colors hover:bg-muted/40"
               href="/analytics/events"
             >
               <div className="font-medium">Event analytics</div>
-              <div className="text-muted-foreground">Cross-check event-level budgets and settlement health.</div>
+              <div className="text-muted-foreground">
+                Cross-check event-level budgets and settlement health.
+              </div>
             </Link>
           </CardContent>
         </Card>
@@ -376,7 +405,9 @@ const AnalyticsFinancePage = async () => {
       <section className="space-y-4">
         <div className="flex items-center justify-between gap-4">
           <div>
-            <h2 className="text-sm font-medium text-muted-foreground">Upcoming and open invoices</h2>
+            <h2 className="text-sm font-medium text-muted-foreground">
+              Upcoming and open invoices
+            </h2>
             <p className="text-muted-foreground text-sm">
               Sorts by nearest due date so collections risk is visible first.
             </p>
@@ -405,7 +436,10 @@ const AnalyticsFinancePage = async () => {
             <TableBody>
               {recentInvoices.length === 0 ? (
                 <TableRow>
-                  <TableCell className="py-8 text-center text-muted-foreground" colSpan={7}>
+                  <TableCell
+                    className="py-8 text-center text-muted-foreground"
+                    colSpan={7}
+                  >
                     No invoices found for this tenant yet.
                   </TableCell>
                 </TableRow>
@@ -415,19 +449,27 @@ const AnalyticsFinancePage = async () => {
                     <TableCell>
                       <div className="font-medium">{invoice.invoiceNumber}</div>
                       <div className="text-muted-foreground text-xs">
-                        {titleCase(invoice.invoiceType)} · {currencyFormatter.format(Number(invoice.total ?? 0))}
+                        {titleCase(invoice.invoiceType)} ·{" "}
+                        {currencyFormatter.format(Number(invoice.total ?? 0))}
                       </div>
                     </TableCell>
                     <TableCell>{formatClientName(invoice.client)}</TableCell>
                     <TableCell>{invoice.event.title}</TableCell>
                     <TableCell>
-                      <Badge className="w-fit" variant={invoiceStatusVariant(invoice.status)}>
+                      <Badge
+                        className="w-fit"
+                        variant={invoiceStatusVariant(invoice.status)}
+                      >
                         {titleCase(invoice.status)}
                       </Badge>
                     </TableCell>
-                    <TableCell>{dateFormatter.format(invoice.dueDate)}</TableCell>
+                    <TableCell>
+                      {dateFormatter.format(invoice.dueDate)}
+                    </TableCell>
                     <TableCell className="text-right">
-                      {currencyFormatter.format(Number(invoice.amountPaid ?? 0))}
+                      {currencyFormatter.format(
+                        Number(invoice.amountPaid ?? 0)
+                      )}
                     </TableCell>
                     <TableCell className="text-right">
                       {currencyFormatter.format(Number(invoice.amountDue ?? 0))}
@@ -443,7 +485,9 @@ const AnalyticsFinancePage = async () => {
       <section className="space-y-4">
         <div className="flex items-center justify-between gap-4">
           <div>
-            <h2 className="text-sm font-medium text-muted-foreground">Recent payment activity</h2>
+            <h2 className="text-sm font-medium text-muted-foreground">
+              Recent payment activity
+            </h2>
             <p className="text-muted-foreground text-sm">
               Latest payment records tied back to invoices, clients, and events.
             </p>
@@ -471,7 +515,10 @@ const AnalyticsFinancePage = async () => {
             <TableBody>
               {recentPayments.length === 0 ? (
                 <TableRow>
-                  <TableCell className="py-8 text-center text-muted-foreground" colSpan={6}>
+                  <TableCell
+                    className="py-8 text-center text-muted-foreground"
+                    colSpan={6}
+                  >
                     No payments found for this tenant yet.
                   </TableCell>
                 </TableRow>
@@ -479,7 +526,9 @@ const AnalyticsFinancePage = async () => {
                 recentPayments.map((payment) => (
                   <TableRow key={payment.id}>
                     <TableCell>
-                      <div className="font-medium">{titleCase(payment.methodType)}</div>
+                      <div className="font-medium">
+                        {titleCase(payment.methodType)}
+                      </div>
                       <div className="text-muted-foreground text-xs">
                         Invoice {payment.invoice.invoiceNumber}
                       </div>
@@ -487,12 +536,17 @@ const AnalyticsFinancePage = async () => {
                     <TableCell>{formatClientName(payment.client)}</TableCell>
                     <TableCell>{payment.event.title}</TableCell>
                     <TableCell>
-                      <Badge className="w-fit" variant={paymentStatusVariant(payment.status)}>
+                      <Badge
+                        className="w-fit"
+                        variant={paymentStatusVariant(payment.status)}
+                      >
                         {titleCase(payment.status)}
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      {dateFormatter.format(payment.completedAt ?? payment.createdAt)}
+                      {dateFormatter.format(
+                        payment.completedAt ?? payment.createdAt
+                      )}
                     </TableCell>
                     <TableCell className="text-right">
                       {currencyFormatter.format(Number(payment.amount ?? 0))}

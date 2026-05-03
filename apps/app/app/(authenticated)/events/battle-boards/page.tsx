@@ -102,7 +102,9 @@ const BattleBoardsPage = async () => {
       <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
         {/* Page Header */}
         <div className="flex flex-col gap-1">
-          <h1 className="text-2xl font-semibold tracking-tight">Battle Boards</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">
+            Battle Boards
+          </h1>
           <p className="text-muted-foreground">
             Print-ready event staff assignments and operational timelines
           </p>

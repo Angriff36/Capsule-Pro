@@ -249,7 +249,10 @@ export function CommunicationsTab({ clientId }: CommunicationsTabProps) {
                   className="w-full h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"
                   id="interactionType"
                   onChange={(e) =>
-                    setFormData({ ...formData, interactionType: e.target.value })
+                    setFormData({
+                      ...formData,
+                      interactionType: e.target.value,
+                    })
                   }
                   required
                   value={formData.interactionType}
@@ -322,20 +325,20 @@ export function CommunicationsTab({ clientId }: CommunicationsTabProps) {
           <FilterIcon className="h-4 w-4 text-muted-foreground" />
           <div className="flex gap-1 flex-wrap">
             <Button
+              className="h-7 text-xs"
               onClick={() => setFilterType("all")}
               size="sm"
               variant={filterType === "all" ? "default" : "outline"}
-              className="h-7 text-xs"
             >
               All
             </Button>
             {INTERACTION_TYPES.map((type) => (
               <Button
+                className="h-7 text-xs"
                 key={type.value}
                 onClick={() => setFilterType(type.value)}
                 size="sm"
                 variant={filterType === type.value ? "default" : "outline"}
-                className="h-7 text-xs"
               >
                 <type.icon className="h-3 w-3 mr-1" />
                 {type.label}
@@ -396,10 +399,13 @@ export function CommunicationsTab({ clientId }: CommunicationsTabProps) {
                           {getInteractionLabel(interaction.interactionType)}
                         </span>
                         <Badge className="text-xs" variant="outline">
-                          {new Date(interaction.interactionDate).toLocaleDateString(
-                            "en-US",
-                            { month: "short", day: "numeric", year: "numeric" }
-                          )}
+                          {new Date(
+                            interaction.interactionDate
+                          ).toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                          })}
                         </Badge>
                       </div>
                       <div className="flex items-center gap-1">
@@ -436,10 +442,13 @@ export function CommunicationsTab({ clientId }: CommunicationsTabProps) {
                         <div className="flex items-center gap-1 text-xs text-muted-foreground">
                           <CalendarIcon className="h-3 w-3" />
                           Follow-up:{" "}
-                          {new Date(interaction.followUpDate).toLocaleDateString(
-                            "en-US",
-                            { month: "short", day: "numeric", year: "numeric" }
-                          )}
+                          {new Date(
+                            interaction.followUpDate
+                          ).toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                          })}
                           {!interaction.followUpCompleted && (
                             <Badge className="ml-2 text-xs" variant="secondary">
                               Pending

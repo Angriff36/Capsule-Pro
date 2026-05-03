@@ -38,7 +38,10 @@ vi.mock("@/app/lib/tenant", () => ({ getTenantIdForOrg: mocks.tenant }));
 vi.mock("@/lib/database", () => ({
   database: {
     eventContract: { findMany: mocks.ecFindMany, findFirst: mocks.ecFindFirst },
-    vendorContract: { findMany: mocks.vcFindMany, findUnique: mocks.vcFindUnique },
+    vendorContract: {
+      findMany: mocks.vcFindMany,
+      findUnique: mocks.vcFindUnique,
+    },
     event: { findFirst: mocks.eventFindFirst },
     client: { findFirst: mocks.clientFindFirst },
   },
@@ -46,7 +49,10 @@ vi.mock("@/lib/database", () => ({
 vi.mock("@repo/database", () => ({
   database: {
     eventContract: { findMany: mocks.ecFindMany, findFirst: mocks.ecFindFirst },
-    vendorContract: { findMany: mocks.vcFindMany, findUnique: mocks.vcFindUnique },
+    vendorContract: {
+      findMany: mocks.vcFindMany,
+      findUnique: mocks.vcFindUnique,
+    },
     event: { findFirst: mocks.eventFindFirst },
     client: { findFirst: mocks.clientFindFirst },
   },
@@ -58,10 +64,10 @@ vi.mock("@/app/lib/invariant", () => ({
   },
 }));
 
-import { GET as ecListGET } from "@/app/api/events/contracts/list/route";
 import { GET as ecDetailGET } from "@/app/api/events/contracts/[id]/route";
-import { GET as vcListGET } from "@/app/api/procurement/vendor-contracts/list/route";
+import { GET as ecListGET } from "@/app/api/events/contracts/list/route";
 import { GET as vcDetailGET } from "@/app/api/procurement/vendor-contracts/[id]/route";
+import { GET as vcListGET } from "@/app/api/procurement/vendor-contracts/list/route";
 
 function setAuth(tenantId: string | null = TENANT_A) {
   mocks.auth.mockResolvedValue({ orgId: ORG_ID, userId: USER_ID });
@@ -87,11 +93,16 @@ describe("Contract Listing & Detail API", () => {
     ]);
     const res = await ecListGET(new NextRequest("http://localhost"));
     expect(res.status).toBe(200);
-    const json = (await res.json()) as { success: boolean; eventContracts: unknown[] };
+    const json = (await res.json()) as {
+      success: boolean;
+      eventContracts: unknown[];
+    };
     expect(json.success).toBe(true);
     expect(json.eventContracts).toHaveLength(1);
     expect(mocks.ecFindMany).toHaveBeenCalledWith(
-      expect.objectContaining({ where: { tenantId: TENANT_A, deletedAt: null } }),
+      expect.objectContaining({
+        where: { tenantId: TENANT_A, deletedAt: null },
+      })
     );
   });
 
@@ -104,11 +115,16 @@ describe("Contract Listing & Detail API", () => {
     ]);
     const res = await vcListGET(new NextRequest("http://localhost"));
     expect(res.status).toBe(200);
-    const json = (await res.json()) as { success: boolean; vendorContracts: unknown[] };
+    const json = (await res.json()) as {
+      success: boolean;
+      vendorContracts: unknown[];
+    };
     expect(json.success).toBe(true);
     expect(json.vendorContracts).toHaveLength(1);
     expect(mocks.vcFindMany).toHaveBeenCalledWith(
-      expect.objectContaining({ where: { tenantId: TENANT_A, deletedAt: null } }),
+      expect.objectContaining({
+        where: { tenantId: TENANT_A, deletedAt: null },
+      })
     );
   });
 
@@ -116,18 +132,50 @@ describe("Contract Listing & Detail API", () => {
 
   it("EventContract detail returns contract with event and client relations", async () => {
     setAuth();
-    const contract = { id: CONTRACT_ID, tenantId: TENANT_A, eventId: EVENT_ID, clientId: CLIENT_ID, status: "sent" };
+    const contract = {
+      id: CONTRACT_ID,
+      tenantId: TENANT_A,
+      eventId: EVENT_ID,
+      clientId: CLIENT_ID,
+      status: "sent",
+    };
     mocks.ecFindFirst.mockResolvedValue(contract);
-    mocks.eventFindFirst.mockResolvedValue({ id: EVENT_ID, title: "Annual Gala", eventDate: "2026-08-01" });
-    mocks.clientFindFirst.mockResolvedValue({ id: CLIENT_ID, company_name: "Acme Corp", first_name: "Jane", last_name: "Doe" });
+    mocks.eventFindFirst.mockResolvedValue({
+      id: EVENT_ID,
+      title: "Annual Gala",
+      eventDate: "2026-08-01",
+    });
+    mocks.clientFindFirst.mockResolvedValue({
+      id: CLIENT_ID,
+      company_name: "Acme Corp",
+      first_name: "Jane",
+      last_name: "Doe",
+    });
 
-    const res = await ecDetailGET(new NextRequest("http://localhost"), params(CONTRACT_ID));
+    const res = await ecDetailGET(
+      new NextRequest("http://localhost"),
+      params(CONTRACT_ID)
+    );
     expect(res.status).toBe(200);
-    const json = (await res.json()) as { contract: { event: unknown; client: unknown } };
-    expect(json.contract.event).toEqual(expect.objectContaining({ id: EVENT_ID, title: "Annual Gala" }));
-    expect(json.contract.client).toEqual(expect.objectContaining({ id: CLIENT_ID, company_name: "Acme Corp" }));
+    const json = (await res.json()) as {
+      contract: { event: unknown; client: unknown };
+    };
+    expect(json.contract.event).toEqual(
+      expect.objectContaining({ id: EVENT_ID, title: "Annual Gala" })
+    );
+    expect(json.contract.client).toEqual(
+      expect.objectContaining({ id: CLIENT_ID, company_name: "Acme Corp" })
+    );
     expect(mocks.ecFindFirst).toHaveBeenCalledWith(
-      expect.objectContaining({ where: { AND: [{ tenantId: TENANT_A }, { id: CONTRACT_ID }, { deletedAt: null }] } }),
+      expect.objectContaining({
+        where: {
+          AND: [
+            { tenantId: TENANT_A },
+            { id: CONTRACT_ID },
+            { deletedAt: null },
+          ],
+        },
+      })
     );
   });
 
@@ -135,14 +183,26 @@ describe("Contract Listing & Detail API", () => {
 
   it("VendorContract detail returns a single contract", async () => {
     setAuth();
-    mocks.vcFindUnique.mockResolvedValue({ id: CONTRACT_ID, tenantId: TENANT_A, status: "active" });
-    const res = await vcDetailGET(new NextRequest("http://localhost"), params(CONTRACT_ID));
+    mocks.vcFindUnique.mockResolvedValue({
+      id: CONTRACT_ID,
+      tenantId: TENANT_A,
+      status: "active",
+    });
+    const res = await vcDetailGET(
+      new NextRequest("http://localhost"),
+      params(CONTRACT_ID)
+    );
     expect(res.status).toBe(200);
-    const json = (await res.json()) as { success: boolean; vendorContract: { id: string } };
+    const json = (await res.json()) as {
+      success: boolean;
+      vendorContract: { id: string };
+    };
     expect(json.success).toBe(true);
     expect(json.vendorContract.id).toBe(CONTRACT_ID);
     expect(mocks.vcFindUnique).toHaveBeenCalledWith(
-      expect.objectContaining({ where: { id: CONTRACT_ID, tenantId: TENANT_A, deletedAt: null } }),
+      expect.objectContaining({
+        where: { id: CONTRACT_ID, tenantId: TENANT_A, deletedAt: null },
+      })
     );
   });
 
@@ -151,7 +211,10 @@ describe("Contract Listing & Detail API", () => {
   it("EventContract detail returns 404 for a different tenant", async () => {
     setAuth();
     mocks.ecFindFirst.mockResolvedValue(null);
-    const res = await ecDetailGET(new NextRequest("http://localhost"), params(CONTRACT_ID));
+    const res = await ecDetailGET(
+      new NextRequest("http://localhost"),
+      params(CONTRACT_ID)
+    );
     expect(res.status).toBe(404);
   });
 
@@ -163,7 +226,9 @@ describe("Contract Listing & Detail API", () => {
     const json = (await res.json()) as { vendorContracts: unknown[] };
     expect(json.vendorContracts).toHaveLength(0);
     expect(mocks.vcFindMany).toHaveBeenCalledWith(
-      expect.objectContaining({ where: { tenantId: TENANT_B, deletedAt: null } }),
+      expect.objectContaining({
+        where: { tenantId: TENANT_B, deletedAt: null },
+      })
     );
   });
 });

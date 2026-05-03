@@ -58,7 +58,7 @@ export function EventTimelineClient({
     event.preventDefault();
     setError(null);
 
-    if (!draft.timelineTime || !draft.description.trim()) {
+    if (!(draft.timelineTime && draft.description.trim())) {
       setError("Time and description are required");
       return;
     }
@@ -128,9 +128,7 @@ export function EventTimelineClient({
         // Revert
         setItems((current) =>
           current.map((item) =>
-            item.id === itemId
-              ? { ...item, isCompleted: !isCompleted }
-              : item
+            item.id === itemId ? { ...item, isCompleted: !isCompleted } : item
           )
         );
         return;
@@ -265,8 +263,8 @@ export function EventTimelineClient({
             Empty
           </p>
           <p className="mt-3 text-ink text-sm leading-relaxed">
-            No timeline items yet. Add the first moment above to start sequencing
-            this event's run-of-show.
+            No timeline items yet. Add the first moment above to start
+            sequencing this event's run-of-show.
           </p>
         </div>
       ) : (

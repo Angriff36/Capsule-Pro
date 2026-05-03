@@ -64,7 +64,9 @@ const formatTaskQuantity = (completed: unknown, total: unknown) => {
 const UnavailableState = () => (
   <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
     <div className="space-y-0.5">
-      <h1 className="text-2xl font-semibold tracking-tight">Kitchen analytics</h1>
+      <h1 className="text-2xl font-semibold tracking-tight">
+        Kitchen analytics
+      </h1>
       <p className="text-muted-foreground">
         Unable to load kitchen analytics right now.
       </p>
@@ -154,7 +156,11 @@ const KitchenAnalyticsPage = async () => {
         tenantId,
         deletedAt: null,
       },
-      orderBy: [{ dueByDate: "asc" }, { priority: "asc" }, { createdAt: "desc" }],
+      orderBy: [
+        { dueByDate: "asc" },
+        { priority: "asc" },
+        { createdAt: "desc" },
+      ],
       take: 8,
       select: {
         id: true,
@@ -245,7 +251,9 @@ const KitchenAnalyticsPage = async () => {
       })
     : [];
 
-  const locationMap = new Map(locations.map((location) => [location.id, location.name]));
+  const locationMap = new Map(
+    locations.map((location) => [location.id, location.name])
+  );
   const prepListSyncRate =
     prepListTotal > 0 ? (finalizedPrepListCount / prepListTotal) * 100 : 0;
   const wasteCost30d = Number(wasteCostAggregate._sum.totalCost ?? 0);
@@ -276,7 +284,9 @@ const KitchenAnalyticsPage = async () => {
   return (
     <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
       <div className="space-y-0.5">
-        <h1 className="text-2xl font-semibold tracking-tight">Kitchen analytics</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">
+          Kitchen analytics
+        </h1>
         <p className="text-muted-foreground">
           A tenant-scoped kitchen operations snapshot with live prep, waste, and
           recipe activity.
@@ -319,7 +329,10 @@ const KitchenAnalyticsPage = async () => {
               <TableBody>
                 {upcomingPrepTasks.length === 0 ? (
                   <TableRow>
-                    <TableCell className="text-center text-muted-foreground" colSpan={4}>
+                    <TableCell
+                      className="text-center text-muted-foreground"
+                      colSpan={4}
+                    >
                       No prep tasks found for this tenant.
                     </TableCell>
                   </TableRow>
@@ -330,7 +343,8 @@ const KitchenAnalyticsPage = async () => {
                         <div className="space-y-1">
                           <div className="font-medium">{task.name}</div>
                           <div className="text-muted-foreground text-xs">
-                            Due {dateFormatter.format(task.dueByDate)} • Priority {task.priority}
+                            Due {dateFormatter.format(task.dueByDate)} •
+                            Priority {task.priority}
                           </div>
                         </div>
                       </TableCell>
@@ -343,7 +357,10 @@ const KitchenAnalyticsPage = async () => {
                         {locationMap.get(task.locationId) ?? "Unknown location"}
                       </TableCell>
                       <TableCell className="text-right text-sm">
-                        {formatTaskQuantity(task.quantityCompleted, task.quantityTotal)}
+                        {formatTaskQuantity(
+                          task.quantityCompleted,
+                          task.quantityTotal
+                        )}
                       </TableCell>
                     </TableRow>
                   ))
@@ -373,7 +390,10 @@ const KitchenAnalyticsPage = async () => {
               <TableBody>
                 {recentWasteEntries.length === 0 ? (
                   <TableRow>
-                    <TableCell className="text-center text-muted-foreground" colSpan={4}>
+                    <TableCell
+                      className="text-center text-muted-foreground"
+                      colSpan={4}
+                    >
                       No waste entries logged yet.
                     </TableCell>
                   </TableRow>
@@ -381,13 +401,17 @@ const KitchenAnalyticsPage = async () => {
                   recentWasteEntries.map((entry) => (
                     <TableRow key={entry.id}>
                       <TableCell>
-                        <div className="font-medium">{entry.inventoryItem.name}</div>
+                        <div className="font-medium">
+                          {entry.inventoryItem.name}
+                        </div>
                         <div className="text-muted-foreground text-xs">
                           Qty {numberFormatter.format(Number(entry.quantity))}
                         </div>
                       </TableCell>
                       <TableCell>{entry.reason.name}</TableCell>
-                      <TableCell>{dateFormatter.format(entry.loggedAt)}</TableCell>
+                      <TableCell>
+                        {dateFormatter.format(entry.loggedAt)}
+                      </TableCell>
                       <TableCell className="text-right">
                         {entry.totalCost === null
                           ? "—"
@@ -407,7 +431,8 @@ const KitchenAnalyticsPage = async () => {
           <CardHeader>
             <CardTitle>Prep list sync</CardTitle>
             <CardDescription>
-              Recently generated prep lists and whether they reached a finalized state.
+              Recently generated prep lists and whether they reached a finalized
+              state.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -422,7 +447,10 @@ const KitchenAnalyticsPage = async () => {
               <TableBody>
                 {recentPrepLists.length === 0 ? (
                   <TableRow>
-                    <TableCell className="text-center text-muted-foreground" colSpan={3}>
+                    <TableCell
+                      className="text-center text-muted-foreground"
+                      colSpan={3}
+                    >
                       No prep lists generated yet.
                     </TableCell>
                   </TableRow>
@@ -433,7 +461,8 @@ const KitchenAnalyticsPage = async () => {
                         <div className="space-y-1">
                           <div className="font-medium">{prepList.name}</div>
                           <div className="text-muted-foreground text-xs">
-                            Generated {dateFormatter.format(prepList.generatedAt)}
+                            Generated{" "}
+                            {dateFormatter.format(prepList.generatedAt)}
                             {prepList.finalizedAt
                               ? ` • Finalized ${dateFormatter.format(prepList.finalizedAt)}`
                               : ""}
@@ -445,7 +474,9 @@ const KitchenAnalyticsPage = async () => {
                           {prepList.status}
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-right">{prepList.totalItems}</TableCell>
+                      <TableCell className="text-right">
+                        {prepList.totalItems}
+                      </TableCell>
                     </TableRow>
                   ))
                 )}
@@ -458,7 +489,8 @@ const KitchenAnalyticsPage = async () => {
           <CardHeader>
             <CardTitle>Recently updated recipes</CardTitle>
             <CardDescription>
-              Quick visibility into the live recipe catalog behind kitchen operations.
+              Quick visibility into the live recipe catalog behind kitchen
+              operations.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -473,7 +505,10 @@ const KitchenAnalyticsPage = async () => {
               <TableBody>
                 {recentRecipes.length === 0 ? (
                   <TableRow>
-                    <TableCell className="text-center text-muted-foreground" colSpan={3}>
+                    <TableCell
+                      className="text-center text-muted-foreground"
+                      colSpan={3}
+                    >
                       No recipes found.
                     </TableCell>
                   </TableRow>
@@ -488,9 +523,13 @@ const KitchenAnalyticsPage = async () => {
                           </div>
                         </div>
                       </TableCell>
-                      <TableCell>{recipe.category ?? "Uncategorized"}</TableCell>
                       <TableCell>
-                        <Badge variant={recipe.isActive ? "default" : "outline"}>
+                        {recipe.category ?? "Uncategorized"}
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant={recipe.isActive ? "default" : "outline"}
+                        >
                           {recipe.isActive ? "active" : "inactive"}
                         </Badge>
                       </TableCell>
@@ -507,7 +546,8 @@ const KitchenAnalyticsPage = async () => {
         <CardHeader>
           <CardTitle>30-day completion snapshot</CardTitle>
           <CardDescription>
-            Completed prep work in the last 30 days compared with currently open work.
+            Completed prep work in the last 30 days compared with currently open
+            work.
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4 md:grid-cols-2">

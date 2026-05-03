@@ -42,11 +42,13 @@ const titleCase = (value: string) =>
     .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
     .join(" ");
 
-const formatClientName = (client: {
-  company_name: string | null;
-  first_name: string | null;
-  last_name: string | null;
-} | null) => {
+const formatClientName = (
+  client: {
+    company_name: string | null;
+    first_name: string | null;
+    last_name: string | null;
+  } | null
+) => {
   if (!client) {
     return "Unassigned";
   }
@@ -71,7 +73,9 @@ const formatLeadLabel = (lead: {
 const statusVariant = (status: string) => {
   const normalized = status.toLowerCase();
 
-  if (["paid", "accepted", "won", "confirmed", "completed"].includes(normalized)) {
+  if (
+    ["paid", "accepted", "won", "confirmed", "completed"].includes(normalized)
+  ) {
     return "default" as const;
   }
 
@@ -95,114 +99,120 @@ const AnalyticsSalesPage = async () => {
 
   const tenantId = await getTenantIdForOrg(orgId);
 
-  const [leadSummary, proposalSummary, invoiceSummary, paymentSummary, recentProposals, recentInvoices] =
-    await Promise.all([
-      database.lead.aggregate({
-        where: {
-          tenantId,
-          deletedAt: null,
-        },
-        _count: true,
-        _sum: {
-          estimatedValue: true,
-        },
-      }),
-      database.proposal.aggregate({
-        where: {
-          tenantId,
-          deletedAt: null,
-        },
-        _count: true,
-        _sum: {
-          total: true,
-        },
-      }),
-      database.invoice.aggregate({
-        where: {
-          tenantId,
-          deletedAt: null,
-        },
-        _count: true,
-        _sum: {
-          total: true,
-          amountDue: true,
-        },
-      }),
-      database.payment.aggregate({
-        where: {
-          tenantId,
-          deletedAt: null,
-        },
-        _count: true,
-        _sum: {
-          amount: true,
-        },
-      }),
-      database.proposal.findMany({
-        where: {
-          tenantId,
-          deletedAt: null,
-        },
-        orderBy: [{ updatedAt: "desc" }, { createdAt: "desc" }],
-        take: 8,
-        select: {
-          id: true,
-          proposalNumber: true,
-          title: true,
-          status: true,
-          eventDate: true,
-          total: true,
-          client: {
-            select: {
-              company_name: true,
-              first_name: true,
-              last_name: true,
-            },
-          },
-          lead: {
-            select: {
-              companyName: true,
-              contactName: true,
-            },
-          },
-          event: {
-            select: {
-              title: true,
-            },
+  const [
+    leadSummary,
+    proposalSummary,
+    invoiceSummary,
+    paymentSummary,
+    recentProposals,
+    recentInvoices,
+  ] = await Promise.all([
+    database.lead.aggregate({
+      where: {
+        tenantId,
+        deletedAt: null,
+      },
+      _count: true,
+      _sum: {
+        estimatedValue: true,
+      },
+    }),
+    database.proposal.aggregate({
+      where: {
+        tenantId,
+        deletedAt: null,
+      },
+      _count: true,
+      _sum: {
+        total: true,
+      },
+    }),
+    database.invoice.aggregate({
+      where: {
+        tenantId,
+        deletedAt: null,
+      },
+      _count: true,
+      _sum: {
+        total: true,
+        amountDue: true,
+      },
+    }),
+    database.payment.aggregate({
+      where: {
+        tenantId,
+        deletedAt: null,
+      },
+      _count: true,
+      _sum: {
+        amount: true,
+      },
+    }),
+    database.proposal.findMany({
+      where: {
+        tenantId,
+        deletedAt: null,
+      },
+      orderBy: [{ updatedAt: "desc" }, { createdAt: "desc" }],
+      take: 8,
+      select: {
+        id: true,
+        proposalNumber: true,
+        title: true,
+        status: true,
+        eventDate: true,
+        total: true,
+        client: {
+          select: {
+            company_name: true,
+            first_name: true,
+            last_name: true,
           },
         },
-      }),
-      database.invoice.findMany({
-        where: {
-          tenantId,
-          deletedAt: null,
-        },
-        orderBy: [{ issuedAt: "desc" }, { createdAt: "desc" }],
-        take: 8,
-        select: {
-          id: true,
-          invoiceNumber: true,
-          invoiceType: true,
-          status: true,
-          dueDate: true,
-          issuedAt: true,
-          total: true,
-          amountDue: true,
-          client: {
-            select: {
-              company_name: true,
-              first_name: true,
-              last_name: true,
-            },
-          },
-          event: {
-            select: {
-              title: true,
-            },
+        lead: {
+          select: {
+            companyName: true,
+            contactName: true,
           },
         },
-      }),
-    ]);
+        event: {
+          select: {
+            title: true,
+          },
+        },
+      },
+    }),
+    database.invoice.findMany({
+      where: {
+        tenantId,
+        deletedAt: null,
+      },
+      orderBy: [{ issuedAt: "desc" }, { createdAt: "desc" }],
+      take: 8,
+      select: {
+        id: true,
+        invoiceNumber: true,
+        invoiceType: true,
+        status: true,
+        dueDate: true,
+        issuedAt: true,
+        total: true,
+        amountDue: true,
+        client: {
+          select: {
+            company_name: true,
+            first_name: true,
+            last_name: true,
+          },
+        },
+        event: {
+          select: {
+            title: true,
+          },
+        },
+      },
+    }),
+  ]);
 
   const leadCount = leadSummary._count;
   const proposalCount = proposalSummary._count;
@@ -217,9 +227,12 @@ const AnalyticsSalesPage = async () => {
   return (
     <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
       <div className="space-y-0.5">
-        <h1 className="text-2xl font-semibold tracking-tight">Sales analytics</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">
+          Sales analytics
+        </h1>
         <p className="text-muted-foreground">
-          Live pipeline, proposal, invoice, and payment activity for this tenant.
+          Live pipeline, proposal, invoice, and payment activity for this
+          tenant.
         </p>
       </div>
 
@@ -232,7 +245,8 @@ const AnalyticsSalesPage = async () => {
             <CardTitle className="text-2xl">{leadCount}</CardTitle>
           </CardHeader>
           <CardContent className="text-muted-foreground text-sm">
-            {currencyFormatter.format(estimatedPipelineValue)} estimated across all active leads.
+            {currencyFormatter.format(estimatedPipelineValue)} estimated across
+            all active leads.
           </CardContent>
         </Card>
 
@@ -242,24 +256,30 @@ const AnalyticsSalesPage = async () => {
             <CardTitle className="text-2xl">{proposalCount}</CardTitle>
           </CardHeader>
           <CardContent className="text-muted-foreground text-sm">
-            {currencyFormatter.format(proposedRevenue)} proposed revenue on record.
+            {currencyFormatter.format(proposedRevenue)} proposed revenue on
+            record.
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
             <CardDescription>Invoices issued</CardDescription>
-            <CardTitle className="text-2xl">{currencyFormatter.format(invoicedRevenue)}</CardTitle>
+            <CardTitle className="text-2xl">
+              {currencyFormatter.format(invoicedRevenue)}
+            </CardTitle>
           </CardHeader>
           <CardContent className="text-muted-foreground text-sm">
-            {invoiceCount} invoices tracked with {currencyFormatter.format(outstandingRevenue)} still due.
+            {invoiceCount} invoices tracked with{" "}
+            {currencyFormatter.format(outstandingRevenue)} still due.
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
             <CardDescription>Cash collected</CardDescription>
-            <CardTitle className="text-2xl">{currencyFormatter.format(collectedRevenue)}</CardTitle>
+            <CardTitle className="text-2xl">
+              {currencyFormatter.format(collectedRevenue)}
+            </CardTitle>
           </CardHeader>
           <CardContent className="text-muted-foreground text-sm">
             {paymentCount} payments recorded for this tenant.
@@ -270,9 +290,12 @@ const AnalyticsSalesPage = async () => {
       <section className="space-y-4">
         <div className="flex items-center justify-between gap-4">
           <div>
-            <h2 className="text-sm font-medium text-muted-foreground">Recent proposals</h2>
+            <h2 className="text-sm font-medium text-muted-foreground">
+              Recent proposals
+            </h2>
             <p className="text-muted-foreground text-sm">
-              Current opportunities linked to leads, clients, and upcoming events.
+              Current opportunities linked to leads, clients, and upcoming
+              events.
             </p>
           </div>
           <Link
@@ -298,7 +321,10 @@ const AnalyticsSalesPage = async () => {
             <TableBody>
               {recentProposals.length === 0 ? (
                 <TableRow>
-                  <TableCell className="py-8 text-center text-muted-foreground" colSpan={6}>
+                  <TableCell
+                    className="py-8 text-center text-muted-foreground"
+                    colSpan={6}
+                  >
                     No proposals found for this tenant yet.
                   </TableCell>
                 </TableRow>
@@ -319,14 +345,21 @@ const AnalyticsSalesPage = async () => {
                         </div>
                       </TableCell>
                       <TableCell>{accountLabel}</TableCell>
-                      <TableCell>{proposal.event?.title ?? "Not linked"}</TableCell>
                       <TableCell>
-                        <Badge className="w-fit" variant={statusVariant(proposal.status)}>
+                        {proposal.event?.title ?? "Not linked"}
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          className="w-fit"
+                          variant={statusVariant(proposal.status)}
+                        >
                           {titleCase(proposal.status)}
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        {proposal.eventDate ? dateFormatter.format(proposal.eventDate) : "TBD"}
+                        {proposal.eventDate
+                          ? dateFormatter.format(proposal.eventDate)
+                          : "TBD"}
                       </TableCell>
                       <TableCell className="text-right">
                         {currencyFormatter.format(Number(proposal.total ?? 0))}
@@ -343,7 +376,9 @@ const AnalyticsSalesPage = async () => {
       <section className="space-y-4">
         <div className="flex items-center justify-between gap-4">
           <div>
-            <h2 className="text-sm font-medium text-muted-foreground">Latest invoices</h2>
+            <h2 className="text-sm font-medium text-muted-foreground">
+              Latest invoices
+            </h2>
             <p className="text-muted-foreground text-sm">
               Collection visibility for the newest billed events.
             </p>
@@ -372,7 +407,10 @@ const AnalyticsSalesPage = async () => {
             <TableBody>
               {recentInvoices.length === 0 ? (
                 <TableRow>
-                  <TableCell className="py-8 text-center text-muted-foreground" colSpan={7}>
+                  <TableCell
+                    className="py-8 text-center text-muted-foreground"
+                    colSpan={7}
+                  >
                     No invoices found for this tenant yet.
                   </TableCell>
                 </TableRow>
@@ -382,18 +420,26 @@ const AnalyticsSalesPage = async () => {
                     <TableCell>
                       <div className="font-medium">{invoice.invoiceNumber}</div>
                       <div className="text-muted-foreground text-xs">
-                        {titleCase(invoice.invoiceType)} · {currencyFormatter.format(Number(invoice.total ?? 0))}
+                        {titleCase(invoice.invoiceType)} ·{" "}
+                        {currencyFormatter.format(Number(invoice.total ?? 0))}
                       </div>
                     </TableCell>
                     <TableCell>{formatClientName(invoice.client)}</TableCell>
                     <TableCell>{invoice.event.title}</TableCell>
                     <TableCell>
-                      <Badge className="w-fit" variant={statusVariant(invoice.status)}>
+                      <Badge
+                        className="w-fit"
+                        variant={statusVariant(invoice.status)}
+                      >
                         {titleCase(invoice.status)}
                       </Badge>
                     </TableCell>
-                    <TableCell>{dateFormatter.format(invoice.issuedAt)}</TableCell>
-                    <TableCell>{dateFormatter.format(invoice.dueDate)}</TableCell>
+                    <TableCell>
+                      {dateFormatter.format(invoice.issuedAt)}
+                    </TableCell>
+                    <TableCell>
+                      {dateFormatter.format(invoice.dueDate)}
+                    </TableCell>
                     <TableCell className="text-right">
                       {currencyFormatter.format(Number(invoice.amountDue ?? 0))}
                     </TableCell>

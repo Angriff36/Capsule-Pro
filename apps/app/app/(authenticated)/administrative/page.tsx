@@ -1,13 +1,11 @@
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
-import { Badge } from "@repo/design-system/components/ui/badge";
-import { Button } from "@repo/design-system/components/ui/button";
 import {
   CommandBand,
   CommandBandActions,
+  CommandBandBody,
   CommandBandHeader,
   CommandBandLede,
-  CommandBandBody,
   DisplayHeading,
   MetricBand,
   MetricCell,
@@ -19,18 +17,16 @@ import {
   PageCanvas,
   SectionHeader,
 } from "@repo/design-system/components/blocks/page-shell";
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Progress } from "@repo/design-system/components/ui/progress";
 import {
-  AlertTriangleIcon,
   CalendarDaysIcon,
-  CheckCircle2Icon,
   ClockIcon,
   RefreshCwIcon,
   SearchIcon,
   UploadIcon,
-  UsersIcon,
-  UtensilsIcon,
 } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";

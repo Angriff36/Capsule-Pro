@@ -262,7 +262,9 @@ export function ScoringRulesClient({
       <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
         {/* Page Header */}
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Lead Scoring</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">
+            Lead Scoring
+          </h1>
           <p className="text-muted-foreground">
             Configure scoring rules to automatically prioritize leads based on
             custom criteria.

@@ -13,7 +13,7 @@ import {
 } from "@repo/design-system/components/blocks/page-shell";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
-import { Building2, MapPin, Phone, Mail, Users } from "lucide-react";
+import { Building2, Mail, MapPin, Phone, Users } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -126,9 +126,7 @@ export default async function CrmVenuesPage() {
                         <div className="flex items-center gap-1">
                           <Mail className="h-3 w-3" />
                           {venue.contactName}
-                          {venue.contactEmail
-                            ? ` (${venue.contactEmail})`
-                            : ""}
+                          {venue.contactEmail ? ` (${venue.contactEmail})` : ""}
                         </div>
                       ) : null}
                       {venue.contactPhone ? (

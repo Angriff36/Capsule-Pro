@@ -53,10 +53,7 @@ const getTags = (formData: FormData, key: string): string[] => {
     .filter(Boolean);
 };
 
-const getBoolean = (
-  formData: FormData,
-  key: string
-): boolean | undefined => {
+const getBoolean = (formData: FormData, key: string): boolean | undefined => {
   const value = getString(formData, key);
   if (!value) {
     return undefined;
@@ -144,8 +141,7 @@ export const createInventoryItem = async (
   const tags = getTags(formData, "tags");
   const fsa_status = getOptionalString(formData, "fsa_status") || "unknown";
   const fsa_temp_logged = getBoolean(formData, "fsa_temp_logged") ?? false;
-  const fsa_allergen_info =
-    getBoolean(formData, "fsa_allergen_info") ?? false;
+  const fsa_allergen_info = getBoolean(formData, "fsa_allergen_info") ?? false;
   const fsa_traceable = getBoolean(formData, "fsa_traceable") ?? false;
 
   const item = await client.$transaction(async (tx) => {

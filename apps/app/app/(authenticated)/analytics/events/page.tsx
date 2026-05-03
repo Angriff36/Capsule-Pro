@@ -54,11 +54,13 @@ const statusVariant = (status: string) => {
   }
 };
 
-const formatClientName = (client: {
-  company_name: string | null;
-  first_name: string | null;
-  last_name: string | null;
-} | null) => {
+const formatClientName = (
+  client: {
+    company_name: string | null;
+    first_name: string | null;
+    last_name: string | null;
+  } | null
+) => {
   if (!client) {
     return "Unassigned";
   }
@@ -160,7 +162,8 @@ const AnalyticsEventsPage = async () => {
         0
       );
       const completedReports = event.reports.filter(
-        (report) => report.status === "completed" || report.status === "approved"
+        (report) =>
+          report.status === "completed" || report.status === "approved"
       ).length;
 
       acc.totalBudget += budgetValue;
@@ -189,7 +192,9 @@ const AnalyticsEventsPage = async () => {
   return (
     <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
       <div className="space-y-0.5">
-        <h1 className="text-2xl font-semibold tracking-tight">Event analytics</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">
+          Event analytics
+        </h1>
         <p className="text-muted-foreground">
           Live event budget, invoicing, and report status for the latest 12
           events.
@@ -282,7 +287,10 @@ const AnalyticsEventsPage = async () => {
             <TableBody>
               {events.length === 0 ? (
                 <TableRow>
-                  <TableCell className="py-8 text-center text-muted-foreground" colSpan={8}>
+                  <TableCell
+                    className="py-8 text-center text-muted-foreground"
+                    colSpan={8}
+                  >
                     No events found for this tenant yet.
                   </TableCell>
                 </TableRow>
@@ -297,28 +305,38 @@ const AnalyticsEventsPage = async () => {
                     (sum, payment) => sum + Number(payment.amount ?? 0),
                     0
                   );
-                  const varianceValue = Number(latestBudget?.varianceAmount ?? 0);
+                  const varianceValue = Number(
+                    latestBudget?.varianceAmount ?? 0
+                  );
                   const clientName = formatClientName(event.client);
                   const budgetStatus = latestBudget?.status ?? "No budget";
                   const reportStatus = latestReport
                     ? `${latestReport.completion}% ${latestReport.status.replaceAll("_", " ")}`
                     : "No report";
                   const paymentProgress =
-                    budgetValue > 0 ? percentFormatter.format((paidValue / budgetValue) * 100) : "0.0";
+                    budgetValue > 0
+                      ? percentFormatter.format((paidValue / budgetValue) * 100)
+                      : "0.0";
 
                   return (
                     <TableRow key={event.id}>
                       <TableCell>
                         <div className="font-medium">{event.title}</div>
                         <div className="text-muted-foreground text-xs">
-                          {event.eventNumber || "No event number"} · {event.guestCount} guests
+                          {event.eventNumber || "No event number"} ·{" "}
+                          {event.guestCount} guests
                         </div>
                       </TableCell>
-                      <TableCell>{dateFormatter.format(event.eventDate)}</TableCell>
+                      <TableCell>
+                        {dateFormatter.format(event.eventDate)}
+                      </TableCell>
                       <TableCell>{clientName}</TableCell>
                       <TableCell>
                         <div className="flex flex-col gap-2">
-                          <Badge className="w-fit" variant={statusVariant(event.status)}>
+                          <Badge
+                            className="w-fit"
+                            variant={statusVariant(event.status)}
+                          >
                             {event.status}
                           </Badge>
                           <span className="text-muted-foreground text-xs">
@@ -331,10 +349,20 @@ const AnalyticsEventsPage = async () => {
                       </TableCell>
                       <TableCell className="text-right">
                         <div>{currencyFormatter.format(paidValue)}</div>
-                        <div className="text-muted-foreground text-xs">{paymentProgress}% funded</div>
+                        <div className="text-muted-foreground text-xs">
+                          {paymentProgress}% funded
+                        </div>
                       </TableCell>
                       <TableCell className="text-right">
-                        <span className={varianceValue > 0 ? "text-amber-600" : varianceValue < 0 ? "text-emerald-600" : "text-foreground"}>
+                        <span
+                          className={
+                            varianceValue > 0
+                              ? "text-amber-600"
+                              : varianceValue < 0
+                                ? "text-emerald-600"
+                                : "text-foreground"
+                          }
+                        >
                           {currencyFormatter.format(varianceValue)}
                         </span>
                       </TableCell>

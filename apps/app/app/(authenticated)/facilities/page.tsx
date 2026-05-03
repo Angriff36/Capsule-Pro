@@ -9,6 +9,17 @@
  * POST /api/facilities/commands/create.
  */
 
+import {
+  CommandBand,
+  CommandBandActions,
+  CommandBandHeader,
+  CommandBandLede,
+  DisplayHeading,
+  MonoLabel,
+  OperationalColumn,
+  PageCanvas,
+  SectionHeader,
+} from "@repo/design-system/components/blocks/page-shell";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -294,7 +305,7 @@ export default function FacilitiesPage() {
               Register a new building or site (kitchen, warehouse, office, …).
             </DialogDescription>
           </DialogHeader>
-          <form className="space-y-4" action={handleSave}>
+          <form action={handleSave} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Name *</Label>
@@ -328,7 +339,11 @@ export default function FacilitiesPage() {
                     )}
                   </SelectContent>
                 </Select>
-                <input name="facilityType" type="hidden" value={form.facilityType} />
+                <input
+                  name="facilityType"
+                  type="hidden"
+                  value={form.facilityType}
+                />
               </div>
             </div>
 

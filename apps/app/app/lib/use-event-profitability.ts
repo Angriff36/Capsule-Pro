@@ -9,9 +9,9 @@
 
 "use client";
 
-import { apiFetch } from "@/app/lib/api";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { apiFetch } from "@/app/lib/api";
 
 // ---------------------------------------------------------------------------
 // Types — mirrors the EventProfitability Prisma model in tenant_events schema
@@ -89,9 +89,7 @@ export async function fetchProfitabilityById(
 
   if (!response.ok) {
     const error = await response.json();
-    throw new Error(
-      error.message || "Failed to fetch profitability record"
-    );
+    throw new Error(error.message || "Failed to fetch profitability record");
   }
 
   return await response.json();
@@ -100,20 +98,15 @@ export async function fetchProfitabilityById(
 export async function recalculateProfitability(
   id: string
 ): Promise<{ success: boolean }> {
-  const response = await apiFetch(
-    `${API_BASE}/commands/recalculate`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ instanceId: id }),
-    }
-  );
+  const response = await apiFetch(`${API_BASE}/commands/recalculate`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ instanceId: id }),
+  });
 
   if (!response.ok) {
     const error = await response.json();
-    throw new Error(
-      error.message || "Failed to recalculate profitability"
-    );
+    throw new Error(error.message || "Failed to recalculate profitability");
   }
 
   return await response.json();

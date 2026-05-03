@@ -1,4 +1,5 @@
 import { auth } from "@repo/auth/server";
+import { database } from "@repo/database";
 import {
   CommandBand,
   CommandBandActions,
@@ -17,7 +18,6 @@ import {
   StatusPill,
 } from "@repo/design-system/components/blocks/page-shell";
 import { Button } from "@repo/design-system/components/ui/button";
-import { database } from "@repo/database";
 import { ArrowRight, BookOpen, CreditCard, FileText } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -43,11 +43,13 @@ function formatDate(value: Date | null) {
   }).format(value);
 }
 
-function getClientLabel(client: {
-  company_name: string | null;
-  first_name: string | null;
-  last_name: string | null;
-} | null) {
+function getClientLabel(
+  client: {
+    company_name: string | null;
+    first_name: string | null;
+    last_name: string | null;
+  } | null
+) {
   if (!client) return "No client";
 
   const personName = [client.first_name, client.last_name]
@@ -203,9 +205,9 @@ export default async function AccountingPage() {
             <MonoLabel tone="dark">Operations / Accounting</MonoLabel>
             <DisplayHeading>Accounting overview</DisplayHeading>
             <CommandBandLede>
-              Keep receivables, payments, and your ledger structure in one place.
-              This page gives operations a fast read on cash collection and the
-              work that still needs attention.
+              Keep receivables, payments, and your ledger structure in one
+              place. This page gives operations a fast read on cash collection
+              and the work that still needs attention.
             </CommandBandLede>
           </div>
           <CommandBandActions>
@@ -232,13 +234,16 @@ export default async function AccountingPage() {
             <MetricCell>
               <MetricLabel>Invoices</MetricLabel>
               <MetricValue>{invoiceCount}</MetricValue>
-              <p className="text-sm text-white/70">{formatCurrency(invoicedTotal)} billed</p>
+              <p className="text-sm text-white/70">
+                {formatCurrency(invoicedTotal)} billed
+              </p>
             </MetricCell>
             <MetricCell>
               <MetricLabel>Outstanding</MetricLabel>
               <MetricValue>{formatCurrency(outstandingTotal)}</MetricValue>
               <p className="text-sm text-white/70">
-                {outstandingInvoiceCount} invoice{outstandingInvoiceCount === 1 ? "" : "s"} still open
+                {outstandingInvoiceCount} invoice
+                {outstandingInvoiceCount === 1 ? "" : "s"} still open
               </p>
             </MetricCell>
             <MetricCell>
@@ -251,7 +256,9 @@ export default async function AccountingPage() {
             <MetricCell>
               <MetricLabel>Ledger</MetricLabel>
               <MetricValue>{activeAccountCount}</MetricValue>
-              <p className="text-sm text-white/70">active chart-of-account codes</p>
+              <p className="text-sm text-white/70">
+                active chart-of-account codes
+              </p>
             </MetricCell>
           </MetricBand>
         </CommandBandBody>
@@ -260,15 +267,16 @@ export default async function AccountingPage() {
       <OperationalColumn>
         <section className="space-y-4">
           <SectionHeader
+            count={`${overdueInvoiceCount} overdue`}
+            description="Overdue invoices and recent billing activity for the current tenant."
             eyebrow="Attention"
             title="Receivables that need follow-up"
-            description="Overdue invoices and recent billing activity for the current tenant."
-            count={`${overdueInvoiceCount} overdue`}
           />
 
           {recentInvoices.length === 0 ? (
             <div className="rounded-[22px] border border-dashed border-hairline bg-canvas p-8 text-sm text-muted-foreground">
-              No invoices yet. Start in the invoices module to create your first billing record.
+              No invoices yet. Start in the invoices module to create your first
+              billing record.
             </div>
           ) : (
             <div className="overflow-hidden rounded-[22px] border border-hairline bg-canvas">
@@ -284,19 +292,29 @@ export default async function AccountingPage() {
                   key={invoice.id}
                 >
                   <div className="space-y-1">
-                    <div className="font-medium text-ink">{invoice.invoiceNumber}</div>
-                    <div className="text-muted-foreground">Due {formatDate(invoice.dueDate)}</div>
+                    <div className="font-medium text-ink">
+                      {invoice.invoiceNumber}
+                    </div>
+                    <div className="text-muted-foreground">
+                      Due {formatDate(invoice.dueDate)}
+                    </div>
                   </div>
                   <div className="space-y-1 text-muted-foreground">
                     <div>{getClientLabel(invoice.client)}</div>
                     <div>{invoice.event.title}</div>
                   </div>
                   <div>
-                    <StatusPill>{invoice.status.replaceAll("_", " ")}</StatusPill>
+                    <StatusPill>
+                      {invoice.status.replaceAll("_", " ")}
+                    </StatusPill>
                   </div>
                   <div className="space-y-1 text-right">
-                    <div className="font-medium text-ink">{formatCurrency(Number(invoice.amountDue))}</div>
-                    <div className="text-muted-foreground">of {formatCurrency(Number(invoice.total))}</div>
+                    <div className="font-medium text-ink">
+                      {formatCurrency(Number(invoice.amountDue))}
+                    </div>
+                    <div className="text-muted-foreground">
+                      of {formatCurrency(Number(invoice.total))}
+                    </div>
                   </div>
                 </div>
               ))}
@@ -306,10 +324,10 @@ export default async function AccountingPage() {
 
         <section className="space-y-4">
           <SectionHeader
+            count={`${recentPayments.length} recent`}
+            description="Latest recorded payments across invoices, with method and completion status."
             eyebrow="Cash"
             title="Recent payment activity"
-            description="Latest recorded payments across invoices, with method and completion status."
-            count={`${recentPayments.length} recent`}
           />
 
           {recentPayments.length === 0 ? (
@@ -332,13 +350,16 @@ export default async function AccountingPage() {
                         {getClientLabel(payment.client)}
                       </div>
                     </div>
-                    <StatusPill>{payment.status.replaceAll("_", " ")}</StatusPill>
+                    <StatusPill>
+                      {payment.status.replaceAll("_", " ")}
+                    </StatusPill>
                   </div>
                   <div className="mt-4 space-y-1 text-sm text-muted-foreground">
                     <div>Invoice {payment.invoice.invoiceNumber}</div>
                     <div>{payment.methodType.replaceAll("_", " ")}</div>
                     <div>
-                      {payment.completedAt ? "Completed" : "Recorded"} {formatDate(payment.completedAt ?? payment.createdAt)}
+                      {payment.completedAt ? "Completed" : "Recorded"}{" "}
+                      {formatDate(payment.completedAt ?? payment.createdAt)}
                     </div>
                   </div>
                 </div>
@@ -349,10 +370,10 @@ export default async function AccountingPage() {
 
         <section className="space-y-4">
           <SectionHeader
+            count={`${moduleLinks.length} destinations`}
+            description="Jump straight into the accounting surfaces that already exist in Capsule Pro."
             eyebrow="Navigate"
             title="Accounting modules"
-            description="Jump straight into the accounting surfaces that already exist in Capsule Pro."
-            count={`${moduleLinks.length} destinations`}
           />
 
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">

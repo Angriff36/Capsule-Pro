@@ -79,7 +79,8 @@ export function ContactsTab({ client }: ContactsTabProps) {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [selectedContact, setSelectedContact] = useState<ClientContactData | null>(null);
+  const [selectedContact, setSelectedContact] =
+    useState<ClientContactData | null>(null);
   const [formData, setFormData] = useState({ ...emptyForm });
 
   const fetchContacts = async () => {
@@ -196,7 +197,9 @@ export function ContactsTab({ client }: ContactsTabProps) {
           <Label htmlFor="first_name">First Name *</Label>
           <Input
             id="first_name"
-            onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, first_name: e.target.value })
+            }
             required
             value={formData.first_name}
           />
@@ -205,7 +208,9 @@ export function ContactsTab({ client }: ContactsTabProps) {
           <Label htmlFor="last_name">Last Name *</Label>
           <Input
             id="last_name"
-            onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, last_name: e.target.value })
+            }
             required
             value={formData.last_name}
           />
@@ -289,7 +294,11 @@ export function ContactsTab({ client }: ContactsTabProps) {
             <form className="space-y-4" onSubmit={handleCreate}>
               {contactFormFields}
               <div className="flex justify-end gap-2">
-                <Button onClick={() => setCreateDialogOpen(false)} type="button" variant="outline">
+                <Button
+                  onClick={() => setCreateDialogOpen(false)}
+                  type="button"
+                  variant="outline"
+                >
                   Cancel
                 </Button>
                 <Button disabled={submitting} type="submit">
@@ -362,14 +371,19 @@ export function ContactsTab({ client }: ContactsTabProps) {
                   </div>
                 </div>
                 {contact.title && (
-                  <p className="text-sm text-muted-foreground">{contact.title}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {contact.title}
+                  </p>
                 )}
               </CardHeader>
               <CardContent className="space-y-2 text-sm">
                 {contact.email && (
                   <div className="flex items-center gap-2">
                     <MailIcon className="h-4 w-4 text-muted-foreground" />
-                    <a className="hover:underline" href={`mailto:${contact.email}`}>
+                    <a
+                      className="hover:underline"
+                      href={`mailto:${contact.email}`}
+                    >
                       {contact.email}
                     </a>
                   </div>
@@ -377,7 +391,10 @@ export function ContactsTab({ client }: ContactsTabProps) {
                 {contact.phone && (
                   <div className="flex items-center gap-2">
                     <PhoneIcon className="h-4 w-4 text-muted-foreground" />
-                    <a className="hover:underline" href={`tel:${contact.phone}`}>
+                    <a
+                      className="hover:underline"
+                      href={`tel:${contact.phone}`}
+                    >
                       {contact.phone}
                     </a>
                   </div>
@@ -398,7 +415,11 @@ export function ContactsTab({ client }: ContactsTabProps) {
             {contactFormFields}
             <div className="flex justify-end gap-2">
               <Button
-                onClick={() => { setEditDialogOpen(false); setSelectedContact(null); setFormData({ ...emptyForm }); }}
+                onClick={() => {
+                  setEditDialogOpen(false);
+                  setSelectedContact(null);
+                  setFormData({ ...emptyForm });
+                }}
                 type="button"
                 variant="outline"
               >

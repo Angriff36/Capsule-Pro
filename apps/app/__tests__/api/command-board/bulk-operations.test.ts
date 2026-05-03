@@ -92,10 +92,9 @@ describe("Command Board Server Actions", () => {
     it("bulk updates card status", async () => {
       mockCardUpdateMany.mockResolvedValue({ count: 3 });
 
-      await bulkUpdateCardsAction(
-        ["card-1", "card-2", "card-3"],
-        { status: "done" },
-      );
+      await bulkUpdateCardsAction(["card-1", "card-2", "card-3"], {
+        status: "done",
+      });
 
       expect(mockCardUpdateMany).toHaveBeenCalledWith({
         where: {
@@ -142,7 +141,7 @@ describe("Command Board Server Actions", () => {
       expect(mockCardUpdateMany).toHaveBeenCalledWith(
         expect.objectContaining({
           data: { status: "in_progress", color: "red", cardType: "task" },
-        }),
+        })
       );
     });
   });
@@ -164,12 +163,12 @@ describe("Command Board Server Actions", () => {
         10,
         20,
         300,
-        200,
+        200
       );
 
       // The action generates its own UUID
       expect(result.id).toMatch(
-        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/,
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
       );
 
       // Group was created with correct fields
@@ -209,12 +208,12 @@ describe("Command Board Server Actions", () => {
         0,
         0,
         400,
-        300,
+        300
       );
 
       // Action generates UUID
       expect(result.id).toMatch(
-        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/,
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
       );
       expect(mockCardUpdateMany).not.toHaveBeenCalled();
     });

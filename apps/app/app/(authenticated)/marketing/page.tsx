@@ -1,10 +1,4 @@
-import {
-  BarChart3,
-  Mail,
-  Megaphone,
-  MessageSquare,
-  Users,
-} from "lucide-react";
+import { BarChart3, Mail, Megaphone, MessageSquare, Users } from "lucide-react";
 import { ModuleLanding } from "../components/module-landing";
 
 const MarketingPage = () => (
@@ -23,7 +17,7 @@ const MarketingPage = () => (
         title: "Leads",
         description:
           "Track and qualify inbound leads from events, referrals, and outreach.",
-        href: "/crm/clients",
+        href: "/marketing/leads",
         actionLabel: "Manage leads",
         icon: Users,
       },

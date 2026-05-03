@@ -69,7 +69,7 @@ function formatExpiry(iso: string | null): string | null {
   const exp = new Date(iso);
   const now = new Date();
   const diffDays = Math.ceil(
-    (exp.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
+    (exp.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
   );
   if (diffDays < 0) return `Expired ${Math.abs(diffDays)}d ago`;
   if (diffDays === 0) return "Expires today";
@@ -114,7 +114,7 @@ export function ContractsPageClient({ contracts }: ContractsPageClientProps) {
         (c) =>
           c.title.toLowerCase().includes(q) ||
           c.contractNumber?.toLowerCase().includes(q) ||
-          c.partyName?.toLowerCase().includes(q),
+          c.partyName?.toLowerCase().includes(q)
       );
     }
 
@@ -167,7 +167,9 @@ export function ContractsPageClient({ contracts }: ContractsPageClientProps) {
       ),
       meta: (
         <div className="flex flex-col items-end gap-1">
-          <span className="ds-caption text-ink/60">{formatDate(c.createdAt)}</span>
+          <span className="ds-caption text-ink/60">
+            {formatDate(c.createdAt)}
+          </span>
           {c.expiresAt && (
             <span
               className={`ds-mono text-xs ${expiringWarning ? "font-medium text-red-600" : "text-ink/40"}`}

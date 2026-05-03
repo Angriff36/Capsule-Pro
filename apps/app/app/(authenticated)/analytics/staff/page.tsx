@@ -39,7 +39,11 @@ const decimalFormatter = new Intl.NumberFormat("en-US", {
   maximumFractionDigits: 1,
 });
 
-const formatName = (employee: { firstName: string; lastName: string; email: string }) => {
+const formatName = (employee: {
+  firstName: string;
+  lastName: string;
+  email: string;
+}) => {
   const name = `${employee.firstName} ${employee.lastName}`.trim();
   return name.length > 0 ? name : employee.email;
 };
@@ -61,78 +65,90 @@ const AnalyticsStaffPage = async () => {
   const ninetyDaysAgo = new Date();
   ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
 
-  const [employees, timeEntries, eventAssignments, clientInteractions, taskProgress] =
-    await Promise.all([
-      database.user.findMany({
-        where: {
-          tenantId,
-          deletedAt: null,
+  const [
+    employees,
+    timeEntries,
+    eventAssignments,
+    clientInteractions,
+    taskProgress,
+  ] = await Promise.all([
+    database.user.findMany({
+      where: {
+        tenantId,
+        deletedAt: null,
+      },
+      orderBy: [
+        { isActive: "desc" },
+        { firstName: "asc" },
+        { lastName: "asc" },
+      ],
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        role: true,
+        employmentType: true,
+        isActive: true,
+        hireDate: true,
+      },
+    }),
+    database.timeEntry.findMany({
+      where: {
+        tenantId,
+        deleted_at: null,
+        clockIn: {
+          gte: ninetyDaysAgo,
         },
-        orderBy: [{ isActive: "desc" }, { firstName: "asc" }, { lastName: "asc" }],
-        select: {
-          id: true,
-          email: true,
-          firstName: true,
-          lastName: true,
-          role: true,
-          employmentType: true,
-          isActive: true,
-          hireDate: true,
+      },
+      select: {
+        employeeId: true,
+        clockIn: true,
+        clockOut: true,
+        breakMinutes: true,
+      },
+    }),
+    database.eventStaffAssignment.findMany({
+      where: {
+        tenantId,
+        deletedAt: null,
+        OR: [
+          { startTime: { gte: ninetyDaysAgo } },
+          { createdAt: { gte: ninetyDaysAgo } },
+        ],
+      },
+      select: {
+        employeeId: true,
+        startTime: true,
+        createdAt: true,
+      },
+    }),
+    database.clientInteraction.findMany({
+      where: {
+        tenantId,
+        deletedAt: null,
+        interactionDate: {
+          gte: ninetyDaysAgo,
         },
-      }),
-      database.timeEntry.findMany({
-        where: {
-          tenantId,
-          deleted_at: null,
-          clockIn: {
-            gte: ninetyDaysAgo,
-          },
+      },
+      select: {
+        employeeId: true,
+        interactionDate: true,
+      },
+    }),
+    database.kitchenTaskProgress.findMany({
+      where: {
+        tenantId,
+        createdAt: {
+          gte: ninetyDaysAgo,
         },
-        select: {
-          employeeId: true,
-          clockIn: true,
-          clockOut: true,
-          breakMinutes: true,
-        },
-      }),
-      database.eventStaffAssignment.findMany({
-        where: {
-          tenantId,
-          deletedAt: null,
-          OR: [{ startTime: { gte: ninetyDaysAgo } }, { createdAt: { gte: ninetyDaysAgo } }],
-        },
-        select: {
-          employeeId: true,
-          startTime: true,
-          createdAt: true,
-        },
-      }),
-      database.clientInteraction.findMany({
-        where: {
-          tenantId,
-          deletedAt: null,
-          interactionDate: {
-            gte: ninetyDaysAgo,
-          },
-        },
-        select: {
-          employeeId: true,
-          interactionDate: true,
-        },
-      }),
-      database.kitchenTaskProgress.findMany({
-        where: {
-          tenantId,
-          createdAt: {
-            gte: ninetyDaysAgo,
-          },
-        },
-        select: {
-          employeeId: true,
-          createdAt: true,
-        },
-      }),
-    ]);
+      },
+      select: {
+        employeeId: true,
+        createdAt: true,
+      },
+    }),
+  ]);
 
   const metricsByEmployee = new Map<
     string,
@@ -298,8 +314,8 @@ const AnalyticsStaffPage = async () => {
             <MonoLabel tone="dark">Operations / Analytics / Staff</MonoLabel>
             <DisplayHeading>Staff activity snapshot</DisplayHeading>
             <CommandBandLede>
-              Live staff analytics built from roster, timekeeping, assignment, CRM,
-              and kitchen activity data for the last 90 days.
+              Live staff analytics built from roster, timekeeping, assignment,
+              CRM, and kitchen activity data for the last 90 days.
             </CommandBandLede>
           </div>
         </CommandBandHeader>
@@ -320,10 +336,10 @@ const AnalyticsStaffPage = async () => {
         <OperationalColumn>
           <section className="space-y-6">
             <SectionHeader
+              count={`${employeeRows.length} employees`}
+              description="Simple operational view of who has logged hours and touched live work recently."
               eyebrow="Activity"
               title="Team performance rollup"
-              description="Simple operational view of who has logged hours and touched live work recently."
-              count={`${employeeRows.length} employees`}
             />
 
             {employeeRows.length === 0 ? (
@@ -360,15 +376,22 @@ const AnalyticsStaffPage = async () => {
                         <TableCell>
                           <div>{formatEnum(employee.role)}</div>
                           <div className="text-muted-foreground text-xs">
-                            {formatEnum(employee.employmentType)} · Hired {dateFormatter.format(employee.hireDate)}
+                            {formatEnum(employee.employmentType)} · Hired{" "}
+                            {dateFormatter.format(employee.hireDate)}
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Badge variant={employee.isActive ? "success" : "secondary"}>
+                          <Badge
+                            variant={
+                              employee.isActive ? "success" : "secondary"
+                            }
+                          >
                             {employee.isActive ? "Active" : "Inactive"}
                           </Badge>
                         </TableCell>
-                        <TableCell>{decimalFormatter.format(employee.hoursWorked)}</TableCell>
+                        <TableCell>
+                          {decimalFormatter.format(employee.hoursWorked)}
+                        </TableCell>
                         <TableCell>{employee.shiftsWorked}</TableCell>
                         <TableCell>{employee.eventAssignments}</TableCell>
                         <TableCell>{employee.clientInteractions}</TableCell>
@@ -389,9 +412,9 @@ const AnalyticsStaffPage = async () => {
 
         <aside className="space-y-6">
           <SectionHeader
+            description="Useful for quick staffing review without opening the heavier dashboard shell."
             eyebrow="Highlights"
             title="90-day totals"
-            description="Useful for quick staffing review without opening the heavier dashboard shell."
           />
           <div className="space-y-4 rounded-[22px] border border-hairline bg-canvas p-6">
             <div className="flex items-center justify-between gap-4 text-sm">
@@ -404,12 +427,19 @@ const AnalyticsStaffPage = async () => {
             </div>
             <div className="flex items-center justify-between gap-4 text-sm">
               <span className="text-muted-foreground">Kitchen updates</span>
-              <span className="font-medium text-ink">{totalKitchenUpdates}</span>
+              <span className="font-medium text-ink">
+                {totalKitchenUpdates}
+              </span>
             </div>
             <div className="flex items-center justify-between gap-4 text-sm">
-              <span className="text-muted-foreground">Employees with recent activity</span>
+              <span className="text-muted-foreground">
+                Employees with recent activity
+              </span>
               <span className="font-medium text-ink">
-                {employeeRows.filter((employee) => employee.lastActivity).length}
+                {
+                  employeeRows.filter((employee) => employee.lastActivity)
+                    .length
+                }
               </span>
             </div>
           </div>

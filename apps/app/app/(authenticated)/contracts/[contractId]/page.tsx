@@ -26,15 +26,12 @@ import {
   PageCanvas,
 } from "@repo/design-system/components/blocks/page-shell";
 import { Button } from "@repo/design-system/components/ui/button";
-import {
-  FileSignature,
-  ArrowLeft,
-} from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { serializeDecimal } from "@/app/lib/decimal";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { ContractDetailClient } from "./contract-detail-client";
 
 // ---------------------------------------------------------------------------
@@ -117,9 +114,7 @@ interface SerializedVendorContract {
   updatedAt: string;
 }
 
-type SerializedContract =
-  | SerializedEventContract
-  | SerializedVendorContract;
+type SerializedContract = SerializedEventContract | SerializedVendorContract;
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -327,19 +322,15 @@ export default async function ContractDetailPage({
   // ---------------------------------------------------------------------------
 
   const isEvent = contract.contractType === "event";
-  const ecContract = isEvent
-    ? (contract as SerializedEventContract)
-    : null;
-  const vcContract = !isEvent
-    ? (contract as SerializedVendorContract)
-    : null;
+  const ecContract = isEvent ? (contract as SerializedEventContract) : null;
+  const vcContract = isEvent ? null : (contract as SerializedVendorContract);
 
   const displayTitle = isEvent
     ? ecContract!.title
     : `${vcContract!.vendorName || "Vendor"} -- ${vcContract!.contractTypeLabel || "Contract"}`;
 
   const expiryDays = daysUntil(
-    isEvent ? ecContract!.expiresAt : vcContract!.endDate,
+    isEvent ? ecContract!.expiresAt : vcContract!.endDate
   );
 
   const expiryLabel =
@@ -436,9 +427,7 @@ export default async function ContractDetailPage({
               </MetricCell>
               <MetricCell>
                 <MetricLabel>SLA breaches</MetricLabel>
-                <MetricValue>
-                  {vcContract!.slaBreachCount ?? 0}
-                </MetricValue>
+                <MetricValue>{vcContract!.slaBreachCount ?? 0}</MetricValue>
               </MetricCell>
               <MetricCell>
                 <MetricLabel>Days until expiry</MetricLabel>

@@ -44,7 +44,10 @@ const stageOrder = [
 
 type DealStage = (typeof stageOrder)[number];
 
-function proposalStatusToStage(status: string, eventId: string | null): DealStage {
+function proposalStatusToStage(
+  status: string,
+  eventId: string | null
+): DealStage {
   switch (status) {
     case "draft":
       return "lead";
@@ -94,7 +97,9 @@ function formatDate(value: Date | null) {
   return dateFormatter.format(value);
 }
 
-function stageTone(stage: DealStage): "default" | "secondary" | "outline" | "destructive" {
+function stageTone(
+  stage: DealStage
+): "default" | "secondary" | "outline" | "destructive" {
   switch (stage) {
     case "negotiation":
     case "won":
@@ -240,7 +245,9 @@ export default async function PipelinePage() {
               key={item.stage}
             >
               <div className="flex items-center justify-between gap-3">
-                <h2 className="text-sm font-semibold capitalize">{item.stage}</h2>
+                <h2 className="text-sm font-semibold capitalize">
+                  {item.stage}
+                </h2>
                 <Badge variant={stageTone(item.stage)}>{item.count}</Badge>
               </div>
               <p className="mt-2 text-xs text-muted-foreground">
@@ -281,7 +288,9 @@ export default async function PipelinePage() {
                   {deals.map((deal) => (
                     <tr className="align-top" key={deal.id}>
                       <td className="px-6 py-4">
-                        <div className="font-medium text-foreground">{deal.title}</div>
+                        <div className="font-medium text-foreground">
+                          {deal.title}
+                        </div>
                         <div className="mt-1 text-xs text-muted-foreground">
                           {deal.proposalNumber}
                         </div>
@@ -290,7 +299,10 @@ export default async function PipelinePage() {
                         {deal.clientName}
                       </td>
                       <td className="px-6 py-4">
-                        <Badge className="capitalize" variant={stageTone(deal.stage)}>
+                        <Badge
+                          className="capitalize"
+                          variant={stageTone(deal.stage)}
+                        >
                           {deal.stage}
                         </Badge>
                       </td>

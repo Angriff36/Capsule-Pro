@@ -105,7 +105,8 @@ export default function FacilitiesWorkOrdersPage() {
           assigned_to: result.assignedTo,
           assigned_vendor: null,
           scheduled_date: result.scheduledDate?.toISOString() ?? null,
-          reported_at: result.createdAt?.toISOString() ?? new Date().toISOString(),
+          reported_at:
+            result.createdAt?.toISOString() ?? new Date().toISOString(),
         },
         ...prev,
       ]);

@@ -402,7 +402,11 @@ export default function VehiclesPage() {
                 : "Add a new vehicle to the fleet."}
             </DialogDescription>
           </DialogHeader>
-          <form action={createVehicle} className="space-y-4" onSubmit={handleSave}>
+          <form
+            action={createVehicle}
+            className="space-y-4"
+            onSubmit={handleSave}
+          >
             <div className="grid grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label>Make *</Label>

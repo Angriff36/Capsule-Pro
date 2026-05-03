@@ -1,3 +1,4 @@
+import { database } from "@repo/database";
 import {
   CommandBand,
   CommandBandBody,
@@ -13,7 +14,6 @@ import {
   PageCanvas,
   SectionHeader,
 } from "@repo/design-system/components/blocks/page-shell";
-import { database } from "@repo/database";
 import { redirect } from "next/navigation";
 import { requireCurrentUser } from "@/app/lib/tenant";
 import { MyTrainingClient } from "./my-training-client";
@@ -138,10 +138,10 @@ export default async function MyTrainingPage() {
 
       <OperationalColumn>
         <SectionHeader
+          count={`${rows.length} module${rows.length === 1 ? "" : "s"}`}
+          description="Training modules assigned to you, sorted by urgency."
           eyebrow="Modules"
           title="Your assignments"
-          description="Training modules assigned to you, sorted by urgency."
-          count={`${rows.length} module${rows.length === 1 ? "" : "s"}`}
         />
         <MyTrainingClient
           assignments={rows.map((r) => ({

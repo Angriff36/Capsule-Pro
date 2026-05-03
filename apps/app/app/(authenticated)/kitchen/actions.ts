@@ -1,6 +1,6 @@
 "use server";
 
-import { type WasteEntry, tenantDatabase } from "@repo/database";
+import { tenantDatabase, type WasteEntry } from "@repo/database";
 import { revalidatePath } from "next/cache";
 import { requireCurrentUser, requireTenantId } from "@/app/lib/tenant";
 
@@ -204,9 +204,7 @@ export const updateWasteEntry = async (
 
   const quantity = getDecimal(formData, "quantity");
   const reasonIdStr = getString(formData, "reasonId");
-  const reasonId = reasonIdStr
-    ? Number.parseInt(reasonIdStr, 10)
-    : undefined;
+  const reasonId = reasonIdStr ? Number.parseInt(reasonIdStr, 10) : undefined;
   const unitId = getInt(formData, "unitId");
   const locationId = getOptionalString(formData, "locationId");
   const unitCost = getDecimal(formData, "unitCost");
@@ -218,8 +216,7 @@ export const updateWasteEntry = async (
       where: { tenantId_id: { tenantId, id: entryId } },
       data: {
         ...(quantity !== undefined && { quantity }),
-        ...(reasonId !== undefined &&
-          !Number.isNaN(reasonId) && { reasonId }),
+        ...(reasonId !== undefined && !Number.isNaN(reasonId) && { reasonId }),
         ...(unitId !== undefined && { unitId }),
         ...(locationId !== undefined && {
           locationId: locationId || null,

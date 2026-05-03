@@ -1,0 +1,238 @@
+/**
+ * @module use-leads
+ * @intent Client-side helpers and types for the Marketing Leads page
+ * @responsibility Provide typed fetch wrappers, command helpers, formatting
+ *   utilities, and status helpers consumed by the leads-page-client component
+ * @domain Marketing / CRM
+ * @tags leads, marketing, crm, client-helpers
+ * @canonical true
+ */
+
+"use client";
+
+import { apiFetch } from "@/app/lib/api";
+
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
+
+export type LeadStatus =
+  | "new"
+  | "contacted"
+  | "qualified"
+  | "converted"
+  | "disqualified";
+
+export type DateOrString = Date | string;
+
+export interface Lead {
+  id: string;
+  tenantId: string;
+  source: string | null;
+  companyName: string | null;
+  contactName: string;
+  contactEmail: string | null;
+  contactPhone: string | null;
+  eventType: string | null;
+  eventDate: DateOrString | null;
+  estimatedGuests: number | null;
+  estimatedValue: number | null;
+  status: string;
+  assignedTo: string | null;
+  notes: string | null;
+  convertedToClientId: string | null;
+  convertedAt: DateOrString | null;
+  createdAt: DateOrString;
+  updatedAt: DateOrString;
+  deletedAt: DateOrString | null;
+}
+
+export interface LeadSummary {
+  totalCount: number;
+  newCount: number;
+  contactedCount: number;
+  qualifiedCount: number;
+  convertedCount: number;
+  disqualifiedCount: number;
+  totalEstimatedValue: number;
+}
+
+// ---------------------------------------------------------------------------
+// Fetch helpers
+// ---------------------------------------------------------------------------
+
+export async function fetchLeads(): Promise<Lead[]> {
+  const response = await apiFetch("/api/crm/leads/list?limit=200");
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(
+      (error as { message?: string }).message || "Failed to fetch leads"
+    );
+  }
+  const data = (await response.json()) as { leads: Lead[] };
+  return data.leads;
+}
+
+export async function fetchLeadById(id: string): Promise<Lead> {
+  const response = await apiFetch(`/api/crm/leads/${id}`);
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(
+      (error as { message?: string }).message || "Failed to fetch lead"
+    );
+  }
+  const data = (await response.json()) as { lead: Lead };
+  return data.lead;
+}
+
+// ---------------------------------------------------------------------------
+// Command helpers
+// ---------------------------------------------------------------------------
+
+async function executeCommand(
+  command: string,
+  instanceId: string,
+  body?: Record<string, unknown>
+): Promise<Response> {
+  const response = await apiFetch(`/api/crm/leads/commands/${command}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ instanceId, ...body }),
+  });
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(
+      (error as { message?: string }).message ||
+        `Failed to execute ${command} on lead`
+    );
+  }
+  return response;
+}
+
+export async function createLead(data: {
+  contactName: string;
+  companyName?: string;
+  contactEmail?: string;
+  contactPhone?: string;
+  source?: string;
+  eventType?: string;
+  eventDate?: string;
+  estimatedGuests?: number;
+  estimatedValue?: number;
+  notes?: string;
+}): Promise<void> {
+  const response = await apiFetch("/api/crm/leads/commands/create", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(
+      (error as { message?: string }).message || "Failed to create lead"
+    );
+  }
+}
+
+export async function updateLead(
+  id: string,
+  data: Record<string, unknown>
+): Promise<void> {
+  await executeCommand("update", id, data);
+}
+
+export async function convertLeadToClient(id: string): Promise<void> {
+  await executeCommand("convert-to-client", id);
+}
+
+export async function disqualifyLead(id: string): Promise<void> {
+  await executeCommand("disqualify", id);
+}
+
+export async function archiveLead(id: string): Promise<void> {
+  await executeCommand("archive", id);
+}
+
+// ---------------------------------------------------------------------------
+// Formatting helpers
+// ---------------------------------------------------------------------------
+
+const currencyFormatter = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 0,
+});
+
+export function formatCurrency(amount: number | null | undefined): string {
+  if (amount == null) return "\u2014";
+  return currencyFormatter.format(amount);
+}
+
+const dateFormatter = new Intl.DateTimeFormat("en-US", {
+  month: "short",
+  day: "numeric",
+  year: "numeric",
+});
+
+export function formatDate(value: DateOrString | null | undefined): string {
+  if (!value) return "\u2014";
+  const date = value instanceof Date ? value : new Date(value);
+  return dateFormatter.format(date);
+}
+
+const shortDateFormatter = new Intl.DateTimeFormat("en-US", {
+  month: "short",
+  day: "numeric",
+});
+
+export function formatShortDate(
+  value: DateOrString | null | undefined
+): string {
+  if (!value) return "\u2014";
+  const date = value instanceof Date ? value : new Date(value);
+  return shortDateFormatter.format(date);
+}
+
+// ---------------------------------------------------------------------------
+// Status helpers
+// ---------------------------------------------------------------------------
+
+type StatusVariant =
+  | "default"
+  | "secondary"
+  | "outline"
+  | "destructive"
+  | "success"
+  | "coral";
+
+const STATUS_VARIANT_MAP: Record<LeadStatus, StatusVariant> = {
+  new: "default",
+  contacted: "outline",
+  qualified: "success",
+  converted: "success",
+  disqualified: "secondary",
+};
+
+const STATUS_LABEL_MAP: Record<LeadStatus, string> = {
+  new: "New",
+  contacted: "Contacted",
+  qualified: "Qualified",
+  converted: "Converted",
+  disqualified: "Disqualified",
+};
+
+export function getStatusColor(status: LeadStatus): StatusVariant {
+  return STATUS_VARIANT_MAP[status] ?? "secondary";
+}
+
+export function getStatusLabel(status: string): string {
+  return (
+    STATUS_LABEL_MAP[status as LeadStatus] ??
+    status.charAt(0).toUpperCase() + status.slice(1)
+  );
+}
+
+export function getLeadDisplayName(lead: Lead): string {
+  return lead.companyName || lead.contactName || "Unknown lead";
+}

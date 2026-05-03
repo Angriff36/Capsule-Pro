@@ -469,7 +469,10 @@ export default function VendorsPage() {
       ) : (
         <div className="space-y-3">
           {filtered.map((vendor) => (
-            <Card className="hover:border-primary/40 transition-shadow" key={vendor.id}>
+            <Card
+              className="hover:border-primary/40 transition-shadow"
+              key={vendor.id}
+            >
               <CardContent className="p-4">
                 <div className="flex items-center gap-4">
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 text-blue-700">

@@ -27,6 +27,7 @@ import {
   SelectValue,
 } from "@repo/design-system/components/ui/select";
 import { Separator } from "@repo/design-system/components/ui/separator";
+import { Switch } from "@repo/design-system/components/ui/switch";
 import {
   Table,
   TableBody,
@@ -42,7 +43,6 @@ import {
   TabsTrigger,
 } from "@repo/design-system/components/ui/tabs";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
-import { Switch } from "@repo/design-system/components/ui/switch";
 import {
   AlertCircle,
   Bell,
@@ -150,15 +150,11 @@ const NOTIFICATION_CATEGORIES = [
   },
   {
     label: "Kitchen",
-    types: [
-      { value: "prep_list_published", label: "Prep List Published" },
-    ],
+    types: [{ value: "prep_list_published", label: "Prep List Published" }],
   },
   {
     label: "Inventory",
-    types: [
-      { value: "inventory_low", label: "Inventory Low" },
-    ],
+    types: [{ value: "inventory_low", label: "Inventory Low" }],
   },
 ] as const;
 
@@ -1199,7 +1195,9 @@ function SmsPreferencesTab({ employeeId }: { employeeId: string }) {
                         <p className="text-sm font-medium">{type.label}</p>
                         <p className="text-xs text-muted-foreground">
                           Receive SMS when{" "}
-                          {type.label.toLowerCase().replace(/^(a|an|the)\s/i, "")}
+                          {type.label
+                            .toLowerCase()
+                            .replace(/^(a|an|the)\s/i, "")}
                         </p>
                       </div>
                     </div>
@@ -1225,11 +1223,7 @@ function SmsPreferencesTab({ employeeId }: { employeeId: string }) {
 // Page
 // ---------------------------------------------------------------------------
 
-export function NotificationsClient({
-  employeeId,
-}: {
-  employeeId: string;
-}) {
+export function NotificationsClient({ employeeId }: { employeeId: string }) {
   return (
     <>
       <Separator />

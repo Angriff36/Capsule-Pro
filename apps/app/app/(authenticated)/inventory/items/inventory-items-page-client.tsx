@@ -265,7 +265,9 @@ export const InventoryItemsPageClient = () => {
       <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
         {/* Page Header */}
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Inventory Items</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">
+            Inventory Items
+          </h1>
           <p className="text-muted-foreground">
             Manage ingredient inventory, track stock levels, and monitor reorder
             points.

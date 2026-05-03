@@ -1,39 +1,23 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import Link from "next/link";
 import {
-  PageCanvas,
   CommandBand,
+  CommandBandActions,
+  CommandBandBody,
   CommandBandHeader,
   CommandBandLede,
-  CommandBandBody,
-  CommandBandActions,
+  DisplayHeading,
   MetricBand,
   MetricCell,
   MetricLabel,
   MetricValue,
   MonoLabel,
-  DisplayHeading,
   OperationalColumn,
+  PageCanvas,
   SectionHeader,
 } from "@repo/design-system/components/blocks/page-shell";
-import { Button } from "@repo/design-system/components/ui/button";
 import { Badge } from "@repo/design-system/components/ui/badge";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@repo/design-system/components/ui/tabs";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@repo/design-system/components/ui/table";
+import { Button } from "@repo/design-system/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -44,8 +28,20 @@ import {
 } from "@repo/design-system/components/ui/dialog";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
-import { Switch } from "@repo/design-system/components/ui/switch";
-import { toast } from "sonner";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@repo/design-system/components/ui/table";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@repo/design-system/components/ui/tabs";
 import {
   AlertTriangle,
   CheckCircle2,
@@ -53,9 +49,11 @@ import {
   Plus,
   RotateCw,
   Trash2,
-  XCircle,
   Webhook,
 } from "lucide-react";
+import Link from "next/link";
+import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
 
 // ---------------------------------------------------------------------------
@@ -170,7 +168,7 @@ function entityLabel(e: string): string {
 function StatusBadge({ status }: { status: string }) {
   const cls = STATUS_COLORS[status] ?? "bg-gray-100 text-gray-700";
   return (
-    <Badge variant="secondary" className={`text-xs capitalize ${cls}`}>
+    <Badge className={`text-xs capitalize ${cls}`} variant="secondary">
       {status.replace(/_/g, " ")}
     </Badge>
   );
@@ -200,20 +198,20 @@ function ConfirmDialog({
   variant?: "default" | "destructive";
 }) {
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog onOpenChange={onOpenChange} open={open}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button onClick={() => onOpenChange(false)} variant="outline">
             Cancel
           </Button>
           <Button
-            variant={variant === "destructive" ? "destructive" : "default"}
-            onClick={onConfirm}
             disabled={loading}
+            onClick={onConfirm}
+            variant={variant === "destructive" ? "destructive" : "default"}
           >
             {loading ? "Working…" : confirmLabel}
           </Button>
@@ -283,7 +281,7 @@ function WebhookFormDialog({
 
   const toggleFilter = (
     field: "eventTypeFilters" | "entityFilters",
-    value: string,
+    value: string
   ) => {
     setForm((prev) => {
       const arr = prev[field];
@@ -299,7 +297,7 @@ function WebhookFormDialog({
   const valid = form.name.trim().length > 0 && form.url.trim().length > 0;
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog onOpenChange={onOpenChange} open={open}>
       <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{webhook ? "Edit Webhook" : "New Webhook"}</DialogTitle>
@@ -315,20 +313,20 @@ function WebhookFormDialog({
             <Label htmlFor="wh-name">Name</Label>
             <Input
               id="wh-name"
+              onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
               placeholder="e.g. Slack Notification"
               value={form.name}
-              onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
             />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="wh-url">Endpoint URL</Label>
             <Input
+              className="font-mono text-sm"
               id="wh-url"
+              onChange={(e) => setForm((p) => ({ ...p, url: e.target.value }))}
               placeholder="https://example.com/webhooks"
               value={form.url}
-              onChange={(e) => setForm((p) => ({ ...p, url: e.target.value }))}
-              className="font-mono text-sm"
             />
           </div>
 
@@ -337,24 +335,24 @@ function WebhookFormDialog({
               <Label htmlFor="wh-secret">HMAC Secret</Label>
               <Input
                 id="wh-secret"
-                type="password"
-                placeholder={webhook ? "(unchanged)" : "Optional"}
-                value={form.secret}
                 onChange={(e) =>
                   setForm((p) => ({ ...p, secret: e.target.value }))
                 }
+                placeholder={webhook ? "(unchanged)" : "Optional"}
+                type="password"
+                value={form.secret}
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="wh-apikey">API Key</Label>
               <Input
                 id="wh-apikey"
-                type="password"
-                placeholder={webhook ? "(unchanged)" : "Optional"}
-                value={form.apiKey}
                 onChange={(e) =>
                   setForm((p) => ({ ...p, apiKey: e.target.value }))
                 }
+                placeholder={webhook ? "(unchanged)" : "Optional"}
+                type="password"
+                value={form.apiKey}
               />
             </div>
           </div>
@@ -364,14 +362,14 @@ function WebhookFormDialog({
             <div className="flex flex-wrap gap-2">
               {EVENT_TYPES.map((et) => (
                 <Button
+                  className="capitalize"
                   key={et}
-                  type="button"
+                  onClick={() => toggleFilter("eventTypeFilters", et)}
                   size="sm"
+                  type="button"
                   variant={
                     form.eventTypeFilters.includes(et) ? "default" : "outline"
                   }
-                  onClick={() => toggleFilter("eventTypeFilters", et)}
-                  className="capitalize"
                 >
                   {et}
                 </Button>
@@ -387,14 +385,14 @@ function WebhookFormDialog({
             <div className="flex flex-wrap gap-2">
               {ENTITY_TYPES.map((et) => (
                 <Button
+                  className="capitalize"
                   key={et}
-                  type="button"
+                  onClick={() => toggleFilter("entityFilters", et)}
                   size="sm"
+                  type="button"
                   variant={
                     form.entityFilters.includes(et) ? "default" : "outline"
                   }
-                  onClick={() => toggleFilter("entityFilters", et)}
-                  className="capitalize"
                 >
                   {entityLabel(et)}
                 </Button>
@@ -410,39 +408,39 @@ function WebhookFormDialog({
               <Label htmlFor="wh-retry">Max Retries</Label>
               <Input
                 id="wh-retry"
-                type="number"
-                min={0}
                 max={10}
-                value={form.retryCount}
+                min={0}
                 onChange={(e) =>
                   setForm((p) => ({
                     ...p,
                     retryCount: Number(e.target.value),
                   }))
                 }
+                type="number"
+                value={form.retryCount}
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="wh-timeout">Timeout (ms)</Label>
               <Input
                 id="wh-timeout"
-                type="number"
                 min={1000}
-                step={1000}
-                value={form.timeoutMs}
                 onChange={(e) =>
                   setForm((p) => ({
                     ...p,
                     timeoutMs: Number(e.target.value),
                   }))
                 }
+                step={1000}
+                type="number"
+                value={form.timeoutMs}
               />
             </div>
           </div>
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button onClick={() => onOpenChange(false)} variant="outline">
             Cancel
           </Button>
           <Button disabled={!valid || loading} onClick={() => onSave(form)}>
@@ -478,7 +476,7 @@ export function WebhooksClient() {
   const [loading, setLoading] = useState(true);
   const [formOpen, setFormOpen] = useState(false);
   const [editingWebhook, setEditingWebhook] = useState<WebhookConfig | null>(
-    null,
+    null
   );
   const [saving, setSaving] = useState(false);
 
@@ -507,39 +505,47 @@ export function WebhooksClient() {
     }
   }, []);
 
-  const fetchLogs = useCallback(async (append = false) => {
-    try {
-      const offset = append ? logs.length : 0;
-      const res = await apiFetch(
-        `/api/integrations/webhooks/delivery-logs?limit=50&offset=${offset}`,
-      );
-      if (res.ok) {
-        const data = await res.json();
-        setLogs((prev) => (append ? [...prev, ...(data.logs ?? [])] : data.logs ?? []));
-        setLogsPagination(data.pagination ?? { total: 0, hasMore: false });
-      }
-    } catch {
-      toast.error("Failed to load delivery logs");
-    }
-  }, [logs.length]);
-
-  const fetchDlq = useCallback(async (append = false) => {
-    try {
-      const offset = append ? dlqEntries.length : 0;
-      const res = await apiFetch(
-        `/api/integrations/webhooks/dlq?limit=50&unresolved=true&offset=${offset}`,
-      );
-      if (res.ok) {
-        const data = await res.json();
-        setDlqEntries((prev) =>
-          append ? [...prev, ...(data.entries ?? [])] : data.entries ?? [],
+  const fetchLogs = useCallback(
+    async (append = false) => {
+      try {
+        const offset = append ? logs.length : 0;
+        const res = await apiFetch(
+          `/api/integrations/webhooks/delivery-logs?limit=50&offset=${offset}`
         );
-        setDlqPagination(data.pagination ?? { total: 0, hasMore: false });
+        if (res.ok) {
+          const data = await res.json();
+          setLogs((prev) =>
+            append ? [...prev, ...(data.logs ?? [])] : (data.logs ?? [])
+          );
+          setLogsPagination(data.pagination ?? { total: 0, hasMore: false });
+        }
+      } catch {
+        toast.error("Failed to load delivery logs");
       }
-    } catch {
-      toast.error("Failed to load dead letter queue");
-    }
-  }, [dlqEntries.length]);
+    },
+    [logs.length]
+  );
+
+  const fetchDlq = useCallback(
+    async (append = false) => {
+      try {
+        const offset = append ? dlqEntries.length : 0;
+        const res = await apiFetch(
+          `/api/integrations/webhooks/dlq?limit=50&unresolved=true&offset=${offset}`
+        );
+        if (res.ok) {
+          const data = await res.json();
+          setDlqEntries((prev) =>
+            append ? [...prev, ...(data.entries ?? [])] : (data.entries ?? [])
+          );
+          setDlqPagination(data.pagination ?? { total: 0, hasMore: false });
+        }
+      } catch {
+        toast.error("Failed to load dead letter queue");
+      }
+    },
+    [dlqEntries.length]
+  );
 
   // ---------------------------------------------------------------------------
   // Initial load
@@ -548,7 +554,7 @@ export function WebhooksClient() {
   useEffect(() => {
     setLoading(true);
     Promise.all([fetchWebhooks(), fetchLogs(), fetchDlq()]).finally(() =>
-      setLoading(false),
+      setLoading(false)
     );
   }, [fetchWebhooks, fetchLogs, fetchDlq]);
 
@@ -583,9 +589,7 @@ export function WebhooksClient() {
           });
 
       if (res.ok) {
-        toast.success(
-          editingWebhook ? "Webhook updated" : "Webhook created",
-        );
+        toast.success(editingWebhook ? "Webhook updated" : "Webhook created");
         setFormOpen(false);
         setEditingWebhook(null);
         await fetchWebhooks();
@@ -660,7 +664,7 @@ export function WebhooksClient() {
         try {
           const res = await apiFetch(
             `/api/integrations/webhooks/dlq/${entry.id}/retry`,
-            { method: "POST" },
+            { method: "POST" }
           );
           if (res.ok) {
             toast.success("Delivery queued for retry");
@@ -688,7 +692,7 @@ export function WebhooksClient() {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ resolution: "Manually resolved" }),
-            },
+            }
           );
           if (res.ok) {
             toast.success("Entry resolved");
@@ -764,7 +768,7 @@ export function WebhooksClient() {
               <Plus className="mr-2 h-4 w-4" />
               New Webhook
             </Button>
-            <Button variant="outline" asChild>
+            <Button asChild variant="outline">
               <Link href="/settings">Back to Settings</Link>
             </Button>
           </CommandBandActions>
@@ -793,7 +797,7 @@ export function WebhooksClient() {
 
       {/* Tabs */}
       <OperationalColumn>
-        <Tabs value={tab} onValueChange={setTab}>
+        <Tabs onValueChange={setTab} value={tab}>
           <TabsList>
             <TabsTrigger value="webhooks">
               <Globe className="mr-1.5 h-3.5 w-3.5" />
@@ -810,7 +814,7 @@ export function WebhooksClient() {
           </TabsList>
 
           {/* ---- Webhooks tab ---- */}
-          <TabsContent value="webhooks" className="mt-6">
+          <TabsContent className="mt-6" value="webhooks">
             {webhooks.length === 0 ? (
               <div className="rounded-[22px] border border-dashed px-6 py-16 text-center">
                 <Webhook className="mx-auto h-10 w-10 text-muted-foreground/40" />
@@ -847,24 +851,22 @@ export function WebhooksClient() {
                 <TableBody>
                   {webhooks.map((wh) => (
                     <TableRow key={wh.id}>
-                      <TableCell className="font-medium">
-                        {wh.name}
-                      </TableCell>
+                      <TableCell className="font-medium">{wh.name}</TableCell>
                       <TableCell className="font-mono text-xs text-muted-foreground max-w-[200px] truncate">
                         {wh.url}
                       </TableCell>
                       <TableCell>
                         <div className="flex flex-wrap gap-1">
                           {wh.eventTypeFilters.length === 0 ? (
-                            <Badge variant="secondary" className="text-xs">
+                            <Badge className="text-xs" variant="secondary">
                               All
                             </Badge>
                           ) : (
                             wh.eventTypeFilters.map((et) => (
                               <Badge
+                                className="text-xs capitalize"
                                 key={et}
                                 variant="secondary"
-                                className="text-xs capitalize"
                               >
                                 {et}
                               </Badge>
@@ -890,21 +892,23 @@ export function WebhooksClient() {
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-1">
                           <Button
-                            size="icon-sm"
-                            variant="ghost"
-                            title="Edit"
                             onClick={() => {
                               setEditingWebhook(wh);
                               setFormOpen(true);
                             }}
+                            size="icon-sm"
+                            title="Edit"
+                            variant="ghost"
                           >
                             <RotateCw className="h-3.5 w-3.5" />
                           </Button>
                           <Button
-                            size="icon-sm"
-                            variant="ghost"
-                            title={wh.status === "active" ? "Pause" : "Activate"}
                             onClick={() => handleToggle(wh)}
+                            size="icon-sm"
+                            title={
+                              wh.status === "active" ? "Pause" : "Activate"
+                            }
+                            variant="ghost"
                           >
                             {wh.status === "active" ? (
                               <AlertTriangle className="h-3.5 w-3.5" />
@@ -913,10 +917,10 @@ export function WebhooksClient() {
                             )}
                           </Button>
                           <Button
-                            size="icon-sm"
-                            variant="ghost"
-                            title="Delete"
                             onClick={() => handleDelete(wh)}
+                            size="icon-sm"
+                            title="Delete"
+                            variant="ghost"
                           >
                             <Trash2 className="h-3.5 w-3.5 text-red-500" />
                           </Button>
@@ -930,17 +934,13 @@ export function WebhooksClient() {
           </TabsContent>
 
           {/* ---- Delivery Logs tab ---- */}
-          <TabsContent value="delivery-logs" className="mt-6">
+          <TabsContent className="mt-6" value="delivery-logs">
             <div className="flex items-center justify-between mb-4">
               <SectionHeader
-                title="Delivery Logs"
                 count={logsPagination.total}
+                title="Delivery Logs"
               />
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleRetryFailed}
-              >
+              <Button onClick={handleRetryFailed} size="sm" variant="outline">
                 <RotateCw className="mr-1.5 h-3.5 w-3.5" />
                 Retry Failed
               </Button>
@@ -968,8 +968,8 @@ export function WebhooksClient() {
                       <TableRow key={log.id}>
                         <TableCell>
                           <Badge
-                            variant="secondary"
                             className="text-xs capitalize"
+                            variant="secondary"
                           >
                             {log.eventType}
                           </Badge>
@@ -1020,9 +1020,9 @@ export function WebhooksClient() {
                 {logsPagination.hasMore && (
                   <div className="mt-4 text-center">
                     <Button
-                      variant="outline"
-                      size="sm"
                       onClick={() => fetchLogs(true)}
+                      size="sm"
+                      variant="outline"
                     >
                       Load more
                     </Button>
@@ -1033,16 +1033,18 @@ export function WebhooksClient() {
           </TabsContent>
 
           {/* ---- Dead Letter Queue tab ---- */}
-          <TabsContent value="dlq" className="mt-6">
+          <TabsContent className="mt-6" value="dlq">
             <SectionHeader
-              title="Dead Letter Queue"
-              description="Permanently failed deliveries awaiting manual review."
               count={dlqPagination.total}
+              description="Permanently failed deliveries awaiting manual review."
+              title="Dead Letter Queue"
             />
             {dlqEntries.length === 0 ? (
               <div className="rounded-[22px] border border-dashed px-6 py-16 text-center text-muted-foreground">
                 <CheckCircle2 className="mx-auto h-10 w-10 text-muted-foreground/40" />
-                <p className="mt-4">No unresolved entries in the dead letter queue.</p>
+                <p className="mt-4">
+                  No unresolved entries in the dead letter queue.
+                </p>
               </div>
             ) : (
               <>
@@ -1063,8 +1065,8 @@ export function WebhooksClient() {
                       <TableRow key={entry.id}>
                         <TableCell>
                           <Badge
-                            variant="secondary"
                             className="text-xs capitalize"
+                            variant="secondary"
                           >
                             {entry.eventType}
                           </Badge>
@@ -1092,18 +1094,18 @@ export function WebhooksClient() {
                         <TableCell className="text-right">
                           <div className="flex items-center justify-end gap-1">
                             <Button
-                              size="icon-sm"
-                              variant="ghost"
-                              title="Retry"
                               onClick={() => handleRetryDlq(entry)}
+                              size="icon-sm"
+                              title="Retry"
+                              variant="ghost"
                             >
                               <RotateCw className="h-3.5 w-3.5" />
                             </Button>
                             <Button
-                              size="icon-sm"
-                              variant="ghost"
-                              title="Resolve"
                               onClick={() => handleResolveDlq(entry)}
+                              size="icon-sm"
+                              title="Resolve"
+                              variant="ghost"
                             >
                               <CheckCircle2 className="h-3.5 w-3.5" />
                             </Button>
@@ -1116,9 +1118,9 @@ export function WebhooksClient() {
                 {dlqPagination.hasMore && (
                   <div className="mt-4 text-center">
                     <Button
-                      variant="outline"
-                      size="sm"
                       onClick={() => fetchDlq(true)}
+                      size="sm"
+                      variant="outline"
                     >
                       Load more
                     </Button>
@@ -1132,23 +1134,23 @@ export function WebhooksClient() {
 
       {/* Form dialog */}
       <WebhookFormDialog
-        open={formOpen}
-        onOpenChange={setFormOpen}
-        webhook={editingWebhook}
-        onSave={handleSave}
         loading={saving}
+        onOpenChange={setFormOpen}
+        onSave={handleSave}
+        open={formOpen}
+        webhook={editingWebhook}
       />
 
       {/* Confirm dialog */}
       {confirm && (
         <ConfirmDialog
-          open
-          onOpenChange={() => setConfirm(null)}
-          title={confirm.title}
-          description={confirm.description}
           confirmLabel={confirm.label}
-          variant={confirm.variant}
+          description={confirm.description}
           onConfirm={confirm.action}
+          onOpenChange={() => setConfirm(null)}
+          open
+          title={confirm.title}
+          variant={confirm.variant}
         />
       )}
     </PageCanvas>

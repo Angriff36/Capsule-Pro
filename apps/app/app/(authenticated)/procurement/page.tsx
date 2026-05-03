@@ -193,10 +193,14 @@ const ProcurementPage = async () => {
           <CommandBandActions>
             <div className="flex flex-wrap gap-3">
               <Button asChild size="default" variant="on-dark">
-                <Link href="/procurement/requisitions/new">New requisition</Link>
+                <Link href="/procurement/requisitions/new">
+                  New requisition
+                </Link>
               </Button>
               <Button asChild size="default" variant="secondary">
-                <Link href="/procurement/purchase-orders/new">New purchase order</Link>
+                <Link href="/procurement/purchase-orders/new">
+                  New purchase order
+                </Link>
               </Button>
             </div>
           </CommandBandActions>
@@ -211,17 +215,23 @@ const ProcurementPage = async () => {
             <MetricCell>
               <MetricLabel>Awaiting approval</MetricLabel>
               <MetricValue>{String(approvalsCount)}</MetricValue>
-              <div className="text-white/55 text-xs">Manager or finance queue</div>
+              <div className="text-white/55 text-xs">
+                Manager or finance queue
+              </div>
             </MetricCell>
             <MetricCell>
               <MetricLabel>Draft POs</MetricLabel>
               <MetricValue>{String(draftPoCount)}</MetricValue>
-              <div className="text-white/55 text-xs">Purchase orders not finalized</div>
+              <div className="text-white/55 text-xs">
+                Purchase orders not finalized
+              </div>
             </MetricCell>
             <MetricCell>
               <MetricLabel>Suppliers / Budgets</MetricLabel>
               <MetricValue>{`${vendorCount} / ${activeBudgetCount}`}</MetricValue>
-              <div className="text-white/55 text-xs">Active vendors and budgets</div>
+              <div className="text-white/55 text-xs">
+                Active vendors and budgets
+              </div>
             </MetricCell>
           </MetricBand>
         </CommandBandBody>
@@ -248,7 +258,9 @@ const ProcurementPage = async () => {
                     <TableHead>Department</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Requested</TableHead>
-                    <TableHead className="text-right">Estimated total</TableHead>
+                    <TableHead className="text-right">
+                      Estimated total
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -274,7 +286,9 @@ const ProcurementPage = async () => {
                         {dateFormatter.format(requisition.requestDate)}
                       </TableCell>
                       <TableCell className="text-right tabular-nums">
-                        {currencyFormatter.format(Number(requisition.estimatedTotal))}
+                        {currencyFormatter.format(
+                          Number(requisition.estimatedTotal)
+                        )}
                       </TableCell>
                     </TableRow>
                   ))}
@@ -318,7 +332,9 @@ const ProcurementPage = async () => {
                         </Link>
                       </TableCell>
                       <TableCell>
-                        <Badge variant="outline">{statusLabel(order.status)}</Badge>
+                        <Badge variant="outline">
+                          {statusLabel(order.status)}
+                        </Badge>
                       </TableCell>
                       <TableCell className="text-muted-foreground">
                         {dateFormatter.format(order.orderDate)}
@@ -408,7 +424,9 @@ const ProcurementPage = async () => {
                       <TableHead>Budget</TableHead>
                       <TableHead>Year</TableHead>
                       <TableHead>Status</TableHead>
-                      <TableHead className="text-right">Spent / budget</TableHead>
+                      <TableHead className="text-right">
+                        Spent / budget
+                      </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -424,13 +442,17 @@ const ProcurementPage = async () => {
                         </TableCell>
                         <TableCell>{budget.fiscalYear}</TableCell>
                         <TableCell>
-                          <Badge variant="outline">{statusLabel(budget.status)}</Badge>
+                          <Badge variant="outline">
+                            {statusLabel(budget.status)}
+                          </Badge>
                         </TableCell>
                         <TableCell className="text-right tabular-nums">
                           {currencyFormatter.format(Number(budget.spentAmount))}
                           <span className="text-muted-foreground">
                             {" / "}
-                            {currencyFormatter.format(Number(budget.budgetAmount))}
+                            {currencyFormatter.format(
+                              Number(budget.budgetAmount)
+                            )}
                           </span>
                         </TableCell>
                       </TableRow>

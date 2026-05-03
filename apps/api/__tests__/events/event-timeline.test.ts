@@ -63,11 +63,11 @@ vi.mock("@repo/database", () => ({
   },
 }));
 
-import { GET as listGET } from "@/app/api/events/[eventId]/timeline/route";
 import { POST as createPOST } from "@/app/api/events/[eventId]/timeline/commands/create-item/route";
-import { POST as updatePOST } from "@/app/api/events/[eventId]/timeline/commands/update-item/route";
-import { POST as togglePOST } from "@/app/api/events/[eventId]/timeline/commands/toggle-completed/route";
 import { POST as deletePOST } from "@/app/api/events/[eventId]/timeline/commands/delete-item/route";
+import { POST as togglePOST } from "@/app/api/events/[eventId]/timeline/commands/toggle-completed/route";
+import { POST as updatePOST } from "@/app/api/events/[eventId]/timeline/commands/update-item/route";
+import { GET as listGET } from "@/app/api/events/[eventId]/timeline/route";
 
 function setAuthOk() {
   mocks.authMock.mockResolvedValue({
@@ -190,7 +190,15 @@ describe("Event Timeline API", () => {
       );
       expect(res.status).toBe(200);
       const json = (await res.json()) as {
-        data: { items: unknown[]; summary: { total: number; completed: number; pending: number; completionRate: number } };
+        data: {
+          items: unknown[];
+          summary: {
+            total: number;
+            completed: number;
+            pending: number;
+            completionRate: number;
+          };
+        };
       };
       expect(json.data.items).toHaveLength(2);
       expect(json.data.summary).toEqual({
@@ -201,7 +209,11 @@ describe("Event Timeline API", () => {
       });
       expect(mocks.timelineFindManyMock).toHaveBeenCalledWith(
         expect.objectContaining({
-          where: { tenantId: TEST_TENANT_ID, eventId: TEST_EVENT_ID, deletedAt: null },
+          where: {
+            tenantId: TEST_TENANT_ID,
+            eventId: TEST_EVENT_ID,
+            deletedAt: null,
+          },
         })
       );
     });
@@ -341,7 +353,9 @@ describe("Event Timeline API", () => {
       expect(res.status).toBe(200);
       expect(mocks.timelineUpdateMock).toHaveBeenCalledWith(
         expect.objectContaining({
-          where: { tenantId_id: { tenantId: TEST_TENANT_ID, id: TEST_ITEM_ID } },
+          where: {
+            tenantId_id: { tenantId: TEST_TENANT_ID, id: TEST_ITEM_ID },
+          },
           data: { description: "Updated", notes: "Cue music" },
         })
       );
@@ -460,7 +474,9 @@ describe("Event Timeline API", () => {
       expect(res.status).toBe(200);
       expect(mocks.timelineUpdateMock).toHaveBeenCalledWith(
         expect.objectContaining({
-          where: { tenantId_id: { tenantId: TEST_TENANT_ID, id: TEST_ITEM_ID } },
+          where: {
+            tenantId_id: { tenantId: TEST_TENANT_ID, id: TEST_ITEM_ID },
+          },
           data: { deletedAt: expect.any(Date) },
         })
       );

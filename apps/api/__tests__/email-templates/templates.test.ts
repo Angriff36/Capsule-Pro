@@ -1174,7 +1174,9 @@ describe("Email Templates Integration Tests", () => {
   it("should handle concurrent updates to the same template", async () => {
     vi.mocked(executeManifestCommand).mockResolvedValue(
       new Response(
-        JSON.stringify({ data: createMockTemplate({ name: "Concurrent Update" }) }),
+        JSON.stringify({
+          data: createMockTemplate({ name: "Concurrent Update" }),
+        }),
         { status: 200 }
       )
     );

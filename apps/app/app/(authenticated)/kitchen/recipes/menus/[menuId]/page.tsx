@@ -97,7 +97,9 @@ export default async function MenuDetailPage({
           {/* Header with Edit button */}
           <div className="mb-6 flex items-start justify-between">
             <div>
-              <h1 className="text-2xl font-semibold tracking-tight">{menu.name}</h1>
+              <h1 className="text-2xl font-semibold tracking-tight">
+                {menu.name}
+              </h1>
               {menu.description && (
                 <p className="mt-2 text-muted-foreground">{menu.description}</p>
               )}

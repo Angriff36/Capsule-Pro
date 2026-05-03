@@ -1,4 +1,4 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "ignoreCommand": "node scripts/skip-ci.js"
+  "ignoreCommand": "bash -c 'echo \"Git-triggered builds disabled; use GitHub Actions Deploy workflow or vercel CLI\" >&2; exit 1'"
 }

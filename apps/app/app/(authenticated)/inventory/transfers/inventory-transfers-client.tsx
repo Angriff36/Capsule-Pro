@@ -192,7 +192,9 @@ export function InventoryTransfersClient() {
     <div className="container mx-auto py-6 space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Inventory Transfers</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">
+            Inventory Transfers
+          </h1>
           <p className="text-muted-foreground">
             Track stock movements between storage locations
           </p>

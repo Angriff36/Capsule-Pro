@@ -242,7 +242,9 @@ export function EmailTemplatesClient() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Email Templates</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">
+            Email Templates
+          </h1>
           <p className="text-muted-foreground">
             Create and manage branded email templates for proposals,
             confirmations, reminders, and follow-ups.

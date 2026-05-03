@@ -40,7 +40,9 @@ const driverSchema = z.object({
     .string()
     .optional()
     .transform((v) => v || null),
-  status: z.enum(["available", "on_route", "off_duty", "inactive"]).default("available"),
+  status: z
+    .enum(["available", "on_route", "off_duty", "inactive"])
+    .default("available"),
   notes: z
     .string()
     .optional()
