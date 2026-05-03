@@ -574,6 +574,7 @@ export function AvailabilityClient() {
               </p>
             </div>
             <AvailabilityForm
+              employeeOptions={employees}
               onCancel={() => setCreateModalOpen(false)}
               onSuccess={() => {
                 setCreateModalOpen(false);
