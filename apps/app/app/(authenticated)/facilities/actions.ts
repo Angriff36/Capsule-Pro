@@ -228,3 +228,57 @@ export async function createPMSchedule(input: CreatePMScheduleInput) {
   revalidatePath("/facilities/schedules");
   return schedule;
 }
+
+// ── Schedule Queries / Complete ─────────────────────────────────────────────
+
+export async function getSchedules() {
+  const { orgId } = await auth();
+  invariant(orgId, "Unauthorized");
+  const tenantId = await getTenantId();
+
+  return database.preventiveMaintenanceSchedule.findMany({
+    where: { tenantId },
+    orderBy: { nextDueAt: "asc" },
+  });
+}
+
+export async function getFacilityAssets() {
+  const { orgId } = await auth();
+  invariant(orgId, "Unauthorized");
+  const tenantId = await getTenantId();
+
+  return database.facilityAsset.findMany({
+    where: { tenantId, status: "active" },
+    orderBy: { name: "asc" },
+  });
+}
+
+export async function completeSchedule(scheduleId: string) {
+  const { orgId } = await auth();
+  invariant(orgId, "Unauthorized");
+  const tenantId = await getTenantId();
+
+  const schedule = await database.preventiveMaintenanceSchedule.findFirst({
+    where: { tenantId, id: scheduleId },
+  });
+
+  if (!schedule) throw new Error("Schedule not found");
+
+  const now = new Date();
+  const nextDue = new Date(schedule.nextDueAt);
+  const intervalMs = schedule.intervalDays * 24 * 60 * 60 * 1000;
+
+  while (nextDue <= now) {
+    nextDue.setTime(nextDue.getTime() + intervalMs);
+  }
+
+  await database.preventiveMaintenanceSchedule.update({
+    where: { tenantId_id: { tenantId, id: scheduleId } },
+    data: {
+      lastCompletedAt: now,
+      nextDueAt: nextDue,
+    },
+  });
+
+  revalidatePath("/facilities/schedules");
+}

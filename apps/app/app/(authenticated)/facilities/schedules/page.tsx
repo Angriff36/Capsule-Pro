@@ -55,8 +55,12 @@ import {
   Wrench,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { apiFetch } from "@/app/lib/api";
-import { createPMSchedule } from "../actions";
+import {
+  createPMSchedule,
+  getSchedules,
+  getFacilityAssets,
+  completeSchedule,
+} from "../actions";
 import { FacilitiesNavigation } from "../components/facilities-navigation";
 
 interface Schedule {
@@ -107,39 +111,26 @@ export default function SchedulesPage() {
   useEffect(() => {
     loadData();
   }, []);
-
   const loadData = async () => {
     setLoading(true);
     try {
-      const [schedulesRes, assetsRes] = await Promise.all([
-        apiFetch("/api/facilities/schedules/list?status=all"),
-        apiFetch("/api/facilities/assets/list?status=active"),
+      const [schedulesData, assetsData] = await Promise.all([
+        getSchedules(),
+        getFacilityAssets(),
       ]);
-      const schedulesData = await schedulesRes.json();
-      const assetsData = await assetsRes.json();
-      if (schedulesData.success)
-        setSchedules(schedulesData.data.schedules || []);
-      if (assetsData.success) setAssets(assetsData.data.assets || []);
+      setSchedules(schedulesData || []);
+      setAssets(assetsData || []);
     } catch (error) {
       console.error("Failed to load:", error);
     } finally {
       setLoading(false);
     }
   };
-
   const handleComplete = async (scheduleId: string) => {
     setCompleting(scheduleId);
     try {
-      const res = await apiFetch(
-        "/api/facilities/schedules/commands/complete",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ scheduleId }),
-        }
-      );
-      const data = await res.json();
-      if (data.success) await loadData();
+      await completeSchedule(scheduleId);
+      await loadData();
     } catch (error) {
       console.error("Failed to complete schedule:", error);
     } finally {

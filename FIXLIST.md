@@ -32,7 +32,7 @@
 | 24 | events | `/events/reports/[reportId]` | 🔴 ❌ | Static JSX | TODO |
 | 25 | events | `/events/import` | 🔴 ❌ | Static JSX | TODO |
 | 26 | facilities | `/facilities` | 🟢 ✅ | Wired createFacility + getFacilities server actions, replaced missing API call | ✅ 2026-05-03 |
-| 27 | facilities | `/facilities/schedules` | 🟡 🔶 | Form, no server action | TODO |
+| 27 | facilities | `/facilities/schedules` | 🟢 ✅ | Wired server actions (getSchedules, getFacilityAssets, completeSchedule) to replace missing API routes | ✅ 2026-05-03 |
 | 28 | facilities | `/facilities/areas` | 🟡 🔶 | Form, no server action | TODO |
 | 29 | facilities | `/facilities/assets` | 🟡 🔶 | Form, no server action | TODO |
 | 30 | facilities | `/facilities/work-orders` | 🟡 🔶 | Form, no server action | TODO |
