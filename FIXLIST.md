@@ -6,7 +6,7 @@
 | # | Module | Route | Type | Issue | Status |
 |---|--------|-------|------|-------|--------|
 | 1 | accounting | `/accounting` | 🟢 ✅ | Accounting dashboard wired to live invoice/payment/account data | ✅ 2026-05-02 |
-| 2 | accounting | `/accounting/chart-of-accounts` | 🔴 ❌ | 14-line shell | TODO |
+| 2 | accounting | `/accounting/chart-of-accounts` | 🟢 ✅ | Server-rendered Prisma-backed chart of accounts list with tenant auth | ✅ 2026-05-02 |
 | 3 | accounting | `/accounting/payments` | 🔴 ❌ | 12-line shell | TODO |
 | 4 | administrative | `/administrative` | 🔴 ❌ | Static JSX | TODO |
 | 5 | administrative | `/administrative/chat` | 🔴 ❌ | Static JSX | TODO |
