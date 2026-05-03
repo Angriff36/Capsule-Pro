@@ -29,7 +29,9 @@ import { ArrowLeft, Loader2, Package, Plus, Search } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
+import { createPurchaseRequisition } from "../../actions";
 import { formatCurrency } from "../../components/req-shared";
 
 interface InventoryItem {
@@ -139,27 +141,27 @@ export default function NewRequisitionPage() {
 
     setCreating(true);
     try {
-      const res = await apiFetch(
-        "/api/procurement/requisitions/commands/create",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            requisitionNumber: `PR-${new Date().getFullYear()}-${String(Date.now()).slice(-4)}`,
-            requiredBy: requiredBy || undefined,
-            department: department || undefined,
-            justification: justification || undefined,
-            priority,
-            notes: notes || undefined,
-          }),
-        }
-      );
-      const data = await res.json();
-      if (data.success) {
-        router.push("/procurement/requisitions");
-      }
+      await createPurchaseRequisition({
+        requiredBy: requiredBy || undefined,
+        department: department || undefined,
+        justification: justification || undefined,
+        priority,
+        notes: notes || undefined,
+        items: lineItems.map((li) => ({
+          itemId: li.itemId,
+          itemName: li.itemName,
+          itemNumber: li.itemNumber,
+          unitOfMeasure: li.unitOfMeasure,
+          quantityRequested: li.quantityRequested,
+          estimatedUnitCost: li.estimatedUnitCost,
+          estimatedTotalCost: li.estimatedTotalCost,
+        })),
+      });
     } catch (error) {
       console.error("Failed to create requisition:", error);
+      toast.error("Failed to create requisition", {
+        description: error instanceof Error ? error.message : "Unknown error",
+      });
     } finally {
       setCreating(false);
     }

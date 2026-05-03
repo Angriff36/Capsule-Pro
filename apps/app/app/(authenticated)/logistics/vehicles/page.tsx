@@ -40,7 +40,9 @@ import {
   Wrench,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
+import { createVehicle } from "../actions";
 
 interface Vehicle {
   id: string;
@@ -167,11 +169,11 @@ export default function VehiclesPage() {
     if (!(form.make.trim() && form.model.trim())) return;
     setSaving(true);
     try {
-      const endpoint = editing
-        ? "/api/logistics/vehicles/commands/update"
-        : "/api/logistics/vehicles/commands/create";
-      const body = editing
-        ? {
+      if (editing) {
+        const res = await apiFetch("/api/logistics/vehicles/commands/update", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
             vehicleId: editing.id,
             make: form.make,
             model: form.model,
@@ -188,33 +190,34 @@ export default function VehiclesPage() {
             mileage: form.mileage ? Number.parseFloat(form.mileage) : null,
             status: form.status,
             notes: form.notes || null,
-          }
-        : {
-            make: form.make,
-            model: form.model,
-            year: form.year ? Number.parseInt(form.year) : null,
-            plateNumber: form.plateNumber || null,
-            vin: form.vin || null,
-            capacityWeight: form.capacityWeight
-              ? Number.parseFloat(form.capacityWeight)
-              : null,
-            capacityVolume: form.capacityVolume
-              ? Number.parseFloat(form.capacityVolume)
-              : null,
-            fuelType: form.fuelType || null,
-            notes: form.notes || null,
-          };
-      const res = await apiFetch(endpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-      if (res.ok) {
-        await loadVehicles();
-        setShowDialog(false);
+          }),
+        });
+        if (res.ok) {
+          toast.success("Vehicle updated successfully");
+          await loadVehicles();
+          setShowDialog(false);
+        }
+      } else {
+        // Use the server action for creation
+        const fd = new FormData();
+        fd.set("make", form.make);
+        fd.set("model", form.model);
+        if (form.year) fd.set("year", form.year);
+        fd.set("plateNumber", form.plateNumber);
+        fd.set("vin", form.vin);
+        if (form.capacityWeight) fd.set("capacityWeight", form.capacityWeight);
+        if (form.capacityVolume) fd.set("capacityVolume", form.capacityVolume);
+        fd.set("fuelType", form.fuelType);
+        if (form.mileage) fd.set("mileage", form.mileage);
+        fd.set("status", form.status);
+        fd.set("notes", form.notes);
+        await createVehicle(fd);
       }
     } catch (e) {
       console.error("Failed to save:", e);
+      toast.error("Failed to save vehicle", {
+        description: e instanceof Error ? e.message : "Unknown error",
+      });
     } finally {
       setSaving(false);
     }
@@ -399,7 +402,7 @@ export default function VehiclesPage() {
                 : "Add a new vehicle to the fleet."}
             </DialogDescription>
           </DialogHeader>
-          <form className="space-y-4" onSubmit={handleSave}>
+          <form action={createVehicle} className="space-y-4" onSubmit={handleSave}>
             <div className="grid grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label>Make *</Label>

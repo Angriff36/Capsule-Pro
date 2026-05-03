@@ -39,7 +39,9 @@ import {
   User,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
+import { createDriver } from "../actions";
 
 interface Driver {
   id: string;
@@ -167,23 +169,35 @@ export default function DriversPage() {
     if (!form.name.trim()) return;
     setSaving(true);
     try {
-      const endpoint = editing
-        ? "/api/logistics/drivers/commands/update"
-        : "/api/logistics/drivers/commands/create";
-      const body = editing
-        ? { driverId: editing.id, ...form, vehicleId: form.vehicleId || null }
-        : { ...form, vehicleId: form.vehicleId || null };
-      const res = await apiFetch(endpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-      if (res.ok) {
-        await loadData();
-        setShowDialog(false);
+      if (editing) {
+        const res = await apiFetch("/api/logistics/drivers/commands/update", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ driverId: editing.id, ...form, vehicleId: form.vehicleId || null }),
+        });
+        if (res.ok) {
+          toast.success("Driver updated successfully");
+          await loadData();
+          setShowDialog(false);
+        }
+      } else {
+        // Use the server action for creation
+        const fd = new FormData();
+        fd.set("name", form.name);
+        fd.set("phone", form.phone);
+        fd.set("email", form.email);
+        fd.set("licenseNumber", form.licenseNumber);
+        fd.set("licenseExpiry", form.licenseExpiry);
+        fd.set("vehicleId", form.vehicleId);
+        fd.set("status", form.status);
+        fd.set("notes", form.notes);
+        await createDriver(fd);
       }
     } catch (e) {
       console.error("Failed to save:", e);
+      toast.error("Failed to save driver", {
+        description: e instanceof Error ? e.message : "Unknown error",
+      });
     } finally {
       setSaving(false);
     }
@@ -341,7 +355,7 @@ export default function DriversPage() {
                 : "Add a new delivery driver."}
             </DialogDescription>
           </DialogHeader>
-          <form className="space-y-4" onSubmit={handleSave}>
+          <form action={createDriver} className="space-y-4" onSubmit={handleSave}>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Name *</Label>

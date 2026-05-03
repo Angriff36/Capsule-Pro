@@ -40,6 +40,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
+import { createFacilityAsset } from "../../actions";
 import { FacilitiesNavigation } from "../components/facilities-navigation";
 
 interface Asset {
@@ -220,46 +221,48 @@ export default function AssetsPage() {
     }
     setSaving(true);
     try {
-      const endpoint = editing
-        ? "/api/facilities/assets/commands/update"
-        : "/api/facilities/assets/commands/create";
-      const body = editing
-        ? {
-            assetId: editing.id,
-            name: form.name,
-            assetType: form.assetType,
-            serialNumber: form.serialNumber || null,
-            manufacturer: form.manufacturer || null,
-            model: form.model || null,
-            purchaseDate: form.purchaseDate || null,
-            purchaseCost: form.purchaseCost
-              ? Number.parseFloat(form.purchaseCost)
-              : null,
-            warrantyExpiry: form.warrantyExpiry || null,
-            status: form.status,
-            areaId: form.areaId || null,
-            notes: form.notes || null,
-          }
-        : {
-            name: form.name,
-            assetType: form.assetType,
-            serialNumber: form.serialNumber || null,
-            manufacturer: form.manufacturer || null,
-            model: form.model || null,
-            purchaseDate: form.purchaseDate || null,
-            purchaseCost: form.purchaseCost
-              ? Number.parseFloat(form.purchaseCost)
-              : null,
-            warrantyExpiry: form.warrantyExpiry || null,
-            areaId: form.areaId || null,
-            notes: form.notes || null,
-          };
-      const res = await apiFetch(endpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-      if (res.ok) {
+      if (editing) {
+        const endpoint = "/api/facilities/assets/commands/update";
+        const body = {
+          assetId: editing.id,
+          name: form.name,
+          assetType: form.assetType,
+          serialNumber: form.serialNumber || null,
+          manufacturer: form.manufacturer || null,
+          model: form.model || null,
+          purchaseDate: form.purchaseDate || null,
+          purchaseCost: form.purchaseCost
+            ? Number.parseFloat(form.purchaseCost)
+            : null,
+          warrantyExpiry: form.warrantyExpiry || null,
+          status: form.status,
+          areaId: form.areaId || null,
+          notes: form.notes || null,
+        };
+        const res = await apiFetch(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+        if (res.ok) {
+          await loadData();
+          setShowDialog(false);
+        }
+      } else {
+        await createFacilityAsset({
+          name: form.name,
+          assetType: form.assetType,
+          serialNumber: form.serialNumber || undefined,
+          manufacturer: form.manufacturer || undefined,
+          model: form.model || undefined,
+          purchaseDate: form.purchaseDate || undefined,
+          purchaseCost: form.purchaseCost
+            ? Number.parseFloat(form.purchaseCost)
+            : undefined,
+          warrantyExpiry: form.warrantyExpiry || undefined,
+          areaId: form.areaId || undefined,
+          notes: form.notes || undefined,
+        });
         await loadData();
         setShowDialog(false);
       }

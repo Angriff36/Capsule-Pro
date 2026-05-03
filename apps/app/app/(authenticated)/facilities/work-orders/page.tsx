@@ -30,6 +30,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
+import { createWorkOrder } from "../../actions";
 import { FacilitiesNavigation } from "../components/facilities-navigation";
 
 interface WorkOrder {
@@ -85,34 +86,24 @@ export default function FacilitiesWorkOrdersPage() {
 
     setCreating(true);
     try {
-      const res = await apiFetch(
-        "/api/facilities/work-orders/commands/create",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            title: createForm.title,
-            description: createForm.description || null,
-            priority: createForm.priority,
-            workOrderType: createForm.workOrderType,
-            scheduledDate: createForm.scheduledDate || null,
-            assignedVendor: createForm.assignedVendor || null,
-          }),
-        }
-      );
-      const data = await res.json();
-      if (data.success) {
-        setWorkOrders((prev) => [data.data.workOrder, ...prev]);
-        setShowCreateDialog(false);
-        setCreateForm({
-          title: "",
-          description: "",
-          priority: "medium",
-          workOrderType: "corrective",
-          scheduledDate: "",
-          assignedVendor: "",
-        });
-      }
+      const result = await createWorkOrder({
+        title: createForm.title,
+        description: createForm.description || undefined,
+        priority: createForm.priority,
+        workOrderType: createForm.workOrderType,
+        scheduledDate: createForm.scheduledDate || undefined,
+        vendorId: createForm.assignedVendor || undefined,
+      });
+      setWorkOrders((prev) => [result, ...prev]);
+      setShowCreateDialog(false);
+      setCreateForm({
+        title: "",
+        description: "",
+        priority: "medium",
+        workOrderType: "corrective",
+        scheduledDate: "",
+        assignedVendor: "",
+      });
     } catch (error) {
       console.error("Failed to create work order:", error);
     } finally {

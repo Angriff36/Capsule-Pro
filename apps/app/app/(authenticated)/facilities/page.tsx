@@ -45,6 +45,7 @@ import {
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
+import { createFacility } from "./actions";
 import { UpcomingMaintenanceWidget } from "./components/upcoming-maintenance-widget";
 
 interface Facility {
@@ -122,32 +123,12 @@ export default function FacilitiesPage() {
     setShowDialog(true);
   };
 
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!form.name.trim()) {
-      return;
-    }
+  const handleSave = async (formData: FormData) => {
     setSaving(true);
     try {
-      const res = await apiFetch("/api/facilities/commands/create", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: form.name,
-          code: form.code || null,
-          facilityType: form.facilityType,
-          addressLine1: form.addressLine1 || null,
-          city: form.city || null,
-          state: form.state || null,
-          postalCode: form.postalCode || null,
-          phone: form.phone || null,
-          notes: form.notes || null,
-        }),
-      });
-      if (res.ok) {
-        await loadFacilities();
-        setShowDialog(false);
-      }
+      await createFacility(formData);
+      await loadFacilities();
+      setShowDialog(false);
     } catch (err) {
       console.error("Failed to save facility:", err);
     } finally {
@@ -309,11 +290,12 @@ export default function FacilitiesPage() {
               Register a new building or site (kitchen, warehouse, office, …).
             </DialogDescription>
           </DialogHeader>
-          <form className="space-y-4" onSubmit={handleSave}>
+          <form className="space-y-4" action={handleSave}>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Name *</Label>
                 <Input
+                  name="name"
                   onChange={(e) =>
                     setForm((p) => ({ ...p, name: e.target.value }))
                   }
@@ -342,6 +324,7 @@ export default function FacilitiesPage() {
                     )}
                   </SelectContent>
                 </Select>
+                <input name="facilityType" type="hidden" value={form.facilityType} />
               </div>
             </div>
 
@@ -349,6 +332,7 @@ export default function FacilitiesPage() {
               <div className="space-y-2">
                 <Label>Code</Label>
                 <Input
+                  name="code"
                   onChange={(e) =>
                     setForm((p) => ({ ...p, code: e.target.value }))
                   }
@@ -359,6 +343,7 @@ export default function FacilitiesPage() {
               <div className="space-y-2">
                 <Label>Phone</Label>
                 <Input
+                  name="phone"
                   onChange={(e) =>
                     setForm((p) => ({ ...p, phone: e.target.value }))
                   }
@@ -371,6 +356,7 @@ export default function FacilitiesPage() {
             <div className="space-y-2">
               <Label>Address</Label>
               <Input
+                name="addressLine1"
                 onChange={(e) =>
                   setForm((p) => ({ ...p, addressLine1: e.target.value }))
                 }
@@ -383,6 +369,7 @@ export default function FacilitiesPage() {
               <div className="space-y-2">
                 <Label>City</Label>
                 <Input
+                  name="city"
                   onChange={(e) =>
                     setForm((p) => ({ ...p, city: e.target.value }))
                   }
@@ -393,6 +380,7 @@ export default function FacilitiesPage() {
               <div className="space-y-2">
                 <Label>State</Label>
                 <Input
+                  name="state"
                   onChange={(e) =>
                     setForm((p) => ({ ...p, state: e.target.value }))
                   }
@@ -403,6 +391,7 @@ export default function FacilitiesPage() {
               <div className="space-y-2">
                 <Label>Postal Code</Label>
                 <Input
+                  name="postalCode"
                   onChange={(e) =>
                     setForm((p) => ({ ...p, postalCode: e.target.value }))
                   }
@@ -415,6 +404,7 @@ export default function FacilitiesPage() {
             <div className="space-y-2">
               <Label>Notes</Label>
               <Textarea
+                name="notes"
                 onChange={(e) =>
                   setForm((p) => ({ ...p, notes: e.target.value }))
                 }

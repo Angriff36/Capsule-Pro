@@ -56,6 +56,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
+import { createPMSchedule } from "../../actions";
 import { FacilitiesNavigation } from "../components/facilities-navigation";
 
 interface Schedule {
@@ -151,37 +152,30 @@ export default function SchedulesPage() {
     if (!createForm.title.trim()) return;
     setCreating(true);
     try {
-      const res = await apiFetch("/api/facilities/schedules/commands/create", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: createForm.title,
-          description: createForm.description || null,
-          frequency: createForm.frequency,
-          nextDueDate: createForm.nextDueDate || undefined,
-          estimatedHours: createForm.estimatedHours
-            ? Number.parseFloat(createForm.estimatedHours)
-            : undefined,
-          estimatedCost: createForm.estimatedCost
-            ? Number.parseFloat(createForm.estimatedCost)
-            : undefined,
-          equipmentId: createForm.equipmentId || undefined,
-        }),
+      await createPMSchedule({
+        title: createForm.title,
+        description: createForm.description || undefined,
+        frequency: createForm.frequency,
+        nextDueDate: createForm.nextDueDate || undefined,
+        estimatedHours: createForm.estimatedHours
+          ? Number.parseFloat(createForm.estimatedHours)
+          : undefined,
+        estimatedCost: createForm.estimatedCost
+          ? Number.parseFloat(createForm.estimatedCost)
+          : undefined,
+        equipmentId: createForm.equipmentId || undefined,
       });
-      const data = await res.json();
-      if (data.success) {
-        await loadData();
-        setShowCreateDialog(false);
-        setCreateForm({
-          title: "",
-          description: "",
-          frequency: "monthly",
-          nextDueDate: "",
-          estimatedHours: "",
-          estimatedCost: "",
-          equipmentId: "",
-        });
-      }
+      await loadData();
+      setShowCreateDialog(false);
+      setCreateForm({
+        title: "",
+        description: "",
+        frequency: "monthly",
+        nextDueDate: "",
+        estimatedHours: "",
+        estimatedCost: "",
+        equipmentId: "",
+      });
     } catch (error) {
       console.error("Failed to create schedule:", error);
     } finally {

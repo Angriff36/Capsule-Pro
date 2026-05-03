@@ -24,6 +24,7 @@ import { Textarea } from "@repo/design-system/components/ui/textarea";
 import { Loader2, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
+import { createFacilityArea } from "../../actions";
 import { FacilitiesNavigation } from "../components/facilities-navigation";
 
 export default function AreasPage() {
@@ -62,33 +63,26 @@ export default function AreasPage() {
     if (!createForm.name.trim()) return;
     setCreating(true);
     try {
-      const res = await apiFetch("/api/facilities/areas/commands/create", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: createForm.name,
-          code: createForm.code || undefined,
-          areaType: createForm.areaType,
-          floor: createForm.floor || undefined,
-          squareFeet: createForm.squareFeet
-            ? Number.parseInt(createForm.squareFeet)
-            : undefined,
-          description: createForm.description || undefined,
-        }),
+      await createFacilityArea({
+        name: createForm.name,
+        code: createForm.code || undefined,
+        areaType: createForm.areaType,
+        floor: createForm.floor || undefined,
+        squareFootage: createForm.squareFeet
+          ? Number.parseInt(createForm.squareFeet)
+          : undefined,
+        notes: createForm.description || undefined,
       });
-      const data = await res.json();
-      if (data.success) {
-        await loadAreas();
-        setShowCreateDialog(false);
-        setCreateForm({
-          name: "",
-          code: "",
-          areaType: "other",
-          floor: "",
-          squareFeet: "",
-          description: "",
-        });
-      }
+      await loadAreas();
+      setShowCreateDialog(false);
+      setCreateForm({
+        name: "",
+        code: "",
+        areaType: "other",
+        floor: "",
+        squareFeet: "",
+        description: "",
+      });
     } catch (error) {
       console.error("Failed to create area:", error);
     } finally {

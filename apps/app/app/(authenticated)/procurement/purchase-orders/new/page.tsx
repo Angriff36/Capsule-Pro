@@ -21,7 +21,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { usePostHog } from "posthog-js/react";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
+import { createPurchaseOrder } from "../../actions";
 import type { POFormData, Vendor } from "../../components/po-form";
 import { POForm } from "../../components/po-form";
 import {
@@ -136,30 +138,23 @@ export default function NewPOPage() {
         line_item_count: lineItems.length,
       });
 
-      const res = await apiFetch(
-        "/api/procurement/purchase-orders/commands/create",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            vendorId: form.vendorId,
-            expectedDeliveryDate: form.expectedDeliveryDate || undefined,
-            notes: form.notes || undefined,
-            items: lineItems.map((li) => ({
-              itemId: li.itemId,
-              quantityOrdered: li.quantityOrdered,
-              unitCost: li.unitCost,
-              unitId: 1,
-            })),
-          }),
-        }
-      );
-      const data = await res.json();
-      if (data.success && data.data.order?.id) {
-        router.push(`/procurement/purchase-orders/${data.data.order.id}`);
-      }
+      // Use the server action for creation
+      await createPurchaseOrder({
+        vendorId: form.vendorId,
+        expectedDeliveryDate: form.expectedDeliveryDate || undefined,
+        notes: form.notes || undefined,
+        items: lineItems.map((li) => ({
+          itemId: li.itemId,
+          quantityOrdered: li.quantityOrdered,
+          unitCost: li.unitCost,
+          unitId: 1,
+        })),
+      });
     } catch (error) {
       console.error("Failed to create PO:", error);
+      toast.error("Failed to create purchase order", {
+        description: error instanceof Error ? error.message : "Unknown error",
+      });
     } finally {
       setCreating(false);
     }
@@ -190,7 +185,7 @@ export default function NewPOPage() {
         </div>
       </div>
 
-      <form onSubmit={handleCreate}>
+      <form action={createPurchaseOrder} onSubmit={handleCreate}>
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
           {/* Main form */}
           <div className="space-y-6">

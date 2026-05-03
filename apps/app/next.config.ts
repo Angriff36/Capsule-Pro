@@ -264,6 +264,17 @@ let nextConfig: NextConfig = withToolbar(
         destination: "/webhooks",
         permanent: false,
       },
+      // Orphan routes — sidebar links but no page.tsx
+      {
+        source: "/inventory/vendor-catalogs",
+        destination: "/inventory",
+        permanent: false,
+      },
+      {
+        source: "/staffing/coverage",
+        destination: "/staffing",
+        permanent: false,
+      },
     ],
     rewrites,
     async headers() {
