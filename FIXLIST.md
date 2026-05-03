@@ -10,7 +10,7 @@
 | 3 | accounting | `/accounting/payments` | 🟢 ✅ | Server-rendered tenant-scoped payment dashboard with Prisma metrics and recent payment list | ✅ 2026-05-02 |
 | 4 | administrative | `/administrative` | 🟢 ✅ | Server-rendered administrative dashboard with tenant-scoped event prep, metrics, and document import activity | ✅ 2026-05-03 |
 | 5 | administrative | `/administrative/chat` | 🟢 ✅ | Tenant-scoped operational chat page already wired to auth, Prisma employee lookup, and live client chat UI | ✅ 2026-05-03 |
-| 6 | analytics | `/analytics/kitchen` | 🔴 ❌ | Static JSX | TODO |
+| 6 | analytics | `/analytics/kitchen` | 🟢 ✅ | Server-rendered tenant-scoped kitchen analytics dashboard with live prep, waste, prep-list, and recipe data | ✅ 2026-05-03 |
 | 7 | analytics | `/analytics/events` | 🔴 ❌ | 9-line shell | TODO |
 | 8 | analytics | `/analytics/sales` | 🔴 ❌ | 5-line shell | TODO |
 | 9 | analytics | `/analytics/finance` | 🔴 ❌ | 19-line shell | TODO |
