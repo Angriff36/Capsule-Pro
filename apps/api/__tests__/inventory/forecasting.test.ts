@@ -829,9 +829,158 @@ describe("Inventory Forecasting Service", () => {
 });
 
 describe("Forecast Integration Tests", () => {
-  // These tests would require a real database connection
-  // Marked as integration tests to be run separately
-  it.todo("should generate accurate forecasts with real database data");
-  it.todo("should handle concurrent forecast requests");
-  it.todo("should process large batch forecasts efficiently");
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("should generate accurate forecasts with mocked database data", async () => {
+    vi.mocked(database.inventoryItem.findFirst).mockResolvedValue(
+      createMockInventoryItem({ quantityOnHand: 100, reorder_level: 20 })
+    );
+
+    const today = new Date();
+    const transactions = Array.from({ length: 30 }, (_, i) =>
+      createMockTransaction({
+        quantity: 5,
+        transactionType: "use",
+        transaction_date: new Date(
+          today.getTime() - (i + 1) * 24 * 60 * 60 * 1000
+        ),
+      })
+    );
+    vi.mocked(database.inventoryTransaction.findMany).mockResolvedValue(
+      transactions
+    );
+    vi.mocked(database.event.findMany).mockResolvedValue([]);
+
+    const result = await calculateDepletionForecast({
+      tenantId: TEST_TENANT_ID,
+      sku: TEST_SKU,
+      horizonDays: 30,
+    });
+
+    expect(result.sku).toBe(TEST_SKU);
+    expect(result.currentStock).toBe(100);
+    expect(result.confidence).toBe("high");
+    expect(result.daysUntilDepletion).toBeGreaterThan(0);
+    expect(result.forecast.length).toBeGreaterThan(0);
+
+    // Verify forecast entries are monotonically decreasing
+    for (let i = 1; i < result.forecast.length; i++) {
+      expect(result.forecast[i].projectedStock).toBeLessThanOrEqual(
+        result.forecast[i - 1].projectedStock
+      );
+    }
+  });
+
+  it("should handle concurrent forecast requests", async () => {
+    vi.mocked(database.inventoryItem.findFirst).mockResolvedValue(
+      createMockInventoryItem({ quantityOnHand: 100, reorder_level: 20 })
+    );
+
+    const today = new Date();
+    const transactions = Array.from({ length: 30 }, (_, i) =>
+      createMockTransaction({
+        quantity: 5,
+        transactionType: "use",
+        transaction_date: new Date(
+          today.getTime() - (i + 1) * 24 * 60 * 60 * 1000
+        ),
+      })
+    );
+    vi.mocked(database.inventoryTransaction.findMany).mockResolvedValue(
+      transactions
+    );
+    vi.mocked(database.event.findMany).mockResolvedValue([]);
+
+    const [result1, result2] = await Promise.all([
+      calculateDepletionForecast({
+        tenantId: TEST_TENANT_ID,
+        sku: TEST_SKU,
+        horizonDays: 30,
+      }),
+      calculateDepletionForecast({
+        tenantId: TEST_TENANT_ID,
+        sku: TEST_SKU,
+        horizonDays: 30,
+      }),
+    ]);
+
+    expect(result1.sku).toBe(TEST_SKU);
+    expect(result1.currentStock).toBe(100);
+    expect(result1.confidence).toBe("high");
+    expect(result1.daysUntilDepletion).toBeGreaterThan(0);
+
+    expect(result2.sku).toBe(TEST_SKU);
+    expect(result2.currentStock).toBe(100);
+    expect(result2.confidence).toBe("high");
+    expect(result2.daysUntilDepletion).toBeGreaterThan(0);
+  });
+
+  it("should process large batch forecasts with error isolation", async () => {
+    const skus = Array.from({ length: 50 }, (_, i) => `SKU-BATCH-${i}`);
+
+    // Even-indexed SKUs return valid items, odd-indexed SKUs throw DB errors
+    vi.mocked(database.inventoryItem.findFirst).mockImplementation(
+      (async (args: { where?: { item_number?: string } }) => {
+        const sku = args?.where?.item_number;
+        if (!sku) return null;
+        const index = skus.indexOf(sku);
+        if (index === -1 || index % 2 !== 0) {
+          throw new Error(`Item not found: ${sku}`);
+        }
+        return createMockInventoryItem({
+          item_number: sku,
+          quantityOnHand: 100,
+          reorder_level: 20,
+        });
+      }) as unknown as typeof database.inventoryItem.findFirst
+    );
+
+    const today = new Date();
+    const transactions = Array.from({ length: 30 }, (_, i) =>
+      createMockTransaction({
+        quantity: 5,
+        transactionType: "use",
+        transaction_date: new Date(
+          today.getTime() - (i + 1) * 24 * 60 * 60 * 1000
+        ),
+      })
+    );
+    vi.mocked(database.inventoryTransaction.findMany).mockResolvedValue(
+      transactions
+    );
+    vi.mocked(database.event.findMany).mockResolvedValue([]);
+
+    // calculateDepletionForecast catches internal DB errors and returns a
+    // zero-stock forecast instead of throwing, so batchCalculateForecasts
+    // never sees the error. All 50 SKUs produce results.
+    const results = await batchCalculateForecasts(
+      TEST_TENANT_ID,
+      skus,
+      30
+    );
+
+    expect(results).toBeInstanceOf(Map);
+    // All 50 SKUs should be present (errors are caught internally)
+    expect(results.size).toBe(50);
+
+    // Even-indexed SKUs should have high-confidence forecasts with real data
+    for (const [sku, forecast] of results) {
+      expect(forecast).toBeDefined();
+      const index = skus.indexOf(sku);
+      if (index % 2 === 0) {
+        expect(forecast.currentStock).toBe(100);
+        expect(forecast.confidence).toBe("high");
+      } else {
+        // Odd-indexed SKUs hit DB error path → zero-stock fallback
+        expect(forecast.currentStock).toBe(0);
+        expect(forecast.confidence).toBe("low");
+      }
+    }
+  });
 });
