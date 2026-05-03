@@ -226,7 +226,7 @@ ${briefing.criticalInfo.map((c) => `- ${c}`).join("\n")}
             <div className="flex flex-wrap gap-2">
               {briefing.highlights.map((highlight, index) => (
                 <Badge
-                  className="bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-300 dark:border-emerald-800"
+                  className="border border-hairline bg-muted/20 text-foreground"
                   key={index}
                   variant="outline"
                 >
@@ -244,11 +244,11 @@ ${briefing.criticalInfo.map((c) => `- ${c}`).join("\n")}
               <AlertTriangleIcon className="size-4 text-amber-600" />
               <span className="font-medium text-sm">Critical Info</span>
             </div>
-            <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-950/30">
+            <div className="rounded-lg border border-hairline bg-muted/20 p-3">
               <ul className="space-y-1">
                 {briefing.criticalInfo.map((info, index) => (
                   <li
-                    className="text-amber-900 text-sm dark:text-amber-200"
+                    className="text-foreground text-sm"
                     key={index}
                   >
                     - {info}

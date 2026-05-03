@@ -81,27 +81,27 @@ const STATUS_CONFIG: Record<
   confirmed: {
     label: "Confirmed",
     variant: "default",
-    color: "bg-green-100 text-green-800",
+    color: "bg-muted/50 text-foreground",
   },
   pending: {
     label: "Pending",
     variant: "secondary",
-    color: "bg-yellow-100 text-yellow-800",
+    color: "bg-muted/50 text-foreground",
   },
   declined: {
     label: "Declined",
     variant: "destructive",
-    color: "bg-red-100 text-red-800",
+    color: "bg-muted/50 text-foreground",
   },
   waitlisted: {
     label: "Waitlisted",
     variant: "outline",
-    color: "bg-blue-100 text-blue-800",
+    color: "bg-muted/50 text-foreground",
   },
   tentative: {
     label: "Tentative",
     variant: "outline",
-    color: "bg-orange-100 text-orange-800",
+    color: "bg-muted/50 text-foreground",
   },
 };
 

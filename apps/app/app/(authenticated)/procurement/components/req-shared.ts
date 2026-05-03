@@ -17,48 +17,48 @@ export interface ReqStatusConfig {
 export const REQ_STATUS_CONFIG: Record<string, ReqStatusConfig> = {
   draft: {
     label: "Draft",
-    color: "bg-gray-100 text-gray-700",
+    color: "bg-muted/50 text-foreground",
     icon: FileText,
   },
   pending_manager: {
     label: "Pending Manager",
-    color: "bg-blue-100 text-blue-700",
+    color: "bg-muted/50 text-foreground",
     icon: Clock,
   },
   pending_finance: {
     label: "Pending Finance",
-    color: "bg-indigo-100 text-indigo-700",
+    color: "bg-muted/50 text-foreground",
     icon: Loader2,
   },
   approved: {
     label: "Approved",
-    color: "bg-green-100 text-green-700",
+    color: "bg-muted/50 text-foreground",
     icon: CheckCircle2,
   },
   rejected: {
     label: "Rejected",
-    color: "bg-red-100 text-red-700",
+    color: "bg-muted/50 text-foreground",
     icon: XCircle,
   },
   converted: {
     label: "Converted to PO",
-    color: "bg-purple-100 text-purple-700",
+    color: "bg-muted/50 text-foreground",
     icon: ArrowRightLeft,
   },
   cancelled: {
     label: "Cancelled",
-    color: "bg-orange-100 text-orange-700",
+    color: "bg-muted/50 text-foreground",
     icon: Ban,
   },
 };
 
 export const PRIORITY_CONFIG: Record<string, { label: string; color: string }> =
   {
-    low: { label: "Low", color: "bg-gray-100 text-gray-600" },
-    normal: { label: "Normal", color: "bg-blue-100 text-blue-600" },
-    high: { label: "High", color: "bg-orange-100 text-orange-600" },
-    urgent: { label: "Urgent", color: "bg-red-100 text-red-600" },
-    critical: { label: "Critical", color: "bg-red-200 text-red-800" },
+    low: { label: "Low", color: "bg-muted/50 text-foreground" },
+    normal: { label: "Normal", color: "bg-muted/50 text-foreground" },
+    high: { label: "High", color: "bg-muted/50 text-foreground" },
+    urgent: { label: "Urgent", color: "bg-muted/50 text-foreground" },
+    critical: { label: "Critical", color: "bg-muted/50 text-foreground" },
   };
 
 export const formatCurrency = (n: number) =>

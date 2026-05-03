@@ -98,10 +98,10 @@ function ApprovalChainStepper({
     <div className="flex items-center gap-1 mt-2">
       {/* Step 1: Requester - Always complete if we're viewing this */}
       <div className="flex items-center gap-1.5">
-        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-green-100 text-green-600">
+        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-muted/50 text-foreground">
           <CheckCircle2 className="h-3.5 w-3.5" />
         </div>
-        <span className="text-xs font-medium text-green-700">Requester</span>
+        <span className="text-xs font-medium text-foreground">Requester</span>
       </div>
 
       <ArrowRight className="h-3.5 w-3.5 text-gray-300 mx-1" />
@@ -110,31 +110,31 @@ function ApprovalChainStepper({
       <div className="flex items-center gap-1.5">
         {managerApproval ? (
           <>
-            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-green-100 text-green-600">
+            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-muted/50 text-foreground">
               <CheckCircle2 className="h-3.5 w-3.5" />
             </div>
-            <span className="text-xs font-medium text-green-700">Manager</span>
+            <span className="text-xs font-medium text-foreground">Manager</span>
           </>
         ) : hasRejection ? (
           <>
-            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-red-100 text-red-600">
+            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-muted/50 text-foreground">
               <XCircle className="h-3.5 w-3.5" />
             </div>
-            <span className="text-xs font-medium text-red-700">Manager</span>
+            <span className="text-xs font-medium text-foreground">Manager</span>
           </>
         ) : isSubmitted ? (
           <>
-            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 text-blue-600 animate-pulse">
+            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-muted/50 text-foreground animate-pulse">
               <Clock className="h-3.5 w-3.5" />
             </div>
-            <span className="text-xs font-medium text-blue-700">Manager</span>
+            <span className="text-xs font-medium text-foreground">Manager</span>
           </>
         ) : (
           <>
-            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gray-100 text-gray-400">
+            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-muted/50 text-muted-foreground">
               <Clock className="h-3.5 w-3.5" />
             </div>
-            <span className="text-xs font-medium text-gray-500">Manager</span>
+            <span className="text-xs font-medium text-muted-foreground">Manager</span>
           </>
         )}
       </div>
@@ -145,31 +145,31 @@ function ApprovalChainStepper({
       <div className="flex items-center gap-1.5">
         {hasApproval ? (
           <>
-            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-green-100 text-green-600">
+            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-muted/50 text-foreground">
               <CheckCircle2 className="h-3.5 w-3.5" />
             </div>
-            <span className="text-xs font-medium text-green-700">Finance</span>
+            <span className="text-xs font-medium text-foreground">Finance</span>
           </>
         ) : hasRejection ? (
           <>
-            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gray-100 text-gray-400">
+            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-muted/50 text-muted-foreground">
               <Clock className="h-3.5 w-3.5" />
             </div>
-            <span className="text-xs font-medium text-gray-500">Finance</span>
+            <span className="text-xs font-medium text-muted-foreground">Finance</span>
           </>
         ) : isSubmitted ? (
           <>
-            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gray-100 text-gray-400">
+            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-muted/50 text-muted-foreground">
               <Clock className="h-3.5 w-3.5" />
             </div>
-            <span className="text-xs font-medium text-gray-500">Finance</span>
+            <span className="text-xs font-medium text-muted-foreground">Finance</span>
           </>
         ) : (
           <>
-            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gray-100 text-gray-400">
+            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-muted/50 text-muted-foreground">
               <Clock className="h-3.5 w-3.5" />
             </div>
-            <span className="text-xs font-medium text-gray-500">Finance</span>
+            <span className="text-xs font-medium text-muted-foreground">Finance</span>
           </>
         )}
       </div>
@@ -198,10 +198,10 @@ function ApprovalHistoryTimeline({ history }: { history: ApprovalHistory[] }) {
               <div
                 className={`flex h-8 w-8 items-center justify-center rounded-full ${
                   isApproved
-                    ? "bg-green-100 text-green-600"
+                    ? "bg-muted/50 text-foreground"
                     : isRejected
-                      ? "bg-red-100 text-red-600"
-                      : "bg-blue-100 text-blue-600"
+                      ? "bg-muted/50 text-foreground"
+                      : "bg-muted/50 text-foreground"
                 }`}
               >
                 {isApproved ? (
@@ -404,17 +404,17 @@ export default function ApprovalsPage() {
 
       {/* Tabs & List */}
       <Tabs onValueChange={setActiveTab} value={activeTab}>
-        <TabsList>
-          <TabsTrigger value="pending">
+        <TabsList className="rounded-[16px] border border-hairline bg-canvas p-1">
+          <TabsTrigger className="data-[state=active]:bg-ink data-[state=active]:text-white rounded-[12px] px-4 py-1.5 text-sm font-medium transition-colors" value="pending">
             Pending ({orders.filter((o) => o.status === "submitted").length})
           </TabsTrigger>
-          <TabsTrigger value="approved">
+          <TabsTrigger className="data-[state=active]:bg-ink data-[state=active]:text-white rounded-[12px] px-4 py-1.5 text-sm font-medium transition-colors" value="approved">
             Approved ({orders.filter((o) => o.status === "approved").length})
           </TabsTrigger>
-          <TabsTrigger value="rejected">
+          <TabsTrigger className="data-[state=active]:bg-ink data-[state=active]:text-white rounded-[12px] px-4 py-1.5 text-sm font-medium transition-colors" value="rejected">
             Rejected ({orders.filter((o) => o.status === "rejected").length})
           </TabsTrigger>
-          <TabsTrigger value="all">All History ({orders.length})</TabsTrigger>
+          <TabsTrigger className="data-[state=active]:bg-ink data-[state=active]:text-white rounded-[12px] px-4 py-1.5 text-sm font-medium transition-colors" value="all">All History ({orders.length})</TabsTrigger>
         </TabsList>
 
         <TabsContent className="mt-4" value={activeTab}>

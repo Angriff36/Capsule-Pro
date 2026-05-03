@@ -85,10 +85,10 @@ const REVIEW_TYPE_LABELS: Record<string, string> = {
 };
 
 const REVIEW_TYPE_COLORS: Record<string, string> = {
-  ANNUAL: "bg-purple-100 text-purple-800",
-  SIX_MONTH: "bg-blue-100 text-blue-800",
-  COACHING: "bg-green-100 text-green-800",
-  PROBATION: "bg-amber-100 text-amber-800",
+  ANNUAL: "bg-muted/50 text-foreground",
+  SIX_MONTH: "bg-muted/50 text-foreground",
+  COACHING: "bg-muted/50 text-foreground",
+  PROBATION: "bg-muted/50 text-foreground",
 };
 
 const STATUS_CONFIG: Record<
@@ -101,17 +101,17 @@ const STATUS_CONFIG: Record<
 > = {
   scheduled: {
     label: "Scheduled",
-    color: "bg-blue-100 text-blue-700",
+    color: "bg-muted/50 text-foreground",
     icon: Calendar,
   },
   completed: {
     label: "Completed",
-    color: "bg-green-100 text-green-700",
+    color: "bg-muted/50 text-foreground",
     icon: CheckCircle2,
   },
   cancelled: {
     label: "Cancelled",
-    color: "bg-gray-100 text-gray-700",
+    color: "bg-muted/50 text-foreground",
     icon: AlertTriangle,
   },
 };
@@ -330,7 +330,7 @@ export default function PerformancePageClient() {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.total}</div>
+            <div className="text-2xl font-semibold">{stats.total}</div>
           </CardContent>
         </Card>
         <Card>
@@ -339,7 +339,7 @@ export default function PerformancePageClient() {
             <Calendar className="h-4 w-4 text-blue-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.scheduled}</div>
+            <div className="text-2xl font-semibold">{stats.scheduled}</div>
             <p className="text-xs text-muted-foreground">Pending completion</p>
           </CardContent>
         </Card>
@@ -349,7 +349,7 @@ export default function PerformancePageClient() {
             <CheckCircle2 className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.completed}</div>
+            <div className="text-2xl font-semibold">{stats.completed}</div>
           </CardContent>
         </Card>
         <Card>
@@ -358,7 +358,7 @@ export default function PerformancePageClient() {
             <Star className="h-4 w-4 text-amber-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.avgRating}</div>
+            <div className="text-2xl font-semibold">{stats.avgRating}</div>
             <p className="text-xs text-muted-foreground">out of 5.0</p>
           </CardContent>
         </Card>
@@ -441,7 +441,7 @@ export default function PerformancePageClient() {
                             <Badge
                               className={
                                 REVIEW_TYPE_COLORS[review.reviewType] ||
-                                "bg-gray-100"
+                                "bg-muted/50"
                               }
                             >
                               {REVIEW_TYPE_LABELS[review.reviewType] ||
@@ -533,7 +533,7 @@ export default function PerformancePageClient() {
                               <p className="text-sm font-medium mb-1">
                                 Strengths
                               </p>
-                              <p className="text-sm text-muted-foreground bg-green-50 dark:bg-green-950/30 rounded-md p-2">
+                              <p className="text-sm text-muted-foreground bg-muted/20 rounded-md p-2">
                                 {review.strengths}
                               </p>
                             </div>
@@ -543,7 +543,7 @@ export default function PerformancePageClient() {
                               <p className="text-sm font-medium mb-1">
                                 Areas for Improvement
                               </p>
-                              <p className="text-sm text-muted-foreground bg-amber-50 dark:bg-amber-950/30 rounded-md p-2">
+                              <p className="text-sm text-muted-foreground bg-muted/20 rounded-md p-2">
                                 {review.areasForImprovement}
                               </p>
                             </div>
@@ -553,7 +553,7 @@ export default function PerformancePageClient() {
                               <p className="text-sm font-medium mb-1">
                                 Goals for Next Period
                               </p>
-                              <p className="text-sm text-muted-foreground bg-blue-50 dark:bg-blue-950/30 rounded-md p-2">
+                              <p className="text-sm text-muted-foreground bg-muted/20 rounded-md p-2">
                                 {review.goalsNextPeriod}
                               </p>
                             </div>
@@ -563,7 +563,7 @@ export default function PerformancePageClient() {
                               <p className="text-sm font-medium mb-1">
                                 Manager Comments
                               </p>
-                              <p className="text-sm text-muted-foreground bg-gray-50 dark:bg-gray-800/50 rounded-md p-2">
+                              <p className="text-sm text-muted-foreground bg-muted/20 rounded-md p-2">
                                 {review.managerComments}
                               </p>
                             </div>
@@ -573,7 +573,7 @@ export default function PerformancePageClient() {
                               <p className="text-sm font-medium mb-1">
                                 Employee Comments
                               </p>
-                              <p className="text-sm text-muted-foreground bg-gray-50 dark:bg-gray-800/50 rounded-md p-2">
+                              <p className="text-sm text-muted-foreground bg-muted/20 rounded-md p-2">
                                 {review.employeeComments}
                               </p>
                             </div>

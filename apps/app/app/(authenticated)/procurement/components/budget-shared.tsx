@@ -61,13 +61,13 @@ export const formatPeriodType = (t: string) => {
 export const getStatusColor = (status: string) => {
   switch (status) {
     case "active":
-      return "bg-green-100 text-green-700";
+      return "bg-muted/50 text-foreground";
     case "paused":
-      return "bg-yellow-100 text-yellow-700";
+      return "bg-muted/50 text-foreground";
     case "closed":
-      return "bg-gray-100 text-gray-700";
+      return "bg-muted/50 text-foreground";
     default:
-      return "bg-gray-100 text-gray-700";
+      return "bg-muted/50 text-foreground";
   }
 };
 

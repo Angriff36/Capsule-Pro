@@ -1,4 +1,5 @@
 import { auth } from "@repo/auth/server";
+import { Button } from "@repo/design-system/components/ui/button";
 import { notFound } from "next/navigation";
 
 import { getTenantIdForOrg } from "../../../lib/tenant";
@@ -107,43 +108,37 @@ const EventDetailsPage = async ({ params }: EventDetailsPageProps) => {
         pages={[{ label: "Events", href: "/events" }]}
       >
         <div className="flex items-center gap-2">
-          <a
-            className="inline-flex h-9 items-center justify-center whitespace-nowrap rounded-md border border-input bg-background px-4 py-2 font-medium text-sm shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
-            href={`/events/${eventId}/waitlist`}
-          >
-            Waitlist
-          </a>
-          <a
-            className="inline-flex h-9 items-center justify-center whitespace-nowrap rounded-md border border-input bg-background px-4 py-2 font-medium text-sm shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
-            href={`/events/${eventId}/budget`}
-          >
-            Budget
-          </a>
-          <a
-            className="inline-flex h-9 items-center justify-center whitespace-nowrap rounded-md border border-input bg-background px-4 py-2 font-medium text-sm shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
-            href={`/events/${eventId}/timeline`}
-          >
-            Timeline
-          </a>
-          <a
-            className="inline-flex h-9 items-center justify-center whitespace-nowrap rounded-md border border-input bg-background px-4 py-2 font-medium text-sm shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
-            href={`/events/${eventId}/battle-board`}
-          >
-            Battle Board
-          </a>
+          <Button asChild size="sm" variant="outline">
+            <a href={`/events/${eventId}/waitlist`}>
+              Waitlist
+            </a>
+          </Button>
+          <Button asChild size="sm" variant="outline">
+            <a href={`/events/${eventId}/budget`}>
+              Budget
+            </a>
+          </Button>
+          <Button asChild size="sm" variant="outline">
+            <a href={`/events/${eventId}/timeline`}>
+              Timeline
+            </a>
+          </Button>
+          <Button asChild size="sm" variant="outline">
+            <a href={`/events/${eventId}/battle-board`}>
+              Battle Board
+            </a>
+          </Button>
           <EventExportButton eventId={eventId} eventName={event.title} />
-          <a
-            className="inline-flex h-9 items-center justify-center whitespace-nowrap rounded-md px-4 py-2 font-medium text-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
-            href="/events"
-          >
-            Back to events
-          </a>
-          <a
-            className="inline-flex h-9 items-center justify-center whitespace-nowrap rounded-md border border-input bg-background px-4 py-2 font-medium text-sm shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
-            href="/events/import"
-          >
-            Import new
-          </a>
+          <Button asChild size="sm" variant="ghost">
+            <a href="/events">
+              Back to events
+            </a>
+          </Button>
+          <Button asChild size="sm" variant="outline">
+            <a href="/events/import">
+              Import new
+            </a>
+          </Button>
           <DeleteEventButton
             eventId={eventId}
             eventTitle={event.title}

@@ -205,7 +205,7 @@ const TrainingModulePage = async ({ params }: TrainingModulePageProps) => {
             <FileText className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="text-2xl font-semibold">
               {formatContentType(module.content_type)}
             </div>
           </CardContent>
@@ -217,7 +217,7 @@ const TrainingModulePage = async ({ params }: TrainingModulePageProps) => {
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="text-2xl font-semibold">
               {module.duration_minutes ? `${module.duration_minutes} min` : "-"}
             </div>
           </CardContent>
@@ -229,7 +229,7 @@ const TrainingModulePage = async ({ params }: TrainingModulePageProps) => {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{assignments.length}</div>
+            <div className="text-2xl font-semibold">{assignments.length}</div>
           </CardContent>
         </Card>
 
@@ -239,7 +239,7 @@ const TrainingModulePage = async ({ params }: TrainingModulePageProps) => {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="text-2xl font-semibold">
               {completedCount}/{assignments.length}
             </div>
             {assignments.length > 0 && (
@@ -308,7 +308,7 @@ const TrainingModulePage = async ({ params }: TrainingModulePageProps) => {
               Employees assigned to this training module.
               {overdueCount > 0 && (
                 <Badge
-                  className="ml-2 bg-red-100 text-red-800"
+                  className="ml-2 bg-muted/50 text-foreground"
                   variant="outline"
                 >
                   {overdueCount} overdue
@@ -372,7 +372,7 @@ const TrainingModulePage = async ({ params }: TrainingModulePageProps) => {
                             </Badge>
                             {overdue && (
                               <Badge
-                                className="bg-red-100 text-red-800"
+                                className="bg-muted/50 text-foreground"
                                 variant="outline"
                               >
                                 Overdue

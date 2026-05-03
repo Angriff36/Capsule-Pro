@@ -283,13 +283,13 @@ export default function VendorDetailPage() {
       </div>
 
       <Tabs defaultValue="details">
-        <TabsList>
-          <TabsTrigger value="details">Details</TabsTrigger>
-          <TabsTrigger value="contacts">
+        <TabsList className="rounded-[16px] border border-hairline bg-canvas p-1">
+          <TabsTrigger className="data-[state=active]:bg-ink data-[state=active]:text-white rounded-[12px] px-4 py-1.5 text-sm font-medium transition-colors" value="details">Details</TabsTrigger>
+          <TabsTrigger className="data-[state=active]:bg-ink data-[state=active]:text-white rounded-[12px] px-4 py-1.5 text-sm font-medium transition-colors" value="contacts">
             Contacts ({contacts.length})
           </TabsTrigger>
-          <TabsTrigger value="ratings">Ratings ({ratings.length})</TabsTrigger>
-          <TabsTrigger value="catalog">
+          <TabsTrigger className="data-[state=active]:bg-ink data-[state=active]:text-white rounded-[12px] px-4 py-1.5 text-sm font-medium transition-colors" value="ratings">Ratings ({ratings.length})</TabsTrigger>
+          <TabsTrigger className="data-[state=active]:bg-ink data-[state=active]:text-white rounded-[12px] px-4 py-1.5 text-sm font-medium transition-colors" value="catalog">
             Catalog ({catalogItemCount})
           </TabsTrigger>
         </TabsList>
@@ -694,7 +694,7 @@ export default function VendorDetailPage() {
                             {contact.contact_name}
                           </span>
                           {contact.is_primary && (
-                            <Badge className="bg-blue-100 text-blue-700">
+                            <Badge className="bg-muted/50 text-foreground">
                               Primary
                             </Badge>
                           )}

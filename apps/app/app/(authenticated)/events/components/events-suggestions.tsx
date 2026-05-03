@@ -46,7 +46,7 @@ export function EventsPageWithSuggestions({
       </div>
 
       {showSuggestions && (
-        <div className="mb-6 rounded-lg border bg-background shadow-lg">
+        <div className="mb-6 rounded-lg border border-hairline bg-background">
           <SuggestionsPanel
             isLoading={suggestionsLoading}
             onAction={handleActionClick}

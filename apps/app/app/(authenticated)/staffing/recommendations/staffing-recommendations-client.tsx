@@ -160,7 +160,7 @@ export function StaffingRecommendationsClient() {
       </Card>
 
       {error && (
-        <Card className="border-red-500 bg-red-50">
+        <Card className="border-red-500 bg-muted/20">
           <CardContent className="pt-6">
             <p className="text-red-600">{error}</p>
           </CardContent>
@@ -177,7 +177,7 @@ export function StaffingRecommendationsClient() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold flex items-center gap-2">
+                <div className="text-2xl font-semibold flex items-center gap-2">
                   <Users className="h-6 w-6" />
                   {recommendation.totalStaff}
                 </div>
@@ -190,7 +190,7 @@ export function StaffingRecommendationsClient() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold">
+                <div className="text-2xl font-semibold">
                   ${recommendation.totalLaborCost.toLocaleString()}
                 </div>
               </CardContent>
@@ -202,7 +202,7 @@ export function StaffingRecommendationsClient() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold">
+                <div className="text-2xl font-semibold">
                   1:
                   {Math.round(
                     recommendation.guestCount / recommendation.totalStaff
