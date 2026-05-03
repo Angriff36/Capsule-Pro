@@ -198,13 +198,7 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[proactive bridge @ 76% context — saved before compacting]
-Files (6):
-  apps/app/app/(authenticated)/contracts/page.tsx (create)
-  apps/app/app/(authenticated)/contracts/contracts-page-client.tsx (create)
-  apps/app/app/(authenticated)/contracts/[contractId]/page.tsx (create)
-  apps/app/app/(authenticated)/contracts/[contractId]/contract-detail-client.tsx (create)
-  apps/app/app/(authenticated)/contracts/[contractId]/page.tsx (edit)
-  apps/api/vercel.json (edit)
+[Emergency bridge — running bridge was not updated]
+No changes or facts in this session.
 
 # === END COGNILAYER ===

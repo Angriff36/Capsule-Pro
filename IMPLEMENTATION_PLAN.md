@@ -26,6 +26,20 @@
 
 ---
 
+## Recently remediated (2026-05-03 — CRM Client Detail Enhancements)
+
+- **§4 CRM Contacts — edit/delete DONE.** `contacts-tab.tsx` now has full CRUD: edit dialog (pre-fills all fields from selected contact) + delete with AlertDialog confirmation. Uses `updateClientContact()` and `deleteClientContact()` server actions (tenant-scoped, soft-delete, primary/billing contact management). Edit/delete buttons added to each contact card header.
+
+- **§4 CRM Communications — filtering/search DONE.** `communications-tab.tsx` now has filter pills (All / Email / Phone Call / Meeting / Note) and search input (subject + description). `getClientInteractions()` server action extended with `ClientInteractionFilters` type supporting `interactionType` and `search` params. Context-aware empty states (different messaging for filtered-no-results vs truly-empty). Uses `useCallback` with filter deps for proper refetch.
+
+- **§4 CRM Preferences — full CRUD DONE.** `preferences-tab.tsx` rewritten from read-only to full CRUD: create dialog (category dropdown: Dietary/Venue/Service/Communication/Billing/General), edit dialog, delete with AlertDialog confirmation. Dynamic refresh via `getClientById()` after mutations. Server actions: `createClientPreference()`, `updateClientPreference()`, `deleteClientPreference()` with tenant isolation.
+
+- **Pre-existing typecheck fix: `analytics/staff/page.tsx`** — fixed wrong relative import `../../lib/tenant` → `../../../lib/tenant` (file is at `app/lib/tenant.ts`, not `(authenticated)/lib/tenant.ts`).
+
+**Validation:** `pnpm --filter app typecheck` clean. `pnpm --filter app test` → 257 passed / 32 files. `pnpm --filter api test` → 4015 passed / 128 files. No schema or migration changes.
+
+---
+
 ## Recently remediated (2026-05-03 — Training Portal + Payroll Polish)
 
 - **§4 Employee Training Portal — DONE (CAP-TRAINING-001).** New authenticated UI at `apps/app/app/(authenticated)/staff/my-training/{page.tsx,my-training-client.tsx}`. Server component uses `requireCurrentUser()` to resolve the employee, then queries `training_assignments` joined with `training_modules` and `training_completions`. Cohere page-shell with `PageCanvas + CommandBand + MetricBand (4 metrics: Assigned / In Progress / Completed / Overdue) + OperationalColumn + SectionHeader`. Client component renders assignment cards with status badges, due-date countdowns, overdue flagging, and "Start" / "Complete" actions calling `POST /api/training/complete`. Handles both specific and "assigned_to_all" assignments. Overdue items sorted first. Added "My Training" card to staff landing ModuleLanding.
