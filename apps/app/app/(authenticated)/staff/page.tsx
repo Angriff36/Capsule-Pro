@@ -1,4 +1,5 @@
 import {
+  BookOpen,
   CalendarDays,
   Clock,
   GraduationCap,
@@ -44,11 +45,19 @@ const StaffPage = () => (
         icon: Clock,
       },
       {
-        title: "Training",
+        title: "My Training",
+        description:
+          "View and complete your assigned training modules and track progress.",
+        href: "/staff/my-training",
+        actionLabel: "View my training",
+        icon: BookOpen,
+      },
+      {
+        title: "Training Management",
         description:
           "Assign and track training modules, certifications, and compliance.",
         href: "/staff/training",
-        actionLabel: "View training",
+        actionLabel: "Manage training",
         icon: GraduationCap,
       },
     ]}

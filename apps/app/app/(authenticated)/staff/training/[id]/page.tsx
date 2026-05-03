@@ -1,5 +1,9 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import {
+  DisplayHeading,
+  MonoLabel,
+} from "@repo/design-system/components/blocks/page-shell";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -23,6 +27,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTenantIdForOrg } from "../../../../lib/tenant";
 import { AssignTrainingDialog } from "./components/assign-training-dialog";
+import { DeleteTrainingModuleButton } from "./components/delete-training-module-button";
+import { EditTrainingModuleDialog } from "./components/edit-training-module-dialog";
 
 interface ModuleDetail {
   id: string;
@@ -67,6 +73,11 @@ const formatDate = (date: Date) => {
     day: "numeric",
     year: "numeric",
   }).format(date);
+};
+
+const isOverdue = (dueDate: Date | null, status: string): boolean => {
+  if (!dueDate || status === "completed") return false;
+  return new Date(dueDate) < new Date();
 };
 
 interface TrainingModulePageProps {
@@ -139,23 +150,49 @@ const TrainingModulePage = async ({ params }: TrainingModulePageProps) => {
     (a) => a.status === "completed"
   ).length;
 
+  const overdueCount = assignments.filter((a) =>
+    isOverdue(a.due_date, a.status)
+  ).length;
+
   return (
     <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
-      <div className="flex items-center gap-4">
+      <div className="flex items-start gap-4">
         <Link href="/staff/training">
           <Button size="icon" variant="ghost">
             <ArrowLeft className="h-4 w-4" />
           </Button>
         </Link>
-        <div className="flex-1 space-y-0.5">
-          <h1 className="text-2xl font-semibold tracking-tight">{module.title}</h1>
+        <div className="flex-1 space-y-1">
+          <MonoLabel tone="dark">Operations / Staff / Training</MonoLabel>
+          <DisplayHeading>{module.title}</DisplayHeading>
           <p className="text-muted-foreground">
             {module.description || "No description provided."}
           </p>
         </div>
-        <AssignTrainingDialog moduleId={id} moduleName={module.title}>
-          <Button>Assign to Employee</Button>
-        </AssignTrainingDialog>
+        <div className="flex items-center gap-2">
+          <EditTrainingModuleDialog
+            defaultValues={{
+              title: module.title,
+              description: module.description ?? "",
+              contentUrl: module.content_url ?? "",
+              contentType: module.content_type,
+              durationMinutes: module.duration_minutes,
+              category: module.category ?? "",
+              isRequired: module.is_required,
+              isActive: module.is_active,
+            }}
+            moduleId={id}
+          >
+            <Button variant="outline">Edit Module</Button>
+          </EditTrainingModuleDialog>
+          <AssignTrainingDialog moduleId={id} moduleName={module.title}>
+            <Button>Assign to Employee</Button>
+          </AssignTrainingDialog>
+          <DeleteTrainingModuleButton
+            moduleId={id}
+            moduleTitle={module.title}
+          />
+        </div>
       </div>
 
       <Separator />
@@ -269,6 +306,11 @@ const TrainingModulePage = async ({ params }: TrainingModulePageProps) => {
             <CardTitle>Assignments</CardTitle>
             <CardDescription>
               Employees assigned to this training module.
+              {overdueCount > 0 && (
+                <Badge className="ml-2 bg-red-100 text-red-800" variant="outline">
+                  {overdueCount} overdue
+                </Badge>
+              )}
             </CardDescription>
           </CardHeader>
           <CardContent className="p-0">
@@ -288,48 +330,68 @@ const TrainingModulePage = async ({ params }: TrainingModulePageProps) => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {assignments.map((assignment) => (
-                    <TableRow key={assignment.id}>
-                      <TableCell>
-                        <div>
-                          <div className="font-medium">
-                            {assignment.employee_first_name &&
-                            assignment.employee_last_name
-                              ? `${assignment.employee_first_name} ${assignment.employee_last_name}`
-                              : (assignment.employee_email ?? "All Employees")}
-                          </div>
-                          {assignment.employee_email && (
-                            <div className="text-xs text-muted-foreground">
-                              {assignment.employee_email}
+                  {assignments.map((assignment) => {
+                    const overdue = isOverdue(
+                      assignment.due_date,
+                      assignment.status
+                    );
+
+                    return (
+                      <TableRow key={assignment.id}>
+                        <TableCell>
+                          <div>
+                            <div className="font-medium">
+                              {assignment.employee_first_name &&
+                              assignment.employee_last_name
+                                ? `${assignment.employee_first_name} ${assignment.employee_last_name}`
+                                : (assignment.employee_email ?? "All Employees")}
                             </div>
+                            {assignment.employee_email && (
+                              <div className="text-xs text-muted-foreground">
+                                {assignment.employee_email}
+                              </div>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-1.5">
+                            <Badge
+                              variant={
+                                assignment.status === "completed"
+                                  ? "default"
+                                  : assignment.status === "in_progress"
+                                    ? "secondary"
+                                    : "outline"
+                              }
+                            >
+                              {assignment.status.replace("_", " ")}
+                            </Badge>
+                            {overdue && (
+                              <Badge className="bg-red-100 text-red-800" variant="outline">
+                                Overdue
+                              </Badge>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          {assignment.due_date ? (
+                            <span
+                              className={overdue ? "text-red-600 font-medium" : ""}
+                            >
+                              {formatDate(assignment.due_date)}
+                            </span>
+                          ) : (
+                            "-"
                           )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          variant={
-                            assignment.status === "completed"
-                              ? "default"
-                              : assignment.status === "in_progress"
-                                ? "secondary"
-                                : "outline"
-                          }
-                        >
-                          {assignment.status.replace("_", " ")}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        {assignment.due_date
-                          ? formatDate(assignment.due_date)
-                          : "-"}
-                      </TableCell>
-                      <TableCell>
-                        {assignment.completion_completed_at
-                          ? formatDate(assignment.completion_completed_at)
-                          : "-"}
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                        </TableCell>
+                        <TableCell>
+                          {assignment.completion_completed_at
+                            ? formatDate(assignment.completion_completed_at)
+                            : "-"}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
                 </TableBody>
               </Table>
             )}

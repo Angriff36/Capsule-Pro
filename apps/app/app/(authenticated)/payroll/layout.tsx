@@ -1,5 +1,9 @@
 "use client";
 
+import {
+  DisplayHeading,
+  MonoLabel,
+} from "@repo/design-system/components/blocks/page-shell";
 import { cn } from "@repo/design-system/lib/utils";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -54,7 +58,10 @@ const PayrollLayout = ({ children }: PayrollLayoutProperties) => {
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
       <div className="flex items-center justify-between space-y-2">
-        <h2 className="text-2xl font-semibold tracking-tight">Payroll</h2>
+        <div className="space-y-1">
+          <MonoLabel>Operations / Payroll</MonoLabel>
+          <DisplayHeading>Payroll</DisplayHeading>
+        </div>
       </div>
       <nav className="flex gap-1 overflow-x-auto pb-1">
         {navigationItems.map((item) => {
