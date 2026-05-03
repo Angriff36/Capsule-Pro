@@ -259,5 +259,10 @@ export async function POST(request: NextRequest) {
   return await executeManifestCommand(request, {
     entityName: "InventoryItem",
     commandName: "create",
+    transformBody: (body) => ({
+      ...body,
+      unitCost: body.unit_cost,
+      quantityOnHand: body.quantity_on_hand,
+    }),
   });
 }

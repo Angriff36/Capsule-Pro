@@ -4,49 +4,29 @@
 entity InventoryItem {
   property required id: string
   property required tenantId: string
-  property required itemNumber: string
+  property required item_number: string
   property required name: string
-  property required itemType: string = "ingredient"
-  property category: string = ""
-  property baseUnit: string = "each"
+  property description: string = ""
+  property required category: string
+  property unitOfMeasure: string = "each"
+  property unitCost: number = 0
   property quantityOnHand: number = 0
-  property quantityReserved: number = 0
-  property quantityAvailable: number = 0
   property parLevel: number = 0
-  property reorderPoint: number = 0
-  property reorderQuantity: number = 0
-  property costPerUnit: number = 0
+  property reorder_level: number = 0
   property supplierId: string = ""
-  property locationId: string = ""
-  property allergens: string = ""
-  property isActive: boolean = true
-  property lastCountedAt: number = 0
+  property tags: string = ""
+  property fsa_status: string = "unknown"
+  property fsa_temp_logged: boolean = false
+  property fsa_allergen_info: boolean = false
+  property fsa_traceable: boolean = false
   property createdAt: number = 0
   property updatedAt: number = 0
+  property deletedAt: number = 0
 
   computed isBelowPar: boolean = self.parLevel > 0 and self.quantityOnHand < self.parLevel
-  computed isBelowReorderPoint: boolean = self.reorderPoint > 0 and self.quantityOnHand < self.reorderPoint
-  computed totalValue: number = self.quantityOnHand * self.costPerUnit
-  computed reservedValue: number = self.quantityReserved * self.costPerUnit
-  computed stockoutRisk: boolean = self.quantityAvailable <= 0
-  computed lowStockRisk: boolean = self.quantityAvailable < (self.parLevel * 0.25)
+  computed isBelowReorderPoint: boolean = self.reorder_level > 0 and self.quantityOnHand < self.reorder_level
+  computed totalValue: number = self.quantityOnHand * self.unitCost
   computed needsReorder: boolean = self.isBelowReorderPoint
-
-  constraint positiveQuantities: self.quantityOnHand >= 0 and self.quantityReserved >= 0 {
-    messageTemplate: "Inventory quantities cannot be negative (onHand: {onHand}, reserved: {reserved})"
-    details: {
-      onHand: self.quantityOnHand
-      reserved: self.quantityReserved
-    }
-  }
-
-  constraint reserveDoesNotExceedOnHand: self.quantityReserved <= self.quantityOnHand {
-    messageTemplate: "Reserved quantity ({reserved}) cannot exceed on-hand quantity ({onHand})"
-    details: {
-      onHand: self.quantityOnHand
-      reserved: self.quantityReserved
-    }
-  }
 
   constraint warnBelowPar:warn self.isBelowPar {
     messageTemplate: "Item '{itemName}' is below par level ({onHand} < {parLevel})"
@@ -55,25 +35,6 @@ entity InventoryItem {
       onHand: self.quantityOnHand
       parLevel: self.parLevel
       shortfall: self.parLevel - self.quantityOnHand
-    }
-  }
-
-  constraint warnLowStock:warn self.lowStockRisk {
-    messageTemplate: "Item '{itemName}' has low stock risk (only {available} available)"
-    details: {
-      itemName: self.name
-      available: self.quantityAvailable
-      parLevel: self.parLevel
-    }
-  }
-
-  constraint blockStockout:block self.stockoutRisk {
-    messageTemplate: "Item '{itemName}' is out of stock (onHand: {onHand}, reserved: {reserved})"
-    details: {
-      itemName: self.name
-      onHand: self.quantityOnHand
-      reserved: self.quantityReserved
-      available: self.quantityAvailable
     }
   }
 
@@ -244,30 +205,30 @@ entity InventoryItem {
     emit InventoryReservationReleased
   }
 
-  command create(itemNumber: string, name: string, itemType: string, category: string, baseUnit: string, parLevel: number, reorderPoint: number, reorderQuantity: number, costPerUnit: number, supplierId: string, locationId: string, allergens: string) {
-    guard itemNumber != null and itemNumber != "" "Item number/SKU is required"
+  command create(item_number: string, name: string, category: string, description: string, unitOfMeasure: string, unitCost: number, quantityOnHand: number, parLevel: number, reorder_level: number, supplierId: string, tags: string, fsa_status: string, fsa_temp_logged: boolean, fsa_allergen_info: boolean, fsa_traceable: boolean) {
+    guard item_number != null and item_number != "" "Item number/SKU is required"
     guard name != null and name != "" "Item name is required"
-    guard costPerUnit == null or costPerUnit >= 0 "Cost per unit must be non-negative"
+    guard category != null and category != "" "Category is required"
+    guard unitCost == null or unitCost >= 0 "Unit cost must be non-negative"
+    guard quantityOnHand == null or quantityOnHand >= 0 "Quantity on hand cannot be negative"
     guard parLevel == null or parLevel >= 0 "Par level must be non-negative"
-    guard reorderPoint == null or reorderPoint >= 0 "Reorder point must be non-negative"
-    guard reorderQuantity == null or reorderQuantity >= 0 "Reorder quantity must be non-negative"
+    guard reorder_level == null or reorder_level >= 0 "Reorder level must be non-negative"
 
-    mutate itemNumber = itemNumber
+    mutate item_number = item_number
     mutate name = name
-    mutate itemType = itemType
+    mutate description = description
     mutate category = category
-    mutate baseUnit = baseUnit
-    mutate quantityOnHand = 0
-    mutate quantityReserved = 0
-    mutate quantityAvailable = 0
+    mutate unitOfMeasure = unitOfMeasure
+    mutate unitCost = unitCost
+    mutate quantityOnHand = quantityOnHand
     mutate parLevel = parLevel
-    mutate reorderPoint = reorderPoint
-    mutate reorderQuantity = reorderQuantity
-    mutate costPerUnit = costPerUnit
+    mutate reorder_level = reorder_level
     mutate supplierId = supplierId
-    mutate locationId = locationId
-    mutate allergens = allergens
-    mutate isActive = true
+    mutate tags = tags
+    mutate fsa_status = fsa_status
+    mutate fsa_temp_logged = fsa_temp_logged
+    mutate fsa_allergen_info = fsa_allergen_info
+    mutate fsa_traceable = fsa_traceable
     mutate createdAt = now()
     mutate updatedAt = now()
 
