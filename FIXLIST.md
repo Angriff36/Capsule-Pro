@@ -14,7 +14,7 @@
 | 7 | analytics | `/analytics/events` | 🟢 ✅ | Server-rendered event analytics dashboard with live tenant event, budget, invoice, payment, and report data | ✅ 2026-05-03 |
 | 8 | analytics | `/analytics/sales` | 🟢 ✅ | Server-rendered tenant-scoped sales analytics with live lead, proposal, invoice, and payment data | ✅ 2026-05-03 |
 | 9 | analytics | `/analytics/finance` | 🟢 ✅ | Server-rendered finance analytics dashboard with live invoice, payment, budget, and account data | ✅ 2026-05-03 |
-| 10 | analytics | `/analytics/staff` | 🔴 ❌ | 9-line shell | TODO |
+| 10 | analytics | `/analytics/staff` | 🟢 ✅ | Server-rendered staff activity snapshot with live roster, timekeeping, assignment, CRM, and kitchen metrics | ✅ 2026-05-03 |
 | 11 | analytics | `/analytics/multi-location` | 🔴 ❌ | Static JSX | TODO |
 | 12 | crm | `/crm/pipeline` | 🔴 ❌ | Static shell — no query, no action | TODO |
 | 13 | crm | `/crm/venues` | 🔴 ❌ | 11-line shell | TODO |
