@@ -2,6 +2,7 @@
 
 **Total broken: 98** (85 dead shells + 13 form-only)
 **Generated:** 2026-05-02 | **Auto-fix cron:** every 10 min
+**Last fix:** 2026-05-03 — kitchen/quality-assurance
 
 | # | Module | Route | Type | Issue | Status |
 |---|--------|-------|------|-------|--------|
@@ -104,6 +105,8 @@
 | 97 | warehouse | `/warehouse/receiving/reports` | 🔴 ❌ | Static JSX | TODO |
 | 98 | warehouse | `/warehouse/shipments` | 🔴 ❌ | 5-line shell | TODO |
 | 99 | warehouse | `/warehouse/audits` | 🔴 ❌ | 7-line shell | TODO |
+
+| 100 | kitchen | `/kitchen/quality-assurance` | 🔴 ❌ | 297-line static JSX — hardcoded sample data, no DB queries | ✅ 2026-05-03 |
 
 ## Legend
 - 🔴 ❌ = Dead shell — static JSX with no data or actions
