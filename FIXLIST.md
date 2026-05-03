@@ -2,7 +2,7 @@
 
 **Total broken: 98** (85 dead shells + 13 form-only)
 **Generated:** 2026-05-02 | **Auto-fix cron:** every 10 min
-**Last fix:** 2026-05-03 — kitchen/quality-assurance
+**Last fix:** 2026-05-03 — crm/segmentation (already functional)
 
 | # | Module | Route | Type | Issue | Status |
 |---|--------|-------|------|-------|--------|
@@ -19,7 +19,7 @@
 | 11 | analytics | `/analytics/multi-location` | 🟢 ✅ | Tenant-scoped multi-location dashboard already loads live location, revenue, labor, waste, event, inventory, and staffing analytics | ✅ 2026-05-03 |
 | 12 | crm | `/crm/pipeline` | 🟢 ✅ | Server-rendered pipeline snapshot backed by tenant-scoped proposal queries with stage summaries and live deal table | ✅ 2026-05-03 |
 | 13 | crm | `/crm/venues` | 🟢 ✅ | Server-rendered tenant-scoped venue list with live Prisma data, type/capacity/contact/tag display | ✅ 2026-05-03 |
-| 14 | crm | `/crm/segmentation` | 🔴 ❌ | Static JSX — no server actions | TODO |
+| 14 | crm | `/crm/segmentation` | 🟢 ✅ | Already functional — server component with live DB queries, tenant-scoped | ✅ 2026-05-03 |
 | 15 | events | `/events/budget` | 🔴 ❌ | Static JSX | TODO |
 | 16 | events | `/events/timeline` | 🔴 ❌ | Static JSX | TODO |
 | 17 | events | `/events/kitchen-dashboard` | 🔴 ❌ | Static JSX | TODO |
@@ -106,7 +106,7 @@
 | 98 | warehouse | `/warehouse/shipments` | 🔴 ❌ | 5-line shell | TODO |
 | 99 | warehouse | `/warehouse/audits` | 🔴 ❌ | 7-line shell | TODO |
 
-| 100 | kitchen | `/kitchen/quality-assurance` | 🔴 ❌ | 297-line static JSX — hardcoded sample data, no DB queries | ✅ 2026-05-03 |
+| 100 | kitchen | `/crm/segmentation (already functional)` | 🔴 ❌ | 297-line static JSX — hardcoded sample data, no DB queries | ✅ 2026-05-03 |
 
 ## Legend
 - 🔴 ❌ = Dead shell — static JSX with no data or actions
