@@ -5,7 +5,7 @@
 
 | # | Module | Route | Type | Issue | Status |
 |---|--------|-------|------|-------|--------|
-| 1 | accounting | `/accounting` | 🔴 ❌ | 8-line shell | TODO |
+| 1 | accounting | `/accounting` | 🟢 ✅ | Accounting dashboard wired to live invoice/payment/account data | ✅ 2026-05-02 |
 | 2 | accounting | `/accounting/chart-of-accounts` | 🔴 ❌ | 14-line shell | TODO |
 | 3 | accounting | `/accounting/payments` | 🔴 ❌ | 12-line shell | TODO |
 | 4 | administrative | `/administrative` | 🔴 ❌ | Static JSX | TODO |
