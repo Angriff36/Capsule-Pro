@@ -156,7 +156,7 @@ export default function SchedulesPage() {
         title: createForm.title,
         description: createForm.description || undefined,
         frequency: createForm.frequency,
-        nextDueDate: createForm.nextDueDate || undefined,
+        nextDueAt: createForm.nextDueDate || new Date().toISOString(),
         estimatedHours: createForm.estimatedHours
           ? Number.parseFloat(createForm.estimatedHours)
           : undefined,

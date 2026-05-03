@@ -92,7 +92,7 @@ export default function FacilitiesWorkOrdersPage() {
         priority: createForm.priority,
         workOrderType: createForm.workOrderType,
         scheduledDate: createForm.scheduledDate || undefined,
-        vendorId: createForm.assignedVendor || undefined,
+        assignedTo: createForm.assignedVendor || undefined,
       });
       setWorkOrders((prev) => [result, ...prev]);
       setShowCreateDialog(false);

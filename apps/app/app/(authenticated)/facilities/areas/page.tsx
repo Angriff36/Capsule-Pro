@@ -68,7 +68,7 @@ export default function AreasPage() {
         code: createForm.code || undefined,
         areaType: createForm.areaType,
         floor: createForm.floor || undefined,
-        squareFootage: createForm.squareFeet
+        squareFeet: createForm.squareFeet
           ? Number.parseInt(createForm.squareFeet)
           : undefined,
         notes: createForm.description || undefined,
