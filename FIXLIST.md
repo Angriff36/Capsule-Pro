@@ -71,7 +71,7 @@
 | 64 | misc | `/tools/conflicts` | 🔴 ❌ | Static JSX | TODO |
 | 65 | payroll | `/payroll` | 🔴 ❌ | 40-line shell | TODO |
 | 66 | payroll | `/payroll/overview` | 🔴 ❌ | Static JSX | TODO |
-| 67 | procurement | `/procurement` | 🔴 ❌ | 5-line shell | TODO |
+| 67 | procurement | `/procurement` | 🔴 ❌ | 5-line shell | ✅ 2026-05-02 |
 | 68 | procurement | `/procurement/requisitions/new` | 🟡 🔶 | Form, no server action | TODO |
 | 69 | procurement | `/procurement/purchase-orders/new` | 🟡 🔶 | Form, no server action | TODO |
 | 70 | scheduling | `/scheduling/shifts` | 🔴 ❌ | 18-line shell | TODO |
