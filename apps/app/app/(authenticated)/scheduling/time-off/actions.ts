@@ -227,6 +227,13 @@ export async function createTimeOffRequest(
     throw new Error("Employee has overlapping time-off requests");
   }
 
+  // Calculate hours from date range (business days × 8h)
+  const diffDays =
+    Math.ceil(
+      (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
+    ) + 1;
+  const hours = diffDays * 8;
+
   // Create the time-off request
   const result = await database.$queryRaw<
     Array<{
@@ -248,7 +255,8 @@ export async function createTimeOffRequest(
         end_date,
         reason,
         request_type,
-        status
+        status,
+        hours
       )
       VALUES (
         ${tenantId},
@@ -257,7 +265,8 @@ export async function createTimeOffRequest(
         ${endDate},
         ${input.reason || null},
         ${input.requestType},
-        'PENDING'
+        'PENDING',
+        ${hours}
       )
       RETURNING id, tenant_id, employee_id, status, start_date, end_date, reason, request_type
     `
