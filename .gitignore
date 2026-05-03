@@ -437,8 +437,9 @@ specs/**/*_INPROGRESS/
 specs/spec-template.md
 specs/manifest-structure/
 
-# Root-level scratch files
-spec.md
+# Root-level scratch files (anchored to repo root — Windows/macOS are case-insensitive,
+# so an unanchored `spec.md` would also match `specs/<module>/SPEC.md`)
+/spec.md
 ACTUAL_FIX.md
 session-ses_35b0.md
 session-ses_3585.md session-ses_35b0.md session-ses_3766.md

@@ -199,22 +199,9 @@ Last: [first session]
 
 ## Last Session Bridge
 [pre-compact bridge — saved before context compaction]
-Files (7):
-  packages/design-system/components/blocks/manifest-test-playground.tsx (edit)
-  packages/design-system/components/ui/chart.tsx (edit)
-  packages/internationalization/proxy.ts (create)
-  packages/feature-flags/access.ts (create)
-  packages/design-system/components/blocks/getting-started-checklist.tsx (edit)
-  packages/analytics/provider.tsx (create)
-  apps/app/app/layout.tsx (edit)
-Manual bridge:
-[proactive bridge @ 77% context — saved before compacting]
-Files (6):
-  packages/design-system/components/blocks/manifest-test-playground.tsx (edit)
-  packages/design-system/components/ui/chart.tsx (edit)
-  packages/internationalization/proxy.ts (create)
-  packages/feature-flags/access.ts (create)
-  packages/design-system/components/blocks/getting-started-checklist.tsx (edit)
-  packages/analytics/provider.tsx (create)
+Files (3):
+  specs/staffing/SPEC.md (create)
+  specs/contracts/SPEC.md (edit)
+  specs/marketing/SPEC.md (edit)
 
 # === END COGNILAYER ===
