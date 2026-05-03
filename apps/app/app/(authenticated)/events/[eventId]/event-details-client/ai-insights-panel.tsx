@@ -125,7 +125,7 @@ export function AIInsightsPanel({
 
   return (
     <section className="space-y-4">
-      <Card className="border-border/70 shadow-sm">
+      <Card className="border-border/70">
         <CardHeader className="pb-3">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
@@ -214,7 +214,7 @@ export function AIInsightsPanel({
           />
         </div>
         <aside className="space-y-3">
-          <Card className="border-border/70 bg-muted/15 shadow-sm">
+          <Card className="border-border/70 bg-muted/15">
             <CardContent className="px-4 py-3">
               <p className="font-medium text-sm">Action queue</p>
               <p className="text-foreground/75 text-xs">

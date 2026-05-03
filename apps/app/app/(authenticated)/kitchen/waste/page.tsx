@@ -19,7 +19,7 @@ export default function WasteTrackingPage() {
     <div className="space-y-8 p-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Waste Tracking</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">Waste Tracking</h1>
           <p className="text-muted-foreground">
             Log food waste to identify reduction opportunities and cost savings
           </p>

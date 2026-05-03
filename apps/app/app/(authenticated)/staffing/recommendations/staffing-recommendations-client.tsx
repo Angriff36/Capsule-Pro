@@ -74,7 +74,7 @@ export function StaffingRecommendationsClient() {
   return (
     <div className="container mx-auto py-6 space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">AI Staffing Recommendations</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">AI Staffing Recommendations</h1>
         <p className="text-muted-foreground">
           Get AI-powered staffing recommendations based on event details
         </p>

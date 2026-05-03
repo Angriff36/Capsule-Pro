@@ -61,7 +61,7 @@ export default async function SessionPage({
           ← Back to Sessions
         </button>
 
-        <h1 className="text-3xl font-bold mb-2">{session.sessionName}</h1>
+        <h1 className="text-2xl font-semibold tracking-tight mb-2">{session.sessionName}</h1>
 
         <div className="mb-4 flex space-x-4 text-sm">
           <span className="text-gray-600">Type: {session.countType}</span>

@@ -497,21 +497,21 @@ export const MobileRecipeClient = ({
       </div>
 
       <Tabs className="flex min-h-0 flex-1 flex-col" defaultValue="steps">
-        <TabsList className="sticky top-[60px] z-40 grid w-full grid-cols-3 rounded-none border-b border-hairline bg-background">
+        <TabsList className="sticky top-[60px] z-40 flex w-full gap-1 bg-background p-1">
           <TabsTrigger
-            className="rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary"
+            className="rounded-full data-[state=active]:bg-ink data-[state=active]:text-white"
             value="steps"
           >
             Steps
           </TabsTrigger>
           <TabsTrigger
-            className="rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary"
+            className="rounded-full data-[state=active]:bg-ink data-[state=active]:text-white"
             value="ingredients"
           >
             Ingredients
           </TabsTrigger>
           <TabsTrigger
-            className="rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary"
+            className="rounded-full data-[state=active]:bg-ink data-[state=active]:text-white"
             value="info"
           >
             Info

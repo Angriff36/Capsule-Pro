@@ -271,7 +271,7 @@ export const StockLevelsPageClient = () => {
     <div className="space-y-8">
       {/* Page Header */}
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Stock Levels</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Stock Levels</h1>
         <p className="text-muted-foreground mt-2">
           Monitor inventory quantities, par levels, and stock values across all
           locations.

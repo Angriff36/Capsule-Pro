@@ -522,12 +522,12 @@ export default function PayrollApprovalsPage() {
       </div>
 
       {/* Tab Switcher */}
-      <div className="flex space-x-1 border-b">
+      <div className="flex gap-1">
         <button
-          className={`px-4 py-2 text-sm font-medium transition-colors ${
+          className={`inline-flex items-center rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
             activeTab === "queue"
-              ? "border-b-2 border-primary text-foreground"
-              : "text-muted-foreground hover:text-foreground"
+              ? "bg-ink text-white"
+              : "text-muted-foreground hover:bg-accent hover:text-foreground"
           }`}
           onClick={() => setActiveTab("queue")}
           type="button"
@@ -535,10 +535,10 @@ export default function PayrollApprovalsPage() {
           Approval Queue
         </button>
         <button
-          className={`px-4 py-2 text-sm font-medium transition-colors ${
+          className={`inline-flex items-center rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
             activeTab === "history"
-              ? "border-b-2 border-primary text-foreground"
-              : "text-muted-foreground hover:text-foreground"
+              ? "bg-ink text-white"
+              : "text-muted-foreground hover:bg-accent hover:text-foreground"
           }`}
           onClick={() => setActiveTab("history")}
           type="button"

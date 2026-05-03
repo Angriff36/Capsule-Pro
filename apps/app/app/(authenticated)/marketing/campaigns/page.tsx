@@ -27,7 +27,7 @@ const CampaignsPage = async () => {
 
       <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
         <div className="space-y-0.5">
-          <h1 className="text-3xl font-bold tracking-tight">Campaigns</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">Campaigns</h1>
           <p className="text-muted-foreground">
             Manage your multi-channel marketing campaigns
           </p>

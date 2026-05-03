@@ -96,7 +96,7 @@ ${briefing.criticalInfo.map((c) => `- ${c}`).join("\n")}
   // Loading state
   if (isLoading && !briefing) {
     return (
-      <Card className="border-border/70 shadow-sm">
+      <Card className="border-border/70">
         <CardHeader className="pb-3">
           <div className="flex items-center gap-2">
             <SparklesIcon className="size-5 text-primary" />
@@ -173,7 +173,7 @@ ${briefing.criticalInfo.map((c) => `- ${c}`).join("\n")}
   }).format(new Date(briefing.generatedAt));
 
   return (
-    <Card className="border-border/70 shadow-sm">
+    <Card className="border-border/70">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-2">

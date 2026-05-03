@@ -162,7 +162,7 @@ export default function EditVenuePage() {
           </Link>
         </Button>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Edit Venue</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">Edit Venue</h1>
           <p className="text-muted-foreground">Update venue information.</p>
         </div>
       </div>

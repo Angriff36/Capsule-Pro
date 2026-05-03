@@ -30,7 +30,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
-import { createWorkOrder } from "../../actions";
+import { createWorkOrder } from "../actions";
 import { FacilitiesNavigation } from "../components/facilities-navigation";
 
 interface WorkOrder {
@@ -92,9 +92,23 @@ export default function FacilitiesWorkOrdersPage() {
         priority: createForm.priority,
         workOrderType: createForm.workOrderType,
         scheduledDate: createForm.scheduledDate || undefined,
-        vendorId: createForm.assignedVendor || undefined,
       });
-      setWorkOrders((prev) => [result, ...prev]);
+      setWorkOrders((prev) => [
+        {
+          id: result.id,
+          work_order_number: result.workOrderNumber,
+          priority: result.priority,
+          title: result.title,
+          status: result.status,
+          work_order_type: result.workOrderType,
+          description: result.description,
+          assigned_to: result.assignedTo,
+          assigned_vendor: null,
+          scheduled_date: result.scheduledDate?.toISOString() ?? null,
+          reported_at: result.createdAt?.toISOString() ?? new Date().toISOString(),
+        },
+        ...prev,
+      ]);
       setShowCreateDialog(false);
       setCreateForm({
         title: "",

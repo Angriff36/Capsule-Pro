@@ -10,7 +10,7 @@ export function SalesDashboardSkeleton() {
   return (
     <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
       <div className="space-y-1">
-        <h1 className="text-3xl font-bold tracking-tight">Sales Dashboard</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Sales Dashboard</h1>
         <p className="text-muted-foreground">
           Upload a workbook to explore weekly, monthly, quarterly, and annual
           sales performance.

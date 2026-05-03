@@ -340,7 +340,7 @@ export default function ApprovalsPage() {
     <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
       <div className="flex items-center justify-between">
         <div className="space-y-0.5">
-          <h1 className="text-3xl font-bold tracking-tight">Approvals</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">Approvals</h1>
           <p className="text-muted-foreground">
             Review and approve purchase orders before they're sent to vendors.
           </p>
@@ -441,7 +441,7 @@ export default function ApprovalsPage() {
 
                 return (
                   <Card
-                    className="hover:shadow-sm transition-shadow"
+                    className="hover:border-primary/40 transition-shadow"
                     key={order.id}
                   >
                     <CardContent className="p-4">

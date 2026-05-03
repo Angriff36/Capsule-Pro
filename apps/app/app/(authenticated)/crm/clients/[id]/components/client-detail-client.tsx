@@ -188,7 +188,7 @@ export function ClientDetailClient({ client }: ClientDetailProps) {
           </Button>
           <div className="flex-1">
             <div className="flex items-center gap-3">
-              <h1 className="text-3xl font-bold tracking-tight">
+              <h1 className="text-2xl font-semibold tracking-tight">
                 {getClientDisplayName()}
               </h1>
               <Badge variant="outline">{client.clientType}</Badge>

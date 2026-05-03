@@ -54,9 +54,9 @@ const PayrollLayout = ({ children }: PayrollLayoutProperties) => {
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
       <div className="flex items-center justify-between space-y-2">
-        <h2 className="text-3xl font-bold tracking-tight">Payroll</h2>
+        <h2 className="text-2xl font-semibold tracking-tight">Payroll</h2>
       </div>
-      <nav className="flex space-x-1 border-b">
+      <nav className="flex gap-1 overflow-x-auto pb-1">
         {navigationItems.map((item) => {
           const isActive =
             pathname === item.href ||
@@ -64,10 +64,10 @@ const PayrollLayout = ({ children }: PayrollLayoutProperties) => {
           return (
             <Link
               className={cn(
-                "inline-flex items-center px-1 py-4 text-sm font-medium transition-colors",
+                "inline-flex items-center rounded-full px-4 py-1.5 text-sm font-medium transition-colors whitespace-nowrap",
                 isActive
-                  ? "border-b-2 border-primary text-foreground"
-                  : "text-muted-foreground hover:text-foreground"
+                  ? "bg-ink text-white"
+                  : "text-muted-foreground hover:bg-accent hover:text-foreground"
               )}
               href={item.href}
               key={item.href}

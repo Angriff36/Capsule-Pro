@@ -126,7 +126,7 @@ export default function VenuePage() {
             </Link>
           </Button>
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">
+            <h1 className="text-2xl font-semibold tracking-tight">
               Venue Not Found
             </h1>
           </div>
@@ -158,7 +158,7 @@ export default function VenuePage() {
           </Button>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-3xl font-bold tracking-tight">
+              <h1 className="text-2xl font-semibold tracking-tight">
                 {venue.name}
               </h1>
               <Badge variant={venue.isActive ? "default" : "secondary"}>

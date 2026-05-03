@@ -178,7 +178,7 @@ export default function VendorsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="space-y-0.5">
-          <h1 className="text-3xl font-bold tracking-tight">Vendors</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">Vendors</h1>
           <p className="text-muted-foreground">
             Manage suppliers and vendor relationships.
           </p>
@@ -469,7 +469,7 @@ export default function VendorsPage() {
       ) : (
         <div className="space-y-3">
           {filtered.map((vendor) => (
-            <Card className="hover:shadow-sm transition-shadow" key={vendor.id}>
+            <Card className="hover:border-primary/40 transition-shadow" key={vendor.id}>
               <CardContent className="p-4">
                 <div className="flex items-center gap-4">
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 text-blue-700">

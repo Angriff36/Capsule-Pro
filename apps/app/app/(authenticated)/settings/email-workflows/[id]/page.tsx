@@ -183,7 +183,7 @@ export default function EditEmailWorkflowPage({
             Back
           </Button>
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Edit Workflow</h1>
+            <h1 className="text-2xl font-semibold tracking-tight">Edit Workflow</h1>
             <p className="text-muted-foreground mt-1">{name}</p>
           </div>
         </div>

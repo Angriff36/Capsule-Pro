@@ -141,8 +141,8 @@ export default function NewPOPage() {
       // Use the server action for creation
       await createPurchaseOrder({
         vendorId: form.vendorId,
-        expectedDeliveryDate: form.expectedDeliveryDate || undefined,
-        notes: form.notes || undefined,
+        expectedDeliveryDate: form.expectedDeliveryDate || null,
+        notes: form.notes || null,
         items: lineItems.map((li) => ({
           itemId: li.itemId,
           quantityOrdered: li.quantityOrdered,
@@ -185,7 +185,7 @@ export default function NewPOPage() {
         </div>
       </div>
 
-      <form action={createPurchaseOrder} onSubmit={handleCreate}>
+      <form onSubmit={handleCreate}>
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
           {/* Main form */}
           <div className="space-y-6">

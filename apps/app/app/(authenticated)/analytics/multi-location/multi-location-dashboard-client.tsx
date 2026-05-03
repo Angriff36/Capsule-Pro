@@ -268,7 +268,7 @@ function MultiLocationDashboardClient({
       {/* Header */}
       <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <div className="space-y-0.5">
-          <h1 className="text-3xl font-bold tracking-tight">
+          <h1 className="text-2xl font-semibold tracking-tight">
             Multi-Location Executive Dashboard
           </h1>
           <p className="text-muted-foreground">

@@ -244,7 +244,7 @@ export default function ReceivingPage() {
       {/* Page Header */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div className="space-y-0.5">
-          <h1 className="text-3xl font-bold tracking-tight">
+          <h1 className="text-2xl font-semibold tracking-tight">
             Warehouse Receiving
           </h1>
           <p className="text-muted-foreground">

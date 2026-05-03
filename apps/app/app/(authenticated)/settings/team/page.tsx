@@ -50,7 +50,7 @@ const SettingsTeamPage = async () => {
   return (
     <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
       <div className="space-y-0.5">
-        <h1 className="text-3xl font-bold tracking-tight">Team</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Team</h1>
         <p className="text-muted-foreground">
           Manage who has access to this workspace and their roles.
         </p>

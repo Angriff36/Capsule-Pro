@@ -40,7 +40,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
-import { createFacilityAsset } from "../../actions";
+import { createFacilityAsset } from "../actions";
 import { FacilitiesNavigation } from "../components/facilities-navigation";
 
 interface Asset {
@@ -315,7 +315,7 @@ export default function AssetsPage() {
       <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
         <div className="flex items-center justify-between">
           <div className="space-y-0.5">
-            <h1 className="text-3xl font-bold tracking-tight">Assets</h1>
+            <h1 className="text-2xl font-semibold tracking-tight">Assets</h1>
             <p className="text-muted-foreground">
               Track equipment, warranty status, and maintenance needs.
             </p>
@@ -398,7 +398,7 @@ export default function AssetsPage() {
                   new Date(Date.now() + 90 * 86_400_000);
               return (
                 <Card
-                  className="hover:shadow-sm transition-shadow"
+                  className="hover:border-primary/40 transition-shadow"
                   key={asset.id}
                 >
                   <CardContent className="p-4">

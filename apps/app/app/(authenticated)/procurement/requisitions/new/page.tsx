@@ -64,7 +64,7 @@ export default function NewRequisitionPage() {
   const [justification, setJustification] = useState("");
   const [requiredBy, setRequiredBy] = useState("");
   const [department, setDepartment] = useState("");
-  const [priority, setPriority] = useState("normal");
+  const [priority, setPriority] = useState<"low" | "normal" | "high" | "urgent" | "critical">("normal");
   const [notes, setNotes] = useState("");
   const [lineItems, setLineItems] = useState<LineItem[]>([]);
 
@@ -142,11 +142,11 @@ export default function NewRequisitionPage() {
     setCreating(true);
     try {
       await createPurchaseRequisition({
-        requiredBy: requiredBy || undefined,
-        department: department || undefined,
-        justification: justification || undefined,
+        requiredBy: requiredBy || null,
+        department: department || null,
+        justification: justification || null,
         priority,
-        notes: notes || undefined,
+        notes: notes || null,
         items: lineItems.map((li) => ({
           itemId: li.itemId,
           itemName: li.itemName,
@@ -207,7 +207,7 @@ export default function NewRequisitionPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="priority">Priority</Label>
-                    <Select onValueChange={setPriority} value={priority}>
+                    <Select onValueChange={(v) => setPriority(v as "low" | "normal" | "high" | "urgent" | "critical")} value={priority}>
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>

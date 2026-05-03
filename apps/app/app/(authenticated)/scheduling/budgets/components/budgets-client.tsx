@@ -198,7 +198,7 @@ export function BudgetsClient() {
       <div className="space-y-0.5">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Labor Budgets</h1>
+            <h1 className="text-2xl font-semibold tracking-tight">Labor Budgets</h1>
             <p className="text-muted-foreground">
               Manage and track labor budgets for your organization
             </p>

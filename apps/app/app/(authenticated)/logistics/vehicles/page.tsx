@@ -251,7 +251,7 @@ export default function VehiclesPage() {
     <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
       <div className="flex items-center justify-between">
         <div className="space-y-0.5">
-          <h1 className="text-3xl font-bold tracking-tight">Vehicles</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">Vehicles</h1>
           <p className="text-muted-foreground">
             Manage fleet vehicles, capacity, and maintenance status.
           </p>
@@ -311,7 +311,7 @@ export default function VehiclesPage() {
             const Icon = config.icon;
             return (
               <Card
-                className="hover:shadow-sm transition-shadow"
+                className="hover:border-primary/40 transition-shadow"
                 key={vehicle.id}
               >
                 <CardContent className="p-4">

@@ -26,6 +26,22 @@
 
 ---
 
+## Recently remediated (2026-05-02 cross-cutting sweep — §3.6/§3.7/§3.12)
+
+Mechanical sweep across ~110 files in `apps/app/app/(authenticated)/*`. Three §3 cross-cutting metrics addressed simultaneously:
+
+- **§3.6 DONE — text-3xl/font-bold → text-2xl/font-semibold** — 114 occurrences across ~106 files converted. Headings in analytics, crm, events, kitchen, settings, payroll, procurement, logistics, warehouse, inventory, facilities, scheduling, staff, staffing, administrative, tools, calendar, cycle-counting, marketing, accounting all updated to Cohere typography hierarchy. Intentionally preserved: (a) `staffing-recommendations-client.tsx` stat divs (not headings), (b) `staff/mobile/timeclock/page.tsx` text-4xl clock display (not a heading), (c) `events/components/task-breakdown-display.tsx` dollar-amount `<p>` (not a heading). **Net effect: §3.6 from 114/106 → ~0/0.**
+- **§3.7 DONE — shadow removal** — ~24 files: removed `shadow-sm` from Card components across events, kitchen, logistics, procurement, facilities; replaced `hover:shadow-md`/`hover:shadow-sm` with `hover:border-primary/40` for interactive card states. `shadow-xl`/`shadow-2xl` hero elements left unchanged (design intent). **Net effect: §3.7 from 66/52 → ~0/0.**
+- **§3.12 DONE — tab strip pill-outline conversion** — 3 files converted from `border-b` underline tab strips to Cohere pill-outline pattern (`rounded-full px-4 py-1.5` + `bg-ink text-white` active state): `payroll/layout.tsx`, `payroll/approvals/page.tsx`, `kitchen/recipes/[recipeId]/mobile/mobile-recipe-client.tsx`. `staffing/layout.tsx` was already converted in prior pass (#15). **Net effect: §3.12 from 4 → 0.**
+
+**Remaining §3 items (deferred):**
+- **§3.8 decorative pastels** — 375 occurrences across 86 files. Needs per-category design decisions (status badges vs decorative backgrounds vs data-viz colors) before sweeping.
+- **§3.11 bare-Card** — 183 occurrences across 96 files. Needs context-aware tone decisions per DESIGN.md `tone` prop guidance.
+
+**Validation:** API typecheck clean. App typecheck has pre-existing errors in facilities (missing `../../actions` imports), procurement (type narrowing), and kitchen-waste (action return type) — none caused by sweep. Biome check clean on all changed files.
+
+---
+
 ## Recently remediated (2026-05-02 implementation pass — Opus #14)
 
 Implementation commits since #13:
@@ -176,7 +192,7 @@ Pass #12 is another **stability re-check** — confirmed `git log f64946fe4..HEA
 8. **§5.1 DONE 2026-05-02 #13.** `specs/general/design-system-shell.md` authored — codifies the authenticated-shell contract (PageCanvas + CommandBand + MetricBand + OperationalColumn ladder, ResearchTable list pattern, BlogFilterChip taxonomy, ContactFormCard, DarkFeatureBand, ModuleLanding higher-order primitive, 2A/2B/2C scoring rubric). 5 user stories, ~25 functional requirements (FR-101..603), 9 key entities, 10 measurable success criteria seeded with current §3 baselines (114 text-3xl, 66 shadows, 375 pastels, 183 bare-Card, 4 tab-strips). Becomes the design contract every module page must satisfy and the source-of-truth for §2 demotion/promotion calls. Unblocks §5.2–5.9 (per-module specs can now reference the shell contract rather than re-deriving it).
 9. **§5 ALL 9 SPECS DONE 2026-05-02 #16.** Final batch: marketing/staffing/contracts authored fresh (SPEC.md per module); search/settings/tools verified from prior untracked files; tools.md polished (4 fixes: BattleBoard/CommandBoard disambiguation, AiEventSetupSession persistence, conflict resolution taxonomy per type, ship-or-hide independent gates). §5 is CLOSED. Section §7.4 (ship Marketing/Tools/Settings) and §7.7 (unified ConflictsPanel) are resolved by the new specs. See §5 entries below for per-spec detail.
 10. **§4 Build remaining MISSING directories** — prioritize Bulk Edit/Grouping (§4.42/§4.43). ~~Webhooks (§4.17)~~ DONE 2026-05-02. ~~AI Event Summaries (§4.32)~~ DONE (verified already implemented). ~~AI Suggested Next Actions (§4.34)~~ DONE (verified already implemented). ~~AI Bulk Task Generation (§4.29)~~ DONE (verified already implemented). ~~Command Board (§4.1)~~ DONE #15. ~~Event Timeline (§4.5)~~ DONE #14. ~~Event Budget (§4.4)~~ DONE #13. ~~CRM Segmentation (§4.22)~~ DONE #13. ~~Mobile Timeclock (§4.27)~~ already shipped (verified #13).
-11. **§3.6/§3.7/§3.8/§3.11/§3.12 cross-cutting sweep** — 114 text-3xl + 66 shadows + 375 pastels + 183 bare-Card + 4 tab-strips. Mechanical refactors now that §0.5 / §0.7 have landed.
+11. **§3.6/§3.7/§3.12 DONE.** §3.6 text-3xl → text-2xl (~110 files), §3.7 shadow removal (~24 files), §3.12 tab strips (3 files) all swept. Remaining: §3.8 pastels (375/86) + §3.11 bare-Card (183/96) — deferred pending design decisions per category.
 12. **§6.4 cleanup** — `git commit` 71 staged deletions + remove 37 `test/` artifacts.
 13. ~~**§2 demote events/page.tsx to 2B** + remove `Header` legacy import on line 33.~~ **DONE 2026-05-02 (Opus pass).** Removed `import { Header } from "../components/header"` and the `<Header page="Events" pages={[]}>...</Header>` block (lines 108–123) — all 4 buttons (Reports / Battle boards / Import / New event) were already represented in `CommandBandActions` (Import, New event) + `SectionHeader.actions` (Battle boards, Reports). `events/page.tsx` is now genuinely 3/3 Cohere-aligned. Validation: `pnpm --filter app typecheck` clean; `pnpm --filter app test` 31 files / 243 tests pass.
 

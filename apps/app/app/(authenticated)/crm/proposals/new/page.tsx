@@ -87,7 +87,7 @@ export default function NewProposalPage() {
           </Link>
         </Button>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">New Proposal</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">New Proposal</h1>
           <p className="text-muted-foreground">
             Create a new event proposal for a client
           </p>

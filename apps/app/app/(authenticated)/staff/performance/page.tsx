@@ -311,7 +311,7 @@ export default function PerformancePageClient() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="space-y-0.5">
-          <h1 className="text-3xl font-bold tracking-tight">Performance</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">Performance</h1>
           <p className="text-muted-foreground">
             Track reviews, ratings, goals, and staff development.
           </p>
