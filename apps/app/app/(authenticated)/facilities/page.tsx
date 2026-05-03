@@ -52,17 +52,6 @@ import {
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
-import {
-  CommandBand,
-  CommandBandActions,
-  CommandBandHeader,
-  CommandBandLede,
-  DisplayHeading,
-  MonoLabel,
-  OperationalColumn,
-  PageCanvas,
-  SectionHeader,
-} from "@repo/design-system/components/blocks/page-shell";
 import { createFacility, getFacilities } from "./actions";
 import { UpcomingMaintenanceWidget } from "./components/upcoming-maintenance-widget";
 
@@ -70,11 +59,11 @@ interface Facility {
   id: string;
   name: string;
   code: string | null;
-  facility_type: string;
-  address_line1: string | null;
+  facilityType: string;
+  addressLine1: string | null;
   city: string | null;
   state: string | null;
-  postal_code: string | null;
+  postalCode: string | null;
   phone: string | null;
   status: string;
   notes: string | null;
@@ -239,24 +228,24 @@ export default function FacilitiesPage() {
                       <div className="mb-1 flex flex-wrap items-center gap-2">
                         <span className="font-semibold">{facility.name}</span>
                         <Badge variant="outline">
-                          {FACILITY_TYPE_LABELS[facility.facility_type] ||
-                            facility.facility_type}
+                          {FACILITY_TYPE_LABELS[facility.facilityType] ||
+                            facility.facilityType}
                         </Badge>
                         {facility.code ? (
                           <Badge variant="secondary">{facility.code}</Badge>
                         ) : null}
                       </div>
                       <div className="space-y-0.5 text-sm text-muted-foreground">
-                        {facility.address_line1 ? (
-                          <div>{facility.address_line1}</div>
+                        {facility.addressLine1 ? (
+                          <div>{facility.addressLine1}</div>
                         ) : null}
                         {facility.city || facility.state ? (
                           <div>
                             {[facility.city, facility.state]
                               .filter(Boolean)
                               .join(", ")}
-                            {facility.postal_code
-                              ? ` ${facility.postal_code}`
+                            {facility.postalCode
+                              ? ` ${facility.postalCode}`
                               : ""}
                           </div>
                         ) : null}

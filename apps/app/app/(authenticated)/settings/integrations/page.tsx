@@ -36,6 +36,10 @@ import {
 import {
   AlertCircle,
   CheckCircle,
+  ChevronDown,
+  ChevronUp,
+  Download,
+  FileSpreadsheet,
   Loader2,
   RefreshCw,
   Settings,
@@ -1541,6 +1545,531 @@ function NowstaIntegration() {
 }
 
 // ---------------------------------------------------------------------------
+// QuickBooks Integration
+// ---------------------------------------------------------------------------
+
+interface ExportResult {
+  filename: string;
+  format: string;
+  recordCount: number;
+  totalAmount: number;
+  fileUrl: string;
+}
+
+interface ExportHistoryEntry {
+  id: string;
+  type: string;
+  format: string;
+  recordCount: number;
+  totalAmount: number;
+  filename: string;
+  exportedAt: string;
+}
+
+function ExportSection({
+  title,
+  description,
+  children,
+  open,
+  onToggle,
+}: {
+  title: string;
+  description: string;
+  children: React.ReactNode;
+  open: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <Card>
+      <CardHeader
+        className="cursor-pointer select-none"
+        onClick={onToggle}
+      >
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="flex items-center gap-2">
+              <FileSpreadsheet className="h-5 w-5" />
+              {title}
+            </CardTitle>
+            <CardDescription>{description}</CardDescription>
+          </div>
+          {open ? (
+            <ChevronUp className="h-5 w-5 text-muted-foreground" />
+          ) : (
+            <ChevronDown className="h-5 w-5 text-muted-foreground" />
+          )}
+        </div>
+      </CardHeader>
+      {open && <CardContent>{children}</CardContent>}
+    </Card>
+  );
+}
+
+function QuickBooksIntegration() {
+  const [billsOpen, setBillsOpen] = useState(false);
+  const [invoicesOpen, setInvoicesOpen] = useState(false);
+  const [payrollOpen, setPayrollOpen] = useState(false);
+
+  // Bills state
+  const [billsStartDate, setBillsStartDate] = useState("");
+  const [billsEndDate, setBillsEndDate] = useState("");
+  const [billsFormat, setBillsFormat] = useState("qbOnlineCsv");
+  const [billsExporting, setBillsExporting] = useState(false);
+
+  // Invoices state
+  const [invoicesStartDate, setInvoicesStartDate] = useState("");
+  const [invoicesEndDate, setInvoicesEndDate] = useState("");
+  const [invoicesFormat, setInvoicesFormat] = useState("qbOnlineCsv");
+  const [invoicesExporting, setInvoicesExporting] = useState(false);
+
+  // Payroll state
+  const [payrollPeriodId, setPayrollPeriodId] = useState("");
+  const [payrollFormat, setPayrollFormat] = useState("qbOnlineCsv");
+  const [payrollExporting, setPayrollExporting] = useState(false);
+
+  // Results
+  const [lastResult, setLastResult] = useState<ExportResult | null>(null);
+  const [history, setHistory] = useState<ExportHistoryEntry[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+
+  const loadHistory = useCallback(async () => {
+    setHistoryLoading(true);
+    try {
+      const res = await apiFetch("/api/integrations/quickbooks/history");
+      if (res.ok) {
+        const data = await res.json();
+        setHistory(data.exports ?? []);
+      }
+    } catch {
+      // Silently fail — history is supplementary
+    } finally {
+      setHistoryLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadHistory();
+  }, [loadHistory]);
+
+  const handleExport = useCallback(
+    async (
+      endpoint: string,
+      body: Record<string, unknown>,
+      setExporting: (v: boolean) => void,
+    ) => {
+      setExporting(true);
+      try {
+        const res = await apiFetch(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+
+        const data = await res.json();
+        if (!res.ok) {
+          toast.error("Export failed", {
+            description: data.error || "Unknown error",
+          });
+          return;
+        }
+
+        const result: ExportResult = {
+          filename: data.filename || "export.csv",
+          format: data.format || body.format || "qbOnlineCsv",
+          recordCount: data.recordCount ?? 0,
+          totalAmount: data.totalAmount ?? 0,
+          fileUrl: data.fileUrl || "",
+        };
+
+        setLastResult(result);
+        toast.success("Export completed", {
+          description: `${result.recordCount} records exported`,
+        });
+
+        // Trigger download
+        if (result.fileUrl) {
+          const link = document.createElement("a");
+          link.href = result.fileUrl;
+          link.download = result.filename;
+          link.click();
+        }
+
+        loadHistory();
+      } catch {
+        toast.error("Export failed");
+      } finally {
+        setExporting(false);
+      }
+    },
+    [loadHistory],
+  );
+
+  const handleBillsExport = useCallback(() => {
+    if (!billsStartDate || !billsEndDate) {
+      toast.error("Start date and end date are required");
+      return;
+    }
+    handleExport(
+      "/api/inventory/purchase-orders/export/quickbooks",
+      {
+        startDate: billsStartDate,
+        endDate: billsEndDate,
+        format: billsFormat,
+      },
+      setBillsExporting,
+    );
+  }, [billsStartDate, billsEndDate, billsFormat, handleExport]);
+
+  const handleInvoicesExport = useCallback(() => {
+    if (!invoicesStartDate || !invoicesEndDate) {
+      toast.error("Start date and end date are required");
+      return;
+    }
+    handleExport(
+      "/api/events/export/quickbooks",
+      {
+        startDate: invoicesStartDate,
+        endDate: invoicesEndDate,
+        format: invoicesFormat,
+      },
+      setInvoicesExporting,
+    );
+  }, [invoicesStartDate, invoicesEndDate, invoicesFormat, handleExport]);
+
+  const handlePayrollExport = useCallback(() => {
+    if (!payrollPeriodId.trim()) {
+      toast.error("Period ID is required");
+      return;
+    }
+    handleExport(
+      "/api/payroll/export/quickbooks",
+      { periodId: payrollPeriodId.trim(), format: payrollFormat },
+      setPayrollExporting,
+    );
+  }, [payrollPeriodId, payrollFormat, handleExport]);
+
+  const handleRedownload = useCallback(() => {
+    if (!lastResult?.fileUrl) {
+      return;
+    }
+    const link = document.createElement("a");
+    link.href = lastResult.fileUrl;
+    link.download = lastResult.filename;
+    link.click();
+  }, [lastResult]);
+
+  const formatLabel = (fmt: string) => {
+    if (fmt === "iif") return "IIF (QuickBooks Desktop)";
+    return "CSV (QuickBooks Online)";
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Status card */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <FileSpreadsheet className="h-5 w-5" />
+            QuickBooks File Export
+          </CardTitle>
+          <CardDescription>
+            Export bills, invoices, and payroll data as CSV or IIF files for
+            import into QuickBooks Desktop or QuickBooks Online. This is an
+            export-only integration — no live connection or sync is required.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-3 sm:grid-cols-3">
+            <div className="rounded-md border p-3">
+              <p className="text-sm font-medium">Bills (POs)</p>
+              <p className="text-xs text-muted-foreground">
+                Export purchase orders
+              </p>
+            </div>
+            <div className="rounded-md border p-3">
+              <p className="text-sm font-medium">Invoices</p>
+              <p className="text-xs text-muted-foreground">Export event invoices</p>
+            </div>
+            <div className="rounded-md border p-3">
+              <p className="text-sm font-medium">Payroll</p>
+              <p className="text-xs text-muted-foreground">
+                Export payroll periods
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Bills export */}
+      <ExportSection
+        description="Export purchase orders as bills for QuickBooks"
+        onToggle={() => setBillsOpen((v) => !v)}
+        open={billsOpen}
+        title="Bills (Purchase Orders)"
+      >
+        <div className="space-y-4">
+          <div className="grid gap-4 sm:grid-cols-3">
+            <div className="space-y-2">
+              <Label htmlFor="qb-bills-start">Start Date</Label>
+              <Input
+                id="qb-bills-start"
+                onChange={(e) => setBillsStartDate(e.target.value)}
+                type="date"
+                value={billsStartDate}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="qb-bills-end">End Date</Label>
+              <Input
+                id="qb-bills-end"
+                onChange={(e) => setBillsEndDate(e.target.value)}
+                type="date"
+                value={billsEndDate}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="qb-bills-format">Format</Label>
+              <Select
+                onValueChange={setBillsFormat}
+                value={billsFormat}
+              >
+                <SelectTrigger id="qb-bills-format">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="qbOnlineCsv">
+                    CSV (QuickBooks Online)
+                  </SelectItem>
+                  <SelectItem value="iif">
+                    IIF (QuickBooks Desktop)
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <Button disabled={billsExporting} onClick={handleBillsExport}>
+            {billsExporting ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <Download className="mr-2 h-4 w-4" />
+            )}
+            Export Bills
+          </Button>
+        </div>
+      </ExportSection>
+
+      {/* Invoices export */}
+      <ExportSection
+        description="Export event invoices for QuickBooks"
+        onToggle={() => setInvoicesOpen((v) => !v)}
+        open={invoicesOpen}
+        title="Invoices (Events)"
+      >
+        <div className="space-y-4">
+          <div className="grid gap-4 sm:grid-cols-3">
+            <div className="space-y-2">
+              <Label htmlFor="qb-inv-start">Start Date</Label>
+              <Input
+                id="qb-inv-start"
+                onChange={(e) => setInvoicesStartDate(e.target.value)}
+                type="date"
+                value={invoicesStartDate}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="qb-inv-end">End Date</Label>
+              <Input
+                id="qb-inv-end"
+                onChange={(e) => setInvoicesEndDate(e.target.value)}
+                type="date"
+                value={invoicesEndDate}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="qb-inv-format">Format</Label>
+              <Select
+                onValueChange={setInvoicesFormat}
+                value={invoicesFormat}
+              >
+                <SelectTrigger id="qb-inv-format">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="qbOnlineCsv">
+                    CSV (QuickBooks Online)
+                  </SelectItem>
+                  <SelectItem value="iif">
+                    IIF (QuickBooks Desktop)
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <Button disabled={invoicesExporting} onClick={handleInvoicesExport}>
+            {invoicesExporting ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <Download className="mr-2 h-4 w-4" />
+            )}
+            Export Invoices
+          </Button>
+        </div>
+      </ExportSection>
+
+      {/* Payroll export */}
+      <ExportSection
+        description="Export payroll data for QuickBooks"
+        onToggle={() => setPayrollOpen((v) => !v)}
+        open={payrollOpen}
+        title="Payroll"
+      >
+        <div className="space-y-4">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="qb-pr-period">Period ID</Label>
+              <Input
+                id="qb-pr-period"
+                onChange={(e) => setPayrollPeriodId(e.target.value)}
+                placeholder="Enter payroll period ID"
+                value={payrollPeriodId}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="qb-pr-format">Format</Label>
+              <Select
+                onValueChange={setPayrollFormat}
+                value={payrollFormat}
+              >
+                <SelectTrigger id="qb-pr-format">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="qbOnlineCsv">
+                    CSV (QuickBooks Online)
+                  </SelectItem>
+                  <SelectItem value="qbxml">QBXML (QuickBooks Desktop)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <Button disabled={payrollExporting} onClick={handlePayrollExport}>
+            {payrollExporting ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <Download className="mr-2 h-4 w-4" />
+            )}
+            Export Payroll
+          </Button>
+        </div>
+      </ExportSection>
+
+      {/* Last export result */}
+      {lastResult && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <CheckCircle className="h-5 w-5 text-green-600" />
+              Last Export Result
+            </CardTitle>
+            <CardDescription>
+              Your most recent QuickBooks export
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="space-y-1">
+                <p className="text-sm text-muted-foreground">Filename</p>
+                <p className="text-sm font-medium">{lastResult.filename}</p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-sm text-muted-foreground">Format</p>
+                <p className="text-sm font-medium">
+                  {formatLabel(lastResult.format)}
+                </p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-sm text-muted-foreground">Records</p>
+                <p className="text-sm font-medium">{lastResult.recordCount}</p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-sm text-muted-foreground">Total Amount</p>
+                <p className="text-sm font-medium">
+                  ${lastResult.totalAmount.toLocaleString()}
+                </p>
+              </div>
+            </div>
+            <div className="mt-4">
+              <Button onClick={handleRedownload} size="sm" variant="outline">
+                <Download className="mr-2 h-4 w-4" />
+                Download Again
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Export history */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <RefreshCw className="h-5 w-5" />
+            Export History
+          </CardTitle>
+          <CardDescription>Recent QuickBooks file exports</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {historyLoading ? (
+            <div className="flex items-center justify-center py-6">
+              <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+            </div>
+          ) : history.length === 0 ? (
+            <p className="py-6 text-center text-sm text-muted-foreground">
+              No exports yet. Use the sections above to generate your first
+              export.
+            </p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b text-left text-muted-foreground">
+                    <th className="pb-2 pr-4 font-medium">Type</th>
+                    <th className="pb-2 pr-4 font-medium">Format</th>
+                    <th className="pb-2 pr-4 font-medium">Records</th>
+                    <th className="pb-2 pr-4 font-medium">Amount</th>
+                    <th className="pb-2 pr-4 font-medium">Filename</th>
+                    <th className="pb-2 font-medium">Exported</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {history.map((entry) => (
+                    <tr className="border-b last:border-0" key={entry.id}>
+                      <td className="py-2 pr-4">{entry.type}</td>
+                      <td className="py-2 pr-4">
+                        <Badge variant="secondary">
+                          {formatLabel(entry.format)}
+                        </Badge>
+                      </td>
+                      <td className="py-2 pr-4">{entry.recordCount}</td>
+                      <td className="py-2 pr-4">
+                        ${entry.totalAmount.toLocaleString()}
+                      </td>
+                      <td className="py-2 pr-4 font-mono text-xs">
+                        {entry.filename}
+                      </td>
+                      <td className="py-2">{formatDate(entry.exportedAt)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Page
 // ---------------------------------------------------------------------------
 
@@ -1558,12 +2087,16 @@ export default function IntegrationsSettingsPage() {
         <TabsList>
           <TabsTrigger value="goodshuffle">GoodShuffle</TabsTrigger>
           <TabsTrigger value="nowsta">Nowsta</TabsTrigger>
+          <TabsTrigger value="quickbooks">QuickBooks</TabsTrigger>
         </TabsList>
         <TabsContent value="goodshuffle">
           <GoodShuffleIntegration />
         </TabsContent>
         <TabsContent value="nowsta">
           <NowstaIntegration />
+        </TabsContent>
+        <TabsContent value="quickbooks">
+          <QuickBooksIntegration />
         </TabsContent>
       </Tabs>
     </div>

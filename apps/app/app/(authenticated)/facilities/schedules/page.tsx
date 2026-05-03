@@ -65,26 +65,29 @@ import { FacilitiesNavigation } from "../components/facilities-navigation";
 
 interface Schedule {
   id: string;
-  schedule_number: string;
-  area_id: string | null;
-  equipment_id: string | null;
+  scheduleNumber: string;
+  areaId: string | null;
+  equipmentId: string | null;
   title: string;
   description: string | null;
   frequency: string;
-  interval_days: number;
-  last_completed_at: string | null;
-  next_due_at: string;
-  assigned_to: string | null;
-  estimated_hours: number | null;
-  estimated_cost: number | null;
+  intervalDays: number;
+  lastCompletedAt: Date | null;
+  nextDueAt: Date;
+  assignedTo: string | null;
+  estimatedHours: { toNumber(): number } | null;
+  estimatedCost: { toNumber(): number } | null;
   status: string;
-  created_at: string;
+  createdAt: Date;
+  tenantId: string;
+  updatedAt: Date;
+  deletedAt: Date | null;
 }
 
 interface Asset {
   id: string;
   name: string;
-  asset_type: string;
+  assetType: string;
   status: string;
 }
 
@@ -187,7 +190,7 @@ export default function SchedulesPage() {
 
   const now = new Date();
   const overdueCount = schedules.filter(
-    (s) => new Date(s.next_due_at) < now
+    (s) => new Date(s.nextDueAt) < now
   ).length;
 
   // Calendar logic
@@ -200,7 +203,7 @@ export default function SchedulesPage() {
   }, [currentMonth]);
 
   const getSchedulesForDay = (day: Date) => {
-    return schedules.filter((s) => isSameDay(new Date(s.next_due_at), day));
+    return schedules.filter((s) => isSameDay(new Date(s.nextDueAt), day));
   };
 
   const selectedDaySchedules = selectedDate
@@ -320,7 +323,7 @@ export default function SchedulesPage() {
                     const isSelected =
                       selectedDate && isSameDay(day, selectedDate);
                     const hasOverdue = daySchedules.some(
-                      (s) => new Date(s.next_due_at) < now
+                      (s) => new Date(s.nextDueAt) < now
                     );
 
                     return (
@@ -384,7 +387,7 @@ export default function SchedulesPage() {
                 ) : selectedDate ? (
                   <div className="space-y-2">
                     {selectedDaySchedules.map((s) => {
-                      const isOverdue = new Date(s.next_due_at) < now;
+                      const isOverdue = new Date(s.nextDueAt) < now;
                       return (
                         <div
                           className={`p-2 rounded border ${isOverdue ? "border-red-300 bg-red-50" : "border-gray-200"}`}
@@ -437,9 +440,9 @@ export default function SchedulesPage() {
         ) : (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {schedules.map((schedule) => {
-              const isOverdue = new Date(schedule.next_due_at) < now;
-              const linkedAsset = schedule.equipment_id
-                ? assets.find((a) => a.id === schedule.equipment_id)
+              const isOverdue = new Date(schedule.nextDueAt) < now;
+              const linkedAsset = schedule.equipmentId
+                ? assets.find((a) => a.id === schedule.equipmentId)
                 : null;
               return (
                 <Card
@@ -456,7 +459,7 @@ export default function SchedulesPage() {
                       )}
                     </div>
                     <div className="font-mono text-xs text-muted-foreground">
-                      {schedule.schedule_number}
+                      {schedule.scheduleNumber}
                     </div>
                   </CardHeader>
                   <CardContent>
@@ -478,7 +481,7 @@ export default function SchedulesPage() {
                         <span
                           className={`text-sm ${isOverdue ? "text-red-600 font-medium" : ""}`}
                         >
-                          {new Date(schedule.next_due_at).toLocaleDateString()}
+                          {new Date(schedule.nextDueAt).toLocaleDateString()}
                         </span>
                       </div>
                       {linkedAsset && (
@@ -491,23 +494,23 @@ export default function SchedulesPage() {
                           </span>
                         </div>
                       )}
-                      {schedule.estimated_hours && (
+                      {schedule.estimatedHours && (
                         <div className="flex items-center justify-between">
                           <span className="text-sm text-muted-foreground">
                             Est. Hours
                           </span>
                           <span className="text-sm">
-                            {schedule.estimated_hours}h
+                            {schedule.estimatedHours?.toNumber()}h
                           </span>
                         </div>
                       )}
-                      {schedule.estimated_cost && (
+                      {schedule.estimatedCost && (
                         <div className="flex items-center justify-between">
                           <span className="text-sm text-muted-foreground">
                             Est. Cost
                           </span>
                           <span className="text-sm">
-                            ${Number(schedule.estimated_cost).toFixed(2)}
+                            ${schedule.estimatedCost?.toNumber().toFixed(2)}
                           </span>
                         </div>
                       )}
