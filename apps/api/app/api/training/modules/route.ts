@@ -224,24 +224,65 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Step 2: Persist via createInstance -> TrainingModulePrismaStore
-    const created = await runtime.createInstance("TrainingModule", {
-      tenantId,
-      ...commandPayload,
-    });
+    // Step 2: Persist directly to tenant_staff.training_modules.
+    // createInstance() writes to the generic PrismaJsonStore (JSON blob),
+    // but the GET handler queries tenant_staff.training_modules directly.
+    // TrainingModule is NOT in ENTITIES_WITH_SPECIFIC_STORES, so we must
+    // use raw SQL INSERT to match the GET handler's storage.
+    const moduleId = crypto.randomUUID();
 
-    if (!created) {
+    const createdModule = await database.$queryRaw<
+      Array<{
+        id: string;
+        tenant_id: string;
+        title: string;
+        description: string | null;
+        content_type: string;
+        duration_minutes: number | null;
+        category: string | null;
+        is_required: boolean;
+        is_active: boolean;
+        content_url: string | null;
+        created_by: string | null;
+        created_at: Date;
+        updated_at: Date;
+      }>
+    >(
+      Prisma.sql`
+        INSERT INTO tenant_staff.training_modules (
+          id, tenant_id, title, description, content_type,
+          duration_minutes, category, is_required, is_active,
+          content_url, created_by
+        )
+        VALUES (
+          ${moduleId}::uuid,
+          ${tenantId}::uuid,
+          ${commandPayload.title || ""},
+          ${commandPayload.description || null},
+          ${commandPayload.contentType || "document"},
+          ${commandPayload.durationMinutes ? Number(commandPayload.durationMinutes) : null}::smallint,
+          ${commandPayload.category || null},
+          ${commandPayload.isRequired === true},
+          ${commandPayload.isActive !== false},
+          ${commandPayload.contentUrl || null},
+          ${currentUser.id}::uuid
+        )
+        RETURNING *
+      `
+    );
+
+    if (!createdModule || createdModule.length === 0) {
       return NextResponse.json(
         {
           message:
-            "Failed to create training module. Check that all required fields are valid.",
+            "Failed to create training module.",
         },
         { status: 422 }
       );
     }
 
     return NextResponse.json({
-      result: created,
+      result: createdModule[0],
       events: result.emittedEvents,
     });
   } catch (error) {
