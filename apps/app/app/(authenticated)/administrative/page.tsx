@@ -3,15 +3,24 @@ import { database, Prisma } from "@repo/database";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@repo/design-system/components/ui/card";
+  CommandBand,
+  CommandBandActions,
+  CommandBandHeader,
+  CommandBandLede,
+  CommandBandBody,
+  DisplayHeading,
+  MetricBand,
+  MetricCell,
+  MetricDelta,
+  MetricLabel,
+  MetricValue,
+  MonoLabel,
+  OperationalColumn,
+  PageCanvas,
+  SectionHeader,
+} from "@repo/design-system/components/blocks/page-shell";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Progress } from "@repo/design-system/components/ui/progress";
-import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   AlertTriangleIcon,
   CalendarDaysIcon,
@@ -26,7 +35,6 @@ import {
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTenantIdForOrg } from "../../lib/tenant";
-import { Header } from "../components/header";
 import { DataImportSection } from "./components/data-import-section";
 import {
   formatDateRange,
@@ -65,7 +73,6 @@ const AdminDashboardPage = async ({
     weekNumber,
   } = getWeekDateRange(weekOffset);
 
-  // Fetch events for the week with staff count
   const eventsWithStaff = await database.$queryRaw<
     Array<{
       id: string;
@@ -140,13 +147,11 @@ const AdminDashboardPage = async ({
     }),
   }));
 
-  // Calculate stats
   const totalEvents = events.length;
   const totalHeadcount = events.reduce((sum, e) => sum + e.guestCount, 0);
   const averageHeadcount =
     totalEvents > 0 ? Math.round(totalHeadcount / totalEvents) : 0;
 
-  // Service style breakdown (from eventType)
   const serviceStyleCounts = events.reduce(
     (acc, e) => {
       const style = e.eventType.toLowerCase();
@@ -156,12 +161,10 @@ const AdminDashboardPage = async ({
     {} as Record<string, number>
   );
 
-  // Validation issues count
   const validationIssues = events.filter(
     (e) => e.validationStatus !== "ready"
   ).length;
 
-  // Fetch recent document imports (graceful fallback if table doesn't exist)
   interface DocumentRow {
     id: string;
     file_name: string;
@@ -192,11 +195,9 @@ const AdminDashboardPage = async ({
       `
     );
   } catch {
-    // Table may not exist or be empty - continue with empty array
     recentDocuments = [];
   }
 
-  // Count events from last week for comparison
   const lastWeekStart = new Date(weekStart);
   lastWeekStart.setDate(lastWeekStart.getDate() - 7);
   const lastWeekEnd = new Date(weekEnd);
@@ -217,56 +218,95 @@ const AdminDashboardPage = async ({
   const eventDiff = totalEvents - lastWeekCount;
 
   return (
-    <>
-      <Header page="Production Meeting Prep" pages={["Administrative"]}>
-        <div className="flex items-center gap-3 px-4">
-          <Badge className="text-sm font-medium" variant="outline">
-            Week {weekNumber}
-          </Badge>
-          {validationIssues === 0 ? (
-            <Badge className="gap-1" variant="default">
-              <CheckCircle2Icon className="size-3" />
-              Ready for review
-            </Badge>
-          ) : (
-            <Badge className="gap-1" variant="secondary">
-              <AlertTriangleIcon className="size-3" />
-              {validationIssues} issues
-            </Badge>
-          )}
-          <Button asChild size="sm" variant="ghost">
-            <Link href={`/administrative?week=${weekOffset}`}>
-              <RefreshCwIcon className="size-4 mr-1" />
-              Refresh
-            </Link>
-          </Button>
-          <Button asChild size="sm">
-            <Link href="/events/import">
-              <UploadIcon className="size-4 mr-1" />
-              Upload Source Files
-            </Link>
-          </Button>
-        </div>
-      </Header>
+    <PageCanvas>
+      <CommandBand>
+        <CommandBandHeader>
+          <div className="space-y-4">
+            <MonoLabel tone="dark">
+              Administrative / Week {weekNumber}
+            </MonoLabel>
+            <DisplayHeading>Production Meeting Prep</DisplayHeading>
+            <CommandBandLede>
+              {formatDateRange(weekStart, weekEnd)} —{" "}
+              {validationIssues === 0
+                ? "All events ready for review"
+                : `${validationIssues} event${validationIssues !== 1 ? "s" : ""} need attention`}
+            </CommandBandLede>
+          </div>
+          <CommandBandActions>
+            <Button
+              asChild
+              className="border-white/25 bg-transparent text-white hover:bg-white/10"
+              size="sm"
+              variant="outline"
+            >
+              <Link href={`/administrative?week=${weekOffset}`}>
+                <RefreshCwIcon className="mr-1 size-4" />
+                Refresh
+              </Link>
+            </Button>
+            <Button asChild size="sm">
+              <Link href="/events/import">
+                <UploadIcon className="mr-1 size-4" />
+                Upload Source Files
+              </Link>
+            </Button>
+          </CommandBandActions>
+        </CommandBandHeader>
 
-      <Separator />
+        <CommandBandBody>
+          <MetricBand>
+            <MetricCell>
+              <MetricLabel>Total Events</MetricLabel>
+              <MetricValue>{totalEvents}</MetricValue>
+              <MetricDelta>
+                {eventDiff >= 0 ? "+" : ""}
+                {eventDiff} from last week
+              </MetricDelta>
+            </MetricCell>
+            <MetricCell>
+              <MetricLabel>Headcount</MetricLabel>
+              <MetricValue>{totalHeadcount.toLocaleString()}</MetricValue>
+              <MetricDelta>Avg {averageHeadcount} per event</MetricDelta>
+            </MetricCell>
+            <MetricCell>
+              <MetricLabel>Service Styles</MetricLabel>
+              <MetricValue>
+                {Object.keys(serviceStyleCounts).length}
+              </MetricValue>
+              <MetricDelta>
+                {Object.entries(serviceStyleCounts)
+                  .slice(0, 2)
+                  .map(([s, c]) => `${c} ${s}`)
+                  .join(", ")}
+              </MetricDelta>
+            </MetricCell>
+            <MetricCell>
+              <MetricLabel>Validation Issues</MetricLabel>
+              <MetricValue>{validationIssues}</MetricValue>
+              <MetricDelta>
+                {validationIssues > 0 ? "Action required" : "All events ready"}
+              </MetricDelta>
+            </MetricCell>
+          </MetricBand>
+        </CommandBandBody>
+      </CommandBand>
 
-      <div className="flex flex-1 gap-8 p-4 pt-0">
-        {/* Left Sidebar */}
-        <aside className="flex w-72 shrink-0 flex-col gap-8">
-          {/* Data Import Section */}
-          <DataImportSection documents={recentDocuments} />
+      <OperationalColumn>
+        <div className="grid gap-6 lg:grid-cols-[260px_1fr]">
+          {/* Sidebar */}
+          <aside className="space-y-6">
+            <DataImportSection documents={recentDocuments} />
 
-          {/* Week Navigation */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base">Week Overview</CardTitle>
-              <CardDescription className="text-xs">
+            {/* Week Navigation */}
+            <div className="rounded-[22px] border border-hairline bg-canvas p-5">
+              <p className="font-mono text-[11px] text-muted-foreground uppercase tracking-[0.22em]">
+                Week Overview
+              </p>
+              <p className="mt-1 text-ink text-sm">
                 {formatDateRange(weekStart, weekEnd)}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex items-center justify-between">
+              </p>
+              <div className="mt-3 flex items-center justify-between">
                 <Button asChild size="sm" variant="outline">
                   <Link href={`/administrative?week=${weekOffset - 1}`}>
                     Previous
@@ -279,175 +319,92 @@ const AdminDashboardPage = async ({
                 </Button>
               </div>
               {weekOffset !== 0 && (
-                <Button asChild className="w-full" size="sm" variant="ghost">
+                <Button
+                  asChild
+                  className="mt-2 w-full"
+                  size="sm"
+                  variant="ghost"
+                >
                   <Link href="/administrative">Current Week</Link>
                 </Button>
               )}
-            </CardContent>
-          </Card>
-
-          {/* Quick Stats */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base">Quick Stats</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Confirmed</span>
-                <span className="font-medium">
-                  {events.filter((e) => e.status === "confirmed").length}
-                </span>
-              </div>
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Tentative</span>
-                <span className="font-medium">
-                  {events.filter((e) => e.status === "tentative").length}
-                </span>
-              </div>
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">
-                  Total Staff Assigned
-                </span>
-                <span className="font-medium">
-                  {events.reduce((sum, e) => sum + e.staffCount, 0)}
-                </span>
-              </div>
-            </CardContent>
-          </Card>
-        </aside>
-
-        {/* Main Content */}
-        <div className="flex flex-1 flex-col gap-8">
-          {/* Performance Overview */}
-          <section>
-            <h3 className="mb-4 text-sm font-medium text-muted-foreground">
-              Performance Overview
-            </h3>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardDescription className="flex items-center gap-2">
-                    <CalendarDaysIcon className="size-4" />
-                    Total Events
-                  </CardDescription>
-                  <CardTitle className="text-3xl">{totalEvents}</CardTitle>
-                </CardHeader>
-                <CardContent className="text-sm text-muted-foreground">
-                  {eventDiff >= 0 ? "+" : ""}
-                  {eventDiff} from last week
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardDescription className="flex items-center gap-2">
-                    <UsersIcon className="size-4" />
-                    Headcount
-                  </CardDescription>
-                  <CardTitle className="text-3xl">
-                    {totalHeadcount.toLocaleString()}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="text-sm text-muted-foreground">
-                  Avg {averageHeadcount} per event
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardDescription className="flex items-center gap-2">
-                    <UtensilsIcon className="size-4" />
-                    Service Styles
-                  </CardDescription>
-                  <CardTitle className="text-3xl">
-                    {Object.keys(serviceStyleCounts).length}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="flex flex-wrap gap-1">
-                  {Object.entries(serviceStyleCounts)
-                    .slice(0, 3)
-                    .map(([style, count]) => (
-                      <Badge
-                        className="text-xs capitalize"
-                        key={style}
-                        variant="secondary"
-                      >
-                        {count} {style}
-                      </Badge>
-                    ))}
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardDescription className="flex items-center gap-2">
-                    <AlertTriangleIcon className="size-4" />
-                    Validation Issues
-                  </CardDescription>
-                  <CardTitle
-                    className={`text-3xl ${validationIssues > 0 ? "text-destructive" : ""}`}
-                  >
-                    {validationIssues}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="text-sm text-muted-foreground">
-                  {validationIssues > 0
-                    ? "Action required"
-                    : "All events ready"}
-                </CardContent>
-              </Card>
             </div>
-          </section>
 
-          {/* Events Overview */}
-          <section className="flex flex-col gap-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-medium text-muted-foreground">
-                Events Overview
-              </h3>
-              <div className="flex items-center gap-2">
-                <div className="relative">
-                  <SearchIcon className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
-                  <Input
-                    className="w-64 pl-8"
-                    placeholder="Search client or venue..."
-                    type="search"
-                  />
+            {/* Quick Stats */}
+            <div className="rounded-[22px] border border-hairline bg-canvas p-5">
+              <p className="font-mono text-[11px] text-muted-foreground uppercase tracking-[0.22em]">
+                Quick Stats
+              </p>
+              <div className="mt-3 space-y-2">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Confirmed</span>
+                  <span className="font-medium">
+                    {events.filter((e) => e.status === "confirmed").length}
+                  </span>
                 </div>
-                <Button size="sm" variant="outline">
-                  Filter
-                </Button>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Tentative</span>
+                  <span className="font-medium">
+                    {events.filter((e) => e.status === "tentative").length}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Staff Assigned</span>
+                  <span className="font-medium">
+                    {events.reduce((sum, e) => sum + e.staffCount, 0)}
+                  </span>
+                </div>
               </div>
             </div>
+          </aside>
 
-            {events.length === 0 ? (
-              <Card className="py-12">
-                <CardContent className="flex flex-col items-center justify-center text-center">
-                  <CalendarDaysIcon className="size-12 text-muted-foreground/50" />
-                  <h3 className="mt-4 text-lg font-medium">
+          {/* Main Content */}
+          <div className="space-y-6">
+            <section className="space-y-4">
+              <div className="flex items-center justify-between">
+                <SectionHeader
+                  count={`${totalEvents} event${totalEvents !== 1 ? "s" : ""}`}
+                  description="Events this week requiring review."
+                  eyebrow="Events"
+                  title="Events Overview"
+                />
+                <div className="flex items-center gap-2">
+                  <div className="relative">
+                    <SearchIcon className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
+                    <Input
+                      className="w-64 pl-8"
+                      placeholder="Search client or venue..."
+                      type="search"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {events.length === 0 ? (
+                <div className="rounded-[22px] border border-hairline border-dashed bg-canvas p-10 text-center">
+                  <CalendarDaysIcon className="mx-auto size-12 text-muted-foreground/50" />
+                  <p className="mt-4 text-ink text-lg font-medium">
                     No events this week
-                  </h3>
+                  </p>
                   <p className="mt-1 text-sm text-muted-foreground">
                     Create new events or check a different week.
                   </p>
                   <Button asChild className="mt-4">
                     <Link href="/events/new">Create Event</Link>
                   </Button>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                {events.map((event) => (
-                  <Link
-                    className="group"
-                    href={`/events/${event.id}`}
-                    key={event.id}
-                  >
-                    <Card className="h-full transition hover:border-primary/40 hover:shadow-md">
-                      <CardHeader className="pb-3">
+                </div>
+              ) : (
+                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                  {events.map((event) => (
+                    <Link
+                      className="group"
+                      href={`/events/${event.id}`}
+                      key={event.id}
+                    >
+                      <div className="h-full rounded-[22px] border border-hairline bg-canvas p-5 transition hover:border-primary/40">
                         <div className="flex items-start justify-between gap-2">
                           <Badge
-                            className="text-xs font-mono"
+                            className="font-mono text-xs"
                             variant="outline"
                           >
                             #EV-
@@ -463,15 +420,11 @@ const AdminDashboardPage = async ({
                             {statusLabels[event.validationStatus]}
                           </Badge>
                         </div>
-                        <CardTitle className="mt-2 text-base">
-                          {event.title}
-                        </CardTitle>
-                        <CardDescription className="text-xs">
+                        <p className="mt-2 font-semibold">{event.title}</p>
+                        <p className="text-xs text-muted-foreground">
                           {event.venueName ?? "Venue TBD"}
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent className="space-y-3">
-                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                        </p>
+                        <div className="mt-3 flex items-center gap-4 text-sm text-muted-foreground">
                           <span className="flex items-center gap-1">
                             <CalendarDaysIcon className="size-3.5" />
                             {dateFormatter.format(event.eventDate)}
@@ -481,7 +434,7 @@ const AdminDashboardPage = async ({
                             TBD
                           </span>
                         </div>
-                        <div className="flex flex-wrap items-center gap-2">
+                        <div className="mt-2 flex flex-wrap items-center gap-2">
                           <Badge
                             className="text-xs capitalize"
                             variant="secondary"
@@ -501,7 +454,7 @@ const AdminDashboardPage = async ({
                             </Badge>
                           ))}
                         </div>
-                        <div className="flex items-center justify-between pt-2">
+                        <div className="mt-3 flex items-center justify-between pt-2">
                           <Button
                             className="h-7 text-xs"
                             size="sm"
@@ -516,16 +469,16 @@ const AdminDashboardPage = async ({
                             }
                           />
                         </div>
-                      </CardContent>
-                    </Card>
-                  </Link>
-                ))}
-              </div>
-            )}
-          </section>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </section>
+          </div>
         </div>
-      </div>
-    </>
+      </OperationalColumn>
+    </PageCanvas>
   );
 };
 
