@@ -26,6 +26,16 @@
 
 ---
 
+## Recently remediated (2026-05-03 — Event Profitability + CRM Proposals + §4 audit correction)
+
+- **Event Profitability page — DONE.** New authenticated UI at `apps/app/app/(authenticated)/events/profitability/{page.tsx,profitability-page-client.tsx}` + lib at `apps/app/app/lib/use-event-profitability.ts`. Server component uses raw SQL (no Prisma relation between `EventProfitability` and `Event`) to LEFT JOIN `tenant_events.event_profitability` to `tenant_events.events`. Client component renders 4 summary cards (Total Revenue / Budgeted / Average Margin / Underperforming), search + margin-health filter, data table with per-event margin coloring (green >= 30%, yellow 15-30%, red < 15%), and recalculate action. Uses the existing API route at `apps/api/app/api/events/profitability/list/route.ts` and recalculate endpoint.
+- **CRM Proposals page — DONE.** Replaced incomplete stub at `apps/app/app/(authenticated)/crm/proposals/page.tsx` with a full server component using `PageCanvas + CommandBand + MetricBand + OperationalColumn + SectionHeader` pattern. Parallel Prisma queries via `Promise.all`: proposals list with client/lead relations, accepted count, pending count, total value aggregate. New client component at `proposals-page-client.tsx` with search, status filter, grid-based table layout, and action menus (Send/Accept/Reject/Withdraw per status). Uses existing 12 API routes under `apps/api/app/api/crm/proposals/`. Lib at `apps/app/app/lib/use-proposals.ts`.
+- **§4 audit correction — CORRECTED.** Thorough audit of IMPLEMENTATION_PLAN.md's 24 claimed "MISSING" §4 features found that **only 2 were genuinely missing** (events/profitability and crm/proposals). All other claimed-MISSING features (events/import, events/contracts, settings/notifications, payroll/overview, payroll/runs, payroll/periods, payroll/payouts, staff/training, warehouse/receiving, warehouse/shipments, inventory/levels, inventory/forecasts, inventory/items, scheduling/shifts, scheduling/availability, scheduling/time-off) already had substantial implementations (200–1183 line client components with full interactivity). The §4 priority list should be re-triaged: most remaining open items are spec-parity quality audits on existing implementations, not from-zero builds.
+
+**Validation:** `pnpm --filter api test` → 4009 passed / 1 skipped / 8 todo (same baseline). `pnpm --filter app typecheck` clean. `pnpm --filter api typecheck` clean.
+
+---
+
 ## Recently remediated (2026-05-02 — §4.42 Bulk Edit + §4.43 Bulk Grouping)
 
 - §4.42 Bulk Edit + §4.43 Bulk Grouping — DONE 2026-05-02. Command board canvas rewritten with full interactivity: card drag-and-drop, multi-select, bulk edit toolbar (status/color), group creation/assignment/collapse/expand, SVG connection rendering. 14 new server-action tests. Also fixed pre-existing `ai/suggestions.test.ts` failure (time-of-day-dependent urgent-task filter used midnight baseline instead of now).
