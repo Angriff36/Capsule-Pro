@@ -232,6 +232,38 @@ let nextConfig: NextConfig = withToolbar(
         destination: "/scheduling/availability",
         permanent: false,
       },
+      // Calendar module orphans (sidebar links elsewhere, but direct URLs were 404)
+      {
+        source: "/calendar/add-event",
+        destination: "/events/new",
+        permanent: false,
+      },
+      {
+        source: "/calendar/schedule-shift",
+        destination: "/scheduling/shifts/new",
+        permanent: false,
+      },
+      {
+        source: "/calendar/webhooks",
+        destination: "/webhooks",
+        permanent: false,
+      },
+      // Events module orphans
+      {
+        source: "/events/imports",
+        destination: "/events",
+        permanent: false,
+      },
+      {
+        source: "/events/settings",
+        destination: "/events",
+        permanent: false,
+      },
+      {
+        source: "/events/webhooks",
+        destination: "/webhooks",
+        permanent: false,
+      },
     ],
     rewrites,
     async headers() {
