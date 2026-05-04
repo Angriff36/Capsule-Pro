@@ -5,7 +5,7 @@
     "irHash": "",
     "compilerVersion": "0.3.8",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-04-29T02:21:55.990Z",
+    "compiledAt": "2026-05-04T10:30:51.903Z",
     "sources": [
       "admin-chat-participant-rules.manifest",
       "admin-task-rules.manifest",
@@ -23144,7 +23144,7 @@
           ]
         },
         {
-          "name": "itemNumber",
+          "name": "item_number",
           "type": {
             "name": "string",
             "nullable": false
@@ -23164,21 +23164,7 @@
           ]
         },
         {
-          "name": "itemType",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "defaultValue": {
-            "kind": "string",
-            "value": "ingredient"
-          },
-          "modifiers": [
-            "required"
-          ]
-        },
-        {
-          "name": "category",
+          "name": "description",
           "type": {
             "name": "string",
             "nullable": false
@@ -23190,7 +23176,17 @@
           "modifiers": []
         },
         {
-          "name": "baseUnit",
+          "name": "category",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "unitOfMeasure",
           "type": {
             "name": "string",
             "nullable": false
@@ -23202,31 +23198,19 @@
           "modifiers": []
         },
         {
+          "name": "unitCost",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
           "name": "quantityOnHand",
-          "type": {
-            "name": "number",
-            "nullable": false
-          },
-          "defaultValue": {
-            "kind": "number",
-            "value": 0
-          },
-          "modifiers": []
-        },
-        {
-          "name": "quantityReserved",
-          "type": {
-            "name": "number",
-            "nullable": false
-          },
-          "defaultValue": {
-            "kind": "number",
-            "value": 0
-          },
-          "modifiers": []
-        },
-        {
-          "name": "quantityAvailable",
           "type": {
             "name": "number",
             "nullable": false
@@ -23250,31 +23234,7 @@
           "modifiers": []
         },
         {
-          "name": "reorderPoint",
-          "type": {
-            "name": "number",
-            "nullable": false
-          },
-          "defaultValue": {
-            "kind": "number",
-            "value": 0
-          },
-          "modifiers": []
-        },
-        {
-          "name": "reorderQuantity",
-          "type": {
-            "name": "number",
-            "nullable": false
-          },
-          "defaultValue": {
-            "kind": "number",
-            "value": 0
-          },
-          "modifiers": []
-        },
-        {
-          "name": "costPerUnit",
+          "name": "reorder_level",
           "type": {
             "name": "number",
             "nullable": false
@@ -23298,7 +23258,7 @@
           "modifiers": []
         },
         {
-          "name": "locationId",
+          "name": "tags",
           "type": {
             "name": "string",
             "nullable": false
@@ -23310,38 +23270,50 @@
           "modifiers": []
         },
         {
-          "name": "allergens",
+          "name": "fsa_status",
           "type": {
             "name": "string",
             "nullable": false
           },
           "defaultValue": {
             "kind": "string",
-            "value": ""
+            "value": "unknown"
           },
           "modifiers": []
         },
         {
-          "name": "isActive",
+          "name": "fsa_temp_logged",
           "type": {
             "name": "boolean",
             "nullable": false
           },
           "defaultValue": {
             "kind": "boolean",
-            "value": true
+            "value": false
           },
           "modifiers": []
         },
         {
-          "name": "lastCountedAt",
+          "name": "fsa_allergen_info",
           "type": {
-            "name": "number",
+            "name": "boolean",
             "nullable": false
           },
           "defaultValue": {
-            "kind": "number",
-            "value": 0
+            "kind": "boolean",
+            "value": false
+          },
+          "modifiers": []
+        },
+        {
+          "name": "fsa_traceable",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "boolean",
+            "value": false
           },
           "modifiers": []
         },
@@ -23359,6 +23331,18 @@
         },
         {
           "name": "updatedAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "deletedAt",
           "type": {
             "name": "number",
             "nullable": false
@@ -23440,7 +23424,7 @@
                   "kind": "identifier",
                   "name": "self"
                 },
-                "property": "reorderPoint"
+                "property": "reorder_level"
               },
               "right": {
                 "kind": "literal",
@@ -23467,7 +23451,7 @@
                   "kind": "identifier",
                   "name": "self"
                 },
-                "property": "reorderPoint"
+                "property": "reorder_level"
               }
             }
           },
@@ -23496,101 +23480,7 @@
                 "kind": "identifier",
                 "name": "self"
               },
-              "property": "costPerUnit"
-            }
-          },
-          "dependencies": []
-        },
-        {
-          "name": "reservedValue",
-          "type": {
-            "name": "number",
-            "nullable": false
-          },
-          "expression": {
-            "kind": "binary",
-            "operator": "*",
-            "left": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
-              },
-              "property": "quantityReserved"
-            },
-            "right": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
-              },
-              "property": "costPerUnit"
-            }
-          },
-          "dependencies": []
-        },
-        {
-          "name": "stockoutRisk",
-          "type": {
-            "name": "boolean",
-            "nullable": false
-          },
-          "expression": {
-            "kind": "binary",
-            "operator": "<=",
-            "left": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
-              },
-              "property": "quantityAvailable"
-            },
-            "right": {
-              "kind": "literal",
-              "value": {
-                "kind": "number",
-                "value": 0
-              }
-            }
-          },
-          "dependencies": []
-        },
-        {
-          "name": "lowStockRisk",
-          "type": {
-            "name": "boolean",
-            "nullable": false
-          },
-          "expression": {
-            "kind": "binary",
-            "operator": "<",
-            "left": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
-              },
-              "property": "quantityAvailable"
-            },
-            "right": {
-              "kind": "binary",
-              "operator": "*",
-              "left": {
-                "kind": "member",
-                "object": {
-                  "kind": "identifier",
-                  "name": "self"
-                },
-                "property": "parLevel"
-              },
-              "right": {
-                "kind": "literal",
-                "value": {
-                  "kind": "number",
-                  "value": 0.25
-                }
-              }
+              "property": "unitCost"
             }
           },
           "dependencies": []
@@ -23623,118 +23513,6 @@
         "create"
       ],
       "constraints": [
-        {
-          "name": "positiveQuantities",
-          "code": "positiveQuantities",
-          "expression": {
-            "kind": "binary",
-            "operator": "and",
-            "left": {
-              "kind": "binary",
-              "operator": ">=",
-              "left": {
-                "kind": "member",
-                "object": {
-                  "kind": "identifier",
-                  "name": "self"
-                },
-                "property": "quantityOnHand"
-              },
-              "right": {
-                "kind": "literal",
-                "value": {
-                  "kind": "number",
-                  "value": 0
-                }
-              }
-            },
-            "right": {
-              "kind": "binary",
-              "operator": ">=",
-              "left": {
-                "kind": "member",
-                "object": {
-                  "kind": "identifier",
-                  "name": "self"
-                },
-                "property": "quantityReserved"
-              },
-              "right": {
-                "kind": "literal",
-                "value": {
-                  "kind": "number",
-                  "value": 0
-                }
-              }
-            }
-          },
-          "severity": "block",
-          "messageTemplate": "Inventory quantities cannot be negative (onHand: {onHand}, reserved: {reserved})",
-          "detailsMapping": {
-            "onHand": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
-              },
-              "property": "quantityOnHand"
-            },
-            "reserved": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
-              },
-              "property": "quantityReserved"
-            }
-          },
-          "overrideable": false
-        },
-        {
-          "name": "reserveDoesNotExceedOnHand",
-          "code": "reserveDoesNotExceedOnHand",
-          "expression": {
-            "kind": "binary",
-            "operator": "<=",
-            "left": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
-              },
-              "property": "quantityReserved"
-            },
-            "right": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
-              },
-              "property": "quantityOnHand"
-            }
-          },
-          "severity": "block",
-          "messageTemplate": "Reserved quantity ({reserved}) cannot exceed on-hand quantity ({onHand})",
-          "detailsMapping": {
-            "onHand": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
-              },
-              "property": "quantityOnHand"
-            },
-            "reserved": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
-              },
-              "property": "quantityReserved"
-            }
-          },
-          "overrideable": false
-        },
         {
           "name": "warnBelowPar",
           "code": "warnBelowPar",
@@ -23792,96 +23570,6 @@
                 },
                 "property": "quantityOnHand"
               }
-            }
-          },
-          "overrideable": false
-        },
-        {
-          "name": "warnLowStock",
-          "code": "warnLowStock",
-          "expression": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "self"
-            },
-            "property": "lowStockRisk"
-          },
-          "severity": "warn",
-          "messageTemplate": "Item '{itemName}' has low stock risk (only {available} available)",
-          "detailsMapping": {
-            "itemName": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
-              },
-              "property": "name"
-            },
-            "available": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
-              },
-              "property": "quantityAvailable"
-            },
-            "parLevel": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
-              },
-              "property": "parLevel"
-            }
-          },
-          "overrideable": false
-        },
-        {
-          "name": "blockStockout",
-          "code": "blockStockout",
-          "expression": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "self"
-            },
-            "property": "stockoutRisk"
-          },
-          "severity": "block",
-          "messageTemplate": "Item '{itemName}' is out of stock (onHand: {onHand}, reserved: {reserved})",
-          "detailsMapping": {
-            "itemName": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
-              },
-              "property": "name"
-            },
-            "onHand": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
-              },
-              "property": "quantityOnHand"
-            },
-            "reserved": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
-              },
-              "property": "quantityReserved"
-            },
-            "available": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
-              },
-              "property": "quantityAvailable"
             }
           },
           "overrideable": false
@@ -25660,6 +25348,10 @@
         "reassign",
         "updatePriority",
         "updateComplexity",
+        "updateTitle",
+        "updateSummary",
+        "updateDueDate",
+        "updateTags",
         "addTag",
         "removeTag",
         "cancel",
@@ -62523,6 +62215,126 @@
           "name": "newComplexity",
           "type": {
             "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "updatedAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "KitchenTaskTitleUpdated",
+      "channel": "kitchen.kitchentask.title.updated",
+      "payload": [
+        {
+          "name": "taskId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "title",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "updatedAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "KitchenTaskSummaryUpdated",
+      "channel": "kitchen.kitchentask.summary.updated",
+      "payload": [
+        {
+          "name": "taskId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "summary",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "updatedAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "KitchenTaskDueDateUpdated",
+      "channel": "kitchen.kitchentask.duedate.updated",
+      "payload": [
+        {
+          "name": "taskId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "dueDate",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "updatedAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "KitchenTaskTagsUpdated",
+      "channel": "kitchen.kitchentask.tags.updated",
+      "payload": [
+        {
+          "name": "taskId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "tags",
+          "type": {
+            "name": "string",
             "nullable": false
           },
           "required": true
@@ -112273,7 +112085,7 @@
       "entity": "InventoryItem",
       "parameters": [
         {
-          "name": "itemNumber",
+          "name": "item_number",
           "type": {
             "name": "string",
             "nullable": false
@@ -112289,14 +112101,6 @@
           "required": true
         },
         {
-          "name": "itemType",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
           "name": "category",
           "type": {
             "name": "string",
@@ -112305,9 +112109,33 @@
           "required": true
         },
         {
-          "name": "baseUnit",
+          "name": "description",
           "type": {
             "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "unitOfMeasure",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "unitCost",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "quantityOnHand",
+          "type": {
+            "name": "number",
             "nullable": false
           },
           "required": true
@@ -112321,23 +112149,7 @@
           "required": true
         },
         {
-          "name": "reorderPoint",
-          "type": {
-            "name": "number",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "reorderQuantity",
-          "type": {
-            "name": "number",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "costPerUnit",
+          "name": "reorder_level",
           "type": {
             "name": "number",
             "nullable": false
@@ -112353,7 +112165,7 @@
           "required": true
         },
         {
-          "name": "locationId",
+          "name": "tags",
           "type": {
             "name": "string",
             "nullable": false
@@ -112361,9 +112173,33 @@
           "required": true
         },
         {
-          "name": "allergens",
+          "name": "fsa_status",
           "type": {
             "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "fsa_temp_logged",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "fsa_allergen_info",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "fsa_traceable",
+          "type": {
+            "name": "boolean",
             "nullable": false
           },
           "required": true
@@ -112378,7 +112214,7 @@
             "operator": "!=",
             "left": {
               "kind": "identifier",
-              "name": "itemNumber"
+              "name": "item_number"
             },
             "right": {
               "kind": "literal",
@@ -112392,7 +112228,7 @@
             "operator": "!=",
             "left": {
               "kind": "identifier",
-              "name": "itemNumber"
+              "name": "item_number"
             },
             "right": {
               "kind": "literal",
@@ -112438,13 +112274,46 @@
         },
         {
           "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "category"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "category"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          }
+        },
+        {
+          "kind": "binary",
           "operator": "or",
           "left": {
             "kind": "binary",
             "operator": "==",
             "left": {
               "kind": "identifier",
-              "name": "costPerUnit"
+              "name": "unitCost"
             },
             "right": {
               "kind": "literal",
@@ -112458,7 +112327,40 @@
             "operator": ">=",
             "left": {
               "kind": "identifier",
-              "name": "costPerUnit"
+              "name": "unitCost"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "number",
+                "value": 0
+              }
+            }
+          }
+        },
+        {
+          "kind": "binary",
+          "operator": "or",
+          "left": {
+            "kind": "binary",
+            "operator": "==",
+            "left": {
+              "kind": "identifier",
+              "name": "quantityOnHand"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": ">=",
+            "left": {
+              "kind": "identifier",
+              "name": "quantityOnHand"
             },
             "right": {
               "kind": "literal",
@@ -112510,7 +112412,7 @@
             "operator": "==",
             "left": {
               "kind": "identifier",
-              "name": "reorderPoint"
+              "name": "reorder_level"
             },
             "right": {
               "kind": "literal",
@@ -112524,40 +112426,7 @@
             "operator": ">=",
             "left": {
               "kind": "identifier",
-              "name": "reorderPoint"
-            },
-            "right": {
-              "kind": "literal",
-              "value": {
-                "kind": "number",
-                "value": 0
-              }
-            }
-          }
-        },
-        {
-          "kind": "binary",
-          "operator": "or",
-          "left": {
-            "kind": "binary",
-            "operator": "==",
-            "left": {
-              "kind": "identifier",
-              "name": "reorderQuantity"
-            },
-            "right": {
-              "kind": "literal",
-              "value": {
-                "kind": "null"
-              }
-            }
-          },
-          "right": {
-            "kind": "binary",
-            "operator": ">=",
-            "left": {
-              "kind": "identifier",
-              "name": "reorderQuantity"
+              "name": "reorder_level"
             },
             "right": {
               "kind": "literal",
@@ -112597,7 +112466,27 @@
             "kind": "literal",
             "value": {
               "kind": "string",
-              "value": "Cost per unit must be non-negative"
+              "value": "Category is required"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Unit cost must be non-negative"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Quantity on hand cannot be negative"
             }
           }
         },
@@ -112617,26 +112506,16 @@
             "kind": "literal",
             "value": {
               "kind": "string",
-              "value": "Reorder point must be non-negative"
-            }
-          }
-        },
-        {
-          "kind": "compute",
-          "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "string",
-              "value": "Reorder quantity must be non-negative"
+              "value": "Reorder level must be non-negative"
             }
           }
         },
         {
           "kind": "mutate",
-          "target": "itemNumber",
+          "target": "item_number",
           "expression": {
             "kind": "identifier",
-            "name": "itemNumber"
+            "name": "item_number"
           }
         },
         {
@@ -112649,10 +112528,10 @@
         },
         {
           "kind": "mutate",
-          "target": "itemType",
+          "target": "description",
           "expression": {
             "kind": "identifier",
-            "name": "itemType"
+            "name": "description"
           }
         },
         {
@@ -112665,43 +112544,26 @@
         },
         {
           "kind": "mutate",
-          "target": "baseUnit",
+          "target": "unitOfMeasure",
           "expression": {
             "kind": "identifier",
-            "name": "baseUnit"
+            "name": "unitOfMeasure"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "unitCost",
+          "expression": {
+            "kind": "identifier",
+            "name": "unitCost"
           }
         },
         {
           "kind": "mutate",
           "target": "quantityOnHand",
           "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "number",
-              "value": 0
-            }
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "quantityReserved",
-          "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "number",
-              "value": 0
-            }
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "quantityAvailable",
-          "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "number",
-              "value": 0
-            }
+            "kind": "identifier",
+            "name": "quantityOnHand"
           }
         },
         {
@@ -112714,26 +112576,10 @@
         },
         {
           "kind": "mutate",
-          "target": "reorderPoint",
+          "target": "reorder_level",
           "expression": {
             "kind": "identifier",
-            "name": "reorderPoint"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "reorderQuantity",
-          "expression": {
-            "kind": "identifier",
-            "name": "reorderQuantity"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "costPerUnit",
-          "expression": {
-            "kind": "identifier",
-            "name": "costPerUnit"
+            "name": "reorder_level"
           }
         },
         {
@@ -112746,29 +112592,42 @@
         },
         {
           "kind": "mutate",
-          "target": "locationId",
+          "target": "tags",
           "expression": {
             "kind": "identifier",
-            "name": "locationId"
+            "name": "tags"
           }
         },
         {
           "kind": "mutate",
-          "target": "allergens",
+          "target": "fsa_status",
           "expression": {
             "kind": "identifier",
-            "name": "allergens"
+            "name": "fsa_status"
           }
         },
         {
           "kind": "mutate",
-          "target": "isActive",
+          "target": "fsa_temp_logged",
           "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "boolean",
-              "value": true
-            }
+            "kind": "identifier",
+            "name": "fsa_temp_logged"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "fsa_allergen_info",
+          "expression": {
+            "kind": "identifier",
+            "name": "fsa_allergen_info"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "fsa_traceable",
+          "expression": {
+            "kind": "identifier",
+            "name": "fsa_traceable"
           }
         },
         {
@@ -115718,6 +115577,239 @@
       ],
       "emits": [
         "KitchenTaskComplexityUpdated"
+      ]
+    },
+    {
+      "name": "updateTitle",
+      "entity": "KitchenTask",
+      "parameters": [
+        {
+          "name": "title",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        }
+      ],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "title"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "title"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          }
+        }
+      ],
+      "constraints": [],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Task title is required"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "title",
+          "expression": {
+            "kind": "identifier",
+            "name": "title"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "updatedAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        }
+      ],
+      "emits": [
+        "KitchenTaskTitleUpdated"
+      ]
+    },
+    {
+      "name": "updateSummary",
+      "entity": "KitchenTask",
+      "parameters": [
+        {
+          "name": "summary",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        }
+      ],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "!=",
+          "left": {
+            "kind": "identifier",
+            "name": "summary"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "null"
+            }
+          }
+        }
+      ],
+      "constraints": [],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Task summary is required"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "summary",
+          "expression": {
+            "kind": "identifier",
+            "name": "summary"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "updatedAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        }
+      ],
+      "emits": [
+        "KitchenTaskSummaryUpdated"
+      ]
+    },
+    {
+      "name": "updateDueDate",
+      "entity": "KitchenTask",
+      "parameters": [
+        {
+          "name": "dueDate",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        }
+      ],
+      "guards": [],
+      "constraints": [],
+      "actions": [
+        {
+          "kind": "mutate",
+          "target": "dueDate",
+          "expression": {
+            "kind": "identifier",
+            "name": "dueDate"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "updatedAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        }
+      ],
+      "emits": [
+        "KitchenTaskDueDateUpdated"
+      ]
+    },
+    {
+      "name": "updateTags",
+      "entity": "KitchenTask",
+      "parameters": [
+        {
+          "name": "tags",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        }
+      ],
+      "guards": [],
+      "constraints": [],
+      "actions": [
+        {
+          "kind": "mutate",
+          "target": "tags",
+          "expression": {
+            "kind": "identifier",
+            "name": "tags"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "updatedAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        }
+      ],
+      "emits": [
+        "KitchenTaskTagsUpdated"
       ]
     },
     {

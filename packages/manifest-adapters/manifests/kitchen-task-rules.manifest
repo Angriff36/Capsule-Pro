@@ -109,6 +109,38 @@ entity KitchenTask {
     emit KitchenTaskComplexityUpdated
   }
 
+  command updateTitle(title: string) {
+    guard title != null and title != "" "Task title is required"
+
+    mutate title = title
+    mutate updatedAt = now()
+
+    emit KitchenTaskTitleUpdated
+  }
+
+  command updateSummary(summary: string) {
+    guard summary != null "Task summary is required"
+
+    mutate summary = summary
+    mutate updatedAt = now()
+
+    emit KitchenTaskSummaryUpdated
+  }
+
+  command updateDueDate(dueDate: number) {
+    mutate dueDate = dueDate
+    mutate updatedAt = now()
+
+    emit KitchenTaskDueDateUpdated
+  }
+
+  command updateTags(tags: string) {
+    mutate tags = tags
+    mutate updatedAt = now()
+
+    emit KitchenTaskTagsUpdated
+  }
+
   command addTag(tag: string) {
     guard tag != null and tag != ""
 
@@ -206,6 +238,30 @@ event KitchenTaskComplexityUpdated: "kitchen.kitchentask.complexity.updated" {
   taskId: string
   oldComplexity: number
   newComplexity: number
+  updatedAt: number
+}
+
+event KitchenTaskTitleUpdated: "kitchen.kitchentask.title.updated" {
+  taskId: string
+  title: string
+  updatedAt: number
+}
+
+event KitchenTaskSummaryUpdated: "kitchen.kitchentask.summary.updated" {
+  taskId: string
+  summary: string
+  updatedAt: number
+}
+
+event KitchenTaskDueDateUpdated: "kitchen.kitchentask.duedate.updated" {
+  taskId: string
+  dueDate: number
+  updatedAt: number
+}
+
+event KitchenTaskTagsUpdated: "kitchen.kitchentask.tags.updated" {
+  taskId: string
+  tags: string
   updatedAt: number
 }
 
