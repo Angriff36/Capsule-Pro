@@ -195,7 +195,7 @@ export function IoTPageClient() {
             Real-time temperature monitoring and probe management
           </p>
         </div>
-        <Button>
+        <Button onClick={() => toast.info("Probe registration form coming soon")}>
           <Plus className="mr-2 h-4 w-4" />
           Register Probe
         </Button>
@@ -412,10 +412,10 @@ export function IoTPageClient() {
                           </div>
                         </div>
                         <div className="flex gap-2">
-                          <Button size="sm" variant="outline">
+                          <Button size="sm" variant="outline" onClick={() => toast.info("Log temperature reading coming soon")}>
                             Log Reading
                           </Button>
-                          <Button size="sm" variant="ghost">
+                          <Button size="sm" variant="ghost" onClick={() => toast.info("Probe details view coming soon")}>
                             Details
                           </Button>
                         </div>
@@ -503,10 +503,10 @@ export function IoTPageClient() {
                           </div>
                         </div>
                         <div className="flex gap-2">
-                          <Button size="sm" variant="outline">
+                          <Button size="sm" variant="outline" onClick={() => toast.info("Alert acknowledgement coming soon")}>
                             Acknowledge
                           </Button>
-                          <Button size="sm" variant="ghost">
+                          <Button size="sm" variant="ghost" onClick={() => toast.info("Alert resolution coming soon")}>
                             Resolve
                           </Button>
                         </div>
