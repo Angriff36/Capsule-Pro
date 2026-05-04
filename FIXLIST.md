@@ -107,7 +107,7 @@
 | 99 | warehouse | `/warehouse/audits` | 🔴 ❌ | 7-line shell | ✅ 2026-05-03 — verified functional |
 
 | 100 | kitchen | `/crm/segmentation (already functional)` | 🔴 ❌ | 297-line static JSX — hardcoded sample data, no DB queries | ✅ 2026-05-03 |
-| 101 | kitchen | `/kitchen/equipment` | 🔴 ❌ | 532-line client component with dead buttons (Add, Schedule Maintenance, Details, New Work Order — all no onClick). Equipment model EXISTS, API routes exist. Needs dialog wired to POST /api/kitchen/equipment/commands/create. | 🟢 STALE CLASSIFICATION 2026-05-04 — model EXISTS, API infra exists. Dead buttons need wiring. |
+| 101 | kitchen | `/kitchen/equipment` | 🔧 ✅ | 532-line client component with dead buttons (Add, Schedule Maintenance, Details, New Work Order — all no onClick). Equipment model EXISTS, API routes exist. Needs dialog wired to POST /api/kitchen/equipment/commands/create. | FIXED 2026-05-04 — wired Add Equipment dialog with 11 fields, POSTs to create endpoint, refreshes list on save. |
 | 102 | kitchen | `/kitchen/iot` | 🟡 🔶 | Dead buttons: "Register Probe", "Log Reading", "Details" — no onClick handlers | ✅ 2026-05-04 — wired all 5 dead buttons (Register Probe, Log Reading, Details, Acknowledge, Resolve) with toast.info |
 | 103 | kitchen | `/kitchen/inventory` | 🟡 🔶 | Dead button: "Reorder" (line 220-222) — no onClick handler | ✅ 2026-05-04 — wired Reorder with Link to /procurement/purchase-orders/new |
 | 104 | warehouse | `/warehouse/receiving` | 🟡 🔶 | Dead buttons: "Reports", "Supplier Performance" — no onClick handlers | ✅ 2026-05-04 — wired Reports and Supplier Performance buttons with toast.info |
@@ -121,14 +121,14 @@
 - ✅ = Fixed and verified working
 
 ## Fix Strategy
-**7 new items found 2026-05-03 (scouting mission).** #102, #103, #104, #105 fixed; #106 verified intentional; #101 pending architecture.
-**Scout found 2026-05-04:** #107 (knowledge-base GET path mismatch), #108 (payroll/runs PUT handler). All existing items (#1-#100) were previously resolved.
+**7 new items found 2026-05-03 (scouting mission).** #101, #102, #103, #104, #105 fixed; #106 verified intentional.
+**Scout found 2026-05-04:** #101 (kitchen/equipment Add button wired), #107 (knowledge-base GET path mismatch), #108 (payroll/runs PUT handler). All existing items (#1-#100, #102-#106) were previously resolved.
 
 
 
 ## Per-Page Tracking
 See `capsule-pages/` for detailed per-page fix history.
-## Final Status (2026-05-04 07:00 UTC)
+## Final Status (2026-05-04 07:45 UTC)
 **109 entries — all resolved.** 
-- **Scout found 2026-05-04:** #107 (knowledge-base GET path mismatch), #108 (payroll/runs PUT handler missing — "Approve Run" button POST'd to GET-only backend)
-- Previously resolved: #1-#106
+- **Scout found 2026-05-04:** #101 (kitchen/equipment Add button wired), #107 (knowledge-base GET path mismatch), #108 (payroll/runs PUT handler missing)
+- Previously resolved: #1-#100, #102-#106
