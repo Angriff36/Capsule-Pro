@@ -70,6 +70,66 @@ interface Shipment {
   createdAt: string;
 }
 
+function normalizeShipment(payload: Record<string, unknown>): Shipment {
+  return {
+    id: String(payload.id ?? ""),
+    shipmentNumber: String(
+      payload.shipmentNumber ?? payload.shipment_number ?? ""
+    ),
+    status: String(payload.status ?? "draft"),
+    eventId:
+      typeof (payload.eventId ?? payload.event_id) === "string"
+        ? String(payload.eventId ?? payload.event_id)
+        : null,
+    supplierId:
+      typeof (payload.supplierId ?? payload.supplier_id) === "string"
+        ? String(payload.supplierId ?? payload.supplier_id)
+        : null,
+    scheduledDate:
+      typeof (payload.scheduledDate ?? payload.scheduled_date) === "string"
+        ? String(payload.scheduledDate ?? payload.scheduled_date)
+        : null,
+    shippedDate:
+      typeof (payload.shippedDate ?? payload.shipped_date) === "string"
+        ? String(payload.shippedDate ?? payload.shipped_date)
+        : null,
+    estimatedDeliveryDate:
+      typeof (
+        payload.estimatedDeliveryDate ?? payload.estimated_delivery_date
+      ) === "string"
+        ? String(
+            payload.estimatedDeliveryDate ?? payload.estimated_delivery_date
+          )
+        : null,
+    actualDeliveryDate:
+      typeof (payload.actualDeliveryDate ?? payload.actual_delivery_date) ===
+      "string"
+        ? String(payload.actualDeliveryDate ?? payload.actual_delivery_date)
+        : null,
+    totalItems: Number(payload.totalItems ?? payload.total_items ?? 0),
+    shippingCost:
+      payload.shippingCost ?? payload.shipping_cost
+        ? Number(payload.shippingCost ?? payload.shipping_cost)
+        : null,
+    totalValue:
+      payload.totalValue ?? payload.total_value
+        ? Number(payload.totalValue ?? payload.total_value)
+        : null,
+    trackingNumber:
+      typeof (payload.trackingNumber ?? payload.tracking_number) === "string"
+        ? String(payload.trackingNumber ?? payload.tracking_number)
+        : null,
+    carrier:
+      typeof payload.carrier === "string" ? String(payload.carrier) : null,
+    shippingMethod:
+      typeof (payload.shippingMethod ?? payload.shipping_method) === "string"
+        ? String(payload.shippingMethod ?? payload.shipping_method)
+        : null,
+    notes: typeof payload.notes === "string" ? String(payload.notes) : null,
+    createdAt: String(payload.createdAt ?? payload.created_at ?? ""),
+  };
+}
+
 const STATUS_CONFIG: Record<
   string,
   {
@@ -153,9 +213,18 @@ export function ShipmentsClient() {
   const loadShipments = async () => {
     setLoading(true);
     try {
-      const res = await apiFetch("/api/shipments/shipment/list");
+      const res = await apiFetch("/api/shipments");
       const data = await res.json();
-      setShipments(data.shipments || []);
+      const shipmentData = Array.isArray(data.data)
+        ? data.data
+        : Array.isArray(data.shipments)
+          ? data.shipments
+          : [];
+      setShipments(
+        shipmentData.map((shipment: Record<string, unknown>) =>
+          normalizeShipment(shipment)
+        )
+      );
     } catch (error) {
       console.error("Failed to load shipments:", error);
     } finally {
@@ -167,7 +236,7 @@ export function ShipmentsClient() {
     e.preventDefault();
     setCreating(true);
     try {
-      const res = await apiFetch("/api/shipments/shipment/commands/create", {
+      const res = await apiFetch("/api/shipments", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -182,8 +251,7 @@ export function ShipmentsClient() {
           notes: createForm.notes || undefined,
         }),
       });
-      const data = await res.json();
-      if (data.shipment) {
+      if (res.ok) {
         await loadShipments();
         setShowCreateDialog(false);
         setCreateForm({
@@ -213,23 +281,18 @@ export function ShipmentsClient() {
         cancelled: "cancel",
       };
 
-      const command = commandMap[status];
-      if (!command) return;
+      if (!commandMap[status]) return;
 
-      const res = await apiFetch(
-        `/api/shipments/shipment/commands/${command}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ shipmentId }),
-        }
-      );
+      const res = await apiFetch(`/api/shipments/${shipmentId}/status`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+      });
       const data = await res.json();
-      if (data.shipment) {
+      if (res.ok) {
+        const updatedShipment = normalizeShipment(data as Record<string, unknown>);
         setShipments((prev) =>
-          prev.map((s) =>
-            s.id === shipmentId ? { ...s, status: data.shipment.status } : s
-          )
+          prev.map((s) => (s.id === shipmentId ? updatedShipment : s))
         );
       }
     } catch (error) {

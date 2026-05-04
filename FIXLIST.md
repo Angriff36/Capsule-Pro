@@ -1,8 +1,8 @@
 # Capsule Pro Fix List
 
-**112 entries — 4 resolved, 0 remaining** (2026-05-04 — #107 knowledge-base, #109 ingredient search, #110 cost calculation all resolved)
+**113 entries — 5 resolved, 0 remaining** (2026-05-04 — #107 knowledge-base, #109 ingredient search, #110 cost calculation, #111 logistics shipments all resolved)
 **Generated:** 2026-05-02 | **Auto-fix cron:** every 10 min
-**Last fix:** 2026-05-04 — #109, #110: fixed ingredient search and cost calculation routes in rich-recipe-editor
+**Last fix:** 2026-05-04 — #111: fixed logistics shipments client/API path mismatch and snake_case response normalization
 
 | # | Module | Route | Type | Issue | Status |
 |---|--------|-------|------|-------|--------|
@@ -117,6 +117,7 @@
 | 108 | payroll | `/payroll/runs` | 🟡 🔶 | Frontend "Approve Run" button calls PUT /api/payroll/runs/{id} but backend runs/[id]/route.ts only had GET — approve would fail silently | 🔧 FIXED 2026-05-04 — added PUT handler with status-transition validation, sets approved_by/approved_at on approval |
 | 109 | kitchen | `/kitchen/recipes` (ingredient search) | 🟡 🔶 | rich-recipe-editor.tsx calls `apiFetch("/api/ingredients/search", { method: "POST" })` but no route exists at that path. GET route at `/api/kitchen/ingredients` uses ?search= param. Silent failure — catch returns empty `[]` | ✅ 2026-05-04 — fixed client to use GET /api/kitchen/ingredients?search=, maps response.data to names |
 | 110 | kitchen | `/kitchen/recipes` (cost calculation) | 🟡 🔶 | rich-recipe-editor.tsx calls `apiFetch("/api/recipes/calculate-cost", { method: "POST" })` but no route exists and no /api/recipes/:path* rewrite. Silent failure — cost breakdown never loads. Separate from #109 (same file, different endpoint). | ✅ 2026-05-04 — created POST /api/kitchen/ingredients/calculate-cost with InventoryItem lookup; frontend updated to call it |
+| 111 | logistics | `/logistics/shipments` | 🟡 🔶 | `shipments-client.tsx` called nonexistent `/api/shipments/shipment/list` and `/api/shipments/shipment/commands/*` paths while the backend serves bare `/api/shipments` plus `/api/shipments/[id]/status` and returns snake_case payloads. | ✅ 2026-05-04 — fixed client paths for list/create/status, normalized snake_case API responses into the UI model, and preserved modal create + status progression wiring. |
 ## Legend
 - 🔴 ❌ = Dead shell — static JSX with no data or actions
 - 🟡 🔶 = Form-only — has form HTML but no server action wired
@@ -124,12 +125,12 @@
 
 ## Fix Strategy
 **7 new items found 2026-05-03 (scouting mission).** #101, #102, #103, #104, #105 fixed; #106 verified intentional.
-**Scout found 2026-05-04:** #101 (kitchen/equipment Add button wired), #107 (knowledge-base GET path mismatch — resolved: bare entries/route.ts delegates to list/route.ts), #108 (payroll/runs PUT handler). #109 (ingredient search route missing — fixed: client adapted to GET /api/kitchen/ingredients?search=), #110 (cost calculation route missing — fixed: created POST /api/kitchen/ingredients/calculate-cost). All existing items (#1-#100, #102-#106) were previously resolved.
+**Scout found 2026-05-04:** #101 (kitchen/equipment Add button wired), #107 (knowledge-base GET path mismatch — resolved: bare entries/route.ts delegates to list/route.ts), #108 (payroll/runs PUT handler), #109 (ingredient search route missing — fixed: client adapted to GET /api/kitchen/ingredients?search=), #110 (cost calculation route missing — fixed: created POST /api/kitchen/ingredients/calculate-cost), #111 (logistics/shipments client/API path mismatch — fixed: client now calls `/api/shipments` and `/api/shipments/[id]/status`, with snake_case response normalization). All existing items (#1-#100, #102-#106) were previously resolved.
 
 
 
 ## Per-Page Tracking
 See `capsule-pages/` for detailed per-page fix history.
-## Final Status (2026-05-04 16:36 UTC)
-**112 entries — all resolved. 0 remaining.** 
-- **Resolved:** #1-#100, #101 (kitchen/equipment), #102 (kitchen/iot dead buttons), #103 (kitchen/inventory reorder), #104 (warehouse/receiving dead buttons), #105 (marketing/leads /new page), #106 (marketing/campaigns placeholder), #107 (knowledge-base GET path mismatch), #108 (payroll/runs PUT handler), #109 (ingredient search — adapted client to use GET /api/kitchen/ingredients?search=), #110 (cost calculation — created POST /api/kitchen/ingredients/calculate-cost)
+## Final Status (2026-05-04 23:40 UTC)
+**113 entries — all resolved. 0 remaining.** 
+- **Resolved:** #1-#100, #101 (kitchen/equipment), #102 (kitchen/iot dead buttons), #103 (kitchen/inventory reorder), #104 (warehouse/receiving dead buttons), #105 (marketing/leads /new page), #106 (marketing/campaigns placeholder), #107 (knowledge-base GET path mismatch), #108 (payroll/runs PUT handler), #109 (ingredient search — adapted client to use GET /api/kitchen/ingredients?search=), #110 (cost calculation — created POST /api/kitchen/ingredients/calculate-cost), #111 (logistics/shipments client/API path mismatch)
