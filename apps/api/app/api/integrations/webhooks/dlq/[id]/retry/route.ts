@@ -12,6 +12,7 @@ import { sendWebhook, type WebhookPayload } from "@repo/notifications";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { log } from "@repo/observability/log";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -201,7 +202,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     });
   } catch (error) {
     captureException(error);
-    console.error("Error retrying DLQ entry:", error);
+    log.error("Error retrying DLQ entry:", error);
     return NextResponse.json(
       { error: "Failed to retry DLQ entry" },
       { status: 500 }

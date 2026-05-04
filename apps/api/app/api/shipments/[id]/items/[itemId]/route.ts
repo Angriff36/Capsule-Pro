@@ -20,6 +20,7 @@ import {
   updateShipmentTotals,
   validateShipmentItemUpdate,
 } from "./helpers";
+import { log } from "@repo/observability/log";
 
 export async function PUT(
   request: Request,
@@ -76,7 +77,7 @@ export async function PUT(
     if (error instanceof InvariantError) {
       return NextResponse.json({ message: error.message }, { status: 400 });
     }
-    console.error("Failed to update shipment item:", error);
+    log.error("Failed to update shipment item:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }
@@ -152,7 +153,7 @@ export async function DELETE(
     );
   } catch (error) {
     captureException(error);
-    console.error("Failed to delete shipment item:", error);
+    log.error("Failed to delete shipment item:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }

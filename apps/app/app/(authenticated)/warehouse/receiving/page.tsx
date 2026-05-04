@@ -270,7 +270,7 @@ export default function ReceivingPage() {
         <h2 className="text-sm font-medium text-muted-foreground">
           Purchase Order Lookup
         </h2>
-        <Card>
+        <Card tone="canvas">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Package className="size-5" />
@@ -318,7 +318,7 @@ export default function ReceivingPage() {
             Purchase Order Details
           </h2>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            <Card className="md:col-span-2 lg:col-span-2">
+            <Card tone="canvas" className="md:col-span-2 lg:col-span-2">
               <CardHeader>
                 <CardTitle>PO Items</CardTitle>
                 <CardDescription>
@@ -486,7 +486,7 @@ export default function ReceivingPage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card tone="canvas">
               <CardHeader>
                 <CardTitle>PO Summary</CardTitle>
               </CardHeader>

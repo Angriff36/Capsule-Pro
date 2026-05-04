@@ -8,6 +8,7 @@ import {
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
+import { log } from "@repo/observability/log";
 
 export const runtime = "nodejs";
 
@@ -34,7 +35,7 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
 
-    console.log("[pricing-tiers/create] Executing command:", {
+    log.info("[pricing-tiers/create] Executing command:", {
       entityName: "PricingTier",
       command: "create",
       userId: currentUser.id,
@@ -72,7 +73,7 @@ export async function POST(request: NextRequest) {
       events: result.emittedEvents,
     });
   } catch (error) {
-    console.error("[pricing-tiers/create] Error:", error);
+    log.error("[pricing-tiers/create] Error:", error);
     captureException(error);
     return manifestErrorResponse("Internal server error", 500);
   }

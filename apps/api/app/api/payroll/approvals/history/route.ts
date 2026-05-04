@@ -10,6 +10,7 @@ import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { InvariantError, invariant } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { log } from "@repo/observability/log";
 
 const UUID_REGEX =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -195,7 +196,7 @@ export async function GET(request: Request) {
     if (error instanceof InvariantError) {
       return NextResponse.json({ message: error.message }, { status: 400 });
     }
-    console.error("Failed to get approval history:", error);
+    log.error("Failed to get approval history:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }

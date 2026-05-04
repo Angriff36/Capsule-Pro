@@ -5,6 +5,7 @@ import { ContractPDF } from "@repo/pdf";
 import { type NextRequest, NextResponse } from "next/server";
 import type React from "react";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { log } from "@repo/observability/log";
 
 export const runtime = "nodejs";
 
@@ -314,7 +315,7 @@ async function handlePdfBase64(
 }
 
 function handlePdfError(error: unknown): NextResponse {
-  console.error("Failed to generate Contract PDF:", error);
+  log.error("Failed to generate Contract PDF:", error);
 
   if (error instanceof Error) {
     if (error.message === "Unauthorized") {

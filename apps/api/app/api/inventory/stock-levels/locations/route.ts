@@ -10,6 +10,7 @@ import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import type { LocationListResponse } from "../types";
+import { log } from "@repo/observability/log";
 
 /**
  * GET /api/inventory/stock-levels/locations - List storage locations
@@ -84,7 +85,7 @@ export async function GET(_request: Request) {
     return NextResponse.json(response);
   } catch (error) {
     captureException(error);
-    console.error("Failed to list storage locations:", error);
+    log.error("Failed to list storage locations:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }

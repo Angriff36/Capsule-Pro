@@ -9,6 +9,7 @@ import {
   type ShiftRequirement,
 } from "@/lib/staff/auto-assignment";
 import { withRateLimit } from "@/middleware/rate-limiter";
+import { log } from "@repo/observability/log";
 
 /**
  * POST /api/staff/shifts/bulk-assignment-suggestions
@@ -123,7 +124,7 @@ export const POST = withRateLimit(
       });
     } catch (error) {
       captureException(error);
-      console.error("Error getting bulk assignment suggestions:", error);
+      log.error("Error getting bulk assignment suggestions:", error);
       return NextResponse.json(
         { message: "Failed to get bulk assignment suggestions" },
         { status: 500 }
@@ -236,7 +237,7 @@ export const GET = withRateLimit(
       });
     } catch (error) {
       captureException(error);
-      console.error("Error getting open shifts suggestions:", error);
+      log.error("Error getting open shifts suggestions:", error);
       return NextResponse.json(
         { message: "Failed to get open shifts suggestions" },
         { status: 500 }

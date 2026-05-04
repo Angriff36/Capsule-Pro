@@ -194,7 +194,7 @@ export async function POST(
       events: result.events,
     });
   } catch (error) {
-    console.error("[composite/restore-version] Error:", error);
+    log.error("[composite/restore-version] Error:", error);
     captureException(error);
 
     const message =

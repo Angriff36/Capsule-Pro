@@ -12,6 +12,7 @@
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { requireTenantId } from "@/app/lib/tenant";
+import { log } from "@repo/observability/log";
 
 export async function POST(request: NextRequest) {
   try {
@@ -39,7 +40,7 @@ export async function POST(request: NextRequest) {
     );
   } catch (error) {
     captureException(error);
-    console.error("Error optimizing route:", error);
+    log.error("Error optimizing route:", error);
     return NextResponse.json(
       { error: "Failed to optimize route" },
       { status: 500 }

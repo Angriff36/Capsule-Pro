@@ -168,7 +168,7 @@ export default function EditVenuePage() {
       </div>
 
       <form onSubmit={handleSubmit}>
-        <Card>
+        <Card tone="canvas">
           <CardHeader>
             <CardTitle>Venue Details</CardTitle>
             <CardDescription>

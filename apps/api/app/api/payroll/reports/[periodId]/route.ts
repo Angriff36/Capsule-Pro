@@ -9,6 +9,7 @@ import { captureException } from "@sentry/nextjs";
 
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { log } from "@repo/observability/log";
 
 /**
  * GET /api/payroll/reports/{periodId}?format={csv|qbxml|qbOnlineCsv|json}
@@ -82,7 +83,7 @@ export async function GET(
     });
   } catch (error) {
     captureException(error);
-    console.error("Report generation error:", error);
+    log.error("Report generation error:", error);
 
     if (error instanceof Error && error.message.includes("not found")) {
       return NextResponse.json({ error: error.message }, { status: 404 });

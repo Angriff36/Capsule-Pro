@@ -7,6 +7,7 @@ import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
+import { log } from "@repo/observability/log";
 
 export async function GET(request: NextRequest) {
   try {
@@ -228,7 +229,7 @@ export async function GET(request: NextRequest) {
     return manifestSuccessResponse({ groups, total, page, limit });
   } catch (error) {
     captureException(error);
-    console.error("Search error:", error);
+    log.error("Search error:", error);
     return manifestErrorResponse("Search failed", 500);
   }
 }

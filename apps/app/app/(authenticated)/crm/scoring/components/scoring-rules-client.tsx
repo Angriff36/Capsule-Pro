@@ -279,13 +279,13 @@ export function ScoringRulesClient({
             Overview
           </h2>
           <div className="grid gap-4 md:grid-cols-4">
-            <Card>
+            <Card tone="soft-stone">
               <CardHeader className="pb-2">
                 <CardDescription>Total Rules</CardDescription>
                 <CardTitle className="text-2xl">{totalRules}</CardTitle>
               </CardHeader>
             </Card>
-            <Card>
+            <Card tone="soft-stone">
               <CardHeader className="pb-2">
                 <CardDescription>Active Rules</CardDescription>
                 <CardTitle className="text-2xl text-green-600">
@@ -293,13 +293,13 @@ export function ScoringRulesClient({
                 </CardTitle>
               </CardHeader>
             </Card>
-            <Card>
+            <Card tone="soft-stone">
               <CardHeader className="pb-2">
                 <CardDescription>Total Leads</CardDescription>
                 <CardTitle className="text-2xl">{totalLeads}</CardTitle>
               </CardHeader>
             </Card>
-            <Card>
+            <Card tone="soft-stone">
               <CardHeader className="pb-2">
                 <CardDescription>Lead Distribution</CardDescription>
                 <div className="flex gap-2 mt-1">

@@ -10,6 +10,7 @@ import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { InvariantError, invariant } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { log } from "@repo/observability/log";
 
 /**
  * GET /api/crm/clients/[id]/events
@@ -89,7 +90,7 @@ export async function GET(
     if (error instanceof InvariantError) {
       return NextResponse.json({ message: error.message }, { status: 400 });
     }
-    console.error("Error listing client events:", error);
+    log.error("Error listing client events:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }

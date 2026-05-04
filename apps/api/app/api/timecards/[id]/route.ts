@@ -4,6 +4,7 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { log } from "@repo/observability/log";
 
 export async function GET(
   _request: Request,
@@ -140,7 +141,7 @@ export async function PUT(
   context: { params: Promise<{ id: string }> }
 ) {
   const { id } = await context.params;
-  console.log("[TimeEntry/PUT] Delegating to manifest clockOut command", {
+  log.info("[TimeEntry/PUT] Delegating to manifest clockOut command", {
     id,
   });
   return executeManifestCommand(request, {
@@ -156,7 +157,7 @@ export async function DELETE(
   context: { params: Promise<{ id: string }> }
 ) {
   const { id } = await context.params;
-  console.log("[TimeEntry/DELETE] Delegating to manifest softDelete command", {
+  log.info("[TimeEntry/DELETE] Delegating to manifest softDelete command", {
     id,
   });
   return executeManifestCommand(request, {

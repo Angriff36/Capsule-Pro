@@ -2,6 +2,7 @@ import { database, Prisma } from "@repo/database";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { requireTenantId } from "@/app/lib/tenant";
+import { log } from "@repo/observability/log";
 
 /**
  * GET /api/events/automated-followups/list
@@ -47,7 +48,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ followups });
   } catch (error) {
     captureException(error);
-    console.error("Error listing automated followups:", error);
+    log.error("Error listing automated followups:", error);
     return NextResponse.json(
       { error: "Failed to list followups" },
       { status: 500 }

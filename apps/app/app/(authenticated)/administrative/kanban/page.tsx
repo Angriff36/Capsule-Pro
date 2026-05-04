@@ -88,7 +88,7 @@ const AdministrativeKanbanPage = async () => {
           const columnTasks = tasksByStatus.get(column.status) ?? [];
 
           return (
-            <Card className="flex h-full flex-col" key={column.title}>
+            <Card tone="canvas" className="flex h-full flex-col" key={column.title}>
               <CardHeader>
                 <CardTitle>{column.title}</CardTitle>
                 <CardDescription>{column.description}</CardDescription>

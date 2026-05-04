@@ -10,6 +10,7 @@ import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
+import { log } from "@repo/observability/log";
 
 export async function GET(request: NextRequest) {
   try {
@@ -43,7 +44,7 @@ export async function GET(request: NextRequest) {
     return manifestSuccessResponse({ schedules });
   } catch (error) {
     captureException(error);
-    console.error("Error listing preventive maintenance schedules:", error);
+    log.error("Error listing preventive maintenance schedules:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

@@ -9,6 +9,7 @@ import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
+import { log } from "@repo/observability/log";
 
 export async function GET(
   request: NextRequest,
@@ -42,7 +43,7 @@ export async function GET(
 
     return manifestSuccessResponse({ container });
   } catch (error) {
-    console.error("Error fetching container:", error);
+    log.error("Error fetching container:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

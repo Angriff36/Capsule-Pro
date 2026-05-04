@@ -3,6 +3,7 @@ import { database, type Prisma } from "@repo/database";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { log } from "@repo/observability/log";
 
 export async function POST(request: NextRequest) {
   try {
@@ -104,7 +105,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true });
   } catch (error) {
     captureException(error);
-    console.error("Error receiving inventory transfer:", error);
+    log.error("Error receiving inventory transfer:", error);
     return NextResponse.json(
       { error: "Failed to receive inventory transfer" },
       { status: 500 }

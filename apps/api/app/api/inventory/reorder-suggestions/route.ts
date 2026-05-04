@@ -7,6 +7,7 @@ import {
 } from "@/app/lib/inventory-forecasting";
 
 import { requireTenantId } from "@/app/lib/tenant";
+import { log } from "@repo/observability/log";
 
 // GET /api/inventory/reorder-suggestions?sku={sku}&leadTimeDays={7}&safetyStockDays={3}
 // Returns: Array of ReorderSuggestionResult for the SKU or all low-stock items
@@ -63,7 +64,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(suggestions);
   } catch (error) {
     captureException(error);
-    console.error("Failed to fetch reorder suggestions:", error);
+    log.error("Failed to fetch reorder suggestions:", error);
     return NextResponse.json(
       {
         error: "Failed to fetch reorder suggestions",
@@ -104,7 +105,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     captureException(error);
-    console.error("Failed to process reorder suggestions:", error);
+    log.error("Failed to process reorder suggestions:", error);
     return NextResponse.json(
       {
         error: "Failed to process reorder suggestions",

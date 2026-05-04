@@ -12,6 +12,7 @@ import {
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
+import { log } from "@repo/observability/log";
 
 export const runtime = "nodejs";
 
@@ -40,7 +41,7 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
 
-    console.log(
+    log.info(
       "[event-import-workflow/completeExtraction] Executing command:",
       {
         entityName: "EventImportWorkflow",
@@ -61,7 +62,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (!result.success) {
-      console.error(
+      log.error(
         "[event-import-workflow/completeExtraction] Command failed:",
         {
           policyDenial: result.policyDenial,
@@ -91,7 +92,7 @@ export async function POST(request: NextRequest) {
       events: result.emittedEvents,
     });
   } catch (error) {
-    console.error("[event-import-workflow/completeExtraction] Error:", error);
+    log.error("[event-import-workflow/completeExtraction] Error:", error);
     captureException(error);
     return manifestErrorResponse("Internal server error", 500);
   }

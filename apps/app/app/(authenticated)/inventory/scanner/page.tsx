@@ -300,7 +300,7 @@ export default function ScannerPage() {
         <TabsContent className="mt-4 space-y-4" value="lookup">
           <div className="grid gap-6 lg:grid-cols-2">
             {/* Scanner */}
-            <Card>
+            <Card tone="canvas">
               <CardHeader>
                 <CardTitle>Scan Barcode</CardTitle>
                 <CardDescription>
@@ -321,7 +321,7 @@ export default function ScannerPage() {
             </Card>
 
             {/* Result */}
-            <Card>
+            <Card tone="canvas">
               <CardHeader>
                 <CardTitle>Item Result</CardTitle>
                 <CardDescription>
@@ -409,7 +409,7 @@ export default function ScannerPage() {
         <TabsContent className="mt-4 space-y-4" value="stock_count">
           <div className="grid gap-6 lg:grid-cols-2">
             {/* Scanner */}
-            <Card>
+            <Card tone="canvas">
               <CardHeader>
                 <CardTitle>Scan Items</CardTitle>
                 <CardDescription>
@@ -430,7 +430,7 @@ export default function ScannerPage() {
             </Card>
 
             {/* Count List */}
-            <Card>
+            <Card tone="canvas">
               <CardHeader>
                 <CardTitle>Count List</CardTitle>
                 <CardDescription>
@@ -511,7 +511,7 @@ export default function ScannerPage() {
 
       {/* Scan History */}
       {scanHistory.length > 0 && (
-        <Card>
+        <Card tone="canvas">
           <CardHeader>
             <CardTitle>Scan History</CardTitle>
           </CardHeader>

@@ -974,13 +974,13 @@ async function processDocumentsAndGenerateResponse(
   //         );
   //       }
   //     }
-  //     console.log(
+  //     log.info(
   //       "[processDocumentsAndGenerateResponse] Processed",
   //       manifestImportIds.length,
   //       "imports through Manifest"
   //     );
   //   } catch (manifestError) {
-  //     console.error(
+  //     log.error(
   //       "[processDocumentsAndGenerateResponse] Manifest processing failed, continuing:",
   //       manifestError
   //     );

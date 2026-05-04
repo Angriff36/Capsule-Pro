@@ -16,6 +16,7 @@ import type {
   SimulationListItem,
   SimulationStatus,
 } from "../types";
+import { log } from "@repo/observability/log";
 
 interface PaginationParams {
   page: number;
@@ -121,7 +122,7 @@ export async function GET(request: Request) {
     });
   } catch (error) {
     captureException(error);
-    console.error("Failed to list simulations:", error);
+    log.error("Failed to list simulations:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }
@@ -303,7 +304,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     captureException(error);
-    console.error("Failed to create simulation:", error);
+    log.error("Failed to create simulation:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }

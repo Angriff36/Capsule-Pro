@@ -122,7 +122,7 @@ export default function NewVenuePage() {
       </div>
 
       <form onSubmit={handleSubmit}>
-        <Card>
+        <Card tone="canvas">
           <CardHeader>
             <CardTitle>Venue Details</CardTitle>
             <CardDescription>

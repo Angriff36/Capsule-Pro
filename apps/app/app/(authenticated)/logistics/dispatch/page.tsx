@@ -243,7 +243,7 @@ export default function DispatchPage() {
             ["completed", "Completed", CheckCircle2],
           ] as const
         ).map(([key, label, Icon]) => (
-          <Card key={key}>
+          <Card tone="soft-stone" key={key}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">{label}</CardTitle>
               <Icon className="h-4 w-4 text-muted-foreground" />
@@ -284,6 +284,7 @@ export default function DispatchPage() {
                   <div className="space-y-3">
                     {routes.map((route) => (
                       <Card
+                        tone="canvas"
                         className="hover:border-primary/40 transition-shadow"
                         key={route.id}
                       >
@@ -375,7 +376,7 @@ export default function DispatchPage() {
           )}
 
           {data.routes.length === 0 && (
-            <Card>
+            <Card tone="canvas">
               <CardContent className="py-12 text-center text-muted-foreground">
                 <Truck className="h-12 w-12 mx-auto mb-4 opacity-50" />
                 <p>No routes scheduled for today.</p>
@@ -389,7 +390,7 @@ export default function DispatchPage() {
 
         {/* Available Drivers Sidebar */}
         <div className="space-y-4">
-          <Card>
+          <Card tone="canvas">
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center gap-2 text-base">
                 <Users className="h-4 w-4" />

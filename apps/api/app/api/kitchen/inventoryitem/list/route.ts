@@ -9,6 +9,7 @@ import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
+import { log } from "@repo/observability/log";
 
 export async function GET(_request: NextRequest) {
   try {
@@ -35,7 +36,7 @@ export async function GET(_request: NextRequest) {
 
     return manifestSuccessResponse({ inventoryItems });
   } catch (error) {
-    console.error("Error fetching inventoryItems:", error);
+    log.error("Error fetching inventoryItems:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

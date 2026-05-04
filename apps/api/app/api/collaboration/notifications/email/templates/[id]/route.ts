@@ -11,6 +11,7 @@ import { database } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { log } from "@repo/observability/log";
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -51,7 +52,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
 
     return NextResponse.json({ data: template });
   } catch (error) {
-    console.error("Error fetching email template:", error);
+    log.error("Error fetching email template:", error);
     return NextResponse.json(
       { error: "Failed to fetch email template" },
       { status: 500 }

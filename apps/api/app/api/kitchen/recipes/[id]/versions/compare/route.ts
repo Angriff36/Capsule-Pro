@@ -3,6 +3,7 @@ import { database } from "@repo/database";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { log } from "@repo/observability/log";
 
 interface VersionMeta {
   id: string;
@@ -403,7 +404,7 @@ export async function GET(
 
     return NextResponse.json(response);
   } catch (error) {
-    console.error("[api/kitchen/recipes/versions/compare] Error:", error);
+    log.error("[api/kitchen/recipes/versions/compare] Error:", error);
     captureException(error);
     return NextResponse.json(
       { error: "Failed to compare versions" },

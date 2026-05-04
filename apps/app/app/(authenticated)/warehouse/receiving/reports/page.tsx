@@ -179,7 +179,7 @@ const ReceivingReportsPage = async () => {
           Performance Overview
         </h2>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          <Card>
+          <Card tone="soft-stone">
             <CardHeader className="pb-2">
               <CardDescription>Total POs Received</CardDescription>
               <CardTitle>
@@ -188,7 +188,7 @@ const ReceivingReportsPage = async () => {
             </CardHeader>
           </Card>
 
-          <Card>
+          <Card tone="soft-stone">
             <CardHeader className="pb-2">
               <CardDescription>Items Received</CardDescription>
               <CardTitle>
@@ -197,7 +197,7 @@ const ReceivingReportsPage = async () => {
             </CardHeader>
           </Card>
 
-          <Card>
+          <Card tone="soft-stone">
             <CardHeader className="pb-2">
               <CardDescription>Quality Score</CardDescription>
               <CardTitle>
@@ -206,7 +206,7 @@ const ReceivingReportsPage = async () => {
             </CardHeader>
           </Card>
 
-          <Card>
+          <Card tone="soft-stone">
             <CardHeader className="pb-2">
               <CardDescription>Discrepancies</CardDescription>
               <CardTitle className="text-destructive">
@@ -223,7 +223,7 @@ const ReceivingReportsPage = async () => {
           Supplier Performance
         </h2>
 
-        <Card>
+        <Card tone="canvas">
           <CardContent className="pt-6">
             {supplierMetrics.length === 0 ? (
               <div className="py-8 text-center text-sm text-muted-foreground">
@@ -337,7 +337,7 @@ const ReceivingReportsPage = async () => {
           Discrepancy Breakdown by Type
         </h2>
 
-        <Card>
+        <Card tone="canvas">
           <CardContent className="pt-6">
             {discrepancies.length === 0 ? (
               <div className="py-8 text-center text-sm text-muted-foreground">

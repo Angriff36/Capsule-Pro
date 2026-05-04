@@ -12,6 +12,7 @@ import { NextResponse } from "next/server";
 import { InvariantError, invariant } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { log } from "@repo/observability/log";
 
 /**
  * GET /api/crm/clients/[id]/preferences
@@ -59,7 +60,7 @@ export async function GET(
     if (error instanceof InvariantError) {
       return NextResponse.json({ message: error.message }, { status: 400 });
     }
-    console.error("Error listing client preferences:", error);
+    log.error("Error listing client preferences:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }

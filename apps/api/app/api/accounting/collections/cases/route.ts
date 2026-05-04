@@ -9,6 +9,7 @@ import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { requireTenantId } from "@/app/lib/tenant";
+import { log } from "@repo/observability/log";
 
 // Validation schemas
 const createCaseSchema = z.object({
@@ -107,7 +108,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     captureException(error);
-    console.error("Error listing collection cases:", error);
+    log.error("Error listing collection cases:", error);
     return NextResponse.json(
       { error: "Failed to list collection cases" },
       { status: 500 }
@@ -201,7 +202,7 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-    console.error("Error creating collection case:", error);
+    log.error("Error creating collection case:", error);
     return NextResponse.json(
       { error: "Failed to create collection case" },
       { status: 500 }

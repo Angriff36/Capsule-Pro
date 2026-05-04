@@ -8,6 +8,7 @@
 
 import type { NextRequest } from "next/server";
 import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { log } from "@repo/observability/log";
 
 export const runtime = "nodejs";
 
@@ -18,7 +19,7 @@ export const runtime = "nodejs";
  * Body: { id: string, permission: string, revokedBy: string }
  */
 export async function POST(request: NextRequest) {
-  console.log("[RolePolicy/revoke] Delegating to manifest revoke command");
+  log.info("[RolePolicy/revoke] Delegating to manifest revoke command");
 
   return executeManifestCommand(request, {
     entityName: "RolePolicy",

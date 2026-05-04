@@ -9,6 +9,7 @@ import {
 } from "@/lib/manifest-response";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
 import { clampLimit, clampOffset } from "@/lib/pagination";
+import { log } from "@repo/observability/log";
 
 export const runtime = "nodejs";
 
@@ -83,7 +84,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     captureException(error);
-    console.error("Error listing SMS automation rules:", error);
+    log.error("Error listing SMS automation rules:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }
@@ -191,7 +192,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     captureException(error);
-    console.error("Error creating SMS automation rule:", error);
+    log.error("Error creating SMS automation rule:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

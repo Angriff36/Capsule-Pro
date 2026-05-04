@@ -5,6 +5,7 @@ import { NextResponse } from "next/server";
 import { InvariantError, invariant } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { log } from "@repo/observability/log";
 
 type Params = Promise<{ id: string }>;
 
@@ -73,7 +74,7 @@ export async function GET(_request: Request, { params }: { params: Params }) {
     if (error instanceof InvariantError) {
       return NextResponse.json({ message: error.message }, { status: 400 });
     }
-    console.error("Error fetching contract:", error);
+    log.error("Error fetching contract:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }

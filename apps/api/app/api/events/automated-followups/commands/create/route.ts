@@ -3,6 +3,7 @@ import { database } from "@repo/database";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { log } from "@repo/observability/log";
 
 /**
  * Generate a unique ID using crypto.randomUUID
@@ -65,7 +66,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     captureException(error);
-    console.error("Error creating automated followup:", error);
+    log.error("Error creating automated followup:", error);
     return NextResponse.json(
       { error: "Failed to create followup" },
       { status: 500 }

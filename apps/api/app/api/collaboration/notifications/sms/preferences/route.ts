@@ -12,6 +12,7 @@ import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { log } from "@repo/observability/log";
 
 const setPreferenceSchema = z.object({
   employeeId: z.string().min(1),
@@ -53,7 +54,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     captureException(error);
-    console.error("Failed to fetch SMS preferences:", error);
+    log.error("Failed to fetch SMS preferences:", error);
     const message = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
       { error: `Failed to fetch SMS preferences: ${message}` },
@@ -104,7 +105,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     captureException(error);
-    console.error("Failed to set SMS preference:", error);
+    log.error("Failed to set SMS preference:", error);
     const message = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
       { error: `Failed to set SMS preference: ${message}` },

@@ -18,6 +18,7 @@ import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { log } from "@repo/observability/log";
 
 const VALID_STAGES = [
   "lead",
@@ -95,7 +96,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     captureException(error);
-    console.error("Error updating deal stage:", error);
+    log.error("Error updating deal stage:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }

@@ -11,6 +11,7 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { log } from "@repo/observability/log";
 
 type CycleCountSessionType =
   | "ad_hoc"
@@ -133,7 +134,7 @@ export async function GET(request: Request) {
       },
     });
   } catch (error) {
-    console.error("Failed to list cycle count sessions:", error);
+    log.error("Failed to list cycle count sessions:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }
@@ -145,7 +146,7 @@ export async function GET(request: Request) {
  * POST /api/inventory/cycle-count/sessions - Create a new cycle count session
  */
 export async function POST(request: NextRequest) {
-  console.log("[CycleCountSession/POST] Delegating to manifest create command");
+  log.info("[CycleCountSession/POST] Delegating to manifest create command");
   return await executeManifestCommand(request, {
     entityName: "CycleCountSession",
     commandName: "create",

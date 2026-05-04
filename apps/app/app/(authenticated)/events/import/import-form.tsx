@@ -192,7 +192,7 @@ export function ImportForm() {
   return (
     <div className="flex flex-col gap-6">
       {/* Upload Form */}
-      <Card>
+      <Card tone="canvas">
         <CardHeader>
           <CardTitle>Upload Files</CardTitle>
           <CardDescription>
@@ -329,7 +329,7 @@ export function ImportForm() {
 
       {/* Results */}
       {result && (
-        <Card>
+        <Card tone="canvas">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <CheckCircle2Icon className="h-5 w-5 text-green-600" />

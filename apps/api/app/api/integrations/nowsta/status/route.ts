@@ -9,6 +9,7 @@ import { database, Prisma } from "@repo/database";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { log } from "@repo/observability/log";
 
 /**
  * GET /api/integrations/nowsta/status
@@ -129,7 +130,7 @@ export async function GET(_request: NextRequest) {
     });
   } catch (error) {
     captureException(error);
-    console.error("Failed to get Nowsta status:", error);
+    log.error("Failed to get Nowsta status:", error);
     return NextResponse.json(
       { error: "Failed to get status" },
       { status: 500 }

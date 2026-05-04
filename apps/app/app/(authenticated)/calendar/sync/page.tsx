@@ -206,7 +206,7 @@ export default function CalendarSyncPage() {
 
       {/* Success/Error Messages */}
       {connectedProvider && (
-        <Card className="border-green-200 bg-green-50">
+        <Card className="border-green-200 bg-green-50" tone="canvas">
           <CardContent className="flex items-center gap-2 pt-6">
             <Check className="h-4 w-4 text-green-600" />
             <span className="text-green-700">
@@ -219,7 +219,7 @@ export default function CalendarSyncPage() {
         </Card>
       )}
       {errorMessage && (
-        <Card className="border-red-200 bg-red-50">
+        <Card className="border-red-200 bg-red-50" tone="canvas">
           <CardContent className="flex items-center gap-2 pt-6">
             <X className="h-4 w-4 text-red-600" />
             <span className="text-red-700">
@@ -244,7 +244,7 @@ export default function CalendarSyncPage() {
               actionLoading === `disconnect-${provider.id}`;
 
             return (
-              <Card key={provider.id}>
+              <Card key={provider.id} tone="canvas">
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -326,7 +326,7 @@ export default function CalendarSyncPage() {
       )}
 
       {/* Setup Instructions */}
-      <Card>
+      <Card tone="canvas">
         <CardHeader>
           <CardTitle className="text-lg">Setup Instructions</CardTitle>
         </CardHeader>

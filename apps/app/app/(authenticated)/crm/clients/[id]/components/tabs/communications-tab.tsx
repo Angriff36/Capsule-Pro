@@ -362,7 +362,7 @@ export function CommunicationsTab({ clientId }: CommunicationsTabProps) {
           Loading communications...
         </div>
       ) : interactions.length === 0 ? (
-        <Card>
+        <Card tone="canvas">
           <CardContent className="flex flex-col items-center justify-center py-12 text-center">
             <MessageSquareIcon className="h-12 w-12 text-muted-foreground mb-4" />
             <h3 className="text-lg font-semibold mb-2">
@@ -386,7 +386,7 @@ export function CommunicationsTab({ clientId }: CommunicationsTabProps) {
       ) : (
         <div className="space-y-3">
           {interactions.map((interaction) => (
-            <Card key={interaction.id}>
+            <Card key={interaction.id} tone="canvas">
               <CardContent className="py-4">
                 <div className="flex items-start gap-4">
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted flex-shrink-0">

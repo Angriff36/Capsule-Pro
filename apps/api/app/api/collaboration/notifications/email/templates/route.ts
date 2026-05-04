@@ -10,6 +10,7 @@ import { database } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { log } from "@repo/observability/log";
 
 /**
  * GET /api/collaboration/notifications/email/templates
@@ -75,7 +76,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("Error fetching email templates:", error);
+    log.error("Error fetching email templates:", error);
     return NextResponse.json(
       { error: "Failed to fetch email templates" },
       { status: 500 }

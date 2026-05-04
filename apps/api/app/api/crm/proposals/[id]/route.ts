@@ -13,6 +13,7 @@ import { NextResponse } from "next/server";
 import { InvariantError } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { log } from "@repo/observability/log";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -141,7 +142,7 @@ export async function GET(_request: Request, { params }: RouteParams) {
     if (error instanceof InvariantError) {
       return NextResponse.json({ message: error.message }, { status: 400 });
     }
-    console.error("Error getting proposal:", error);
+    log.error("Error getting proposal:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }

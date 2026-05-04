@@ -3,6 +3,7 @@ import { database, Prisma } from "@repo/database";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "../../../../lib/tenant";
+import { log } from "@repo/observability/log";
 
 const UUID_REGEX =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -471,7 +472,7 @@ export async function POST(request: Request) {
     return NextResponse.json(response);
   } catch (error) {
     captureException(error);
-    console.error("Error checking allergens:", error);
+    log.error("Error checking allergens:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }

@@ -14,6 +14,7 @@ import { InvariantError, invariant } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { translatePrismaError } from "@/lib/prisma-error";
 import { validateUpdateVenueRequest } from "../validation";
+import { log } from "@repo/observability/log";
 
 /**
  * GET /api/crm/venues/[id]
@@ -66,7 +67,7 @@ export async function GET(
         { status: prismaResult.status }
       );
     }
-    console.error("Error getting venue:", error);
+    log.error("Error getting venue:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }
@@ -178,7 +179,7 @@ export async function PUT(
         { status: prismaResult.status }
       );
     }
-    console.error("Error updating venue:", error);
+    log.error("Error updating venue:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }
@@ -257,7 +258,7 @@ export async function DELETE(
         { status: prismaResult.status }
       );
     }
-    console.error("Error deleting venue:", error);
+    log.error("Error deleting venue:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }

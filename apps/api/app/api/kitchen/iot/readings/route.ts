@@ -3,6 +3,7 @@ import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { database } from "@/lib/database";
+import { log } from "@repo/observability/log";
 
 /**
  * GET /api/kitchen/iot/readings
@@ -44,7 +45,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ readings });
   } catch (error) {
     captureException(error);
-    console.error("List readings error:", error);
+    log.error("List readings error:", error);
     return NextResponse.json(
       { error: "Failed to list readings" },
       { status: 500 }
@@ -130,7 +131,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ reading });
   } catch (error) {
     captureException(error);
-    console.error("Create reading error:", error);
+    log.error("Create reading error:", error);
     return NextResponse.json(
       { error: "Failed to record reading" },
       { status: 500 }

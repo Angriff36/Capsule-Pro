@@ -315,7 +315,7 @@ export function ContactsTab({ client }: ContactsTabProps) {
           Loading contacts...
         </div>
       ) : contacts.length === 0 ? (
-        <Card>
+        <Card tone="canvas">
           <CardContent className="flex flex-col items-center justify-center py-12 text-center">
             <UserIcon className="h-12 w-12 text-muted-foreground mb-4" />
             <h3 className="text-lg font-semibold mb-2">No contacts yet</h3>
@@ -331,7 +331,7 @@ export function ContactsTab({ client }: ContactsTabProps) {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {contacts.map((contact) => (
-            <Card key={contact.id}>
+            <Card key={contact.id} tone="canvas">
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">
                   <CardTitle className="text-base">

@@ -13,6 +13,7 @@ import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
+import { log } from "@repo/observability/log";
 
 const VALID_TYPES = ["kitchen", "warehouse", "commissary", "office", "other"];
 
@@ -80,7 +81,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     captureException(error);
-    console.error("Error creating facility:", error);
+    log.error("Error creating facility:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

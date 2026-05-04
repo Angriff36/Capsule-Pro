@@ -8,6 +8,7 @@ import {
   autoAssignShift,
   getEligibleEmployeesForShift,
 } from "@/lib/staff/auto-assignment";
+import { log } from "@repo/observability/log";
 
 /**
  * GET /api/staff/shifts/[shiftId]/assignment-suggestions
@@ -85,7 +86,7 @@ export async function GET(
     return NextResponse.json(result);
   } catch (error) {
     captureException(error);
-    console.error("Error getting assignment suggestions:", error);
+    log.error("Error getting assignment suggestions:", error);
     return NextResponse.json(
       { message: "Failed to get assignment suggestions" },
       { status: 500 }
@@ -203,7 +204,7 @@ export async function POST(
     );
   } catch (error) {
     captureException(error);
-    console.error("Error auto-assigning shift:", error);
+    log.error("Error auto-assigning shift:", error);
     return NextResponse.json(
       { message: "Failed to auto-assign shift" },
       { status: 500 }

@@ -13,6 +13,7 @@ import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { log } from "@repo/observability/log";
 
 const QuerySchema = z.object({
   supplierId: z.string().uuid(),
@@ -108,7 +109,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     captureException(error);
-    console.error("[supplier-sync-status] Error fetching status:", error);
+    log.error("[supplier-sync-status] Error fetching status:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

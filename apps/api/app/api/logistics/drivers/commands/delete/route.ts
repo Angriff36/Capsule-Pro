@@ -8,6 +8,7 @@ import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
+import { log } from "@repo/observability/log";
 
 export async function POST(request: NextRequest) {
   try {
@@ -28,7 +29,7 @@ export async function POST(request: NextRequest) {
     return manifestSuccessResponse({ deleted: true });
   } catch (error) {
     captureException(error);
-    console.error("Error deleting driver:", error);
+    log.error("Error deleting driver:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

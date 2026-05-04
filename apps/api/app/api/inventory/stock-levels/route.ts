@@ -14,6 +14,7 @@ import type {
   StockLevelWithStatus,
   StockReorderStatus,
 } from "./types";
+import { log } from "@repo/observability/log";
 
 interface PaginationParams {
   page: number;
@@ -623,7 +624,7 @@ export async function GET(request: Request) {
     );
   } catch (error) {
     captureException(error);
-    console.error("Failed to list stock levels:", error);
+    log.error("Failed to list stock levels:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }

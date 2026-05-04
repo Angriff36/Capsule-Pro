@@ -2,6 +2,7 @@ import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
+import { log } from "@repo/observability/log";
 
 async function getTenantIdForOrg(orgId: string): Promise<string> {
   const account = await database.account.findFirst({
@@ -124,7 +125,7 @@ export async function GET(request: Request) {
     return NextResponse.json(data);
   } catch (error) {
     captureException(error);
-    console.error("Error fetching profitability data:", error);
+    log.error("Error fetching profitability data:", error);
     return NextResponse.json(
       { error: "Failed to fetch profitability data" },
       { status: 500 }

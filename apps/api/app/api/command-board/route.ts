@@ -17,6 +17,7 @@ import type {
   CommandBoardWithCardsCount,
 } from "./types";
 import { BOARD_STATUSES } from "./types";
+import { log } from "@repo/observability/log";
 
 interface PaginationParams {
   page: number;
@@ -174,7 +175,7 @@ export async function GET(request: Request) {
       },
     });
   } catch (error) {
-    console.error("Failed to list command boards:", error);
+    log.error("Failed to list command boards:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }

@@ -9,6 +9,7 @@ import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
+import { log } from "@repo/observability/log";
 
 export async function GET(request: NextRequest) {
   try {
@@ -34,7 +35,7 @@ export async function GET(request: NextRequest) {
 
     return manifestSuccessResponse({ chartOfAccounts });
   } catch (error) {
-    console.error("Error fetching chartOfAccounts:", error);
+    log.error("Error fetching chartOfAccounts:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

@@ -5,6 +5,7 @@ import { NextResponse } from "next/server";
 import { corsHeaders } from "@/app/lib/cors";
 import { InvariantError, invariant } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { log } from "@repo/observability/log";
 
 const TEAM_THREAD_TYPE = "team";
 const UUID_REGEX =
@@ -181,7 +182,7 @@ export async function PATCH(request: Request, context: RouteContext) {
         { status: 400, headers: corsHeaders(request, "PATCH, OPTIONS") }
       );
     }
-    console.error("Failed to update admin chat thread:", error);
+    log.error("Failed to update admin chat thread:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500, headers: corsHeaders(request, "PATCH, OPTIONS") }

@@ -4,6 +4,7 @@ import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { log } from "@repo/observability/log";
 
 export const runtime = "nodejs";
 
@@ -304,7 +305,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(result);
   } catch (error) {
     captureException(error);
-    console.error("Error restoring entities:", error);
+    log.error("Error restoring entities:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }
@@ -381,7 +382,7 @@ async function restoreDependentEntities(
         });
       }
     } catch (err) {
-      console.warn(`Failed to restore dependent ${dep.dependentEntity}:`, err);
+      log.warn(`Failed to restore dependent ${dep.dependentEntity}:`, err);
     }
   }
 }
@@ -449,7 +450,7 @@ export async function DELETE(request: NextRequest) {
     });
   } catch (error) {
     captureException(error);
-    console.error("Error permanently deleting entity:", error);
+    log.error("Error permanently deleting entity:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }

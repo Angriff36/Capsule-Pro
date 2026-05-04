@@ -9,6 +9,7 @@ import type {
   TrainingModule,
   TrainingModulesListResponse,
 } from "../types";
+import { log } from "@repo/observability/log";
 
 export const runtime = "nodejs";
 
@@ -289,7 +290,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    console.error("[training-module/create] Error:", error);
+    log.error("[training-module/create] Error:", error);
     return NextResponse.json(
       {
         message:

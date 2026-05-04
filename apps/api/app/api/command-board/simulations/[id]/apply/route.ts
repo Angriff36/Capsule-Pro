@@ -22,6 +22,7 @@ import type {
   BoardGroup,
   BoardProjection,
 } from "../../../types";
+import { log } from "@repo/observability/log";
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -507,7 +508,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     });
   } catch (error) {
     captureException(error);
-    console.error("Failed to apply simulation:", error);
+    log.error("Failed to apply simulation:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }

@@ -8,6 +8,7 @@ import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
+import { log } from "@repo/observability/log";
 
 const VALID_TYPES = [
   "hvac",
@@ -84,7 +85,7 @@ export async function POST(request: NextRequest) {
     return manifestSuccessResponse({ asset: (result as any[])[0] });
   } catch (error) {
     captureException(error);
-    console.error("Error creating facility asset:", error);
+    log.error("Error creating facility asset:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

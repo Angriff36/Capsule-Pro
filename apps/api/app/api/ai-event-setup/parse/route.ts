@@ -10,6 +10,7 @@ import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
+import { log } from "@repo/observability/log";
 
 export const runtime = "nodejs";
 
@@ -465,7 +466,7 @@ export async function POST(request: NextRequest) {
       return manifestErrorResponse("originalInput is required", 400);
     }
 
-    console.log("[ai-event-setup/parse] Parsing natural language event:", {
+    log.info("[ai-event-setup/parse] Parsing natural language event:", {
       input: originalInput.substring(0, 100),
       tenantId,
     });
@@ -486,7 +487,7 @@ export async function POST(request: NextRequest) {
     // Generate a session ID for tracking
     const sessionId = crypto.randomUUID();
 
-    console.log("[ai-event-setup/parse] Parse result:", {
+    log.info("[ai-event-setup/parse] Parse result:", {
       sessionId,
       title: parsed.title,
       eventType: parsed.eventType,
@@ -525,7 +526,7 @@ export async function POST(request: NextRequest) {
       ],
     });
   } catch (error) {
-    console.error("[ai-event-setup/parse] Error:", error);
+    log.error("[ai-event-setup/parse] Error:", error);
     captureException(error);
     return manifestErrorResponse("Internal server error", 500);
   }

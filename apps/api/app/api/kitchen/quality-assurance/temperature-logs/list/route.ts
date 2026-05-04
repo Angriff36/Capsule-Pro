@@ -3,6 +3,7 @@ import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { database } from "@/lib/database";
+import { log } from "@repo/observability/log";
 
 export async function GET(request: NextRequest) {
   try {
@@ -43,7 +44,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ success: true, logs });
   } catch (error) {
     captureException(error);
-    console.error("Error listing temperature logs:", error);
+    log.error("Error listing temperature logs:", error);
     return NextResponse.json(
       { error: "Failed to list temperature logs" },
       { status: 500 }

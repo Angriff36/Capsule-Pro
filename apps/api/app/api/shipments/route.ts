@@ -16,6 +16,7 @@ import type {
   ShipmentFilters,
   ShipmentStatus,
 } from "./types";
+import { log } from "@repo/observability/log";
 
 function parsePaginationParams(
   searchParams: URLSearchParams
@@ -144,7 +145,7 @@ export async function GET(request: Request) {
       pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
     });
   } catch (error) {
-    console.error("Failed to list shipments:", error);
+    log.error("Failed to list shipments:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }
@@ -153,7 +154,7 @@ export async function GET(request: Request) {
 }
 
 export function POST(request: NextRequest) {
-  console.log("[Shipment/POST] Delegating to manifest create command");
+  log.info("[Shipment/POST] Delegating to manifest create command");
   return executeManifestCommand(request, {
     entityName: "Shipment",
     commandName: "create",
@@ -201,7 +202,7 @@ export function POST(request: NextRequest) {
         mapped.shippingCost = Number(mapped.shippingCost);
       }
 
-      console.log(
+      log.info(
         "[Shipment/POST] Transformed body:",
         JSON.stringify({ ...mapped, scheduledDate: "<epoch>" })
       );

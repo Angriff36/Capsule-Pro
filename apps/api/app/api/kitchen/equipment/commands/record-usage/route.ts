@@ -4,6 +4,7 @@ import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { manifestErrorResponse } from "@/lib/manifest-response";
 import { database } from "@/lib/database";
+import { log } from "@repo/observability/log";
 
 export async function POST(request: NextRequest) {
   try {
@@ -62,7 +63,7 @@ export async function POST(request: NextRequest) {
     );
   } catch (error) {
     captureException(error);
-    console.error("Error recording equipment usage:", error);
+    log.error("Error recording equipment usage:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

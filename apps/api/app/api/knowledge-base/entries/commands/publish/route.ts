@@ -10,6 +10,7 @@ import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
+import { log } from "@repo/observability/log";
 
 // POST /api/knowledge-base/entries/commands/publish
 export async function POST(request: NextRequest) {
@@ -59,7 +60,7 @@ export async function POST(request: NextRequest) {
     return manifestSuccessResponse({ entry });
   } catch (error) {
     captureException(error);
-    console.error("Error publishing knowledge base entry:", error);
+    log.error("Error publishing knowledge base entry:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

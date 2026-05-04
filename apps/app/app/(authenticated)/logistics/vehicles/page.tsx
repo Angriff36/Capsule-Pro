@@ -270,7 +270,7 @@ export default function VehiclesPage() {
           const config = STATUS_CONFIG[status];
           const count = vehicles.filter((v) => v.status === status).length;
           return (
-            <Card key={status}>
+            <Card tone="soft-stone" key={status}>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">
                   {config.label}
@@ -297,7 +297,7 @@ export default function VehiclesPage() {
 
       {/* Vehicle List */}
       {vehicles.length === 0 ? (
-        <Card>
+        <Card tone="canvas">
           <CardContent className="py-12 text-center text-muted-foreground">
             <Truck className="h-12 w-12 mx-auto mb-4 opacity-50" />
             <p>No vehicles found. Add a vehicle to get started.</p>
@@ -311,6 +311,7 @@ export default function VehiclesPage() {
             const Icon = config.icon;
             return (
               <Card
+                tone="canvas"
                 className="hover:border-primary/40 transition-shadow"
                 key={vehicle.id}
               >

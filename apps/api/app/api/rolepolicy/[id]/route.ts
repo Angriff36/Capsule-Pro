@@ -9,6 +9,7 @@ import { database } from "@repo/database";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { log } from "@repo/observability/log";
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -61,7 +62,7 @@ export async function GET(request: Request, context: RouteContext) {
     return NextResponse.json(policy);
   } catch (error) {
     captureException(error);
-    console.error("[RolePolicy/detail] Error:", error);
+    log.error("[RolePolicy/detail] Error:", error);
     return NextResponse.json(
       { message: "Failed to fetch role policy" },
       { status: 500 }

@@ -250,7 +250,7 @@ export default function DriversPage() {
           const config = STATUS_CONFIG[status];
           const count = drivers.filter((d) => d.status === status).length;
           return (
-            <Card key={status}>
+            <Card tone="soft-stone" key={status}>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">
                   {config.label}
@@ -268,7 +268,7 @@ export default function DriversPage() {
       </div>
 
       {drivers.length === 0 ? (
-        <Card>
+        <Card tone="canvas">
           <CardContent className="py-12 text-center text-muted-foreground">
             <User className="h-12 w-12 mx-auto mb-4 opacity-50" />
             <p>No drivers found. Add a driver to get started.</p>
@@ -282,6 +282,7 @@ export default function DriversPage() {
             const Icon = config.icon;
             return (
               <Card
+                tone="canvas"
                 className="hover:border-primary/40 transition-shadow"
                 key={driver.id}
               >

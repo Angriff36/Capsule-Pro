@@ -12,6 +12,7 @@ import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { log } from "@repo/observability/log";
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -93,7 +94,7 @@ export async function POST(_request: NextRequest, context: RouteContext) {
     });
   } catch (error) {
     captureException(error);
-    console.error("Failed to discard simulation:", error);
+    log.error("Failed to discard simulation:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }

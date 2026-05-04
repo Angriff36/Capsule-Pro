@@ -11,6 +11,7 @@ import { NextResponse } from "next/server";
 import { generateApiKey } from "@/app/lib/api-key-service";
 import { requireCurrentUser } from "@/app/lib/tenant";
 import { withRateLimit } from "@/middleware/rate-limiter";
+import { log } from "@repo/observability/log";
 
 export const runtime = "nodejs";
 
@@ -47,7 +48,7 @@ export const GET = withRateLimit(
       return NextResponse.json({ keys });
     } catch (error) {
       captureException(error);
-      console.error("[ApiKeys/list] Error:", error);
+      log.error("[ApiKeys/list] Error:", error);
       return NextResponse.json(
         { message: "Failed to fetch API keys" },
         { status: 500 }
@@ -124,7 +125,7 @@ export const POST = withRateLimit(
         },
       });
 
-      console.log("[ApiKeys/create] Created API key", {
+      log.info("[ApiKeys/create] Created API key", {
         tenantId: currentUser.tenantId,
         keyId: apiKey.id,
         name: apiKey.name,
@@ -141,7 +142,7 @@ export const POST = withRateLimit(
       );
     } catch (error) {
       captureException(error);
-      console.error("[ApiKeys/create] Error:", error);
+      log.error("[ApiKeys/create] Error:", error);
       return NextResponse.json(
         { message: "Failed to create API key" },
         { status: 500 }

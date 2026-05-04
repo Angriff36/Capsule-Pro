@@ -3,6 +3,7 @@ import { database } from "@repo/database";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { log } from "@repo/observability/log";
 
 export async function POST(request: NextRequest) {
   try {
@@ -55,7 +56,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true, transfer: updatedTransfer });
   } catch (error) {
     captureException(error);
-    console.error("Error shipping inventory transfer:", error);
+    log.error("Error shipping inventory transfer:", error);
     return NextResponse.json(
       { error: "Failed to ship inventory transfer" },
       { status: 500 }

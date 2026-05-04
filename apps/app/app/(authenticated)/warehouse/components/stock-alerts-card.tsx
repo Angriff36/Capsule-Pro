@@ -54,7 +54,7 @@ export function StockAlertsCard({
   ).length;
 
   return (
-    <Card>
+    <Card tone="canvas">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-base">Stock Alerts</CardTitle>

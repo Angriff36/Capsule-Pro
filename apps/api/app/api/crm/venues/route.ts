@@ -20,6 +20,7 @@ import {
   parseVenueListFilters,
   validateCreateVenueRequest,
 } from "./validation";
+import { log } from "@repo/observability/log";
 
 /**
  * GET /api/crm/venues
@@ -106,7 +107,7 @@ export async function GET(request: NextRequest) {
         { status: prismaResult.status }
       );
     }
-    console.error("Error listing venues:", error);
+    log.error("Error listing venues:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }
@@ -177,7 +178,7 @@ export async function POST(request: NextRequest) {
         { status: prismaResult.status }
       );
     }
-    console.error("Error creating venue:", error);
+    log.error("Error creating venue:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }

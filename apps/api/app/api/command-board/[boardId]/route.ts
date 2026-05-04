@@ -18,6 +18,7 @@ import type {
   CardType,
   CommandBoardWithCards,
 } from "../types";
+import { log } from "@repo/observability/log";
 
 interface RouteContext {
   params: Promise<{ boardId: string }>;
@@ -173,7 +174,7 @@ export async function GET(_request: Request, context: RouteContext) {
 
     return NextResponse.json(boardWithCards);
   } catch (error) {
-    console.error(
+    log.error(
       "Failed to get command board:",
       error instanceof Error ? error : new Error(String(error))
     );

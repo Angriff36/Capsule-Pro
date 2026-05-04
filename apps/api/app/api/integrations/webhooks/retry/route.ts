@@ -19,6 +19,7 @@ import { captureException } from "@sentry/nextjs";
 
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { log } from "@repo/observability/log";
 
 // Valid statuses
 const VALID_DELIVERY_STATUSES = [
@@ -261,7 +262,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     captureException(error);
-    console.error("Error retrying webhooks:", error);
+    log.error("Error retrying webhooks:", error);
     return NextResponse.json(
       { error: "Failed to retry webhooks" },
       { status: 500 }

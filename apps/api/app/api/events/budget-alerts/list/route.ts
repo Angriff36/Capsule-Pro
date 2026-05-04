@@ -9,6 +9,7 @@ import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
+import { log } from "@repo/observability/log";
 
 export async function GET(request: NextRequest) {
   try {
@@ -35,7 +36,7 @@ export async function GET(request: NextRequest) {
 
     return manifestSuccessResponse({ budgetAlerts });
   } catch (error) {
-    console.error("Error fetching budgetAlerts:", error);
+    log.error("Error fetching budgetAlerts:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

@@ -10,6 +10,7 @@ import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
+import { log } from "@repo/observability/log";
 
 export interface KnowledgeBaseEntry {
   id: string;
@@ -101,7 +102,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     captureException(error);
-    console.error("Error fetching knowledge base entries:", error);
+    log.error("Error fetching knowledge base entries:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

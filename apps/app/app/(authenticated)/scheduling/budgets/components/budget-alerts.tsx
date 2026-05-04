@@ -136,7 +136,7 @@ export function BudgetAlerts() {
 
       {/* Summary Cards */}
       <div className="grid gap-4 md:grid-cols-3">
-        <Card>
+        <Card tone="soft-stone">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Alerts</CardTitle>
             <AlertTriangleIcon className="h-4 w-4 text-orange-600" />
@@ -147,7 +147,7 @@ export function BudgetAlerts() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card tone="soft-stone">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               Unacknowledged
@@ -160,7 +160,7 @@ export function BudgetAlerts() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card tone="soft-stone">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Resolved</CardTitle>
             <CheckIcon className="h-4 w-4 text-green-600" />
@@ -233,7 +233,7 @@ export function BudgetAlerts() {
       </div>
 
       {/* Alerts Table */}
-      <Card>
+      <Card tone="canvas">
         <CardContent className="p-0">
           <Table>
             <TableHeader>

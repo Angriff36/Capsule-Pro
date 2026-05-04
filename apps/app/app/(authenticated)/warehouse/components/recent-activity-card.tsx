@@ -93,7 +93,7 @@ export function RecentActivityCard({
   const displayTransactions = transactions.slice(0, maxItems);
 
   return (
-    <Card>
+    <Card tone="canvas">
       <CardHeader className="pb-3">
         <CardTitle className="text-base">Recent Activity</CardTitle>
         <CardDescription className="text-xs">

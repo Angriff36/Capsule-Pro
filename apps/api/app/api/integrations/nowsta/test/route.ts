@@ -11,6 +11,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createNowstaClient } from "@/app/lib/nowsta-client";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { log } from "@repo/observability/log";
 
 const testSchema = z.object({
   apiKey: z.string().min(1, "API key is required"),
@@ -84,7 +85,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     captureException(error);
-    console.error("Nowsta connection test failed:", error);
+    log.error("Nowsta connection test failed:", error);
     const message = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
       { success: false, message: `Connection test failed: ${message}` },
@@ -136,7 +137,7 @@ export async function GET() {
     });
   } catch (error) {
     captureException(error);
-    console.error("Nowsta connection test failed:", error);
+    log.error("Nowsta connection test failed:", error);
     const message = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
       { success: false, message: `Connection test failed: ${message}` },

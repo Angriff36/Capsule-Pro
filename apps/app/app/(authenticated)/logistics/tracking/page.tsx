@@ -359,7 +359,7 @@ export default function TrackingPage() {
 
       {/* Summary */}
       <div className="grid gap-4 md:grid-cols-3">
-        <Card>
+        <Card tone="soft-stone">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               Active Deliveries
@@ -373,7 +373,7 @@ export default function TrackingPage() {
             </p>
           </CardContent>
         </Card>
-        <Card>
+        <Card tone="soft-stone">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Dispatched</CardTitle>
             <Package className="h-4 w-4 text-gray-500" />
@@ -382,7 +382,7 @@ export default function TrackingPage() {
             <div className="text-2xl font-bold">{stats.dispatched}</div>
           </CardContent>
         </Card>
-        <Card>
+        <Card tone="soft-stone">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               Delivered Today
@@ -396,7 +396,7 @@ export default function TrackingPage() {
       </div>
 
       {deliveries.length === 0 ? (
-        <Card>
+        <Card tone="canvas">
           <CardContent className="py-16 text-center">
             <Truck className="mx-auto h-12 w-12 text-muted-foreground/50 mb-4" />
             <h3 className="font-semibold text-lg mb-1">
@@ -414,7 +414,7 @@ export default function TrackingPage() {
           {/* Map + List Layout */}
           <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_380px]">
             {/* Map */}
-            <Card className="overflow-hidden">
+            <Card tone="canvas" className="overflow-hidden">
               <CardContent className="p-0">
                 <div className="h-[500px]">
                   <MiniMap deliveries={deliveries} />
@@ -423,7 +423,7 @@ export default function TrackingPage() {
             </Card>
 
             {/* Delivery List */}
-            <Card className="overflow-auto max-h-[500px]">
+            <Card tone="canvas" className="overflow-auto max-h-[500px]">
               <CardHeader className="pb-2">
                 <CardTitle className="text-base">Active Deliveries</CardTitle>
                 <CardDescription>Click a delivery for details</CardDescription>
@@ -494,7 +494,7 @@ export default function TrackingPage() {
 
           {/* Selected Delivery Detail */}
           {selected && (
-            <Card>
+            <Card tone="canvas">
               <CardContent className="pt-6">
                 <div className="grid gap-6 md:grid-cols-[minmax(0,1fr)_280px]">
                   {/* Timeline */}

@@ -12,6 +12,7 @@ import {
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
+import { log } from "@repo/observability/log";
 
 export const runtime = "nodejs";
 
@@ -40,7 +41,7 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
 
-    console.log("[vendor-catalog/update] Executing command:", {
+    log.info("[vendor-catalog/update] Executing command:", {
       entityName: "VendorCatalog",
       command: "update",
       userId: currentUser.id,
@@ -58,7 +59,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (!result.success) {
-      console.error("[vendor-catalog/update] Command failed:", {
+      log.error("[vendor-catalog/update] Command failed:", {
         policyDenial: result.policyDenial,
         guardFailure: result.guardFailure,
         error: result.error,
@@ -85,7 +86,7 @@ export async function POST(request: NextRequest) {
       events: result.emittedEvents,
     });
   } catch (error) {
-    console.error("[vendor-catalog/update] Error:", error);
+    log.error("[vendor-catalog/update] Error:", error);
     captureException(error);
     return manifestErrorResponse("Internal server error", 500);
   }

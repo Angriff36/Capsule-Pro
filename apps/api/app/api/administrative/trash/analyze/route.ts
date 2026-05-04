@@ -4,6 +4,7 @@ import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { log } from "@repo/observability/log";
 
 export const runtime = "nodejs";
 
@@ -432,7 +433,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(result);
   } catch (error) {
     captureException(error);
-    console.error("Error analyzing entity dependencies:", error);
+    log.error("Error analyzing entity dependencies:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }
@@ -560,7 +561,7 @@ async function analyzeEntityDependencies(
         });
       }
     } catch (err) {
-      console.warn(`Failed to query dependents of type ${dependentType}:`, err);
+      log.warn(`Failed to query dependents of type ${dependentType}:`, err);
     }
   }
 

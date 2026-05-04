@@ -11,6 +11,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { manifestErrorResponse } from "@/lib/manifest-response";
 import { database } from "@/lib/database";
+import { log } from "@repo/observability/log";
 
 type Severity = "critical" | "warning" | "info";
 
@@ -185,7 +186,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ alerts, summary });
   } catch (error) {
     captureException(error);
-    console.error("Error fetching equipment alerts:", error);
+    log.error("Error fetching equipment alerts:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

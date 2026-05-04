@@ -4,6 +4,7 @@ import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { log } from "@repo/observability/log";
 
 export interface StationGroup {
   stationId: string;
@@ -180,7 +181,7 @@ export async function PATCH(
 ) {
   const { id } = await params;
 
-  console.log("[PrepList/PATCH] Delegating to manifest update command", {
+  log.info("[PrepList/PATCH] Delegating to manifest update command", {
     prepListId: id,
   });
 
@@ -206,7 +207,7 @@ export async function DELETE(
 ) {
   const { id } = await params;
 
-  console.log("[PrepList/DELETE] Delegating to manifest cancel command", {
+  log.info("[PrepList/DELETE] Delegating to manifest cancel command", {
     prepListId: id,
   });
 

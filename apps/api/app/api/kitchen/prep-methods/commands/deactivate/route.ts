@@ -12,6 +12,7 @@ import {
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
+import { log } from "@repo/observability/log";
 
 export const runtime = "nodejs";
 
@@ -40,7 +41,7 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
 
-    console.log("[prep-method/deactivate] Executing command:", {
+    log.info("[prep-method/deactivate] Executing command:", {
       entityName: "PrepMethod",
       command: "deactivate",
       userId: currentUser.id,
@@ -58,7 +59,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (!result.success) {
-      console.error("[prep-method/deactivate] Command failed:", {
+      log.error("[prep-method/deactivate] Command failed:", {
         policyDenial: result.policyDenial,
         guardFailure: result.guardFailure,
         error: result.error,
@@ -85,7 +86,7 @@ export async function POST(request: NextRequest) {
       events: result.emittedEvents,
     });
   } catch (error) {
-    console.error("[prep-method/deactivate] Error:", error);
+    log.error("[prep-method/deactivate] Error:", error);
     captureException(error);
     return manifestErrorResponse("Internal server error", 500);
   }

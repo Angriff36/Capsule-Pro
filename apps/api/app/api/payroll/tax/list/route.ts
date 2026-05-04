@@ -8,6 +8,7 @@ import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
+import { log } from "@repo/observability/log";
 
 // Tax brackets for 2026 federal single filers (simplified)
 const DEFAULT_FEDERAL_BRACKETS = [
@@ -58,7 +59,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     captureException(error);
-    console.error("Error fetching tax config:", error);
+    log.error("Error fetching tax config:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }
@@ -87,7 +88,7 @@ export async function PUT(request: NextRequest) {
     return manifestSuccessResponse({ config: (result as any[])[0] });
   } catch (error) {
     captureException(error);
-    console.error("Error updating tax config:", error);
+    log.error("Error updating tax config:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

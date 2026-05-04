@@ -18,6 +18,7 @@ import type {
 } from "./types";
 
 import { PO_STATUSES } from "./types";
+import { log } from "@repo/observability/log";
 
 interface PaginationParams {
   page: number;
@@ -254,7 +255,7 @@ export async function GET(request: Request) {
     });
   } catch (error) {
     captureException(error);
-    console.error("Failed to list purchase orders:", error);
+    log.error("Failed to list purchase orders:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }

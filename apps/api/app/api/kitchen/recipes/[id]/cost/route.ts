@@ -161,7 +161,7 @@ export async function GET(
 
     return manifestSuccessResponse(costData.breakdown);
   } catch (error) {
-    console.error("[recipes/cost] Error:", error);
+    log.error("[recipes/cost] Error:", error);
     captureException(error);
     const message =
       error instanceof Error ? error.message : "Failed to fetch recipe cost";
@@ -271,7 +271,7 @@ export async function POST(
       });
     }
 
-    console.error("[recipes/cost] Error:", error);
+    log.error("[recipes/cost] Error:", error);
     captureException(error);
 
     const message =

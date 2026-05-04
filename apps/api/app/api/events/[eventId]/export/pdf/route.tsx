@@ -13,6 +13,7 @@ import { database, type Event } from "@repo/database";
 import { EventDetailPDF } from "@repo/pdf";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { log } from "@repo/observability/log";
 
 export const runtime = "nodejs";
 
@@ -366,7 +367,7 @@ export async function GET(
       filename: `event-${sanitizedTitle}-${event.id.slice(0, 8)}.pdf`,
     });
   } catch (error) {
-    console.error("Failed to generate Event PDF:", error);
+    log.error("Failed to generate Event PDF:", error);
     return NextResponse.json(
       {
         error: "Failed to generate PDF",

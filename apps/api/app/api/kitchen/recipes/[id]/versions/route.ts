@@ -3,6 +3,7 @@ import { database } from "@repo/database";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { log } from "@repo/observability/log";
 
 /**
  * GET /api/kitchen/recipes/:id/versions
@@ -71,7 +72,7 @@ export async function GET(
 
     return NextResponse.json(rows);
   } catch (error) {
-    console.error("[GET /api/kitchen/recipes/:id/versions] Error:", error);
+    log.error("[GET /api/kitchen/recipes/:id/versions] Error:", error);
     captureException(error);
     return NextResponse.json(
       { error: "Failed to fetch recipe versions" },

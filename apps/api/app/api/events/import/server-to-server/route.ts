@@ -14,6 +14,7 @@ import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { log } from "@repo/observability/log";
 
 /**
  * Schema for menu item in import request
@@ -794,7 +795,7 @@ export async function POST(request: Request) {
     return NextResponse.json(response);
   } catch (error) {
     captureException(error);
-    console.error("Server-to-server import error:", error);
+    log.error("Server-to-server import error:", error);
     return NextResponse.json(
       {
         error: "Internal server error",

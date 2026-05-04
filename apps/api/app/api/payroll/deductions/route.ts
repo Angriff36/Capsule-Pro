@@ -10,6 +10,7 @@ import { database, Prisma } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { log } from "@repo/observability/log";
 
 type DeductionType =
   | "benefits"
@@ -154,7 +155,7 @@ export async function GET(request: Request) {
       },
     });
   } catch (error) {
-    console.error("Failed to list deductions:", error);
+    log.error("Failed to list deductions:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }

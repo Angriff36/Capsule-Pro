@@ -538,7 +538,7 @@ export function ContractDetailClient({
         {/* Contract Details */}
         <div className="grid gap-6 lg:grid-cols-2">
           {/* Contract Information Card */}
-          <Card>
+          <Card tone="canvas">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <FileTextIcon className="size-5 text-primary" />
@@ -653,7 +653,7 @@ export function ContractDetailClient({
           </Card>
 
           {/* Document and Signatures Card */}
-          <Card>
+          <Card tone="canvas">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <SignatureIcon className="size-5 text-primary" />
@@ -788,7 +788,7 @@ export function ContractDetailClient({
 
         {/* Document Preview Section */}
         {contract.documentUrl && (
-          <Card>
+          <Card tone="canvas">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <FileTextIcon className="size-5 text-primary" />
@@ -808,7 +808,7 @@ export function ContractDetailClient({
         )}
 
         {/* Contract History Section */}
-        <Card>
+        <Card tone="canvas">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <HistoryIcon className="size-5 text-primary" />

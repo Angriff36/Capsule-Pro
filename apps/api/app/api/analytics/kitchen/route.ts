@@ -3,6 +3,7 @@ import { database } from "@repo/database";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { log } from "@repo/observability/log";
 
 interface StationMetrics {
   station_id: string;
@@ -481,7 +482,7 @@ export async function GET(request: Request) {
     });
   } catch (error) {
     captureException(error);
-    console.error("Error fetching kitchen analytics:", error);
+    log.error("Error fetching kitchen analytics:", error);
     return NextResponse.json(
       { message: "Failed to fetch kitchen analytics" },
       { status: 500 }

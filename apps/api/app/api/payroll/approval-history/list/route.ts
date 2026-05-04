@@ -9,6 +9,7 @@ import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
+import { log } from "@repo/observability/log";
 
 export async function GET(request: NextRequest) {
   try {
@@ -34,7 +35,7 @@ export async function GET(request: NextRequest) {
 
     return manifestSuccessResponse({ approvalHistories });
   } catch (error) {
-    console.error("Error fetching payrollApprovalHistorys:", error);
+    log.error("Error fetching payrollApprovalHistorys:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

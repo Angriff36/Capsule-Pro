@@ -11,6 +11,7 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { log } from "@repo/observability/log";
 
 export async function GET(
   _request: Request,
@@ -85,7 +86,7 @@ export async function GET(
 
     return NextResponse.json({ data: mappedItems });
   } catch (error) {
-    console.error("Failed to list shipment items:", error);
+    log.error("Failed to list shipment items:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }
@@ -98,7 +99,7 @@ export async function POST(
   context: { params: Promise<{ id: string }> }
 ) {
   const { id } = await context.params;
-  console.log("[ShipmentItem/POST] Delegating to manifest create command", {
+  log.info("[ShipmentItem/POST] Delegating to manifest create command", {
     shipmentId: id,
   });
   return executeManifestCommand(request, {

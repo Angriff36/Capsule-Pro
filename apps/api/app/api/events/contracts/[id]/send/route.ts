@@ -18,6 +18,7 @@ import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { requireCurrentUser } from "@/app/lib/tenant";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
+import { log } from "@repo/observability/log";
 
 export const runtime = "nodejs";
 
@@ -165,7 +166,7 @@ export async function POST(
             }),
           });
         } catch (emailError) {
-          console.error("Failed to send contract email:", emailError);
+          log.error("Failed to send contract email:", emailError);
           // Continue — email failure is non-fatal
         }
       }
@@ -184,7 +185,7 @@ export async function POST(
     if (error instanceof Error && error.name === "InvariantError") {
       return manifestErrorResponse("Unauthorized", 401);
     }
-    console.error("[EventContract/send] Error:", error);
+    log.error("[EventContract/send] Error:", error);
     captureException(error);
     return manifestErrorResponse("Internal server error", 500);
   }

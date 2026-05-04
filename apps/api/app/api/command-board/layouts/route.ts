@@ -13,6 +13,7 @@ import { InvariantError } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { executeManifestCommand } from "@/lib/manifest-command-handler";
 import { validateBoardId } from "./validation";
+import { log } from "@repo/observability/log";
 
 const LAYOUT_SELECT = {
   id: true,
@@ -69,7 +70,7 @@ export async function GET(request: Request) {
       const message = (error as InvariantError).message;
       return NextResponse.json({ message }, { status: 400 });
     }
-    console.error("Error listing layouts:", error);
+    log.error("Error listing layouts:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }

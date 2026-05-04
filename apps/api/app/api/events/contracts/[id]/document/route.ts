@@ -12,6 +12,7 @@ import { database } from "@repo/database";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { log } from "@repo/observability/log";
 
 interface ContractDocumentAPIContext {
   params: Promise<{
@@ -121,7 +122,7 @@ export async function POST(
     });
   } catch (error) {
     captureException(error);
-    console.error("Error uploading document:", error);
+    log.error("Error uploading document:", error);
     return NextResponse.json(
       { error: "Failed to upload document" },
       { status: 500 }

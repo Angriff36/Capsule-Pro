@@ -9,6 +9,7 @@ import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
+import { log } from "@repo/observability/log";
 
 export async function GET(
   request: NextRequest,
@@ -41,7 +42,7 @@ export async function GET(
 
     return manifestSuccessResponse({ overrideAudit });
   } catch (error) {
-    console.error("Error fetching overrideAudit:", error);
+    log.error("Error fetching overrideAudit:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

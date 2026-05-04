@@ -13,6 +13,7 @@ import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { log } from "@repo/observability/log";
 
 interface InventoryRequirement {
   inventoryItemId: string;
@@ -311,7 +312,7 @@ export async function POST(
     return NextResponse.json(response, { status: 201 });
   } catch (error) {
     captureException(error);
-    console.error("Failed to generate shipment from event:", error);
+    log.error("Failed to generate shipment from event:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }
@@ -395,7 +396,7 @@ export async function GET(
     });
   } catch (error) {
     captureException(error);
-    console.error("Failed to preview shipment generation:", error);
+    log.error("Failed to preview shipment generation:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }

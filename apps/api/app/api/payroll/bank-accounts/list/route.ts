@@ -4,6 +4,7 @@ import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { log } from "@repo/observability/log";
 
 /**
  * GET /api/payroll/bank-accounts
@@ -101,7 +102,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ accounts, employees });
   } catch (error) {
     captureException(error);
-    console.error("Failed to list bank accounts:", error);
+    log.error("Failed to list bank accounts:", error);
     return NextResponse.json(
       { error: "Failed to list bank accounts" },
       { status: 500 }

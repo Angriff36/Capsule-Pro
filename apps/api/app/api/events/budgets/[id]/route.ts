@@ -12,6 +12,7 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { log } from "@repo/observability/log";
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -54,7 +55,7 @@ export async function GET(_request: Request, context: RouteContext) {
 
     return NextResponse.json(budget);
   } catch (error) {
-    console.error("Error fetching event budget:", error);
+    log.error("Error fetching event budget:", error);
     return NextResponse.json(
       { message: "Failed to fetch event budget" },
       { status: 500 }
@@ -71,7 +72,7 @@ export async function PUT(
   context: { params: Promise<{ id: string }> }
 ) {
   const { id } = await context.params;
-  console.log("[EventBudget/PUT] Delegating to manifest update command", {
+  log.info("[EventBudget/PUT] Delegating to manifest update command", {
     id,
   });
   return executeManifestCommand(request, {
@@ -91,7 +92,7 @@ export async function DELETE(
   context: { params: Promise<{ id: string }> }
 ) {
   const { id } = await context.params;
-  console.log("[EventBudget/DELETE] Delegating to manifest finalize command", {
+  log.info("[EventBudget/DELETE] Delegating to manifest finalize command", {
     id,
   });
   return executeManifestCommand(request, {

@@ -11,6 +11,7 @@ import { database } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { log } from "@repo/observability/log";
 
 /**
  * GET /api/collaboration/notifications/email/workflows/[id]
@@ -64,7 +65,7 @@ export async function GET(
       workflow,
     });
   } catch (error) {
-    console.error("Failed to fetch email workflow:", error);
+    log.error("Failed to fetch email workflow:", error);
     const message = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
       { error: `Failed to fetch email workflow: ${message}` },

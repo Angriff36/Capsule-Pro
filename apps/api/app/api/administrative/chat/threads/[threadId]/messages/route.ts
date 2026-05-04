@@ -7,6 +7,7 @@ import { corsHeaders } from "@/app/lib/cors";
 import { InvariantError, invariant } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { env } from "@/env";
+import { log } from "@repo/observability/log";
 
 export const runtime = "nodejs";
 
@@ -236,7 +237,7 @@ export async function GET(request: Request, context: RouteContext) {
         { status: 400, headers: corsHeaders(request, "GET, POST, OPTIONS") }
       );
     }
-    console.error("Failed to fetch admin chat messages:", error);
+    log.error("Failed to fetch admin chat messages:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500, headers: corsHeaders(request, "GET, POST, OPTIONS") }
@@ -343,7 +344,7 @@ export async function POST(request: Request, context: RouteContext) {
         createdAt: message.createdAt.toISOString(),
       });
     } catch (publishError) {
-      console.error("Failed to publish admin chat message:", publishError);
+      log.error("Failed to publish admin chat message:", publishError);
     }
 
     return NextResponse.json(message, {
@@ -358,7 +359,7 @@ export async function POST(request: Request, context: RouteContext) {
         { status: 400, headers: corsHeaders(request, "GET, POST, OPTIONS") }
       );
     }
-    console.error("Failed to send admin chat message:", error);
+    log.error("Failed to send admin chat message:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500, headers: corsHeaders(request, "GET, POST, OPTIONS") }

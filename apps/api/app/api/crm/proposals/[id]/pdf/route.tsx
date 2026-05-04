@@ -4,6 +4,7 @@ import { database, type PrismaClient } from "@repo/database";
 import { ProposalPDF } from "@repo/pdf";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { log } from "@repo/observability/log";
 
 export const runtime = "nodejs";
 
@@ -357,7 +358,7 @@ export async function GET(
 
     return generateBase64Response(pdfComponent, proposal.proposalNumber);
   } catch (error) {
-    console.error("Failed to generate Proposal PDF:", error);
+    log.error("Failed to generate Proposal PDF:", error);
     return NextResponse.json(
       {
         error: "Failed to generate PDF",

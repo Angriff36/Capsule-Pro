@@ -13,6 +13,7 @@ import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
+import { log } from "@repo/observability/log";
 
 /**
  * GET /api/settings/rate-limits/events
@@ -118,7 +119,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     captureException(error);
-    console.error("[rate-limits/events] Error:", error);
+    log.error("[rate-limits/events] Error:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

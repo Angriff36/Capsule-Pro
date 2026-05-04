@@ -3,6 +3,7 @@ import { database } from "@repo/database";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { log } from "@repo/observability/log";
 
 /**
  * POST /api/events/automated-followups/commands/complete
@@ -49,7 +50,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true });
   } catch (error) {
     captureException(error);
-    console.error("Error completing followup:", error);
+    log.error("Error completing followup:", error);
     return NextResponse.json(
       { error: "Failed to complete followup" },
       { status: 500 }

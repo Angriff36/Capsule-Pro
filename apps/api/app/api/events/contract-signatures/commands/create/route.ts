@@ -12,6 +12,7 @@ import {
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
+import { log } from "@repo/observability/log";
 
 export const runtime = "nodejs";
 
@@ -40,7 +41,7 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
 
-    console.log("[contract-signature/create] Executing command:", {
+    log.info("[contract-signature/create] Executing command:", {
       entityName: "ContractSignature",
       command: "create",
       userId: currentUser.id,
@@ -58,7 +59,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (!result.success) {
-      console.error("[contract-signature/create] Command failed:", {
+      log.error("[contract-signature/create] Command failed:", {
         policyDenial: result.policyDenial,
         guardFailure: result.guardFailure,
         error: result.error,
@@ -85,7 +86,7 @@ export async function POST(request: NextRequest) {
       events: result.emittedEvents,
     });
   } catch (error) {
-    console.error("[contract-signature/create] Error:", error);
+    log.error("[contract-signature/create] Error:", error);
     captureException(error);
     return manifestErrorResponse("Internal server error", 500);
   }

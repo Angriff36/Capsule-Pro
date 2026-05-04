@@ -2,6 +2,7 @@ import { auth } from "@repo/auth/server";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { log } from "@repo/observability/log";
 
 const SUPPORTED_PROVIDERS = ["google", "outlook"] as const;
 
@@ -145,7 +146,7 @@ export async function POST(request: NextRequest) {
     }
   } catch (error) {
     captureException(error);
-    console.error("[calendar/sync/trigger] Error:", error);
+    log.error("[calendar/sync/trigger] Error:", error);
     return NextResponse.json(
       { error: "Failed to trigger sync" },
       { status: 500 }

@@ -12,6 +12,7 @@ import {
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
+import { log } from "@repo/observability/log";
 
 export const runtime = "nodejs";
 
@@ -40,7 +41,7 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
 
-    console.log("[notification/markRead] Executing command:", {
+    log.info("[notification/markRead] Executing command:", {
       entityName: "Notification",
       command: "markRead",
       userId: currentUser.id,
@@ -59,7 +60,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (!result.success) {
-      console.error("[notification/markRead] Command failed:", {
+      log.error("[notification/markRead] Command failed:", {
         policyDenial: result.policyDenial,
         guardFailure: result.guardFailure,
         error: result.error,
@@ -86,7 +87,7 @@ export async function POST(request: NextRequest) {
       events: result.emittedEvents,
     });
   } catch (error) {
-    console.error("[notification/markRead] Error:", error);
+    log.error("[notification/markRead] Error:", error);
     captureException(error);
     return manifestErrorResponse("Internal server error", 500);
   }

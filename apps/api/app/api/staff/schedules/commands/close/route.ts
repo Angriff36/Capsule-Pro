@@ -12,6 +12,7 @@ import {
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
+import { log } from "@repo/observability/log";
 
 export const runtime = "nodejs";
 
@@ -40,7 +41,7 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
 
-    console.log("[schedule/close] Executing command:", {
+    log.info("[schedule/close] Executing command:", {
       entityName: "Schedule",
       command: "close",
       userId: currentUser.id,
@@ -59,7 +60,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (!result.success) {
-      console.error("[schedule/close] Command failed:", {
+      log.error("[schedule/close] Command failed:", {
         policyDenial: result.policyDenial,
         guardFailure: result.guardFailure,
         error: result.error,
@@ -86,7 +87,7 @@ export async function POST(request: NextRequest) {
       events: result.emittedEvents,
     });
   } catch (error) {
-    console.error("[schedule/close] Error:", error);
+    log.error("[schedule/close] Error:", error);
     captureException(error);
     return manifestErrorResponse("Internal server error", 500);
   }

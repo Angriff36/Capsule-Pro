@@ -15,6 +15,7 @@ import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
+import { log } from "@repo/observability/log";
 
 /**
  * GET /api/settings/rate-limits
@@ -43,7 +44,7 @@ export async function GET(request: NextRequest) {
     return manifestSuccessResponse({ rateLimitConfigs: configs });
   } catch (error) {
     captureException(error);
-    console.error("[rate-limits/list] Error:", error);
+    log.error("[rate-limits/list] Error:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }
@@ -129,7 +130,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    console.log("[rate-limits/create] Created rate limit config", {
+    log.info("[rate-limits/create] Created rate limit config", {
       tenantId,
       configId: config.id,
       name: config.name,
@@ -139,7 +140,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(config, { status: 201 });
   } catch (error) {
     captureException(error);
-    console.error("[rate-limits/create] Error:", error);
+    log.error("[rate-limits/create] Error:", error);
     return manifestErrorResponse(
       "Failed to create rate limit configuration",
       500

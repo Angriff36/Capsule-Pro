@@ -401,7 +401,7 @@ export function TrashPageClient({
 
       <div className="flex flex-1 flex-col p-4 pt-0">
         {/* Filters and Search */}
-        <Card>
+        <Card tone="canvas">
           <CardHeader className="pb-4">
             <div className="flex items-center justify-between">
               <div>
@@ -489,6 +489,7 @@ export function TrashPageClient({
         {/* Restore Result Notification */}
         {restoreResult && (
           <Card
+            tone="canvas"
             className={
               restoreResult.success
                 ? "border-green-200 bg-green-50"
@@ -540,7 +541,7 @@ export function TrashPageClient({
         )}
 
         {/* Items Table */}
-        <Card className="flex-1">
+        <Card tone="canvas" className="flex-1">
           <CardContent className="p-0">
             <Table>
               <TableHeader>

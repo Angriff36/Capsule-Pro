@@ -9,6 +9,7 @@ import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
+import { log } from "@repo/observability/log";
 
 export async function GET(
   request: NextRequest,
@@ -40,7 +41,7 @@ export async function GET(
 
     return manifestSuccessResponse({ prepLists });
   } catch (error) {
-    console.error("Error fetching prepLists:", error);
+    log.error("Error fetching prepLists:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

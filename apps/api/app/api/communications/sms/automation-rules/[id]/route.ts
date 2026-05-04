@@ -8,6 +8,7 @@ import {
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
+import { log } from "@repo/observability/log";
 
 export const runtime = "nodejs";
 
@@ -61,7 +62,7 @@ export async function GET(
     });
   } catch (error) {
     captureException(error);
-    console.error("Error getting SMS automation rule:", error);
+    log.error("Error getting SMS automation rule:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }
@@ -179,7 +180,7 @@ export async function PATCH(
     });
   } catch (error) {
     captureException(error);
-    console.error("Error updating SMS automation rule:", error);
+    log.error("Error updating SMS automation rule:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }
@@ -259,7 +260,7 @@ export async function DELETE(
     });
   } catch (error) {
     captureException(error);
-    console.error("Error deleting SMS automation rule:", error);
+    log.error("Error deleting SMS automation rule:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

@@ -18,6 +18,7 @@ import {
   parsePaginationParams,
   validateCreateInvoiceRequest,
 } from "./validation";
+import { log } from "@repo/observability/log";
 
 /**
  * GET /api/accounting/invoices
@@ -161,7 +162,7 @@ export async function GET(request: NextRequest) {
         { status: prismaResult.status }
       );
     }
-    console.error("Error listing invoices:", error);
+    log.error("Error listing invoices:", error);
     return NextResponse.json(
       { error: "Failed to list invoices" },
       { status: 500 }
@@ -316,7 +317,7 @@ export async function POST(request: NextRequest) {
         { status: prismaResult.status }
       );
     }
-    console.error("Error creating invoice:", error);
+    log.error("Error creating invoice:", error);
     return NextResponse.json(
       { error: "Failed to create invoice" },
       { status: 500 }

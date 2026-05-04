@@ -10,6 +10,7 @@ import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
+import { log } from "@repo/observability/log";
 
 // GET /api/knowledge-base/entries/[slug] - Get entry by slug
 export async function GET(
@@ -44,7 +45,7 @@ export async function GET(
     return manifestSuccessResponse({ entry });
   } catch (error) {
     captureException(error);
-    console.error("Error fetching knowledge base entry:", error);
+    log.error("Error fetching knowledge base entry:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

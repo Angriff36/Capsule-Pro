@@ -8,6 +8,7 @@ import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
+import { log } from "@repo/observability/log";
 
 export async function POST(request: NextRequest) {
   try {
@@ -49,7 +50,7 @@ export async function POST(request: NextRequest) {
     return manifestSuccessResponse({ vehicle: (result as any[])[0] });
   } catch (error) {
     captureException(error);
-    console.error("Error creating vehicle:", error);
+    log.error("Error creating vehicle:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

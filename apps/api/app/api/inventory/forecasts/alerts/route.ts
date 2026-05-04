@@ -3,6 +3,7 @@ import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { batchCalculateForecasts } from "@/app/lib/inventory-forecasting";
 import { requireTenantId } from "@/app/lib/tenant";
+import { log } from "@repo/observability/log";
 
 // GET /api/inventory/forecasts/alerts?criticalThreshold={7}&warningThreshold={14}
 // Returns: Items forecasted to run out within the threshold days
@@ -96,7 +97,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ alerts });
   } catch (error) {
     captureException(error);
-    console.error("Failed to fetch forecast alerts:", error);
+    log.error("Failed to fetch forecast alerts:", error);
     return NextResponse.json(
       {
         error: "Failed to fetch forecast alerts",

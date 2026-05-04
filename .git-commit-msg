@@ -1,0 +1,16 @@
+feat: complete §3.11 Card tone migration (183→0) + §6.2 console migration (1,949 statements across 1,266 files)
+
+§3.11: All bare <Card> instances now have explicit tone= props (soft-stone for
+stat/metric cards, canvas for content/display). ~149 Cards migrated across 50
+files spanning analytics, logistics, warehouse, inventory, facilities, CRM,
+events, scheduling, and administrative modules.
+
+§6.2: All console.log/error/warn in production routes (apps/api/app/api/) replaced
+with log.info/error/warn from @repo/observability/log. 371 log → info, 1,559
+error → error, 19 warn → warn. Zero remaining console calls in production routes.
+
+API tests: 4,051 passed. App tests: 257 passed. Both typechecks clean.
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>

@@ -2,6 +2,7 @@ import { auth } from "@repo/auth/server";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { log } from "@repo/observability/log";
 
 const SUPPORTED_PROVIDERS = ["google", "outlook"] as const;
 type Provider = (typeof SUPPORTED_PROVIDERS)[number];
@@ -164,7 +165,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid action" }, { status: 400 });
   } catch (error) {
     captureException(error);
-    console.error("[calendar/sync/connect] Error:", error);
+    log.error("[calendar/sync/connect] Error:", error);
     return NextResponse.json(
       { error: "Failed to initiate connection" },
       { status: 500 }

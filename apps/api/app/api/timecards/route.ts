@@ -4,6 +4,7 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { log } from "@repo/observability/log";
 
 function getStatusFilter(status: string | null): string {
   if (status === "approved") {
@@ -193,7 +194,7 @@ export async function GET(request: Request) {
 }
 
 export function POST(request: NextRequest) {
-  console.log("[TimeEntry/POST] Delegating to manifest clockIn command");
+  log.info("[TimeEntry/POST] Delegating to manifest clockIn command");
   return executeManifestCommand(request, {
     entityName: "TimeEntry",
     commandName: "clockIn",

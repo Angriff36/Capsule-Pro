@@ -9,6 +9,7 @@ import { auth } from "@repo/auth/server";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { log } from "@repo/observability/log";
 
 export async function GET() {
   try {
@@ -26,7 +27,7 @@ export async function GET() {
     return NextResponse.json({ exports: [] });
   } catch (error) {
     captureException(error);
-    console.error("Failed to get QuickBooks export history:", error);
+    log.error("Failed to get QuickBooks export history:", error);
     return NextResponse.json(
       { error: "Failed to get export history" },
       { status: 500 }

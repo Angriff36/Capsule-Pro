@@ -13,6 +13,7 @@ import { InvariantError } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { executeManifestCommand } from "@/lib/manifest-command-handler";
 import { parseClientListFilters, parsePaginationParams } from "./validation";
+import { log } from "@repo/observability/log";
 
 /**
  * GET /api/crm/clients
@@ -114,7 +115,7 @@ export async function GET(request: Request) {
     if (error instanceof InvariantError) {
       return NextResponse.json({ message: error.message }, { status: 400 });
     }
-    console.error("Error listing clients:", error);
+    log.error("Error listing clients:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }

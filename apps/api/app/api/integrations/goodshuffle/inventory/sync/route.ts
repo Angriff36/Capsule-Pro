@@ -10,6 +10,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { runGoodshuffleInventorySync } from "@/app/lib/goodshuffle-inventory-sync-service";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { log } from "@repo/observability/log";
 
 const syncSchema = z.object({
   dryRun: z.boolean().default(false),
@@ -54,7 +55,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(result);
   } catch (error) {
     captureException(error);
-    console.error("Failed to run Goodshuffle inventory sync:", error);
+    log.error("Failed to run Goodshuffle inventory sync:", error);
     return NextResponse.json(
       { error: "Failed to run inventory sync" },
       { status: 500 }

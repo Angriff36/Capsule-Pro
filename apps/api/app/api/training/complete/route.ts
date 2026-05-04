@@ -4,6 +4,7 @@ import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import type { CompleteTrainingInput, StartTrainingInput } from "../types";
+import { log } from "@repo/observability/log";
 
 /**
  * POST /api/training/complete
@@ -256,7 +257,7 @@ export async function POST(request: Request) {
     );
   } catch (error) {
     captureException(error);
-    console.error("Error processing training completion:", error);
+    log.error("Error processing training completion:", error);
     return NextResponse.json(
       { message: "Failed to process training completion" },
       { status: 500 }

@@ -4,6 +4,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { database } from "@/lib/database";
+import { log } from "@repo/observability/log";
 
 const generateSchema = z.object({
   recipeId: z.string(),
@@ -531,7 +532,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     captureException(error);
-    console.error("Error generating nutrition label:", error);
+    log.error("Error generating nutrition label:", error);
     return NextResponse.json(
       { error: "Failed to generate nutrition label" },
       { status: 500 }

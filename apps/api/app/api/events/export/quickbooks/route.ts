@@ -20,6 +20,7 @@ import {
 } from "@/app/lib/quickbooks-invoice-export";
 
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { log } from "@repo/observability/log";
 
 /**
  * Request schema for QuickBooks invoice export
@@ -346,7 +347,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     captureException(error);
-    console.error("QuickBooks invoice export error:", error);
+    log.error("QuickBooks invoice export error:", error);
 
     if (error instanceof Error && error.message.includes("not found")) {
       return NextResponse.json({ error: error.message }, { status: 404 });

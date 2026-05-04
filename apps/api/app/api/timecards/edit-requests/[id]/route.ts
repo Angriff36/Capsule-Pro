@@ -9,6 +9,7 @@ import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
+import { log } from "@repo/observability/log";
 
 export async function GET(
   request: NextRequest,
@@ -41,7 +42,7 @@ export async function GET(
 
     return manifestSuccessResponse({ timecardEditRequest });
   } catch (error) {
-    console.error("Error fetching timecardEditRequest:", error);
+    log.error("Error fetching timecardEditRequest:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

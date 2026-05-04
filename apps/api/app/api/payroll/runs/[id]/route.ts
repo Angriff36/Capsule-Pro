@@ -11,6 +11,7 @@ import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
+import { log } from "@repo/observability/log";
 
 const VALID_TRANSITIONS: Record<string, string[]> = {
   pending: ["approved", "rejected"],
@@ -64,7 +65,7 @@ export async function GET(
 
     return manifestSuccessResponse({ payrollRun });
   } catch (error) {
-    console.error("Error fetching payrollRun:", error);
+    log.error("Error fetching payrollRun:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }
@@ -140,7 +141,7 @@ export async function PUT(
     return manifestSuccessResponse({ payrollRun: updatedRun[0] });
   } catch (error) {
     captureException(error);
-    console.error("Error updating payrollRun:", error);
+    log.error("Error updating payrollRun:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

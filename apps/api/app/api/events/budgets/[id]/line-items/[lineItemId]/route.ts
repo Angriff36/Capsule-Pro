@@ -12,6 +12,7 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { log } from "@repo/observability/log";
 
 interface RouteContext {
   params: Promise<{ id: string; lineItemId: string }>;
@@ -50,7 +51,7 @@ export async function GET(_request: Request, context: RouteContext) {
 
     return NextResponse.json(lineItem);
   } catch (error) {
-    console.error("Error fetching budget line item:", error);
+    log.error("Error fetching budget line item:", error);
     return NextResponse.json(
       { message: "Failed to fetch budget line item" },
       { status: 500 }
@@ -67,7 +68,7 @@ export async function PUT(
   context: { params: Promise<{ id: string; lineItemId: string }> }
 ) {
   const { id, lineItemId } = await context.params;
-  console.log("[BudgetLineItem/PUT] Delegating to manifest update command", {
+  log.info("[BudgetLineItem/PUT] Delegating to manifest update command", {
     id,
     lineItemId,
   });
@@ -88,7 +89,7 @@ export async function DELETE(
   context: { params: Promise<{ id: string; lineItemId: string }> }
 ) {
   const { id, lineItemId } = await context.params;
-  console.log("[BudgetLineItem/DELETE] Delegating to manifest remove command", {
+  log.info("[BudgetLineItem/DELETE] Delegating to manifest remove command", {
     id,
     lineItemId,
   });

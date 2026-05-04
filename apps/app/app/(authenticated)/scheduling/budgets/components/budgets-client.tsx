@@ -234,7 +234,7 @@ export function BudgetsClient() {
           Performance Overview
         </h2>
         <div className="grid gap-4 md:grid-cols-3">
-          <Card>
+          <Card tone="soft-stone">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
                 Active Budgets
@@ -247,7 +247,7 @@ export function BudgetsClient() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card tone="soft-stone">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
                 Total Budget Target
@@ -262,7 +262,7 @@ export function BudgetsClient() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card tone="soft-stone">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
                 Actual Spend
@@ -365,7 +365,7 @@ export function BudgetsClient() {
         <h2 className="text-sm font-medium text-muted-foreground">
           Budgets ({filteredBudgets.length})
         </h2>
-        <Card>
+        <Card tone="canvas">
           <CardContent className="p-0">
             <Table>
               <TableHeader>

@@ -6,6 +6,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { withRateLimit } from "@/middleware/rate-limiter";
+import { log } from "@repo/observability/log";
 
 const ExportQuickBooksRequestSchema = z.object({
   periodId: z.string().min(1),
@@ -94,7 +95,7 @@ export const POST = withRateLimit<Record<string, string | string[]>>(
       });
     } catch (error) {
       captureException(error);
-      console.error("QuickBooks export error:", error);
+      log.error("QuickBooks export error:", error);
 
       if (error instanceof Error && error.message.includes("not found")) {
         return NextResponse.json({ error: error.message }, { status: 404 });

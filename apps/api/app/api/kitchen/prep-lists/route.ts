@@ -14,6 +14,7 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { log } from "@repo/observability/log";
 
 interface PrepListListFilters {
   eventId?: string;
@@ -239,7 +240,7 @@ export async function GET(request: Request) {
  * constraints, policies, and emits domain events.
  */
 export async function POST(request: NextRequest) {
-  console.log("[PrepList/POST] Delegating to manifest create command");
+  log.info("[PrepList/POST] Delegating to manifest create command");
 
   return await executeManifestCommand(request, {
     entityName: "PrepList",

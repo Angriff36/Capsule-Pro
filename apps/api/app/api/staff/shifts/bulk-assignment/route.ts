@@ -12,6 +12,7 @@ import {
   separateShiftsByAssignmentType,
   sortResultsByInputOrder,
 } from "./helpers";
+import { log } from "@repo/observability/log";
 
 /**
  * POST /api/staff/shifts/bulk-assignment
@@ -112,7 +113,7 @@ export const POST = withRateLimit(
       });
     } catch (error) {
       captureException(error);
-      console.error("Error executing bulk assignment:", error);
+      log.error("Error executing bulk assignment:", error);
       return NextResponse.json(
         {
           message: "Failed to execute bulk assignment",

@@ -15,6 +15,7 @@ import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { requireCurrentUser } from "@/app/lib/tenant";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
+import { log } from "@repo/observability/log";
 
 export const runtime = "nodejs";
 
@@ -149,7 +150,7 @@ export async function PATCH(
     if (error instanceof Error && error.name === "InvariantError") {
       return manifestErrorResponse("Unauthorized", 401);
     }
-    console.error("[EventContract/status] Error:", error);
+    log.error("[EventContract/status] Error:", error);
     captureException(error);
     return manifestErrorResponse("Internal server error", 500);
   }

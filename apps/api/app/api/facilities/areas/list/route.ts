@@ -13,6 +13,7 @@ import {
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
 import { clampLimit, clampOffset } from "@/lib/pagination";
+import { log } from "@repo/observability/log";
 
 export async function GET(request: NextRequest) {
   try {
@@ -50,7 +51,7 @@ export async function GET(request: NextRequest) {
     return manifestSuccessResponse({ areas, limit, offset });
   } catch (error) {
     captureException(error);
-    console.error("Error listing facility areas:", error);
+    log.error("Error listing facility areas:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

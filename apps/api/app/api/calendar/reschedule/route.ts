@@ -3,6 +3,7 @@ import { database } from "@repo/database";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { log } from "@repo/observability/log";
 
 export async function PATCH(request: NextRequest) {
   try {
@@ -91,7 +92,7 @@ export async function PATCH(request: NextRequest) {
     );
   } catch (error) {
     captureException(error);
-    console.error("Calendar reschedule error:", error);
+    log.error("Calendar reschedule error:", error);
     return NextResponse.json(
       { error: "Failed to reschedule event" },
       { status: 500 }

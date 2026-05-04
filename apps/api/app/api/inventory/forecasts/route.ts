@@ -7,6 +7,7 @@ import {
 } from "@/app/lib/inventory-forecasting";
 
 import { requireTenantId } from "@/app/lib/tenant";
+import { log } from "@repo/observability/log";
 
 // GET /api/inventory/forecasts?sku={sku}&from={date}&to={date}&horizon={days}&save={true|false}
 // Returns: ForecastResult for the SKU with optional date range filter or new calculation
@@ -62,7 +63,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(forecast);
   } catch (error) {
     captureException(error);
-    console.error("Failed to fetch forecasts:", error);
+    log.error("Failed to fetch forecasts:", error);
     return NextResponse.json(
       {
         error: "Failed to fetch forecasts",

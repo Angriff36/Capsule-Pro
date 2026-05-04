@@ -3,6 +3,7 @@ import { database, Prisma } from "@repo/database";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { log } from "@repo/observability/log";
 
 /**
  * GET /api/staff/shifts/available-employees
@@ -128,7 +129,7 @@ export async function GET(request: Request) {
     });
   } catch (error) {
     captureException(error);
-    console.error("Error fetching available employees:", error);
+    log.error("Error fetching available employees:", error);
     return NextResponse.json(
       { message: "Failed to fetch available employees" },
       { status: 500 }

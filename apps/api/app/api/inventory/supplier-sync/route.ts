@@ -23,6 +23,7 @@ import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
+import { log } from "@repo/observability/log";
 
 export const runtime = "nodejs";
 
@@ -125,7 +126,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     captureException(error);
-    console.error("[supplier-sync/sync] Error:", error);
+    log.error("[supplier-sync/sync] Error:", error);
     const message = error instanceof Error ? error.message : "Sync failed";
     return manifestErrorResponse(message, 500);
   }
@@ -181,7 +182,7 @@ export async function GET(request: NextRequest) {
     return manifestSuccessResponse({ supplierId, syncLogs });
   } catch (error) {
     captureException(error);
-    console.error("[supplier-sync/status] Error:", error);
+    log.error("[supplier-sync/status] Error:", error);
     const message =
       error instanceof Error ? error.message : "Failed to fetch sync status";
     return manifestErrorResponse(message, 500);

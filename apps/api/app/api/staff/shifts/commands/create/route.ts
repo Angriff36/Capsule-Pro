@@ -12,6 +12,7 @@ import {
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
+import { log } from "@repo/observability/log";
 
 export const runtime = "nodejs";
 
@@ -40,7 +41,7 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
 
-    console.log("[schedule-shift/create] Executing command:", {
+    log.info("[schedule-shift/create] Executing command:", {
       entityName: "ScheduleShift",
       command: "create",
       userId: currentUser.id,
@@ -58,7 +59,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (!result.success) {
-      console.error("[schedule-shift/create] Command failed:", {
+      log.error("[schedule-shift/create] Command failed:", {
         policyDenial: result.policyDenial,
         guardFailure: result.guardFailure,
         error: result.error,
@@ -85,7 +86,7 @@ export async function POST(request: NextRequest) {
       events: result.emittedEvents,
     });
   } catch (error) {
-    console.error("[schedule-shift/create] Error:", error);
+    log.error("[schedule-shift/create] Error:", error);
     captureException(error);
     return manifestErrorResponse("Internal server error", 500);
   }

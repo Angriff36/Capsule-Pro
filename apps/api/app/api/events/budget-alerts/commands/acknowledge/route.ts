@@ -12,6 +12,7 @@ import {
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
+import { log } from "@repo/observability/log";
 
 export const runtime = "nodejs";
 
@@ -40,7 +41,7 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
 
-    console.log("[budget-alert/acknowledge] Executing command:", {
+    log.info("[budget-alert/acknowledge] Executing command:", {
       entityName: "BudgetAlert",
       command: "acknowledge",
       userId: currentUser.id,
@@ -58,7 +59,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (!result.success) {
-      console.error("[budget-alert/acknowledge] Command failed:", {
+      log.error("[budget-alert/acknowledge] Command failed:", {
         policyDenial: result.policyDenial,
         guardFailure: result.guardFailure,
         error: result.error,
@@ -85,7 +86,7 @@ export async function POST(request: NextRequest) {
       events: result.emittedEvents,
     });
   } catch (error) {
-    console.error("[budget-alert/acknowledge] Error:", error);
+    log.error("[budget-alert/acknowledge] Error:", error);
     captureException(error);
     return manifestErrorResponse("Internal server error", 500);
   }

@@ -19,6 +19,7 @@ import type {
   StockStatus,
 } from "./types";
 import { FSA_STATUSES, ITEM_CATEGORIES } from "./types";
+import { log } from "@repo/observability/log";
 
 interface PaginationParams {
   page: number;
@@ -243,7 +244,7 @@ export async function GET(request: Request) {
       },
     });
   } catch (error) {
-    console.error("Failed to list inventory items:", error);
+    log.error("Failed to list inventory items:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }
@@ -255,7 +256,7 @@ export async function GET(request: Request) {
  * POST /api/inventory/items - Create a new inventory item
  */
 export async function POST(request: NextRequest) {
-  console.log("[InventoryItem/POST] Delegating to manifest create command");
+  log.info("[InventoryItem/POST] Delegating to manifest create command");
   return await executeManifestCommand(request, {
     entityName: "InventoryItem",
     commandName: "create",

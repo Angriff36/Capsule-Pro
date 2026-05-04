@@ -10,6 +10,7 @@ import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
+import { log } from "@repo/observability/log";
 
 export interface ActivityFeedItem {
   id: string;
@@ -128,7 +129,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     captureException(error);
-    console.error("Error fetching activity feed:", error);
+    log.error("Error fetching activity feed:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

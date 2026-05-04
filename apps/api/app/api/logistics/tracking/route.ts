@@ -9,6 +9,7 @@ import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
+import { log } from "@repo/observability/log";
 
 export async function GET(request: NextRequest) {
   try {
@@ -303,7 +304,7 @@ export async function GET(request: NextRequest) {
     return manifestSuccessResponse({ deliveries, stats });
   } catch (error) {
     captureException(error);
-    console.error("Error loading tracking data:", error);
+    log.error("Error loading tracking data:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

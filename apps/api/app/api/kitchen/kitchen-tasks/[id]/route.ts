@@ -9,6 +9,7 @@ import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
+import { log } from "@repo/observability/log";
 
 export async function GET(
   request: NextRequest,
@@ -42,7 +43,7 @@ export async function GET(
 
     return manifestSuccessResponse({ kitchenTask });
   } catch (error) {
-    console.error("Error fetching kitchenTask:", error);
+    log.error("Error fetching kitchenTask:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

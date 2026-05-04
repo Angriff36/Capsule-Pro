@@ -11,6 +11,7 @@ import type {
   SuggestionPriority,
   SuggestionType,
 } from "./types";
+import { log } from "@repo/observability/log";
 
 // AI model configuration
 const AI_MODEL = "gpt-4o-mini";
@@ -425,7 +426,7 @@ Generate ${maxSuggestions} prioritized suggestions based on this state.`;
 
     return suggestions;
   } catch (error: unknown) {
-    console.error("AI suggestion generation failed:", error);
+    log.error("AI suggestion generation failed:", error);
 
     // Fallback to rule-based suggestions
     return generateFallbackSuggestions(tenantId, context, maxSuggestions);
@@ -611,7 +612,7 @@ export async function GET(request: Request) {
     });
   } catch (error: unknown) {
     captureException(error);
-    console.error("Suggestions API error:", error);
+    log.error("Suggestions API error:", error);
 
     return NextResponse.json(
       {

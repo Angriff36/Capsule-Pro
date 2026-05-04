@@ -17,6 +17,7 @@ import {
   parseEventBudgetListFilters,
   validateCreateEventBudget,
 } from "./validation";
+import { log } from "@repo/observability/log";
 
 /**
  * GET /api/events/budgets
@@ -83,7 +84,7 @@ export async function GET(request: Request) {
     });
   } catch (error) {
     captureException(error);
-    console.error("Error fetching event budgets:", error);
+    log.error("Error fetching event budgets:", error);
     return NextResponse.json(
       { message: "Failed to fetch event budgets" },
       { status: 500 }
@@ -257,7 +258,7 @@ export async function POST(request: Request) {
         return NextResponse.json({ message: error.message }, { status: 400 });
       }
     }
-    console.error("Error creating event budget:", error);
+    log.error("Error creating event budget:", error);
     return NextResponse.json(
       { message: "Failed to create event budget" },
       { status: 500 }

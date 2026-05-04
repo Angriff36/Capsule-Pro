@@ -3,6 +3,7 @@ import { database, Prisma } from "@repo/database";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { log } from "@repo/observability/log";
 
 export async function GET(req: NextRequest) {
   try {
@@ -79,7 +80,7 @@ export async function GET(req: NextRequest) {
     });
   } catch (error) {
     captureException(error);
-    console.error("Failed to fetch schedules:", error);
+    log.error("Failed to fetch schedules:", error);
     return NextResponse.json(
       { error: "Failed to fetch schedules" },
       { status: 500 }

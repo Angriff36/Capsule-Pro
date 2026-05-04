@@ -6,6 +6,7 @@ import { generateText } from "ai";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { withRateLimit } from "@/middleware/rate-limiter";
+import { log } from "@repo/observability/log";
 
 // AI model configuration
 const AI_MODEL = "gpt-4o-mini";
@@ -315,7 +316,7 @@ Generate a concise summary (${TARGET_WORD_COUNT} words) that includes all critic
       criticalInfo: aiResponse.criticalInfo ?? [],
     };
   } catch (error: unknown) {
-    console.error("AI summary generation failed:", error);
+    log.error("AI summary generation failed:", error);
 
     // Fallback to basic summary
     return generateFallbackSummary(eventData);
@@ -449,7 +450,7 @@ export const GET = withRateLimit<{ eventId: string }>(
       });
     } catch (error: unknown) {
       captureException(error);
-      console.error("Event summary generation error:", error);
+      log.error("Event summary generation error:", error);
 
       if (error instanceof Error && error.message === "Event not found") {
         return NextResponse.json(

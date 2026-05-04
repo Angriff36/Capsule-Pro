@@ -9,6 +9,7 @@ import { database } from "@repo/database";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { log } from "@repo/observability/log";
 
 function toNumber(value: { toNumber: () => number }): number {
   return value.toNumber();
@@ -107,7 +108,7 @@ export async function GET(request: Request, context: RouteContext) {
     });
   } catch (error) {
     captureException(error);
-    console.error("Failed to get variance reports:", error);
+    log.error("Failed to get variance reports:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }

@@ -3,6 +3,7 @@ import { PrepListPDF, type PrepListPDFData } from "@repo/pdf";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { database } from "@/lib/database";
+import { log } from "@repo/observability/log";
 
 export const runtime = "nodejs";
 
@@ -144,7 +145,7 @@ async function handlePdfBase64(
 }
 
 function handlePdfError(error: unknown): NextResponse {
-  console.error("Failed to generate Prep List PDF:", error);
+  log.error("Failed to generate Prep List PDF:", error);
 
   if (error instanceof Error) {
     if (error.message === "Unauthorized") {

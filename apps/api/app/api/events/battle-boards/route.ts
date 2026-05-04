@@ -13,6 +13,7 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { log } from "@repo/observability/log";
 
 /**
  * GET /api/events/battle-boards
@@ -75,7 +76,7 @@ export async function GET(request: Request) {
       },
     });
   } catch (error) {
-    console.error("Error listing battle boards:", error);
+    log.error("Error listing battle boards:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }
@@ -88,7 +89,7 @@ export async function GET(request: Request) {
  * Create a new battle board
  */
 export async function POST(request: NextRequest) {
-  console.log("[BattleBoard/POST] Delegating to manifest create command");
+  log.info("[BattleBoard/POST] Delegating to manifest create command");
   return await executeManifestCommand(request, {
     entityName: "BattleBoard",
     commandName: "create",

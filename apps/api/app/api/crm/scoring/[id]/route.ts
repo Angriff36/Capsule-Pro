@@ -11,6 +11,7 @@ import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { log } from "@repo/observability/log";
 
 export const runtime = "nodejs";
 
@@ -171,7 +172,7 @@ export async function PUT(
     return NextResponse.json({ data: refreshed[0] });
   } catch (error) {
     captureException(error);
-    console.error("Error updating scoring rule:", error);
+    log.error("Error updating scoring rule:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }
@@ -212,7 +213,7 @@ export async function DELETE(
     return NextResponse.json({ success: true });
   } catch (error) {
     captureException(error);
-    console.error("Error deleting scoring rule:", error);
+    log.error("Error deleting scoring rule:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }

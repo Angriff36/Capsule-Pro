@@ -278,7 +278,7 @@ export default function WaitlistPage() {
       {summary && (
         <>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-            <Card>
+            <Card tone="soft-stone">
               <CardContent className="pt-6">
                 <div className="flex items-center gap-2">
                   <Users className="h-4 w-4 text-muted-foreground" />
@@ -289,7 +289,7 @@ export default function WaitlistPage() {
                 <p className="text-2xl font-bold mt-1">{summary.total}</p>
               </CardContent>
             </Card>
-            <Card>
+            <Card tone="soft-stone">
               <CardContent className="pt-6">
                 <div className="flex items-center gap-2">
                   <UserCheck className="h-4 w-4 text-green-600" />
@@ -302,7 +302,7 @@ export default function WaitlistPage() {
                 </p>
               </CardContent>
             </Card>
-            <Card>
+            <Card tone="soft-stone">
               <CardContent className="pt-6">
                 <div className="flex items-center gap-2">
                   <Clock className="h-4 w-4 text-yellow-600" />
@@ -313,7 +313,7 @@ export default function WaitlistPage() {
                 </p>
               </CardContent>
             </Card>
-            <Card>
+            <Card tone="soft-stone">
               <CardContent className="pt-6">
                 <div className="flex items-center gap-2">
                   <ListOrdered className="h-4 w-4 text-blue-600" />
@@ -326,7 +326,7 @@ export default function WaitlistPage() {
                 </p>
               </CardContent>
             </Card>
-            <Card>
+            <Card tone="soft-stone">
               <CardContent className="pt-6">
                 <div className="flex items-center gap-2">
                   <ArrowRightToLine className="h-4 w-4 text-muted-foreground" />
@@ -345,7 +345,7 @@ export default function WaitlistPage() {
 
           {/* Capacity Bar */}
           {summary.capacity !== null && (
-            <Card>
+            <Card tone="canvas">
               <CardContent className="pt-6">
                 <div className="flex justify-between text-sm mb-2">
                   <span className="text-muted-foreground">Capacity</span>
@@ -366,7 +366,7 @@ export default function WaitlistPage() {
       )}
 
       {/* Guest Table */}
-      <Card>
+      <Card tone="canvas">
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Guests</CardTitle>
           <Dialog onOpenChange={setAddOpen} open={addOpen}>

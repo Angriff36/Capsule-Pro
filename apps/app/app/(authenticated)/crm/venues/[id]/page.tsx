@@ -214,7 +214,7 @@ export default function VenuePage() {
 
       <div className="grid gap-6 md:grid-cols-2">
         {/* Location & Capacity */}
-        <Card>
+        <Card tone="canvas">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <MapPinIcon className="h-5 w-5" />
@@ -250,7 +250,7 @@ export default function VenuePage() {
         </Card>
 
         {/* Contact Information */}
-        <Card>
+        <Card tone="canvas">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <UserIcon className="h-5 w-5" />
@@ -290,7 +290,7 @@ export default function VenuePage() {
 
         {/* Access Notes */}
         {(venue.accessNotes || venue.cateringNotes) && (
-          <Card className="md:col-span-2">
+          <Card className="md:col-span-2" tone="canvas">
             <CardHeader>
               <CardTitle>Notes</CardTitle>
             </CardHeader>
@@ -314,7 +314,7 @@ export default function VenuePage() {
         )}
 
         {/* Event History */}
-        <Card className="md:col-span-2">
+        <Card className="md:col-span-2" tone="canvas">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <CalendarIcon className="h-5 w-5" />

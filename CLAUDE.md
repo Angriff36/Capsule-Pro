@@ -198,7 +198,7 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[auto-bridge snapshot @ 10 changes]
-Files: apps/app/app/(authenticated)/events/budgets/components/create-budget-modal.tsx (edit), apps/app/app/(authenticated)/events/budgets/budgets-page-client.tsx (edit), apps/app/app/(authenticated)/events/events-page-client.tsx (edit), apps/app/app/(authenticated)/kitchen/recipes/recipes-toolbar.tsx (edit), apps/app/app/(authenticated)/kitchen/recipes/components/rich-recipe-editor.tsx (edit), apps/app/app/(authenticated)/kitchen/recipes/recipes-page-client.tsx (edit), apps/app/app/(authenticated)/kitchen/recipes/recipe-favorite-button.tsx (edit), packages/design-system/components/ui/card.tsx (edit)
+[Emergency bridge — running bridge was not updated]
+Files: apps/app/app/(authenticated)/payroll/direct-deposit/page.tsx (edit), apps/api/__tests__/rate-limiting/rate-limiter.test.ts (edit), IMPLEMENTATION_PLAN.md (edit), scripts/manifest/write-route-infra-allowlist.json (edit)
 
 # === END COGNILAYER ===

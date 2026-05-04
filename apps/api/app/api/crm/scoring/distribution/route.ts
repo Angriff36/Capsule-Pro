@@ -10,6 +10,7 @@ import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { log } from "@repo/observability/log";
 
 export const runtime = "nodejs";
 
@@ -54,7 +55,7 @@ export async function GET(_request: NextRequest) {
     return NextResponse.json({ data: distMap });
   } catch (error) {
     captureException(error);
-    console.error("Error fetching distribution:", error);
+    log.error("Error fetching distribution:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }

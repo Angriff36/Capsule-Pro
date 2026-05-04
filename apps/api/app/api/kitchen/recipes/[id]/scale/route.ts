@@ -200,7 +200,7 @@ export async function GET(
       ingredients: scaledIngredients,
     });
   } catch (error) {
-    console.error("[recipes/scale] GET Error:", error);
+    log.error("[recipes/scale] GET Error:", error);
     captureException(error);
     const message =
       error instanceof Error ? error.message : "Failed to scale ingredients";
@@ -244,7 +244,7 @@ export async function POST(
 
     return manifestSuccessResponse(result);
   } catch (error) {
-    console.error("[recipes/scale] Error:", error);
+    log.error("[recipes/scale] Error:", error);
     captureException(error);
     const message =
       error instanceof Error ? error.message : "Failed to scale recipe cost";
@@ -351,7 +351,7 @@ export async function PATCH(
       );
     }
 
-    console.error("[recipes/scale] Error:", error);
+    log.error("[recipes/scale] Error:", error);
     captureException(error);
 
     const message =

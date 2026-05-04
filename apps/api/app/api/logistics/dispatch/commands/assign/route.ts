@@ -8,6 +8,7 @@ import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
+import { log } from "@repo/observability/log";
 
 export async function POST(request: NextRequest) {
   try {
@@ -94,7 +95,7 @@ export async function POST(request: NextRequest) {
     return manifestSuccessResponse({ route: updatedRoute });
   } catch (error) {
     captureException(error);
-    console.error("Error assigning driver:", error);
+    log.error("Error assigning driver:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

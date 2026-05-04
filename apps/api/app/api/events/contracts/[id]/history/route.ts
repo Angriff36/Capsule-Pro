@@ -12,6 +12,7 @@ import { database } from "@repo/database";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { log } from "@repo/observability/log";
 
 interface ContractHistoryAPIContext {
   params: Promise<{
@@ -137,7 +138,7 @@ export async function GET(
     });
   } catch (error) {
     captureException(error);
-    console.error("Error fetching contract history:", error);
+    log.error("Error fetching contract history:", error);
     return NextResponse.json(
       { error: "Failed to fetch contract history" },
       { status: 500 }

@@ -137,7 +137,7 @@ const CrmCommunicationsPage = async () => {
         <h2 className="text-sm font-medium text-muted-foreground">
           Recent Touchpoints
         </h2>
-        <Card>
+        <Card tone="canvas">
           <CardContent className="space-y-4 pt-6">
             {interactions.length === 0 ? (
               <p className="text-sm text-muted-foreground">

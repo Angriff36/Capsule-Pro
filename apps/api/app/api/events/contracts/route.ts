@@ -13,6 +13,7 @@ import { InvariantError } from "../../../lib/invariant";
 import { getTenantIdForOrg } from "../../../lib/tenant";
 import type { ContractStatus } from "./types";
 import { CONTRACT_STATUSES } from "./validation";
+import { log } from "@repo/observability/log";
 
 interface ContractListFilters {
   status?: ContractStatus;
@@ -214,7 +215,7 @@ export async function GET(request: Request) {
     if (error instanceof InvariantError) {
       return NextResponse.json({ message: error.message }, { status: 400 });
     }
-    console.error("Error listing contracts:", error);
+    log.error("Error listing contracts:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }

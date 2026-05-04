@@ -125,7 +125,7 @@ export const RecipesPageClient = () => {
     <div className="space-y-6">
       {/* Summary Cards */}
       <div className="grid gap-4 md:grid-cols-4">
-        <Card>
+        <Card tone="soft-stone">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Recipes</CardTitle>
             <CalculatorIcon className="h-4 w-4 text-muted-foreground" />
@@ -137,7 +137,7 @@ export const RecipesPageClient = () => {
             </p>
           </CardContent>
         </Card>
-        <Card>
+        <Card tone="soft-stone">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               With Cost Data
@@ -152,7 +152,7 @@ export const RecipesPageClient = () => {
             </p>
           </CardContent>
         </Card>
-        <Card>
+        <Card tone="soft-stone">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Value</CardTitle>
             <DollarSignIcon className="h-4 w-4 text-muted-foreground" />
@@ -166,7 +166,7 @@ export const RecipesPageClient = () => {
             </p>
           </CardContent>
         </Card>
-        <Card>
+        <Card tone="soft-stone">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               Avg Cost/Yield
@@ -185,7 +185,7 @@ export const RecipesPageClient = () => {
       </div>
 
       {/* Filters */}
-      <Card>
+      <Card tone="canvas">
         <CardHeader>
           <CardTitle>Recipe Costing</CardTitle>
           <CardDescription>

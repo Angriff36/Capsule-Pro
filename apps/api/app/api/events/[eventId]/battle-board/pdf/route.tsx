@@ -5,6 +5,7 @@ import { BattleBoardPDF } from "@repo/pdf";
 import { type NextRequest, NextResponse } from "next/server";
 import type React from "react";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { log } from "@repo/observability/log";
 
 export const runtime = "nodejs";
 
@@ -344,7 +345,7 @@ export async function GET(
 
     return generateBase64Response(pdfComponent, event.title);
   } catch (error) {
-    console.error("Failed to generate Battle Board PDF:", error);
+    log.error("Failed to generate Battle Board PDF:", error);
     return NextResponse.json(
       {
         error: "Failed to generate PDF",

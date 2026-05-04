@@ -11,6 +11,7 @@ import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
+import { log } from "@repo/observability/log";
 
 /**
  * GET /api/payroll/tax/brackets
@@ -64,7 +65,7 @@ export async function GET() {
     });
   } catch (error) {
     captureException(error);
-    console.error("Error fetching tax brackets:", error);
+    log.error("Error fetching tax brackets:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }
@@ -130,7 +131,7 @@ export async function PUT(request: NextRequest) {
     });
   } catch (error) {
     captureException(error);
-    console.error("Error calculating tax preview:", error);
+    log.error("Error calculating tax preview:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

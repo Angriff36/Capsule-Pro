@@ -29,6 +29,7 @@ import {
   parsePaymentFilters,
   validateCreatePaymentRequest,
 } from "./validation";
+import { log } from "@repo/observability/log";
 
 /**
  * Cache scope for `Idempotency-Key`-protected payment creation.
@@ -138,7 +139,7 @@ export async function GET(request: NextRequest) {
         { status: prismaResult.status }
       );
     }
-    console.error("Error listing payments:", error);
+    log.error("Error listing payments:", error);
     return NextResponse.json(
       { error: "Failed to list payments" },
       { status: 500 }
@@ -270,7 +271,7 @@ export async function POST(request: NextRequest) {
         { status: prismaResult.status }
       );
     }
-    console.error("Error creating payment:", error);
+    log.error("Error creating payment:", error);
     return NextResponse.json(
       { error: "Failed to create payment" },
       { status: 500 }

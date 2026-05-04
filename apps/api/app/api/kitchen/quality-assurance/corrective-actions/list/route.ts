@@ -3,6 +3,7 @@ import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { database } from "@/lib/database";
+import { log } from "@repo/observability/log";
 
 export async function GET(request: NextRequest) {
   try {
@@ -34,7 +35,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ success: true, actions });
   } catch (error) {
     captureException(error);
-    console.error("Error listing corrective actions:", error);
+    log.error("Error listing corrective actions:", error);
     return NextResponse.json(
       { error: "Failed to list corrective actions" },
       { status: 500 }

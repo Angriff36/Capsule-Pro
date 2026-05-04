@@ -261,7 +261,7 @@ export default function EditProposalTemplatePage() {
           {/* Main Form */}
           <div className="lg:col-span-2 space-y-6">
             {/* Basic Info */}
-            <Card>
+            <Card tone="canvas">
               <CardHeader>
                 <CardTitle>Template Details</CardTitle>
                 <CardDescription>
@@ -336,7 +336,7 @@ export default function EditProposalTemplatePage() {
             </Card>
 
             {/* Line Items */}
-            <Card>
+            <Card tone="canvas">
               <CardHeader>
                 <CardTitle>Default Line Items</CardTitle>
                 <CardDescription>
@@ -493,7 +493,7 @@ export default function EditProposalTemplatePage() {
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Settings */}
-            <Card>
+            <Card tone="canvas">
               <CardHeader>
                 <CardTitle>Settings</CardTitle>
               </CardHeader>
@@ -535,7 +535,7 @@ export default function EditProposalTemplatePage() {
             </Card>
 
             {/* Branding */}
-            <Card>
+            <Card tone="canvas">
               <CardHeader>
                 <CardTitle>Branding</CardTitle>
                 <CardDescription>

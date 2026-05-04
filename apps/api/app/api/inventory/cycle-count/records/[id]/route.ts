@@ -12,6 +12,7 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { log } from "@repo/observability/log";
 
 type SyncStatus = "synced" | "pending" | "failed" | "conflict";
 
@@ -115,7 +116,7 @@ export async function GET(_request: Request, context: RouteContext) {
 
     return NextResponse.json(mapRecord(record));
   } catch (error) {
-    console.error("Failed to get cycle count record:", error);
+    log.error("Failed to get cycle count record:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }
@@ -131,7 +132,7 @@ export async function PUT(
   context: { params: Promise<{ id: string }> }
 ) {
   const { id } = await context.params;
-  console.log("[CycleCountRecord/PUT] Delegating to manifest update command", {
+  log.info("[CycleCountRecord/PUT] Delegating to manifest update command", {
     id,
   });
   return executeManifestCommand(request, {
@@ -150,7 +151,7 @@ export async function DELETE(
   context: { params: Promise<{ id: string }> }
 ) {
   const { id } = await context.params;
-  console.log(
+  log.info(
     "[CycleCountRecord/DELETE] Delegating to manifest remove command",
     { id }
   );

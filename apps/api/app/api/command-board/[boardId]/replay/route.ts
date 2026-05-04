@@ -13,6 +13,7 @@ import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { InvariantError } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { log } from "@repo/observability/log";
 
 interface RouteContext {
   params: Promise<{ boardId: string }>;
@@ -191,7 +192,7 @@ export async function GET(request: Request, context: RouteContext) {
       const message = (error as InvariantError).message;
       return NextResponse.json({ message }, { status: 400 });
     }
-    console.error("Error fetching replay events:", error);
+    log.error("Error fetching replay events:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }

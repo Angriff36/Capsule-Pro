@@ -3,6 +3,7 @@ import { database, Prisma } from "@repo/database";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { log } from "@repo/observability/log";
 
 /**
  * GET /api/user-preferences
@@ -64,7 +65,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ preferences: preferencesList });
   } catch (error) {
     captureException(error);
-    console.error("Failed to fetch user preferences:", error);
+    log.error("Failed to fetch user preferences:", error);
     return NextResponse.json(
       { error: "Failed to fetch user preferences" },
       { status: 500 }
@@ -142,7 +143,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: true });
   } catch (error) {
     captureException(error);
-    console.error("Failed to save user preference:", error);
+    log.error("Failed to save user preference:", error);
     return NextResponse.json(
       { error: "Failed to save user preference" },
       { status: 500 }

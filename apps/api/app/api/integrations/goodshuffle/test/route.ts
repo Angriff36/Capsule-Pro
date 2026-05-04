@@ -11,6 +11,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createGoodshuffleClient } from "@/app/lib/goodshuffle-client";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { log } from "@repo/observability/log";
 
 const testSchema = z.object({
   apiKey: z.string().min(1, "API key is required"),
@@ -55,7 +56,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(result);
   } catch (error) {
     captureException(error);
-    console.error("Failed to test Goodshuffle connection:", error);
+    log.error("Failed to test Goodshuffle connection:", error);
     return NextResponse.json(
       { error: "Failed to test connection" },
       { status: 500 }
@@ -100,7 +101,7 @@ export async function GET() {
     return NextResponse.json(result);
   } catch (error) {
     captureException(error);
-    console.error("Failed to test Goodshuffle connection:", error);
+    log.error("Failed to test Goodshuffle connection:", error);
     return NextResponse.json(
       { error: "Failed to test connection" },
       { status: 500 }

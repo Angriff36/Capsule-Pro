@@ -3,6 +3,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { executeManifestCommand } from "@/lib/manifest-command-handler";
 import { getBudgetAlerts } from "@/lib/staff/labor-budget";
+import { log } from "@repo/observability/log";
 
 /**
  * GET /api/staff/budgets/alerts
@@ -44,7 +45,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json({ alerts });
   } catch (error) {
-    console.error("Error fetching budget alerts:", error);
+    log.error("Error fetching budget alerts:", error);
     return NextResponse.json(
       { message: "Failed to fetch budget alerts" },
       { status: 500 }

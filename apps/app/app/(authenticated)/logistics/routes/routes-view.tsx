@@ -251,14 +251,14 @@ export function RoutesView() {
 
         <TabsContent className="space-y-4" value={activeTab}>
           {filteredRoutes.length === 0 ? (
-            <Card>
+            <Card tone="canvas">
               <CardContent className="py-8 text-center text-muted-foreground">
                 No routes found. Create a new route to get started.
               </CardContent>
             </Card>
           ) : (
             filteredRoutes.map((route) => (
-              <Card key={route.id}>
+              <Card tone="canvas" key={route.id}>
                 <CardHeader className="pb-2">
                   <div className="flex items-center justify-between">
                     <CardTitle className="flex items-center gap-2">

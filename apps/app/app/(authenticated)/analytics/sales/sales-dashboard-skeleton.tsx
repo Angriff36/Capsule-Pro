@@ -21,7 +21,7 @@ export function SalesDashboardSkeleton() {
 
       <Separator />
 
-      <Card>
+      <Card tone="canvas">
         <CardHeader>
           <CardTitle>Upload Workbook</CardTitle>
         </CardHeader>

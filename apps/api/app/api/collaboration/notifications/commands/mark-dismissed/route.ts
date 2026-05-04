@@ -12,6 +12,7 @@ import {
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
+import { log } from "@repo/observability/log";
 
 export const runtime = "nodejs";
 
@@ -40,7 +41,7 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
 
-    console.log("[notification/markDismissed] Executing command:", {
+    log.info("[notification/markDismissed] Executing command:", {
       entityName: "Notification",
       command: "markDismissed",
       userId: currentUser.id,
@@ -59,7 +60,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (!result.success) {
-      console.error("[notification/markDismissed] Command failed:", {
+      log.error("[notification/markDismissed] Command failed:", {
         policyDenial: result.policyDenial,
         guardFailure: result.guardFailure,
         error: result.error,
@@ -86,7 +87,7 @@ export async function POST(request: NextRequest) {
       events: result.emittedEvents,
     });
   } catch (error) {
-    console.error("[notification/markDismissed] Error:", error);
+    log.error("[notification/markDismissed] Error:", error);
     captureException(error);
     return manifestErrorResponse("Internal server error", 500);
   }

@@ -3,6 +3,7 @@ import { database } from "@repo/database";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { log } from "@repo/observability/log";
 
 interface TaskMetrics {
   total_tasks: string;
@@ -376,7 +377,7 @@ export async function GET(
     return NextResponse.json(metrics);
   } catch (error) {
     captureException(error);
-    console.error("Error fetching employee performance:", error);
+    log.error("Error fetching employee performance:", error);
     return NextResponse.json(
       { message: "Failed to fetch employee performance" },
       { status: 500 }

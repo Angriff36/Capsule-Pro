@@ -15,6 +15,7 @@ import type {
   PurchaseOrderWithDetails,
   QualityStatus,
 } from "../types";
+import { log } from "@repo/observability/log";
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -150,7 +151,7 @@ export async function GET(_request: Request, context: RouteContext) {
     return NextResponse.json(orderWithDetails);
   } catch (error) {
     captureException(error);
-    console.error("Failed to get purchase order:", error);
+    log.error("Failed to get purchase order:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }

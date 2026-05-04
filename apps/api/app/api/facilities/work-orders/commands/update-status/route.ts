@@ -8,6 +8,7 @@ import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
+import { log } from "@repo/observability/log";
 
 export async function POST(request: NextRequest) {
   try {
@@ -78,7 +79,7 @@ export async function POST(request: NextRequest) {
     return manifestSuccessResponse({ workOrder: (result as any[])[0] });
   } catch (error) {
     captureException(error);
-    console.error("Error updating work order:", error);
+    log.error("Error updating work order:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

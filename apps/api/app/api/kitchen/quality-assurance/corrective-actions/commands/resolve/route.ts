@@ -3,6 +3,7 @@ import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { database } from "@/lib/database";
+import { log } from "@repo/observability/log";
 
 export async function POST(request: NextRequest) {
   try {
@@ -55,7 +56,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true, action });
   } catch (error) {
     captureException(error);
-    console.error("Error resolving corrective action:", error);
+    log.error("Error resolving corrective action:", error);
     return NextResponse.json(
       { error: "Failed to resolve corrective action" },
       { status: 500 }

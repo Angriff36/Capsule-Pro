@@ -13,6 +13,7 @@ import { InvariantError } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import type { CreateAdjustmentResponse } from "../types";
 import { validateCreateAdjustmentRequest } from "../validation";
+import { log } from "@repo/observability/log";
 
 async function verifyInventoryItemExists(
   tenantId: string,
@@ -353,7 +354,7 @@ export async function POST(request: Request) {
     if (error instanceof InvariantError) {
       return NextResponse.json({ message: error.message }, { status: 400 });
     }
-    console.error("Failed to create stock adjustment:", error);
+    log.error("Failed to create stock adjustment:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }

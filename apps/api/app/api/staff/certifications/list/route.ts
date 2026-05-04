@@ -9,6 +9,7 @@ import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
+import { log } from "@repo/observability/log";
 
 export async function GET(request: NextRequest) {
   try {
@@ -36,7 +37,7 @@ export async function GET(request: NextRequest) {
 
     return manifestSuccessResponse({ employeeCertifications });
   } catch (error) {
-    console.error("Error fetching employeeCertifications:", error);
+    log.error("Error fetching employeeCertifications:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

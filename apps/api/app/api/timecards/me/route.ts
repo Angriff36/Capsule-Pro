@@ -3,6 +3,7 @@ import { database, Prisma } from "@repo/database";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { log } from "@repo/observability/log";
 
 /**
  * GET /api/timecards/me
@@ -100,7 +101,7 @@ export async function GET() {
     });
   } catch (error) {
     captureException(error);
-    console.error("Failed to fetch current employee status:", error);
+    log.error("Failed to fetch current employee status:", error);
     return NextResponse.json(
       { error: "Failed to fetch employee status" },
       { status: 500 }

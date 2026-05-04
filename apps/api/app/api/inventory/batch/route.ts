@@ -16,6 +16,7 @@ import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import type { FSAStatus, ItemCategory } from "../items/types";
 import { FSA_STATUSES, ITEM_CATEGORIES } from "../items/types";
+import { log } from "@repo/observability/log";
 
 interface BatchUpdatePayload {
   action: "update";
@@ -192,7 +193,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ message: "Unknown action" }, { status: 400 });
   } catch (error) {
     captureException(error);
-    console.error("[InventoryBatch/POST] Error:", error);
+    log.error("[InventoryBatch/POST] Error:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }

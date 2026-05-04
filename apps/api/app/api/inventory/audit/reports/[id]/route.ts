@@ -10,6 +10,7 @@ import { database } from "@repo/database";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { log } from "@repo/observability/log";
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -393,7 +394,7 @@ export async function GET(request: Request, context: RouteContext) {
     });
   } catch (error) {
     captureException(error);
-    console.error("Failed to get saved report:", error);
+    log.error("Failed to get saved report:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }
@@ -467,7 +468,7 @@ export async function DELETE(request: Request, context: RouteContext) {
     });
   } catch (error) {
     captureException(error);
-    console.error("Failed to delete saved report:", error);
+    log.error("Failed to delete saved report:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }

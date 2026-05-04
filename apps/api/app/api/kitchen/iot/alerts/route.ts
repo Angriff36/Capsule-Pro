@@ -3,6 +3,7 @@ import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { database } from "@/lib/database";
+import { log } from "@repo/observability/log";
 
 /**
  * GET /api/kitchen/iot/alerts
@@ -40,7 +41,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ alerts });
   } catch (error) {
     captureException(error);
-    console.error("List IoT alerts error:", error);
+    log.error("List IoT alerts error:", error);
     return NextResponse.json(
       { error: "Failed to list alerts" },
       { status: 500 }
@@ -100,7 +101,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ alert });
   } catch (error) {
     captureException(error);
-    console.error("Create IoT alert error:", error);
+    log.error("Create IoT alert error:", error);
     return NextResponse.json(
       { error: "Failed to create alert" },
       { status: 500 }

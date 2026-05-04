@@ -136,7 +136,7 @@ const WarehouseInventoryPage = async () => {
         <h2 className="text-sm font-medium text-muted-foreground">
           Stock by Location
         </h2>
-        <Card>
+        <Card tone="canvas">
           <CardContent className="overflow-x-auto">
             <div className="rounded-md border">
               {inventoryRows.length === 0 ? (

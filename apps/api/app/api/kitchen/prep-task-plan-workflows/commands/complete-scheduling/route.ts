@@ -12,6 +12,7 @@ import {
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
+import { log } from "@repo/observability/log";
 
 export const runtime = "nodejs";
 
@@ -40,7 +41,7 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
 
-    console.log(
+    log.info(
       "[prep-task-plan-workflow/completeScheduling] Executing command:",
       {
         entityName: "PrepTaskPlanWorkflow",
@@ -61,7 +62,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (!result.success) {
-      console.error(
+      log.error(
         "[prep-task-plan-workflow/completeScheduling] Command failed:",
         {
           policyDenial: result.policyDenial,
@@ -91,7 +92,7 @@ export async function POST(request: NextRequest) {
       events: result.emittedEvents,
     });
   } catch (error) {
-    console.error("[prep-task-plan-workflow/completeScheduling] Error:", error);
+    log.error("[prep-task-plan-workflow/completeScheduling] Error:", error);
     captureException(error);
     return manifestErrorResponse("Internal server error", 500);
   }

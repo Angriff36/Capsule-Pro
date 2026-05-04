@@ -11,6 +11,7 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { log } from "@repo/observability/log";
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -60,7 +61,7 @@ export async function GET(_request: Request, context: RouteContext) {
 
     return NextResponse.json({ lineItems });
   } catch (error) {
-    console.error("Error fetching budget line items:", error);
+    log.error("Error fetching budget line items:", error);
     return NextResponse.json(
       { message: "Failed to fetch budget line items" },
       { status: 500 }
@@ -77,7 +78,7 @@ export async function POST(
   context: { params: Promise<{ id: string }> }
 ) {
   const { id } = await context.params;
-  console.log("[BudgetLineItem/POST] Delegating to manifest create command", {
+  log.info("[BudgetLineItem/POST] Delegating to manifest create command", {
     budgetId: id,
   });
   return executeManifestCommand(request, {

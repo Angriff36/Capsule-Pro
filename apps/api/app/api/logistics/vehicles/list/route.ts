@@ -11,6 +11,7 @@ import {
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
 import { clampLimit, clampOffset } from "@/lib/pagination";
+import { log } from "@repo/observability/log";
 
 export async function GET(request: NextRequest) {
   try {
@@ -40,7 +41,7 @@ export async function GET(request: NextRequest) {
     return manifestSuccessResponse({ vehicles, limit, offset });
   } catch (error) {
     captureException(error);
-    console.error("Error listing vehicles:", error);
+    log.error("Error listing vehicles:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

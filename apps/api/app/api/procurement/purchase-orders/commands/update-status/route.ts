@@ -8,6 +8,7 @@ import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
+import { log } from "@repo/observability/log";
 
 const VALID_TRANSITIONS: Record<string, string[]> = {
   draft: ["submitted", "cancelled"],
@@ -58,7 +59,7 @@ export async function POST(request: NextRequest) {
     return manifestSuccessResponse({ order: (result as any[])[0] });
   } catch (error) {
     captureException(error);
-    console.error("Error updating PO status:", error);
+    log.error("Error updating PO status:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

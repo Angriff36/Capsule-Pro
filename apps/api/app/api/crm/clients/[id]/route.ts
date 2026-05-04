@@ -14,6 +14,7 @@ import { InvariantError, invariant } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { executeManifestCommand } from "@/lib/manifest-command-handler";
 import { translatePrismaError } from "@/lib/prisma-error";
+import { log } from "@repo/observability/log";
 
 /**
  * GET /api/crm/clients/[id]
@@ -111,7 +112,7 @@ export async function GET(
         { status: prismaResult.status }
       );
     }
-    console.error("Error getting client:", error);
+    log.error("Error getting client:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }

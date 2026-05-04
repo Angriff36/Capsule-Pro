@@ -8,6 +8,7 @@ import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
+import { log } from "@repo/observability/log";
 
 export async function POST(request: NextRequest) {
   try {
@@ -74,7 +75,7 @@ export async function POST(request: NextRequest) {
     return manifestSuccessResponse({ allReceived });
   } catch (error) {
     captureException(error);
-    console.error("Error receiving PO items:", error);
+    log.error("Error receiving PO items:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

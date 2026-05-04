@@ -11,6 +11,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { InvariantError } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { log } from "@repo/observability/log";
 
 type PayrollRunStatus =
   | "pending"
@@ -174,7 +175,7 @@ export async function GET(request: Request) {
     if (error instanceof InvariantError) {
       return NextResponse.json({ message: error.message }, { status: 400 });
     }
-    console.error("Failed to list approval requests:", error);
+    log.error("Failed to list approval requests:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }

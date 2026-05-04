@@ -7,6 +7,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { database } from "@/lib/database";
 import { clampLimit, clampOffset } from "@/lib/pagination";
+import { log } from "@repo/observability/log";
 
 export async function GET(request: NextRequest) {
   try {
@@ -53,7 +54,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ versions, limit, offset });
   } catch (error) {
     captureException(error);
-    console.error("Error listing document versions:", error);
+    log.error("Error listing document versions:", error);
     return NextResponse.json(
       { error: "Failed to list document versions" },
       { status: 500 }

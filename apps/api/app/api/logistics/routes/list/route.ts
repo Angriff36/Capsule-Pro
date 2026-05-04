@@ -2,6 +2,7 @@ import { database } from "@repo/database";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { requireTenantId } from "@/app/lib/tenant";
+import { log } from "@repo/observability/log";
 
 export async function GET(request: NextRequest) {
   try {
@@ -33,7 +34,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ routes });
   } catch (error) {
     captureException(error);
-    console.error("Error listing routes:", error);
+    log.error("Error listing routes:", error);
     return NextResponse.json(
       { error: "Failed to list routes" },
       { status: 500 }

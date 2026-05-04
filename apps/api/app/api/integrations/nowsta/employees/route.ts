@@ -10,6 +10,7 @@ import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { createNowstaClient } from "@/app/lib/nowsta-client";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { log } from "@repo/observability/log";
 
 /**
  * GET /api/integrations/nowsta/employees
@@ -137,7 +138,7 @@ export async function GET(_request: NextRequest) {
     });
   } catch (error) {
     captureException(error);
-    console.error("Failed to get Nowsta employees:", error);
+    log.error("Failed to get Nowsta employees:", error);
     const message = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
       { error: `Failed to get employees: ${message}` },

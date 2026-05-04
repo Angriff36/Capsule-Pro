@@ -14,6 +14,7 @@ import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { withRateLimit } from "@/middleware/rate-limiter";
+import { log } from "@repo/observability/log";
 
 /**
  * Helper function to escape CSV values
@@ -320,7 +321,7 @@ export const GET = withRateLimit<{ eventId: string }>(
       });
     } catch (error) {
       captureException(error);
-      console.error("Failed to export event CSV:", error);
+      log.error("Failed to export event CSV:", error);
       return NextResponse.json(
         {
           error: "Failed to export event",

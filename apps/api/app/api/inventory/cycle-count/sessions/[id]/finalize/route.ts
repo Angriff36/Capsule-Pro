@@ -10,6 +10,7 @@ import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { InvariantError } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { log } from "@repo/observability/log";
 
 function toNumber(value: { toNumber: () => number }): number {
   return value.toNumber();
@@ -325,7 +326,7 @@ export async function POST(request: Request, context: RouteContext) {
     if (error instanceof InvariantError) {
       return NextResponse.json({ message: error.message }, { status: 400 });
     }
-    console.error("Failed to finalize cycle count session:", error);
+    log.error("Failed to finalize cycle count session:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }

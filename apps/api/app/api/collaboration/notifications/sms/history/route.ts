@@ -11,6 +11,7 @@ import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { clampLimit, clampOffset } from "@/lib/pagination";
+import { log } from "@repo/observability/log";
 
 /**
  * GET /api/collaboration/notifications/sms/history
@@ -67,7 +68,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     captureException(error);
-    console.error("Failed to fetch SMS logs:", error);
+    log.error("Failed to fetch SMS logs:", error);
     const message = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
       { error: `Failed to fetch SMS logs: ${message}` },

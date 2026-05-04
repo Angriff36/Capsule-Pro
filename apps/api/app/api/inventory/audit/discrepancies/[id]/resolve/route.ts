@@ -16,6 +16,7 @@ import {
 } from "@/lib/manifest-response";
 import type { CommandResult, RuntimeEngine } from "@/lib/manifest-runtime";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
+import { log } from "@repo/observability/log";
 
 export const runtime = "nodejs";
 
@@ -165,7 +166,7 @@ function handleCommandError(
   userRole: string,
   operation: string
 ): Response {
-  console.error(`[discrepancies/resolve] ${operation} command failed:`, {
+  log.error(`[discrepancies/resolve] ${operation} command failed:`, {
     policyDenial: result.policyDenial,
     guardFailure: result.guardFailure,
     error: result.error,
@@ -368,7 +369,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       },
     });
 
-    console.log("[discrepancies/resolve] Resolved discrepancy:", {
+    log.info("[discrepancies/resolve] Resolved discrepancy:", {
       id,
       userId: currentUser.id,
       userRole: currentUser.role,
@@ -381,7 +382,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       discrepancy: formatDiscrepancy(updatedReport),
     });
   } catch (error) {
-    console.error("[discrepancies/resolve] Error:", error);
+    log.error("[discrepancies/resolve] Error:", error);
     captureException(error);
     return manifestErrorResponse("Internal server error", 500);
   }

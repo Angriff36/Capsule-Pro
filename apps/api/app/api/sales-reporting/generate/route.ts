@@ -4,6 +4,7 @@ import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { withRateLimit } from "@/middleware/rate-limiter";
+import { log } from "@repo/observability/log";
 
 export const runtime = "nodejs";
 
@@ -114,7 +115,7 @@ export const POST = withRateLimit(
         },
       });
     } catch (error) {
-      console.error(
+      log.error(
         "[sales-reporting/generate] Report generation failed:",
         error
       );

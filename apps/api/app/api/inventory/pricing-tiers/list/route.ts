@@ -7,6 +7,7 @@ import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
+import { log } from "@repo/observability/log";
 
 export async function GET(_request: NextRequest) {
   try {
@@ -33,7 +34,7 @@ export async function GET(_request: NextRequest) {
     return manifestSuccessResponse({ pricingTiers });
   } catch (error) {
     captureException(error);
-    console.error("[pricing-tiers/list] Error:", error);
+    log.error("[pricing-tiers/list] Error:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

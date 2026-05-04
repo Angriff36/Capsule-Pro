@@ -12,6 +12,7 @@ import { database } from "@repo/database";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { log } from "@repo/observability/log";
 
 interface DLQListQuery {
   page?: number;
@@ -71,7 +72,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     captureException(error);
-    console.error("Error listing DLQ entries:", error);
+    log.error("Error listing DLQ entries:", error);
     return NextResponse.json(
       { error: "Failed to list DLQ entries" },
       { status: 500 }

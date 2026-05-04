@@ -9,6 +9,7 @@ import { database, type Prisma } from "@repo/database";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { log } from "@repo/observability/log";
 
 // Valid statuses
 const VALID_STATUSES = ["pending", "success", "failed", "retrying"] as const;
@@ -79,7 +80,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     captureException(error);
-    console.error("Error fetching delivery logs:", error);
+    log.error("Error fetching delivery logs:", error);
     return NextResponse.json(
       { error: "Failed to fetch delivery logs" },
       { status: 500 }

@@ -8,6 +8,7 @@ import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
+import { log } from "@repo/observability/log";
 
 export async function POST(request: NextRequest) {
   try {
@@ -57,7 +58,7 @@ export async function POST(request: NextRequest) {
     return manifestSuccessResponse({ review: (result as any[])[0] });
   } catch (error) {
     captureException(error);
-    console.error("Error completing performance review:", error);
+    log.error("Error completing performance review:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

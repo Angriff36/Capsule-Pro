@@ -10,6 +10,7 @@ import { database, Prisma } from "@repo/database";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { log } from "@repo/observability/log";
 
 // Valid event types
 const VALID_EVENT_TYPES = ["created", "updated", "deleted"] as const;
@@ -98,7 +99,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ webhooks: sanitizedWebhooks });
   } catch (error) {
     captureException(error);
-    console.error("Error fetching webhooks:", error);
+    log.error("Error fetching webhooks:", error);
     return NextResponse.json(
       { error: "Failed to fetch webhooks" },
       { status: 500 }
@@ -200,7 +201,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ webhook: sanitizedWebhook }, { status: 201 });
   } catch (error) {
     captureException(error);
-    console.error("Error creating webhook:", error);
+    log.error("Error creating webhook:", error);
     return NextResponse.json(
       { error: "Failed to create webhook" },
       { status: 500 }

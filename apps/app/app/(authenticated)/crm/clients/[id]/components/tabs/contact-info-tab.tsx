@@ -420,7 +420,7 @@ export function ContactInfoTab({ client, onEdit }: ContactInfoTabProps) {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Name/Company */}
-        <Card>
+        <Card tone="canvas">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               {client.clientType === "company" ? (
@@ -449,7 +449,7 @@ export function ContactInfoTab({ client, onEdit }: ContactInfoTabProps) {
         </Card>
 
         {/* Contact Details */}
-        <Card>
+        <Card tone="canvas">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Contact Details
@@ -500,7 +500,7 @@ export function ContactInfoTab({ client, onEdit }: ContactInfoTabProps) {
         </Card>
 
         {/* Address */}
-        <Card className="md:col-span-2">
+        <Card className="md:col-span-2" tone="canvas">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <MapPinIcon className="h-4 w-4" />
@@ -516,7 +516,7 @@ export function ContactInfoTab({ client, onEdit }: ContactInfoTabProps) {
 
         {/* Tags */}
         {client.tags && client.tags.length > 0 && (
-          <Card className="md:col-span-2">
+          <Card className="md:col-span-2" tone="canvas">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-muted-foreground">
                 Tags
@@ -536,7 +536,7 @@ export function ContactInfoTab({ client, onEdit }: ContactInfoTabProps) {
 
         {/* Notes */}
         {client.notes && (
-          <Card className="md:col-span-2">
+          <Card className="md:col-span-2" tone="canvas">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                 <FileTextIcon className="h-4 w-4" />
@@ -551,7 +551,7 @@ export function ContactInfoTab({ client, onEdit }: ContactInfoTabProps) {
 
         {/* Tax Info */}
         {(client.taxExempt || client.taxId || client.defaultPaymentTerms) && (
-          <Card className="md:col-span-2">
+          <Card className="md:col-span-2" tone="canvas">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-muted-foreground">
                 Tax & Payment Information

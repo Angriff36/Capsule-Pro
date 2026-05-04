@@ -11,6 +11,7 @@ import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { log } from "@repo/observability/log";
 
 export const runtime = "nodejs";
 
@@ -539,7 +540,7 @@ export async function POST(request: NextRequest) {
     );
   } catch (error) {
     captureException(error);
-    console.error(
+    log.error(
       "Failed to merge simulation:",
       error instanceof Error ? error : new Error(String(error))
     );
@@ -587,7 +588,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(result);
   } catch (error) {
     captureException(error);
-    console.error(
+    log.error(
       "Failed to check merge conflicts:",
       error instanceof Error ? error : new Error(String(error))
     );

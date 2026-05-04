@@ -251,7 +251,7 @@ export const RecipeCostDetailClient = ({
 
       {/* Cost Summary Cards */}
       <div className="grid gap-4 md:grid-cols-4">
-        <Card>
+        <Card tone="soft-stone">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Cost</CardTitle>
             <DollarSignIcon className="h-4 w-4 text-muted-foreground" />
@@ -265,7 +265,7 @@ export const RecipeCostDetailClient = ({
             </p>
           </CardContent>
         </Card>
-        <Card>
+        <Card tone="soft-stone">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               Cost Per Yield
@@ -281,7 +281,7 @@ export const RecipeCostDetailClient = ({
             </p>
           </CardContent>
         </Card>
-        <Card>
+        <Card tone="soft-stone">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               Cost Per Portion
@@ -299,7 +299,7 @@ export const RecipeCostDetailClient = ({
             </p>
           </CardContent>
         </Card>
-        <Card>
+        <Card tone="soft-stone">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               Last Calculated
@@ -319,7 +319,7 @@ export const RecipeCostDetailClient = ({
 
       {/* Scaled Cost Display */}
       {scaledCost && (
-        <Card className="border-primary bg-muted/20 dark:bg-muted/20">
+        <Card tone="canvas" className="border-primary bg-muted/20 dark:bg-muted/20">
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
               <ScaleIcon className="h-5 w-5" />
@@ -374,7 +374,7 @@ export const RecipeCostDetailClient = ({
       </div>
 
       {/* Ingredient Cost Breakdown */}
-      <Card>
+      <Card tone="canvas">
         <CardHeader>
           <CardTitle>Ingredient Cost Breakdown</CardTitle>
           <CardDescription>

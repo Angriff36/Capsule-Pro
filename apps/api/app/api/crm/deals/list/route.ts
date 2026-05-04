@@ -17,6 +17,7 @@ import {
 } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { clampLimit, clampOffset } from "@/lib/pagination";
+import { log } from "@repo/observability/log";
 
 /**
  * Maps a proposal status to a pipeline stage.
@@ -129,7 +130,7 @@ export async function GET(request: NextRequest) {
     return NextResponseAlias.json({ data: deals, limit, offset });
   } catch (error) {
     captureException(error);
-    console.error("Error listing deals:", error);
+    log.error("Error listing deals:", error);
     return NextResponseAlias.json(
       { message: "Internal server error" },
       { status: 500 }

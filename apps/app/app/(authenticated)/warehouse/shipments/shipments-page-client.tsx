@@ -401,7 +401,7 @@ export const ShipmentsPageClient = () => {
           Performance Overview
         </h2>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          <Card>
+          <Card tone="soft-stone">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardDescription>Total Shipments</CardDescription>
               <BoxIcon className="size-4 text-muted-foreground" />
@@ -410,7 +410,7 @@ export const ShipmentsPageClient = () => {
               <CardTitle>{summary.totalShipments}</CardTitle>
             </CardContent>
           </Card>
-          <Card>
+          <Card tone="soft-stone">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardDescription>Total Value</CardDescription>
               <DollarSignIcon className="size-4 text-muted-foreground" />
@@ -419,7 +419,7 @@ export const ShipmentsPageClient = () => {
               <CardTitle>{formatCurrency(summary.totalValue)}</CardTitle>
             </CardContent>
           </Card>
-          <Card>
+          <Card tone="soft-stone">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardDescription>In Transit</CardDescription>
               <TruckIcon className="size-4 text-muted-foreground" />
@@ -428,7 +428,7 @@ export const ShipmentsPageClient = () => {
               <CardTitle>{summary.inTransitCount}</CardTitle>
             </CardContent>
           </Card>
-          <Card>
+          <Card tone="soft-stone">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardDescription>Preparing</CardDescription>
               <RefreshCwIcon className="size-4 text-muted-foreground" />
@@ -451,7 +451,7 @@ export const ShipmentsPageClient = () => {
             New Shipment
           </Button>
         </div>
-        <Card>
+        <Card tone="canvas">
           <CardContent className="space-y-4 pt-6">
             {/* Filters */}
             <div className="flex flex-wrap gap-4">
@@ -632,7 +632,7 @@ export const ShipmentsPageClient = () => {
 
       {/* Selected Shipment Detail View */}
       {selectedShipment && (
-        <Card>
+        <Card tone="canvas">
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>

@@ -15,6 +15,7 @@ import { NextResponse } from "next/server";
 import { InvariantError, invariant } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { translatePrismaError } from "@/lib/prisma-error";
+import { log } from "@repo/observability/log";
 
 export async function GET(
   request: NextRequest,
@@ -96,7 +97,7 @@ export async function GET(
         { status: prismaResult.status }
       );
     }
-    console.error("Error listing venue events:", error);
+    log.error("Error listing venue events:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }

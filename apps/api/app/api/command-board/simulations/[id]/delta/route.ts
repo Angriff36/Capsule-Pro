@@ -17,6 +17,7 @@ import type {
   BoardGroup,
   BoardProjection,
 } from "../../../types";
+import { log } from "@repo/observability/log";
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -336,7 +337,7 @@ export async function GET(_request: Request, context: RouteContext) {
     });
   } catch (error) {
     captureException(error);
-    console.error("Failed to compute simulation delta:", error);
+    log.error("Failed to compute simulation delta:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }

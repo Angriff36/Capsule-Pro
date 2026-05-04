@@ -181,7 +181,7 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    console.error("[allergens/update-dish] Error:", error);
+    log.error("[allergens/update-dish] Error:", error);
     captureException(error);
 
     const message =

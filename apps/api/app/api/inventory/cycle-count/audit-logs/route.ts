@@ -9,6 +9,7 @@ import { database } from "@repo/database";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { log } from "@repo/observability/log";
 
 interface PaginationParams {
   page: number;
@@ -129,7 +130,7 @@ export async function GET(request: Request) {
     });
   } catch (error) {
     captureException(error);
-    console.error("Failed to get audit logs:", error);
+    log.error("Failed to get audit logs:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }

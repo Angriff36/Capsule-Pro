@@ -4,6 +4,7 @@ import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { manifestErrorResponse } from "@/lib/manifest-response";
 import { database } from "@/lib/database";
+import { log } from "@repo/observability/log";
 
 const VALID_STATUSES = ["active", "inactive", "maintenance", "retired"];
 
@@ -53,7 +54,7 @@ export async function POST(request: NextRequest) {
     );
   } catch (error) {
     captureException(error);
-    console.error("Error updating equipment status:", error);
+    log.error("Error updating equipment status:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

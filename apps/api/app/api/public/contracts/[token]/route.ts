@@ -9,6 +9,7 @@
 import { database } from "@repo/database";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
+import { log } from "@repo/observability/log";
 
 type Params = Promise<{ token: string }>;
 
@@ -149,7 +150,7 @@ export async function GET(_request: Request, { params }: { params: Params }) {
     });
   } catch (error) {
     captureException(error);
-    console.error("Error fetching public contract:", error);
+    log.error("Error fetching public contract:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }

@@ -14,6 +14,7 @@ import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
+import { log } from "@repo/observability/log";
 
 export const runtime = "nodejs";
 
@@ -299,7 +300,7 @@ export async function GET(request: NextRequest) {
       summary,
     });
   } catch (error) {
-    console.error("[discrepancies/list] Error:", error);
+    log.error("[discrepancies/list] Error:", error);
     captureException(error);
     return manifestErrorResponse("Internal server error", 500);
   }

@@ -8,6 +8,7 @@ import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
+import { log } from "@repo/observability/log";
 
 export async function POST(request: NextRequest) {
   try {
@@ -53,7 +54,7 @@ export async function POST(request: NextRequest) {
     return manifestSuccessResponse({ driver });
   } catch (error) {
     captureException(error);
-    console.error("Error creating driver:", error);
+    log.error("Error creating driver:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

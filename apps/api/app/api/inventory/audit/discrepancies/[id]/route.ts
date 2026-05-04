@@ -14,6 +14,7 @@ import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
+import { log } from "@repo/observability/log";
 
 export const runtime = "nodejs";
 
@@ -181,7 +182,7 @@ export async function GET(_request: NextRequest, context: RouteContext) {
       resolver,
     });
   } catch (error) {
-    console.error("[discrepancies/get] Error:", error);
+    log.error("[discrepancies/get] Error:", error);
     captureException(error);
     return manifestErrorResponse("Internal server error", 500);
   }
@@ -274,7 +275,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       data: updateData,
     });
 
-    console.log("[discrepancies/update] Updated discrepancy:", {
+    log.info("[discrepancies/update] Updated discrepancy:", {
       id,
       userId: currentUser.id,
       userRole: currentUser.role,
@@ -316,7 +317,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       },
     });
   } catch (error) {
-    console.error("[discrepancies/update] Error:", error);
+    log.error("[discrepancies/update] Error:", error);
     captureException(error);
     return manifestErrorResponse("Internal server error", 500);
   }

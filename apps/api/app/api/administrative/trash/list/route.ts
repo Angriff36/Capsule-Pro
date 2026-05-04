@@ -4,6 +4,7 @@ import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { log } from "@repo/observability/log";
 
 export const runtime = "nodejs";
 
@@ -694,7 +695,7 @@ export async function GET(request: NextRequest) {
         }
       } catch (err) {
         // Table may not exist or be inaccessible - skip
-        console.warn(`Skipping entity type ${ent}:`, err);
+        log.warn(`Skipping entity type ${ent}:`, err);
       }
     }
 
@@ -727,7 +728,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     captureException(error);
-    console.error("Error fetching trash items:", error);
+    log.error("Error fetching trash items:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }

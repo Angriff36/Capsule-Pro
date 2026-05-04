@@ -17,6 +17,7 @@ import type {
   SimulationContext,
   SimulationStatus,
 } from "../../types";
+import { log } from "@repo/observability/log";
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -139,7 +140,7 @@ export async function GET(_request: Request, context: RouteContext) {
     return NextResponse.json(simulationContext);
   } catch (error) {
     captureException(error);
-    console.error(
+    log.error(
       "Failed to get simulation:",
       error instanceof Error ? error : new Error(String(error))
     );
@@ -205,7 +206,7 @@ export async function DELETE(_request: Request, context: RouteContext) {
     return NextResponse.json({ success: true });
   } catch (error) {
     captureException(error);
-    console.error("Failed to delete simulation:", error);
+    log.error("Failed to delete simulation:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }

@@ -415,7 +415,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.error("[composite/create-with-version] Error:", error);
+    log.error("[composite/create-with-version] Error:", error);
     captureException(error);
 
     const message =

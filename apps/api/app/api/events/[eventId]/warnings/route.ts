@@ -4,6 +4,7 @@ import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { InvariantError, invariant } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { log } from "@repo/observability/log";
 
 export async function GET(
   request: NextRequest,
@@ -71,7 +72,7 @@ export async function GET(
     if (error instanceof InvariantError) {
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
-    console.error("Error fetching allergen warnings:", error);
+    log.error("Error fetching allergen warnings:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

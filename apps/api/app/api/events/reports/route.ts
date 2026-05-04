@@ -13,6 +13,7 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { log } from "@repo/observability/log";
 
 /**
  * GET /api/events/reports
@@ -85,7 +86,7 @@ export async function GET(request: Request) {
       },
     });
   } catch (error) {
-    console.error("Error listing event reports:", error);
+    log.error("Error listing event reports:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }
@@ -98,7 +99,7 @@ export async function GET(request: Request) {
  * Create a new event report
  */
 export async function POST(request: NextRequest) {
-  console.log("[EventReport/POST] Delegating to manifest create command");
+  log.info("[EventReport/POST] Delegating to manifest create command");
   return await executeManifestCommand(request, {
     entityName: "EventReport",
     commandName: "create",

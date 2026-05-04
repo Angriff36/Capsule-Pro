@@ -9,6 +9,7 @@ import { database } from "@repo/database";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { requireTenantId } from "@/app/lib/tenant";
+import { log } from "@repo/observability/log";
 
 export const runtime = "nodejs";
 
@@ -49,7 +50,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
     return NextResponse.json({ data: schedule });
   } catch (error) {
     captureException(error);
-    console.error("Error getting revenue recognition schedule:", error);
+    log.error("Error getting revenue recognition schedule:", error);
     return NextResponse.json(
       { error: "Failed to get revenue recognition schedule" },
       { status: 500 }
@@ -302,7 +303,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     return NextResponse.json({ data: updated });
   } catch (error) {
     captureException(error);
-    console.error("Error updating revenue recognition schedule:", error);
+    log.error("Error updating revenue recognition schedule:", error);
     return NextResponse.json(
       { error: "Failed to update revenue recognition schedule" },
       { status: 500 }

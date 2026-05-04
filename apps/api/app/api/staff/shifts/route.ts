@@ -4,6 +4,7 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { log } from "@repo/observability/log";
 
 /**
  * GET /api/staff/shifts
@@ -123,7 +124,7 @@ export async function GET(request: Request) {
  * Create a new shift (manifest command)
  */
 export function POST(request: NextRequest) {
-  console.log("[ScheduleShift/POST] Delegating to manifest create command");
+  log.info("[ScheduleShift/POST] Delegating to manifest create command");
   return executeManifestCommand(request, {
     entityName: "ScheduleShift",
     commandName: "create",

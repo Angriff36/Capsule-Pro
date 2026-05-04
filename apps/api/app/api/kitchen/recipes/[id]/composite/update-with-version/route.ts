@@ -458,7 +458,7 @@ export async function POST(
       );
     }
 
-    console.error("[composite/update-with-version] Error:", error);
+    log.error("[composite/update-with-version] Error:", error);
     captureException(error);
 
     const message =

@@ -70,7 +70,7 @@ export function EventsTab({ clientId }: EventsTabProps) {
           Loading events...
         </div>
       ) : events.length === 0 ? (
-        <Card>
+        <Card tone="canvas">
           <CardContent className="flex flex-col items-center justify-center py-12 text-center">
             <CalendarIcon className="h-12 w-12 text-muted-foreground mb-4" />
             <h3 className="text-lg font-semibold mb-2">No events yet</h3>
@@ -82,7 +82,7 @@ export function EventsTab({ clientId }: EventsTabProps) {
       ) : (
         <div className="space-y-3">
           {events.map((event) => (
-            <Card key={event.id}>
+            <Card key={event.id} tone="canvas">
               <CardContent className="flex items-center justify-between py-4">
                 <div className="flex items-center gap-4">
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">

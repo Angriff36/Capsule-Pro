@@ -10,6 +10,7 @@ import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { log } from "@repo/observability/log";
 
 const mapEmployeeSchema = z.object({
   nowstaEmployeeId: z.string().min(1, "Nowsta employee ID is required"),
@@ -138,7 +139,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     captureException(error);
-    console.error("Failed to map employee:", error);
+    log.error("Failed to map employee:", error);
     return NextResponse.json(
       { error: "Failed to create mapping" },
       { status: 500 }
@@ -184,7 +185,7 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ success: true });
   } catch (error) {
     captureException(error);
-    console.error("Failed to delete employee mapping:", error);
+    log.error("Failed to delete employee mapping:", error);
     return NextResponse.json(
       { error: "Failed to delete mapping" },
       { status: 500 }

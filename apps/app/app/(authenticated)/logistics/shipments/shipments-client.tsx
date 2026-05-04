@@ -312,7 +312,7 @@ export function ShipmentsClient() {
 
       {/* Summary Cards */}
       <div className="grid gap-4 md:grid-cols-4">
-        <Card>
+        <Card tone="soft-stone">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               Total Shipments
@@ -323,7 +323,7 @@ export function ShipmentsClient() {
             <div className="text-2xl font-bold">{stats.total}</div>
           </CardContent>
         </Card>
-        <Card>
+        <Card tone="soft-stone">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Active</CardTitle>
             <Truck className="h-4 w-4 text-blue-500" />
@@ -333,7 +333,7 @@ export function ShipmentsClient() {
             <p className="text-xs text-muted-foreground">In progress</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card tone="soft-stone">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Delivered</CardTitle>
             <CheckCircle2 className="h-4 w-4 text-green-500" />
@@ -342,7 +342,7 @@ export function ShipmentsClient() {
             <div className="text-2xl font-bold">{stats.delivered}</div>
           </CardContent>
         </Card>
-        <Card>
+        <Card tone="soft-stone">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Value</CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
@@ -386,7 +386,7 @@ export function ShipmentsClient() {
 
         <TabsContent value={activeTab}>
           {filteredShipments.length === 0 ? (
-            <Card>
+            <Card tone="canvas">
               <CardContent className="py-12 text-center text-muted-foreground">
                 <Package className="mx-auto h-12 w-12 mb-4 opacity-50" />
                 <p>No shipments found.</p>
@@ -405,6 +405,7 @@ export function ShipmentsClient() {
 
                 return (
                   <Card
+                    tone="canvas"
                     className="hover:border-primary/40 transition-shadow"
                     key={shipment.id}
                   >

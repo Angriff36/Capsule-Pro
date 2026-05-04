@@ -5,6 +5,7 @@ import { NextResponse } from "next/server";
 import { corsHeaders } from "@/app/lib/cors";
 import { InvariantError, invariant } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { log } from "@repo/observability/log";
 
 const TEAM_THREAD_SLUG = "team";
 const TEAM_THREAD_TYPE = "team";
@@ -274,7 +275,7 @@ export async function GET(request: Request) {
     );
   } catch (error) {
     captureException(error);
-    console.error("Failed to load admin chat threads:", error);
+    log.error("Failed to load admin chat threads:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500, headers: corsHeaders(request, "GET, POST, OPTIONS") }
@@ -465,7 +466,7 @@ export async function POST(request: Request) {
       );
     }
 
-    console.error("Failed to create direct message thread:", error);
+    log.error("Failed to create direct message thread:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500, headers: corsHeaders(request, "GET, POST, OPTIONS") }

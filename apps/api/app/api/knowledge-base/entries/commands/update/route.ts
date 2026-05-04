@@ -10,6 +10,7 @@ import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
+import { log } from "@repo/observability/log";
 
 interface UpdateEntryRequest {
   title?: string;
@@ -85,7 +86,7 @@ export async function POST(request: NextRequest) {
     return manifestSuccessResponse({ entry });
   } catch (error) {
     captureException(error);
-    console.error("Error updating knowledge base entry:", error);
+    log.error("Error updating knowledge base entry:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

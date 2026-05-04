@@ -11,6 +11,7 @@ import { auth } from "@repo/auth/server";
 import { connectorRegistry } from "@repo/supplier-connectors";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
+import { log } from "@repo/observability/log";
 
 /**
  * GET /api/inventory/supplier-sync/connectors
@@ -25,7 +26,7 @@ export async function GET(request: NextRequest) {
     if (!orgId) {
       // Allow unauthenticated access to connector list
       // In production, you might want to require auth
-      console.warn(
+      log.warn(
         "[supplier-connectors] Unauthenticated request for connector list"
       );
     }
@@ -38,7 +39,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     captureException(error);
-    console.error("[supplier-connectors] Error listing connectors:", error);
+    log.error("[supplier-connectors] Error listing connectors:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

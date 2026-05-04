@@ -14,6 +14,7 @@ import {
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
 import { clampLimit, clampOffset } from "@/lib/pagination";
+import { log } from "@repo/observability/log";
 
 export async function GET(request: NextRequest) {
   try {
@@ -45,7 +46,7 @@ export async function GET(request: NextRequest) {
 
     return manifestSuccessResponse({ ingredients, limit, offset });
   } catch (error) {
-    console.error("Error fetching ingredients:", error);
+    log.error("Error fetching ingredients:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

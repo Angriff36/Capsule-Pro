@@ -8,6 +8,7 @@ import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
+import { log } from "@repo/observability/log";
 
 export async function GET(
   request: NextRequest,
@@ -52,7 +53,7 @@ export async function GET(
     });
   } catch (error) {
     captureException(error);
-    console.error("Error fetching vendor:", error);
+    log.error("Error fetching vendor:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

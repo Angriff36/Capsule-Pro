@@ -8,6 +8,7 @@ import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
+import { log } from "@repo/observability/log";
 
 interface ActionRequest {
   orderId: string;
@@ -117,7 +118,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     captureException(error);
-    console.error("Error processing approval action:", error);
+    log.error("Error processing approval action:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

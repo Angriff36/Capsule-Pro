@@ -9,6 +9,7 @@ import { database } from "@repo/database";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { log } from "@repo/observability/log";
 
 /**
  * GET /api/integrations/goodshuffle/inventory
@@ -54,7 +55,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     captureException(error);
-    console.error("Failed to list Goodshuffle inventory syncs:", error);
+    log.error("Failed to list Goodshuffle inventory syncs:", error);
     return NextResponse.json(
       { error: "Failed to list inventory syncs" },
       { status: 500 }

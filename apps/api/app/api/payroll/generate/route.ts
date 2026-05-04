@@ -9,6 +9,7 @@ import { captureException } from "@sentry/nextjs";
 
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { log } from "@repo/observability/log";
 
 /**
  * POST /api/payroll/generate
@@ -103,7 +104,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     captureException(error);
-    console.error("Payroll generation error:", error);
+    log.error("Payroll generation error:", error);
     return NextResponse.json(
       { error: "Failed to generate payroll" },
       { status: 500 }

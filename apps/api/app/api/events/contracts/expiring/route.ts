@@ -16,6 +16,7 @@ import type {
   ContractStatus,
   DocumentType,
 } from "../types";
+import { log } from "@repo/observability/log";
 
 /**
  * Parse and validate expiring contracts parameters from URL search params
@@ -208,7 +209,7 @@ export async function GET(request: Request) {
     if (error instanceof InvariantError) {
       return NextResponse.json({ message: error.message }, { status: 400 });
     }
-    console.error("Error fetching expiring contracts:", error);
+    log.error("Error fetching expiring contracts:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }

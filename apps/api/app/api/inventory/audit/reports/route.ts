@@ -11,6 +11,7 @@ import { database } from "@repo/database";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { log } from "@repo/observability/log";
 
 interface DateRangeFilter {
   gte?: Date;
@@ -334,7 +335,7 @@ export async function GET(request: Request) {
     });
   } catch (error) {
     captureException(error);
-    console.error("Failed to generate audit report:", error);
+    log.error("Failed to generate audit report:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }
@@ -795,7 +796,7 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     captureException(error);
-    console.error("Failed to generate custom audit report:", error);
+    log.error("Failed to generate custom audit report:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }

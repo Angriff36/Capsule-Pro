@@ -11,6 +11,7 @@ import { database, type Prisma } from "@repo/database";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { log } from "@repo/observability/log";
 
 // Valid event types
 const VALID_EVENT_TYPES = ["created", "updated", "deleted"] as const;
@@ -88,7 +89,7 @@ export async function GET(
     return NextResponse.json({ webhook: sanitizedWebhook });
   } catch (error) {
     captureException(error);
-    console.error("Error fetching webhook:", error);
+    log.error("Error fetching webhook:", error);
     return NextResponse.json(
       { error: "Failed to fetch webhook" },
       { status: 500 }
@@ -233,7 +234,7 @@ export async function PUT(
     return NextResponse.json({ webhook: sanitizedWebhook });
   } catch (error) {
     captureException(error);
-    console.error("Error updating webhook:", error);
+    log.error("Error updating webhook:", error);
     return NextResponse.json(
       { error: "Failed to update webhook" },
       { status: 500 }
@@ -287,7 +288,7 @@ export async function DELETE(
     return NextResponse.json({ success: true });
   } catch (error) {
     captureException(error);
-    console.error("Error deleting webhook:", error);
+    log.error("Error deleting webhook:", error);
     return NextResponse.json(
       { error: "Failed to delete webhook" },
       { status: 500 }

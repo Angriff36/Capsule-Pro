@@ -12,6 +12,7 @@ import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
+import { log } from "@repo/observability/log";
 
 export const runtime = "nodejs";
 
@@ -56,7 +57,7 @@ export async function POST(request: NextRequest) {
     const taskRecord = await database.kitchenTask.findFirst({
       where: { tenantId, id },
     });
-    console.log("[kitchen-task/claim] Pre-command state:", {
+    log.info("[kitchen-task/claim] Pre-command state:", {
       taskId: id,
       taskStatus: taskRecord?.status,
       effectiveUserId,
@@ -74,7 +75,7 @@ export async function POST(request: NextRequest) {
     );
 
     if (!result.success) {
-      console.error("[kitchen-task/claim] Command failed:", {
+      log.error("[kitchen-task/claim] Command failed:", {
         policyDenial: result.policyDenial,
         guardFailure: result.guardFailure,
         error: result.error,
@@ -102,7 +103,7 @@ export async function POST(request: NextRequest) {
       events: result.emittedEvents,
     });
   } catch (error) {
-    console.error("[kitchen-task/claim] Error:", error);
+    log.error("[kitchen-task/claim] Error:", error);
     captureException(error);
     return manifestErrorResponse("Internal server error", 500);
   }

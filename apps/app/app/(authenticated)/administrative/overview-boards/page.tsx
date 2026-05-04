@@ -506,7 +506,7 @@ const AdministrativeOverviewBoardsPage = async () => {
         </h2>
         <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
           {boardSnapshots.map((snapshot) => (
-            <Card className="h-full" key={snapshot.title}>
+            <Card tone="soft-stone" className="h-full" key={snapshot.title}>
               <CardHeader>
                 <CardTitle className="text-lg">{snapshot.title}</CardTitle>
                 <CardDescription>{snapshot.description}</CardDescription>
@@ -526,7 +526,7 @@ const AdministrativeOverviewBoardsPage = async () => {
         <h2 className="text-sm font-medium text-muted-foreground">
           Executive Actions
         </h2>
-        <Card>
+        <Card tone="canvas">
           <CardHeader>
             <CardTitle>Top Decisions</CardTitle>
             <CardDescription>Awaiting sign-off from leadership</CardDescription>
@@ -560,7 +560,7 @@ const AdministrativeOverviewBoardsPage = async () => {
           Alerts & Board Health
         </h2>
         <div className="grid gap-6 lg:grid-cols-2">
-          <Card>
+          <Card tone="canvas">
             <CardHeader>
               <CardTitle>Critical Alerts</CardTitle>
               <CardDescription>
@@ -592,7 +592,7 @@ const AdministrativeOverviewBoardsPage = async () => {
               </div>
             </CardContent>
           </Card>
-          <Card>
+          <Card tone="canvas">
             <CardHeader>
               <CardTitle>Board Health</CardTitle>
               <CardDescription>

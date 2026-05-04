@@ -8,6 +8,7 @@ import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
+import { log } from "@repo/observability/log";
 
 export async function POST(request: NextRequest) {
   try {
@@ -71,7 +72,7 @@ export async function POST(request: NextRequest) {
     return manifestSuccessResponse({ facility: (result as unknown[])[0] });
   } catch (error) {
     captureException(error);
-    console.error("Error updating facility:", error);
+    log.error("Error updating facility:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

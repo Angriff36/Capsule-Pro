@@ -20,6 +20,7 @@ import {
   parsePaymentMethodFilters,
   validateCreatePaymentMethodRequest,
 } from "./validation";
+import { log } from "@repo/observability/log";
 
 /**
  * GET /api/accounting/payment-methods
@@ -84,7 +85,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     captureException(error);
-    console.error("Error listing payment methods:", error);
+    log.error("Error listing payment methods:", error);
     return NextResponse.json(
       { error: "Failed to list payment methods" },
       { status: 500 }
@@ -150,7 +151,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json<PaymentMethodResponse>(response, { status: 201 });
   } catch (error) {
     captureException(error);
-    console.error("Error creating payment method:", error);
+    log.error("Error creating payment method:", error);
     return NextResponse.json(
       { error: "Failed to create payment method" },
       { status: 500 }

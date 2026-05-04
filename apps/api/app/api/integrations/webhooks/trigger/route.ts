@@ -17,6 +17,7 @@ import { captureException } from "@sentry/nextjs";
 
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { log } from "@repo/observability/log";
 
 // Valid event types
 const VALID_EVENT_TYPES = ["created", "updated", "deleted"] as const;
@@ -212,7 +213,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     captureException(error);
-    console.error("Error triggering webhooks:", error);
+    log.error("Error triggering webhooks:", error);
     return NextResponse.json(
       { error: "Failed to trigger webhooks" },
       { status: 500 }

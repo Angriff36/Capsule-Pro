@@ -12,6 +12,7 @@ import { NextResponse } from "next/server";
 import { InvariantError } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { validateUpdateQuantityReceivedRequest } from "../../../../validation";
+import { log } from "@repo/observability/log";
 
 interface RouteContext {
   params: Promise<{ id: string; itemId: string }>;
@@ -263,7 +264,7 @@ export async function PUT(request: Request, context: RouteContext) {
     if (error instanceof InvariantError) {
       return NextResponse.json({ message: error.message }, { status: 400 });
     }
-    console.error("Failed to update quantity received:", error);
+    log.error("Failed to update quantity received:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }

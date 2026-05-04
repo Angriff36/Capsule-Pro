@@ -10,6 +10,7 @@ import { auth } from "@repo/auth/server";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { manifestErrorResponse } from "@/lib/manifest-response";
+import { log } from "@repo/observability/log";
 
 export async function GET(
   request: NextRequest,
@@ -33,7 +34,7 @@ export async function GET(
     );
   } catch (error) {
     captureException(error);
-    console.error("Error fetching shared template:", error);
+    log.error("Error fetching shared template:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }
@@ -65,7 +66,7 @@ export async function POST(
     );
   } catch (error) {
     captureException(error);
-    console.error("Error creating board from shared template:", error);
+    log.error("Error creating board from shared template:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

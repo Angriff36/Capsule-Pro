@@ -8,6 +8,7 @@ import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
+import { log } from "@repo/observability/log";
 
 export async function GET(request: NextRequest) {
   try {
@@ -108,7 +109,7 @@ export async function GET(request: NextRequest) {
     return manifestSuccessResponse({ orders: result });
   } catch (error) {
     captureException(error);
-    console.error("Error listing approval orders:", error);
+    log.error("Error listing approval orders:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

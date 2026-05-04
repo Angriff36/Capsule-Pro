@@ -1,5 +1,6 @@
 import type { NextRequest } from "next/server";
 import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { log } from "@repo/observability/log";
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -17,7 +18,7 @@ interface RouteContext {
 export async function POST(request: NextRequest, context: RouteContext) {
   const { id } = await context.params;
 
-  console.log("[KitchenTask/release] Delegating to manifest release command", {
+  log.info("[KitchenTask/release] Delegating to manifest release command", {
     taskId: id,
   });
 

@@ -1,5 +1,6 @@
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
+import { log } from "@repo/observability/log";
 
 /**
  * GET /api/calendar/sync/callback/google
@@ -15,7 +16,7 @@ export async function GET(request: NextRequest) {
     const error = searchParams.get("error");
 
     if (error) {
-      console.error("[google/callback] OAuth error:", error);
+      log.error("[google/callback] OAuth error:", error);
       return NextResponse.redirect(
         new URL(
           `/calendar/sync?error=${encodeURIComponent(error)}`,
@@ -69,7 +70,7 @@ export async function GET(request: NextRequest) {
 
     if (!tokenResponse.ok) {
       const errorText = await tokenResponse.text();
-      console.error("[google/callback] Token exchange failed:", errorText);
+      log.error("[google/callback] Token exchange failed:", errorText);
       return NextResponse.redirect(
         new URL("/calendar/sync?error=token_exchange_failed", request.url)
       );
@@ -151,7 +152,7 @@ export async function GET(request: NextRequest) {
     );
   } catch (error) {
     captureException(error);
-    console.error("[google/callback] Error:", error);
+    log.error("[google/callback] Error:", error);
     return NextResponse.redirect(
       new URL("/calendar/sync?error=callback_failed", request.url)
     );

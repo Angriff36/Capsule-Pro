@@ -12,6 +12,7 @@ import {
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
+import { log } from "@repo/observability/log";
 
 export const runtime = "nodejs";
 
@@ -40,7 +41,7 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
 
-    console.log("[prep-task-plan-workflow/startApproving] Executing command:", {
+    log.info("[prep-task-plan-workflow/startApproving] Executing command:", {
       entityName: "PrepTaskPlanWorkflow",
       command: "startApproving",
       userId: currentUser.id,
@@ -58,7 +59,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (!result.success) {
-      console.error(
+      log.error(
         "[prep-task-plan-workflow/startApproving] Command failed:",
         {
           policyDenial: result.policyDenial,
@@ -88,7 +89,7 @@ export async function POST(request: NextRequest) {
       events: result.emittedEvents,
     });
   } catch (error) {
-    console.error("[prep-task-plan-workflow/startApproving] Error:", error);
+    log.error("[prep-task-plan-workflow/startApproving] Error:", error);
     captureException(error);
     return manifestErrorResponse("Internal server error", 500);
   }

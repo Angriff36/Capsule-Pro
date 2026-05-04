@@ -10,6 +10,7 @@ import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
+import { log } from "@repo/observability/log";
 
 export async function GET(request: NextRequest) {
   try {
@@ -56,7 +57,7 @@ export async function GET(request: NextRequest) {
     return manifestSuccessResponse({ workOrders });
   } catch (error) {
     captureException(error);
-    console.error("Error listing work orders:", error);
+    log.error("Error listing work orders:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

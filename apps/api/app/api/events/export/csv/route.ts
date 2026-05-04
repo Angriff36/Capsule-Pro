@@ -12,6 +12,7 @@ import { database } from "@repo/database";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { log } from "@repo/observability/log";
 
 /**
  * Helper function to escape CSV values
@@ -275,7 +276,7 @@ export async function GET(request: Request) {
     });
   } catch (error) {
     captureException(error);
-    console.error("Failed to export events CSV:", error);
+    log.error("Failed to export events CSV:", error);
     return NextResponse.json(
       {
         error: "Failed to export events",

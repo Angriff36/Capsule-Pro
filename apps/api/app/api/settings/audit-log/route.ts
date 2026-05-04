@@ -16,6 +16,7 @@ import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { requireCurrentUser } from "@/app/lib/tenant";
 import { withRateLimit } from "@/middleware/rate-limiter";
+import { log } from "@repo/observability/log";
 
 export const runtime = "nodejs";
 
@@ -144,7 +145,7 @@ export const GET = withRateLimit(
       });
     } catch (error) {
       captureException(error);
-      console.error("[AuditLog/list] Error:", error);
+      log.error("[AuditLog/list] Error:", error);
       return NextResponse.json(
         { message: "Failed to fetch audit log entries" },
         { status: 500 }

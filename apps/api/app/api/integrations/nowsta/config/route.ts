@@ -12,6 +12,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createNowstaClient } from "@/app/lib/nowsta-client";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { log } from "@repo/observability/log";
 
 const configSchema = z.object({
   apiKey: z.string().min(1, "API key is required"),
@@ -74,7 +75,7 @@ export async function GET() {
     });
   } catch (error) {
     captureException(error);
-    console.error("Failed to get Nowsta config:", error);
+    log.error("Failed to get Nowsta config:", error);
     return NextResponse.json(
       { error: "Failed to get configuration" },
       { status: 500 }
@@ -153,7 +154,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     captureException(error);
-    console.error("Failed to save Nowsta config:", error);
+    log.error("Failed to save Nowsta config:", error);
     return NextResponse.json(
       { error: "Failed to save configuration" },
       { status: 500 }
@@ -184,7 +185,7 @@ export async function DELETE() {
     return NextResponse.json({ success: true });
   } catch (error) {
     captureException(error);
-    console.error("Failed to delete Nowsta config:", error);
+    log.error("Failed to delete Nowsta config:", error);
     return NextResponse.json(
       { error: "Failed to delete configuration" },
       { status: 500 }

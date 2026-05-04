@@ -30,7 +30,7 @@ export function WasteStatsCards() {
     return (
       <div className="grid gap-4 md:grid-cols-4">
         {[1, 2, 3, 4].map((i) => (
-          <Card key={i}>
+          <Card tone="soft-stone" key={i}>
             <CardContent className="p-6">
               <div className="h-4 w-24 animate-pulse bg-muted rounded mb-2" />
               <div className="h-8 w-32 animate-pulse bg-muted rounded" />
@@ -75,7 +75,7 @@ export function WasteStatsCards() {
   return (
     <div className="grid gap-4 md:grid-cols-4">
       {cards.map((card) => (
-        <Card key={card.title}>
+        <Card tone="soft-stone" key={card.title}>
           <CardContent className="p-6">
             <div className="flex items-center gap-4">
               <div className={`p-3 rounded-lg ${card.bgColor}`}>

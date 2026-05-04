@@ -3,6 +3,7 @@ import { database } from "@repo/database";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { log } from "@repo/observability/log";
 
 interface EmployeePerformanceRaw {
   employee_id: string;
@@ -432,7 +433,7 @@ export async function GET(request: Request) {
     return NextResponse.json(summary);
   } catch (error) {
     captureException(error);
-    console.error("Error fetching employee performance summary:", error);
+    log.error("Error fetching employee performance summary:", error);
     return NextResponse.json(
       { message: "Failed to fetch employee performance summary" },
       { status: 500 }

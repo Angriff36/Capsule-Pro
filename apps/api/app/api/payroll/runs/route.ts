@@ -12,6 +12,7 @@ import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { log } from "@repo/observability/log";
 
 type PayrollRunStatus =
   | "pending"
@@ -156,7 +157,7 @@ export async function GET(request: Request) {
     });
   } catch (error) {
     captureException(error);
-    console.error("Failed to list payroll runs:", error);
+    log.error("Failed to list payroll runs:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }

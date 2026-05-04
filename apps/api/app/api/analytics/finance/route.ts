@@ -3,6 +3,7 @@ import { database } from "@repo/database";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { log } from "@repo/observability/log";
 
 interface CurrentMetrics {
   total_events: string;
@@ -542,7 +543,7 @@ export async function GET(request: Request) {
     });
   } catch (error) {
     captureException(error);
-    console.error("Error fetching finance analytics:", error);
+    log.error("Error fetching finance analytics:", error);
     return NextResponse.json(
       { message: "Failed to fetch finance analytics" },
       { status: 500 }

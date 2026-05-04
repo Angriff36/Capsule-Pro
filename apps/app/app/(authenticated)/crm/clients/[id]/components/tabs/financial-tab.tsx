@@ -41,7 +41,7 @@ export function FinancialTab({ client }: FinancialTabProps) {
       <h2 className="text-xl font-semibold">Financial Summary</h2>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
+        <Card tone="soft-stone">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <DollarSignIcon className="h-4 w-4" />
@@ -59,7 +59,7 @@ export function FinancialTab({ client }: FinancialTabProps) {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card tone="soft-stone">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <TrendingUpIcon className="h-4 w-4" />
@@ -80,7 +80,7 @@ export function FinancialTab({ client }: FinancialTabProps) {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card tone="soft-stone">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <CalendarIcon className="h-4 w-4" />
@@ -103,7 +103,7 @@ export function FinancialTab({ client }: FinancialTabProps) {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Card>
+        <Card tone="canvas">
           <CardHeader>
             <CardTitle>Payment Terms</CardTitle>
           </CardHeader>
@@ -121,7 +121,7 @@ export function FinancialTab({ client }: FinancialTabProps) {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card tone="canvas">
           <CardHeader>
             <CardTitle>Tax Status</CardTitle>
           </CardHeader>
@@ -142,7 +142,7 @@ export function FinancialTab({ client }: FinancialTabProps) {
         </Card>
       </div>
 
-      <Card>
+      <Card tone="canvas">
         <CardHeader>
           <CardTitle>Lifetime Value Metrics</CardTitle>
         </CardHeader>

@@ -9,6 +9,7 @@ import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { requireTenantId } from "@/app/lib/tenant";
+import { log } from "@repo/observability/log";
 
 // Validation schemas
 const recordPaymentSchema = z.object({
@@ -94,7 +95,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
     });
   } catch (error) {
     captureException(error);
-    console.error("Error getting collection case:", error);
+    log.error("Error getting collection case:", error);
     return NextResponse.json(
       { error: "Failed to get collection case" },
       { status: 500 }
@@ -371,7 +372,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
         { status: 400 }
       );
     }
-    console.error("Error updating collection case:", error);
+    log.error("Error updating collection case:", error);
     return NextResponse.json(
       { error: "Failed to update collection case" },
       { status: 500 }

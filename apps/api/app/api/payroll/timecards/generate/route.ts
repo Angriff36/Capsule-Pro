@@ -3,6 +3,7 @@ import { database, Prisma } from "@repo/database";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { log } from "@repo/observability/log";
 
 /**
  * POST /api/payroll/timecards/generate
@@ -237,7 +238,7 @@ export async function POST(request: NextRequest) {
             createdEntries.push(result[0]);
           }
         } catch (err) {
-          console.error(
+          log.error(
             `Failed to create time entry for shift ${shift.shift_id}:`,
             err
           );
@@ -283,7 +284,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     captureException(error);
-    console.error("Schedule-to-payroll generation error:", error);
+    log.error("Schedule-to-payroll generation error:", error);
     return NextResponse.json(
       { error: "Failed to generate timecards from schedules" },
       { status: 500 }

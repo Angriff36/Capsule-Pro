@@ -8,6 +8,7 @@ import {
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
+import { log } from "@repo/observability/log";
 
 export const runtime = "nodejs";
 
@@ -34,7 +35,7 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
 
-    console.log("[bulk-order-rules/create] Executing command:", {
+    log.info("[bulk-order-rules/create] Executing command:", {
       entityName: "BulkOrderRule",
       command: "create",
       userId: currentUser.id,
@@ -72,7 +73,7 @@ export async function POST(request: NextRequest) {
       events: result.emittedEvents,
     });
   } catch (error) {
-    console.error("[bulk-order-rules/create] Error:", error);
+    log.error("[bulk-order-rules/create] Error:", error);
     captureException(error);
     return manifestErrorResponse("Internal server error", 500);
   }

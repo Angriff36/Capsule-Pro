@@ -1,5 +1,6 @@
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
+import { log } from "@repo/observability/log";
 
 interface StaffingRecommendationRequest {
   guestCount?: number;
@@ -123,7 +124,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     captureException(error);
-    console.error("Staffing recommendations error:", error);
+    log.error("Staffing recommendations error:", error);
     return NextResponse.json(
       { error: "Failed to generate staffing recommendations" },
       { status: 500 }

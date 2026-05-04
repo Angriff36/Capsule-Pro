@@ -12,6 +12,7 @@ import {
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
+import { log } from "@repo/observability/log";
 
 export const runtime = "nodejs";
 
@@ -40,7 +41,7 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
 
-    console.log("[prep-task-plan-workflow/cancel] Executing command:", {
+    log.info("[prep-task-plan-workflow/cancel] Executing command:", {
       entityName: "PrepTaskPlanWorkflow",
       command: "cancel",
       userId: currentUser.id,
@@ -58,7 +59,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (!result.success) {
-      console.error("[prep-task-plan-workflow/cancel] Command failed:", {
+      log.error("[prep-task-plan-workflow/cancel] Command failed:", {
         policyDenial: result.policyDenial,
         guardFailure: result.guardFailure,
         error: result.error,
@@ -85,7 +86,7 @@ export async function POST(request: NextRequest) {
       events: result.emittedEvents,
     });
   } catch (error) {
-    console.error("[prep-task-plan-workflow/cancel] Error:", error);
+    log.error("[prep-task-plan-workflow/cancel] Error:", error);
     captureException(error);
     return manifestErrorResponse("Internal server error", 500);
   }

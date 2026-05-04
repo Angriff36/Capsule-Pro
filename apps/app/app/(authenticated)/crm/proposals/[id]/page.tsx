@@ -244,7 +244,7 @@ export default async function ProposalDetailPage({
         {/* Main Content */}
         <div className="lg:col-span-2 space-y-6">
           {/* Event Details */}
-          <Card>
+          <Card tone="canvas">
             <CardHeader>
               <CardTitle>Event Details</CardTitle>
             </CardHeader>
@@ -310,7 +310,7 @@ export default async function ProposalDetailPage({
           </Card>
 
           {/* Line Items */}
-          <Card>
+          <Card tone="canvas">
             <CardHeader>
               <CardTitle>Proposal Items</CardTitle>
               <CardDescription>
@@ -370,7 +370,7 @@ export default async function ProposalDetailPage({
 
           {/* Terms */}
           {proposal.termsAndConditions && (
-            <Card>
+            <Card tone="canvas">
               <CardHeader>
                 <CardTitle>Terms & Conditions</CardTitle>
               </CardHeader>
@@ -386,7 +386,7 @@ export default async function ProposalDetailPage({
         {/* Sidebar */}
         <div className="space-y-6">
           {/* Client Info */}
-          <Card>
+          <Card tone="canvas">
             <CardHeader>
               <CardTitle>Client Information</CardTitle>
             </CardHeader>
@@ -430,7 +430,7 @@ export default async function ProposalDetailPage({
           </Card>
 
           {/* Pricing Summary */}
-          <Card>
+          <Card tone="canvas">
             <CardHeader>
               <CardTitle>Pricing Summary</CardTitle>
             </CardHeader>
@@ -468,7 +468,7 @@ export default async function ProposalDetailPage({
           </Card>
 
           {/* Status Timeline */}
-          <Card>
+          <Card tone="canvas">
             <CardHeader>
               <CardTitle>Status Timeline</CardTitle>
             </CardHeader>

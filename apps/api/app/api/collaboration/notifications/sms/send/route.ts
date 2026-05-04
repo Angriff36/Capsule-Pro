@@ -16,6 +16,7 @@ import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { log } from "@repo/observability/log";
 
 const sendSmsSchema = z.object({
   notificationType: z.string().min(1),
@@ -84,7 +85,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     captureException(error);
-    console.error("SMS send failed:", error);
+    log.error("SMS send failed:", error);
 
     // Sanitize known provider-not-configured errors before sending to client
     const raw = error instanceof Error ? error.message : "Unknown error";

@@ -17,6 +17,7 @@ import type {
 } from "../types";
 
 import { TRANSACTION_TYPES } from "../types";
+import { log } from "@repo/observability/log";
 
 interface PaginationParams {
   page: number;
@@ -270,7 +271,7 @@ export async function GET(request: Request) {
     return NextResponse.json(response);
   } catch (error) {
     captureException(error);
-    console.error("Failed to list transactions:", error);
+    log.error("Failed to list transactions:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }

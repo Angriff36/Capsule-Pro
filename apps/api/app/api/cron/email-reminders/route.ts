@@ -13,6 +13,7 @@ import { database } from "@repo/database";
 import { triggerEmailWorkflows } from "@repo/notifications";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
+import { log } from "@repo/observability/log";
 
 // Force dynamic rendering — reads Authorization headers and queries DB at runtime
 export const dynamic = "force-dynamic";
@@ -32,7 +33,7 @@ function verifyCronAuth(request: NextRequest): boolean {
   const cronSecret = process.env.CRON_SECRET;
 
   if (!cronSecret) {
-    console.error(
+    log.error(
       "[cron/email-reminders] CRON_SECRET is not configured — rejecting request (fail-closed)"
     );
     return false;
@@ -67,7 +68,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
     results.taskReminders.errors.push(message);
-    console.error("Failed to process task reminders:", error);
+    log.error("Failed to process task reminders:", error);
     captureException(error, {
       tags: { route: "cron/email-reminders", errorType: "task_reminders" },
     });
@@ -80,7 +81,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
     results.shiftReminders.errors.push(message);
-    console.error("Failed to process shift reminders:", error);
+    log.error("Failed to process shift reminders:", error);
     captureException(error, {
       tags: { route: "cron/email-reminders", errorType: "shift_reminders" },
     });

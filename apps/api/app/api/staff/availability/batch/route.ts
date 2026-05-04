@@ -11,6 +11,7 @@ import {
   validateEffectiveDates,
   verifyEmployee,
 } from "../validation";
+import { log } from "@repo/observability/log";
 
 /**
  * POST /api/staff/availability/batch
@@ -185,7 +186,7 @@ export const POST = withRateLimit(
       );
     } catch (error) {
       captureException(error);
-      console.error("Error creating batch availability:", error);
+      log.error("Error creating batch availability:", error);
       return NextResponse.json(
         { message: "Failed to create availability records" },
         { status: 500 }

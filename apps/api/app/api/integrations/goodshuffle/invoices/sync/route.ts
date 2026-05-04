@@ -10,6 +10,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { runGoodshuffleInvoiceSync } from "@/app/lib/goodshuffle-invoice-sync-service";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { log } from "@repo/observability/log";
 
 const syncSchema = z.object({
   startDate: z
@@ -72,7 +73,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(result);
   } catch (error) {
     captureException(error);
-    console.error("Failed to run Goodshuffle invoice sync:", error);
+    log.error("Failed to run Goodshuffle invoice sync:", error);
     return NextResponse.json(
       { error: "Failed to run invoice sync" },
       { status: 500 }

@@ -18,6 +18,7 @@ import {
 } from "@repo/notifications";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
+import { log } from "@repo/observability/log";
 
 // Force dynamic rendering — reads Authorization headers and queries DB at runtime
 export const dynamic = "force-dynamic";
@@ -47,7 +48,7 @@ function verifyCronAuth(request: NextRequest): boolean {
   const cronSecret = process.env.CRON_SECRET;
 
   if (!cronSecret) {
-    console.error(
+    log.error(
       "[cron/contract-expiration-alerts] CRON_SECRET is not configured — rejecting request (fail-closed)"
     );
     return false;
@@ -224,7 +225,7 @@ export async function POST(request: NextRequest) {
         const message =
           error instanceof Error ? error.message : "Unknown error";
         results.errors.push(`Tenant ${tenantId}: ${message}`);
-        console.error(
+        log.error(
           `Failed to process contract alerts for tenant ${tenantId}:`,
           error
         );
@@ -245,7 +246,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
-    console.error("Failed to process contract expiration alerts:", error);
+    log.error("Failed to process contract expiration alerts:", error);
     captureException(error, {
       tags: { route: "cron/contract-expiration-alerts", errorType: "outer" },
     });

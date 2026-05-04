@@ -10,6 +10,7 @@ import { NextResponse } from "next/server";
 import { generateApiKey } from "@/app/lib/api-key-service";
 import { requireCurrentUser } from "@/app/lib/tenant";
 import { withRateLimit } from "@/middleware/rate-limiter";
+import { log } from "@repo/observability/log";
 
 export const runtime = "nodejs";
 
@@ -87,7 +88,7 @@ export const POST = withRateLimit(
         },
       });
 
-      console.log("[ApiKeys/rotate] Rotated API key", {
+      log.info("[ApiKeys/rotate] Rotated API key", {
         tenantId: currentUser.tenantId,
         keyId: id,
         userId: currentUser.id,
@@ -100,7 +101,7 @@ export const POST = withRateLimit(
       });
     } catch (error) {
       captureException(error);
-      console.error("[ApiKeys/rotate] Error:", error);
+      log.error("[ApiKeys/rotate] Error:", error);
       return NextResponse.json(
         { message: "Failed to rotate API key" },
         { status: 500 }

@@ -9,6 +9,7 @@ import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
+import { log } from "@repo/observability/log";
 
 function buildVehicleAssignment(vehicleId: unknown) {
   // Omitted from request: leave column unchanged.
@@ -68,7 +69,7 @@ export async function POST(request: NextRequest) {
     return manifestSuccessResponse({ driver: (result as any[])[0] });
   } catch (error) {
     captureException(error);
-    console.error("Error updating driver:", error);
+    log.error("Error updating driver:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

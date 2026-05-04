@@ -11,6 +11,7 @@ import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { log } from "@repo/observability/log";
 
 export const runtime = "nodejs";
 
@@ -56,7 +57,7 @@ export async function GET(_request: NextRequest) {
     return NextResponse.json({ data: rules });
   } catch (error) {
     captureException(error);
-    console.error("Error listing scoring rules:", error);
+    log.error("Error listing scoring rules:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }
@@ -162,7 +163,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ data: rule[0] }, { status: 201 });
   } catch (error) {
     captureException(error);
-    console.error("Error creating scoring rule:", error);
+    log.error("Error creating scoring rule:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }

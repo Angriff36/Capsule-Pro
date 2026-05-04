@@ -1,5 +1,6 @@
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
+import { log } from "@repo/observability/log";
 
 /**
  * GET /api/calendar/sync/callback/outlook
@@ -15,7 +16,7 @@ export async function GET(request: NextRequest) {
     const error = searchParams.get("error");
 
     if (error) {
-      console.error("[outlook/callback] OAuth error:", error);
+      log.error("[outlook/callback] OAuth error:", error);
       return NextResponse.redirect(
         new URL(
           `/calendar/sync?error=${encodeURIComponent(error)}`,
@@ -72,7 +73,7 @@ export async function GET(request: NextRequest) {
 
     if (!tokenResponse.ok) {
       const errorText = await tokenResponse.text();
-      console.error("[outlook/callback] Token exchange failed:", errorText);
+      log.error("[outlook/callback] Token exchange failed:", errorText);
       return NextResponse.redirect(
         new URL("/calendar/sync?error=token_exchange_failed", request.url)
       );
@@ -154,7 +155,7 @@ export async function GET(request: NextRequest) {
     );
   } catch (error) {
     captureException(error);
-    console.error("[outlook/callback] Error:", error);
+    log.error("[outlook/callback] Error:", error);
     return NextResponse.redirect(
       new URL("/calendar/sync?error=callback_failed", request.url)
     );

@@ -631,7 +631,7 @@ export function SalesDashboardClient() {
       <Separator />
 
       {/* Upload Card */}
-      <Card>
+      <Card tone="canvas">
         <CardHeader>
           <CardTitle>Upload Data</CardTitle>
           <CardDescription>
@@ -669,7 +669,7 @@ export function SalesDashboardClient() {
       {salesData ? (
         <>
           {/* Column Mapping */}
-          <Card>
+          <Card tone="canvas">
             <CardHeader>
               <CardTitle>Column Mapping</CardTitle>
               <CardDescription>
@@ -766,7 +766,7 @@ export function SalesDashboardClient() {
           </Card>
 
           {/* Workbook Snapshot */}
-          <Card>
+          <Card tone="soft-stone">
             <CardHeader>
               <CardTitle>Data Snapshot</CardTitle>
               <CardDescription>
@@ -814,7 +814,7 @@ export function SalesDashboardClient() {
 
               {/* ============ WEEKLY ============ */}
               <TabsContent className="space-y-6" value="weekly">
-                <Card>
+                <Card tone="soft-stone">
                   <CardHeader>
                     <CardTitle>Weekly Metrics</CardTitle>
                     <CardDescription>
@@ -856,7 +856,7 @@ export function SalesDashboardClient() {
                     spec={barChartSpec({ showCurrency: true })}
                     title="Revenue by Event Type"
                   />
-                  <Card>
+                  <Card tone="canvas">
                     <CardHeader>
                       <CardTitle>Trending Lost Reasons</CardTitle>
                       <CardDescription>
@@ -874,7 +874,7 @@ export function SalesDashboardClient() {
                   </Card>
                 </div>
 
-                <Card>
+                <Card tone="canvas">
                   <CardHeader>
                     <CardTitle>Top Upcoming / Pending</CardTitle>
                     <CardDescription>
@@ -900,7 +900,7 @@ export function SalesDashboardClient() {
 
               {/* ============ MONTHLY ============ */}
               <TabsContent className="space-y-6" value="monthly">
-                <Card>
+                <Card tone="soft-stone">
                   <CardHeader>
                     <CardTitle>Monthly Metrics</CardTitle>
                     <CardDescription>
@@ -985,7 +985,7 @@ export function SalesDashboardClient() {
                 </div>
 
                 <div className="grid gap-4 lg:grid-cols-2">
-                  <Card>
+                  <Card tone="canvas">
                     <CardHeader>
                       <CardTitle>Win/Loss Trends</CardTitle>
                       <CardDescription>
@@ -1000,7 +1000,7 @@ export function SalesDashboardClient() {
                       />
                     </CardContent>
                   </Card>
-                  <Card>
+                  <Card tone="canvas">
                     <CardHeader>
                       <CardTitle>Closing Performance</CardTitle>
                       <CardDescription>
@@ -1027,7 +1027,7 @@ export function SalesDashboardClient() {
 
               {/* ============ QUARTERLY ============ */}
               <TabsContent className="space-y-6" value="quarterly">
-                <Card>
+                <Card tone="soft-stone">
                   <CardHeader>
                     <CardTitle>Quarterly Metrics</CardTitle>
                     <CardDescription>
@@ -1108,7 +1108,7 @@ export function SalesDashboardClient() {
                 </div>
 
                 <div className="grid gap-4 lg:grid-cols-2">
-                  <Card>
+                  <Card tone="canvas">
                     <CardHeader>
                       <CardTitle>Customer Segment Analysis</CardTitle>
                       <CardDescription>
@@ -1121,7 +1121,7 @@ export function SalesDashboardClient() {
                       />
                     </CardContent>
                   </Card>
-                  <Card>
+                  <Card tone="canvas">
                     <CardHeader>
                       <CardTitle>Pricing Summary</CardTitle>
                       <CardDescription>
@@ -1137,7 +1137,7 @@ export function SalesDashboardClient() {
                 </div>
 
                 <div className="grid gap-4 lg:grid-cols-2">
-                  <Card>
+                  <Card tone="canvas">
                     <CardHeader>
                       <CardTitle>Funnel by Source Details</CardTitle>
                       <CardDescription>
@@ -1150,7 +1150,7 @@ export function SalesDashboardClient() {
                       />
                     </CardContent>
                   </Card>
-                  <Card>
+                  <Card tone="canvas">
                     <CardHeader>
                       <CardTitle>Win/Loss Review</CardTitle>
                       <CardDescription>
@@ -1167,7 +1167,7 @@ export function SalesDashboardClient() {
                   </Card>
                 </div>
 
-                <Card>
+                <Card tone="soft-stone">
                   <CardHeader>
                     <CardTitle>Next Quarter Forecast</CardTitle>
                     <CardDescription>
@@ -1182,7 +1182,7 @@ export function SalesDashboardClient() {
                 </Card>
 
                 <div className="grid gap-4 lg:grid-cols-2">
-                  <Card>
+                  <Card tone="canvas">
                     <CardHeader>
                       <CardTitle>Recommendations</CardTitle>
                     </CardHeader>
@@ -1203,7 +1203,7 @@ export function SalesDashboardClient() {
                       )}
                     </CardContent>
                   </Card>
-                  <Card>
+                  <Card tone="canvas">
                     <CardHeader>
                       <CardTitle>Opportunities</CardTitle>
                     </CardHeader>
@@ -1229,7 +1229,7 @@ export function SalesDashboardClient() {
 
               {/* ============ ANNUAL ============ */}
               <TabsContent className="space-y-6" value="annual">
-                <Card>
+                <Card tone="soft-stone">
                   <CardHeader>
                     <CardTitle>Annual Metrics</CardTitle>
                     <CardDescription>
@@ -1324,7 +1324,7 @@ export function SalesDashboardClient() {
                   />
                 </div>
 
-                <Card>
+                <Card tone="canvas">
                   <CardHeader>
                     <CardTitle>Win/Loss Trends</CardTitle>
                   </CardHeader>
@@ -1340,7 +1340,7 @@ export function SalesDashboardClient() {
 
               {/* ============ COMPARISON ============ */}
               <TabsContent className="space-y-6" value="comparison">
-                <Card>
+                <Card tone="canvas">
                   <CardHeader>
                     <CardTitle>Comparative View</CardTitle>
                     <CardDescription>
@@ -1369,7 +1369,7 @@ export function SalesDashboardClient() {
                     </div>
                   </CardContent>
                 </Card>
-                <Card>
+                <Card tone="canvas">
                   <CardHeader>
                     <CardTitle>Period Summary</CardTitle>
                   </CardHeader>
@@ -1381,7 +1381,7 @@ export function SalesDashboardClient() {
 
               {/* ============ VALIDATION ============ */}
               <TabsContent className="space-y-6" value="validation">
-                <Card>
+                <Card tone="canvas">
                   <CardHeader>
                     <CardTitle>Funnel Validation</CardTitle>
                     <CardDescription>
@@ -1426,7 +1426,7 @@ export function SalesDashboardClient() {
 
               {/* ============ CHART BUILDER ============ */}
               <TabsContent className="space-y-6" value="chart-builder">
-                <Card>
+                <Card tone="canvas">
                   <CardHeader>
                     <CardTitle>Chart Builder</CardTitle>
                     <CardDescription>

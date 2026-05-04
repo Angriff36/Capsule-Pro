@@ -12,6 +12,7 @@ import {
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
+import { log } from "@repo/observability/log";
 
 export const runtime = "nodejs";
 
@@ -40,7 +41,7 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
 
-    console.log("[proposal/accept] Executing command:", {
+    log.info("[proposal/accept] Executing command:", {
       entityName: "Proposal",
       command: "accept",
       userId: currentUser.id,
@@ -59,7 +60,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (!result.success) {
-      console.error("[proposal/accept] Command failed:", {
+      log.error("[proposal/accept] Command failed:", {
         policyDenial: result.policyDenial,
         guardFailure: result.guardFailure,
         error: result.error,
@@ -86,7 +87,7 @@ export async function POST(request: NextRequest) {
       events: result.emittedEvents,
     });
   } catch (error) {
-    console.error("[proposal/accept] Error:", error);
+    log.error("[proposal/accept] Error:", error);
     captureException(error);
     return manifestErrorResponse("Internal server error", 500);
   }

@@ -4,6 +4,7 @@ import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { log } from "@repo/observability/log";
 
 /**
  * POST /api/payroll/bank-accounts/commands/delete
@@ -83,7 +84,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true, id: result.id });
   } catch (error) {
     captureException(error);
-    console.error("Failed to delete bank account:", error);
+    log.error("Failed to delete bank account:", error);
     return NextResponse.json(
       { error: "Failed to delete bank account" },
       { status: 500 }

@@ -12,6 +12,7 @@ import { InvariantError } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import type { CompleteReceivingRequest } from "../../types";
 import { validateCompleteReceivingRequest } from "../../validation";
+import { log } from "@repo/observability/log";
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -238,7 +239,7 @@ export async function POST(request: Request, context: RouteContext) {
     if (error instanceof InvariantError) {
       return NextResponse.json({ message: error.message }, { status: 400 });
     }
-    console.error("Failed to complete receiving:", error);
+    log.error("Failed to complete receiving:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }

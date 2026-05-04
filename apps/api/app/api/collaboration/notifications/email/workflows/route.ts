@@ -10,6 +10,7 @@ import { database } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { log } from "@repo/observability/log";
 
 /**
  * GET /api/collaboration/notifications/email/workflows
@@ -65,7 +66,7 @@ export async function GET(request: NextRequest) {
       workflows,
     });
   } catch (error) {
-    console.error("Failed to fetch email workflows:", error);
+    log.error("Failed to fetch email workflows:", error);
     const message = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
       { error: `Failed to fetch email workflows: ${message}` },

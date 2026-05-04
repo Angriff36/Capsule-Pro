@@ -10,6 +10,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { runNowstaSync } from "@/app/lib/nowsta-sync-service";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { log } from "@repo/observability/log";
 
 const syncRequestSchema = z.object({
   startDate: z.string().transform((val) => new Date(val)),
@@ -84,7 +85,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     captureException(error);
-    console.error("Nowsta sync failed:", error);
+    log.error("Nowsta sync failed:", error);
     const message = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
       { error: `Sync failed: ${message}` },
