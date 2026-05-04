@@ -773,7 +773,7 @@ export function UnifiedCalendar({
             {activeEvent ? (
               <div
                 className={`
-                  px-2 py-1 rounded text-xs truncate shadow-lg
+                  px-2 py-1 rounded text-xs truncate border border-hairline
                   ${EVENT_COLORS[activeEvent.type] || "bg-gray-500"}
                   text-white
                   ring-2 ring-blue-400

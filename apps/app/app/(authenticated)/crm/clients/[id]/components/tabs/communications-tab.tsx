@@ -246,7 +246,7 @@ export function CommunicationsTab({ clientId }: CommunicationsTabProps) {
               <div className="space-y-2">
                 <Label htmlFor="interactionType">Type *</Label>
                 <select
-                  className="w-full h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"
+                  className="w-full h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm"
                   id="interactionType"
                   onChange={(e) =>
                     setFormData({
@@ -488,7 +488,7 @@ export function CommunicationsTab({ clientId }: CommunicationsTabProps) {
             <div className="space-y-2">
               <Label htmlFor="edit-interactionType">Type *</Label>
               <select
-                className="w-full h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"
+                className="w-full h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm"
                 id="edit-interactionType"
                 onChange={(e) =>
                   setFormData({ ...formData, interactionType: e.target.value })

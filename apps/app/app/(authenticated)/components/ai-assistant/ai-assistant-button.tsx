@@ -9,9 +9,8 @@ export function AiAssistantButton() {
   return (
     <button
       aria-label={isOpen ? "Close AI Assistant" : "Open AI Assistant"}
-      className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg hover:scale-105 active:scale-95 transition-all duration-150"
+      className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground border border-hairline hover:scale-105 active:scale-95 transition-all duration-150"
       onClick={toggle}
-      style={{ boxShadow: "0 4px 24px 0 rgba(0,0,0,0.18)" }}
       type="button"
     >
       <span

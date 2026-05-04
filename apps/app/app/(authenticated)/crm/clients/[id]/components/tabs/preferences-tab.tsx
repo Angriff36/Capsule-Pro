@@ -207,7 +207,7 @@ export function PreferencesTab({ client }: PreferencesTabProps) {
       <div className="space-y-2">
         <Label htmlFor="preferenceType">Category *</Label>
         <select
-          className="w-full h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"
+          className="w-full h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm"
           id="preferenceType"
           onChange={(e) =>
             setFormData({ ...formData, preferenceType: e.target.value })

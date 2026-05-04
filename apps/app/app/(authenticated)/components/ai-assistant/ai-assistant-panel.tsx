@@ -76,7 +76,7 @@ export function AiAssistantPanel() {
 
   return (
     <div
-      className={`fixed bottom-6 right-20 z-50 flex flex-col w-[400px] max-md:w-full max-md:right-0 max-md:left-0 max-md:bottom-0 max-md:rounded-b-none h-[600px] max-md:h-[80vh] rounded-2xl shadow-2xl border bg-background overflow-hidden transition-all duration-200 ${panelTranslate}`}
+      className={`fixed bottom-6 right-20 z-50 flex flex-col w-[400px] max-md:w-full max-md:right-0 max-md:left-0 max-md:bottom-0 max-md:rounded-b-none h-[600px] max-md:h-[80vh] rounded-2xl border bg-background overflow-hidden transition-all duration-200 ${panelTranslate}`}
       style={{ visibility: isOpen ? "visible" : "hidden" }}
     >
       {/* Header */}

@@ -212,7 +212,7 @@ function MiniMap({ deliveries }: { deliveries: ActiveDelivery[] }) {
         })}
       </svg>
 
-      <div className="absolute bottom-3 right-3 bg-white dark:bg-slate-800 rounded-md p-2 shadow-sm text-xs space-y-1">
+      <div className="absolute bottom-3 right-3 bg-white dark:bg-slate-800 rounded-md p-2 border border-hairline text-xs space-y-1">
         <div className="flex items-center gap-2">
           <div className="w-2 h-2 rounded-full bg-blue-500" />
           <span>In Transit ({activeDeliveries.length})</span>
