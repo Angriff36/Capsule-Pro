@@ -6,7 +6,7 @@ import type { ReactNode } from "react";
  * BlogFilterChip — Cohere-aligned editorial taxonomy chip used in blog
  * and research filter rails. Per DESIGN.md `blog-filter-chip`:
  * transparent background, coral text, card-heading typography, 8px
- * (`rounded-md`) radius, 8/14px padding.
+ * (`rounded-sm`) radius, 8/14px padding.
  *
  * The two `tone` variants follow the documented behaviour:
  *   - coral (default) — outlined editorial taxonomy chip
@@ -17,7 +17,7 @@ import type { ReactNode } from "react";
  * row's metadata column).
  */
 const blogFilterChipVariants = cva(
-  "ds-feature-heading inline-flex items-center gap-1.5 rounded-md border px-3.5 py-2 transition-colors",
+  "ds-feature-heading inline-flex items-center gap-1.5 rounded-sm border px-3.5 py-2 transition-colors",
   {
     variants: {
       tone: {

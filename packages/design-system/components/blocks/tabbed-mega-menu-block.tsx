@@ -116,7 +116,7 @@ export function TabbedMegaMenuBlock({
 
   return (
     <div className="pr-[50vw] pb-[50vh]">
-      <div className="w-full max-w-md rounded-md border bg-background p-px">
+      <div className="w-full max-w-md rounded-sm border bg-background p-px">
         <NavigationMenu>
           <NavigationMenuList>
             <NavigationMenuItem>
@@ -150,7 +150,7 @@ export function TabbedMegaMenuBlock({
                                 : null;
                             return (
                               <NavigationMenuLink
-                                className="flex flex-row items-start gap-3 rounded-md border border-transparent p-3 hover:border-border"
+                                className="flex flex-row items-start gap-3 rounded-sm border border-transparent p-3 hover:border-border"
                                 href={item.href ?? "#"}
                                 key={item.title}
                               >
