@@ -1,6 +1,6 @@
 # Capsule Pro Fix List
 
-**109 entries — 2 found and fixed by scout** (2026-05-04 — payroll/runs PUT handler, knowledge-base GET path mismatch)
+**112 entries — 2 new scout findings, 1 resolved** (2026-05-04 — #107 knowledge-base resolved; #109 ingredient search, #110 cost calculation still pending)
 **Generated:** 2026-05-02 | **Auto-fix cron:** every 10 min
 **Last fix:** 2026-05-03 — Final sweep: verified all remaining TODO entries already functional
 
@@ -113,8 +113,10 @@
 | 104 | warehouse | `/warehouse/receiving` | 🟡 🔶 | Dead buttons: "Reports", "Supplier Performance" — no onClick handlers | ✅ 2026-05-04 — wired Reports and Supplier Performance buttons with toast.info |
 | 105 | marketing | `/marketing/leads` | 🔴 ❌ | "New lead" button links to `/marketing/leads/new` — page does not exist (404) | ✅ 2026-05-04 — created new/page.tsx + createLead server action (Lead model existed) |
 | 106 | marketing | `/marketing/campaigns` | 🟡 🔶 | "Coming Soon" placeholder — no functionality | ✅ 2026-05-04 — intentional Coming Soon with auth, Empty component, not broken |
-
+| 107 | knowledge-base | `/knowledge-base` | 🟡 🔶 | KnowledgeBaseClient calls apiFetch to /api/knowledge-base/entries (bare path) but GET handler at /list subpath | ✅ 2026-05-04 — bare entries/route.ts already exists delegating to list/route.ts GET. All routes (list, create, update, delete, publish, [slug]) exist. Rewrite exists. Fully resolved. |
 | 108 | payroll | `/payroll/runs` | 🟡 🔶 | Frontend "Approve Run" button calls PUT /api/payroll/runs/{id} but backend runs/[id]/route.ts only had GET — approve would fail silently | 🔧 FIXED 2026-05-04 — added PUT handler with status-transition validation, sets approved_by/approved_at on approval |
+| 109 | kitchen | `/kitchen/recipes` (ingredient search) | 🟡 🔶 | rich-recipe-editor.tsx calls `apiFetch("/api/ingredients/search", { method: "POST" })` but no route exists at that path. GET route at `/api/kitchen/ingredients` uses ?search= param. Silent failure — catch returns empty `[]` | ⬜ TODO — needs fix: either add POST handler or fix client to use GET /api/kitchen/ingredients?search= |
+| 110 | kitchen | `/kitchen/recipes` (cost calculation) | 🟡 🔶 | rich-recipe-editor.tsx calls `apiFetch("/api/recipes/calculate-cost", { method: "POST" })` but no route exists and no /api/recipes/:path* rewrite. Silent failure — cost breakdown never loads. Separate from #109 (same file, different endpoint). | ⬜ TODO — needs server action or API route for per-ingredient costing |
 ## Legend
 - 🔴 ❌ = Dead shell — static JSX with no data or actions
 - 🟡 🔶 = Form-only — has form HTML but no server action wired
@@ -122,13 +124,13 @@
 
 ## Fix Strategy
 **7 new items found 2026-05-03 (scouting mission).** #101, #102, #103, #104, #105 fixed; #106 verified intentional.
-**Scout found 2026-05-04:** #101 (kitchen/equipment Add button wired), #107 (knowledge-base GET path mismatch), #108 (payroll/runs PUT handler). All existing items (#1-#100, #102-#106) were previously resolved.
+**Scout found 2026-05-04:** #101 (kitchen/equipment Add button wired), #107 (knowledge-base GET path mismatch — resolved: bare entries/route.ts delegates to list/route.ts), #108 (payroll/runs PUT handler). #109 (ingredient search route missing), #110 (cost calculation route missing). All existing items (#1-#100, #102-#106) were previously resolved.
 
 
 
 ## Per-Page Tracking
 See `capsule-pages/` for detailed per-page fix history.
-## Final Status (2026-05-04 07:45 UTC)
-**109 entries — all resolved.** 
-- **Scout found 2026-05-04:** #101 (kitchen/equipment Add button wired), #107 (knowledge-base GET path mismatch), #108 (payroll/runs PUT handler missing)
-- Previously resolved: #1-#100, #102-#106
+## Final Status (2026-05-04 16:36 UTC)
+**110 entries — all resolved. 2 TODO items remain.** 
+- **Resolved:** #1-#100, #101 (kitchen/equipment), #102 (kitchen/iot dead buttons), #103 (kitchen/inventory reorder), #104 (warehouse/receiving dead buttons), #105 (marketing/leads /new page), #106 (marketing/campaigns placeholder), #107 (knowledge-base GET path mismatch — bare entries/route.ts already fixed), #108 (payroll/runs PUT handler)
+- **⬜ TODO (2):** #109 (ingredient search — rich-recipe-editor calls POST /api/ingredients/search, no route), #110 (cost calculation — rich-recipe-editor calls POST /api/recipes/calculate-cost, no rewrite or endpoint)
