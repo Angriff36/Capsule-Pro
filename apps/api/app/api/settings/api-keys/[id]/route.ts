@@ -7,6 +7,7 @@
  */
 
 import { database } from "@repo/database";
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { requireCurrentUser } from "@/app/lib/tenant";
@@ -61,7 +62,7 @@ export const GET = withRateLimit(
       return NextResponse.json(apiKey);
     } catch (error) {
       captureException(error);
-      console.error("[ApiKeys/detail] Error:", error);
+      log.error("[ApiKeys/detail] Error", { error });
       return NextResponse.json(
         { message: "Failed to fetch API key" },
         { status: 500 }
@@ -183,7 +184,7 @@ export const PUT = withRateLimit(
         },
       });
 
-      console.log("[ApiKeys/update] Updated API key", {
+      log.info("[ApiKeys/update] Updated API key", {
         tenantId: currentUser.tenantId,
         keyId: id,
         userId: currentUser.id,
@@ -192,7 +193,7 @@ export const PUT = withRateLimit(
       return NextResponse.json(updated);
     } catch (error) {
       captureException(error);
-      console.error("[ApiKeys/update] Error:", error);
+      log.error("[ApiKeys/update] Error", { error });
       return NextResponse.json(
         { message: "Failed to update API key" },
         { status: 500 }
@@ -247,7 +248,7 @@ export const DELETE = withRateLimit(
         },
       });
 
-      console.log("[ApiKeys/delete] Soft deleted API key", {
+      log.info("[ApiKeys/delete] Soft deleted API key", {
         tenantId: currentUser.tenantId,
         keyId: id,
         userId: currentUser.id,
@@ -256,7 +257,7 @@ export const DELETE = withRateLimit(
       return NextResponse.json({ success: true });
     } catch (error) {
       captureException(error);
-      console.error("[ApiKeys/delete] Error:", error);
+      log.error("[ApiKeys/delete] Error", { error });
       return NextResponse.json(
         { message: "Failed to delete API key" },
         { status: 500 }

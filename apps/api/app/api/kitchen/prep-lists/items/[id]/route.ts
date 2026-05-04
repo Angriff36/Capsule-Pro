@@ -1,3 +1,4 @@
+import { log } from "@repo/observability/log";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { executeManifestCommand } from "@/lib/manifest-command-handler";
@@ -29,7 +30,7 @@ export async function PATCH(
   try {
     body = await clonedRequest.json();
   } catch (error) {
-    console.error("[PrepListItem/PATCH] Failed to parse request body:", error);
+    log.error("[PrepListItem/PATCH] Failed to parse request body", { error });
     return NextResponse.json(
       { message: "Invalid request body" },
       { status: 400 }
@@ -41,7 +42,7 @@ export async function PATCH(
   // 1. Completion status changes
   if (body.isCompleted !== undefined) {
     if (body.isCompleted) {
-      console.log("[PrepListItem/PATCH] Delegating to markCompleted command", {
+      log.debug("[PrepListItem/PATCH] Delegating to markCompleted command", {
         itemId: id,
       });
       return executeManifestCommand(request, {
@@ -55,7 +56,7 @@ export async function PATCH(
       });
     }
 
-    console.log("[PrepListItem/PATCH] Delegating to markUncompleted command", {
+    log.debug("[PrepListItem/PATCH] Delegating to markUncompleted command", {
       itemId: id,
     });
     return executeManifestCommand(request, {
@@ -71,7 +72,7 @@ export async function PATCH(
 
   // 2. Quantity updates
   if (body.scaledQuantity !== undefined) {
-    console.log("[PrepListItem/PATCH] Delegating to updateQuantity command", {
+    log.debug("[PrepListItem/PATCH] Delegating to updateQuantity command", {
       itemId: id,
       scaledQuantity: body.scaledQuantity,
     });
@@ -89,7 +90,7 @@ export async function PATCH(
 
   // 3. Preparation notes updates
   if (body.preparationNotes !== undefined) {
-    console.log("[PrepListItem/PATCH] Delegating to updatePrepNotes command", {
+    log.debug("[PrepListItem/PATCH] Delegating to updatePrepNotes command", {
       itemId: id,
     });
     return executeManifestCommand(request, {
@@ -106,7 +107,7 @@ export async function PATCH(
 
   // 4. Station updates
   if (body.stationId !== undefined || body.stationName !== undefined) {
-    console.log("[PrepListItem/PATCH] Delegating to updateStation command", {
+    log.debug("[PrepListItem/PATCH] Delegating to updateStation command", {
       itemId: id,
       stationId: body.stationId,
     });
@@ -124,7 +125,7 @@ export async function PATCH(
   }
 
   // No recognized field to update
-  console.error(
+  log.error(
     "[PrepListItem/PATCH] No manifest command available for the requested update",
     { itemId: id, bodyKeys: Object.keys(body) }
   );
@@ -151,7 +152,7 @@ export async function DELETE(
 ) {
   const { id } = await params;
 
-  console.log(
+  log.debug(
     "[PrepListItem/DELETE] Delegating to manifest markUncompleted command",
     { itemId: id }
   );

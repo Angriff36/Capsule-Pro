@@ -14,6 +14,7 @@
  */
 
 import { database, type Prisma } from "@repo/database";
+import { log } from "@repo/observability/log";
 import {
   determineNextStatus,
   sendWebhook,
@@ -36,7 +37,7 @@ export async function GET(request: Request): Promise<NextResponse> {
 
   // If CRON_SECRET is not configured, the endpoint is not available
   if (!cronSecret) {
-    console.error(
+    log.error(
       "[webhook-retry] CRON_SECRET environment variable is not configured"
     );
     return NextResponse.json(
@@ -48,7 +49,7 @@ export async function GET(request: Request): Promise<NextResponse> {
   // Validate the Authorization header
   const authHeader = request.headers.get("authorization");
   if (authHeader !== `Bearer ${cronSecret}`) {
-    console.error(
+    log.error(
       "[webhook-retry] Unauthorized request — invalid or missing Authorization header"
     );
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -226,16 +227,16 @@ export async function GET(request: Request): Promise<NextResponse> {
           data: updates,
         });
       } catch (deliveryError) {
-        console.error(
-          `[webhook-retry] Failed to process delivery ${delivery.id}:`,
-          deliveryError
+        log.error(
+          `[webhook-retry] Failed to process delivery ${delivery.id}`,
+          { error: deliveryError }
         );
         failedCount++;
         // Continue processing other deliveries
       }
     }
 
-    console.log(
+    log.info(
       `[webhook-retry] Processed ${deliveries.length} webhook retries: ${successCount} success, ${failedCount} failed`
     );
 
@@ -246,7 +247,7 @@ export async function GET(request: Request): Promise<NextResponse> {
       timestamp: new Date().toISOString(),
     });
   } catch (error: unknown) {
-    console.error("[webhook-retry] Failed to process webhook retries:", error);
+    log.error("[webhook-retry] Failed to process webhook retries", { error });
     captureException(error);
 
     return NextResponse.json(

@@ -656,6 +656,21 @@
       "pattern": "^/api/crm/venues/[^/]+$",
       "methods": ["PUT", "DELETE"],
       "comment": "Direct Prisma — Venue update + soft-delete (no manifest yet, active-events guard enforced)"
+    },
+    {
+      "prefix": "/api/inventory/vendor-catalogs/commands/update-cost",
+      "methods": ["POST"],
+      "comment": "Infrastructure: Vendor catalog cost update with propagation (direct Prisma, no manifest command)"
+    },
+    {
+      "pattern": "^/api/kitchen/prep-lists/items/[^/]+$",
+      "methods": ["PATCH", "DELETE"],
+      "comment": "Uses executeManifestCommand — PrepListItem commands (updateQuantity, toggleCompleted, softDelete)"
+    },
+    {
+      "prefix": "/api/kitchen/tasks/sync-claims",
+      "methods": ["POST"],
+      "comment": "Infrastructure: Batch claim/release sync for kitchen tasks using executeManifestCommand"
     }
   ]
 }

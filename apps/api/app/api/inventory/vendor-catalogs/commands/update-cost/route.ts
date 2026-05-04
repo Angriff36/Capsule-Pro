@@ -4,6 +4,7 @@
 
 import { auth } from "@repo/auth/server";
 import { database, processVendorCostUpdate } from "@repo/database";
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -40,7 +41,7 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
 
-    console.log("[vendor-catalog/updateCost] Executing command:", {
+    log.info("[vendor-catalog/updateCost] Executing command", {
       entityName: "VendorCatalog",
       command: "updateCost",
       userId: currentUser.id,
@@ -58,7 +59,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (!result.success) {
-      console.error("[vendor-catalog/updateCost] Command failed:", {
+      log.error("[vendor-catalog/updateCost] Command failed", {
         policyDenial: result.policyDenial,
         guardFailure: result.guardFailure,
         error: result.error,
@@ -95,9 +96,9 @@ export async function POST(request: NextRequest) {
           reason: body.reason ?? "Vendor catalog price update",
         });
 
-        console.log(
-          "[vendor-catalog/updateCost] Cost propagation complete:",
-          costUpdateResult
+        log.info(
+          "[vendor-catalog/updateCost] Cost propagation complete",
+          { result: costUpdateResult }
         );
 
         // Include cost propagation results in the response
@@ -109,9 +110,9 @@ export async function POST(request: NextRequest) {
           events: result.emittedEvents,
         });
       } catch (costUpdateError) {
-        console.error(
-          "[vendor-catalog/updateCost] Cost propagation failed:",
-          costUpdateError
+        log.error(
+          "[vendor-catalog/updateCost] Cost propagation failed",
+          { error: costUpdateError }
         );
         captureException(costUpdateError);
 
@@ -132,7 +133,7 @@ export async function POST(request: NextRequest) {
       events: result.emittedEvents,
     });
   } catch (error) {
-    console.error("[vendor-catalog/updateCost] Error:", error);
+    log.error("[vendor-catalog/updateCost] Error", { error });
     captureException(error);
     return manifestErrorResponse("Internal server error", 500);
   }

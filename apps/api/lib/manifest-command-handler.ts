@@ -17,6 +17,7 @@ import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@repo/manifest-adapters/route-helpers";
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { requireCurrentUser } from "@/app/lib/tenant";
@@ -112,7 +113,7 @@ export async function executeManifestCommand(
         })
       : body;
 
-    console.log(`${logPrefix} Executing command:`, {
+    log.info(`${logPrefix} Executing command`, {
       entityName,
       command: commandName,
       userId: currentUser.id,
@@ -150,7 +151,7 @@ export async function executeManifestCommand(
 
     // 7. Handle failures
     if (!result.success) {
-      console.error(`${logPrefix} Command failed:`, {
+      log.error(`${logPrefix} Command failed`, {
         policyDenial: result.policyDenial,
         guardFailure: result.guardFailure,
         error: result.error,
@@ -180,11 +181,11 @@ export async function executeManifestCommand(
   } catch (error) {
     // InvariantError from requireCurrentUser means auth or tenant resolution failed
     if (error instanceof Error && error.name === "InvariantError") {
-      console.error(`${logPrefix} Auth/tenant error:`, error.message);
+      log.error(`${logPrefix} Auth/tenant error`, { error: error.message });
       return manifestErrorResponse("Unauthorized", 401);
     }
 
-    console.error(`${logPrefix} Error:`, error);
+    log.error(`${logPrefix} Error`, { error });
     captureException(error);
     return manifestErrorResponse("Internal server error", 500);
   }

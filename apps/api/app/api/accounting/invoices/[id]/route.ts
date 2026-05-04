@@ -6,6 +6,7 @@
 
 import { database } from "@repo/database";
 import { InvoiceTemplate, resend } from "@repo/email";
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { requireTenantId } from "@/app/lib/tenant";
@@ -105,7 +106,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
         { status: prismaResult.status }
       );
     }
-    console.error("Error fetching invoice:", error);
+    log.error("Error fetching invoice", { error });
     return NextResponse.json(
       { error: "Failed to fetch invoice" },
       { status: 500 }
@@ -210,7 +211,7 @@ export async function PUT(request: NextRequest, context: RouteContext) {
         { status: prismaResult.status }
       );
     }
-    console.error("Error updating invoice:", error);
+    log.error("Error updating invoice", { error });
     return NextResponse.json(
       { error: "Failed to update invoice" },
       { status: 500 }
@@ -386,7 +387,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
           });
         } catch (emailError) {
           captureException(emailError);
-          console.error("Failed to send reminder email:", emailError);
+          log.error("Failed to send reminder email", { error: emailError });
         }
       }
 
@@ -420,7 +421,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
         { status: prismaResult.status }
       );
     }
-    console.error("Error handling invoice action:", error);
+    log.error("Error handling invoice action", { error });
     return NextResponse.json(
       { error: "Failed to handle invoice action" },
       { status: 500 }
@@ -522,7 +523,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       } catch (emailError) {
         // Non-fatal: status transition already committed.
         captureException(emailError);
-        console.error("Failed to send invoice email:", emailError);
+        log.error("Failed to send invoice email", { error: emailError });
       }
     }
 
@@ -549,7 +550,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         { status: prismaResult.status }
       );
     }
-    console.error("Error sending invoice:", error);
+    log.error("Error sending invoice", { error });
     return NextResponse.json(
       { error: "Failed to send invoice" },
       { status: 500 }
@@ -624,7 +625,7 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
         { status: prismaResult.status }
       );
     }
-    console.error("Error voiding invoice:", error);
+    log.error("Error voiding invoice", { error });
     return NextResponse.json(
       { error: "Failed to void invoice" },
       { status: 500 }

@@ -1,3 +1,4 @@
+import { log } from "@repo/observability/log";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { executeManifestCommand } from "@/lib/manifest-command-handler";
@@ -39,7 +40,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
   try {
     body = await clonedRequest.json();
   } catch (error) {
-    console.error("[KitchenTask/PATCH] Failed to parse request body:", error);
+    log.error("[KitchenTask/PATCH] Failed to parse request body", { error });
     return NextResponse.json(
       { message: "Invalid request body" },
       { status: 400 }
@@ -53,7 +54,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     const commandName = STATUS_TO_COMMAND[newStatus];
 
     if (!commandName) {
-      console.error(
+      log.error(
         `[KitchenTask/PATCH] No manifest command mapped for target status: "${newStatus}"`,
         { taskId: id, requestedStatus: newStatus }
       );
@@ -65,7 +66,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       );
     }
 
-    console.log(
+    log.debug(
       `[KitchenTask/PATCH] Mapping status="${newStatus}" to command="${commandName}"`,
       { taskId: id }
     );
@@ -93,7 +94,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
 
   // Non-status field updates — map to specific manifest commands where possible
   if (body.priority !== undefined) {
-    console.log("[KitchenTask/PATCH] Delegating to updatePriority command", {
+    log.debug("[KitchenTask/PATCH] Delegating to updatePriority command", {
       taskId: id,
       priority: body.priority,
     });
@@ -110,7 +111,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
   }
 
   if (body.complexity !== undefined) {
-    console.log("[KitchenTask/PATCH] Delegating to updateComplexity command", {
+    log.debug("[KitchenTask/PATCH] Delegating to updateComplexity command", {
       taskId: id,
       complexity: body.complexity,
     });
@@ -127,7 +128,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
   }
 
   if (body.title !== undefined) {
-    console.log("[KitchenTask/PATCH] Delegating to updateTitle command", {
+    log.debug("[KitchenTask/PATCH] Delegating to updateTitle command", {
       taskId: id,
       title: body.title,
     });
@@ -144,7 +145,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
   }
 
   if (body.summary !== undefined) {
-    console.log("[KitchenTask/PATCH] Delegating to updateSummary command", {
+    log.debug("[KitchenTask/PATCH] Delegating to updateSummary command", {
       taskId: id,
       summary: body.summary,
     });
@@ -161,7 +162,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
   }
 
   if (body.dueDate !== undefined) {
-    console.log("[KitchenTask/PATCH] Delegating to updateDueDate command", {
+    log.debug("[KitchenTask/PATCH] Delegating to updateDueDate command", {
       taskId: id,
       dueDate: body.dueDate,
     });
@@ -178,7 +179,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
   }
 
   if (body.tags !== undefined) {
-    console.log("[KitchenTask/PATCH] Delegating to updateTags command", {
+    log.debug("[KitchenTask/PATCH] Delegating to updateTags command", {
       taskId: id,
       tags: body.tags,
     });
@@ -203,7 +204,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
 export async function DELETE(request: NextRequest, context: RouteContext) {
   const { id } = await context.params;
 
-  console.log("[KitchenTask/DELETE] Delegating to cancel command", {
+  log.debug("[KitchenTask/DELETE] Delegating to cancel command", {
     taskId: id,
   });
 

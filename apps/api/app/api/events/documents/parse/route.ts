@@ -15,6 +15,8 @@ import type {
   ProcessedDocument,
   StaffShift,
 } from "@repo/event-parser";
+import { log } from "@repo/observability/log";
+import { parseError as parseErrorToMessage } from "@repo/observability/error";
 import { captureException } from "@sentry/nextjs";
 
 import { NextResponse } from "next/server";
@@ -727,7 +729,7 @@ async function handleEventCreation(
   files: File[],
   importRecords: Array<{ importId: string; document: ProcessedDocument }>
 ): Promise<{ eventId: string; title: string }> {
-  console.log("[handleEventCreation] Creating new event from parsed data");
+  log.debug("[handleEventCreation] Creating new event from parsed data");
   const missingFields = getMissingFieldsFromParsedEvent(event);
   const result = await createEventFromParsedData(
     tenantId,
@@ -735,7 +737,7 @@ async function handleEventCreation(
     files,
     missingFields
   );
-  console.log("[handleEventCreation] Event created:", result.eventId);
+  log.info("[handleEventCreation] Event created", { eventId: result.eventId });
 
   await linkImportRecordsToEvent(importRecords, result.eventId);
 
@@ -752,7 +754,7 @@ async function generateBattleBoardForEvent(
   response: ParseDocumentsResponse
 ): Promise<void> {
   try {
-    console.log("[generateBattleBoardForEvent] Creating battle board");
+    log.debug("[generateBattleBoardForEvent] Creating battle board");
 
     const { buildBattleBoardFromEvent } = await getEventParser();
     const battleBoardResult = buildBattleBoardFromEvent(event);
@@ -773,14 +775,13 @@ async function generateBattleBoardForEvent(
       },
     });
 
-    console.log(
-      "[generateBattleBoardForEvent] Battle board saved:",
-      savedBattleBoard.id
-    );
+    log.info("[generateBattleBoardForEvent] Battle board saved", {
+      battleBoardId: savedBattleBoard.id,
+    });
     response.battleBoard = battleBoardResult.battleBoard;
     response.battleBoardId = savedBattleBoard.id;
   } catch (error) {
-    console.error("[generateBattleBoardForEvent] Generation failed:", error);
+    log.error("[generateBattleBoardForEvent] Generation failed", { error });
     response.battleBoardError =
       error instanceof Error ? error.message : "Unknown error";
   }
@@ -797,7 +798,7 @@ async function generateChecklistForEvent(
   response: ParseDocumentsResponse
 ): Promise<void> {
   try {
-    console.log("[generateChecklistForEvent] Creating checklist");
+    log.debug("[generateChecklistForEvent] Creating checklist");
 
     const { buildInitialChecklist } = await getEventParser();
     const checklistResult = buildInitialChecklist(event);
@@ -827,12 +828,14 @@ async function generateChecklistForEvent(
       },
     });
 
-    console.log("[generateChecklistForEvent] Checklist saved:", savedReport.id);
+    log.info("[generateChecklistForEvent] Checklist saved", {
+      reportId: savedReport.id,
+    });
 
     response.checklist = checklistResult;
     response.checklistId = savedReport.id;
   } catch (error) {
-    console.error("[generateChecklistForEvent] Generation failed:", error);
+    log.error("[generateChecklistForEvent] Generation failed", { error });
     response.checklistError =
       error instanceof Error ? error.message : "Unknown error";
   }
@@ -865,7 +868,7 @@ async function processParsedEventData(
     try {
       await importMenuToEvent(tenantId, actualEventId, event);
     } catch (menuError) {
-      console.error("[processParsedEventData] Menu import failed:", menuError);
+      log.error("[processParsedEventData] Menu import failed", { error: menuError });
     }
   }
 
@@ -885,11 +888,9 @@ async function processDocumentsAndGenerateResponse(
   shouldGenerateChecklist: boolean,
   shouldGenerateBattleBoard: boolean
 ) {
-  console.log(
-    "[processDocumentsAndGenerateResponse] Starting with",
-    files.length,
-    "files"
-  );
+  log.debug("[processDocumentsAndGenerateResponse] Starting", {
+    fileCount: files.length,
+  });
   // Initialize Manifest runtime via dynamic import (avoids require() of ESM on Vercel)
   // Note: Event import functions are capsule-pro specific and not in @angriff36/manifest
   // These need to be ported to kitchen-ops or a separate event-import module
@@ -914,11 +915,11 @@ async function processDocumentsAndGenerateResponse(
 
   // Parse documents (existing parser logic)
   const result = await parseDocuments(fileContents);
-  console.log("[processDocumentsAndGenerateResponse] parseDocuments result:", {
+  log.debug("[processDocumentsAndGenerateResponse] parseDocuments result", {
     documentCount: result.documents.length,
     hasEvent: !!result.mergedEvent,
     staffCount: result.mergedStaff?.length || 0,
-    errors: result.errors,
+    errorCount: result.errors.length,
   });
 
   // Create import records in database
@@ -989,32 +990,25 @@ async function processDocumentsAndGenerateResponse(
 
   // Build response
   const response = buildResponse(result, importRecords);
-  console.log("[processDocumentsAndGenerateResponse] response built");
+  log.debug("[processDocumentsAndGenerateResponse] Response object built");
 
   // Process parsed event data - create event and import menu
   let actualEventId = eventId;
   let derivedTitle = "";
   if (result.mergedEvent) {
-    console.log(
-      "[processDocumentsAndGenerateResponse] Parsed event data:",
-      JSON.stringify(
-        {
-          client: result.mergedEvent.client,
-          number: result.mergedEvent.number,
-          date: result.mergedEvent.date,
-          serviceStyle: result.mergedEvent.serviceStyle,
-          headcount: result.mergedEvent.headcount,
-          venue: result.mergedEvent.venue,
-          status: result.mergedEvent.status,
-          kits: result.mergedEvent.kits,
-          menuSectionsCount: result.mergedEvent.menuSections?.length || 0,
-          timelineCount: result.mergedEvent.timeline?.length || 0,
-          staffingCount: result.mergedEvent.staffing?.length || 0,
-        },
-        null,
-        2
-      )
-    );
+    log.debug("[processDocumentsAndGenerateResponse] Parsed event data", {
+      client: result.mergedEvent.client,
+      number: result.mergedEvent.number,
+      date: result.mergedEvent.date,
+      serviceStyle: result.mergedEvent.serviceStyle,
+      headcount: result.mergedEvent.headcount,
+      venue: result.mergedEvent.venue?.name,
+      status: result.mergedEvent.status,
+      kits: result.mergedEvent.kits,
+      menuSectionsCount: result.mergedEvent.menuSections?.length || 0,
+      timelineCount: result.mergedEvent.timeline?.length || 0,
+      staffingCount: result.mergedEvent.staffing?.length || 0,
+    });
 
     const eventData = await processParsedEventData(
       tenantId,
@@ -1030,7 +1024,7 @@ async function processDocumentsAndGenerateResponse(
   // Generate battle board if requested
   if (shouldGenerateBattleBoard) {
     if (!result.mergedEvent) {
-      console.warn(
+      log.warn(
         "[processDocumentsAndGenerateResponse] Cannot generate battle board: no merged event data"
       );
       response.battleBoardError = "No event data extracted from documents";
@@ -1042,7 +1036,7 @@ async function processDocumentsAndGenerateResponse(
         response
       );
     } else {
-      console.warn(
+      log.warn(
         "[processDocumentsAndGenerateResponse] Cannot generate battle board: no event ID"
       );
       response.battleBoardError =
@@ -1053,7 +1047,7 @@ async function processDocumentsAndGenerateResponse(
   // Generate checklist if requested
   if (shouldGenerateChecklist) {
     if (!result.mergedEvent) {
-      console.warn(
+      log.warn(
         "[processDocumentsAndGenerateResponse] Cannot generate checklist: no merged event data"
       );
       response.checklistError = "No event data extracted from documents";
@@ -1066,7 +1060,7 @@ async function processDocumentsAndGenerateResponse(
         response
       );
     } else {
-      console.warn(
+      log.warn(
         "[processDocumentsAndGenerateResponse] Cannot generate checklist: no event ID"
       );
       response.checklistError =
@@ -1162,36 +1156,31 @@ async function _createChecklist(
  */
 export async function POST(request: Request) {
   try {
-    console.log("[POST /api/events/documents/parse] Starting");
+    log.debug("[POST /api/events/documents/parse] Starting");
     const { orgId, userId } = await auth();
     if (!(orgId && userId)) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
     const tenantId = await getTenantIdForOrg(orgId);
-    console.log("[POST] tenantId:", tenantId);
     const { searchParams } = new URL(request.url);
 
     const eventId = searchParams.get("eventId");
     const generateChecklist = searchParams.get("generateChecklist") === "true";
     const generateBattleBoard =
       searchParams.get("generateBattleBoard") === "true";
-    console.log(
-      "[POST] eventId:",
+    log.debug("[POST] Request params", {
       eventId,
-      "generateChecklist:",
       generateChecklist,
-      "generateBattleBoard:",
-      generateBattleBoard
-    );
+      generateBattleBoard,
+    });
 
     // Parse form data
     const { files } = await processFormData(request);
-    console.log(
-      "[POST] Files received:",
-      files.length,
-      files.map((f) => f.name)
-    );
+    log.debug("[POST] Files received", {
+      fileCount: files.length,
+      fileNames: files.map((f) => f.name),
+    });
 
     if (files.length === 0) {
       return NextResponse.json(
@@ -1208,7 +1197,7 @@ export async function POST(request: Request) {
     }
 
     // Process documents and generate response (now powered by Manifest)
-    console.log("[POST] About to call processDocumentsAndGenerateResponse");
+    log.debug("[POST] About to call processDocumentsAndGenerateResponse");
     let response: ParseDocumentsResponse;
     try {
       response = await processDocumentsAndGenerateResponse(
@@ -1219,26 +1208,22 @@ export async function POST(request: Request) {
         generateChecklist,
         generateBattleBoard
       );
-      console.log("[POST] processDocumentsAndGenerateResponse completed");
+      log.debug("[POST] processDocumentsAndGenerateResponse completed");
     } catch (innerError) {
-      console.error(
-        "[POST] Error in processDocumentsAndGenerateResponse:",
-        innerError
-      );
+      log.error("[POST] Error in processDocumentsAndGenerateResponse", {
+        error: innerError,
+      });
       throw innerError;
     }
 
-    console.log("[POST] Response generated successfully");
+    log.debug("[POST] Response generated successfully");
     return NextResponse.json({ data: response });
   } catch (error) {
     captureException(error);
-    console.error("[POST] Error parsing documents:", error);
+    const errorMessage = parseErrorToMessage(error);
+    log.error("[POST] Error parsing documents", { error });
 
-    const errorMessage =
-      error instanceof Error ? error.message : "Unknown error";
     const errorStack = error instanceof Error ? error.stack : undefined;
-
-    console.error("[POST] Error details:", { errorMessage, errorStack });
 
     // Always include details in response so client/Network tab can show the real error
     return NextResponse.json(
@@ -1303,7 +1288,7 @@ export async function GET(request: Request) {
     });
   } catch (error) {
     captureException(error);
-    console.error("Error listing imports:", error);
+    log.error("[GET /api/events/documents/parse] Error listing imports", { error });
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }

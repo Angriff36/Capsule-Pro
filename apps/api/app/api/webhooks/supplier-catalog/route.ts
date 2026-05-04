@@ -41,6 +41,7 @@
 
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { database } from "@repo/database";
+import { log } from "@repo/observability/log";
 import type { SupplierProduct } from "@repo/supplier-connectors";
 import { connectorRegistry } from "@repo/supplier-connectors";
 import { captureException } from "@sentry/nextjs";
@@ -136,7 +137,7 @@ export async function POST(request: Request) {
     ];
 
   if (!webhookSecret) {
-    console.error(
+    log.error(
       `[webhook/supplier-catalog] No webhook secret configured for ${payload.connectorId} — rejecting request`
     );
     return NextResponse.json(
@@ -157,7 +158,7 @@ export async function POST(request: Request) {
         Buffer.from(expectedSignature, "hex")
       )
     ) {
-      console.warn(
+      log.warn(
         `[webhook/supplier-catalog] Invalid signature for ${payload.connectorId}`
       );
       return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
@@ -264,14 +265,14 @@ export async function POST(request: Request) {
       upserted++;
     } catch (err) {
       errors++;
-      console.error(
-        `[webhook/supplier-catalog] Failed to upsert product ${product.sku}:`,
-        err
+      log.error(
+        `[webhook/supplier-catalog] Failed to upsert product ${product.sku}`,
+        { error: err }
       );
     }
   }
 
-  console.log(
+  log.info(
     `[webhook/supplier-catalog] Processed ${payload.event} from ${connector.name}: ` +
       `${upserted} upserted, ${errors} errors`
   );

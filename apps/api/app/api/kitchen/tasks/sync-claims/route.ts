@@ -1,5 +1,7 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { parseError } from "@repo/observability/error";
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -57,7 +59,7 @@ async function processClaimAction(
   taskId: string,
   userId: string
 ): Promise<{ success: boolean; error?: string }> {
-  console.log("[KitchenTask/sync-claims] Processing claim action", {
+  log.debug("[KitchenTask/sync-claims] Processing claim action", {
     taskId,
     userId,
   });
@@ -72,7 +74,7 @@ async function processClaimAction(
     if (!result.success) {
       const errorMsg = getErrorMessage(result);
 
-      console.error("[KitchenTask/sync-claims] Claim command failed:", {
+      log.error("[KitchenTask/sync-claims] Claim command failed", {
         taskId,
         userId,
         policyDenial: result.policyDenial,
@@ -85,15 +87,15 @@ async function processClaimAction(
 
     return { success: true };
   } catch (error) {
-    console.error("[KitchenTask/sync-claims] Claim action threw:", {
+    const errorMessage = parseError(error);
+    log.error("[KitchenTask/sync-claims] Claim action threw", {
       taskId,
       userId,
-      error: error instanceof Error ? error.message : String(error),
+      error: errorMessage,
     });
-    captureException(error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Unknown error",
+      error: errorMessage,
     };
   }
 }
@@ -103,7 +105,7 @@ async function processReleaseAction(
   taskId: string,
   userId: string
 ): Promise<{ success: boolean; error?: string }> {
-  console.log("[KitchenTask/sync-claims] Processing release action", {
+  log.debug("[KitchenTask/sync-claims] Processing release action", {
     taskId,
     userId,
   });
@@ -118,7 +120,7 @@ async function processReleaseAction(
     if (!result.success) {
       const errorMsg = getErrorMessage(result);
 
-      console.error("[KitchenTask/sync-claims] Release command failed:", {
+      log.error("[KitchenTask/sync-claims] Release command failed", {
         taskId,
         userId,
         policyDenial: result.policyDenial,
@@ -131,15 +133,15 @@ async function processReleaseAction(
 
     return { success: true };
   } catch (error) {
-    console.error("[KitchenTask/sync-claims] Release action threw:", {
+    const errorMessage = parseError(error);
+    log.error("[KitchenTask/sync-claims] Release action threw", {
       taskId,
       userId,
-      error: error instanceof Error ? error.message : String(error),
+      error: errorMessage,
     });
-    captureException(error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Unknown error",
+      error: errorMessage,
     };
   }
 }
@@ -202,13 +204,13 @@ export async function POST(request: Request) {
   try {
     const { orgId, userId: clerkId } = await auth();
     if (!(orgId && clerkId)) {
-      console.error(`${logPrefix} Unauthorized: missing orgId or clerkId`);
+      log.error(`${logPrefix} Unauthorized: missing orgId or clerkId`);
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
     const tenantId = await getTenantIdForOrg(orgId);
     if (!tenantId) {
-      console.error(`${logPrefix} Tenant not found for orgId: ${orgId}`);
+      log.error(`${logPrefix} Tenant not found for orgId`, { orgId });
       return NextResponse.json(
         { message: "Tenant not found" },
         { status: 400 }
@@ -219,7 +221,7 @@ export async function POST(request: Request) {
 
     // Validate request body
     if (!(body.claims && Array.isArray(body.claims))) {
-      console.error(`${logPrefix} Invalid request: 'claims' array required`, {
+      log.error(`${logPrefix} Invalid request: 'claims' array required`, {
         bodyKeys: Object.keys(body),
       });
       return NextResponse.json(
@@ -242,7 +244,7 @@ export async function POST(request: Request) {
     });
 
     if (!currentUser) {
-      console.error(`${logPrefix} User not found in database`, {
+      log.error(`${logPrefix} User not found in database`, {
         clerkId,
         tenantId,
       });
@@ -258,9 +260,10 @@ export async function POST(request: Request) {
       entityName: "KitchenTask",
     });
 
-    console.log(`${logPrefix} Processing ${body.claims.length} claim actions`, {
+    log.info(`${logPrefix} Processing claim actions`, {
       userId: currentUser.id,
       tenantId,
+      claimCount: body.claims.length,
     });
 
     const results: SyncResult = {
@@ -273,7 +276,7 @@ export async function POST(request: Request) {
       await processSingleAction(runtime, claimAction, currentUser.id, results);
     }
 
-    console.log(`${logPrefix} Sync complete`, {
+    log.info(`${logPrefix} Sync complete`, {
       total: body.claims.length,
       successful: results.successful.length,
       failed: results.failed.length,
@@ -288,7 +291,7 @@ export async function POST(request: Request) {
       },
     });
   } catch (error) {
-    console.error(`${logPrefix} Unhandled error:`, error);
+    log.error(`${logPrefix} Unhandled error`, { error });
     captureException(error);
     return NextResponse.json(
       { message: "Internal server error" },

@@ -2,6 +2,7 @@ import "server-only";
 
 import { auth, currentUser } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { log } from "@repo/observability/log";
 import { captureException, captureMessage } from "@sentry/nextjs";
 import { invariant } from "./invariant";
 
@@ -111,7 +112,7 @@ export const requireCurrentUser = async (): Promise<CurrentUser> => {
       },
     });
 
-    console.log("[requireCurrentUser] Restored soft-deleted user", {
+    log.info("[requireCurrentUser] Restored soft-deleted user", {
       tenantId,
       clerkId,
       userId: restored.id,
@@ -145,7 +146,7 @@ export const requireCurrentUser = async (): Promise<CurrentUser> => {
         },
       });
 
-      console.log("[requireCurrentUser] Linked existing employee by email", {
+      log.info("[requireCurrentUser] Linked existing employee by email", {
         tenantId,
         clerkId,
         userId: linked.id,
@@ -167,7 +168,7 @@ export const requireCurrentUser = async (): Promise<CurrentUser> => {
     extra: { email, orgId },
   });
 
-  console.log("[requireCurrentUser] Auto-provisioning new user", {
+  log.info("[requireCurrentUser] Auto-provisioning new user", {
     tenantId,
     clerkId,
     email,
@@ -220,9 +221,9 @@ export const requireCurrentUser = async (): Promise<CurrentUser> => {
       extra: { email, orgId },
     });
 
-    console.error(
-      "[requireCurrentUser] Failed to provision user:",
-      provisionErr
+    log.error(
+      "[requireCurrentUser] Failed to provision user",
+      { error: provisionErr }
     );
     throw new Error(
       `Unable to provision your account in this organization. Please contact support. (org: ${orgId})`

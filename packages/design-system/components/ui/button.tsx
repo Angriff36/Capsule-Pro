@@ -5,16 +5,18 @@ import type * as React from "react";
 
 /**
  * Button variants per DESIGN.md (Cohere):
- *  - default      → near-black pill primary CTA
+ *  - default      → near-black pill primary CTA (button-primary: pill 32px)
  *  - secondary    → soft-stone neutral surface
- *  - outline      → 1px hairline outlined pill (research-filter style)
- *  - ghost        → text-only with subtle hover
- *  - link         → underlined editorial link
+ *  - outline      → hairline outlined 30px pill (button-pill-outline: xl 30px)
+ *  - pill-outline → alias for outline (explicit naming for research filters)
+ *  - ghost        → transparent with subtle hover
+ *  - text         → text-only action link (button-secondary: xs 4px, underlined)
+ *  - link         → underlined editorial link (rounded-none for inline text)
  *  - destructive  → error state
  *  - on-dark      → white pill for dark feature bands
  *  - coral        → editorial taxonomy chip (use sparingly)
  *
- * Sizes default to pill radius. Use size="square" for icon buttons that should keep rounded-sm.
+ * Sizes default to pill radius (rounded-full). Use size="square" for icon buttons.
  */
 const buttonVariants = cva(
   "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full text-sm font-medium transition-colors disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
@@ -26,11 +28,15 @@ const buttonVariants = cva(
         destructive:
           "bg-destructive text-white hover:bg-destructive/90 focus-visible:ring-destructive/40",
         outline:
-          "border border-hairline bg-transparent text-foreground hover:bg-soft-stone",
+          "rounded-[30px] border border-hairline bg-transparent text-foreground hover:bg-soft-stone",
+        "pill-outline":
+          "rounded-[30px] border border-hairline bg-transparent text-foreground hover:bg-soft-stone",
         secondary:
           "bg-soft-stone text-ink hover:bg-soft-stone/80",
         ghost:
           "bg-transparent text-foreground hover:bg-soft-stone",
+        text:
+          "rounded-[4px] bg-transparent text-foreground underline underline-offset-4 hover:text-action-blue",
         link:
           "rounded-none text-foreground underline underline-offset-4 hover:text-action-blue",
         "on-dark":

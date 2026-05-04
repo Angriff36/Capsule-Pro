@@ -18,6 +18,7 @@
 
 import { database } from "@repo/database";
 import { captureException } from "@sentry/nextjs";
+import { log } from "@repo/observability/log";
 import { NextResponse } from "next/server";
 
 // Force dynamic rendering
@@ -130,7 +131,7 @@ export async function GET(request: Request): Promise<NextResponse> {
 
   // If CRON_SECRET is not configured, the endpoint is not available
   if (!cronSecret) {
-    console.error(
+    log.error(
       "[inventory-audit] CRON_SECRET environment variable is not configured"
     );
     return NextResponse.json(
@@ -147,7 +148,7 @@ export async function GET(request: Request): Promise<NextResponse> {
   const isAuthHeaderValid = authHeader === `Bearer ${cronSecret}`;
 
   if (!(isVercelCronValid || isAuthHeaderValid)) {
-    console.error(
+    log.error(
       "[inventory-audit] Unauthorized request — invalid or missing authentication"
     );
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -165,7 +166,7 @@ export async function GET(request: Request): Promise<NextResponse> {
     // If no schedules configured, fall back to creating daily sessions for all tenants
     // that have inventory locations but no pending cycle count sessions
     if (activeSchedules.length === 0) {
-      console.log(
+      log.info(
         "[inventory-audit] No active schedules found, using default daily behavior"
       );
       return await createDefaultDailySessions();
@@ -175,7 +176,7 @@ export async function GET(request: Request): Promise<NextResponse> {
     const schedulesToRun = activeSchedules.filter(shouldRunToday);
 
     if (schedulesToRun.length === 0) {
-      console.log("[inventory-audit] No schedules due to run today");
+      log.info("[inventory-audit] No schedules due to run today");
       return NextResponse.json({
         sessionsCreated: 0,
         tenantsProcessed: 0,
@@ -203,7 +204,7 @@ export async function GET(request: Request): Promise<NextResponse> {
         // Get first active location
         const location = await getFirstActiveLocation(tenantId);
         if (!location) {
-          console.log(
+          log.info(
             `[inventory-audit] No active locations for tenant ${tenantId}, skipping`
           );
           continue;
@@ -240,9 +241,9 @@ export async function GET(request: Request): Promise<NextResponse> {
 
         tenantsProcessed.push(tenantId);
       } catch (tenantError) {
-        console.error(
-          `[inventory-audit] Failed to create session for tenant ${tenantId}:`,
-          tenantError
+        log.error(
+          `[inventory-audit] Failed to create session for tenant ${tenantId}`,
+          { error: tenantError }
         );
         errors.push({
           tenantId,
@@ -254,7 +255,7 @@ export async function GET(request: Request): Promise<NextResponse> {
       }
     }
 
-    console.log(
+    log.info(
       `[inventory-audit] Created ${sessionsCreated} sessions for ${tenantsProcessed.length} tenants`
     );
 
@@ -267,9 +268,9 @@ export async function GET(request: Request): Promise<NextResponse> {
       timestamp: new Date().toISOString(),
     });
   } catch (error: unknown) {
-    console.error(
-      "[inventory-audit] Failed to process inventory audit scheduling:",
-      error
+    log.error(
+      "[inventory-audit] Failed to process inventory audit scheduling",
+      { error }
     );
     captureException(error);
 
@@ -360,14 +361,14 @@ async function createDefaultDailySessions(): Promise<NextResponse> {
         sessionsCreated++;
         tenantsProcessed.push(tenantId);
       } catch (tenantError) {
-        console.error(
-          `[inventory-audit] Failed to create default session for tenant ${tenantId}:`,
-          tenantError
+        log.error(
+          `[inventory-audit] Failed to create default session for tenant ${tenantId}`,
+          { error: tenantError }
         );
       }
     }
 
-    console.log(
+    log.info(
       `[inventory-audit] Default mode: Created ${sessionsCreated} sessions for ${tenantsProcessed.length} tenants`
     );
 
@@ -378,9 +379,9 @@ async function createDefaultDailySessions(): Promise<NextResponse> {
       timestamp: new Date().toISOString(),
     });
   } catch (error: unknown) {
-    console.error(
-      "[inventory-audit] Failed to create default daily sessions:",
-      error
+    log.error(
+      "[inventory-audit] Failed to create default daily sessions",
+      { error }
     );
     captureException(error);
 

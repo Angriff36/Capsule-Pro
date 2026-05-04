@@ -1,5 +1,6 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -52,9 +53,9 @@ export async function GET(request: NextRequest) {
       const authResult = await auth();
       orgId = authResult.orgId;
     } catch (authError) {
-      console.error(
-        "[calendar] Auth failed:",
-        authError instanceof Error ? authError.message : authError
+      log.error(
+        "[calendar] Auth failed",
+        { error: authError instanceof Error ? authError.message : authError }
       );
       return NextResponse.json(
         { error: "Authentication failed" },
@@ -70,9 +71,9 @@ export async function GET(request: NextRequest) {
     try {
       tenantId = await getTenantIdForOrg(orgId);
     } catch (error) {
-      console.error(
-        "[calendar] Failed to resolve tenant:",
-        error instanceof Error ? error.message : error
+      log.error(
+        "[calendar] Failed to resolve tenant",
+        { error: error instanceof Error ? error.message : error }
       );
       captureException(error);
       return NextResponse.json(
@@ -144,9 +145,9 @@ export async function GET(request: NextRequest) {
           }))
         );
       } catch (error) {
-        console.error(
-          "[calendar] Events query failed:",
-          error instanceof Error ? error.message : error
+        log.error(
+          "[calendar] Events query failed",
+          { error: error instanceof Error ? error.message : error }
         );
         captureException(error);
       }
@@ -190,7 +191,7 @@ export async function GET(request: NextRequest) {
           );
         }
       } catch (error) {
-        console.error("[calendar] Shifts query failed:", error);
+        log.error("[calendar] Shifts query failed", { error });
       }
     }
 
@@ -233,7 +234,7 @@ export async function GET(request: NextRequest) {
           );
         }
       } catch (error) {
-        console.error("[calendar] Time-off query failed:", error);
+        log.error("[calendar] Time-off query failed", { error });
       }
     }
 
@@ -243,9 +244,9 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ events });
   } catch (error) {
     captureException(error);
-    console.error(
-      "[calendar] API error:",
-      error instanceof Error ? error.message : error
+    log.error(
+      "[calendar] API error",
+      { error: error instanceof Error ? error.message : error }
     );
     return NextResponse.json(
       { error: "Failed to fetch calendar data" },

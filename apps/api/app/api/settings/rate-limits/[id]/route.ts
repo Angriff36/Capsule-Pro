@@ -8,6 +8,7 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
@@ -54,7 +55,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     return manifestSuccessResponse({ config });
   } catch (error) {
     captureException(error);
-    console.error("[rate-limits/detail] Error:", error);
+    log.error("[rate-limits/detail] Error", { error });
     return manifestErrorResponse("Internal server error", 500);
   }
 }
@@ -131,7 +132,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       },
     });
 
-    console.log("[rate-limits/update] Updated rate limit config", {
+    log.info("[rate-limits/update] Updated rate limit config", {
       tenantId,
       configId: config.id,
       name: config.name,
@@ -140,7 +141,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     return NextResponse.json(config);
   } catch (error) {
     captureException(error);
-    console.error("[rate-limits/update] Error:", error);
+    log.error("[rate-limits/update] Error", { error });
     return manifestErrorResponse(
       "Failed to update rate limit configuration",
       500
@@ -181,7 +182,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       data: { deletedAt: new Date() },
     });
 
-    console.log("[rate-limits/delete] Deleted rate limit config", {
+    log.info("[rate-limits/delete] Deleted rate limit config", {
       tenantId,
       configId: id,
       name: existing.name,
@@ -190,7 +191,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     return new NextResponse(null, { status: 204 });
   } catch (error) {
     captureException(error);
-    console.error("[rate-limits/delete] Error:", error);
+    log.error("[rate-limits/delete] Error", { error });
     return manifestErrorResponse(
       "Failed to delete rate limit configuration",
       500

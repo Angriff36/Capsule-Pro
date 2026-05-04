@@ -198,7 +198,7 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[Emergency bridge — running bridge was not updated]
-Files: scripts/manifest/write-route-infra-allowlist.json (edit)
+[auto-bridge snapshot @ 10 changes]
+Files: apps/api/test/mocks/@repo/database.ts (edit), packages/database/prisma/schema.prisma (edit)
 
 # === END COGNILAYER ===

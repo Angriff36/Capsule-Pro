@@ -7,6 +7,7 @@
 
 import "server-only";
 import { database } from "@repo/database";
+import { log } from "@repo/observability/log";
 import { invariant } from "./invariant";
 
 // Types for forecasting
@@ -70,9 +71,9 @@ export async function calculateDepletionForecast(
       },
     });
   } catch (dbError) {
-    console.error(
-      `[calculateDepletionForecast] DB error looking up SKU ${sku}:`,
-      dbError
+    log.error(
+      `[calculateDepletionForecast] DB error looking up SKU ${sku}`,
+      { error: dbError }
     );
     // Return a safe zero-stock forecast rather than crashing
     return {
@@ -99,9 +100,9 @@ export async function calculateDepletionForecast(
       ? await getProjectedUsage(tenantId, itemId, horizonDays)
       : await getProjectedUsageFromEventsOnly(tenantId, sku, horizonDays);
   } catch (usageError) {
-    console.error(
-      `[calculateDepletionForecast] Error getting projected usage for SKU ${sku}:`,
-      usageError
+    log.error(
+      `[calculateDepletionForecast] Error getting projected usage for SKU ${sku}`,
+      { error: usageError }
     );
     // Return forecast with current stock but no usage projection
     return {
@@ -214,9 +215,9 @@ export async function generateReorderSuggestions(
         )
         .map((item) => item.item_number);
     } catch (error) {
-      console.error(
-        "[generateReorderSuggestions] Failed to query inventory items:",
-        error
+      log.error(
+        "[generateReorderSuggestions] Failed to query inventory items",
+        { error }
       );
       return suggestions;
     }
@@ -235,9 +236,9 @@ export async function generateReorderSuggestions(
         suggestions.push(suggestion);
       }
     } catch (error) {
-      console.error(
-        `[generateReorderSuggestions] Failed for SKU ${itemSku}:`,
-        error
+      log.error(
+        `[generateReorderSuggestions] Failed for SKU ${itemSku}`,
+        { error }
       );
       // Continue with other SKUs
     }
@@ -540,9 +541,9 @@ async function calculateReorderSuggestion(
       },
     });
   } catch (dbError) {
-    console.error(
-      `[calculateReorderSuggestion] DB error looking up SKU ${sku}:`,
-      dbError
+    log.error(
+      `[calculateReorderSuggestion] DB error looking up SKU ${sku}`,
+      { error: dbError }
     );
     return null;
   }
@@ -563,9 +564,9 @@ async function calculateReorderSuggestion(
       horizonDays: leadTimeDays + safetyStockDays,
     });
   } catch (forecastError) {
-    console.error(
-      `[calculateReorderSuggestion] Forecast failed for SKU ${sku}:`,
-      forecastError
+    log.error(
+      `[calculateReorderSuggestion] Forecast failed for SKU ${sku}`,
+      { error: forecastError }
     );
     // Return null — we can't make a suggestion without forecast data
     return null;
@@ -642,7 +643,7 @@ export async function batchCalculateForecasts(
   for (const sku of skus) {
     // Skip empty/null SKUs
     if (!sku || sku.trim().length === 0) {
-      console.warn("[batchCalculateForecasts] Skipping empty SKU");
+      log.warn("[batchCalculateForecasts] Skipping empty SKU");
       continue;
     }
 
@@ -654,7 +655,7 @@ export async function batchCalculateForecasts(
       });
       results.set(sku, forecast);
     } catch (error) {
-      console.error(`Failed to calculate forecast for SKU ${sku}:`, error);
+      log.error(`Failed to calculate forecast for SKU ${sku}`, { error });
       // Continue with other SKUs — don't let one failure crash the batch
     }
   }
