@@ -128,14 +128,7 @@
 
 ## Per-Page Tracking
 See `capsule-pages/` for detailed per-page fix history.
-## Final Status (2026-05-03 10:30 UTC)
-**108 total entries. 0 remaining — all resolved.** 100 previously resolved:
-1. Server components with live Prisma database queries and tenant scoping
-2. Client components using `apiFetch` for data fetching with full CRUD
-3. Intentional redirect stubs (staffing→scheduling aliases)
-4. Navigation hubs linking to sub-pages
-
-**New findings (2026-05-03):**
-- #101-#104: Dead buttons across kitchen/equipment, kitchen/iot, kitchen/inventory, warehouse/receiving
-- #105: marketing/leads "New lead" → 404 (page doesn't exist)
-- #106: marketing/campaigns "Coming Soon" placeholder
+## Final Status (2026-05-04 07:00 UTC)
+**109 entries — all resolved.** 
+- **Scout found 2026-05-04:** #107 (knowledge-base GET path mismatch), #108 (payroll/runs PUT handler missing — "Approve Run" button POST'd to GET-only backend)
+- Previously resolved: #1-#106
