@@ -33,6 +33,8 @@ model Account {
   prepListItems                  PrepListItem[]
   prepTasks                      PrepTask[]
   stations                       Station[]
+  equipment                      Equipment[]
+  workOrders                     WorkOrder[]
   taskClaims                     KitchenTaskClaim[]
   taskProgress                   KitchenTaskProgress[]
   events                         Event[]
@@ -542,6 +544,83 @@ model Station {
   @@unique([tenantId, id])
   @@index([tenantId, locationId])
   @@map("stations")
+  @@schema("tenant_kitchen")
+}
+
+model Equipment {
+  tenantId String @map("tenant_id") @db.Uuid
+  id       String @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+
+  locationId              String    @map("location_id") @db.Uuid
+  name                    String
+  type                    String    @default("general")
+  status                  String    @default("active")
+  serialNumber            String?   @map("serial_number")
+  manufacturer            String?
+  model                   String?
+  purchaseDate            DateTime? @map("purchase_date") @db.Date
+  warrantyExpiry          DateTime? @map("warranty_expiry") @db.Date
+  lastMaintenanceDate     DateTime? @map("last_maintenance_date") @db.Date
+  nextMaintenanceDate     DateTime? @map("next_maintenance_date") @db.Date
+  maintenanceIntervalDays Int       @default(90) @map("maintenance_interval_days")
+  usageHours              Float     @default(0) @map("usage_hours")
+  maxUsageHours           Float     @default(1000) @map("max_usage_hours")
+  condition               String    @default("good")
+  notes                   String?   @db.Text
+  isActive                Boolean   @default(true) @map("is_active")
+  createdAt               DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt               DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt               DateTime? @map("deleted_at") @db.Timestamptz(6)
+
+  iotDeviceId       String?   @map("iot_device_id")
+  iotDeviceType     String?   @map("iot_device_type")
+  connectionStatus  String    @default("disconnected") @map("connection_status")
+  lastHeartbeat     DateTime? @map("last_heartbeat") @db.Timestamptz(6)
+  currentSensorData Json?     @map("current_sensor_data")
+
+  workOrders WorkOrder[]
+  tenant     Account     @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
+  @@unique([tenantId, id])
+  @@index([tenantId, locationId])
+  @@index([tenantId, status])
+  @@index([tenantId, nextMaintenanceDate])
+  @@index([tenantId, iotDeviceId])
+  @@map("equipment")
+  @@schema("tenant_kitchen")
+}
+
+model WorkOrder {
+  tenantId String @map("tenant_id") @db.Uuid
+  id       String @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+
+  equipmentId   String    @map("equipment_id") @db.Uuid
+  equipmentName String    @map("equipment_name")
+  title         String
+  type          String    @default("repair")
+  priority      String    @default("medium")
+  status        String    @default("open")
+  description   String?   @db.Text
+  assignedTo    String?   @map("assigned_to") @db.Uuid
+  estimatedCost Float?    @map("estimated_cost")
+  actualCost    Float?    @default(0) @map("actual_cost")
+  scheduledDate DateTime? @map("scheduled_date") @db.Timestamptz(6)
+  completedDate DateTime? @map("completed_date") @db.Timestamptz(6)
+  partsUsed     String?   @map("parts_used") @db.Text
+  vendorId      String?   @map("vendor_id") @db.Uuid
+  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt     DateTime? @map("deleted_at") @db.Timestamptz(6)
+
+  equipment Equipment @relation(fields: [equipmentId, tenantId], references: [id, tenantId], onDelete: Cascade)
+  tenant    Account   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
+  @@unique([tenantId, id])
+  @@index([tenantId, equipmentId])
+  @@index([tenantId, status])
+  @@index([tenantId, priority])
+  @@index([tenantId, scheduledDate])
+  @@map("work_orders")
   @@schema("tenant_kitchen")
 }
 
@@ -2216,18 +2295,18 @@ model VendorContract {
 }
 
 model VendorContact {
-  tenantId     String            @map("tenant_id") @db.Uuid
-  id           String            @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  supplierId   String            @map("supplier_id") @db.Uuid
-  contactName  String            @map("contact_name")
-  contactEmail String?           @map("contact_email")
-  contactPhone String?           @map("contact_phone")
-  contactRole  String?           @map("contact_role")
-  isPrimary    Boolean           @default(false) @map("is_primary")
+  tenantId     String    @map("tenant_id") @db.Uuid
+  id           String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  supplierId   String    @map("supplier_id") @db.Uuid
+  contactName  String    @map("contact_name")
+  contactEmail String?   @map("contact_email")
+  contactPhone String?   @map("contact_phone")
+  contactRole  String?   @map("contact_role")
+  isPrimary    Boolean   @default(false) @map("is_primary")
   notes        String?
-  createdAt    DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt    DateTime          @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-  deletedAt    DateTime?         @map("deleted_at") @db.Timestamptz(6)
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt    DateTime? @map("deleted_at") @db.Timestamptz(6)
 
   tenant   Account           @relation(fields: [tenantId], references: [id], onDelete: Restrict)
   supplier InventorySupplier @relation(fields: [supplierId, tenantId], references: [id, tenantId], onDelete: Cascade)
@@ -2239,16 +2318,16 @@ model VendorContact {
 }
 
 model VendorRating {
-  tenantId   String            @map("tenant_id") @db.Uuid
-  id         String            @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  supplierId String            @map("supplier_id") @db.Uuid
-  category   String            @default("overall")
-  rating     Int               @db.SmallInt
+  tenantId   String    @map("tenant_id") @db.Uuid
+  id         String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  supplierId String    @map("supplier_id") @db.Uuid
+  category   String    @default("overall")
+  rating     Int       @db.SmallInt
   comment    String?
-  ratedBy    String?           @map("rated_by") @db.Uuid
-  createdAt  DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt  DateTime          @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-  deletedAt  DateTime?         @map("deleted_at") @db.Timestamptz(6)
+  ratedBy    String?   @map("rated_by") @db.Uuid
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt  DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt  DateTime? @map("deleted_at") @db.Timestamptz(6)
 
   tenant   Account           @relation(fields: [tenantId], references: [id], onDelete: Restrict)
   supplier InventorySupplier @relation(fields: [supplierId, tenantId], references: [id, tenantId], onDelete: Cascade)
@@ -2260,27 +2339,27 @@ model VendorRating {
 }
 
 model ProcurementBudget {
-  tenantId            String    @map("tenant_id") @db.Uuid
-  id                  String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name                String
-  description         String?
-  category            String?
-  fiscalYear          Int       @map("fiscal_year")
-  periodType          String    @default("annual") @map("period_type")
-  periodStart         DateTime? @map("period_start") @db.Date
-  periodEnd           DateTime? @map("period_end") @db.Date
-  budgetAmount        Decimal   @map("budget_amount") @db.Decimal(12, 2)
-  spentAmount         Decimal   @default(0) @map("spent_amount") @db.Decimal(12, 2)
-  committedAmount     Decimal   @default(0) @map("committed_amount") @db.Decimal(12, 2)
-  thresholdWarningPct Int       @default(80) @map("threshold_warning_pct") @db.SmallInt
-  thresholdCriticalPct Int      @default(100) @map("threshold_critical_pct") @db.SmallInt
-  status              String    @default("active")
-  notes               String?
-  createdAt           DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt           DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-  deletedAt           DateTime? @map("deleted_at") @db.Timestamptz(6)
+  tenantId             String    @map("tenant_id") @db.Uuid
+  id                   String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                 String
+  description          String?
+  category             String?
+  fiscalYear           Int       @map("fiscal_year")
+  periodType           String    @default("annual") @map("period_type")
+  periodStart          DateTime? @map("period_start") @db.Date
+  periodEnd            DateTime? @map("period_end") @db.Date
+  budgetAmount         Decimal   @map("budget_amount") @db.Decimal(12, 2)
+  spentAmount          Decimal   @default(0) @map("spent_amount") @db.Decimal(12, 2)
+  committedAmount      Decimal   @default(0) @map("committed_amount") @db.Decimal(12, 2)
+  thresholdWarningPct  Int       @default(80) @map("threshold_warning_pct") @db.SmallInt
+  thresholdCriticalPct Int       @default(100) @map("threshold_critical_pct") @db.SmallInt
+  status               String    @default("active")
+  notes                String?
+  createdAt            DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt            DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt            DateTime? @map("deleted_at") @db.Timestamptz(6)
 
-  tenant Account                     @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  tenant Account                  @relation(fields: [tenantId], references: [id], onDelete: Restrict)
   alerts ProcurementBudgetAlert[]
 
   @@id([tenantId, id])
@@ -2292,23 +2371,23 @@ model ProcurementBudget {
 }
 
 model ProcurementBudgetAlert {
-  tenantId        String    @map("tenant_id") @db.Uuid
-  id              String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  budgetId        String    @map("budget_id") @db.Uuid
-  alertType       String    @map("alert_type")
-  utilizationPct  Decimal   @map("utilization_pct") @db.Decimal(5, 2)
-  message         String
-  isAcknowledged  Boolean   @default(false) @map("is_acknowledged")
-  acknowledgedBy  String?   @map("acknowledged_by") @db.Uuid
-  acknowledgedAt  DateTime? @map("acknowledged_at") @db.Timestamptz(6)
-  resolved        Boolean   @default(false)
-  resolvedAt      DateTime? @map("resolved_at") @db.Timestamptz(6)
-  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt       DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-  deletedAt       DateTime? @map("deleted_at") @db.Timestamptz(6)
+  tenantId       String    @map("tenant_id") @db.Uuid
+  id             String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  budgetId       String    @map("budget_id") @db.Uuid
+  alertType      String    @map("alert_type")
+  utilizationPct Decimal   @map("utilization_pct") @db.Decimal(5, 2)
+  message        String
+  isAcknowledged Boolean   @default(false) @map("is_acknowledged")
+  acknowledgedBy String?   @map("acknowledged_by") @db.Uuid
+  acknowledgedAt DateTime? @map("acknowledged_at") @db.Timestamptz(6)
+  resolved       Boolean   @default(false)
+  resolvedAt     DateTime? @map("resolved_at") @db.Timestamptz(6)
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt      DateTime? @map("deleted_at") @db.Timestamptz(6)
 
-  tenant  Account           @relation(fields: [tenantId], references: [id], onDelete: Restrict)
-  budget  ProcurementBudget @relation(fields: [budgetId, tenantId], references: [id, tenantId], onDelete: Cascade)
+  tenant Account           @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  budget ProcurementBudget @relation(fields: [budgetId, tenantId], references: [id, tenantId], onDelete: Cascade)
 
   @@id([tenantId, id])
   @@index([tenantId, budgetId], map: "procurement_budget_alerts_budget_idx")
@@ -4626,33 +4705,33 @@ model CollectionPaymentPlan {
 
 /// Revenue recognition schedule for invoices
 model RevenueRecognitionSchedule {
-  tenantId           String    @map("tenant_id") @db.Uuid
-  id                 String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  invoiceId          String    @map("invoice_id") @db.Uuid
-  eventId            String    @map("event_id") @db.Uuid
-  contractId         String?   @map("contract_id") @db.Uuid
-  clientId           String    @map("client_id") @db.Uuid
-  totalAmount        Decimal   @map("total_amount") @db.Money
-  recognizedAmount   Decimal   @default(0) @map("recognized_amount") @db.Money
-  remainingAmount    Decimal   @map("remaining_amount") @db.Money
-  method             String    @db.Text
-  status             String    @default("PENDING") @db.Text
-  startDate          DateTime  @map("start_date") @db.Timestamptz(6)
-  endDate            DateTime  @map("end_date") @db.Timestamptz(6)
-  recognitionPeriod  Int       @map("recognition_period")
-  serviceStartDate   DateTime? @map("service_start_date") @db.Timestamptz(6)
-  serviceEndDate     DateTime? @map("service_end_date") @db.Timestamptz(6)
-  totalMilestones    Int       @default(0) @map("total_milestones")
-  completedMilestones Int      @default(0) @map("completed_milestones")
-  description        String?   @db.Text
-  notes              String?   @db.Text
-  metadata           Json      @default("{}")
-  createdAt          DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt          DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-  completedAt        DateTime? @map("completed_at") @db.Timestamptz(6)
-  deletedAt          DateTime? @map("deleted_at") @db.Timestamptz(6)
+  tenantId            String    @map("tenant_id") @db.Uuid
+  id                  String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  invoiceId           String    @map("invoice_id") @db.Uuid
+  eventId             String    @map("event_id") @db.Uuid
+  contractId          String?   @map("contract_id") @db.Uuid
+  clientId            String    @map("client_id") @db.Uuid
+  totalAmount         Decimal   @map("total_amount") @db.Money
+  recognizedAmount    Decimal   @default(0) @map("recognized_amount") @db.Money
+  remainingAmount     Decimal   @map("remaining_amount") @db.Money
+  method              String    @db.Text
+  status              String    @default("PENDING") @db.Text
+  startDate           DateTime  @map("start_date") @db.Timestamptz(6)
+  endDate             DateTime  @map("end_date") @db.Timestamptz(6)
+  recognitionPeriod   Int       @map("recognition_period")
+  serviceStartDate    DateTime? @map("service_start_date") @db.Timestamptz(6)
+  serviceEndDate      DateTime? @map("service_end_date") @db.Timestamptz(6)
+  totalMilestones     Int       @default(0) @map("total_milestones")
+  completedMilestones Int       @default(0) @map("completed_milestones")
+  description         String?   @db.Text
+  notes               String?   @db.Text
+  metadata            Json      @default("{}")
+  createdAt           DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt           DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  completedAt         DateTime? @map("completed_at") @db.Timestamptz(6)
+  deletedAt           DateTime? @map("deleted_at") @db.Timestamptz(6)
 
-  tenant Account                      @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  tenant Account                  @relation(fields: [tenantId], references: [id], onDelete: Restrict)
   lines  RevenueRecognitionLine[]
 
   @@id([tenantId, id])
@@ -4687,8 +4766,8 @@ model RevenueRecognitionLine {
   updatedAt            DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
   deletedAt            DateTime? @map("deleted_at") @db.Timestamptz(6)
 
-  tenant   Account                     @relation(fields: [tenantId], references: [id], onDelete: Restrict)
-  schedule RevenueRecognitionSchedule  @relation(fields: [tenantId, scheduleId], references: [tenantId, id], onDelete: Cascade)
+  tenant   Account                    @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  schedule RevenueRecognitionSchedule @relation(fields: [tenantId, scheduleId], references: [tenantId, id], onDelete: Cascade)
 
   @@id([tenantId, id])
   @@unique([id])
@@ -5317,31 +5396,31 @@ model RolePolicy {
 
 /// Vendor catalog entries for inventory
 model VendorCatalog {
-  tenantId             String    @map("tenant_id") @db.Uuid
-  id                   String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  supplierId           String    @map("supplier_id") @db.Uuid
-  itemNumber           String    @map("item_number")
-  itemName             String    @map("item_name")
+  tenantId             String            @map("tenant_id") @db.Uuid
+  id                   String            @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  supplierId           String            @map("supplier_id") @db.Uuid
+  itemNumber           String            @map("item_number")
+  itemName             String            @map("item_name")
   description          String?
   category             String?
-  baseUnitCost         Decimal   @map("base_unit_cost") @db.Decimal(12, 2)
-  currency             String    @default("USD")
-  unitOfMeasure        String    @map("unit_of_measure")
-  leadTimeDays         Int?      @map("lead_time_days")
-  leadTimeMinDays      Int?      @map("lead_time_min_days")
-  leadTimeMaxDays      Int?      @map("lead_time_max_days")
-  minimumOrderQuantity Decimal?  @map("minimum_order_quantity") @db.Decimal(12, 3)
-  orderMultiple        Decimal?  @map("order_multiple") @db.Decimal(12, 3)
-  isActive             Boolean   @default(true) @map("is_active")
-  effectiveFrom        DateTime? @map("effective_from") @db.Timestamptz(6)
-  effectiveTo          DateTime? @map("effective_to") @db.Timestamptz(6)
-  supplierSku          String?   @map("supplier_sku")
+  baseUnitCost         Decimal           @map("base_unit_cost") @db.Decimal(12, 2)
+  currency             String            @default("USD")
+  unitOfMeasure        String            @map("unit_of_measure")
+  leadTimeDays         Int?              @map("lead_time_days")
+  leadTimeMinDays      Int?              @map("lead_time_min_days")
+  leadTimeMaxDays      Int?              @map("lead_time_max_days")
+  minimumOrderQuantity Decimal?          @map("minimum_order_quantity") @db.Decimal(12, 3)
+  orderMultiple        Decimal?          @map("order_multiple") @db.Decimal(12, 3)
+  isActive             Boolean           @default(true) @map("is_active")
+  effectiveFrom        DateTime?         @map("effective_from") @db.Timestamptz(6)
+  effectiveTo          DateTime?         @map("effective_to") @db.Timestamptz(6)
+  supplierSku          String?           @map("supplier_sku")
   notes                String?
   tags                 String[]
-  lastCostUpdate       DateTime? @map("last_cost_update") @db.Timestamptz(6)
-  createdAt            DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt            DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-  deletedAt            DateTime? @map("deleted_at") @db.Timestamptz(6)
+  lastCostUpdate       DateTime?         @map("last_cost_update") @db.Timestamptz(6)
+  createdAt            DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt            DateTime          @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt            DateTime?         @map("deleted_at") @db.Timestamptz(6)
   supplier             InventorySupplier @relation(fields: [supplierId, tenantId], references: [id, tenantId])
 
   @@id([tenantId, id])

@@ -198,7 +198,7 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[Emergency bridge — running bridge was not updated]
-Files: packages/design-system/styles/globals.css (edit), packages/design-system/components/ui/chart.tsx (edit), packages/design-system/components/ui/alert.tsx (edit), IMPLEMENTATION_PLAN.md (edit)
+[auto-bridge snapshot @ 10 changes]
+Files: apps/api/app/api/kitchen/equipment/commands/schedule-maintenance/route.ts (create), apps/api/app/api/kitchen/equipment/commands/record-usage/route.ts (create), apps/api/app/api/kitchen/equipment/commands/update-status/route.ts (create), apps/api/app/api/kitchen/equipment/list/route.ts (create), apps/api/app/api/kitchen/equipment/commands/create/route.ts (edit), packages/database/prisma/schema.prisma (edit), apps/api/app/api/kitchen/tasks/[id]/route.ts (edit), packages/manifest-adapters/manifests/kitchen-task-rules.manifest (edit)
 
 # === END COGNILAYER ===

@@ -1236,8 +1236,28 @@
   },
   {
     "entity": "KitchenTask",
+    "command": "updateDueDate",
+    "commandId": "KitchenTask.updateDueDate"
+  },
+  {
+    "entity": "KitchenTask",
     "command": "updatePriority",
     "commandId": "KitchenTask.updatePriority"
+  },
+  {
+    "entity": "KitchenTask",
+    "command": "updateSummary",
+    "commandId": "KitchenTask.updateSummary"
+  },
+  {
+    "entity": "KitchenTask",
+    "command": "updateTags",
+    "commandId": "KitchenTask.updateTags"
+  },
+  {
+    "entity": "KitchenTask",
+    "command": "updateTitle",
+    "commandId": "KitchenTask.updateTitle"
   },
   {
     "entity": "LaborBudget",

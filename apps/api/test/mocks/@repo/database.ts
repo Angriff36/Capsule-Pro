@@ -179,6 +179,22 @@ export const database: Record<string, unknown> = {
   collectionCase: createMockModel(),
   collectionAction: createMockModel(),
   collectionPaymentPlan: createMockModel(),
+  // Equipment & maintenance models
+  equipment: createMockModel(),
+  workOrder: createMockModel(),
+  // Notification model
+  notification: createMockModel(),
+  // Training models
+  trainingAssignment: createMockModel(),
+  trainingModule: createMockModel(),
+  // Email template model (camelCase accessor)
+  emailTemplate: createMockModel(),
+  // Payroll models (camelCase accessors)
+  payrollPeriod: createMockModel(),
+  payrollRun: createMockModel(),
+  // Time tracking models
+  timeEntry: createMockModel(),
+  timeOffRequest: createMockModel(),
 };
 
 database.$transaction = vi.fn((fn: (tx: unknown) => unknown) => fn(database));

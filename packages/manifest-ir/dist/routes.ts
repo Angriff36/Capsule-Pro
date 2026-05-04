@@ -2316,9 +2316,29 @@ export function kitchenTaskUpdateComplexityPath(): string {
   return "/api/kitchentask/update-complexity";
 }
 
+/** POST /api/kitchentask/update-due-date */
+export function kitchenTaskUpdateDueDatePath(): string {
+  return "/api/kitchentask/update-due-date";
+}
+
 /** POST /api/kitchentask/update-priority */
 export function kitchenTaskUpdatePriorityPath(): string {
   return "/api/kitchentask/update-priority";
+}
+
+/** POST /api/kitchentask/update-summary */
+export function kitchenTaskUpdateSummaryPath(): string {
+  return "/api/kitchentask/update-summary";
+}
+
+/** POST /api/kitchentask/update-tags */
+export function kitchenTaskUpdateTagsPath(): string {
+  return "/api/kitchentask/update-tags";
+}
+
+/** POST /api/kitchentask/update-title */
+export function kitchenTaskUpdateTitlePath(): string {
+  return "/api/kitchentask/update-title";
 }
 
 /** POST /api/laborbudget/create */
@@ -4111,7 +4131,11 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "KitchenTask.removeTag", path: "/api/kitchentask/remove-tag", method: "POST", source: "command", auth: true, tenant: true },
   { id: "KitchenTask.start", path: "/api/kitchentask/start", method: "POST", source: "command", auth: true, tenant: true },
   { id: "KitchenTask.updateComplexity", path: "/api/kitchentask/update-complexity", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "KitchenTask.updateDueDate", path: "/api/kitchentask/update-due-date", method: "POST", source: "command", auth: true, tenant: true },
   { id: "KitchenTask.updatePriority", path: "/api/kitchentask/update-priority", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "KitchenTask.updateSummary", path: "/api/kitchentask/update-summary", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "KitchenTask.updateTags", path: "/api/kitchentask/update-tags", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "KitchenTask.updateTitle", path: "/api/kitchentask/update-title", method: "POST", source: "command", auth: true, tenant: true },
   { id: "LaborBudget.create", path: "/api/laborbudget/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "LaborBudget.softDelete", path: "/api/laborbudget/soft-delete", method: "POST", source: "command", auth: true, tenant: true },
   { id: "LaborBudget.update", path: "/api/laborbudget/update", method: "POST", source: "command", auth: true, tenant: true },
