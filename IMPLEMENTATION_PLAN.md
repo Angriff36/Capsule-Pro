@@ -26,6 +26,20 @@
 
 ---
 
+## Recently remediated (2026-05-04 — Prep-List Autogeneration Processor Fix)
+
+- **Kitchen prep-list autogeneration processor — NOW FUNCTIONAL.** `apps/api/app/api/kitchen/prep-lists/autogenerate/process/route.ts` was a no-op: the callback always returned `success: false` with a redirect message, causing every outbox event to be marked as "failed". Fix: (1) Extracted `generatePrepListCore(tenantId, input)` from `generatePrepList` in `generate/route.ts` — same logic but accepts `tenantId` directly instead of calling `auth()`. (2) Extracted `savePrepListToDatabaseCore(tenantId, eventId, prepList, name?)` from `savePrepListToDatabase` — same logic but accepts `tenantId` directly. (3) Wired the processor callback to call `generatePrepListCore` → `savePrepListToDatabaseCore` for each outbox event, using the authenticated user's tenantId. Original `generatePrepList` and `savePrepListToDatabase` remain as authenticated wrappers delegating to the core functions — zero change to existing callers.
+
+- **13 API routes with implementation gaps documented.** Full audit found: 3 command-board template routes (501 — need shareId/isPublic schema fields), 1 logistics route-optimization route (501 — needs algorithm), 1 QuickBooks export history (empty — needs persistence model), 2 inventory supplier-sync routes (partial — need SupplierSyncHistory model), 3 kitchen routes (partial — IoT alerts need notification service, override audit swallows errors, prep-list processor now fixed), 2 events routes (partial — manifest import porting needed, documents stored as data URLs), 1 calendar route (partial — missing Deadline/Reminder models).
+
+- **7 tables without Prisma models documented.** Raw SQL routes reference tables that have no corresponding Prisma model: `tenant_payroll.tax_configurations` (TaxConfiguration), `tenant_staff.payroll_periods` (PayrollPeriod), `tenant_staff.payroll_runs` (PayrollRun), `tenant_staff.payroll_line_items` (PayrollLineItem), `tenant_events.event_followups` (EventFollowup), `tenant_inventory.suppliers` (Supplier), `tenant_inventory.storage_locations` (StorageLocation). The AGENTS.md claim about `ProcurementApproval` and `Deal` is stale — zero routes reference `ProcurementApproval`, and `Deal` is a virtual concept on top of the existing `Proposal` model.
+
+- **Pre-existing `apps/api/__tmp_check.js` temp file cleaned up.**
+
+**Validation:** `pnpm --filter api typecheck` clean. `pnpm --filter api test` — [tests running, will be updated with results].
+
+---
+
 ## Recently remediated (2026-05-04 — Equipment API Routes + Kitchen Task Field Updates)
 
 - **Equipment API routes — ALL 6 ROUTES IMPLEMENTED.** Equipment model was added to schema.prisma in commit `6d51796c4` but all 6 API routes were still returning 501 with stale comments saying "Equipment model does not exist in schema." All routes now use Prisma ORM (`database.equipment.*` / `database.workOrder.*`) against the `Equipment` and `WorkOrder` models in `tenant_kitchen`. Routes: (1) `GET /list` — list with filters (status, type, locationId), includes work orders and count; (2) `POST /create` — validates name+locationId, creates equipment with all optional fields; (3) `POST /update-status` — status/condition/notes update with valid-status guard; (4) `POST /schedule-maintenance` — creates WorkOrder + sets equipment to maintenance status; (5) `POST /record-usage` — accumulates hours, auto-sets condition at 80%/100% thresholds; (6) `GET /alerts` — predictive failure analysis (usage critical/warning, overdue maintenance, warranty expiring/expired, condition degraded, IoT disconnected) with severity-sorted output.

@@ -119,20 +119,14 @@ interface GeneratePrepListInput {
   customInstructions?: string;
 }
 
-export async function generatePrepList(
+/**
+ * Core prep-list generation logic that accepts tenantId directly.
+ * Used by both the authenticated endpoint and the background processor.
+ */
+export async function generatePrepListCore(
+  tenantId: string,
   input: GeneratePrepListInput
 ): Promise<PrepListGenerationResult> {
-  const { orgId, userId } = await auth();
-
-  if (!orgId) {
-    throw new Error("Unauthorized");
-  }
-
-  if (!userId) {
-    throw new Error("Unauthorized");
-  }
-
-  const tenantId = await getTenantIdForOrg(orgId);
   const batchMultiplier = input.batchMultiplier ?? 1;
 
   const event = await database.event.findUnique({
@@ -296,6 +290,23 @@ export async function generatePrepList(
     totalEstimatedTime,
     generatedAt: new Date(),
   };
+}
+
+/**
+ * Authenticated wrapper that resolves tenantId from the request context
+ * and delegates to generatePrepListCore.
+ */
+export async function generatePrepList(
+  input: GeneratePrepListInput
+): Promise<PrepListGenerationResult> {
+  const { orgId, userId } = await auth();
+
+  if (!orgId || !userId) {
+    throw new Error("Unauthorized");
+  }
+
+  const tenantId = await getTenantIdForOrg(orgId);
+  return generatePrepListCore(tenantId, input);
 }
 
 async function getAllRecipeIngredients(
@@ -785,21 +796,15 @@ export async function savePrepListToProductionBoard(
 }
 
 /**
- * Save a generated prep list to the database for later viewing/editing
+ * Save a generated prep list to the database for later viewing/editing.
+ * Core function that accepts tenantId directly.
  */
-export async function savePrepListToDatabase(
+export async function savePrepListToDatabaseCore(
+  tenantId: string,
   eventId: string,
   prepList: PrepListGenerationResult,
   name?: string
 ): Promise<{ success: boolean; prepListId?: string; error?: string }> {
-  const { orgId } = await auth();
-
-  if (!orgId) {
-    return { success: false, error: "Unauthorized" };
-  }
-
-  const tenantId = await getTenantIdForOrg(orgId);
-
   try {
     // Calculate total estimated time
     const totalEstimatedTime = Math.round(prepList.totalEstimatedTime * 60); // Convert to minutes
@@ -916,6 +921,24 @@ export async function savePrepListToDatabase(
     captureException(error);
     return { success: false, error: "Failed to save prep list to database" };
   }
+}
+
+/**
+ * Authenticated wrapper for savePrepListToDatabaseCore.
+ */
+export async function savePrepListToDatabase(
+  eventId: string,
+  prepList: PrepListGenerationResult,
+  name?: string
+): Promise<{ success: boolean; prepListId?: string; error?: string }> {
+  const { orgId } = await auth();
+
+  if (!orgId) {
+    return { success: false, error: "Unauthorized" };
+  }
+
+  const tenantId = await getTenantIdForOrg(orgId);
+  return savePrepListToDatabaseCore(tenantId, eventId, prepList, name);
 }
 
 export async function POST(request: NextRequest) {

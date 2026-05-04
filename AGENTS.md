@@ -252,9 +252,13 @@ related work:
   exists. ~~`20260327020000_add_employee_bank_accounts`~~ — resolved:
   `EmployeeBankAccount` model exists.)
 - Routes that use raw SQL against non-existent Prisma entities:
-  `ProcurementApproval`, `Deal`. (~~`Driver`, `Vehicle`, `FacilityAsset`,
-  `RevenueRecognitionSchedule`~~ — models now exist. ~~`Vendor`, `Budget`~~ —
-  `VendorContact`/`ProcurementBudget` cover the needed tables.)
+  `TaxConfiguration`, `PayrollPeriod`, `PayrollRun`, `PayrollLineItem`,
+  `EventFollowup`, `Supplier`, `StorageLocation`.
+  (~~`Driver`, `Vehicle`, `FacilityAsset`, `RevenueRecognitionSchedule`~~ —
+  models now exist. ~~`Vendor`, `Budget`~~ — `VendorContact`/`ProcurementBudget`
+  cover the needed tables. ~~`ProcurementApproval`, `Deal`~~ — zero routes
+  reference `ProcurementApproval`; `Deal` is a virtual concept on top of the
+  existing `Proposal` model.)
 
 Before adding a route that queries a table, check
 `packages/database/prisma/schema.prisma` first — if the model is missing, add it
@@ -302,12 +306,16 @@ these before blaming a tool or your environment.
   a lint failure.
 - **New modules frequently use raw SQL against tables with no Prisma model.**
   Some domains still have routes that query tables via raw SQL because the
-  Prisma model was never created (e.g., `Equipment`, `ProcurementApproval`,
-  `Deal`). Models for `Driver`, `Vehicle`, `FacilityAsset`,
-  `RevenueRecognitionSchedule`, `VendorContact`, `ProcurementBudget`, and
-  `EmployeeBankAccount` now exist. Before trusting that a module is "done", open
-  `packages/database/prisma/schema.prisma` and confirm the model exists. A
-  passing test or a 200 response on GET does not prove completion.
+  Prisma model was never created (e.g., `TaxConfiguration`, `PayrollPeriod`,
+  `PayrollRun`, `PayrollLineItem`, `EventFollowup`, `Supplier`,
+  `StorageLocation`). ~~`Equipment`, `ProcurementApproval`, `Deal`~~ —
+  `Equipment` now has a model; `ProcurementApproval` has zero referencing routes;
+  `Deal` is virtual on top of `Proposal`. Models for `Driver`, `Vehicle`,
+  `FacilityAsset`, `RevenueRecognitionSchedule`, `VendorContact`,
+  `ProcurementBudget`, and `EmployeeBankAccount` now exist. Before trusting
+  that a module is "done", open `packages/database/prisma/schema.prisma` and
+  confirm the model exists. A passing test or a 200 response on GET does not
+  prove completion.
 - **Duplicate `softDelete/` + `soft-delete/` route directories** — the inventory
   triple (`pricing-tiers`, `bulk-order-rules`, `supplier-catalogs`) was cleaned
   up 2026-04-26 (`supplier-catalogs/` removed entirely as a stale duplicate of

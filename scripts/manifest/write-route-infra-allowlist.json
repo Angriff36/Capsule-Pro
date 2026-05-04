@@ -643,6 +643,16 @@
       "comment": "Direct Prisma — Venue create (no manifest yet, mirrors server actions)"
     },
     {
+      "prefix": "/api/kitchen/prep-lists/generate",
+      "methods": ["POST"],
+      "comment": "Infrastructure: Prep list generation from event dishes/recipes (direct DB, no manifest command)"
+    },
+    {
+      "prefix": "/api/kitchen/prep-lists/autogenerate/process",
+      "methods": ["POST"],
+      "comment": "Infrastructure: Background outbox processor for auto-generated prep lists (cron-style)"
+    },
+    {
       "pattern": "^/api/crm/venues/[^/]+$",
       "methods": ["PUT", "DELETE"],
       "comment": "Direct Prisma — Venue update + soft-delete (no manifest yet, active-events guard enforced)"

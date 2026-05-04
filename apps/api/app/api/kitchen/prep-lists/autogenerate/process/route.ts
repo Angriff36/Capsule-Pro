@@ -12,15 +12,18 @@ import { database } from "@repo/database";
 import { processPendingPrepListGenerations } from "@repo/manifest-adapters";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
+import {
+  generatePrepListCore,
+  savePrepListToDatabaseCore,
+} from "../../generate/route";
 
 /**
  * Process pending prep list generation requests
  *
  * This endpoint queries for pending prep list generation events in the outbox
- * and processes them. It should be called by a cron job or background worker.
- *
- * Note: This is a simplified implementation that marks events as processed.
- * For actual prep list generation, call the generate endpoint directly.
+ * and processes them. It generates the prep list from event dishes/recipes
+ * and persists the result to the database.
  */
 export async function POST() {
   try {
@@ -30,19 +33,37 @@ export async function POST() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Process pending generations
-    // Note: Actual generation is handled by the prep-lists/generate endpoint
+    const tenantId = await getTenantIdForOrg(orgId);
+
+    // Process pending generations using authenticated tenant context
     const result = await processPendingPrepListGenerations(
       database,
-      (_input) => {
-        // For now, just mark as processed with a note
-        // In production, you would call the generate endpoint here
-        // or implement the business logic directly
-        return Promise.resolve({
-          success: false,
-          error:
-            "Prep list generation should be triggered via /api/kitchen/prep-lists/generate endpoint",
-        });
+      async (input) => {
+        try {
+          const prepList = await generatePrepListCore(tenantId, {
+            eventId: input.eventId,
+            batchMultiplier: input.batchMultiplier,
+            dietaryRestrictions: input.dietaryRestrictions,
+          });
+
+          const saveResult = await savePrepListToDatabaseCore(
+            tenantId,
+            input.eventId,
+            prepList,
+            `${prepList.eventTitle} - Auto-generated Prep List`
+          );
+
+          return saveResult;
+        } catch (error) {
+          captureException(error);
+          return {
+            success: false,
+            error:
+              error instanceof Error
+                ? error.message
+                : "Failed to generate prep list",
+          };
+        }
       }
     );
 
@@ -50,7 +71,6 @@ export async function POST() {
       processed: result.processed,
       errors: result.errors,
       timestamp: new Date().toISOString(),
-      note: "Use POST /api/kitchen/prep-lists/generate to generate prep lists",
     });
   } catch (error) {
     captureException(error);
