@@ -11,6 +11,7 @@
 
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { database } from "@repo/database";
+import { log } from "@repo/observability/log";
 import { updateDeliveryStatus } from "@repo/notifications";
 import { keys } from "@repo/notifications/keys";
 import { captureException } from "@sentry/nextjs";
@@ -50,14 +51,14 @@ async function processStatusUpdate(
   errorCode: string | null,
   errorMessage: string | null
 ): Promise<NextResponse> {
-  const log = await database.sms_logs.findFirst({
+  const smsLog = await database.sms_logs.findFirst({
     where: {
       twilio_sid: messageSid,
     },
   });
 
-  if (!log) {
-    console.error(`SMS log not found for Twilio SID: ${messageSid}`);
+  if (!smsLog) {
+    log.error(`SMS log not found for Twilio SID: ${messageSid}`);
     // Still return 200 to prevent Twilio from retrying
     return NextResponse.json({ received: true, warning: "Log not found" });
   }
@@ -70,7 +71,7 @@ async function processStatusUpdate(
   if (newStatus) {
     await updateDeliveryStatus(
       database,
-      log.tenant_id,
+      smsLog.tenant_id,
       messageSid,
       newStatus,
       error
@@ -95,7 +96,7 @@ function mapTwilioStatus(messageStatus: string): "delivered" | "failed" | null {
       // Don't update for these intermediate statuses
       return null;
     default:
-      console.warn(`Unknown Twilio message status: ${messageStatus}`);
+      log.warn(`Unknown Twilio message status: ${messageStatus}`);
       return null;
   }
 }
@@ -157,7 +158,7 @@ export async function POST(request: NextRequest) {
     );
   } catch (error) {
     captureException(error);
-    console.error("Failed to process SMS webhook:", error);
+    log.error("Failed to process SMS webhook", { error });
     return NextResponse.json({ received: true, error: "Processing failed" });
   }
 }
@@ -190,7 +191,7 @@ async function handleUnauthenticatedRequest(
     );
   } catch (error) {
     captureException(error);
-    console.error("Failed to process SMS webhook:", error);
+    log.error("Failed to process SMS webhook", { error });
     return NextResponse.json({ received: true, error: "Processing failed" });
   }
 }

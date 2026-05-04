@@ -8,6 +8,7 @@
  */
 
 import { database } from "@repo/database";
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { requireCurrentUser, requireTenantId } from "@/app/lib/tenant";
@@ -96,7 +97,7 @@ export async function GET() {
     return NextResponse.json({ data: mappedSchedules });
   } catch (error) {
     captureException(error);
-    console.error("Failed to get audit schedules:", error);
+    log.error("Failed to get audit schedules", { error });
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }
@@ -202,7 +203,7 @@ export async function POST(request: NextRequest) {
     );
   } catch (error) {
     captureException(error);
-    console.error("Failed to create audit schedule:", error);
+    log.error("Failed to create audit schedule", { error });
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }
@@ -334,7 +335,7 @@ export async function PATCH(request: NextRequest) {
     });
   } catch (error) {
     captureException(error);
-    console.error("Failed to update audit schedule:", error);
+    log.error("Failed to update audit schedule", { error });
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }
@@ -390,7 +391,7 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ success: true });
   } catch (error) {
     captureException(error);
-    console.error("Failed to delete audit schedule:", error);
+    log.error("Failed to delete audit schedule", { error });
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }

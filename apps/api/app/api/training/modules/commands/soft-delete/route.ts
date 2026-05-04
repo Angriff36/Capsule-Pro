@@ -4,6 +4,7 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -40,12 +41,14 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
 
-    console.log("[training-module/softDelete] Executing command:", {
-      entityName: "TrainingModule",
-      command: "softDelete",
-      userId: currentUser.id,
-      userRole: currentUser.role,
-      tenantId,
+    log.info("[training-module/softDelete] Executing command", {
+      data: {
+        entityName: "TrainingModule",
+        command: "softDelete",
+        userId: currentUser.id,
+        userRole: currentUser.role,
+        tenantId,
+      },
     });
 
     const runtime = await createManifestRuntime({
@@ -58,7 +61,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (!result.success) {
-      console.error("[training-module/softDelete] Command failed:", {
+      log.error("[training-module/softDelete] Command failed", {
         policyDenial: result.policyDenial,
         guardFailure: result.guardFailure,
         error: result.error,
@@ -85,7 +88,7 @@ export async function POST(request: NextRequest) {
       events: result.emittedEvents,
     });
   } catch (error) {
-    console.error("[training-module/softDelete] Error:", error);
+    log.error("[training-module/softDelete] Error", { error });
     captureException(error);
     return manifestErrorResponse("Internal server error", 500);
   }

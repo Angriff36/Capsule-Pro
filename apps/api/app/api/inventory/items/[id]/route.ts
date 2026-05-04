@@ -8,6 +8,7 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { InvariantError } from "@/app/lib/invariant";
@@ -131,7 +132,7 @@ async function handleRecipeCostRecalculation(
       itemName
     );
   } catch (error) {
-    console.error("Failed to recalculate recipe costs:", error);
+    log.error("Failed to recalculate recipe costs", { error });
     return null;
   }
 }
@@ -184,7 +185,7 @@ export async function GET(_request: Request, context: RouteContext) {
     return NextResponse.json(buildItemResponse(item, stockStatus));
   } catch (error) {
     captureException(error);
-    console.error("Failed to get inventory item:", error);
+    log.error("Failed to get inventory item", { error });
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }
@@ -319,7 +320,7 @@ export async function PUT(request: Request, context: RouteContext) {
     if (error instanceof InvariantError) {
       return NextResponse.json({ message: error.message }, { status: 400 });
     }
-    console.error("Failed to update inventory item:", error);
+    log.error("Failed to update inventory item", { error });
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }
@@ -487,7 +488,7 @@ export async function DELETE(_request: Request, context: RouteContext) {
     return NextResponse.json({ success: true });
   } catch (error) {
     captureException(error);
-    console.error("Failed to delete inventory item:", error);
+    log.error("Failed to delete inventory item", { error });
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }

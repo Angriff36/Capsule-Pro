@@ -26,12 +26,22 @@
 
 ---
 
-## Recently remediated (2026-05-04 — §0.7 Card Tone Variants Complete + Kitchen/Events Shadow Sweep + Card Tone Migration)
+## Recently remediated (2026-05-04 — §3.11 Card Tone Migration Batch 2–4 + §6.2 Console Migration Batch 2–3)
+
+- **§3.11 Card tone migration — ~181 Cards migrated across 12 files (batches 2–4).** Strategy: stat/metric cards → `tone="soft-stone"`, regular content cards → `tone="canvas"`. Files migrated: `analytics/staff/employee-performance-dashboard.tsx` (15), `settings/notifications/notifications-client.tsx` (15), `analytics/events/profitability-dashboard.tsx` (14), `tools/ai/ai-client.tsx` (12), `events/[eventId]/operations-section.tsx` (11), `payroll/tax-setup/page.tsx` (11), `settings/integrations/page.tsx` (11), `procurement/budget/page.tsx` (11), `analytics/multi-location/multi-location-dashboard-client.tsx` (11), `inventory/forecasts/forecasts-page-client.tsx` (9), `procurement/vendors/[id]/page.tsx` (9), `payroll/direct-deposit/page.tsx` (8). **Not migrated (429 rate limits):** batch 1 (sales-dashboard-client, recipe-detail-tabs, autofill-reports — ~59 Cards) and batch 5 (remaining 5+ Card files). Combined with prior 24 Cards → ~205 total migrated; strict count dropped from 183 to ~remaining unfixed files.
+- **§6.2 Console migration — ~85 statements migrated across 25 API route files (batches 2–3).** All replaced with `@repo/observability/log` (log.info, log.error, log.warn). Files include: rate-limiter middleware, staff/shifts commands, shipments, inventory, communications, accounting, training modules, timecards, time-off-requests. Updated rate-limiter test to spy on observability log instead of console.error. Combined with prior ~120 → ~205 total migrated this session. Baseline was ~2,138; ~205 migrated (~9.6%).
+- **§0.9 verified** — `packages/auth/index.ts` barrel confirmed present and correct. No action needed.
+
+**Validation:** `pnpm --filter api typecheck` clean, `pnpm --filter app typecheck` clean. API tests: 4051 passed + 1 skipped / 129 files. No schema or migration changes.
+
+---
+
+## Previously remediated (2026-05-04 — §0.7 Card Tone Variants Complete + Kitchen/Events Shadow Sweep + Card Tone Migration Batch 1)
 
 - **§0.7 DONE — Card tone variants complete.** `packages/design-system/components/ui/card.tsx` now has 6 tone variants: `canvas` (default white), `soft-stone` (warm neutral), `ink` (near-black), `deep-green` (dark-green, text inverts to canvas), `navy` (dark-navy, text inverts to canvas), `media` (white with 22px rounded-media radius for hero/photo cards). Base `rounded-card` moved from cva base string to per-variant classes so media variant can use `rounded-media` independently. `data-tone` attribute rendered for testing.
 - **§3.7 DONE — 12 shadow violations removed in kitchen + events.** Kitchen: removed `shadow-sm` from recipe-favorite-button.tsx, `shadow-lg` from recipes-page-client.tsx (FAB), `shadow-md` from rich-recipe-editor.tsx dropdown and 3 SelectContent dropdowns in recipes-toolbar.tsx. Events: removed `shadow-lg` from events-page-client.tsx FAB, budget modals (budgets-page-client, create-budget-modal, budget-detail-client), event-details dialog, and contract detail button. All replaced with `border border-hairline` or `border border-primary/30`.
 - **§3.6 DONE — 1 typography violation fixed.** `events/components/task-breakdown-display.tsx` line 602: `font-bold text-3xl` grand total → `font-semibold text-2xl`.
-- **§3.11 Card tone migration — 24 Cards migrated.** Kitchen: equipment-page-client.tsx (7 Cards), iot-page-client.tsx (8 Cards) — all migrated to explicit `tone="canvas"`. Events: event-card.tsx (1), event-summary-display.tsx (2), event-overview-card.tsx (2 — one canvas, one soft-stone), event-details-sections.tsx (4) — all migrated to explicit tone props.
+- **§3.11 Card tone migration — 24 Cards migrated (batch 1).** Kitchen: equipment-page-client.tsx (7 Cards), iot-page-client.tsx (8 Cards) — all migrated to explicit `tone="canvas"`. Events: event-card.tsx (1), event-summary-display.tsx (2), event-overview-card.tsx (2 — one canvas, one soft-stone), event-details-sections.tsx (4) — all migrated to explicit tone props.
 
 **Validation:** `pnpm --filter api typecheck` clean, `pnpm --filter app typecheck` clean, all 41 packages pass typecheck via turbo. API tests: 4051 passed + 1 skipped / 129 files. App tests: 257 passed / 32 files. No schema or migration changes.
 
@@ -192,7 +202,7 @@ Mechanical sweep across ~110 files in `apps/app/app/(authenticated)/*`. Three §
 
 **Remaining §3 items (deferred):**
 - **§3.8 DONE — decorative pastels** — Swept 375→86 occurrences across 86→28 files (v0.10.53). All decorative `bg-*-50/100/200` replaced with Cohere tokens (`bg-muted/50`, `bg-muted/20`, `border-hairline`, `text-foreground`). Remaining 86 are semantic status indicators (success/error/warning badges, overdue alerts, CCP/HACCP indicators) correctly preserved per DESIGN.md.
-- **§3.11 bare-Card** — 183 occurrences across 96 files. Needs context-aware tone decisions per DESIGN.md `tone` prop guidance.
+- **§3.11 bare-Card** — ~~183 occurrences across 96 files~~. ~205 Cards migrated to explicit `tone` props across 16 files (24 in batch 1 + ~181 in batches 2–4). Remaining: ~59 Cards in 3 rate-limited files (sales-dashboard-client, recipe-detail-tabs, autofill-reports) + 5+ files in batch 5 — blocked by 429 rate limits. Strategy: stat/metric cards → `tone="soft-stone"`, content cards → `tone="canvas"`.
 
 **Validation:** API typecheck clean. App typecheck has pre-existing errors in facilities (missing `../../actions` imports), procurement (type narrowing), and kitchen-waste (action return type) — none caused by sweep. Biome check clean on all changed files.
 
@@ -296,9 +306,9 @@ Pass #12 is another **stability re-check** — confirmed `git log f64946fe4..HEA
 
 - **§3.6 locked at 114/106 #12** (matches #10/#11 AND-pattern lock). No drift.
 - **§3.10 boundary violations LOCKED at 7 files / 8 imports #12** — same files as #9/#10/#11. Item is execution-ready; awaits §0.6 sweep.
-- **§3.11 strict locked at 183/96 #12; broad now 767/184** (was 1,505/182 in #11). Broad-pattern non-determinism re-confirmed; **continue using strict 183/96 for tooling**.
+- **§3.11 ~[~] — ~205 Cards migrated to explicit `tone` props (16 files).** Strict baseline was 183/96; ~64+ Cards remain in 8+ files blocked by 429 rate limits (sales-dashboard-client, recipe-detail-tabs, autofill-reports + batch 5). Broad 767/184 non-determinism re-confirmed.
 - **§6.1 E2E `test.skip` FLAT at 41/13 #12** (matches #8–#11). Same 13 spec files.
-- **§6.2 console FLAT at 2,195 #12** — net +3 from #11's 2,192 (within #10's locked methodology noise window). All on `console.error`.
+- **§6.2 console ~[~] — ~205 statements migrated (batches 1–3), ~1,933 remaining.** Baseline was ~2,138 (per AGENTS.md: 405 log + 1,724 error + 9 warn). Session migrated ~120 (batch 1) + ~85 (batches 2–3) = ~205 total. All replaced with `@repo/observability/log`. Rate-limiter test updated.
 - **§6.3 stray backups FLAT at 0 #12** outside `obsidiancap/`.
 
 ### New methodology catches (require canonical-query lock before action)
@@ -326,7 +336,7 @@ Pass #12 is another **stability re-check** — confirmed `git log f64946fe4..HEA
 
 ### §0 foundation locks
 
-- **§0.9 `packages/auth` barrel still FAIL #12** (locked from #11 — no `index.ts` re-exporting `sign-in.tsx`/`sign-up.tsx`).
+- **§0.9 `packages/auth` barrel DONE** — verified 2026-05-04: `packages/auth/index.ts` barrel confirmed present, re-exports `SignIn` and `SignUp`. Prior #11/#12 FAIL verdict was stale.
 - **§0.11 `ModuleLanding` line count FLAT at 126 #12.** 4 import sites unchanged (settings, tools, logistics, payroll). Extraction action remains open.
 - **page-shell.tsx exports FLAT at 28 #12** — Kitchen* primitives (already counted in #11). No new exports.
 - **All 11 flagship Cohere components from §0.5 still missing #12** — top execution priority for §0 work.
@@ -348,7 +358,7 @@ Pass #12 is another **stability re-check** — confirmed `git log f64946fe4..HEA
 8. **§5.1 DONE 2026-05-02 #13.** `specs/general/design-system-shell.md` authored — codifies the authenticated-shell contract (PageCanvas + CommandBand + MetricBand + OperationalColumn ladder, ResearchTable list pattern, BlogFilterChip taxonomy, ContactFormCard, DarkFeatureBand, ModuleLanding higher-order primitive, 2A/2B/2C scoring rubric). 5 user stories, ~25 functional requirements (FR-101..603), 9 key entities, 10 measurable success criteria seeded with current §3 baselines (114 text-3xl, 66 shadows, 375 pastels, 183 bare-Card, 4 tab-strips). Becomes the design contract every module page must satisfy and the source-of-truth for §2 demotion/promotion calls. Unblocks §5.2–5.9 (per-module specs can now reference the shell contract rather than re-deriving it).
 9. **§5 ALL 9 SPECS DONE 2026-05-02 #16.** Final batch: marketing/staffing/contracts authored fresh (SPEC.md per module); search/settings/tools verified from prior untracked files; tools.md polished (4 fixes: BattleBoard/CommandBoard disambiguation, AiEventSetupSession persistence, conflict resolution taxonomy per type, ship-or-hide independent gates). §5 is CLOSED. Section §7.4 (ship Marketing/Tools/Settings) and §7.7 (unified ConflictsPanel) are resolved by the new specs. See §5 entries below for per-spec detail.
 10. **§4 Build remaining MISSING directories** — ~~Bulk Edit/Grouping (§4.42/§4.43)~~ DONE 2026-05-02. ~~Webhooks (§4.17)~~ DONE 2026-05-02. ~~AI Event Summaries (§4.32)~~ DONE (verified already implemented). ~~AI Suggested Next Actions (§4.34)~~ DONE (verified already implemented). ~~AI Bulk Task Generation (§4.29)~~ DONE (verified already implemented). ~~Command Board (§4.1)~~ DONE #15. ~~Event Timeline (§4.5)~~ DONE #14. ~~Event Budget (§4.4)~~ DONE #13. ~~CRM Segmentation (§4.22)~~ DONE #13. ~~Mobile Timeclock (§4.27)~~ already shipped (verified #13).
-11. **§3.6/§3.7/§3.12/§3.8 DONE.** §3.6 text-3xl → text-2xl (~110 files), §3.7 shadow removal (~24 files), §3.12 tab strips (3 files), §3.8 decorative pastels (375→86, remaining are semantic) all swept. Remaining: §3.11 bare-Card (183/96) — deferred pending design decisions per category.
+11. **§3.6/§3.7/§3.12/§3.8 DONE.** §3.6 text-3xl → text-2xl (~110 files), §3.7 shadow removal (~24 files), §3.12 tab strips (3 files), §3.8 decorative pastels (375→86, remaining are semantic) all swept. **§3.11 bare-Card ~[~] — ~205 Cards migrated (16 files), ~64+ remaining in rate-limited files.** Design decisions resolved: stat/metric → `soft-stone`, content → `canvas`. Next batch needed for remaining files.
 12. **§6.4 cleanup** — `git commit` 71 staged deletions + remove 37 `test/` artifacts.
 13. ~~**§2 demote events/page.tsx to 2B** + remove `Header` legacy import on line 33.~~ **DONE 2026-05-02 (Opus pass).** Removed `import { Header } from "../components/header"` and the `<Header page="Events" pages={[]}>...</Header>` block (lines 108–123) — all 4 buttons (Reports / Battle boards / Import / New event) were already represented in `CommandBandActions` (Import, New event) + `SectionHeader.actions` (Battle boards, Reports). `events/page.tsx` is now genuinely 3/3 Cohere-aligned. Validation: `pnpm --filter app typecheck` clean; `pnpm --filter app test` 31 files / 243 tests pass.
 

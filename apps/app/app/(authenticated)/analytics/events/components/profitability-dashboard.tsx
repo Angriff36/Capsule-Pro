@@ -71,7 +71,7 @@ export function ProfitabilityDashboard({
     return (
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {[...new Array(4)].map((_, i) => (
-          <Card key={i}>
+          <Card key={i} tone="canvas">
             <CardHeader>
               <div className="h-4 w-24 animate-pulse bg-muted rounded" />
               <div className="h-3 w-16 mt-2 animate-pulse bg-muted rounded" />
@@ -94,7 +94,7 @@ export function ProfitabilityDashboard({
             Performance Overview
           </h3>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-            <Card>
+            <Card tone="canvas">
               <CardHeader>
                 <CardDescription>Budgeted Revenue</CardDescription>
                 <CardTitle className="text-2xl">
@@ -103,7 +103,7 @@ export function ProfitabilityDashboard({
               </CardHeader>
             </Card>
 
-            <Card>
+            <Card tone="canvas">
               <CardHeader>
                 <CardDescription>Actual Revenue</CardDescription>
                 <CardTitle className="text-2xl">
@@ -119,7 +119,7 @@ export function ProfitabilityDashboard({
               </CardContent>
             </Card>
 
-            <Card>
+            <Card tone="canvas">
               <CardHeader>
                 <CardDescription>Total Costs</CardDescription>
                 <CardTitle className="text-2xl">
@@ -135,7 +135,7 @@ export function ProfitabilityDashboard({
               </CardContent>
             </Card>
 
-            <Card>
+            <Card tone="canvas">
               <CardHeader>
                 <CardDescription>Gross Margin</CardDescription>
                 <CardTitle className="text-2xl">
@@ -161,7 +161,7 @@ export function ProfitabilityDashboard({
             Cost Analysis & Trends
           </h3>
           <div className="grid gap-6 md:grid-cols-2">
-            <Card>
+            <Card tone="canvas">
               <CardHeader>
                 <CardTitle>Cost Breakdown</CardTitle>
                 <CardDescription>Actual vs budgeted costs</CardDescription>
@@ -251,7 +251,7 @@ export function ProfitabilityDashboard({
               </CardContent>
             </Card>
 
-            <Card>
+            <Card tone="canvas">
               <CardHeader>
                 <CardTitle>Margin Trends</CardTitle>
                 <CardDescription>
@@ -310,7 +310,7 @@ export function ProfitabilityDashboard({
           <h3 className="text-sm font-medium text-muted-foreground">
             Variance Analysis
           </h3>
-          <Card>
+          <Card tone="canvas">
             <CardHeader>
               <CardTitle>Budget vs Actual Performance</CardTitle>
               <CardDescription>
@@ -422,7 +422,7 @@ export function ProfitabilityDashboard({
       </div>
 
       {historical.length === 0 ? (
-        <Card>
+        <Card tone="canvas">
           <CardContent className="flex flex-col items-center justify-center py-12">
             <div className="text-center">
               <h3 className="text-lg font-medium mb-2">
@@ -442,7 +442,7 @@ export function ProfitabilityDashboard({
               Summary Metrics
             </h3>
             <div className="grid gap-6 md:grid-cols-4">
-              <Card>
+              <Card tone="canvas">
                 <CardHeader>
                   <CardDescription>Total Events</CardDescription>
                   <CardTitle className="text-2xl">
@@ -451,7 +451,7 @@ export function ProfitabilityDashboard({
                 </CardHeader>
               </Card>
 
-              <Card>
+              <Card tone="canvas">
                 <CardHeader>
                   <CardDescription>Average Margin %</CardDescription>
                   <CardTitle className="text-2xl">
@@ -466,7 +466,7 @@ export function ProfitabilityDashboard({
                 </CardHeader>
               </Card>
 
-              <Card>
+              <Card tone="canvas">
                 <CardHeader>
                   <CardDescription>Total Revenue</CardDescription>
                   <CardTitle className="text-2xl">
@@ -478,7 +478,7 @@ export function ProfitabilityDashboard({
                 </CardHeader>
               </Card>
 
-              <Card>
+              <Card tone="canvas">
                 <CardHeader>
                   <CardDescription>Total Costs</CardDescription>
                   <CardTitle className="text-2xl">
@@ -499,7 +499,7 @@ export function ProfitabilityDashboard({
             <h3 className="text-sm font-medium text-muted-foreground">
               Historical Trends
             </h3>
-            <Card>
+            <Card tone="canvas">
               <CardHeader>
                 <CardTitle>Monthly Profitability Metrics</CardTitle>
                 <CardDescription>

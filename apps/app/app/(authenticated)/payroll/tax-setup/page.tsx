@@ -329,7 +329,7 @@ export default function TaxSetupPage() {
 
         {/* Federal Tab */}
         <TabsContent className="space-y-6" value="federal">
-          <Card>
+          <Card tone="canvas">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -438,7 +438,7 @@ export default function TaxSetupPage() {
 
         {/* FICA Tab */}
         <TabsContent className="space-y-6" value="fica">
-          <Card>
+          <Card tone="canvas">
             <CardHeader>
               <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted/50 text-foreground">
@@ -454,7 +454,7 @@ export default function TaxSetupPage() {
             </CardHeader>
             <CardContent>
               <div className="grid gap-6 md:grid-cols-2">
-                <Card className="border-dashed">
+                <Card tone="canvas" className="border-dashed">
                   <CardHeader className="pb-3">
                     <CardTitle className="text-base">
                       Social Security (OASDI)
@@ -499,7 +499,7 @@ export default function TaxSetupPage() {
                   </CardContent>
                 </Card>
 
-                <Card className="border-dashed">
+                <Card tone="canvas" className="border-dashed">
                   <CardHeader className="pb-3">
                     <CardTitle className="text-base">Medicare</CardTitle>
                   </CardHeader>
@@ -548,7 +548,7 @@ export default function TaxSetupPage() {
 
         {/* State Tab */}
         <TabsContent className="space-y-6" value="state">
-          <Card>
+          <Card tone="canvas">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -649,7 +649,7 @@ export default function TaxSetupPage() {
 
         {/* Tax Preview Tab */}
         <TabsContent className="space-y-6" value="preview">
-          <Card>
+          <Card tone="canvas">
             <CardHeader>
               <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted/50 text-foreground">
@@ -724,7 +724,7 @@ export default function TaxSetupPage() {
                 <div className="space-y-4">
                   <Separator />
                   <div className="grid gap-4 md:grid-cols-3">
-                    <Card className="border-dashed">
+                    <Card tone="soft-stone" className="border-dashed">
                       <CardContent className="pt-6">
                         <p className="text-sm text-muted-foreground">
                           Gross Annual
@@ -734,7 +734,7 @@ export default function TaxSetupPage() {
                         </p>
                       </CardContent>
                     </Card>
-                    <Card className="border-dashed">
+                    <Card tone="soft-stone" className="border-dashed">
                       <CardContent className="pt-6">
                         <p className="text-sm text-muted-foreground">
                           Total Annual Tax
@@ -744,7 +744,7 @@ export default function TaxSetupPage() {
                         </p>
                       </CardContent>
                     </Card>
-                    <Card className="border-dashed">
+                    <Card tone="soft-stone" className="border-dashed">
                       <CardContent className="pt-6">
                         <p className="text-sm text-muted-foreground">
                           Effective Rate
@@ -756,7 +756,7 @@ export default function TaxSetupPage() {
                     </Card>
                   </div>
 
-                  <Card>
+                  <Card tone="canvas">
                     <CardHeader className="pb-2">
                       <CardTitle className="text-base">
                         Biweekly Withholding Breakdown
@@ -816,7 +816,7 @@ export default function TaxSetupPage() {
       </Tabs>
 
       {/* Employee W-4 Note */}
-      <Card className="border border-hairline bg-muted/20">
+      <Card tone="canvas" className="border border-hairline bg-muted/20">
         <CardContent className="pt-6">
           <div className="flex items-start gap-3">
             <CheckCircle2 className="h-5 w-5 text-primary mt-0.5" />

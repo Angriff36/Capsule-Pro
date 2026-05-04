@@ -13,6 +13,7 @@
  */
 
 import { database } from "@repo/database";
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { requireTenantId } from "@/app/lib/tenant";
@@ -58,7 +59,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
     return NextResponse.json<PaymentMethodResponse>(response);
   } catch (error) {
     captureException(error);
-    console.error("Error fetching payment method:", error);
+    log.error("Error fetching payment method", { error });
     return NextResponse.json(
       { error: "Failed to fetch payment method" },
       { status: 500 }
@@ -138,7 +139,7 @@ export async function PUT(request: NextRequest, context: RouteContext) {
     return NextResponse.json<PaymentMethodResponse>(response);
   } catch (error) {
     captureException(error);
-    console.error("Error updating payment method:", error);
+    log.error("Error updating payment method", { error });
     return NextResponse.json(
       { error: "Failed to update payment method" },
       { status: 500 }
@@ -247,7 +248,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     return NextResponse.json({ error: "Invalid action" }, { status: 400 });
   } catch (error) {
     captureException(error);
-    console.error("Error handling payment method action:", error);
+    log.error("Error handling payment method action", { error });
     return NextResponse.json(
       { error: "Failed to handle payment method action" },
       { status: 500 }
@@ -297,7 +298,7 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
     return NextResponse.json({ success: true });
   } catch (error) {
     captureException(error);
-    console.error("Error deleting payment method:", error);
+    log.error("Error deleting payment method", { error });
     return NextResponse.json(
       { error: "Failed to delete payment method" },
       { status: 500 }

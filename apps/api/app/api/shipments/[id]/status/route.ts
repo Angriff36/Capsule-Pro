@@ -7,6 +7,7 @@
 import { auth } from "@repo/auth/server";
 import type { Shipment } from "@repo/database";
 import { database } from "@repo/database";
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { InvariantError } from "@/app/lib/invariant";
@@ -555,10 +556,7 @@ async function handleInventoryOnDelivery(
       updated.deliveredBy ?? updated.receivedBy ?? null
     );
   } catch (inventoryError) {
-    console.error(
-      "Failed to update inventory for delivered shipment:",
-      inventoryError
-    );
+    log.error("Failed to update inventory for delivered shipment", { error: inventoryError });
     // Continue with the response even if inventory update fails
   }
 }
@@ -593,10 +591,7 @@ async function handleInventoryOnPreparation(
       userId
     );
   } catch (inventoryError) {
-    console.error(
-      "Failed to reserve inventory for preparing shipment:",
-      inventoryError
-    );
+    log.error("Failed to reserve inventory for preparing shipment", { error: inventoryError });
     // Continue with the response even if inventory update fails
   }
 }
@@ -636,10 +631,7 @@ async function handleInventoryOnCancellation(
       userId
     );
   } catch (inventoryError) {
-    console.error(
-      "Failed to reverse inventory for cancelled shipment:",
-      inventoryError
-    );
+    log.error("Failed to reverse inventory for cancelled shipment", { error: inventoryError });
     // Continue with the response even if inventory update fails
   }
 }
@@ -714,7 +706,7 @@ export async function POST(
     if (error instanceof InvariantError) {
       return NextResponse.json({ message: error.message }, { status: 400 });
     }
-    console.error("Failed to update shipment status:", error);
+    log.error("Failed to update shipment status", { error });
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }

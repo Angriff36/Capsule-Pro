@@ -302,9 +302,10 @@ describe("Rate Limiting Middleware", () => {
         expect(result.remaining).toBe(100); // default limit as remaining
       });
 
-      it("should log error to console on Redis failure", async () => {
-        const consoleSpy = vi
-          .spyOn(console, "error")
+      it("should log error via observability on Redis failure", async () => {
+        const { log } = await import("@repo/observability/log");
+        const logSpy = vi
+          .spyOn(log, "error")
           .mockImplementation(() => {});
         const request = createMockRequest({
           headers: { "x-tenant-id": TEST_TENANT_ID },
@@ -314,12 +315,12 @@ describe("Rate Limiting Middleware", () => {
 
         await checkRateLimit(request, TEST_TENANT_ID);
 
-        expect(consoleSpy).toHaveBeenCalledWith(
-          "[rate-limiter] Redis error, allowing request:",
-          expect.any(Error)
+        expect(logSpy).toHaveBeenCalledWith(
+          "[rate-limiter] Redis error, allowing request",
+          { error: expect.any(Error) }
         );
 
-        consoleSpy.mockRestore();
+        logSpy.mockRestore();
       });
 
       it("should return remaining equal to limit on Redis error", async () => {

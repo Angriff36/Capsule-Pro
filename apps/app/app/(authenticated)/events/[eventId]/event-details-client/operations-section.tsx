@@ -78,7 +78,7 @@ export function OperationsSection({
     <section className="space-y-4">
       {/* Template Staffing Suggestions */}
       {templateStaffing && templateName && (
-        <Card className="border-border/70">
+        <Card tone="canvas" className="border-border/70">
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <div>
@@ -110,7 +110,7 @@ export function OperationsSection({
           </CardHeader>
           <CardContent className="pt-0">
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              <Card className="bg-muted/30">
+              <Card tone="soft-stone" className="bg-muted/30">
                 <CardContent className="pt-4 pb-3">
                   <div className="flex items-center gap-2 mb-1">
                     <UsersIcon className="h-4 w-4 text-muted-foreground" />
@@ -123,7 +123,7 @@ export function OperationsSection({
                   </p>
                 </CardContent>
               </Card>
-              <Card className="bg-muted/30">
+              <Card tone="soft-stone" className="bg-muted/30">
                 <CardContent className="pt-4 pb-3">
                   <div className="flex items-center gap-2 mb-1">
                     <WineIcon className="h-4 w-4 text-muted-foreground" />
@@ -136,7 +136,7 @@ export function OperationsSection({
                   </p>
                 </CardContent>
               </Card>
-              <Card className="bg-muted/30">
+              <Card tone="soft-stone" className="bg-muted/30">
                 <CardContent className="pt-4 pb-3">
                   <div className="flex items-center gap-2 mb-1">
                     <ChefHatIcon className="h-4 w-4 text-muted-foreground" />
@@ -147,7 +147,7 @@ export function OperationsSection({
                   </p>
                 </CardContent>
               </Card>
-              <Card className="bg-muted/30">
+              <Card tone="soft-stone" className="bg-muted/30">
                 <CardContent className="pt-4 pb-3">
                   <div className="flex items-center gap-2 mb-1">
                     <PackageIcon className="h-4 w-4 text-muted-foreground" />
@@ -170,7 +170,7 @@ export function OperationsSection({
         </Card>
       )}
 
-      <Card className="border-border/70">
+      <Card tone="canvas" className="border-border/70">
         <CardHeader className="pb-3">
           <CardTitle className="text-lg">Operations control</CardTitle>
           <CardDescription>
@@ -179,13 +179,13 @@ export function OperationsSection({
         </CardHeader>
         <CardContent className="space-y-4 pt-0">
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-            <Card>
+            <Card tone="soft-stone">
               <CardContent className="pt-5">
                 <p className="text-foreground/70 text-xs">Pending</p>
                 <p className="font-semibold text-lg">{taskSummary.pending}</p>
               </CardContent>
             </Card>
-            <Card>
+            <Card tone="soft-stone">
               <CardContent className="pt-5">
                 <p className="text-foreground/70 text-xs">In Progress</p>
                 <p className="font-semibold text-lg">
@@ -193,19 +193,19 @@ export function OperationsSection({
                 </p>
               </CardContent>
             </Card>
-            <Card>
+            <Card tone="soft-stone">
               <CardContent className="pt-5">
                 <p className="text-foreground/70 text-xs">Completed</p>
                 <p className="font-semibold text-lg">{taskSummary.completed}</p>
               </CardContent>
             </Card>
-            <Card>
+            <Card tone="soft-stone">
               <CardContent className="pt-5">
                 <p className="text-foreground/70 text-xs">Canceled</p>
                 <p className="font-semibold text-lg">{taskSummary.canceled}</p>
               </CardContent>
             </Card>
-            <Card>
+            <Card tone="soft-stone">
               <CardContent className="pt-5">
                 <p className="text-foreground/70 text-xs">Other</p>
                 <p className="font-semibold text-lg">{taskSummary.other}</p>

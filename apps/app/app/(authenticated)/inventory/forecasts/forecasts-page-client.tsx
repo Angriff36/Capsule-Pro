@@ -244,7 +244,7 @@ export const ForecastsPageClient = () => {
           Performance Overview
         </h2>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          <Card>
+          <Card tone="soft-stone">
             <CardHeader>
               <CardDescription>Total Alerts</CardDescription>
               <CardTitle>{allSuggestions.length}</CardTitle>
@@ -254,7 +254,7 @@ export const ForecastsPageClient = () => {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card tone="soft-stone">
             <CardHeader>
               <CardDescription>Critical</CardDescription>
               <CardTitle className="text-destructive">
@@ -266,7 +266,7 @@ export const ForecastsPageClient = () => {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card tone="soft-stone">
             <CardHeader>
               <CardDescription>Warning</CardDescription>
               <CardTitle>{warningCount}</CardTitle>
@@ -276,7 +276,7 @@ export const ForecastsPageClient = () => {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card tone="soft-stone">
             <CardHeader>
               <CardDescription>Depleting Soon</CardDescription>
               <CardTitle>{depletingSoonCount}</CardTitle>
@@ -306,7 +306,7 @@ export const ForecastsPageClient = () => {
           {/* Forecast Analysis Tab */}
           <TabsContent className="space-y-4" value="forecast">
             {/* Search/Filter Card */}
-            <Card>
+            <Card tone="canvas">
               <CardHeader>
                 <CardTitle>Generate Forecast</CardTitle>
                 <CardDescription>
@@ -434,7 +434,7 @@ export const ForecastsPageClient = () => {
 
             {/* Forecast Results */}
             {forecast && (
-              <Card>
+              <Card tone="canvas">
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between">
                     <span>Forecast Results: {forecast.sku}</span>
@@ -781,7 +781,7 @@ export const ForecastsPageClient = () => {
 
             {/* Suggestions for Selected SKU */}
             {suggestions.length > 0 && (
-              <Card>
+              <Card tone="canvas">
                 <CardHeader>
                   <CardTitle>Reorder Suggestions for {selectedSku}</CardTitle>
                 </CardHeader>
@@ -824,7 +824,7 @@ export const ForecastsPageClient = () => {
           {/* Reorder Alerts Tab */}
           <TabsContent className="space-y-4" value="alerts">
             {/* Forecast-Based Alerts */}
-            <Card>
+            <Card tone="canvas">
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
                   <span>Depletion Alerts</span>
@@ -986,7 +986,7 @@ export const ForecastsPageClient = () => {
             </Card>
 
             {/* Reorder Suggestions */}
-            <Card>
+            <Card tone="canvas">
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
                   <span>Reorder Suggestions</span>

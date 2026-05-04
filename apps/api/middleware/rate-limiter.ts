@@ -20,6 +20,7 @@
  */
 
 import { database } from "@repo/database";
+import { log } from "@repo/observability/log";
 import { createRateLimiter, slidingWindow } from "@repo/rate-limit";
 import { NextResponse } from "next/server";
 
@@ -259,7 +260,7 @@ async function getRateLimitConfig(
 
     return null;
   } catch (error) {
-    console.error("[rate-limiter] Failed to lookup rate limit config:", error);
+    log.error("[rate-limiter] Failed to lookup rate limit config", { error });
     return null;
   }
 }
@@ -310,7 +311,7 @@ function logRateLimitEvent(
       },
     })
     .catch((error) => {
-      console.error("[rate-limiter] Failed to log rate limit event:", error);
+      log.error("[rate-limiter] Failed to log rate limit event", { error });
     });
 }
 
@@ -413,7 +414,7 @@ export async function checkRateLimit(
     };
   } catch (error) {
     // On Redis error, allow the request (fail open)
-    console.error("[rate-limiter] Redis error, allowing request:", error);
+    log.error("[rate-limiter] Redis error, allowing request", { error });
     return {
       success: true,
       limit,

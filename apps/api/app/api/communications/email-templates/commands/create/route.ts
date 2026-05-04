@@ -7,6 +7,7 @@
 import type { RuntimeEngine } from "@angriff36/manifest";
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -63,7 +64,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    console.log("[email-template/create] Executing command:", {
+    log.info("[email-template/create] Executing command", {
       entityName: "EmailTemplate",
       command: "create",
       userId: currentUser.id,
@@ -84,7 +85,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (!result.success) {
-      console.error("[email-template/create] Command failed:", {
+      log.error("[email-template/create] Command failed", {
         policyDenial: result.policyDenial,
         guardFailure: result.guardFailure,
         error: result.error,
@@ -97,7 +98,7 @@ export async function POST(request: NextRequest) {
     const created = await persistEmailTemplate(runtime, tenantId, body);
 
     if (!created) {
-      console.error(
+      log.error(
         "[email-template/create] createInstance returned undefined — constraint violation or store error"
       );
       return manifestErrorResponse(
@@ -112,7 +113,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    console.error("[email-template/create] Error:", {
+    log.error("[email-template/create] Error", {
       error: message,
       stack: error instanceof Error ? error.stack : undefined,
     });
