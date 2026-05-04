@@ -107,6 +107,12 @@
 | 99 | warehouse | `/warehouse/audits` | 🔴 ❌ | 7-line shell | ✅ 2026-05-03 — verified functional |
 
 | 100 | kitchen | `/crm/segmentation (already functional)` | 🔴 ❌ | 297-line static JSX — hardcoded sample data, no DB queries | ✅ 2026-05-03 |
+| 101 | kitchen | `/kitchen/equipment` | 🟡 🔶 | Dead buttons: "Add Equipment", "New Work Order", "Schedule Maintenance", "Details" (×2), "Update Status" — no onClick handlers | ⬜ Unassigned |
+| 102 | kitchen | `/kitchen/iot` | 🟡 🔶 | Dead buttons: "Register Probe", "Log Reading", "Details" — no onClick handlers | ⬜ Unassigned |
+| 103 | kitchen | `/kitchen/inventory` | 🟡 🔶 | Dead button: "Reorder" (line 220-222) — no onClick handler | ⬜ Unassigned |
+| 104 | warehouse | `/warehouse/receiving` | 🟡 🔶 | Dead buttons: "Reports", "Supplier Performance" — no onClick handlers | ⬜ Unassigned |
+| 105 | marketing | `/marketing/leads` | 🔴 ❌ | "New lead" button links to `/marketing/leads/new` — page does not exist (404) | ✅ 2026-05-04 — created new/page.tsx + createLead server action (Lead model existed) |
+| 106 | marketing | `/marketing/campaigns` | 🟡 🔶 | "Coming Soon" placeholder — no functionality | ⬜ Unassigned |
 
 ## Legend
 - 🔴 ❌ = Dead shell — static JSX with no data or actions
@@ -114,17 +120,20 @@
 - ✅ = Fixed and verified working
 
 ## Fix Strategy
-ALL DONE — 0 remaining. No broken pages left to fix.
+**7 new items found 2026-05-03 (scouting mission).** #101-#106 need attention. All existing items (#1-#100) were previously resolved.
 
 
 
 ## Per-Page Tracking
 See `capsule-pages/` for detailed per-page fix history.
-## Final Status (2026-05-03 05:30 UTC)
-**99/99 entries resolved. 0 remaining.** All pages verified functional:
+## Final Status (2026-05-03 10:30 UTC)
+**106 total entries. 5 remaining (#101-#104, #106, found during scouting mission).** 100 previously resolved:
 1. Server components with live Prisma database queries and tenant scoping
 2. Client components using `apiFetch` for data fetching with full CRUD
 3. Intentional redirect stubs (staffing→scheduling aliases)
 4. Navigation hubs linking to sub-pages
 
-No broken pages remain. FIXLIST can be archived.
+**New findings (2026-05-03):**
+- #101-#104: Dead buttons across kitchen/equipment, kitchen/iot, kitchen/inventory, warehouse/receiving
+- #105: marketing/leads "New lead" → 404 (page doesn't exist)
+- #106: marketing/campaigns "Coming Soon" placeholder
