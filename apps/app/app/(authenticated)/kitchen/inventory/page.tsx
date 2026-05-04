@@ -10,6 +10,7 @@ import {
   CardTitle,
 } from "@repo/design-system/components/ui/card";
 import { Separator } from "@repo/design-system/components/ui/separator";
+import Link from "next/link";
 import {
   Table,
   TableBody,
@@ -217,8 +218,10 @@ const KitchenInventoryPage = async () => {
                           Below {formatQuantity(alert.threshold_value)}
                         </div>
                       </div>
-                      <Button size="sm" variant="outline">
-                        Reorder
+                      <Button size="sm" variant="outline" asChild>
+                        <Link href={`/procurement/purchase-orders/new?itemId=${alert.item_id}&itemName=${encodeURIComponent(alert.item_name)}`}>
+                          Reorder
+                        </Link>
                       </Button>
                     </div>
                   ))}
