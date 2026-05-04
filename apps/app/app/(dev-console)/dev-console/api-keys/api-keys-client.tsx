@@ -353,7 +353,7 @@ function CreateKeyDialog({
 
     setLoading(true);
     try {
-      const res = await apiFetch("/api/settings/api-keys/commands/create", {
+      const res = await apiFetch("/api/settings/api-keys", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -650,14 +650,14 @@ export const ApiKeysClient = () => {
     setError(null);
 
     try {
-      const res = await apiFetch("/api/settings/api-keys/list");
+      const res = await apiFetch("/api/settings/api-keys");
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
         throw new Error(data.message || "Failed to fetch API keys");
       }
       const data: ApiKeyListResponse = await res.json();
       // Handle both response shapes (manifest-wrapped and direct)
-      const keys = data.result?.apiKeys ?? data.apiKeys ?? [];
+      const keys = data.result?.apiKeys ?? data.apiKeys ?? data.keys ?? [];
       setApiKeys(keys);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unknown error");
