@@ -1,11 +1,9 @@
-// Equipment routes are disabled - Equipment model does not exist in schema
-// This route needs schema migration to add Equipment model
-
 import { auth } from "@repo/auth/server";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { manifestErrorResponse } from "@/lib/manifest-response";
+import { database } from "@/lib/database";
 
 export async function GET(request: NextRequest) {
   try {
@@ -19,10 +17,45 @@ export async function GET(request: NextRequest) {
       return manifestErrorResponse("Tenant not found", 400);
     }
 
-    // Equipment model does not exist in schema
-    return manifestErrorResponse(
-      "Equipment feature not implemented - missing model",
-      501
+    const { searchParams } = new URL(request.url);
+    const status = searchParams.get("status");
+    const type = searchParams.get("type");
+    const locationId = searchParams.get("locationId");
+
+    const where = {
+      tenantId,
+      deletedAt: null,
+      ...(status && { status }),
+      ...(type && { type }),
+      ...(locationId && { locationId }),
+    };
+
+    const [equipment, total] = await Promise.all([
+      database.equipment.findMany({
+        where,
+        orderBy: { name: "asc" },
+        include: {
+          workOrders: {
+            where: { status: { in: ["open", "in_progress"] } },
+            select: {
+              id: true,
+              title: true,
+              type: true,
+              priority: true,
+              status: true,
+            },
+            take: 5,
+            orderBy: { createdAt: "desc" },
+          },
+          _count: { select: { workOrders: true } },
+        },
+      }),
+      database.equipment.count({ where }),
+    ]);
+
+    return new Response(
+      JSON.stringify({ equipment, total }),
+      { status: 200, headers: { "Content-Type": "application/json" } },
     );
   } catch (error) {
     captureException(error);

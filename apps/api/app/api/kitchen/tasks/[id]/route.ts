@@ -126,22 +126,73 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     });
   }
 
-  // BLOCKER: No manifest commands exist for title, summary, dueDate, tags updates.
-  // These need corresponding kitchen-ops manifest definitions.
-  // Tracked as capsule-pro/TODO:kitchen-task-field-commands
-  console.error(
-    "[KitchenTask/PATCH] No manifest command available for the requested update",
-    { taskId: id, bodyKeys: Object.keys(body) }
-  );
-  return NextResponse.json(
-    {
-      error: "Not implemented",
-      message:
-        "Update not supported: no manifest command available for the requested fields. Tracked as capsule-pro/TODO:kitchen-task-field-commands",
-      fields: Object.keys(body),
-    },
-    { status: 501 }
-  );
+  if (body.title !== undefined) {
+    console.log("[KitchenTask/PATCH] Delegating to updateTitle command", {
+      taskId: id,
+      title: body.title,
+    });
+    return executeManifestCommand(request, {
+      entityName: "KitchenTask",
+      commandName: "updateTitle",
+      params: { id },
+      transformBody: (reqBody, ctx) => ({
+        id,
+        title: reqBody.title,
+        userId: ctx.userId,
+      }),
+    });
+  }
+
+  if (body.summary !== undefined) {
+    console.log("[KitchenTask/PATCH] Delegating to updateSummary command", {
+      taskId: id,
+      summary: body.summary,
+    });
+    return executeManifestCommand(request, {
+      entityName: "KitchenTask",
+      commandName: "updateSummary",
+      params: { id },
+      transformBody: (reqBody, ctx) => ({
+        id,
+        summary: reqBody.summary,
+        userId: ctx.userId,
+      }),
+    });
+  }
+
+  if (body.dueDate !== undefined) {
+    console.log("[KitchenTask/PATCH] Delegating to updateDueDate command", {
+      taskId: id,
+      dueDate: body.dueDate,
+    });
+    return executeManifestCommand(request, {
+      entityName: "KitchenTask",
+      commandName: "updateDueDate",
+      params: { id },
+      transformBody: (reqBody, ctx) => ({
+        id,
+        dueDate: reqBody.dueDate,
+        userId: ctx.userId,
+      }),
+    });
+  }
+
+  if (body.tags !== undefined) {
+    console.log("[KitchenTask/PATCH] Delegating to updateTags command", {
+      taskId: id,
+      tags: body.tags,
+    });
+    return executeManifestCommand(request, {
+      entityName: "KitchenTask",
+      commandName: "updateTags",
+      params: { id },
+      transformBody: (reqBody, ctx) => ({
+        id,
+        tags: reqBody.tags,
+        userId: ctx.userId,
+      }),
+    });
+  }
 }
 
 /**

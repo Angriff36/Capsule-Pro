@@ -26,6 +26,16 @@
 
 ---
 
+## Recently remediated (2026-05-04 — Equipment API Routes + Kitchen Task Field Updates)
+
+- **Equipment API routes — ALL 6 ROUTES IMPLEMENTED.** Equipment model was added to schema.prisma in commit `6d51796c4` but all 6 API routes were still returning 501 with stale comments saying "Equipment model does not exist in schema." All routes now use Prisma ORM (`database.equipment.*` / `database.workOrder.*`) against the `Equipment` and `WorkOrder` models in `tenant_kitchen`. Routes: (1) `GET /list` — list with filters (status, type, locationId), includes work orders and count; (2) `POST /create` — validates name+locationId, creates equipment with all optional fields; (3) `POST /update-status` — status/condition/notes update with valid-status guard; (4) `POST /schedule-maintenance` — creates WorkOrder + sets equipment to maintenance status; (5) `POST /record-usage` — accumulates hours, auto-sets condition at 80%/100% thresholds; (6) `GET /alerts` — predictive failure analysis (usage critical/warning, overdue maintenance, warranty expiring/expired, condition degraded, IoT disconnected) with severity-sorted output.
+- **Kitchen task PATCH handler — stale BLOCKER removed.** `kitchen/tasks/[id]/route.ts` had stale comment "No manifest commands exist for title, summary, dueDate, tags updates" but `kitchen-task-rules.manifest` defines all four (`updateTitle`, `updateSummary`, `updateDueDate`, `updateTags`). Added four `executeManifestCommand` blocks following the existing `priority`/`complexity` pattern. All task field updates now functional.
+- **26 new equipment tests** at `apps/api/__tests__/kitchen/equipment-crud.test.ts` — covers auth gates, CRUD operations, filter support, error paths (400/404), usage threshold auto-condition, and alert detection (usage/maintenance/warranty/IoT).
+
+**Validation:** `pnpm --filter api typecheck` clean. `pnpm --filter app typecheck` clean. `pnpm --filter api test` → 4051 passed + 1 skipped / 130 files (was 4025/129 — +26 tests, +1 file). No schema or migration changes.
+
+---
+
 ## Recently remediated (2026-05-04 — Test Suite Repair + IoT Toast Fix)
 
 - **Test suite repaired — 4 failures fixed across 3 files.** API tests: 4025 passed + 1 skipped (was 4019 passed + 4 failed + 1 skipped). (1) `manifest-runtime-node.invariant.test.ts` — `training/modules/route.ts` was missing `export const runtime = "nodejs"` despite dynamically importing `createManifestRuntime`. Added the export. (2) `inventory/inventory-item-crud.test.ts` — test used exact object match but route passes `transformBody` property; changed to `expect.objectContaining`. (3) `training/training.test.ts` — 2 tests expected `executeManifestCommand` delegation but the route uses `createManifestRuntime` + raw SQL INSERT (intentionally, because `executeManifestCommand` doesn't persist). Rewrote tests to verify actual route behavior: manifest validation via `runCommand`, raw SQL persistence, 403/422 error paths.

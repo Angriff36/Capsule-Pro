@@ -251,7 +251,7 @@ related work:
   ~~`20260327040000_add_lead_scoring`~~ — resolved: `CrmScoringRule` model
   exists. ~~`20260327020000_add_employee_bank_accounts`~~ — resolved:
   `EmployeeBankAccount` model exists.)
-- Routes that use raw SQL against non-existent Prisma entities: `Equipment`,
+- Routes that use raw SQL against non-existent Prisma entities:
   `ProcurementApproval`, `Deal`. (~~`Driver`, `Vehicle`, `FacilityAsset`,
   `RevenueRecognitionSchedule`~~ — models now exist. ~~`Vendor`, `Budget`~~ —
   `VendorContact`/`ProcurementBudget` cover the needed tables.)
