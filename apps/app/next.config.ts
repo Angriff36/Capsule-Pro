@@ -168,6 +168,10 @@ const rewrites: NextConfig["rewrites"] = async () => {
       source: "/api/rolepolicy/:path*",
       destination: `${apiBaseUrl}/api/rolepolicy/:path*`,
     },
+    {
+      source: "/api/search/:path*",
+      destination: `${apiBaseUrl}/api/search/:path*`,
+    },
   ];
 };
 
