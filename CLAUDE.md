@@ -198,7 +198,7 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[Emergency bridge — running bridge was not updated]
-Files: apps/app/app/(authenticated)/payroll/direct-deposit/page.tsx (edit), apps/api/__tests__/rate-limiting/rate-limiter.test.ts (edit), IMPLEMENTATION_PLAN.md (edit), scripts/manifest/write-route-infra-allowlist.json (edit)
+[auto-bridge snapshot @ 10 changes]
+Files: apps/app/app/(authenticated)/crm/venues/[id]/page.tsx (edit), apps/app/app/(authenticated)/administrative/overview-boards/page.tsx (edit), apps/app/app/(authenticated)/administrative/trash/components/trash-page-client.tsx (edit), apps/app/app/(authenticated)/inventory/scanner/page.tsx (edit), apps/app/app/(authenticated)/analytics/sales/sales-dashboard-client.tsx (edit)
 
 # === END COGNILAYER ===
