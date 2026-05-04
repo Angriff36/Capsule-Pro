@@ -20,6 +20,7 @@ import {
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { ChartOfAccountsActions } from "./chart-of-accounts-actions";
 
 const typeLabels = {
   ASSET: "Asset",
@@ -76,6 +77,7 @@ export default async function ChartOfAccountsPage() {
             Prisma.
           </p>
         </div>
+        <ChartOfAccountsActions />
         <Button asChild variant="outline">
           <Link href="/accounting">Back to accounting overview</Link>
         </Button>
