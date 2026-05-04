@@ -422,7 +422,7 @@ export function CreateDependencyForm({
           Predecessor Task (must finish first)
         </label>
         <select
-          className="w-full px-3 py-2 border rounded-md"
+          className="w-full px-3 py-2 border rounded-sm"
           onChange={(e) =>
             setFormData({ ...formData, predecessorTaskId: e.target.value })
           }
@@ -443,7 +443,7 @@ export function CreateDependencyForm({
           Successor Task (depends on predecessor)
         </label>
         <select
-          className="w-full px-3 py-2 border rounded-md"
+          className="w-full px-3 py-2 border rounded-sm"
           disabled={!formData.predecessorTaskId}
           onChange={(e) =>
             setFormData({ ...formData, successorTaskId: e.target.value })
@@ -465,7 +465,7 @@ export function CreateDependencyForm({
       <div className="space-y-2">
         <label className="text-sm font-medium">Dependency Type</label>
         <select
-          className="w-full px-3 py-2 border rounded-md"
+          className="w-full px-3 py-2 border rounded-sm"
           onChange={(e) =>
             setFormData({ ...formData, dependencyType: e.target.value as any })
           }
@@ -491,7 +491,7 @@ export function CreateDependencyForm({
       <div className="space-y-2">
         <label className="text-sm font-medium">Lag Time (minutes)</label>
         <input
-          className="w-full px-3 py-2 border rounded-md"
+          className="w-full px-3 py-2 border rounded-sm"
           min="0"
           onChange={(e) =>
             setFormData({
@@ -524,14 +524,14 @@ export function CreateDependencyForm({
 
       <div className="flex justify-end gap-2">
         <button
-          className="px-4 py-2 text-sm border rounded-md hover:bg-gray-50 dark:hover:bg-gray-800"
+          className="px-4 py-2 text-sm border rounded-sm hover:bg-gray-50 dark:hover:bg-gray-800"
           onClick={onCancel}
           type="button"
         >
           Cancel
         </button>
         <button
-          className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50"
+          className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-sm hover:bg-primary/90 disabled:opacity-50"
           disabled={!(formData.predecessorTaskId && formData.successorTaskId)}
           type="submit"
         >

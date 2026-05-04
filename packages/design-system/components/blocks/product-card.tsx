@@ -6,7 +6,7 @@ import type { ReactNode } from "react";
  * ProductCard — Cohere-aligned warm product card used to surface
  * marketing tiles for individual products (Command, Embed, Rerank, etc.).
  * Per DESIGN.md `product-card`: soft-stone (`#eeece7`) background, ink
- * text, 8px (`rounded-md`) radius, 32px padding.
+ * text, 8px (`rounded-sm`) radius, 32px padding.
  *
  * Composition is mark → heading → body → optional bullet list with the
  * Cohere check glyph → CTA. The bullet list uses the editorial check
@@ -51,7 +51,7 @@ export function ProductCard({
   return (
     <article
       className={cn(
-        "flex h-full flex-col gap-5 rounded-md bg-soft-stone p-8 text-ink",
+        "flex h-full flex-col gap-5 rounded-sm bg-soft-stone p-8 text-ink",
         className
       )}
       data-slot="product-card"

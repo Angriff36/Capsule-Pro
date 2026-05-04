@@ -67,7 +67,7 @@
   --chart-3: var(--ds-coral);
   --chart-4: var(--ds-dark-navy);
   --chart-5: var(--ds-muted);
-  --radius: 0.625rem;
+  --radius: 0.875rem;
   /* Sidebar = command/control surface → deep green band per DESIGN.md */
   --sidebar: var(--ds-deep-green);
   --sidebar-foreground: var(--ds-canvas);
@@ -184,10 +184,10 @@
   --color-slate-soft: var(--ds-slate);
   /* DESIGN.md radius scale (rounded-pill, rounded-card, rounded-media, ...) */
   --radius-xs: 4px;
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
+  --radius-sm: 8px;
+  --radius-md: 16px;
+  --radius-lg: 22px;
+  --radius-xl: 30px;
   --radius-card: 16px;
   --radius-media: 22px;
   --radius-pill: 32px;

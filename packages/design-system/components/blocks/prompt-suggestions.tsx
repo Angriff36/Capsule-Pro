@@ -467,7 +467,7 @@ export function PromptSuggestions({
                   href={suggestion.href}
                 >
                   {Icon && (
-                    <div className="flex size-8 shrink-0 items-center justify-center rounded-md bg-muted">
+                    <div className="flex size-8 shrink-0 items-center justify-center rounded-sm bg-muted">
                       <Icon className="size-4 text-muted-foreground" />
                     </div>
                   )}
@@ -482,7 +482,7 @@ export function PromptSuggestions({
               ) : (
                 <div className="flex items-start gap-3 w-full">
                   {Icon && (
-                    <div className="flex size-8 shrink-0 items-center justify-center rounded-md bg-muted">
+                    <div className="flex size-8 shrink-0 items-center justify-center rounded-sm bg-muted">
                       <Icon className="size-4 text-muted-foreground" />
                     </div>
                   )}
