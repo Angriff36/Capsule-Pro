@@ -39,7 +39,7 @@ const StaffingLayout = ({ children }: StaffingLayoutProperties) => {
       </div>
 
       {/* Pill Navigation */}
-      <div className="border-b border-hairline bg-canvas px-6">
+      <div className="bg-canvas px-6">
         <div className="mx-auto max-w-7xl">
           <nav className="flex gap-1 overflow-x-auto py-3">
             {navigationItems.map((item) => {

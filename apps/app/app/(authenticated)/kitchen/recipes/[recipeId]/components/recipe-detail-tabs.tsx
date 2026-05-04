@@ -348,7 +348,7 @@ function StepCard({ step, index }: { step: RecipeStepDisplay; index: number }) {
               )}
               {hasTemp && (
                 <Badge
-                  className={`gap-1 ${isCCP ? "border-amber-200 bg-amber-50 text-amber-900" : ""}`}
+                  className={`gap-1 ${isCCP ? "border-amber-900/20 bg-amber-900/10 text-amber-900" : ""}`}
                   variant={isCCP ? "outline" : "secondary"}
                 >
                   <Thermometer className="h-3 w-3" />
@@ -406,7 +406,7 @@ function StepCard({ step, index }: { step: RecipeStepDisplay; index: number }) {
 
             {/* CCP verification checkbox */}
             {isCCP && (
-              <div className="mt-3 flex items-center gap-2 rounded-md border border-amber-200 bg-amber-50 p-3">
+              <div className="mt-3 flex items-center gap-2 rounded-md border border-amber-900/20 bg-amber-900/10 p-3">
                 <button
                   className={`flex h-5 w-5 items-center justify-center rounded border-2 ${
                     tempVerified

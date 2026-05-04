@@ -196,7 +196,7 @@ const KitchenInventoryPage = async () => {
             <h2 className="text-sm font-medium text-muted-foreground">
               Low Stock Alerts ({lowStockAlerts.length})
             </h2>
-            <Card className="border-amber-200 bg-amber-50">
+            <Card className="border-amber-900/20 bg-amber-900/10">
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center gap-2 text-amber-800">
                   Items Requiring Reorder
@@ -209,7 +209,7 @@ const KitchenInventoryPage = async () => {
                 <div className="grid gap-2 md:grid-cols-2 lg:grid-cols-3">
                   {lowStockAlerts.map((alert) => (
                     <div
-                      className="flex items-center justify-between rounded-lg border border-amber-200 bg-white p-3"
+                      className="flex items-center justify-between rounded-lg border border-amber-900/20 bg-white p-3"
                       key={alert.id}
                     >
                       <div>

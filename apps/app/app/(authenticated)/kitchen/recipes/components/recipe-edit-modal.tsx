@@ -531,7 +531,7 @@ function StepRow({
         {/* CCP checkbox for temperature verification */}
         {step.temperature_value !== null &&
           step.temperature_value !== undefined && (
-            <div className="flex items-center gap-2 rounded-md border border-amber-200 bg-amber-50 p-2">
+            <div className="flex items-center gap-2 rounded-md border border-amber-900/20 bg-amber-900/10 p-2">
               <AlertTriangle className="h-4 w-4 text-amber-700" />
               <span className="text-sm text-amber-900">
                 Critical Control Point: Temperature verification required

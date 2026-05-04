@@ -432,7 +432,7 @@ export function EquipmentPageClient() {
             tone="canvas"
             className={
               alertSummary.bySeverity.critical > 0
-                ? "border-red-500 bg-red-50"
+                ? "border-red-500 bg-red-900/10"
                 : ""
             }
           >

@@ -175,7 +175,7 @@ function formatDueStatus(dueDate: Date | null): {
   if (isPast(due) && diffMins < -30) {
     return {
       label: "Overdue",
-      className: "text-rose-600 bg-rose-50",
+      className: "text-rose-700 bg-rose-900/10",
       isOverdue: true,
       isUrgent: true,
     };
@@ -184,7 +184,7 @@ function formatDueStatus(dueDate: Date | null): {
   if (diffMins < 0) {
     return {
       label: `${Math.abs(diffMins)}m late`,
-      className: "text-rose-600 bg-rose-50",
+      className: "text-rose-700 bg-rose-900/10",
       isOverdue: false,
       isUrgent: true,
     };
@@ -193,7 +193,7 @@ function formatDueStatus(dueDate: Date | null): {
   if (diffMins < 60) {
     return {
       label: `Due in ${diffMins}m`,
-      className: "text-amber-600 bg-amber-50",
+      className: "text-amber-700 bg-amber-900/10",
       isOverdue: false,
       isUrgent: true,
     };

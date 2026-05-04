@@ -163,7 +163,7 @@ export default async function DishDetailPage({
                 <h1 className="text-2xl font-bold">{dish.name}</h1>
                 <div className="mt-2 flex flex-wrap items-center gap-2">
                   {dish.is_active ? (
-                    <Badge className="gap-1 bg-emerald-100 text-emerald-700 border-0">
+                    <Badge className="gap-1 bg-emerald-900/10 text-emerald-700 border-0">
                       <CheckCircle className="h-3 w-3" /> Active
                     </Badge>
                   ) : (

@@ -82,7 +82,7 @@ export function StaffingRecommendationsClient() {
         </p>
       </div>
 
-      <Card>
+      <Card tone="canvas">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Sparkles className="h-5 w-5" />
@@ -160,7 +160,7 @@ export function StaffingRecommendationsClient() {
       </Card>
 
       {error && (
-        <Card className="border-red-500 bg-muted/20">
+        <Card tone="canvas" className="border-hairline">
           <CardContent className="pt-6">
             <p className="text-red-600">{error}</p>
           </CardContent>
@@ -170,7 +170,7 @@ export function StaffingRecommendationsClient() {
       {recommendation && (
         <>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Card>
+            <Card tone="canvas">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
                   Total Staff
@@ -183,7 +183,7 @@ export function StaffingRecommendationsClient() {
                 </div>
               </CardContent>
             </Card>
-            <Card>
+            <Card tone="canvas">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
                   Estimated Labor Cost
@@ -195,7 +195,7 @@ export function StaffingRecommendationsClient() {
                 </div>
               </CardContent>
             </Card>
-            <Card>
+            <Card tone="canvas">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
                   Staff-to-Guest Ratio
@@ -212,7 +212,7 @@ export function StaffingRecommendationsClient() {
             </Card>
           </div>
 
-          <Card>
+          <Card tone="canvas">
             <CardHeader>
               <CardTitle>Role Breakdown</CardTitle>
               <CardDescription>Recommended staffing by role</CardDescription>
@@ -257,7 +257,7 @@ export function StaffingRecommendationsClient() {
           </Card>
 
           {recommendation.notes && recommendation.notes.length > 0 && (
-            <Card>
+            <Card tone="canvas">
               <CardHeader>
                 <CardTitle>Notes & Recommendations</CardTitle>
               </CardHeader>

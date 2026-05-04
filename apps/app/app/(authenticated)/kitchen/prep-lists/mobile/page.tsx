@@ -284,7 +284,7 @@ export default function PrepListsMobilePage() {
                           <Badge
                             className={`text-xs ${
                               prepDateLabel.isUrgent && !isCompleted
-                                ? "bg-rose-100 text-rose-800 border-rose-300"
+                                ? "bg-rose-900/10 text-rose-700 border-rose-900/20"
                                 : ""
                             }`}
                             variant="outline"

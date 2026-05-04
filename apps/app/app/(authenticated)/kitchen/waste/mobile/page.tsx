@@ -409,7 +409,7 @@ export default function WasteLoggingMobilePage() {
 
               {/* Success Message */}
               {successMessage && (
-                <div className="rounded-lg bg-emerald-50 p-3">
+                <div className="rounded-lg bg-emerald-900/10 p-3">
                   <p className="text-emerald-800 text-sm font-medium">
                     {successMessage}
                   </p>

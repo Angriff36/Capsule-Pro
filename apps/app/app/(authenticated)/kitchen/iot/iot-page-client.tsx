@@ -207,7 +207,7 @@ export function IoTPageClient() {
         <Card
           tone="canvas"
           className={
-            criticalAlerts.length > 0 ? "border-red-500 bg-red-50" : ""
+            criticalAlerts.length > 0 ? "border-red-500 bg-red-900/10" : ""
           }
         >
           <CardHeader className="pb-2">
