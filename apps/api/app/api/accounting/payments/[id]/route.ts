@@ -12,6 +12,7 @@
  */
 
 import { database } from "@repo/database";
+import { log } from "@repo/observability/log";
 import { type NextRequest, NextResponse } from "next/server";
 import { requireTenantId } from "@/app/lib/tenant";
 import { translatePrismaError } from "@/lib/prisma-error";
@@ -90,7 +91,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
         { status: prismaResult.status }
       );
     }
-    console.error("Error fetching payment:", error);
+    log.error("Error fetching payment", { error });
     return NextResponse.json(
       { error: "Failed to fetch payment" },
       { status: 500 }
@@ -228,7 +229,7 @@ export async function PUT(request: NextRequest, context: RouteContext) {
         { status: prismaResult.status }
       );
     }
-    console.error("Error processing payment:", error);
+    log.error("Error processing payment", { error });
     return NextResponse.json(
       { error: "Failed to process payment" },
       { status: 500 }
@@ -348,9 +349,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
       });
     } catch (auditError) {
       captureException(auditError);
-      console.error(
-        "Failed to persist payment refund audit row (continuing):",
-        auditError
+      log.error(
+        "Failed to persist payment refund audit row (continuing)",
+        { error: auditError }
       );
     }
 
@@ -433,7 +434,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         { status: prismaResult.status }
       );
     }
-    console.error("Error refunding payment:", error);
+    log.error("Error refunding payment", { error });
     return NextResponse.json(
       { error: "Failed to refund payment" },
       { status: 500 }

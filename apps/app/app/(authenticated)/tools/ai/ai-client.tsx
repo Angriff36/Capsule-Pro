@@ -205,7 +205,7 @@ function StatCard({
   icon: React.ComponentType<{ className?: string }>;
 }) {
   return (
-    <Card>
+    <Card tone="canvas">
       <CardContent className="flex items-center gap-3 p-4">
         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-muted">
           <Icon className="h-4 w-4 text-muted-foreground" />
@@ -298,7 +298,7 @@ function SuggestionsTab() {
 
       {/* Error state */}
       {error && (
-        <Card className="border-destructive">
+        <Card tone="canvas" className="border-destructive">
           <CardContent className="flex items-center gap-2 p-4 text-destructive">
             <AlertCircle className="h-4 w-4 shrink-0" />
             <p className="text-sm">{error}</p>
@@ -334,7 +334,7 @@ function SuggestionsTab() {
 
       {/* Summary text */}
       {data?.summary && (
-        <Card>
+        <Card tone="canvas">
           <CardContent className="p-4">
             <div className="flex items-start gap-2">
               <Brain className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
@@ -346,7 +346,7 @@ function SuggestionsTab() {
 
       {/* Suggestions list */}
       {data && activeSuggestions.length === 0 && (
-        <Card>
+        <Card tone="canvas">
           <CardContent className="flex flex-col items-center gap-2 py-12">
             <Lightbulb className="h-10 w-10 text-muted-foreground/50" />
             <p className="text-sm text-muted-foreground">
@@ -358,7 +358,7 @@ function SuggestionsTab() {
 
       <div className="space-y-4">
         {activeSuggestions.map((suggestion) => (
-          <Card key={suggestion.id}>
+          <Card tone="canvas" key={suggestion.id}>
             <CardHeader className="pb-3">
               <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <CardTitle className="text-base">{suggestion.title}</CardTitle>
@@ -412,7 +412,7 @@ function SuggestionsTab() {
 
       {/* Empty initial state */}
       {!(data || loading || error) && (
-        <Card>
+        <Card tone="canvas">
           <CardContent className="flex flex-col items-center gap-2 py-16">
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
               <Sparkles className="h-6 w-6 text-muted-foreground" />
@@ -498,7 +498,7 @@ function EventSummariesTab() {
 
       {/* Error state */}
       {error && (
-        <Card className="border-destructive">
+        <Card tone="canvas" className="border-destructive">
           <CardContent className="flex items-center gap-2 p-4 text-destructive">
             <AlertCircle className="h-4 w-4 shrink-0" />
             <p className="text-sm">{error}</p>
@@ -508,7 +508,7 @@ function EventSummariesTab() {
 
       {/* Loading indicator */}
       {loading && (
-        <Card>
+        <Card tone="canvas">
           <CardContent className="flex flex-col items-center gap-3 py-12">
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
             <div className="text-center">
@@ -526,7 +526,7 @@ function EventSummariesTab() {
       {summary && !loading && (
         <div className="space-y-4">
           {/* Event header */}
-          <Card>
+          <Card tone="canvas">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
@@ -563,7 +563,7 @@ function EventSummariesTab() {
 
           {/* Highlights */}
           {summary.highlights.length > 0 && (
-            <Card>
+            <Card tone="canvas">
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center gap-2 text-sm font-medium">
                   <Lightbulb className="h-4 w-4 text-yellow-500" />
@@ -585,7 +585,7 @@ function EventSummariesTab() {
 
           {/* Critical Info */}
           {summary.criticalInfo.length > 0 && (
-            <Card className="border-hairline bg-muted/50">
+            <Card tone="canvas" className="border-hairline bg-muted/50">
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center gap-2 text-sm font-medium text-foreground">
                   <AlertTriangle className="h-4 w-4 text-amber-600" />
@@ -612,7 +612,7 @@ function EventSummariesTab() {
 
       {/* Empty initial state */}
       {!(summary || loading || error) && (
-        <Card>
+        <Card tone="canvas">
           <CardContent className="flex flex-col items-center gap-2 py-16">
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
               <FileText className="h-6 w-6 text-muted-foreground" />

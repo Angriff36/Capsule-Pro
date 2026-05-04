@@ -671,6 +671,11 @@
       "prefix": "/api/kitchen/tasks/sync-claims",
       "methods": ["POST"],
       "comment": "Infrastructure: Batch claim/release sync for kitchen tasks using executeManifestCommand"
+    },
+    {
+      "pattern": "^/api/inventory/items/[^/]+$",
+      "methods": ["PUT", "DELETE"],
+      "comment": "Infrastructure: Inventory item update/delete using direct Prisma access (no manifest yet)"
     }
   ]
 }

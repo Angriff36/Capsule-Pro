@@ -4,6 +4,7 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -40,12 +41,14 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
 
-    console.log("[schedule-shift/update] Executing command:", {
-      entityName: "ScheduleShift",
-      command: "update",
-      userId: currentUser.id,
-      userRole: currentUser.role,
-      tenantId,
+    log.info("[schedule-shift/update] Executing command", {
+      data: {
+        entityName: "ScheduleShift",
+        command: "update",
+        userId: currentUser.id,
+        userRole: currentUser.role,
+        tenantId,
+      },
     });
 
     const runtime = await createManifestRuntime({
@@ -58,7 +61,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (!result.success) {
-      console.error("[schedule-shift/update] Command failed:", {
+      log.error("[schedule-shift/update] Command failed", {
         policyDenial: result.policyDenial,
         guardFailure: result.guardFailure,
         error: result.error,
@@ -85,7 +88,7 @@ export async function POST(request: NextRequest) {
       events: result.emittedEvents,
     });
   } catch (error) {
-    console.error("[schedule-shift/update] Error:", error);
+    log.error("[schedule-shift/update] Error", { error });
     captureException(error);
     return manifestErrorResponse("Internal server error", 500);
   }

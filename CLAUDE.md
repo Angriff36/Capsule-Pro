@@ -199,6 +199,6 @@ Last: [first session]
 
 ## Last Session Bridge
 [auto-bridge snapshot @ 10 changes]
-Files: apps/api/app/api/cron/inventory-audit/route.ts (edit), apps/api/app/api/events/documents/parse/route.ts (edit), apps/api/app/lib/inventory-forecasting.ts (edit), apps/api/app/api/kitchen/tasks/sync-claims/route.ts (edit), packages/design-system/components/ui/button.tsx (edit)
+Files: apps/app/app/(authenticated)/events/budgets/components/create-budget-modal.tsx (edit), apps/app/app/(authenticated)/events/budgets/budgets-page-client.tsx (edit), apps/app/app/(authenticated)/events/events-page-client.tsx (edit), apps/app/app/(authenticated)/kitchen/recipes/recipes-toolbar.tsx (edit), apps/app/app/(authenticated)/kitchen/recipes/components/rich-recipe-editor.tsx (edit), apps/app/app/(authenticated)/kitchen/recipes/recipes-page-client.tsx (edit), apps/app/app/(authenticated)/kitchen/recipes/recipe-favorite-button.tsx (edit), packages/design-system/components/ui/card.tsx (edit)
 
 # === END COGNILAYER ===

@@ -4,6 +4,7 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -40,12 +41,14 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
 
-    console.log("[time-entry/clockIn] Executing command:", {
-      entityName: "TimeEntry",
-      command: "clockIn",
-      userId: currentUser.id,
-      userRole: currentUser.role,
-      tenantId,
+    log.info("[time-entry/clockIn] Executing command", {
+      data: {
+        entityName: "TimeEntry",
+        command: "clockIn",
+        userId: currentUser.id,
+        userRole: currentUser.role,
+        tenantId,
+      },
     });
 
     const runtime = await createManifestRuntime({
@@ -58,7 +61,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (!result.success) {
-      console.error("[time-entry/clockIn] Command failed:", {
+      log.error("[time-entry/clockIn] Command failed", {
         policyDenial: result.policyDenial,
         guardFailure: result.guardFailure,
         error: result.error,
@@ -85,7 +88,7 @@ export async function POST(request: NextRequest) {
       events: result.emittedEvents,
     });
   } catch (error) {
-    console.error("[time-entry/clockIn] Error:", error);
+    log.error("[time-entry/clockIn] Error", { error });
     captureException(error);
     return manifestErrorResponse("Internal server error", 500);
   }

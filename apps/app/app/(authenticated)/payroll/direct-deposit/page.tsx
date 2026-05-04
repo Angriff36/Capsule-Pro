@@ -319,7 +319,7 @@ export default function DirectDepositPage() {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
+        <Card tone="soft-stone">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-muted/50 rounded-lg">
@@ -332,7 +332,7 @@ export default function DirectDepositPage() {
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card tone="soft-stone">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-muted/50 rounded-lg">
@@ -345,7 +345,7 @@ export default function DirectDepositPage() {
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card tone="soft-stone">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-muted/50 rounded-lg">
@@ -360,7 +360,7 @@ export default function DirectDepositPage() {
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card tone="soft-stone">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-muted/50 rounded-lg">
@@ -378,7 +378,7 @@ export default function DirectDepositPage() {
       </div>
 
       {/* Employee Filter */}
-      <Card>
+      <Card tone="canvas">
         <CardContent className="p-4">
           <div className="flex items-center gap-4">
             <div className="flex-1 max-w-md">
@@ -416,11 +416,11 @@ export default function DirectDepositPage() {
 
       {/* Accounts List */}
       {loading ? (
-        <Card className="p-8 text-center">
+        <Card className="p-8 text-center" tone="canvas">
           <Loader2 className="mx-auto h-6 w-6 animate-spin text-muted-foreground" />
         </Card>
       ) : displayAccounts.length === 0 ? (
-        <Card className="p-8 text-center">
+        <Card className="p-8 text-center" tone="canvas">
           <Landmark className="mx-auto h-10 w-10 text-muted-foreground/50 mb-3" />
           <p className="text-muted-foreground font-medium">
             No bank accounts found
@@ -438,7 +438,7 @@ export default function DirectDepositPage() {
               (e) => e.id === account.employee_id
             );
             return (
-              <Card key={account.id}>
+              <Card key={account.id} tone="canvas">
                 <CardContent className="p-4">
                   <div className="flex items-start justify-between">
                     <div className="flex items-start gap-4">

@@ -259,7 +259,7 @@ function ActionsCard({
   onSync: () => void;
 }) {
   return (
-    <Card>
+    <Card tone="canvas">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <RefreshCw className="h-5 w-5" />
@@ -332,7 +332,7 @@ function GoodShuffleStatusCard({
   isConfigured: boolean;
 }) {
   return (
-    <Card>
+    <Card tone="canvas">
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
@@ -393,7 +393,7 @@ function GoodShuffleConfigDisplay({
   onDelete: () => void;
 }) {
   return (
-    <Card>
+    <Card tone="canvas">
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
@@ -496,7 +496,7 @@ function GoodShuffleConfigForm({
     : "Enter API key";
 
   return (
-    <Card>
+    <Card tone="canvas">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Settings className="h-5 w-5" />
@@ -1001,7 +1001,7 @@ function NowstaStatusCard({
   isConfigured: boolean;
 }) {
   return (
-    <Card>
+    <Card tone="canvas">
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
@@ -1076,7 +1076,7 @@ function NowstaConfigDisplay({
   onDelete: () => void;
 }) {
   return (
-    <Card>
+    <Card tone="canvas">
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
@@ -1171,7 +1171,7 @@ function NowstaConfigForm({
     : "Enter API key";
 
   return (
-    <Card>
+    <Card tone="canvas">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Settings className="h-5 w-5" />
@@ -1580,7 +1580,7 @@ function ExportSection({
   onToggle: () => void;
 }) {
   return (
-    <Card>
+    <Card tone="canvas">
       <CardHeader className="cursor-pointer select-none" onClick={onToggle}>
         <div className="flex items-center justify-between">
           <div>
@@ -1763,7 +1763,7 @@ function QuickBooksIntegration() {
   return (
     <div className="space-y-6">
       {/* Status card */}
-      <Card>
+      <Card tone="canvas">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <FileSpreadsheet className="h-5 w-5" />
@@ -1953,7 +1953,7 @@ function QuickBooksIntegration() {
 
       {/* Last export result */}
       {lastResult && (
-        <Card>
+        <Card tone="canvas">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <CheckCircle className="h-5 w-5 text-green-600" />
@@ -1997,7 +1997,7 @@ function QuickBooksIntegration() {
       )}
 
       {/* Export history */}
-      <Card>
+      <Card tone="canvas">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <RefreshCw className="h-5 w-5" />

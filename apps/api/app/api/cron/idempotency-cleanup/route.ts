@@ -14,6 +14,7 @@
  */
 
 import { database } from "@repo/database";
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 
@@ -27,7 +28,7 @@ export async function GET(request: Request): Promise<NextResponse> {
 
   // If CRON_SECRET is not configured, the endpoint is not available
   if (!cronSecret) {
-    console.error(
+    log.error(
       "[idempotency-cleanup] CRON_SECRET environment variable is not configured"
     );
     return NextResponse.json(
@@ -39,7 +40,7 @@ export async function GET(request: Request): Promise<NextResponse> {
   // Validate the Authorization header
   const authHeader = request.headers.get("authorization");
   if (authHeader !== `Bearer ${cronSecret}`) {
-    console.error(
+    log.error(
       "[idempotency-cleanup] Unauthorized request — invalid or missing Authorization header"
     );
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -55,7 +56,7 @@ export async function GET(request: Request): Promise<NextResponse> {
     });
     const deleted = result.count;
 
-    console.log(
+    log.info(
       `[idempotency-cleanup] Cleaned up ${deleted} expired idempotency entries`
     );
 
@@ -64,9 +65,9 @@ export async function GET(request: Request): Promise<NextResponse> {
       timestamp: new Date().toISOString(),
     });
   } catch (error: unknown) {
-    console.error(
-      "[idempotency-cleanup] Failed to clean up expired idempotency entries:",
-      error
+    log.error(
+      "[idempotency-cleanup] Failed to clean up expired idempotency entries",
+      { error }
     );
     captureException(error);
 

@@ -315,7 +315,7 @@ export default function VendorDetailPage() {
           <div className="grid gap-6 md:grid-cols-2">
             {editing ? (
               <>
-                <Card>
+                <Card tone="canvas">
                   <CardHeader>
                     <CardTitle>Basic Information</CardTitle>
                   </CardHeader>
@@ -412,7 +412,7 @@ export default function VendorDetailPage() {
                     </div>
                   </CardContent>
                 </Card>
-                <Card>
+                <Card tone="canvas">
                   <CardHeader>
                     <CardTitle>Address</CardTitle>
                   </CardHeader>
@@ -469,7 +469,7 @@ export default function VendorDetailPage() {
               </>
             ) : (
               <>
-                <Card>
+                <Card tone="canvas">
                   <CardHeader>
                     <CardTitle>Basic Information</CardTitle>
                   </CardHeader>
@@ -551,7 +551,7 @@ export default function VendorDetailPage() {
                     )}
                   </CardContent>
                 </Card>
-                <Card>
+                <Card tone="canvas">
                   <CardHeader>
                     <CardTitle>Address</CardTitle>
                   </CardHeader>
@@ -692,7 +692,7 @@ export default function VendorDetailPage() {
             </Dialog>
           </div>
           {contacts.length === 0 ? (
-            <Card>
+            <Card tone="canvas">
               <CardContent className="py-12 text-center text-muted-foreground">
                 <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
                 <p>No contacts yet. Add a contact for this vendor.</p>
@@ -701,7 +701,7 @@ export default function VendorDetailPage() {
           ) : (
             <div className="grid gap-3 md:grid-cols-2">
               {contacts.map((contact) => (
-                <Card key={contact.id}>
+                <Card key={contact.id} tone="canvas">
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between">
                       <div>
@@ -833,7 +833,7 @@ export default function VendorDetailPage() {
             </Dialog>
           </div>
           {ratings.length === 0 ? (
-            <Card>
+            <Card tone="canvas">
               <CardContent className="py-12 text-center text-muted-foreground">
                 <Star className="h-12 w-12 mx-auto mb-4 opacity-50" />
                 <p>No ratings yet. Rate this vendor's performance.</p>
@@ -842,7 +842,7 @@ export default function VendorDetailPage() {
           ) : (
             <div className="space-y-3">
               {ratings.map((rating) => (
-                <Card key={rating.id}>
+                <Card key={rating.id} tone="canvas">
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between">
                       <div>
@@ -870,7 +870,7 @@ export default function VendorDetailPage() {
 
         {/* Catalog Tab */}
         <TabsContent value="catalog">
-          <Card>
+          <Card tone="canvas">
             <CardContent className="py-12 text-center text-muted-foreground">
               <Package className="h-12 w-12 mx-auto mb-4 opacity-50" />
               <p>

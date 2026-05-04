@@ -668,13 +668,13 @@ function AutomationRulesTab() {
     <div className="space-y-6">
       {/* Summary Cards */}
       <div className="grid gap-4 sm:grid-cols-3">
-        <Card>
+        <Card tone="canvas">
           <CardHeader className="pb-2">
             <CardDescription>Total Rules</CardDescription>
             <CardTitle className="text-2xl">{totalRules}</CardTitle>
           </CardHeader>
         </Card>
-        <Card>
+        <Card tone="canvas">
           <CardHeader className="pb-2">
             <CardDescription>Active</CardDescription>
             <CardTitle className="text-2xl text-green-600">
@@ -682,7 +682,7 @@ function AutomationRulesTab() {
             </CardTitle>
           </CardHeader>
         </Card>
-        <Card>
+        <Card tone="canvas">
           <CardHeader className="pb-2">
             <CardDescription>Inactive</CardDescription>
             <CardTitle className="text-2xl text-muted-foreground">
@@ -702,7 +702,7 @@ function AutomationRulesTab() {
 
       {/* Rules Table */}
       {rules.length === 0 ? (
-        <Card>
+        <Card tone="canvas">
           <CardContent className="py-12 text-center">
             <Bell className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
             <p className="text-lg font-medium">No automation rules yet</p>
@@ -713,7 +713,7 @@ function AutomationRulesTab() {
           </CardContent>
         </Card>
       ) : (
-        <Card>
+        <Card tone="canvas">
           <CardContent className="p-0">
             <Table>
               <TableHeader>
@@ -902,13 +902,13 @@ function SmsHistoryTab() {
     <div className="space-y-6">
       {/* Summary Cards */}
       <div className="grid gap-4 sm:grid-cols-4">
-        <Card>
+        <Card tone="canvas">
           <CardHeader className="pb-2">
             <CardDescription>Total</CardDescription>
             <CardTitle className="text-2xl">{totalSent}</CardTitle>
           </CardHeader>
         </Card>
-        <Card>
+        <Card tone="canvas">
           <CardHeader className="pb-2">
             <CardDescription>Delivered</CardDescription>
             <CardTitle className="text-2xl text-green-600">
@@ -916,13 +916,13 @@ function SmsHistoryTab() {
             </CardTitle>
           </CardHeader>
         </Card>
-        <Card>
+        <Card tone="canvas">
           <CardHeader className="pb-2">
             <CardDescription>Failed</CardDescription>
             <CardTitle className="text-2xl text-red-600">{failed}</CardTitle>
           </CardHeader>
         </Card>
-        <Card>
+        <Card tone="canvas">
           <CardHeader className="pb-2">
             <CardDescription>Pending</CardDescription>
             <CardTitle className="text-2xl text-yellow-600">
@@ -954,7 +954,7 @@ function SmsHistoryTab() {
 
       {/* History Table */}
       {logs.length === 0 ? (
-        <Card>
+        <Card tone="canvas">
           <CardContent className="py-12 text-center">
             <MessageSquare className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
             <p className="text-lg font-medium">No SMS history</p>
@@ -965,7 +965,7 @@ function SmsHistoryTab() {
           </CardContent>
         </Card>
       ) : (
-        <Card>
+        <Card tone="canvas">
           <CardContent className="p-0">
             <Table>
               <TableHeader>
@@ -1114,13 +1114,13 @@ function SmsPreferencesTab({ employeeId }: { employeeId: string }) {
     <div className="space-y-6">
       {/* Summary Cards */}
       <div className="grid gap-4 sm:grid-cols-3">
-        <Card>
+        <Card tone="canvas">
           <CardHeader className="pb-2">
             <CardDescription>Notification Types</CardDescription>
             <CardTitle className="text-2xl">{totalTypes}</CardTitle>
           </CardHeader>
         </Card>
-        <Card>
+        <Card tone="canvas">
           <CardHeader className="pb-2">
             <CardDescription>Enabled</CardDescription>
             <CardTitle className="text-2xl text-green-600">
@@ -1128,7 +1128,7 @@ function SmsPreferencesTab({ employeeId }: { employeeId: string }) {
             </CardTitle>
           </CardHeader>
         </Card>
-        <Card>
+        <Card tone="canvas">
           <CardHeader className="pb-2">
             <CardDescription>Disabled</CardDescription>
             <CardTitle className="text-2xl text-muted-foreground">
@@ -1177,7 +1177,7 @@ function SmsPreferencesTab({ employeeId }: { employeeId: string }) {
       {/* Preference Groups */}
       <div className="space-y-4">
         {NOTIFICATION_CATEGORIES.map((category) => (
-          <Card key={category.label}>
+          <Card key={category.label} tone="canvas">
             <CardHeader className="pb-3">
               <CardTitle className="text-base">{category.label}</CardTitle>
             </CardHeader>

@@ -310,7 +310,7 @@ function MultiLocationDashboardClient({
 
       {/* Summary Cards */}
       <div className="grid gap-4 md:grid-cols-4">
-        <Card>
+        <Card tone="soft-stone">
           <CardHeader className="pb-2">
             <CardDescription>Total Revenue</CardDescription>
             <CardTitle className="text-2xl">
@@ -323,7 +323,7 @@ function MultiLocationDashboardClient({
             </p>
           </CardContent>
         </Card>
-        <Card>
+        <Card tone="soft-stone">
           <CardHeader className="pb-2">
             <CardDescription>Total Staff</CardDescription>
             <CardTitle className="text-2xl">
@@ -336,7 +336,7 @@ function MultiLocationDashboardClient({
             </p>
           </CardContent>
         </Card>
-        <Card>
+        <Card tone="soft-stone">
           <CardHeader className="pb-2">
             <CardDescription>Locations</CardDescription>
             <CardTitle className="text-2xl">
@@ -349,7 +349,7 @@ function MultiLocationDashboardClient({
             </p>
           </CardContent>
         </Card>
-        <Card>
+        <Card tone="soft-stone">
           <CardHeader className="pb-2">
             <CardDescription>Avg Margin</CardDescription>
             <CardTitle className="text-2xl">
@@ -402,6 +402,7 @@ function MultiLocationDashboardClient({
               className={`cursor-pointer transition-colors ${
                 state.expandedKPI === kpi.id ? "border-primary" : ""
               }`}
+              tone="canvas"
               key={kpi.id}
               onClick={() =>
                 dispatch({
@@ -505,6 +506,7 @@ function MultiLocationDashboardClient({
                     ? "border-yellow-500/50 bg-muted/50 dark:border-yellow-500/50"
                     : ""
               }`}
+              tone="canvas"
               key={benchmark.id}
             >
               <CardHeader className="pb-2">
@@ -550,7 +552,7 @@ function MultiLocationDashboardClient({
           Top Performers
         </h2>
         <div className="grid gap-4 md:grid-cols-2">
-          <Card>
+          <Card tone="canvas">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm flex items-center gap-2">
                 <TrendingUp className="h-4 w-4 text-green-500" />
@@ -594,7 +596,7 @@ function MultiLocationDashboardClient({
             </CardContent>
           </Card>
 
-          <Card>
+          <Card tone="canvas">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm flex items-center gap-2">
                 <TrendingUp className="h-4 w-4 text-green-500" />
@@ -638,7 +640,7 @@ function MultiLocationDashboardClient({
             </CardContent>
           </Card>
 
-          <Card>
+          <Card tone="canvas">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm flex items-center gap-2">
                 <CheckCircle2 className="h-4 w-4 text-green-500" />
@@ -682,7 +684,7 @@ function MultiLocationDashboardClient({
             </CardContent>
           </Card>
 
-          <Card>
+          <Card tone="canvas">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm flex items-center gap-2">
                 <TrendingDown className="h-4 w-4 text-green-500" />
@@ -733,7 +735,7 @@ function MultiLocationDashboardClient({
         <h2 className="text-sm font-medium text-muted-foreground">
           Location Comparison
         </h2>
-        <Card>
+        <Card tone="canvas">
           <CardContent className="p-0">
             <div className="overflow-x-auto">
               <Table>

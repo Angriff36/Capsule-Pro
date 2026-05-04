@@ -4,6 +4,7 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -51,14 +52,14 @@ export async function POST(request: NextRequest) {
     });
 
     if (!validation.valid) {
-      console.error("[schedule-shift/create-validated] Validation failed:", {
+      log.error("[schedule-shift/create-validated] Validation failed", {
         code: (validation.error as any)?.code,
         message: (validation.error as any)?.message,
       });
       return validation.error;
     }
 
-    console.log("[schedule-shift/create-validated] Executing command:", {
+    log.info("[schedule-shift/create-validated] Executing command", {
       entityName: "ScheduleShift",
       command: "create",
       userId: currentUser.id,
@@ -82,7 +83,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (!result.success) {
-      console.error("[schedule-shift/create-validated] Command failed:", {
+      log.error("[schedule-shift/create-validated] Command failed", {
         policyDenial: result.policyDenial,
         guardFailure: result.guardFailure,
         error: result.error,
@@ -123,7 +124,7 @@ export async function POST(request: NextRequest) {
           : [],
     });
   } catch (error) {
-    console.error("[schedule-shift/create-validated] Error:", error);
+    log.error("[schedule-shift/create-validated] Error", { error });
     captureException(error);
     return manifestErrorResponse("Internal server error", 500);
   }

@@ -70,7 +70,7 @@ export function EmployeePerformanceDashboard({
     return (
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         {[...new Array(4)].map((_, i) => (
-          <Card key={i}>
+          <Card key={i} tone="canvas">
             <CardHeader>
               <div className="h-4 w-24 animate-pulse bg-muted rounded" />
               <div className="h-3 w-16 mt-2 animate-pulse bg-muted rounded" />
@@ -105,7 +105,7 @@ export function EmployeePerformanceDashboard({
             Performance Overview
           </h3>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-            <Card>
+            <Card tone="canvas">
               <CardHeader>
                 <CardTitle className="text-sm font-medium">
                   Task Completion Rate
@@ -121,7 +121,7 @@ export function EmployeePerformanceDashboard({
               </CardContent>
             </Card>
 
-            <Card>
+            <Card tone="canvas">
               <CardHeader>
                 <CardTitle className="text-sm font-medium">
                   Quality Score
@@ -145,7 +145,7 @@ export function EmployeePerformanceDashboard({
               </CardContent>
             </Card>
 
-            <Card>
+            <Card tone="canvas">
               <CardHeader>
                 <CardTitle className="text-sm font-medium">
                   Efficiency Score
@@ -169,7 +169,7 @@ export function EmployeePerformanceDashboard({
               </CardContent>
             </Card>
 
-            <Card>
+            <Card tone="canvas">
               <CardHeader>
                 <CardTitle className="text-sm font-medium">
                   Punctuality Rate
@@ -200,7 +200,7 @@ export function EmployeePerformanceDashboard({
             Performance Details
           </h3>
           <div className="grid gap-6 md:grid-cols-2">
-            <Card>
+            <Card tone="canvas">
               <CardHeader>
                 <CardTitle>Task Performance</CardTitle>
                 <CardDescription>
@@ -296,7 +296,7 @@ export function EmployeePerformanceDashboard({
               </CardContent>
             </Card>
 
-            <Card>
+            <Card tone="canvas">
               <CardHeader>
                 <CardTitle>Attendance & Punctuality</CardTitle>
                 <CardDescription>
@@ -377,7 +377,7 @@ export function EmployeePerformanceDashboard({
           <h3 className="text-sm font-medium text-muted-foreground">
             Activity Summary
           </h3>
-          <Card>
+          <Card tone="canvas">
             <CardHeader>
               <CardTitle>Activity Summary</CardTitle>
               <CardDescription>
@@ -471,7 +471,7 @@ export function EmployeePerformanceDashboard({
               Performance Overview
             </h3>
             <div className="grid gap-6 md:grid-cols-4">
-              <Card>
+              <Card tone="canvas">
                 <CardHeader>
                   <CardTitle className="text-sm font-medium">
                     Total Employees
@@ -484,7 +484,7 @@ export function EmployeePerformanceDashboard({
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card tone="canvas">
                 <CardHeader>
                   <CardTitle className="text-sm font-medium">
                     Avg Task Completion
@@ -497,7 +497,7 @@ export function EmployeePerformanceDashboard({
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card tone="canvas">
                 <CardHeader>
                   <CardTitle className="text-sm font-medium">
                     Avg Quality Score
@@ -510,7 +510,7 @@ export function EmployeePerformanceDashboard({
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card tone="canvas">
                 <CardHeader>
                   <CardTitle className="text-sm font-medium">
                     Avg Efficiency Score
@@ -529,7 +529,7 @@ export function EmployeePerformanceDashboard({
             <h3 className="text-sm font-medium text-muted-foreground">
               Top Performers
             </h3>
-            <Card>
+            <Card tone="canvas">
               <CardHeader>
                 <CardTitle>Top Performers</CardTitle>
                 <CardDescription>
@@ -574,7 +574,7 @@ export function EmployeePerformanceDashboard({
               Metrics Analysis
             </h3>
             <div className="grid gap-6 md:grid-cols-2">
-              <Card>
+              <Card tone="canvas">
                 <CardHeader>
                   <CardTitle>Metrics by Role</CardTitle>
                   <CardDescription>
@@ -644,7 +644,7 @@ export function EmployeePerformanceDashboard({
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card tone="canvas">
                 <CardHeader>
                   <CardTitle>Performance Trends</CardTitle>
                   <CardDescription>

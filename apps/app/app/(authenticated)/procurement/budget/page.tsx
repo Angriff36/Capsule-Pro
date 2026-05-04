@@ -459,7 +459,7 @@ export default function BudgetPage() {
 
       {/* Summary Cards */}
       <div className="grid gap-4 md:grid-cols-4">
-        <Card>
+        <Card tone="soft-stone">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Budget</CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
@@ -473,7 +473,7 @@ export default function BudgetPage() {
             </p>
           </CardContent>
         </Card>
-        <Card>
+        <Card tone="soft-stone">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Spent</CardTitle>
             <PieChart className="h-4 w-4 text-muted-foreground" />
@@ -489,7 +489,7 @@ export default function BudgetPage() {
             </p>
           </CardContent>
         </Card>
-        <Card>
+        <Card tone="soft-stone">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Remaining</CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
@@ -502,7 +502,7 @@ export default function BudgetPage() {
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card tone="soft-stone">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Alerts</CardTitle>
             <AlertTriangle className="h-4 w-4 text-muted-foreground" />
@@ -542,7 +542,7 @@ export default function BudgetPage() {
           className={`space-y-3 ${selectedBudget ? "md:col-span-1" : "md:col-span-3"}`}
         >
           {filtered.length === 0 ? (
-            <Card>
+            <Card tone="canvas">
               <CardContent className="py-12 text-center text-muted-foreground">
                 <DollarSign className="h-12 w-12 mx-auto mb-4 opacity-50" />
                 <p>
@@ -563,6 +563,7 @@ export default function BudgetPage() {
               return (
                 <Card
                   className={`cursor-pointer transition-all ${isSelected ? "ring-2 ring-blue-500 border-primary" : "hover:border-primary/40"}`}
+                  tone="canvas"
                   key={budget.id}
                   onClick={() => loadDetail(budget.id)}
                 >
@@ -624,7 +625,7 @@ export default function BudgetPage() {
         {selectedBudget && selectedBudgetObj && (
           <div className="md:col-span-2 space-y-4">
             {detailLoading ? (
-              <Card>
+              <Card tone="canvas">
                 <CardContent className="py-12 text-center">
                   <Loader2 className="h-8 w-8 animate-spin text-muted-foreground mx-auto" />
                 </CardContent>
@@ -632,7 +633,7 @@ export default function BudgetPage() {
             ) : detailData ? (
               <>
                 {/* Detail Header */}
-                <Card>
+                <Card tone="canvas">
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <div>
@@ -717,7 +718,7 @@ export default function BudgetPage() {
                 </Card>
 
                 {/* Visual Budget vs Actual */}
-                <Card>
+                <Card tone="canvas">
                   <CardHeader>
                     <CardTitle className="text-base">
                       Budget vs Actual
@@ -802,7 +803,7 @@ export default function BudgetPage() {
 
                 {/* Alerts */}
                 {detailData.alerts.length > 0 && (
-                  <Card>
+                  <Card tone="canvas">
                     <CardHeader>
                       <CardTitle className="text-base flex items-center gap-2">
                         <AlertTriangle className="h-4 w-4 text-amber-500" />
@@ -842,7 +843,7 @@ export default function BudgetPage() {
 
                 {/* Description & Notes */}
                 {(selectedBudgetObj.description || selectedBudgetObj.notes) && (
-                  <Card>
+                  <Card tone="canvas">
                     <CardContent className="p-4 space-y-2">
                       {selectedBudgetObj.description && (
                         <div>
