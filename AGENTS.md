@@ -252,13 +252,16 @@ related work:
   exists. ~~`20260327020000_add_employee_bank_accounts`~~ — resolved:
   `EmployeeBankAccount` model exists.)
 - Routes that use raw SQL against non-existent Prisma entities:
-  `TaxConfiguration`, `PayrollPeriod`, `PayrollRun`, `PayrollLineItem`,
-  `EventFollowup`, `Supplier`, `StorageLocation`.
-  (~~`Driver`, `Vehicle`, `FacilityAsset`, `RevenueRecognitionSchedule`~~ —
-  models now exist. ~~`Vendor`, `Budget`~~ — `VendorContact`/`ProcurementBudget`
-  cover the needed tables. ~~`ProcurementApproval`, `Deal`~~ — zero routes
-  reference `ProcurementApproval`; `Deal` is a virtual concept on top of the
-  existing `Proposal` model.)
+  **All previously listed items now resolved.** Remaining names (`Supplier`,
+  `StorageLocation`) are covered by `InventorySupplier` and existing
+  `StorageLocation` models respectively.
+  (~~`TaxConfiguration`, `PayrollPeriod`, `PayrollRun`, `PayrollLineItem`,
+  `EventFollowup`~~ — models added 2026-05-04. ~~`Driver`, `Vehicle`,
+  `FacilityAsset`, `RevenueRecognitionSchedule`~~ — models now exist.
+  ~~`Vendor`, `Budget`~~ — `VendorContact`/`ProcurementBudget` cover the
+  needed tables. ~~`ProcurementApproval`, `Deal`~~ — zero routes reference
+  `ProcurementApproval`; `Deal` is a virtual concept on top of the existing
+  `Proposal` model.)
 
 Before adding a route that queries a table, check
 `packages/database/prisma/schema.prisma` first — if the model is missing, add it

@@ -120,6 +120,8 @@ export const database: Record<string, unknown> = {
   inventoryTransferItem: createMockModel(),
   // Event model for forecasting tests
   event: createMockModel(),
+  // Event followup model
+  eventFollowup: createMockModel(),
   // Schedule models
   schedule: createMockModel(),
   scheduleShift: createMockModel(),
@@ -132,6 +134,7 @@ export const database: Record<string, unknown> = {
   employeeDeduction: createMockModel(),
   employeeBankAccount: createMockModel(),
   payrollApprovalHistory: createMockModel(),
+  taxConfiguration: createMockModel(),
   // Communications models
   email_templates: createMockModel(),
   emailWorkflow: createMockModel(),

@@ -3608,7 +3608,7 @@ model payroll_line_items {
   deductions     Json      @default("{}")
   net_pay        Decimal   @db.Decimal(10, 2)
   created_at     DateTime  @default(now()) @db.Timestamptz(6)
-  updated_at     DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at     DateTime  @default(now()) @updatedAt @db.Timestamptz(6)
   deleted_at     DateTime? @db.Timestamptz(6)
 
   @@id([tenant_id, id])
@@ -3626,7 +3626,7 @@ model payroll_periods {
   period_end   DateTime  @db.Date
   status       String    @default("open")
   created_at   DateTime  @default(now()) @db.Timestamptz(6)
-  updated_at   DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at   DateTime  @default(now()) @updatedAt @db.Timestamptz(6)
   deleted_at   DateTime? @db.Timestamptz(6)
 
   @@id([tenant_id, id])
@@ -3647,8 +3647,9 @@ model payroll_runs {
   approved_by       String?   @db.Uuid
   approved_at       DateTime? @db.Timestamptz(6)
   paid_at           DateTime? @db.Timestamptz(6)
+  reject_reason     String?
   created_at        DateTime  @default(now()) @db.Timestamptz(6)
-  updated_at        DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at        DateTime  @default(now()) @updatedAt @db.Timestamptz(6)
   deleted_at        DateTime? @db.Timestamptz(6)
 
   @@id([tenant_id, id])
@@ -4233,6 +4234,28 @@ model DocumentVersion {
   @@index([tenantId, documentType, documentId])
   @@index([tenantId, createdAt])
   @@map("document_versions")
+  @@schema("tenant_events")
+}
+
+/// Automated follow-up tasks generated after events
+model EventFollowup {
+  tenant_id    String    @db.Uuid
+  id           String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  event_id     String    @db.Uuid
+  task_type    String // communication | feedback | billing | administrative | sales
+  description  String
+  due_date     DateTime? @db.Timestamptz(6)
+  status       String    @default("pending") // pending | completed | skipped
+  assigned_to  String?   @db.Uuid
+  completed_at DateTime? @db.Timestamptz(6)
+  notes        String?
+  created_at   DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at   DateTime  @default(now()) @updatedAt @db.Timestamptz(6)
+
+  @@id([tenant_id, id])
+  @@index([tenant_id, event_id])
+  @@index([tenant_id, status])
+  @@map("event_followups")
   @@schema("tenant_events")
 }
 
@@ -5387,6 +5410,44 @@ model RolePolicy {
   @@unique([tenantId, roleId])
   @@index([tenantId, isActive])
   @@map("role_policies")
+  @@schema("tenant_staff")
+}
+
+/// Audit trail for payroll approval actions
+model PayrollApprovalHistory {
+  tenant_id       String   @db.Uuid
+  id              String   @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  payroll_run_id  String   @db.Uuid
+  action          String // approved | rejected | finalized | approval_requested
+  previous_status String
+  new_status      String
+  performed_by    String   @db.Uuid
+  performed_at    DateTime @default(now()) @db.Timestamptz(6)
+  reason          String?
+
+  @@id([tenant_id, id])
+  @@index([tenant_id, payroll_run_id])
+  @@index([tenant_id, performed_by])
+  @@map("payroll_approval_history")
+  @@schema("tenant_staff")
+}
+
+/// Tax configuration for payroll calculations
+model TaxConfiguration {
+  tenant_id    String    @db.Uuid
+  id           String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tax_type     String // federal | state | local
+  jurisdiction String
+  state_code   String?
+  is_active    Boolean   @default(true)
+  created_at   DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at   DateTime  @default(now()) @updatedAt @db.Timestamptz(6)
+  deleted_at   DateTime? @db.Timestamptz(6)
+
+  @@id([tenant_id, id])
+  @@index([tenant_id, is_active])
+  @@index([tenant_id, tax_type])
+  @@map("tax_configurations")
   @@schema("tenant_staff")
 }
 

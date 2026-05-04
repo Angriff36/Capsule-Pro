@@ -32,11 +32,21 @@
 
 - **13 API routes with implementation gaps documented.** Full audit found: 3 command-board template routes (501 — need shareId/isPublic schema fields), 1 logistics route-optimization route (501 — needs algorithm), 1 QuickBooks export history (empty — needs persistence model), 2 inventory supplier-sync routes (partial — need SupplierSyncHistory model), 3 kitchen routes (partial — IoT alerts need notification service, override audit swallows errors, prep-list processor now fixed), 2 events routes (partial — manifest import porting needed, documents stored as data URLs), 1 calendar route (partial — missing Deadline/Reminder models).
 
-- **7 tables without Prisma models documented.** Raw SQL routes reference tables that have no corresponding Prisma model: `tenant_payroll.tax_configurations` (TaxConfiguration), `tenant_staff.payroll_periods` (PayrollPeriod), `tenant_staff.payroll_runs` (PayrollRun), `tenant_staff.payroll_line_items` (PayrollLineItem), `tenant_events.event_followups` (EventFollowup), `tenant_inventory.suppliers` (Supplier), `tenant_inventory.storage_locations` (StorageLocation). The AGENTS.md claim about `ProcurementApproval` and `Deal` is stale — zero routes reference `ProcurementApproval`, and `Deal` is a virtual concept on top of the existing `Proposal` model.
+- **7 tables without Prisma models — NOW 0 UNRESOLVED.** Original list: `TaxConfiguration`, `PayrollPeriod`, `PayrollRun`, `PayrollLineItem`, `EventFollowup` (all now have models — see "Missing Prisma Models + Route Audit" section above), `Supplier` (covered by `InventorySupplier`), `StorageLocation` (model exists). The AGENTS.md claim about `ProcurementApproval` and `Deal` is stale — zero routes reference `ProcurementApproval`, and `Deal` is a virtual concept on top of the existing `Proposal` model.
 
 - **Pre-existing `apps/api/__tmp_check.js` temp file cleaned up.**
 
 **Validation:** `pnpm --filter api typecheck` clean. `pnpm --filter api test` — [tests running, will be updated with results].
+
+---
+
+## Recently remediated (2026-05-04 — Missing Prisma Models + Route Audit)
+
+- **3 new Prisma models added to schema.prisma.** `EventFollowup` (tenant_events.event_followups — automated follow-up tasks after events), `PayrollApprovalHistory` (tenant_staff.payroll_approval_history — audit trail for payroll approvals), `TaxConfiguration` (tenant_staff.tax_configurations — tax config for payroll). All three were previously raw-SQL-only with no model.
+- **Existing payroll models enhanced.** Added `reject_reason String?` to `PayrollRun`; added `@updatedAt` to `PayrollPeriod`, `PayrollRun`, `PayrollLineItems`.
+- **Migration pending — DB was unreachable.** Run `pnpm db:dev --create-only --name add_missing_models` when DB is available to generate migrations for the 3 new tables + `reject_reason` column.
+- **"Routes using raw SQL against non-existent Prisma entities" list now nearly empty.** Removed: `TaxConfiguration`, `PayrollPeriod`, `PayrollRun`, `PayrollLineItem`, `EventFollowup` (all have models). Remaining: `Supplier` (covered by `InventorySupplier`), `StorageLocation` (model exists). Effective count: **0 unresolved**.
+- **501/incomplete route audit findings (documented, not fixed):** 3 command-board template routes (501 — need shareId/isPublic), 1 logistics route-optimization (501 — needs algorithm), 5 calendar routes using deadline/reminder types (models not planned), multiple routes silently swallowing DB errors (kitchen overrides, supplier sync), IoT alerts created but notifications never sent, event document import manifest processing commented out.
 
 ---
 
