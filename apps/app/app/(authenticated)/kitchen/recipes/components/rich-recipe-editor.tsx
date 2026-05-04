@@ -446,7 +446,7 @@ export function RichRecipeEditor({
     const calculateCosts = async () => {
       startCalculation(async () => {
         try {
-          const response = await apiFetch("/api/recipes/calculate-cost", {
+          const response = await apiFetch("/api/kitchen/ingredients/calculate-cost", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -572,14 +572,14 @@ export function RichRecipeEditor({
     // Auth checked at page level
     setIsSearching(true);
     try {
-      const response = await apiFetch("/api/ingredients/search", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query }),
-      });
+      const response = await apiFetch(
+        `/api/kitchen/ingredients?search=${encodeURIComponent(query)}`
+      );
       if (response.ok) {
         const data = await response.json();
-        return data.ingredients || [];
+        return (data.data || []).map(
+          (ing: { name: string }) => ing.name
+        );
       }
     } catch {
       // Ignore search errors
