@@ -318,6 +318,7 @@ export function EventTemplateSelector({
               <div className="grid gap-4 sm:grid-cols-2">
                 {templates.map((template) => (
                   <Card
+                    tone="canvas"
                     className="cursor-pointer transition-all hover:border-primary"
                     key={template.id}
                     onClick={() => {

@@ -136,7 +136,7 @@ const KitchenStationsPage = async () => {
           </h2>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {stationStats.length === 0 ? (
-              <Card className="col-span-full">
+              <Card tone="canvas" className="col-span-full">
                 <CardContent className="flex flex-col items-center justify-center py-12">
                   <p className="text-muted-foreground">
                     No station data found. Tasks with station tags will appear
@@ -161,7 +161,7 @@ const KitchenStationsPage = async () => {
                   stationBadgeVariant[station.station_id] || "secondary";
 
                 return (
-                  <Card key={station.station_id}>
+                  <Card tone="canvas" key={station.station_id}>
                     <CardHeader className="pb-3">
                       <div className="flex items-center justify-between">
                         <CardTitle className="text-lg">
@@ -234,7 +234,7 @@ const KitchenStationsPage = async () => {
           <h2 className="text-sm font-medium text-muted-foreground">
             Station Tags Reference
           </h2>
-          <Card>
+          <Card tone="canvas">
             <CardContent className="pt-6">
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-5">
                 {Object.entries(STATION_CONFIG).map(([key, config]) => (

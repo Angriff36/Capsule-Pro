@@ -216,7 +216,7 @@ export function ReportEditorClient({ report, event }: ReportEditorProps) {
       {/* Main checklist area */}
       <div className="lg:col-span-2 space-y-4">
         {/* Progress bar */}
-        <Card>
+        <Card tone="canvas">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-medium">Completion Progress</span>
@@ -294,7 +294,7 @@ export function ReportEditorClient({ report, event }: ReportEditorProps) {
             })}
           </Accordion>
         ) : (
-          <Card>
+          <Card tone="canvas">
             <CardContent className="py-12 text-center">
               <p className="text-muted-foreground">
                 No checklist data available. Import a PDF to auto-generate the
@@ -308,7 +308,7 @@ export function ReportEditorClient({ report, event }: ReportEditorProps) {
       {/* Sidebar */}
       <div className="space-y-4">
         {/* Event info card */}
-        <Card>
+        <Card tone="canvas">
           <CardHeader>
             <CardDescription>Event Details</CardDescription>
             <CardTitle className="text-lg">{event.title}</CardTitle>
@@ -335,7 +335,7 @@ export function ReportEditorClient({ report, event }: ReportEditorProps) {
         </Card>
 
         {/* Status card */}
-        <Card>
+        <Card tone="canvas">
           <CardHeader>
             <CardDescription>Report Status</CardDescription>
             <div className="flex items-center gap-2">

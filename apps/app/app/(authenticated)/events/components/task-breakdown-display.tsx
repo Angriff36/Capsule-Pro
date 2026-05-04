@@ -534,7 +534,7 @@ export function TaskBreakdownDisplay({
       )}
 
       {isGenerating && (
-        <Card className="border border-hairline bg-muted/20">
+        <Card tone="canvas" className="border border-hairline bg-muted/20">
           <CardContent className="py-4">
             <div className="flex items-center gap-3">
               <Spinner className="size-5 text-purple-500" />
@@ -570,7 +570,7 @@ export function TaskBreakdownDisplay({
         />
       </div>
 
-      <Card>
+      <Card tone="canvas">
         <CardHeader className="pb-2">
           <CardTitle className="font-medium text-sm">
             Total Time Estimate
@@ -579,19 +579,19 @@ export function TaskBreakdownDisplay({
         <CardContent>
           <div className="grid grid-cols-3 gap-4 text-center">
             <div>
-              <p className="font-bold text-2xl text-blue-600">
+              <p className="font-semibold text-2xl text-blue-600">
                 {formatGrandTotal(totalPrepTime)}
               </p>
               <p className="text-muted-foreground text-xs">Prep</p>
             </div>
             <div>
-              <p className="font-bold text-2xl text-green-600">
+              <p className="font-semibold text-2xl text-green-600">
                 {formatGrandTotal(totalSetupTime)}
               </p>
               <p className="text-muted-foreground text-xs">Setup</p>
             </div>
             <div>
-              <p className="font-bold text-2xl text-orange-600">
+              <p className="font-semibold text-2xl text-orange-600">
                 {formatGrandTotal(totalCleanupTime)}
               </p>
               <p className="text-muted-foreground text-xs">Cleanup</p>
@@ -627,7 +627,7 @@ export function TaskBreakdownSkeleton({
 
       <div className="grid gap-6 lg:grid-cols-3">
         {Array.from({ length: sections }).map((_, i) => (
-          <Card key={i}>
+          <Card tone="canvas" key={i}>
             <CardHeader className="pb-2">
               <Skeleton className="mb-2 h-6 w-32" />
               <Skeleton className="h-4 w-24" />

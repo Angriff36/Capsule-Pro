@@ -250,7 +250,7 @@ export default function WasteLoggingMobilePage() {
       )}
 
       <div className="flex min-h-0 flex-1 flex-col p-4">
-        <Card className="mb-4 border-hairline">
+        <Card tone="canvas" className="mb-4 border-hairline">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-lg">
               <Trash2 className="h-5 w-5 text-rose-600" />

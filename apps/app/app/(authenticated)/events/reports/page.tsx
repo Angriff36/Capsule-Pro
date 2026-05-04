@@ -146,7 +146,7 @@ const EventReportsPage = async () => {
             Performance Overview
           </h2>
           <div className="grid gap-6 lg:grid-cols-4">
-            <Card>
+            <Card tone="soft-stone">
               <CardHeader>
                 <CardDescription>Total Reports</CardDescription>
                 <CardTitle className="text-2xl">
@@ -157,7 +157,7 @@ const EventReportsPage = async () => {
                 Pre-Event Review checklists
               </CardContent>
             </Card>
-            <Card>
+            <Card tone="soft-stone">
               <CardHeader>
                 <CardDescription>In Progress</CardDescription>
                 <CardTitle className="text-2xl">{inProgressCount}</CardTitle>
@@ -167,7 +167,7 @@ const EventReportsPage = async () => {
                 Needs attention
               </CardContent>
             </Card>
-            <Card>
+            <Card tone="soft-stone">
               <CardHeader>
                 <CardDescription>Completed</CardDescription>
                 <CardTitle className="text-2xl">{completedCount}</CardTitle>
@@ -177,7 +177,7 @@ const EventReportsPage = async () => {
                 Ready for event
               </CardContent>
             </Card>
-            <Card>
+            <Card tone="soft-stone">
               <CardHeader>
                 <CardDescription>Avg. Completion</CardDescription>
                 <CardTitle className="text-2xl">{avgCompletion}%</CardTitle>
@@ -228,7 +228,7 @@ const EventReportsPage = async () => {
                   href={`/events/reports/${report.id}`}
                   key={report.id}
                 >
-                  <Card className="h-full transition hover:border-primary/40">
+                  <Card tone="canvas" className="h-full transition hover:border-primary/40">
                     <CardHeader className="gap-1">
                       <CardDescription className="flex items-center justify-between gap-2">
                         <span className="truncate">

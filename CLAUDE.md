@@ -199,6 +199,6 @@ Last: [first session]
 
 ## Last Session Bridge
 [auto-bridge snapshot @ 10 changes]
-Files: apps/app/app/(authenticated)/crm/venues/[id]/page.tsx (edit), apps/app/app/(authenticated)/administrative/overview-boards/page.tsx (edit), apps/app/app/(authenticated)/administrative/trash/components/trash-page-client.tsx (edit), apps/app/app/(authenticated)/inventory/scanner/page.tsx (edit), apps/app/app/(authenticated)/analytics/sales/sales-dashboard-client.tsx (edit)
+Files: apps/app/app/(authenticated)/crm/clients/[id]/components/tabs/communications-tab.tsx (edit), apps/app/app/(authenticated)/crm/clients/[id]/components/tabs/preferences-tab.tsx (edit), apps/app/app/(authenticated)/command-board/[id]/board-canvas.tsx (edit), apps/app/app/(authenticated)/scheduling/budgets/components/budgets-client.tsx (edit), apps/app/app/(authenticated)/components/ai-assistant/ai-assistant-button.tsx (edit), apps/app/app/(authenticated)/components/ai-assistant/ai-assistant-panel.tsx (edit), apps/app/app/(authenticated)/components/clipboard-image-button.tsx (edit), apps/app/app/(authenticated)/calendar/components/unified-calendar.tsx (edit), apps/app/app/(authenticated)/logistics/tracking/page.tsx (edit)
 
 # === END COGNILAYER ===

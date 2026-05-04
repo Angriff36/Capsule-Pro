@@ -267,7 +267,7 @@ export default function WaitlistPage() {
           <ArrowLeft className="h-4 w-4 mr-1" /> Back
         </Button>
         <div>
-          <h1 className="text-2xl font-bold">Guest Waitlist & RSVP</h1>
+          <h1 className="text-2xl font-semibold">Guest Waitlist & RSVP</h1>
           <p className="text-sm text-muted-foreground">
             Manage guest RSVPs and waitlist for this event
           </p>
@@ -286,7 +286,7 @@ export default function WaitlistPage() {
                     Total Guests
                   </span>
                 </div>
-                <p className="text-2xl font-bold mt-1">{summary.total}</p>
+                <p className="text-2xl font-semibold mt-1">{summary.total}</p>
               </CardContent>
             </Card>
             <Card tone="soft-stone">
@@ -297,7 +297,7 @@ export default function WaitlistPage() {
                     Confirmed
                   </span>
                 </div>
-                <p className="text-2xl font-bold mt-1 text-green-600">
+                <p className="text-2xl font-semibold mt-1 text-green-600">
                   {summary.confirmed}
                 </p>
               </CardContent>
@@ -308,7 +308,7 @@ export default function WaitlistPage() {
                   <Clock className="h-4 w-4 text-yellow-600" />
                   <span className="text-sm text-muted-foreground">Pending</span>
                 </div>
-                <p className="text-2xl font-bold mt-1 text-yellow-600">
+                <p className="text-2xl font-semibold mt-1 text-yellow-600">
                   {summary.pending}
                 </p>
               </CardContent>
@@ -321,7 +321,7 @@ export default function WaitlistPage() {
                     Waitlisted
                   </span>
                 </div>
-                <p className="text-2xl font-bold mt-1 text-blue-600">
+                <p className="text-2xl font-semibold mt-1 text-blue-600">
                   {summary.waitlisted}
                 </p>
               </CardContent>
@@ -334,7 +334,7 @@ export default function WaitlistPage() {
                     Spots Left
                   </span>
                 </div>
-                <p className="text-2xl font-bold mt-1">
+                <p className="text-2xl font-semibold mt-1">
                   {summary.capacity !== null
                     ? summary.spotsRemaining
                     : "Unlimited"}

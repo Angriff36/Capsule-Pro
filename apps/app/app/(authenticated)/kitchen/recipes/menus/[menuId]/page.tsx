@@ -184,7 +184,7 @@ export default async function MenuDetailPage({
 
           {/* Dietary Summary */}
           {(allDietaryTags.size > 0 || allAllergens.size > 0) && (
-            <Card className="mb-8">
+            <Card tone="canvas" className="mb-8">
               <CardHeader>
                 <CardTitle className="text-lg">Dietary Summary</CardTitle>
               </CardHeader>

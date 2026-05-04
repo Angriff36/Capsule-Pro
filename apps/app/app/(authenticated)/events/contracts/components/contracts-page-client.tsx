@@ -238,7 +238,7 @@ export const ContractsPageClient = ({
       {/* Filters Section */}
       <section>
         <h2 className="text-sm font-medium text-muted-foreground">Filters</h2>
-        <Card className="mt-3">
+        <Card tone="canvas" className="mt-3">
           <CardContent className="flex flex-col gap-4 p-4 lg:flex-row lg:items-end">
             {/* Search */}
             <div className="flex-1">
@@ -393,7 +393,7 @@ export const ContractsPageClient = ({
                 href={`/events/contracts/${contract.id}`}
                 key={`${contract.tenantId}-${contract.id}`}
               >
-                <Card className="h-full transition hover:border-primary/40">
+                <Card tone="canvas" className="h-full transition hover:border-primary/40">
                   <CardHeader className="gap-2">
                     <div className="flex items-start justify-between gap-2">
                       <CardDescription className="flex items-center gap-1.5">

@@ -99,7 +99,7 @@ const KitchenTasksPage = async () => {
             Performance Overview
           </h2>
           <div className="grid gap-6 md:grid-cols-4">
-            <Card>
+            <Card tone="soft-stone">
               <CardHeader className="pb-2">
                 <CardDescription>Total Tasks</CardDescription>
                 <CardTitle className="text-2xl font-bold">
@@ -107,7 +107,7 @@ const KitchenTasksPage = async () => {
                 </CardTitle>
               </CardHeader>
             </Card>
-            <Card>
+            <Card tone="soft-stone">
               <CardHeader className="pb-2">
                 <CardDescription>Open</CardDescription>
                 <CardTitle className="text-2xl font-bold">
@@ -115,7 +115,7 @@ const KitchenTasksPage = async () => {
                 </CardTitle>
               </CardHeader>
             </Card>
-            <Card>
+            <Card tone="soft-stone">
               <CardHeader className="pb-2">
                 <CardDescription>In Progress</CardDescription>
                 <CardTitle className="text-2xl font-bold">
@@ -123,7 +123,7 @@ const KitchenTasksPage = async () => {
                 </CardTitle>
               </CardHeader>
             </Card>
-            <Card>
+            <Card tone="soft-stone">
               <CardHeader className="pb-2">
                 <CardDescription>My Claims</CardDescription>
                 <CardTitle className="text-2xl font-bold">
@@ -139,7 +139,7 @@ const KitchenTasksPage = async () => {
           <h2 className="text-sm font-medium text-muted-foreground">
             All Kitchen Tasks
           </h2>
-          <Card>
+          <Card tone="canvas">
             <CardContent className="p-0">
               {tasks.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12 text-center">

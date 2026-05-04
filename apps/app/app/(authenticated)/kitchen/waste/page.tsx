@@ -39,7 +39,7 @@ export default function WasteTrackingPage() {
           Waste Management
         </h2>
         <div className="grid gap-6 md:grid-cols-2">
-          <Card>
+          <Card tone="canvas">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Trash2 className="size-4" />
@@ -54,7 +54,7 @@ export default function WasteTrackingPage() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card tone="canvas">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <TrendingUp className="size-4" />
@@ -75,7 +75,7 @@ export default function WasteTrackingPage() {
         <h2 className="text-sm font-medium text-muted-foreground mb-4">
           Reports & Analysis
         </h2>
-        <Card>
+        <Card tone="canvas">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <BarChart3 className="size-4" />

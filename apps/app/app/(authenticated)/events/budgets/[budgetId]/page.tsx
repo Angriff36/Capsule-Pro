@@ -206,7 +206,7 @@ export default async function BudgetDetailPage({
 
       <OperationalColumn>
         {/* Utilization */}
-        <Card>
+        <Card tone="canvas">
           <CardHeader>
             <CardTitle className="text-base">Budget Utilization</CardTitle>
           </CardHeader>
@@ -224,7 +224,7 @@ export default async function BudgetDetailPage({
         </Card>
 
         {/* Budget Info */}
-        <Card>
+        <Card tone="canvas">
           <CardHeader>
             <CardTitle className="text-base">Budget Info</CardTitle>
           </CardHeader>
@@ -262,7 +262,7 @@ export default async function BudgetDetailPage({
         </Card>
 
         {/* Line Items */}
-        <Card>
+        <Card tone="canvas">
           <CardHeader>
             <CardTitle className="text-base">
               Line Items ({lineItems.length})

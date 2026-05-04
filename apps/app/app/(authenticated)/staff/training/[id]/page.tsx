@@ -199,7 +199,7 @@ const TrainingModulePage = async ({ params }: TrainingModulePageProps) => {
 
       {/* Module Stats */}
       <div className="grid gap-4 md:grid-cols-4">
-        <Card>
+        <Card tone="soft-stone">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Content Type</CardTitle>
             <FileText className="h-4 w-4 text-muted-foreground" />
@@ -211,7 +211,7 @@ const TrainingModulePage = async ({ params }: TrainingModulePageProps) => {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card tone="soft-stone">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Duration</CardTitle>
             <Clock className="h-4 w-4 text-muted-foreground" />
@@ -223,7 +223,7 @@ const TrainingModulePage = async ({ params }: TrainingModulePageProps) => {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card tone="soft-stone">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Assigned</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
@@ -233,7 +233,7 @@ const TrainingModulePage = async ({ params }: TrainingModulePageProps) => {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card tone="soft-stone">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Completed</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
@@ -254,7 +254,7 @@ const TrainingModulePage = async ({ params }: TrainingModulePageProps) => {
 
       {/* Module Info */}
       <div className="grid gap-4 md:grid-cols-2">
-        <Card>
+        <Card tone="canvas">
           <CardHeader>
             <CardTitle>Module Details</CardTitle>
           </CardHeader>
@@ -301,7 +301,7 @@ const TrainingModulePage = async ({ params }: TrainingModulePageProps) => {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card tone="canvas">
           <CardHeader>
             <CardTitle>Assignments</CardTitle>
             <CardDescription>

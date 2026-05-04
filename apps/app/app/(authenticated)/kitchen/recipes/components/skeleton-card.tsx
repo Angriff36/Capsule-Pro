@@ -8,7 +8,7 @@ import { Skeleton } from "@repo/design-system/components/ui/skeleton";
  */
 export function SkeletonCard() {
   return (
-    <Card className="overflow-hidden" data-testid="skeleton-card">
+    <Card tone="canvas" className="overflow-hidden" data-testid="skeleton-card">
       <AspectRatio className="relative w-full" ratio={16 / 9}>
         <Skeleton className="h-full w-full rounded-none" />
       </AspectRatio>

@@ -235,7 +235,7 @@ export function BudgetsPageClient() {
           Performance Overview
         </h2>
         <div className="grid gap-4 md:grid-cols-3">
-          <Card>
+          <Card tone="soft-stone">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardDescription className="text-sm font-medium">
                 Active Budgets
@@ -243,7 +243,7 @@ export function BudgetsPageClient() {
               <CheckCircle2Icon className="size-4 text-green-600" />
             </CardHeader>
             <CardContent>
-              <CardTitle className="text-2xl font-bold">
+              <CardTitle className="text-2xl font-semibold">
                 {activeBudgets}
               </CardTitle>
               <p className="text-xs text-muted-foreground">
@@ -252,7 +252,7 @@ export function BudgetsPageClient() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card tone="soft-stone">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardDescription className="text-sm font-medium">
                 Total Budget
@@ -260,7 +260,7 @@ export function BudgetsPageClient() {
               <DollarSignIcon className="size-4 text-blue-600" />
             </CardHeader>
             <CardContent>
-              <CardTitle className="text-2xl font-bold">
+              <CardTitle className="text-2xl font-semibold">
                 {formatCurrency(totalBudget)}
               </CardTitle>
               <p className="text-xs text-muted-foreground">
@@ -269,7 +269,7 @@ export function BudgetsPageClient() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card tone="soft-stone">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardDescription className="text-sm font-medium">
                 Actual Spend
@@ -277,7 +277,7 @@ export function BudgetsPageClient() {
               <DollarSignIcon className="size-4 text-purple-600" />
             </CardHeader>
             <CardContent>
-              <CardTitle className="text-2xl font-bold">
+              <CardTitle className="text-2xl font-semibold">
                 {formatCurrency(totalActual)}
               </CardTitle>
               <p className="text-xs text-muted-foreground">
@@ -356,7 +356,7 @@ export function BudgetsPageClient() {
         <h2 className="text-sm font-medium text-muted-foreground mb-4">
           Budgets ({filteredBudgets.length})
         </h2>
-        <Card>
+        <Card tone="canvas">
           <CardContent className="p-0">
             <Table>
               <TableHeader>

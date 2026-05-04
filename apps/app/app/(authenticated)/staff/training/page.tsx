@@ -100,7 +100,7 @@ const StaffTrainingPage = async () => {
       <Separator />
 
       <div className="grid gap-6">
-        <Card>
+        <Card tone="canvas">
           <CardHeader>
             <CardTitle>Training Modules</CardTitle>
             <CardDescription>

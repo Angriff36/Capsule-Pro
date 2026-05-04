@@ -159,7 +159,7 @@ export default function EventFollowUpsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold">Event Follow-Ups</h2>
+          <h2 className="text-2xl font-semibold">Event Follow-Ups</h2>
           <p className="text-muted-foreground">
             Automated follow-up tasks for client management
           </p>
@@ -175,13 +175,13 @@ export default function EventFollowUpsPage() {
       </div>
 
       {loading ? (
-        <Card>
+        <Card tone="canvas">
           <CardContent className="py-8 text-center text-muted-foreground">
             Loading follow-ups...
           </CardContent>
         </Card>
       ) : followups.length === 0 ? (
-        <Card>
+        <Card tone="canvas">
           <CardContent className="py-8 text-center">
             <Calendar className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
             <p className="text-muted-foreground mb-4">

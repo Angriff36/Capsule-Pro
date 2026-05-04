@@ -354,6 +354,7 @@ export function MenuBuilderEditor({
               open={isExpanded}
             >
               <Card
+                tone="canvas"
                 className={`transition-colors ${isDragOver ? "ring-2 ring-primary" : ""}`}
                 onDragLeave={handleDragLeave}
                 onDragOver={(e) => handleDragOver(e, course.id)}

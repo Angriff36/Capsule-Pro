@@ -154,6 +154,7 @@ const QualityAssurancePage = async () => {
               };
               return (
                 <Card
+                  tone="soft-stone"
                   className="hover:border-primary/50 transition-colors"
                   key={type}
                 >
@@ -183,7 +184,7 @@ const QualityAssurancePage = async () => {
                 Recent Checks
               </h3>
               {qualityChecks.slice(0, 10).map((qc) => (
-                <Card key={qc.id}>
+                <Card tone="canvas" key={qc.id}>
                   <CardHeader className="pb-2">
                     <div className="flex items-center justify-between">
                       <CardTitle className="text-sm flex items-center gap-2">
@@ -238,7 +239,7 @@ const QualityAssurancePage = async () => {
                 (tl) => tl.logType === type
               ).length;
               return (
-                <Card key={type}>
+                <Card tone="soft-stone" key={type}>
                   <CardContent className="pt-4">
                     <div className="font-medium">{label}</div>
                     <div className="text-xs text-muted-foreground">
@@ -251,7 +252,7 @@ const QualityAssurancePage = async () => {
           </div>
 
           {temperatureLogs.length > 0 ? (
-            <Card>
+            <Card tone="canvas">
               <CardHeader>
                 <CardTitle>Recent Temperature Logs</CardTitle>
               </CardHeader>
@@ -333,7 +334,7 @@ const QualityAssurancePage = async () => {
           {correctiveActions.length > 0 ? (
             <div className="space-y-3">
               {correctiveActions.map((action) => (
-                <Card key={action.id}>
+                <Card tone="canvas" key={action.id}>
                   <CardContent className="pt-4">
                     <div className="flex items-start justify-between">
                       <div className="space-y-1">

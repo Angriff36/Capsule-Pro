@@ -36,6 +36,7 @@ import {
   Users,
 } from "lucide-react";
 import Link from "next/link";
+import { log } from "@repo/observability/log";
 import { useCallback, useEffect, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
 
@@ -102,7 +103,7 @@ export default function StaffingOverviewPage() {
         setWeeklySummaries(data.weekly || []);
       }
     } catch (err) {
-      console.error("Failed to fetch coverage:", err);
+      log.error("Failed to fetch coverage", err);
     } finally {
       setLoading(false);
     }

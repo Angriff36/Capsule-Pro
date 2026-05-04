@@ -680,7 +680,7 @@ export function EventExplorer({
       </div>
       <div className="grid gap-6 lg:grid-cols-[260px_minmax(0,1fr)]">
         <aside className="sticky top-6 hidden self-start lg:block">
-          <Card className="border-border/60 bg-card/70 text-foreground">
+          <Card tone="canvas" className="border-border/60 bg-card/70 text-foreground">
             <CardHeader>
               <CardTitle className="text-base">Filters</CardTitle>
               <CardDescription className="text-muted-foreground">
@@ -823,7 +823,7 @@ export function EventExplorer({
             )}
           </div>
           <div className="grid gap-4 md:grid-cols-2">
-            <Card className="border-border/60 bg-card/70 text-foreground">
+            <Card tone="canvas" className="border-border/60 bg-card/70 text-foreground">
               <CardHeader className="space-y-1">
                 <CardTitle className="flex items-center gap-2 text-lg">
                   <TimerIcon className="size-4 text-success" />
@@ -874,7 +874,7 @@ export function EventExplorer({
               </CardContent>
             </Card>
 
-            <Card className="border-border/60 bg-card/70 text-foreground">
+            <Card tone="canvas" className="border-border/60 bg-card/70 text-foreground">
               <CardHeader className="space-y-1">
                 <CardTitle className="flex items-center gap-2 text-lg">
                   <CalendarDaysIcon className="size-4 text-info" />
@@ -909,7 +909,7 @@ export function EventExplorer({
           </div>
 
           {dateRangeInvalid && (
-            <Card className="border-destructive/40 bg-destructive/10 text-destructive">
+            <Card tone="canvas" className="border-destructive/40 bg-destructive/10 text-destructive">
               <CardContent className="py-6 text-sm">
                 End date must be after the start date. Adjust your range or
                 reset filters.
@@ -917,7 +917,7 @@ export function EventExplorer({
             </Card>
           )}
           {sortedRelatedEvents.length === 0 ? (
-            <Card className="border-border/60 bg-card/70 text-foreground">
+            <Card tone="canvas" className="border-border/60 bg-card/70 text-foreground">
               <CardContent className="py-10 text-center">
                 <div className="mx-auto mb-4 flex size-12 items-center justify-center rounded-full bg-muted/60">
                   <Globe2Icon className="size-5 text-muted-foreground" />

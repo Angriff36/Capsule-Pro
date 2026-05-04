@@ -86,7 +86,7 @@ function StationCard({
     UtensilsCrossed;
 
   return (
-    <Card>
+    <Card tone="canvas">
       <CardHeader
         className="cursor-pointer transition-colors hover:bg-muted/50"
         onClick={onToggle}
@@ -228,7 +228,7 @@ function StationCard({
 
 function EmptyState({ onGoToEvents }: { onGoToEvents: () => void }) {
   return (
-    <Card>
+    <Card tone="canvas">
       <CardContent className="flex flex-col items-center justify-center py-16 text-center">
         <div className="mb-4 rounded-full bg-muted p-4">
           <UtensilsCrossed className="h-12 w-12 text-muted-foreground" />
@@ -248,7 +248,7 @@ function EmptyState({ onGoToEvents }: { onGoToEvents: () => void }) {
 
 function StationSkeleton() {
   return (
-    <Card>
+    <Card tone="canvas">
       <CardHeader>
         <div className="flex items-center gap-3">
           <Skeleton className="h-12 w-12 rounded-lg" />

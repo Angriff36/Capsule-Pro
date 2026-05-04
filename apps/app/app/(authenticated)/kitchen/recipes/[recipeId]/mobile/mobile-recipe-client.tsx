@@ -521,7 +521,7 @@ export const MobileRecipeClient = ({
         {/* Steps Tab */}
         <TabsContent className="mt-0 px-4 py-6" value="steps">
           {/* Step Card */}
-          <Card className="mb-4 overflow-hidden">
+          <Card tone="canvas" className="mb-4 overflow-hidden">
             {currentStepData.imageUrl && (
               <AspectRatio ratio={16 / 9}>
                 <Image
@@ -576,7 +576,7 @@ export const MobileRecipeClient = ({
           {/* Timer Section */}
           {currentStepData.durationMinutes &&
             currentStepData.durationMinutes > 0 && (
-              <Card className="mb-4">
+              <Card tone="canvas" className="mb-4">
                 <CardContent className="flex items-center justify-between p-4">
                   <div className="flex items-center gap-3">
                     <Timer className="h-5 w-5 text-primary" />

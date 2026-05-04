@@ -308,6 +308,7 @@ function StepCard({ step, index }: { step: RecipeStepDisplay; index: number }) {
 
   return (
     <Card
+      tone="canvas"
       className={`relative overflow-hidden transition-all ${
         isCCP ? "border-amber-300" : ""
       }`}
@@ -1266,7 +1267,7 @@ export function RecipeDetailTabs({
         {/* Grouped Info Cards */}
         <div className="grid gap-4 md:grid-cols-2">
           {/* Timing Card */}
-          <Card className="border-l-4 border-l-[var(--brand-golden-zest)]">
+          <Card tone="canvas" className="border-l-4 border-l-[var(--brand-golden-zest)]">
             <CardHeader className="pb-2">
               <CardTitle className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
                 <Clock className="h-4 w-4 text-[var(--brand-golden-zest)]" />
@@ -1304,7 +1305,7 @@ export function RecipeDetailTabs({
           </Card>
 
           {/* Yield Card */}
-          <Card className="border-l-4 border-l-[var(--brand-leafy-green)]">
+          <Card tone="canvas" className="border-l-4 border-l-[var(--brand-leafy-green)]">
             <CardHeader className="pb-2">
               <CardTitle className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
                 <Users className="h-4 w-4 text-[var(--brand-leafy-green)]" />
@@ -1325,7 +1326,7 @@ export function RecipeDetailTabs({
         {/* Tags Card */}
         {(recipe?.tags?.filter((t) => t.toLowerCase() !== "imported")?.length ??
           0) > 0 && (
-          <Card className="border-l-4 border-l-[var(--brand-spiced-orange)]">
+          <Card tone="canvas" className="border-l-4 border-l-[var(--brand-spiced-orange)]">
             <CardHeader className="pb-2">
               <CardTitle className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
                 <ChefHat className="h-4 w-4 text-[var(--brand-spiced-orange)]" />

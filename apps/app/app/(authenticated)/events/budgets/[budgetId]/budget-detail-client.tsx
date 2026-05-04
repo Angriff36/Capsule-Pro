@@ -315,7 +315,7 @@ export function BudgetDetailClient() {
 
       {/* Summary Cards */}
       <div className="grid gap-4 md:grid-cols-4">
-        <Card>
+        <Card tone="soft-stone">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Status</CardTitle>
             <CheckCircle2Icon className="h-4 w-4 text-green-600" />
@@ -327,25 +327,25 @@ export function BudgetDetailClient() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card tone="soft-stone">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Budget</CardTitle>
             <DollarSignIcon className="h-4 w-4 text-blue-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="text-2xl font-semibold">
               {formatCurrency(budget.totalBudgetAmount)}
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card tone="soft-stone">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Actual</CardTitle>
             <DollarSignIcon className="h-4 w-4 text-purple-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="text-2xl font-semibold">
               {formatCurrency(budget.totalActualAmount)}
             </div>
             <p className="text-xs text-muted-foreground">
@@ -354,14 +354,14 @@ export function BudgetDetailClient() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card tone="soft-stone">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Variance</CardTitle>
             <DollarSignIcon className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
             <div
-              className={`text-2xl font-bold ${
+              className={`text-2xl font-semibold ${
                 budget.varianceAmount < 0
                   ? "text-red-600"
                   : budget.varianceAmount > 0
@@ -379,7 +379,7 @@ export function BudgetDetailClient() {
       </div>
 
       {/* Utilization Progress */}
-      <Card>
+      <Card tone="canvas">
         <CardHeader>
           <CardTitle>Budget Utilization</CardTitle>
         </CardHeader>
@@ -399,7 +399,7 @@ export function BudgetDetailClient() {
       </Card>
 
       {/* Budget Settings */}
-      <Card>
+      <Card tone="canvas">
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>Budget Settings</CardTitle>
@@ -489,7 +489,7 @@ export function BudgetDetailClient() {
       </Card>
 
       {/* Line Items */}
-      <Card>
+      <Card tone="canvas">
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>Line Items</CardTitle>

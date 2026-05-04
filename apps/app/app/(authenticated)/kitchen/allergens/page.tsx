@@ -367,7 +367,7 @@ export default function AllergenManagementPage() {
 
             {/* Allergen Warnings Tab */}
             <TabsContent className="space-y-4" value="warnings">
-              <Card>
+              <Card tone="canvas">
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2">
                     <AlertTriangle className="size-5" />
@@ -386,6 +386,7 @@ export default function AllergenManagementPage() {
                     <div className="space-y-4">
                       {filteredWarnings.map((warning) => (
                         <Card
+                          tone="canvas"
                           className="border-l-4 border-l-yellow-500"
                           key={warning.id}
                         >
@@ -496,7 +497,7 @@ export default function AllergenManagementPage() {
 
             {/* Events Tab */}
             <TabsContent className="space-y-4" value="events">
-              <Card>
+              <Card tone="canvas">
                 <CardHeader>
                   <CardTitle>Event Allergen Information</CardTitle>
                 </CardHeader>
@@ -508,7 +509,7 @@ export default function AllergenManagementPage() {
                   ) : (
                     <div className="space-y-4">
                       {filteredEvents.map((event) => (
-                        <Card key={event.id}>
+                        <Card tone="canvas" key={event.id}>
                           <CardContent className="pt-4">
                             <div className="flex items-center justify-between">
                               <div>
@@ -545,7 +546,7 @@ export default function AllergenManagementPage() {
 
             {/* Dishes Tab */}
             <TabsContent className="space-y-4" value="dishes">
-              <Card>
+              <Card tone="canvas">
                 <CardHeader>
                   <CardTitle>Dish Allergen Information</CardTitle>
                 </CardHeader>
@@ -557,7 +558,7 @@ export default function AllergenManagementPage() {
                   ) : (
                     <div className="space-y-4">
                       {filteredDishes.map((dish) => (
-                        <Card key={dish.id}>
+                        <Card tone="canvas" key={dish.id}>
                           <CardContent className="pt-4">
                             <div className="flex items-start justify-between">
                               <div className="space-y-2">
@@ -604,7 +605,7 @@ export default function AllergenManagementPage() {
 
             {/* Recipes Tab */}
             <TabsContent className="space-y-4" value="recipes">
-              <Card>
+              <Card tone="canvas">
                 <CardHeader>
                   <CardTitle>Recipe Information</CardTitle>
                 </CardHeader>
@@ -616,7 +617,7 @@ export default function AllergenManagementPage() {
                   ) : (
                     <div className="space-y-4">
                       {filteredRecipes.map((recipe) => (
-                        <Card key={recipe.id}>
+                        <Card tone="canvas" key={recipe.id}>
                           <CardContent className="pt-4">
                             <div className="space-y-2">
                               <h3 className="font-medium">{recipe.name}</h3>

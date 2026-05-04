@@ -118,7 +118,7 @@ const BattleBoardsPage = async () => {
             Performance Overview
           </h2>
           <div className="grid gap-6 lg:grid-cols-4">
-            <Card>
+            <Card tone="soft-stone">
               <CardHeader>
                 <CardDescription>Total Boards</CardDescription>
                 <CardTitle className="text-2xl">{boards.length}</CardTitle>
@@ -127,7 +127,7 @@ const BattleBoardsPage = async () => {
                 Event battle boards
               </CardContent>
             </Card>
-            <Card>
+            <Card tone="soft-stone">
               <CardHeader>
                 <CardDescription>Draft</CardDescription>
                 <CardTitle className="text-2xl">{draftCount}</CardTitle>
@@ -136,7 +136,7 @@ const BattleBoardsPage = async () => {
                 In progress
               </CardContent>
             </Card>
-            <Card>
+            <Card tone="soft-stone">
               <CardHeader>
                 <CardDescription>Ready / Published</CardDescription>
                 <CardTitle className="text-2xl">
@@ -147,7 +147,7 @@ const BattleBoardsPage = async () => {
                 Ready for printing
               </CardContent>
             </Card>
-            <Card>
+            <Card tone="soft-stone">
               <CardHeader>
                 <CardDescription>Total Staff</CardDescription>
                 <CardTitle className="text-2xl">{totalStaff}</CardTitle>
@@ -204,7 +204,7 @@ const BattleBoardsPage = async () => {
                     href={`/events/battle-boards/${board.id}`}
                     key={board.id}
                   >
-                    <Card className="h-full transition hover:border-primary/40">
+                    <Card tone="canvas" className="h-full transition hover:border-primary/40">
                       <CardHeader className="gap-1">
                         <CardDescription className="flex items-center justify-between gap-2">
                           <span className="truncate">

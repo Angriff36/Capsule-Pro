@@ -220,7 +220,7 @@ export default async function DishDetailPage({
 
         {/* Stats Grid */}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <Card className="border-l-4 border-l-accent">
+          <Card tone="canvas" className="border-l-4 border-l-accent">
             <CardHeader className="pb-2">
               <CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-2">
                 <DollarSign className="h-3.5 w-3.5 text-accent" />
@@ -237,7 +237,7 @@ export default async function DishDetailPage({
             </CardContent>
           </Card>
 
-          <Card className="border-l-4 border-l-primary">
+          <Card tone="canvas" className="border-l-4 border-l-primary">
             <CardHeader className="pb-2">
               <CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-2">
                 <DollarSign className="h-3.5 w-3.5 text-primary" />
@@ -254,7 +254,7 @@ export default async function DishDetailPage({
             </CardContent>
           </Card>
 
-          <Card className="border-l-4 border-l-emerald-500">
+          <Card tone="canvas" className="border-l-4 border-l-emerald-500">
             <CardHeader className="pb-2">
               <CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-2">
                 <TrendingUp className="h-3.5 w-3.5 text-emerald-500" />
@@ -269,7 +269,7 @@ export default async function DishDetailPage({
             </CardContent>
           </Card>
 
-          <Card className="border-l-4 border-l-secondary">
+          <Card tone="canvas" className="border-l-4 border-l-secondary">
             <CardHeader className="pb-2">
               <CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-2">
                 <Users className="h-3.5 w-3.5 text-secondary" />

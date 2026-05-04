@@ -199,13 +199,13 @@ export const ProfitabilityPageClient = ({
       {/* Summary Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {/* Total Revenue */}
-        <Card>
+        <Card tone="soft-stone">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardDescription>Total Revenue</CardDescription>
             <DollarSignIcon className="text-muted-foreground size-4" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="text-2xl font-semibold">
               {formatCurrency(summary.totalActualRevenue)}
             </div>
             <p className="text-muted-foreground text-xs">
@@ -221,13 +221,13 @@ export const ProfitabilityPageClient = ({
         </Card>
 
         {/* Total Costs */}
-        <Card>
+        <Card tone="soft-stone">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardDescription>Total Costs</CardDescription>
             <TrendingDownIcon className="text-muted-foreground size-4" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="text-2xl font-semibold">
               {formatCurrency(summary.totalActualCost)}
             </div>
             <p className="text-muted-foreground text-xs">
@@ -243,14 +243,14 @@ export const ProfitabilityPageClient = ({
         </Card>
 
         {/* Average Margin */}
-        <Card>
+        <Card tone="soft-stone">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardDescription>Average Margin</CardDescription>
             <TrendingUpIcon className="text-muted-foreground size-4" />
           </CardHeader>
           <CardContent>
             <div
-              className={`text-2xl font-bold ${getMarginColor(
+              className={`text-2xl font-semibold ${getMarginColor(
                 summary.averageMarginPct
               )}`}
             >
@@ -264,14 +264,14 @@ export const ProfitabilityPageClient = ({
         </Card>
 
         {/* Underperforming */}
-        <Card>
+        <Card tone="soft-stone">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardDescription>Events Underwater</CardDescription>
             <TrendingDownIcon className="text-muted-foreground size-4" />
           </CardHeader>
           <CardContent>
             <div
-              className={`text-2xl font-bold ${
+              className={`text-2xl font-semibold ${
                 summary.underperformingCount > 0
                   ? "text-red-600 dark:text-red-400"
                   : "text-green-600 dark:text-green-400"
@@ -287,7 +287,7 @@ export const ProfitabilityPageClient = ({
       {/* Filters Section */}
       <section>
         <h2 className="text-sm font-medium text-muted-foreground">Filters</h2>
-        <Card className="mt-3">
+        <Card tone="canvas" className="mt-3">
           <CardContent className="flex flex-col gap-4 p-4 lg:flex-row lg:items-end">
             {/* Search */}
             <div className="flex-1">
@@ -380,7 +380,7 @@ export const ProfitabilityPageClient = ({
             )}
           </Empty>
         ) : (
-          <Card className="mt-4">
+          <Card tone="canvas" className="mt-4">
             <Table>
               <TableHeader>
                 <TableRow>

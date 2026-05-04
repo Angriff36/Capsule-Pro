@@ -59,7 +59,7 @@ export default function NewKitchenTaskPage() {
         Back to Production Board
       </Button>
 
-      <Card>
+      <Card tone="canvas">
         <CardHeader>
           <CardTitle>Create New Kitchen Task</CardTitle>
         </CardHeader>

@@ -204,7 +204,7 @@ export function EventSetupChecklist({
   const daysUntil = getDaysUntilEvent();
 
   return (
-    <Card>
+    <Card tone="canvas">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg font-semibold">

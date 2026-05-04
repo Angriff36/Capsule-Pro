@@ -147,7 +147,7 @@ const KitchenInventoryPage = async () => {
             Performance Overview
           </h2>
           <div className="grid gap-6 md:grid-cols-4">
-            <Card>
+            <Card tone="soft-stone">
               <CardHeader>
                 <CardDescription>Total Items</CardDescription>
                 <CardTitle className="text-2xl">
@@ -158,7 +158,7 @@ const KitchenInventoryPage = async () => {
                 Tracked inventory items
               </CardContent>
             </Card>
-            <Card>
+            <Card tone="soft-stone">
               <CardHeader>
                 <CardDescription>Inventory Value</CardDescription>
                 <CardTitle className="text-2xl">
@@ -169,7 +169,7 @@ const KitchenInventoryPage = async () => {
                 Total stock value
               </CardContent>
             </Card>
-            <Card>
+            <Card tone="soft-stone">
               <CardHeader>
                 <CardDescription>Low Stock</CardDescription>
                 <CardTitle className="text-2xl">{lowStockCount}</CardTitle>
@@ -178,7 +178,7 @@ const KitchenInventoryPage = async () => {
                 Below reorder level
               </CardContent>
             </Card>
-            <Card>
+            <Card tone="soft-stone">
               <CardHeader>
                 <CardDescription>Out of Stock</CardDescription>
                 <CardTitle className="text-2xl">{outOfStockCount}</CardTitle>
@@ -196,7 +196,7 @@ const KitchenInventoryPage = async () => {
             <h2 className="text-sm font-medium text-muted-foreground">
               Low Stock Alerts ({lowStockAlerts.length})
             </h2>
-            <Card className="border-amber-900/20 bg-amber-900/10">
+            <Card tone="canvas" className="border-amber-900/20 bg-amber-900/10">
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center gap-2 text-amber-800">
                   Items Requiring Reorder
@@ -236,7 +236,7 @@ const KitchenInventoryPage = async () => {
           <h2 className="text-sm font-medium text-muted-foreground">
             Inventory Items ({inventoryItems.length})
           </h2>
-          <Card>
+          <Card tone="canvas">
             <CardContent className="p-0">
               {inventoryItems.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12 text-center">

@@ -135,7 +135,7 @@ export default function NewBattleBoardPage() {
 
         {/* Form Card */}
         <div className="mx-auto w-full max-w-2xl">
-          <Card>
+          <Card tone="canvas">
             <CardHeader>
               <CardTitle>Create New Battle Board</CardTitle>
               <CardDescription>

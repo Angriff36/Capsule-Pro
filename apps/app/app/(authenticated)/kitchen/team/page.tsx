@@ -32,7 +32,7 @@ const KitchenTeamPage = () => {
           <h2 className="text-sm font-medium text-muted-foreground">
             Team Management
           </h2>
-          <Card>
+          <Card tone="canvas">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Users className="size-5" />
@@ -63,7 +63,7 @@ const KitchenTeamPage = () => {
             Features Overview
           </h2>
           <div className="grid gap-6 md:grid-cols-3">
-            <Card>
+            <Card tone="canvas">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <UserPlus className="size-4" />
@@ -80,7 +80,7 @@ const KitchenTeamPage = () => {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card tone="canvas">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Settings className="size-4" />
@@ -97,7 +97,7 @@ const KitchenTeamPage = () => {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card tone="canvas">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Users className="size-4" />
@@ -121,7 +121,7 @@ const KitchenTeamPage = () => {
           <h2 className="text-sm font-medium text-muted-foreground">
             Common Tasks
           </h2>
-          <Card>
+          <Card tone="canvas">
             <CardContent>
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
                 <Button

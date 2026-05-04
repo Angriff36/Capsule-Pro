@@ -148,7 +148,7 @@ export default function NutritionLabelsPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Recipe List */}
-        <Card>
+        <Card tone="canvas">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Scale className="h-5 w-5" />
@@ -212,7 +212,7 @@ export default function NutritionLabelsPage() {
         </Card>
 
         {/* Nutrition Label Preview */}
-        <Card>
+        <Card tone="canvas">
           <CardHeader>
             <CardTitle>Nutrition Facts</CardTitle>
           </CardHeader>
@@ -225,7 +225,7 @@ export default function NutritionLabelsPage() {
             ) : nutritionLabel ? (
               <div className="bg-white border-2 border-black p-4 font-mono text-sm">
                 {/* Header */}
-                <div className="text-4xl font-black border-b-4 border-black pb-1">
+                <div className="text-3xl font-semibold border-b-4 border-black pb-1">
                   Nutrition Facts
                 </div>
 

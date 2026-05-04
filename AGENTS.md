@@ -229,9 +229,10 @@ for smoke tests.
 - **No `describe.skip` or `test.todo` in committed code without a linked
   issue.** If a test must be skipped, open a follow-up ticket and reference it
   in a comment on the skip line. Current offenders:
-  `apps/api/__tests__/sales-reporting/generate.test.ts:33`,
-  `apps/api/__tests__/inventory/forecasting.test.ts:834-836`,
-  `apps/api/__tests__/email-templates/templates.test.ts:1073-1077`. **E2E
+  `apps/api/__tests__/sales-reporting/generate.test.ts:33`
+  (tracked in GitHub issue #36 — PDF generation requires browser APIs).
+  Prior offenders `inventory/forecasting.test.ts:834-836` and
+  `email-templates/templates.test.ts:1073-1077` have been resolved. **E2E
   (third-pass re-count):** **25** `test.skip(true, …)` conditionals across **6**
   spec files — `integrated-payment-processor` (7), `recipe-scaling` (7),
   `role-aware-empty-states` (4), `illustrated-empty-states` (4),

@@ -357,7 +357,7 @@ export function BattleBoardEditorClient({
 
       {/* Event info banner */}
       {event && (
-        <Card>
+        <Card tone="canvas">
           <CardContent className="py-4">
             <div className="flex items-center justify-between flex-wrap gap-4">
               <div className="flex items-center gap-6 text-sm">
@@ -407,7 +407,7 @@ export function BattleBoardEditorClient({
 
         {/* Staff Tab */}
         <TabsContent className="space-y-4" value="staff">
-          <Card>
+          <Card tone="canvas">
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
                 <CardTitle>Staff Assignments</CardTitle>
@@ -526,7 +526,7 @@ export function BattleBoardEditorClient({
 
         {/* Timeline Tab */}
         <TabsContent className="space-y-4" value="timeline">
-          <Card>
+          <Card tone="canvas">
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
                 <CardTitle>Event Timeline</CardTitle>
@@ -656,7 +656,7 @@ export function BattleBoardEditorClient({
         {/* Details Tab */}
         <TabsContent className="space-y-4" value="details">
           <div className="grid gap-4 md:grid-cols-2">
-            <Card>
+            <Card tone="canvas">
               <CardHeader>
                 <CardTitle>Event Information</CardTitle>
               </CardHeader>
@@ -686,7 +686,7 @@ export function BattleBoardEditorClient({
               </CardContent>
             </Card>
 
-            <Card>
+            <Card tone="canvas">
               <CardHeader>
                 <CardTitle>Staff Info</CardTitle>
               </CardHeader>
@@ -714,7 +714,7 @@ export function BattleBoardEditorClient({
           </div>
 
           {/* Layouts */}
-          <Card>
+          <Card tone="canvas">
             <CardHeader>
               <CardTitle>Layouts & Instructions</CardTitle>
               <CardDescription>

@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from "@repo/design-system/components/ui/select";
 import { Loader2, Sparkles, User, Users } from "lucide-react";
+import { log } from "@repo/observability/log";
 import { useState } from "react";
 import { apiFetch } from "@/app/lib/api";
 
@@ -65,7 +66,7 @@ export function StaffingRecommendationsClient() {
       }
     } catch (err) {
       setError("Failed to generate recommendation");
-      console.error(err);
+      log.error("Failed to generate staffing recommendation", err);
     } finally {
       setLoading(false);
     }
@@ -162,7 +163,7 @@ export function StaffingRecommendationsClient() {
       {error && (
         <Card tone="canvas" className="border-hairline">
           <CardContent className="pt-6">
-            <p className="text-red-600">{error}</p>
+            <p className="text-destructive">{error}</p>
           </CardContent>
         </Card>
       )}
@@ -221,7 +222,7 @@ export function StaffingRecommendationsClient() {
               <div className="space-y-4">
                 {recommendation.roles.map((role, i) => (
                   <div
-                    className="flex items-center justify-between p-4 border rounded-lg"
+                    className="flex items-center justify-between p-4 border border-hairline rounded-md"
                     key={`${role.role}-${i}`}
                   >
                     <div className="flex-1">
