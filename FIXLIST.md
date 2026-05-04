@@ -1,6 +1,6 @@
 # Capsule Pro Fix List
 
-**ALL DONE — 0 remaining** (2026-05-03 05:30 UTC — final audit: all 99 entries verified functional)
+**108 entries — 1 found and fixed by scout** (2026-05-04 — knowledge-base GET path mismatch)
 **Generated:** 2026-05-02 | **Auto-fix cron:** every 10 min
 **Last fix:** 2026-05-03 — Final sweep: verified all remaining TODO entries already functional
 
@@ -114,6 +114,7 @@
 | 105 | marketing | `/marketing/leads` | 🔴 ❌ | "New lead" button links to `/marketing/leads/new` — page does not exist (404) | ✅ 2026-05-04 — created new/page.tsx + createLead server action (Lead model existed) |
 | 106 | marketing | `/marketing/campaigns` | 🟡 🔶 | "Coming Soon" placeholder — no functionality | ✅ 2026-05-04 — intentional Coming Soon with auth, Empty component, not broken |
 
+| 107 | knowledge-base | `/knowledge-base` | 🔴 🆕 | Client calls apiFetch("/api/knowledge-base/entries") but GET handler at /list subpath — missing delegating route.ts | 🔧 FIXED 2026-05-04 — created entries/route.ts delegating to list/route.ts |
 ## Legend
 - 🔴 ❌ = Dead shell — static JSX with no data or actions
 - 🟡 🔶 = Form-only — has form HTML but no server action wired
