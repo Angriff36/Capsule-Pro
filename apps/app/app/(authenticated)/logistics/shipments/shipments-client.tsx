@@ -78,7 +78,11 @@ const STATUS_CONFIG: Record<
     icon: React.ComponentType<{ className?: string }>;
   }
 > = {
-  draft: { label: "Draft", color: "bg-muted/50 text-foreground", icon: Package },
+  draft: {
+    label: "Draft",
+    color: "bg-muted/50 text-foreground",
+    icon: Package,
+  },
   scheduled: {
     label: "Scheduled",
     color: "bg-muted/50 text-foreground",

@@ -157,7 +157,9 @@ export default async function LeadDetailPage({
       <OperationalColumn>
         <LeadDetailClient
           interactions={serializedInteractions}
-          lead={serializedLead as Parameters<typeof LeadDetailClient>[0]["lead"]}
+          lead={
+            serializedLead as Parameters<typeof LeadDetailClient>[0]["lead"]
+          }
         />
       </OperationalColumn>
     </PageCanvas>

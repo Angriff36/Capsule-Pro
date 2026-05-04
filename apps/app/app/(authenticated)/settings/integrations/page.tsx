@@ -1581,10 +1581,7 @@ function ExportSection({
 }) {
   return (
     <Card>
-      <CardHeader
-        className="cursor-pointer select-none"
-        onClick={onToggle}
-      >
+      <CardHeader className="cursor-pointer select-none" onClick={onToggle}>
         <div className="flex items-center justify-between">
           <div>
             <CardTitle className="flex items-center gap-2">
@@ -1655,7 +1652,7 @@ function QuickBooksIntegration() {
     async (
       endpoint: string,
       body: Record<string, unknown>,
-      setExporting: (v: boolean) => void,
+      setExporting: (v: boolean) => void
     ) => {
       setExporting(true);
       try {
@@ -1701,11 +1698,11 @@ function QuickBooksIntegration() {
         setExporting(false);
       }
     },
-    [loadHistory],
+    [loadHistory]
   );
 
   const handleBillsExport = useCallback(() => {
-    if (!billsStartDate || !billsEndDate) {
+    if (!(billsStartDate && billsEndDate)) {
       toast.error("Start date and end date are required");
       return;
     }
@@ -1716,12 +1713,12 @@ function QuickBooksIntegration() {
         endDate: billsEndDate,
         format: billsFormat,
       },
-      setBillsExporting,
+      setBillsExporting
     );
   }, [billsStartDate, billsEndDate, billsFormat, handleExport]);
 
   const handleInvoicesExport = useCallback(() => {
-    if (!invoicesStartDate || !invoicesEndDate) {
+    if (!(invoicesStartDate && invoicesEndDate)) {
       toast.error("Start date and end date are required");
       return;
     }
@@ -1732,7 +1729,7 @@ function QuickBooksIntegration() {
         endDate: invoicesEndDate,
         format: invoicesFormat,
       },
-      setInvoicesExporting,
+      setInvoicesExporting
     );
   }, [invoicesStartDate, invoicesEndDate, invoicesFormat, handleExport]);
 
@@ -1744,7 +1741,7 @@ function QuickBooksIntegration() {
     handleExport(
       "/api/payroll/export/quickbooks",
       { periodId: payrollPeriodId.trim(), format: payrollFormat },
-      setPayrollExporting,
+      setPayrollExporting
     );
   }, [payrollPeriodId, payrollFormat, handleExport]);
 
@@ -1788,7 +1785,9 @@ function QuickBooksIntegration() {
             </div>
             <div className="rounded-md border p-3">
               <p className="text-sm font-medium">Invoices</p>
-              <p className="text-xs text-muted-foreground">Export event invoices</p>
+              <p className="text-xs text-muted-foreground">
+                Export event invoices
+              </p>
             </div>
             <div className="rounded-md border p-3">
               <p className="text-sm font-medium">Payroll</p>
@@ -1829,10 +1828,7 @@ function QuickBooksIntegration() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="qb-bills-format">Format</Label>
-              <Select
-                onValueChange={setBillsFormat}
-                value={billsFormat}
-              >
+              <Select onValueChange={setBillsFormat} value={billsFormat}>
                 <SelectTrigger id="qb-bills-format">
                   <SelectValue />
                 </SelectTrigger>
@@ -1840,9 +1836,7 @@ function QuickBooksIntegration() {
                   <SelectItem value="qbOnlineCsv">
                     CSV (QuickBooks Online)
                   </SelectItem>
-                  <SelectItem value="iif">
-                    IIF (QuickBooks Desktop)
-                  </SelectItem>
+                  <SelectItem value="iif">IIF (QuickBooks Desktop)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -1887,10 +1881,7 @@ function QuickBooksIntegration() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="qb-inv-format">Format</Label>
-              <Select
-                onValueChange={setInvoicesFormat}
-                value={invoicesFormat}
-              >
+              <Select onValueChange={setInvoicesFormat} value={invoicesFormat}>
                 <SelectTrigger id="qb-inv-format">
                   <SelectValue />
                 </SelectTrigger>
@@ -1898,9 +1889,7 @@ function QuickBooksIntegration() {
                   <SelectItem value="qbOnlineCsv">
                     CSV (QuickBooks Online)
                   </SelectItem>
-                  <SelectItem value="iif">
-                    IIF (QuickBooks Desktop)
-                  </SelectItem>
+                  <SelectItem value="iif">IIF (QuickBooks Desktop)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -1936,10 +1925,7 @@ function QuickBooksIntegration() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="qb-pr-format">Format</Label>
-              <Select
-                onValueChange={setPayrollFormat}
-                value={payrollFormat}
-              >
+              <Select onValueChange={setPayrollFormat} value={payrollFormat}>
                 <SelectTrigger id="qb-pr-format">
                   <SelectValue />
                 </SelectTrigger>
@@ -1947,7 +1933,9 @@ function QuickBooksIntegration() {
                   <SelectItem value="qbOnlineCsv">
                     CSV (QuickBooks Online)
                   </SelectItem>
-                  <SelectItem value="qbxml">QBXML (QuickBooks Desktop)</SelectItem>
+                  <SelectItem value="qbxml">
+                    QBXML (QuickBooks Desktop)
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>

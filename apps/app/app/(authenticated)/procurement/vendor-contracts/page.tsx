@@ -207,7 +207,12 @@ export default function VendorContractsPage() {
       {/* Tabs & List */}
       <Tabs onValueChange={setActiveTab} value={activeTab}>
         <TabsList className="rounded-[16px] border border-hairline bg-canvas p-1">
-          <TabsTrigger className="data-[state=active]:bg-ink data-[state=active]:text-white rounded-[12px] px-4 py-1.5 text-sm font-medium transition-colors" value="all">All ({contracts.length})</TabsTrigger>
+          <TabsTrigger
+            className="data-[state=active]:bg-ink data-[state=active]:text-white rounded-[12px] px-4 py-1.5 text-sm font-medium transition-colors"
+            value="all"
+          >
+            All ({contracts.length})
+          </TabsTrigger>
           {(
             [
               "draft",
@@ -220,7 +225,11 @@ export default function VendorContractsPage() {
           ).map((s) => {
             const count = contracts.filter((c) => c.status === s).length;
             return count > 0 ? (
-              <TabsTrigger className="data-[state=active]:bg-ink data-[state=active]:text-white rounded-[12px] px-4 py-1.5 text-sm font-medium transition-colors" key={s} value={s}>
+              <TabsTrigger
+                className="data-[state=active]:bg-ink data-[state=active]:text-white rounded-[12px] px-4 py-1.5 text-sm font-medium transition-colors"
+                key={s}
+                value={s}
+              >
                 {VC_STATUS_CONFIG[s].label} ({count})
               </TabsTrigger>
             ) : null;

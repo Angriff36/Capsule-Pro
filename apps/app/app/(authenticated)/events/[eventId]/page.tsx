@@ -109,35 +109,23 @@ const EventDetailsPage = async ({ params }: EventDetailsPageProps) => {
       >
         <div className="flex items-center gap-2">
           <Button asChild size="sm" variant="outline">
-            <a href={`/events/${eventId}/waitlist`}>
-              Waitlist
-            </a>
+            <a href={`/events/${eventId}/waitlist`}>Waitlist</a>
           </Button>
           <Button asChild size="sm" variant="outline">
-            <a href={`/events/${eventId}/budget`}>
-              Budget
-            </a>
+            <a href={`/events/${eventId}/budget`}>Budget</a>
           </Button>
           <Button asChild size="sm" variant="outline">
-            <a href={`/events/${eventId}/timeline`}>
-              Timeline
-            </a>
+            <a href={`/events/${eventId}/timeline`}>Timeline</a>
           </Button>
           <Button asChild size="sm" variant="outline">
-            <a href={`/events/${eventId}/battle-board`}>
-              Battle Board
-            </a>
+            <a href={`/events/${eventId}/battle-board`}>Battle Board</a>
           </Button>
           <EventExportButton eventId={eventId} eventName={event.title} />
           <Button asChild size="sm" variant="ghost">
-            <a href="/events">
-              Back to events
-            </a>
+            <a href="/events">Back to events</a>
           </Button>
           <Button asChild size="sm" variant="outline">
-            <a href="/events/import">
-              Import new
-            </a>
+            <a href="/events/import">Import new</a>
           </Button>
           <DeleteEventButton
             eventId={eventId}

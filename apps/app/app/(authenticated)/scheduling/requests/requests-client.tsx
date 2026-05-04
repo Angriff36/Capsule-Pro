@@ -11,7 +11,10 @@ import {
 } from "@repo/design-system/components/ui/table";
 import type { UnifiedRequest } from "./page";
 
-const STATUS_COLOR: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
+const STATUS_COLOR: Record<
+  string,
+  "default" | "secondary" | "destructive" | "outline"
+> = {
   PENDING: "secondary",
   APPROVED: "default",
   REJECTED: "destructive",
@@ -54,9 +57,7 @@ export function RequestsClient({ requests }: { requests: UnifiedRequest[] }) {
                 </div>
               </TableCell>
               <TableCell>
-                <span className="text-sm">
-                  {TYPE_LABEL[r.type] ?? r.type}
-                </span>
+                <span className="text-sm">{TYPE_LABEL[r.type] ?? r.type}</span>
               </TableCell>
               <TableCell>
                 <div className="text-sm">{r.detail}</div>

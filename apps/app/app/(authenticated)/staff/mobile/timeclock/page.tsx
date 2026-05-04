@@ -793,7 +793,9 @@ export default function MobileTimeClockPage() {
             {locationWarning && (
               <div className="flex items-center gap-2 rounded-lg bg-muted/50 p-3 border border-hairline">
                 <AlertCircle className="h-4 w-4 text-foreground" />
-                <span className="text-sm text-foreground">{locationWarning}</span>
+                <span className="text-sm text-foreground">
+                  {locationWarning}
+                </span>
               </div>
             )}
           </div>

@@ -1,7 +1,7 @@
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
 import type { Metadata } from "next";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { RequestsClient } from "./requests-client";
 
 export const metadata: Metadata = {
@@ -112,7 +112,7 @@ export default async function SchedulingRequestsPage() {
 
   const timeAgo = (date: Date): string => {
     const diffMs = Date.now() - new Date(date).getTime();
-    const mins = Math.floor(diffMs / 60000);
+    const mins = Math.floor(diffMs / 60_000);
     if (mins < 1) return "just now";
     if (mins < 60) return `${mins}m ago`;
     const hours = Math.floor(mins / 60);
@@ -125,9 +125,10 @@ export default async function SchedulingRequestsPage() {
     ...timeOffRequests.map((r) => ({
       id: r.id,
       type: "time_off" as const,
-      employee: [r.employee_first_name, r.employee_last_name]
-        .filter(Boolean)
-        .join(" ") || "Unknown",
+      employee:
+        [r.employee_first_name, r.employee_last_name]
+          .filter(Boolean)
+          .join(" ") || "Unknown",
       employeeRole: r.employee_role || "Staff",
       detail: `${formatRequestType(r.request_type)} · ${new Date(r.start_date).toLocaleDateString()}${r.start_date.toDateString() !== r.end_date.toDateString() ? ` – ${new Date(r.end_date).toLocaleDateString()}` : ""}`,
       submitted: timeAgo(r.submitted_at),
@@ -137,11 +138,12 @@ export default async function SchedulingRequestsPage() {
     ...timecardEdits.map((r) => ({
       id: r.id,
       type: "timecard_edit" as const,
-      employee: [r.employee_first_name, r.employee_last_name]
-        .filter(Boolean)
-        .join(" ") || "Unknown",
+      employee:
+        [r.employee_first_name, r.employee_last_name]
+          .filter(Boolean)
+          .join(" ") || "Unknown",
       employeeRole: r.employee_role || "Staff",
-      detail: `Timecard edit request`,
+      detail: "Timecard edit request",
       submitted: timeAgo(r.created_at),
       status: r.status,
       reason: r.reason,
@@ -151,9 +153,7 @@ export default async function SchedulingRequestsPage() {
   return (
     <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
       <div className="space-y-0.5">
-        <h1 className="text-2xl font-semibold tracking-tight">
-          Request Queue
-        </h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Request Queue</h1>
         <p className="text-muted-foreground">
           Review and approve time-off requests, timecard edits, and shift
           changes.

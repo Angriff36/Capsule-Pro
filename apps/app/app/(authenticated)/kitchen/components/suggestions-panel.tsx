@@ -36,7 +36,10 @@ const priorityConfig: Record<
   SuggestionPriority,
   { color: string; icon: typeof AlertTriangle }
 > = {
-  high: { color: "bg-muted/50 text-foreground border-hairline", icon: AlertTriangle },
+  high: {
+    color: "bg-muted/50 text-foreground border-hairline",
+    icon: AlertTriangle,
+  },
   medium: { color: "bg-muted/20 text-foreground border-hairline", icon: Clock },
   low: {
     color: "border-hairline bg-pale-blue/40 text-action-blue",

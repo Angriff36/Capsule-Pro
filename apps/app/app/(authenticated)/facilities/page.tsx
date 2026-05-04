@@ -51,7 +51,6 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { apiFetch } from "@/app/lib/api";
 import { createFacility, getFacilities } from "./actions";
 import { UpcomingMaintenanceWidget } from "./components/upcoming-maintenance-widget";
 

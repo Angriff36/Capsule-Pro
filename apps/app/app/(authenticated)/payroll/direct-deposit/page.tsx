@@ -449,9 +449,7 @@ export default function DirectDepositPage() {
                             : "bg-muted/20"
                         } border border-hairline`}
                       >
-                        <Landmark
-                          className={`h-5 w-5 text-foreground`}
-                        />
+                        <Landmark className={"h-5 w-5 text-foreground"} />
                       </div>
                       <div className="min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
