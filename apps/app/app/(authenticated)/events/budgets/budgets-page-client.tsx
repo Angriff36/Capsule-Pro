@@ -547,7 +547,7 @@ function BudgetDeleteModal({
       className={`fixed inset-0 z-50 flex items-center justify-center ${open ? "" : "hidden"}`}
     >
       <div className="fixed inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative z-50 w-full max-w-md rounded-lg bg-white p-6 shadow-lg dark:bg-gray-900">
+      <div className="relative z-50 w-full max-w-md rounded-lg border border-hairline bg-white p-6 dark:bg-gray-900">
         <div className="mb-4">
           <XCircleIcon className="size-12 text-red-600" />
         </div>

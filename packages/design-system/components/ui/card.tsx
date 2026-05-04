@@ -8,23 +8,25 @@ import type * as React from "react";
  * elevation.
  *
  * `tone` selects the surface treatment so callers don't have to hand-roll
- * Tailwind classes for the three editorial surfaces:
- *   - canvas     → default white card on canvas (most lists / detail panels)
- *   - soft-stone → warm neutral surface (product cards, secondary panels)
- *   - ink        → near-black surface for inset stat-callouts on light pages
- *                  (text inverts to canvas)
- *
- * Use a higher-level wrapper (e.g. a `<DarkBand>` block) for full-bleed dark
- * sections; `tone="ink"` is intended for an inset Card on a light page.
+ * Tailwind classes for the editorial surfaces:
+ *   - canvas      → default white card on canvas (most lists / detail panels)
+ *   - soft-stone  → warm neutral surface (product cards, secondary panels)
+ *   - ink         → near-black surface for inset stat-callouts on light pages
+ *   - deep-green  → dark-green surface for agent console / feature band insets
+ *   - navy        → dark-navy surface for alternate dark-band insets
+ *   - media       → canvas card with 22px media radius (hero/photo cards)
  */
 const cardVariants = cva(
-  "flex flex-col gap-6 rounded-card border py-6",
+  "flex flex-col gap-6 border py-6",
   {
     variants: {
       tone: {
-        canvas: "bg-card text-card-foreground border-card-border",
-        "soft-stone": "bg-soft-stone text-ink border-hairline",
-        ink: "bg-ink text-canvas border-ink",
+        canvas: "rounded-card bg-card text-card-foreground border-card-border",
+        "soft-stone": "rounded-card bg-soft-stone text-ink border-hairline",
+        ink: "rounded-card bg-ink text-canvas border-ink",
+        "deep-green": "rounded-card bg-deep-green text-canvas border-deep-green",
+        navy: "rounded-card bg-dark-navy text-canvas border-dark-navy",
+        media: "rounded-media bg-card text-card-foreground border-card-border",
       },
     },
     defaultVariants: {
