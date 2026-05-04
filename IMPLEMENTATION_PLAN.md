@@ -26,6 +26,15 @@
 
 ---
 
+## Recently remediated (2026-05-04 — Test Suite Repair + IoT Toast Fix)
+
+- **Test suite repaired — 4 failures fixed across 3 files.** API tests: 4025 passed + 1 skipped (was 4019 passed + 4 failed + 1 skipped). (1) `manifest-runtime-node.invariant.test.ts` — `training/modules/route.ts` was missing `export const runtime = "nodejs"` despite dynamically importing `createManifestRuntime`. Added the export. (2) `inventory/inventory-item-crud.test.ts` — test used exact object match but route passes `transformBody` property; changed to `expect.objectContaining`. (3) `training/training.test.ts` — 2 tests expected `executeManifestCommand` delegation but the route uses `createManifestRuntime` + raw SQL INSERT (intentionally, because `executeManifestCommand` doesn't persist). Rewrote tests to verify actual route behavior: manifest validation via `runCommand`, raw SQL persistence, 403/422 error paths.
+- **IoT page toast import fix.** `kitchen/iot/iot-page-client.tsx` used `toast.info()` without importing from `sonner` — caused typecheck failure. Added missing import.
+
+**Validation:** `pnpm --filter api typecheck` clean. `pnpm --filter app typecheck` clean. `pnpm --filter api test` → 4025 passed + 1 skipped / 128 files. `pnpm --filter app test` → 257 passed / 32 files.
+
+---
+
 ## Recently remediated (2026-05-04 — §0.1 Radius Scale Fix + §6.4 Debug Scripts Cleanup)
 
 - **§0.1 DONE — radius token scale fixed to DESIGN.md spec.** `packages/design-system/styles/globals.css` radius tokens changed from calc()-based derivations of a 10px base to explicit DESIGN.md values: `--radius-sm: 8px` (was 6px), `--radius-md: 16px` (was 8px), `--radius-lg: 22px` (was 10px), `--radius-xl: 30px` (was 14px). `--radius-xs: 4px`, `--radius-card: 16px`, `--radius-media: 22px`, `--radius-pill: 32px` were already correct. Base `--radius` updated to 0.875rem for backward compatibility. All design-system UI primitives (`packages/design-system/components/ui/`) migrated from `rounded-md` to `rounded-sm` to preserve original 8px visual intent (inputs, toggles, tooltips, buttons, selects, menus, popovers, calendars, skeletons, sidebar elements, tabs, commands, etc. — 24 files). Blocks migrated: blog-filter-chip, product-card, prompt-suggestions, prep-task-dependency-graph, tabbed-mega-menu-block, calendar-block (6 files). `rounded-lg` (now 22px) kept for dialog, alert-dialog, empty state — matches DESIGN.md spec for form-card and large-panel radius. Chart tooltip and alert downgraded from `rounded-lg` to `rounded-md` (16px) as more appropriate for small/inline elements.

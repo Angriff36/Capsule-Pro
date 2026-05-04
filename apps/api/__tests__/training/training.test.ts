@@ -495,13 +495,41 @@ describe("Training API", () => {
   // =======================================================================
   // MODULES -- Create via handler (POST /api/training/modules)
   // =======================================================================
-  describe("POST /api/training/modules (via executeManifestCommand)", () => {
-    it("should delegate to executeManifestCommand", async () => {
-      const mockResponse = new Response(
-        JSON.stringify({ success: true, data: { id: "mod-new" } }),
-        { status: 200, headers: { "Content-Type": "application/json" } }
-      );
-      vi.mocked(executeManifestCommand).mockResolvedValue(mockResponse);
+  describe("POST /api/training/modules (via manifest runtime + raw SQL)", () => {
+    const mockRunCommand = vi.fn();
+
+    beforeEach(() => {
+      setupCommandMocks();
+      setupUserLookup();
+      mockRunCommand.mockReset();
+      vi.mocked(createManifestRuntime).mockResolvedValue({
+        runCommand: mockRunCommand,
+      } as never);
+    });
+
+    it("should create module through manifest runtime validation + raw SQL insert", async () => {
+      mockRunCommand.mockResolvedValue({
+        success: true,
+        result: { id: "mod-new" },
+        emittedEvents: [{ type: "created" }],
+      });
+
+      const insertedRow = {
+        id: "mod-new",
+        tenant_id: TEST_TENANT_ID,
+        title: "New Module",
+        description: null,
+        content_type: "video",
+        duration_minutes: null,
+        category: null,
+        is_required: false,
+        is_active: true,
+        content_url: null,
+        created_by: TEST_USER_ID,
+        created_at: new Date("2026-01-15"),
+        updated_at: new Date("2026-01-15"),
+      };
+      queryRawMock.mockResolvedValue([insertedRow] as never);
 
       const request = new NextRequest("http://localhost/api/training/modules", {
         method: "POST",
@@ -513,24 +541,49 @@ describe("Training API", () => {
       const response = await createModuleViaHandler(request);
 
       expect(response.status).toBe(200);
-      expect(executeManifestCommand).toHaveBeenCalledWith(
-        request,
+
+      // Verify manifest runtime was used for validation
+      expect(mockRunCommand).toHaveBeenCalledWith(
+        "create",
         expect.objectContaining({
-          entityName: "TrainingModule",
-          commandName: "create",
-        })
+          title: "New Module",
+          contentType: "video",
+        }),
+        { entityName: "TrainingModule" }
       );
 
+      // Verify raw SQL INSERT was called for persistence
+      expect(database.$queryRaw).toHaveBeenCalled();
+
       const body = await response.json();
-      expect(body.success).toBe(true);
+      expect(body.result.id).toBe("mod-new");
+      expect(body.result.title).toBe("New Module");
+      expect(body.events).toEqual([{ type: "created" }]);
     });
 
-    it("should pass transformBody with defaults", async () => {
-      const mockResponse = new Response(JSON.stringify({ success: true }), {
-        status: 200,
-        headers: { "Content-Type": "application/json" },
+    it("should apply defaults to command payload", async () => {
+      mockRunCommand.mockResolvedValue({
+        success: true,
+        result: { id: "mod-new" },
+        emittedEvents: [],
       });
-      vi.mocked(executeManifestCommand).mockResolvedValue(mockResponse);
+
+      const insertedRow = {
+        id: "mod-new",
+        tenant_id: TEST_TENANT_ID,
+        title: "My Module",
+        description: null,
+        content_type: "document",
+        duration_minutes: null,
+        category: null,
+        is_required: false,
+        is_active: true,
+        content_url: null,
+        created_by: TEST_USER_ID,
+        created_at: new Date("2026-01-15"),
+        updated_at: new Date("2026-01-15"),
+      };
+      queryRawMock.mockResolvedValue([insertedRow] as never);
 
       const request = new NextRequest("http://localhost/api/training/modules", {
         method: "POST",
@@ -538,18 +591,53 @@ describe("Training API", () => {
       });
       await createModuleViaHandler(request);
 
-      const callArgs = vi.mocked(executeManifestCommand).mock.calls[0][1];
-      const ctx = {
-        userId: TEST_USER_ID,
-        tenantId: TEST_TENANT_ID,
-        role: "admin",
-      };
-      const transformed = callArgs.transformBody!({ title: "My Module" }, ctx);
+      // Verify runCommand received defaults
+      expect(mockRunCommand).toHaveBeenCalledWith(
+        "create",
+        expect.objectContaining({
+          title: "My Module",
+          contentType: "document", // default
+          isRequired: false, // default
+          durationMinutes: 0, // default
+          contentUrl: "", // default
+          createdBy: TEST_USER_ID,
+        }),
+        { entityName: "TrainingModule" }
+      );
+    });
 
-      expect(transformed.isActive).toBe(true);
-      expect(transformed.contentType).toBe("document"); // default
-      expect(transformed.createdBy).toBe(TEST_USER_ID);
-      expect(transformed.tenantId).toBe(TEST_TENANT_ID);
+    it("should return 403 on policy denial from manifest runtime", async () => {
+      mockRunCommand.mockResolvedValue({
+        success: false,
+        policyDenial: { policyName: "AdminOnlyPolicy" },
+      });
+
+      const request = new NextRequest("http://localhost/api/training/modules", {
+        method: "POST",
+        body: JSON.stringify({ title: "Unauthorized" }),
+      });
+      const response = await createModuleViaHandler(request);
+
+      expect(response.status).toBe(403);
+      const body = await response.json();
+      expect(body.message).toContain("Access denied");
+    });
+
+    it("should return 422 on guard failure from manifest runtime", async () => {
+      mockRunCommand.mockResolvedValue({
+        success: false,
+        guardFailure: { index: 0, formatted: "title is required" },
+      });
+
+      const request = new NextRequest("http://localhost/api/training/modules", {
+        method: "POST",
+        body: JSON.stringify({}),
+      });
+      const response = await createModuleViaHandler(request);
+
+      expect(response.status).toBe(422);
+      const body = await response.json();
+      expect(body.message).toContain("Guard 0 failed");
     });
   });
 

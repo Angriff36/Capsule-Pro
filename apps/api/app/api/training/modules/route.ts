@@ -10,6 +10,8 @@ import type {
   TrainingModulesListResponse,
 } from "../types";
 
+export const runtime = "nodejs";
+
 /**
  * GET /api/training/modules
  * List training modules with optional filtering

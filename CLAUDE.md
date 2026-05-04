@@ -198,7 +198,7 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[auto-bridge snapshot @ 10 changes]
-Files: apps/app/app/(authenticated)/kitchen/task-card.tsx (edit), apps/app/app/(authenticated)/administrative/trash/components/dependency-analysis-dialog.tsx (edit), apps/app/app/(authenticated)/calendar/components/unified-calendar.tsx (edit), apps/app/app/(authenticated)/administrative/trash/components/trash-page-client.tsx (edit), apps/app/app/(authenticated)/facilities/schedules/page.tsx (edit)
+[Emergency bridge — running bridge was not updated]
+Files: packages/design-system/styles/globals.css (edit), packages/design-system/components/ui/chart.tsx (edit), packages/design-system/components/ui/alert.tsx (edit), IMPLEMENTATION_PLAN.md (edit)
 
 # === END COGNILAYER ===
