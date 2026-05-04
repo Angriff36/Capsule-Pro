@@ -25,6 +25,17 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@repo/design-system/components/ui/dialog";
+import { Label } from "@repo/design-system/components/ui/label";
+import { Input } from "@repo/design-system/components/ui/input";
+import { toast } from "sonner";
 
 interface Equipment {
   id: string;
@@ -90,6 +101,21 @@ export function EquipmentPageClient() {
   const [alerts, setAlerts] = useState<PredictiveAlert[]>([]);
   const [alertSummary, setAlertSummary] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
+    type: "general",
+    locationId: "",
+    serialNumber: "",
+    manufacturer: "",
+    model: "",
+    purchaseDate: "",
+    warrantyExpiry: "",
+    maintenanceIntervalDays: "90",
+    maxUsageHours: "1000",
+    notes: "",
+  });
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     Promise.all([fetchEquipment(), fetchWorkOrders(), fetchAlerts()]);
@@ -136,6 +162,59 @@ export function EquipmentPageClient() {
     }
   }
 
+  async function handleCreateEquipment() {
+    if (!formData.name.trim()) {
+      toast.error("Name is required");
+      return;
+    }
+    if (!formData.locationId.trim()) {
+      toast.error("Location ID is required");
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const body: Record<string, unknown> = {
+        name: formData.name,
+        type: formData.type,
+        locationId: formData.locationId,
+        serialNumber: formData.serialNumber || undefined,
+        manufacturer: formData.manufacturer || undefined,
+        model: formData.model || undefined,
+        maintenanceIntervalDays: parseInt(formData.maintenanceIntervalDays) || 90,
+        maxUsageHours: parseFloat(formData.maxUsageHours) || 1000,
+        notes: formData.notes || undefined,
+      };
+      if (formData.purchaseDate) {
+        body.purchaseDate = formData.purchaseDate;
+      }
+      if (formData.warrantyExpiry) {
+        body.warrantyExpiry = formData.warrantyExpiry;
+      }
+      const res = await apiFetch("/api/kitchen/equipment/commands/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) {
+        throw new Error("Failed to create equipment");
+      }
+      toast.success("Equipment created successfully");
+      setIsAddDialogOpen(false);
+      setFormData({
+        name: "", type: "general", locationId: "",
+        serialNumber: "", manufacturer: "", model: "",
+        purchaseDate: "", warrantyExpiry: "",
+        maintenanceIntervalDays: "90", maxUsageHours: "1000", notes: "",
+      });
+      fetchEquipment();
+    } catch (error) {
+      console.error("Error creating equipment:", error);
+      toast.error("Failed to create equipment");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
   function formatDate(date: Date | string): string {
     const d = typeof date === "string" ? new Date(date) : date;
     return d.toLocaleDateString();
@@ -159,11 +238,192 @@ export function EquipmentPageClient() {
             alerts
           </p>
         </div>
-        <Button>
+        <Button onClick={() => setIsAddDialogOpen(true)}>
           <Plus className="mr-2 h-4 w-4" />
           Add Equipment
         </Button>
       </div>
+
+      {/* Add Equipment Dialog */}
+      <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Add Equipment</DialogTitle>
+            <DialogDescription>
+              Add a new piece of kitchen equipment to track maintenance and
+              usage.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="name" className="text-right">
+                Name *
+              </Label>
+              <Input
+                className="col-span-3"
+                id="name"
+                placeholder="Convection Oven"
+                value={formData.name}
+                onChange={(e) =>
+                  setFormData({ ...formData, name: e.target.value })
+                }
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="type" className="text-right">
+                Type
+              </Label>
+              <Input
+                className="col-span-3"
+                id="type"
+                placeholder="general"
+                value={formData.type}
+                onChange={(e) =>
+                  setFormData({ ...formData, type: e.target.value })
+                }
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="locationId" className="text-right">
+                Location ID *
+              </Label>
+              <Input
+                className="col-span-3"
+                id="locationId"
+                placeholder="UUID of the facility location"
+                value={formData.locationId}
+                onChange={(e) =>
+                  setFormData({ ...formData, locationId: e.target.value })
+                }
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="manufacturer" className="text-right">
+                Manufacturer
+              </Label>
+              <Input
+                className="col-span-3"
+                id="manufacturer"
+                placeholder="Vulcan, Rational, etc."
+                value={formData.manufacturer}
+                onChange={(e) =>
+                  setFormData({ ...formData, manufacturer: e.target.value })
+                }
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="model" className="text-right">
+                Model
+              </Label>
+              <Input
+                className="col-span-3"
+                id="model"
+                placeholder="VC4-GD"
+                value={formData.model}
+                onChange={(e) =>
+                  setFormData({ ...formData, model: e.target.value })
+                }
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="serialNumber" className="text-right">
+                Serial #
+              </Label>
+              <Input
+                className="col-span-3"
+                id="serialNumber"
+                placeholder="SN-12345"
+                value={formData.serialNumber}
+                onChange={(e) =>
+                  setFormData({ ...formData, serialNumber: e.target.value })
+                }
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="purchaseDate" className="text-right">
+                Purchase Date
+              </Label>
+              <Input
+                className="col-span-3"
+                id="purchaseDate"
+                type="date"
+                value={formData.purchaseDate}
+                onChange={(e) =>
+                  setFormData({ ...formData, purchaseDate: e.target.value })
+                }
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="warrantyExpiry" className="text-right">
+                Warranty Expiry
+              </Label>
+              <Input
+                className="col-span-3"
+                id="warrantyExpiry"
+                type="date"
+                value={formData.warrantyExpiry}
+                onChange={(e) =>
+                  setFormData({ ...formData, warrantyExpiry: e.target.value })
+                }
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="maintenanceIntervalDays" className="text-right">
+                Maint. Interval (days)
+              </Label>
+              <Input
+                className="col-span-3"
+                id="maintenanceIntervalDays"
+                type="number"
+                value={formData.maintenanceIntervalDays}
+                onChange={(e) =>
+                  setFormData({ ...formData, maintenanceIntervalDays: e.target.value })
+                }
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="maxUsageHours" className="text-right">
+                Max Usage Hours
+              </Label>
+              <Input
+                className="col-span-3"
+                id="maxUsageHours"
+                type="number"
+                value={formData.maxUsageHours}
+                onChange={(e) =>
+                  setFormData({ ...formData, maxUsageHours: e.target.value })
+                }
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="notes" className="text-right">
+                Notes
+              </Label>
+              <Input
+                className="col-span-3"
+                id="notes"
+                placeholder="Any additional notes"
+                value={formData.notes}
+                onChange={(e) =>
+                  setFormData({ ...formData, notes: e.target.value })
+                }
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              disabled={submitting}
+              variant="outline"
+              onClick={() => setIsAddDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button disabled={submitting} onClick={handleCreateEquipment}>
+              {submitting ? "Saving..." : "Save"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Alert Summary */}
       {alertSummary && (
