@@ -199,6 +199,6 @@ Last: [first session]
 
 ## Last Session Bridge
 [auto-bridge snapshot @ 10 changes]
-Files: apps/api/test/mocks/@repo/database.ts (edit), packages/database/prisma/schema.prisma (edit)
+Files: apps/api/app/api/cron/inventory-audit/route.ts (edit), apps/api/app/api/events/documents/parse/route.ts (edit), apps/api/app/lib/inventory-forecasting.ts (edit), apps/api/app/api/kitchen/tasks/sync-claims/route.ts (edit), packages/design-system/components/ui/button.tsx (edit)
 
 # === END COGNILAYER ===

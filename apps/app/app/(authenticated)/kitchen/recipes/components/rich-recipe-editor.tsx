@@ -343,7 +343,7 @@ function IngredientRowItem({
 
           {/* Search Results Dropdown */}
           {showNameSearch && nameResults.length > 0 && (
-            <div className="absolute z-50 mt-1 w-full rounded-md border bg-popover p-1 shadow-md max-h-60 overflow-y-auto">
+            <div className="absolute z-50 mt-1 w-full rounded-md border bg-popover p-1 border-hairline max-h-60 overflow-y-auto">
               {nameResults.map((result) => (
                 <button
                   className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm hover:bg-accent"

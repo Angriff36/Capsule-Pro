@@ -204,7 +204,7 @@ export function CreateBudgetModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="fixed inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative z-50 w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-lg bg-white p-6 shadow-lg dark:bg-gray-900">
+      <div className="relative z-50 w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-lg border border-hairline bg-white p-6 dark:bg-gray-900">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-semibold">
             {isEditing ? "Edit Budget" : "Create Budget"}

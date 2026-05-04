@@ -60,7 +60,7 @@ export function EventCard({ event }: { event: EventCardEvent }) {
 
   return (
     <Link className="block" href={`/events/${event.id}`}>
-      <Card className="h-full transition hover:border-primary/40">
+      <Card tone="canvas" className="h-full transition hover:border-primary/40">
         <CardHeader>
           <div className="flex items-start justify-between gap-3">
             <div className="flex-1 space-y-1.5">

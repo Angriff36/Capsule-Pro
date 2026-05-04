@@ -605,7 +605,7 @@ export function BudgetDetailClient() {
             className="fixed inset-0 bg-black/50"
             onClick={() => setLineItemModalOpen(false)}
           />
-          <div className="relative z-50 w-full max-w-md rounded-lg bg-white p-6 shadow-lg dark:bg-gray-900">
+          <div className="relative z-50 w-full max-w-md rounded-lg border border-hairline bg-white p-6 dark:bg-gray-900">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-semibold">
                 {selectedLineItem ? "Edit Line Item" : "Add Line Item"}

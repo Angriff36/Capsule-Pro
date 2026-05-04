@@ -329,7 +329,7 @@ export const RecipesPageClient = () => {
       {/* FAB for creating new recipe */}
       <button
         aria-label="Create new recipe"
-        className="fixed bottom-8 right-8 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-ink text-white shadow-lg transition-colors hover:bg-ink/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:ring-offset-2"
+        className="fixed bottom-8 right-8 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-ink text-white border border-primary/30 transition-colors hover:bg-ink/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:ring-offset-2"
         onClick={() => setIsCreateModalOpen(true)}
         type="button"
       >

@@ -169,6 +169,7 @@ export function EquipmentPageClient() {
       {alertSummary && (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card
+            tone="canvas"
             className={
               alertSummary.bySeverity.critical > 0
                 ? "border-red-500 bg-red-50"
@@ -186,7 +187,7 @@ export function EquipmentPageClient() {
               </div>
             </CardContent>
           </Card>
-          <Card>
+          <Card tone="canvas">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
                 High
@@ -198,7 +199,7 @@ export function EquipmentPageClient() {
               </div>
             </CardContent>
           </Card>
-          <Card>
+          <Card tone="canvas">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
                 Medium
@@ -210,7 +211,7 @@ export function EquipmentPageClient() {
               </div>
             </CardContent>
           </Card>
-          <Card>
+          <Card tone="canvas">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
                 Total Equipment
@@ -245,7 +246,7 @@ export function EquipmentPageClient() {
         </TabsList>
 
         <TabsContent className="space-y-4" value="equipment">
-          <Card>
+          <Card tone="canvas">
             <CardHeader>
               <CardTitle>Equipment Inventory</CardTitle>
               <CardDescription>
@@ -354,7 +355,7 @@ export function EquipmentPageClient() {
         </TabsContent>
 
         <TabsContent className="space-y-4" value="work-orders">
-          <Card>
+          <Card tone="canvas">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
@@ -435,7 +436,7 @@ export function EquipmentPageClient() {
         </TabsContent>
 
         <TabsContent className="space-y-4" value="alerts">
-          <Card>
+          <Card tone="canvas">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <AlertTriangle className="h-5 w-5" />

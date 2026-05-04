@@ -599,7 +599,7 @@ export function TaskBreakdownDisplay({
           </div>
           <Separator className="my-4" />
           <div className="text-center">
-            <p className="font-bold text-3xl">{formatGrandTotal(grandTotal)}</p>
+            <p className="font-semibold text-2xl">{formatGrandTotal(grandTotal)}</p>
             <p className="text-muted-foreground text-xs">Grand Total</p>
           </div>
         </CardContent>

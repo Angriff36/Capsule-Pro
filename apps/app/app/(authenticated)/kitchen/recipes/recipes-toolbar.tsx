@@ -162,7 +162,7 @@ export const RecipesToolbar = ({
                 <FilterIcon className="text-muted-foreground" size={14} />
                 <SelectValue placeholder="Category" />
               </SelectTrigger>
-              <SelectContent className="editorial-surface-reset z-50 rounded-[16px] border border-border bg-popover shadow-md">
+              <SelectContent className="editorial-surface-reset z-50 rounded-[16px] border border-hairline bg-popover">
                 <SelectItem value="all">All categories</SelectItem>
                 <SelectItem value="main course">Main course</SelectItem>
                 <SelectItem value="appetizer">Appetizer</SelectItem>
@@ -183,7 +183,7 @@ export const RecipesToolbar = ({
               >
                 <SelectValue placeholder="Dietary" />
               </SelectTrigger>
-              <SelectContent className="editorial-surface-reset z-50 rounded-[16px] border border-border bg-popover shadow-md">
+              <SelectContent className="editorial-surface-reset z-50 rounded-[16px] border border-hairline bg-popover">
                 <SelectItem value="all">Dietary</SelectItem>
                 <SelectItem value="gf">Gluten free</SelectItem>
                 <SelectItem value="v">Vegetarian</SelectItem>
@@ -203,7 +203,7 @@ export const RecipesToolbar = ({
               >
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
-              <SelectContent className="editorial-surface-reset z-50 rounded-[16px] border border-border bg-popover shadow-md">
+              <SelectContent className="editorial-surface-reset z-50 rounded-[16px] border border-hairline bg-popover">
                 <SelectItem value="all">Status</SelectItem>
                 <SelectItem value="active">Active</SelectItem>
                 <SelectItem value="inactive">Paused</SelectItem>

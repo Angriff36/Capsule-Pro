@@ -205,6 +205,7 @@ export function IoTPageClient() {
       {/* Status Summary */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
         <Card
+          tone="canvas"
           className={
             criticalAlerts.length > 0 ? "border-red-500 bg-red-50" : ""
           }
@@ -221,7 +222,7 @@ export function IoTPageClient() {
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card tone="canvas">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <Bell className="h-4 w-4" />
@@ -234,7 +235,7 @@ export function IoTPageClient() {
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card tone="canvas">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <Radio className="h-4 w-4" />
@@ -247,7 +248,7 @@ export function IoTPageClient() {
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card tone="canvas">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <Wrench className="h-4 w-4" />
@@ -260,7 +261,7 @@ export function IoTPageClient() {
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card tone="canvas">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <Thermometer className="h-4 w-4" />
@@ -297,7 +298,7 @@ export function IoTPageClient() {
         </TabsList>
 
         <TabsContent className="space-y-4" value="probes">
-          <Card>
+          <Card tone="canvas">
             <CardHeader>
               <CardTitle>Temperature Probes</CardTitle>
               <CardDescription>
@@ -430,7 +431,7 @@ export function IoTPageClient() {
         </TabsContent>
 
         <TabsContent className="space-y-4" value="alerts">
-          <Card>
+          <Card tone="canvas">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <AlertTriangle className="h-5 w-5" />
@@ -521,7 +522,7 @@ export function IoTPageClient() {
         </TabsContent>
 
         <TabsContent className="space-y-4" value="readings">
-          <Card>
+          <Card tone="canvas">
             <CardHeader>
               <CardTitle>Temperature Readings</CardTitle>
               <CardDescription>
