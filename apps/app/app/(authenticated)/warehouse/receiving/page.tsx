@@ -252,11 +252,11 @@ export default function ReceivingPage() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button className="gap-2" variant="outline">
+          <Button className="gap-2" variant="outline" onClick={() => toast.info("Warehouse reports coming soon")}>
             <FileText className="size-4" />
             Reports
           </Button>
-          <Button className="gap-2" variant="outline">
+          <Button className="gap-2" variant="outline" onClick={() => toast.info("Supplier performance dashboard coming soon")}>
             <TrendingUp className="size-4" />
             Supplier Performance
           </Button>

@@ -110,7 +110,7 @@
 | 101 | kitchen | `/kitchen/equipment` | 🟡 🔶 | Dead buttons: "Add Equipment", "New Work Order", "Schedule Maintenance", "Details" (×2), "Update Status" — no onClick handlers | ⬜ Unassigned |
 | 102 | kitchen | `/kitchen/iot` | 🟡 🔶 | Dead buttons: "Register Probe", "Log Reading", "Details" — no onClick handlers | ⬜ Unassigned |
 | 103 | kitchen | `/kitchen/inventory` | 🟡 🔶 | Dead button: "Reorder" (line 220-222) — no onClick handler | ⬜ Unassigned |
-| 104 | warehouse | `/warehouse/receiving` | 🟡 🔶 | Dead buttons: "Reports", "Supplier Performance" — no onClick handlers | ⬜ Unassigned |
+| 104 | warehouse | `/warehouse/receiving` | 🟡 🔶 | Dead buttons: "Reports", "Supplier Performance" — no onClick handlers | ✅ 2026-05-04 — wired Reports and Supplier Performance buttons with toast.info |
 | 105 | marketing | `/marketing/leads` | 🔴 ❌ | "New lead" button links to `/marketing/leads/new` — page does not exist (404) | ✅ 2026-05-04 — created new/page.tsx + createLead server action (Lead model existed) |
 | 106 | marketing | `/marketing/campaigns` | 🟡 🔶 | "Coming Soon" placeholder — no functionality | ⬜ Unassigned |
 
@@ -120,7 +120,7 @@
 - ✅ = Fixed and verified working
 
 ## Fix Strategy
-**7 new items found 2026-05-03 (scouting mission).** #101-#106 need attention. All existing items (#1-#100) were previously resolved.
+**7 new items found 2026-05-03 (scouting mission).** #105, #104 fixed; #101-#103, #106 remain. All existing items (#1-#100) were previously resolved.
 
 
 
