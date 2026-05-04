@@ -247,10 +247,7 @@ ${briefing.criticalInfo.map((c) => `- ${c}`).join("\n")}
             <div className="rounded-lg border border-hairline bg-muted/20 p-3">
               <ul className="space-y-1">
                 {briefing.criticalInfo.map((info, index) => (
-                  <li
-                    className="text-foreground text-sm"
-                    key={index}
-                  >
+                  <li className="text-foreground text-sm" key={index}>
                     - {info}
                   </li>
                 ))}

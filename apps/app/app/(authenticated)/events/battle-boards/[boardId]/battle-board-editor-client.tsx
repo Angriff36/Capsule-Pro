@@ -555,7 +555,9 @@ export function BattleBoardEditorClient({
                   <TableBody>
                     {boardData.timeline.map((item, index) => (
                       <TableRow
-                        className={item.hl ? "bg-muted/50 border border-hairline" : ""}
+                        className={
+                          item.hl ? "bg-muted/50 border border-hairline" : ""
+                        }
                         key={index}
                       >
                         <TableCell>

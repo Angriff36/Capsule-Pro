@@ -569,7 +569,9 @@ export function TimeOffForm({
         <div className="flex gap-2">
           <Info className="h-5 w-5 text-foreground" />
           <div className="flex-1">
-            <h4 className="font-semibold text-foreground">Request Processing</h4>
+            <h4 className="font-semibold text-foreground">
+              Request Processing
+            </h4>
             <p className="text-sm text-muted-foreground mt-1">
               Time-off requests require manager approval. You'll receive
               notifications via email when your request is reviewed.

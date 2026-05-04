@@ -26,7 +26,6 @@ export async function getFacilities() {
   });
 }
 
-
 export async function createFacility(formData: FormData) {
   const { orgId } = await auth();
   invariant(orgId, "Unauthorized");

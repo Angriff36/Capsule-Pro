@@ -15,7 +15,11 @@ export interface POStatusConfig {
 }
 
 export const STATUS_CONFIG: Record<string, POStatusConfig> = {
-  draft: { label: "Draft", color: "bg-muted/50 text-foreground", icon: FileText },
+  draft: {
+    label: "Draft",
+    color: "bg-muted/50 text-foreground",
+    icon: FileText,
+  },
   submitted: {
     label: "Submitted",
     color: "bg-muted/50 text-foreground",

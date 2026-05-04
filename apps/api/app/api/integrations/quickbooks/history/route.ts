@@ -19,10 +19,7 @@ export async function GET() {
 
     const tenantId = await getTenantIdForOrg(orgId);
     if (!tenantId) {
-      return NextResponse.json(
-        { error: "No tenant found" },
-        { status: 401 },
-      );
+      return NextResponse.json({ error: "No tenant found" }, { status: 401 });
     }
 
     // Placeholder — no persistence model yet
@@ -32,7 +29,7 @@ export async function GET() {
     console.error("Failed to get QuickBooks export history:", error);
     return NextResponse.json(
       { error: "Failed to get export history" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

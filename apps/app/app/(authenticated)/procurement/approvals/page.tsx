@@ -134,7 +134,9 @@ function ApprovalChainStepper({
             <div className="flex h-6 w-6 items-center justify-center rounded-full bg-muted/50 text-muted-foreground">
               <Clock className="h-3.5 w-3.5" />
             </div>
-            <span className="text-xs font-medium text-muted-foreground">Manager</span>
+            <span className="text-xs font-medium text-muted-foreground">
+              Manager
+            </span>
           </>
         )}
       </div>
@@ -155,21 +157,27 @@ function ApprovalChainStepper({
             <div className="flex h-6 w-6 items-center justify-center rounded-full bg-muted/50 text-muted-foreground">
               <Clock className="h-3.5 w-3.5" />
             </div>
-            <span className="text-xs font-medium text-muted-foreground">Finance</span>
+            <span className="text-xs font-medium text-muted-foreground">
+              Finance
+            </span>
           </>
         ) : isSubmitted ? (
           <>
             <div className="flex h-6 w-6 items-center justify-center rounded-full bg-muted/50 text-muted-foreground">
               <Clock className="h-3.5 w-3.5" />
             </div>
-            <span className="text-xs font-medium text-muted-foreground">Finance</span>
+            <span className="text-xs font-medium text-muted-foreground">
+              Finance
+            </span>
           </>
         ) : (
           <>
             <div className="flex h-6 w-6 items-center justify-center rounded-full bg-muted/50 text-muted-foreground">
               <Clock className="h-3.5 w-3.5" />
             </div>
-            <span className="text-xs font-medium text-muted-foreground">Finance</span>
+            <span className="text-xs font-medium text-muted-foreground">
+              Finance
+            </span>
           </>
         )}
       </div>
@@ -405,16 +413,30 @@ export default function ApprovalsPage() {
       {/* Tabs & List */}
       <Tabs onValueChange={setActiveTab} value={activeTab}>
         <TabsList className="rounded-[16px] border border-hairline bg-canvas p-1">
-          <TabsTrigger className="data-[state=active]:bg-ink data-[state=active]:text-white rounded-[12px] px-4 py-1.5 text-sm font-medium transition-colors" value="pending">
+          <TabsTrigger
+            className="data-[state=active]:bg-ink data-[state=active]:text-white rounded-[12px] px-4 py-1.5 text-sm font-medium transition-colors"
+            value="pending"
+          >
             Pending ({orders.filter((o) => o.status === "submitted").length})
           </TabsTrigger>
-          <TabsTrigger className="data-[state=active]:bg-ink data-[state=active]:text-white rounded-[12px] px-4 py-1.5 text-sm font-medium transition-colors" value="approved">
+          <TabsTrigger
+            className="data-[state=active]:bg-ink data-[state=active]:text-white rounded-[12px] px-4 py-1.5 text-sm font-medium transition-colors"
+            value="approved"
+          >
             Approved ({orders.filter((o) => o.status === "approved").length})
           </TabsTrigger>
-          <TabsTrigger className="data-[state=active]:bg-ink data-[state=active]:text-white rounded-[12px] px-4 py-1.5 text-sm font-medium transition-colors" value="rejected">
+          <TabsTrigger
+            className="data-[state=active]:bg-ink data-[state=active]:text-white rounded-[12px] px-4 py-1.5 text-sm font-medium transition-colors"
+            value="rejected"
+          >
             Rejected ({orders.filter((o) => o.status === "rejected").length})
           </TabsTrigger>
-          <TabsTrigger className="data-[state=active]:bg-ink data-[state=active]:text-white rounded-[12px] px-4 py-1.5 text-sm font-medium transition-colors" value="all">All History ({orders.length})</TabsTrigger>
+          <TabsTrigger
+            className="data-[state=active]:bg-ink data-[state=active]:text-white rounded-[12px] px-4 py-1.5 text-sm font-medium transition-colors"
+            value="all"
+          >
+            All History ({orders.length})
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent className="mt-4" value={activeTab}>

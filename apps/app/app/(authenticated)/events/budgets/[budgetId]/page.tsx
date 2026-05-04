@@ -15,12 +15,16 @@ import {
   OperationalColumn,
   PageCanvas,
 } from "@repo/design-system/components/blocks/page-shell";
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
+import { Progress } from "@repo/design-system/components/ui/progress";
+import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   Table,
   TableBody,
@@ -29,18 +33,12 @@ import {
   TableHeader,
   TableRow,
 } from "@repo/design-system/components/ui/table";
-import { Badge } from "@repo/design-system/components/ui/badge";
-import { Progress } from "@repo/design-system/components/ui/progress";
-import { Button } from "@repo/design-system/components/ui/button";
-import { Separator } from "@repo/design-system/components/ui/separator";
-import {
-  ArrowLeft,
-} from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { serializeDecimal } from "@/app/lib/decimal";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 // ---------------------------------------------------------------------------
 // Metadata
@@ -58,9 +56,11 @@ export const metadata: Metadata = {
 const CATEGORY_COLORS: Record<string, string> = {
   venue: "bg-muted/50 text-foreground dark:bg-muted/50 dark:text-foreground",
   catering: "bg-muted/50 text-foreground dark:bg-muted/50 dark:text-foreground",
-  beverages: "bg-muted/50 text-foreground dark:bg-muted/50 dark:text-foreground",
+  beverages:
+    "bg-muted/50 text-foreground dark:bg-muted/50 dark:text-foreground",
   labor: "bg-muted/50 text-foreground dark:bg-muted/50 dark:text-foreground",
-  equipment: "bg-muted/50 text-foreground dark:bg-muted/50 dark:text-foreground",
+  equipment:
+    "bg-muted/50 text-foreground dark:bg-muted/50 dark:text-foreground",
   other: "bg-muted/50 text-foreground dark:bg-muted/50 dark:text-foreground",
 };
 
@@ -151,8 +151,7 @@ export default async function BudgetDetailPage({
               {budget.event?.eventDate
                 ? ` (${new Date(budget.event.eventDate).toLocaleDateString()})`
                 : ""}
-              . Status:{" "}
-              <span className="capitalize">{budget.status}</span>.
+              . Status: <span className="capitalize">{budget.status}</span>.
               Version {budget.version}.
             </CommandBandLede>
           </div>
@@ -296,7 +295,8 @@ export default async function BudgetDetailPage({
                       <TableCell>
                         <Badge
                           className={
-                            CATEGORY_COLORS[item.category] ?? CATEGORY_COLORS.other
+                            CATEGORY_COLORS[item.category] ??
+                            CATEGORY_COLORS.other
                           }
                           variant="outline"
                         >
