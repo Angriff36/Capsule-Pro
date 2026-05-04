@@ -156,6 +156,14 @@ const rewrites: NextConfig["rewrites"] = async () => {
       source: "/api/integrations/:path*",
       destination: `${apiBaseUrl}/api/integrations/:path*`,
     },
+    {
+      source: "/api/communications/:path*",
+      destination: `${apiBaseUrl}/api/communications/:path*`,
+    },
+    {
+      source: "/api/settings/:path*",
+      destination: `${apiBaseUrl}/api/settings/:path*`,
+    },
   ];
 };
 
