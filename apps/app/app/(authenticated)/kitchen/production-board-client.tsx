@@ -444,7 +444,7 @@ export function ProductionBoardClient({
                   <button
                     className={`flex items-center gap-2 rounded-lg px-4 py-2 font-medium text-sm transition-all ${
                       isActive
-                        ? "bg-background text-foreground shadow-sm"
+                        ? "bg-background text-foreground"
                         : "text-muted-foreground hover:text-foreground"
                     }`}
                     key={station.id}

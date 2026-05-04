@@ -146,7 +146,7 @@ function DealCard({
 }) {
   return (
     <div
-      className="group cursor-grab rounded-md border border-border/60 bg-card p-3 shadow-sm transition-colors hover:border-border active:cursor-grabbing"
+      className="group cursor-grab rounded-md border border-border/60 bg-card p-3 transition-colors hover:border-border active:cursor-grabbing"
       draggable
       onDragStart={(e) => onDragStart(e, deal)}
     >

@@ -241,7 +241,7 @@ export default async function PipelinePage() {
         <div className="grid gap-4 lg:grid-cols-3 xl:grid-cols-6">
           {stageSummary.map((item) => (
             <section
-              className="rounded-3xl border border-border bg-card p-4 shadow-sm"
+              className="rounded-3xl border border-border bg-card p-4"
               key={item.stage}
             >
               <div className="flex items-center justify-between gap-3">
@@ -257,7 +257,7 @@ export default async function PipelinePage() {
           ))}
         </div>
 
-        <section className="overflow-hidden rounded-3xl border border-border bg-card shadow-sm">
+        <section className="overflow-hidden rounded-3xl border border-border bg-card">
           <div className="flex items-center justify-between border-b border-border px-6 py-4">
             <div>
               <h2 className="text-lg font-semibold">Pipeline deals</h2>

@@ -69,7 +69,7 @@ export default async function ChartOfAccountsPage() {
     <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
       <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">
+          <h1 className="text-2xl font-semibold tracking-tight">
             Chart of Accounts
           </h1>
           <p className="text-muted-foreground">

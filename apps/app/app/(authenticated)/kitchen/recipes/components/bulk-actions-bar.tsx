@@ -56,7 +56,7 @@ export function BulkActionsBar({
   };
 
   return (
-    <div className="sticky top-0 z-10 flex items-center gap-3 rounded-lg border border-accent/30 bg-accent/5 px-4 py-2.5 shadow-sm">
+    <div className="sticky top-0 z-10 flex items-center gap-3 rounded-lg border border-accent/30 bg-accent/5 px-4 py-2.5">
       <span className="text-sm font-medium text-accent">
         {count} {type} selected
       </span>

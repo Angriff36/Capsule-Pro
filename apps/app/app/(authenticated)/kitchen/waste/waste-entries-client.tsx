@@ -267,7 +267,7 @@ export function WasteEntriesClient() {
 
           {/* Search Results Dropdown */}
           {filteredItems.length > 0 && (
-            <div className="border rounded-md shadow-sm bg-background max-h-60 overflow-y-auto">
+            <div className="border rounded-md bg-background max-h-60 overflow-y-auto">
               {filteredItems.map((item) => (
                 <button
                   className="w-full text-left px-3 py-2 hover:bg-muted transition-colors border-b last:border-b-0"

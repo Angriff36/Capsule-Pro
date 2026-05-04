@@ -71,7 +71,7 @@ export function InlineTextInput({
   return (
     <div
       className={cn(
-        "inline-flex items-center gap-1 rounded-md border border-ring bg-background px-1 py-0.5 shadow-sm",
+        "inline-flex items-center gap-1 rounded-md border border-ring bg-background px-1 py-0.5",
         className
       )}
       onClick={(e) => e.stopPropagation()}
@@ -191,7 +191,7 @@ export function InlinePriceInput({
   return (
     <div
       className={cn(
-        "inline-flex items-center gap-1 rounded-md border border-ring bg-background px-1 py-0.5 shadow-sm",
+        "inline-flex items-center gap-1 rounded-md border border-ring bg-background px-1 py-0.5",
         className
       )}
       onClick={(e) => e.stopPropagation()}

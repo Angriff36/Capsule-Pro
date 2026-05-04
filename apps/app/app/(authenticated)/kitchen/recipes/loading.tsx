@@ -8,7 +8,7 @@ export default function Loading() {
   return (
     <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
       {/* Toolbar skeleton */}
-      <div className="rounded-3xl border bg-card/80 p-4 shadow-sm">
+      <div className="rounded-3xl border bg-card/80 p-4">
         <div className="flex items-center justify-between">
           <div className="flex gap-2">
             <div className="h-9 w-20 rounded-full bg-muted" />
