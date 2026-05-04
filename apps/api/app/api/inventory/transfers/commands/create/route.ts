@@ -4,6 +4,10 @@ import { type NextRequest, NextResponse } from "next/server";
 import { requireCurrentUser } from "@/app/lib/tenant";
 import { log } from "@repo/observability/log";
 
+function isValidUUID(value: string): boolean {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
+}
+
 export async function POST(request: NextRequest) {
   try {
     const currentUser = await requireCurrentUser();
@@ -21,6 +25,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (!isValidUUID(fromLocationId)) {
+      return NextResponse.json(
+        { error: "From location ID is not a valid UUID" },
+        { status: 400 }
+      );
+    }
+    if (!isValidUUID(toLocationId)) {
+      return NextResponse.json(
+        { error: "To location ID is not a valid UUID" },
+        { status: 400 }
+      );
+    }
+
     if (!(items && Array.isArray(items)) || items.length === 0) {
       return NextResponse.json(
         { error: "At least one item is required" },
@@ -33,6 +50,15 @@ export async function POST(request: NextRequest) {
       where: { tenantId: currentUser.tenantId },
     });
     const transferNumber = `TRF-${String(transferCount + 1).padStart(6, "0")}`;
+
+    for (const item of items) {
+      if (item.itemId && !isValidUUID(item.itemId)) {
+        return NextResponse.json(
+          { error: `Item ID "${item.itemId}" is not a valid UUID` },
+          { status: 400 }
+        );
+      }
+    }
 
     // Create transfer and items in a transaction
     const transfer = await database.$transaction(
