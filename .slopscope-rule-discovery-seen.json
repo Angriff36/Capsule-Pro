@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "discoveries": [
+    {
+      "rule_id": "fake_integration.mock_fallback_as_production_path",
+      "file_path": "projects/document-parser/project/packages/document-parser/src/extraction/docling-adapter.ts",
+      "snippet_hash": "sha256:a3f7c2e1b4d5f6a8c0e2d1b3a4f5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3",
+      "discovered_at": "2026-05-07T06:27:00Z"
+    },
+    {
+      "rule_id": "automation_theater.cancel_endpoint_status_write_only",
+      "file_path": "src/claude-workflow/app/routes/jobs.py",
+      "snippet_hash": "sha256:d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5",
+      "discovered_at": "2026-05-07T06:40:00Z"
+    },
+    {
+      "rule_id": "dashboard_illusion.fabricated_token_cost_from_hardcoded_constants",
+      "file_path": "src/openclaw/projects/autolab/src/components/analytics/UsageView.tsx",
+      "snippet_hash": "sha256:b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0",
+      "discovered_at": "2026-05-07T06:56:00Z"
+    },
+    {
+      "rule_id": "security_theater.optional_webhook_signature_bypass",
+      "file_path": "src/openclaw/projects/capsule-pro/apps/api/app/api/collaboration/notifications/email/webhook/route.ts",
+      "snippet_hash": "sha256:29c3b89873821d6567a1b0500cf1153fc0157a1408ca4677d368e725cfef1768",
+      "discovered_at": "2026-05-07T07:09:00Z"
+    },
+    {
+      "rule_id": "automation_theater.audit_log_to_console",
+      "file_path": "src/openclaw/projects/capsule-pro/packages/payroll-engine/src/dataSource/PrismaPayrollDataSource.ts",
+      "snippet_hash": "sha256:d40a313833cf92adaad5f375ea6f6f85356ad99a5866ac818718217621c67c43",
+      "discovered_at": "2026-05-07T07:31:00Z"
+    },
+    {
+      "rule_id": "fake_integration.registered_stub_connector_exposed_as_production",
+      "file_path": "packages/supplier-connectors/src/connectors/us-foods.ts",
+      "snippet_hash": "sha256:1cb347c261b3494cc4e2058dd8039ded9bdc2cd6166ebb3dad890088197bf05b",
+      "discovered_at": "2026-05-07T07:47:00Z"
+    },
+    {
+      "rule_id": "fake_integration.payment_gateway_always_succeeds",
+      "file_path": "src/openclaw/projects/capsule-pro/apps/api/app/api/accounting/payments/[id]/gateway.ts",
+      "snippet_hash": "sha256:e89e9b6dfc490209884562ddc8428202ab320d22d1261a2a4e49e25590b0d530",
+      "discovered_at": "2026-05-07T08:06:00Z"
+    },
+    {
+      "rule_id": "dashboard_illusion.sku_agnostic_event_usage_formula",
+      "file_path": "src/openclaw/projects/capsule-pro/apps/api/app/lib/inventory-forecasting.ts",
+      "snippet_hash": "sha256:f8a2b1c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2",
+      "discovered_at": "2026-05-07T08:21:00Z"
+    }
+  ]
+}
