@@ -46,6 +46,7 @@ interface ApiKeyListResponse {
   success: boolean;
   result?: { apiKeys: ApiKey[] };
   apiKeys?: ApiKey[];
+  keys?: ApiKey[];
 }
 
 // ---------------------------------------------------------------------------
