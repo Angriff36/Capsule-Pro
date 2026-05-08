@@ -5,11 +5,11 @@
  */
 
 import { auth } from "@repo/auth/server";
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { getGoodshuffleSyncStatus } from "@/app/lib/goodshuffle-event-sync-service";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { log } from "@repo/observability/log";
 
 /**
  * GET /api/integrations/goodshuffle/status

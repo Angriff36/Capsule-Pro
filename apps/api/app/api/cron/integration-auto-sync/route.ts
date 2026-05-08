@@ -32,7 +32,7 @@ const SYNC_LOOKAHEAD_DAYS = 7;
 function isSyncDue(lastSyncAt: Date | null, intervalMinutes: number): boolean {
   if (!lastSyncAt) return true;
   const nextSyncAt = new Date(
-    lastSyncAt.getTime() + intervalMinutes * 60 * 1000,
+    lastSyncAt.getTime() + intervalMinutes * 60 * 1000
   );
   return nextSyncAt <= new Date();
 }
@@ -51,18 +51,18 @@ export async function GET(request: Request): Promise<NextResponse> {
 
   if (!cronSecret) {
     log.error(
-      "[integration-auto-sync] CRON_SECRET environment variable is not configured",
+      "[integration-auto-sync] CRON_SECRET environment variable is not configured"
     );
     return NextResponse.json(
       { error: "Cron endpoint not configured" },
-      { status: 503 },
+      { status: 503 }
     );
   }
 
   const authHeader = request.headers.get("authorization");
   if (authHeader !== `Bearer ${cronSecret}`) {
     log.error(
-      "[integration-auto-sync] Unauthorized request — invalid or missing Authorization header",
+      "[integration-auto-sync] Unauthorized request — invalid or missing Authorization header"
     );
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -85,8 +85,10 @@ export async function GET(request: Request): Promise<NextResponse> {
 
     for (const config of goodshuffleConfigs) {
       if (
-        !isSyncDue(config.lastSyncAt, config.autoSyncInterval as number) ||
-        !config.syncEnabled
+        !(
+          isSyncDue(config.lastSyncAt, config.autoSyncInterval as number) &&
+          config.syncEnabled
+        )
       ) {
         continue;
       }
@@ -100,13 +102,13 @@ export async function GET(request: Request): Promise<NextResponse> {
         });
         goodshuffleResult.synced++;
         log.info(
-          `[integration-auto-sync] Goodshuffle sync completed for tenant ${config.tenantId}`,
+          `[integration-auto-sync] Goodshuffle sync completed for tenant ${config.tenantId}`
         );
       } catch (syncError) {
         goodshuffleResult.errors++;
         log.error(
           `[integration-auto-sync] Goodshuffle sync failed for tenant ${config.tenantId}`,
-          { error: syncError },
+          { error: syncError }
         );
         captureException(syncError);
       }
@@ -126,8 +128,10 @@ export async function GET(request: Request): Promise<NextResponse> {
 
     for (const config of nowstaConfigs) {
       if (
-        !isSyncDue(config.lastSyncAt, config.autoSyncInterval as number) ||
-        !config.syncEnabled
+        !(
+          isSyncDue(config.lastSyncAt, config.autoSyncInterval as number) &&
+          config.syncEnabled
+        )
       ) {
         continue;
       }
@@ -140,20 +144,20 @@ export async function GET(request: Request): Promise<NextResponse> {
         });
         nowstaResult.synced++;
         log.info(
-          `[integration-auto-sync] Nowsta sync completed for tenant ${config.tenantId}`,
+          `[integration-auto-sync] Nowsta sync completed for tenant ${config.tenantId}`
         );
       } catch (syncError) {
         nowstaResult.errors++;
         log.error(
           `[integration-auto-sync] Nowsta sync failed for tenant ${config.tenantId}`,
-          { error: syncError },
+          { error: syncError }
         );
         captureException(syncError);
       }
     }
 
     log.info(
-      `[integration-auto-sync] Goodshuffle: checked=${goodshuffleResult.checked} synced=${goodshuffleResult.synced} errors=${goodshuffleResult.errors} | Nowsta: checked=${nowstaResult.checked} synced=${nowstaResult.synced} errors=${nowstaResult.errors}`,
+      `[integration-auto-sync] Goodshuffle: checked=${goodshuffleResult.checked} synced=${goodshuffleResult.synced} errors=${goodshuffleResult.errors} | Nowsta: checked=${nowstaResult.checked} synced=${nowstaResult.synced} errors=${nowstaResult.errors}`
     );
 
     return NextResponse.json({
@@ -172,7 +176,7 @@ export async function GET(request: Request): Promise<NextResponse> {
         goodshuffle: goodshuffleResult,
         nowsta: nowstaResult,
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

@@ -1,10 +1,10 @@
 import { generateSalesReport } from "@capsule-pro/sales-reporting";
 import { auth } from "@repo/auth/server";
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { withRateLimit } from "@/middleware/rate-limiter";
-import { log } from "@repo/observability/log";
 
 export const runtime = "nodejs";
 
@@ -115,10 +115,7 @@ export const POST = withRateLimit(
         },
       });
     } catch (error) {
-      log.error(
-        "[sales-reporting/generate] Report generation failed:",
-        error
-      );
+      log.error("[sales-reporting/generate] Report generation failed:", error);
       captureException(error, {
         tags: {
           route: "sales-reporting/generate",

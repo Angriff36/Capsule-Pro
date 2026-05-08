@@ -6,6 +6,7 @@
 
 import { auth } from "@repo/auth/server";
 import { database, type Prisma } from "@repo/database";
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { InvariantError } from "../../../../lib/invariant";
@@ -16,7 +17,6 @@ import type {
   ContractStatus,
   DocumentType,
 } from "../types";
-import { log } from "@repo/observability/log";
 
 /**
  * Parse and validate expiring contracts parameters from URL search params

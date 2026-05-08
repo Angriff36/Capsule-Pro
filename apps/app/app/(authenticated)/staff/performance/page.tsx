@@ -421,8 +421,8 @@ export default function PerformancePageClient() {
                 return (
                   <Card
                     className={isOverdue ? "border-red-300" : ""}
-                    tone="canvas"
                     key={review.id}
+                    tone="canvas"
                   >
                     <CardContent className="p-4">
                       <div className="flex items-center gap-4">

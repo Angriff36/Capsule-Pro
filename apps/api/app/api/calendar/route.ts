@@ -53,10 +53,9 @@ export async function GET(request: NextRequest) {
       const authResult = await auth();
       orgId = authResult.orgId;
     } catch (authError) {
-      log.error(
-        "[calendar] Auth failed",
-        { error: authError instanceof Error ? authError.message : authError }
-      );
+      log.error("[calendar] Auth failed", {
+        error: authError instanceof Error ? authError.message : authError,
+      });
       return NextResponse.json(
         { error: "Authentication failed" },
         { status: 401 }
@@ -71,10 +70,9 @@ export async function GET(request: NextRequest) {
     try {
       tenantId = await getTenantIdForOrg(orgId);
     } catch (error) {
-      log.error(
-        "[calendar] Failed to resolve tenant",
-        { error: error instanceof Error ? error.message : error }
-      );
+      log.error("[calendar] Failed to resolve tenant", {
+        error: error instanceof Error ? error.message : error,
+      });
       captureException(error);
       return NextResponse.json(
         { error: "Failed to resolve organization" },
@@ -86,8 +84,7 @@ export async function GET(request: NextRequest) {
 
     const startParam = searchParams.get("start");
     const endParam = searchParams.get("end");
-    const typesParam =
-      searchParams.get("types") || "event,shift,timeoff";
+    const typesParam = searchParams.get("types") || "event,shift,timeoff";
 
     if (!(startParam && endParam)) {
       return NextResponse.json(
@@ -145,10 +142,9 @@ export async function GET(request: NextRequest) {
           }))
         );
       } catch (error) {
-        log.error(
-          "[calendar] Events query failed",
-          { error: error instanceof Error ? error.message : error }
-        );
+        log.error("[calendar] Events query failed", {
+          error: error instanceof Error ? error.message : error,
+        });
         captureException(error);
       }
     }
@@ -241,10 +237,9 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ events });
   } catch (error) {
     captureException(error);
-    log.error(
-      "[calendar] API error",
-      { error: error instanceof Error ? error.message : error }
-    );
+    log.error("[calendar] API error", {
+      error: error instanceof Error ? error.message : error,
+    });
     return NextResponse.json(
       { error: "Failed to fetch calendar data" },
       { status: 500 }

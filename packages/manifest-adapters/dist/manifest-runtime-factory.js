@@ -13,10 +13,10 @@
  *
  * @packageDocumentation
  */
+import { createPermissionGuard, loadRolePolicies } from "./permission-guard.js";
 import { PrismaIdempotencyStore } from "./prisma-idempotency-store.js";
 import { PrismaJsonStore } from "./prisma-json-store.js";
 import { createPrismaOutboxWriter, PrismaStore } from "./prisma-store.js";
-import { createPermissionGuard, loadRolePolicies, } from "./permission-guard.js";
 import { loadPrecompiledIR } from "./runtime/loadManifests.js";
 import { ManifestRuntimeEngine } from "./runtime-engine.js";
 // ---------------------------------------------------------------------------

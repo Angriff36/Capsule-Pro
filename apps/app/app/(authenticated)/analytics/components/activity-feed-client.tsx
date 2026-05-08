@@ -17,6 +17,7 @@ import {
 } from "@repo/design-system/components/blocks/activity-feed";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Card, CardContent } from "@repo/design-system/components/ui/card";
+import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
@@ -227,8 +228,8 @@ export function ActivityTimelineWidget({
       <CardContent className="p-4">
         <div className="flex items-center justify-between mb-3">
           <h3 className="font-semibold text-sm">Recent Activity</h3>
-          <Button className="h-7 text-xs" size="sm" variant="ghost">
-            View All
+          <Button asChild className="h-7 text-xs" size="sm" variant="ghost">
+            <Link href="/analytics/activity-feed">View All</Link>
           </Button>
         </div>
         <div className="space-y-3">

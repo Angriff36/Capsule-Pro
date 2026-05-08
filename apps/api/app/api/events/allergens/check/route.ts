@@ -1,9 +1,9 @@
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "../../../../lib/tenant";
-import { log } from "@repo/observability/log";
 
 const UUID_REGEX =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;

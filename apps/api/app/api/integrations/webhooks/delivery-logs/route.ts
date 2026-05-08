@@ -6,10 +6,10 @@
 
 import { auth } from "@repo/auth/server";
 import { database, type Prisma } from "@repo/database";
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { log } from "@repo/observability/log";
 
 // Valid statuses
 const VALID_STATUSES = ["pending", "success", "failed", "retrying"] as const;

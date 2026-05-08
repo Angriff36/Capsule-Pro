@@ -1,8 +1,8 @@
 import { auth } from "@repo/auth/server";
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { log } from "@repo/observability/log";
 
 interface SyncErrorDetail {
   externalId: string;
@@ -173,7 +173,11 @@ async function syncGoogleCalendar(
   start: Date,
   end: Date,
   _tenantId: string
-): Promise<{ imported: number; errors: number; errorDetails: SyncErrorDetail[] }> {
+): Promise<{
+  imported: number;
+  errors: number;
+  errorDetails: SyncErrorDetail[];
+}> {
   const { database } = await import("@repo/database");
 
   const url = new URL(
@@ -269,7 +273,11 @@ async function syncOutlookCalendar(
   start: Date,
   end: Date,
   _tenantId: string
-): Promise<{ imported: number; errors: number; errorDetails: SyncErrorDetail[] }> {
+): Promise<{
+  imported: number;
+  errors: number;
+  errorDetails: SyncErrorDetail[];
+}> {
   const { database } = await import("@repo/database");
 
   const url = new URL("https://graph.microsoft.com/v1.0/me/calendarView");

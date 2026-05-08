@@ -1,15 +1,14 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { log } from "@repo/observability/log";
 import {
   GeneratePayrollRequestSchema,
   PayrollService,
   PrismaPayrollDataSource,
 } from "@repo/payroll-engine";
 import { captureException } from "@sentry/nextjs";
-
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { log } from "@repo/observability/log";
 
 /**
  * POST /api/payroll/generate

@@ -140,7 +140,10 @@ export async function triggerEmailWorkflows(
 }
 
 type RecipientConfig =
-  | { type: "client" | "assigned_user" | "event_manager" | "custom"; emails?: string[] }
+  | {
+      type: "client" | "assigned_user" | "event_manager" | "custom";
+      emails?: string[];
+    }
   | {
       includeRoles?: string[];
       excludeRoles?: string[];

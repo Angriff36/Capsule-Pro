@@ -1,10 +1,10 @@
 import { auth } from "@repo/auth/server";
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { manifestErrorResponse } from "@/lib/manifest-response";
 import { database } from "@/lib/database";
-import { log } from "@repo/observability/log";
+import { manifestErrorResponse } from "@/lib/manifest-response";
 
 export async function GET(request: NextRequest) {
   try {
@@ -54,10 +54,10 @@ export async function GET(request: NextRequest) {
       database.equipment.count({ where }),
     ]);
 
-    return new Response(
-      JSON.stringify({ equipment, total }),
-      { status: 200, headers: { "Content-Type": "application/json" } },
-    );
+    return new Response(JSON.stringify({ equipment, total }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
   } catch (error) {
     captureException(error);
     log.error("Error fetching equipment:", error);

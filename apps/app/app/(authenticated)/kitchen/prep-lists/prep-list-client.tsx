@@ -36,7 +36,6 @@ import {
   Flame,
   Leaf,
   RefreshCw,
-  Save,
   Snowflake,
   Users,
   UtensilsCrossed,
@@ -108,7 +107,16 @@ function StationCard({
               </div>
             </div>
           </div>
-          <Button aria-label="Toggle details" size="icon" variant="ghost">
+          <Button
+            aria-label="Toggle details"
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggle();
+            }}
+            size="icon"
+            type="button"
+            variant="ghost"
+          >
             {isExpanded ? (
               <Check className="h-4 w-4" />
             ) : (
@@ -167,9 +175,12 @@ function StationCard({
                         )}
                       </div>
                       <Button
-                        aria-label="Lock ingredient"
+                        aria-label="Mark ingredient reviewed — coming soon"
                         className="h-8 w-8 shrink-0"
+                        disabled
                         size="icon"
+                        title="Coming soon"
+                        type="button"
                         variant="ghost"
                       >
                         <Check className="h-4 w-4" />
@@ -389,10 +400,6 @@ export function PrepListClient({
     }
   }, [savedPrepListId, prepList]);
 
-
-
-
-
   const toggleStation = (stationId: string) => {
     setExpandedStations((prev) => {
       const newSet = new Set(prev);
@@ -463,7 +470,6 @@ export function PrepListClient({
                 disabled={prepList.totalIngredients === 0}
                 prepList={prepList}
               />
-
             </div>
           </div>
 

@@ -10,10 +10,10 @@
 import type { DocumentProps } from "@react-pdf/renderer";
 import { auth } from "@repo/auth/server";
 import { database, type Event } from "@repo/database";
+import { log } from "@repo/observability/log";
 import { EventDetailPDF } from "@repo/pdf";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { log } from "@repo/observability/log";
 
 export const runtime = "nodejs";
 

@@ -11,6 +11,7 @@
 
 import { auth } from "@repo/auth/server";
 import { database, type EntityType } from "@repo/database";
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
@@ -22,7 +23,6 @@ import type {
   BoardGroup,
   BoardProjection,
 } from "../../../types";
-import { log } from "@repo/observability/log";
 
 interface RouteContext {
   params: Promise<{ id: string }>;

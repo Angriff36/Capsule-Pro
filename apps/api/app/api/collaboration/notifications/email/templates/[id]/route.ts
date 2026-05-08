@@ -8,10 +8,10 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { log } from "@repo/observability/log";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { executeManifestCommand } from "@/lib/manifest-command-handler";
-import { log } from "@repo/observability/log";
 
 interface RouteContext {
   params: Promise<{ id: string }>;

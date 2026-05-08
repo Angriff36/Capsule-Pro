@@ -353,9 +353,7 @@ export const prepTaskRules = [
 /**
  * All equipment rules.
  */
-export const equipmentRules = [
-    stationEquipmentRule,
-];
+export const equipmentRules = [stationEquipmentRule];
 /**
  * All allergen rules.
  */

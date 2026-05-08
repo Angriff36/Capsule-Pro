@@ -438,7 +438,7 @@ const AnalyticsPage = async () => {
                 <p className="font-mono text-[11px] text-muted-foreground uppercase tracking-[0.22em]">
                   {metric.title}
                 </p>
-                <p className="mt-3 font-medium text-3xl text-ink tracking-[-0.01em]">
+                <p className="mt-3 font-medium text-2xl text-ink tracking-[-0.01em]">
                   {metric.value}
                 </p>
                 <p className="mt-3 text-muted-foreground text-sm leading-relaxed">

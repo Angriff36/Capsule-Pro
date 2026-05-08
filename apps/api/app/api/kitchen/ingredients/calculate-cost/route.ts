@@ -72,9 +72,7 @@ export async function POST(request: Request) {
     // Look up InventoryItem costs for all ingredients in one query
     const inventoryItems =
       ingredientNames.length > 0
-        ? await database.$queryRaw<
-            Array<{ name: string; unit_cost: number }>
-          >`
+        ? await database.$queryRaw<Array<{ name: string; unit_cost: number }>>`
             SELECT DISTINCT ON (LOWER(name)) name, unit_cost
             FROM tenant_inventory.inventory_items
             WHERE tenant_id = ${tenantId}::uuid

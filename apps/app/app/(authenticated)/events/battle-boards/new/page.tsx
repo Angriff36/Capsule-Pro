@@ -90,7 +90,7 @@ export default function NewBattleBoardPage() {
 
       const data = await response.json();
 
-      if (!response.ok || !data.success) {
+      if (!(response.ok && data.success)) {
         throw new Error(
           data.message || data.error || "Failed to create battle board"
         );
@@ -236,7 +236,12 @@ export default function NewBattleBoardPage() {
                     )}
                     {creating ? "Creating..." : "Create Board"}
                   </Button>
-                  <Button asChild disabled={creating} type="button" variant="outline">
+                  <Button
+                    asChild
+                    disabled={creating}
+                    type="button"
+                    variant="outline"
+                  >
                     <Link href="/events/battle-boards">Cancel</Link>
                   </Button>
                 </div>

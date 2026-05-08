@@ -4,17 +4,17 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
+import { recordEntityChange } from "@/app/lib/activity-feed-service";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { dispatchWebhooks } from "@/app/lib/webhook-dispatch";
 import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
-import { log } from "@repo/observability/log";
-import { recordEntityChange } from "@/app/lib/activity-feed-service";
-import { dispatchWebhooks } from "@/app/lib/webhook-dispatch";
 import { validateSignatureData } from "../../validation";
 
 export const runtime = "nodejs";
@@ -88,19 +88,30 @@ export async function POST(request: NextRequest) {
     recordEntityChange(
       tenantId,
       "Contract",
-      (body as Record<string, unknown>)?.id as string ?? (body as Record<string, unknown>)?.contractId as string ?? "",
+      ((body as Record<string, unknown>)?.id as string) ??
+        ((body as Record<string, unknown>)?.contractId as string) ??
+        "",
       "signed",
-      (body as Record<string, unknown>)?.title as string ?? (body as Record<string, unknown>)?.contractTitle as string ?? "Contract",
+      ((body as Record<string, unknown>)?.title as string) ??
+        ((body as Record<string, unknown>)?.contractTitle as string) ??
+        "Contract",
       currentUser.id
     ).catch(() => {});
 
-    const contractId = (body as Record<string, unknown>)?.id as string ?? (body as Record<string, unknown>)?.contractId as string ?? "";
+    const contractId =
+      ((body as Record<string, unknown>)?.id as string) ??
+      ((body as Record<string, unknown>)?.contractId as string) ??
+      "";
     dispatchWebhooks({
       tenantId,
       entityType: "Contract",
       entityId: contractId,
       action: "updated",
-      data: { ...(result.result as Record<string, unknown>), contractId, signedBy: currentUser.id },
+      data: {
+        ...(result.result as Record<string, unknown>),
+        contractId,
+        signedBy: currentUser.id,
+      },
     }).catch(() => {});
 
     return manifestSuccessResponse({

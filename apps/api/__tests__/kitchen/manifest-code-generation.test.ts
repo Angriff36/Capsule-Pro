@@ -130,7 +130,9 @@ describe("Manifest Code Generation Inventory", () => {
     // Verify the manifest directory has content
     if (existsSync(manifestBinPath)) {
       const entries = readdirSync(manifestBinPath).filter(
-        (e) => e.endsWith(".manifest") || statSync(join(manifestBinPath, e)).isDirectory()
+        (e) =>
+          e.endsWith(".manifest") ||
+          statSync(join(manifestBinPath, e)).isDirectory()
       );
       expect(entries.length).toBeGreaterThan(0);
     }

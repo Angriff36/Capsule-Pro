@@ -10,9 +10,6 @@ import {
 } from "@repo/design-system/components/ui/drawer";
 import type { Meta, StoryObj } from "@storybook/react";
 
-/**
- * A drawer component for React.
- */
 const meta: Meta<typeof Drawer> = {
   title: "ui/Drawer",
   component: Drawer,
@@ -27,13 +24,15 @@ const meta: Meta<typeof Drawer> = {
           <DrawerDescription>This action cannot be undone.</DrawerDescription>
         </DrawerHeader>
         <DrawerFooter>
-          <button
-            className="rounded bg-primary px-4 py-2 text-primary-foreground"
-            type="button"
-          >
-            Submit
-          </button>
-          <DrawerClose>
+          <DrawerClose asChild>
+            <button
+              className="rounded bg-primary px-4 py-2 text-primary-foreground"
+              type="button"
+            >
+              Submit
+            </button>
+          </DrawerClose>
+          <DrawerClose asChild>
             <button className="hover:underline" type="button">
               Cancel
             </button>

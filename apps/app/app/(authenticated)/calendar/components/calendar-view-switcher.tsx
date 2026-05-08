@@ -2,8 +2,8 @@
 
 import { BlogFilterChip } from "@repo/design-system/components/blocks/blog-filter-chip";
 import { ResearchTable } from "@repo/design-system/components/blocks/research-table";
-import { useState } from "react";
 import Link from "next/link";
+import { useState } from "react";
 import type { CalendarEvent } from "../page";
 import { UnifiedCalendar } from "./unified-calendar";
 

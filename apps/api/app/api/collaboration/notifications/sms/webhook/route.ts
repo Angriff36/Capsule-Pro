@@ -11,9 +11,9 @@
 
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { database } from "@repo/database";
-import { log } from "@repo/observability/log";
 import { updateDeliveryStatus } from "@repo/notifications";
 import { keys } from "@repo/notifications/keys";
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 
@@ -118,7 +118,7 @@ export async function POST(request: NextRequest) {
   if (!authToken) {
     return NextResponse.json(
       { error: "Webhook auth token not configured" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 
@@ -165,4 +165,3 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ received: true, error: "Processing failed" });
   }
 }
-

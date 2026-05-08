@@ -6,6 +6,7 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -13,7 +14,6 @@ import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
-import { log } from "@repo/observability/log";
 
 /**
  * GET /api/settings/rate-limits/analytics
@@ -115,8 +115,10 @@ export async function GET(request: NextRequest) {
       }),
     ]);
 
-    const totalAllowed = eventCounts.find((e) => e.allowed === true)?._count ?? 0;
-    const totalBlocked = eventCounts.find((e) => e.allowed === false)?._count ?? 0;
+    const totalAllowed =
+      eventCounts.find((e) => e.allowed === true)?._count ?? 0;
+    const totalBlocked =
+      eventCounts.find((e) => e.allowed === false)?._count ?? 0;
     const totalRequests = totalAllowed + totalBlocked;
 
     // Get per-endpoint blocked counts for the breakdown
@@ -134,7 +136,7 @@ export async function GET(request: NextRequest) {
       blockedByEndpoint.map((item) => [
         `${item.endpoint}|${item.method}`,
         item._count,
-      ]),
+      ])
     );
 
     // Format response
@@ -146,8 +148,7 @@ export async function GET(request: NextRequest) {
       summary: {
         totalRequests,
         totalBlocked,
-        blockRate:
-          totalRequests > 0 ? (totalBlocked / totalRequests) * 100 : 0,
+        blockRate: totalRequests > 0 ? (totalBlocked / totalRequests) * 100 : 0,
       },
       byEndpoint: byEndpoint.map((item) => ({
         endpoint: item.endpoint,

@@ -17,8 +17,10 @@ import {
   PageCanvas,
   SectionHeader,
 } from "@repo/design-system/components/blocks/page-shell";
-import { Button } from "@repo/design-system/components/ui/button";
-import { buttonVariants } from "@repo/design-system/components/ui/button";
+import {
+  Button,
+  buttonVariants,
+} from "@repo/design-system/components/ui/button";
 import {
   Empty,
   EmptyContent,
@@ -129,7 +131,10 @@ const EventsPage = async () => {
                 <Link href="/events/import">Import</Link>
               </Button>
               <Link
-                className={buttonVariants({ size: "default", variant: "on-dark" })}
+                className={buttonVariants({
+                  size: "default",
+                  variant: "on-dark",
+                })}
                 href="/events/new"
               >
                 New event

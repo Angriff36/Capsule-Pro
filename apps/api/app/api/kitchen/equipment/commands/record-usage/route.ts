@@ -1,10 +1,10 @@
 import { auth } from "@repo/auth/server";
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { manifestErrorResponse } from "@/lib/manifest-response";
 import { database } from "@/lib/database";
-import { log } from "@repo/observability/log";
+import { manifestErrorResponse } from "@/lib/manifest-response";
 
 export async function POST(request: NextRequest) {
   try {
@@ -58,7 +58,11 @@ export async function POST(request: NextRequest) {
     });
 
     return new Response(
-      JSON.stringify({ equipment, addedHours: usageHours, totalHours: newUsageHours }),
+      JSON.stringify({
+        equipment,
+        addedHours: usageHours,
+        totalHours: newUsageHours,
+      }),
       { status: 200, headers: { "Content-Type": "application/json" } }
     );
   } catch (error) {

@@ -4,6 +4,7 @@
 
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -11,7 +12,6 @@ import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
-import { log } from "@repo/observability/log";
 
 const VALID_TRANSITIONS: Record<string, string[]> = {
   pending: ["approved", "rejected"],
@@ -24,10 +24,7 @@ const VALID_TRANSITIONS: Record<string, string[]> = {
   failed: ["pending"],
 };
 
-function isValidStatusTransition(
-  current: string,
-  next: string
-): boolean {
+function isValidStatusTransition(current: string, next: string): boolean {
   const allowed = VALID_TRANSITIONS[current];
   if (!allowed) return false;
   return allowed.includes(next);
@@ -113,15 +110,18 @@ export async function PUT(
     if (!isValidStatusTransition(currentRun.status, newStatus)) {
       return NextResponse.json(
         {
-          error: "Invalid status transition: '" + currentRun.status + "' -> '" + newStatus + "'",
+          error:
+            "Invalid status transition: '" +
+            currentRun.status +
+            "' -> '" +
+            newStatus +
+            "'",
         },
         { status: 400 }
       );
     }
 
-    const updatedRun = await database.$queryRaw<
-      Array<Record<string, unknown>>
-    >(
+    const updatedRun = await database.$queryRaw<Array<Record<string, unknown>>>(
       Prisma.sql`
         UPDATE tenant_staff.payroll_runs
         SET

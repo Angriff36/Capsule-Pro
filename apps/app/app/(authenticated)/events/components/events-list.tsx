@@ -170,7 +170,9 @@ export function EventsList({ events }: { events: EventListItem[] }) {
         ),
         meta: (
           <div className="space-y-1 text-right">
-            <div className="font-mono text-xs">{formatMono(event.eventDate)}</div>
+            <div className="font-mono text-xs">
+              {formatMono(event.eventDate)}
+            </div>
             <div className="text-[11px] text-ink/50">
               {formatDate(event.eventDate)}
             </div>

@@ -13,11 +13,10 @@ import {
   shouldAutoDisable,
   shouldTriggerWebhook,
 } from "@repo/notifications";
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
-
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { log } from "@repo/observability/log";
 
 // Valid event types
 const VALID_EVENT_TYPES = ["created", "updated", "deleted"] as const;

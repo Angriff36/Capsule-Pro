@@ -173,9 +173,9 @@ export const modules: ModuleDefinition[] = [
         items: [
           { title: "Overview", href: "/staff" },
           { title: "Team", href: "/staff/team" },
-          { title: "Schedule", href: "/staff/schedule" },
-          { title: "Availability", href: "/staff/availability" },
-          { title: "Time Off", href: "/staff/time-off" },
+          { title: "Schedule", href: "/scheduling" },
+          { title: "Availability", href: "/scheduling/availability" },
+          { title: "Time Off", href: "/scheduling/time-off" },
           { title: "Performance", href: "/staff/performance" },
           { title: "Training", href: "/staff/training" },
         ],

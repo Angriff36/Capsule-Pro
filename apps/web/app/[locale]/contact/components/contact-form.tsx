@@ -106,8 +106,8 @@ export const ContactForm = ({ dictionary }: ContactFormProps) => {
                 <Input id="picture" type="file" />
               </div>
 
-              <Button className="w-full gap-4">
-                {dictionary.web.contact.hero.form.cta}{" "}
+              <Button className="w-full gap-4" disabled type="button">
+                {dictionary.web.contact.hero.form.cta} — not wired yet{" "}
                 <MoveRight className="h-4 w-4" />
               </Button>
             </div>

@@ -4,17 +4,17 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
-import { captureException } from "@sentry/nextjs";
 import { triggerShiftAssignedSms } from "@repo/notifications";
+import { log } from "@repo/observability/log";
+import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { dispatchWebhooks } from "@/app/lib/webhook-dispatch";
 import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
-import { dispatchWebhooks } from "@/app/lib/webhook-dispatch";
-import { log } from "@repo/observability/log";
 
 export const runtime = "nodejs";
 
@@ -92,8 +92,7 @@ export async function POST(request: NextRequest) {
       triggerShiftAssignedSms({
         tenantId,
         shiftId:
-          (result.result as Record<string, unknown>)?.id as string ??
-          body.id,
+          ((result.result as Record<string, unknown>)?.id as string) ?? body.id,
         shiftDate: body.shiftStart.slice(0, 10),
         shiftStart: body.shiftStart,
         shiftEnd: body.shiftEnd,
@@ -106,7 +105,10 @@ export async function POST(request: NextRequest) {
     dispatchWebhooks({
       tenantId,
       entityType: "scheduleShift",
-      entityId: (result.result as Record<string, unknown>)?.id as string ?? body.id ?? "",
+      entityId:
+        ((result.result as Record<string, unknown>)?.id as string) ??
+        body.id ??
+        "",
       action: "created",
       data: result.result as Record<string, unknown>,
     }).catch(() => {});

@@ -1,10 +1,10 @@
 import { auth } from "@repo/auth/server";
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { manifestErrorResponse } from "@/lib/manifest-response";
 import { database } from "@/lib/database";
-import { log } from "@repo/observability/log";
+import { manifestErrorResponse } from "@/lib/manifest-response";
 
 export async function POST(request: NextRequest) {
   try {
@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
       iotDeviceType,
     } = body;
 
-    if (!name || !locationId) {
+    if (!(name && locationId)) {
       return manifestErrorResponse("name and locationId are required", 400);
     }
 
@@ -56,9 +56,7 @@ export async function POST(request: NextRequest) {
         manufacturer,
         model,
         purchaseDate: purchaseDate ? new Date(purchaseDate) : undefined,
-        warrantyExpiry: warrantyExpiry
-          ? new Date(warrantyExpiry)
-          : undefined,
+        warrantyExpiry: warrantyExpiry ? new Date(warrantyExpiry) : undefined,
         maintenanceIntervalDays: maintenanceIntervalDays ?? 90,
         maxUsageHours: maxUsageHours ?? 1000,
         notes,
@@ -67,10 +65,10 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return new Response(
-      JSON.stringify({ equipment }),
-      { status: 201, headers: { "Content-Type": "application/json" } },
-    );
+    return new Response(JSON.stringify({ equipment }), {
+      status: 201,
+      headers: { "Content-Type": "application/json" },
+    });
   } catch (error) {
     captureException(error);
     log.error("Error creating equipment:", error);

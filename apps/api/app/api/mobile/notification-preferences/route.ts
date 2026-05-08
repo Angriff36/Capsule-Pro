@@ -1,7 +1,7 @@
-import { type NextRequest, NextResponse } from "next/server";
-import { requireCurrentUser } from "@/app/lib/tenant";
 import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
+import { type NextRequest, NextResponse } from "next/server";
+import { requireCurrentUser } from "@/app/lib/tenant";
 
 const NOTIFICATION_KEYS = [
   "taskAssigned",
@@ -46,7 +46,7 @@ export async function GET() {
     });
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -67,7 +67,7 @@ export async function PATCH(request: NextRequest) {
     if (Object.keys(updates).length === 0) {
       return NextResponse.json(
         { error: "No valid preference fields provided" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -92,8 +92,8 @@ export async function PATCH(request: NextRequest) {
           update: {
             preferenceValue: value,
           },
-        }),
-      ),
+        })
+      )
     );
 
     return NextResponse.json({ success: true });
@@ -103,7 +103,7 @@ export async function PATCH(request: NextRequest) {
     });
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

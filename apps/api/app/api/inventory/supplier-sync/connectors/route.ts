@@ -8,10 +8,10 @@
  */
 
 import { auth } from "@repo/auth/server";
+import { log } from "@repo/observability/log";
 import { connectorRegistry } from "@repo/supplier-connectors";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
-import { log } from "@repo/observability/log";
 
 /**
  * GET /api/inventory/supplier-sync/connectors

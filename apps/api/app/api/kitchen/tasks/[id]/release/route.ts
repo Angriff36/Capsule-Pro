@@ -1,6 +1,6 @@
+import { log } from "@repo/observability/log";
 import type { NextRequest } from "next/server";
 import { executeManifestCommand } from "@/lib/manifest-command-handler";
-import { log } from "@repo/observability/log";
 
 interface RouteContext {
   params: Promise<{ id: string }>;

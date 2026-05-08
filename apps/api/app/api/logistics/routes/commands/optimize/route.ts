@@ -9,10 +9,10 @@
  * This endpoint returns 501 until an optimization algorithm is chosen.
  */
 
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { requireTenantId } from "@/app/lib/tenant";
-import { log } from "@repo/observability/log";
 
 export async function POST(request: NextRequest) {
   try {

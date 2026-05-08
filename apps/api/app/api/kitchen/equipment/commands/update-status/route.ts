@@ -1,10 +1,10 @@
 import { auth } from "@repo/auth/server";
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { manifestErrorResponse } from "@/lib/manifest-response";
 import { database } from "@/lib/database";
-import { log } from "@repo/observability/log";
+import { manifestErrorResponse } from "@/lib/manifest-response";
 
 const VALID_STATUSES = ["active", "inactive", "maintenance", "retired"];
 
@@ -28,7 +28,10 @@ export async function POST(request: NextRequest) {
     }
 
     if (status && !VALID_STATUSES.includes(status)) {
-      return manifestErrorResponse(`status must be one of: ${VALID_STATUSES.join(", ")}`, 400);
+      return manifestErrorResponse(
+        `status must be one of: ${VALID_STATUSES.join(", ")}`,
+        400
+      );
     }
 
     const existing = await database.equipment.findFirst({
@@ -48,10 +51,10 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return new Response(
-      JSON.stringify({ equipment }),
-      { status: 200, headers: { "Content-Type": "application/json" } }
-    );
+    return new Response(JSON.stringify({ equipment }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
   } catch (error) {
     captureException(error);
     log.error("Error updating equipment status:", error);

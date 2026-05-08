@@ -11,17 +11,19 @@ const DevConsoleDashboardPage = () => (
       <div className="dev-console-header-actions">
         <button
           className="dev-console-button dev-console-button-ghost"
+          disabled
           type="button"
         >
           <DownloadIcon className="h-4 w-4" />
-          Export Report
+          Export report — demo only (not wired)
         </button>
         <button
           className="dev-console-button dev-console-button-primary"
+          disabled
           type="button"
         >
           <PlusIcon className="h-4 w-4" />
-          New Application
+          New application — demo only (not wired)
         </button>
       </div>
     </header>
@@ -133,8 +135,8 @@ const DevConsoleDashboardPage = () => (
             <span>Umbrella Corp rotated production keys</span>
           </div>
         </div>
-        <button className="dev-console-link" type="button">
-          View all logs
+        <button className="dev-console-link" disabled type="button">
+          View all logs — demo only (not wired)
         </button>
       </div>
 
@@ -146,14 +148,14 @@ const DevConsoleDashboardPage = () => (
           </div>
         </div>
         <div className="dev-console-quick-links">
-          <button className="dev-console-quick-link" type="button">
-            Documentation
+          <button className="dev-console-quick-link" disabled type="button">
+            Documentation — demo only
           </button>
-          <button className="dev-console-quick-link" type="button">
-            Support Center
+          <button className="dev-console-quick-link" disabled type="button">
+            Support center — demo only
           </button>
-          <button className="dev-console-quick-link" type="button">
-            Global Config
+          <button className="dev-console-quick-link" disabled type="button">
+            Global config — demo only
           </button>
         </div>
       </div>

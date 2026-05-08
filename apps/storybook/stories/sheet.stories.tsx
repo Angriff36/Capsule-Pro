@@ -41,17 +41,19 @@ const meta: Meta<typeof SheetContent> = {
           </SheetDescription>
         </SheetHeader>
         <SheetFooter>
-          <SheetClose>
+          <SheetClose asChild>
             <button className="hover:underline" type="button">
               Cancel
             </button>
           </SheetClose>
-          <button
-            className="rounded bg-primary px-4 py-2 text-primary-foreground"
-            type="button"
-          >
-            Submit
-          </button>
+          <SheetClose asChild>
+            <button
+              className="rounded bg-primary px-4 py-2 text-primary-foreground"
+              type="button"
+            >
+              Submit
+            </button>
+          </SheetClose>
         </SheetFooter>
       </SheetContent>
     </Sheet>

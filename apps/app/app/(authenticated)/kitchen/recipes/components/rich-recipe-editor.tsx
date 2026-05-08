@@ -446,21 +446,24 @@ export function RichRecipeEditor({
     const calculateCosts = async () => {
       startCalculation(async () => {
         try {
-          const response = await apiFetch("/api/kitchen/ingredients/calculate-cost", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              ingredients: ingredients.map((ing) => ({
-                name: ing.name,
-                quantity: Number.parseFloat(ing.quantity) || 0,
-                unit: ing.unit,
-                isSubRecipe: ing.isSubRecipe,
-                subRecipeId: ing.subRecipeId,
-              })),
-              scaleFactor,
-              yieldQuantity: recipe?.yieldQuantity || 1,
-            }),
-          });
+          const response = await apiFetch(
+            "/api/kitchen/ingredients/calculate-cost",
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                ingredients: ingredients.map((ing) => ({
+                  name: ing.name,
+                  quantity: Number.parseFloat(ing.quantity) || 0,
+                  unit: ing.unit,
+                  isSubRecipe: ing.isSubRecipe,
+                  subRecipeId: ing.subRecipeId,
+                })),
+                scaleFactor,
+                yieldQuantity: recipe?.yieldQuantity || 1,
+              }),
+            }
+          );
 
           if (response.ok) {
             const data = await response.json();
@@ -577,9 +580,7 @@ export function RichRecipeEditor({
       );
       if (response.ok) {
         const data = await response.json();
-        return (data.data || []).map(
-          (ing: { name: string }) => ing.name
-        );
+        return (data.data || []).map((ing: { name: string }) => ing.name);
       }
     } catch {
       // Ignore search errors

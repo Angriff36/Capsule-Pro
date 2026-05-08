@@ -7,12 +7,12 @@
  */
 
 import { database } from "@repo/database";
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
-import { log } from "@repo/observability/log";
 import {
-  validateContractStatusTransition,
   type ContractStatus,
+  validateContractStatusTransition,
 } from "../../../../events/contracts/validation";
 
 type Params = Promise<{ token: string }>;

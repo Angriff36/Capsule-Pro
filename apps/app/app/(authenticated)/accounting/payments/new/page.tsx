@@ -126,8 +126,7 @@ export default function NewPaymentPage() {
       router.push("/accounting/payments");
     } catch (error) {
       toast.error("Failed to create payment", {
-        description:
-          error instanceof Error ? error.message : "Unknown error",
+        description: error instanceof Error ? error.message : "Unknown error",
       });
     } finally {
       setLoading(false);

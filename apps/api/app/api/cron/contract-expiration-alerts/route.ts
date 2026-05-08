@@ -16,9 +16,9 @@ import {
   buildContractTemplateData,
   triggerEmailWorkflows,
 } from "@repo/notifications";
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
-import { log } from "@repo/observability/log";
 
 // Force dynamic rendering — reads Authorization headers and queries DB at runtime
 export const dynamic = "force-dynamic";

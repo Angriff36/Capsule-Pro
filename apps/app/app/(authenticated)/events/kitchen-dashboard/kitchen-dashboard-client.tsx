@@ -666,7 +666,7 @@ export const KitchenDashboardClient = ({
             <p className="font-mono text-[12px] uppercase tracking-[0.28em] text-[#75758a]">
               Kitchen operations / empty
             </p>
-            <h2 className="font-display text-4xl font-normal leading-[1.05] tracking-[-0.02em] text-foreground sm:text-5xl">
+            <h2 className="font-display text-2xl font-normal leading-[1.05] tracking-[-0.02em] text-foreground sm:text-5xl">
               No events yet.
             </h2>
             <p className="max-w-lg text-base leading-relaxed text-[#454553]">
@@ -705,7 +705,7 @@ export const KitchenDashboardClient = ({
               <p className="font-mono text-[12px] uppercase tracking-[0.28em] text-white/60">
                 Kitchen operations / control room
               </p>
-              <h2 className="font-display text-4xl font-normal leading-[1.05] tracking-[-0.02em] sm:text-5xl">
+              <h2 className="font-display text-2xl font-normal leading-[1.05] tracking-[-0.02em] sm:text-5xl">
                 Today &amp; the next 24 hours.
               </h2>
               <p className="max-w-xl text-base leading-relaxed text-white/70">
@@ -895,7 +895,7 @@ export const KitchenDashboardClient = ({
                 <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-[#75758a]">
                   No matches
                 </p>
-                <h3 className="text-3xl font-normal leading-[1.1] tracking-[-0.02em] text-[#17171c]">
+                <h3 className="text-2xl font-normal leading-[1.1] tracking-[-0.02em] text-[#17171c]">
                   Nothing matches these filters.
                 </h3>
                 <p className="text-[15px] leading-relaxed text-[#616161]">
@@ -928,7 +928,7 @@ export const KitchenDashboardClient = ({
                     <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-[#75758a]">
                       Live operations
                     </p>
-                    <h3 className="mt-1 text-3xl font-normal leading-tight tracking-[-0.01em] text-[#17171c]">
+                    <h3 className="mt-1 text-2xl font-normal leading-tight tracking-[-0.01em] text-[#17171c]">
                       In window now.
                     </h3>
                   </div>
@@ -1066,7 +1066,7 @@ export const KitchenDashboardClient = ({
                     <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-[#75758a]">
                       {viewMode === "timeline" ? "Timeline" : "Queue"}
                     </p>
-                    <h3 className="mt-1 text-3xl font-normal leading-tight tracking-[-0.01em] text-[#17171c]">
+                    <h3 className="mt-1 text-2xl font-normal leading-tight tracking-[-0.01em] text-[#17171c]">
                       {viewMode === "timeline"
                         ? "Service days, sequenced."
                         : "Every event, in line."}

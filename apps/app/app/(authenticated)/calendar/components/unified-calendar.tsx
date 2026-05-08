@@ -11,6 +11,7 @@ import {
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
+import { ResearchTable } from "@repo/design-system/components/blocks/research-table";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -22,7 +23,6 @@ import {
   DialogTitle,
 } from "@repo/design-system/components/ui/dialog";
 import { Input } from "@repo/design-system/components/ui/input";
-import { ResearchTable } from "@repo/design-system/components/blocks/research-table";
 import {
   Tabs,
   TabsList,
@@ -961,17 +961,14 @@ export function UnifiedCalendar({
             </DialogTitle>
             <DialogDescription>
               {overflowDialog.events.length}{" "}
-              {overflowDialog.events.length === 1 ? "entry" : "entries"} on
-              this date
+              {overflowDialog.events.length === 1 ? "entry" : "entries"} on this
+              date
             </DialogDescription>
           </DialogHeader>
 
           <ResearchTable
             rows={overflowDialog.events
-              .sort(
-                (a, b) =>
-                  a.start.getTime() - b.start.getTime()
-              )
+              .sort((a, b) => a.start.getTime() - b.start.getTime())
               .map((e) => ({
                 id: e.id,
                 title: e.title,

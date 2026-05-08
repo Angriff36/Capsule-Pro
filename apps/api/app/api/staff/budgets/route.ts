@@ -1,9 +1,9 @@
 import { auth } from "@repo/auth/server";
+import { log } from "@repo/observability/log";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { executeManifestCommand } from "@/lib/manifest-command-handler";
 import { getLaborBudgets } from "@/lib/staff/labor-budget";
-import { log } from "@repo/observability/log";
 
 /**
  * GET /api/staff/budgets

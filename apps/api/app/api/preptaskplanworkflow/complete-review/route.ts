@@ -3,6 +3,7 @@
 // Writes MUST flow through runtime to enforce guards, policies, and constraints
 
 import { auth } from "@repo/auth/server";
+import { log } from "@repo/observability/log";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import {
@@ -10,7 +11,6 @@ import {
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
-import { log } from "@repo/observability/log";
 
 export const runtime = "nodejs";
 
@@ -57,10 +57,7 @@ export async function POST(request: NextRequest) {
       events: result.emittedEvents,
     });
   } catch (error) {
-    log.error(
-      "Error executing PrepTaskPlanWorkflow.completeReview:",
-      error
-    );
+    log.error("Error executing PrepTaskPlanWorkflow.completeReview:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

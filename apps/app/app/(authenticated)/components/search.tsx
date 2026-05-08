@@ -17,6 +17,7 @@ export const Search = () => (
       <Button
         className="absolute top-px right-px bottom-px h-8 w-8"
         size="icon"
+        type="submit"
         variant="ghost"
       >
         <ArrowRightIcon className="text-muted-foreground" size={16} />

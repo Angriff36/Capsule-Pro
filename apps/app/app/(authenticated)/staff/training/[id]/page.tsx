@@ -182,12 +182,8 @@ const TrainingModulePage = async ({ params }: TrainingModulePageProps) => {
               isActive: module.is_active,
             }}
             moduleId={id}
-          >
-            <Button variant="outline">Edit Module</Button>
-          </EditTrainingModuleDialog>
-          <AssignTrainingDialog moduleId={id} moduleName={module.title}>
-            <Button>Assign to Employee</Button>
-          </AssignTrainingDialog>
+          />
+          <AssignTrainingDialog moduleId={id} moduleName={module.title} />
           <DeleteTrainingModuleButton
             moduleId={id}
             moduleTitle={module.title}

@@ -462,16 +462,20 @@ const SchedulingPage = async () => {
               </span>
             </div>
             <Button
-              aria-label="Notifications"
+              aria-label="Scheduling notifications — not implemented"
               className="border-white/25 bg-transparent text-white hover:bg-white/10"
+              disabled
               size="icon"
+              type="button"
               variant="outline"
             >
               <BellIcon className="size-4" />
             </Button>
-            <Button size="default" variant="on-dark">
-              <PlusIcon className="size-4" />
-              Add shift
+            <Button asChild size="default" variant="on-dark">
+              <Link href="/scheduling/shifts">
+                <PlusIcon className="size-4" />
+                Add shift
+              </Link>
             </Button>
           </CommandBandActions>
         </CommandBandHeader>
@@ -558,9 +562,11 @@ const SchedulingPage = async () => {
           <section className="space-y-6">
             <SectionHeader
               actions={
-                <Button size="sm" variant="default">
-                  <PlusIcon className="size-4" />
-                  Add shift
+                <Button asChild size="sm" variant="default">
+                  <Link href="/scheduling/shifts">
+                    <PlusIcon className="size-4" />
+                    Add shift
+                  </Link>
                 </Button>
               }
               count={`${shiftTotals?.shift_count ?? 0} shifts · ${shiftTotals?.staff_count ?? 0} people`}
@@ -688,8 +694,8 @@ const SchedulingPage = async () => {
                             </div>
                           </div>
                         </div>
-                        <Button size="sm" variant="ghost">
-                          Edit
+                        <Button asChild size="sm" variant="ghost">
+                          <Link href="/scheduling/shifts">Edit</Link>
                         </Button>
                       </div>
                     </OperationalRow>
@@ -702,8 +708,8 @@ const SchedulingPage = async () => {
           <section className="space-y-6">
             <SectionHeader
               actions={
-                <Button size="sm" variant="outline">
-                  View leaderboard
+                <Button disabled size="sm" type="button" variant="outline">
+                  View leaderboard — not implemented
                 </Button>
               }
               count="Top 3"

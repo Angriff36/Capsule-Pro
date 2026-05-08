@@ -10,6 +10,16 @@ import {
   CardTitle,
 } from "@repo/design-system/components/ui/card";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@repo/design-system/components/ui/dialog";
+import { Input } from "@repo/design-system/components/ui/input";
+import { Label } from "@repo/design-system/components/ui/label";
+import {
   Tabs,
   TabsContent,
   TabsList,
@@ -24,18 +34,8 @@ import {
   Wrench,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { apiFetch } from "@/app/lib/api";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@repo/design-system/components/ui/dialog";
-import { Label } from "@repo/design-system/components/ui/label";
-import { Input } from "@repo/design-system/components/ui/input";
 import { toast } from "sonner";
+import { apiFetch } from "@/app/lib/api";
 
 interface Equipment {
   id: string;
@@ -180,8 +180,9 @@ export function EquipmentPageClient() {
         serialNumber: formData.serialNumber || undefined,
         manufacturer: formData.manufacturer || undefined,
         model: formData.model || undefined,
-        maintenanceIntervalDays: parseInt(formData.maintenanceIntervalDays) || 90,
-        maxUsageHours: parseFloat(formData.maxUsageHours) || 1000,
+        maintenanceIntervalDays:
+          Number.parseInt(formData.maintenanceIntervalDays) || 90,
+        maxUsageHours: Number.parseFloat(formData.maxUsageHours) || 1000,
         notes: formData.notes || undefined,
       };
       if (formData.purchaseDate) {
@@ -201,10 +202,17 @@ export function EquipmentPageClient() {
       toast.success("Equipment created successfully");
       setIsAddDialogOpen(false);
       setFormData({
-        name: "", type: "general", locationId: "",
-        serialNumber: "", manufacturer: "", model: "",
-        purchaseDate: "", warrantyExpiry: "",
-        maintenanceIntervalDays: "90", maxUsageHours: "1000", notes: "",
+        name: "",
+        type: "general",
+        locationId: "",
+        serialNumber: "",
+        manufacturer: "",
+        model: "",
+        purchaseDate: "",
+        warrantyExpiry: "",
+        maintenanceIntervalDays: "90",
+        maxUsageHours: "1000",
+        notes: "",
       });
       fetchEquipment();
     } catch (error) {
@@ -244,7 +252,7 @@ export function EquipmentPageClient() {
       </div>
 
       {/* Add Equipment Dialog */}
-      <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+      <Dialog onOpenChange={setIsAddDialogOpen} open={isAddDialogOpen}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
             <DialogTitle>Add Equipment</DialogTitle>
@@ -255,165 +263,168 @@ export function EquipmentPageClient() {
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="name" className="text-right">
+              <Label className="text-right" htmlFor="name">
                 Name *
               </Label>
               <Input
                 className="col-span-3"
                 id="name"
-                placeholder="Convection Oven"
-                value={formData.name}
                 onChange={(e) =>
                   setFormData({ ...formData, name: e.target.value })
                 }
+                placeholder="Convection Oven"
+                value={formData.name}
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="type" className="text-right">
+              <Label className="text-right" htmlFor="type">
                 Type
               </Label>
               <Input
                 className="col-span-3"
                 id="type"
-                placeholder="general"
-                value={formData.type}
                 onChange={(e) =>
                   setFormData({ ...formData, type: e.target.value })
                 }
+                placeholder="general"
+                value={formData.type}
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="locationId" className="text-right">
+              <Label className="text-right" htmlFor="locationId">
                 Location ID *
               </Label>
               <Input
                 className="col-span-3"
                 id="locationId"
-                placeholder="UUID of the facility location"
-                value={formData.locationId}
                 onChange={(e) =>
                   setFormData({ ...formData, locationId: e.target.value })
                 }
+                placeholder="UUID of the facility location"
+                value={formData.locationId}
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="manufacturer" className="text-right">
+              <Label className="text-right" htmlFor="manufacturer">
                 Manufacturer
               </Label>
               <Input
                 className="col-span-3"
                 id="manufacturer"
-                placeholder="Vulcan, Rational, etc."
-                value={formData.manufacturer}
                 onChange={(e) =>
                   setFormData({ ...formData, manufacturer: e.target.value })
                 }
+                placeholder="Vulcan, Rational, etc."
+                value={formData.manufacturer}
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="model" className="text-right">
+              <Label className="text-right" htmlFor="model">
                 Model
               </Label>
               <Input
                 className="col-span-3"
                 id="model"
-                placeholder="VC4-GD"
-                value={formData.model}
                 onChange={(e) =>
                   setFormData({ ...formData, model: e.target.value })
                 }
+                placeholder="VC4-GD"
+                value={formData.model}
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="serialNumber" className="text-right">
+              <Label className="text-right" htmlFor="serialNumber">
                 Serial #
               </Label>
               <Input
                 className="col-span-3"
                 id="serialNumber"
-                placeholder="SN-12345"
-                value={formData.serialNumber}
                 onChange={(e) =>
                   setFormData({ ...formData, serialNumber: e.target.value })
                 }
+                placeholder="SN-12345"
+                value={formData.serialNumber}
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="purchaseDate" className="text-right">
+              <Label className="text-right" htmlFor="purchaseDate">
                 Purchase Date
               </Label>
               <Input
                 className="col-span-3"
                 id="purchaseDate"
-                type="date"
-                value={formData.purchaseDate}
                 onChange={(e) =>
                   setFormData({ ...formData, purchaseDate: e.target.value })
                 }
+                type="date"
+                value={formData.purchaseDate}
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="warrantyExpiry" className="text-right">
+              <Label className="text-right" htmlFor="warrantyExpiry">
                 Warranty Expiry
               </Label>
               <Input
                 className="col-span-3"
                 id="warrantyExpiry"
-                type="date"
-                value={formData.warrantyExpiry}
                 onChange={(e) =>
                   setFormData({ ...formData, warrantyExpiry: e.target.value })
                 }
+                type="date"
+                value={formData.warrantyExpiry}
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="maintenanceIntervalDays" className="text-right">
+              <Label className="text-right" htmlFor="maintenanceIntervalDays">
                 Maint. Interval (days)
               </Label>
               <Input
                 className="col-span-3"
                 id="maintenanceIntervalDays"
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    maintenanceIntervalDays: e.target.value,
+                  })
+                }
                 type="number"
                 value={formData.maintenanceIntervalDays}
-                onChange={(e) =>
-                  setFormData({ ...formData, maintenanceIntervalDays: e.target.value })
-                }
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="maxUsageHours" className="text-right">
+              <Label className="text-right" htmlFor="maxUsageHours">
                 Max Usage Hours
               </Label>
               <Input
                 className="col-span-3"
                 id="maxUsageHours"
-                type="number"
-                value={formData.maxUsageHours}
                 onChange={(e) =>
                   setFormData({ ...formData, maxUsageHours: e.target.value })
                 }
+                type="number"
+                value={formData.maxUsageHours}
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="notes" className="text-right">
+              <Label className="text-right" htmlFor="notes">
                 Notes
               </Label>
               <Input
                 className="col-span-3"
                 id="notes"
-                placeholder="Any additional notes"
-                value={formData.notes}
                 onChange={(e) =>
                   setFormData({ ...formData, notes: e.target.value })
                 }
+                placeholder="Any additional notes"
+                value={formData.notes}
               />
             </div>
           </div>
           <DialogFooter>
             <Button
               disabled={submitting}
-              variant="outline"
               onClick={() => setIsAddDialogOpen(false)}
+              variant="outline"
             >
               Cancel
             </Button>
@@ -428,12 +439,12 @@ export function EquipmentPageClient() {
       {alertSummary && (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card
-            tone="canvas"
             className={
               alertSummary.bySeverity.critical > 0
                 ? "border-red-500 bg-red-900/10"
                 : ""
             }
+            tone="canvas"
           >
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -597,11 +608,11 @@ export function EquipmentPageClient() {
                           </div>
                         </div>
                         <div className="flex gap-2">
-                          <Button size="sm" variant="outline">
-                            Schedule Maintenance
+                          <Button disabled size="sm" variant="outline">
+                            Schedule maintenance — not implemented
                           </Button>
-                          <Button size="sm" variant="ghost">
-                            Details
+                          <Button disabled size="sm" variant="ghost">
+                            Details — not implemented
                           </Button>
                         </div>
                       </div>
@@ -623,9 +634,9 @@ export function EquipmentPageClient() {
                     Track repairs, replacements, and inspections
                   </CardDescription>
                 </div>
-                <Button>
+                <Button disabled type="button" variant="default">
                   <Plus className="mr-2 h-4 w-4" />
-                  New Work Order
+                  New work order — not implemented
                 </Button>
               </div>
             </CardHeader>
@@ -679,11 +690,11 @@ export function EquipmentPageClient() {
                         </div>
                       </div>
                       <div className="flex gap-2">
-                        <Button size="sm" variant="outline">
-                          Update Status
+                        <Button disabled size="sm" variant="outline">
+                          Update status — not implemented
                         </Button>
-                        <Button size="sm" variant="ghost">
-                          Details
+                        <Button disabled size="sm" variant="ghost">
+                          Details — not implemented
                         </Button>
                       </div>
                     </div>
@@ -756,8 +767,8 @@ export function EquipmentPageClient() {
                             Recommendation: {alert.recommendedAction}
                           </p>
                         </div>
-                        <Button size="sm" variant="outline">
-                          Take Action
+                        <Button disabled size="sm" variant="outline">
+                          Take action — not implemented
                         </Button>
                       </div>
                     </div>

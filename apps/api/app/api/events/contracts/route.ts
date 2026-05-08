@@ -7,13 +7,13 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { log } from "@repo/observability/log";
 import { type NextRequest, NextResponse } from "next/server";
 import { executeManifestCommand } from "@/lib/manifest-command-handler";
 import { InvariantError } from "../../../lib/invariant";
 import { getTenantIdForOrg } from "../../../lib/tenant";
 import type { ContractStatus } from "./types";
 import { CONTRACT_STATUSES } from "./validation";
-import { log } from "@repo/observability/log";
 
 interface ContractListFilters {
   status?: ContractStatus;

@@ -8,9 +8,7 @@
  * All errors are caught internally — this never propagates to the caller.
  */
 
-import { database, type Prisma } from "@repo/database";
-import { log } from "@repo/observability/log";
-import { captureException } from "@sentry/nextjs";
+import { database, type Prisma, type webhook_event_type } from "@repo/database";
 import {
   buildWebhookPayload,
   determineNextStatus,
@@ -18,7 +16,8 @@ import {
   shouldAutoDisable,
   shouldTriggerWebhook,
 } from "@repo/notifications";
-import { webhook_delivery_status, type webhook_event_type } from "@repo/database";
+import { log } from "@repo/observability/log";
+import { captureException } from "@sentry/nextjs";
 
 interface DispatchWebhooksParams {
   tenantId: string;
@@ -52,14 +51,24 @@ export async function dispatchWebhooks({
       return;
     }
 
-    const payload = buildWebhookPayload(action, entityType, entityId, data, tenantId);
+    const payload = buildWebhookPayload(
+      action,
+      entityType,
+      entityId,
+      data,
+      tenantId
+    );
 
     await Promise.allSettled(
       matchingWebhooks.map(async (webhook) => {
         try {
           const result = await sendWebhook(webhook, payload);
 
-          const { status, nextRetryAt } = determineNextStatus(1, webhook.retryCount, result);
+          const { status, nextRetryAt } = determineNextStatus(
+            1,
+            webhook.retryCount,
+            result
+          );
 
           await database.webhookDeliveryLog.create({
             data: {
@@ -95,11 +104,14 @@ export async function dispatchWebhooks({
 
           if (shouldAutoDisable(consecutiveFailures)) {
             updateData.status = "disabled";
-            log.warn("[webhook-dispatch] Auto-disabling webhook after consecutive failures", {
-              webhookId: webhook.id,
-              consecutiveFailures,
-              tenantId,
-            });
+            log.warn(
+              "[webhook-dispatch] Auto-disabling webhook after consecutive failures",
+              {
+                webhookId: webhook.id,
+                consecutiveFailures,
+                tenantId,
+              }
+            );
           }
 
           await database.outboundWebhook.update({

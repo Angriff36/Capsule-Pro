@@ -5,12 +5,12 @@
  */
 
 import { database } from "@repo/database";
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
-import { withRateLimit } from "@/middleware/rate-limiter";
-import { requireDualAuth } from "@/middleware/dual-auth";
 import { API_SCOPES } from "@/lib/api-scopes";
-import { log } from "@repo/observability/log";
+import { requireDualAuth } from "@/middleware/dual-auth";
+import { withRateLimit } from "@/middleware/rate-limiter";
 
 export const runtime = "nodejs";
 
@@ -25,7 +25,7 @@ export const POST = withRateLimit(
   async (request: Request, context) => {
     try {
       const authResult = await requireDualAuth(request, API_SCOPES.ADMIN);
-      if (!authResult.authenticated || !authResult.tenantId) {
+      if (!(authResult.authenticated && authResult.tenantId)) {
         return authResult.error!;
       }
 

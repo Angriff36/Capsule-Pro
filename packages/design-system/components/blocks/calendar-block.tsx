@@ -59,12 +59,15 @@ export function CalendarBlock() {
           </div>
           <Button
             className="size-6"
+            disabled
             size="icon"
-            title="Add Event"
+            title="Adding events from this preview is not implemented"
             variant="ghost"
           >
             <PlusIcon />
-            <span className="sr-only">Add Event</span>
+            <span className="sr-only">
+              Add event — not implemented in this preview
+            </span>
           </Button>
         </div>
         <div className="flex w-full flex-col gap-2">

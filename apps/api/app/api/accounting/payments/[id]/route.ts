@@ -159,6 +159,7 @@ export async function PUT(request: NextRequest, context: RouteContext) {
       tenantId,
       amount: Number(payment.amount),
       currency: payment.currency,
+      gatewayPaymentMethodId: payment.gatewayPaymentMethodId,
     });
 
     const isCompleted = gatewayResult.success;
@@ -349,10 +350,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
       });
     } catch (auditError) {
       captureException(auditError);
-      log.error(
-        "Failed to persist payment refund audit row (continuing)",
-        { error: auditError }
-      );
+      log.error("Failed to persist payment refund audit row (continuing)", {
+        error: auditError,
+      });
     }
 
     if (!gatewayResult.success) {

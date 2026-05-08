@@ -6,6 +6,7 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -15,7 +16,6 @@ import type {
   PurchaseOrderWithDetails,
   QualityStatus,
 } from "../types";
-import { log } from "@repo/observability/log";
 
 interface RouteContext {
   params: Promise<{ id: string }>;

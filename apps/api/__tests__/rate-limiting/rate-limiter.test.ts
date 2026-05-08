@@ -304,9 +304,7 @@ describe("Rate Limiting Middleware", () => {
 
       it("should log error via observability on Redis failure", async () => {
         const { log } = await import("@repo/observability/log");
-        const logSpy = vi
-          .spyOn(log, "error")
-          .mockImplementation(() => {});
+        const logSpy = vi.spyOn(log, "error").mockImplementation(() => {});
         const request = createMockRequest({
           headers: { "x-tenant-id": TEST_TENANT_ID },
         });

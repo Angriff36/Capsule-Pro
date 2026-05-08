@@ -1,5 +1,6 @@
 import { Input } from "@repo/design-system/components/ui/input";
 import type { Meta, StoryObj } from "@storybook/react";
+import { action } from "storybook/actions";
 
 /**
  * Displays a form input field or a component that looks like an input field.
@@ -74,7 +75,8 @@ export const WithButton: Story = {
       <Input {...args} />
       <button
         className="rounded bg-primary px-4 py-2 text-primary-foreground"
-        type="submit"
+        onClick={action("subscribe")}
+        type="button"
       >
         Subscribe
       </button>

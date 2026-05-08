@@ -1,5 +1,6 @@
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
+import { log } from "@repo/observability/log";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -9,7 +10,6 @@ import type {
   TrainingModule,
   TrainingModulesListResponse,
 } from "../types";
-import { log } from "@repo/observability/log";
 
 export const runtime = "nodejs";
 
@@ -162,7 +162,10 @@ export async function POST(request: NextRequest) {
 
     const tenantId = await getTenantIdForOrg(orgId);
     if (!tenantId) {
-      return NextResponse.json({ message: "Tenant not found" }, { status: 400 });
+      return NextResponse.json(
+        { message: "Tenant not found" },
+        { status: 400 }
+      );
     }
 
     const currentUser = await database.user.findFirst({
@@ -186,9 +189,7 @@ export async function POST(request: NextRequest) {
       contentUrl: body.contentUrl ?? body.content_url ?? "",
     };
 
-    const { createManifestRuntime } = await import(
-      "@/lib/manifest-runtime"
-    );
+    const { createManifestRuntime } = await import("@/lib/manifest-runtime");
 
     const runtime = await createManifestRuntime({
       user: {
@@ -277,8 +278,7 @@ export async function POST(request: NextRequest) {
     if (!createdModule || createdModule.length === 0) {
       return NextResponse.json(
         {
-          message:
-            "Failed to create training module.",
+          message: "Failed to create training module.",
         },
         { status: 422 }
       );

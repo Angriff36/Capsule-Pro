@@ -6,11 +6,11 @@
  */
 
 import { database, Prisma } from "@repo/database";
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
-import { requireDualAuth } from "@/middleware/dual-auth";
 import { API_SCOPES } from "@/lib/api-scopes";
-import { log } from "@repo/observability/log";
+import { requireDualAuth } from "@/middleware/dual-auth";
 
 // Valid event types
 const VALID_EVENT_TYPES = ["created", "updated", "deleted"] as const;
@@ -52,7 +52,7 @@ interface CreateWebhookRequest {
 export async function GET(request: NextRequest) {
   try {
     const authResult = await requireDualAuth(request, API_SCOPES.ADMIN);
-    if (!authResult.authenticated || !authResult.tenantId) {
+    if (!(authResult.authenticated && authResult.tenantId)) {
       return authResult.error!;
     }
     const tenantId = authResult.tenantId;
@@ -106,7 +106,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const authResult = await requireDualAuth(request, API_SCOPES.ADMIN);
-    if (!authResult.authenticated || !authResult.tenantId) {
+    if (!(authResult.authenticated && authResult.tenantId)) {
       return authResult.error!;
     }
     const tenantId = authResult.tenantId;

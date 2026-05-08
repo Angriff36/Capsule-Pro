@@ -92,9 +92,7 @@ const StaffTrainingPage = async () => {
             Create and manage training modules and assignments.
           </p>
         </div>
-        <CreateTrainingModuleDialog>
-          <Button>Create Module</Button>
-        </CreateTrainingModuleDialog>
+        <CreateTrainingModuleDialog />
       </div>
 
       <Separator />

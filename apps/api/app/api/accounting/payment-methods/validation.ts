@@ -200,9 +200,7 @@ export function getDisplayInfo(paymentMethod: {
  * TODO: Add `cardExpiryMonth Int?` and `cardExpiryYear Int?` to the
  * PaymentMethod model to support date-based expiry detection.
  */
-export function isCardExpired(paymentMethod: {
-  status: string;
-}): boolean {
+export function isCardExpired(paymentMethod: { status: string }): boolean {
   return paymentMethod.status === "EXPIRED";
 }
 
@@ -216,10 +214,7 @@ export function isCardExpired(paymentMethod: {
 export function isPaymentMethodUsable(paymentMethod: {
   status: string;
 }): boolean {
-  const unusableStatuses: ReadonlySet<string> = new Set([
-    "EXPIRED",
-    "FLAGGED",
-  ]);
+  const unusableStatuses: ReadonlySet<string> = new Set(["EXPIRED", "FLAGGED"]);
 
   return !unusableStatuses.has(paymentMethod.status);
 }

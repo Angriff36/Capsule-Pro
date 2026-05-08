@@ -320,6 +320,7 @@ describe("PUT /api/accounting/payments/[id] (process) — gateway trust boundary
         tenantId: TENANT_ID,
         amount: 100, // payment.amount, not body.amount=0.01
         currency: "USD", // payment.currency, not body.currency=ZWL
+        gatewayPaymentMethodId: null,
       });
     });
 

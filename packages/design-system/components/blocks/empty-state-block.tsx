@@ -33,10 +33,12 @@ export function EmptyStateBlock() {
           </EmptyHeader>
           <EmptyContent>
             <div className="flex w-full flex-col gap-2 sm:flex-row sm:justify-center">
-              <Button size="sm">Create invoice</Button>
-              <Button size="sm" variant="outline">
+              <Button disabled size="sm" type="button">
+                Create invoice — preview block
+              </Button>
+              <Button disabled size="sm" type="button" variant="outline">
                 <UploadCloud />
-                Import CSV
+                Import CSV — preview block
               </Button>
             </div>
             <p className="text-muted-foreground text-xs">

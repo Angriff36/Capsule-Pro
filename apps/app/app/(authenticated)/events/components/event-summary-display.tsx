@@ -388,7 +388,7 @@ ${summary.insights.map((i) => `- ${i.title}: ${i.description}`).join("\n")}
 
   if (!summary) {
     return (
-      <Card tone="canvas" className="border-dashed bg-background">
+      <Card className="border-dashed bg-background" tone="canvas">
         <CardContent className="py-5">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-start gap-3">
@@ -511,7 +511,7 @@ ${summary.insights.map((i) => `- ${i.title}: ${i.description}`).join("\n")}
       </div>
 
       {isGenerating && (
-        <Card tone="canvas" className="border-primary/20 bg-primary/5">
+        <Card className="border-primary/20 bg-primary/5" tone="canvas">
           <CardContent className="py-4">
             <div className="flex items-center gap-4">
               <Spinner className="size-5 text-primary" />

@@ -11,6 +11,7 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { log } from "@repo/observability/log";
 import {
   connectorRegistry,
   SupplierSyncService,
@@ -23,7 +24,6 @@ import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
-import { log } from "@repo/observability/log";
 
 export const runtime = "nodejs";
 

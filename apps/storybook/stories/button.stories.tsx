@@ -1,6 +1,7 @@
 import { Button } from "@repo/design-system/components/ui/button";
 import type { Meta, StoryObj } from "@storybook/react";
 import { Loader2, Mail } from "lucide-react";
+import { action } from "storybook/actions";
 
 /**
  * Displays a button or a component that looks like a button.
@@ -21,6 +22,7 @@ const meta = {
     variant: "default",
     size: "default",
     children: "Button",
+    onClick: action("clicked"),
   },
 } satisfies Meta<typeof Button>;
 

@@ -1,9 +1,9 @@
-import { auth } from "@repo/auth/server";
-import { captureException } from "@sentry/nextjs";
 import { createHmac } from "node:crypto";
+import { auth } from "@repo/auth/server";
+import { log } from "@repo/observability/log";
+import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { log } from "@repo/observability/log";
 
 const SUPPORTED_PROVIDERS = ["google", "outlook"] as const;
 type Provider = (typeof SUPPORTED_PROVIDERS)[number];
@@ -146,7 +146,8 @@ export async function POST(request: NextRequest) {
 
       // Generate HMAC-signed state token with expiry
       const ts = Date.now();
-      const secret = process.env.CALENDAR_SYNC_SECRET ?? process.env.NEXTAUTH_SECRET ?? "";
+      const secret =
+        process.env.CALENDAR_SYNC_SECRET ?? process.env.NEXTAUTH_SECRET ?? "";
       const sig = createHmac("sha256", secret)
         .update(JSON.stringify({ tenantId, provider, ts }))
         .digest("hex");

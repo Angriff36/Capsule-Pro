@@ -4,6 +4,7 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -12,7 +13,6 @@ import {
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
-import { log } from "@repo/observability/log";
 
 export const runtime = "nodejs";
 
@@ -92,10 +92,7 @@ export async function POST(request: NextRequest) {
       events: result.emittedEvents,
     });
   } catch (error) {
-    log.error(
-      "[prep-task-plan-workflow/completeInstantiation] Error:",
-      error
-    );
+    log.error("[prep-task-plan-workflow/completeInstantiation] Error:", error);
     captureException(error);
     return manifestErrorResponse("Internal server error", 500);
   }

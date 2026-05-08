@@ -71,10 +71,9 @@ export async function calculateDepletionForecast(
       },
     });
   } catch (dbError) {
-    log.error(
-      `[calculateDepletionForecast] DB error looking up SKU ${sku}`,
-      { error: dbError }
-    );
+    log.error(`[calculateDepletionForecast] DB error looking up SKU ${sku}`, {
+      error: dbError,
+    });
     // Return a safe zero-stock forecast rather than crashing
     return {
       sku,
@@ -236,10 +235,9 @@ export async function generateReorderSuggestions(
         suggestions.push(suggestion);
       }
     } catch (error) {
-      log.error(
-        `[generateReorderSuggestions] Failed for SKU ${itemSku}`,
-        { error }
-      );
+      log.error(`[generateReorderSuggestions] Failed for SKU ${itemSku}`, {
+        error,
+      });
       // Continue with other SKUs
     }
   }
@@ -541,10 +539,9 @@ async function calculateReorderSuggestion(
       },
     });
   } catch (dbError) {
-    log.error(
-      `[calculateReorderSuggestion] DB error looking up SKU ${sku}`,
-      { error: dbError }
-    );
+    log.error(`[calculateReorderSuggestion] DB error looking up SKU ${sku}`, {
+      error: dbError,
+    });
     return null;
   }
 
@@ -564,10 +561,9 @@ async function calculateReorderSuggestion(
       horizonDays: leadTimeDays + safetyStockDays,
     });
   } catch (forecastError) {
-    log.error(
-      `[calculateReorderSuggestion] Forecast failed for SKU ${sku}`,
-      { error: forecastError }
-    );
+    log.error(`[calculateReorderSuggestion] Forecast failed for SKU ${sku}`, {
+      error: forecastError,
+    });
     // Return null — we can't make a suggestion without forecast data
     return null;
   }

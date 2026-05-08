@@ -58,6 +58,19 @@ export {
 } from "./outbound-webhook-service";
 // Re-export SMS utilities
 export { sendSms } from "./sms";
+// Re-export SMS Automation utilities
+export { evaluateAndExecuteRules } from "./sms-automation-engine";
+export {
+  triggerCustomEventSms,
+  triggerInventoryLowSms,
+  triggerPrepListPublishedSms,
+  triggerShiftAssignedSms,
+  triggerShiftChangedSms,
+  triggerShiftReminderSms,
+  triggerTaskAssignedSms,
+  triggerTaskCompletedSms,
+  triggerTaskOverdueSms,
+} from "./sms-automation-triggers";
 export {
   getSmsLogs,
   getSmsPreferences,
@@ -82,16 +95,3 @@ export {
   type SmsTemplateData,
   validateTemplateData,
 } from "./sms-templates";
-// Re-export SMS Automation utilities
-export { evaluateAndExecuteRules } from "./sms-automation-engine";
-export {
-  triggerTaskAssignedSms,
-  triggerTaskCompletedSms,
-  triggerTaskOverdueSms,
-  triggerShiftAssignedSms,
-  triggerShiftReminderSms,
-  triggerShiftChangedSms,
-  triggerPrepListPublishedSms,
-  triggerInventoryLowSms,
-  triggerCustomEventSms,
-} from "./sms-automation-triggers";

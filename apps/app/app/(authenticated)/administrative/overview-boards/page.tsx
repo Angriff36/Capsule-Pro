@@ -506,7 +506,7 @@ const AdministrativeOverviewBoardsPage = async () => {
         </h2>
         <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
           {boardSnapshots.map((snapshot) => (
-            <Card tone="soft-stone" className="h-full" key={snapshot.title}>
+            <Card className="h-full" key={snapshot.title} tone="soft-stone">
               <CardHeader>
                 <CardTitle className="text-lg">{snapshot.title}</CardTitle>
                 <CardDescription>{snapshot.description}</CardDescription>

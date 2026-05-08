@@ -1,5 +1,6 @@
 import { Textarea } from "@repo/design-system/components/ui/textarea";
 import type { Meta, StoryObj } from "@storybook/react";
+import { action } from "storybook/actions";
 
 /**
  * Displays a form textarea or a component that looks like a textarea.
@@ -72,7 +73,8 @@ export const WithButton: Story = {
       <Textarea {...args} />
       <button
         className="rounded bg-primary px-4 py-2 text-primary-foreground"
-        type="submit"
+        onClick={action("send-message")}
+        type="button"
       >
         Send Message
       </button>

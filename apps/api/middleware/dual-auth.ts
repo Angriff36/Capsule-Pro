@@ -14,13 +14,13 @@
 
 import { auth } from "@repo/auth/server";
 import { NextResponse } from "next/server";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
 import {
+  type ApiKeyContext,
   authenticateApiKey,
   hasScope,
   insufficientPermissions,
-  type ApiKeyContext,
 } from "./api-key-auth";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 // ============================================================================
 // Types
@@ -105,10 +105,7 @@ export async function requireDualAuth(
       authMethod: "none",
       tenantId: null,
       userId: null,
-      error: NextResponse.json(
-        { message: "Unauthorized" },
-        { status: 401 }
-      ),
+      error: NextResponse.json({ message: "Unauthorized" }, { status: 401 }),
     };
   }
 
@@ -120,10 +117,7 @@ export async function requireDualAuth(
       authMethod: "none",
       tenantId: null,
       userId: null,
-      error: NextResponse.json(
-        { message: "No tenant found" },
-        { status: 401 }
-      ),
+      error: NextResponse.json({ message: "No tenant found" }, { status: 401 }),
     };
   }
 

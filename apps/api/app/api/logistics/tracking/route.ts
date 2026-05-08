@@ -1,6 +1,7 @@
 // Real-time tracking data for active deliveries
 // Returns shipments with route/driver/vehicle info and simulated positions
 
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { requireTenantId } from "@/app/lib/tenant";
@@ -9,7 +10,6 @@ import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
-import { log } from "@repo/observability/log";
 
 export async function GET(request: NextRequest) {
   try {

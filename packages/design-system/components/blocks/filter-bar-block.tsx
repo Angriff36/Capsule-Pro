@@ -1,6 +1,7 @@
 "use client";
 
 import { Search, X } from "lucide-react";
+import { useState } from "react";
 
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
@@ -22,6 +23,8 @@ import {
  * FilterBarBlock - A filter bar component block
  */
 export function FilterBarBlock() {
+  const [appliedNonce, setAppliedNonce] = useState(0);
+
   const activeFilters = [
     "Status: Active",
     "Owner: Riley",
@@ -65,11 +68,30 @@ export function FilterBarBlock() {
               </SelectContent>
             </Select>
           </div>
-          <div className="flex items-center gap-2">
-            <Button size="sm" variant="outline">
-              Reset
-            </Button>
-            <Button size="sm">Apply filters</Button>
+          <div className="flex flex-col items-end gap-1">
+            <div className="flex items-center gap-2">
+              <Button
+                disabled={appliedNonce === 0}
+                onClick={() => setAppliedNonce(0)}
+                size="sm"
+                type="button"
+                variant="outline"
+              >
+                Reset
+              </Button>
+              <Button
+                onClick={() => setAppliedNonce((n: number) => n + 1)}
+                size="sm"
+                type="button"
+              >
+                Apply filters
+              </Button>
+            </div>
+            {appliedNonce > 0 ? (
+              <span className="text-muted-foreground text-xs">
+                Saved mock filter pass {appliedNonce} (preview-only block)
+              </span>
+            ) : null}
           </div>
         </div>
         <div className="flex flex-wrap gap-2">

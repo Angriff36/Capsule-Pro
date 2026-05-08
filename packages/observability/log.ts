@@ -3,7 +3,11 @@ import { log as logtail } from "@logtail/next";
 function toContext(value: unknown): Record<string, any> | undefined {
   if (value === undefined) return undefined;
   if (value instanceof Error) {
-    return { errorMessage: value.message, stack: value.stack, name: value.name };
+    return {
+      errorMessage: value.message,
+      stack: value.stack,
+      name: value.name,
+    };
   }
   if (typeof value === "object" && value !== null) {
     return value as Record<string, any>;

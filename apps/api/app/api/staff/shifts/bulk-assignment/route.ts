@@ -1,10 +1,11 @@
 import { auth } from "@repo/auth/server";
-import { captureException } from "@sentry/nextjs";
 import { triggerShiftAssignedSms } from "@repo/notifications";
+import { log } from "@repo/observability/log";
+import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { withRateLimit } from "@/middleware/rate-limiter";
 import { dispatchWebhooks } from "@/app/lib/webhook-dispatch";
+import { withRateLimit } from "@/middleware/rate-limiter";
 import {
   type AssignmentResult,
   type BulkAssignmentRequest,
@@ -15,7 +16,6 @@ import {
   separateShiftsByAssignmentType,
   sortResultsByInputOrder,
 } from "./helpers";
-import { log } from "@repo/observability/log";
 
 /**
  * POST /api/staff/shifts/bulk-assignment

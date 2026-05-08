@@ -4,15 +4,15 @@
 
 import { auth } from "@repo/auth/server";
 import { triggerPrepListPublishedSms } from "@repo/notifications";
+import { log } from "@repo/observability/log";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { dispatchWebhooks } from "@/app/lib/webhook-dispatch";
 import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
-import { dispatchWebhooks } from "@/app/lib/webhook-dispatch";
-import { log } from "@repo/observability/log";
 
 export const runtime = "nodejs";
 
@@ -57,7 +57,10 @@ export async function POST(request: NextRequest) {
     // Fire-and-forget SMS trigger for prep list published
     triggerPrepListPublishedSms({
       tenantId,
-      prepListId: (body.id as string) ?? ((result.result as Record<string, unknown>)?.id as string) ?? "",
+      prepListId:
+        (body.id as string) ??
+        ((result.result as Record<string, unknown>)?.id as string) ??
+        "",
       prepListName: (body.name as string) ?? "",
       publishedByEmployeeId: userId,
       publishedByName: "",
@@ -66,7 +69,10 @@ export async function POST(request: NextRequest) {
     dispatchWebhooks({
       tenantId,
       entityType: "prepTask",
-      entityId: (body.id as string) ?? ((result.result as Record<string, unknown>)?.id as string) ?? "",
+      entityId:
+        (body.id as string) ??
+        ((result.result as Record<string, unknown>)?.id as string) ??
+        "",
       action: "updated",
       data: result.result as Record<string, unknown>,
     }).catch(() => {});

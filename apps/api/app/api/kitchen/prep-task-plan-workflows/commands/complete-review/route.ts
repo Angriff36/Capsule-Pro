@@ -4,6 +4,7 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -12,7 +13,6 @@ import {
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
-import { log } from "@repo/observability/log";
 
 export const runtime = "nodejs";
 
@@ -59,15 +59,12 @@ export async function POST(request: NextRequest) {
     });
 
     if (!result.success) {
-      log.error(
-        "[prep-task-plan-workflow/completeReview] Command failed:",
-        {
-          policyDenial: result.policyDenial,
-          guardFailure: result.guardFailure,
-          error: result.error,
-          userRole: currentUser.role,
-        }
-      );
+      log.error("[prep-task-plan-workflow/completeReview] Command failed:", {
+        policyDenial: result.policyDenial,
+        guardFailure: result.guardFailure,
+        error: result.error,
+        userRole: currentUser.role,
+      });
 
       if (result.policyDenial) {
         return manifestErrorResponse(

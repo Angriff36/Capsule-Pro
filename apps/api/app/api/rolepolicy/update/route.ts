@@ -6,9 +6,9 @@
  * @version generated-commands v1.0.0
  */
 
+import { log } from "@repo/observability/log";
 import type { NextRequest } from "next/server";
 import { executeManifestCommand } from "@/lib/manifest-command-handler";
-import { log } from "@repo/observability/log";
 
 export const runtime = "nodejs";
 

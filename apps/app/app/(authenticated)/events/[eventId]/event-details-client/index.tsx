@@ -4,7 +4,8 @@ import type { Event } from "@repo/database";
 import { GridBackground } from "@repo/design-system/components/ui/grid-background";
 import { Separator } from "@repo/design-system/components/ui/separator";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import type { MutableRefObject } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
 import { useSuggestions } from "../../../kitchen/lib/use-suggestions";
@@ -555,6 +556,10 @@ interface GenerateBreakdownDeps {
   setBreakdown: (v: TaskBreakdown) => void;
   setShowBreakdownModal: (v: boolean) => void;
   onRefresh: () => void;
+  progressIntervalRef: MutableRefObject<ReturnType<
+    typeof globalThis.setInterval
+  > | null>;
+  cancelledRef: MutableRefObject<boolean>;
 }
 
 async function runGenerateBreakdown(
@@ -568,7 +573,16 @@ async function runGenerateBreakdown(
     setBreakdown,
     setShowBreakdownModal,
     onRefresh,
+    progressIntervalRef,
+    cancelledRef,
   } = deps;
+
+  cancelledRef.current = false;
+  if (progressIntervalRef.current) {
+    globalThis.clearInterval(progressIntervalRef.current);
+    progressIntervalRef.current = null;
+  }
+
   setIsGenerating(true);
   setGenerationProgress("Analyzing event details...");
   const messages = [
@@ -580,7 +594,7 @@ async function runGenerateBreakdown(
     "Finalizing breakdown...",
   ];
   let idx = 0;
-  const interval = setInterval(() => {
+  progressIntervalRef.current = globalThis.setInterval(() => {
     if (idx < messages.length) {
       setGenerationProgress(messages[idx]);
       idx++;
@@ -588,20 +602,37 @@ async function runGenerateBreakdown(
   }, 1500);
   try {
     const result = await generateTaskBreakdown({ eventId, customInstructions });
-    clearInterval(interval);
+    if (progressIntervalRef.current) {
+      globalThis.clearInterval(progressIntervalRef.current);
+      progressIntervalRef.current = null;
+    }
+    if (cancelledRef.current) {
+      return;
+    }
     setGenerationProgress("");
     setBreakdown(result);
     setShowBreakdownModal(true);
     onRefresh();
   } catch (error) {
-    clearInterval(interval);
+    if (progressIntervalRef.current) {
+      globalThis.clearInterval(progressIntervalRef.current);
+      progressIntervalRef.current = null;
+    }
+    if (cancelledRef.current) {
+      return;
+    }
     const message =
       error instanceof Error ? error.message : "Failed to generate breakdown";
     setGenerationProgress(`Error: ${message}`);
     // Don't close modal on error so user can see the message
   } finally {
-    clearInterval(interval);
-    setIsGenerating(false);
+    if (progressIntervalRef.current) {
+      globalThis.clearInterval(progressIntervalRef.current);
+      progressIntervalRef.current = null;
+    }
+    if (!cancelledRef.current) {
+      setIsGenerating(false);
+    }
   }
 }
 
@@ -908,6 +939,10 @@ export function EventDetailsClient({
   const [breakdown, setBreakdown] = useState<TaskBreakdown | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationProgress, setGenerationProgress] = useState("");
+  const breakdownProgressIntervalRef = useRef<ReturnType<
+    typeof globalThis.setInterval
+  > | null>(null);
+  const breakdownGenerationCancelledRef = useRef(false);
 
   // Prep list state
   const [isGeneratingPrepList, setIsGeneratingPrepList] = useState(false);
@@ -1247,19 +1282,34 @@ export function EventDetailsClient({
             setGenerationProgress,
             setBreakdown,
             setShowBreakdownModal,
+            cancelledRef: breakdownGenerationCancelledRef,
             onRefresh: router.refresh,
+            progressIntervalRef: breakdownProgressIntervalRef,
           },
           customInstructions
         );
       } catch (error) {
+        if (breakdownGenerationCancelledRef.current) {
+          return;
+        }
         const message =
           error instanceof Error ? error.message : "Failed to generate tasks";
         toast.error(message);
-        throw error; // Re-throw so modal knows to handle it
+        throw error;
       }
     },
     [event.id, router.refresh]
   );
+
+  const handleCancelBreakdownGeneration = useCallback(() => {
+    breakdownGenerationCancelledRef.current = true;
+    if (breakdownProgressIntervalRef.current) {
+      globalThis.clearInterval(breakdownProgressIntervalRef.current);
+      breakdownProgressIntervalRef.current = null;
+    }
+    setIsGenerating(false);
+    setGenerationProgress("");
+  }, []);
 
   const handleSaveBreakdown = useCallback(async () => {
     if (!breakdown) {
@@ -1414,6 +1464,7 @@ export function EventDetailsClient({
               generationProgress={generationProgress}
               isGenerating={isGenerating}
               isLoadingSummary={isLoadingSummary}
+              onCancelBreakdownGeneration={handleCancelBreakdownGeneration}
               onCreateBudget={() => router.push("/events/budgets")}
               onDeleteSummary={handleDeleteSummary}
               onDismissSuggestion={dismissSuggestion}

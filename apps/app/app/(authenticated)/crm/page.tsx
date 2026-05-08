@@ -17,8 +17,10 @@ import {
   SectionHeader,
 } from "@repo/design-system/components/blocks/page-shell";
 import { Badge } from "@repo/design-system/components/ui/badge";
-import { Button } from "@repo/design-system/components/ui/button";
-import { buttonVariants } from "@repo/design-system/components/ui/button";
+import {
+  Button,
+  buttonVariants,
+} from "@repo/design-system/components/ui/button";
 import {
   Table,
   TableBody,
@@ -245,7 +247,10 @@ const CrmPage = async () => {
               <Link href="/crm/proposals">View proposals</Link>
             </Button>
             <Link
-              className={buttonVariants({ size: "default", variant: "on-dark" })}
+              className={buttonVariants({
+                size: "default",
+                variant: "on-dark",
+              })}
               href="/crm/clients/new"
             >
               New client

@@ -354,11 +354,11 @@ export function MenuBuilderEditor({
               open={isExpanded}
             >
               <Card
-                tone="canvas"
                 className={`transition-colors ${isDragOver ? "ring-2 ring-primary" : ""}`}
                 onDragLeave={handleDragLeave}
                 onDragOver={(e) => handleDragOver(e, course.id)}
                 onDrop={(e) => handleDrop(e, course.id)}
+                tone="canvas"
               >
                 <CollapsibleTrigger asChild>
                   <CardHeader className="cursor-pointer hover:bg-muted/50 py-3">

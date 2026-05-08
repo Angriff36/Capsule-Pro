@@ -32,10 +32,12 @@ const meta: Meta<ComponentProps<typeof Dialog>> = {
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="gap-4">
-          <button className="hover:underline" type="button">
-            Cancel
-          </button>
-          <DialogClose>
+          <DialogClose asChild>
+            <button className="hover:underline" type="button">
+              Cancel
+            </button>
+          </DialogClose>
+          <DialogClose asChild>
             <button
               className="rounded bg-primary px-4 py-2 text-primary-foreground"
               type="button"

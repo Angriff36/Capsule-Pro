@@ -153,6 +153,6 @@ export async function GET(request: NextRequest): Promise<Response> {
       headers: {
         "Cache-Control": "public, max-age=60, stale-while-revalidate=300",
       },
-    },
+    }
   );
 }

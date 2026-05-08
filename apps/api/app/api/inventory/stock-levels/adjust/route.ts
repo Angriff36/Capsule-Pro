@@ -7,6 +7,7 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { triggerInventoryLowSms } from "@repo/notifications";
+import { log } from "@repo/observability/log";
 import { createOutboxEvent } from "@repo/realtime";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
@@ -15,7 +16,6 @@ import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { dispatchWebhooks } from "@/app/lib/webhook-dispatch";
 import type { CreateAdjustmentResponse } from "../types";
 import { validateCreateAdjustmentRequest } from "../validation";
-import { log } from "@repo/observability/log";
 
 async function verifyInventoryItemExists(
   tenantId: string,
@@ -356,7 +356,13 @@ export async function POST(request: Request) {
       entityType: "InventoryItem",
       entityId: inventoryItemId,
       action: "updated",
-      data: { inventoryItemId, adjustmentType, quantity, previousQuantity: result.previousQuantity, newQuantity: result.newQuantity },
+      data: {
+        inventoryItemId,
+        adjustmentType,
+        quantity,
+        previousQuantity: result.previousQuantity,
+        newQuantity: result.newQuantity,
+      },
     }).catch(() => {});
 
     // Fire-and-forget SMS trigger for low stock detection

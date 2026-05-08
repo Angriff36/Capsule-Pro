@@ -6,13 +6,13 @@
  */
 
 import { database } from "@repo/database";
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { generateApiKey } from "@/app/lib/api-key-service";
-import { withRateLimit } from "@/middleware/rate-limiter";
+import { API_SCOPES, VALID_SCOPES } from "@/lib/api-scopes";
 import { requireDualAuth } from "@/middleware/dual-auth";
-import { VALID_SCOPES, API_SCOPES } from "@/lib/api-scopes";
-import { log } from "@repo/observability/log";
+import { withRateLimit } from "@/middleware/rate-limiter";
 
 export const runtime = "nodejs";
 
@@ -24,7 +24,7 @@ export const GET = withRateLimit(
   async (request: Request) => {
     try {
       const authResult = await requireDualAuth(request, API_SCOPES.ADMIN);
-      if (!authResult.authenticated || !authResult.tenantId) {
+      if (!(authResult.authenticated && authResult.tenantId)) {
         return authResult.error!;
       }
 
@@ -72,7 +72,7 @@ export const POST = withRateLimit(
   async (request: Request) => {
     try {
       const authResult = await requireDualAuth(request, API_SCOPES.ADMIN);
-      if (!authResult.authenticated || !authResult.tenantId) {
+      if (!(authResult.authenticated && authResult.tenantId)) {
         return authResult.error!;
       }
 

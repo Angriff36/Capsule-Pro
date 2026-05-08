@@ -1,13 +1,12 @@
 import { database } from "@repo/database";
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import {
   calculateDepletionForecast,
   saveForecastToDatabase,
 } from "@/app/lib/inventory-forecasting";
-
 import { requireTenantId } from "@/app/lib/tenant";
-import { log } from "@repo/observability/log";
 
 // GET /api/inventory/forecasts?sku={sku}&from={date}&to={date}&horizon={days}&save={true|false}
 // Returns: ForecastResult for the SKU with optional date range filter or new calculation

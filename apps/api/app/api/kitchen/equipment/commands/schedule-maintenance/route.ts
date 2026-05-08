@@ -1,10 +1,10 @@
 import { auth } from "@repo/auth/server";
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { manifestErrorResponse } from "@/lib/manifest-response";
 import { database } from "@/lib/database";
-import { log } from "@repo/observability/log";
+import { manifestErrorResponse } from "@/lib/manifest-response";
 
 export async function POST(request: NextRequest) {
   try {
@@ -19,7 +19,16 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { equipmentId, title, description, priority, scheduledDate, assignedTo, estimatedCost, vendorId } = body;
+    const {
+      equipmentId,
+      title,
+      description,
+      priority,
+      scheduledDate,
+      assignedTo,
+      estimatedCost,
+      vendorId,
+    } = body;
 
     if (!equipmentId) {
       return manifestErrorResponse("equipmentId is required", 400);
@@ -58,10 +67,10 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return new Response(
-      JSON.stringify({ workOrder }),
-      { status: 201, headers: { "Content-Type": "application/json" } }
-    );
+    return new Response(JSON.stringify({ workOrder }), {
+      status: 201,
+      headers: { "Content-Type": "application/json" },
+    });
   } catch (error) {
     captureException(error);
     log.error("Error scheduling maintenance:", error);

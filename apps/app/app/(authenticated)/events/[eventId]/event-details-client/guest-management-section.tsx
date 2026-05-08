@@ -44,7 +44,10 @@ export function GuestManagementSection({
           </Button>
         </div>
       </div>
-      <Card tone="canvas" className="border-border/60 bg-card/70 text-foreground">
+      <Card
+        className="border-border/60 bg-card/70 text-foreground"
+        tone="canvas"
+      >
         <CardContent className="pt-6">
           <GuestManagement eventId={eventId} />
         </CardContent>

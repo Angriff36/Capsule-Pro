@@ -1,5 +1,6 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import Ably from "ably";
 import { NextResponse } from "next/server";
@@ -7,7 +8,6 @@ import { corsHeaders } from "@/app/lib/cors";
 import { InvariantError, invariant } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { env } from "@/env";
-import { log } from "@repo/observability/log";
 
 export const runtime = "nodejs";
 

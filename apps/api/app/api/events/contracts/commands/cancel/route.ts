@@ -4,6 +4,7 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -12,10 +13,9 @@ import {
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
-import { log } from "@repo/observability/log";
 import {
-  validateContractStatusTransition,
   type ContractStatus,
+  validateContractStatusTransition,
 } from "../../validation";
 
 export const runtime = "nodejs";
@@ -46,7 +46,9 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
 
     // Validate status transition: * -> canceled
-    const contractId = (body as Record<string, unknown>)?.id as string | undefined;
+    const contractId = (body as Record<string, unknown>)?.id as
+      | string
+      | undefined;
     if (contractId) {
       const existing = await database.eventContract.findFirst({
         where: { tenantId, id: contractId },

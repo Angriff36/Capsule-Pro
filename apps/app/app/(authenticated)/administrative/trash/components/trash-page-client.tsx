@@ -386,15 +386,13 @@ export function TrashPageClient({
       <Header page="Trash" pages={["Administrative"]}>
         <div className="flex items-center gap-2 px-4">
           <Button
-            asChild
             onClick={() => fetchTrashItems()}
             size="sm"
+            type="button"
             variant="outline"
           >
-            <button type="button">
-              <RefreshCwIcon className="size-4" />
-              Refresh
-            </button>
+            <RefreshCwIcon className="size-4" />
+            Refresh
           </Button>
         </div>
       </Header>
@@ -489,12 +487,12 @@ export function TrashPageClient({
         {/* Restore Result Notification */}
         {restoreResult && (
           <Card
-            tone="canvas"
             className={
               restoreResult.success
                 ? "border-green-200 bg-green-50"
                 : "border-red-200 bg-red-50"
             }
+            tone="canvas"
           >
             <CardContent className="p-4">
               <div className="flex items-start gap-3">
@@ -541,7 +539,7 @@ export function TrashPageClient({
         )}
 
         {/* Items Table */}
-        <Card tone="canvas" className="flex-1">
+        <Card className="flex-1" tone="canvas">
           <CardContent className="p-0">
             <Table>
               <TableHeader>

@@ -16,17 +16,14 @@
  * a real processor.
  *
  * The route handler now calls `processPaymentGateway` instead of reading
- * the body. The implementation here is a deterministic always-success
- * placeholder; the contract (input shape + return shape) is the swap
- * point for a real Stripe / Adyen / Authorize.Net call. When the real
- * call lands it MUST:
- *   1. Use the configured `stripe` (or equivalent) client from
- *      `packages/payments`, never `fetch()` from inside this file.
- *   2. Return `success: false, failureReason: "<processor-side reason>"`
+ * the body. This implementation calls Stripe PaymentIntents via the
+ * initialized `stripe` client from `@repo/payments`. The contract (input
+ * shape + return shape) is the processor-agnostic seam:
+ *   1. Uses the configured `stripe` client from `packages/payments`.
+ *   2. Returns `success: false, failureReason: "<processor-side reason>"`
  *      for declines, network errors, or unrecoverable timeouts.
- *   3. Keep the `transactionId` it returns server-side authoritative —
- *      the caller MUST persist exactly that value as
- *      `payment.gatewayTransactionId`.
+ *   3. Keeps the `transactionId` server-side authoritative — the caller
+ *      persists exactly that value as `payment.gatewayTransactionId`.
  *
  * Refund path: the symmetric helper is `refundPaymentGateway`. Same rule —
  * the caller MUST NOT trust `body.refundTransactionId` or any other
@@ -34,13 +31,16 @@
  * module's return value only.
  */
 
-import { randomUUID } from "node:crypto";
+import { log } from "@repo/observability/log";
+import { stripe } from "@repo/payments";
 
 export interface ProcessPaymentInput {
   paymentId: string;
   tenantId: string;
   amount: number;
   currency: string;
+  /** Stored Stripe PaymentMethod ID (pm_*) from a prior client-side setup. */
+  gatewayPaymentMethodId?: string | null;
 }
 
 export interface ProcessPaymentResult {
@@ -70,60 +70,109 @@ export interface RefundPaymentResult {
   failureReason?: string;
 }
 
+const SUCCESS_STATUSES = new Set(["succeeded", "requires_capture"]);
+
 /**
- * Process a charge through the payment gateway.
+ * Process a charge through Stripe.
  *
- * Placeholder implementation: deterministic always-success. Returns a
- * server-generated transaction ID (`txn_<uuid>`) that the caller persists
- * as `payment.gatewayTransactionId`.
- *
- * Real-processor swap-in checklist:
- *   - Replace the body with a `stripe.paymentIntents.create({...}).confirm()`
- *     call (or equivalent). Use `paymentId` as the idempotency key.
- *   - Map processor errors to `{ success: false, failureReason }`.
- *   - Keep the function signature stable; the route handler depends on it.
+ * Creates a PaymentIntent and, when a payment method is available,
+ * confirms it immediately. Returns the PaymentIntent ID (pi_*) as the
+ * authoritative transaction ID.
  */
 export async function processPaymentGateway(
-  input: ProcessPaymentInput
+  input: ProcessPaymentInput,
 ): Promise<ProcessPaymentResult> {
-  // Reference inputs so the placeholder is not flagged as unused; the real
-  // call will consume all four.
-  void input.paymentId;
-  void input.tenantId;
-  void input.amount;
-  void input.currency;
+  try {
+    const amountCents = Math.round(input.amount * 100);
 
-  return {
-    success: true,
-    transactionId: `txn_${randomUUID()}`,
-  };
+    const params: Parameters<typeof stripe.paymentIntents.create>[0] = {
+      amount: amountCents,
+      currency: input.currency.toLowerCase(),
+      metadata: {
+        paymentId: input.paymentId,
+        tenantId: input.tenantId,
+      },
+    };
+
+    if (input.gatewayPaymentMethodId) {
+      params.payment_method = input.gatewayPaymentMethodId;
+      params.confirm = true;
+    }
+
+    const paymentIntent = await stripe.paymentIntents.create(params, {
+      idempotencyKey: `pay_${input.paymentId}`,
+    });
+
+    if (SUCCESS_STATUSES.has(paymentIntent.status)) {
+      return {
+        success: true,
+        transactionId: paymentIntent.id,
+      };
+    }
+
+    return {
+      success: false,
+      transactionId: paymentIntent.id,
+      failureReason: `Payment intent status: ${paymentIntent.status}`,
+    };
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Payment processing failed";
+    log.error("Payment gateway error", { error });
+    return {
+      success: false,
+      transactionId: "",
+      failureReason: message,
+    };
+  }
 }
 
 /**
- * Process a refund through the payment gateway.
+ * Process a refund through Stripe.
  *
- * Placeholder implementation: deterministic always-success. Returns a
- * server-generated refund ID (`re_<uuid>`).
- *
- * Real-processor swap-in checklist:
- *   - Replace the body with `stripe.refunds.create({ payment_intent:
- *     originalGatewayTransactionId, amount, reason })` or equivalent.
- *   - Map processor errors to `{ success: false, failureReason }`.
- *   - The caller treats `success: false` as a 502 short-circuit and
- *     does NOT mutate the local payment or invoice rows.
+ * Creates a Refund against the original PaymentIntent. Returns the
+ * Stripe Refund ID (re_*) as the authoritative refund transaction ID.
  */
 export async function refundPaymentGateway(
-  input: RefundPaymentInput
+  input: RefundPaymentInput,
 ): Promise<RefundPaymentResult> {
-  void input.paymentId;
-  void input.tenantId;
-  void input.amount;
-  void input.currency;
-  void input.reason;
-  void input.originalGatewayTransactionId;
+  try {
+    if (!input.originalGatewayTransactionId) {
+      return {
+        success: false,
+        refundTransactionId: "",
+        failureReason: "No original transaction ID to refund",
+      };
+    }
 
-  return {
-    success: true,
-    refundTransactionId: `re_${randomUUID()}`,
-  };
+    const amountCents = Math.round(input.amount * 100);
+
+    const refund = await stripe.refunds.create({
+      payment_intent: input.originalGatewayTransactionId,
+      amount: amountCents,
+      reason: "requested_by_customer",
+      metadata: {
+        paymentId: input.paymentId,
+        tenantId: input.tenantId,
+        originalReason: input.reason,
+      },
+    });
+
+    const succeeded = refund.status === "succeeded" || refund.status === "pending";
+
+    return {
+      success: succeeded,
+      refundTransactionId: refund.id,
+      ...(succeeded ? {} : { failureReason: `Refund status: ${refund.status}` }),
+    };
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Refund processing failed";
+    log.error("Refund gateway error", { error });
+    return {
+      success: false,
+      refundTransactionId: "",
+      failureReason: message,
+    };
+  }
 }

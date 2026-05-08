@@ -56,7 +56,7 @@ export function NewEventClient({ orgId }: NewEventClientProps) {
     <div className="flex flex-1 flex-col gap-4">
       {/* Template Banner */}
       {selectedTemplate && (
-        <Card tone="canvas" className="border-primary/50 bg-primary/5">
+        <Card className="border-primary/50 bg-primary/5" tone="canvas">
           <CardContent className="flex items-center justify-between p-4">
             <div className="flex items-center gap-3">
               <div className="rounded-lg bg-primary/10 p-2">

@@ -33,9 +33,7 @@ vi.mock("../../../app/api/command-board/chat/manifest-command-tools", () => ({
 
 describe("agent-loop module exports", () => {
   it("exports all expected public functions", async () => {
-    const mod = await import(
-      "../../../app/api/command-board/chat/agent-loop"
-    );
+    const mod = await import("../../../app/api/command-board/chat/agent-loop");
 
     expect(typeof mod.normalizeStructuredAgentResponse).toBe("function");
     expect(typeof mod.isBoardStateReadIntent).toBe("function");
@@ -110,12 +108,15 @@ describe("normalizeStructuredAgentResponse", () => {
       "../../../app/api/command-board/chat/agent-loop"
     );
 
-    const fenced = "```json\n" + JSON.stringify({
-      summary: "Fenced response",
-      actionsTaken: ["did a thing"],
-      errors: [],
-      nextSteps: [],
-    }) + "\n```";
+    const fenced =
+      "```json\n" +
+      JSON.stringify({
+        summary: "Fenced response",
+        actionsTaken: ["did a thing"],
+        errors: [],
+        nextSteps: [],
+      }) +
+      "\n```";
 
     const result = normalizeStructuredAgentResponse(fenced, []);
     expect(result.summary).toBe("Fenced response");
@@ -271,7 +272,12 @@ describe("parseSimulationPlan", () => {
     const { parseSimulationPlan } = await import(
       "../../../app/api/command-board/chat/agent-loop"
     );
-    expect(parseSimulationPlan(JSON.stringify({ summary: "no plan fields" }), emptyCatalog)).toBeNull();
+    expect(
+      parseSimulationPlan(
+        JSON.stringify({ summary: "no plan fields" }),
+        emptyCatalog
+      )
+    ).toBeNull();
   });
 
   it("parses a valid plan with empty command sequence", async () => {
@@ -332,7 +338,11 @@ describe("buildFallbackSimulationPlan", () => {
     );
     // Empty catalog — everything is unsupported
     const catalog = { ...emptyCatalog };
-    const result = buildFallbackSimulationPlan("I want a venue and a bill", catalog, []);
+    const result = buildFallbackSimulationPlan(
+      "I want a venue and a bill",
+      catalog,
+      []
+    );
     expect(result.unfulfilledIntents.length).toBeGreaterThan(0);
   });
 });
@@ -422,7 +432,9 @@ describe("runManifestActionAgentSafe — error envelope", () => {
     // Verify Sentry received the actual Error object, not just a string
     const capturedError = vi.mocked(captureException).mock.calls[0]![0];
     expect(capturedError).toBeInstanceOf(Error);
-    expect((capturedError as Error).message).toContain("Sentry tracking test error");
+    expect((capturedError as Error).message).toContain(
+      "Sentry tracking test error"
+    );
 
     globalThis.fetch = originalFetch;
   });
@@ -440,7 +452,11 @@ describe("normalizeStructuredAgentResponse — retry exhaustion envelope", () =>
       "The operation timed out or encountered a transient error. Please try again.";
 
     const result = normalizeStructuredAgentResponse("", [
-      { toolName: "execute_manifest_command", status: "error", summary: transientErrorMessage },
+      {
+        toolName: "execute_manifest_command",
+        status: "error",
+        summary: transientErrorMessage,
+      },
     ]);
 
     expect(result.errors).toContain(transientErrorMessage);

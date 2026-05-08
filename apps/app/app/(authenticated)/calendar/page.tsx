@@ -29,7 +29,6 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTenantIdForOrg } from "../../lib/tenant";
 import { CalendarViewSwitcher } from "./components/calendar-view-switcher";
-import { UnifiedCalendar } from "./components/unified-calendar";
 
 export interface CalendarEvent {
   id: string;
@@ -233,9 +232,9 @@ const CalendarPage = async () => {
             <MonoLabel tone="dark">Operations / Calendar</MonoLabel>
             <DisplayHeading>Every shift, event, and request</DisplayHeading>
             <CommandBandLede>
-              A unified view of events, scheduled shifts, and time-off
-              requests across the operation. Switch between calendar and list
-              views to find conflicts before they ship.
+              A unified view of events, scheduled shifts, and time-off requests
+              across the operation. Switch between calendar and list views to
+              find conflicts before they ship.
             </CommandBandLede>
             <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-3 py-1 font-mono text-[11px] text-white/70 uppercase tracking-[0.2em]">
               {rangeLabel}

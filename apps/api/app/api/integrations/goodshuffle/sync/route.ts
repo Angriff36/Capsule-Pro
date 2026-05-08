@@ -5,12 +5,12 @@
  */
 
 import { auth } from "@repo/auth/server";
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { runGoodshuffleEventSync } from "@/app/lib/goodshuffle-event-sync-service";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { log } from "@repo/observability/log";
 
 const syncSchema = z.object({
   startDate: z.string().transform((v) => new Date(v)),

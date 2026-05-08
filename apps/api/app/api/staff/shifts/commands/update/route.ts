@@ -4,17 +4,17 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
-import { log } from "@repo/observability/log";
 import { triggerShiftChangedSms } from "@repo/notifications";
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { dispatchWebhooks } from "@/app/lib/webhook-dispatch";
 import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
-import { dispatchWebhooks } from "@/app/lib/webhook-dispatch";
 
 export const runtime = "nodejs";
 
@@ -100,7 +100,10 @@ export async function POST(request: NextRequest) {
     dispatchWebhooks({
       tenantId,
       entityType: "scheduleShift",
-      entityId: body.id as string ?? (result.result as Record<string, unknown>)?.id as string ?? "",
+      entityId:
+        (body.id as string) ??
+        ((result.result as Record<string, unknown>)?.id as string) ??
+        "",
       action: "updated",
       data: result.result as Record<string, unknown>,
     }).catch(() => {});

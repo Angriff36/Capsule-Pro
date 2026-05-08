@@ -899,16 +899,12 @@ export const ForecastsPageClient = () => {
                                   </div>
                                   <div className="mt-2 flex items-center gap-2">
                                     <Button
-                                      onClick={() => {
-                                        toast.success(
-                                          `Reorder request created for ${alert.sku}`
-                                        );
-                                      }}
+                                      disabled
                                       size="sm"
                                       variant="destructive"
                                     >
                                       <ArrowDown className="mr-1 size-3" />
-                                      Request Reorder
+                                      Request Reorder · Coming soon
                                     </Button>
                                   </div>
                                 </div>
@@ -962,16 +958,12 @@ export const ForecastsPageClient = () => {
                                   </div>
                                   <div className="mt-2 flex items-center gap-2">
                                     <Button
-                                      onClick={() => {
-                                        toast.success(
-                                          `Reorder request created for ${alert.sku}`
-                                        );
-                                      }}
+                                      disabled
                                       size="sm"
                                       variant="outline"
                                     >
                                       <ArrowRight className="mr-1 size-3" />
-                                      Request Reorder
+                                      Request Reorder · Coming soon
                                     </Button>
                                   </div>
                                 </div>
@@ -1051,16 +1043,8 @@ export const ForecastsPageClient = () => {
                             </span>
                           </div>
                         </div>
-                        <Button
-                          onClick={() => {
-                            toast.success(
-                              `Purchase order created for ${suggestion.sku}`
-                            );
-                          }}
-                          size="sm"
-                          variant="outline"
-                        >
-                          Create PO
+                        <Button disabled size="sm" variant="outline">
+                          Create PO · Coming soon
                         </Button>
                       </div>
                     ))}

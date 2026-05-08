@@ -5,12 +5,12 @@
  */
 
 import { auth } from "@repo/auth/server";
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { runGoodshuffleInventorySync } from "@/app/lib/goodshuffle-inventory-sync-service";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { log } from "@repo/observability/log";
 
 const syncSchema = z.object({
   dryRun: z.boolean().default(false),

@@ -123,9 +123,9 @@ export function SuggestionsPanel({
 
               return (
                 <Card
-                  tone="canvas"
                   className="overflow-hidden border-hairline transition-colors duration-200 hover:bg-soft-stone/20"
                   key={suggestion.id}
+                  tone="canvas"
                 >
                   <CardHeader className="space-y-2 pb-3">
                     <div className="flex items-start justify-between gap-2">

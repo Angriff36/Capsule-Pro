@@ -15,8 +15,8 @@ import type {
   ProcessedDocument,
   StaffShift,
 } from "@repo/event-parser";
-import { log } from "@repo/observability/log";
 import { parseError as parseErrorToMessage } from "@repo/observability/error";
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 
 import { NextResponse } from "next/server";
@@ -868,7 +868,9 @@ async function processParsedEventData(
     try {
       await importMenuToEvent(tenantId, actualEventId, event);
     } catch (menuError) {
-      log.error("[processParsedEventData] Menu import failed", { error: menuError });
+      log.error("[processParsedEventData] Menu import failed", {
+        error: menuError,
+      });
     }
   }
 
@@ -1288,7 +1290,9 @@ export async function GET(request: Request) {
     });
   } catch (error) {
     captureException(error);
-    log.error("[GET /api/events/documents/parse] Error listing imports", { error });
+    log.error("[GET /api/events/documents/parse] Error listing imports", {
+      error,
+    });
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }

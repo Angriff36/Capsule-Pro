@@ -209,7 +209,7 @@ function StatsSidebar({
   return (
     <div className="space-y-4">
       {/* Progress Card */}
-      <Card tone="soft-stone" className="border-hairline">
+      <Card className="border-hairline" tone="soft-stone">
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 font-semibold text-sm">
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
@@ -243,7 +243,7 @@ function StatsSidebar({
       </Card>
 
       {/* Quick Stats */}
-      <Card tone="soft-stone" className="border-hairline">
+      <Card className="border-hairline" tone="soft-stone">
         <CardHeader className="pb-3">
           <CardTitle className="font-semibold text-sm">Quick Stats</CardTitle>
         </CardHeader>
@@ -268,7 +268,7 @@ function StatsSidebar({
       </Card>
 
       {/* Team Activity */}
-      <Card tone="canvas" className="border-hairline">
+      <Card className="border-hairline" tone="canvas">
         <CardHeader className="pb-3">
           <CardTitle className="font-semibold text-sm">Team Activity</CardTitle>
         </CardHeader>
@@ -536,7 +536,7 @@ export function ProductionBoardClient({
           {/* Stats Sidebar / Suggestions Panel */}
           <aside className="space-y-4">
             {showSuggestions ? (
-              <Card tone="canvas" className="border-hairline">
+              <Card className="border-hairline" tone="canvas">
                 <SuggestionsPanel
                   isLoading={suggestionsLoading}
                   onAction={handleAction}
@@ -557,7 +557,10 @@ export function ProductionBoardClient({
                 />
                 {/* AI Suggestions teaser */}
                 {suggestions.length > 0 && (
-                  <Card tone="canvas" className="border-hairline bg-pale-blue/35">
+                  <Card
+                    className="border-hairline bg-pale-blue/35"
+                    tone="canvas"
+                  >
                     <CardHeader className="pb-3">
                       <CardTitle className="flex items-center gap-2 font-semibold text-action-blue text-sm">
                         <Lightbulb className="h-4 w-4" />

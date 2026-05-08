@@ -1,4 +1,5 @@
 import { auth } from "@repo/auth/server";
+import { log } from "@repo/observability/log";
 import {
   calculateTaxes,
   getFicaRates,
@@ -6,12 +7,10 @@ import {
 } from "@repo/payroll-engine";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
-
 import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
-import { log } from "@repo/observability/log";
 
 /**
  * GET /api/payroll/tax/brackets

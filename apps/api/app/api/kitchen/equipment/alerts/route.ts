@@ -6,12 +6,12 @@
 // warranty expiration, condition degradation, and IoT disconnection.
 
 import { auth } from "@repo/auth/server";
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { manifestErrorResponse } from "@/lib/manifest-response";
 import { database } from "@/lib/database";
-import { log } from "@repo/observability/log";
+import { manifestErrorResponse } from "@/lib/manifest-response";
 
 type Severity = "critical" | "warning" | "info";
 
@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
 
     const now = new Date();
     const thirtyDaysFromNow = new Date(
-      now.getTime() + 30 * 24 * 60 * 60 * 1000,
+      now.getTime() + 30 * 24 * 60 * 60 * 1000
     );
 
     const equipment = await database.equipment.findMany({
@@ -91,7 +91,7 @@ export async function GET(request: NextRequest) {
       if (eq.nextMaintenanceDate && eq.nextMaintenanceDate < now) {
         const daysOverdue = Math.floor(
           (now.getTime() - eq.nextMaintenanceDate.getTime()) /
-            (1000 * 60 * 60 * 24),
+            (1000 * 60 * 60 * 24)
         );
         alerts.push({
           equipmentId: eq.id,
@@ -112,8 +112,7 @@ export async function GET(request: NextRequest) {
         eq.warrantyExpiry > now
       ) {
         const daysLeft = Math.ceil(
-          (eq.warrantyExpiry.getTime() - now.getTime()) /
-            (1000 * 60 * 60 * 24),
+          (eq.warrantyExpiry.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
         );
         alerts.push({
           equipmentId: eq.id,
@@ -174,7 +173,9 @@ export async function GET(request: NextRequest) {
       warning: 1,
       info: 2,
     };
-    alerts.sort((a, b) => severityOrder[a.severity] - severityOrder[b.severity]);
+    alerts.sort(
+      (a, b) => severityOrder[a.severity] - severityOrder[b.severity]
+    );
 
     const summary = {
       total: alerts.length,

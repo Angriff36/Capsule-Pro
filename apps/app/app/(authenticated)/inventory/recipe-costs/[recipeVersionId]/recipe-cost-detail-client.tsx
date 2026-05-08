@@ -319,7 +319,10 @@ export const RecipeCostDetailClient = ({
 
       {/* Scaled Cost Display */}
       {scaledCost && (
-        <Card tone="canvas" className="border-primary bg-muted/20 dark:bg-muted/20">
+        <Card
+          className="border-primary bg-muted/20 dark:bg-muted/20"
+          tone="canvas"
+        >
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
               <ScaleIcon className="h-5 w-5" />

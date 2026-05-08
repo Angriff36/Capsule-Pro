@@ -566,7 +566,7 @@ export function AvailabilityClient() {
               <div className="font-mono text-[11px] text-muted-foreground uppercase tracking-[0.28em]">
                 Scheduling
               </div>
-              <h2 className="font-normal text-2xl text-ink tracking-[-0.02em] sm:text-3xl">
+              <h2 className="font-normal text-2xl text-ink tracking-[-0.02em]">
                 New availability
               </h2>
               <p className="text-muted-foreground text-sm">

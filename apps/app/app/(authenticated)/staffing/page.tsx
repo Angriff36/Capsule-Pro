@@ -25,6 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
+import { log } from "@repo/observability/log";
 import {
   ArrowRight,
   BarChart3,
@@ -36,7 +37,6 @@ import {
   Users,
 } from "lucide-react";
 import Link from "next/link";
-import { log } from "@repo/observability/log";
 import { useCallback, useEffect, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
 

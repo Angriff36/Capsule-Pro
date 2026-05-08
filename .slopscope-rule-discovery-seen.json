@@ -216,6 +216,18 @@
       "file_path": "apps/api/app/api/training/complete/route.ts",
       "snippet_hash": "sha256:fcaedec1ceebf267ec2ced8b4857a424e57aa8c54025d81d678b21003a64d311",
       "discovered_at": "2026-05-08T11:45:00Z"
+    },
+    {
+      "rule_id": "skeleton_crud.file_upload_stored_as_base64_data_url_in_db",
+      "file_path": "apps/api/app/api/events/contracts/[id]/document/route.ts",
+      "snippet_hash": "sha256:cac2488bd23a7d5c4d77945b1198f02bbfb61a542df700714688bc5c82b6fc2a",
+      "discovered_at": "2026-05-08T07:07:00Z"
+    },
+    {
+      "rule_id": "automation_theater.push_token_registered_but_never_consumed",
+      "file_path": "apps/api/app/api/mobile/push-token/route.ts",
+      "snippet_hash": "sha256:e9f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2",
+      "discovered_at": "2026-05-08T07:45:00Z"
     }
   ]
 }

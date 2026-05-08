@@ -402,7 +402,6 @@ function MultiLocationDashboardClient({
               className={`cursor-pointer transition-colors ${
                 state.expandedKPI === kpi.id ? "border-primary" : ""
               }`}
-              tone="canvas"
               key={kpi.id}
               onClick={() =>
                 dispatch({
@@ -410,6 +409,7 @@ function MultiLocationDashboardClient({
                   payload: state.expandedKPI === kpi.id ? null : kpi.id,
                 })
               }
+              tone="canvas"
             >
               <CardHeader>
                 <div className="flex items-start justify-between">
@@ -506,8 +506,8 @@ function MultiLocationDashboardClient({
                     ? "border-yellow-500/50 bg-muted/50 dark:border-yellow-500/50"
                     : ""
               }`}
-              tone="canvas"
               key={benchmark.id}
+              tone="canvas"
             >
               <CardHeader className="pb-2">
                 <div className="flex items-start justify-between">

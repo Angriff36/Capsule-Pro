@@ -293,6 +293,9 @@ Meanwhile, a real Stripe client exists in `packages/payments/index.ts` (instanti
 
 The refund path is equally dangerous: `POST /api/accounting/payments/[id]` calls `refundPaymentGateway`, which always returns success, then decrements `invoice.amountPaid` and writes a forensic audit row to `paymentRefundAttempt` — recording a fake `re_` transaction ID as if a real processor issued it. A user could process a charge, see the invoice flip to PAID, then refund it — the entire ledger cycle completes with phantom transactions from start to finish.
 
+### Status: RESOLVED (branch fix/middleware-matcher-invocations)
+Gateway.ts now calls real Stripe PaymentIntents API via @repo/payments client. processPaymentGateway creates a PaymentIntent (with confirm=true if payment method available). refundPaymentGateway creates a Stripe Refund against the original PaymentIntent. Both map Stripe errors to { success: false, failureReason }. Route handler passes gatewayPaymentMethodId from the persisted Payment row. Webhook handler extended with payment_intent.succeeded and payment_intent.payment_failed reconciliation.
+
 ### Evidence
 - File: `apps/api/app/api/accounting/payments/[id]/gateway.ts`
 - Snippet (charge placeholder, lines 86-100):
@@ -2119,9 +2122,8 @@ Two exported validation functions in the payment-methods module (`isCardExpired`
 - Pre-existing work committed: webhook auto-dispatch from manifest command handler, mobile API endpoints, API scopes middleware
 
 ### Still unresolved (priority order):
-1. fake_integration.payment_gateway_always_success_placeholder — needs real Stripe integration
-2. placeholder.base64_data_url_persisted_as_file_storage — files stored as base64 in DB
-3. fake_integration.stub_connector_registered_as_live — supplier connectors are pure stubs
+1. placeholder.base64_data_url_persisted_as_file_storage — files stored as base64 in DB
+2. fake_integration.stub_connector_registered_as_live — supplier connectors are pure stubs
 
 ### [2026-05-08] Session Notes (continued)
 
@@ -2142,3 +2144,7 @@ Implemented three missing marketing module sub-surfaces per spec CAP-MARKETING-0
 5. **API: Marketing Analytics** (`GET /api/marketing/analytics`) — Aggregates from EmailLog, Lead, sms_logs, EmailWorkflow, and sms_automation_rules. Returns email performance by workflow, lead pipeline by source, SMS delivery rates.
 
 All pages use Cohere-aligned design system: PageCanvas > CommandBand > MetricBand > OperationalColumn pattern. No bare Card, no text-3xl font-bold, no legacy Header import.
+
+### [2026-05-08] Payment Gateway + Design System Fixes
+- Payment gateway: replaced deterministic always-success placeholder with real Stripe PaymentIntents API calls. gateway.ts now creates real PaymentIntents and Refunds via @repo/payments client. Route handler passes gatewayPaymentMethodId for immediate confirmation. Webhook handler extended with payment_intent.succeeded/failed reconciliation handlers.
+- Design system: fixed 14 text-3xl/text-4xl violations across 9 files (scheduling, analytics, kitchen, events). Added data-design-system-shell="operational" to kitchen page. All 4,074 API tests pass, typecheck clean.

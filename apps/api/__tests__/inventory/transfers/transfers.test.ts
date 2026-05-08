@@ -176,7 +176,11 @@ describe("Inventory Transfers API", () => {
 
       const request = buildPostRequest(
         "http://localhost/api/inventory/transfers/commands/create",
-        { fromLocationId: VALID_LOCATION_UUID_A, toLocationId: VALID_LOCATION_UUID_B, items: [] }
+        {
+          fromLocationId: VALID_LOCATION_UUID_A,
+          toLocationId: VALID_LOCATION_UUID_B,
+          items: [],
+        }
       );
       const response = await createTransfer(request);
 
@@ -190,7 +194,11 @@ describe("Inventory Transfers API", () => {
 
       const request = buildPostRequest(
         "http://localhost/api/inventory/transfers/commands/create",
-        { fromLocationId: VALID_LOCATION_UUID_A, toLocationId: VALID_LOCATION_UUID_B, items: "not-array" }
+        {
+          fromLocationId: VALID_LOCATION_UUID_A,
+          toLocationId: VALID_LOCATION_UUID_B,
+          items: "not-array",
+        }
       );
       const response = await createTransfer(request);
 

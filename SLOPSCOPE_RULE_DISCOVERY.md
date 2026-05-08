@@ -565,3 +565,138 @@ For a catering company, training completion drives compliance. Food safety certi
 ### Implementation note
 Detector should flag completion/assessment endpoints in training, compliance, or certification modules where the `passed` status or `score` is accepted from the client request body without any server-side verification (no quiz evaluation, no answer checking, no passing threshold comparison). The `negative_patterns` check for the presence of actual quiz/assessment infrastructure in the same codebase — if those exist, the endpoint may be legitimate. The `companion_pattern` anchors to completion-related logic. The `file_must_match` restricts to training/compliance paths to avoid flagging generic status-update endpoints. Official docs not required: generic trust-boundary violation in assessment flows.
 ---
+## [2026-05-08 07:07] Rule Discovery — skeleton_crud.file_upload_stored_as_base64_data_url_in_db
+
+### Finding
+The contract document upload endpoint (`POST /api/events/contracts/[id]/document`) accepts file uploads up to 10MB, converts them to base64 data URLs, and persists the entire data URL directly into a `document_url` TEXT column on the `event_contract` table. A 10MB file becomes approximately 13.3MB of base64 text stored as a database row value. The code contains an explicit comment acknowledging this is not production-ready: "In production, you would upload to a storage service (S3, Blob, etc.) and store the URL. For now, we're storing a data URL." No object storage SDK (AWS S3, Azure Blob, GCS) is imported anywhere in the file or in any adjacent upload-handling code. The `document_url` column is a nullable `TEXT` field with no size constraints, and the 10MB client-side limit means a single contract record could contain ~13MB of inline base64 in the database. This bloats database rows, makes queries slower, wastes storage (base64 is ~33% larger than binary), and will break at scale since most databases have practical row size limits.
+
+### Evidence
+- File: `apps/api/app/api/events/contracts/[id]/document/route.ts`
+- Snippet (line 90-93): File-to-base64 conversion:
+```typescript
+    // Convert file to base64 for storage
+    const bytes = await file.arrayBuffer();
+    const buffer = Buffer.from(bytes);
+    const base64 = buffer.toString("base64");
+```
+- Snippet (line 101-104): Explicit admission and data URL construction:
+```typescript
+    // Update contract with document URL
+    // Note: In production, you would upload to a storage service (S3, Blob, etc.)
+    // and store the URL. For now, we're storing a data URL.
+    const dataUrl = `data:${file.type};base64,${base64}`;
+```
+- Snippet (line 106-117): Persisted directly to database:
+```typescript
+    await database.eventContract.update({
+      where: { tenantId_id: { tenantId, id: contractId } },
+      data: {
+        documentUrl: dataUrl,
+        documentType,
+      },
+    });
+```
+- Schema: `packages/database/prisma/schema.prisma` line 4173: `documentUrl String? @map("document_url")` — nullable TEXT column
+
+### Why this matters
+Users upload contract documents (PDFs, Word files) believing they are stored reliably. A 10MB PDF becomes ~13.3MB of base64 text stored inline in a PostgreSQL/MySQL TEXT column. This means: (1) database storage is ~33% larger than the actual file size; (2) every query that touches the `event_contract` table, even for unrelated columns, pulls this massive text value into memory; (3) database backup/replication times increase proportionally; (4) there is no CDN, no caching headers, no resumable uploads, and no integrity checking — the entire file is a single opaque text blob; (5) most databases have practical row size limits (PostgreSQL's TOAST can handle large values but at significant performance cost); (6) the "success: true" response gives users no indication that their documents are stored in a明知 non-production manner.
+
+### Proposed detector rule
+```json
+{
+  "id": "skeleton_crud.file_upload_stored_as_base64_data_url_in_db",
+  "title": "File upload endpoint stores base64 data URL directly into database instead of object storage",
+  "category": "skeleton_crud",
+  "severity": "medium",
+  "confidence": 0.88,
+  "detector_type": "regex",
+  "language_targets": ["typescript", "javascript"],
+  "pattern": "data:\\$\\{.*\\};base64,\\$\\{.*\\}",
+  "negative_patterns": [
+    "S3Client|s3\\.upload|s3\\.putObject|BlobServiceClient|Storage\\.bucket|uploadTo.*Storage|@aws-sdk\\/client-s3",
+    "cloudStorage|firebase.*storage|google.*storage|azure.*storage"
+  ],
+  "evidence_required": {
+    "file_must_match": ["(upload|document|attachment|file).*(route|handler|action)"],
+    "companion_pattern": "\\.update\\(\\s*\\{|\\.create\\(\\s*\\{"
+  },
+  "false_positive_controls": {
+    "skip_test_files": true,
+    "skip_doc_files": true,
+    "strip_comments": true,
+    "path_exclude": ["node_modules/", ".next/", "dist/", "build/"]
+  },
+  "user_impact": "User-uploaded documents (contracts, invoices, etc.) are stored as base64 text blobs in the database rather than in object storage. This bloats database rows by ~33%, degrades query performance, and will not scale. The upload appears to succeed but the storage strategy is explicitly acknowledged as non-production.",
+  "repair_guidance": "Replace the base64-in-database approach with an actual object storage upload (AWS S3, Azure Blob Storage, or equivalent). Upload the file buffer to object storage, store the resulting URL/key in the `document_url` column, and use signed URLs or a CDN for download access. Remove the 'In production' comment once a real storage backend is wired in.",
+  "example_source": {
+    "file": "apps/api/app/api/events/contracts/[id]/document/route.ts",
+    "line_or_snippet": "const dataUrl = `data:${file.type};base64,${base64}`;\n\nawait database.eventContract.update({\n  where: { tenantId_id: { tenantId, id: contractId } },\n  data: { documentUrl: dataUrl, documentType },\n});"
+  }
+}
+```
+
+### Implementation note
+Detector targets upload handler files that construct data URLs from base64-encoded file buffers and persist them via database create/update operations. The `negative_patterns` check for any object storage SDK imports (AWS S3, Azure Blob, GCS, Firebase) that would indicate a real storage backend is also present. The `companion_pattern` requires a database write operation (`.update(` or `.create(`) to distinguish from routes that return data URLs as HTTP response payloads (which is a different, less harmful pattern). The `file_must_match` restricts to upload/document-related routes to avoid flagging export endpoints that legitimately return base64 content in API responses. Official docs not required: generic implementation-evidence rule.
+
+---
+## [2026-05-08 07:45] Rule Discovery — automation_theater.push_token_registered_but_never_consumed
+
+### Finding
+The mobile app requests push notification permissions from the user, obtains an Expo push token, registers it with `POST /api/mobile/push-token`, and allows the user to configure notification preferences (task assigned, task completed, event reminder, schedule change, inventory alert) via `PATCH /api/mobile/notification-preferences`. The push token is stored in the `user_preference` table under `preferenceKey: "pushToken"`. The notification preferences are stored under `category: "mobile_notifications"` with individual boolean rows per preference key.
+
+However, no code in the entire backend ever reads these push tokens or preferences to deliver a single push notification. There is no Expo push client, no FCM/APNs integration, no `expo-server-sdk` import, and no push delivery function anywhere in the `apps/api` or `packages/notifications` directories. The `@knocklabs/node` SDK is instantiated in `packages/notifications/index.ts` but never imported or used by any consuming code. The mobile app defines a full notification listener infrastructure (received handler, response handler, channel configuration) but will never receive a remote push notification because the backend has no sending capability.
+
+### Evidence
+- File: `apps/api/app/api/mobile/push-token/route.ts`
+- Snippet (lines 19-38): Push token upserted to `user_preference` table, never read back for push delivery
+- File: `apps/api/app/api/mobile/notification-preferences/route.ts`
+- Snippet (lines 6-12): Five notification preference keys defined: `taskAssigned`, `taskCompleted`, `eventReminder`, `scheduleChange`, `inventoryAlert`
+- File: `apps/mobile/src/notifications/push-handlers.ts`
+- Snippet (line 1): `import * as Notifications from "expo-notifications";` — mobile expects push delivery
+- Snippet (lines 21-27): `NotificationPreferences` interface matching backend keys
+- Snippet (lines 88-110): `configurePushNotifications()` called on app startup — requests permissions, gets token, registers with backend
+- File: `packages/notifications/index.ts`
+- Snippet (line 1): `import { Knock } from "@knocklabs/node";` — Knock SDK imported but the `notifications` instance is never consumed
+
+### Why this matters
+Mobile users grant notification permissions on app launch, see a preferences UI with five toggleable notification types, and believe the system will alert them when tasks are assigned, events are approaching, or inventory is low. In reality, the push token is stored in a dead-end table row and no backend code exists to send a single push notification. This is a two-sided implementation gap: the client has full receiving infrastructure (permissions, listeners, channels) and the server has full persistence infrastructure (token storage, preference CRUD) — but the bridge between them (actual push delivery) is absent. Users who rely on mobile notifications for task management will silently receive nothing, while the preferences UI creates the false impression that the feature is functional.
+
+### Proposed detector rule
+```json
+{
+  "id": "automation_theater.push_token_registered_but_never_consumed",
+  "title": "Push notification token registration and preferences endpoints exist but no push delivery code reads the tokens",
+  "category": "automation_theater",
+  "severity": "high",
+  "confidence": 0.9,
+  "detector_type": "cross_file",
+  "language_targets": ["typescript", "javascript"],
+  "pattern": "preferenceKey:\\s*[\"']pushToken[\"']|pushToken.*upsert|pushToken.*create",
+  "negative_patterns": [
+    "expo.*push.*send|Expo.*Push.*send|sendPushNotification|sendPush",
+    "fcm.*send|admin.*messaging|apns.*send|pushProvider",
+    "notifications\\.notify\\(|notifications\\.trigger\\(",
+    "@expo\\/server-sdk|expo-server-sdk"
+  ],
+  "evidence_required": {
+    "file_must_match": ["(mobile|push|notification).*(route|handler|token)"],
+    "min_pattern_count": 1
+  },
+  "false_positive_controls": {
+    "skip_test_files": true,
+    "skip_doc_files": true,
+    "strip_comments": true,
+    "path_exclude": ["node_modules/", ".next/", "dist/", "build/"]
+  },
+  "user_impact": "Mobile users grant notification permissions and configure five notification preference toggles, but never receive a single push notification because the backend stores tokens without any push delivery infrastructure. The feature appears fully functional on both client and server sides but the critical delivery bridge is missing.",
+  "repair_guidance": "Implement a push notification delivery service that reads push tokens from user_preference where preferenceKey='pushToken' and respects the mobile_notifications category preferences. Integrate with Expo's push notification API (expo-server-sdk) or a push provider like FCM/APNs. Wire the delivery into existing domain events (task assignment, schedule changes, inventory alerts) by checking the user's push preferences before sending.",
+  "example_source": {
+    "file": "apps/api/app/api/mobile/push-token/route.ts",
+    "line_or_snippet": "await database.userPreference.upsert({\n      where: {\n        tenantId_userId_preferenceKey_category: {\n          tenantId: user.tenantId,\n          userId: user.id,\n          preferenceKey: \"pushToken\",\n          category: \"mobile\",\n        },\n      },\n      create: {\n        preferenceValue: pushToken,\n        ...\n      },\n    });"
+  }
+}
+```
+
+### Implementation note
+Detector should identify push token registration endpoints that persist tokens to a database but verify no push delivery code exists anywhere in the backend. The `negative_patterns` check for common push SDK imports and send calls (Expo server SDK, FCM, APNs, Knock notify/trigger). A cross-file variant should also verify that the notification preferences defined in the mobile preferences endpoint match events that the system actually produces (e.g., task assigned, schedule change) — if preferences exist for event types that have no corresponding domain event, the preferences UI is theater on top of theater. Official docs not required: generic implementation-evidence rule.
+---

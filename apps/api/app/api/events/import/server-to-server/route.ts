@@ -10,11 +10,11 @@
 import { randomUUID } from "node:crypto";
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { log } from "@repo/observability/log";
 
 /**
  * Schema for menu item in import request
@@ -794,11 +794,12 @@ export async function POST(request: Request) {
 
     // Dispatch best-effort completion notification
     if (importOptions.notifyOnCompletion && importOptions.notificationUrl) {
-      const totalProcessed = response.successCount + response.skippedCount + response.failedCount;
+      const totalProcessed =
+        response.successCount + response.skippedCount + response.failedCount;
       fetch(importOptions.notificationUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        signal: AbortSignal.timeout(5_000),
+        signal: AbortSignal.timeout(5000),
         body: JSON.stringify({
           event: "import.completed",
           data: {

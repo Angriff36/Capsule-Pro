@@ -1,6 +1,7 @@
 // Refresh budget spend and generate alerts for a single budget or all budgets
 // Converted from $queryRawUnsafe to Prisma ORM + $queryRaw tagged templates
 import { auth } from "@repo/auth/server";
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -9,7 +10,6 @@ import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
-import { log } from "@repo/observability/log";
 
 export async function POST(request: NextRequest) {
   try {

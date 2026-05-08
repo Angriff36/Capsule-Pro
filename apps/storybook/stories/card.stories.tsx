@@ -8,6 +8,7 @@ import {
 } from "@repo/design-system/components/ui/card";
 import type { Meta, StoryObj } from "@storybook/react";
 import { BellRing } from "lucide-react";
+import { action } from "storybook/actions";
 
 const notifications = [
   {
@@ -53,7 +54,11 @@ const meta = {
         ))}
       </CardContent>
       <CardFooter>
-        <button className="hover:underline" type="button">
+        <button
+          className="hover:underline"
+          onClick={action("close")}
+          type="button"
+        >
           Close
         </button>
       </CardFooter>

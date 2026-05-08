@@ -96,7 +96,7 @@ ${briefing.criticalInfo.map((c) => `- ${c}`).join("\n")}
   // Loading state
   if (isLoading && !briefing) {
     return (
-      <Card tone="canvas" className="border-border/70">
+      <Card className="border-border/70" tone="canvas">
         <CardHeader className="pb-3">
           <div className="flex items-center gap-2">
             <SparklesIcon className="size-5 text-primary" />
@@ -117,7 +117,7 @@ ${briefing.criticalInfo.map((c) => `- ${c}`).join("\n")}
   // Error state
   if (error && !briefing) {
     return (
-      <Card tone="canvas" className="border-destructive/50 bg-destructive/5">
+      <Card className="border-destructive/50 bg-destructive/5" tone="canvas">
         <CardHeader className="pb-3">
           <div className="flex items-center gap-2">
             <AlertTriangleIcon className="size-5 text-destructive" />
@@ -145,7 +145,10 @@ ${briefing.criticalInfo.map((c) => `- ${c}`).join("\n")}
   // Empty state - prompt to generate
   if (!briefing) {
     return (
-      <Card tone="canvas" className="border-dashed border-border/70 bg-muted/30">
+      <Card
+        className="border-dashed border-border/70 bg-muted/30"
+        tone="canvas"
+      >
         <CardHeader className="pb-3">
           <div className="flex items-center gap-2">
             <SparklesIcon className="size-5 text-primary" />
@@ -173,7 +176,7 @@ ${briefing.criticalInfo.map((c) => `- ${c}`).join("\n")}
   }).format(new Date(briefing.generatedAt));
 
   return (
-    <Card tone="canvas" className="border-border/70">
+    <Card className="border-border/70" tone="canvas">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-2">

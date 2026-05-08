@@ -2,12 +2,12 @@
 // centralized in `@/lib/pagination` so a hostile or buggy client cannot
 // request the entire version history of a document in one round trip.
 import { auth } from "@repo/auth/server";
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { database } from "@/lib/database";
 import { clampLimit, clampOffset } from "@/lib/pagination";
-import { log } from "@repo/observability/log";
 
 export async function GET(request: NextRequest) {
   try {

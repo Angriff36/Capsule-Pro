@@ -1,10 +1,10 @@
 import { auth } from "@repo/auth/server";
 import { sendEmailNotification } from "@repo/notifications";
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { database } from "@/lib/database";
-import { log } from "@repo/observability/log";
 
 /**
  * GET /api/kitchen/iot/alerts
@@ -118,7 +118,7 @@ export async function POST(request: NextRequest) {
           temperature != null ? `${Number(temperature).toFixed(1)}°F` : "N/A";
         const subject = `[IoT Alert] ${alertType} — ${probeId ?? "Unknown probe"}`;
         const body = [
-          `<h2>IoT Temperature Alert</h2>`,
+          "<h2>IoT Temperature Alert</h2>",
           `<p><strong>Alert:</strong> ${alertType}</p>`,
           `<p><strong>Probe:</strong> ${probeId ?? "Unknown"}</p>`,
           `<p><strong>Temperature:</strong> ${tempStr}</p>`,

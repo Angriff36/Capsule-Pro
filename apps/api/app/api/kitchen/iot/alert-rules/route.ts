@@ -1,10 +1,9 @@
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-
 import { requireCurrentUser } from "@/app/lib/tenant";
 import { database } from "@/lib/database";
-import { log } from "@repo/observability/log";
 
 const createAlertRuleSchema = z.object({
   name: z.string().min(1),
@@ -62,7 +61,7 @@ export async function GET(request: NextRequest) {
     log.error("List IoT alert rules error:", error);
     return NextResponse.json(
       { error: "Failed to list alert rules" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -81,7 +80,7 @@ export async function POST(request: NextRequest) {
     if (!parsed.success) {
       return NextResponse.json(
         { error: "Validation failed", details: parsed.error.flatten() },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -98,7 +97,7 @@ export async function POST(request: NextRequest) {
     log.error("Create IoT alert rule error:", error);
     return NextResponse.json(
       { error: "Failed to create alert rule" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

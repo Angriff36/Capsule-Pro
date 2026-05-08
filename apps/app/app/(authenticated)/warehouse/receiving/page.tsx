@@ -252,13 +252,13 @@ export default function ReceivingPage() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button className="gap-2" variant="outline" onClick={() => toast.info("Warehouse reports coming soon")}>
+          <Button className="gap-2" disabled variant="outline">
             <FileText className="size-4" />
-            Reports
+            Reports — not implemented
           </Button>
-          <Button className="gap-2" variant="outline" onClick={() => toast.info("Supplier performance dashboard coming soon")}>
+          <Button className="gap-2" disabled variant="outline">
             <TrendingUp className="size-4" />
-            Supplier Performance
+            Supplier performance — not implemented
           </Button>
         </div>
       </div>
@@ -318,7 +318,7 @@ export default function ReceivingPage() {
             Purchase Order Details
           </h2>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            <Card tone="canvas" className="md:col-span-2 lg:col-span-2">
+            <Card className="md:col-span-2 lg:col-span-2" tone="canvas">
               <CardHeader>
                 <CardTitle>PO Items</CardTitle>
                 <CardDescription>

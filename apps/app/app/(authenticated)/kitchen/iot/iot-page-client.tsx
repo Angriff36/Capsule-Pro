@@ -28,7 +28,6 @@ import {
   Wrench,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
 
 interface TemperatureProbe {
@@ -196,19 +195,19 @@ export function IoTPageClient() {
             Real-time temperature monitoring and probe management
           </p>
         </div>
-        <Button onClick={() => toast.info("Probe registration form coming soon")}>
+        <Button disabled type="button">
           <Plus className="mr-2 h-4 w-4" />
-          Register Probe
+          Register probe — not implemented yet
         </Button>
       </div>
 
       {/* Status Summary */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
         <Card
-          tone="canvas"
           className={
             criticalAlerts.length > 0 ? "border-red-500 bg-red-900/10" : ""
           }
+          tone="canvas"
         >
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
@@ -413,12 +412,25 @@ export function IoTPageClient() {
                             )}
                           </div>
                         </div>
-                        <div className="flex gap-2">
-                          <Button size="sm" variant="outline" onClick={() => toast.info("Log temperature reading coming soon")}>
-                            Log Reading
+                        <div
+                          className="flex gap-2"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <Button
+                            disabled
+                            size="sm"
+                            type="button"
+                            variant="outline"
+                          >
+                            Log reading — not implemented
                           </Button>
-                          <Button size="sm" variant="ghost" onClick={() => toast.info("Probe details view coming soon")}>
-                            Details
+                          <Button
+                            disabled
+                            size="sm"
+                            type="button"
+                            variant="ghost"
+                          >
+                            Details — not implemented
                           </Button>
                         </div>
                       </div>
@@ -505,11 +517,11 @@ export function IoTPageClient() {
                           </div>
                         </div>
                         <div className="flex gap-2">
-                          <Button size="sm" variant="outline" onClick={() => toast.info("Alert acknowledgement coming soon")}>
-                            Acknowledge
+                          <Button disabled size="sm" variant="outline">
+                            Acknowledge — not implemented
                           </Button>
-                          <Button size="sm" variant="ghost" onClick={() => toast.info("Alert resolution coming soon")}>
-                            Resolve
+                          <Button disabled size="sm" variant="ghost">
+                            Resolve — not implemented
                           </Button>
                         </div>
                       </div>

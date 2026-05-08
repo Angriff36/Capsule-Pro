@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { Button } from "@repo/design-system/components/ui/button";
-import { AccountModal } from "./components/account-modal";
+import { useEffect, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
 import type { ChartOfAccountWithParent } from "@/app/lib/use-chart-of-accounts";
+import { AccountModal } from "./components/account-modal";
 
 export function ChartOfAccountsActions() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -30,9 +30,9 @@ export function ChartOfAccountsActions() {
     <>
       <Button onClick={() => setIsModalOpen(true)}>Add Account</Button>
       <AccountModal
-        open={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onCreated={() => window.location.reload()}
+        open={isModalOpen}
         parentAccounts={parentAccounts}
       />
     </>

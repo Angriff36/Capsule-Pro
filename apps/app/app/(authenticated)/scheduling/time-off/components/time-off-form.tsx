@@ -382,8 +382,13 @@ export function TimeOffForm({
           <Input
             id="startDate"
             min={new Date().toISOString().split("T")[0]}
+            onBlur={(e) => {
+              if (e.target.value !== formData.startDate) {
+                setFormData((prev) => ({ ...prev, startDate: e.target.value }));
+              }
+            }}
             onChange={(e) => {
-              setFormData({ ...formData, startDate: e.target.value });
+              setFormData((prev) => ({ ...prev, startDate: e.target.value }));
               if (
                 conflicts.hasShiftConflicts ||
                 conflicts.hasTimeOffConflicts
@@ -405,8 +410,13 @@ export function TimeOffForm({
           <Input
             id="endDate"
             min={formData.startDate}
+            onBlur={(e) => {
+              if (e.target.value !== formData.endDate) {
+                setFormData((prev) => ({ ...prev, endDate: e.target.value }));
+              }
+            }}
             onChange={(e) => {
-              setFormData({ ...formData, endDate: e.target.value });
+              setFormData((prev) => ({ ...prev, endDate: e.target.value }));
               if (
                 conflicts.hasShiftConflicts ||
                 conflicts.hasTimeOffConflicts

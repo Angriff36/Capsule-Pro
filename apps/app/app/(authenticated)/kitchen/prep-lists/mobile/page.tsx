@@ -154,7 +154,7 @@ export default function PrepListsMobilePage() {
 
       <div className="flex min-h-0 flex-1 flex-col p-4">
         {/* Summary card */}
-        <Card tone="soft-stone" className="mb-4 border-hairline bg-soft-stone">
+        <Card className="mb-4 border-hairline bg-soft-stone" tone="soft-stone">
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="text-lg">
@@ -200,7 +200,7 @@ export default function PrepListsMobilePage() {
         {prepLists.map((list) => {
           const eventDate = parseISO(list.event.eventDate);
           return (
-            <Card tone="canvas" className="mb-3 border-hairline" key={list.id}>
+            <Card className="mb-3 border-hairline" key={list.id} tone="canvas">
               <CardHeader className="pb-2">
                 <CardTitle className="text-base">{list.event.name}</CardTitle>
                 <CardDescription className="flex items-center gap-3 text-sm">
@@ -246,13 +246,13 @@ export default function PrepListsMobilePage() {
 
                 return (
                   <Card
-                    tone="canvas"
                     className={`mb-2 border-2 ${
                       prepDateLabel.isUrgent && !isCompleted
                         ? "border-rose-300"
                         : "border-hairline"
                     } ${isCompleted ? "bg-soft-stone/50" : "bg-card"}`}
                     key={item.id}
+                    tone="canvas"
                   >
                     <CardContent className="p-4">
                       <div className="mb-2 flex items-start justify-between">

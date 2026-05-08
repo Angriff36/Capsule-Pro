@@ -243,7 +243,7 @@ export default function DispatchPage() {
             ["completed", "Completed", CheckCircle2],
           ] as const
         ).map(([key, label, Icon]) => (
-          <Card tone="soft-stone" key={key}>
+          <Card key={key} tone="soft-stone">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">{label}</CardTitle>
               <Icon className="h-4 w-4 text-muted-foreground" />
@@ -284,9 +284,9 @@ export default function DispatchPage() {
                   <div className="space-y-3">
                     {routes.map((route) => (
                       <Card
-                        tone="canvas"
                         className="hover:border-primary/40 transition-shadow"
                         key={route.id}
+                        tone="canvas"
                       >
                         <CardContent className="p-4">
                           <div className="flex items-start justify-between gap-4">

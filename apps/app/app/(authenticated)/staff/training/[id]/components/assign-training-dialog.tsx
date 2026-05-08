@@ -62,13 +62,11 @@ interface Employee {
 interface AssignTrainingDialogProps {
   moduleId: string;
   moduleName: string;
-  children: React.ReactNode;
 }
 
 export function AssignTrainingDialog({
   moduleId,
   moduleName,
-  children,
 }: AssignTrainingDialogProps) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -149,7 +147,9 @@ export function AssignTrainingDialog({
 
   return (
     <Dialog onOpenChange={setOpen} open={open}>
-      <DialogTrigger asChild>{children}</DialogTrigger>
+      <DialogTrigger asChild>
+        <Button>Assign to Employee</Button>
+      </DialogTrigger>
       <DialogContent className="sm:max-w-[400px]">
         <DialogHeader>
           <DialogTitle>Assign Training</DialogTitle>

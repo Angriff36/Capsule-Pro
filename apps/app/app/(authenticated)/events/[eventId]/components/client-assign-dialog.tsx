@@ -101,7 +101,10 @@ export const ClientAssignDialog = ({
     const parts: string[] = [];
     if (client.email) parts.push(client.email);
     if (client.phone) parts.push(client.phone);
-    if (client.clientType === "company" && (client.first_name || client.last_name)) {
+    if (
+      client.clientType === "company" &&
+      (client.first_name || client.last_name)
+    ) {
       const contact = [client.first_name, client.last_name]
         .filter(Boolean)
         .join(" ");
@@ -154,6 +157,7 @@ export const ClientAssignDialog = ({
                   <a
                     className="underline hover:text-foreground"
                     href="/crm/clients/new"
+                    rel="noopener"
                     target="_blank"
                   >
                     Create one?

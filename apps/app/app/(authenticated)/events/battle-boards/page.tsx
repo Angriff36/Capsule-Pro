@@ -204,7 +204,10 @@ const BattleBoardsPage = async () => {
                     href={`/events/battle-boards/${board.id}`}
                     key={board.id}
                   >
-                    <Card tone="canvas" className="h-full transition hover:border-primary/40">
+                    <Card
+                      className="h-full transition hover:border-primary/40"
+                      tone="canvas"
+                    >
                       <CardHeader className="gap-1">
                         <CardDescription className="flex items-center justify-between gap-2">
                           <span className="truncate">

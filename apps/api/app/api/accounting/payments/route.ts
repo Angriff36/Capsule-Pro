@@ -11,6 +11,7 @@
  */
 
 import { database, type Prisma } from "@repo/database";
+import { log } from "@repo/observability/log";
 import { type NextRequest, NextResponse } from "next/server";
 import { requireTenantId } from "@/app/lib/tenant";
 import {
@@ -29,7 +30,6 @@ import {
   parsePaymentFilters,
   validateCreatePaymentRequest,
 } from "./validation";
-import { log } from "@repo/observability/log";
 
 /**
  * Cache scope for `Idempotency-Key`-protected payment creation.

@@ -153,12 +153,17 @@ export const BoardCanvas = ({
   /* ---- group creation ---- */
   const [showGroupDialog, setShowGroupDialog] = useState(false);
   const [newGroupName, setNewGroupName] = useState("");
-  const [newGroupColor, setNewGroupColor] = useState<string>(GROUP_COLORS[0].value);
+  const [newGroupColor, setNewGroupColor] = useState<string>(
+    GROUP_COLORS[0].value
+  );
   const [creatingGroup, setCreatingGroup] = useState(false);
 
   /* ---- entity browser ---- */
   const [browserOpen, setBrowserOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedBrowserCategoryId, setSelectedBrowserCategoryId] = useState<
+    string | null
+  >(null);
 
   /* ---- ref for scroll container ---- */
   const canvasRef = useRef<HTMLDivElement>(null);
@@ -885,7 +890,16 @@ export const BoardCanvas = ({
             {ENTITY_CATEGORIES.map((category) => (
               <li key={category.id}>
                 <button
-                  className="w-full rounded-md px-3 py-2 text-left text-sm hover:bg-accent"
+                  className={`w-full rounded-md px-3 py-2 text-left text-sm hover:bg-accent ${
+                    selectedBrowserCategoryId === category.id
+                      ? "bg-accent font-medium"
+                      : ""
+                  }`}
+                  onClick={() =>
+                    setSelectedBrowserCategoryId((prev) =>
+                      prev === category.id ? null : category.id
+                    )
+                  }
                   type="button"
                 >
                   {category.label}

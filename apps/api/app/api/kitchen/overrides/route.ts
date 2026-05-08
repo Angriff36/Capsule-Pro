@@ -131,13 +131,16 @@ export async function POST(request: Request) {
   } catch (error) {
     auditLogged = false;
     captureException(error);
-    logger.error("Override audit + outbox transaction failed — audit trail lost", {
-      error: String(error),
-      constraintCode,
-      entityType,
-      entityId,
-      overriddenBy: currentUser.id,
-    });
+    logger.error(
+      "Override audit + outbox transaction failed — audit trail lost",
+      {
+        error: String(error),
+        constraintCode,
+        entityType,
+        entityId,
+        overriddenBy: currentUser.id,
+      }
+    );
   }
 
   return NextResponse.json({

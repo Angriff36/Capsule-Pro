@@ -10,12 +10,11 @@ import {
   sendEmailFromTemplate,
   sendEmailNotification,
 } from "@repo/notifications";
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
-
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { log } from "@repo/observability/log";
 
 const sendEmailSchema = z.object({
   notificationType: z.string().min(1),

@@ -53,13 +53,9 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-interface CreateTrainingModuleDialogProps {
-  children: React.ReactNode;
-}
+interface CreateTrainingModuleDialogProps {}
 
-export function CreateTrainingModuleDialog({
-  children,
-}: CreateTrainingModuleDialogProps) {
+export function CreateTrainingModuleDialog({}: CreateTrainingModuleDialogProps) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
@@ -96,9 +92,16 @@ export function CreateTrainingModuleDialog({
         }),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Failed to create module");
+        throw new Error(data.message || `Server error (${response.status})`);
+      }
+
+      if (!data.result) {
+        throw new Error(
+          "Module was not created — no result returned from server"
+        );
       }
 
       toast.success("Training module created");
@@ -106,9 +109,10 @@ export function CreateTrainingModuleDialog({
       form.reset();
       router.refresh();
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "Failed to create module"
-      );
+      const message =
+        error instanceof Error ? error.message : "Failed to create module";
+      console.error("Training module creation failed:", message);
+      toast.error(message);
     } finally {
       setIsSubmitting(false);
     }
@@ -116,7 +120,9 @@ export function CreateTrainingModuleDialog({
 
   return (
     <Dialog onOpenChange={setOpen} open={open}>
-      <DialogTrigger asChild>{children}</DialogTrigger>
+      <DialogTrigger asChild>
+        <Button>Create Module</Button>
+      </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>Create Training Module</DialogTitle>

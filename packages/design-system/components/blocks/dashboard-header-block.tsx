@@ -79,13 +79,13 @@ export function DashboardHeaderBlock() {
             </CardDescription>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <Button size="sm" variant="outline">
+            <Button disabled size="sm" type="button" variant="outline">
               <Download />
-              Download
+              Download — preview block
             </Button>
-            <Button size="sm">
+            <Button disabled size="sm" type="button">
               <Plus />
-              Create report
+              Create report — preview block
             </Button>
           </div>
         </div>
@@ -115,9 +115,9 @@ export function DashboardHeaderBlock() {
                 </Avatar>
               ))}
             </div>
-            <Button size="sm" variant="ghost">
+            <Button disabled size="sm" type="button" variant="ghost">
               <Users />
-              Manage access
+              Manage access — preview block
             </Button>
           </div>
         </div>

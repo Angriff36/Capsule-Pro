@@ -1,3 +1,4 @@
+import { database } from "@repo/database";
 import { analytics } from "@repo/analytics/server";
 import { clerkClient } from "@repo/auth/server";
 import { parseError } from "@repo/observability/error";
@@ -72,6 +73,98 @@ const handleSubscriptionScheduleCanceled = async (
   });
 };
 
+const handlePaymentIntentSucceeded = async (
+  data: Stripe.PaymentIntent,
+) => {
+  const tenantId = data.metadata?.tenantId;
+  const paymentId = data.metadata?.paymentId;
+
+  if (!tenantId || !paymentId) {
+    return;
+  }
+
+  try {
+    const payment = await database.payment.findFirst({
+      where: { tenantId, id: paymentId, deletedAt: null },
+    });
+
+    if (!payment || payment.status === "COMPLETED") {
+      return;
+    }
+
+    await database.payment.update({
+      where: { tenantId_id: { tenantId, id: paymentId } },
+      data: {
+        status: "COMPLETED",
+        processedAt: new Date(),
+        completedAt: new Date(),
+        gatewayTransactionId: data.id,
+      },
+    });
+
+    if (payment.invoiceId) {
+      const invoice = await database.invoice.findFirst({
+        where: { tenantId, id: payment.invoiceId, deletedAt: null },
+      });
+
+      if (invoice) {
+        const paymentAmount = Number(payment.amount);
+        const currentAmountPaid = Number(invoice.amountPaid);
+        const currentAmountDue = Number(invoice.amountDue);
+
+        await database.invoice.update({
+          where: { tenantId_id: { tenantId, id: payment.invoiceId } },
+          data: {
+            amountPaid: currentAmountPaid + paymentAmount,
+            amountDue: currentAmountDue - paymentAmount,
+            status:
+              Math.abs(currentAmountDue - paymentAmount) < 0.01
+                ? "PAID"
+                : "PARTIALLY_PAID",
+            ...(Math.abs(currentAmountDue - paymentAmount) < 0.01
+              ? { paidAt: new Date() }
+              : {}),
+          },
+        });
+      }
+    }
+  } catch (error) {
+    log.error("Failed to reconcile payment_intent.succeeded", { error });
+  }
+};
+
+const handlePaymentIntentFailed = async (
+  data: Stripe.PaymentIntent,
+) => {
+  const tenantId = data.metadata?.tenantId;
+  const paymentId = data.metadata?.paymentId;
+
+  if (!tenantId || !paymentId) {
+    return;
+  }
+
+  try {
+    const payment = await database.payment.findFirst({
+      where: { tenantId, id: paymentId, deletedAt: null },
+    });
+
+    if (!payment || payment.status === "FAILED") {
+      return;
+    }
+
+    await database.payment.update({
+      where: { tenantId_id: { tenantId, id: paymentId } },
+      data: {
+        status: "FAILED",
+        processedAt: new Date(),
+        gatewayTransactionId: data.id,
+      },
+    });
+  } catch (error) {
+    log.error("Failed to reconcile payment_intent.payment_failed", { error });
+  }
+};
+
 export const POST = async (request: Request): Promise<Response> => {
   if (!env.STRIPE_WEBHOOK_SECRET) {
     return NextResponse.json({ message: "Not configured", ok: false });
@@ -99,6 +192,14 @@ export const POST = async (request: Request): Promise<Response> => {
       }
       case "subscription_schedule.canceled": {
         await handleSubscriptionScheduleCanceled(event.data.object);
+        break;
+      }
+      case "payment_intent.succeeded": {
+        await handlePaymentIntentSucceeded(event.data.object);
+        break;
+      }
+      case "payment_intent.payment_failed": {
+        await handlePaymentIntentFailed(event.data.object);
         break;
       }
       default: {

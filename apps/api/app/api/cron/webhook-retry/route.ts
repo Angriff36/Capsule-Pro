@@ -14,13 +14,13 @@
  */
 
 import { database, type Prisma } from "@repo/database";
-import { log } from "@repo/observability/log";
 import {
   determineNextStatus,
   sendWebhook,
   shouldAutoDisable,
   type WebhookPayload,
 } from "@repo/notifications";
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 
@@ -227,10 +227,9 @@ export async function GET(request: Request): Promise<NextResponse> {
           data: updates,
         });
       } catch (deliveryError) {
-        log.error(
-          `[webhook-retry] Failed to process delivery ${delivery.id}`,
-          { error: deliveryError }
-        );
+        log.error(`[webhook-retry] Failed to process delivery ${delivery.id}`, {
+          error: deliveryError,
+        });
         failedCount++;
         // Continue processing other deliveries
       }

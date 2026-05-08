@@ -221,11 +221,7 @@ const StaffTeamPage = async () => {
                               isActive: employee.isActive,
                               employmentType: employee.employmentType,
                             }}
-                          >
-                            <Button size="sm" variant="outline">
-                              Edit
-                            </Button>
-                          </EditStaffDialog>
+                          />
                         </TableCell>
                       </TableRow>
                     ))}

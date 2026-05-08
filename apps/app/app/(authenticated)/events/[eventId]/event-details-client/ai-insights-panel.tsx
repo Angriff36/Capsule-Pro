@@ -47,6 +47,8 @@ interface AIInsightsPanelProps {
   onOpenSummaryModal: () => void;
   onOpenBreakdownModal: () => void;
   onRegenerateBreakdown: () => void;
+  /** Stops UI generation progress; cannot abort the server-side model call mid-flight */
+  onCancelBreakdownGeneration: () => void;
   onExportBreakdown: () => void;
   onSaveBreakdown: () => void;
   onRefreshSuggestions: () => void;
@@ -76,6 +78,7 @@ export function AIInsightsPanel({
   onOpenSummaryModal,
   onOpenBreakdownModal,
   onRegenerateBreakdown,
+  onCancelBreakdownGeneration,
   onExportBreakdown,
   onSaveBreakdown,
   onRefreshSuggestions,
@@ -125,7 +128,7 @@ export function AIInsightsPanel({
 
   return (
     <section className="space-y-4">
-      <Card tone="canvas" className="border-border/70">
+      <Card className="border-border/70" tone="canvas">
         <CardHeader className="pb-3">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
@@ -207,6 +210,7 @@ export function AIInsightsPanel({
             breakdown={breakdown}
             generationProgress={generationProgress}
             isGenerating={isGenerating}
+            onCancelGeneration={onCancelBreakdownGeneration}
             onExport={onExportBreakdown}
             onOpenGenerateModal={onOpenBreakdownModal}
             onRegenerate={onRegenerateBreakdown}
@@ -214,7 +218,7 @@ export function AIInsightsPanel({
           />
         </div>
         <aside className="space-y-3">
-          <Card tone="canvas" className="border-border/70 bg-muted/15">
+          <Card className="border-border/70 bg-muted/15" tone="canvas">
             <CardContent className="px-4 py-3">
               <p className="font-medium text-sm">Action queue</p>
               <p className="text-foreground/75 text-xs">

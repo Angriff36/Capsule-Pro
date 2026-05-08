@@ -6,13 +6,13 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { InvariantError } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import type { CompleteReceivingRequest } from "../../types";
 import { validateCompleteReceivingRequest } from "../../validation";
-import { log } from "@repo/observability/log";
 
 interface RouteContext {
   params: Promise<{ id: string }>;

@@ -16,17 +16,19 @@ const DevConsoleTenantsPage = () => (
       <div className="dev-console-header-actions">
         <button
           className="dev-console-button dev-console-button-ghost"
+          disabled
           type="button"
         >
           <RotateCcwIcon className="h-4 w-4" />
-          Reset Keys
+          Reset keys — demo only
         </button>
         <button
           className="dev-console-button dev-console-button-primary"
+          disabled
           type="button"
         >
           <KeyRoundIcon className="h-4 w-4" />
-          Impersonate
+          Impersonate — demo only
         </button>
       </div>
     </div>
@@ -117,15 +119,17 @@ const DevConsoleTenantsPage = () => (
           <div>
             <button
               className="dev-console-button dev-console-button-ghost"
+              disabled
               type="button"
             >
-              Clear
+              Clear — demo only
             </button>
             <button
               className="dev-console-button dev-console-button-primary"
+              disabled
               type="button"
             >
-              Create tenant &amp; owner
+              Create tenant &amp; owner — demo only
             </button>
           </div>
         </div>

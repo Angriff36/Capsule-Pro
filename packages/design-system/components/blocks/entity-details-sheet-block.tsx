@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Separator } from "../ui/separator";
 import {
   Sheet,
+  SheetClose,
   SheetContent,
   SheetDescription,
   SheetFooter,
@@ -85,12 +86,19 @@ export function EntityDetailsSheetBlock() {
                   </div>
                 </div>
               </div>
-              <SheetFooter>
-                <Button variant="outline">
+              <SheetFooter className="flex flex-wrap gap-2">
+                <Button disabled type="button" variant="outline">
                   <ExternalLink />
-                  Open profile
+                  Open profile — preview block
                 </Button>
-                <Button>Send message</Button>
+                <Button disabled type="button">
+                  Send message — preview block
+                </Button>
+                <SheetClose asChild>
+                  <Button type="button" variant="secondary">
+                    Close sheet
+                  </Button>
+                </SheetClose>
               </SheetFooter>
             </SheetContent>
           </Sheet>

@@ -1,7 +1,7 @@
-import { type NextRequest, NextResponse } from "next/server";
-import { requireCurrentUser } from "@/app/lib/tenant";
 import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
+import { type NextRequest, NextResponse } from "next/server";
+import { requireCurrentUser } from "@/app/lib/tenant";
 
 const SETTING_KEYS = [
   "hapticFeedback",
@@ -41,7 +41,7 @@ export async function GET() {
     log.error("Error getting app settings", { error: String(error) });
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -66,7 +66,7 @@ export async function PATCH(request: NextRequest) {
     if (Object.keys(updates).length === 0) {
       return NextResponse.json(
         { error: "No valid setting fields provided" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -91,8 +91,8 @@ export async function PATCH(request: NextRequest) {
           update: {
             preferenceValue: value,
           },
-        }),
-      ),
+        })
+      )
     );
 
     const refreshed = await database.userPreference.findMany({
@@ -117,7 +117,7 @@ export async function PATCH(request: NextRequest) {
     log.error("Error updating app settings", { error: String(error) });
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

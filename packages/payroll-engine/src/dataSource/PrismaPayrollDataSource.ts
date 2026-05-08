@@ -2,8 +2,8 @@
 // Implements PayrollDataSource interface using Prisma database client
 
 import type { PrismaClient } from "@repo/database/generated/client";
+import { money } from "../core/currency";
 import { calculateTaxes } from "../core/taxEngine";
-import { Currency, money } from "../core/currency";
 import type {
   Deduction,
   Employee,
@@ -389,8 +389,11 @@ export class PrismaPayrollDataSource implements PayrollDataSource {
       // Reconstruct a minimal Employee for tax calculation.
       // taxInfo is unavailable at read time (not persisted), so
       // calculateTaxes uses defaults: single status, FL jurisdiction.
-      const preTaxTotal = (deductions.preTax as Array<{ amount: number }>)
-        ?.reduce((sum: number, d: { amount: number }) => sum + d.amount, 0) ?? 0;
+      const preTaxTotal =
+        (deductions.preTax as Array<{ amount: number }>)?.reduce(
+          (sum: number, d: { amount: number }) => sum + d.amount,
+          0
+        ) ?? 0;
 
       const employee: Employee = {
         id: item.employee_id,

@@ -78,7 +78,7 @@ export function OperationsSection({
     <section className="space-y-4">
       {/* Template Staffing Suggestions */}
       {templateStaffing && templateName && (
-        <Card tone="canvas" className="border-border/70">
+        <Card className="border-border/70" tone="canvas">
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <div>
@@ -110,7 +110,7 @@ export function OperationsSection({
           </CardHeader>
           <CardContent className="pt-0">
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              <Card tone="soft-stone" className="bg-muted/30">
+              <Card className="bg-muted/30" tone="soft-stone">
                 <CardContent className="pt-4 pb-3">
                   <div className="flex items-center gap-2 mb-1">
                     <UsersIcon className="h-4 w-4 text-muted-foreground" />
@@ -123,7 +123,7 @@ export function OperationsSection({
                   </p>
                 </CardContent>
               </Card>
-              <Card tone="soft-stone" className="bg-muted/30">
+              <Card className="bg-muted/30" tone="soft-stone">
                 <CardContent className="pt-4 pb-3">
                   <div className="flex items-center gap-2 mb-1">
                     <WineIcon className="h-4 w-4 text-muted-foreground" />
@@ -136,7 +136,7 @@ export function OperationsSection({
                   </p>
                 </CardContent>
               </Card>
-              <Card tone="soft-stone" className="bg-muted/30">
+              <Card className="bg-muted/30" tone="soft-stone">
                 <CardContent className="pt-4 pb-3">
                   <div className="flex items-center gap-2 mb-1">
                     <ChefHatIcon className="h-4 w-4 text-muted-foreground" />
@@ -147,7 +147,7 @@ export function OperationsSection({
                   </p>
                 </CardContent>
               </Card>
-              <Card tone="soft-stone" className="bg-muted/30">
+              <Card className="bg-muted/30" tone="soft-stone">
                 <CardContent className="pt-4 pb-3">
                   <div className="flex items-center gap-2 mb-1">
                     <PackageIcon className="h-4 w-4 text-muted-foreground" />
@@ -170,7 +170,7 @@ export function OperationsSection({
         </Card>
       )}
 
-      <Card tone="canvas" className="border-border/70">
+      <Card className="border-border/70" tone="canvas">
         <CardHeader className="pb-3">
           <CardTitle className="text-lg">Operations control</CardTitle>
           <CardDescription>

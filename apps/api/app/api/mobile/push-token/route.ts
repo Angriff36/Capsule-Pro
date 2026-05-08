@@ -1,7 +1,7 @@
-import { type NextRequest, NextResponse } from "next/server";
-import { requireCurrentUser } from "@/app/lib/tenant";
 import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
+import { type NextRequest, NextResponse } from "next/server";
+import { requireCurrentUser } from "@/app/lib/tenant";
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
     if (!pushToken || typeof pushToken !== "string") {
       return NextResponse.json(
         { error: "pushToken is required" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
     log.error("Error registering push token", { error: String(error) });
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

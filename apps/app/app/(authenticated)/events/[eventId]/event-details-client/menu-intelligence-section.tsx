@@ -217,7 +217,10 @@ export function MenuIntelligenceSection({
         </TabsContent>
 
         <TabsContent className="space-y-6" value="recipes">
-          <Card tone="canvas" className="border-border/60 bg-card/70 text-foreground">
+          <Card
+            className="border-border/60 bg-card/70 text-foreground"
+            tone="canvas"
+          >
             <CardHeader className="space-y-1">
               <CardTitle className="flex items-center gap-2 text-lg">
                 <ChefHatIcon className="size-5 text-warning" />
@@ -402,7 +405,10 @@ export function MenuIntelligenceSection({
             </CardContent>
           </Card>
 
-          <Card tone="canvas" className="border-border/60 bg-card/70 text-foreground">
+          <Card
+            className="border-border/60 bg-card/70 text-foreground"
+            tone="canvas"
+          >
             <CardHeader className="space-y-1">
               <CardTitle className="flex items-center gap-2 text-lg">
                 <ClipboardCopyIcon className="size-5 text-info" />

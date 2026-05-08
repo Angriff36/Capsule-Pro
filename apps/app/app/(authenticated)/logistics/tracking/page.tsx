@@ -332,7 +332,10 @@ export default function TrackingPage() {
         <div className="space-y-0.5">
           <h1 className="text-2xl font-semibold tracking-tight">
             Delivery Tracking
-            <Badge variant="outline" className="ml-2 text-xs font-normal text-muted-foreground">
+            <Badge
+              className="ml-2 text-xs font-normal text-muted-foreground"
+              variant="outline"
+            >
               Simulated Positions
             </Badge>
           </h1>
@@ -417,7 +420,7 @@ export default function TrackingPage() {
           {/* Map + List Layout */}
           <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_380px]">
             {/* Map */}
-            <Card tone="canvas" className="overflow-hidden">
+            <Card className="overflow-hidden" tone="canvas">
               <CardContent className="p-0">
                 <div className="h-[500px]">
                   <MiniMap deliveries={deliveries} />
@@ -426,7 +429,7 @@ export default function TrackingPage() {
             </Card>
 
             {/* Delivery List */}
-            <Card tone="canvas" className="overflow-auto max-h-[500px]">
+            <Card className="overflow-auto max-h-[500px]" tone="canvas">
               <CardHeader className="pb-2">
                 <CardTitle className="text-base">Active Deliveries</CardTitle>
                 <CardDescription>Click a delivery for details</CardDescription>

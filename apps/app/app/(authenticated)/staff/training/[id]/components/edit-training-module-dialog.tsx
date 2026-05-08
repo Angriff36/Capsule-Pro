@@ -66,13 +66,11 @@ interface EditTrainingModuleDialogProps {
     isRequired: boolean;
     isActive: boolean;
   };
-  children: React.ReactNode;
 }
 
 export function EditTrainingModuleDialog({
   moduleId,
   defaultValues,
-  children,
 }: EditTrainingModuleDialogProps) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -133,7 +131,9 @@ export function EditTrainingModuleDialog({
 
   return (
     <Dialog onOpenChange={setOpen} open={open}>
-      <DialogTrigger asChild>{children}</DialogTrigger>
+      <DialogTrigger asChild>
+        <Button variant="outline">Edit Module</Button>
+      </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>Edit Training Module</DialogTitle>

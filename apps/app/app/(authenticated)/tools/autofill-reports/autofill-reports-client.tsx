@@ -455,10 +455,14 @@ function DocumentParserTab() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
-  const [selectedEventName, setSelectedEventName] = useState<string | null>(null);
+  const [selectedEventName, setSelectedEventName] = useState<string | null>(
+    null
+  );
   const [eventPickerOpen, setEventPickerOpen] = useState(false);
   const [eventSearchQuery, setEventSearchQuery] = useState("");
-  const [eventSearchResults, setEventSearchResults] = useState<EventSearchResult[]>([]);
+  const [eventSearchResults, setEventSearchResults] = useState<
+    EventSearchResult[]
+  >([]);
   const [eventSearchLoading, setEventSearchLoading] = useState(false);
   const [applying, setApplying] = useState<string | null>(null);
   const pendingSection = useRef<string | null>(null);
@@ -535,21 +539,18 @@ function DocumentParserTab() {
     }
   }, []);
 
-  const handleSelectEvent = useCallback(
-    (event: EventSearchResult) => {
-      setSelectedEventId(event.id);
-      setSelectedEventName(event.title);
-      setEventPickerOpen(false);
-      setEventSearchQuery("");
-      setEventSearchResults([]);
-      const section = pendingSection.current;
-      pendingSection.current = null;
-      if (section) {
-        setTimeout(() => handleApplySection(section), 0);
-      }
-    },
-    []
-  );
+  const handleSelectEvent = useCallback((event: EventSearchResult) => {
+    setSelectedEventId(event.id);
+    setSelectedEventName(event.title);
+    setEventPickerOpen(false);
+    setEventSearchQuery("");
+    setEventSearchResults([]);
+    const section = pendingSection.current;
+    pendingSection.current = null;
+    if (section) {
+      setTimeout(() => handleApplySection(section), 0);
+    }
+  }, []);
 
   const handleApplySection = useCallback(
     async (section: string) => {
@@ -569,27 +570,20 @@ function DocumentParserTab() {
             id: selectedEventId,
           };
           if (details.eventName) updatePayload.title = details.eventName;
-          if (details.eventDate)
-            updatePayload.eventDate = details.eventDate;
-          if (details.guestCount)
-            updatePayload.guestCount = details.guestCount;
+          if (details.eventDate) updatePayload.eventDate = details.eventDate;
+          if (details.guestCount) updatePayload.guestCount = details.guestCount;
           if (details.venue) updatePayload.venueName = details.venue;
 
-          const res = await apiFetch(
-            "/api/events/event/commands/update",
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(updatePayload),
-            }
-          );
+          const res = await apiFetch("/api/events/event/commands/update", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(updatePayload),
+          });
           if (!res.ok) {
             const data = (await res.json().catch(() => ({}))) as {
               error?: string;
             };
-            throw new Error(
-              data.error || `Update failed (${res.status})`
-            );
+            throw new Error(data.error || `Update failed (${res.status})`);
           }
           toast.success("Event details applied", {
             description: `Updated ${selectedEventName}`,
@@ -616,19 +610,16 @@ function DocumentParserTab() {
               };
               const dishId = dishData.result?.id;
               if (dishId) {
-                await apiFetch(
-                  "/api/events/event-dishes/commands/create",
-                  {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                      eventId: selectedEventId,
-                      dishId,
-                      quantityServings: item.quantity || 1,
-                      specialInstructions: item.notes || undefined,
-                    }),
-                  }
-                );
+                await apiFetch("/api/events/event-dishes/commands/create", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    eventId: selectedEventId,
+                    dishId,
+                    quantityServings: item.quantity || 1,
+                    specialInstructions: item.notes || undefined,
+                  }),
+                });
               }
               created++;
             } catch {
@@ -649,19 +640,16 @@ function DocumentParserTab() {
           const errors: string[] = [];
           for (const shift of parsed.staffShifts) {
             try {
-              const res = await apiFetch(
-                "/api/staff/shifts/commands/create",
-                {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({
-                    eventId: selectedEventId,
-                    role: shift.role,
-                    employeeName: shift.name,
-                    shiftTime: shift.time,
-                  }),
-                }
-              );
+              const res = await apiFetch("/api/staff/shifts/commands/create", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  eventId: selectedEventId,
+                  role: shift.role,
+                  employeeName: shift.name,
+                  shiftTime: shift.time,
+                }),
+              });
               if (res.ok) {
                 created++;
               } else {
@@ -671,20 +659,16 @@ function DocumentParserTab() {
               errors.push(shift.name);
             }
           }
-          toast.success(
-            `${created} shift${created !== 1 ? "s" : ""} created`,
-            {
-              description:
-                errors.length > 0
-                  ? `Failed: ${errors.join(", ")}`
-                  : `Added to ${selectedEventName}`,
-            }
-          );
+          toast.success(`${created} shift${created !== 1 ? "s" : ""} created`, {
+            description:
+              errors.length > 0
+                ? `Failed: ${errors.join(", ")}`
+                : `Added to ${selectedEventName}`,
+          });
         }
       } catch (err) {
         toast.error(`Failed to apply ${section.toLowerCase()}`, {
-          description:
-            err instanceof Error ? err.message : "Unknown error",
+          description: err instanceof Error ? err.message : "Unknown error",
         });
       } finally {
         setApplying(null);
@@ -803,7 +787,8 @@ function DocumentParserTab() {
                 </span>
               ) : (
                 <span className="text-sm text-muted-foreground">
-                  No event selected — click &quot;Apply to Event&quot; to pick one
+                  No event selected — click &quot;Apply to Event&quot; to pick
+                  one
                 </span>
               )}
             </div>

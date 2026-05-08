@@ -187,7 +187,8 @@ export async function createAvailability(formData: FormData) {
   }
 
   const employeeId = formData.get("employeeId") as string;
-  const dayOfWeek = formData.get("dayOfWeek") as unknown as DayOfWeek;
+  const dayOfWeekRaw = formData.get("dayOfWeek") as string;
+  const dayOfWeek = Number.parseInt(dayOfWeekRaw, 10);
   const startTime = formData.get("startTime") as string;
   const endTime = formData.get("endTime") as string;
   const isAvailable = formData.get("isAvailable") !== "false";
@@ -195,7 +196,7 @@ export async function createAvailability(formData: FormData) {
   const effectiveUntil = formData.get("effectiveUntil") as string | null;
 
   // Validate required fields
-  if (!(employeeId && dayOfWeek !== undefined && startTime && endTime)) {
+  if (!(employeeId && !isNaN(dayOfWeek) && startTime && endTime)) {
     throw new Error(
       "Employee, day of week, start time, and end time are required"
     );
@@ -205,6 +206,12 @@ export async function createAvailability(formData: FormData) {
     ? new Date(effectiveFrom)
     : new Date();
   const effectiveUntilDate = effectiveUntil ? new Date(effectiveUntil) : null;
+
+  // Parse time strings into Date objects for Prisma Time fields
+  const [startH, startM] = startTime.split(":").map(Number);
+  const [endH, endM] = endTime.split(":").map(Number);
+  const startTimeDate = new Date(1970, 0, 1, startH, startM);
+  const endTimeDate = new Date(1970, 0, 1, endH, endM);
 
   // Validate time format and range
   const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
@@ -255,8 +262,8 @@ export async function createAvailability(formData: FormData) {
       tenant_id: tenantId,
       employee_id: employeeId,
       day_of_week: dayOfWeek,
-      start_time: startTime,
-      end_time: endTime,
+      start_time: startTimeDate,
+      end_time: endTimeDate,
       is_available: isAvailable,
       effective_from: createEffectiveFrom2,
       effective_until: effectiveUntilDate,

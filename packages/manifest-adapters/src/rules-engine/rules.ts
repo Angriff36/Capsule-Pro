@@ -631,9 +631,7 @@ export const prepTaskRules: ValidatedRule[] = [
 /**
  * All equipment rules.
  */
-export const equipmentRules: ValidatedRule[] = [
-  stationEquipmentRule,
-];
+export const equipmentRules: ValidatedRule[] = [stationEquipmentRule];
 
 /**
  * All allergen rules.

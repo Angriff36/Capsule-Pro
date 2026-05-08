@@ -299,7 +299,7 @@ const KitchenAnalyticsPage = async () => {
           <Card key={metric.label}>
             <CardHeader className="pb-3">
               <CardDescription>{metric.label}</CardDescription>
-              <CardTitle className="text-3xl">{metric.value}</CardTitle>
+              <CardTitle className="text-2xl">{metric.value}</CardTitle>
             </CardHeader>
             <CardContent className="text-muted-foreground text-sm">
               {metric.note}
@@ -553,13 +553,13 @@ const KitchenAnalyticsPage = async () => {
         <CardContent className="grid gap-4 md:grid-cols-2">
           <div className="rounded-lg border p-4">
             <div className="text-muted-foreground text-sm">Completed tasks</div>
-            <div className="mt-2 font-semibold text-3xl">
+            <div className="mt-2 font-semibold text-2xl">
               {numberFormatter.format(completedPrepTaskCount)}
             </div>
           </div>
           <div className="rounded-lg border p-4">
             <div className="text-muted-foreground text-sm">Still open</div>
-            <div className="mt-2 font-semibold text-3xl">
+            <div className="mt-2 font-semibold text-2xl">
               {numberFormatter.format(openPrepTaskCount)}
             </div>
           </div>

@@ -151,7 +151,10 @@ function OperationsSnapshot({
   isLimited,
 }: OperationsSnapshotProps) {
   return (
-    <Card tone="soft-stone" className="border-border/60 bg-card/70 text-foreground">
+    <Card
+      className="border-border/60 bg-card/70 text-foreground"
+      tone="soft-stone"
+    >
       <CardHeader className="space-y-1">
         <CardTitle className="flex items-center gap-2 text-lg">
           <ActivityIcon className="size-5 text-success" />
@@ -315,7 +318,10 @@ export function EventOverviewCard({
           </p>
         </div>
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
-          <Card tone="canvas" className="border-border/60 bg-card/70 text-foreground">
+          <Card
+            className="border-border/60 bg-card/70 text-foreground"
+            tone="canvas"
+          >
             <CardHeader className="space-y-4">
               <div className="flex flex-wrap items-center gap-2 text-xs uppercase tracking-[0.18em] text-muted-foreground">
                 <Badge
@@ -369,7 +375,7 @@ export function EventOverviewCard({
                     {event.eventNumber}
                   </p>
                 )}
-                <CardTitle className="text-3xl font-semibold tracking-tight">
+                <CardTitle className="text-2xl font-semibold tracking-tight">
                   {event.title}
                 </CardTitle>
                 <CardDescription className="text-muted-foreground">

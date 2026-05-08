@@ -2,14 +2,14 @@ import { auth } from "@repo/auth/server";
 import type { Prisma } from "@repo/database";
 import { database } from "@repo/database";
 import { claimPrepTask } from "@repo/manifest-adapters";
-import { triggerTaskAssignedSms } from "@repo/notifications";
 import {
   createNextResponse,
   hasBlockingConstraints,
 } from "@repo/manifest-adapters/api-response";
+import { triggerTaskAssignedSms } from "@repo/notifications";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-
+import { dispatchWebhooks } from "@/app/lib/webhook-dispatch";
 import {
   type ApiSuccessResponse,
   checkExistingClaim,
@@ -19,7 +19,6 @@ import {
   loadTaskIntoManifest,
   mapManifestStatusToPrisma,
 } from "../../shared-task-helpers";
-import { dispatchWebhooks } from "@/app/lib/webhook-dispatch";
 
 export const runtime = "nodejs";
 
@@ -195,7 +194,8 @@ export async function POST(request: Request, context: RouteContext) {
     taskId: id,
     taskName: task.name,
     employeeId: userId,
-    employeeName: `${currentUser.firstName || ""} ${currentUser.lastName || ""}`.trim(),
+    employeeName:
+      `${currentUser.firstName || ""} ${currentUser.lastName || ""}`.trim(),
     dueDate: task.dueByDate?.toISOString(),
   }).catch(() => {});
 
@@ -220,7 +220,12 @@ export async function POST(request: Request, context: RouteContext) {
     entityType: "KitchenTask",
     entityId: id,
     action: "updated",
-    data: { taskId: id, status: "in_progress", claimId: claim.id, employeeId: userId },
+    data: {
+      taskId: id,
+      status: "in_progress",
+      claimId: claim.id,
+      employeeId: userId,
+    },
   }).catch(() => {});
 
   return NextResponse.json(successResponse, { status: 201 });

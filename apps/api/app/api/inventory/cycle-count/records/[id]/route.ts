@@ -8,11 +8,11 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { log } from "@repo/observability/log";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { executeManifestCommand } from "@/lib/manifest-command-handler";
-import { log } from "@repo/observability/log";
 
 type SyncStatus = "synced" | "pending" | "failed" | "conflict";
 
@@ -151,10 +151,9 @@ export async function DELETE(
   context: { params: Promise<{ id: string }> }
 ) {
   const { id } = await context.params;
-  log.info(
-    "[CycleCountRecord/DELETE] Delegating to manifest remove command",
-    { id }
-  );
+  log.info("[CycleCountRecord/DELETE] Delegating to manifest remove command", {
+    id,
+  });
   return executeManifestCommand(request, {
     entityName: "CycleCountRecord",
     commandName: "remove",

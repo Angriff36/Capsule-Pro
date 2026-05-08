@@ -10,7 +10,6 @@ import {
   CardTitle,
 } from "@repo/design-system/components/ui/card";
 import { Separator } from "@repo/design-system/components/ui/separator";
-import Link from "next/link";
 import {
   Table,
   TableBody,
@@ -19,6 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from "@repo/design-system/components/ui/table";
+import Link from "next/link";
 import { getTenantIdForOrg } from "../../../lib/tenant";
 import { Header } from "../../components/header";
 
@@ -196,7 +196,7 @@ const KitchenInventoryPage = async () => {
             <h2 className="text-sm font-medium text-muted-foreground">
               Low Stock Alerts ({lowStockAlerts.length})
             </h2>
-            <Card tone="canvas" className="border-amber-900/20 bg-amber-900/10">
+            <Card className="border-amber-900/20 bg-amber-900/10" tone="canvas">
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center gap-2 text-amber-800">
                   Items Requiring Reorder
@@ -218,8 +218,10 @@ const KitchenInventoryPage = async () => {
                           Below {formatQuantity(alert.threshold_value)}
                         </div>
                       </div>
-                      <Button size="sm" variant="outline" asChild>
-                        <Link href={`/procurement/purchase-orders/new?itemId=${alert.item_id}&itemName=${encodeURIComponent(alert.item_name)}`}>
+                      <Button asChild size="sm" variant="outline">
+                        <Link
+                          href={`/procurement/purchase-orders/new?itemId=${alert.item_id}&itemName=${encodeURIComponent(alert.item_name)}`}
+                        >
                           Reorder
                         </Link>
                       </Button>

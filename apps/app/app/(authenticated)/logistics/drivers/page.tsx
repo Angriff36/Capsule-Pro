@@ -250,7 +250,7 @@ export default function DriversPage() {
           const config = STATUS_CONFIG[status];
           const count = drivers.filter((d) => d.status === status).length;
           return (
-            <Card tone="soft-stone" key={status}>
+            <Card key={status} tone="soft-stone">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">
                   {config.label}
@@ -282,9 +282,9 @@ export default function DriversPage() {
             const Icon = config.icon;
             return (
               <Card
-                tone="canvas"
                 className="hover:border-primary/40 transition-shadow"
                 key={driver.id}
+                tone="canvas"
               >
                 <CardContent className="p-4">
                   <div className="flex items-center gap-4">

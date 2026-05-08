@@ -7,9 +7,9 @@
  */
 
 import { database } from "@repo/database";
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
-import { log } from "@repo/observability/log";
 
 type Params = Promise<{ token: string }>;
 

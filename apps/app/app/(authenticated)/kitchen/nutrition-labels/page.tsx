@@ -194,7 +194,12 @@ export default function NutritionLabelsPage() {
                         disabled={
                           generating && selectedRecipe?.id === recipe.id
                         }
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          void generateLabel(recipe);
+                        }}
                         size="sm"
+                        type="button"
                         variant="ghost"
                       >
                         {generating && selectedRecipe?.id === recipe.id ? (
@@ -225,7 +230,7 @@ export default function NutritionLabelsPage() {
             ) : nutritionLabel ? (
               <div className="bg-white border-2 border-black p-4 font-mono text-sm">
                 {/* Header */}
-                <div className="text-3xl font-semibold border-b-4 border-black pb-1">
+                <div className="text-2xl font-semibold border-b-4 border-black pb-1">
                   Nutrition Facts
                 </div>
 

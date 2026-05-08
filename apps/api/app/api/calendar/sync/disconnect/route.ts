@@ -1,8 +1,8 @@
 import { auth } from "@repo/auth/server";
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { log } from "@repo/observability/log";
 
 const SUPPORTED_PROVIDERS = ["google", "outlook"] as const;
 
@@ -31,14 +31,14 @@ async function revokeProviderToken(
         `https://oauth2.googleapis.com/revoke?token=${encodeURIComponent(token)}`,
         { method: "POST" }
       );
-      if (!res.ok) {
+      if (res.ok) {
+        log.info(
+          "[calendar/sync/disconnect] Google token revoked successfully"
+        );
+      } else {
         const text = await res.text().catch(() => "");
         log.warn(
           `[calendar/sync/disconnect] Google token revocation returned ${res.status}: ${text}`
-        );
-      } else {
-        log.info(
-          "[calendar/sync/disconnect] Google token revoked successfully"
         );
       }
     } else if (provider === "outlook") {
@@ -66,14 +66,14 @@ async function revokeProviderToken(
             }).toString(),
           }
         );
-        if (!res.ok) {
+        if (res.ok) {
+          log.info(
+            "[calendar/sync/disconnect] Microsoft session logged out successfully"
+          );
+        } else {
           const text = await res.text().catch(() => "");
           log.warn(
             `[calendar/sync/disconnect] Microsoft session logout returned ${res.status}: ${text}`
-          );
-        } else {
-          log.info(
-            "[calendar/sync/disconnect] Microsoft session logged out successfully"
           );
         }
       } else {

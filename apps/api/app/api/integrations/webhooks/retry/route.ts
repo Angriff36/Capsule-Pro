@@ -15,11 +15,10 @@ import {
   shouldAutoDisable,
   type WebhookPayload,
 } from "@repo/notifications";
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
-
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { log } from "@repo/observability/log";
 
 // Valid statuses
 const VALID_DELIVERY_STATUSES = [

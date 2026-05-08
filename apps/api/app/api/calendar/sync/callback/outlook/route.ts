@@ -1,7 +1,7 @@
-import { captureException } from "@sentry/nextjs";
 import { createHmac, timingSafeEqual } from "node:crypto";
-import { type NextRequest, NextResponse } from "next/server";
 import { log } from "@repo/observability/log";
+import { captureException } from "@sentry/nextjs";
+import { type NextRequest, NextResponse } from "next/server";
 
 /**
  * GET /api/calendar/sync/callback/outlook
@@ -33,7 +33,12 @@ export async function GET(request: NextRequest) {
     }
 
     // Decode and verify state (HMAC signature + expiry)
-    let stateData: { tenantId: string; provider: string; ts: number; sig: string };
+    let stateData: {
+      tenantId: string;
+      provider: string;
+      ts: number;
+      sig: string;
+    };
     try {
       stateData = JSON.parse(Buffer.from(state, "base64url").toString("utf-8"));
     } catch {
@@ -53,14 +58,23 @@ export async function GET(request: NextRequest) {
     }
 
     // Verify HMAC signature
-    const secret = process.env.CALENDAR_SYNC_SECRET ?? process.env.NEXTAUTH_SECRET ?? "";
+    const secret =
+      process.env.CALENDAR_SYNC_SECRET ?? process.env.NEXTAUTH_SECRET ?? "";
     const expectedSig = createHmac("sha256", secret)
-      .update(JSON.stringify({ tenantId: stateData.tenantId, provider: stateData.provider, ts: stateData.ts }))
+      .update(
+        JSON.stringify({
+          tenantId: stateData.tenantId,
+          provider: stateData.provider,
+          ts: stateData.ts,
+        })
+      )
       .digest("hex");
 
     if (
-      !stateData.sig ||
-      !timingSafeEqual(Buffer.from(stateData.sig), Buffer.from(expectedSig))
+      !(
+        stateData.sig &&
+        timingSafeEqual(Buffer.from(stateData.sig), Buffer.from(expectedSig))
+      )
     ) {
       return NextResponse.redirect(
         new URL("/calendar/sync?error=invalid_state_signature", request.url)

@@ -17,8 +17,8 @@
  */
 
 import { database } from "@repo/database";
-import { captureException } from "@sentry/nextjs";
 import { log } from "@repo/observability/log";
+import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 
 // Force dynamic rendering
@@ -379,10 +379,9 @@ async function createDefaultDailySessions(): Promise<NextResponse> {
       timestamp: new Date().toISOString(),
     });
   } catch (error: unknown) {
-    log.error(
-      "[inventory-audit] Failed to create default daily sessions",
-      { error }
-    );
+    log.error("[inventory-audit] Failed to create default daily sessions", {
+      error,
+    });
     captureException(error);
 
     return NextResponse.json(

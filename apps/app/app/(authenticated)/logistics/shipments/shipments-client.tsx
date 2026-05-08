@@ -108,11 +108,11 @@ function normalizeShipment(payload: Record<string, unknown>): Shipment {
         : null,
     totalItems: Number(payload.totalItems ?? payload.total_items ?? 0),
     shippingCost:
-      payload.shippingCost ?? payload.shipping_cost
+      (payload.shippingCost ?? payload.shipping_cost)
         ? Number(payload.shippingCost ?? payload.shipping_cost)
         : null,
     totalValue:
-      payload.totalValue ?? payload.total_value
+      (payload.totalValue ?? payload.total_value)
         ? Number(payload.totalValue ?? payload.total_value)
         : null,
     trackingNumber:
@@ -290,7 +290,9 @@ export function ShipmentsClient() {
       });
       const data = await res.json();
       if (res.ok) {
-        const updatedShipment = normalizeShipment(data as Record<string, unknown>);
+        const updatedShipment = normalizeShipment(
+          data as Record<string, unknown>
+        );
         setShipments((prev) =>
           prev.map((s) => (s.id === shipmentId ? updatedShipment : s))
         );
@@ -468,9 +470,9 @@ export function ShipmentsClient() {
 
                 return (
                   <Card
-                    tone="canvas"
                     className="hover:border-primary/40 transition-shadow"
                     key={shipment.id}
+                    tone="canvas"
                   >
                     <CardContent className="p-4">
                       <div className="flex items-center gap-4">

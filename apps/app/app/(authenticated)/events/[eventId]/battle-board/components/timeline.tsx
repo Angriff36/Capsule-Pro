@@ -915,9 +915,15 @@ export function Timeline({
             </div>
 
             <div className="border-t px-4 py-3">
-              <Button className="w-full" size="sm">
+              <Button
+                className="w-full"
+                disabled
+                size="sm"
+                type="button"
+                variant="outline"
+              >
                 <PlusIcon className="mr-2 h-4 w-4" />
-                Add Staff
+                Add staff — not available yet
               </Button>
             </div>
           </aside>

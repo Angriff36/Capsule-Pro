@@ -1,12 +1,12 @@
 import { openai } from "@ai-sdk/openai";
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { generateText } from "ai";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { withRateLimit } from "@/middleware/rate-limiter";
-import { log } from "@repo/observability/log";
 
 // AI model configuration
 const AI_MODEL = "gpt-4o-mini";

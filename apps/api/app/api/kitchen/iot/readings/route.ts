@@ -1,9 +1,9 @@
 import { auth } from "@repo/auth/server";
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { database } from "@/lib/database";
-import { log } from "@repo/observability/log";
 
 /**
  * GET /api/kitchen/iot/readings
@@ -142,7 +142,8 @@ export async function POST(request: NextRequest) {
             rule.thresholdMax !== null
           ) {
             breached =
-              temperature < rule.thresholdMin || temperature > rule.thresholdMax;
+              temperature < rule.thresholdMin ||
+              temperature > rule.thresholdMax;
           }
           if (breached) {
             triggeredRule = rule;
@@ -182,8 +183,7 @@ export async function POST(request: NextRequest) {
           tenantId,
           alertNumber,
           probeId,
-          alertType:
-            temperature < probe.minTemp ? "low_temp" : "high_temp",
+          alertType: temperature < probe.minTemp ? "low_temp" : "high_temp",
           severity: "warning",
           title:
             temperature < probe.minTemp

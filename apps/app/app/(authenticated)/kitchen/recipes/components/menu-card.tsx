@@ -98,7 +98,10 @@ export const MenuCard = ({
 
   return (
     <Link href={`/kitchen/recipes/menus/${id}`}>
-      <Card tone="canvas" className="group h-full overflow-hidden rounded-[22px] border-hairline bg-soft-stone shadow-none transition-colors hover:border-ink/20">
+      <Card
+        className="group h-full overflow-hidden rounded-[22px] border-hairline bg-soft-stone shadow-none transition-colors hover:border-ink/20"
+        tone="canvas"
+      >
         <CardHeader className="space-y-2">
           <div className="flex items-start justify-between gap-3">
             <CardTitle className="font-normal text-xl leading-snug tracking-[-0.01em] text-ink">

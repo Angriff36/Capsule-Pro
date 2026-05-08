@@ -580,7 +580,7 @@ export default function MobileTimeClockPage() {
 
       <div className="flex flex-1 flex-col p-4">
         {/* Status Card */}
-        <Card tone="canvas" className="mb-4 p-6">
+        <Card className="mb-4 p-6" tone="canvas">
           <div className="mb-4 flex items-center justify-between">
             <div>
               <h2 className="font-semibold text-lg">{getEmployeeName()}</h2>
@@ -619,7 +619,7 @@ export default function MobileTimeClockPage() {
                     </span>
                   )}
                 </div>
-                <div className="font-semibold text-3xl text-foreground">
+                <div className="font-semibold text-2xl text-foreground">
                   {clockedInDuration}
                 </div>
                 {isOnBreak && breakStartTime && (
@@ -687,7 +687,7 @@ export default function MobileTimeClockPage() {
 
         {/* Location Status */}
         {currentLocation && (
-          <Card tone="canvas" className="mb-4 p-4">
+          <Card className="mb-4 p-4" tone="canvas">
             <div className="flex items-center gap-2">
               <MapPin className="h-5 w-5 text-blue-500" />
               <div>

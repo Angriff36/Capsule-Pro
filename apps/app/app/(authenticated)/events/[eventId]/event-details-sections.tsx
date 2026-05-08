@@ -711,7 +711,7 @@ export function BudgetSection({
   });
 
   return (
-    <Card tone="canvas" className="border-border/70">
+    <Card className="border-border/70" tone="canvas">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-3">
           <div>
@@ -790,6 +790,7 @@ interface TaskBreakdownSectionProps {
   isGenerating: boolean;
   generationProgress: string;
   onOpenGenerateModal: () => void;
+  onCancelGeneration?: () => void;
   onExport: () => void;
   onRegenerate: () => void;
   onSave: () => void;
@@ -800,6 +801,7 @@ export function TaskBreakdownSection({
   isGenerating,
   generationProgress,
   onOpenGenerateModal,
+  onCancelGeneration,
   onExport,
   onRegenerate,
   onSave,
@@ -819,6 +821,7 @@ export function TaskBreakdownSection({
           breakdown={breakdown}
           generationProgress={generationProgress}
           isGenerating={isGenerating}
+          onCancelGeneration={onCancelGeneration}
           onExport={onExport}
           onRegenerate={onRegenerate}
           onSave={onSave}
@@ -915,7 +918,7 @@ export function SuggestionsSection({
     : "No recommendations generated";
 
   return (
-    <Card tone="canvas" className="border-border/70">
+    <Card className="border-border/70" tone="canvas">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-3">
           <div>
@@ -1058,7 +1061,7 @@ export function PrepListsSection({ prepLists }: PrepListsSectionProps) {
   if (prepLists.length === 0) return null;
 
   return (
-    <Card tone="canvas" className="border-border/70">
+    <Card className="border-border/70" tone="canvas">
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-base">
           <ListChecksIcon className="size-4 text-emerald-600" />
@@ -1116,7 +1119,7 @@ export function PrepTasksSection({
   onOpenGenerateModal,
 }: PrepTasksSectionProps) {
   return (
-    <Card tone="canvas" className="border-border/70">
+    <Card className="border-border/70" tone="canvas">
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-base">
           <ClipboardListIcon className="size-4 text-sky-600" />

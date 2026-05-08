@@ -9,10 +9,10 @@
 import { auth } from "@repo/auth/server";
 import { database, type Prisma } from "@repo/database";
 import { sendWebhook, type WebhookPayload } from "@repo/notifications";
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { log } from "@repo/observability/log";
 
 interface RouteParams {
   params: Promise<{ id: string }>;

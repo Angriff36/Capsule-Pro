@@ -349,22 +349,30 @@ export default function SettingsScreen() {
         <Text style={styles.sectionTitle}>Support</Text>
 
         <TouchableOpacity disabled style={styles.settingRow}>
-          <Text style={[styles.settingLabel, styles.disabledText]}>Help Center</Text>
+          <Text style={[styles.settingLabel, styles.disabledText]}>
+            Help Center
+          </Text>
           <Text style={[styles.chevron, styles.disabledText]}>›</Text>
         </TouchableOpacity>
 
         <TouchableOpacity disabled style={styles.settingRow}>
-          <Text style={[styles.settingLabel, styles.disabledText]}>Contact Support</Text>
+          <Text style={[styles.settingLabel, styles.disabledText]}>
+            Contact Support
+          </Text>
           <Text style={[styles.chevron, styles.disabledText]}>›</Text>
         </TouchableOpacity>
 
         <TouchableOpacity disabled style={styles.settingRow}>
-          <Text style={[styles.settingLabel, styles.disabledText]}>Privacy Policy</Text>
+          <Text style={[styles.settingLabel, styles.disabledText]}>
+            Privacy Policy
+          </Text>
           <Text style={[styles.chevron, styles.disabledText]}>›</Text>
         </TouchableOpacity>
 
         <TouchableOpacity disabled style={styles.settingRow}>
-          <Text style={[styles.settingLabel, styles.disabledText]}>Terms of Service</Text>
+          <Text style={[styles.settingLabel, styles.disabledText]}>
+            Terms of Service
+          </Text>
           <Text style={[styles.chevron, styles.disabledText]}>›</Text>
         </TouchableOpacity>
       </View>

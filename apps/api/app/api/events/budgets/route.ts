@@ -7,6 +7,7 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { InvariantError, invariant } from "@/app/lib/invariant";
@@ -17,7 +18,6 @@ import {
   parseEventBudgetListFilters,
   validateCreateEventBudget,
 } from "./validation";
-import { log } from "@repo/observability/log";
 
 /**
  * GET /api/events/budgets

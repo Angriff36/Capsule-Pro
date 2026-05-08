@@ -58,8 +58,13 @@ export default async function SchedulingRequestsPage() {
 
   const tenantId = await getTenantIdForOrg(orgId);
 
-  const timeOffRequests = await database.$queryRaw<TimeOffRequestRow[]>(
-    Prisma.sql`
+  let timeOffRequests: TimeOffRequestRow[] = [];
+  let timecardEdits: TimecardEditRow[] = [];
+  let loadError: string | null = null;
+
+  try {
+    timeOffRequests = await database.$queryRaw<TimeOffRequestRow[]>(
+      Prisma.sql`
       SELECT
         tor.id,
         tor.employee_id,
@@ -73,7 +78,7 @@ export default async function SchedulingRequestsPage() {
         tor.status,
         tor.submitted_at
       FROM tenant_staff.employee_time_off_requests tor
-      JOIN public.users u
+      LEFT JOIN public.users u
         ON u.id = tor.employee_id::uuid
        AND u.tenant_id = tor.tenant_id
       WHERE tor.tenant_id = ${tenantId}
@@ -81,10 +86,15 @@ export default async function SchedulingRequestsPage() {
       ORDER BY tor.submitted_at DESC
       LIMIT 50
     `
-  );
+    );
+  } catch (err) {
+    console.error("Failed to load time-off requests:", err);
+    loadError = "Failed to load time-off requests";
+  }
 
-  const timecardEdits = await database.$queryRaw<TimecardEditRow[]>(
-    Prisma.sql`
+  try {
+    timecardEdits = await database.$queryRaw<TimecardEditRow[]>(
+      Prisma.sql`
       SELECT
         ter.id,
         ter.employee_id,
@@ -95,14 +105,20 @@ export default async function SchedulingRequestsPage() {
         ter.status,
         ter.created_at
       FROM tenant_staff.timecard_edit_requests ter
-      JOIN public.users u
+      LEFT JOIN public.users u
         ON u.id = ter.employee_id::uuid
        AND u.tenant_id = ter.tenant_id
       WHERE ter.tenant_id = ${tenantId}
       ORDER BY ter.created_at DESC
       LIMIT 50
     `
-  );
+    );
+  } catch (err) {
+    console.error("Failed to load timecard edits:", err);
+    loadError = loadError
+      ? `${loadError}; timecard edits`
+      : "Failed to load timecard edits";
+  }
 
   const formatRequestType = (rt: string) =>
     rt
@@ -159,6 +175,11 @@ export default async function SchedulingRequestsPage() {
           changes.
         </p>
       </div>
+      {loadError && (
+        <div className="rounded-md border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+          {loadError}. The page shows available data below.
+        </div>
+      )}
       <RequestsClient requests={unified} />
     </div>
   );

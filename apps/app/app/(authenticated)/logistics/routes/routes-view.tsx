@@ -276,7 +276,7 @@ export function RoutesView() {
             </Card>
           ) : (
             filteredRoutes.map((route) => (
-              <Card tone="canvas" key={route.id}>
+              <Card key={route.id} tone="canvas">
                 <CardHeader className="pb-2">
                   <div className="flex items-center justify-between">
                     <CardTitle className="flex items-center gap-2">
@@ -362,7 +362,8 @@ export function RoutesView() {
                         Optimize
                       </Button>
                     )}
-                    {(route.status === "optimized" || route.status === "draft") && (
+                    {(route.status === "optimized" ||
+                      route.status === "draft") && (
                       <Button
                         onClick={() => handleStartRoute(route.id)}
                         size="sm"

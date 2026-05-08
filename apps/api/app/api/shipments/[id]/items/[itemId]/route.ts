@@ -7,6 +7,7 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { InvariantError } from "@/app/lib/invariant";
@@ -20,7 +21,6 @@ import {
   updateShipmentTotals,
   validateShipmentItemUpdate,
 } from "./helpers";
-import { log } from "@repo/observability/log";
 
 export async function PUT(
   request: Request,

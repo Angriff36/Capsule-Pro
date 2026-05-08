@@ -512,10 +512,13 @@ describe("Inventory Items CRUD API", () => {
 
       const response = await POST(request as never);
 
-      expect(executeManifestCommand).toHaveBeenCalledWith(request, expect.objectContaining({
-        entityName: "InventoryItem",
-        commandName: "create",
-      }));
+      expect(executeManifestCommand).toHaveBeenCalledWith(
+        request,
+        expect.objectContaining({
+          entityName: "InventoryItem",
+          commandName: "create",
+        })
+      );
       expect(response.status).toBe(201);
     });
 

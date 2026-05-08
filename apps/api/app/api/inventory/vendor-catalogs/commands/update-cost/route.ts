@@ -96,10 +96,9 @@ export async function POST(request: NextRequest) {
           reason: body.reason ?? "Vendor catalog price update",
         });
 
-        log.info(
-          "[vendor-catalog/updateCost] Cost propagation complete",
-          { result: costUpdateResult }
-        );
+        log.info("[vendor-catalog/updateCost] Cost propagation complete", {
+          result: costUpdateResult,
+        });
 
         // Include cost propagation results in the response
         return manifestSuccessResponse({
@@ -110,10 +109,9 @@ export async function POST(request: NextRequest) {
           events: result.emittedEvents,
         });
       } catch (costUpdateError) {
-        log.error(
-          "[vendor-catalog/updateCost] Cost propagation failed",
-          { error: costUpdateError }
-        );
+        log.error("[vendor-catalog/updateCost] Cost propagation failed", {
+          error: costUpdateError,
+        });
         captureException(costUpdateError);
 
         // Return success but warn about cost propagation failure

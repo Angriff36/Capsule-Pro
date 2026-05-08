@@ -386,9 +386,9 @@ export default function AllergenManagementPage() {
                     <div className="space-y-4">
                       {filteredWarnings.map((warning) => (
                         <Card
-                          tone="canvas"
                           className="border-l-4 border-l-yellow-500"
                           key={warning.id}
+                          tone="canvas"
                         >
                           <CardContent className="pt-4">
                             <div className="flex items-start justify-between">
@@ -509,7 +509,7 @@ export default function AllergenManagementPage() {
                   ) : (
                     <div className="space-y-4">
                       {filteredEvents.map((event) => (
-                        <Card tone="canvas" key={event.id}>
+                        <Card key={event.id} tone="canvas">
                           <CardContent className="pt-4">
                             <div className="flex items-center justify-between">
                               <div>
@@ -558,7 +558,7 @@ export default function AllergenManagementPage() {
                   ) : (
                     <div className="space-y-4">
                       {filteredDishes.map((dish) => (
-                        <Card tone="canvas" key={dish.id}>
+                        <Card key={dish.id} tone="canvas">
                           <CardContent className="pt-4">
                             <div className="flex items-start justify-between">
                               <div className="space-y-2">
@@ -617,7 +617,7 @@ export default function AllergenManagementPage() {
                   ) : (
                     <div className="space-y-4">
                       {filteredRecipes.map((recipe) => (
-                        <Card tone="canvas" key={recipe.id}>
+                        <Card key={recipe.id} tone="canvas">
                           <CardContent className="pt-4">
                             <div className="space-y-2">
                               <h3 className="font-medium">{recipe.name}</h3>

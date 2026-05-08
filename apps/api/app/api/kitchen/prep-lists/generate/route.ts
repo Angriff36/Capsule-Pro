@@ -301,7 +301,7 @@ export async function generatePrepList(
 ): Promise<PrepListGenerationResult> {
   const { orgId, userId } = await auth();
 
-  if (!orgId || !userId) {
+  if (!(orgId && userId)) {
     throw new Error("Unauthorized");
   }
 

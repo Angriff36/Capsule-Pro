@@ -1,5 +1,6 @@
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -8,7 +9,6 @@ import {
   autoAssignShift,
   getEligibleEmployeesForShift,
 } from "@/lib/staff/auto-assignment";
-import { log } from "@repo/observability/log";
 
 /**
  * GET /api/staff/shifts/[shiftId]/assignment-suggestions

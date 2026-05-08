@@ -71,7 +71,9 @@ function stripToFindingsAndEvidence(source) {
           output.push("");
         }
 
-        output.push(`### ${wantedSection === "finding" ? "Finding" : "Evidence"}`);
+        output.push(
+          `### ${wantedSection === "finding" ? "Finding" : "Evidence"}`
+        );
         activeSection = wantedSection;
         continue;
       }
@@ -121,7 +123,9 @@ async function main() {
   const outputPath = resolve(requestedOutputPath || defaultOutputPath);
 
   if (resolvedInputPath === outputPath) {
-    console.error("Refusing to overwrite the input file. Provide a different output path.");
+    console.error(
+      "Refusing to overwrite the input file. Provide a different output path."
+    );
     process.exit(1);
   }
 

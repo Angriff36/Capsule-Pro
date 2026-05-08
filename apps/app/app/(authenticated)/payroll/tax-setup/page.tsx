@@ -454,7 +454,7 @@ export default function TaxSetupPage() {
             </CardHeader>
             <CardContent>
               <div className="grid gap-6 md:grid-cols-2">
-                <Card tone="canvas" className="border-dashed">
+                <Card className="border-dashed" tone="canvas">
                   <CardHeader className="pb-3">
                     <CardTitle className="text-base">
                       Social Security (OASDI)
@@ -499,7 +499,7 @@ export default function TaxSetupPage() {
                   </CardContent>
                 </Card>
 
-                <Card tone="canvas" className="border-dashed">
+                <Card className="border-dashed" tone="canvas">
                   <CardHeader className="pb-3">
                     <CardTitle className="text-base">Medicare</CardTitle>
                   </CardHeader>
@@ -724,7 +724,7 @@ export default function TaxSetupPage() {
                 <div className="space-y-4">
                   <Separator />
                   <div className="grid gap-4 md:grid-cols-3">
-                    <Card tone="soft-stone" className="border-dashed">
+                    <Card className="border-dashed" tone="soft-stone">
                       <CardContent className="pt-6">
                         <p className="text-sm text-muted-foreground">
                           Gross Annual
@@ -734,7 +734,7 @@ export default function TaxSetupPage() {
                         </p>
                       </CardContent>
                     </Card>
-                    <Card tone="soft-stone" className="border-dashed">
+                    <Card className="border-dashed" tone="soft-stone">
                       <CardContent className="pt-6">
                         <p className="text-sm text-muted-foreground">
                           Total Annual Tax
@@ -744,7 +744,7 @@ export default function TaxSetupPage() {
                         </p>
                       </CardContent>
                     </Card>
-                    <Card tone="soft-stone" className="border-dashed">
+                    <Card className="border-dashed" tone="soft-stone">
                       <CardContent className="pt-6">
                         <p className="text-sm text-muted-foreground">
                           Effective Rate
@@ -816,7 +816,7 @@ export default function TaxSetupPage() {
       </Tabs>
 
       {/* Employee W-4 Note */}
-      <Card tone="canvas" className="border border-hairline bg-muted/20">
+      <Card className="border border-hairline bg-muted/20" tone="canvas">
         <CardContent className="pt-6">
           <div className="flex items-start gap-3">
             <CheckCircle2 className="h-5 w-5 text-primary mt-0.5" />

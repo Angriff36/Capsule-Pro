@@ -298,7 +298,7 @@ function SuggestionsTab() {
 
       {/* Error state */}
       {error && (
-        <Card tone="canvas" className="border-destructive">
+        <Card className="border-destructive" tone="canvas">
           <CardContent className="flex items-center gap-2 p-4 text-destructive">
             <AlertCircle className="h-4 w-4 shrink-0" />
             <p className="text-sm">{error}</p>
@@ -358,7 +358,7 @@ function SuggestionsTab() {
 
       <div className="space-y-4">
         {activeSuggestions.map((suggestion) => (
-          <Card tone="canvas" key={suggestion.id}>
+          <Card key={suggestion.id} tone="canvas">
             <CardHeader className="pb-3">
               <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <CardTitle className="text-base">{suggestion.title}</CardTitle>
@@ -498,7 +498,7 @@ function EventSummariesTab() {
 
       {/* Error state */}
       {error && (
-        <Card tone="canvas" className="border-destructive">
+        <Card className="border-destructive" tone="canvas">
           <CardContent className="flex items-center gap-2 p-4 text-destructive">
             <AlertCircle className="h-4 w-4 shrink-0" />
             <p className="text-sm">{error}</p>
@@ -585,7 +585,7 @@ function EventSummariesTab() {
 
           {/* Critical Info */}
           {summary.criticalInfo.length > 0 && (
-            <Card tone="canvas" className="border-hairline bg-muted/50">
+            <Card className="border-hairline bg-muted/50" tone="canvas">
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center gap-2 text-sm font-medium text-foreground">
                   <AlertTriangle className="h-4 w-4 text-amber-600" />

@@ -10,6 +10,7 @@
 
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
+import { log } from "@repo/observability/log";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { InvariantError } from "@/app/lib/invariant";
@@ -20,7 +21,6 @@ import {
   parseVenueListFilters,
   validateCreateVenueRequest,
 } from "./validation";
-import { log } from "@repo/observability/log";
 
 /**
  * GET /api/crm/venues

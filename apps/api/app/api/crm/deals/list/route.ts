@@ -10,6 +10,7 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import {
   type NextRequest,
@@ -17,7 +18,6 @@ import {
 } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { clampLimit, clampOffset } from "@/lib/pagination";
-import { log } from "@repo/observability/log";
 
 /**
  * Maps a proposal status to a pipeline stage.

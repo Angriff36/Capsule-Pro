@@ -5,12 +5,12 @@
  */
 
 import { auth } from "@repo/auth/server";
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { runNowstaSync } from "@/app/lib/nowsta-sync-service";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { log } from "@repo/observability/log";
 
 const syncRequestSchema = z.object({
   startDate: z.string().transform((val) => new Date(val)),

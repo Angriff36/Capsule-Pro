@@ -287,7 +287,7 @@ export const ProfitabilityPageClient = ({
       {/* Filters Section */}
       <section>
         <h2 className="text-sm font-medium text-muted-foreground">Filters</h2>
-        <Card tone="canvas" className="mt-3">
+        <Card className="mt-3" tone="canvas">
           <CardContent className="flex flex-col gap-4 p-4 lg:flex-row lg:items-end">
             {/* Search */}
             <div className="flex-1">
@@ -380,7 +380,7 @@ export const ProfitabilityPageClient = ({
             )}
           </Empty>
         ) : (
-          <Card tone="canvas" className="mt-4">
+          <Card className="mt-4" tone="canvas">
             <Table>
               <TableHeader>
                 <TableRow>

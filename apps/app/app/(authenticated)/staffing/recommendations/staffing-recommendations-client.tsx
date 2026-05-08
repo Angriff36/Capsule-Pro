@@ -17,8 +17,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
-import { Loader2, User, Users } from "lucide-react";
 import { log } from "@repo/observability/log";
+import { Loader2, User, Users } from "lucide-react";
 import { useState } from "react";
 import { apiFetch } from "@/app/lib/api";
 
@@ -156,7 +156,7 @@ export function StaffingRecommendationsClient() {
       </Card>
 
       {error && (
-        <Card tone="canvas" className="border-hairline">
+        <Card className="border-hairline" tone="canvas">
           <CardContent className="pt-6">
             <p className="text-destructive">{error}</p>
           </CardContent>

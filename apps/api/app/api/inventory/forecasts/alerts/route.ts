@@ -1,9 +1,9 @@
 import { database } from "@repo/database";
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { batchCalculateForecasts } from "@/app/lib/inventory-forecasting";
 import { requireTenantId } from "@/app/lib/tenant";
-import { log } from "@repo/observability/log";
 
 // GET /api/inventory/forecasts/alerts?criticalThreshold={7}&warningThreshold={14}
 // Returns: Items forecasted to run out within the threshold days

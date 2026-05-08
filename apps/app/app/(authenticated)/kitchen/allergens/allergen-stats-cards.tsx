@@ -67,7 +67,7 @@ export function AllergenStatsCards({ stats }: { stats: AllergenStats }) {
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
       {cards.map((card) => (
-        <Card tone="soft-stone" key={card.title}>
+        <Card key={card.title} tone="soft-stone">
           <CardContent className="p-6">
             <div className="flex items-center gap-4">
               <div className={`p-3 rounded-lg ${card.bgColor}`}>

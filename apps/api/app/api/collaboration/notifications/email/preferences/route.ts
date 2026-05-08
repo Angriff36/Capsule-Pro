@@ -8,11 +8,11 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { getEmailPreferences, setEmailPreference } from "@repo/notifications";
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { log } from "@repo/observability/log";
 
 const setPreferenceSchema = z.object({
   employeeId: z.string().min(1),

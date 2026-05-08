@@ -557,7 +557,9 @@ async function handleInventoryOnDelivery(
       updated.deliveredBy ?? updated.receivedBy ?? null
     );
   } catch (inventoryError) {
-    log.error("Failed to update inventory for delivered shipment", { error: inventoryError });
+    log.error("Failed to update inventory for delivered shipment", {
+      error: inventoryError,
+    });
     // Continue with the response even if inventory update fails
   }
 }
@@ -592,7 +594,9 @@ async function handleInventoryOnPreparation(
       userId
     );
   } catch (inventoryError) {
-    log.error("Failed to reserve inventory for preparing shipment", { error: inventoryError });
+    log.error("Failed to reserve inventory for preparing shipment", {
+      error: inventoryError,
+    });
     // Continue with the response even if inventory update fails
   }
 }
@@ -632,7 +636,9 @@ async function handleInventoryOnCancellation(
       userId
     );
   } catch (inventoryError) {
-    log.error("Failed to reverse inventory for cancelled shipment", { error: inventoryError });
+    log.error("Failed to reverse inventory for cancelled shipment", {
+      error: inventoryError,
+    });
     // Continue with the response even if inventory update fails
   }
 }
@@ -707,7 +713,10 @@ export async function POST(
       entityType: "Shipment",
       entityId: id,
       action: "updated",
-      data: { ...mapShipmentToResponse(updated), previousStatus: existing.status },
+      data: {
+        ...mapShipmentToResponse(updated),
+        previousStatus: existing.status,
+      },
     }).catch(() => {});
 
     return NextResponse.json(mapShipmentToResponse(updated));

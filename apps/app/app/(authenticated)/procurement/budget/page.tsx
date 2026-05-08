@@ -563,9 +563,9 @@ export default function BudgetPage() {
               return (
                 <Card
                   className={`cursor-pointer transition-all ${isSelected ? "ring-2 ring-blue-500 border-primary" : "hover:border-primary/40"}`}
-                  tone="canvas"
                   key={budget.id}
                   onClick={() => loadDetail(budget.id)}
+                  tone="canvas"
                 >
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between mb-2">

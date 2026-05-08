@@ -371,6 +371,7 @@ interface TaskBreakdownDisplayProps {
   onSave?: () => void;
   isGenerating?: boolean;
   generationProgress?: string;
+  onCancelGeneration?: () => void;
 }
 
 export function TaskBreakdownDisplay({
@@ -380,6 +381,7 @@ export function TaskBreakdownDisplay({
   onSave,
   isGenerating,
   generationProgress,
+  onCancelGeneration,
 }: TaskBreakdownDisplayProps) {
   const [_streamingTasks, setStreamingTasks] = useState<
     { section: TaskSection; taskIndex: number }[]
@@ -534,7 +536,7 @@ export function TaskBreakdownDisplay({
       )}
 
       {isGenerating && (
-        <Card tone="canvas" className="border border-hairline bg-muted/20">
+        <Card className="border border-hairline bg-muted/20" tone="canvas">
           <CardContent className="py-4">
             <div className="flex items-center gap-3">
               <Spinner className="size-5 text-purple-500" />
@@ -547,10 +549,14 @@ export function TaskBreakdownDisplay({
                 )}
               </div>
               <Button
-                onClick={() => {
-                  /* Stop generation logic */
-                }}
+                disabled={!onCancelGeneration}
+                onClick={onCancelGeneration}
                 size="sm"
+                title={
+                  onCancelGeneration
+                    ? undefined
+                    : "Stop is not available in this context"
+                }
                 variant="outline"
               >
                 <StopCircleIcon className="mr-1 size-4" />
@@ -599,7 +605,9 @@ export function TaskBreakdownDisplay({
           </div>
           <Separator className="my-4" />
           <div className="text-center">
-            <p className="font-semibold text-2xl">{formatGrandTotal(grandTotal)}</p>
+            <p className="font-semibold text-2xl">
+              {formatGrandTotal(grandTotal)}
+            </p>
             <p className="text-muted-foreground text-xs">Grand Total</p>
           </div>
         </CardContent>
@@ -627,7 +635,7 @@ export function TaskBreakdownSkeleton({
 
       <div className="grid gap-6 lg:grid-cols-3">
         {Array.from({ length: sections }).map((_, i) => (
-          <Card tone="canvas" key={i}>
+          <Card key={i} tone="canvas">
             <CardHeader className="pb-2">
               <Skeleton className="mb-2 h-6 w-32" />
               <Skeleton className="h-4 w-24" />

@@ -14,13 +14,13 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import type { FSAStatus, ItemCategory } from "../items/types";
 import { FSA_STATUSES, ITEM_CATEGORIES } from "../items/types";
-import { log } from "@repo/observability/log";
 
 interface ImportResult {
   success: number;
@@ -312,10 +312,7 @@ export async function POST(request: NextRequest) {
         `;
         inserted++;
       } catch (err) {
-        log.error(
-          `[InventoryImport] Failed to insert row ${row.row}:`,
-          err
-        );
+        log.error(`[InventoryImport] Failed to insert row ${row.row}:`, err);
         errors.push({
           row: row.row,
           message: `Insert failed: ${(err as Error).message}`,

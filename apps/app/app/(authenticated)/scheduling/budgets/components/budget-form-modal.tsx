@@ -50,7 +50,7 @@ export function BudgetFormModal({
   const [formData, setFormData] = useState({
     name: budget?.name || "",
     description: budget?.description || "",
-    budgetType: (budget?.budget_type || "event") as BudgetType,
+    budgetType: (budget?.budget_type || "week") as BudgetType,
     budgetTarget: budget?.budget_target || 0,
     budgetUnit: (budget?.budget_unit || "hours") as BudgetUnit,
     locationId: budget?.location_id || "",

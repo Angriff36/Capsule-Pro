@@ -77,9 +77,12 @@ export const EditStaffDialog = ({
     <Dialog onOpenChange={setOpen} open={open}>
       <DialogTrigger asChild>
         {children || (
-          <Button size="sm" variant="outline">
+          <button
+            className="inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-[30px] border border-hairline bg-transparent text-foreground hover:bg-soft-stone h-8 px-4 text-[13px] font-medium transition-colors disabled:pointer-events-none disabled:opacity-50 shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            type="button"
+          >
             Edit
-          </Button>
+          </button>
         )}
       </DialogTrigger>
       <DialogContent>

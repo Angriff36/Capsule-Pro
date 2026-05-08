@@ -4,10 +4,10 @@ export const DevConsoleTopbar = () => (
   <div className="dev-console-topbar">
     <div className="dev-console-topbar-title">Platform / Overview</div>
     <div className="dev-console-topbar-actions">
-      <button className="dev-console-icon-button" type="button">
+      <button className="dev-console-icon-button" disabled type="button">
         <BellIcon className="h-4 w-4" />
       </button>
-      <button className="dev-console-icon-button" type="button">
+      <button className="dev-console-icon-button" disabled type="button">
         <HelpCircleIcon className="h-4 w-4" />
       </button>
     </div>

@@ -242,3 +242,15 @@ Backlog of proposed detector rules discovered by the rule-discovery loop.
   - Detector type: hybrid
   - Source evidence: apps/api/app/api/training/complete/route.ts
   - Future implementation: Flag training/compliance endpoints that accept client-supplied `passed` or `score` fields without server-side quiz/assessment verification infrastructure.
+- [ ] skeleton_crud.file_upload_stored_as_base64_data_url_in_db — File upload endpoint stores base64 data URL directly into database instead of object storage
+  - Category: skeleton_crud
+  - Severity: medium
+  - Detector type: regex
+  - Source evidence: apps/api/app/api/events/contracts/[id]/document/route.ts
+  - Future implementation: Flag upload handlers that construct data URLs from base64 buffers and persist them via DB create/update, with negative patterns for object storage SDK imports to suppress false positives on production-ready code.
+- [ ] automation_theater.push_token_registered_but_never_consumed — Push notification token registration and preferences endpoints exist but no push delivery code reads the tokens
+  - Category: automation_theater
+  - Severity: high
+  - Detector type: cross_file
+  - Source evidence: apps/api/app/api/mobile/push-token/route.ts, apps/api/app/api/mobile/notification-preferences/route.ts
+  - Future implementation: Find push token storage endpoints, verify no push SDK imports (Expo server SDK, FCM, APNs) or send calls exist in the backend, cross-reference notification preference keys against actual domain event producers

@@ -318,13 +318,13 @@ export function EventTemplateSelector({
               <div className="grid gap-4 sm:grid-cols-2">
                 {templates.map((template) => (
                   <Card
-                    tone="canvas"
                     className="cursor-pointer transition-all hover:border-primary"
                     key={template.id}
                     onClick={() => {
                       onSelectTemplate(template);
                       onOpenChange(false);
                     }}
+                    tone="canvas"
                   >
                     <CardHeader className="pb-3">
                       <div className="flex items-start justify-between">

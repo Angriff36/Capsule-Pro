@@ -71,7 +71,10 @@ function EventExplorerSkeleton() {
       <div className="grid gap-6 lg:grid-cols-[260px_minmax(0,1fr)]">
         {/* Filters sidebar (desktop) */}
         <aside className="sticky top-6 hidden self-start lg:block">
-          <Card tone="canvas" className="border-border/60 bg-card/70 text-foreground">
+          <Card
+            className="border-border/60 bg-card/70 text-foreground"
+            tone="canvas"
+          >
             <div className="space-y-3 p-6">
               <Skeleton className="h-6 w-20" />
               <Skeleton className="h-4 w-48" />
@@ -117,14 +120,20 @@ function EventExplorerSkeleton() {
 
           {/* Today/This week cards */}
           <div className="grid gap-4 md:grid-cols-2">
-            <Card tone="canvas" className="border-border/60 bg-card/70 text-foreground">
+            <Card
+              className="border-border/60 bg-card/70 text-foreground"
+              tone="canvas"
+            >
               <div className="space-y-3 p-6">
                 <Skeleton className="h-6 w-40" />
                 <Skeleton className="h-4 w-48" />
                 <Skeleton className="h-20 w-full" />
               </div>
             </Card>
-            <Card tone="canvas" className="border-border/60 bg-card/70 text-foreground">
+            <Card
+              className="border-border/60 bg-card/70 text-foreground"
+              tone="canvas"
+            >
               <div className="space-y-3 p-6">
                 <Skeleton className="h-6 w-32" />
                 <Skeleton className="h-4 w-48" />

@@ -4,8 +4,8 @@
 // Covers: GET /list, POST /create, POST /update-status,
 //         POST /schedule-maintenance, POST /record-usage, GET /alerts
 
-import { describe, it, expect, vi, beforeEach } from "vitest";
 import { NextRequest } from "next/server";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // ── constants ────────────────────────────────────────────────────────
 const TENANT_A = "10000000-0000-0000-0000-000000000001";
@@ -58,7 +58,7 @@ function setAuth(tenantId: string | null = TENANT_A) {
 function makeRequest(
   url = "http://localhost/api/kitchen/equipment/list",
   body?: Record<string, unknown>,
-  method?: string,
+  method?: string
 ) {
   const resolvedMethod = method ?? (body ? "POST" : "GET");
   if (body) {
@@ -72,9 +72,7 @@ function makeRequest(
 }
 
 // ── import routes (after mocks) ──────────────────────────────────────
-const { GET: listGET } = await import(
-  "@/app/api/kitchen/equipment/list/route"
-);
+const { GET: listGET } = await import("@/app/api/kitchen/equipment/list/route");
 const { POST: createPOST } = await import(
   "@/app/api/kitchen/equipment/commands/create/route"
 );
@@ -145,7 +143,7 @@ describe("Equipment API", () => {
       expect(mocks.eqFindMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({ tenantId: TENANT_A }),
-        }),
+        })
       );
     });
 
@@ -156,8 +154,8 @@ describe("Equipment API", () => {
 
       await listGET(
         makeRequest(
-          "http://localhost/api/kitchen/equipment/list?status=maintenance&type=oven",
-        ),
+          "http://localhost/api/kitchen/equipment/list?status=maintenance&type=oven"
+        )
       );
 
       expect(mocks.eqFindMany).toHaveBeenCalledWith(
@@ -166,7 +164,7 @@ describe("Equipment API", () => {
             status: "maintenance",
             type: "oven",
           }),
-        }),
+        })
       );
     });
 
@@ -203,7 +201,7 @@ describe("Equipment API", () => {
         makeRequest("http://localhost", {
           name: "Oven A",
           locationId: LOCATION_ID,
-        }),
+        })
       );
       expect(res.status).toBe(201);
 
@@ -216,14 +214,14 @@ describe("Equipment API", () => {
             name: "Oven A",
             locationId: LOCATION_ID,
           }),
-        }),
+        })
       );
     });
 
     it("returns 400 when name is missing", async () => {
       setAuth();
       const res = await createPOST(
-        makeRequest("http://localhost", { locationId: LOCATION_ID }),
+        makeRequest("http://localhost", { locationId: LOCATION_ID })
       );
       expect(res.status).toBe(400);
     });
@@ -231,7 +229,7 @@ describe("Equipment API", () => {
     it("returns 400 when locationId is missing", async () => {
       setAuth();
       const res = await createPOST(
-        makeRequest("http://localhost", { name: "Oven A" }),
+        makeRequest("http://localhost", { name: "Oven A" })
       );
       expect(res.status).toBe(400);
     });
@@ -242,7 +240,7 @@ describe("Equipment API", () => {
         makeRequest("http://localhost", {
           name: "Oven A",
           locationId: "not-a-uuid",
-        }),
+        })
       );
       expect(res.status).toBe(400);
     });
@@ -263,13 +261,13 @@ describe("Equipment API", () => {
         makeRequest("http://localhost", {
           id: EQUIPMENT_ID,
           status: "maintenance",
-        }),
+        })
       );
       expect(res.status).toBe(200);
       expect(mocks.eqUpdate).toHaveBeenCalledWith(
         expect.objectContaining({
           data: expect.objectContaining({ status: "maintenance" }),
-        }),
+        })
       );
     });
 
@@ -281,7 +279,7 @@ describe("Equipment API", () => {
         makeRequest("http://localhost", {
           id: EQUIPMENT_ID,
           status: "active",
-        }),
+        })
       );
       expect(res.status).toBe(404);
     });
@@ -292,7 +290,7 @@ describe("Equipment API", () => {
         makeRequest("http://localhost", {
           id: EQUIPMENT_ID,
           status: "invalid_status",
-        }),
+        })
       );
       expect(res.status).toBe(400);
     });
@@ -320,7 +318,7 @@ describe("Equipment API", () => {
           equipmentId: EQUIPMENT_ID,
           priority: "high",
           scheduledDate: "2026-06-01",
-        }),
+        })
       );
       expect(res.status).toBe(201);
       expect(mocks.woCreate).toHaveBeenCalledWith(
@@ -331,19 +329,19 @@ describe("Equipment API", () => {
             type: "maintenance",
             priority: "high",
           }),
-        }),
+        })
       );
       expect(mocks.eqUpdate).toHaveBeenCalledWith(
         expect.objectContaining({
           data: expect.objectContaining({ status: "maintenance" }),
-        }),
+        })
       );
     });
 
     it("returns 400 when equipmentId missing", async () => {
       setAuth();
       const res = await scheduleMaintenancePOST(
-        makeRequest("http://localhost", {}),
+        makeRequest("http://localhost", {})
       );
       expect(res.status).toBe(400);
     });
@@ -352,7 +350,7 @@ describe("Equipment API", () => {
       setAuth();
       mocks.eqFindFirst.mockResolvedValue(null);
       const res = await scheduleMaintenancePOST(
-        makeRequest("http://localhost", { equipmentId: EQUIPMENT_ID }),
+        makeRequest("http://localhost", { equipmentId: EQUIPMENT_ID })
       );
       expect(res.status).toBe(404);
     });
@@ -377,7 +375,7 @@ describe("Equipment API", () => {
         makeRequest("http://localhost", {
           id: EQUIPMENT_ID,
           hours: 50,
-        }),
+        })
       );
       expect(res.status).toBe(200);
       const json = (await res.json()) as {
@@ -389,7 +387,7 @@ describe("Equipment API", () => {
       expect(mocks.eqUpdate).toHaveBeenCalledWith(
         expect.objectContaining({
           data: expect.objectContaining({ usageHours: 150 }),
-        }),
+        })
       );
     });
 
@@ -399,7 +397,7 @@ describe("Equipment API", () => {
         makeRequest("http://localhost", {
           id: EQUIPMENT_ID,
           hours: -5,
-        }),
+        })
       );
       expect(res.status).toBe(400);
     });
@@ -411,7 +409,7 @@ describe("Equipment API", () => {
         makeRequest("http://localhost", {
           id: EQUIPMENT_ID,
           hours: 10,
-        }),
+        })
       );
       expect(res.status).toBe(404);
     });
@@ -429,13 +427,13 @@ describe("Equipment API", () => {
         makeRequest("http://localhost", {
           id: EQUIPMENT_ID,
           hours: 20,
-        }),
+        })
       );
 
       expect(mocks.eqUpdate).toHaveBeenCalledWith(
         expect.objectContaining({
           data: expect.objectContaining({ condition: "fair" }),
-        }),
+        })
       );
     });
 
@@ -452,7 +450,7 @@ describe("Equipment API", () => {
         makeRequest("http://localhost", {
           id: EQUIPMENT_ID,
           hours: 20,
-        }),
+        })
       );
 
       expect(mocks.eqUpdate).toHaveBeenCalledWith(
@@ -460,7 +458,7 @@ describe("Equipment API", () => {
           data: expect.objectContaining({
             condition: "needs_replacement",
           }),
-        }),
+        })
       );
     });
   });
@@ -576,7 +574,7 @@ describe("Equipment API", () => {
         alerts: { alertType: string }[];
       };
       expect(
-        json.alerts.some((a) => a.alertType === "maintenance_overdue"),
+        json.alerts.some((a) => a.alertType === "maintenance_overdue")
       ).toBe(true);
     });
 
@@ -602,9 +600,9 @@ describe("Equipment API", () => {
       const json = (await res.json()) as {
         alerts: { alertType: string }[];
       };
-      expect(
-        json.alerts.some((a) => a.alertType === "iot_disconnected"),
-      ).toBe(true);
+      expect(json.alerts.some((a) => a.alertType === "iot_disconnected")).toBe(
+        true
+      );
     });
 
     it("sorts alerts by severity (critical first)", async () => {
@@ -633,7 +631,11 @@ describe("Equipment API", () => {
       // All critical alerts should come before warning, which comes before info
       const severities = json.alerts.map((a) => a.severity);
       let lastOrder = -1;
-      const order: Record<string, number> = { critical: 0, warning: 1, info: 2 };
+      const order: Record<string, number> = {
+        critical: 0,
+        warning: 1,
+        info: 2,
+      };
       for (const sev of severities) {
         expect(order[sev]).toBeGreaterThanOrEqual(lastOrder);
         lastOrder = order[sev];

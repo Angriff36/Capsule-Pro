@@ -9,6 +9,7 @@
  */
 
 import { database } from "@repo/database";
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { requireTenantId } from "@/app/lib/tenant";
@@ -20,7 +21,6 @@ import {
   parsePaymentMethodFilters,
   validateCreatePaymentMethodRequest,
 } from "./validation";
-import { log } from "@repo/observability/log";
 
 /**
  * GET /api/accounting/payment-methods

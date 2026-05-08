@@ -5,11 +5,11 @@
  */
 
 import { database } from "@repo/database";
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { requireTenantId } from "@/app/lib/tenant";
-import { log } from "@repo/observability/log";
 
 // Validation schemas
 const recordPaymentSchema = z.object({

@@ -1,9 +1,9 @@
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { log } from "@repo/observability/log";
 
 /**
  * GET /api/user-preferences
@@ -12,7 +12,7 @@ import { log } from "@repo/observability/log";
 export async function GET(req: NextRequest) {
   try {
     const { orgId, userId } = await auth();
-    if (!orgId || !userId) {
+    if (!(orgId && userId)) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
 
@@ -72,7 +72,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const { orgId, userId } = await auth();
-    if (!orgId || !userId) {
+    if (!(orgId && userId)) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
 

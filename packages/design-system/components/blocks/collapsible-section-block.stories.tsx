@@ -7,6 +7,7 @@ import {
   UsersIcon,
   UtensilsIcon,
 } from "lucide-react";
+import { useState } from "react";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import {
@@ -48,9 +49,9 @@ export const WithContent: Story = {
     triggerText: "View dishes",
     showEmptyState: false,
     headerActions: (
-      <Button size="sm" variant="outline">
+      <Button disabled size="sm" type="button" variant="outline">
         <PlusIcon className="mr-2 size-3" />
-        Add Dish
+        Add dish — story preview
       </Button>
     ),
     children: (
@@ -76,54 +77,75 @@ export const WithContent: Story = {
   },
 };
 
+function EmptyStateStory() {
+  const [clicks, setClicks] = useState(0);
+  return (
+    <div>
+      <CollapsibleSectionBlock
+        defaultOpen
+        emptyState={{
+          icon: DollarSignIcon,
+          title: "No budget created for this event",
+          description:
+            "Create a budget to track costs and manage event finances",
+          actionLabel: "Create Budget",
+          onAction: () => setClicks((count) => count + 1),
+        }}
+        icon={DollarSignIcon}
+        iconColor="text-green-500"
+        showEmptyState
+        subtitle="No budget created yet"
+        title="Event Budget"
+        triggerText="View budget"
+      >
+        {null}
+      </CollapsibleSectionBlock>
+      <p className="mt-2 text-muted-foreground text-xs">
+        Story demo taps: {clicks}
+      </p>
+    </div>
+  );
+}
+
 /**
  * Collapsible section with empty state
  */
 export const EmptyState: Story = {
-  render: () => (
-    <CollapsibleSectionBlock
-      defaultOpen
-      emptyState={{
-        icon: DollarSignIcon,
-        title: "No budget created for this event",
-        description: "Create a budget to track costs and manage event finances",
-        actionLabel: "Create Budget",
-        onAction: () => console.log("Create budget clicked"),
-      }}
-      icon={DollarSignIcon}
-      iconColor="text-green-500"
-      showEmptyState
-      subtitle="No budget created yet"
-      title="Event Budget"
-      triggerText="View budget"
-    >
-      {null}
-    </CollapsibleSectionBlock>
-  ),
+  render: () => <EmptyStateStory />,
 };
+
+function NoSubtitleStory() {
+  const [clicks, setClicks] = useState(0);
+  return (
+    <div>
+      <CollapsibleSectionBlock
+        defaultOpen={false}
+        emptyState={{
+          title: "No guests added yet",
+          description: "Add guests to manage RSVPs and dietary restrictions",
+          actionLabel: "Add Guest",
+          onAction: () => setClicks((count) => count + 1),
+        }}
+        icon={UsersIcon}
+        iconColor="text-blue-500"
+        showEmptyState
+        title="Guest List"
+        triggerText="View guests"
+      >
+        {null}
+      </CollapsibleSectionBlock>
+      <p className="mt-2 text-muted-foreground text-xs">
+        Story demo taps: {clicks}
+      </p>
+    </div>
+  );
+}
 
 /**
  * Collapsible section with no subtitle
  */
 export const NoSubtitle: Story = {
-  render: () => (
-    <CollapsibleSectionBlock
-      defaultOpen={false}
-      emptyState={{
-        title: "No guests added yet",
-        description: "Add guests to manage RSVPs and dietary restrictions",
-        actionLabel: "Add Guest",
-        onAction: () => console.log("Add guest clicked"),
-      }}
-      icon={UsersIcon}
-      iconColor="text-blue-500"
-      showEmptyState
-      title="Guest List"
-      triggerText="View guests"
-    >
-      {null}
-    </CollapsibleSectionBlock>
-  ),
+  render: () => <NoSubtitleStory />,
 };
 
 /**
@@ -135,9 +157,9 @@ export const StackedSections: Story = {
       <CollapsibleSectionBlock
         defaultOpen
         headerActions={
-          <Button size="sm" variant="outline">
+          <Button disabled size="sm" type="button" variant="outline">
             <PlusIcon className="mr-2 size-3" />
-            Add Dish
+            Add dish — story preview
           </Button>
         }
         icon={UtensilsIcon}
@@ -211,9 +233,9 @@ export const SectionHeader: Story = {
     <div className="w-[600px] space-y-6">
       <SectionHeaderBlock
         actions={
-          <Button>
+          <Button disabled type="button">
             <SparklesIcon className="mr-2 size-4" />
-            Generate Tasks
+            Generate tasks — story preview
           </Button>
         }
         icon={SparklesIcon}
@@ -223,9 +245,9 @@ export const SectionHeader: Story = {
 
       <SectionHeaderBlock
         actions={
-          <Button variant="outline">
+          <Button disabled type="button" variant="outline">
             <SparklesIcon className="mr-2 size-4" />
-            Show Suggestions
+            Show suggestions — story preview
           </Button>
         }
         badge="3"
@@ -236,9 +258,9 @@ export const SectionHeader: Story = {
 
       <SectionHeaderBlock
         actions={
-          <Button variant="outline">
+          <Button disabled type="button" variant="outline">
             <SparklesIcon className="mr-2 size-4" />
-            Generate Summary
+            Generate summary — story preview
           </Button>
         }
         icon={SparklesIcon}
@@ -289,7 +311,11 @@ export const CustomTriggerText: Story = {
               <div className="text-muted-foreground text-xs">{label}</div>
             )}
             {label && <div className="text-lg font-semibold">$1,000</div>}
-            {!label && <Button className="w-full">View Full Budget</Button>}
+            {!label && (
+              <Button className="w-full" disabled type="button">
+                View full budget — story preview
+              </Button>
+            )}
           </div>
         ))}
       </div>
@@ -297,29 +323,39 @@ export const CustomTriggerText: Story = {
   },
 };
 
+function EmptyStateNoIconStory() {
+  const [clicks, setClicks] = useState(0);
+  return (
+    <div>
+      <CollapsibleSectionBlock
+        defaultOpen
+        emptyState={{
+          title: "No prep tasks yet",
+          description: "Generate a task breakdown or add tasks manually",
+          actionLabel: "Generate with AI",
+          onAction: () => setClicks((count) => count + 1),
+        }}
+        icon={UsersIcon}
+        iconColor="text-purple-500"
+        showEmptyState
+        subtitle="No tasks yet"
+        title="Prep Tasks"
+        triggerText="View tasks"
+      >
+        {null}
+      </CollapsibleSectionBlock>
+      <p className="mt-2 text-muted-foreground text-xs">
+        Story demo taps: {clicks}
+      </p>
+    </div>
+  );
+}
+
 /**
  * Empty state without icon
  */
 export const EmptyStateNoIcon: Story = {
-  render: () => (
-    <CollapsibleSectionBlock
-      defaultOpen
-      emptyState={{
-        title: "No prep tasks yet",
-        description: "Generate a task breakdown or add tasks manually",
-        actionLabel: "Generate with AI",
-        onAction: () => console.log("Generate clicked"),
-      }}
-      icon={UsersIcon}
-      iconColor="text-purple-500"
-      showEmptyState
-      subtitle="No tasks yet"
-      title="Prep Tasks"
-      triggerText="View tasks"
-    >
-      {null}
-    </CollapsibleSectionBlock>
-  ),
+  render: () => <EmptyStateNoIconStory />,
 };
 
 /**
@@ -437,8 +473,12 @@ export const DynamicTriggerText: Story = {
               <div className="text-lg font-semibold text-green-600">+$500</div>
             </div>
             <div className="flex items-center">
-              <button className="w-full rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90">
-                View Full Budget
+              <button
+                className="w-full cursor-not-allowed rounded-md bg-primary/50 px-4 py-2 text-sm font-medium text-primary-foreground"
+                disabled
+                type="button"
+              >
+                View full budget — story preview
               </button>
             </div>
           </div>

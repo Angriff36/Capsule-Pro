@@ -83,7 +83,7 @@ const KitchenPage = async () => {
   }));
 
   return (
-    <>
+    <div data-design-system-shell="operational">
       <KitchenNavigation />
       <ProductionBoardClient
         currentUserId={dbUser?.id}
@@ -91,7 +91,7 @@ const KitchenPage = async () => {
         tenantId={tenantId}
       />
       <ProductionBoardRealtime tenantId={tenantId} userId={dbUser?.id} />
-    </>
+    </div>
   );
 };
 

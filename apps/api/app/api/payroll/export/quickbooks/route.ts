@@ -1,12 +1,12 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { log } from "@repo/observability/log";
 import { PayrollService, PrismaPayrollDataSource } from "@repo/payroll-engine";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { withRateLimit } from "@/middleware/rate-limiter";
-import { log } from "@repo/observability/log";
 
 const ExportQuickBooksRequestSchema = z.object({
   periodId: z.string().min(1),
