@@ -488,51 +488,56 @@ export function UnifiedCalendar({
 
   // Reschedule event via API
   const handleConfirmReschedule = async () => {
-    const { event, newDate } = rescheduleDialog;
-    if (!(event && newDate)) {
+    const { event: dragEvent, newDate } = rescheduleDialog;
+    if (!(dragEvent && newDate)) {
+      return;
+    }
+
+    // Only events and shifts are reschedulable
+    if (dragEvent.type !== "event" && dragEvent.type !== "shift") {
       return;
     }
 
     setIsRescheduling(true);
     try {
       // Preserve the original time from the event
-      const originalHours = event.start.getHours();
-      const originalMinutes = event.start.getMinutes();
+      const originalHours = dragEvent.start.getHours();
+      const originalMinutes = dragEvent.start.getMinutes();
       const newEventDate = setMinutes(
         setHours(startOfDay(newDate), originalHours),
         originalMinutes
       );
 
-      const response = await apiFetch(
-        "/api/events/event/commands/update-date",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            id: event.id,
-            newEventDate: newEventDate.getTime(), // Send as timestamp in ms
-          }),
-        }
-      );
+      const response = await apiFetch("/api/calendar/reschedule", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          eventId: dragEvent.id,
+          eventType: dragEvent.type,
+          newDate: newEventDate.toISOString(),
+        }),
+      });
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || "Failed to reschedule event");
+        throw new Error(error.error || "Failed to reschedule");
       }
 
-      // Update local state
+      // Update local state optimistically
       setEvents((prev) =>
-        prev.map((e) => (e.id === event.id ? { ...e, start: newEventDate } : e))
+        prev.map((e) =>
+          e.id === dragEvent.id ? { ...e, start: newEventDate } : e
+        )
       );
 
       toast.success(
-        `"${event.title}" rescheduled to ${format(newEventDate, "MMM d, yyyy")}`
+        `"${dragEvent.title}" rescheduled to ${format(newEventDate, "MMM d, yyyy")}`
       );
       setRescheduleDialog({ open: false, event: null, newDate: null });
     } catch (error) {
       console.error("Failed to reschedule:", error);
       toast.error(
-        error instanceof Error ? error.message : "Failed to reschedule event"
+        error instanceof Error ? error.message : "Failed to reschedule"
       );
     } finally {
       setIsRescheduling(false);
