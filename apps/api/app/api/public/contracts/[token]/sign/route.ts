@@ -10,6 +10,10 @@ import { database } from "@repo/database";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { log } from "@repo/observability/log";
+import {
+  validateContractStatusTransition,
+  type ContractStatus,
+} from "../../../../events/contracts/validation";
 
 type Params = Promise<{ token: string }>;
 
@@ -85,6 +89,12 @@ export async function POST(
         { status: 400 }
       );
     }
+
+    // Validate status transition via state machine
+    validateContractStatusTransition(
+      contract.status as ContractStatus,
+      "signed"
+    );
 
     // Get client IP address
     const ipAddress =

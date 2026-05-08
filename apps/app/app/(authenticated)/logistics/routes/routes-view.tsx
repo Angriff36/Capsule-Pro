@@ -37,6 +37,7 @@ import {
   Truck,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
 
 interface RouteStop {
@@ -146,6 +147,21 @@ export function RoutesView() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ routeId }),
       });
+
+      if (!res.ok) {
+        if (res.status === 501) {
+          toast.info(
+            "Route optimization is not yet available. You can start the route directly from draft status."
+          );
+        } else {
+          const data = await res.json().catch(() => null);
+          toast.error(
+            data?.error || `Failed to optimize route (HTTP ${res.status})`
+          );
+        }
+        return;
+      }
+
       const data = await res.json();
       if (data.route) {
         setRoutes((prev) =>
@@ -153,7 +169,9 @@ export function RoutesView() {
         );
       }
     } catch (error) {
-      console.error("Failed to optimize route:", error);
+      toast.error(
+        error instanceof Error ? error.message : "Failed to optimize route"
+      );
     } finally {
       setOptimizing(null);
     }
@@ -344,7 +362,7 @@ export function RoutesView() {
                         Optimize
                       </Button>
                     )}
-                    {route.status === "optimized" && (
+                    {(route.status === "optimized" || route.status === "draft") && (
                       <Button
                         onClick={() => handleStartRoute(route.id)}
                         size="sm"

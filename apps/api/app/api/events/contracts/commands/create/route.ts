@@ -13,6 +13,7 @@ import {
 } from "@/lib/manifest-response";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
 import { log } from "@repo/observability/log";
+import { validateCreateContractRequest } from "../../validation";
 
 export const runtime = "nodejs";
 
@@ -39,7 +40,8 @@ export async function POST(request: NextRequest) {
       return manifestErrorResponse("User not found in database", 400);
     }
 
-    const body = await request.json();
+    const body: Record<string, unknown> = await request.json();
+    validateCreateContractRequest(body);
 
     log.info("[event-contract/create] Executing command:", {
       entityName: "EventContract",

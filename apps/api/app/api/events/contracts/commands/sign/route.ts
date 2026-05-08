@@ -13,6 +13,8 @@ import {
 } from "@/lib/manifest-response";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
 import { log } from "@repo/observability/log";
+import { recordEntityChange } from "@/app/lib/activity-feed-service";
+import { validateSignatureData } from "../../validation";
 
 export const runtime = "nodejs";
 
@@ -39,7 +41,8 @@ export async function POST(request: NextRequest) {
       return manifestErrorResponse("User not found in database", 400);
     }
 
-    const body = await request.json();
+    const body: Record<string, unknown> = await request.json();
+    validateSignatureData(body);
 
     log.info("[event-contract/sign] Executing command:", {
       entityName: "EventContract",
@@ -80,6 +83,15 @@ export async function POST(request: NextRequest) {
       }
       return manifestErrorResponse(result.error ?? "Command failed", 400);
     }
+
+    recordEntityChange(
+      tenantId,
+      "Contract",
+      (body as Record<string, unknown>)?.id as string ?? (body as Record<string, unknown>)?.contractId as string ?? "",
+      "signed",
+      (body as Record<string, unknown>)?.title as string ?? (body as Record<string, unknown>)?.contractTitle as string ?? "Contract",
+      currentUser.id
+    ).catch(() => {});
 
     return manifestSuccessResponse({
       result: result.result,

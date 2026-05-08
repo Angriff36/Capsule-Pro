@@ -13,6 +13,10 @@ import {
 } from "@/lib/manifest-response";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
 import { log } from "@repo/observability/log";
+import {
+  validateContractStatusTransition,
+  type ContractStatus,
+} from "../../validation";
 
 export const runtime = "nodejs";
 
@@ -40,6 +44,21 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
+
+    // Validate status transition: draft -> sent
+    const contractId = (body as Record<string, unknown>)?.id as string | undefined;
+    if (contractId) {
+      const existing = await database.eventContract.findFirst({
+        where: { tenantId, id: contractId },
+        select: { status: true },
+      });
+      if (existing) {
+        validateContractStatusTransition(
+          existing.status as ContractStatus,
+          "sent"
+        );
+      }
+    }
 
     log.info("[event-contract/send] Executing command:", {
       entityName: "EventContract",

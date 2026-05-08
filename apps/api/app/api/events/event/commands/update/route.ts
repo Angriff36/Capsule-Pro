@@ -13,6 +13,7 @@ import {
 } from "@/lib/manifest-response";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
 import { log } from "@repo/observability/log";
+import { recordEntityChange } from "@/app/lib/activity-feed-service";
 
 export const runtime = "nodejs";
 
@@ -80,6 +81,15 @@ export async function POST(request: NextRequest) {
       }
       return manifestErrorResponse(result.error ?? "Command failed", 400);
     }
+
+    recordEntityChange(
+      tenantId,
+      "Event",
+      (body as Record<string, unknown>)?.id as string ?? "",
+      "updated",
+      (body as Record<string, unknown>)?.title as string ?? (body as Record<string, unknown>)?.name as string ?? "Event",
+      currentUser.id
+    ).catch(() => {});
 
     return manifestSuccessResponse({
       result: result.result,

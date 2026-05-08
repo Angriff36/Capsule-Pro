@@ -857,6 +857,8 @@ The developer left explicit evidence of abandonment: line 117 says `// Use a sim
 
 Additionally, lines 54-84 build `updates[]` and `updateValues[]` arrays that are never consumed by the working implementation (which uses the original `rule_name`, `field`, `condition`, etc. variables directly). No test exists for this endpoint (`apps/api/app/api/crm/scoring/` has zero test files), so the 500 error has gone undetected.
 
+### Status: RESOLVED (branch fix/middleware-matcher-invocations) — Removed the broken first SQL implementation (reduce no-op). Only the clean COALESCE approach remains.
+
 ### Evidence
 - File: `apps/api/app/api/crm/scoring/[id]/route.ts`
 - Snippet (broken first attempt, lines 96-128):
@@ -1313,6 +1315,8 @@ The test file `apps/app/__tests__/api/command-board/agent-loop-timeout.test.ts` 
 
 ### Finding
 The logistics route management UI presents a multi-step workflow: draft → optimize → start → complete. The "Optimize" button is visible for draft routes and calls `/api/logistics/routes/commands/optimize`, which always returns HTTP 501 ("Route optimization not yet implemented"). The frontend handler silently swallows this error — no toast, no status message, no user feedback — and the spinner just stops. The downstream "Start Route" button is gated on `route.status === "optimized"`, a state that is unreachable through normal UI interaction. The entire middle step of the advertised workflow is a dead button backed by a permanently unimplemented endpoint.
+
+### Status: RESOLVED (branch fix/middleware-matcher-invocations) — Frontend now shows toast.info for 501 and toast.error for other failures. "Start Route" button available for draft routes too.
 
 ### Evidence
 - File: `apps/api/app/api/logistics/routes/commands/optimize/route.ts`
@@ -1938,6 +1942,8 @@ const upperBound = forecastValue * 1.1;
 ### Finding
 A 433-line validation module (`apps/api/app/api/events/contracts/validation.ts`) exports six validation functions that implement thorough business rule enforcement for contract operations — signature data validation, contract access checks, business rule validation, status transition guards, expiration checks, and contract number generation. Only one export from this file (`CONTRACT_STATUSES`, a constant array) is actually imported by any route handler. All six validation functions are dead code: `validateSignatureData`, `validateContractAccess`, `validateContractBusinessRules`, `validateContractTransition`, `isContractExpired`, and `generateContractNumber`. The actual contract routes delegate to the manifest runtime for validation, meaning this module creates a false impression of safety — a developer reading this file would assume these guards are active in production, but they are not.
 
+### Status: RESOLVED (branch fix/middleware-matcher-invocations) — All 6 validation functions wired into 8 contract route handlers: validateCreateContractRequest (create), validateUpdateContractRequest (update), validateSignatureData (sign), validateContractStatusTransition (send, cancel, expire, mark-viewed, public sign).
+
 ### Evidence
 - File: `apps/api/app/api/events/contracts/validation.ts`
 - Snippet:
@@ -2011,6 +2017,8 @@ The mobile app's Settings screen renders four `TouchableOpacity` elements under 
 
 ### Finding
 The `activity-feed-service.ts` file exports 6 write functions (`createActivity`, `createActivities`, `recordEntityChange`, `recordAIApproval`, `recordCollaboratorAction`, `recordSystemEvent`) designed to populate the `ActivityFeed` table. The Prisma model exists (with 6 indexes), two read-only API routes exist (`/api/activity-feed/list` and `/api/activity-feed/stats`), and a full frontend with polling exists (`activity-feed-client.tsx` with `ActivityFeedClient` and `ActivityTimelineWidget`). Tests cover only the read endpoints. **Zero callers** import or invoke any of the write functions anywhere in the entire API codebase. The activity feed will always display "No recent activity" for every tenant.
+
+### Status: RESOLVED (branch fix/middleware-matcher-invocations) — recordEntityChange now wired into event create, event update, and contract sign routes with fire-and-forget .catch(() => {}).
 
 ### Evidence
 - File: `apps/api/app/lib/activity-feed-service.ts`
