@@ -71,7 +71,7 @@ interface CalendarEvent {
   title: string;
   start: Date;
   end?: Date;
-  type: "event" | "shift" | "timeoff" | "deadline" | "reminder";
+  type: "event" | "shift" | "timeoff";
   status?: string;
   color?: string;
   details?: string;
@@ -93,16 +93,12 @@ const EVENT_COLORS: Record<string, string> = {
   event: "bg-blue-500 border-blue-600",
   shift: "bg-emerald-500 border-emerald-600",
   timeoff: "bg-amber-500 border-amber-600",
-  deadline: "bg-red-500 border-red-600",
-  reminder: "bg-purple-500 border-purple-600",
 };
 
 const EVENT_TYPE_LABELS: Record<string, string> = {
   event: "Events",
   shift: "Shifts",
   timeoff: "Time Off",
-  deadline: "Deadlines",
-  reminder: "Reminders",
 };
 
 // Event types that can be rescheduled via drag-and-drop
@@ -124,7 +120,7 @@ function DraggableEvent({ event, onClick, isDayView }: DraggableEventProps) {
   const isDraggable = DRAGGABLE_EVENT_TYPES.includes(event.type);
 
   if (!isDraggable) {
-    // Non-draggable events (timeoff, deadline, reminder)
+    // Non-draggable events (timeoff)
     return (
       <button
         className={`
@@ -227,8 +223,6 @@ export function UnifiedCalendar({
     "event",
     "shift",
     "timeoff",
-    "deadline",
-    "reminder",
   ]);
   const [searchQuery, setSearchQuery] = useState("");
   const [_isLoading, setIsLoading] = useState(false);
