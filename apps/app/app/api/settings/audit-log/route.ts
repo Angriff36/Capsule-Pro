@@ -127,25 +127,32 @@ export async function GET(request: NextRequest): Promise<Response> {
     ...params
   );
 
-  return NextResponse.json({
-    data: rows.map((row) => ({
-      id: row.id,
-      userId: row.user_id,
-      userEmail: row.user_email,
-      action: row.action,
-      entityType: row.entity_type,
-      entityId: row.entity_id,
-      entityName: row.entity_name,
-      beforeValue: row.before_value,
-      afterValue: row.after_value,
-      ipAddress: row.ip_address,
-      createdAt: row.created_at,
-    })),
-    pagination: {
-      page,
-      limit,
-      total,
-      totalPages: Math.ceil(total / limit),
+  return NextResponse.json(
+    {
+      data: rows.map((row) => ({
+        id: row.id,
+        userId: row.user_id,
+        userEmail: row.user_email,
+        action: row.action,
+        entityType: row.entity_type,
+        entityId: row.entity_id,
+        entityName: row.entity_name,
+        beforeValue: row.before_value,
+        afterValue: row.after_value,
+        ipAddress: row.ip_address,
+        createdAt: row.created_at,
+      })),
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
     },
-  });
+    {
+      headers: {
+        "Cache-Control": "public, max-age=60, stale-while-revalidate=300",
+      },
+    },
+  );
 }

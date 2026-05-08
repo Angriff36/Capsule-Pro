@@ -237,9 +237,11 @@ let nextConfig: NextConfig = withToolbar(
         bodySizeLimit: "2mb",
       },
     },
-    // Enable source maps for Sentry error tracking in production
-    // Source maps are deleted after upload to Sentry (configured in sentryConfig.sourcemaps.deleteSourcemapsAfterUpload)
-    productionBrowserSourceMaps: true,
+    // Enable source maps only when they can be uploaded to Sentry.
+    // Local builds and non-Vercel deploys skip this to save build time.
+    // Source maps are deleted after upload to Sentry.
+    productionBrowserSourceMaps:
+      env.VERCEL && Boolean(process.env.SENTRY_AUTH_TOKEN),
     redirects: async () => [
       {
         source: "/",

@@ -471,7 +471,11 @@ export async function GET(request: NextRequest) {
       limit,
     };
 
-    return NextResponse.json(response);
+    return NextResponse.json(response, {
+      headers: {
+        "Cache-Control": "public, max-age=30, stale-while-revalidate=300",
+      },
+    });
   } catch (error) {
     console.error("[/api/search] Error:", error);
     analytics.capture({
