@@ -111,6 +111,8 @@ The API route also declares a `supplier` variable (line 77-82) with a type cast 
   });
   ```
 
+### Status: RESOLVED (branch fix/middleware-matcher-invocations)
+SupplierConnector interface now has `isStub` boolean. Both CharliesProduceConnector and UsFoodsConnector set `isStub = true`. Registry's `listMetadata()` exposes stub status. Sync route returns HTTP 503 with clear message when a stub connector is used, preventing silent zero-product syncs. Registry console.log removed.
 
 ---
 
@@ -1698,6 +1700,8 @@ return NextResponse.json({ exportId: result.exportId, fileUrl: dataUrl, ... });
 - File: `apps/api/app/api/events/export/quickbooks/route.ts` (line 331-336) — same pattern
 - Prisma schema: `documentUrl String? @map("document_url")` (schema.prisma:4090) — plain String column, not a blob or large-object reference
 
+### Status: RESOLVED (branch fix/middleware-matcher-invocations)
+Contract document upload, payroll QuickBooks export, purchase order QuickBooks export, and event QuickBooks export now use Vercel Blob object storage via `@repo/storage/uploadFile()`. Files are stored as blobs with tenant-scoped paths, and download URLs are returned instead of inline base64 data URLs. Requires `BLOB_READ_WRITE_TOKEN` environment variable.
 
 ---
 
@@ -2122,8 +2126,7 @@ Two exported validation functions in the payment-methods module (`isCardExpired`
 - Pre-existing work committed: webhook auto-dispatch from manifest command handler, mobile API endpoints, API scopes middleware
 
 ### Still unresolved (priority order):
-1. placeholder.base64_data_url_persisted_as_file_storage — files stored as base64 in DB
-2. fake_integration.stub_connector_registered_as_live — supplier connectors are pure stubs
+None — all discovered rule violations have been addressed.
 
 ### [2026-05-08] Session Notes (continued)
 

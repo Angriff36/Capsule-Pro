@@ -83,6 +83,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (connector.isStub) {
+      return manifestErrorResponse(
+        `Connector "${connector.name}" is a stub — no live API integration. Catalog sync is not available until credentials and integration are configured.`,
+        503
+      );
+    }
+
     // For now, build config with placeholder credentials
     // In production, credentials would be fetched from the supplier record's
     // encrypted connectorCredentials field

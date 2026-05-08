@@ -2,6 +2,7 @@ import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { PayrollService, PrismaPayrollDataSource } from "@repo/payroll-engine";
+import { uploadFile } from "@repo/storage";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { z } from "zod";
@@ -75,21 +76,19 @@ export const POST = withRateLimit<Record<string, string | string[]>>(
         userId
       );
 
-      // Determine file extension and MIME type
       const fileExtension = target === "qbxml" ? "qbxml" : "csv";
       const mimeType = target === "qbxml" ? "application/xml" : "text/csv";
 
-      // In a production system, you might:
-      // 1. Store the file in object storage (S3, GCS, etc.)
-      // 2. Return a signed URL for download
-      // For now, we'll return the content as a base64-encoded data URL
-
-      const base64Content = Buffer.from(result.content).toString("base64");
-      const dataUrl = `data:${mimeType};base64,${base64Content}`;
+      const storageResult = await uploadFile({
+        tenantId,
+        path: `exports/payroll/${result.exportId}.${fileExtension}`,
+        body: Buffer.from(result.content),
+        contentType: mimeType,
+      });
 
       return NextResponse.json({
         exportId: result.exportId,
-        fileUrl: dataUrl,
+        fileUrl: storageResult.url,
         format: result.format,
         filename: `payroll-${periodId}.${fileExtension}`,
       });

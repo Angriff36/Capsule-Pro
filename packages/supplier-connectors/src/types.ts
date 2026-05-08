@@ -102,6 +102,9 @@ export interface SupplierConnector {
   /** Human-readable name of the supplier */
   readonly name: string;
 
+  /** Whether this connector is a stub without real API integration */
+  readonly isStub?: boolean;
+
   /**
    * Test the connection to the supplier's system.
    *

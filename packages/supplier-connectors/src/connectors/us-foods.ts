@@ -41,6 +41,7 @@ import type {
 export class UsFoodsConnector implements SupplierConnector {
   readonly id = "us-foods";
   readonly name = "US Foods";
+  readonly isStub = true;
 
   /**
    * Test connection to US Foods EDI system.

@@ -39,6 +39,7 @@ import type {
 export class CharliesProduceConnector implements SupplierConnector {
   readonly id = "charlies-produce";
   readonly name = "Charlie's Produce";
+  readonly isStub = true;
 
   /**
    * Test connection to Charlie's Produce API.

@@ -41,9 +41,6 @@ export class ConnectorRegistry {
       );
     }
     this.connectors.set(connector.id, connector);
-    console.log(
-      `[connector-registry] Registered connector: ${connector.id} (${connector.name})`
-    );
   }
 
   /**
@@ -83,10 +80,11 @@ export class ConnectorRegistry {
    *
    * @returns Array of connector metadata
    */
-  listMetadata(): Array<{ id: string; name: string }> {
+  listMetadata(): Array<{ id: string; name: string; isStub: boolean }> {
     return this.list().map((connector) => ({
       id: connector.id,
       name: connector.name,
+      isStub: connector.isStub ?? false,
     }));
   }
 

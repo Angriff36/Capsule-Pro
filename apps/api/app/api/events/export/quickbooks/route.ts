@@ -10,6 +10,7 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
+import { uploadFile } from "@repo/storage";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
@@ -327,13 +328,17 @@ export async function POST(request: NextRequest) {
     // Calculate total amount
     const totalAmount = invoices.reduce((sum, inv) => sum + inv.totalAmount, 0);
 
-    // Return as base64-encoded content
-    const base64Content = Buffer.from(result.content).toString("base64");
-    const dataUrl = `data:${result.mimeType};base64,${base64Content}`;
+    // Upload to object storage and return download URL
+    const storageResult = await uploadFile({
+      tenantId,
+      path: `exports/events/${result.filename}`,
+      body: Buffer.from(result.content),
+      contentType: result.mimeType,
+    });
 
     return NextResponse.json({
       filename: result.filename,
-      fileUrl: dataUrl,
+      fileUrl: storageResult.url,
       contentType: result.mimeType,
       format: result.format,
       eventsExported: events.length,

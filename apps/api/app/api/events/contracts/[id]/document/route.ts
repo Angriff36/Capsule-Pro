@@ -1,7 +1,7 @@
 /**
  * @module ContractDocumentAPI
  * @intent Handle contract document uploads
- * @responsibility Process document uploads with validation and storage
+ * @responsibility Process document uploads with validation and object storage
  * @domain Events
  * @tags contracts, api, document-upload
  * @canonical true
@@ -10,6 +10,7 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
+import { deleteFile, uploadFile } from "@repo/storage";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -22,11 +23,11 @@ interface ContractDocumentAPIContext {
 
 /**
  * POST /api/events/contracts/[id]/document
- * Upload a contract document
+ * Upload a contract document to object storage
  */
 export async function POST(
   request: NextRequest,
-  context: ContractDocumentAPIContext
+  context: ContractDocumentAPIContext,
 ) {
   const { id: contractId } = await context.params;
   const { orgId } = await auth();
@@ -45,7 +46,6 @@ export async function POST(
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
-    // Validate file type
     const allowedTypes = [
       "application/pdf",
       "application/msword",
@@ -57,20 +57,18 @@ export async function POST(
         {
           error: "Invalid file type. Only PDF and Word documents are allowed.",
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
-    // Validate file size (max 10MB)
-    const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+    const maxSize = 10 * 1024 * 1024;
     if (file.size > maxSize) {
       return NextResponse.json(
         { error: "File size exceeds 10MB limit" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
-    // Check if contract exists and belongs to tenant
     const contract = await database.eventContract.findUnique({
       where: {
         tenantId_id: {
@@ -83,25 +81,32 @@ export async function POST(
     if (!contract) {
       return NextResponse.json(
         { error: "Contract not found" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
-    // Convert file to base64 for storage
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-    const base64 = buffer.toString("base64");
-
-    // Determine document type
     let documentType = "PDF";
     if (file.type.includes("word") || file.type.includes("document")) {
       documentType = "Word";
     }
 
-    // Update contract with document URL
-    // Note: In production, you would upload to a storage service (S3, Blob, etc.)
-    // and store the URL. For now, we're storing a data URL.
-    const dataUrl = `data:${file.type};base64,${base64}`;
+    const ext = documentType === "PDF" ? "pdf" : "docx";
+    const storagePath = `contracts/${contractId}/document.${ext}`;
+
+    const result = await uploadFile({
+      tenantId,
+      path: storagePath,
+      body: file,
+      contentType: file.type,
+    });
+
+    if (contract.documentUrl) {
+      try {
+        await deleteFile(contract.documentUrl);
+      } catch {
+        // Previous file may no longer exist in storage
+      }
+    }
 
     await database.eventContract.update({
       where: {
@@ -111,7 +116,7 @@ export async function POST(
         },
       },
       data: {
-        documentUrl: dataUrl,
+        documentUrl: result.url,
         documentType,
       },
     });
@@ -119,13 +124,16 @@ export async function POST(
     return NextResponse.json({
       success: true,
       message: "Document uploaded successfully",
+      documentUrl: result.url,
     });
   } catch (error) {
     captureException(error);
     log.error("Error uploading document:", error);
-    return NextResponse.json(
-      { error: "Failed to upload document" },
-      { status: 500 }
-    );
+
+    const message =
+      error instanceof Error ? error.message : "Failed to upload document";
+    const status = message.includes("BLOB_READ_WRITE_TOKEN") ? 503 : 500;
+
+    return NextResponse.json({ error: message }, { status });
   }
 }
