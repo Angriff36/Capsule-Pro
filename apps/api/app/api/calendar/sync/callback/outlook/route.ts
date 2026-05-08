@@ -1,4 +1,5 @@
 import { captureException } from "@sentry/nextjs";
+import { createHmac, timingSafeEqual } from "node:crypto";
 import { type NextRequest, NextResponse } from "next/server";
 import { log } from "@repo/observability/log";
 
@@ -31,13 +32,38 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Decode state
-    let stateData: { tenantId: string; provider: string; ts: number };
+    // Decode and verify state (HMAC signature + expiry)
+    let stateData: { tenantId: string; provider: string; ts: number; sig: string };
     try {
       stateData = JSON.parse(Buffer.from(state, "base64url").toString("utf-8"));
     } catch {
       return NextResponse.redirect(
         new URL("/calendar/sync?error=invalid_state", request.url)
+      );
+    }
+
+    const STATE_MAX_AGE_MS = 10 * 60 * 1000; // 10 minutes
+    if (
+      typeof stateData.ts !== "number" ||
+      Date.now() - stateData.ts > STATE_MAX_AGE_MS
+    ) {
+      return NextResponse.redirect(
+        new URL("/calendar/sync?error=expired_state", request.url)
+      );
+    }
+
+    // Verify HMAC signature
+    const secret = process.env.CALENDAR_SYNC_SECRET ?? process.env.NEXTAUTH_SECRET ?? "";
+    const expectedSig = createHmac("sha256", secret)
+      .update(JSON.stringify({ tenantId: stateData.tenantId, provider: stateData.provider, ts: stateData.ts }))
+      .digest("hex");
+
+    if (
+      !stateData.sig ||
+      !timingSafeEqual(Buffer.from(stateData.sig), Buffer.from(expectedSig))
+    ) {
+      return NextResponse.redirect(
+        new URL("/calendar/sync?error=invalid_state_signature", request.url)
       );
     }
 

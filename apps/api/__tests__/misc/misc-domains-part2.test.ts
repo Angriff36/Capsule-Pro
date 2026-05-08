@@ -759,13 +759,13 @@ describe("User Preferences API", () => {
       expect(json.error).toBe("No tenant found");
     });
 
-    it("should return 400 when userId is missing", async () => {
+    it("should use session userId instead of query param (IDOR fix)", async () => {
+      vi.mocked(database.$queryRaw).mockResolvedValue([] as never);
+
       const request = new NextRequest("http://localhost/api/user-preferences");
       const response = await userPreferencesGet(request);
 
-      expect(response.status).toBe(400);
-      const json = await response.json();
-      expect(json.error).toBe("User ID required");
+      expect(response.status).toBe(200);
     });
 
     it("should return preferences for authenticated user", async () => {
@@ -922,16 +922,16 @@ describe("User Preferences API", () => {
       expect(json.error).toContain("preferenceValue");
     });
 
-    it("should return 400 when userId query param is missing", async () => {
+    it("should use session userId instead of query param (IDOR fix)", async () => {
+      vi.mocked(database.$executeRaw).mockResolvedValue(1 as never);
+
       const request = makeRequest("http://localhost/api/user-preferences", {
         preferenceKey: "theme",
         preferenceValue: "dark",
       });
       const response = await userPreferencesPost(request);
 
-      expect(response.status).toBe(400);
-      const json = await response.json();
-      expect(json.error).toBe("User ID required");
+      expect(response.status).toBe(200);
     });
 
     it("should upsert a preference successfully", async () => {

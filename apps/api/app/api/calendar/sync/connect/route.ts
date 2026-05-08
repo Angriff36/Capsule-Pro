@@ -1,5 +1,6 @@
 import { auth } from "@repo/auth/server";
 import { captureException } from "@sentry/nextjs";
+import { createHmac } from "node:crypto";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { log } from "@repo/observability/log";
@@ -143,9 +144,14 @@ export async function POST(request: NextRequest) {
       const redirectUri = `${process.env.OAUTH_REDIRECT_URI}/api/calendar/sync/callback/${provider}`;
       const config = OAUTH_CONFIG[provider];
 
-      // Generate a simple state token (in production, store in session/redis)
+      // Generate HMAC-signed state token with expiry
+      const ts = Date.now();
+      const secret = process.env.CALENDAR_SYNC_SECRET ?? process.env.NEXTAUTH_SECRET ?? "";
+      const sig = createHmac("sha256", secret)
+        .update(JSON.stringify({ tenantId, provider, ts }))
+        .digest("hex");
       const state = Buffer.from(
-        JSON.stringify({ tenantId, provider, ts: Date.now() })
+        JSON.stringify({ tenantId, provider, ts, sig })
       ).toString("base64url");
 
       const params = new URLSearchParams({

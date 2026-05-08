@@ -96,10 +96,14 @@ export async function POST(request: NextRequest) {
     const signatureHeader = request.headers.get("resend-signature") ?? "";
 
     const webhookSecret = process.env.RESEND_WEBHOOK_SECRET;
-    if (
-      webhookSecret &&
-      !verifyResendSignature(rawBody, signatureHeader, webhookSecret)
-    ) {
+    if (!webhookSecret) {
+      return NextResponse.json(
+        { error: "Webhook secret not configured" },
+        { status: 500 },
+      );
+    }
+
+    if (!verifyResendSignature(rawBody, signatureHeader, webhookSecret)) {
       return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
     }
 

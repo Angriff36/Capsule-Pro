@@ -4,6 +4,11 @@ import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { log } from "@repo/observability/log";
 
+interface SyncErrorDetail {
+  externalId: string;
+  message: string;
+}
+
 const SUPPORTED_PROVIDERS = ["google", "outlook"] as const;
 
 /**
@@ -84,6 +89,7 @@ export async function POST(request: NextRequest) {
 
     let importedCount = 0;
     let errorCount = 0;
+    let errorDetails: SyncErrorDetail[] = [];
 
     try {
       if (provider === "google") {
@@ -96,6 +102,7 @@ export async function POST(request: NextRequest) {
         );
         importedCount = result.imported;
         errorCount = result.errors;
+        errorDetails = result.errorDetails;
       } else if (provider === "outlook") {
         const result = await syncOutlookCalendar(
           sync.accessToken,
@@ -106,6 +113,7 @@ export async function POST(request: NextRequest) {
         );
         importedCount = result.imported;
         errorCount = result.errors;
+        errorDetails = result.errorDetails;
       }
 
       // Update sync status
@@ -123,6 +131,7 @@ export async function POST(request: NextRequest) {
         provider,
         imported: importedCount,
         errors: errorCount,
+        errorDetails,
         dateRange: { start: start.toISOString(), end: end.toISOString() },
       });
     } catch (syncError) {
@@ -155,7 +164,8 @@ export async function POST(request: NextRequest) {
 }
 
 /**
- * Fetch events from Google Calendar API and import them
+ * Fetch events from Google Calendar API and import them.
+ * Deduplicates by matching on tenantId + title + eventDate + eventType.
  */
 async function syncGoogleCalendar(
   accessToken: string,
@@ -163,7 +173,7 @@ async function syncGoogleCalendar(
   start: Date,
   end: Date,
   _tenantId: string
-): Promise<{ imported: number; errors: number }> {
+): Promise<{ imported: number; errors: number; errorDetails: SyncErrorDetail[] }> {
   const { database } = await import("@repo/database");
 
   const url = new URL(
@@ -193,36 +203,65 @@ async function syncGoogleCalendar(
 
   let imported = 0;
   let errors = 0;
+  const errorDetails: SyncErrorDetail[] = [];
 
   for (const event of events) {
     try {
-      // Create or update event in database
-      // Note: In production, use a mapping table to track external event IDs
-      await database.event.create({
-        data: {
+      const title = event.summary || "Untitled Event";
+      const eventDate = new Date(
+        event.start?.dateTime || event.start?.date || new Date()
+      );
+      const eventType = "external_google";
+
+      const existing = await database.event.findFirst({
+        where: {
           tenantId: _tenantId,
-          title: event.summary || "Untitled Event",
-          eventDate: new Date(
-            event.start?.dateTime || event.start?.date || new Date()
-          ),
-          eventType: "external_google",
-          status: "confirmed",
-          venueName: event.location || null,
-          guestCount: event.attendees?.length || 0,
-          // Add external ID reference if schema supports it
+          title,
+          eventDate,
+          eventType,
+          deletedAt: null,
         },
       });
+
+      const eventData = {
+        title,
+        eventDate,
+        eventType,
+        status: "confirmed" as const,
+        venueName: event.location || null,
+        guestCount: event.attendees?.length || 0,
+      };
+
+      if (existing) {
+        await database.event.update({
+          where: { tenantId_id: { tenantId: _tenantId, id: existing.id } },
+          data: eventData,
+        });
+      } else {
+        await database.event.create({
+          data: {
+            tenantId: _tenantId,
+            ...eventData,
+          },
+        });
+      }
       imported++;
-    } catch {
+    } catch (error) {
       errors++;
+      errorDetails.push({
+        externalId: event.id || "unknown",
+        message: error instanceof Error ? error.message : "Unknown error",
+      });
+      log.error("[calendar-sync] Failed to import Google event:", error);
     }
   }
 
-  return { imported, errors };
+  return { imported, errors, errorDetails };
 }
 
 /**
- * Fetch events from Microsoft Graph API and import them
+ * Fetch events from Microsoft Graph API and import them.
+ * Deduplicates by matching on tenantId + title + eventDate + eventType.
  */
 async function syncOutlookCalendar(
   accessToken: string,
@@ -230,7 +269,7 @@ async function syncOutlookCalendar(
   start: Date,
   end: Date,
   _tenantId: string
-): Promise<{ imported: number; errors: number }> {
+): Promise<{ imported: number; errors: number; errorDetails: SyncErrorDetail[] }> {
   const { database } = await import("@repo/database");
 
   const url = new URL("https://graph.microsoft.com/v1.0/me/calendarView");
@@ -257,25 +296,56 @@ async function syncOutlookCalendar(
 
   let imported = 0;
   let errors = 0;
+  const errorDetails: SyncErrorDetail[] = [];
 
   for (const event of events) {
     try {
-      await database.event.create({
-        data: {
+      const title = event.subject || "Untitled Event";
+      const eventDate = new Date(event.start?.dateTime || new Date());
+      const eventType = "external_outlook";
+
+      const existing = await database.event.findFirst({
+        where: {
           tenantId: _tenantId,
-          title: event.subject || "Untitled Event",
-          eventDate: new Date(event.start?.dateTime || new Date()),
-          eventType: "external_outlook",
-          status: "confirmed",
-          venueName: event.location?.displayName || null,
-          guestCount: event.attendees?.length || 0,
+          title,
+          eventDate,
+          eventType,
+          deletedAt: null,
         },
       });
+
+      const eventData = {
+        title,
+        eventDate,
+        eventType,
+        status: "confirmed" as const,
+        venueName: event.location?.displayName || null,
+        guestCount: event.attendees?.length || 0,
+      };
+
+      if (existing) {
+        await database.event.update({
+          where: { tenantId_id: { tenantId: _tenantId, id: existing.id } },
+          data: eventData,
+        });
+      } else {
+        await database.event.create({
+          data: {
+            tenantId: _tenantId,
+            ...eventData,
+          },
+        });
+      }
       imported++;
-    } catch {
+    } catch (error) {
       errors++;
+      errorDetails.push({
+        externalId: event.id || "unknown",
+        message: error instanceof Error ? error.message : "Unknown error",
+      });
+      log.error("[calendar-sync] Failed to import Outlook event:", error);
     }
   }
 
-  return { imported, errors };
+  return { imported, errors, errorDetails };
 }

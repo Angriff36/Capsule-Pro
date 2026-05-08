@@ -116,7 +116,10 @@ export async function POST(request: NextRequest) {
   const authToken = env.TWILIO_AUTH_TOKEN;
 
   if (!authToken) {
-    return handleUnauthenticatedRequest(request);
+    return NextResponse.json(
+      { error: "Webhook auth token not configured" },
+      { status: 500 },
+    );
   }
 
   const signature = request.headers.get("x-twilio-signature");
@@ -163,35 +166,3 @@ export async function POST(request: NextRequest) {
   }
 }
 
-/**
- * Handle requests when Twilio auth token is not configured
- */
-async function handleUnauthenticatedRequest(
-  request: NextRequest
-): Promise<NextResponse> {
-  try {
-    const formData = await request.formData();
-    const messageSid = formData.get("MessageSid") as string;
-    const messageStatus = formData.get("MessageStatus") as string;
-    const errorCode = formData.get("ErrorCode") as string | null;
-    const errorMessage = formData.get("ErrorMessage") as string | null;
-
-    if (!(messageSid && messageStatus)) {
-      return NextResponse.json(
-        { error: "Missing required fields: MessageSid or MessageStatus" },
-        { status: 400 }
-      );
-    }
-
-    return await processStatusUpdate(
-      messageSid,
-      messageStatus,
-      errorCode,
-      errorMessage
-    );
-  } catch (error) {
-    captureException(error);
-    log.error("Failed to process SMS webhook", { error });
-    return NextResponse.json({ received: true, error: "Processing failed" });
-  }
-}

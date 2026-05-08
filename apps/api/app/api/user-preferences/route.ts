@@ -11,8 +11,8 @@ import { log } from "@repo/observability/log";
  */
 export async function GET(req: NextRequest) {
   try {
-    const { orgId } = await auth();
-    if (!orgId) {
+    const { orgId, userId } = await auth();
+    if (!orgId || !userId) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
 
@@ -23,14 +23,6 @@ export async function GET(req: NextRequest) {
 
     const { searchParams } = new URL(req.url);
     const category = searchParams.get("category");
-
-    // Get user ID from session (this would typically come from Clerk session)
-    // For now, we'll pass it via query param for testing
-    const userId = searchParams.get("userId");
-
-    if (!userId) {
-      return NextResponse.json({ error: "User ID required" }, { status: 400 });
-    }
 
     // Fetch user preferences using SQL query with optional category filter
     const preferencesList = await database.$queryRaw<
@@ -79,8 +71,8 @@ export async function GET(req: NextRequest) {
  */
 export async function POST(req: NextRequest) {
   try {
-    const { orgId } = await auth();
-    if (!orgId) {
+    const { orgId, userId } = await auth();
+    if (!orgId || !userId) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
 
@@ -97,13 +89,6 @@ export async function POST(req: NextRequest) {
         { error: "preferenceKey and preferenceValue are required" },
         { status: 400 }
       );
-    }
-
-    const { searchParams } = new URL(req.url);
-    const userId = searchParams.get("userId");
-
-    if (!userId) {
-      return NextResponse.json({ error: "User ID required" }, { status: 400 });
     }
 
     // Upsert preference using INSERT ... ON CONFLICT

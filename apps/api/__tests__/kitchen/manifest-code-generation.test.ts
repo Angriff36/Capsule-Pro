@@ -11,7 +11,7 @@
  * See: .specify/memory/AGENTS.md for code generation workflow
  */
 
-import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
@@ -30,7 +30,8 @@ describe("Manifest Code Generation Inventory", () => {
   it("reports surface area of manual vs generated integration (non-blocking)", () => {
     // Check if the manifest API directory exists
     if (!existsSync(MANUAL_INTEGRATION_DIR)) {
-      console.info("\nℹ️  No manifest API directory found - inventory empty.\n");
+      // Directory does not exist — inventory is empty, which is valid
+      expect(existsSync(MANUAL_INTEGRATION_DIR)).toBe(false);
       return;
     }
 
@@ -57,7 +58,7 @@ describe("Manifest Code Generation Inventory", () => {
     // Inventory Report
     console.info("\n");
     console.info("─".repeat(80));
-    console.info("📊 Manifest Integration Surface Area Inventory");
+    console.info("Manifest Integration Surface Area Inventory");
     console.info("─".repeat(80));
     console.info("\n");
     console.info(`Total Route Files:       ${totalFiles}`);
@@ -71,7 +72,7 @@ describe("Manifest Code Generation Inventory", () => {
       console.info("\n");
       for (const file of manualFiles) {
         const relativePath = file.replace(PROJECT_ROOT, "").replace(/\\/g, "/");
-        console.info(`  • ${relativePath}`);
+        console.info(`  - ${relativePath}`);
       }
       console.info("\n");
     }
@@ -81,7 +82,7 @@ describe("Manifest Code Generation Inventory", () => {
       console.info("\n");
       for (const file of generatedFiles) {
         const relativePath = file.replace(PROJECT_ROOT, "").replace(/\\/g, "/");
-        console.info(`  ✓ ${relativePath}`);
+        console.info(`  + ${relativePath}`);
       }
       console.info("\n");
     }
@@ -96,13 +97,15 @@ describe("Manifest Code Generation Inventory", () => {
     console.info("─".repeat(80));
     console.info("\n");
 
-    // This test always passes - it's inventory only
-    expect(true).toBe(true);
+    // Assert the classification is internally consistent
+    expect(generatedCount + manualCount).toBe(totalFiles);
+    expect(Number(migrationProgress)).toBeGreaterThanOrEqual(0);
+    expect(Number(migrationProgress)).toBeLessThanOrEqual(100);
   });
 
-  it("provides workflow information (informational)", () => {
+  it("provides workflow information and verifies manifest build infrastructure", () => {
     console.info("\n");
-    console.info("ℹ️  Code Generation Workflow (Preferred for New Features)");
+    console.info("Code Generation Workflow (Preferred for New Features)");
     console.info("\n");
     console.info(
       "  1. Edit the manifest spec (e.g., packages/manifest-adapters/manifests/recipe-rules.manifest)"
@@ -117,8 +120,20 @@ describe("Manifest Code Generation Inventory", () => {
     );
     console.info("\n");
 
-    // This test always passes - it's informational only
-    expect(true).toBe(true);
+    // Verify the manifest compilation infrastructure exists
+    const manifestBinPath = join(
+      PROJECT_ROOT,
+      "packages/manifest-adapters/manifests"
+    );
+    expect(existsSync(manifestBinPath)).toBe(true);
+
+    // Verify the manifest directory has content
+    if (existsSync(manifestBinPath)) {
+      const entries = readdirSync(manifestBinPath).filter(
+        (e) => e.endsWith(".manifest") || statSync(join(manifestBinPath, e)).isDirectory()
+      );
+      expect(entries.length).toBeGreaterThan(0);
+    }
   });
 });
 
