@@ -9,7 +9,20 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
-import { Separator } from "@repo/design-system/components/ui/separator";
+import {
+  CommandBand,
+  CommandBandBody,
+  CommandBandHeader,
+  CommandBandLede,
+  DisplayHeading,
+  MetricBand,
+  MetricCell,
+  MetricLabel,
+  MetricValue,
+  MonoLabel,
+  OperationalColumn,
+  PageCanvas,
+} from "@repo/design-system/components/blocks/page-shell";
 import { notFound } from "next/navigation";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { TeamClient, type TeamMemberRow } from "./team-client";
@@ -47,19 +60,53 @@ const SettingsTeamPage = async () => {
     createdAt: m.createdAt.toISOString(),
   }));
 
+  const activeCount = members.filter((m) => m.isActive).length;
+  const roleCounts = members.reduce(
+    (acc, m) => {
+      acc[m.role] = (acc[m.role] || 0) + 1;
+      return acc;
+    },
+    {} as Record<string, number>,
+  );
+  const uniqueRoles = Object.keys(roleCounts).length;
+
   return (
-    <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
-      <div className="space-y-0.5">
-        <h1 className="text-2xl font-semibold tracking-tight">Team</h1>
-        <p className="text-muted-foreground">
-          Manage who has access to this workspace and their roles.
-        </p>
-      </div>
+    <PageCanvas>
+      <CommandBand>
+        <CommandBandHeader>
+          <div className="space-y-4">
+            <MonoLabel tone="dark">Settings / Team</MonoLabel>
+            <DisplayHeading>Team</DisplayHeading>
+            <CommandBandLede>
+              Manage who has access to this workspace and their roles.
+            </CommandBandLede>
+          </div>
+        </CommandBandHeader>
+        <CommandBandBody>
+          <MetricBand cols={3}>
+            <MetricCell>
+              <MetricLabel>Total members</MetricLabel>
+              <MetricValue>{members.length}</MetricValue>
+              <p className="text-sm text-white/70">All workspace users</p>
+            </MetricCell>
+            <MetricCell>
+              <MetricLabel>Active</MetricLabel>
+              <MetricValue>{activeCount}</MetricValue>
+              <p className="text-sm text-white/70">Currently active</p>
+            </MetricCell>
+            <MetricCell>
+              <MetricLabel>Roles</MetricLabel>
+              <MetricValue>{uniqueRoles}</MetricValue>
+              <p className="text-sm text-white/70">Distinct role types</p>
+            </MetricCell>
+          </MetricBand>
+        </CommandBandBody>
+      </CommandBand>
 
-      <Separator />
-
-      <TeamClient members={members} />
-    </div>
+      <OperationalColumn>
+        <TeamClient members={members} />
+      </OperationalColumn>
+    </PageCanvas>
   );
 };
 

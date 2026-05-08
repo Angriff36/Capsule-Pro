@@ -1,16 +1,33 @@
+import {
+  CommandBand,
+  CommandBandHeader,
+  CommandBandLede,
+  DisplayHeading,
+  MonoLabel,
+  OperationalColumn,
+  PageCanvas,
+} from "@repo/design-system/components/blocks/page-shell";
 import { ManifestEditorClient } from "./manifest-editor-client";
 
 const ManifestEditorPage = () => (
-  <div className="p-6">
-    <h1 className="text-2xl font-semibold">Rules Explorer</h1>
-    <p className="mt-1 text-sm text-muted-foreground">
-      Read-only view of what actions exist, what can block them, and who can run
-      them (compiled from Manifest).
-    </p>
-    <div className="mt-6">
+  <PageCanvas>
+    <CommandBand>
+      <CommandBandHeader>
+        <div className="space-y-4">
+          <MonoLabel tone="dark">Settings / Rules Explorer</MonoLabel>
+          <DisplayHeading>Rules Explorer</DisplayHeading>
+          <CommandBandLede>
+            Read-only view of what actions exist, what can block them, and who
+            can run them (compiled from Manifest).
+          </CommandBandLede>
+        </div>
+      </CommandBandHeader>
+    </CommandBand>
+
+    <OperationalColumn>
       <ManifestEditorClient />
-    </div>
-  </div>
+    </OperationalColumn>
+  </PageCanvas>
 );
 
 export default ManifestEditorPage;

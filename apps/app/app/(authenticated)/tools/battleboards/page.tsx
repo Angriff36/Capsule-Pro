@@ -1,17 +1,33 @@
-import { Separator } from "@repo/design-system/components/ui/separator";
+import {
+  CommandBand,
+  CommandBandHeader,
+  CommandBandLede,
+  DisplayHeading,
+  MonoLabel,
+  OperationalColumn,
+  PageCanvas,
+} from "@repo/design-system/components/blocks/page-shell";
 import { BattleboardsClient } from "./battleboards-client";
 
 const ToolsBattleboardsPage = () => (
-  <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
-    <div className="space-y-0.5">
-      <h1 className="text-2xl font-semibold tracking-tight">Battleboards</h1>
-      <p className="text-muted-foreground">
-        Build and manage battleboards for production and service coordination.
-      </p>
-    </div>
-    <Separator />
-    <BattleboardsClient />
-  </div>
+  <PageCanvas>
+    <CommandBand>
+      <CommandBandHeader>
+        <div className="space-y-4">
+          <MonoLabel tone="dark">Tools / Battleboards</MonoLabel>
+          <DisplayHeading>Battleboards</DisplayHeading>
+          <CommandBandLede>
+            Build and manage battleboards for production and service
+            coordination.
+          </CommandBandLede>
+        </div>
+      </CommandBandHeader>
+    </CommandBand>
+
+    <OperationalColumn>
+      <BattleboardsClient />
+    </OperationalColumn>
+  </PageCanvas>
 );
 
 export default ToolsBattleboardsPage;
