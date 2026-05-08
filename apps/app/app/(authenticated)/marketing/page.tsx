@@ -25,15 +25,15 @@ const MarketingPage = () => (
         title: "Email workflows",
         description:
           "Automated email sequences for client onboarding, event follow-ups, and nurture campaigns.",
-        href: "/settings/email-workflows",
-        actionLabel: "Set up workflows",
+        href: "/marketing/email-workflows",
+        actionLabel: "Manage workflows",
         icon: Mail,
       },
       {
         title: "Analytics",
         description:
           "Campaign performance, open rates, click-through rates, and conversion metrics.",
-        href: "/analytics/sales",
+        href: "/marketing/analytics",
         actionLabel: "View analytics",
         icon: BarChart3,
       },
@@ -41,8 +41,8 @@ const MarketingPage = () => (
         title: "SMS automation",
         description:
           "Event reminders, delivery notifications, and follow-up text messages.",
-        href: "/marketing",
-        actionLabel: "Coming soon",
+        href: "/marketing/sms-rules",
+        actionLabel: "Manage rules",
         icon: MessageSquare,
       },
     ]}

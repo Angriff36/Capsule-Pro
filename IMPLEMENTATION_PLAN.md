@@ -2126,3 +2126,19 @@ Two exported validation functions in the payment-methods module (`isCardExpired`
 ### [2026-05-08] Session Notes (continued)
 
 - API key scope enforcement fully wired: edge middleware detects Bearer cp_* tokens, requireCurrentUser() checks API key auth before Clerk auth, resolveCurrentUser() enforces scope via scope-guard.ts, executeManifestCommand and getAuthContext() both use resolveCurrentUser for dual-auth coverage across ~80 command routes, 11 direct requireCurrentUser callers, and all GET routes using getAuthContext(). Resolves security_theater.api_key_scopes_never_enforced.
+
+### [2026-05-08] Marketing Module — Three Sub-Surfaces Implemented
+
+Implemented three missing marketing module sub-surfaces per spec CAP-MARKETING-001:
+
+1. **Email Workflows** (`/marketing/email-workflows`) — Server component fetching EmailWorkflow records with included emailTemplate relation. Client component with search, active/inactive filters, toggle activation, and create workflow dialog with all 11 trigger types. Template-missing detection for soft-deleted templates.
+
+2. **SMS Rules** (`/marketing/sms-rules`) — Server component fetching sms_automation_rules. Client component with search, active/inactive filters, toggle activation/deactivation, and create rule dialog with all 11 trigger types and 4 recipient types.
+
+3. **Marketing Analytics** (`/marketing/analytics`) — Server component showing aggregate metrics. Client component fetching from new `GET /api/marketing/analytics?window=30d|90d|180d` endpoint. Shows email performance by workflow, lead pipeline by source, SMS rules summary. Window-scoped metrics in MetricBand.
+
+4. **Marketing Landing** — Updated links: email workflows now points to `/marketing/email-workflows`, analytics to `/marketing/analytics`, SMS automation to `/marketing/sms-rules`.
+
+5. **API: Marketing Analytics** (`GET /api/marketing/analytics`) — Aggregates from EmailLog, Lead, sms_logs, EmailWorkflow, and sms_automation_rules. Returns email performance by workflow, lead pipeline by source, SMS delivery rates.
+
+All pages use Cohere-aligned design system: PageCanvas > CommandBand > MetricBand > OperationalColumn pattern. No bare Card, no text-3xl font-bold, no legacy Header import.
