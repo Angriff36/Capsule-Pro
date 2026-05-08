@@ -24,7 +24,7 @@ const getSentryEnvironment = (): string | undefined => {
 init({
   dsn: process.env.SENTRY_DSN ?? process.env.NEXT_PUBLIC_SENTRY_DSN ?? "",
   environment: getSentryEnvironment(),
-  tracesSampleRate: Number(process.env.SENTRY_TRACES_SAMPLE_RATE ?? "1.0"),
+  tracesSampleRate: Number(process.env.SENTRY_TRACES_SAMPLE_RATE ?? "0.05"),
   sendDefaultPii: true,
   tracePropagationTargets: [
     "localhost",
