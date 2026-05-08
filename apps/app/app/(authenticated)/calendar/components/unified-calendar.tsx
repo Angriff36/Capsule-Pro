@@ -22,6 +22,7 @@ import {
   DialogTitle,
 } from "@repo/design-system/components/ui/dialog";
 import { Input } from "@repo/design-system/components/ui/input";
+import { ResearchTable } from "@repo/design-system/components/blocks/research-table";
 import {
   Tabs,
   TabsList,
@@ -219,6 +220,11 @@ export function UnifiedCalendar({
     null
   );
   const [showEventDialog, setShowEventDialog] = useState(false);
+  const [overflowDialog, setOverflowDialog] = useState<{
+    open: boolean;
+    date: Date | null;
+    events: CalendarEvent[];
+  }>({ open: false, date: null, events: [] });
   const [filters, setFilters] = useState<string[]>([
     "event",
     "shift",
@@ -757,9 +763,19 @@ export function UnifiedCalendar({
                         />
                       ))}
                     {dayEvents.length > (view === "day" ? 50 : 4) && (
-                      <div className="text-xs text-gray-500 pl-1">
+                      <button
+                        className="text-xs text-ink/60 pl-1 underline-offset-2 hover:underline hover:text-ink"
+                        onClick={() =>
+                          setOverflowDialog({
+                            open: true,
+                            date: day,
+                            events: dayEvents,
+                          })
+                        }
+                        type="button"
+                      >
                         +{dayEvents.length - (view === "day" ? 50 : 4)} more
-                      </div>
+                      </button>
                     )}
                   </div>
                 </DroppableDayCell>
@@ -924,6 +940,76 @@ export function UnifiedCalendar({
             </Button>
             <Button disabled={isRescheduling} onClick={handleConfirmReschedule}>
               {isRescheduling ? "Rescheduling..." : "Confirm Reschedule"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Overflow Dialog for +N more */}
+      <Dialog
+        onOpenChange={(open) =>
+          setOverflowDialog((prev) => ({ ...prev, open }))
+        }
+        open={overflowDialog.open}
+      >
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>
+              {overflowDialog.date
+                ? format(overflowDialog.date, "EEEE, MMMM d, yyyy")
+                : "Calendar entries"}
+            </DialogTitle>
+            <DialogDescription>
+              {overflowDialog.events.length}{" "}
+              {overflowDialog.events.length === 1 ? "entry" : "entries"} on
+              this date
+            </DialogDescription>
+          </DialogHeader>
+
+          <ResearchTable
+            rows={overflowDialog.events
+              .sort(
+                (a, b) =>
+                  a.start.getTime() - b.start.getTime()
+              )
+              .map((e) => ({
+                id: e.id,
+                title: e.title,
+                href:
+                  e.type === "event"
+                    ? `/events/${e.id}`
+                    : e.type === "shift"
+                      ? `/scheduling/shifts/${e.id}`
+                      : `/staff/time-off/${e.id}`,
+                pills: (
+                  <span
+                    className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
+                      e.type === "event"
+                        ? "bg-blue-100 text-blue-700"
+                        : e.type === "shift"
+                          ? "bg-green-100 text-green-700"
+                          : "bg-amber-100 text-amber-700"
+                    }`}
+                  >
+                    {e.type === "timeoff" ? "Time off" : e.type}
+                  </span>
+                ),
+                meta: (
+                  <span className="font-mono text-xs">
+                    {format(e.start, "h:mm a")}
+                  </span>
+                ),
+              }))}
+          />
+
+          <DialogFooter>
+            <Button
+              onClick={() =>
+                setOverflowDialog({ open: false, date: null, events: [] })
+              }
+              variant="outline"
+            >
+              Close
             </Button>
           </DialogFooter>
         </DialogContent>
