@@ -96,6 +96,8 @@ const paymentStatusVariant = (status: string) => {
   }
 };
 
+export const revalidate = 60;
+
 const AnalyticsFinancePage = async () => {
   const { orgId } = await auth();
 

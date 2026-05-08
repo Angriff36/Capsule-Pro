@@ -48,6 +48,8 @@ const statusLabel = (value: string) =>
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(" ");
 
+export const revalidate = 60;
+
 const ProcurementPage = async () => {
   const { orgId } = await auth();
 

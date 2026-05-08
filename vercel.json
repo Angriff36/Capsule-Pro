@@ -7,6 +7,11 @@
   "github": {
     "silent": true
   },
+  "functions": {
+    "app/(authenticated)/**/*": {
+      "regions": ["iad1"]
+    }
+  },
   "headers": [
     {
       "source": "/(.*)",

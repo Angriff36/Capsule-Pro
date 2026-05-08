@@ -358,10 +358,6 @@ let nextConfig: NextConfig = withToolbar(
       "/*": ["../../packages/manifest-ir/dist/routes.manifest.json"],
     },
     webpack: (webpackConfig: WebpackConfig, context: WebpackContext) => {
-      if (process.env.NODE_ENV === "production") {
-        webpackConfig.cache = false;
-      }
-
       // Production optimizations to reduce bundle size and build time
       if (context.isServer && context.nextRuntime === "nodejs") {
         webpackConfig.resolve = webpackConfig.resolve ?? {};

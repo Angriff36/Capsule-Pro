@@ -115,6 +115,8 @@ const formatRangeLabel = (start: Date, end: Date) => {
 const formatName = (first?: string | null, last?: string | null) =>
   [first, last].filter(Boolean).join(" ") || "Unassigned";
 
+export const revalidate = 60;
+
 const SchedulingPage = async () => {
   const { orgId, userId } = await auth();
 
@@ -131,18 +133,31 @@ const SchedulingPage = async () => {
   startOfToday.setHours(0, 0, 0, 0);
   const endOfToday = addDays(startOfToday, 1);
 
-  const [currentStaff] = await database.$queryRaw<{ count: number }[]>(
-    Prisma.sql`
+  const [
+    [currentStaff],
+    [previousStaff],
+    [currentHours],
+    [previousHours],
+    [openShifts],
+    [previousOpenShifts],
+    [currentCost],
+    [previousCost],
+    shiftSummary,
+    [shiftTotals],
+    happeningToday,
+    leaderboard,
+  ] = await Promise.all([
+    database.$queryRaw<{ count: number }[]>(
+      Prisma.sql`
       SELECT COUNT(*)::int AS count
       FROM tenant_staff.employees
       WHERE tenant_id = ${tenantId}
         AND deleted_at IS NULL
         AND is_active = true
     `
-  );
-
-  const [previousStaff] = await database.$queryRaw<{ count: number }[]>(
-    Prisma.sql`
+    ),
+    database.$queryRaw<{ count: number }[]>(
+      Prisma.sql`
       SELECT COUNT(*)::int AS count
       FROM tenant_staff.employees
       WHERE tenant_id = ${tenantId}
@@ -150,10 +165,9 @@ const SchedulingPage = async () => {
         AND is_active = true
         AND created_at < ${weekStart}
     `
-  );
-
-  const [currentHours] = await database.$queryRaw<{ hours: number }[]>(
-    Prisma.sql`
+    ),
+    database.$queryRaw<{ hours: number }[]>(
+      Prisma.sql`
       SELECT COALESCE(SUM(EXTRACT(EPOCH FROM (shift_end - shift_start)) / 3600), 0) AS hours
       FROM tenant_staff.schedule_shifts
       WHERE tenant_id = ${tenantId}
@@ -161,10 +175,9 @@ const SchedulingPage = async () => {
         AND shift_start >= ${weekStart}
         AND shift_start < ${weekEnd}
     `
-  );
-
-  const [previousHours] = await database.$queryRaw<{ hours: number }[]>(
-    Prisma.sql`
+    ),
+    database.$queryRaw<{ hours: number }[]>(
+      Prisma.sql`
       SELECT COALESCE(SUM(EXTRACT(EPOCH FROM (shift_end - shift_start)) / 3600), 0) AS hours
       FROM tenant_staff.schedule_shifts
       WHERE tenant_id = ${tenantId}
@@ -172,10 +185,9 @@ const SchedulingPage = async () => {
         AND shift_start >= ${previousWeekStart}
         AND shift_start < ${weekStart}
     `
-  );
-
-  const [openShifts] = await database.$queryRaw<{ count: number }[]>(
-    Prisma.sql`
+    ),
+    database.$queryRaw<{ count: number }[]>(
+      Prisma.sql`
       SELECT COUNT(*)::int AS count
       FROM tenant_staff.open_shifts
       WHERE tenant_id = ${tenantId}
@@ -184,10 +196,9 @@ const SchedulingPage = async () => {
         AND shift_start >= ${weekStart}
         AND shift_start < ${weekEnd}
     `
-  );
-
-  const [previousOpenShifts] = await database.$queryRaw<{ count: number }[]>(
-    Prisma.sql`
+    ),
+    database.$queryRaw<{ count: number }[]>(
+      Prisma.sql`
       SELECT COUNT(*)::int AS count
       FROM tenant_staff.open_shifts
       WHERE tenant_id = ${tenantId}
@@ -196,10 +207,9 @@ const SchedulingPage = async () => {
         AND shift_start >= ${previousWeekStart}
         AND shift_start < ${weekStart}
     `
-  );
-
-  const [currentCost] = await database.$queryRaw<{ cost: number }[]>(
-    Prisma.sql`
+    ),
+    database.$queryRaw<{ cost: number }[]>(
+      Prisma.sql`
       SELECT COALESCE(
         SUM(
           EXTRACT(EPOCH FROM (s.shift_end - s.shift_start)) / 3600 *
@@ -220,10 +230,9 @@ const SchedulingPage = async () => {
         AND s.shift_start >= ${weekStart}
         AND s.shift_start < ${weekEnd}
     `
-  );
-
-  const [previousCost] = await database.$queryRaw<{ cost: number }[]>(
-    Prisma.sql`
+    ),
+    database.$queryRaw<{ cost: number }[]>(
+      Prisma.sql`
       SELECT COALESCE(
         SUM(
           EXTRACT(EPOCH FROM (s.shift_end - s.shift_start)) / 3600 *
@@ -244,10 +253,9 @@ const SchedulingPage = async () => {
         AND s.shift_start >= ${previousWeekStart}
         AND s.shift_start < ${weekStart}
     `
-  );
-
-  const shiftSummary = await database.$queryRaw<ScheduleSummaryRow[]>(
-    Prisma.sql`
+    ),
+    database.$queryRaw<ScheduleSummaryRow[]>(
+      Prisma.sql`
       WITH scheduled AS (
         SELECT
           date_trunc('day', shift_start) AS shift_date,
@@ -280,15 +288,14 @@ const SchedulingPage = async () => {
       FROM scheduled s
       FULL OUTER JOIN open o ON o.shift_date = s.shift_date
     `
-  );
-
-  const [shiftTotals] = await database.$queryRaw<
-    {
-      shift_count: number;
-      staff_count: number;
-    }[]
-  >(
-    Prisma.sql`
+    ),
+    database.$queryRaw<
+      {
+        shift_count: number;
+        staff_count: number;
+      }[]
+    >(
+      Prisma.sql`
       SELECT
         (
           SELECT COUNT(*)::int
@@ -316,10 +323,9 @@ const SchedulingPage = async () => {
             AND shift_start < ${weekEnd}
         ) AS staff_count
     `
-  );
-
-  const happeningToday = await database.$queryRaw<HappeningShiftRow[]>(
-    Prisma.sql`
+    ),
+    database.$queryRaw<HappeningShiftRow[]>(
+      Prisma.sql`
       SELECT
         s.shift_start,
         s.shift_end,
@@ -350,10 +356,9 @@ const SchedulingPage = async () => {
       ORDER BY shift_start
       LIMIT 6
     `
-  );
-
-  const leaderboard = await database.$queryRaw<LeaderboardRow[]>(
-    Prisma.sql`
+    ),
+    database.$queryRaw<LeaderboardRow[]>(
+      Prisma.sql`
       SELECT
         s.employee_id,
         e.first_name,
@@ -372,7 +377,8 @@ const SchedulingPage = async () => {
       ORDER BY shift_count DESC, e.last_name ASC
       LIMIT 3
     `
-  );
+    ),
+  ]);
 
   const scheduleMap = new Map(
     shiftSummary.map((row) => [row.shift_date.toDateString(), row])
