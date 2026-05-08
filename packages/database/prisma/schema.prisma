@@ -147,6 +147,8 @@ model Account {
   temperatureProbes              TemperatureProbe[]
   temperatureReadings            TemperatureReading[]
   iotAlerts                      IoTAlert[]
+  iotAlertRules                  IotAlertRule[]
+  payrollAuditLogs               PayrollAuditLog[]
   facilities                     Facility[]
   facilityAreas                  FacilityArea[]
   facilityAssets                 FacilityAsset[]
@@ -578,8 +580,9 @@ model Equipment {
   lastHeartbeat     DateTime? @map("last_heartbeat") @db.Timestamptz(6)
   currentSensorData Json?     @map("current_sensor_data")
 
-  workOrders WorkOrder[]
-  tenant     Account     @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  workOrders    WorkOrder[]
+  alertRules    IotAlertRule[]
+  tenant        Account         @relation(fields: [tenantId], references: [id], onDelete: Restrict)
 
   @@unique([tenantId, id])
   @@index([tenantId, locationId])
@@ -5451,6 +5454,28 @@ model TaxConfiguration {
   @@schema("tenant_staff")
 }
 
+model PayrollAuditLog {
+  tenantId      String   @map("tenant_id") @db.Uuid
+  id            String   @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  periodId      String   @map("period_id") @db.Uuid
+  action        String
+  userId        String?  @map("user_id") @db.Uuid
+  inputSnapshot Json?    @map("input_snapshot") @db.JsonB
+  rulesVersion  String?  @map("rules_version")
+  resultSummary Json?    @map("result_summary") @db.JsonB
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  tenant Account @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
+  @@id([tenantId, id])
+  @@unique([tenantId, id])
+  @@index([tenantId, periodId])
+  @@index([tenantId, action])
+  @@index([tenantId, createdAt])
+  @@map("payroll_audit_log")
+  @@schema("tenant_staff")
+}
+
 // ============================================================================
 // Tenant Inventory Schema Models
 // ============================================================================
@@ -5866,6 +5891,38 @@ model IoTAlert {
   @@index([tenantId, probeId])
   @@index([tenantId, triggeredAt])
   @@map("iot_alerts")
+  @@schema("tenant_kitchen")
+}
+
+model IotAlertRule {
+  tenantId      String    @map("tenant_id") @db.Uuid
+  id            String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  equipmentId   String    @map("equipment_id") @db.Uuid
+  name          String
+  description   String?
+  sensorType    String    @map("sensor_type")
+  condition     String
+  threshold     Float?
+  thresholdMin  Float?    @map("threshold_min")
+  thresholdMax  Float?    @map("threshold_max")
+  severity      String    @default("warning")
+  durationMs    Int       @default(0) @map("duration_ms")
+  alertAction   String    @default("notification") @map("alert_action")
+  isActive      Boolean   @default(true) @map("is_active")
+  notifyRoles   String[]  @default([]) @map("notify_roles")
+  notifyChannels String[] @default(["in_app"]) @map("notify_channels")
+  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt     DateTime? @map("deleted_at") @db.Timestamptz(6)
+
+  equipment Equipment @relation(fields: [equipmentId, tenantId], references: [id, tenantId], onDelete: Restrict)
+  tenant    Account   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
+  @@id([tenantId, id])
+  @@unique([tenantId, id])
+  @@index([tenantId, equipmentId])
+  @@index([tenantId, isActive])
+  @@map("iot_alert_rules")
   @@schema("tenant_kitchen")
 }
 

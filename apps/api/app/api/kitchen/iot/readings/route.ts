@@ -98,23 +98,92 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Check for alerts
+    // Check for alerts — first via configurable alert rules, then probe thresholds
     const probe = await database.temperatureProbe.findUnique({
       where: { tenantId_probeId: { tenantId, probeId } },
     });
 
-    if (probe && (temperature < probe.minTemp || temperature > probe.maxTemp)) {
-      // Generate alert number
+    let triggeredRule: {
+      name: string;
+      severity: string;
+      condition: string;
+      threshold: number | null;
+      thresholdMin: number | null;
+      thresholdMax: number | null;
+    } | null = null;
+
+    if (probe?.locationId) {
+      const equipmentAtLocation = await database.equipment.findMany({
+        where: { tenantId, locationId: probe.locationId, deletedAt: null },
+        select: { id: true },
+      });
+      const equipmentIds = equipmentAtLocation.map((e) => e.id);
+
+      if (equipmentIds.length > 0) {
+        const activeRules = await database.iotAlertRule.findMany({
+          where: {
+            tenantId,
+            equipmentId: { in: equipmentIds },
+            sensorType: "temperature",
+            isActive: true,
+            deletedAt: null,
+          },
+        });
+
+        for (const rule of activeRules) {
+          let breached = false;
+          if (rule.condition === "above" && rule.threshold !== null) {
+            breached = temperature > rule.threshold;
+          } else if (rule.condition === "below" && rule.threshold !== null) {
+            breached = temperature < rule.threshold;
+          } else if (
+            rule.condition === "outside_range" &&
+            rule.thresholdMin !== null &&
+            rule.thresholdMax !== null
+          ) {
+            breached =
+              temperature < rule.thresholdMin || temperature > rule.thresholdMax;
+          }
+          if (breached) {
+            triggeredRule = rule;
+            break;
+          }
+        }
+      }
+    }
+
+    if (triggeredRule) {
       const alertCount = await database.ioTAlert.count({ where: { tenantId } });
       const alertNumber = `ALT-${String(alertCount + 1).padStart(6, "0")}`;
 
-      // Create alert if out of range
       await database.ioTAlert.create({
         data: {
           tenantId,
           alertNumber,
           probeId,
-          alertType: temperature < probe.minTemp ? "low_temp" : "high_temp",
+          alertType: "rule_violation",
+          severity: triggeredRule.severity || "warning",
+          title: `Alert Rule: ${triggeredRule.name}`,
+          message: `Temperature ${temperature}°C violated rule "${triggeredRule.name}" (${triggeredRule.condition})`,
+          temperature,
+          status: "active",
+          triggeredAt: new Date(),
+        },
+      });
+    } else if (
+      probe &&
+      (temperature < probe.minTemp || temperature > probe.maxTemp)
+    ) {
+      const alertCount = await database.ioTAlert.count({ where: { tenantId } });
+      const alertNumber = `ALT-${String(alertCount + 1).padStart(6, "0")}`;
+
+      await database.ioTAlert.create({
+        data: {
+          tenantId,
+          alertNumber,
+          probeId,
+          alertType:
+            temperature < probe.minTemp ? "low_temp" : "high_temp",
           severity: "warning",
           title:
             temperature < probe.minTemp

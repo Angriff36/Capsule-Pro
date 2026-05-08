@@ -40,6 +40,8 @@ The `PrismaPayrollDataSource.savePayrollAudit()` method is intended to persist p
   payrollPrefs: undefined, // BLOCKER: EmployeePayrollPrefs model does not exist in schema
   ```
 
+### Status: RESOLVED (branch fix/middleware-matcher-invocations)
+PayrollAuditLog Prisma model added to schema (tenant_staff.payroll_audit_log). Migration created at 20260508000000_add_payroll_audit_log. PrismaPayrollDataSource.savePayrollAudit() now persists to database instead of console.log. Audit failures caught and logged but don't crash payroll processing.
 
 ---
 
@@ -170,6 +172,7 @@ The unified calendar UI advertises five event types — Events, Shifts, Time Off
       {label}
   ```
 
+### Status: RESOLVED — deadline and reminder types already removed from frontend and API in prior commit. Frontend only shows event/shift/timeoff. Calendar spec FR-302 (deadline) is DEFERRED, FR-303 (reminder) is REMOVED.
 
 ---
 
@@ -437,6 +440,9 @@ The mobile app (`apps/mobile/`) has a complete push notification and settings sy
 - File: (nonexistent) `apps/api/app/api/mobile/` — directory does not exist
 - No proxy/rewrite rules found mapping `/api/mobile/*` paths
 - No Prisma schema models for `pushToken`, `deviceToken`, or mobile-specific settings tables
+
+### Status: RESOLVED (branch fix/middleware-matcher-invocations)
+Three mobile API endpoints now exist: `/api/mobile/push-token` (POST), `/api/mobile/notification-preferences` (GET+POST), `/api/mobile/app-settings` (GET+POST). All use Prisma for persistence and requireCurrentUser() for auth.
 
 
 ---
@@ -706,6 +712,9 @@ export function buildWebhookPayload(...) { ... }
   - `apps/api/app/api/integrations/webhooks/dlq/[id]/retry/route.ts` (manual DLQ retry)
   - `apps/api/app/api/cron/webhook-retry/route.ts` (scheduled retry worker)
   - NOT imported by any CRUD route that creates/updates/deletes domain entities
+
+### Status: RESOLVED (branch fix/middleware-matcher-invocations)
+`dispatchWebhooks` helper created at `apps/api/app/lib/webhook-dispatch.ts`. Now imported and called (fire-and-forget) in 9 domain route files: event create, contract sign, shift create/update/bulk-assign, shipment status, kitchen task claim, prep-list finalize, inventory stock adjustment.
 
 
 ---
@@ -1418,6 +1427,8 @@ Both the Goodshuffle and Nowsta integration config schemas accept an `autoSyncIn
 - No cron route under `apps/api/app/api/cron/` references goodshuffle or nowsta
 - No `setInterval`, `node-cron`, `bullmq`, or `Temporal` usage found in `apps/api/`
 
+### Status: RESOLVED (branch fix/middleware-matcher-invocations)
+Auto-sync cron endpoint created at /api/cron/integration-auto-sync with */15 * * * * schedule in vercel.json. Queries GoodshuffleConfig and NowstaConfig records where autoSyncInterval is set, checks if sync is due (lastSyncAt + interval), and dispatches sync service directly.
 
 ---
 
@@ -1919,6 +1930,8 @@ CREATE TABLE "tenant_kitchen"."iot_alert_rules" (
 - No API route files matching `alert-rules` or `alertRule` in `apps/api/app/api/`
 - No UI pages matching `alert-rules` or `alertRule` in `apps/app/`
 
+### Status: RESOLVED (branch fix/middleware-matcher-invocations)
+IotAlertRule Prisma model added to schema matching the existing iot_alert_rules migration table. CRUD API created at /api/kitchen/iot/alert-rules (GET list + POST create). IoT readings route now checks configurable alert rules (by equipment location) before falling back to hardcoded probe thresholds.
 
 ---
 
@@ -2107,8 +2120,8 @@ Two exported validation functions in the payment-methods module (`isCardExpired`
 
 ### Still unresolved (priority order):
 1. fake_integration.payment_gateway_always_success_placeholder — needs real Stripe integration
-2. automation_theater.audit_log_console_only — PayrollAudit model doesn't exist
-3. placeholder.base64_data_url_persisted_as_file_storage — files stored as base64 in DB
+2. placeholder.base64_data_url_persisted_as_file_storage — files stored as base64 in DB
+3. fake_integration.stub_connector_registered_as_live — supplier connectors are pure stubs
 
 ### [2026-05-08] Session Notes (continued)
 

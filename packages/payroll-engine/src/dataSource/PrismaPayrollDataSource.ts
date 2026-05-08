@@ -286,16 +286,23 @@ export class PrismaPayrollDataSource implements PayrollDataSource {
   }
 
   async savePayrollAudit(audit: PayrollAudit): Promise<void> {
-    // BLOCKER: PayrollAudit model does not exist in schema. Tracked as capsule-pro/TODO:payroll-employee-models
-    // For now, log to console
-    console.log("[PayrollAudit]", {
-      id: audit.id,
-      tenantId: audit.tenantId,
-      periodId: audit.periodId,
-      action: audit.action,
-      userId: audit.userId,
-      timestamp: audit.timestamp,
-    });
+    try {
+      await this.#prisma.payrollAuditLog.create({
+        data: {
+          tenantId: audit.tenantId,
+          id: audit.id,
+          periodId: audit.periodId,
+          action: audit.action,
+          userId: audit.userId ?? null,
+          inputSnapshot: audit.inputSnapshot ?? undefined,
+          rulesVersion: audit.rulesVersion ?? null,
+          resultSummary: audit.resultSummary ?? undefined,
+        },
+      });
+    } catch (error) {
+      // Audit failures must not crash payroll processing
+      console.error("[PayrollAudit] Failed to persist audit log", error);
+    }
   }
 
   async getPayrollPeriod(

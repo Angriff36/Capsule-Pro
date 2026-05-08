@@ -39,6 +39,10 @@
       "schedule": "0 3 * * *"
     },
     {
+      "path": "/api/cron/integration-auto-sync",
+      "schedule": "*/15 * * * *"
+    },
+    {
       "path": "/outbox/publish",
       "schedule": "* * * * *"
     }
