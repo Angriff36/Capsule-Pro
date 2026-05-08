@@ -17,7 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
-import { Loader2, Sparkles, User, Users } from "lucide-react";
+import { Loader2, User, Users } from "lucide-react";
 import { log } from "@repo/observability/log";
 import { useState } from "react";
 import { apiFetch } from "@/app/lib/api";
@@ -76,17 +76,16 @@ export function StaffingRecommendationsClient() {
     <div className="container mx-auto py-6 space-y-6">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">
-          AI Staffing Recommendations
+          Staffing Recommendations
         </h1>
         <p className="text-muted-foreground">
-          Get AI-powered staffing recommendations based on event details
+          Get calculated staffing recommendations based on event details
         </p>
       </div>
 
       <Card tone="canvas">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5" />
             Event Parameters
           </CardTitle>
           <CardDescription>
@@ -150,11 +149,7 @@ export function StaffingRecommendationsClient() {
             disabled={loading}
             onClick={generateRecommendation}
           >
-            {loading ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-              <Sparkles className="mr-2 h-4 w-4" />
-            )}
+            {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Generate Recommendation
           </Button>
         </CardContent>

@@ -2,6 +2,8 @@
  * Event Contract Validation Helpers
  */
 
+import { randomUUID } from "node:crypto";
+
 import { invariant } from "@/app/lib/invariant";
 
 export const CONTRACT_STATUSES = [
@@ -336,14 +338,11 @@ export function validateSignatureData(
 }
 
 export function generateContractNumber(_tenantId: string): string {
-  // This would typically call a database function to generate a unique contract number
-  // For now, we'll implement a basic generator that could be replaced with a DB function
-  // In a real implementation, this would be:
-  // return await prisma.$executeRaw`SELECT generate_contract_number(${tenantId})`
-
-  // Generate a contract number in the format: CON-YYYYMMDD-XXXXX
+  // Generate a contract number in the format: CON-YYYYMMDD-XXXXXXXX
+  // Uses crypto.randomUUID() for collision resistance (4.3B possibilities per day,
+  // birthday-paradox 50% collision at ~65K records/day vs ~374 with Math.random).
   const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, "");
-  const randomPart = Math.floor(Math.random() * 90_000 + 10_000).toString();
+  const randomPart = randomUUID().slice(0, 8).toUpperCase();
   return `CON-${dateStr}-${randomPart}`;
 }
 

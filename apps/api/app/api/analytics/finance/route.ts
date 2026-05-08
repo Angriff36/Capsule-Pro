@@ -93,8 +93,8 @@ async function fetchCurrentPeriodMetrics(
         COALESCE(SUM(ep.actual_food_cost), 0)::numeric as actual_food_cost,
         COALESCE(SUM(ep.budgeted_labor_cost), 0)::numeric as budgeted_labor_cost,
         COALESCE(SUM(ep.actual_labor_cost), 0)::numeric as actual_labor_cost,
-        COALESCE(SUM(ep.actual_beverage_cost + ep.actual_rentals_cost + ep.actual_other_cost), 0)::numeric as budgeted_other_cost,
-        COALESCE(SUM(ep.actual_beverage_cost + ep.actual_rentals_cost + ep.actual_other_cost), 0)::numeric as actual_other_cost
+        COALESCE(SUM(ep.budgeted_overhead), 0)::numeric as budgeted_other_cost,
+        COALESCE(SUM(ep.actual_overhead), 0)::numeric as actual_other_cost
       FROM tenant_events.event_profitability ep
       JOIN tenant_events.events e ON ep.tenant_id = e.tenant_id AND ep.event_id = e.id
       WHERE ep.tenant_id = ${tenantId}
@@ -114,8 +114,8 @@ async function fetchCurrentPeriodMetrics(
       COALESCE(SUM(ep.actual_food_cost), 0)::numeric as actual_food_cost,
       COALESCE(SUM(ep.budgeted_labor_cost), 0)::numeric as budgeted_labor_cost,
       COALESCE(SUM(ep.actual_labor_cost), 0)::numeric as actual_labor_cost,
-      COALESCE(SUM(ep.actual_beverage_cost + ep.actual_rentals_cost + ep.actual_other_cost), 0)::numeric as budgeted_other_cost,
-      COALESCE(SUM(ep.actual_beverage_cost + ep.actual_rentals_cost + ep.actual_other_cost), 0)::numeric as actual_other_cost
+      COALESCE(SUM(ep.budgeted_overhead), 0)::numeric as budgeted_other_cost,
+      COALESCE(SUM(ep.actual_overhead), 0)::numeric as actual_other_cost
     FROM tenant_events.event_profitability ep
     JOIN tenant_events.events e ON ep.tenant_id = e.tenant_id AND ep.event_id = e.id
     WHERE ep.tenant_id = ${tenantId}
@@ -194,14 +194,15 @@ async function fetchLedgerData(
             AND e.location_id = ${locationId}
         ) as active_contracts,
         (
-          SELECT COALESCE(SUM(e.deposit_amount), 0)::numeric
-          FROM tenant_events.event_contracts ec
-          JOIN tenant_events.events e ON ec.tenant_id = e.tenant_id AND ec.event_id = e.id
-          WHERE ec.tenant_id = ${tenantId}
-            AND e.deposit_paid = true
+          SELECT COALESCE(SUM(i.deposit_paid), 0)::numeric
+          FROM tenant_accounting.invoices i
+          JOIN tenant_events.events e ON i.tenant_id = e.tenant_id AND i.event_id = e.id
+          WHERE i.tenant_id = ${tenantId}
+            AND i.deposit_paid IS NOT NULL
+            AND i.deposit_paid > 0
             AND e.event_date >= ${startDate}
             AND e.event_date <= ${now}
-            AND ec.deleted_at IS NULL
+            AND i.deleted_at IS NULL
             AND e.deleted_at IS NULL
             AND e.location_id = ${locationId}
         ) as deposits_received
@@ -226,14 +227,15 @@ async function fetchLedgerData(
           AND e.deleted_at IS NULL
       ) as active_contracts,
       (
-        SELECT COALESCE(SUM(e.deposit_amount), 0)::numeric
-        FROM tenant_events.event_contracts ec
-        JOIN tenant_events.events e ON ec.tenant_id = e.tenant_id AND ec.event_id = e.id
-        WHERE ec.tenant_id = ${tenantId}
-          AND e.deposit_paid = true
+        SELECT COALESCE(SUM(i.deposit_paid), 0)::numeric
+        FROM tenant_accounting.invoices i
+        JOIN tenant_events.events e ON i.tenant_id = e.tenant_id AND i.event_id = e.id
+        WHERE i.tenant_id = ${tenantId}
+          AND i.deposit_paid IS NOT NULL
+          AND i.deposit_paid > 0
           AND e.event_date >= ${startDate}
           AND e.event_date <= ${now}
-          AND ec.deleted_at IS NULL
+          AND i.deleted_at IS NULL
           AND e.deleted_at IS NULL
       ) as deposits_received
   `;

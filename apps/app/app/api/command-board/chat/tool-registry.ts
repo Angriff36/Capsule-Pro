@@ -2397,6 +2397,7 @@ async function parseNaturalLanguageEventTool(
   }
 
   // Call the AiEventSetupSession.parse manifest command route
+  // (pattern-based parser, not AI — route path kept for backward compatibility)
   // This centralizes parsing logic and enables session tracking
   const result = await executeManifestCommandRoute(
     "/api/ai-event-setup/parse",

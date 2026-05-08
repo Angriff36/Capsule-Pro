@@ -8,6 +8,8 @@
  * - createdAt, updatedAt, deletedAt
  */
 
+import { randomUUID } from "node:crypto";
+
 import { captureException } from "@sentry/nextjs";
 import { invariant } from "@/app/lib/invariant";
 
@@ -185,9 +187,11 @@ export function validateRefundRequest(body: unknown): void {
 }
 
 export function generatePaymentNumber(_tenantId: string): string {
-  // Generate a payment reference number in the format: PAY-YYYYMMDD-XXXXX
+  // Generate a payment reference number in the format: PAY-YYYYMMDD-XXXXXXXX
+  // Uses crypto.randomUUID() for collision resistance (4.3B possibilities per day,
+  // birthday-paradox 50% collision at ~65K records/day vs ~374 with Math.random).
   const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, "");
-  const randomPart = Math.floor(Math.random() * 90_000 + 10_000).toString();
+  const randomPart = randomUUID().slice(0, 8).toUpperCase();
   return `PAY-${dateStr}-${randomPart}`;
 }
 

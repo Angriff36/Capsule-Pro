@@ -344,28 +344,28 @@ export default function SettingsScreen() {
         </View>
       </View>
 
-      {/* Support Section */}
+      {/* Support Section — placeholder buttons, no destination screens exist yet */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Support</Text>
 
-        <TouchableOpacity style={styles.settingRow}>
-          <Text style={styles.settingLabel}>Help Center</Text>
-          <Text style={styles.chevron}>›</Text>
+        <TouchableOpacity disabled style={styles.settingRow}>
+          <Text style={[styles.settingLabel, styles.disabledText]}>Help Center</Text>
+          <Text style={[styles.chevron, styles.disabledText]}>›</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.settingRow}>
-          <Text style={styles.settingLabel}>Contact Support</Text>
-          <Text style={styles.chevron}>›</Text>
+        <TouchableOpacity disabled style={styles.settingRow}>
+          <Text style={[styles.settingLabel, styles.disabledText]}>Contact Support</Text>
+          <Text style={[styles.chevron, styles.disabledText]}>›</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.settingRow}>
-          <Text style={styles.settingLabel}>Privacy Policy</Text>
-          <Text style={styles.chevron}>›</Text>
+        <TouchableOpacity disabled style={styles.settingRow}>
+          <Text style={[styles.settingLabel, styles.disabledText]}>Privacy Policy</Text>
+          <Text style={[styles.chevron, styles.disabledText]}>›</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.settingRow}>
-          <Text style={styles.settingLabel}>Terms of Service</Text>
-          <Text style={styles.chevron}>›</Text>
+        <TouchableOpacity disabled style={styles.settingRow}>
+          <Text style={[styles.settingLabel, styles.disabledText]}>Terms of Service</Text>
+          <Text style={[styles.chevron, styles.disabledText]}>›</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>
@@ -440,6 +440,9 @@ const styles = StyleSheet.create({
     fontSize: 20,
     color: "#94a3b8",
     marginLeft: 8,
+  },
+  disabledText: {
+    opacity: 0.4,
   },
   divider: {
     height: 1,

@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "discoveries": [
+    {
+      "rule_id": "dashboard_illusion.fake_predictive_analytics",
+      "file": "app/(authenticated)/analytics/clients/actions/get-client-ltv.ts",
+      "snippet_hash": "calc_predictive_ltv_hardcoded_confidence_arithmetic",
+      "discovered_at": "2026-05-07T17:36:00Z"
+    },
+    {
+      "rule_id": "automation_theater.toast_only_dead_buttons",
+      "file": "app/(authenticated)/kitchen/iot/iot-page-client.tsx",
+      "snippet_hash": "iot_page_all_5_buttons_toast_coming_soon_100pct_dead",
+      "discovered_at": "2026-05-08T00:53:00Z"
+    }
+  ]
+}

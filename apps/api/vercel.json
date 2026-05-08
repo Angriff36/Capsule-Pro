@@ -37,6 +37,10 @@
     {
       "path": "/api/cron/idempotency-cleanup",
       "schedule": "0 3 * * *"
+    },
+    {
+      "path": "/outbox/publish",
+      "schedule": "* * * * *"
     }
   ]
 }

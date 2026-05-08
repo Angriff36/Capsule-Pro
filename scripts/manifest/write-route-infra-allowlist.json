@@ -633,6 +633,11 @@
       "comment": "Infrastructure: IoT alert management with direct DB access (pending manifest)"
     },
     {
+      "prefix": "/api/kitchen/overrides",
+      "methods": ["POST", "GET"],
+      "comment": "Infrastructure: Kitchen constraint override authorization with audit logging + outbox events"
+    },
+    {
       "pattern": "^/api/shipments/[^/]+/status$",
       "methods": ["POST"],
       "comment": "Infrastructure: Shipment status transition with inventory reservation/cancellation/delivery side-effects"

@@ -793,7 +793,7 @@ describe("Admin Extended API", () => {
       expect(body.result.status).toBe("parsed");
       expect(body.result.sessionId).toBeTruthy();
       expect(body.events).toHaveLength(1);
-      expect(body.events[0].type).toBe("ai-event-setup.session.parsed");
+      expect(body.events[0].type).toBe("event-setup.session.parsed");
     });
 
     it("should parse corporate event", async () => {

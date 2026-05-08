@@ -1,13 +1,16 @@
 /**
  * Payment Method Validation Helpers
  *
- * NOTE: The Prisma PaymentMethod model has been simplified to:
- * - tenantId, id, clientId, type, cardLastFour, cardNetwork, isDefault
+ * Available schema fields (see model PaymentMethod in schema.prisma):
+ * - tenantId, id, clientId, type, cardLastFour, cardNetwork, isDefault, status
  * - createdAt, updatedAt, deletedAt
  *
- * Many fields referenced in this file (cardExpiryMonth, cardExpiryYear, status, fraudFlagged, etc.)
- * do not exist in the current schema. These are preserved for potential future use but will
- * need schema updates to function.
+ * `status` is a free-text column with expected values:
+ *   ACTIVE | VERIFIED | FLAGGED | EXPIRED
+ *
+ * Card expiry month/year fields (cardExpiryMonth, cardExpiryYear) do NOT exist
+ * in the schema. Date-based expiry detection is not possible without a migration
+ * to add those columns.
  */
 
 import { invariant } from "@/app/lib/invariant";
@@ -186,14 +189,39 @@ export function getDisplayInfo(paymentMethod: {
   return type;
 }
 
-// Simplified helper - always returns true since we don't have expiry/status fields
-export function isCardExpired(): boolean {
-  return false;
+/**
+ * Check whether a payment method has been marked as expired via its status field.
+ *
+ * This checks the `status` column only — it cannot perform date-based expiry
+ * detection because the schema has no `cardExpiryMonth` / `cardExpiryYear`
+ * columns. A migration adding those fields would enable automatic expiry
+ * detection based on the current date.
+ *
+ * TODO: Add `cardExpiryMonth Int?` and `cardExpiryYear Int?` to the
+ * PaymentMethod model to support date-based expiry detection.
+ */
+export function isCardExpired(paymentMethod: {
+  status: string;
+}): boolean {
+  return paymentMethod.status === "EXPIRED";
 }
 
-// Simplified helper - always returns true since we don't have status fields
-export function isPaymentMethodUsable(): boolean {
-  return true;
+/**
+ * Determine whether a payment method is usable for new transactions.
+ *
+ * Returns `false` if the method is EXPIRED or FLAGGED for fraud.
+ * Returns `true` for ACTIVE and VERIFIED statuses (and any unrecognized
+ * status value, to avoid blocking legitimate use after future status additions).
+ */
+export function isPaymentMethodUsable(paymentMethod: {
+  status: string;
+}): boolean {
+  const unusableStatuses: ReadonlySet<string> = new Set([
+    "EXPIRED",
+    "FLAGGED",
+  ]);
+
+  return !unusableStatuses.has(paymentMethod.status);
 }
 
 // Type definitions for API responses

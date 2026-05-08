@@ -64,10 +64,6 @@ vi.mock("@repo/database", () => ({
       update: vi.fn(),
       count: vi.fn(),
     },
-    rateLimitUsage: {
-      groupBy: vi.fn(),
-      aggregate: vi.fn(),
-    },
     rateLimitEvent: {
       findMany: vi.fn(),
       groupBy: vi.fn(),
@@ -1730,25 +1726,27 @@ describe("Settings API", () => {
     // ------------------------------------------------ ANALYTICS
     describe("GET /api/settings/rate-limits/analytics", () => {
       it("should return analytics data", async () => {
-        vi.mocked(database.rateLimitUsage.groupBy).mockResolvedValue([
-          {
-            endpoint: "/api/test",
-            method: "GET",
-            _sum: { requestCount: 1000, blockedCount: 50 },
-            _avg: { avgResponseTime: 120 },
-            _max: { maxResponseTime: 500 },
-          },
-        ] as never);
-        vi.mocked(database.rateLimitUsage.aggregate).mockResolvedValue({
-          _sum: { requestCount: 5000, blockedCount: 200 },
-        } as never);
+        // The route does 5 sequential groupBy calls on rateLimitEvent:
+        // 1. eventCounts (by allowed), 2. byEndpoint, 3. topBlocked, 4. topIps, 5. blockedByEndpoint
         vi.mocked(database.rateLimitEvent.groupBy)
           .mockResolvedValueOnce([
             { allowed: true, _count: 4800 },
             { allowed: false, _count: 200 },
           ] as never)
           .mockResolvedValueOnce([
-            { endpoint: "/api/test", _count: 150 },
+            {
+              endpoint: "/api/test",
+              method: "GET",
+              _count: 1000,
+              _sum: { requestsInWindow: 50000 },
+            },
+          ] as never)
+          .mockResolvedValueOnce([
+            { endpoint: "/api/test", _count: 50 },
+          ] as never)
+          .mockResolvedValueOnce([] as never)
+          .mockResolvedValueOnce([
+            { endpoint: "/api/test", method: "GET", _count: 50 },
           ] as never);
 
         const request = new NextRequest(
@@ -1780,13 +1778,12 @@ describe("Settings API", () => {
       });
 
       it("should accept startDate and endDate query params", async () => {
-        vi.mocked(database.rateLimitUsage.groupBy).mockResolvedValue(
-          [] as never
-        );
-        vi.mocked(database.rateLimitUsage.aggregate).mockResolvedValue({
-          _sum: { requestCount: null, blockedCount: null },
-        } as never);
+        // The route does 5 sequential groupBy calls on rateLimitEvent:
+        // 1. eventCounts, 2. byEndpoint, 3. topBlocked, 4. topIps, 5. blockedByEndpoint
         vi.mocked(database.rateLimitEvent.groupBy)
+          .mockResolvedValueOnce([] as never)
+          .mockResolvedValueOnce([] as never)
+          .mockResolvedValueOnce([] as never)
           .mockResolvedValueOnce([] as never)
           .mockResolvedValueOnce([] as never);
 
@@ -1806,7 +1803,7 @@ describe("Settings API", () => {
       });
 
       it("should return 500 on database error", async () => {
-        vi.mocked(database.rateLimitUsage.groupBy).mockRejectedValue(
+        vi.mocked(database.rateLimitEvent.groupBy).mockRejectedValue(
           new Error("DB fail") as never
         );
 

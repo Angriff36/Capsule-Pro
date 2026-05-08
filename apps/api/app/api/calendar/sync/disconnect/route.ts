@@ -6,6 +6,91 @@ import { log } from "@repo/observability/log";
 
 const SUPPORTED_PROVIDERS = ["google", "outlook"] as const;
 
+/**
+ * Attempt to revoke an OAuth token at the provider.
+ * Failures are logged but never block the local disconnect flow.
+ */
+async function revokeProviderToken(
+  provider: string,
+  accessToken: string | null,
+  refreshToken: string | null
+): Promise<void> {
+  const token = accessToken || refreshToken;
+  if (!token) {
+    log.info(
+      `[calendar/sync/disconnect] No token stored for ${provider}, skipping revocation`
+    );
+    return;
+  }
+
+  try {
+    if (provider === "google") {
+      // Google supports revoking both access and refresh tokens via the same endpoint.
+      // https://developers.google.com/identity/protocols/oauth2/web-server#tokenrevoke
+      const res = await fetch(
+        `https://oauth2.googleapis.com/revoke?token=${encodeURIComponent(token)}`,
+        { method: "POST" }
+      );
+      if (!res.ok) {
+        const text = await res.text().catch(() => "");
+        log.warn(
+          `[calendar/sync/disconnect] Google token revocation returned ${res.status}: ${text}`
+        );
+      } else {
+        log.info(
+          "[calendar/sync/disconnect] Google token revoked successfully"
+        );
+      }
+    } else if (provider === "outlook") {
+      // Microsoft Entra ID does not expose a direct token-revocation REST endpoint
+      // for confidential clients. The recommended server-side approach is to invalidate
+      // the refresh token by posting a revocation request to the token endpoint with
+      // grant_type=refresh_token + the refresh_token value, which marks it as revoked.
+      // If that is unavailable, we best-effort call the logout endpoint to end the session.
+      const clientId = process.env.MICROSOFT_CLIENT_ID;
+      const clientSecret = process.env.MICROSOFT_CLIENT_SECRET;
+
+      if (refreshToken && clientId && clientSecret) {
+        // Revoke by exchanging the refresh token for nothing — Entra ID marks it consumed.
+        // A more targeted approach: use the admin consent revocation URL or
+        // POST to the token endpoint which invalidates the previous refresh token.
+        // We use the standard logout endpoint to invalidate the session server-side.
+        const res = await fetch(
+          "https://login.microsoftonline.com/common/oauth2/v2.0/logout",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: new URLSearchParams({
+              client_id: clientId,
+              refresh_token: refreshToken,
+            }).toString(),
+          }
+        );
+        if (!res.ok) {
+          const text = await res.text().catch(() => "");
+          log.warn(
+            `[calendar/sync/disconnect] Microsoft session logout returned ${res.status}: ${text}`
+          );
+        } else {
+          log.info(
+            "[calendar/sync/disconnect] Microsoft session logged out successfully"
+          );
+        }
+      } else {
+        log.info(
+          "[calendar/sync/disconnect] Microsoft: insufficient credentials or no refresh token, skipping revocation"
+        );
+      }
+    }
+  } catch (error) {
+    // Never block disconnect on revocation failure — tokens are being nulled locally.
+    log.warn(
+      `[calendar/sync/disconnect] ${provider} token revocation failed (non-blocking):`,
+      error
+    );
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const { orgId } = await auth();
@@ -31,6 +116,28 @@ export async function POST(request: NextRequest) {
     }
 
     const { database } = await import("@repo/database");
+
+    // Fetch current tokens BEFORE clearing them so we can revoke at the provider.
+    const existingSync = await database.providerSync.findFirst({
+      where: {
+        tenantId,
+        provider,
+        deletedAt: null,
+      },
+      select: {
+        accessToken: true,
+        refreshToken: true,
+      },
+    });
+
+    // Attempt provider-side revocation — failures are logged, never block local cleanup.
+    if (existingSync) {
+      await revokeProviderToken(
+        provider,
+        existingSync.accessToken,
+        existingSync.refreshToken
+      );
+    }
 
     // Soft delete the sync record and clear tokens
     const result = await database.providerSync.updateMany({

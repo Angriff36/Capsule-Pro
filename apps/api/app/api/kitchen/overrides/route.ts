@@ -92,6 +92,7 @@ export async function POST(request: Request) {
   };
 
   // Record the override in the audit table + outbox event atomically
+  let auditLogged = true;
   try {
     await database.$transaction(async (tx) => {
       await tx.overrideAudit.create({
@@ -128,14 +129,20 @@ export async function POST(request: Request) {
       });
     });
   } catch (error) {
-    // If the audit table doesn't exist yet, log and continue
-    logger.warn("Override audit + outbox transaction failed", {
+    auditLogged = false;
+    captureException(error);
+    logger.error("Override audit + outbox transaction failed — audit trail lost", {
       error: String(error),
+      constraintCode,
+      entityType,
+      entityId,
+      overriddenBy: currentUser.id,
     });
   }
 
   return NextResponse.json({
     success: true,
+    auditLogged,
     override: {
       constraintCode,
       reason: details ? `${reason}: ${details}` : reason,

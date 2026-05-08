@@ -1,4 +1,5 @@
 import { auth } from "@repo/auth/server";
+import { sendEmailNotification } from "@repo/notifications";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -94,9 +95,58 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // BLOCKER: Notification service not yet implemented. Need to determine notification
-    // channel (in-app, push, email) and staff assignment routing.
-    // Tracked as capsule-pro/TODO:iot-notification-service
+    // Dispatch email notification to active managers/kitchen staff
+    try {
+      const staff = await database.user.findMany({
+        where: {
+          tenantId,
+          isActive: true,
+          deletedAt: null,
+          role: { in: ["admin", "manager", "kitchen_manager"] },
+        },
+        select: {
+          id: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+        },
+        take: 50,
+      });
+
+      if (staff.length > 0) {
+        const tempStr =
+          temperature != null ? `${Number(temperature).toFixed(1)}°F` : "N/A";
+        const subject = `[IoT Alert] ${alertType} — ${probeId ?? "Unknown probe"}`;
+        const body = [
+          `<h2>IoT Temperature Alert</h2>`,
+          `<p><strong>Alert:</strong> ${alertType}</p>`,
+          `<p><strong>Probe:</strong> ${probeId ?? "Unknown"}</p>`,
+          `<p><strong>Temperature:</strong> ${tempStr}</p>`,
+          `<p><strong>Severity:</strong> ${severity || "warning"}</p>`,
+          `<p><strong>Message:</strong> ${message}</p>`,
+          `<p><strong>Alert #:</strong> ${alertNumber}</p>`,
+          `<p><em>Triggered at ${new Date().toISOString()}</em></p>`,
+        ].join("\n");
+
+        const recipients = staff.map((s) => ({
+          email: s.email,
+          employeeId: s.id,
+          name: `${s.firstName} ${s.lastName}`.trim(),
+        }));
+
+        await sendEmailNotification(database, {
+          tenantId,
+          notificationType: "iot_alert",
+          recipients,
+          subject,
+          body,
+        });
+      }
+    } catch (notifError) {
+      // Notification failure must not block the alert write
+      captureException(notifError);
+      log.error("IoT alert notification dispatch failed:", notifError);
+    }
 
     return NextResponse.json({ alert });
   } catch (error) {

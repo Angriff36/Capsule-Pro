@@ -5,6 +5,6 @@ export default function StaffingRecommendationsPage() {
 }
 
 export const metadata = {
-  title: "AI Staffing Recommendations",
-  description: "AI-powered staffing recommendations for events",
+  title: "Staffing Recommendations",
+  description: "Calculated staffing recommendations for events",
 };

@@ -38,13 +38,22 @@ const SyncRequestSchema = z.object({
 });
 
 export async function POST(request: NextRequest) {
+  // Hoist context so the error path can write a failed log entry
+  // without re-parsing the body or re-calling auth().
+  let tenantId: string | undefined;
+  let supplierId: string | undefined;
+  let resolvedConnectorId: string | undefined;
+  let clerkId: string | undefined;
+
   try {
-    const { orgId, userId: clerkId } = await auth();
+    const authResult = await auth();
+    clerkId = authResult.userId ?? undefined;
+    const orgId = authResult.orgId;
     if (!(clerkId && orgId)) {
       return manifestErrorResponse("Unauthorized", 401);
     }
 
-    const tenantId = await getTenantIdForOrg(orgId);
+    tenantId = await getTenantIdForOrg(orgId);
     if (!tenantId) {
       return manifestErrorResponse("Tenant not found", 400);
     }
@@ -59,28 +68,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { supplierId, connectorId } = parsed.data;
+    supplierId = parsed.data.supplierId;
+    resolvedConnectorId = parsed.data.connectorId;
 
     // Look up the connector
-    const connector = connectorRegistry.get(connectorId);
+    const connector = connectorRegistry.get(resolvedConnectorId);
     if (!connector) {
       return manifestErrorResponse(
-        `Unknown connector: ${connectorId}. Available: ${connectorRegistry
+        `Unknown connector: ${resolvedConnectorId}. Available: ${connectorRegistry
           .listMetadata()
           .map((c: { id: string }) => c.id)
           .join(", ")}`,
         400
       );
     }
-
-    // Look up the supplier and get their connector credentials
-    // Credentials are stored as encrypted JSON on the InventorySupplier record
-    const supplier = (await (database as unknown as Record<string, unknown>)
-      .inventorySupplier) as
-      | {
-          findFirst: (args: unknown) => Promise<unknown>;
-        }
-      | undefined;
 
     // For now, build config with placeholder credentials
     // In production, credentials would be fetched from the supplier record's
@@ -91,15 +92,15 @@ export async function POST(request: NextRequest) {
       credentials: {
         apiBaseUrl:
           process.env[
-            `SUPPLIER_${connectorId.toUpperCase().replace(/-/g, "_")}_API_URL`
+            `SUPPLIER_${resolvedConnectorId.toUpperCase().replace(/-/g, "_")}_API_URL`
           ] || "",
         apiKey:
           process.env[
-            `SUPPLIER_${connectorId.toUpperCase().replace(/-/g, "_")}_API_KEY`
+            `SUPPLIER_${resolvedConnectorId.toUpperCase().replace(/-/g, "_")}_API_KEY`
           ] || "",
         apiSecret:
           process.env[
-            `SUPPLIER_${connectorId.toUpperCase().replace(/-/g, "_")}_API_SECRET`
+            `SUPPLIER_${resolvedConnectorId.toUpperCase().replace(/-/g, "_")}_API_SECRET`
           ] || "",
       },
       options: {
@@ -111,7 +112,7 @@ export async function POST(request: NextRequest) {
     // Validate credentials exist
     if (!(config.credentials.apiBaseUrl && config.credentials.apiKey)) {
       return manifestErrorResponse(
-        `No credentials configured for ${connector.name}. Set environment variables: SUPPLIER_${connectorId.toUpperCase().replace(/-/g, "_")}_API_URL and SUPPLIER_${connectorId.toUpperCase().replace(/-/g, "_")}_API_KEY`,
+        `No credentials configured for ${connector.name}. Set environment variables: SUPPLIER_${resolvedConnectorId.toUpperCase().replace(/-/g, "_")}_API_URL and SUPPLIER_${resolvedConnectorId.toUpperCase().replace(/-/g, "_")}_API_KEY`,
         400
       );
     }
@@ -120,11 +121,71 @@ export async function POST(request: NextRequest) {
     const syncService = new SupplierSyncService(database as any);
     const result = await syncService.syncCatalog(connector, config);
 
+    // Determine sync status from result
+    const hasFatalError = result.errors.some((e) => e.sku === "SYNC_ERROR");
+    const hasPartialErrors = result.errors.length > 0 && !hasFatalError;
+    const status = hasFatalError
+      ? "failed"
+      : hasPartialErrors
+        ? "partial"
+        : "success";
+
+    // Persist the sync log record
+    try {
+      await database.supplierSyncLog.create({
+        data: {
+          tenantId,
+          supplierId,
+          connectorId: result.connectorId,
+          status,
+          productsSynced: result.productsSynced,
+          productsCreated: result.productsCreated,
+          productsUpdated: result.productsUpdated,
+          productsDeactivated: result.productsDeactivated,
+          errors: result.errors,
+          durationMs: result.durationMs,
+          triggeredBy: clerkId,
+        },
+      });
+    } catch (logError) {
+      // Log write failure must not mask the sync result
+      log.error("[supplier-sync/sync] Failed to persist sync log:", logError);
+      captureException(logError);
+    }
+
     return manifestSuccessResponse({
       message: `Synced ${result.productsSynced} products from ${connector.name}`,
       ...result,
     });
   } catch (error) {
+    // Sync threw before producing a result — best-effort failed log entry
+    if (tenantId && supplierId) {
+      try {
+        await database.supplierSyncLog.create({
+          data: {
+            tenantId,
+            supplierId,
+            connectorId: resolvedConnectorId ?? "unknown",
+            status: "failed",
+            productsSynced: 0,
+            productsCreated: 0,
+            productsUpdated: 0,
+            productsDeactivated: 0,
+            errors: [
+              {
+                sku: "SYNC_ERROR",
+                error: error instanceof Error ? error.message : String(error),
+              },
+            ],
+            durationMs: 0,
+            triggeredBy: clerkId ?? null,
+          },
+        });
+      } catch {
+        // Best-effort; outer catch already handles the primary error
+      }
+    }
+
     captureException(error);
     log.error("[supplier-sync/sync] Error:", error);
     const message = error instanceof Error ? error.message : "Sync failed";

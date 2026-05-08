@@ -1,4 +1,4 @@
-// AI Event Setup Session - Parse Command
+// Auto Event Setup Session - Parse Command
 // Handles natural language parsing for event creation
 // Route: POST /api/ai-event-setup/parse
 
@@ -14,7 +14,7 @@ import { log } from "@repo/observability/log";
 
 export const runtime = "nodejs";
 
-// ── Natural Language Event Parsing Logic ─────────────────────────────────
+// ── Pattern-Based Event Parsing Logic ─────────────────────────────────────
 
 interface ParsedEventData {
   title: string;
@@ -516,7 +516,7 @@ export async function POST(request: NextRequest) {
       },
       events: [
         {
-          type: "ai-event-setup.session.parsed",
+          type: "event-setup.session.parsed",
           payload: {
             sessionId,
             originalInput,

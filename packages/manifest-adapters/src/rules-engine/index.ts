@@ -22,7 +22,6 @@ export {
   allergenRuleConfigs,
   allergenRules,
   allRules,
-  equipmentCapacityRule,
   equipmentRules,
   kitchenTaskTransitions,
   longPrepTimeRule,

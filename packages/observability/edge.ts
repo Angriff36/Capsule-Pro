@@ -9,6 +9,7 @@
 
 import { consoleLoggingIntegration, init } from "@sentry/nextjs";
 import { keys } from "./keys";
+import { tracesSampler } from "./tracing";
 
 const shouldDropDevWebpackCacheError = (event: {
   message?: string;
@@ -54,8 +55,8 @@ export const initializeSentry = (): ReturnType<typeof init> => {
     // Enable logging
     enableLogs: true,
 
-    // Adjust this value in production, or use tracesSampler for greater control
-    tracesSampleRate: 1,
+    // tracesSampler drops noise routes and applies the configured sample rate
+    tracesSampler,
 
     // Setting this option to true will print useful information to the console while you're setting up Sentry.
     debug: false,

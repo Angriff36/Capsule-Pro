@@ -80,8 +80,6 @@ export function PaymentFormClient({
     useState<PaymentMethodType>("CREDIT_CARD");
   const [reference, setReference] = useState("");
   const [notes, setNotes] = useState("");
-  const [savePaymentMethod, setSavePaymentMethod] = useState(false);
-  const [paymentMethodNickname, setPaymentMethodNickname] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -107,7 +105,6 @@ export function PaymentFormClient({
           description: notes,
           metadata: {
             reference,
-            savePaymentMethod,
           },
         }),
       });
@@ -118,39 +115,28 @@ export function PaymentFormClient({
 
       const payment = await response.json();
 
+      // Process payment through server-side gateway.
+      // The server PUT handler calls processPaymentGateway() exclusively —
+      // it does NOT read the request body for gateway results or transaction IDs.
+      // All gateway interaction (transaction ID generation, success/failure
+      // determination) happens server-side.
+      const processResponse = await apiFetch(
+        `/api/accounting/payments/${payment.id}`,
+        {
+          method: "PUT",
+        }
+      );
+
+      if (!processResponse.ok) {
+        throw new Error("Failed to process payment through gateway");
+      }
+
       posthog?.capture("billing:checkout_completed", {
         plan: "invoice_payment",
         interval: "one_time",
         amount_cents: Math.round(amount * 100),
         payment_method: methodType,
       });
-
-      // Process payment (in real implementation, this would call the payment gateway)
-      await apiFetch(`/api/accounting/payments/${payment.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          gatewayResponse: {
-            code: "200",
-            message: "Success",
-            transactionId: `txn_${Date.now()}`,
-          },
-        }),
-      });
-
-      // If saving payment method, create tokenized record
-      if (savePaymentMethod && paymentMethodNickname) {
-        await apiFetch("/api/accounting/payment-methods", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            clientId: "", // Will be derived from invoice
-            type: methodType,
-            externalMethodId: `pm_${Date.now()}`,
-            nickname: paymentMethodNickname,
-          }),
-        });
-      }
 
       router.push(`/accounting/invoices/${invoiceId}`);
       router.refresh();
@@ -245,31 +231,6 @@ export function PaymentFormClient({
             rows={3}
             value={notes}
           />
-        </div>
-
-        {/* Save Payment Method */}
-        <div className="border-t pt-4">
-          <div className="flex items-center gap-2">
-            <input
-              checked={savePaymentMethod}
-              className="rounded"
-              id="savePaymentMethod"
-              onChange={(e) => setSavePaymentMethod(e.target.checked)}
-              type="checkbox"
-            />
-            <Label className="cursor-pointer" htmlFor="savePaymentMethod">
-              Save payment method for future use
-            </Label>
-          </div>
-          {savePaymentMethod && (
-            <div className="mt-3">
-              <Input
-                onChange={(e) => setPaymentMethodNickname(e.target.value)}
-                placeholder="Nickname (e.g., 'Company Visa Card')"
-                value={paymentMethodNickname}
-              />
-            </div>
-          )}
         </div>
 
         {/* Actions */}
