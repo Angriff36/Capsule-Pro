@@ -96,14 +96,3 @@ export default clerkMiddleware(async (auth, req) => {
     throw error;
   }
 });
-
-// Narrowed middleware matcher - only runs on protected routes
-// Skips static files, public pages (Plasmic, sign-in, sign-up)
-export const config = {
-  matcher: [
-    // Run middleware for all app routes except static assets
-    "/((?!_next|.*\\..*).*)",
-    // Keep explicit API/trpc coverage for programmatic auth handling
-    "/(api|trpc)(.*)",
-  ],
-};
