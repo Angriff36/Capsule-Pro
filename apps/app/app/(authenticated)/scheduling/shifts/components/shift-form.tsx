@@ -126,25 +126,51 @@ export function ShiftForm({
   useEffect(() => {
     async function loadData() {
       setLoading(true);
-      try {
-        const [employeesData, locationsData, schedulesData, eventsData] =
-          await Promise.all([
-            getEmployees(),
-            getLocations(),
-            getSchedules(),
-            getEvents(),
-          ]);
-        setEmployees(employeesData.employees || []);
-        setLocations(locationsData.locations || []);
-        setSchedules(schedulesData.schedules || []);
-        setEvents(eventsData.events || []);
-      } catch (error) {
-        toast.error("Failed to load form data", {
-          description: error instanceof Error ? error.message : "Unknown error",
-        });
-      } finally {
-        setLoading(false);
+      const [employeesResult, locationsResult, schedulesResult, eventsResult] =
+        await Promise.allSettled([
+          getEmployees(),
+          getLocations(),
+          getSchedules(),
+          getEvents(),
+        ]);
+
+      const failed: string[] = [];
+
+      if (employeesResult.status === "fulfilled") {
+        setEmployees(employeesResult.value.employees || []);
+      } else {
+        console.error("Failed to load employees:", employeesResult.reason);
+        failed.push("employees");
       }
+
+      if (locationsResult.status === "fulfilled") {
+        setLocations(locationsResult.value.locations || []);
+      } else {
+        console.error("Failed to load locations:", locationsResult.reason);
+        failed.push("locations");
+      }
+
+      if (schedulesResult.status === "fulfilled") {
+        setSchedules(schedulesResult.value.schedules || []);
+      } else {
+        console.error("Failed to load schedules:", schedulesResult.reason);
+        failed.push("schedules");
+      }
+
+      if (eventsResult.status === "fulfilled") {
+        setEvents(eventsResult.value.events || []);
+      } else {
+        console.error("Failed to load events:", eventsResult.reason);
+        failed.push("events");
+      }
+
+      if (failed.length > 0) {
+        toast.error(`Failed to load: ${failed.join(", ")}`, {
+          description: "Some dropdown options may be unavailable.",
+        });
+      }
+
+      setLoading(false);
     }
     loadData();
   }, []);

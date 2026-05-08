@@ -18,6 +18,13 @@ vi.mock("@/lib/manifest-runtime", () => ({
   createManifestRuntime: createManifestRuntimeMock,
 }));
 
+vi.mock("@repo/notifications", () => ({
+  triggerTaskAssignedSms: vi.fn().mockResolvedValue(undefined),
+}));
+vi.mock("@/app/lib/webhook-dispatch", () => ({
+  dispatchWebhooks: vi.fn().mockResolvedValue(undefined),
+}));
+
 describe("Shadow Claim Route - Generated Backup", () => {
   beforeEach(() => {
     vi.clearAllMocks();

@@ -73,6 +73,14 @@ vi.mock("@/app/lib/tenant", () => ({
   getTenantIdForOrg: vi.fn(() => Promise.resolve("test-tenant")),
 }));
 
+// Mock modules imported by finalize route
+vi.mock("@repo/notifications", () => ({
+  triggerPrepListPublishedSms: vi.fn().mockResolvedValue(undefined),
+}));
+vi.mock("@/app/lib/webhook-dispatch", () => ({
+  dispatchWebhooks: vi.fn().mockResolvedValue(undefined),
+}));
+
 describe("Manifest HTTP Integration - PrepTask Commands", () => {
   beforeEach(() => {
     vi.clearAllMocks();

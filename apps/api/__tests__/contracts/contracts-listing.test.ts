@@ -64,6 +64,11 @@ vi.mock("@/app/lib/invariant", () => ({
   },
 }));
 
+vi.mock("@repo/notifications", () => ({}));
+vi.mock("@/app/lib/webhook-dispatch", () => ({
+  dispatchWebhooks: vi.fn().mockResolvedValue(undefined),
+}));
+
 import { GET as ecDetailGET } from "@/app/api/events/contracts/[id]/route";
 import { GET as ecListGET } from "@/app/api/events/contracts/list/route";
 import { GET as vcDetailGET } from "@/app/api/procurement/vendor-contracts/[id]/route";

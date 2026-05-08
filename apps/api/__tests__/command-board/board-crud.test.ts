@@ -49,6 +49,7 @@ vi.mock("@repo/auth/server", () => ({
 vi.mock("@/app/lib/tenant", () => ({
   getTenantIdForOrg: vi.fn(),
   requireCurrentUser: vi.fn(),
+  resolveCurrentUser: vi.fn(),
 }));
 
 // Mock manifest runtime
@@ -61,6 +62,11 @@ vi.mock("@sentry/nextjs", () => ({
   captureException: vi.fn(),
 }));
 
+vi.mock("@repo/notifications", () => ({}));
+vi.mock("@/app/lib/webhook-dispatch", () => ({
+  dispatchWebhooks: vi.fn().mockResolvedValue(undefined),
+}));
+
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import {
@@ -68,12 +74,17 @@ import {
   GET as GET_BOARD,
 } from "@/app/api/command-board/[boardId]/route";
 import { GET, POST } from "@/app/api/command-board/route";
-import { getTenantIdForOrg, requireCurrentUser } from "@/app/lib/tenant";
+import {
+  getTenantIdForOrg,
+  requireCurrentUser,
+  resolveCurrentUser,
+} from "@/app/lib/tenant";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
 
 const mockAuth = vi.mocked(auth) as any;
 const mockGetTenantIdForOrg = vi.mocked(getTenantIdForOrg);
 const mockRequireCurrentUser = vi.mocked(requireCurrentUser);
+const mockResolveCurrentUser = vi.mocked(resolveCurrentUser);
 const mockCreateManifestRuntime = vi.mocked(createManifestRuntime);
 const mockCommandBoard = vi.mocked(database.commandBoard);
 const mockBoardProjection = vi.mocked(database.boardProjection);
@@ -109,6 +120,14 @@ function createMockBoard(overrides: Partial<any> = {}) {
 describe("Command Board CRUD Tests", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockResolveCurrentUser.mockResolvedValue({
+      id: TEST_USER_ID,
+      tenantId: TEST_TENANT_ID,
+      role: "admin",
+      email: "test@example.com",
+      firstName: "Test",
+      lastName: "User",
+    });
   });
 
   describe("Create Board", () => {

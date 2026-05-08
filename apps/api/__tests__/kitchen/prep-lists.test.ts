@@ -31,6 +31,12 @@ vi.mock("@/app/lib/tenant", () => ({
   requireCurrentUser: vi.fn(),
 }));
 vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn() }));
+vi.mock("@repo/notifications", () => ({
+  triggerPrepListPublishedSms: vi.fn().mockResolvedValue(undefined),
+}));
+vi.mock("@/app/lib/webhook-dispatch", () => ({
+  dispatchWebhooks: vi.fn().mockResolvedValue(undefined),
+}));
 
 vi.mock("@/lib/manifest-runtime", () => ({
   createManifestRuntime: vi.fn(),

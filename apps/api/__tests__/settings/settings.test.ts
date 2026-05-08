@@ -92,6 +92,9 @@ vi.mock("@/lib/manifest-runtime", () => ({
 vi.mock("@/middleware/rate-limiter", () => ({
   withRateLimit: (_handler: Function, _opts?: unknown) => _handler,
 }));
+vi.mock("@/middleware/dual-auth", () => ({
+  requireDualAuth: vi.fn(),
+}));
 vi.mock("@sentry/nextjs", () => ({
   captureException: vi.fn(),
 }));
@@ -102,6 +105,7 @@ const { getTenantIdForOrg, requireCurrentUser } = await import(
 );
 const { createManifestRuntime } = await import("@/lib/manifest-runtime");
 const { generateApiKey } = await import("@/app/lib/api-key-service");
+const { requireDualAuth } = await import("@/middleware/dual-auth");
 
 const TEST_TENANT_ID = "00000000-0000-0000-0000-000000000001";
 const TEST_USER_ID = "user_settings_test";
@@ -191,6 +195,12 @@ describe("Settings API", () => {
       vi.mocked(requireCurrentUser).mockResolvedValue(
         createMockCurrentUser() as never
       );
+      vi.mocked(requireDualAuth).mockResolvedValue({
+        authenticated: true,
+        authMethod: "session",
+        tenantId: TEST_TENANT_ID,
+        userId: TEST_USER_ID,
+      });
     });
 
     // --------------------------------------------------------- LIST (root)
@@ -249,8 +259,8 @@ describe("Settings API", () => {
         expect(call.select.hashedKey).toBeUndefined();
       });
 
-      it("should return 500 when requireCurrentUser throws", async () => {
-        vi.mocked(requireCurrentUser).mockRejectedValue(
+      it("should return 500 when requireDualAuth throws", async () => {
+        vi.mocked(requireDualAuth).mockRejectedValue(
           new Error("Auth failed") as never
         );
 
@@ -278,7 +288,7 @@ describe("Settings API", () => {
           id: "key-new",
           name: "My Key",
           keyPrefix: "cp_live_",
-          scopes: ["read"],
+          scopes: ["admin"],
           expiresAt: null,
           createdAt: new Date("2026-01-01"),
         } as never);
@@ -287,7 +297,7 @@ describe("Settings API", () => {
           "http://localhost/api/settings/api-keys",
           {
             method: "POST",
-            body: JSON.stringify({ name: "My Key", scopes: ["read"] }),
+            body: JSON.stringify({ name: "My Key", scopes: ["admin"] }),
           }
         );
         const response = await createApiKeyRoot(request);
@@ -1738,7 +1748,7 @@ describe("Settings API", () => {
               endpoint: "/api/test",
               method: "GET",
               _count: 1000,
-              _sum: { requestsInWindow: 50000 },
+              _sum: { requestsInWindow: 50_000 },
             },
           ] as never)
           .mockResolvedValueOnce([
