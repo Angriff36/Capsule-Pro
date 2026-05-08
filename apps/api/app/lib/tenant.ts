@@ -4,6 +4,9 @@ import { auth, currentUser } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { captureException, captureMessage } from "@sentry/nextjs";
+import { headers } from "next/headers";
+import { getRequiredScope } from "@/lib/scope-guard";
+import { authenticateApiKey, hasScope } from "@/middleware/api-key-auth";
 import { invariant } from "./invariant";
 
 export const getTenantIdForOrg = async (orgId: string): Promise<string> => {
@@ -49,11 +52,14 @@ export interface CurrentUser {
 }
 
 /**
- * Resolve the current Clerk user to an internal User (employee) record.
+ * Resolve the current user to an internal User (employee) record.
  *
- * The lookup is `(tenantId, authUserId)` — the composite unique index
- * `employees_tenant_auth_user_idx` ensures one Clerk user can exist in
- * multiple tenants simultaneously.
+ * Supports both API key and Clerk session authentication:
+ * - API key: Bearer token authenticated, scope enforced, user resolved from key creator
+ * - Clerk session: standard (tenantId, authUserId) lookup with auto-provisioning
+ *
+ * The Clerk session lookup uses `(tenantId, authUserId)` — the composite unique
+ * index ensures one Clerk user can exist in multiple tenants simultaneously.
  *
  * If no User record exists for the current (tenant, clerkUserId) pair,
  * auto-provision one using Clerk profile data. This handles:
@@ -62,6 +68,32 @@ export interface CurrentUser {
  *   - Soft-deleted records that should be restored
  */
 export const requireCurrentUser = async (): Promise<CurrentUser> => {
+  // API key auth path — check Authorization header before Clerk session
+  const headersList = await headers();
+  const authHeader = headersList.get("authorization");
+
+  if (authHeader?.startsWith("Bearer cp_")) {
+    const path = headersList.get("x-api-path") ?? "/";
+    const method = headersList.get("x-api-method") ?? "GET";
+    const request = new Request(`https://api${path}`, {
+      headers: headersList,
+      method,
+    });
+    return resolveCurrentUser(request);
+  }
+
+  // Clerk session path (existing logic)
+  return resolveClerkUser();
+};
+
+const BEARER_PREFIX = "Bearer ";
+const API_KEY_PREFIX = "cp_";
+
+/**
+ * Resolve the current Clerk user to an internal User (employee) record.
+ * Handles auto-provisioning, soft-delete restoration, and email-based linking.
+ */
+const resolveClerkUser = async (): Promise<CurrentUser> => {
   const { orgId, userId: clerkId } = await auth();
   invariant(orgId, "auth.orgId must exist");
   invariant(clerkId, "auth.userId must exist");
@@ -221,12 +253,100 @@ export const requireCurrentUser = async (): Promise<CurrentUser> => {
       extra: { email, orgId },
     });
 
-    log.error(
-      "[requireCurrentUser] Failed to provision user",
-      { error: provisionErr }
-    );
+    log.error("[requireCurrentUser] Failed to provision user", {
+      error: provisionErr,
+    });
     throw new Error(
       `Unable to provision your account in this organization. Please contact support. (org: ${orgId})`
     );
   }
+};
+
+// ============================================================================
+// Dual-Auth User Resolution — supports both API key and Clerk session
+// ============================================================================
+
+/**
+ * Like requireCurrentUser(), but also supports API key authentication.
+ *
+ * API key path: authenticates the Bearer token, enforces scope based on
+ * the request URL, then looks up the internal User by the key's createdByUserId.
+ *
+ * Session path: delegates to requireCurrentUser() unchanged.
+ *
+ * Use this in command handlers (executeManifestCommand) and any route that
+ * needs a full CurrentUser record.
+ */
+export const resolveCurrentUser = async (
+  request: Request
+): Promise<CurrentUser> => {
+  const authHeader = request.headers.get("authorization");
+
+  if (authHeader?.startsWith(BEARER_PREFIX)) {
+    const token = authHeader.slice(BEARER_PREFIX.length);
+    if (token.startsWith(API_KEY_PREFIX)) {
+      const result = await authenticateApiKey(request);
+
+      if (!result.success) {
+        throw new Error("Invalid API key");
+      }
+
+      const apiKey = result.apiKey;
+      const url = new URL(request.url);
+      const scope = getRequiredScope(url.pathname, request.method);
+
+      if (scope && !hasScope(apiKey, scope)) {
+        throw new Error(`Insufficient permissions. Required scope: ${scope}`);
+      }
+
+      // Resolve internal user from the API key's creator
+      const user = await database.user.findFirst({
+        where: {
+          tenantId: apiKey.tenantId,
+          id: apiKey.createdByUserId,
+          deletedAt: null,
+        },
+        select: {
+          id: true,
+          tenantId: true,
+          role: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+        },
+      });
+
+      if (user) {
+        return user;
+      }
+
+      // Fallback: look up by authUserId (Clerk ID stored on the user)
+      const createdByClerk = await database.user.findFirst({
+        where: {
+          tenantId: apiKey.tenantId,
+          authUserId: apiKey.createdByUserId,
+          deletedAt: null,
+        },
+        select: {
+          id: true,
+          tenantId: true,
+          role: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+        },
+      });
+
+      if (createdByClerk) {
+        return createdByClerk;
+      }
+
+      throw new Error(
+        "API key creator not found in tenant. The user who created this key may have been removed."
+      );
+    }
+  }
+
+  // Fall through to Clerk session auth
+  return resolveClerkUser();
 };

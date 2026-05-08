@@ -1,6 +1,7 @@
 import { clerkMiddleware, createRouteMatcher } from "@repo/auth/server";
 import { captureException } from "@sentry/nextjs";
 import type { NextMiddleware } from "next/server";
+import { NextResponse } from "next/server";
 import { applyGlobalRateLimit } from "@/middleware/global-rate-limit";
 
 const isPublicRoute = createRouteMatcher([
@@ -10,14 +11,34 @@ const isPublicRoute = createRouteMatcher([
   "/api/sentry-fixer/process",
 ]);
 
+const API_KEY_BEARER_PREFIX = "Bearer cp_";
+
 const middleware: NextMiddleware = clerkMiddleware(async (auth, req) => {
   try {
-    // If hitting the API directly from a browser without a session,
-    // return a JSON 401 instead of redirect HTML.
     if (isPublicRoute(req)) {
       return;
     }
 
+    // API key authentication path — bypass Clerk session check.
+    // The route handler validates the key and enforces scope via
+    // resolveCurrentUser() or getAuthContext().
+    const authHeader = req.headers.get("authorization");
+    if (authHeader?.startsWith(API_KEY_BEARER_PREFIX)) {
+      const rateLimitResponse = await applyGlobalRateLimit(req);
+      if (rateLimitResponse) {
+        return rateLimitResponse;
+      }
+      // Pass the request path to route handlers via header so
+      // scope enforcement can map the route to a required scope.
+      const requestHeaders = new Headers(req.headers);
+      requestHeaders.set("x-api-path", req.nextUrl.pathname);
+      requestHeaders.set("x-api-method", req.method);
+      return NextResponse.next({
+        request: { headers: requestHeaders },
+      });
+    }
+
+    // Session (Clerk) authentication path
     const { userId } = await auth();
     if (!userId) {
       return new Response(JSON.stringify({ message: "Unauthorized" }), {
@@ -26,18 +47,11 @@ const middleware: NextMiddleware = clerkMiddleware(async (auth, req) => {
       });
     }
 
-    // Global rate limiting — applied after authentication
-    // Uses Upstash Redis sliding window (100 req/min per tenant+endpoint)
-    // Per-route withRateLimit() still works for stricter limits on expensive ops
     const rateLimitResponse = await applyGlobalRateLimit(req);
     if (rateLimitResponse) {
       return rateLimitResponse;
     }
 
-    // Continue to the route handler.
-    // For non-middleware-wrapped routes, the edge runtime can't append
-    // rate limit headers to the upstream response, but the limit is still
-    // enforced. Wrapped routes (withRateLimit) add their own headers.
     return;
   } catch (error) {
     captureException(

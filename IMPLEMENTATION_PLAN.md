@@ -208,6 +208,8 @@ However, no route handler in the entire apps/api/app directory imports or calls 
   });
 - Cross-file grep: searching for withApiKeyAuth|authenticateApiKey|hasScope|hasAnyScope|hasAllScopes in apps/api/app/ returns 0 results in route handlers.
 
+### Status: RESOLVED (branch fix/middleware-matcher-invocations)
+API key scope enforcement now wired into the entire request pipeline. Edge middleware (proxy.ts) detects Bearer cp_* tokens and passes through (bypassing Clerk session check, forwarding x-api-path/x-api-method headers). requireCurrentUser() in tenant.ts now checks for API key auth before Clerk auth. resolveCurrentUser(request) authenticates the key and enforces scope via getRequiredScope() from scope-guard.ts. executeManifestCommand uses resolveCurrentUser. getAuthContext() in request-context.ts provides the same dual-auth for GET routes. All ~80 command routes (via executeManifestCommand), 11 direct requireCurrentUser callers, and any route using getAuthContext() are covered.
 
 ---
 
@@ -2104,7 +2106,10 @@ Two exported validation functions in the payment-methods module (`isCardExpired`
 - Pre-existing work committed: webhook auto-dispatch from manifest command handler, mobile API endpoints, API scopes middleware
 
 ### Still unresolved (priority order):
-1. security_theater.api_key_scopes_never_enforced — scopes infrastructure exists but only 3 routes use dual-auth
-2. fake_integration.payment_gateway_always_success_placeholder — needs real Stripe integration
-3. automation_theater.audit_log_console_only — PayrollAudit model doesn't exist
-4. placeholder.base64_data_url_persisted_as_file_storage — files stored as base64 in DB
+1. fake_integration.payment_gateway_always_success_placeholder — needs real Stripe integration
+2. automation_theater.audit_log_console_only — PayrollAudit model doesn't exist
+3. placeholder.base64_data_url_persisted_as_file_storage — files stored as base64 in DB
+
+### [2026-05-08] Session Notes (continued)
+
+- API key scope enforcement fully wired: edge middleware detects Bearer cp_* tokens, requireCurrentUser() checks API key auth before Clerk auth, resolveCurrentUser() enforces scope via scope-guard.ts, executeManifestCommand and getAuthContext() both use resolveCurrentUser for dual-auth coverage across ~80 command routes, 11 direct requireCurrentUser callers, and all GET routes using getAuthContext(). Resolves security_theater.api_key_scopes_never_enforced.

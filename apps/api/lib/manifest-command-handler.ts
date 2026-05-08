@@ -20,9 +20,9 @@ import {
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
-import { requireCurrentUser } from "@/app/lib/tenant";
-import { createManifestRuntime } from "@/lib/manifest-runtime";
+import { resolveCurrentUser } from "@/app/lib/tenant";
 import { dispatchWebhooks } from "@/app/lib/webhook-dispatch";
+import { createManifestRuntime } from "@/lib/manifest-runtime";
 
 /**
  * Options for executing a manifest command.
@@ -94,7 +94,8 @@ export async function executeManifestCommand(
 
   try {
     // 1–3. Authenticate, resolve tenant, and look up (or auto-provision) user
-    const currentUser = await requireCurrentUser();
+    // Supports both Clerk session auth and API key Bearer token auth.
+    const currentUser = await resolveCurrentUser(request);
 
     // 4. Parse request body
     let body: Record<string, unknown> = {};
@@ -176,17 +177,28 @@ export async function executeManifestCommand(
 
     // 8. Success — fire-and-forget webhook dispatch
     const entityId = String(
-      (result.result as Record<string, unknown>)?.id ?? commandPayload.id ?? params?.id ?? ""
+      (result.result as Record<string, unknown>)?.id ??
+        commandPayload.id ??
+        params?.id ??
+        ""
     );
-    const webhookAction = commandName === "create" ? "created" as const
-      : commandName === "delete" || commandName === "softDelete" || commandName === "cancel" ? "deleted" as const
-      : "updated" as const;
+    const webhookAction =
+      commandName === "create"
+        ? ("created" as const)
+        : commandName === "delete" ||
+            commandName === "softDelete" ||
+            commandName === "cancel"
+          ? ("deleted" as const)
+          : ("updated" as const);
     dispatchWebhooks({
       tenantId: currentUser.tenantId,
       entityType: entityName,
       entityId,
       action: webhookAction,
-      data: { ...(result.result as Record<string, unknown> ?? {}), commandName },
+      data: {
+        ...((result.result as Record<string, unknown>) ?? {}),
+        commandName,
+      },
     }).catch(() => {});
 
     return manifestSuccessResponse({
@@ -198,6 +210,23 @@ export async function executeManifestCommand(
     if (error instanceof Error && error.name === "InvariantError") {
       log.error(`${logPrefix} Auth/tenant error`, { error: error.message });
       return manifestErrorResponse("Unauthorized", 401);
+    }
+
+    // API key scope or authentication errors
+    if (
+      error instanceof Error &&
+      error.message.startsWith("Insufficient permissions")
+    ) {
+      return manifestErrorResponse(error.message, 403);
+    }
+    if (error instanceof Error && error.message === "Invalid API key") {
+      return manifestErrorResponse("Invalid API key", 401);
+    }
+    if (
+      error instanceof Error &&
+      error.message.includes("API key creator not found")
+    ) {
+      return manifestErrorResponse(error.message, 401);
     }
 
     log.error(`${logPrefix} Error`, { error });
