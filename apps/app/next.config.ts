@@ -336,20 +336,14 @@ let nextConfig: NextConfig = withToolbar(
         },
       ];
     },
-    // Externalize pdfjs-dist, ably, and pdfkit to avoid bundling issues
+    // Externalize ably and pdfkit to avoid bundling issues
     // ably: Turbopack + Ably causes keyv dynamic require failures in SSR
     // pdfkit: Needs access to .afm font files from node_modules
     serverExternalPackages: [
-      "pdfjs-dist",
-      "prisma",
-      "@prisma/client",
       "@prisma/adapter-neon",
       "ably",
       "pdfkit",
-      "vega",
       "vega-lite",
-      "vega-embed",
-      "vega-canvas",
       "@capsule-pro/sales-reporting",
       "@clerk/backend",
     ],
@@ -374,39 +368,6 @@ let nextConfig: NextConfig = withToolbar(
             minimize: true,
           };
         }
-
-        // Externalize pdfjs-dist - use function to catch all nested imports
-        const existingExternals = webpackConfig.externals || [];
-        const pdfjsExternals = [
-          (
-            { request }: { request: string },
-            callback: (err: null | Error, result?: string) => void
-          ) => {
-            // Externalize all pdfjs-dist imports
-            if (
-              request.startsWith("pdfjs-dist") ||
-              request === "pdf.worker.mjs"
-            ) {
-              // Convert to commonjs reference
-              const moduleName = request.startsWith("pdfjs-dist")
-                ? request
-                : "pdfjs-dist/build/pdf.worker.mjs";
-              return callback(null, `commonjs ${moduleName}`);
-            }
-            // Continue to other externals
-            return callback(null);
-          },
-        ];
-
-        // Combine with existing externals.
-        // NOTE: We intentionally do NOT externalize @repo/event-parser here.
-        // Keeping it bundled avoids Node.js trying to require() an ESM-only package on Vercel.
-        webpackConfig.externals = [
-          ...(Array.isArray(existingExternals)
-            ? existingExternals
-            : [existingExternals]),
-          ...pdfjsExternals,
-        ];
 
         // Suppress 'Critical dependency' and large string warnings that bloat logs/context
         webpackConfig.ignoreWarnings = [

@@ -1,0 +1,69 @@
+/**
+ * Audit Writer
+ *
+ * Central utility for writing entries to the platform.audit_log table.
+ * Audit failures are silently caught so they never crash business logic.
+ */
+
+import { database } from "@repo/database";
+
+export interface AuditEntryInput {
+  tenantId: string;
+  tableSchema: string;
+  tableName: string;
+  recordId: string;
+  action: "insert" | "update" | "delete";
+  oldValues?: Record<string, unknown>;
+  newValues?: Record<string, unknown>;
+  performedBy?: string;
+  ipAddress?: string;
+  userAgent?: string;
+}
+
+/**
+ * Write a single entry to the audit_log table.
+ * Errors are caught and logged — audit failures must never interrupt business flows.
+ */
+export async function writeAuditEntry(input: AuditEntryInput): Promise<void> {
+  try {
+    await database.audit_log.create({
+      data: {
+        tenant_id: input.tenantId,
+        table_schema: input.tableSchema,
+        table_name: input.tableName,
+        record_id: input.recordId,
+        action: input.action,
+        // biome-ignore lint/suspicious/noExplicitAny: Prisma InputJsonValue requires any-compatible cast
+        old_values: (input.oldValues ?? undefined) as any,
+        // biome-ignore lint/suspicious/noExplicitAny: Prisma InputJsonValue requires any-compatible cast
+        new_values: (input.newValues ?? undefined) as any,
+        performed_by: input.performedBy ?? undefined,
+        ip_address: input.ipAddress ?? undefined,
+        user_agent: input.userAgent ?? undefined,
+      },
+    });
+  } catch (error) {
+    console.error("[AuditWriter] Failed to write audit entry:", error);
+  }
+}
+
+/** Convenience: audit an INSERT action. */
+export async function auditCreate(
+  input: Omit<AuditEntryInput, "action">
+): Promise<void> {
+  return writeAuditEntry({ ...input, action: "insert" });
+}
+
+/** Convenience: audit an UPDATE action. */
+export async function auditUpdate(
+  input: Omit<AuditEntryInput, "action">
+): Promise<void> {
+  return writeAuditEntry({ ...input, action: "update" });
+}
+
+/** Convenience: audit a DELETE action. */
+export async function auditDelete(
+  input: Omit<AuditEntryInput, "action">
+): Promise<void> {
+  return writeAuditEntry({ ...input, action: "delete" });
+}

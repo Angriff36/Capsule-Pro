@@ -44,7 +44,7 @@ const chartConfig = {
     color: "hsl(var(--chart-1))",
   },
   predicted: {
-    label: "Predicted",
+    label: "Projected",
     color: "hsl(var(--chart-2))",
   },
 };
@@ -67,16 +67,16 @@ export function PredictiveLTV({ data, className }: PredictiveLTVProps) {
   return (
     <Card className={cn("", className)}>
       <CardHeader>
-        <CardTitle>Predictive LTV</CardTitle>
+        <CardTitle>Client LTV Analysis</CardTitle>
         <CardDescription>
-          Model confidence: {data.confidence}% | Avg Predicted:{" "}
+          Data coverage: {data.confidence}% | Avg Predicted:{" "}
           {formatCurrency(data.averagePredictedLTV)}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {data.clientSegments.length === 0 ? (
           <p className="text-sm text-muted-foreground text-center py-8">
-            Not enough data for predictive modeling
+            Not enough data for LTV analysis
           </p>
         ) : (
           <>

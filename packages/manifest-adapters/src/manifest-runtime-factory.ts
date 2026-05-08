@@ -25,6 +25,10 @@ import { PrismaIdempotencyStore } from "./prisma-idempotency-store.js";
 import { PrismaJsonStore } from "./prisma-json-store.js";
 import type { PrismaStoreConfig } from "./prisma-store.js";
 import { createPrismaOutboxWriter, PrismaStore } from "./prisma-store.js";
+import {
+  createPermissionGuard,
+  loadRolePolicies,
+} from "./permission-guard.js";
 import { loadPrecompiledIR } from "./runtime/loadManifests.js";
 import { ManifestRuntimeEngine } from "./runtime-engine.js";
 
@@ -476,12 +480,21 @@ export async function createManifestRuntime(
       })
     : undefined;
 
-  // 7. Assemble and return the runtime engine.
-  return new ManifestRuntimeEngine(
+  // 7. Assemble the runtime engine.
+  const engine = new ManifestRuntimeEngine(
     ir,
     { user: resolvedUser, eventCollector, telemetry },
     { storeProvider, idempotencyStore }
   );
+
+  // 8. Wrap with RBAC permission guard.
+  //    Loads custom role policies for the tenant and intercepts runCommand
+  //    calls to verify the user's role has the required permission.
+  //    Commands without a mapping in COMMAND_PERMISSION_MAP are allowed through.
+  const rolePolicies = resolvedUser.role
+    ? await loadRolePolicies(prismaForLookups as any, resolvedUser.tenantId)
+    : [];
+  return createPermissionGuard(engine, { rolePolicies });
 }
 
 // Re-export types that consumers may need.

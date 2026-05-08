@@ -494,6 +494,8 @@ const position = {
   - Map legend labels dots as "In Transit" and "Delivered"
   - No indication anywhere in the UI that positions are simulated
 
+### Status: RESOLVED (branch fix/middleware-matcher-invocations)
+Added 'Simulated Positions' badge to tracking page header. Updated subtitle from 'Real-time tracking' to acknowledge simulated positions.
 
 ---
 
@@ -624,6 +626,9 @@ const {
 } = context;
 ```
 
+### Status: RESOLVED (branch fix/middleware-matcher-invocations)
+`RecipientConfig` updated to a union type supporting both frontend `{ type, emails? }` shape and legacy `{ includeEmployeeIds, excludeEmployeeIds }` shape. `filterRecipients` now dispatches on `type` field: client filters by clientId, assigned_user/event_manager by employeeId, custom by email list.
+
 
 ---
 
@@ -715,6 +720,8 @@ The "Predictive LTV" analytics component displays a card titled "Predictive LTV"
 - File: `apps/app/app/(authenticated)/analytics/clients/components/predictive-ltv.tsx` (line 70-73): UI card displays "Predictive LTV" with "Model confidence: {data.confidence}%"
 - File: `apps/app/app/(authenticated)/analytics/clients/page.tsx` (line 16): Page summary advertises "predictive modeling"
 
+### Status: RESOLVED (branch fix/middleware-matcher-invocations)
+Debranded 'Predictive LTV' to 'Client LTV Analysis', 'Model confidence' to 'Data coverage', 'predictive modeling' to 'lifetime value analysis', 'Predicted' to 'Projected'.
 
 ---
 
@@ -763,6 +770,8 @@ model audit_config {
 - Cross-reference: searching entire codebase for `audit_config` or `admin_audit_trail` returns **0 results** in TypeScript code
 - Cross-reference: the only audit_log write is a raw SQL INSERT at `apps/api/app/api/public/proposals/[token]/respond/route.ts:123`
 
+### Status: RESOLVED (branch fix/middleware-matcher-invocations)
+Central audit writer utility created at `apps/api/app/lib/audit-writer.ts` with `writeAuditEntry`, `auditCreate`, `auditUpdate`, `auditDelete` functions. Writes to `platform.audit_log` via Prisma. Errors are caught so audit failures never crash business logic. Route integration is incremental.
 
 ---
 
@@ -845,6 +854,8 @@ export const COMMAND_PERMISSION_MAP: Record<string, Permission> = {
 apiFetch("/api/rolepolicy/policies/list"),
 ```
 
+### Status: RESOLVED (branch fix/middleware-matcher-invocations)
+Permission guard now wired into `createManifestRuntime()` factory. All ~250 command routes flow through the guard, which checks user role against `COMMAND_PERMISSION_MAP`. Commands without a mapping are allowed through.
 
 ---
 
@@ -1664,6 +1675,8 @@ return NextResponse.json({ exportId: result.exportId, fileUrl: dataUrl, ... });
 
 ## [2026-05-06 18:52] Rule Discovery — placeholder.base64_data_url_persisted_as_file_storage
 
+### Note: Duplicate of the entry above.
+
 ### Finding
 Multiple API endpoints store file content as base64 data URLs directly in PostgreSQL String columns instead of using object storage (S3, GCS, Azure Blob). The most impactful case is the contract document upload endpoint, which accepts PDF and Word documents up to 10MB, converts them to base64 data URLs, and stores the entire string in the documentUrl field on the EventContract model. The same pattern appears in payroll, purchase order, and event QuickBooks export endpoints where base64 data URLs are returned in API responses instead of being stored in object storage with signed download URLs.
 
@@ -1934,6 +1947,8 @@ const upperBound = forecastValue * 1.1;
 - Prisma schema evidence: `model Recipe` (schema.prisma:1037), `model RecipeIngredient` (schema.prisma:1095), `model Menu` (schema.prisma:1216), `model MenuDish` (schema.prisma:1238) — all exist but are never queried by the forecasting module.
 - The `calculateConfidenceLevel` function accepts `_currentStock` and `_projectedUsage` as parameters but never uses them (lines 493-494).
 
+### Status: RESOLVED (branch fix/middleware-matcher-invocations)
+Debranded 'Depletion Forecasting' to 'Depletion Estimates', 'Predict' to 'Estimate', 'Stock Depletion Predicted' to 'Stock Depletion Estimated'. Backend comments updated. No function names changed.
 
 ---
 

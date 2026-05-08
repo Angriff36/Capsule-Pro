@@ -139,18 +139,21 @@ export async function triggerEmailWorkflows(
   };
 }
 
-interface RecipientConfig {
-  includeRoles?: string[];
-  excludeRoles?: string[];
-  includeEmployeeIds?: string[];
-  excludeEmployeeIds?: string[];
-  notifyClient?: boolean;
-  notifyAssignedUser?: boolean;
-  notifyManager?: boolean;
-}
+type RecipientConfig =
+  | { type: "client" | "assigned_user" | "event_manager" | "custom"; emails?: string[] }
+  | {
+      includeRoles?: string[];
+      excludeRoles?: string[];
+      includeEmployeeIds?: string[];
+      excludeEmployeeIds?: string[];
+      notifyClient?: boolean;
+      notifyAssignedUser?: boolean;
+      notifyManager?: boolean;
+    };
 
 /**
- * Filters recipients based on workflow recipient configuration
+ * Filters recipients based on workflow recipient configuration.
+ * Handles both the frontend type-based config and the legacy include/exclude config.
  */
 function filterRecipients(
   recipients: EmailRecipient[],
@@ -160,8 +163,33 @@ function filterRecipients(
     return recipients;
   }
 
+  // Frontend type-based config shape
+  if ("type" in config) {
+    switch (config.type) {
+      case "client":
+        return recipients.filter((r) => r.clientId !== undefined);
+      case "assigned_user":
+      case "event_manager":
+        return recipients.filter((r) => r.employeeId !== undefined);
+      case "custom": {
+        const customEmails = config.emails;
+        if (!customEmails || customEmails.length === 0) {
+          return [];
+        }
+        const matched = recipients.filter((r) =>
+          customEmails.includes(r.email)
+        );
+        // If no existing recipients match, create synthetic recipients from the emails list
+        if (matched.length === 0) {
+          return customEmails.map((email) => ({ email }));
+        }
+        return matched;
+      }
+    }
+  }
+
+  // Legacy include/exclude config shape
   return recipients.filter((recipient) => {
-    // Check exclude lists first
     if (
       config.excludeEmployeeIds &&
       recipient.employeeId &&
@@ -170,7 +198,6 @@ function filterRecipients(
       return false;
     }
 
-    // Check include lists (if specified, only include matching)
     if (
       config.includeEmployeeIds &&
       recipient.employeeId &&

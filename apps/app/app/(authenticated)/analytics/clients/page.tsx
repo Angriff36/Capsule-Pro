@@ -13,7 +13,7 @@ async function ClientAnalyticsContent() {
 
 const ClientAnalyticsPage = () => (
   <ModuleSection
-    summary="Analyze client profitability, lifetime value, retention rates, and predictive modeling."
+    summary="Analyze client profitability, lifetime value, retention rates, and lifetime value analysis."
     title="Client Analytics"
   />
 );

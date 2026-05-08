@@ -1,8 +1,8 @@
 /**
- * Inventory Depletion Forecasting Service
+ * Inventory Depletion Estimation Service
  *
- * Analyzes upcoming events to predict inventory usage and calculate depletion dates.
- * Generates reorder alerts and confidence levels for predictions.
+ * Analyzes upcoming events and historical usage to estimate inventory depletion dates.
+ * Generates reorder alerts and confidence levels based on data coverage.
  */
 
 import "server-only";
@@ -351,7 +351,7 @@ async function getUpcomingEventsUsingInventory(
   });
 
   // For each event, estimate usage of this SKU
-  // This is a simplified calculation - in production, you'd use actual event menus
+  // This is a simplified calculation based on guest count
   const eventUsage: Array<{
     eventId: string;
     eventName: string;

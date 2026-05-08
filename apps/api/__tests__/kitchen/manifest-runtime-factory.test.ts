@@ -163,6 +163,9 @@ function makeFakePrisma(overrides?: { userFindFirst?: unknown }) {
     user: {
       findFirst: vi.fn().mockResolvedValue(overrides?.userFindFirst ?? null),
     },
+    rolePolicy: {
+      findMany: vi.fn().mockResolvedValue([]),
+    },
     manifestIdempotency: {
       findUnique: vi.fn().mockResolvedValue(null),
       upsert: vi.fn(),

@@ -230,10 +230,10 @@ export const ForecastsPageClient = () => {
       {/* Page Header */}
       <div className="space-y-0.5">
         <h1 className="text-2xl font-semibold tracking-tight">
-          Depletion Forecasting
+          Depletion Estimates
         </h1>
         <p className="text-muted-foreground">
-          Predict inventory depletion and generate reorder alerts
+          Estimate inventory depletion and generate reorder alerts
         </p>
       </div>
       <Separator />
@@ -310,7 +310,7 @@ export const ForecastsPageClient = () => {
               <CardHeader>
                 <CardTitle>Generate Forecast</CardTitle>
                 <CardDescription>
-                  Enter a SKU to predict when inventory will deplete based on
+                  Enter a SKU to estimate when inventory will deplete based on
                   upcoming events
                 </CardDescription>
               </CardHeader>
@@ -598,7 +598,7 @@ export const ForecastsPageClient = () => {
                       <div className="mt-2 flex items-center justify-center gap-2 text-sm text-muted-foreground">
                         <AlertTriangle className="size-4 text-destructive" />
                         <span>
-                          Predicted depletion:{" "}
+                          Estimated depletion:{" "}
                           {formatDate(forecast.depletionDate)} (
                           {forecast.daysUntilDepletion} days)
                         </span>
@@ -764,11 +764,11 @@ export const ForecastsPageClient = () => {
                       <div className="flex items-center gap-2">
                         <AlertTriangle className="size-5 text-destructive" />
                         <div className="font-semibold text-destructive">
-                          Stock Depletion Predicted
+                          Stock Depletion Estimated
                         </div>
                       </div>
                       <p className="mt-1 text-sm text-destructive/80">
-                        This item is predicted to run out of stock on{" "}
+                        This item is estimated to run out of stock on{" "}
                         {formatDate(forecast.depletionDate)} (
                         {forecast.daysUntilDepletion} days from now). Consider
                         placing a reorder soon.

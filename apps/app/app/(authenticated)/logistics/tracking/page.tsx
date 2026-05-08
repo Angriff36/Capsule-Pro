@@ -332,9 +332,12 @@ export default function TrackingPage() {
         <div className="space-y-0.5">
           <h1 className="text-2xl font-semibold tracking-tight">
             Delivery Tracking
+            <Badge variant="outline" className="ml-2 text-xs font-normal text-muted-foreground">
+              Simulated Positions
+            </Badge>
           </h1>
           <p className="text-muted-foreground">
-            Real-time tracking for active deliveries.
+            Tracking for active deliveries (map positions are simulated).
             {deliveries.length === 0 &&
               " No active shipments found — create shipments and assign them to routes to see tracking data here."}
           </p>
