@@ -202,9 +202,6 @@ const EventsPage = async () => {
                   venueName: event.venueName,
                   tags: event.tags ?? [],
                   hasClient: !!event.clientId,
-                  hasMenu: false,
-                  hasPrepList: false,
-                  hasContract: false,
                 }))}
               />
             )}
