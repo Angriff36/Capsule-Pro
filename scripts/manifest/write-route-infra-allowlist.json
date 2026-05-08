@@ -603,6 +603,11 @@
       "comment": "Infrastructure: Lead score recomputation across all leads (rule engine, no single domain command)"
     },
     {
+      "pattern": "^/api/crm/scoring/[^/]+$",
+      "methods": ["PUT", "DELETE"],
+      "comment": "Infrastructure: CRM scoring rule update/delete using direct Prisma raw SQL (no manifest yet)"
+    },
+    {
       "prefix": "/api/events/allergens/check",
       "methods": ["POST"],
       "comment": "Infrastructure: Read-only allergen/dietary conflict detection across guests and dishes (no domain mutation)"

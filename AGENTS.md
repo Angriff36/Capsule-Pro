@@ -179,14 +179,14 @@ Vercel runs only what's in `apps/api/vercel.json` — adding a file under
 `apps/api/app/api/cron/` does NOT schedule it. The endpoint directory currently
 has 5 routes but only 3 are scheduled:
 
-| Route                             | Schedule      | Scheduled? |
-| --------------------------------- | ------------- | ---------- |
-| `cron/webhook-retry`              | `*/5 * * * *` | ✅         |
-| `cron/inventory-audit`            | `0 6 * * *`   | ✅         |
-| `sentry-fixer/process`            | `0 0 * * *`   | ✅         |
-| `cron/contract-expiration-alerts` | —             | ❌ missing |
-| `cron/email-reminders`            | —             | ❌ missing |
-| `cron/idempotency-cleanup`        | —             | ❌ missing |
+| Route                             | Schedule       | Scheduled? |
+| --------------------------------- | -------------- | ---------- |
+| `cron/webhook-retry`              | `*/5 * * * *`  | ✅         |
+| `cron/inventory-audit`            | `0 6 * * *`    | ✅         |
+| `sentry-fixer/process`            | `0 0 * * *`    | ✅         |
+| `cron/contract-expiration-alerts` | `0 7 * * *`    | ✅         |
+| `cron/email-reminders`            | `*/15 * * * *` | ✅         |
+| `cron/idempotency-cleanup`        | `0 3 * * *`    | ✅         |
 
 When you add a new cron endpoint, add the matching entry to `vercel.json` in the
 same PR, otherwise it never runs in production.

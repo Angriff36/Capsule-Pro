@@ -29,6 +29,14 @@
     {
       "path": "/api/cron/contract-expiration-alerts",
       "schedule": "0 7 * * *"
+    },
+    {
+      "path": "/api/cron/email-reminders",
+      "schedule": "*/15 * * * *"
+    },
+    {
+      "path": "/api/cron/idempotency-cleanup",
+      "schedule": "0 3 * * *"
     }
   ]
 }

@@ -184,7 +184,7 @@ async function fetchLedgerData(
             AND deleted_at IS NULL
         ) as pending_proposals,
         (
-          SELECT COALESCE(SUM(ec.total_value), 0)::numeric
+          SELECT COALESCE(SUM(e.budget), 0)::numeric
           FROM tenant_events.event_contracts ec
           JOIN tenant_events.events e ON ec.tenant_id = e.tenant_id AND ec.event_id = e.id
           WHERE ec.tenant_id = ${tenantId}
@@ -194,11 +194,11 @@ async function fetchLedgerData(
             AND e.location_id = ${locationId}
         ) as active_contracts,
         (
-          SELECT COALESCE(SUM(ec.total_value * 0.5), 0)::numeric
+          SELECT COALESCE(SUM(e.deposit_amount), 0)::numeric
           FROM tenant_events.event_contracts ec
           JOIN tenant_events.events e ON ec.tenant_id = e.tenant_id AND ec.event_id = e.id
           WHERE ec.tenant_id = ${tenantId}
-            AND ec.deposit_paid = true
+            AND e.deposit_paid = true
             AND e.event_date >= ${startDate}
             AND e.event_date <= ${now}
             AND ec.deleted_at IS NULL
@@ -217,7 +217,7 @@ async function fetchLedgerData(
           AND deleted_at IS NULL
       ) as pending_proposals,
       (
-        SELECT COALESCE(SUM(ec.total_value), 0)::numeric
+        SELECT COALESCE(SUM(e.budget), 0)::numeric
         FROM tenant_events.event_contracts ec
         JOIN tenant_events.events e ON ec.tenant_id = e.tenant_id AND ec.event_id = e.id
         WHERE ec.tenant_id = ${tenantId}
@@ -226,11 +226,11 @@ async function fetchLedgerData(
           AND e.deleted_at IS NULL
       ) as active_contracts,
       (
-        SELECT COALESCE(SUM(ec.total_value * 0.5), 0)::numeric
+        SELECT COALESCE(SUM(e.deposit_amount), 0)::numeric
         FROM tenant_events.event_contracts ec
         JOIN tenant_events.events e ON ec.tenant_id = e.tenant_id AND ec.event_id = e.id
         WHERE ec.tenant_id = ${tenantId}
-          AND ec.deposit_paid = true
+          AND e.deposit_paid = true
           AND e.event_date >= ${startDate}
           AND e.event_date <= ${now}
           AND ec.deleted_at IS NULL
