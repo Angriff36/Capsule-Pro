@@ -377,7 +377,12 @@ function EventReportsTab() {
                       {formatDate(report.createdAt)}
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button size="sm" variant="ghost">
+                      <Button
+                        disabled
+                        size="sm"
+                        title="Report download is not yet available"
+                        variant="ghost"
+                      >
                         <Download className="h-4 w-4" />
                       </Button>
                     </TableCell>
@@ -434,12 +439,29 @@ function EventReportsTab() {
 // Document Parser Tab (Autofill)
 // ---------------------------------------------------------------------------
 
+interface EventSearchResult {
+  id: string;
+  title: string;
+  eventDate: string | null;
+  guestCount: number | null;
+  status: string;
+}
+
 function DocumentParserTab() {
   const [file, setFile] = useState<File | null>(null);
   const [parsing, setParsing] = useState(false);
   const [parsed, setParsed] = useState<ParsedDocument | null>(null);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
+  const [selectedEventName, setSelectedEventName] = useState<string | null>(null);
+  const [eventPickerOpen, setEventPickerOpen] = useState(false);
+  const [eventSearchQuery, setEventSearchQuery] = useState("");
+  const [eventSearchResults, setEventSearchResults] = useState<EventSearchResult[]>([]);
+  const [eventSearchLoading, setEventSearchLoading] = useState(false);
+  const [applying, setApplying] = useState<string | null>(null);
+  const pendingSection = useRef<string | null>(null);
 
   const handleFileChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -494,11 +516,182 @@ function DocumentParserTab() {
     }
   }, [file]);
 
-  const handleApplySection = useCallback((section: string) => {
-    toast.success(`${section} data applied to event form`, {
-      description: "Navigate to the event editor to review the changes.",
-    });
+  const searchEvents = useCallback(async (query: string) => {
+    setEventSearchLoading(true);
+    try {
+      const res = await apiFetch(
+        `/api/events?search=${encodeURIComponent(query)}&limit=10`
+      );
+      if (res.ok) {
+        const json = (await res.json()) as {
+          data: EventSearchResult[];
+        };
+        setEventSearchResults(json.data ?? []);
+      }
+    } catch {
+      setEventSearchResults([]);
+    } finally {
+      setEventSearchLoading(false);
+    }
   }, []);
+
+  const handleSelectEvent = useCallback(
+    (event: EventSearchResult) => {
+      setSelectedEventId(event.id);
+      setSelectedEventName(event.title);
+      setEventPickerOpen(false);
+      setEventSearchQuery("");
+      setEventSearchResults([]);
+      const section = pendingSection.current;
+      pendingSection.current = null;
+      if (section) {
+        setTimeout(() => handleApplySection(section), 0);
+      }
+    },
+    []
+  );
+
+  const handleApplySection = useCallback(
+    async (section: string) => {
+      if (!parsed) return;
+
+      if (!selectedEventId) {
+        pendingSection.current = section;
+        setEventPickerOpen(true);
+        return;
+      }
+
+      setApplying(section);
+      try {
+        if (section === "Event Details") {
+          const details = parsed.eventDetails;
+          const updatePayload: Record<string, unknown> = {
+            id: selectedEventId,
+          };
+          if (details.eventName) updatePayload.title = details.eventName;
+          if (details.eventDate)
+            updatePayload.eventDate = details.eventDate;
+          if (details.guestCount)
+            updatePayload.guestCount = details.guestCount;
+          if (details.venue) updatePayload.venueName = details.venue;
+
+          const res = await apiFetch(
+            "/api/events/event/commands/update",
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(updatePayload),
+            }
+          );
+          if (!res.ok) {
+            const data = (await res.json().catch(() => ({}))) as {
+              error?: string;
+            };
+            throw new Error(
+              data.error || `Update failed (${res.status})`
+            );
+          }
+          toast.success("Event details applied", {
+            description: `Updated ${selectedEventName}`,
+          });
+        } else if (section === "Menu Items") {
+          let created = 0;
+          const errors: string[] = [];
+          for (const item of parsed.menuItems) {
+            try {
+              const dishRes = await apiFetch(
+                "/api/kitchen/dishes/commands/create",
+                {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ name: item.name }),
+                }
+              );
+              if (!dishRes.ok) {
+                errors.push(item.name);
+                continue;
+              }
+              const dishData = (await dishRes.json()) as {
+                result?: { id?: string };
+              };
+              const dishId = dishData.result?.id;
+              if (dishId) {
+                await apiFetch(
+                  "/api/events/event-dishes/commands/create",
+                  {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      eventId: selectedEventId,
+                      dishId,
+                      quantityServings: item.quantity || 1,
+                      specialInstructions: item.notes || undefined,
+                    }),
+                  }
+                );
+              }
+              created++;
+            } catch {
+              errors.push(item.name);
+            }
+          }
+          toast.success(
+            `${created} menu item${created !== 1 ? "s" : ""} applied`,
+            {
+              description:
+                errors.length > 0
+                  ? `Failed: ${errors.join(", ")}`
+                  : `Added to ${selectedEventName}`,
+            }
+          );
+        } else if (section === "Staff Shifts") {
+          let created = 0;
+          const errors: string[] = [];
+          for (const shift of parsed.staffShifts) {
+            try {
+              const res = await apiFetch(
+                "/api/staff/shifts/commands/create",
+                {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    eventId: selectedEventId,
+                    role: shift.role,
+                    employeeName: shift.name,
+                    shiftTime: shift.time,
+                  }),
+                }
+              );
+              if (res.ok) {
+                created++;
+              } else {
+                errors.push(shift.name);
+              }
+            } catch {
+              errors.push(shift.name);
+            }
+          }
+          toast.success(
+            `${created} shift${created !== 1 ? "s" : ""} created`,
+            {
+              description:
+                errors.length > 0
+                  ? `Failed: ${errors.join(", ")}`
+                  : `Added to ${selectedEventName}`,
+            }
+          );
+        }
+      } catch (err) {
+        toast.error(`Failed to apply ${section.toLowerCase()}`, {
+          description:
+            err instanceof Error ? err.message : "Unknown error",
+        });
+      } finally {
+        setApplying(null);
+      }
+    },
+    [parsed, selectedEventId, selectedEventName]
+  );
 
   return (
     <div className="space-y-6">
@@ -598,6 +791,109 @@ function DocumentParserTab() {
         </CardContent>
       </Card>
 
+      {/* Selected Event Indicator */}
+      {parsed && (
+        <Card>
+          <CardContent className="flex items-center justify-between p-4">
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
+              {selectedEventId ? (
+                <span className="text-sm">
+                  Applying to: <strong>{selectedEventName}</strong>
+                </span>
+              ) : (
+                <span className="text-sm text-muted-foreground">
+                  No event selected — click &quot;Apply to Event&quot; to pick one
+                </span>
+              )}
+            </div>
+            {selectedEventId && (
+              <Button
+                onClick={() => {
+                  setSelectedEventId(null);
+                  setSelectedEventName(null);
+                }}
+                size="sm"
+                variant="ghost"
+              >
+                Change
+              </Button>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Event Picker Dialog */}
+      <Dialog onOpenChange={setEventPickerOpen} open={eventPickerOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Select Event</DialogTitle>
+            <DialogDescription>
+              Choose an event to apply the parsed data to.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <Input
+              onChange={(e) => {
+                setEventSearchQuery(e.target.value);
+                if (e.target.value.length >= 2) {
+                  searchEvents(e.target.value);
+                } else {
+                  setEventSearchResults([]);
+                }
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && eventSearchQuery.length >= 2) {
+                  searchEvents(eventSearchQuery);
+                }
+              }}
+              placeholder="Search events by name..."
+              value={eventSearchQuery}
+            />
+            {eventSearchLoading && (
+              <div className="flex justify-center py-4">
+                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+              </div>
+            )}
+            {!eventSearchLoading && eventSearchResults.length > 0 && (
+              <div className="max-h-60 space-y-1 overflow-y-auto">
+                {eventSearchResults.map((event) => (
+                  <button
+                    className="flex w-full items-center justify-between rounded-md border px-3 py-2 text-left text-sm hover:bg-muted"
+                    key={event.id}
+                    onClick={() => handleSelectEvent(event)}
+                    type="button"
+                  >
+                    <span className="font-medium">{event.title}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {formatDate(event.eventDate)}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
+            {!eventSearchLoading &&
+              eventSearchQuery.length >= 2 &&
+              eventSearchResults.length === 0 && (
+                <p className="py-4 text-center text-sm text-muted-foreground">
+                  No events found
+                </p>
+              )}
+          </div>
+          <DialogFooter>
+            <Button
+              onClick={() => {
+                setEventPickerOpen(false);
+                pendingSection.current = null;
+              }}
+              variant="outline"
+            >
+              Cancel
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Error State */}
       {error && (
         <Card className="border-destructive">
@@ -623,10 +919,14 @@ function DocumentParserTab() {
                     </CardDescription>
                   </div>
                   <Button
+                    disabled={applying === "Event Details"}
                     onClick={() => handleApplySection("Event Details")}
                     size="sm"
                     variant="outline"
                   >
+                    {applying === "Event Details" && (
+                      <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+                    )}
                     Apply to Event
                   </Button>
                 </div>
@@ -686,10 +986,14 @@ function DocumentParserTab() {
                     </CardDescription>
                   </div>
                   <Button
+                    disabled={applying === "Menu Items"}
                     onClick={() => handleApplySection("Menu Items")}
                     size="sm"
                     variant="outline"
                   >
+                    {applying === "Menu Items" && (
+                      <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+                    )}
                     Apply to Event
                   </Button>
                 </div>
@@ -735,10 +1039,14 @@ function DocumentParserTab() {
                     </CardDescription>
                   </div>
                   <Button
+                    disabled={applying === "Staff Shifts"}
                     onClick={() => handleApplySection("Staff Shifts")}
                     size="sm"
                     variant="outline"
                   >
+                    {applying === "Staff Shifts" && (
+                      <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+                    )}
                     Apply to Event
                   </Button>
                 </div>

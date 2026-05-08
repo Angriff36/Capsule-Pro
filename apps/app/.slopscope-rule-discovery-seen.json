@@ -12,6 +12,18 @@
       "file": "app/(authenticated)/kitchen/iot/iot-page-client.tsx",
       "snippet_hash": "iot_page_all_5_buttons_toast_coming_soon_100pct_dead",
       "discovered_at": "2026-05-08T00:53:00Z"
+    },
+    {
+      "rule_id": "feature_claim_mismatch.rule_discovery_dsl_prose_arrays_in_structured_fields",
+      "file": "SLOPSCOPE_RULE_DISCOVERY.md",
+      "snippet_hash": "dsl_structured_fields_written_as_prose_arrays",
+      "discovered_at": "2026-05-08T02:23:00Z"
+    },
+    {
+      "rule_id": "automation_theater.interactive_drilldown_toast_only",
+      "file": "app/(authenticated)/analytics/components/activity-feed-client.tsx",
+      "snippet_hash": "activity_feed_click_handlers_log_and_toast_viewing_only",
+      "discovered_at": "2026-05-08T09:37:31Z"
     }
   ]
 }

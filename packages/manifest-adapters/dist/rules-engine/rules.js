@@ -139,21 +139,6 @@ export const stationEquipmentRule = createRule("station-equipment", "Station Equ
     }
     return success(stationEquipmentRule);
 }, { appliesTo: ["PrepTask", "KitchenTask"], tags: ["equipment", "station"] });
-/**
- * Rule: Equipment capacity cannot be exceeded.
- */
-export const equipmentCapacityRule = createRule("equipment-capacity", "Equipment Capacity Limits", "Equipment has capacity limits that cannot be exceeded", RuleSeverity.Warning, (context) => {
-    const state = context.entity.state;
-    const operation = context.operation.type;
-    // Only check on claim/start operations
-    if (operation !== "claim" && operation !== "start") {
-        return success(equipmentCapacityRule);
-    }
-    // Check if any required equipment is at capacity
-    // This would need to query current equipment usage
-    // For now, just pass
-    return success(equipmentCapacityRule);
-}, { appliesTo: ["PrepTask", "KitchenTask"], tags: ["equipment", "capacity"] });
 // ---------------------------------------------------------------------------
 // Allergen Constraint Rules
 // ---------------------------------------------------------------------------
@@ -370,7 +355,6 @@ export const prepTaskRules = [
  */
 export const equipmentRules = [
     stationEquipmentRule,
-    equipmentCapacityRule,
 ];
 /**
  * All allergen rules.

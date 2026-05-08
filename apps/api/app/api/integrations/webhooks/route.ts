@@ -5,11 +5,11 @@
  * POST /api/integrations/webhooks - Create webhook
  */
 
-import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { requireDualAuth } from "@/middleware/dual-auth";
+import { API_SCOPES } from "@/lib/api-scopes";
 import { log } from "@repo/observability/log";
 
 // Valid event types
@@ -51,15 +51,11 @@ interface CreateWebhookRequest {
 
 export async function GET(request: NextRequest) {
   try {
-    const { userId, orgId } = await auth();
-    if (!(userId && orgId)) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const authResult = await requireDualAuth(request, API_SCOPES.ADMIN);
+    if (!authResult.authenticated || !authResult.tenantId) {
+      return authResult.error!;
     }
-
-    const tenantId = await getTenantIdForOrg(orgId);
-    if (!tenantId) {
-      return NextResponse.json({ error: "No tenant found" }, { status: 401 });
-    }
+    const tenantId = authResult.tenantId;
 
     const { searchParams } = new URL(request.url);
     const status = searchParams.get("status");
@@ -109,15 +105,11 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const { userId, orgId } = await auth();
-    if (!(userId && orgId)) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const authResult = await requireDualAuth(request, API_SCOPES.ADMIN);
+    if (!authResult.authenticated || !authResult.tenantId) {
+      return authResult.error!;
     }
-
-    const tenantId = await getTenantIdForOrg(orgId);
-    if (!tenantId) {
-      return NextResponse.json({ error: "No tenant found" }, { status: 401 });
-    }
+    const tenantId = authResult.tenantId;
 
     const body: CreateWebhookRequest = await request.json();
 

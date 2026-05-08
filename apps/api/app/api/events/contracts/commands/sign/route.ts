@@ -14,6 +14,7 @@ import {
 import { createManifestRuntime } from "@/lib/manifest-runtime";
 import { log } from "@repo/observability/log";
 import { recordEntityChange } from "@/app/lib/activity-feed-service";
+import { dispatchWebhooks } from "@/app/lib/webhook-dispatch";
 import { validateSignatureData } from "../../validation";
 
 export const runtime = "nodejs";
@@ -92,6 +93,15 @@ export async function POST(request: NextRequest) {
       (body as Record<string, unknown>)?.title as string ?? (body as Record<string, unknown>)?.contractTitle as string ?? "Contract",
       currentUser.id
     ).catch(() => {});
+
+    const contractId = (body as Record<string, unknown>)?.id as string ?? (body as Record<string, unknown>)?.contractId as string ?? "";
+    dispatchWebhooks({
+      tenantId,
+      entityType: "Contract",
+      entityId: contractId,
+      action: "updated",
+      data: { ...(result.result as Record<string, unknown>), contractId, signedBy: currentUser.id },
+    }).catch(() => {});
 
     return manifestSuccessResponse({
       result: result.result,

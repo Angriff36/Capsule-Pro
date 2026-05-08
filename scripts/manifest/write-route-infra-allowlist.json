@@ -686,6 +686,36 @@
       "pattern": "^/api/inventory/items/[^/]+$",
       "methods": ["PUT", "DELETE"],
       "comment": "Infrastructure: Inventory item update/delete using direct Prisma access (no manifest yet)"
+    },
+    {
+      "prefix": "/api/mobile/",
+      "methods": ["POST", "GET", "PATCH"],
+      "comment": "Infrastructure: Mobile app API endpoints (push tokens, notification preferences, app settings)"
+    },
+    {
+      "prefix": "/api/events/import/server-to-server",
+      "methods": ["POST"],
+      "comment": "Infrastructure: Server-to-server event import with notification callback support"
+    },
+    {
+      "prefix": "/api/integrations/webhooks",
+      "methods": ["POST"],
+      "comment": "Infrastructure: Outbound webhook trigger endpoint (dual-auth with API scope enforcement)"
+    },
+    {
+      "prefix": "/api/inventory/stock-levels/adjust",
+      "methods": ["POST"],
+      "comment": "Infrastructure: Stock level adjustment with manifest command"
+    },
+    {
+      "pattern": "^/api/kitchen/tasks/[^/]+/claim$",
+      "methods": ["POST"],
+      "comment": "Infrastructure: Kitchen task claim with constraint validation"
+    },
+    {
+      "prefix": "/api/kitchen/tasks/bundle-claim",
+      "methods": ["POST"],
+      "comment": "Infrastructure: Bundle claim for multiple kitchen tasks"
     }
   ]
 }

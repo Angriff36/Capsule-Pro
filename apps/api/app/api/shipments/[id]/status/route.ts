@@ -12,6 +12,7 @@ import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { InvariantError } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { dispatchWebhooks } from "@/app/lib/webhook-dispatch";
 
 /**
  * Transaction types for inventory transactions
@@ -699,6 +700,15 @@ export async function POST(
       id,
       orgId ?? null
     );
+
+    // Fire-and-forget webhook dispatch for shipment status change
+    dispatchWebhooks({
+      tenantId,
+      entityType: "Shipment",
+      entityId: id,
+      action: "updated",
+      data: { ...mapShipmentToResponse(updated), previousStatus: existing.status },
+    }).catch(() => {});
 
     return NextResponse.json(mapShipmentToResponse(updated));
   } catch (error) {

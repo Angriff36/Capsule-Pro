@@ -114,7 +114,8 @@ export class InvoicePrismaStore {
                 tenantId: this.tenantId,
                 id,
                 invoiceNumber: asString(data.invoiceNumber) || `INV-${Date.now()}`,
-                invoiceType: (asString(data.type ?? data.invoiceType) || "FINAL_PAYMENT"),
+                invoiceType: (asString(data.type ?? data.invoiceType) ||
+                    "FINAL_PAYMENT"),
                 status: (asString(data.status) || "DRAFT"),
                 clientId: asString(data.clientId),
                 eventId: asString(data.eventId),
@@ -198,7 +199,8 @@ export class InvoicePrismaStore {
                 patch.voidedAt = asNullableDate(data.voidedAt);
             // Merge manifest-only props into metadata
             const metaOverrides = extractMetadata(data, INVOICE_METADATA_KEYS);
-            if (Object.keys(metaOverrides).length > 0 || data.metadata !== undefined) {
+            if (Object.keys(metaOverrides).length > 0 ||
+                data.metadata !== undefined) {
                 const existingMeta = data.metadata ?? {};
                 patch.metadata = { ...existingMeta, ...metaOverrides };
             }

@@ -792,6 +792,28 @@ export async function POST(request: Request) {
       importOptions.dryRun
     );
 
+    // Dispatch best-effort completion notification
+    if (importOptions.notifyOnCompletion && importOptions.notificationUrl) {
+      const totalProcessed = response.successCount + response.skippedCount + response.failedCount;
+      fetch(importOptions.notificationUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        signal: AbortSignal.timeout(5_000),
+        body: JSON.stringify({
+          event: "import.completed",
+          data: {
+            totalProcessed,
+            successCount: response.successCount,
+            errorCount: response.failedCount,
+            dryRun: response.dryRun,
+            completedAt: new Date().toISOString(),
+          },
+        }),
+      }).catch(() => {
+        // Notification is best-effort; swallow errors
+      });
+    }
+
     return NextResponse.json(response);
   } catch (error) {
     captureException(error);

@@ -9,8 +9,9 @@ import { database } from "@repo/database";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { generateApiKey } from "@/app/lib/api-key-service";
-import { requireCurrentUser } from "@/app/lib/tenant";
 import { withRateLimit } from "@/middleware/rate-limiter";
+import { requireDualAuth } from "@/middleware/dual-auth";
+import { VALID_SCOPES, API_SCOPES } from "@/lib/api-scopes";
 import { log } from "@repo/observability/log";
 
 export const runtime = "nodejs";
@@ -20,13 +21,16 @@ export const runtime = "nodejs";
  * List all API keys for the tenant (excluding hashed keys for security)
  */
 export const GET = withRateLimit(
-  async () => {
+  async (request: Request) => {
     try {
-      const currentUser = await requireCurrentUser();
+      const authResult = await requireDualAuth(request, API_SCOPES.ADMIN);
+      if (!authResult.authenticated || !authResult.tenantId) {
+        return authResult.error!;
+      }
 
       const keys = await database.apiKey.findMany({
         where: {
-          tenantId: currentUser.tenantId,
+          tenantId: authResult.tenantId,
           deletedAt: null,
         },
         select: {
@@ -67,7 +71,10 @@ export const GET = withRateLimit(
 export const POST = withRateLimit(
   async (request: Request) => {
     try {
-      const currentUser = await requireCurrentUser();
+      const authResult = await requireDualAuth(request, API_SCOPES.ADMIN);
+      if (!authResult.authenticated || !authResult.tenantId) {
+        return authResult.error!;
+      }
 
       let body: Record<string, unknown> = {};
       try {
@@ -85,10 +92,25 @@ export const POST = withRateLimit(
         );
       }
 
+      // Validate requested scopes against the canonical list
+      const requestedScopes = Array.isArray(scopes) ? (scopes as string[]) : [];
+      const invalidScopes = requestedScopes.filter(
+        (s) => !VALID_SCOPES.includes(s)
+      );
+      if (invalidScopes.length > 0) {
+        return NextResponse.json(
+          {
+            message: `Invalid scopes: ${invalidScopes.join(", ")}`,
+            validScopes: VALID_SCOPES,
+          },
+          { status: 400 }
+        );
+      }
+
       // Check for duplicate name within tenant
       const existing = await database.apiKey.findFirst({
         where: {
-          tenantId: currentUser.tenantId,
+          tenantId: authResult.tenantId,
           name,
           deletedAt: null,
         },
@@ -107,13 +129,13 @@ export const POST = withRateLimit(
       // Create the API key record
       const apiKey = await database.apiKey.create({
         data: {
-          tenantId: currentUser.tenantId,
+          tenantId: authResult.tenantId,
           name,
           keyPrefix,
           hashedKey,
-          scopes: Array.isArray(scopes) ? (scopes as string[]) : [],
+          scopes: requestedScopes,
           expiresAt: expiresAt ? new Date(expiresAt as string) : null,
-          createdByUserId: currentUser.id,
+          createdByUserId: authResult.userId!,
         },
         select: {
           id: true,
@@ -126,10 +148,10 @@ export const POST = withRateLimit(
       });
 
       log.info("[ApiKeys/create] Created API key", {
-        tenantId: currentUser.tenantId,
+        tenantId: authResult.tenantId,
         keyId: apiKey.id,
         name: apiKey.name,
-        userId: currentUser.id,
+        userId: authResult.userId,
       });
 
       // Return the key WITH the plain key (only time it's shown)

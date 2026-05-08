@@ -65,7 +65,7 @@ interface WorkOrder {
   createdAt: Date;
 }
 
-interface PredictiveAlert {
+interface EquipmentAlert {
   equipmentId: string;
   equipmentName: string;
   alertType: string;
@@ -98,7 +98,7 @@ const conditionColors = {
 export function EquipmentPageClient() {
   const [equipment, setEquipment] = useState<Equipment[]>([]);
   const [workOrders, setWorkOrders] = useState<WorkOrder[]>([]);
-  const [alerts, setAlerts] = useState<PredictiveAlert[]>([]);
+  const [alerts, setAlerts] = useState<EquipmentAlert[]>([]);
   const [alertSummary, setAlertSummary] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -234,8 +234,7 @@ export function EquipmentPageClient() {
             Equipment Maintenance
           </h1>
           <p className="text-muted-foreground">
-            Track equipment maintenance, work orders, and predictive failure
-            alerts
+            Track equipment maintenance, work orders, and maintenance alerts
           </p>
         </div>
         <Button onClick={() => setIsAddDialogOpen(true)}>
@@ -700,11 +699,10 @@ export function EquipmentPageClient() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <AlertTriangle className="h-5 w-5" />
-                Predictive Failure Alerts
+                Equipment Alerts
               </CardTitle>
               <CardDescription>
-                AI-powered alerts based on equipment usage, maintenance history,
-                and condition
+                Maintenance and condition alerts for your equipment
               </CardDescription>
             </CardHeader>
             <CardContent>

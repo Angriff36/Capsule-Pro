@@ -7,8 +7,9 @@
 import { database } from "@repo/database";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
-import { requireCurrentUser } from "@/app/lib/tenant";
 import { withRateLimit } from "@/middleware/rate-limiter";
+import { requireDualAuth } from "@/middleware/dual-auth";
+import { API_SCOPES } from "@/lib/api-scopes";
 import { log } from "@repo/observability/log";
 
 export const runtime = "nodejs";
@@ -21,9 +22,13 @@ export const runtime = "nodejs";
  * A revoked key cannot be used for authentication.
  */
 export const POST = withRateLimit(
-  async (_request, context) => {
+  async (request: Request, context) => {
     try {
-      const currentUser = await requireCurrentUser();
+      const authResult = await requireDualAuth(request, API_SCOPES.ADMIN);
+      if (!authResult.authenticated || !authResult.tenantId) {
+        return authResult.error!;
+      }
+
       const params = await context.params;
       if (!params) {
         return NextResponse.json(
@@ -37,7 +42,7 @@ export const POST = withRateLimit(
       const existing = await database.apiKey.findUnique({
         where: {
           tenantId_id: {
-            tenantId: currentUser.tenantId,
+            tenantId: authResult.tenantId!,
             id,
           },
         },
@@ -61,7 +66,7 @@ export const POST = withRateLimit(
       const revoked = await database.apiKey.update({
         where: {
           tenantId_id: {
-            tenantId: currentUser.tenantId,
+            tenantId: authResult.tenantId!,
             id,
           },
         },
@@ -77,9 +82,9 @@ export const POST = withRateLimit(
       });
 
       log.info("[ApiKeys/revoke] Revoked API key", {
-        tenantId: currentUser.tenantId,
+        tenantId: authResult.tenantId,
         keyId: id,
-        userId: currentUser.id,
+        userId: authResult.userId,
       });
 
       return NextResponse.json(revoked);

@@ -37,7 +37,7 @@ interface CalendarEvent {
   title: string;
   start: string;
   end?: string;
-  type: "event" | "shift" | "timeoff" | "deadline" | "reminder";
+  type: "event" | "shift" | "timeoff";
   status?: string;
   color?: string;
   details?: string;
@@ -87,7 +87,7 @@ export async function GET(request: NextRequest) {
     const startParam = searchParams.get("start");
     const endParam = searchParams.get("end");
     const typesParam =
-      searchParams.get("types") || "event,shift,timeoff,deadline,reminder";
+      searchParams.get("types") || "event,shift,timeoff";
 
     if (!(startParam && endParam)) {
       return NextResponse.json(
@@ -237,9 +237,6 @@ export async function GET(request: NextRequest) {
         log.error("[calendar] Time-off query failed", { error });
       }
     }
-
-    // BLOCKER: Deadline and Reminder models do not exist in schema.
-    // Tracked as capsule-pro/TODO:calendar-deadlines-reminders
 
     return NextResponse.json({ events });
   } catch (error) {

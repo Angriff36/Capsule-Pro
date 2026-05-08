@@ -6,7 +6,7 @@
  * are snake_case WITHOUT @map). It has NO deletedAt and NO updatedAt columns,
  * so this store uses hard-delete semantics and omits soft-delete filtering.
  */
-import { asNullableString, toDecimalInput, toDecimalRequired, reportOp, } from "./shared.js";
+import { asNullableString, reportOp, toDecimalInput, toDecimalRequired, } from "./shared.js";
 export class InventoryTransactionPrismaStore {
     prisma;
     tenantId;
@@ -41,7 +41,7 @@ export class InventoryTransactionPrismaStore {
                 total_cost: toDecimalInput(data.totalCost ?? data.total_cost),
                 reference: asNullableString(data.reference),
                 notes: asNullableString(data.notes),
-                transaction_date: data.transactionDate ?? data.transaction_date
+                transaction_date: (data.transactionDate ?? data.transaction_date)
                     ? new Date((data.transactionDate ?? data.transaction_date))
                     : new Date(),
                 storage_location_id: (data.storageLocationId ?? data.storage_location_id) ??
@@ -57,9 +57,9 @@ export class InventoryTransactionPrismaStore {
     async update(id, data) {
         try {
             const patch = {};
-            if (data.transactionType !== undefined || data.transaction_type !== undefined)
-                patch.transactionType =
-                    data.transactionType ?? data.transaction_type;
+            if (data.transactionType !== undefined ||
+                data.transaction_type !== undefined)
+                patch.transactionType = data.transactionType ?? data.transaction_type;
             if (data.quantity !== undefined || data.quantityChange !== undefined)
                 patch.quantity = toDecimalRequired(data.quantity ?? data.quantityChange, 0);
             if (data.unitCost !== undefined || data.unit_cost !== undefined)
@@ -70,15 +70,16 @@ export class InventoryTransactionPrismaStore {
                 patch.reference = data.reference;
             if (data.notes !== undefined)
                 patch.notes = data.notes;
-            if (data.transactionDate !== undefined || data.transaction_date !== undefined)
-                patch.transaction_date = (data.transactionDate ?? data.transaction_date)
-                    ? new Date((data.transactionDate ?? data.transaction_date))
-                    : new Date();
+            if (data.transactionDate !== undefined ||
+                data.transaction_date !== undefined)
+                patch.transaction_date =
+                    (data.transactionDate ?? data.transaction_date)
+                        ? new Date((data.transactionDate ?? data.transaction_date))
+                        : new Date();
             if (data.reason !== undefined)
                 patch.reason = data.reason;
             if (data.referenceType !== undefined || data.reference_type !== undefined)
-                patch.referenceType =
-                    data.referenceType ?? data.reference_type;
+                patch.referenceType = data.referenceType ?? data.reference_type;
             if (data.referenceId !== undefined || data.reference_id !== undefined)
                 patch.referenceId = data.referenceId ?? data.reference_id;
             if (data.employeeId !== undefined || data.employee_id !== undefined)

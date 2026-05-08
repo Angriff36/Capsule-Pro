@@ -7,5 +7,5 @@ export default function EquipmentPage() {
 export const metadata = {
   title: "Equipment Maintenance",
   description:
-    "Track equipment maintenance, work orders, and predictive failure alerts",
+    "Track equipment maintenance, work orders, and maintenance alerts",
 };

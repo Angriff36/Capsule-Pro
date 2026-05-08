@@ -319,3 +319,249 @@ Business users see "Predictive LTV" and "Model confidence: 85%" and make strateg
 ### Implementation note
 The detector targets files that combine predictive/ML-flavored labels with trivial arithmetic formulas or hardcoded confidence scores. The `negative_patterns` check for actual ML library imports (TensorFlow, brain.js, ml5) or model.fit/predict calls to reduce false positives on files that genuinely use ML. The `companion_pattern` ensures the file has some predictive/ML language before flagging the hardcoded confidence. This is a medium-severity rule because the user impact is real (misleading analytics driving business decisions) but the pattern is somewhat niche. Official docs not required: generic implementation-evidence rule.
 ---
+## [2026-05-08 08:31] Rule Discovery — fake_integration.schema_credential_field_bypassed_for_env_vars
+
+### Finding
+The `InventorySupplier` Prisma model has a `connectorCredentials` JSON column (schema line 1821) explicitly designed to store per-supplier API credentials. Both the supplier sync route and the supplier catalog webhook route reference this field in their documentation/comments — the webhook JSDoc says "Secret is stored in the supplier's connectorCredentials.webhookSecret field" and the sync route says "In production, credentials would be fetched from the supplier record's encrypted connectorCredentials field." However, neither route ever queries this column. The sync route reads API keys from `process.env[SUPPLIER_<CONNECTOR>_API_URL]` and `process.env[SUPPLIER_<CONNECTOR>_API_KEY]` (lines 93-100). The webhook route reads the webhook secret from `process.env[SUPPLIER_<CONNECTOR>_WEBHOOK_SECRET]` (lines 134-137). The `connectorCredentials` field is referenced in exactly two places in the entire codebase — both times only in comments, never in code. The field defaults to `{}` and no UI exists for populating it.
+
+### Evidence
+- File: `packages/database/prisma/schema.prisma`, line 1821
+- Snippet: `connectorCredentials Json @default("{}") @map("connector_credentials") @db.JsonB`
+- File: `apps/api/app/api/inventory/supplier-sync/route.ts`, lines 86-100
+- Snippet: `// For now, build config with placeholder credentials\n    // In production, credentials would be fetched from the supplier record's\n    // encrypted connectorCredentials field\n    const config = {\n      ...\n      credentials: {\n        apiBaseUrl: process.env[\`SUPPLIER_${resolvedConnectorId.toUpperCase().replace(/-/g, "_")}_API_URL\`] || "",\n        apiKey: process.env[\`SUPPLIER_${resolvedConnectorId.toUpperCase().replace(/-/g, "_")}_API_KEY\`] || "",`
+- File: `apps/api/app/api/webhooks/supplier-catalog/route.ts`, lines 39 and 134-137
+- Snippet: `* - Secret is stored in the supplier's connectorCredentials.webhookSecret field`
+- Snippet: `const webhookSecret = process.env[\`SUPPLIER_${payload.connectorId.toUpperCase().replace(/-/g, "_")}_WEBHOOK_SECRET\`];`
+
+### Why this matters
+The multi-tenant supplier integration architecture claims per-supplier credential isolation via the `connectorCredentials` column, but the actual implementation uses global env vars. This means: (1) all suppliers of the same connector type share one API key, so adding a second US Foods account is impossible without code changes; (2) the "encrypted connectorCredentials field" mentioned in comments is a dead column that misleads future developers into thinking per-supplier credentials are already handled; (3) webhook signature verification uses a shared secret rather than per-supplier secrets, so rotating credentials for one supplier requires redeployment; (4) no UI exists for managing supplier credentials despite the schema field being designed for it. The comments and schema create the impression of a complete per-supplier credential management system that does not exist.
+
+### Proposed detector rule
+```json
+{
+  "id": "fake_integration.schema_credential_field_bypassed_for_env_vars",
+  "title": "Schema credential/secrets field exists but routes read credentials from env vars instead",
+  "category": "fake_integration",
+  "severity": "high",
+  "confidence": 0.88,
+  "detector_type": "cross_file",
+  "language_targets": ["typescript", "javascript"],
+  "pattern": "//\\s*(?:encrypted\\s+)?(?:connector|api|webhook|auth)[Cc]redential",
+  "negative_patterns": [
+    "connectorCredentials\\s*[.=\\[]",
+    "supplier\\.connectorCredentials",
+    "\\.credentials\\s*=\\s*await",
+    "supplier\\.find"
+  ],
+  "evidence_required": {
+    "file_must_match": ["(sync|webhook|connector|integration).*(route|handler|service)"],
+    "companion_pattern": "process\\.env\\.[A-Z_]+(?:API|SECRET|TOKEN|KEY|PASSWORD)"
+  },
+  "false_positive_controls": {
+    "skip_test_files": true,
+    "skip_doc_files": true,
+    "strip_comments": false,
+    "path_exclude": ["node_modules/", ".next/", "dist/"]
+  },
+  "user_impact": "Multi-tenant supplier integrations share global env var credentials instead of per-supplier credentials stored in the database. Adding multiple suppliers of the same type is impossible. Credential rotation requires redeployment. The schema column designed for per-supplier credentials is dead code that misleads developers.",
+  "repair_guidance": "Query the InventorySupplier record in both the sync and webhook routes, extract credentials from the connectorCredentials JSON column, and use those values instead of (or as a fallback to) the global env vars. Implement a UI for managing per-supplier connector credentials. If the column is truly not ready for use, remove the 'encrypted connectorCredentials field' comments that claim it is the intended credential source.",
+  "example_source": {
+    "file": "apps/api/app/api/inventory/supplier-sync/route.ts",
+    "line_or_snippet": "// For now, build config with placeholder credentials\n// In production, credentials would be fetched from the supplier record's\n// encrypted connectorCredentials field\n...\ncredentials: {\n  apiBaseUrl: process.env[`SUPPLIER_${resolvedConnectorId}_API_URL`] || \"\",\n  apiKey: process.env[`SUPPLIER_${resolvedConnectorId}_API_KEY`] || \"\""
+  }
+}
+```
+
+### Implementation note
+The detector should identify routes that (1) have comments referencing a schema credential/secrets field as the intended source, (2) contain env var reads for API keys or secrets in the same file, but (3) never actually read the credential field from the database model. The `negative_patterns` check for actual usage of the credential field (property access, database query). The `companion_pattern` confirms the file reads from env vars for auth-related values. This should be extended to a cross_file variant that checks whether the Prisma schema defines a credential column on the referenced model and whether any code anywhere reads it. Official docs not required: generic implementation-evidence rule.
+---
+## [2026-05-08 10:17] Rule Discovery — feature_claim_mismatch.success_route_admits_not_implemented
+
+### Finding
+The route `apps/api/app/api/command-board/templates/route.ts` is presented as a live GET endpoint and even wraps its response as success, but the payload openly admits the feature does not exist yet. Instead of returning an error or hiding the route, it sends `templates: []` plus the message `Template listing not yet implemented - CommandBoard model needs shareId and isPublic fields`. That's a stub wearing a fake mustache.
+
+### Evidence
+- File: `apps/api/app/api/command-board/templates/route.ts`
+- Snippet: `return manifestSuccessResponse({ templates: [], message: "Template listing not yet implemented - CommandBoard model needs shareId and isPublic fields" });`
+- Conflicting implied behavior: `planning/feature-inventory.md` lists `/api/command-board/templates` as a real GET route, so callers have every reason to treat it as implemented.
+- Proper implementation evidence that should exist: persisted `shareId` / `isPublic` fields on `CommandBoard`, a real database query for template boards, and a response body sourced from actual records rather than a placeholder message.
+
+### Why this matters
+Clients see a success envelope and an empty template list, so they cannot tell "there are zero templates" from "this endpoint is fake." That hides broken functionality, pollutes product telemetry, and trains downstream UI or integrations to trust a route that does nothing.
+
+### Proposed detector rule
+```json
+{
+  "id": "feature_claim_mismatch.success_route_admits_not_implemented",
+  "title": "API route returns success while its message says the feature is not implemented",
+  "category": "feature_claim_mismatch",
+  "severity": "high",
+  "confidence": 0.94,
+  "detector_type": "regex",
+  "language_targets": ["typescript", "javascript"],
+  "pattern": "['\"`]([^'\"`\\n]*not yet implemented[^'\"`\\n]*)['\"`]",
+  "negative_patterns": [
+    "manifestErrorResponse\\(",
+    "NextResponse\\.json\\([^\\n]*status\\s*:\\s*501"
+  ],
+  "evidence_required": {
+    "file_must_match": ["app/api/.*/route\\.(t|j)sx?$"],
+    "min_pattern_count": 1,
+    "companion_pattern": "manifestSuccessResponse\\(|NextResponse\\.json\\s*\\("
+  },
+  "false_positive_controls": {
+    "skip_test_files": true,
+    "skip_doc_files": true,
+    "strip_comments": true,
+    "path_match": ["app/api/.*/route\\.(t|j)sx?$", "pages/api/.*\\.(t|j)sx?$", "api/.*\\.(t|j)sx?$"],
+    "path_exclude": ["node_modules/", "\\.next/", "dist/", "build/"]
+  },
+  "user_impact": "Users and API clients receive a success response for a feature that openly is not implemented, so they misread a stub as an empty-but-working result and keep going with bad assumptions.",
+  "repair_guidance": "Do not return a success envelope for admitted stubs. Either implement the backing model/query path, or return an explicit non-success status until real template data can be fetched.",
+  "example_source": {
+    "file": "apps/api/app/api/command-board/templates/route.ts",
+    "line_or_snippet": "return manifestSuccessResponse({\n  templates: [],\n  message:\n    \"Template listing not yet implemented - CommandBoard model needs shareId and isPublic fields\",\n});"
+  }
+}
+```
+
+### Implementation note
+Future SlopScope logic should flag route files where a string literal containing `not yet implemented` coexists with a success response helper in the same file. A later AST pass can tighten this by proving the literal is actually passed inside the returned success payload, not just sitting in dead code. Official docs not required: generic implementation-evidence rule.
+---
+---
+## [2026-05-08 10:46] Rule Discovery — error_handling_theater.fire_and_forget_side_effect_catch_empty
+
+### Finding
+The stock adjustment route explicitly advertises a low-stock SMS trigger, then calls `triggerInventoryLowSms(...)` with `.catch(() => {})`. That catches every failure path and discards it. If SMS delivery, automation lookup, provider auth, or network I/O blows up, the route still returns `201` as if the alert fired.
+
+### Evidence
+- File: apps/api/app/api/inventory/stock-levels/adjust/route.ts
+- Snippet: `triggerInventoryLowSms({ ... }).catch(() => {});`
+- Exact code:
+```ts
+// Fire-and-forget SMS trigger for low stock detection
+if (reorderStatus === "below_par" && reorderLevel > 0) {
+  triggerInventoryLowSms({
+    tenantId,
+    itemId: inventoryItemId,
+    itemName: item.name,
+    itemSku: item.item_number,
+    currentQuantity: newQuantity,
+    reorderPoint: reorderLevel,
+  }).catch(() => {});
+}
+```
+- Why it indicates lazy/shallow/fake implementation: the route claims to trigger low-stock SMS automation, but the empty catch block converts every delivery failure into invisible success.
+- Conflicting claim or implied behavior: inventory adjustments below par imply low-stock notification automation should fire as part of the workflow.
+- Proper implementation evidence that should exist: error logging/capture, durable retry/outbox state, or an explicit degraded-status response when notification delivery is part of the feature contract.
+- User impact: operators can assume urgent low-stock alerts were sent when nothing actually left the system.
+- Official docs not required: generic implementation-evidence rule.
+
+### Why this matters
+Routes that bury operational failures behind `.catch(() => {})` are classic implementation theater. The product looks automated; the failure mode is silent.
+
+### Proposed detector rule
+```json
+{
+  "id": "error_handling_theater.fire_and_forget_side_effect_catch_empty",
+  "title": "Fire-and-forget side-effect promise errors swallowed with empty catch",
+  "category": "error_handling_theater",
+  "severity": "medium",
+  "confidence": 0.88,
+  "detector_type": "regex",
+  "language_targets": [
+    "typescript",
+    "javascript"
+  ],
+  "pattern": "\\.catch\\(\\(\\)\\s*=>\\s*\\{\\}\\);",
+  "negative_patterns": [
+    "log\\.(warn|error)\\(",
+    "captureException\\(",
+    "throw\\s+"
+  ],
+  "evidence_required": {
+    "file_must_match": [
+      "(app|pages|src)/api/.*\\.(t|j)sx?$"
+    ],
+    "companion_pattern": "(dispatchWebhooks|trigger[A-Z][A-Za-z0-9_]*(Sms|Email|Webhook)?|send[A-Z][A-Za-z0-9_]*|publish[A-Z][A-Za-z0-9_]*)\\s*\\("
+  },
+  "false_positive_controls": {
+    "skip_test_files": true,
+    "skip_doc_files": true,
+    "strip_comments": true,
+    "path_exclude": [
+      "node_modules/",
+      "\\.next/",
+      "dist/",
+      "build/"
+    ]
+  },
+  "user_impact": "Routes report success even when follow-on notifications or webhook dispatches fail, so users think alerts or integrations fired when the system actually dropped them.",
+  "repair_guidance": "For operational side effects like SMS or webhook dispatch, at minimum log/capture the error with route context and persist a retryable failure record. If the side effect is part of the feature contract, do not silently ignore it behind an empty catch.",
+  "example_source": {
+    "file": "apps/api/app/api/inventory/stock-levels/adjust/route.ts",
+    "line_or_snippet": "triggerInventoryLowSms({ ... }).catch(() => {});"
+  }
+}
+```
+
+### Implementation note
+Start with a regex detector for empty `.catch(() => {})` handlers in API routes, then require a companion side-effect verb such as `trigger*`, `send*`, `publish*`, or `dispatchWebhooks` in the same file so the rule stays focused on silently dropped automation work rather than any random promise chain.
+
+---
+## [2026-05-08 04:45] Rule Discovery — test_theater.training_completion_trusts_client_self_report
+
+### Finding
+The training completion endpoint (`POST /api/training/complete`) accepts `{ action: "complete", assignmentId, passed, score }` from the client and writes it directly to the database with no server-side verification. The `passed` field defaults to `true` via `${body.passed ?? true}` (line 228) when the client omits it. The `score` field is entirely optional and unvalidated — there's no check that it falls within 0-100, no comparison against a module-level passing threshold (which doesn't exist in the schema), and no quiz submission endpoint anywhere in the codebase.
+
+The client-side `handleComplete` function (line 69-86 of `my-training-client.tsx`) sends `{ action: "complete", assignmentId, passed: true }` with no score and no quiz answers. The user clicks a "Complete" button and self-certifies. Training modules support `content_type: "quiz"` but there is no question bank, no answer submission endpoint, and no score verification anywhere in the training subsystem. The entire compliance/certification claim is theater — a user can mark any required training (food safety, harassment prevention, etc.) as completed and passed in a single click with zero content consumption or assessment.
+
+### Evidence
+- File: `apps/api/app/api/training/complete/route.ts`
+- Snippet (line 226-228): `${body.score ?? null},\n            ${body.passed ?? true},\n            ${body.notes || null}`
+- File: `apps/app/app/(authenticated)/staff/my-training/my-training-client.tsx`
+- Snippet (lines 75-78): `body: JSON.stringify({\n          action: "complete",\n          assignmentId,\n          passed: true,\n        })`
+- File: `apps/api/app/api/training/types.ts`
+- Snippet (line 5): `export type ContentType = "document" | "video" | "quiz" | "interactive";` — "quiz" is a valid content type
+- File: `apps/api/app/api/training/` — directory listing shows no quiz submission, answer, or question endpoints
+
+### Why this matters
+For a catering company, training completion drives compliance. Food safety certifications, alcohol service permits, and harassment prevention training are legally required in many jurisdictions. The system records employees as "passed" based entirely on client self-report with no server-side assessment. A health inspector or labor auditor reviewing training records would see completion entries with `passed: true` and assume assessments were administered, when in reality any employee can self-certify with a single API call. This is a compliance fraud vector masquerading as a training management system.
+
+### Proposed detector rule
+```json
+{
+  "id": "test_theater.training_completion_trusts_client_self_report",
+  "title": "Training/compliance completion endpoint accepts client-supplied passed/score with no server-side verification",
+  "category": "test_theater",
+  "severity": "critical",
+  "confidence": 0.92,
+  "detector_type": "hybrid",
+  "language_targets": ["typescript", "javascript"],
+  "pattern": "body\\.passed\\s*\\?\\?\\s*true|body\\.score|req\\.body\\.passed|request\\.body\\.passed",
+  "negative_patterns": [
+    "validateQuiz|verifyScore|checkPassing|passingThreshold|passing_score|minimum_score|min_score",
+    "quizSubmission|answerSheet|evaluateAnswers|gradeQuiz|scoreQuiz"
+  ],
+  "evidence_required": {
+    "file_must_match": ["training|compliance|certification|course"],
+    "companion_pattern": "action.*complete|status.*completed|passed.*true"
+  },
+  "false_positive_controls": {
+    "skip_test_files": true,
+    "skip_doc_files": true,
+    "strip_comments": true,
+    "path_exclude": ["node_modules/", ".next/", "dist/", "e2e/"]
+  },
+  "user_impact": "Employees can self-certify completion of required compliance training (food safety, harassment prevention, etc.) with a single click. No quiz is administered, no content consumption is verified, and the system records 'passed: true' based entirely on client-supplied data. Training compliance records are unreliable and potentially fraudulent.",
+  "repair_guidance": "Implement server-side quiz assessment: (1) add a quiz/question bank data model, (2) create a quiz submission endpoint that evaluates answers server-side, (3) store the passing threshold on the training module, (4) have the completion endpoint require a valid quiz submission ID and compare the server-computed score against the threshold rather than accepting client-supplied values. At minimum, if quiz infrastructure is not yet built, change the `passed ?? true` default to `false` so completion without assessment records the employee as not-yet-passed.",
+  "example_source": {
+    "file": "apps/api/app/api/training/complete/route.ts",
+    "line_or_snippet": "${body.score ?? null},\n            ${body.passed ?? true},\n            ${body.notes || null}"
+  }
+}
+```
+
+### Implementation note
+Detector should flag completion/assessment endpoints in training, compliance, or certification modules where the `passed` status or `score` is accepted from the client request body without any server-side verification (no quiz evaluation, no answer checking, no passing threshold comparison). The `negative_patterns` check for the presence of actual quiz/assessment infrastructure in the same codebase — if those exist, the endpoint may be legitimate. The `companion_pattern` anchors to completion-related logic. The `file_must_match` restricts to training/compliance paths to avoid flagging generic status-update endpoints. Official docs not required: generic trust-boundary violation in assessment flows.
+---

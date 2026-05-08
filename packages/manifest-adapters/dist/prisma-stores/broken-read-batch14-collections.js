@@ -186,7 +186,8 @@ export class CollectionCasePrismaStore {
                 patch.isEscalatedToLegal = asBool(data.isEscalatedToLegal, false);
             // Merge manifest-only props into metadata
             const metaOverrides = extractMetadata(data, COLLECTION_CASE_METADATA_KEYS);
-            if (Object.keys(metaOverrides).length > 0 || data.metadata !== undefined) {
+            if (Object.keys(metaOverrides).length > 0 ||
+                data.metadata !== undefined) {
                 const existingMeta = data.metadata ?? {};
                 patch.metadata = { ...existingMeta, ...metaOverrides };
             }
@@ -438,7 +439,8 @@ export class CollectionPaymentPlanPrismaStore {
                 patch.status = asString(data.status);
             // Merge manifest-only props into metadata
             const metaOverrides = extractMetadata(data, COLLECTION_PAYMENT_PLAN_METADATA_KEYS);
-            if (Object.keys(metaOverrides).length > 0 || data.metadata !== undefined) {
+            if (Object.keys(metaOverrides).length > 0 ||
+                data.metadata !== undefined) {
                 const existingMeta = data.metadata ?? {};
                 patch.metadata = { ...existingMeta, ...metaOverrides };
             }

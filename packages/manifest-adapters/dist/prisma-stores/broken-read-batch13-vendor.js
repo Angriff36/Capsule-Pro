@@ -134,7 +134,9 @@ export class VendorCatalogPrismaStore {
             leadTimeDays: row.leadTimeDays ?? null,
             leadTimeMinDays: row.leadTimeMinDays ?? null,
             leadTimeMaxDays: row.leadTimeMaxDays ?? null,
-            minimumOrderQuantity: row.minimumOrderQuantity != null ? String(row.minimumOrderQuantity) : null,
+            minimumOrderQuantity: row.minimumOrderQuantity != null
+                ? String(row.minimumOrderQuantity)
+                : null,
             orderMultiple: row.orderMultiple != null ? String(row.orderMultiple) : null,
             isActive: row.isActive ?? true,
             effectiveFrom: row.effectiveFrom
@@ -190,7 +192,8 @@ export class VendorContractPrismaStore {
             data: {
                 tenantId: this.tenantId,
                 id,
-                contractNumber: asString(data.contractNumber) || `VC-${crypto.randomUUID().slice(0, 8)}`,
+                contractNumber: asString(data.contractNumber) ||
+                    `VC-${crypto.randomUUID().slice(0, 8)}`,
                 vendorId: asString(data.vendorId),
                 vendorName: asNullableString(data.vendorName),
                 contractType: asString(data.contractType) || "purchase",

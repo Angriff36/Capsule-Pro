@@ -21,7 +21,7 @@
  * Replaces the inline InventoryItemPrismaStore in prisma-store.ts.
  * Both soft-delete via deletedAt.
  */
-import { asBool, asJsonInput, asNullableString, asStringArray, toDecimalRequired, reportOp, } from "./shared.js";
+import { asBool, asJsonInput, asNullableString, asStringArray, reportOp, toDecimalRequired, } from "./shared.js";
 // ---------------------------------------------------------------------------
 // InventoryItemPrismaStore  (tenant_inventory.inventory_items)
 // ---------------------------------------------------------------------------
@@ -51,7 +51,9 @@ export class InventoryItemPrismaStore {
             data: {
                 tenantId: this.tenantId,
                 id,
-                item_number: data.itemNumber ?? data.item_number ?? `ITEM-${Date.now()}`,
+                item_number: data.itemNumber ??
+                    data.item_number ??
+                    `ITEM-${Date.now()}`,
                 name: data.name ?? "Unnamed Item",
                 description: asNullableString(data.description),
                 category: data.category ?? "general",
@@ -97,9 +99,11 @@ export class InventoryItemPrismaStore {
                 patch.tags = asStringArray(data.tags ?? data.allergens);
             if (data.fsa_status !== undefined || data.fsaStatus !== undefined)
                 patch.fsa_status = asNullableString(data.fsa_status ?? data.fsaStatus);
-            if (data.fsa_temp_logged !== undefined || data.fsaTempLogged !== undefined)
+            if (data.fsa_temp_logged !== undefined ||
+                data.fsaTempLogged !== undefined)
                 patch.fsa_temp_logged = asBool(data.fsa_temp_logged ?? data.fsaTempLogged, false);
-            if (data.fsa_allergen_info !== undefined || data.fsaAllergenInfo !== undefined)
+            if (data.fsa_allergen_info !== undefined ||
+                data.fsaAllergenInfo !== undefined)
                 patch.fsa_allergen_info = asBool(data.fsa_allergen_info ?? data.fsaAllergenInfo, false);
             if (data.fsa_traceable !== undefined || data.fsaTraceable !== undefined)
                 patch.fsa_traceable = asBool(data.fsa_traceable ?? data.fsaTraceable, false);
@@ -186,12 +190,16 @@ export class InventorySupplierPrismaStore {
             data: {
                 tenantId: this.tenantId,
                 id,
-                supplier_number: data.supplierNumber ?? data.supplier_number ?? `SUP-${Date.now()}`,
+                supplier_number: data.supplierNumber ??
+                    data.supplier_number ??
+                    `SUP-${Date.now()}`,
                 name: data.name ?? "Unnamed Supplier",
                 contact_person: asNullableString(data.contact_person ?? data.contactPerson),
                 email: asNullableString(data.email),
                 phone: asNullableString(data.phone),
-                payment_terms: data.payment_terms ?? data.paymentTerms ?? "NET_30",
+                payment_terms: data.payment_terms ??
+                    data.paymentTerms ??
+                    "NET_30",
                 connectorType: asNullableString(data.connectorType),
                 connectorCredentials: asJsonInput(data.connectorCredentials),
                 notes: asNullableString(data.notes),
@@ -203,7 +211,8 @@ export class InventorySupplierPrismaStore {
     async update(id, data) {
         try {
             const patch = {};
-            if (data.supplier_number !== undefined || data.supplierNumber !== undefined)
+            if (data.supplier_number !== undefined ||
+                data.supplierNumber !== undefined)
                 patch.supplier_number = data.supplier_number ?? data.supplierNumber;
             if (data.name !== undefined)
                 patch.name = data.name;

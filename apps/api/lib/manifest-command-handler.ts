@@ -22,6 +22,7 @@ import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { requireCurrentUser } from "@/app/lib/tenant";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
+import { dispatchWebhooks } from "@/app/lib/webhook-dispatch";
 
 /**
  * Options for executing a manifest command.
@@ -173,7 +174,21 @@ export async function executeManifestCommand(
       return manifestErrorResponse(result.error ?? "Command failed", 400);
     }
 
-    // 8. Success
+    // 8. Success — fire-and-forget webhook dispatch
+    const entityId = String(
+      (result.result as Record<string, unknown>)?.id ?? commandPayload.id ?? params?.id ?? ""
+    );
+    const webhookAction = commandName === "create" ? "created" as const
+      : commandName === "delete" || commandName === "softDelete" || commandName === "cancel" ? "deleted" as const
+      : "updated" as const;
+    dispatchWebhooks({
+      tenantId: currentUser.tenantId,
+      entityType: entityName,
+      entityId,
+      action: webhookAction,
+      data: { ...(result.result as Record<string, unknown> ?? {}), commandName },
+    }).catch(() => {});
+
     return manifestSuccessResponse({
       result: result.result,
       events: result.emittedEvents,

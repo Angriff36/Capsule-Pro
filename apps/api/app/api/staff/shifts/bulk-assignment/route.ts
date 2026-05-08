@@ -1,12 +1,15 @@
 import { auth } from "@repo/auth/server";
 import { captureException } from "@sentry/nextjs";
+import { triggerShiftAssignedSms } from "@repo/notifications";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { withRateLimit } from "@/middleware/rate-limiter";
+import { dispatchWebhooks } from "@/app/lib/webhook-dispatch";
 import {
   type AssignmentResult,
   type BulkAssignmentRequest,
   buildSummary,
+  fetchShiftsForAutoAssignment,
   processAutoAssignShifts,
   processPreSelectedShifts,
   separateShiftsByAssignmentType,
@@ -106,6 +109,58 @@ export const POST = withRateLimit(
 
       // Build summary
       const summary = buildSummary(sortedResults, dryRun);
+
+      // Fire-and-forget SMS triggers for successful non-dry-run assignments
+      if (!dryRun) {
+        const assigned = sortedResults.filter(
+          (r) => r.success && !r.skipped && r.employeeId && r.shiftId
+        );
+        if (assigned.length > 0) {
+          (async () => {
+            try {
+              const shiftIds = assigned.map((r) => r.shiftId);
+              const shifts = await fetchShiftsForAutoAssignment(
+                tenantId,
+                shiftIds.map((id) => ({ shiftId: id }))
+              );
+              const shiftMap = new Map(shifts.map((s) => [s.id, s]));
+              for (const result of assigned) {
+                const shift = shiftMap.get(result.shiftId);
+                if (shift && result.employeeId) {
+                  triggerShiftAssignedSms({
+                    tenantId,
+                    shiftId: result.shiftId,
+                    shiftDate: shift.shift_start.toISOString().slice(0, 10),
+                    shiftStart: shift.shift_start.toISOString(),
+                    shiftEnd: shift.shift_end.toISOString(),
+                    employeeId: result.employeeId,
+                    employeeName: result.employeeName ?? "",
+                    stationName: shift.role_during_shift ?? undefined,
+                  }).catch(() => {});
+                }
+              }
+            } catch {
+              // SMS trigger failures must not affect the response
+            }
+          })();
+        }
+      }
+
+      // Fire-and-forget webhook dispatch for successful non-dry-run assignments
+      if (!dryRun) {
+        const assigned = sortedResults.filter(
+          (r) => r.success && !r.skipped && r.shiftId
+        );
+        for (const result of assigned) {
+          dispatchWebhooks({
+            tenantId,
+            entityType: "scheduleShift",
+            entityId: result.shiftId,
+            action: "updated",
+            data: { shiftId: result.shiftId, employeeId: result.employeeId },
+          }).catch(() => {});
+        }
+      }
 
       return NextResponse.json({
         results: sortedResults,

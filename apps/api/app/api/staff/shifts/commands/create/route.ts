@@ -5,6 +5,7 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { captureException } from "@sentry/nextjs";
+import { triggerShiftAssignedSms } from "@repo/notifications";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import {
@@ -12,6 +13,7 @@ import {
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
+import { dispatchWebhooks } from "@/app/lib/webhook-dispatch";
 import { log } from "@repo/observability/log";
 
 export const runtime = "nodejs";
@@ -80,6 +82,34 @@ export async function POST(request: NextRequest) {
       }
       return manifestErrorResponse(result.error ?? "Command failed", 400);
     }
+
+    // Fire-and-forget SMS trigger for shift assignment (only if an employeeId was in the body)
+    if (
+      body.employeeId &&
+      typeof body.shiftStart === "string" &&
+      typeof body.shiftEnd === "string"
+    ) {
+      triggerShiftAssignedSms({
+        tenantId,
+        shiftId:
+          (result.result as Record<string, unknown>)?.id as string ??
+          body.id,
+        shiftDate: body.shiftStart.slice(0, 10),
+        shiftStart: body.shiftStart,
+        shiftEnd: body.shiftEnd,
+        employeeId: body.employeeId as string,
+        employeeName: (body.employeeName as string) ?? "",
+        stationName: body.roleDuringShift as string | undefined,
+      }).catch(() => {});
+    }
+
+    dispatchWebhooks({
+      tenantId,
+      entityType: "scheduleShift",
+      entityId: (result.result as Record<string, unknown>)?.id as string ?? body.id ?? "",
+      action: "created",
+      data: result.result as Record<string, unknown>,
+    }).catch(() => {});
 
     return manifestSuccessResponse({
       result: result.result,

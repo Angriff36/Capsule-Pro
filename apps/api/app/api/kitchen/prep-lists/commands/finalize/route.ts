@@ -3,6 +3,7 @@
 // Writes MUST flow through runtime to enforce guards, policies, and constraints
 
 import { auth } from "@repo/auth/server";
+import { triggerPrepListPublishedSms } from "@repo/notifications";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import {
@@ -10,6 +11,7 @@ import {
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
+import { dispatchWebhooks } from "@/app/lib/webhook-dispatch";
 import { log } from "@repo/observability/log";
 
 export const runtime = "nodejs";
@@ -51,6 +53,23 @@ export async function POST(request: NextRequest) {
       }
       return manifestErrorResponse(result.error ?? "Command failed", 400);
     }
+
+    // Fire-and-forget SMS trigger for prep list published
+    triggerPrepListPublishedSms({
+      tenantId,
+      prepListId: (body.id as string) ?? ((result.result as Record<string, unknown>)?.id as string) ?? "",
+      prepListName: (body.name as string) ?? "",
+      publishedByEmployeeId: userId,
+      publishedByName: "",
+    }).catch(() => {});
+
+    dispatchWebhooks({
+      tenantId,
+      entityType: "prepTask",
+      entityId: (body.id as string) ?? ((result.result as Record<string, unknown>)?.id as string) ?? "",
+      action: "updated",
+      data: result.result as Record<string, unknown>,
+    }).catch(() => {});
 
     return manifestSuccessResponse({
       result: result.result,

@@ -13,6 +13,7 @@ import type { Prisma } from "@repo/database";
 import { database } from "@repo/database";
 import { claimPrepTask } from "@repo/manifest-adapters";
 import { hasBlockingConstraints } from "@repo/manifest-adapters/api-response";
+import { triggerTaskAssignedSms } from "@repo/notifications";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -251,6 +252,21 @@ export async function POST(request: Request) {
           bundleClaim: true,
         } as Prisma.InputJsonValue
       );
+    }
+
+    // Fire-and-forget SMS triggers for each claimed task
+    const fullName =
+      `${currentUser.firstName || ""} ${currentUser.lastName || ""}`.trim();
+    for (const claimed of claimedTasks) {
+      const task = tasks.find((t) => t.id === claimed.taskId);
+      triggerTaskAssignedSms({
+        tenantId,
+        taskId: claimed.taskId,
+        taskName: task?.name ?? "Unknown task",
+        employeeId: userId,
+        employeeName: fullName,
+        dueDate: task?.dueByDate?.toISOString(),
+      }).catch(() => {});
     }
 
     // Step 8: Return success response

@@ -88,8 +88,7 @@ export class CommandBoardConnectionPrismaStore {
             if (data.toCardId !== undefined)
                 patch.toCardId = asString(data.toCardId);
             if (data.relationshipType !== undefined)
-                patch.relationshipType =
-                    asString(data.relationshipType) || "generic";
+                patch.relationshipType = asString(data.relationshipType) || "generic";
             if (data.label !== undefined)
                 patch.label = asNullableString(data.label);
             if (data.visible !== undefined)

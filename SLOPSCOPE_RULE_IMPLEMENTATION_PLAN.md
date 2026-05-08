@@ -217,3 +217,28 @@ Backlog of proposed detector rules discovered by the rule-discovery loop.
   - Detector type: hybrid
   - Source evidence: `apps/app/app/(authenticated)/analytics/clients/actions/get-client-ltv.ts`
   - Future implementation: Match hardcoded confidence assignments and trivial arithmetic labeled as "predicted" or "predictive", suppress when real ML imports (TensorFlow, brain.js, ml5) or model.fit/predict calls are present
+- [ ] `fake_integration.schema_credential_field_bypassed_for_env_vars` — Schema credential/secrets field exists but routes read credentials from env vars instead
+  - Category: fake_integration
+  - Severity: high
+  - Detector type: cross_file
+  - Source evidence: `apps/api/app/api/inventory/supplier-sync/route.ts`, `apps/api/app/api/webhooks/supplier-catalog/route.ts`
+  - Future implementation: Cross-reference Prisma schema credential columns against route files that claim to use them in comments but actually read from env vars; flag when the schema field is never queried in code
+
+- [ ] `feature_claim_mismatch.success_route_admits_not_implemented` — API route returns success while its message says the feature is not implemented
+  - Category: feature_claim_mismatch
+  - Severity: high
+  - Detector type: regex
+  - Source evidence: `apps/api/app/api/command-board/templates/route.ts`
+  - Future implementation: Match `not yet implemented` string literals inside route files and require a companion success-response helper in the same file so admitted stubs do not masquerade as healthy empty results
+- [ ] error_handling_theater.fire_and_forget_side_effect_catch_empty — Fire-and-forget side-effect promise errors swallowed with empty catch
+  - Category: error_handling_theater
+  - Severity: medium
+  - Detector type: regex
+  - Source evidence: apps/api/app/api/inventory/stock-levels/adjust/route.ts
+  - Future implementation: Flag API routes that combine side-effect verbs like `trigger*` or `dispatchWebhooks` with empty `.catch(() => {})` handlers.
+- [ ] test_theater.training_completion_trusts_client_self_report — Training/compliance completion endpoint accepts client-supplied passed/score with no server-side verification
+  - Category: test_theater
+  - Severity: critical
+  - Detector type: hybrid
+  - Source evidence: apps/api/app/api/training/complete/route.ts
+  - Future implementation: Flag training/compliance endpoints that accept client-supplied `passed` or `score` fields without server-side quiz/assessment verification infrastructure.

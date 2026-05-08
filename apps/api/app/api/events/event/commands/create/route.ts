@@ -14,6 +14,7 @@ import {
 import { createManifestRuntime } from "@/lib/manifest-runtime";
 import { log } from "@repo/observability/log";
 import { recordEntityChange } from "@/app/lib/activity-feed-service";
+import { dispatchWebhooks } from "@/app/lib/webhook-dispatch";
 
 export const runtime = "nodejs";
 
@@ -90,6 +91,15 @@ export async function POST(request: NextRequest) {
       (body as Record<string, unknown>)?.title as string ?? (body as Record<string, unknown>)?.name as string ?? "Event",
       currentUser.id
     ).catch(() => {});
+
+    const eventId = (result.result as Record<string, unknown>)?.id as string ?? "";
+    dispatchWebhooks({
+      tenantId,
+      entityType: "Event",
+      entityId: eventId,
+      action: "created",
+      data: { ...(result.result as Record<string, unknown>), title: (body as Record<string, unknown>)?.title ?? (body as Record<string, unknown>)?.name ?? "Event" },
+    }).catch(() => {});
 
     return manifestSuccessResponse({
       result: result.result,

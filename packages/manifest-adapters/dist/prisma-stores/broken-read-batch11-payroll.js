@@ -9,7 +9,7 @@
  *   PayrollRunPrismaStore — payroll_runs table, snake_case fields,
  *     soft-delete via deleted_at, Decimal fields for monetary totals.
  */
-import { asJsonInput, asNullableString, asString, toDecimalRequired, reportOp, } from "./shared.js";
+import { asJsonInput, asNullableString, asString, reportOp, toDecimalRequired, } from "./shared.js";
 // ---------------------------------------------------------------------------
 // PayrollApprovalHistoryPrismaStore
 // ---------------------------------------------------------------------------
@@ -146,10 +146,10 @@ export class PayrollPeriodPrismaStore {
             data: {
                 tenant_id: this.tenantId,
                 id,
-                period_start: data.periodStart ?? data.period_start
+                period_start: (data.periodStart ?? data.period_start)
                     ? new Date((data.periodStart ?? data.period_start))
                     : new Date(),
-                period_end: data.periodEnd ?? data.period_end
+                period_end: (data.periodEnd ?? data.period_end)
                     ? new Date((data.periodEnd ?? data.period_end))
                     : new Date(),
                 status: (data.status ?? "open") || "open",
@@ -250,7 +250,7 @@ export class PayrollRunPrismaStore {
                 tenant_id: this.tenantId,
                 id,
                 payroll_period_id: (data.payrollPeriodId ?? data.payroll_period_id) ?? "",
-                run_date: data.runDate ?? data.run_date
+                run_date: (data.runDate ?? data.run_date)
                     ? new Date((data.runDate ?? data.run_date))
                     : new Date(),
                 status: (data.status ?? "pending") || "pending",
@@ -258,10 +258,10 @@ export class PayrollRunPrismaStore {
                 total_deductions: toDecimalRequired(data.totalDeductions ?? data.total_deductions, 0),
                 total_net: toDecimalRequired(data.totalNet ?? data.total_net, 0),
                 approved_by: asNullableString(data.approvedBy ?? data.approved_by),
-                approved_at: data.approvedAt ?? data.approved_at
+                approved_at: (data.approvedAt ?? data.approved_at)
                     ? new Date((data.approvedAt ?? data.approved_at))
                     : null,
-                paid_at: data.paidAt ?? data.paid_at
+                paid_at: (data.paidAt ?? data.paid_at)
                     ? new Date((data.paidAt ?? data.paid_at))
                     : null,
             },
@@ -283,13 +283,15 @@ export class PayrollRunPrismaStore {
             if (data.approvedBy !== undefined || data.approved_by !== undefined)
                 patch.approved_by = data.approvedBy ?? data.approved_by;
             if (data.approvedAt !== undefined || data.approved_at !== undefined)
-                patch.approved_at = (data.approvedAt ?? data.approved_at)
-                    ? new Date((data.approvedAt ?? data.approved_at))
-                    : null;
+                patch.approved_at =
+                    (data.approvedAt ?? data.approved_at)
+                        ? new Date((data.approvedAt ?? data.approved_at))
+                        : null;
             if (data.paidAt !== undefined || data.paid_at !== undefined)
-                patch.paid_at = (data.paidAt ?? data.paid_at)
-                    ? new Date((data.paidAt ?? data.paid_at))
-                    : null;
+                patch.paid_at =
+                    (data.paidAt ?? data.paid_at)
+                        ? new Date((data.paidAt ?? data.paid_at))
+                        : null;
             patch.updated_at = new Date();
             const updated = await this.prisma.payroll_runs.update({
                 where: { tenant_id_id: { tenant_id: this.tenantId, id } },

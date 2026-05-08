@@ -1,6 +1,10 @@
+import { auth } from "@repo/auth/server";
+import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
+import { triggerTaskCompletedSms } from "@repo/notifications";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { executeManifestCommand } from "@/lib/manifest-command-handler";
 
 interface RouteContext {
@@ -70,6 +74,38 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       `[KitchenTask/PATCH] Mapping status="${newStatus}" to command="${commandName}"`,
       { taskId: id }
     );
+
+    // Fire-and-forget SMS trigger for task completion
+    if (commandName === "complete") {
+      (async () => {
+        try {
+          const { orgId, userId: clerkId } = await auth();
+          if (orgId && clerkId) {
+            const tenantId = await getTenantIdForOrg(orgId);
+            const currentUser = await database.user.findFirst({
+              where: { AND: [{ tenantId }, { authUserId: clerkId }] },
+            });
+            if (tenantId && currentUser) {
+              const task = await database.prepTask.findFirst({
+                where: { AND: [{ tenantId }, { id }, { deletedAt: null }] },
+              });
+              if (task) {
+                triggerTaskCompletedSms({
+                  tenantId,
+                  taskId: id,
+                  taskName: task.name,
+                  completedByEmployeeId: currentUser.id,
+                  completedByName:
+                    `${currentUser.firstName || ""} ${currentUser.lastName || ""}`.trim(),
+                }).catch(() => {});
+              }
+            }
+          }
+        } catch {
+          // SMS trigger failure must never affect the route response
+        }
+      })();
+    }
 
     return executeManifestCommand(request, {
       entityName: "KitchenTask",

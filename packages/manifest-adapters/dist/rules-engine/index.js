@@ -16,7 +16,7 @@
 // Rule definitions
 export { 
 // Allergen rules
-allergenAcknowledgmentRule, allergenCrossContaminationRule, allergenRuleConfigs, allergenRules, allRules, equipmentCapacityRule, equipmentRules, kitchenTaskTransitions, longPrepTimeRule, 
+allergenAcknowledgmentRule, allergenCrossContaminationRule, allergenRuleConfigs, allergenRules, allRules, equipmentRules, kitchenTaskTransitions, longPrepTimeRule, 
 // Timing rules
 overdueTaskRule, prepTaskCertificationRule, prepTaskDependencies, prepTaskDependencyRule, 
 // Prep task rules

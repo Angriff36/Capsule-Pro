@@ -6,11 +6,13 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { triggerInventoryLowSms } from "@repo/notifications";
 import { createOutboxEvent } from "@repo/realtime";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { InvariantError } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { dispatchWebhooks } from "@/app/lib/webhook-dispatch";
 import type { CreateAdjustmentResponse } from "../types";
 import { validateCreateAdjustmentRequest } from "../validation";
 import { log } from "@repo/observability/log";
@@ -347,6 +349,27 @@ export async function POST(request: Request) {
       reorderStatus,
       parStatus
     );
+
+    // Fire-and-forget webhook dispatch for inventory stock adjustment
+    dispatchWebhooks({
+      tenantId,
+      entityType: "InventoryItem",
+      entityId: inventoryItemId,
+      action: "updated",
+      data: { inventoryItemId, adjustmentType, quantity, previousQuantity: result.previousQuantity, newQuantity: result.newQuantity },
+    }).catch(() => {});
+
+    // Fire-and-forget SMS trigger for low stock detection
+    if (reorderStatus === "below_par" && reorderLevel > 0) {
+      triggerInventoryLowSms({
+        tenantId,
+        itemId: inventoryItemId,
+        itemName: item.name,
+        itemSku: item.item_number,
+        currentQuantity: newQuantity,
+        reorderPoint: reorderLevel,
+      }).catch(() => {});
+    }
 
     return NextResponse.json(response, { status: 201 });
   } catch (error) {

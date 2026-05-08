@@ -70,9 +70,7 @@ export class CommandBoardPrismaStore {
                 isTemplate: asBool(data.isTemplate, false),
                 tags: coerceTags(data.tags),
                 autoPopulate: asBool(data.autoPopulate, false),
-                ...(data.scope !== undefined
-                    ? { scope: asJsonInput(data.scope) }
-                    : {}),
+                ...(data.scope !== undefined ? { scope: asJsonInput(data.scope) } : {}),
             },
         });
         return this.mapToManifestEntity(row);

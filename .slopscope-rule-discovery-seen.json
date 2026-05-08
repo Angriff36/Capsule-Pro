@@ -192,6 +192,30 @@
       "file_path": "apps/app/app/(authenticated)/analytics/clients/actions/get-client-ltv.ts",
       "snippet_hash": "sha256:386d9c4456b49f30503504766c71af885a5a9b1aebeb0d8fe57f1af114edb7b5",
       "discovered_at": "2026-05-08T06:05:00Z"
+    },
+    {
+      "rule_id": "fake_integration.schema_credential_field_bypassed_for_env_vars",
+      "file_path": "apps/api/app/api/inventory/supplier-sync/route.ts",
+      "snippet_hash": "sha256:90b5e8f859a1aeab46306393873001e1dbce16c417ec4893279619fbfc9e4eb5",
+      "discovered_at": "2026-05-08T08:31:00Z"
+    },
+    {
+      "rule_id": "feature_claim_mismatch.success_route_admits_not_implemented",
+      "file_path": "apps/api/app/api/command-board/templates/route.ts",
+      "snippet_hash": "sha256:91310c74e25839ce542641c824a4ee8972e34040701ca75caa755ffaee4597e6",
+      "discovered_at": "2026-05-08T10:17:05Z"
+    },
+    {
+      "rule_id": "error_handling_theater.fire_and_forget_side_effect_catch_empty",
+      "file_path": "apps/api/app/api/inventory/stock-levels/adjust/route.ts",
+      "snippet_hash": "sha256:848e30b6ecd87008f272b9b646c29f0292ba93671e792393e7e716a7ddee05a7",
+      "discovered_at": "2026-05-08T10:46:21Z"
+    },
+    {
+      "rule_id": "test_theater.training_completion_trusts_client_self_report",
+      "file_path": "apps/api/app/api/training/complete/route.ts",
+      "snippet_hash": "sha256:fcaedec1ceebf267ec2ced8b4857a424e57aa8c54025d81d678b21003a64d311",
+      "discovered_at": "2026-05-08T11:45:00Z"
     }
   ]
 }

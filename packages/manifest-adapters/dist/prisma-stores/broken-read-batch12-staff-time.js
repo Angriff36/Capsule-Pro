@@ -285,7 +285,8 @@ export class TrainingAssignmentPrismaStore {
                 patch.status = data.status;
             if (data.dueDate !== undefined || data.due_date !== undefined)
                 patch.due_date = asNullableDate(data.dueDate ?? data.due_date);
-            if (data.assignedToAll !== undefined || data.assigned_to_all !== undefined)
+            if (data.assignedToAll !== undefined ||
+                data.assigned_to_all !== undefined)
                 patch.assigned_to_all = data.assignedToAll ?? data.assigned_to_all;
             patch.updated_at = new Date();
             const updated = await this.prisma.trainingAssignment.update({

@@ -10,7 +10,7 @@
  *   - Status lifecycle: draft → scheduled → preparing → in_transit → delivered / cancelled
  *   - Soft-delete via deletedAt
  */
-import { asNullableDate, asNullableNumber, asNullableString, toDecimalInput, reportOp, } from "./shared.js";
+import { asNullableDate, asNullableNumber, asNullableString, reportOp, toDecimalInput, } from "./shared.js";
 // ---------------------------------------------------------------------------
 // ShipmentPrismaStore
 // ---------------------------------------------------------------------------
@@ -154,7 +154,9 @@ export class ShipmentPrismaStore {
             estimatedDeliveryDate: r.estimatedDeliveryDate instanceof Date
                 ? r.estimatedDeliveryDate.getTime()
                 : 0,
-            actualDeliveryDate: r.actualDeliveryDate instanceof Date ? r.actualDeliveryDate.getTime() : 0,
+            actualDeliveryDate: r.actualDeliveryDate instanceof Date
+                ? r.actualDeliveryDate.getTime()
+                : 0,
             totalItems: r.totalItems ?? 0,
             shippingCost: r.shippingCost != null ? Number(r.shippingCost) : 0,
             totalValue: r.totalValue != null ? Number(r.totalValue) : 0,

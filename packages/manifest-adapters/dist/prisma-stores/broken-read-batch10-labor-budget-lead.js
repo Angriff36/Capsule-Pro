@@ -4,7 +4,7 @@
  * Both entities use clean camelCase Prisma field names with @map for
  * snake_case DB columns. Standard soft-delete via deletedAt.
  */
-import { asBool, asNullableNumber, asNullableString, asString, toDecimalInput, toDecimalRequired, reportOp, } from "./shared.js";
+import { asBool, asNullableNumber, asNullableString, asString, reportOp, toDecimalInput, toDecimalRequired, } from "./shared.js";
 // ---------------------------------------------------------------------------
 // LaborBudgetPrismaStore
 // ---------------------------------------------------------------------------

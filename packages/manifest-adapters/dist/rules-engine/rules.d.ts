@@ -23,10 +23,6 @@ export declare const prepTaskCertificationRule: ValidatedRule;
  */
 export declare const stationEquipmentRule: ValidatedRule;
 /**
- * Rule: Equipment capacity cannot be exceeded.
- */
-export declare const equipmentCapacityRule: ValidatedRule;
-/**
  * Rule: Critical allergens must be acknowledged before proceeding.
  */
 export declare const allergenAcknowledgmentRule: ValidatedRule;

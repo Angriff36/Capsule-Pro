@@ -2,6 +2,8 @@
 // Implements PayrollDataSource interface using Prisma database client
 
 import type { PrismaClient } from "@repo/database/generated/client";
+import { calculateTaxes } from "../core/taxEngine";
+import { Currency, money } from "../core/currency";
 import type {
   Deduction,
   Employee,
@@ -374,6 +376,32 @@ export class PrismaPayrollDataSource implements PayrollDataSource {
 
     return lineItems.map((item) => {
       const deductions = JSON.parse((item.deductions as string) || "{}");
+      const grossPay = Number(item.gross_pay);
+      const netPay = Number(item.net_pay);
+
+      // Reconstruct a minimal Employee for tax calculation.
+      // taxInfo is unavailable at read time (not persisted), so
+      // calculateTaxes uses defaults: single status, FL jurisdiction.
+      const preTaxTotal = (deductions.preTax as Array<{ amount: number }>)
+        ?.reduce((sum: number, d: { amount: number }) => sum + d.amount, 0) ?? 0;
+
+      const employee: Employee = {
+        id: item.employee_id,
+        tenantId: item.tenant_id,
+        name: employeeMap.get(item.employee_id) || "Unknown",
+        roleId: "",
+        currency: "USD",
+        hourlyRate: Number(item.rate_regular),
+        taxInfo: undefined, // Not persisted — tax engine uses defaults
+        payrollPrefs: undefined,
+      };
+
+      const taxResult = calculateTaxes({
+        grossPay: money(grossPay),
+        preTaxDeductions: money(preTaxTotal),
+        employee,
+      });
+
       return {
         id: item.id,
         tenantId: item.tenant_id,
@@ -387,14 +415,14 @@ export class PrismaPayrollDataSource implements PayrollDataSource {
         regularPay: Number(item.rate_regular) * Number(item.hours_regular),
         overtimePay: Number(item.rate_overtime) * Number(item.hours_overtime),
         tips: 0, // BLOCKER: TipPool model does not exist in schema. Tracked as capsule-pro/TODO:payroll-employee-models
-        grossPay: Number(item.gross_pay),
+        grossPay,
         preTaxDeductions: deductions.preTax || [],
-        taxableIncome: Number(item.gross_pay),
-        taxesWithheld: [], // BLOCKER: Tax calculation engine not yet implemented. Tracked as capsule-pro/TODO:payroll-employee-models
-        totalTaxes: 0, // BLOCKER: Tax calculation engine not yet implemented. Tracked as capsule-pro/TODO:payroll-employee-models
+        taxableIncome: taxResult.taxableIncome.toNumber(),
+        taxesWithheld: taxResult.withholdings,
+        totalTaxes: taxResult.totalTax.toNumber(),
         postTaxDeductions: deductions.postTax || [],
-        totalDeductions: Number(item.gross_pay) - Number(item.net_pay),
-        netPay: Number(item.net_pay),
+        totalDeductions: grossPay - netPay,
+        netPay,
         currency: "USD",
         createdAt: item.created_at,
       };

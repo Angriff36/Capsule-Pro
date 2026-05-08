@@ -5,6 +5,7 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
+import { triggerShiftChangedSms } from "@repo/notifications";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -13,6 +14,7 @@ import {
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
+import { dispatchWebhooks } from "@/app/lib/webhook-dispatch";
 
 export const runtime = "nodejs";
 
@@ -82,6 +84,26 @@ export async function POST(request: NextRequest) {
       }
       return manifestErrorResponse(result.error ?? "Command failed", 400);
     }
+
+    // Fire-and-forget SMS trigger for shift change (if employeeId and shiftDate present)
+    if (body.employeeId && typeof body.shiftStart === "string") {
+      triggerShiftChangedSms({
+        tenantId,
+        shiftId: body.id as string,
+        shiftDate: (body.shiftStart as string).slice(0, 10),
+        changeType: "updated",
+        employeeId: body.employeeId as string,
+        employeeName: (body.employeeName as string) ?? "",
+      }).catch(() => {});
+    }
+
+    dispatchWebhooks({
+      tenantId,
+      entityType: "scheduleShift",
+      entityId: body.id as string ?? (result.result as Record<string, unknown>)?.id as string ?? "",
+      action: "updated",
+      data: result.result as Record<string, unknown>,
+    }).catch(() => {});
 
     return manifestSuccessResponse({
       result: result.result,

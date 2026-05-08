@@ -153,7 +153,7 @@ export const BoardCanvas = ({
   /* ---- group creation ---- */
   const [showGroupDialog, setShowGroupDialog] = useState(false);
   const [newGroupName, setNewGroupName] = useState("");
-  const [newGroupColor, setNewGroupColor] = useState(GROUP_COLORS[0].value);
+  const [newGroupColor, setNewGroupColor] = useState<string>(GROUP_COLORS[0].value);
   const [creatingGroup, setCreatingGroup] = useState(false);
 
   /* ---- entity browser ---- */

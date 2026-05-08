@@ -82,3 +82,16 @@ export {
   type SmsTemplateData,
   validateTemplateData,
 } from "./sms-templates";
+// Re-export SMS Automation utilities
+export { evaluateAndExecuteRules } from "./sms-automation-engine";
+export {
+  triggerTaskAssignedSms,
+  triggerTaskCompletedSms,
+  triggerTaskOverdueSms,
+  triggerShiftAssignedSms,
+  triggerShiftReminderSms,
+  triggerShiftChangedSms,
+  triggerPrepListPublishedSms,
+  triggerInventoryLowSms,
+  triggerCustomEventSms,
+} from "./sms-automation-triggers";
