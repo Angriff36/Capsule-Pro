@@ -254,9 +254,25 @@ function SuggestionsTab() {
   }, [timeframe]);
 
   const handleAction = useCallback(
-    (action: SuggestionAction) => {
+    async (action: SuggestionAction) => {
       if (action.type === "navigate") {
         router.push(action.path);
+      } else if (action.type === "api_call") {
+        try {
+          const res = await apiFetch(action.endpoint, {
+            method: action.method,
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(action.payload),
+          });
+          if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            toast.error((err as { message?: string }).message ?? `Request failed (${res.status})`);
+            return;
+          }
+          toast.success("Action completed successfully");
+        } catch {
+          toast.error("Failed to execute action");
+        }
       }
     },
     [router]
@@ -396,6 +412,16 @@ function SuggestionsTab() {
                 >
                   <ArrowRight className="mr-1.5 h-3.5 w-3.5" />
                   Take Action
+                </Button>
+              )}
+              {suggestion.action.type === "api_call" && (
+                <Button
+                  onClick={() => handleAction(suggestion.action)}
+                  size="sm"
+                  variant="outline"
+                >
+                  <ArrowRight className="mr-1.5 h-3.5 w-3.5" />
+                  Execute
                 </Button>
               )}
             </CardContent>

@@ -139,6 +139,14 @@ export default async function ContractsPage() {
     );
   }).length;
 
+  const vendorScores = vendorContracts
+    .map((vc) => vc.complianceScore)
+    .filter((s): s is number => s !== null);
+  const avgCompliance =
+    vendorScores.length > 0
+      ? Math.round(vendorScores.reduce((a, b) => a + b, 0) / vendorScores.length)
+      : null;
+
   return (
     <PageCanvas>
       <CommandBand>
@@ -195,6 +203,11 @@ export default async function ContractsPage() {
               <MetricLabel>Expiring soon</MetricLabel>
               <MetricValue>{expiringCount}</MetricValue>
               <p className="text-sm text-white/70">Within 30 days</p>
+            </MetricCell>
+            <MetricCell>
+              <MetricLabel>Vendor compliance</MetricLabel>
+              <MetricValue>{avgCompliance !== null ? `${avgCompliance}%` : "—"}</MetricValue>
+              <p className="text-sm text-white/70">Avg across vendors</p>
             </MetricCell>
           </MetricBand>
         </CommandBandBody>
