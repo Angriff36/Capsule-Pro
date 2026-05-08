@@ -2,7 +2,6 @@ import { auth, currentUser } from "@repo/auth/server";
 import { SidebarProvider } from "@repo/design-system/components/ui/sidebar";
 import { showBetaFeature } from "@repo/feature-flags";
 import { secure } from "@repo/security";
-import { unstable_cache } from "next/cache";
 import type { ReactNode } from "react";
 import { env } from "@/env";
 import {
@@ -11,26 +10,6 @@ import {
   AiAssistantProvider,
 } from "./components/ai-assistant";
 import { GlobalSidebar } from "./components/sidebar";
-
-/**
- * Cache currentUser() + showBetaFeature() per user for 5 minutes.
- * auth() stays uncached — session validation must happen on every request.
- *
- * Per-user cache tag enables instant invalidation on permission change:
- *   revalidateTag("app-auth")    → invalidate ALL cached auth
- *   (Next.js 15 stable API)
- */
-const getCachedAuth = unstable_cache(
-  async (userId: string) => {
-    const [user, betaFeature] = await Promise.all([
-      currentUser(),
-      showBetaFeature(),
-    ]);
-    return { user, betaFeature };
-  },
-  ["app-auth"],
-  { revalidate: 300, tags: ["app-auth"] },
-);
 
 interface AppLayoutProperties {
   readonly children: ReactNode;
@@ -56,7 +35,8 @@ const AppLayout = async ({ children }: AppLayoutProperties) => {
     return redirectToSignIn();
   }
 
-  const { user, betaFeature } = await getCachedAuth(userId);
+  const user = await currentUser();
+  const betaFeature = await showBetaFeature();
 
   if (!user) {
     return redirectToSignIn();
