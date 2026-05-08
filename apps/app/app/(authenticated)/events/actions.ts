@@ -353,12 +353,31 @@ export const updateEvent = async (formData: FormData): Promise<void> => {
       venueName: getOptionalString(formData, "venueName"),
       venueAddress: getOptionalString(formData, "venueAddress"),
       notes: getOptionalString(formData, "notes"),
+      clientId: getOptionalString(formData, "clientId"),
       tags,
     },
   });
 
   revalidatePath("/events");
   redirect(`/events/${eventId}`);
+};
+
+export const assignClientToEvent = async (
+  eventId: string,
+  clientId: string
+): Promise<void> => {
+  const tenantId = await requireTenantId();
+
+  await database.event.updateMany({
+    where: {
+      AND: [{ tenantId }, { id: eventId }],
+    },
+    data: { clientId },
+  });
+
+  revalidatePath("/events");
+  revalidatePath(`/events/${eventId}`);
+  revalidatePath(`/crm/clients/${clientId}`);
 };
 
 export const deleteEvent = async (formData: FormData): Promise<void> => {

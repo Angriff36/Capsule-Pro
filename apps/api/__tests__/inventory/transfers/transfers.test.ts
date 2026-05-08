@@ -51,6 +51,10 @@ import { GET as listTransfers } from "@/app/api/inventory/transfers/list/route";
 const TEST_TENANT_ID = "00000000-0000-0000-0000-000000000020";
 const TEST_USER_ID = "user_transfers_test";
 const TEST_ORG_ID = "org_transfers_test";
+const VALID_LOCATION_UUID_A = "00000000-0000-0000-0000-000000000001";
+const VALID_LOCATION_UUID_B = "00000000-0000-0000-0000-000000000002";
+const VALID_ITEM_UUID_1 = "00000000-0000-0000-0000-000000000010";
+const VALID_ITEM_UUID_2 = "00000000-0000-0000-0000-000000000011";
 
 // --- Helpers ---
 
@@ -172,7 +176,7 @@ describe("Inventory Transfers API", () => {
 
       const request = buildPostRequest(
         "http://localhost/api/inventory/transfers/commands/create",
-        { fromLocationId: "a", toLocationId: "b", items: [] }
+        { fromLocationId: VALID_LOCATION_UUID_A, toLocationId: VALID_LOCATION_UUID_B, items: [] }
       );
       const response = await createTransfer(request);
 
@@ -186,7 +190,7 @@ describe("Inventory Transfers API", () => {
 
       const request = buildPostRequest(
         "http://localhost/api/inventory/transfers/commands/create",
-        { fromLocationId: "a", toLocationId: "b", items: "not-array" }
+        { fromLocationId: VALID_LOCATION_UUID_A, toLocationId: VALID_LOCATION_UUID_B, items: "not-array" }
       );
       const response = await createTransfer(request);
 
@@ -218,12 +222,12 @@ describe("Inventory Transfers API", () => {
       const request = buildPostRequest(
         "http://localhost/api/inventory/transfers/commands/create",
         {
-          fromLocationId: "loc-a",
-          toLocationId: "loc-b",
+          fromLocationId: VALID_LOCATION_UUID_A,
+          toLocationId: VALID_LOCATION_UUID_B,
           notes: "urgent",
           items: [
-            { itemId: "i1", quantity: 5, notes: "n1" },
-            { itemId: "i2", quantity: 2 },
+            { itemId: VALID_ITEM_UUID_1, quantity: 5, notes: "n1" },
+            { itemId: VALID_ITEM_UUID_2, quantity: 2 },
           ],
         }
       );
@@ -238,8 +242,8 @@ describe("Inventory Transfers API", () => {
         data: expect.objectContaining({
           tenantId: TEST_TENANT_ID,
           transferNumber: "TRF-000004",
-          fromLocationId: "loc-a",
-          toLocationId: "loc-b",
+          fromLocationId: VALID_LOCATION_UUID_A,
+          toLocationId: VALID_LOCATION_UUID_B,
           notes: "urgent",
           status: "pending",
           requestedBy: TEST_USER_ID,
@@ -249,7 +253,7 @@ describe("Inventory Transfers API", () => {
       expect(itemCreateMock).toHaveBeenNthCalledWith(1, {
         data: expect.objectContaining({
           tenantId: TEST_TENANT_ID,
-          itemId: "i1",
+          itemId: VALID_ITEM_UUID_1,
           quantity: 5,
           notes: "n1",
         }),
@@ -265,9 +269,9 @@ describe("Inventory Transfers API", () => {
       const request = buildPostRequest(
         "http://localhost/api/inventory/transfers/commands/create",
         {
-          fromLocationId: "a",
-          toLocationId: "b",
-          items: [{ itemId: "i1", quantity: 1 }],
+          fromLocationId: VALID_LOCATION_UUID_A,
+          toLocationId: VALID_LOCATION_UUID_B,
+          items: [{ itemId: VALID_ITEM_UUID_1, quantity: 1 }],
         }
       );
       const response = await createTransfer(request);

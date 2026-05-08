@@ -36,6 +36,7 @@ export interface EventSetupChecklistProps {
   eventDate?: Date | null;
   eventStatus?: string;
   onEditEvent?: () => void;
+  onAssignClient?: () => void;
 }
 
 interface ChecklistItem {
@@ -63,6 +64,7 @@ export function EventSetupChecklist({
   eventDate,
   eventStatus,
   onEditEvent,
+  onAssignClient,
 }: EventSetupChecklistProps) {
   const [animatedProgress, setAnimatedProgress] = useState(0);
 
@@ -78,7 +80,7 @@ export function EventSetupChecklist({
         icon: <Users className="h-4 w-4" />,
         required: true,
         priority: "high",
-        action: hasClient ? undefined : onEditEvent,
+        action: hasClient ? undefined : onAssignClient,
       },
       {
         id: "venue",
@@ -151,6 +153,7 @@ export function EventSetupChecklist({
       hasPrepList,
       hasContract,
       hasBudget,
+      onAssignClient,
     ]
   );
 

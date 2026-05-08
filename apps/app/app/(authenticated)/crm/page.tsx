@@ -18,6 +18,7 @@ import {
 } from "@repo/design-system/components/blocks/page-shell";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
+import { buttonVariants } from "@repo/design-system/components/ui/button";
 import {
   Table,
   TableBody,
@@ -243,9 +244,12 @@ const CrmPage = async () => {
             >
               <Link href="/crm/proposals">View proposals</Link>
             </Button>
-            <Button asChild size="default" variant="on-dark">
-              <Link href="/crm/clients/new">New client</Link>
-            </Button>
+            <Link
+              className={buttonVariants({ size: "default", variant: "on-dark" })}
+              href="/crm/clients/new"
+            >
+              New client
+            </Link>
           </CommandBandActions>
         </CommandBandHeader>
 

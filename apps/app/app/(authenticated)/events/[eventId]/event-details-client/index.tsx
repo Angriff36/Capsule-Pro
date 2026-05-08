@@ -36,6 +36,7 @@ import {
 } from "../../components/event-templates";
 import { GenerateTaskBreakdownModal } from "../../components/task-breakdown-display";
 import { EventEditorModal } from "../../event-editor-modal";
+import { ClientAssignDialog } from "../components/client-assign-dialog";
 import { EventSetupChecklist } from "../components/event-setup-checklist";
 import {
   determineEventStage,
@@ -888,6 +889,7 @@ export function EventDetailsClient({
 
   // Edit/RSVP state
   const [showEditEvent, setShowEditEvent] = useState(false);
+  const [showAssignClient, setShowAssignClient] = useState(false);
   const [rsvpCount, setRsvpCount] = useState(initialRsvpCount);
   const { isSaved, saveReady, toggleSave } = useSavedEvent(event.id);
   const [quickRsvpOpen, setQuickRsvpOpen] = useState(false);
@@ -961,6 +963,11 @@ export function EventDetailsClient({
 
   // Variant dialog state
   const [showVariantDialog, setShowVariantDialog] = useState(false);
+
+  // Client assigned callback — refreshes page data after linking
+  const handleClientAssigned = useCallback(() => {
+    router.refresh();
+  }, [router]);
   const [variantLinkId, setVariantLinkId] = useState<string | null>(null);
   const [variantSourceName, setVariantSourceName] = useState("");
   const [variantName, setVariantName] = useState("");
@@ -1537,6 +1544,7 @@ export function EventDetailsClient({
                 hasPrepList={sortedPrepTasks.length > 0}
                 hasStaff={staffCount > 0}
                 hasVenue={!!event.venueName}
+                onAssignClient={() => setShowAssignClient(true)}
                 onEditEvent={() => setShowEditEvent(true)}
               />
               <EventTimeline
@@ -1593,6 +1601,13 @@ export function EventDetailsClient({
         onOpenChange={setShowEditEvent}
         onSave={handleUpdateEvent}
         open={showEditEvent}
+      />
+
+      <ClientAssignDialog
+        eventId={event.id}
+        onAssigned={handleClientAssigned}
+        onOpenChange={setShowAssignClient}
+        open={showAssignClient}
       />
 
       <GenerateTaskBreakdownModal
