@@ -1,23 +1,8 @@
 "use client";
 
-/**
- * @module AuditLogClient
- * @intent Client-side audit log viewer with filtering and pagination
- * @responsibility Fetch, filter, paginate, and display audit log entries from the API
- * @domain Settings
- * @tags audit-log, settings, client-component
- * @canonical true
- */
-
+import { BlogFilterChip } from "@repo/design-system/components/blocks/blog-filter-chip";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@repo/design-system/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -28,13 +13,6 @@ import {
 } from "@repo/design-system/components/ui/dialog";
 import { Input } from "@repo/design-system/components/ui/input";
 import { ScrollArea } from "@repo/design-system/components/ui/scroll-area";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@repo/design-system/components/ui/select";
 import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   Table,
@@ -48,7 +26,6 @@ import {
   ChevronLeft,
   ChevronRight,
   EyeIcon,
-  FileText,
   Loader2,
   RefreshCw,
   SearchIcon,
@@ -56,10 +33,6 @@ import {
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
-
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
 
 interface AuditLogEntry {
   id: string;
@@ -86,15 +59,7 @@ interface AuditLogResponse {
   tableNames: string[];
 }
 
-// ---------------------------------------------------------------------------
-// Constants
-// ---------------------------------------------------------------------------
-
-const ACTION_OPTIONS = [
-  { value: "insert", label: "Created" },
-  { value: "update", label: "Updated" },
-  { value: "delete", label: "Deleted" },
-] as const;
+const ACTION_OPTIONS = ["all", "insert", "update", "delete"] as const;
 
 const ACTION_COLORS: Record<
   string,
@@ -104,10 +69,6 @@ const ACTION_COLORS: Record<
   update: "secondary",
   delete: "destructive",
 };
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleString("en-US", {
@@ -120,14 +81,18 @@ function formatDate(iso: string): string {
 }
 
 function formatAction(action: string): string {
-  const found = ACTION_OPTIONS.find((o) => o.value === action);
-  return found ? found.label : action;
+  const map: Record<string, string> = {
+    insert: "Created",
+    update: "Updated",
+    delete: "Deleted",
+  };
+  return map[action] ?? action;
 }
 
 function formatTableName(name: string): string {
   return name
     .split("_")
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .map((p) => p.charAt(0).toUpperCase() + p.slice(1))
     .join(" ");
 }
 
@@ -137,7 +102,6 @@ function JsonPreview({ label, data }: { label: string; data: unknown }) {
       <div className="text-sm italic text-muted-foreground">{label}: None</div>
     );
   }
-
   return (
     <div className="space-y-1">
       <div className="text-sm font-medium text-muted-foreground">{label}</div>
@@ -147,10 +111,6 @@ function JsonPreview({ label, data }: { label: string; data: unknown }) {
     </div>
   );
 }
-
-// ---------------------------------------------------------------------------
-// Detail Dialog
-// ---------------------------------------------------------------------------
 
 function DetailDialog({ entry }: { entry: AuditLogEntry }) {
   return (
@@ -197,7 +157,8 @@ function DetailDialog({ entry }: { entry: AuditLogEntry }) {
                 {formatTableName(entry.tableName)}
               </div>
               <div>
-                <span className="font-medium">Schema:</span> {entry.tableSchema}
+                <span className="font-medium">Schema:</span>{" "}
+                {entry.tableSchema}
               </div>
             </div>
             <Separator />
@@ -210,10 +171,6 @@ function DetailDialog({ entry }: { entry: AuditLogEntry }) {
   );
 }
 
-// ---------------------------------------------------------------------------
-// Main Component
-// ---------------------------------------------------------------------------
-
 export function AuditLogClient() {
   const [entries, setEntries] = useState<AuditLogEntry[]>([]);
   const [tableNames, setTableNames] = useState<string[]>([]);
@@ -221,10 +178,9 @@ export function AuditLogClient() {
   const [totalPages, setTotalPages] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  // Filters
   const [page, setPage] = useState(1);
-  const [actionFilter, setActionFilter] = useState<string>("all");
-  const [tableFilter, setTableFilter] = useState<string>("all");
+  const [actionFilter, setActionFilter] = useState("all");
+  const [tableFilter, setTableFilter] = useState("all");
   const [search, setSearch] = useState("");
 
   const loadLogs = useCallback(async () => {
@@ -241,7 +197,7 @@ export function AuditLogClient() {
       }
 
       const res = await apiFetch(
-        `/api/settings/audit-log?${params.toString()}`
+        `/api/settings/audit-log?${params.toString()}`,
       );
       const data = await res.json();
 
@@ -258,12 +214,11 @@ export function AuditLogClient() {
       setTotal(auditData.total);
       setTotalPages(auditData.totalPages);
 
-      // Populate table name options on first load or when they come back
       if (auditData.tableNames.length > 0) {
         setTableNames((prev) =>
           prev.length >= auditData.tableNames.length
             ? prev
-            : auditData.tableNames
+            : auditData.tableNames,
         );
       }
     } catch {
@@ -277,32 +232,6 @@ export function AuditLogClient() {
     loadLogs();
   }, [loadLogs]);
 
-  // Reset page when filters change
-  const handleActionChange = useCallback((value: string) => {
-    setActionFilter(value);
-    setPage(1);
-  }, []);
-
-  const handleTableChange = useCallback((value: string) => {
-    setTableFilter(value);
-    setPage(1);
-  }, []);
-
-  const handleSearchChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      setSearch(e.target.value);
-    },
-    []
-  );
-
-  const handleSearchSubmit = useCallback((e: React.FormEvent) => {
-    e.preventDefault();
-    // Filter by performed_by is handled server-side via the API
-    // For now, search is client-side post-filter
-    setPage(1);
-  }, []);
-
-  // Client-side search filter on displayed results
   const filteredEntries = search.trim()
     ? entries.filter(
         (e) =>
@@ -311,149 +240,128 @@ export function AuditLogClient() {
           (e.performedByEmail &&
             e.performedByEmail.toLowerCase().includes(search.toLowerCase())) ||
           e.recordId.toLowerCase().includes(search.toLowerCase()) ||
-          e.tableName.toLowerCase().includes(search.toLowerCase())
+          e.tableName.toLowerCase().includes(search.toLowerCase()),
       )
     : entries;
 
   return (
-    <div className="space-y-6">
-      <Separator />
-
-      {/* Filters */}
+    <div className="space-y-4">
       <div className="flex flex-wrap items-end gap-4">
-        <div className="space-y-1.5">
-          <label className="text-sm font-medium">Action</label>
-          <Select onValueChange={handleActionChange} value={actionFilter}>
-            <SelectTrigger className="w-36">
-              <SelectValue placeholder="All actions" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All actions</SelectItem>
-              {ACTION_OPTIONS.map((opt) => (
-                <SelectItem key={opt.value} value={opt.value}>
-                  {opt.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        <div className="relative">
+          <SearchIcon className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            className="w-56 pl-9"
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="User, table, or record ID..."
+            value={search}
+          />
         </div>
-
-        <div className="space-y-1.5">
-          <label className="text-sm font-medium">Table</label>
-          <Select onValueChange={handleTableChange} value={tableFilter}>
-            <SelectTrigger className="w-48">
-              <SelectValue placeholder="All tables" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All tables</SelectItem>
-              {tableNames.map((name) => (
-                <SelectItem key={name} value={name}>
-                  {formatTableName(name)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <form className="space-y-1.5" onSubmit={handleSearchSubmit}>
-          <label className="text-sm font-medium" htmlFor="audit-search">
-            Search
-          </label>
-          <div className="relative">
-            <SearchIcon className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              className="w-56 pl-9"
-              id="audit-search"
-              onChange={handleSearchChange}
-              placeholder="User, table, or record ID..."
-              value={search}
-            />
-          </div>
-        </form>
-
         <Button onClick={loadLogs} size="sm" variant="outline">
           <RefreshCw className="mr-2 h-4 w-4" />
           Refresh
         </Button>
       </div>
 
-      {/* Results */}
+      <div className="flex flex-wrap gap-2">
+        {ACTION_OPTIONS.map((a) => (
+          <BlogFilterChip
+            key={a}
+            onSelect={() => {
+              setActionFilter(a);
+              setPage(1);
+            }}
+            selected={actionFilter === a}
+          >
+            {a === "all" ? "All actions" : formatAction(a)}
+          </BlogFilterChip>
+        ))}
+      </div>
+
+      {tableNames.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          <BlogFilterChip
+            onSelect={() => {
+              setTableFilter("all");
+              setPage(1);
+            }}
+            selected={tableFilter === "all"}
+            tone="ghost"
+          >
+            All tables
+          </BlogFilterChip>
+          {tableNames.map((name) => (
+            <BlogFilterChip
+              key={name}
+              onSelect={() => {
+                setTableFilter(name);
+                setPage(1);
+              }}
+              selected={tableFilter === name}
+              tone="ghost"
+            >
+              {formatTableName(name)}
+            </BlogFilterChip>
+          ))}
+        </div>
+      )}
+
       {loading ? (
         <div className="flex items-center justify-center py-12">
           <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
         </div>
       ) : filteredEntries.length === 0 ? (
-        <Card>
-          <CardContent className="py-12 text-center">
-            <FileText className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-            <p className="text-lg font-medium">No audit log entries found</p>
-            <p className="text-sm text-muted-foreground">
-              Adjust the filters or try a different search term.
-            </p>
-          </CardContent>
-        </Card>
+        <div className="py-12 text-center text-muted-foreground">
+          <p className="text-sm">No audit log entries found.</p>
+        </div>
       ) : (
         <>
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle>Change History</CardTitle>
-              <CardDescription>
-                {total} {total === 1 ? "entry" : "entries"} found.
-                {search.trim() &&
-                  ` Showing ${filteredEntries.length} matching "${search}".`}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="p-0">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Timestamp</TableHead>
-                    <TableHead>User</TableHead>
-                    <TableHead>Action</TableHead>
-                    <TableHead>Table</TableHead>
-                    <TableHead>Record ID</TableHead>
-                    <TableHead>Details</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredEntries.map((entry) => (
-                    <TableRow key={`${entry.id}-${entry.createdAt}`}>
-                      <TableCell className="whitespace-nowrap text-sm">
-                        {formatDate(entry.createdAt)}
-                      </TableCell>
-                      <TableCell>
-                        {entry.performedByName ||
-                          entry.performedByEmail ||
-                          "System"}
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          variant={ACTION_COLORS[entry.action] || "outline"}
-                        >
-                          {formatAction(entry.action)}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <span className="font-medium">
-                          {formatTableName(entry.tableName)}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        <code className="rounded bg-muted px-1 text-xs">
-                          {entry.recordId.slice(0, 8)}...
-                        </code>
-                      </TableCell>
-                      <TableCell>
-                        <DetailDialog entry={entry} />
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Timestamp</TableHead>
+                <TableHead>User</TableHead>
+                <TableHead>Action</TableHead>
+                <TableHead>Table</TableHead>
+                <TableHead>Record ID</TableHead>
+                <TableHead>Details</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredEntries.map((entry) => (
+                <TableRow key={`${entry.id}-${entry.createdAt}`}>
+                  <TableCell className="whitespace-nowrap font-mono text-xs">
+                    {formatDate(entry.createdAt)}
+                  </TableCell>
+                  <TableCell>
+                    {entry.performedByName ||
+                      entry.performedByEmail ||
+                      "System"}
+                  </TableCell>
+                  <TableCell>
+                    <Badge
+                      variant={ACTION_COLORS[entry.action] || "outline"}
+                    >
+                      {formatAction(entry.action)}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <span className="font-medium">
+                      {formatTableName(entry.tableName)}
+                    </span>
+                  </TableCell>
+                  <TableCell>
+                    <code className="rounded bg-muted px-1 text-xs">
+                      {entry.recordId.slice(0, 8)}...
+                    </code>
+                  </TableCell>
+                  <TableCell>
+                    <DetailDialog entry={entry} />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
 
-          {/* Pagination */}
           <div className="flex items-center justify-between">
             <p className="text-sm text-muted-foreground">
               Page {page} of {totalPages || 1}
