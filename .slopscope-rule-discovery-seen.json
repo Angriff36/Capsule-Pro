@@ -1,233 +1,149 @@
 {
   "version": 1,
-  "discoveries": [
+  "entries": [
     {
-      "rule_id": "fake_integration.mock_fallback_as_production_path",
-      "file_path": "projects/document-parser/project/packages/document-parser/src/extraction/docling-adapter.ts",
-      "snippet_hash": "sha256:a3f7c2e1b4d5f6a8c0e2d1b3a4f5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3",
-      "discovered_at": "2026-05-07T06:27:00Z"
+      "rule_id": "feature_claim_mismatch.rule_index_claims_scanner_ready_rules_that_have_no_detector_json",
+      "file_path": "rule-index.md",
+      "snippet_hash": "sha256:01bbfcabf8b4bd88aeccc1051114fd457c7331bbe71d05a7bc25fb82a0977108",
+      "discovered_at": "2026-05-08T04:39:00Z"
     },
     {
-      "rule_id": "automation_theater.cancel_endpoint_status_write_only",
-      "file_path": "src/claude-workflow/app/routes/jobs.py",
-      "snippet_hash": "sha256:d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5",
-      "discovered_at": "2026-05-07T06:40:00Z"
+      "rule_id": "feature_claim_mismatch.brainstorm_rules_reference_undefined_build_phases",
+      "file_path": "rule-index.md",
+      "snippet_hash": "sha256:81b1ab843a8301891d864859de3820e75543f2bdb8bf4cfdd7e8666244e82382",
+      "discovered_at": "2026-05-08T04:52:00Z"
     },
     {
-      "rule_id": "dashboard_illusion.fabricated_token_cost_from_hardcoded_constants",
-      "file_path": "src/openclaw/projects/autolab/src/components/analytics/UsageView.tsx",
-      "snippet_hash": "sha256:b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0",
-      "discovered_at": "2026-05-07T06:56:00Z"
+      "rule_id": "feature_claim_mismatch.rule_index_severity_breakdown_has_fabricated_statistics",
+      "file_path": "rule-index.md",
+      "snippet_hash": "sha256:811f32d24de97ec18faec2cd5ca95040fe7c3fe6f5eb0299032204b6854c7a4b",
+      "discovered_at": "2026-05-08T05:06:00Z"
     },
     {
-      "rule_id": "security_theater.optional_webhook_signature_bypass",
-      "file_path": "src/openclaw/projects/capsule-pro/apps/api/app/api/collaboration/notifications/email/webhook/route.ts",
-      "snippet_hash": "sha256:29c3b89873821d6567a1b0500cf1153fc0157a1408ca4677d368e725cfef1768",
-      "discovered_at": "2026-05-07T07:09:00Z"
+      "rule_id": "feature_claim_mismatch.rule_index_brainstorm_section_count_and_format_inconsistency",
+      "file_path": "rule-index.md",
+      "snippet_hash": "sha256:fad930ed3b06e5d5ae1e80cdee6c9edfbcf19a32bf2ac0d9b2f24c0b466bff9a",
+      "discovered_at": "2026-05-08T05:21:00Z"
     },
     {
-      "rule_id": "automation_theater.audit_log_to_console",
-      "file_path": "src/openclaw/projects/capsule-pro/packages/payroll-engine/src/dataSource/PrismaPayrollDataSource.ts",
-      "snippet_hash": "sha256:d40a313833cf92adaad5f375ea6f6f85356ad99a5866ac818718217621c67c43",
-      "discovered_at": "2026-05-07T07:31:00Z"
+      "rule_id": "feature_claim_mismatch.rule_docs_use_non_canonical_detector_json_schema",
+      "file_path": "rules/fake_integration.payment_gateway_always_success_placeholder.md",
+      "snippet_hash": "sha256:37b26fdfba218ee31272492c186247c893a2c26459fc23a60f6f1cab0e35bfd4",
+      "discovered_at": "2026-05-08T12:36:00Z"
     },
     {
-      "rule_id": "fake_integration.registered_stub_connector_exposed_as_production",
-      "file_path": "packages/supplier-connectors/src/connectors/us-foods.ts",
-      "snippet_hash": "sha256:1cb347c261b3494cc4e2058dd8039ded9bdc2cd6166ebb3dad890088197bf05b",
-      "discovered_at": "2026-05-07T07:47:00Z"
+      "rule_id": "feature_claim_mismatch.rule_doc_patterns_are_prose_descriptions_not_executable_regex",
+      "file_path": "rules/automation_theater.cron_endpoint_never_scheduled.md",
+      "snippet_hash": "sha256:f2ba02587b908d1b4fd192184465de3613fe9f255b657fc3af36cf039323d792",
+      "discovered_at": "2026-05-08T13:00:00Z"
     },
     {
-      "rule_id": "fake_integration.payment_gateway_always_succeeds",
-      "file_path": "src/openclaw/projects/capsule-pro/apps/api/app/api/accounting/payments/[id]/gateway.ts",
-      "snippet_hash": "sha256:e89e9b6dfc490209884562ddc8428202ab320d22d1261a2a4e49e25590b0d530",
-      "discovered_at": "2026-05-07T08:06:00Z"
+      "rule_id": "feature_claim_mismatch.violations_summary_fabricates_severity_counts",
+      "file_path": "violations.md",
+      "snippet_hash": "sha256:b449250f5b714197cb24983e8dfa6ea75d758b6337e8e26ae9dbfd4d52c5ba4e",
+      "discovered_at": "2026-05-08T06:12:00Z"
     },
     {
-      "rule_id": "dashboard_illusion.sku_agnostic_event_usage_formula",
-      "file_path": "src/openclaw/projects/capsule-pro/apps/api/app/lib/inventory-forecasting.ts",
-      "snippet_hash": "sha256:f8a2b1c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2",
-      "discovered_at": "2026-05-07T08:21:00Z"
+      "rule_id": "feature_claim_mismatch.violations_doc_fabricates_source_attribution",
+      "file_path": "violations.md",
+      "snippet_hash": "sha256:f7dca63b5f6af5363a8b54dd01df9f845f7048d1b46bc1a190a0d9e657b58234",
+      "discovered_at": "2026-05-08T13:39:00Z"
     },
     {
-      "rule_id": "dashboard_illusion.simulated_gps_tracking_via_math_random",
-      "file_path": "apps/api/app/api/logistics/tracking/route.ts",
-      "snippet_hash": "sha256:6b9e4ef2088c278ac8d4edb9c8609d1d8ab46a78b9597b048518a8d16db95a3d",
-      "discovered_at": "2026-05-07T10:12:00Z"
+      "rule_id": "feature_claim_mismatch.rule_index_discovered_section_header_inflates_rule_count",
+      "file_path": "rule-index.md",
+      "snippet_hash": "sha256:138de9a7204a94d29d6adb5b7e22e2d9ea12bee1c382619cccd189795a4fcc04",
+      "discovered_at": "2026-05-08T13:55:00Z"
     },
     {
-      "rule_id": "feature_claim_mismatch.payroll_tax_write_read_asymmetry",
-      "file_path": "packages/payroll-engine/src/dataSource/PrismaPayrollDataSource.ts",
-      "snippet_hash": "sha256:a7b2c4d6e8f0a1b3c5d7e9f0a2b4c6d8e0f1a3b5c7d9e0f2a4b6c8d0e1f2a3b4",
-      "discovered_at": "2026-05-07T14:30:00Z"
+      "rule_id": "test_theater.tests_assert_on_mirrored_constants_not_imported_code",
+      "file_path": "apps/app/__tests__/api/command-board/agent-loop-timeout.test.ts",
+      "snippet_hash": "sha256:b7a322e21312477cd7c56ef3d5be0ac39b1ef11541ea8e535a015fc999e91908",
+      "discovered_at": "2026-05-08T15:00:00Z"
     },
     {
-      "rule_id": "test_theater.tautological_assertions_in_test_file",
-      "file_path": "apps/app/__tests__/settings/settings-workflow.test.ts",
-      "snippet_hash": "sha256:acfc1f3a47996ab5aaba61d15e7cd9ac4d6371c3634b1156c77c080ed9d461bb",
-      "discovered_at": "2026-05-07T15:45:00Z"
+      "rule_id": "feature_claim_mismatch.rule_index_total_count_disagrees_with_section_counts",
+      "file_path": "rule-index.md",
+      "snippet_hash": "sha256:a49b1cb8a1568253ddd461b10d39ad4a59a1b57bffa5c1f3197ae21e54a4aa59",
+      "discovered_at": "2026-05-08T15:12:36Z"
     },
     {
-      "rule_id": "feature_claim_mismatch.ai_staffing_is_just_arithmetic",
-      "file_path": "apps/api/app/api/staffing/recommendations/route.ts",
-      "snippet_hash": "sha256:96759ef8197bead8702079deee7f1867f95385f8ac7e6e07c7b569bd71493530",
-      "discovered_at": "2026-05-07T22:14:00Z"
+      "rule_id": "fake_integration.client_fabricates_gateway_ids_with_date_now",
+      "file_path": "apps/app/app/(authenticated)/accounting/invoices/components/payment-form-client.tsx",
+      "snippet_hash": "sha256:68fb0918dba9222ebcf1dcd3109e0ffbb83dc576a197a303ca402781df9cc3a1",
+      "discovered_at": "2026-05-08T16:30:00Z"
     },
     {
-      "rule_id": "automation_theater.cron_route_never_scheduled",
-      "file_path": "apps/api/app/api/cron/email-reminders/route.ts",
-      "snippet_hash": "sha256:1ae5f25ecc64785803a31e61db2d7a3af628b40a92fce751d8c5921ec122eefe",
-      "discovered_at": "2026-05-07T15:25:00Z"
+      "rule_id": "feature_claim_mismatch.rule_index_omits_existing_rule_doc_files",
+      "file_path": "rule-index.md",
+      "snippet_hash": "sha256:7934cec76c156dd4c3089c32ab064a85dc938a8d4d5ae0f36440162e0dcd7a1f",
+      "discovered_at": "2026-05-08T17:00:00Z"
     },
     {
-      "rule_id": "automation_theater.webhook_config_without_domain_event_producers",
-      "file_path": "apps/api/app/api/integrations/webhooks/route.ts",
-      "snippet_hash": "sha256:d496cfd656348a0c816faea4c88f82739c4c318e793cdd7c0182077197acd100",
-      "discovered_at": "2026-05-07T22:44:00Z"
+      "rule_id": "feature_claim_mismatch.violation_report_inflated_by_duplicate_source_file_entries",
+      "file_path": "violations.md",
+      "snippet_hash": "sha256:b84d3f137e37e88671ee4315a9bf77643b29cc948cb3281ebd3dff31a38f9960",
+      "discovered_at": "2026-05-08T17:30:00Z"
     },
     {
-      "rule_id": "fake_integration.iot_system_without_device_connectivity",
-      "file_path": "apps/api/app/api/kitchen/iot/readings/route.ts",
-      "snippet_hash": "sha256:3f8a1c9b2d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b",
-      "discovered_at": "2026-05-08T00:15:00Z"
+      "rule_id": "feature_claim_mismatch.brainstorm_log_fragmented_across_two_files",
+      "file_path": "SLOPSCOPE_RULE_BRAINSTORM.md",
+      "snippet_hash": "sha256:e0267833599f3c1effc0868904a67fe237a1ec3f958ade6daea0c9f33399bf4a",
+      "discovered_at": "2026-05-08T18:45:00Z"
     },
     {
-      "rule_id": "security_theater.rbac_guard_never_wrapped_into_runtime",
-      "file_path": "apps/api/lib/manifest-runtime.ts",
-      "snippet_hash": "sha256:ea644dd7f52a842be1509dc1224d1506f8ac67b1a494ca7371cece42395acc92",
-      "discovered_at": "2026-05-08T01:30:00Z"
+      "rule_id": "feature_claim_mismatch.implementation_plan_file_contains_discovery_log_content",
+      "file_path": "capsule-pro/IMPLEMENTATION_PLAN.md",
+      "snippet_hash": "sha256:ea657f52322dbf51f37e9e375740e34d3d27246cfa15091bfefc24f982e7ebd2",
+      "discovered_at": "2026-05-08T22:15:00Z"
     },
     {
-      "rule_id": "automation_theater.sms_automation_rules_crud_without_engine",
-      "file_path": "packages/notifications/index.ts",
-      "snippet_hash": "sha256:0776e9271c341bc94c038274bb530681489f83a7e71c004c9cf434c1a924d0c5",
-      "discovered_at": "2026-05-08T02:15:00Z"
+      "rule_id": "feature_claim_mismatch.brainstorm_log_chronological_order_violation",
+      "file_path": "SLOPSCOPE_RULE_BRAINSTORM.md",
+      "snippet_hash": "sha256:f1a3c8d5e7b2904612cf8e03dabe6f9c0a4b2e1d53f97c8ba06e914d3257c8f0",
+      "discovered_at": "2026-05-08T22:45:00Z"
     },
     {
-      "rule_id": "dashboard_illusion.actual_revenue_hardcoded_to_budget",
-      "file_path": "apps/app/app/(authenticated)/analytics/events/actions/get-event-profitability.ts",
-      "snippet_hash": "sha256:e61767f601d5fde5b472e1514d398a65a4d8ae04588a0f2a32bc1c4fa681dd1b",
-      "discovered_at": "2026-05-08T16:38:00Z"
+      "rule_id": "feature_claim_mismatch.duplicate_rule_docs_for_same_source_evidence",
+      "file_path": "rules/dashboard_illusion.analytics_reads_from_orphaned_aggregation_table.md",
+      "snippet_hash": "sha256:e7c239f1a8b4d0569c2f38e01dbae6f5c4a2b1e3d54f87c9ba17e025d4368d9f1",
+      "discovered_at": "2026-05-08T23:30:00Z"
     },
     {
-      "rule_id": "feature_claim_mismatch.ui_button_calls_501_stub_with_silent_failure",
-      "file_path": "apps/api/app/api/logistics/routes/commands/optimize/route.ts",
-      "snippet_hash": "sha256:ed651f48e9eca79b76364c8c2e960d6d84f2ede6e2ecb610a6a1ee579b9d35d2",
-      "discovered_at": "2026-05-07T23:30:00Z"
+      "rule_id": "feature_claim_mismatch.rule_index_presents_stub_docs_as_scanner_ready_rules",
+      "file_path": "rules/skeleton_crud.hardcoded_validation_always_passes.md",
+      "snippet_hash": "sha256:092467c7e74ebafe6864637f3d427a9a9e4d372b552da02e6fc429f77eac3e92",
+      "discovered_at": "2026-05-08T23:04:00Z"
     },
     {
-      "rule_id": "feature_claim_mismatch.calendar_advertises_nonexistent_deadline_reminder_types",
-      "file_path": "apps/api/app/api/calendar/route.ts",
-      "snippet_hash": "sha256:77f73d95cb05d8f5b00d03b4d9fbf100c3a8446b501cefb9d86bd096adb02d27",
-      "discovered_at": "2026-05-08T00:08:00Z"
+      "rule_id": "placeholder.unportable_local_source_paths",
+      "file_path": "rules/fake_integration.payment_gateway_always_success_placeholder.md",
+      "snippet_hash": "sha256:93613695e804b09c062b9dbaed969ca321b652f432db2e5600f28ed0e54416ea",
+      "discovered_at": "2026-05-08T23:29:00Z"
     },
     {
-      "rule_id": "skeleton_crud.recipe_cost_skips_unit_conversion",
-      "file_path": "apps/app/app/api/recipes/calculate-cost/route.ts",
-      "snippet_hash": "03f026dad02be1726591e7b0a0c43624eb109b5fe8a083a423c396bc40753966",
-      "discovered_at": "2026-05-08T00:24:00Z"
+      "rule_id": "feature_claim_mismatch.rule_index_severity_disagrees_with_rule_doc",
+      "file_path": "rule-index.md",
+      "snippet_hash": "sha256:fa9d42e1c3b7805162df9e04ecbf7a0d5b3c2f1e64a08d9c17f035e5264d8a1b",
+      "discovered_at": "2026-05-08T23:45:00Z"
     },
     {
-      "rule_id": "skeleton_crud.abandoned_dynamic_sql_replaced_inplace",
-      "file_path": "apps/api/app/api/crm/scoring/[id]/route.ts",
-      "snippet_hash": "sha256:091687c32cb1797e0b45d606de2890614f71bc4f9e54ece0d57d43f51b30045b",
-      "discovered_at": "2026-05-07T18:14:00Z"
+      "rule_id": "placeholder.brainstorm_rule_doc_missing_frontmatter_metadata",
+      "file_path": "rules/brainstorm.hedge_sandwich.md",
+      "snippet_hash": "sha256:42a09e4c3d5f8b7a1e6c0f2d3a5b7e9f1c4d6a8b2e0f3a5c7d9b1e4f6a8c0d2e",
+      "discovered_at": "2026-05-09T00:15:00Z"
     },
     {
-      "rule_id": "feature_claim_mismatch.audit_log_table_read_only_with_comprehensive_ui",
-      "file_path": "apps/api/app/api/settings/audit-log/route.ts",
-      "snippet_hash": "a3f7e2b1c4d9e8f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4",
-      "discovered_at": "2026-05-08T01:49:00Z"
+      "rule_id": "feature_claim_mismatch.brainstorm_log_entry_header_format_inconsistency",
+      "file_path": "SLOPSCOPE_RULE_BRAINSTORM.md",
+      "snippet_hash": "sha256:a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b",
+      "discovered_at": "2026-05-09T01:00:00Z"
     },
     {
-      "rule_id": "fake_integration.sync_route_creates_duplicates_no_external_id_mapping",
-      "file_path": "apps/api/app/api/calendar/sync/trigger/route.ts",
-      "snippet_hash": "sha256:0854c283fd3fd2423589258a806baa843a32a0debbc8c82947cd8b7884a2e4f6",
-      "discovered_at": "2026-05-08T02:55:00Z"
-    },
-    {
-      "rule_id": "feature_claim_mismatch.stale_workaround_causes_double_persist",
-      "file_path": "apps/api/app/api/communications/email-templates/commands/create/route.ts",
-      "snippet_hash": "sha256:b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2",
-      "discovered_at": "2026-05-08T03:27:00Z"
-    },
-    {
-      "rule_id": "feature_claim_mismatch.ai_route_is_pure_regex_with_fabricated_confidence",
-      "file_path": "apps/api/app/api/ai-event-setup/parse/route.ts",
-      "snippet_hash": "sha256:f29f43b42c1423bc4064cba5f8f2c63333e661c96ce536a6d667a280cdcddbcd",
-      "discovered_at": "2026-05-07T21:30:00Z"
-    },
-    {
-      "rule_id": "feature_claim_mismatch.followup_generator_ignores_event_type",
-      "file_path": "apps/api/app/api/events/automated-followups/commands/generate/route.ts",
-      "snippet_hash": "sha256:99daf573ff3abbc5a7dcc9ee75bfd6625c29e5dcf632268740e23e6b1a92e282",
-      "discovered_at": "2026-05-08T03:45:00Z"
-    },
-    {
-      "rule_id": "feature_claim_mismatch.ai_assistant_chat_to_nonexistent_endpoint",
-      "file_path": "apps/app/app/(authenticated)/components/ai-assistant/ai-assistant-panel.tsx",
-      "snippet_hash": "sha256:0f10c346f5def48a7aec876dfaea9f4697bc6e4a34eed30ee5af139abc7a6903",
-      "discovered_at": "2026-05-08T04:31:00Z"
-    },
-    {
-      "rule_id": "dashboard_illusion.attendance_rate_always_100_tautological_sql",
-      "file_path": "apps/app/app/(authenticated)/analytics/staff/actions/get-employee-performance.ts",
-      "snippet_hash": "c9a1b2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2",
-      "discovered_at": "2026-05-08T04:46:00Z"
-    },
-    {
-      "rule_id": "automation_theater.food_safety_alert_without_notification_delivery",
-      "file_path": "apps/api/app/api/kitchen/iot/alerts/route.ts",
-      "snippet_hash": "sha256:fc677dc35aa9636fe1a32f89a5a9361e84665537f6c151c8b705cd32dd565ffe",
-      "discovered_at": "2026-05-08T22:07:00Z"
-    },
-    {
-      "rule_id": "error_handling_theater.silent_json_parse_failure_empty_object",
-      "file_path": "apps/api/app/api/events/[eventId]/shipments/generate/route.ts",
-      "snippet_hash": "cfabd0d2c13db768bfac02a7d75e846f26103d21411b6b55e1f59653e1cdb341",
-      "discovered_at": "2026-05-07T22:22:00Z"
-    },
-    {
-      "rule_id": "dashboard_illusion.predictive_ltv_is_arithmetic_with_fake_confidence",
-      "file_path": "apps/app/app/(authenticated)/analytics/clients/actions/get-client-ltv.ts",
-      "snippet_hash": "sha256:386d9c4456b49f30503504766c71af885a5a9b1aebeb0d8fe57f1af114edb7b5",
-      "discovered_at": "2026-05-08T06:05:00Z"
-    },
-    {
-      "rule_id": "fake_integration.schema_credential_field_bypassed_for_env_vars",
-      "file_path": "apps/api/app/api/inventory/supplier-sync/route.ts",
-      "snippet_hash": "sha256:90b5e8f859a1aeab46306393873001e1dbce16c417ec4893279619fbfc9e4eb5",
-      "discovered_at": "2026-05-08T08:31:00Z"
-    },
-    {
-      "rule_id": "feature_claim_mismatch.success_route_admits_not_implemented",
-      "file_path": "apps/api/app/api/command-board/templates/route.ts",
-      "snippet_hash": "sha256:91310c74e25839ce542641c824a4ee8972e34040701ca75caa755ffaee4597e6",
-      "discovered_at": "2026-05-08T10:17:05Z"
-    },
-    {
-      "rule_id": "error_handling_theater.fire_and_forget_side_effect_catch_empty",
-      "file_path": "apps/api/app/api/inventory/stock-levels/adjust/route.ts",
-      "snippet_hash": "sha256:848e30b6ecd87008f272b9b646c29f0292ba93671e792393e7e716a7ddee05a7",
-      "discovered_at": "2026-05-08T10:46:21Z"
-    },
-    {
-      "rule_id": "test_theater.training_completion_trusts_client_self_report",
-      "file_path": "apps/api/app/api/training/complete/route.ts",
-      "snippet_hash": "sha256:fcaedec1ceebf267ec2ced8b4857a424e57aa8c54025d81d678b21003a64d311",
-      "discovered_at": "2026-05-08T11:45:00Z"
-    },
-    {
-      "rule_id": "skeleton_crud.file_upload_stored_as_base64_data_url_in_db",
-      "file_path": "apps/api/app/api/events/contracts/[id]/document/route.ts",
-      "snippet_hash": "sha256:cac2488bd23a7d5c4d77945b1198f02bbfb61a542df700714688bc5c82b6fc2a",
-      "discovered_at": "2026-05-08T07:07:00Z"
-    },
-    {
-      "rule_id": "automation_theater.push_token_registered_but_never_consumed",
-      "file_path": "apps/api/app/api/mobile/push-token/route.ts",
-      "snippet_hash": "sha256:e9f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2",
-      "discovered_at": "2026-05-08T07:45:00Z"
+      "rule_id": "placeholder.detect_platform_always_returns_hardcoded_constant",
+      "file_path": "openclaw/ClawGuard/src/cli/scan.ts",
+      "snippet_hash": "sha256:5e8a3c9f2d1b6a7e4c0f3d2a5b8e1f4c6d7a9b2e0f3c5a8d1e4f7b6c9a2d0e3f",
+      "discovered_at": "2026-05-08T05:40:00Z"
     }
   ]
 }

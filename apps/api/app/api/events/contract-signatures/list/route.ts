@@ -1,42 +1,38 @@
 // Auto-generated Next.js API route for ContractSignature
 // Generated from Manifest IR - DO NOT EDIT
 
-import { auth } from "@repo/auth/server";
-import { log } from "@repo/observability/log";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { database } from "@/lib/database";
-import {
-  manifestErrorResponse,
-  manifestSuccessResponse,
-} from "@/lib/manifest-response";
+import { manifestErrorResponse, manifestSuccessResponse } from "@/lib/manifest-response";
+import { auth } from "@repo/auth/server";
 
 export async function GET(request: NextRequest) {
   try {
-    const { orgId, userId } = await auth();
-    if (!(userId && orgId)) {
-      return manifestErrorResponse("Unauthorized", 401);
-    }
+  const { orgId, userId } = await auth();
+  if (!(userId && orgId)) {
+    return manifestErrorResponse("Unauthorized", 401);
+  }
 
-    const tenantId = await getTenantIdForOrg(orgId);
+  const tenantId = await getTenantIdForOrg(orgId);
 
-    if (!tenantId) {
-      return manifestErrorResponse("Tenant not found", 400);
-    }
+  if (!tenantId) {
+    return manifestErrorResponse("Tenant not found", 400);
+  }
 
-    const contractSignatures = await database.contractSignature.findMany({
-      where: {
+const contractSignatures = await database.contractSignature.findMany({
+    where: {
         tenantId,
-        deletedAt: null,
+        deletedAt: null
       },
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
 
     return manifestSuccessResponse({ contractSignatures });
   } catch (error) {
-    log.error("Error fetching contractSignatures:", error);
+    console.error("Error fetching contractSignatures:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

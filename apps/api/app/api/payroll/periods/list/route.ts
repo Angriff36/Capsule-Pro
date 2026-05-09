@@ -1,42 +1,38 @@
 // Auto-generated Next.js API route for PayrollPeriod
 // Generated from Manifest IR - DO NOT EDIT
 
-import { auth } from "@repo/auth/server";
-import { log } from "@repo/observability/log";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { database } from "@/lib/database";
-import {
-  manifestErrorResponse,
-  manifestSuccessResponse,
-} from "@/lib/manifest-response";
+import { manifestErrorResponse, manifestSuccessResponse } from "@/lib/manifest-response";
+import { auth } from "@repo/auth/server";
 
 export async function GET(request: NextRequest) {
   try {
-    const { orgId, userId } = await auth();
-    if (!(userId && orgId)) {
-      return manifestErrorResponse("Unauthorized", 401);
-    }
+  const { orgId, userId } = await auth();
+  if (!(userId && orgId)) {
+    return manifestErrorResponse("Unauthorized", 401);
+  }
 
-    const tenantId = await getTenantIdForOrg(orgId);
+  const tenantId = await getTenantIdForOrg(orgId);
 
-    if (!tenantId) {
-      return manifestErrorResponse("Tenant not found", 400);
-    }
+  if (!tenantId) {
+    return manifestErrorResponse("Tenant not found", 400);
+  }
 
-    const payrollPeriods = await database.payroll_periods.findMany({
-      where: {
-        tenant_id: tenantId,
-        deleted_at: null,
+const payrollPeriods = await database.payrollPeriod.findMany({
+    where: {
+        tenantId,
+        deletedAt: null
       },
-      orderBy: {
-        created_at: "desc",
-      },
-    });
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
 
     return manifestSuccessResponse({ payrollPeriods });
   } catch (error) {
-    log.error("Error fetching payrollPeriods:", error);
+    console.error("Error fetching payrollPeriods:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

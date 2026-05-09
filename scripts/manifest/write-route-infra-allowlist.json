@@ -1812,6 +1812,11 @@
         "POST"
       ],
       "comment": "Bypass route - timecard creation (pending manifest migration)"
+    },
+    {
+      "pattern": "^/api/manifest/[^/]+/commands/[^/]+$",
+      "methods": ["POST"],
+      "comment": "Manifest command dispatcher — single dynamic route dispatches to createManifestRuntime().runCommand()"
     }
   ]
 }

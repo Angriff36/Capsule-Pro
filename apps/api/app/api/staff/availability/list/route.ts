@@ -1,42 +1,38 @@
 // Auto-generated Next.js API route for EmployeeAvailability
 // Generated from Manifest IR - DO NOT EDIT
 
-import { auth } from "@repo/auth/server";
-import { log } from "@repo/observability/log";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { database } from "@/lib/database";
-import {
-  manifestErrorResponse,
-  manifestSuccessResponse,
-} from "@/lib/manifest-response";
+import { manifestErrorResponse, manifestSuccessResponse } from "@/lib/manifest-response";
+import { auth } from "@repo/auth/server";
 
 export async function GET(request: NextRequest) {
   try {
-    const { orgId, userId } = await auth();
-    if (!(userId && orgId)) {
-      return manifestErrorResponse("Unauthorized", 401);
-    }
+  const { orgId, userId } = await auth();
+  if (!(userId && orgId)) {
+    return manifestErrorResponse("Unauthorized", 401);
+  }
 
-    const tenantId = await getTenantIdForOrg(orgId);
+  const tenantId = await getTenantIdForOrg(orgId);
 
-    if (!tenantId) {
-      return manifestErrorResponse("Tenant not found", 400);
-    }
+  if (!tenantId) {
+    return manifestErrorResponse("Tenant not found", 400);
+  }
 
-    const employeeAvailabilities =
-      await database.employee_availability.findMany({
-        where: {
-          tenant_id: tenantId,
-        },
-        orderBy: {
-          created_at: "desc",
-        },
-      });
+const employeeAvailabilitys = await database.employeeAvailability.findMany({
+    where: {
+        tenantId,
+        deletedAt: null
+      },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
 
-    return manifestSuccessResponse({ employeeAvailabilities });
+    return manifestSuccessResponse({ employeeAvailabilitys });
   } catch (error) {
-    log.error("Error fetching employeeAvailabilitys:", error);
+    console.error("Error fetching employeeAvailabilitys:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }
