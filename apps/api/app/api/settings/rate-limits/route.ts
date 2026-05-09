@@ -10,18 +10,18 @@ import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
+import { executeManifestCommand } from "@/lib/manifest-command-handler";
 
 /**
  * GET /api/settings/rate-limits
- * List all rate limit configurations for the tenant
+ * List all rate limit configurations for the tenant (read-only, Prisma)
  */
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const { orgId, userId: clerkId } = await auth();
     if (!(clerkId && orgId)) {
@@ -34,10 +34,7 @@ export async function GET(request: NextRequest) {
     }
 
     const configs = await database.rateLimitConfig.findMany({
-      where: {
-        tenantId,
-        deletedAt: null,
-      },
+      where: { tenantId, deletedAt: null },
       orderBy: [{ priority: "desc" }, { createdAt: "desc" }],
     });
 
@@ -51,99 +48,20 @@ export async function GET(request: NextRequest) {
 
 /**
  * POST /api/settings/rate-limits
- * Create a new rate limit configuration
+ * Create a new rate limit configuration via Manifest command
  */
-export async function POST(request: NextRequest) {
-  try {
-    const { orgId, userId: clerkId } = await auth();
-    if (!(clerkId && orgId)) {
-      return manifestErrorResponse("Unauthorized", 401);
-    }
-
-    const tenantId = await getTenantIdForOrg(orgId);
-    if (!tenantId) {
-      return manifestErrorResponse("Tenant not found", 400);
-    }
-
-    const body = await request.json();
-    const {
-      name,
-      endpointPattern,
-      windowMs,
-      maxRequests,
-      burstAllowance,
-      priority,
-      isActive,
-    } = body;
-
-    // Validation
-    if (!name || typeof name !== "string" || name.trim() === "") {
-      return manifestErrorResponse("Name is required", 400);
-    }
-
-    if (!endpointPattern || typeof endpointPattern !== "string") {
-      return manifestErrorResponse("Endpoint pattern is required", 400);
-    }
-
-    if (!windowMs || typeof windowMs !== "number" || windowMs <= 0) {
-      return manifestErrorResponse(
-        "Window duration must be a positive number",
-        400
-      );
-    }
-
-    if (!maxRequests || typeof maxRequests !== "number" || maxRequests <= 0) {
-      return manifestErrorResponse(
-        "Max requests must be a positive number",
-        400
-      );
-    }
-
-    // Validate regex pattern
-    try {
-      new RegExp(endpointPattern, "i");
-    } catch {
-      return manifestErrorResponse("Invalid endpoint pattern regex", 400);
-    }
-
-    const config = await database.rateLimitConfig.create({
-      data: {
-        tenantId,
-        name: name.trim(),
-        endpointPattern,
-        windowMs,
-        maxRequests,
-        burstAllowance: burstAllowance ?? 0,
-        priority: priority ?? 0,
-        isActive: isActive ?? true,
-      },
-      select: {
-        id: true,
-        name: true,
-        endpointPattern: true,
-        windowMs: true,
-        maxRequests: true,
-        burstAllowance: true,
-        priority: true,
-        isActive: true,
-        createdAt: true,
-      },
-    });
-
-    log.info("[rate-limits/create] Created rate limit config", {
-      tenantId,
-      configId: config.id,
-      name: config.name,
-      pattern: config.endpointPattern,
-    });
-
-    return NextResponse.json(config, { status: 201 });
-  } catch (error) {
-    captureException(error);
-    log.error("[rate-limits/create] Error:", error);
-    return manifestErrorResponse(
-      "Failed to create rate limit configuration",
-      500
-    );
-  }
+export function POST(request: NextRequest) {
+  return executeManifestCommand(request, {
+    entityName: "RateLimitConfig",
+    commandName: "create",
+    transformBody: (body) => ({
+      name: body.name || "",
+      endpointPattern: body.endpointPattern || "",
+      windowMs: body.windowMs ?? 60000,
+      maxRequests: body.maxRequests ?? 100,
+      burstAllowance: body.burstAllowance ?? 0,
+      priority: body.priority ?? 0,
+      isActive: body.isActive ?? true,
+    }),
+  });
 }

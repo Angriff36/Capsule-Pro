@@ -13,6 +13,7 @@ import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { executeManifestCommand } from "@/lib/manifest-command-handler";
 import {
   manifestErrorResponse,
   manifestSuccessResponse,
@@ -151,50 +152,15 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 
 /**
  * DELETE /api/settings/rate-limits/[id]
- * Soft delete a rate limit configuration
+ * Soft delete a rate limit configuration (via Manifest command)
  */
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
-  try {
-    const { orgId, userId: clerkId } = await auth();
-    if (!(clerkId && orgId)) {
-      return manifestErrorResponse("Unauthorized", 401);
-    }
+  const { id } = await params;
 
-    const tenantId = await getTenantIdForOrg(orgId);
-    if (!tenantId) {
-      return manifestErrorResponse("Tenant not found", 400);
-    }
-
-    const { id } = await params;
-
-    // Verify ownership
-    const existing = await database.rateLimitConfig.findFirst({
-      where: { id, tenantId, deletedAt: null },
-    });
-
-    if (!existing) {
-      return manifestErrorResponse("Rate limit configuration not found", 404);
-    }
-
-    // Soft delete
-    await database.rateLimitConfig.update({
-      where: { tenantId_id: { tenantId, id } },
-      data: { deletedAt: new Date() },
-    });
-
-    log.info("[rate-limits/delete] Deleted rate limit config", {
-      tenantId,
-      configId: id,
-      name: existing.name,
-    });
-
-    return new NextResponse(null, { status: 204 });
-  } catch (error) {
-    captureException(error);
-    log.error("[rate-limits/delete] Error", { error });
-    return manifestErrorResponse(
-      "Failed to delete rate limit configuration",
-      500
-    );
-  }
+  return executeManifestCommand(request, {
+    entityName: "RateLimitConfig",
+    commandName: "softDelete",
+    params: { id },
+    transformBody: () => ({ id }),
+  });
 }
