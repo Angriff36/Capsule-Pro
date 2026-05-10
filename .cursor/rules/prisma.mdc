@@ -213,12 +213,14 @@ const userPosts = await prisma.user.findUnique({
 
 Maintain a clean, consistent, and reliable migration history.
 
-### ✅ GOOD: Descriptive Migration Names
+### ✅ GOOD: Descriptive Migration Names (this repo)
 
-Use `npx prisma migrate dev --name <descriptive-name>` for clear, self-documenting migration history.
+Use **`pnpm db:dev`** with a descriptive `--name` (this repo’s supported path for
+`prisma migrate dev`; do not call `npx prisma migrate dev` or
+`pnpm --filter @repo/database exec prisma migrate dev` directly — unsupported).
 
 ```bash
-npx prisma migrate dev --name add-user-profile-fields
+pnpm db:dev -- --name add-user-profile-fields
 ```
 
 ❌ **BAD**: Generic names like `init` or `migration` provide no context.

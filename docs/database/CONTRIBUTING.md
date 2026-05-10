@@ -28,6 +28,82 @@ Notes:
 4. Avoid `prisma db push` (disabled in this repo).
 5. If you intentionally want a destructive reset, use `pnpm --filter @repo/database exec prisma migrate reset --force`.
 
+### `SHADOW_DATABASE_URL` and migrate dev (scoping)
+
+- **Purpose:** Prisma Migrate uses a **shadow database** during `migrate dev`.
+  In this repo, `packages/database/prisma.config.ts` sets `shadowDatabaseUrl`
+  only when `SHADOW_DATABASE_URL` is present; otherwise that field is omitted.
+- **Where it is required:** **`pnpm db:dev`** (root `package.json`) runs
+  `scripts/require-shadow-database-url-for-migrate-dev.mjs` first, which
+  requires a **valid URL** in `SHADOW_DATABASE_URL` (typically a dedicated empty
+  Neon database/branch). **`pnpm migrate`** chains into `pnpm db:dev`, so the
+  same requirement applies when that command reaches the migrate-dev step.
+- **Where it is not required:** App and API **env validation** (`@repo/database/keys`)
+  only includes **`DATABASE_URL`**. Vercel/Next **build**, **`prisma generate`**,
+  **`pnpm db:deploy`** / **`migrate deploy`**, **`migrate:status`**, and **runtime
+  startup** do not use or validate `SHADOW_DATABASE_URL`.
+- **Unsupported workflow:** Running **`prisma migrate dev`** directly (for example
+  `pnpm --filter @repo/database exec prisma migrate dev …` or `npx prisma migrate dev`)
+  **without** going through **`pnpm db:dev`** is **unsupported** — it skips the
+  repo guard and may run migrate dev without the intended checks. Use
+  **`pnpm db:dev`** (with extra args after `--`, e.g. `pnpm db:dev -- --create-only --name foo`)
+  as the only migrate-dev entrypoint.
+
+### Neon: create `capsule_shadow` and write `SHADOW_DATABASE_URL` (local only)
+
+If you use **Neon**, provision an empty shadow database on your **dev** branch
+(same migration role as `DATABASE_URL`, e.g. `neondb_owner`), then store a **direct
+(non-pooled) Prisma** URL locally only — **never** in Vercel production env.
+
+1. Install the [Neon CLI](https://neon.tech/docs/reference/cli-install) and run
+   `neon auth`, or set a Neon API key for non-interactive use (see Neon docs:
+   global `--api-key` / `NEON_API_KEY`).
+2. From the repo root, with your Neon **project ID** and **branch** name (default
+   branch name in examples is `dev`; set `NEON_DEV_BRANCH` if yours differs):
+
+   ```bash
+   export NEON_PROJECT_ID="<neon-project-id>"
+   # Optional: same role as in DATABASE_URL (required if the branch has multiple roles)
+   export NEON_DATABASE_OWNER="neondb_owner"
+   # Optional: defaults to branch name "dev"
+   export NEON_DEV_BRANCH="dev"
+
+   pnpm db:neon-shadow -- --write
+   ```
+
+   This runs `neon databases create … --name capsule_shadow` (idempotent if the DB
+   already exists) and `neon connection-string <branch> --database-name capsule_shadow --prisma`
+   (non-pooled by default), then appends **`SHADOW_DATABASE_URL`** to
+   **`packages/database/.env.local`** (gitignored). Prisma loads that file via
+   `packages/database/prisma.config.ts`; **`scripts/require-shadow-database-url-for-migrate-dev.mjs`**
+   reads the same paths so **`pnpm db:dev`** picks it up without exporting it in your shell.
+
+3. **Do not** add `SHADOW_DATABASE_URL` to Vercel **Production** (or any runtime-only
+   env). Next build, **`prisma generate`**, **`pnpm db:deploy`**, **`migrate:status`**,
+   and app startup **do not** require it.
+
+### Neon: schema backup + read-only audit (safe)
+
+Before inspecting or changing Neon resources, take a **schema-only** SQL backup
+(no data) and run a **read-only** CLI audit (no deletes, resets, or
+`connection-string` dumps that expose passwords):
+
+```bash
+# 1) Requires pg_dump on PATH + DATABASE_URL (see packages/database/.env.local)
+pnpm db:neon-backup-schema
+
+# 2) Requires `neon auth` (or NEON_API_KEY). Optional: NEON_PROJECT_ID=...
+pnpm db:neon-audit
+
+# Or both in order:
+pnpm db:neon-backup-and-audit
+```
+
+Outputs: `backups/neon-schema/schema-only-<timestamp>.sql` (gitignored) and JSON
+snapshots on stdout from `neon-audit-readonly.mjs`. This repo’s app tenancy is
+**shared Postgres + `tenant_*` schemas**, not Neon “project-per-customer”; the
+audit only describes your Neon project (branches, databases, roles, operations).
+
 ## Documentation Structure
 
 ```

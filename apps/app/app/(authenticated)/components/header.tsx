@@ -50,7 +50,7 @@ export const Header = ({ pages, page, children }: HeaderProps) => {
                       {item.label}
                     </BreadcrumbLink>
                   ) : (
-                    <BreadcrumbLink href="#">{item.label}</BreadcrumbLink>
+                    <span className="text-muted-foreground">{item.label}</span>
                   )}
                 </BreadcrumbItem>
               </Fragment>

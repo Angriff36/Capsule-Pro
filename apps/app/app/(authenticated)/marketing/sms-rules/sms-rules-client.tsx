@@ -35,7 +35,12 @@ const TRIGGER_TYPES = [
   "custom_event",
 ] as const;
 
-const RECIPIENT_TYPES = ["employee", "role_based", "custom_phone", "manager"] as const;
+const RECIPIENT_TYPES = [
+  "employee",
+  "role_based",
+  "custom_phone",
+  "manager",
+] as const;
 
 function formatTriggerType(type: string): string {
   return type.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
@@ -85,7 +90,7 @@ export function SmsRulesClient({ rules }: SmsRulesClientProps) {
       result = result.filter(
         (r) =>
           r.name.toLowerCase().includes(q) ||
-          r.triggerType.toLowerCase().includes(q),
+          r.triggerType.toLowerCase().includes(q)
       );
     }
     return result;
@@ -95,19 +100,16 @@ export function SmsRulesClient({ rules }: SmsRulesClientProps) {
     setTogglingId(rule.id);
     try {
       const endpoint = rule.isActive ? "deactivate" : "activate";
-      const res = await fetch(
-        `/api/smsautomationrule/${endpoint}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id: rule.id }),
-        },
-      );
+      const res = await fetch(`/api/smsautomationrule/${endpoint}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: rule.id }),
+      });
       if (!res.ok) throw new Error("Failed to update rule");
       toast.success(
         rule.isActive
           ? `"${rule.name}" deactivated`
-          : `"${rule.name}" activated`,
+          : `"${rule.name}" activated`
       );
       router.refresh();
     } catch {
@@ -161,7 +163,7 @@ export function SmsRulesClient({ rules }: SmsRulesClientProps) {
         <p className="mt-1 text-sm text-muted-foreground">
           Create your first SMS automation rule.
         </p>
-        <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+        <Dialog onOpenChange={setCreateOpen} open={createOpen}>
           <DialogTrigger asChild>
             <Button className="mt-4" size="sm">
               New SMS rule
@@ -172,10 +174,10 @@ export function SmsRulesClient({ rules }: SmsRulesClientProps) {
               <DialogTitle>New SMS rule</DialogTitle>
             </DialogHeader>
             <CreateRuleForm
-              form={createForm}
-              setForm={setCreateForm}
               creating={creating}
+              form={createForm}
               onSubmit={handleCreate}
+              setForm={setCreateForm}
             />
           </DialogContent>
         </Dialog>
@@ -211,7 +213,7 @@ export function SmsRulesClient({ rules }: SmsRulesClientProps) {
               {f.charAt(0).toUpperCase() + f.slice(1)}
             </button>
           ))}
-          <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+          <Dialog onOpenChange={setCreateOpen} open={createOpen}>
             <DialogTrigger asChild>
               <Button size="sm">New SMS rule</Button>
             </DialogTrigger>
@@ -220,10 +222,10 @@ export function SmsRulesClient({ rules }: SmsRulesClientProps) {
                 <DialogTitle>New SMS rule</DialogTitle>
               </DialogHeader>
               <CreateRuleForm
-                form={createForm}
-                setForm={setCreateForm}
                 creating={creating}
+                form={createForm}
                 onSubmit={handleCreate}
+                setForm={setCreateForm}
               />
             </DialogContent>
           </Dialog>
@@ -270,7 +272,7 @@ export function SmsRulesClient({ rules }: SmsRulesClientProps) {
                 <button
                   className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium uppercase tracking-wide transition-colors ${
                     rule.isActive
-                      ? "bg-[#1a4d2e] text-white"
+                      ? "bg-ink text-white"
                       : "border border-hairline bg-canvas text-muted-foreground"
                   } ${togglingId === rule.id ? "opacity-50" : ""}`}
                   disabled={togglingId === rule.id}
@@ -316,13 +318,13 @@ function CreateRuleForm({
   return (
     <div className="space-y-4">
       <Input
+        onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
         placeholder="Rule name"
         value={form.name}
-        onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
       />
       <Select
-        value={form.triggerType}
         onValueChange={(v) => setForm((f) => ({ ...f, triggerType: v }))}
+        value={form.triggerType}
       >
         <SelectTrigger>
           <SelectValue placeholder="Trigger type" />
@@ -336,8 +338,8 @@ function CreateRuleForm({
         </SelectContent>
       </Select>
       <Select
-        value={form.recipientType}
         onValueChange={(v) => setForm((f) => ({ ...f, recipientType: v }))}
+        value={form.recipientType}
       >
         <SelectTrigger>
           <SelectValue placeholder="Recipient type" />
@@ -351,19 +353,19 @@ function CreateRuleForm({
         </SelectContent>
       </Select>
       <Input
-        placeholder="Custom message (optional)"
-        value={form.customMessage}
         onChange={(e) =>
           setForm((f) => ({ ...f, customMessage: e.target.value }))
         }
+        placeholder="Custom message (optional)"
+        value={form.customMessage}
       />
       <Input
-        type="number"
-        placeholder="Priority (default 100)"
-        value={form.priority}
         onChange={(e) =>
           setForm((f) => ({ ...f, priority: Number(e.target.value) || 100 }))
         }
+        placeholder="Priority (default 100)"
+        type="number"
+        value={form.priority}
       />
       <Button className="w-full" disabled={creating} onClick={onSubmit}>
         {creating ? "Creating..." : "Create rule"}

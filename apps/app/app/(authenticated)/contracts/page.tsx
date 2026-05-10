@@ -144,7 +144,9 @@ export default async function ContractsPage() {
     .filter((s): s is number => s !== null);
   const avgCompliance =
     vendorScores.length > 0
-      ? Math.round(vendorScores.reduce((a, b) => a + b, 0) / vendorScores.length)
+      ? Math.round(
+          vendorScores.reduce((a, b) => a + b, 0) / vendorScores.length
+        )
       : null;
 
   return (
@@ -206,7 +208,9 @@ export default async function ContractsPage() {
             </MetricCell>
             <MetricCell>
               <MetricLabel>Vendor compliance</MetricLabel>
-              <MetricValue>{avgCompliance !== null ? `${avgCompliance}%` : "—"}</MetricValue>
+              <MetricValue>
+                {avgCompliance !== null ? `${avgCompliance}%` : "—"}
+              </MetricValue>
               <p className="text-sm text-white/70">Avg across vendors</p>
             </MetricCell>
           </MetricBand>

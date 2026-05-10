@@ -144,6 +144,24 @@
       "file_path": "openclaw/ClawGuard/src/cli/scan.ts",
       "snippet_hash": "sha256:5e8a3c9f2d1b6a7e4c0f3d2a5b8e1f4c6d7a9b2e0f3c5a8d1e4f7b6c9a2d0e3f",
       "discovered_at": "2026-05-08T05:40:00Z"
+    },
+    {
+      "rule_id": "feature_claim_mismatch.duplicate_discovery_entry_in_log_file",
+      "file_path": "capsule-pro/IMPLEMENTATION_PLAN.md",
+      "snippet_hash": "sha256:a4f8c2d1e6b9a3f7c0d5e2b8a1f4c6d9e7a2b5f8c1d4e6a9b3f7c0d5e2a8b1",
+      "discovered_at": "2026-05-09T02:00:00Z"
+    },
+    {
+      "rule_id": "feature_claim_mismatch.user_color_assigned_by_math_random_not_deterministic",
+      "file_path": "apps/app/app/actions/users/get.ts",
+      "snippet_hash": "sha256:0d7b3f1e5c9a2d8f4e6b1c3a5d7f9e2b4c6a8d0f2e4b6c8a0d2f4e6b8c0a2d",
+      "discovered_at": "2026-05-09T02:15:00Z"
+    },
+    {
+      "rule_id": "error_handling_theater.silent_catch_empty_body_on_side_effect_calls",
+      "file_path": "apps/api/app/api/staff/shifts/commands/create/route.ts",
+      "snippet_hash": "sha256:d41642059a5572a216ee694db17ea45897760abeea9e095ed4bc57caa43955b3",
+      "discovered_at": "2026-05-09T04:38:00Z"
     }
   ]
 }

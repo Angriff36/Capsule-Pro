@@ -1,5 +1,5 @@
-import { executeManifestCommand } from "@/lib/manifest-command-handler";
 import type { NextRequest } from "next/server";
+import { executeManifestCommand } from "@/lib/manifest-command-handler";
 
 /**
  * POST /api/kitchen/equipment/commands/schedule-maintenance

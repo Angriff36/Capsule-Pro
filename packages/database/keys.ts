@@ -35,11 +35,9 @@ export const keys = () => {
     skipValidation: !!process.env.SKIP_ENV_VALIDATION,
     server: {
       DATABASE_URL: z.url(),
-      SHADOW_DATABASE_URL: z.string().optional().refine((v) => !v || v.length === 0 || z.string().url().safeParse(v).success, "Invalid URL"),
     },
     runtimeEnv: {
       DATABASE_URL: process.env.DATABASE_URL,
-      SHADOW_DATABASE_URL: process.env.SHADOW_DATABASE_URL,
     },
   });
   return {

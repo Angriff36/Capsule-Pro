@@ -1,6 +1,6 @@
-import { database } from "@repo/database";
 import { analytics } from "@repo/analytics/server";
 import { clerkClient } from "@repo/auth/server";
+import { database } from "@repo/database";
 import { parseError } from "@repo/observability/error";
 import { log } from "@repo/observability/log";
 import type { Stripe } from "@repo/payments";
@@ -73,13 +73,11 @@ const handleSubscriptionScheduleCanceled = async (
   });
 };
 
-const handlePaymentIntentSucceeded = async (
-  data: Stripe.PaymentIntent,
-) => {
+const handlePaymentIntentSucceeded = async (data: Stripe.PaymentIntent) => {
   const tenantId = data.metadata?.tenantId;
   const paymentId = data.metadata?.paymentId;
 
-  if (!tenantId || !paymentId) {
+  if (!(tenantId && paymentId)) {
     return;
   }
 
@@ -133,13 +131,11 @@ const handlePaymentIntentSucceeded = async (
   }
 };
 
-const handlePaymentIntentFailed = async (
-  data: Stripe.PaymentIntent,
-) => {
+const handlePaymentIntentFailed = async (data: Stripe.PaymentIntent) => {
   const tenantId = data.metadata?.tenantId;
   const paymentId = data.metadata?.paymentId;
 
-  if (!tenantId || !paymentId) {
+  if (!(tenantId && paymentId)) {
     return;
   }
 

@@ -266,7 +266,10 @@ function SuggestionsTab() {
           });
           if (!res.ok) {
             const err = await res.json().catch(() => ({}));
-            toast.error((err as { message?: string }).message ?? `Request failed (${res.status})`);
+            toast.error(
+              (err as { message?: string }).message ??
+                `Request failed (${res.status})`
+            );
             return;
           }
           toast.success("Action completed successfully");

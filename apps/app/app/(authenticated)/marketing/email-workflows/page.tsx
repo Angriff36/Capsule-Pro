@@ -59,7 +59,11 @@ export default async function EmailWorkflowsPage() {
     isActive: w.isActive,
     lastTriggeredAt: w.lastTriggeredAt?.toISOString() ?? null,
     emailTemplate: w.emailTemplate
-      ? { id: w.emailTemplate.id, name: w.emailTemplate.name, deleted_at: w.emailTemplate.deleted_at?.toISOString() ?? null }
+      ? {
+          id: w.emailTemplate.id,
+          name: w.emailTemplate.name,
+          deleted_at: w.emailTemplate.deleted_at?.toISOString() ?? null,
+        }
       : null,
     createdAt: w.createdAt.toISOString(),
   }));
@@ -72,7 +76,8 @@ export default async function EmailWorkflowsPage() {
             <MonoLabel tone="dark">Operations / Marketing</MonoLabel>
             <DisplayHeading>Email Workflows</DisplayHeading>
             <CommandBandLede>
-              Activate and monitor automated email workflows triggered by events, tasks, and contracts.
+              Activate and monitor automated email workflows triggered by
+              events, tasks, and contracts.
             </CommandBandLede>
           </div>
           <CommandBandActions>
@@ -100,7 +105,11 @@ export default async function EmailWorkflowsPage() {
       </CommandBand>
 
       <OperationalColumn>
-        <SectionHeader eyebrow="Workflows" title="All email workflows" count={`${workflows.length}`} />
+        <SectionHeader
+          count={`${workflows.length}`}
+          eyebrow="Workflows"
+          title="All email workflows"
+        />
         <EmailWorkflowsClient workflows={serializedWorkflows} />
       </OperationalColumn>
     </PageCanvas>

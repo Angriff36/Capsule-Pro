@@ -157,8 +157,7 @@ function DetailDialog({ entry }: { entry: AuditLogEntry }) {
                 {formatTableName(entry.tableName)}
               </div>
               <div>
-                <span className="font-medium">Schema:</span>{" "}
-                {entry.tableSchema}
+                <span className="font-medium">Schema:</span> {entry.tableSchema}
               </div>
             </div>
             <Separator />
@@ -197,7 +196,7 @@ export function AuditLogClient() {
       }
 
       const res = await apiFetch(
-        `/api/settings/audit-log?${params.toString()}`,
+        `/api/settings/audit-log?${params.toString()}`
       );
       const data = await res.json();
 
@@ -218,7 +217,7 @@ export function AuditLogClient() {
         setTableNames((prev) =>
           prev.length >= auditData.tableNames.length
             ? prev
-            : auditData.tableNames,
+            : auditData.tableNames
         );
       }
     } catch {
@@ -240,7 +239,7 @@ export function AuditLogClient() {
           (e.performedByEmail &&
             e.performedByEmail.toLowerCase().includes(search.toLowerCase())) ||
           e.recordId.toLowerCase().includes(search.toLowerCase()) ||
-          e.tableName.toLowerCase().includes(search.toLowerCase()),
+          e.tableName.toLowerCase().includes(search.toLowerCase())
       )
     : entries;
 
@@ -338,9 +337,7 @@ export function AuditLogClient() {
                       "System"}
                   </TableCell>
                   <TableCell>
-                    <Badge
-                      variant={ACTION_COLORS[entry.action] || "outline"}
-                    >
+                    <Badge variant={ACTION_COLORS[entry.action] || "outline"}>
                       {formatAction(entry.action)}
                     </Badge>
                   </TableCell>

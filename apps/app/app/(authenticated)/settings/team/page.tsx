@@ -66,7 +66,7 @@ const SettingsTeamPage = async () => {
       acc[m.role] = (acc[m.role] || 0) + 1;
       return acc;
     },
-    {} as Record<string, number>,
+    {} as Record<string, number>
   );
   const uniqueRoles = Object.keys(roleCounts).length;
 

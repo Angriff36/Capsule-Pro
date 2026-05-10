@@ -1,4 +1,3 @@
-import { requireCurrentUser } from "@/app/lib/tenant";
 import {
   CommandBand,
   CommandBandBody,
@@ -14,6 +13,7 @@ import {
   PageCanvas,
 } from "@repo/design-system/components/blocks/page-shell";
 import { BellRing } from "lucide-react";
+import { requireCurrentUser } from "@/app/lib/tenant";
 import { NotificationsClient } from "./notifications-client";
 
 export default async function NotificationsSettingsPage() {

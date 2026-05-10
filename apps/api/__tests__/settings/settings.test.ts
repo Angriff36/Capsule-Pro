@@ -47,6 +47,13 @@ import {
 } from "@/app/api/settings/rate-limits/route";
 
 // Mock dependencies
+vi.mock("@repo/notifications", () => ({
+  notifications: { trigger: vi.fn(), notify: vi.fn() },
+}));
+vi.mock("@/app/lib/webhook-dispatch", () => ({
+  dispatchWebhook: vi.fn(),
+  dispatchWebhooks: vi.fn().mockResolvedValue(undefined),
+}));
 vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
 vi.mock("@repo/database", () => ({
   database: {
@@ -82,6 +89,7 @@ vi.mock("@repo/database", () => ({
 vi.mock("@/app/lib/tenant", () => ({
   getTenantIdForOrg: vi.fn(),
   requireCurrentUser: vi.fn(),
+  resolveCurrentUser: vi.fn(),
 }));
 vi.mock("@/app/lib/api-key-service", () => ({
   generateApiKey: vi.fn(),
@@ -100,9 +108,8 @@ vi.mock("@sentry/nextjs", () => ({
 }));
 
 const { auth } = await import("@repo/auth/server");
-const { getTenantIdForOrg, requireCurrentUser } = await import(
-  "@/app/lib/tenant"
-);
+const { getTenantIdForOrg, requireCurrentUser, resolveCurrentUser } =
+  await import("@/app/lib/tenant");
 const { createManifestRuntime } = await import("@/lib/manifest-runtime");
 const { generateApiKey } = await import("@/app/lib/api-key-service");
 const { requireDualAuth } = await import("@/middleware/dual-auth");
@@ -1202,6 +1209,8 @@ describe("Settings API", () => {
   // =====================================================================
   // RATE LIMITS - List & Create (auth + getTenantIdForOrg)
   // =====================================================================
+  const mockRateLimitRunCommand = vi.fn();
+
   describe("Rate Limits", () => {
     beforeEach(() => {
       vi.mocked(auth).mockResolvedValue({
@@ -1209,6 +1218,29 @@ describe("Settings API", () => {
         orgId: TEST_ORG_ID,
       } as never);
       vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
+      vi.mocked(createManifestRuntime).mockResolvedValue({
+        runCommand: mockRateLimitRunCommand,
+      } as never);
+      vi.mocked(database.user.findFirst).mockResolvedValue({
+        id: TEST_USER_ID,
+        tenantId: TEST_TENANT_ID,
+        role: "admin",
+        authUserId: TEST_CLERK_ID,
+      } as never);
+      vi.mocked(resolveCurrentUser).mockResolvedValue(
+        createMockCurrentUser() as never
+      );
+      mockRateLimitRunCommand.mockResolvedValue({
+        success: true,
+        result: {
+          id: "rl-new",
+          name: "New Limit",
+          endpointPattern: "/api/test",
+          windowMs: 60_000,
+          maxRequests: 100,
+        },
+        emittedEvents: [],
+      });
     });
 
     // --------------------------------------------------------- LIST
@@ -1223,10 +1255,7 @@ describe("Settings API", () => {
           mockConfigs as never
         );
 
-        const request = new NextRequest(
-          "http://localhost/api/settings/rate-limits"
-        );
-        const response = await listRateLimits(request);
+        const response = await listRateLimits();
 
         expect(response.status).toBe(200);
         const body = await response.json();
@@ -1240,10 +1269,7 @@ describe("Settings API", () => {
           orgId: null,
         } as never);
 
-        const request = new NextRequest(
-          "http://localhost/api/settings/rate-limits"
-        );
-        const response = await listRateLimits(request);
+        const response = await listRateLimits();
 
         expect(response.status).toBe(401);
         const body = await response.json();
@@ -1254,10 +1280,7 @@ describe("Settings API", () => {
       it("should return 400 when tenant not found", async () => {
         vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
 
-        const request = new NextRequest(
-          "http://localhost/api/settings/rate-limits"
-        );
-        const response = await listRateLimits(request);
+        const response = await listRateLimits();
 
         expect(response.status).toBe(400);
       });
@@ -1267,10 +1290,7 @@ describe("Settings API", () => {
           [] as never
         );
 
-        const request = new NextRequest(
-          "http://localhost/api/settings/rate-limits"
-        );
-        await listRateLimits(request);
+        await listRateLimits();
 
         expect(database.rateLimitConfig.findMany).toHaveBeenCalledWith(
           expect.objectContaining({
@@ -1284,10 +1304,7 @@ describe("Settings API", () => {
           new Error("DB error") as never
         );
 
-        const request = new NextRequest(
-          "http://localhost/api/settings/rate-limits"
-        );
-        const response = await listRateLimits(request);
+        const response = await listRateLimits();
 
         expect(response.status).toBe(500);
       });
@@ -1295,19 +1312,7 @@ describe("Settings API", () => {
 
     // ------------------------------------------------ CREATE
     describe("POST /api/settings/rate-limits (create)", () => {
-      it("should create a new rate limit config", async () => {
-        vi.mocked(database.rateLimitConfig.create).mockResolvedValue({
-          id: "rl-new",
-          name: "New Limit",
-          endpointPattern: "/api/test",
-          windowMs: 60_000,
-          maxRequests: 100,
-          burstAllowance: 10,
-          priority: 0,
-          isActive: true,
-          createdAt: new Date("2026-01-01"),
-        } as never);
-
+      it("should create a new rate limit config via manifest command", async () => {
         const request = new NextRequest(
           "http://localhost/api/settings/rate-limits",
           {
@@ -1322,51 +1327,96 @@ describe("Settings API", () => {
         );
         const response = await createRateLimit(request);
 
-        expect(response.status).toBe(201);
+        expect(response.status).toBe(200);
         const body = await response.json();
-        expect(body.name).toBe("New Limit");
-        expect(body.windowMs).toBe(60_000);
+        expect(body.success).toBe(true);
+        expect(body.data.result.name).toBe("New Limit");
+        expect(body.data.result.windowMs).toBe(60_000);
+        expect(body.data.events).toEqual([]);
       });
 
-      it("should return 400 when name is missing", async () => {
-        const request = new NextRequest(
-          "http://localhost/api/settings/rate-limits",
-          {
-            method: "POST",
-            body: JSON.stringify({
-              endpointPattern: "/api/test",
-              windowMs: 60_000,
-              maxRequests: 100,
-            }),
-          }
-        );
-        const response = await createRateLimit(request);
-
-        expect(response.status).toBe(400);
-        const body = await response.json();
-        expect(body.message).toBe("Name is required");
-      });
-
-      it("should return 400 when endpointPattern is missing", async () => {
+      it("should pass transformed payload to runCommand with defaults", async () => {
         const request = new NextRequest(
           "http://localhost/api/settings/rate-limits",
           {
             method: "POST",
             body: JSON.stringify({
               name: "Test",
+              endpointPattern: "/api/test",
               windowMs: 60_000,
               maxRequests: 100,
             }),
           }
         );
-        const response = await createRateLimit(request);
+        await createRateLimit(request);
 
-        expect(response.status).toBe(400);
-        const body = await response.json();
-        expect(body.message).toBe("Endpoint pattern is required");
+        expect(mockRateLimitRunCommand).toHaveBeenCalledWith(
+          "create",
+          expect.objectContaining({
+            name: "Test",
+            endpointPattern: "/api/test",
+            windowMs: 60_000,
+            maxRequests: 100,
+            burstAllowance: 0,
+            priority: 0,
+            isActive: true,
+          }),
+          expect.objectContaining({ entityName: "RateLimitConfig" })
+        );
       });
 
-      it("should return 400 when windowMs is invalid", async () => {
+      it("should apply defaults when optional fields are missing", async () => {
+        const request = new NextRequest(
+          "http://localhost/api/settings/rate-limits",
+          {
+            method: "POST",
+            body: JSON.stringify({
+              name: "Minimal",
+              endpointPattern: "/api/.*",
+            }),
+          }
+        );
+        await createRateLimit(request);
+
+        expect(mockRateLimitRunCommand).toHaveBeenCalledWith(
+          "create",
+          expect.objectContaining({
+            name: "Minimal",
+            endpointPattern: "/api/.*",
+            windowMs: 60_000,
+            maxRequests: 100,
+            burstAllowance: 0,
+            priority: 0,
+            isActive: true,
+          }),
+          expect.anything()
+        );
+      });
+
+      it("should use empty-string defaults when name and endpointPattern are missing", async () => {
+        const request = new NextRequest(
+          "http://localhost/api/settings/rate-limits",
+          {
+            method: "POST",
+            body: JSON.stringify({
+              windowMs: 60_000,
+              maxRequests: 100,
+            }),
+          }
+        );
+        await createRateLimit(request);
+
+        expect(mockRateLimitRunCommand).toHaveBeenCalledWith(
+          "create",
+          expect.objectContaining({
+            name: "",
+            endpointPattern: "",
+          }),
+          expect.anything()
+        );
+      });
+
+      it("should forward negative windowMs to the manifest runtime without validation", async () => {
         const request = new NextRequest(
           "http://localhost/api/settings/rate-limits",
           {
@@ -1381,12 +1431,16 @@ describe("Settings API", () => {
         );
         const response = await createRateLimit(request);
 
-        expect(response.status).toBe(400);
-        const body = await response.json();
-        expect(body.message).toBe("Window duration must be a positive number");
+        // The manifest handler does not validate; it passes through to the runtime
+        expect(mockRateLimitRunCommand).toHaveBeenCalledWith(
+          "create",
+          expect.objectContaining({ windowMs: -1 }),
+          expect.anything()
+        );
+        expect(response.status).toBe(200);
       });
 
-      it("should return 400 when maxRequests is invalid", async () => {
+      it("should forward zero maxRequests to the manifest runtime without validation", async () => {
         const request = new NextRequest(
           "http://localhost/api/settings/rate-limits",
           {
@@ -1401,36 +1455,18 @@ describe("Settings API", () => {
         );
         const response = await createRateLimit(request);
 
-        expect(response.status).toBe(400);
-        const body = await response.json();
-        expect(body.message).toBe("Max requests must be a positive number");
-      });
-
-      it("should return 400 for invalid regex pattern", async () => {
-        const request = new NextRequest(
-          "http://localhost/api/settings/rate-limits",
-          {
-            method: "POST",
-            body: JSON.stringify({
-              name: "Test",
-              endpointPattern: "([invalid",
-              windowMs: 60_000,
-              maxRequests: 100,
-            }),
-          }
+        expect(mockRateLimitRunCommand).toHaveBeenCalledWith(
+          "create",
+          expect.objectContaining({ maxRequests: 0 }),
+          expect.anything()
         );
-        const response = await createRateLimit(request);
-
-        expect(response.status).toBe(400);
-        const body = await response.json();
-        expect(body.message).toBe("Invalid endpoint pattern regex");
+        expect(response.status).toBe(200);
       });
 
       it("should return 401 for unauthenticated requests", async () => {
-        vi.mocked(auth).mockResolvedValue({
-          userId: null,
-          orgId: null,
-        } as never);
+        const authError = new Error("Not authenticated");
+        authError.name = "InvariantError";
+        vi.mocked(resolveCurrentUser).mockRejectedValue(authError as never);
 
         const request = new NextRequest(
           "http://localhost/api/settings/rate-limits",
@@ -1667,14 +1703,7 @@ describe("Settings API", () => {
 
     // ------------------------------------------------ DELETE (soft-delete)
     describe("DELETE /api/settings/rate-limits/[id] (soft-delete)", () => {
-      it("should soft-delete a rate limit config", async () => {
-        vi.mocked(database.rateLimitConfig.findFirst).mockResolvedValue(
-          createMockRateLimitConfig({ id: "rl-001" }) as never
-        );
-        vi.mocked(database.rateLimitConfig.update).mockResolvedValue(
-          {} as never
-        );
-
+      it("should soft-delete a rate limit config via manifest command", async () => {
         const request = new NextRequest(
           "http://localhost/api/settings/rate-limits/rl-001",
           {
@@ -1685,39 +1714,42 @@ describe("Settings API", () => {
           params: Promise.resolve({ id: "rl-001" }),
         });
 
-        expect(response.status).toBe(204);
+        expect(response.status).toBe(200);
+        const body = await response.json();
+        expect(body.success).toBe(true);
 
-        expect(database.rateLimitConfig.update).toHaveBeenCalledWith(
+        expect(mockRateLimitRunCommand).toHaveBeenCalledWith(
+          "softDelete",
+          expect.objectContaining({ id: "rl-001" }),
           expect.objectContaining({
-            where: { tenantId_id: { tenantId: TEST_TENANT_ID, id: "rl-001" } },
-            data: { deletedAt: expect.any(Date) },
+            entityName: "RateLimitConfig",
+            instanceId: "rl-001",
           })
         );
       });
 
-      it("should return 404 when config not found", async () => {
-        vi.mocked(database.rateLimitConfig.findFirst).mockResolvedValue(
-          null as never
-        );
-
+      it("should pass the id from URL params to the command", async () => {
         const request = new NextRequest(
-          "http://localhost/api/settings/rate-limits/nonexistent",
+          "http://localhost/api/settings/rate-limits/rl-999",
           {
             method: "DELETE",
           }
         );
-        const response = await deleteRateLimit(request, {
-          params: Promise.resolve({ id: "nonexistent" }),
+        await deleteRateLimit(request, {
+          params: Promise.resolve({ id: "rl-999" }),
         });
 
-        expect(response.status).toBe(404);
+        expect(mockRateLimitRunCommand).toHaveBeenCalledWith(
+          "softDelete",
+          expect.objectContaining({ id: "rl-999" }),
+          expect.objectContaining({ instanceId: "rl-999" })
+        );
       });
 
       it("should return 401 for unauthenticated requests", async () => {
-        vi.mocked(auth).mockResolvedValue({
-          userId: null,
-          orgId: null,
-        } as never);
+        const authError = new Error("Not authenticated");
+        authError.name = "InvariantError";
+        vi.mocked(resolveCurrentUser).mockRejectedValue(authError as never);
 
         const request = new NextRequest(
           "http://localhost/api/settings/rate-limits/rl-001",

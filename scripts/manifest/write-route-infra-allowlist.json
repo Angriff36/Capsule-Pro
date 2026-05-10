@@ -3,1814 +3,1223 @@
   "rules": [
     {
       "prefix": "/api/webhooks/",
-      "methods": [
-        "POST",
-        "PUT",
-        "PATCH",
-        "DELETE"
-      ]
+      "methods": ["POST", "PUT", "PATCH", "DELETE"]
     },
     {
       "prefix": "/api/integrations/webhooks/",
-      "methods": [
-        "POST",
-        "PUT",
-        "PATCH",
-        "DELETE"
-      ],
+      "methods": ["POST", "PUT", "PATCH", "DELETE"],
       "comment": "Infrastructure: Webhook retry processing and DLQ management"
     },
     {
       "prefix": "/api/auth/",
-      "methods": [
-        "POST",
-        "PUT",
-        "PATCH",
-        "DELETE"
-      ]
+      "methods": ["POST", "PUT", "PATCH", "DELETE"]
     },
     {
       "prefix": "/api/cron/",
-      "methods": [
-        "POST",
-        "PUT",
-        "PATCH",
-        "DELETE"
-      ]
+      "methods": ["POST", "PUT", "PATCH", "DELETE"]
     },
     {
       "prefix": "/api/health",
-      "methods": [
-        "POST",
-        "PUT",
-        "PATCH",
-        "DELETE"
-      ]
+      "methods": ["POST", "PUT", "PATCH", "DELETE"]
     },
     {
       "prefix": "/api/kitchen/recipes/composite/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Composite routes wrap multiple Manifest commands in atomic transactions"
     },
     {
       "pattern": "^/api/kitchen/recipes/[^/]+/composite/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Recipe-scoped composite routes (update-with-version, restore-version)"
     },
     {
       "pattern": "^/api/kitchen/recipes/[^/]+/cost$",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Recipe cost calculation route using RecipeVersion.updateCosts command"
     },
     {
       "pattern": "^/api/kitchen/recipes/[^/]+/scale$",
-      "methods": [
-        "POST",
-        "PATCH"
-      ],
+      "methods": ["POST", "PATCH"],
       "comment": "Recipe scaling routes using RecipeIngredient.updateWasteFactor command"
     },
     {
       "prefix": "/api/kitchen/allergens/update-dish",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Allergen update route using Dish.update command"
     },
     {
       "prefix": "/api/kitchen/allergens/detect-conflicts",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Allergen conflict detection using AllergenWarning.create command"
     },
     {
       "prefix": "/api/kitchen/prep-lists/save-db",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Prep list save route using PrepList/PrepListItem manifest commands"
     },
     {
       "prefix": "/api/kitchen/ai/bulk-generate/prep-tasks",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "AI-generated prep task bulk creation using PrepTask.create command"
     },
     {
       "prefix": "/api/ai/bulk-tasks",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "AI Bulk Task Generation: propose tasks via GPT-4o-mini (no persistence)"
     },
     {
       "prefix": "/api/ai/bulk-tasks/confirm",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "AI Bulk Task Generation: persist accepted tasks as PrepTask records via Prisma"
     },
     {
       "prefix": "/api/kitchen/manifest/",
-      "methods": [
-        "POST",
-        "PUT",
-        "PATCH",
-        "DELETE"
-      ],
+      "methods": ["POST", "PUT", "PATCH", "DELETE"],
       "comment": "Legacy infrastructure routes using Manifest runtime (to be migrated)"
     },
     {
       "prefix": "/api/conflicts/",
-      "methods": [
-        "POST",
-        "PUT",
-        "PATCH",
-        "DELETE"
-      ],
+      "methods": ["POST", "PUT", "PATCH", "DELETE"],
       "comment": "Conflict detection infrastructure"
     },
     {
       "prefix": "/api/user-preferences",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "User preferences — settings, not domain command (permanently exempted in audit registry)"
     },
     {
       "prefix": "/api/staff/shifts/commands/create-validated",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Validated shift creation with overlap/overtime/certification checks using ScheduleShift.create command"
     },
     {
       "prefix": "/api/staff/shifts/commands/update-validated",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Validated shift update with overlap/overtime/certification checks using ScheduleShift.update command"
     },
     {
       "prefix": "/api/events/allergens/warnings/acknowledge",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Uses executeManifestCommand — AllergenWarning.acknowledge"
     },
     {
       "pattern": "^/api/events/contracts/[^/]+$",
-      "methods": [
-        "PUT",
-        "DELETE"
-      ],
+      "methods": ["PUT", "DELETE"],
       "comment": "Uses executeManifestCommand — EventContract.update/softDelete"
     },
     {
       "pattern": "^/api/events/contracts/[^/]+/signatures$",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Uses executeManifestCommand — ContractSignature.create"
     },
     {
       "pattern": "^/api/events/[^/]+/guests$",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Uses executeManifestCommand — EventGuest.create"
     },
     {
       "pattern": "^/api/events/guests/[^/]+$",
-      "methods": [
-        "PUT",
-        "DELETE"
-      ],
+      "methods": ["PUT", "DELETE"],
       "comment": "Uses executeManifestCommand — EventGuest.update/softDelete"
     },
     {
       "pattern": "^/api/kitchen/waste/entries/[^/]+$",
-      "methods": [
-        "PUT",
-        "DELETE"
-      ],
+      "methods": ["PUT", "DELETE"],
       "comment": "Uses executeManifestCommand — WasteEntry.update/softDelete"
     },
     {
       "pattern": "^/api/inventory/purchase-orders/[^/]+/items/[^/]+/quality$",
-      "methods": [
-        "PUT"
-      ],
+      "methods": ["PUT"],
       "comment": "Uses executeManifestCommand — PurchaseOrderItem.update"
     },
     {
       "prefix": "/api/inventory/alerts/subscribe",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Uses executeManifestCommand — AlertsConfig.create"
     },
     {
       "pattern": "^/api/shipments/[^/]+$",
-      "methods": [
-        "PUT",
-        "DELETE"
-      ],
+      "methods": ["PUT", "DELETE"],
       "comment": "Uses executeManifestCommand — Shipment.update/cancel"
     },
     {
       "pattern": "^/api/staff/employees/[^/]+$",
-      "methods": [
-        "PUT",
-        "PATCH"
-      ],
+      "methods": ["PUT", "PATCH"],
       "comment": "Uses executeManifestCommand — User.update"
     },
     {
       "prefix": "/api/command-board",
-      "methods": [
-        "POST",
-        "PUT",
-        "DELETE"
-      ],
+      "methods": ["POST", "PUT", "DELETE"],
       "comment": "Uses executeManifestCommand — CommandBoard/CommandBoardLayout CRUD"
     },
     {
       "prefix": "/api/events/contracts",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Uses executeManifestCommand — EventContract.create"
     },
     {
       "pattern": "^/api/events/contracts/[^/]+/status$",
-      "methods": [
-        "PATCH"
-      ],
+      "methods": ["PATCH"],
       "comment": "Uses createManifestRuntime — EventContract.send/sign/expire/cancel/markViewed"
     },
     {
       "pattern": "^/api/events/contracts/[^/]+/send$",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Uses createManifestRuntime — EventContract.send + email side-effect"
     },
     {
       "pattern": "^/api/events/contracts/[^/]+/signature$",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Uses executeManifestCommand — ContractSignature.create"
     },
     {
       "prefix": "/api/training/modules",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Uses executeManifestCommand — TrainingModule.create"
     },
     {
       "pattern": "^/api/training/modules/[^/]+$",
-      "methods": [
-        "PUT",
-        "DELETE"
-      ],
+      "methods": ["PUT", "DELETE"],
       "comment": "Uses executeManifestCommand — TrainingModule.update/softDelete"
     },
     {
       "prefix": "/api/training/assignments",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Uses executeManifestCommand — TrainingAssignment.create"
     },
     {
       "prefix": "/api/staff/certifications",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Uses executeManifestCommand — EmployeeCertification.create"
     },
     {
       "pattern": "^/api/staff/certifications/[^/]+$",
-      "methods": [
-        "PUT",
-        "DELETE"
-      ],
+      "methods": ["PUT", "DELETE"],
       "comment": "Uses executeManifestCommand — EmployeeCertification.update/softDelete"
     },
     {
       "prefix": "/api/staff/availability",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Uses executeManifestCommand — EmployeeAvailability.create"
     },
     {
       "pattern": "^/api/staff/availability/[^/]+$",
-      "methods": [
-        "PATCH",
-        "DELETE"
-      ],
+      "methods": ["PATCH", "DELETE"],
       "comment": "Uses executeManifestCommand — EmployeeAvailability.update/softDelete"
     },
     {
       "prefix": "/api/staff/time-off/requests",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Uses executeManifestCommand — TimeOffRequest.create"
     },
     {
       "pattern": "^/api/staff/time-off/requests/[^/]+$",
-      "methods": [
-        "PATCH",
-        "DELETE"
-      ],
+      "methods": ["PATCH", "DELETE"],
       "comment": "Uses executeManifestCommand — TimeOffRequest commands/softDelete"
     },
     {
       "prefix": "/api/accounting/accounts",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Uses executeManifestCommand — ChartOfAccount.create"
     },
     {
       "prefix": "/api/accounting/payment-methods",
-      "methods": [
-        "POST",
-        "PUT",
-        "PATCH",
-        "DELETE"
-      ],
+      "methods": ["POST", "PUT", "PATCH", "DELETE"],
       "comment": "Legacy infrastructure: Direct DB access for payment methods (needs manifest migration)"
     },
     {
       "prefix": "/api/accounting/payments",
-      "methods": [
-        "POST",
-        "PUT"
-      ],
+      "methods": ["POST", "PUT"],
       "comment": "Legacy infrastructure: Direct DB access for payments (needs manifest migration)"
     },
     {
       "prefix": "/api/accounting/invoices",
-      "methods": [
-        "POST",
-        "PUT",
-        "PATCH",
-        "DELETE"
-      ],
+      "methods": ["POST", "PUT", "PATCH", "DELETE"],
       "comment": "Legacy infrastructure: Direct DB access for invoices (needs manifest migration)"
     },
     {
       "pattern": "^/api/accounting/accounts/[^/]+$",
-      "methods": [
-        "PUT",
-        "DELETE"
-      ],
+      "methods": ["PUT", "DELETE"],
       "comment": "Uses executeManifestCommand — ChartOfAccount.update/deactivate"
     },
     {
       "prefix": "/api/administrative/tasks",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Uses executeManifestCommand — AdminTask.create"
     },
     {
       "pattern": "^/api/administrative/tasks/[^/]+$",
-      "methods": [
-        "PATCH",
-        "DELETE"
-      ],
+      "methods": ["PATCH", "DELETE"],
       "comment": "Uses executeManifestCommand — AdminTask commands/softDelete"
     },
     {
       "prefix": "/api/collaboration/notifications/email/workflows",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Uses executeManifestCommand — EmailWorkflow.create"
     },
     {
       "pattern": "^/api/collaboration/notifications/email/workflows/[^/]+$",
-      "methods": [
-        "PUT",
-        "DELETE"
-      ],
+      "methods": ["PUT", "DELETE"],
       "comment": "Uses executeManifestCommand — EmailWorkflow.update/softDelete"
     },
     {
       "prefix": "/api/payroll/periods",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Uses executeManifestCommand — PayrollPeriod.create"
     },
     {
       "prefix": "/api/payroll/deductions",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Uses executeManifestCommand — EmployeeDeduction.create"
     },
     {
       "prefix": "/api/payroll/approvals",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Uses executeManifestCommand — PayrollApprovalHistory.create"
     },
     {
       "pattern": "^/api/payroll/runs/[^/]+$",
-      "methods": [
-        "PUT"
-      ],
+      "methods": ["PUT"],
       "comment": "Uses executeManifestCommand — PayrollRun.updateStatus"
     },
     {
       "prefix": "/api/staff/budgets",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Uses executeManifestCommand — LaborBudget.create"
     },
     {
       "pattern": "^/api/staff/budgets/[^/]+$",
-      "methods": [
-        "PUT",
-        "DELETE"
-      ],
+      "methods": ["PUT", "DELETE"],
       "comment": "Uses executeManifestCommand — LaborBudget.update/softDelete"
     },
     {
       "prefix": "/api/staff/budgets/alerts",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Uses executeManifestCommand — BudgetAlert.acknowledge/resolve"
     },
     {
       "prefix": "/api/sentry-fixer/process",
-      "methods": [
-        "POST",
-        "GET"
-      ],
+      "methods": ["POST", "GET"],
       "comment": "Infrastructure: Sentry issue job processor + health check (no domain writes)"
     },
     {
       "pattern": "^/api/kitchen/tasks/[^/]+$",
-      "methods": [
-        "PATCH",
-        "DELETE"
-      ],
+      "methods": ["PATCH", "DELETE"],
       "comment": "Uses executeManifestCommand — KitchenTask.start/complete/cancel/release/updatePriority/updateComplexity"
     },
     {
       "pattern": "^/api/timecards/[^/]+$",
-      "methods": [
-        "PUT",
-        "DELETE"
-      ],
+      "methods": ["PUT", "DELETE"],
       "comment": "Uses executeManifestCommand — TimeEntry.clockOut/softDelete"
     },
     {
       "pattern": "^/api/inventory/cycle-count/records/[^/]+$",
-      "methods": [
-        "PUT",
-        "DELETE"
-      ],
+      "methods": ["PUT", "DELETE"],
       "comment": "Uses executeManifestCommand — CycleCountRecord.update/remove"
     },
     {
       "prefix": "/api/collaboration/notifications/email/templates",
-      "methods": [
-        "POST",
-        "PUT",
-        "DELETE"
-      ],
+      "methods": ["POST", "PUT", "DELETE"],
       "comment": "Uses executeManifestCommand — EmailTemplate.create/update/softDelete"
     },
     {
       "prefix": "/api/settings/api-keys",
-      "methods": [
-        "POST",
-        "PUT",
-        "DELETE"
-      ],
+      "methods": ["POST", "PUT", "DELETE"],
       "comment": "Uses database directly with manifest pattern — ApiKey.create/update/revoke/softDelete"
     },
     {
       "pattern": "^/api/settings/api-keys/[^/]+/revoke$",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Uses database directly — ApiKey.revoke"
     },
     {
       "pattern": "^/api/settings/api-keys/[^/]+/rotate$",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Uses database directly — ApiKey.rotate (regenerates key)"
     },
     {
       "prefix": "/api/inventory/bulk-order-rules",
-      "methods": [
-        "POST",
-        "PUT",
-        "DELETE"
-      ],
+      "methods": ["POST", "PUT", "DELETE"],
       "comment": "Uses database directly with manifest pattern — BulkOrderRule.create/update/softDelete"
     },
     {
       "prefix": "/api/inventory/pricing-tiers",
-      "methods": [
-        "POST",
-        "PUT",
-        "DELETE"
-      ],
+      "methods": ["POST", "PUT", "DELETE"],
       "comment": "Uses database directly with manifest pattern — PricingTier.create/update/softDelete"
     },
     {
       "prefix": "/api/settings/rate-limits",
-      "methods": [
-        "POST",
-        "PATCH",
-        "DELETE"
-      ],
+      "methods": ["POST", "PATCH", "DELETE"],
       "comment": "Infrastructure: Rate limit configuration CRUD for tenant-specific limits"
     },
     {
       "prefix": "/api/settings/audit-log",
-      "methods": [
-        "GET"
-      ],
+      "methods": ["GET"],
       "comment": "Infrastructure: Audit log read-only endpoint for settings page"
     },
     {
       "prefix": "/api/payroll/export",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Infrastructure: Export routes for QuickBooks integration"
     },
     {
       "prefix": "/api/sales-reporting/generate",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Infrastructure: Sales report generation"
     },
     {
       "prefix": "/api/staff/shifts/bulk-assignment",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Infrastructure: Bulk shift assignment using ScheduleShift.create command"
     },
     {
       "prefix": "/api/staff/availability/batch",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Infrastructure: Batch availability updates using EmployeeAvailability.update command"
     },
     {
       "prefix": "/api/timecards/bulk",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Infrastructure: Bulk timecard operations using TimeEntry manifest commands"
     },
     {
       "prefix": "/api/collaboration/notifications/email/send",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Infrastructure: Email sending endpoint with rate limiting"
     },
     {
       "prefix": "/api/collaboration/notifications/email/webhook",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Infrastructure: Email webhook handler for delivery tracking"
     },
     {
       "prefix": "/api/collaboration/notifications/sms/send",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Infrastructure: SMS sending endpoint with rate limiting"
     },
     {
       "prefix": "/api/collaboration/notifications/sms/webhook",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Infrastructure: SMS webhook handler for delivery tracking"
     },
     {
       "prefix": "/api/collaboration/notifications/sms/preferences",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Infrastructure: SMS preference management using database directly"
     },
     {
       "prefix": "/api/communications/sms/automation-rules",
-      "methods": [
-        "POST",
-        "PUT",
-        "PATCH",
-        "DELETE"
-      ],
+      "methods": ["POST", "PUT", "PATCH", "DELETE"],
       "comment": "Uses executeManifestCommand — SmsAutomationRule.create/update/activate/deactivate/softDelete"
     },
     {
       "prefix": "/api/inventory/audit/schedule",
-      "methods": [
-        "GET",
-        "POST",
-        "PATCH",
-        "DELETE"
-      ],
+      "methods": ["GET", "POST", "PATCH", "DELETE"],
       "comment": "Infrastructure: Audit schedule management for automated inventory audits"
     },
     {
       "prefix": "/api/inventory/audit/discrepancies",
-      "methods": [
-        "GET",
-        "POST",
-        "PATCH"
-      ],
+      "methods": ["GET", "POST", "PATCH"],
       "comment": "Infrastructure: Discrepancy listing and resolution workflow for inventory audits"
     },
     {
       "prefix": "/api/inventory/audit/discrepancies/:id",
-      "methods": [
-        "GET",
-        "PATCH"
-      ],
+      "methods": ["GET", "PATCH"],
       "comment": "Infrastructure: Single discrepancy details and update"
     },
     {
       "prefix": "/api/inventory/audit/discrepancies/:id/resolve",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Infrastructure: Mark discrepancy as resolved with root cause analysis"
     },
     {
       "prefix": "/api/inventory/audit/reports",
-      "methods": [
-        "GET",
-        "POST"
-      ],
+      "methods": ["GET", "POST"],
       "comment": "Infrastructure: Audit summary reports with variance analysis"
     },
     {
       "prefix": "/api/inventory/audit/reports/:id",
-      "methods": [
-        "GET",
-        "DELETE"
-      ],
+      "methods": ["GET", "DELETE"],
       "comment": "Infrastructure: Saved report retrieval and deletion"
     },
     {
       "prefix": "/api/events/export/quickbooks",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Infrastructure: QuickBooks export with rate limiting"
     },
     {
       "prefix": "/api/inventory/purchase-orders/export/quickbooks",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Infrastructure: Purchase order QuickBooks export with rate limiting"
     },
     {
       "pattern": "^/api/public/contracts/[^/]+/sign$",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Infrastructure: Public contract signing with rate limiting"
     },
     {
       "pattern": "^/api/public/proposals/[^/]+/respond$",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Infrastructure: Public proposal response with rate limiting"
     },
     {
       "prefix": "/api/ai-event-setup/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "AI Event Setup: NL parsing and session management using manifest pattern"
     },
     {
       "prefix": "/api/accounting/collections/cases",
-      "methods": [
-        "POST",
-        "PATCH"
-      ],
+      "methods": ["POST", "PATCH"],
       "comment": "Infrastructure: Collection case management with direct DB access"
     },
     {
       "pattern": "^/api/accounting/collections/cases/[^/]+$",
-      "methods": [
-        "PATCH"
-      ],
+      "methods": ["PATCH"],
       "comment": "Infrastructure: Single collection case update"
     },
     {
       "prefix": "/api/accounting/revenue-recognition/schedules",
-      "methods": [
-        "POST",
-        "PATCH"
-      ],
+      "methods": ["POST", "PATCH"],
       "comment": "Infrastructure: Revenue recognition schedule management"
     },
     {
       "pattern": "^/api/accounting/revenue-recognition/schedules/[^/]+$",
-      "methods": [
-        "PATCH"
-      ],
+      "methods": ["PATCH"],
       "comment": "Infrastructure: Single revenue schedule update"
     },
     {
       "prefix": "/api/inventory/supplier-sync",
-      "methods": [
-        "GET",
-        "POST"
-      ],
+      "methods": ["GET", "POST"],
       "comment": "Infrastructure: Supplier catalog sync service (SupplierSyncService)"
     },
     {
       "prefix": "/api/logistics/routes/commands/optimize",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Infrastructure: Route optimization command using direct DB access"
     },
     {
       "prefix": "/api/kitchen/equipment/alerts",
-      "methods": [
-        "POST",
-        "PUT",
-        "PATCH",
-        "DELETE"
-      ],
+      "methods": ["POST", "PUT", "PATCH", "DELETE"],
       "comment": "Infrastructure: Equipment alert management using direct DB access"
     },
     {
       "prefix": "/api/kitchen/equipment/commands/create",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Infrastructure: Equipment creation using direct Prisma (no manifest yet)"
     },
     {
       "prefix": "/api/kitchen/equipment/commands/update-status",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Infrastructure: Equipment status/condition update using direct Prisma"
     },
     {
       "prefix": "/api/kitchen/equipment/commands/schedule-maintenance",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Infrastructure: Creates WorkOrder + updates equipment maintenance status via Prisma"
     },
     {
       "prefix": "/api/kitchen/equipment/commands/record-usage",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Infrastructure: Records equipment usage hours with auto-condition via Prisma"
     },
     {
       "prefix": "/api/events/automated-followups/commands",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Infrastructure: Automated follow-up commands (complete, create, generate, skip)"
     },
     {
       "prefix": "/api/logistics/routes/commands",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Infrastructure: Logistics route commands (create, update-status)"
     },
     {
       "prefix": "/api/logistics/drivers/commands",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Infrastructure: Logistics driver commands (raw SQL pending Driver Prisma model + manifest)"
     },
     {
       "prefix": "/api/logistics/vehicles/commands",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Infrastructure: Logistics vehicle commands (raw SQL pending Vehicle Prisma model + manifest)"
     },
     {
       "prefix": "/api/staffing/recommendations",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Infrastructure: Staffing recommendations with direct DB access"
     },
     {
       "prefix": "/api/knowledge-base/entries/commands/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Uses executeManifestCommand — KnowledgeBaseEntry commands"
     },
     {
       "prefix": "/api/payroll/bank-accounts/commands/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Uses executeManifestCommand — PayrollBankAccount commands"
     },
     {
       "prefix": "/api/facilities/",
-      "methods": [
-        "POST",
-        "PUT",
-        "PATCH",
-        "DELETE"
-      ],
+      "methods": ["POST", "PUT", "PATCH", "DELETE"],
       "comment": "Uses executeManifestCommand — Facilities commands (areas, assets, schedules, work-orders)"
     },
     {
       "pattern": "^/api/crm/clients/[^/]+$",
-      "methods": [
-        "PUT",
-        "DELETE"
-      ],
+      "methods": ["PUT", "DELETE"],
       "comment": "Uses executeManifestCommand — Client.update/softDelete + error handling enhancement"
     },
     {
       "prefix": "/api/events/budgets/",
-      "methods": [
-        "PUT",
-        "DELETE"
-      ],
+      "methods": ["PUT", "DELETE"],
       "comment": "Uses executeManifestCommand — EventBudget.update/softDelete"
     },
     {
       "prefix": "/api/calendar/sync/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Infrastructure: Calendar sync trigger"
     },
     {
       "pattern": "^/api/events/[^/]+/waitlist/commands/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Uses executeManifestCommand — Waitlist commands (add-guest, promote, update-rsvp)"
     },
     {
       "pattern": "^/api/events/[^/]+/timeline/commands/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Direct Prisma — EventTimeline run-of-show commands (create-item, update-item, toggle-completed, delete-item) backing §4.5 Event Timeline"
     },
     {
       "prefix": "/api/procurement/budget/commands/refresh",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Infrastructure: Budget spend refresh and alert generation"
     },
     {
       "prefix": "/api/procurement/vendors/commands/rate",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Infrastructure: Vendor performance rating — direct Prisma write, not a manifest command"
     },
     {
       "prefix": "/api/crm/scoring/calculate",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Infrastructure: Lead score recomputation across all leads (rule engine, no single domain command)"
     },
     {
       "pattern": "^/api/crm/scoring/[^/]+$",
-      "methods": [
-        "PUT",
-        "DELETE"
-      ],
+      "methods": ["PUT", "DELETE"],
       "comment": "Infrastructure: CRM scoring rule update/delete using direct Prisma raw SQL (no manifest yet)"
     },
     {
       "prefix": "/api/events/allergens/check",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Infrastructure: Read-only allergen/dietary conflict detection across guests and dishes (no domain mutation)"
     },
     {
       "prefix": "/api/logistics/dispatch/commands/assign",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Infrastructure: Driver/vehicle assignment to delivery route (raw SQL pending Driver/Vehicle Prisma models + manifests)"
     },
     {
       "prefix": "/api/procurement/approvals/action",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Infrastructure: Approve/reject purchase order with approval history side-effect (legacy direct DB access)"
     },
     {
       "prefix": "/api/events/documents/parse",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Infrastructure: PDF/CSV document upload and parsing (file processing, no domain command)"
     },
     {
       "prefix": "/api/kitchen/iot/alerts",
-      "methods": [
-        "POST",
-        "PUT",
-        "PATCH",
-        "DELETE"
-      ],
+      "methods": ["POST", "PUT", "PATCH", "DELETE"],
       "comment": "Infrastructure: IoT alert management with direct DB access (pending manifest)"
     },
     {
       "prefix": "/api/kitchen/iot/alert-rules",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Infrastructure: IoT alert rule CRUD for configurable temperature thresholds"
     },
     {
       "prefix": "/api/kitchen/iot/readings",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Infrastructure: IoT temperature reading ingestion with alert rule evaluation"
     },
     {
       "prefix": "/api/kitchen/overrides",
-      "methods": [
-        "POST",
-        "GET"
-      ],
+      "methods": ["POST", "GET"],
       "comment": "Infrastructure: Kitchen constraint override authorization with audit logging + outbox events"
     },
     {
       "pattern": "^/api/shipments/[^/]+/status$",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Infrastructure: Shipment status transition with inventory reservation/cancellation/delivery side-effects"
     },
     {
       "prefix": "/api/user/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Uses createManifestRuntime — User.create/update/deactivate/terminate/updateRole (instanceId fix)"
     },
     {
       "prefix": "/api/crm/venues",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Direct Prisma — Venue create (no manifest yet, mirrors server actions)"
     },
     {
       "prefix": "/api/kitchen/prep-lists/generate",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Infrastructure: Prep list generation from event dishes/recipes (direct DB, no manifest command)"
     },
     {
       "prefix": "/api/kitchen/prep-lists/autogenerate/process",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Infrastructure: Background outbox processor for auto-generated prep lists (cron-style)"
     },
     {
       "pattern": "^/api/crm/venues/[^/]+$",
-      "methods": [
-        "PUT",
-        "DELETE"
-      ],
+      "methods": ["PUT", "DELETE"],
       "comment": "Direct Prisma — Venue update + soft-delete (no manifest yet, active-events guard enforced)"
     },
     {
       "prefix": "/api/inventory/vendor-catalogs/commands/update-cost",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Infrastructure: Vendor catalog cost update with propagation (direct Prisma, no manifest command)"
     },
     {
       "pattern": "^/api/kitchen/prep-lists/items/[^/]+$",
-      "methods": [
-        "PATCH",
-        "DELETE"
-      ],
+      "methods": ["PATCH", "DELETE"],
       "comment": "Uses executeManifestCommand — PrepListItem commands (updateQuantity, toggleCompleted, softDelete)"
     },
     {
       "prefix": "/api/kitchen/tasks/sync-claims",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Infrastructure: Batch claim/release sync for kitchen tasks using executeManifestCommand"
     },
     {
       "pattern": "^/api/inventory/items/[^/]+$",
-      "methods": [
-        "PUT",
-        "DELETE"
-      ],
+      "methods": ["PUT", "DELETE"],
       "comment": "Infrastructure: Inventory item update/delete using direct Prisma access (no manifest yet)"
     },
     {
       "prefix": "/api/mobile/",
-      "methods": [
-        "POST",
-        "GET",
-        "PATCH"
-      ],
+      "methods": ["POST", "GET", "PATCH"],
       "comment": "Infrastructure: Mobile app API endpoints (push tokens, notification preferences, app settings)"
     },
     {
       "prefix": "/api/events/import/server-to-server",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Infrastructure: Server-to-server event import with notification callback support"
     },
     {
       "prefix": "/api/integrations/webhooks",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Infrastructure: Outbound webhook trigger endpoint (dual-auth with API scope enforcement)"
     },
     {
       "prefix": "/api/inventory/stock-levels/adjust",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Infrastructure: Stock level adjustment with manifest command"
     },
     {
       "pattern": "^/api/kitchen/tasks/[^/]+/claim$",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Infrastructure: Kitchen task claim with constraint validation"
     },
     {
       "prefix": "/api/kitchen/tasks/bundle-claim",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Infrastructure: Bundle claim for multiple kitchen tasks"
     },
     {
       "prefix": "/api/adminchatparticipant/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/administrative/",
-      "methods": [
-        "DELETE",
-        "PATCH",
-        "POST"
-      ],
+      "methods": ["DELETE", "PATCH", "POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/admintask/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/alertsconfig/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/allergenwarning/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/apikey/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/battleboard/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/budgetalert/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/budgetlineitem/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/bulkorderrule/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/calendar/",
-      "methods": [
-        "PATCH"
-      ],
+      "methods": ["PATCH"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/cateringorder/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/chartofaccount/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/client/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/clientcontact/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/clientinteraction/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/clientpreference/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/collaboration/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/commandboard/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/commandboardcard/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/commandboardconnection/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/commandboardgroup/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/commandboardlayout/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/container/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/contractsignature/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/crm/",
-      "methods": [
-        "DELETE",
-        "POST",
-        "PUT"
-      ],
+      "methods": ["DELETE", "POST", "PUT"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/cyclecountrecord/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/cyclecountsession/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/dish/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/documents/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/emailtemplate/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/emailworkflow/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/employeeavailability/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/employeecertification/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/employeededuction/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/event/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/eventbudget/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/eventcontract/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/eventdish/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/eventguest/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/eventimportworkflow/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/eventprofitability/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/eventreport/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/events/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/eventstaff/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/eventsummary/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/ingredient/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/integrations/",
-      "methods": [
-        "DELETE",
-        "POST"
-      ],
+      "methods": ["DELETE", "POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/inventory/",
-      "methods": [
-        "POST",
-        "PUT"
-      ],
+      "methods": ["POST", "PUT"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/inventoryitem/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/inventorysupplier/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/inventorytransaction/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/kitchen/",
-      "methods": [
-        "DELETE",
-        "PATCH",
-        "POST"
-      ],
+      "methods": ["DELETE", "PATCH", "POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/kitchentask/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/laborbudget/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/lead/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/menu/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/menudish/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/notification/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/overrideaudit/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/payroll/",
-      "methods": [
-        "POST",
-        "PUT"
-      ],
+      "methods": ["POST", "PUT"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/payrollapprovalhistory/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/payrollperiod/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/payrollrun/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/prepcomment/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/preplist/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/preplistitem/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/prepmethod/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/preptask/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/preptaskplanworkflow/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/pricingtier/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/procurement/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/proposal/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/proposallineitem/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/purchaseorder/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/purchaseorderitem/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/recipe/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/recipeingredient/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/recipestep/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/recipeversion/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/rolepolicy/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/schedule/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/scheduleshift/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/shipments/",
-      "methods": [
-        "DELETE",
-        "POST",
-        "PUT"
-      ],
+      "methods": ["DELETE", "POST", "PUT"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/staff/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/station/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/timecardeditrequest/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/timecards/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/timeentry/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/timeoffrequest/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/training/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/trainingassignment/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/trainingmodule/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/variancereport/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/vendorcatalog/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/wasteentry/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/workflow/",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
     },
     {
       "prefix": "/api/shipments",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route - shipment creation (pending manifest migration)"
     },
     {
       "prefix": "/api/timecards",
-      "methods": [
-        "POST"
-      ],
+      "methods": ["POST"],
       "comment": "Bypass route - timecard creation (pending manifest migration)"
     },
     {

@@ -197,7 +197,9 @@ export const database: Record<string, unknown> = {
   payrollRun: createMockModel(),
   // Time tracking models
   timeEntry: createMockModel(),
-  timeOffRequest: createMockModel(),
+  employeeTimeOffRequest: createMockModel(),
+  // Role policy model
+  rolePolicy: createMockModel(),
 };
 
 database.$transaction = vi.fn((fn: (tx: unknown) => unknown) => fn(database));

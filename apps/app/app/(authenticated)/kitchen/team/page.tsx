@@ -47,10 +47,10 @@ const KitchenTeamPage = () => {
               </p>
               <div className="flex flex-wrap gap-3">
                 <Button asChild>
-                  <Link href="/staff/team">View Full Team</Link>
+                  <Link href="/staffing">View Full Team</Link>
                 </Button>
                 <Button asChild variant="outline">
-                  <Link href="/staff/schedule">View Schedule</Link>
+                  <Link href="/scheduling/shifts">View Schedule</Link>
                 </Button>
               </div>
             </CardContent>
@@ -129,7 +129,7 @@ const KitchenTeamPage = () => {
                   className="h-auto flex-col gap-2 py-4"
                   variant="outline"
                 >
-                  <Link href="/staff/team?view=online">
+                  <Link href="/staffing">
                     <Users className="size-5" />
                     <span>Who's Working</span>
                   </Link>
@@ -139,7 +139,7 @@ const KitchenTeamPage = () => {
                   className="h-auto flex-col gap-2 py-4"
                   variant="outline"
                 >
-                  <Link href="/staff/team?action=assign">
+                  <Link href="/staffing">
                     <UserPlus className="size-5" />
                     <span>Quick Assign</span>
                   </Link>
@@ -149,7 +149,7 @@ const KitchenTeamPage = () => {
                   className="h-auto flex-col gap-2 py-4"
                   variant="outline"
                 >
-                  <Link href="/staff/availability">
+                  <Link href="/scheduling/availability">
                     <Settings className="size-5" />
                     <span>Availability</span>
                   </Link>
@@ -159,7 +159,7 @@ const KitchenTeamPage = () => {
                   className="h-auto flex-col gap-2 py-4"
                   variant="outline"
                 >
-                  <Link href="/staff/time-off">
+                  <Link href="/scheduling/time-off">
                     <Calendar className="size-5" />
                     <span>Time Off</span>
                   </Link>

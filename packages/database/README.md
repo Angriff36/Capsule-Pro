@@ -204,8 +204,14 @@ model Example {
 
    ```bash
    pnpm migrate
-   # Runs: prisma format + prisma generate + prisma migrate dev
+   # Runs: db:check + prisma format + prisma generate (root prisma:check) + pnpm db:dev
    ```
+
+   **`SHADOW_DATABASE_URL`:** required only for the **`pnpm db:dev`** step (empty
+   shadow DB URL, e.g. Neon branch). Not used by app env validation (`keys` only
+   has `DATABASE_URL`), `prisma generate`, or `migrate deploy`. **Do not** run
+   `prisma migrate dev` directly — use **`pnpm db:dev`** (supported); see
+   `docs/database/CONTRIBUTING.md` § `SHADOW_DATABASE_URL` and migrate dev.
 
 4. **Edit Generated Migration**
 
@@ -236,6 +242,8 @@ model Example {
 ### Important Notes
 
 - **NEVER** use `prisma db push` (disabled in this repo)
+- **ALWAYS** use **`pnpm db:dev`** for `migrate dev` — direct `prisma migrate dev`
+  invocations are **unsupported** (see `docs/database/CONTRIBUTING.md`)
 - **ALWAYS** update `schema-registry-v2.txt` before generating migrations
 - **ALWAYS** add checklist entry before committing
 - **NEVER** edit existing migrations after deployment
@@ -402,8 +410,14 @@ Prisma schema relation issues surface as validation errors such as `P1012` (for 
 ### Migration Commands
 
 ```bash
-# Create new migration (includes db:check + generate)
+# Create new migration (db:check + format + prisma:check + db:dev — needs SHADOW_DATABASE_URL)
 pnpm migrate
+
+# Migrate dev only (supported path; requires SHADOW_DATABASE_URL)
+pnpm db:dev
+
+# Neon: create DB capsule_shadow + optional --write to packages/database/.env.local
+# pnpm db:neon-shadow -- --write
 
 # Check for drift (detects missing columns/tables/indexes)
 pnpm db:check

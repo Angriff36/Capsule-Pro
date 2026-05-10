@@ -4,7 +4,10 @@ import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { database } from "@/lib/database";
-import { manifestErrorResponse } from "@/lib/manifest-response";
+import {
+  manifestErrorResponse,
+  manifestSuccessResponse,
+} from "@/lib/manifest-response";
 
 export async function GET(request: NextRequest) {
   try {
@@ -54,10 +57,7 @@ export async function GET(request: NextRequest) {
       database.equipment.count({ where }),
     ]);
 
-    return new Response(JSON.stringify({ equipment, total }), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
+    return manifestSuccessResponse({ equipment, total });
   } catch (error) {
     captureException(error);
     log.error("Error fetching equipment:", error);

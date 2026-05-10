@@ -80,7 +80,7 @@ const SUCCESS_STATUSES = new Set(["succeeded", "requires_capture"]);
  * authoritative transaction ID.
  */
 export async function processPaymentGateway(
-  input: ProcessPaymentInput,
+  input: ProcessPaymentInput
 ): Promise<ProcessPaymentResult> {
   try {
     const amountCents = Math.round(input.amount * 100);
@@ -134,7 +134,7 @@ export async function processPaymentGateway(
  * Stripe Refund ID (re_*) as the authoritative refund transaction ID.
  */
 export async function refundPaymentGateway(
-  input: RefundPaymentInput,
+  input: RefundPaymentInput
 ): Promise<RefundPaymentResult> {
   try {
     if (!input.originalGatewayTransactionId) {
@@ -158,12 +158,15 @@ export async function refundPaymentGateway(
       },
     });
 
-    const succeeded = refund.status === "succeeded" || refund.status === "pending";
+    const succeeded =
+      refund.status === "succeeded" || refund.status === "pending";
 
     return {
       success: succeeded,
       refundTransactionId: refund.id,
-      ...(succeeded ? {} : { failureReason: `Refund status: ${refund.status}` }),
+      ...(succeeded
+        ? {}
+        : { failureReason: `Refund status: ${refund.status}` }),
     };
   } catch (error) {
     const message =

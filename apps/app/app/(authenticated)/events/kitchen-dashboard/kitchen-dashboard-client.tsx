@@ -1511,7 +1511,7 @@ export const KitchenDashboardClient = ({
       )}
 
       <div className="fixed bottom-4 left-4 right-4 z-40 flex items-center justify-between gap-3 rounded-full border border-[#d9d9dd] bg-white/95 p-2 backdrop-blur md:hidden">
-        {mounted ? (
+        {mounted && (
           <Sheet onOpenChange={setFilterSheetOpen} open={filterSheetOpen}>
             <SheetTrigger asChild>
               <Button
@@ -1540,16 +1540,6 @@ export const KitchenDashboardClient = ({
               </div>
             </SheetContent>
           </Sheet>
-        ) : (
-          <Button
-            className="rounded-full border border-[#d9d9dd] bg-white px-4 text-[13px] font-medium text-[#75758a]"
-            disabled
-            size="sm"
-            variant="outline"
-          >
-            <Filter className="mr-2 size-4" />
-            Filters
-          </Button>
         )}
         <ToggleGroup
           className="rounded-full border border-[#d9d9dd] bg-[#eeece7] p-1"

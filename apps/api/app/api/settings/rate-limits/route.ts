@@ -11,11 +11,11 @@ import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { executeManifestCommand } from "@/lib/manifest-command-handler";
 import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
-import { executeManifestCommand } from "@/lib/manifest-command-handler";
 
 /**
  * GET /api/settings/rate-limits
@@ -57,7 +57,7 @@ export function POST(request: NextRequest) {
     transformBody: (body) => ({
       name: body.name || "",
       endpointPattern: body.endpointPattern || "",
-      windowMs: body.windowMs ?? 60000,
+      windowMs: body.windowMs ?? 60_000,
       maxRequests: body.maxRequests ?? 100,
       burstAllowance: body.burstAllowance ?? 0,
       priority: body.priority ?? 0,

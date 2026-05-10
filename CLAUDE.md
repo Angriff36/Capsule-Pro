@@ -18,7 +18,7 @@ Operational rules (build commands, validation, manifest persistence, planning fi
 
 ### Hard rules (non-negotiable)
 
-1. **Never hand-author a `migrations/<ts>_name/migration.sql` folder.** Use `pnpm db:dev --create-only --name <name>` (which wraps `pnpm --filter @repo/database exec prisma migrate dev --create-only --name <name>`) so the shadow DB validates every table reference at authoring time. Hand-written SQL skips validation and is the #1 cause of failed `db:deploy` runs (`P3018`, "relation does not exist").
+1. **Never hand-author a `migrations/<ts>_name/migration.sql` folder.** Use `pnpm db:dev --create-only --name <name>` so the shadow DB validates every table reference at authoring time. Hand-written SQL skips validation and is the #1 cause of failed `db:deploy` runs (`P3018`, "relation does not exist"). **Do not run `prisma migrate dev` directly** (`npx prisma …`, `pnpm --filter @repo/database exec prisma migrate dev`, etc.) — that path is **unsupported**: it bypasses `pnpm db:dev`'s `SHADOW_DATABASE_URL` guard and repo workflow. The supported migrate-dev entrypoint is **`pnpm db:dev`** (and `pnpm migrate`, which chains into `db:dev`).
 2. **Verify table names against `schema.prisma` before writing raw SQL.** Naming is **not** consistently snake_case in this repo. Examples that have burned past sessions:
    - `model User` → `@@map("employees")` → table is `tenant_staff.employees`, NOT `users`
    - `model EmployeeDeduction` → no `@@map` → table is `tenant_staff.EmployeeDeduction` (PascalCase), NOT `employee_deductions`
@@ -29,12 +29,12 @@ Operational rules (build commands, validation, manifest persistence, planning fi
 
 ### Standard workflow (from `docs/database/CONTRIBUTING.md`, copied here for visibility)
 
-Use the repo's wrapper scripts — not raw `pnpm prisma`. The wrappers ensure correct workspace filtering, pass through `--schema`, and run drift checks in the right order.
+Use the repo's wrapper scripts — not raw `pnpm prisma`. The wrappers ensure correct workspace filtering, pass through `--schema`, and run drift checks in the right order. **`SHADOW_DATABASE_URL`** is required only for **`pnpm db:dev`** (migrate dev + shadow DB); it is **not** part of `@repo/database/keys` (app/runtime validation is **`DATABASE_URL` only**). `packages/database/prisma.config.ts` sets `shadowDatabaseUrl` only when that env var is present. Next/Vercel build, `prisma generate`, `db:deploy`, `migrate:status`, and app startup do **not** require it.
 
 ```
 1. pnpm db:check                                      # detect drift first
 2. edit packages/database/prisma/schema.prisma        # source of truth
-3. pnpm db:dev --create-only --name X                 # generate + validate SQL via shadow DB
+3. pnpm db:dev -- --create-only --name X             # generate + validate SQL via shadow DB (args after --)
 4. review the generated migration                     # verify it does what you intend
 5. pnpm db:deploy                                     # apply to current DB
 6. pnpm db:check                                      # confirm zero drift

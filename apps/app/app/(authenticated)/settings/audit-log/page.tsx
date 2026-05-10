@@ -51,9 +51,7 @@ export default async function AuditLogPage() {
             <MetricCell>
               <MetricLabel>Filter by</MetricLabel>
               <MetricValue>Action</MetricValue>
-              <p className="text-sm text-white/70">
-                Created, updated, deleted
-              </p>
+              <p className="text-sm text-white/70">Created, updated, deleted</p>
             </MetricCell>
             <MetricCell>
               <MetricLabel>Filter by</MetricLabel>

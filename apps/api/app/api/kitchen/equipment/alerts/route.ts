@@ -8,10 +8,13 @@
 import { auth } from "@repo/auth/server";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
-import { type NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { database } from "@/lib/database";
-import { manifestErrorResponse } from "@/lib/manifest-response";
+import {
+  manifestErrorResponse,
+  manifestSuccessResponse,
+} from "@/lib/manifest-response";
 
 type Severity = "critical" | "warning" | "info";
 
@@ -179,12 +182,14 @@ export async function GET(request: NextRequest) {
 
     const summary = {
       total: alerts.length,
-      critical: alerts.filter((a) => a.severity === "critical").length,
-      warning: alerts.filter((a) => a.severity === "warning").length,
-      info: alerts.filter((a) => a.severity === "info").length,
+      bySeverity: {
+        critical: alerts.filter((a) => a.severity === "critical").length,
+        high: alerts.filter((a) => a.severity === "warning").length,
+        medium: alerts.filter((a) => a.severity === "info").length,
+      },
     };
 
-    return NextResponse.json({ alerts, summary });
+    return manifestSuccessResponse({ alerts, summary });
   } catch (error) {
     captureException(error);
     log.error("Error fetching equipment alerts:", error);

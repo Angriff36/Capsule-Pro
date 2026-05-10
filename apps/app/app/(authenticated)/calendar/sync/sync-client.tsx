@@ -10,12 +10,12 @@ import {
 } from "@repo/design-system/components/blocks/page-shell";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
+  Check,
   ExternalLink,
   Loader2,
   RefreshCw,
   Trash2,
   X,
-  Check,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -206,18 +206,22 @@ export function SyncClient() {
 
             return (
               <div
-                key={provider.id}
                 className="rounded-xs border border-hairline bg-canvas p-4 space-y-3"
                 data-slot="sync-provider"
+                key={provider.id}
               >
                 <div className="flex items-center justify-between">
                   <span className="ds-feature-heading text-ink">
                     {provider.name}
                   </span>
                   {sync?.status === "connected" ? (
-                    <StatusPill className="border-green-600 text-green-600">Connected</StatusPill>
+                    <StatusPill className="border-green-600 text-green-600">
+                      Connected
+                    </StatusPill>
                   ) : sync?.status === "error" ? (
-                    <StatusPill className="border-red-600 text-red-600">Error</StatusPill>
+                    <StatusPill className="border-red-600 text-red-600">
+                      Error
+                    </StatusPill>
                   ) : (
                     <StatusPill>Not Connected</StatusPill>
                   )}
@@ -298,26 +302,26 @@ export function SyncClient() {
         </div>
       )}
 
-      <SectionHeader>
+      <SectionHeader title="Setup Instructions">
         <MonoLabel tone="dark">Setup Instructions</MonoLabel>
       </SectionHeader>
 
       <div className="space-y-4">
         <CapabilityCard
-          title="Google Calendar"
           description="Go to Google Cloud Console, create OAuth 2.0 credentials, and add the redirect URI. Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in your environment."
           meta="01 / Provider"
+          title="Google Calendar"
         />
         <CapabilityCard
-          title="Microsoft Outlook"
           description="Go to Azure App Registrations, register a new application, and add the redirect URI. Set MICROSOFT_CLIENT_ID and MICROSOFT_CLIENT_SECRET in your environment."
           meta="02 / Provider"
+          title="Microsoft Outlook"
         />
       </div>
 
       <div className="flex justify-end pt-4">
         <Link href="/calendar">
-          <Button variant="outline" size="sm">
+          <Button size="sm" variant="outline">
             Back to Calendar
           </Button>
         </Link>

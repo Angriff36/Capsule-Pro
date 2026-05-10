@@ -1,9 +1,9 @@
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
-import { type NextRequest, NextResponse } from "next/server";
-import { requireTenantId } from "@/app/lib/tenant";
 import { revalidatePath } from "next/cache";
+import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { requireTenantId } from "@/app/lib/tenant";
 
 const updateShiftSchema = z.object({
   id: z.string().uuid(),
@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
     if (!parsed.success) {
       return NextResponse.json(
         { message: "Validation failed", errors: parsed.error.flatten() },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -43,10 +43,7 @@ export async function POST(request: NextRequest) {
       where: { id, tenantId, deletedAt: null },
     });
     if (!existing) {
-      return NextResponse.json(
-        { message: "Shift not found" },
-        { status: 404 },
-      );
+      return NextResponse.json({ message: "Shift not found" }, { status: 404 });
     }
 
     // If times are being changed, validate them
@@ -60,7 +57,7 @@ export async function POST(request: NextRequest) {
     if (shiftEnd <= shiftStart) {
       return NextResponse.json(
         { message: "End time must be after start time" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -77,13 +74,13 @@ export async function POST(request: NextRequest) {
             AND deleted_at IS NULL
             AND shift_start < ${shiftEnd}
             AND shift_end > ${shiftStart}
-        `,
+        `
       );
 
       if (Number(overlap.count) > 0) {
         return NextResponse.json(
           { message: "Employee has overlapping shifts" },
-          { status: 409 },
+          { status: 409 }
         );
       }
     }
@@ -94,7 +91,8 @@ export async function POST(request: NextRequest) {
     if (updates.locationId) data.locationId = updates.locationId;
     if (updates.shiftStart) data.shift_start = shiftStart;
     if (updates.shiftEnd) data.shift_end = shiftEnd;
-    if (updates.roleDuringShift !== undefined) data.role_during_shift = updates.roleDuringShift || null;
+    if (updates.roleDuringShift !== undefined)
+      data.role_during_shift = updates.roleDuringShift || null;
     if (updates.notes !== undefined) data.notes = updates.notes || null;
 
     const shift = await database.scheduleShift.update({
@@ -112,7 +110,7 @@ export async function POST(request: NextRequest) {
         message:
           error instanceof Error ? error.message : "Failed to update shift",
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

@@ -52,6 +52,7 @@ import {
   getVarianceColor,
 } from "../../../lib/use-budgets";
 import { SuggestionsPanel } from "../../kitchen/components/suggestions-panel";
+import { attachEventImport } from "../actions";
 import type { GeneratedEventSummary } from "../actions/event-summary";
 import type { TaskBreakdown } from "../actions/task-breakdown";
 import {
@@ -1002,9 +1003,9 @@ export function SourceDocumentsSection({
       triggerText="View files"
     >
       <form
-        action={(formData: FormData) => {
+        action={async (formData: FormData) => {
           formData.append("eventId", eventId);
-          // attachEventImport action
+          return attachEventImport(formData);
         }}
         className="flex flex-col gap-3"
       >

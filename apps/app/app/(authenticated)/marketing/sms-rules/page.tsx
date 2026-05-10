@@ -2,7 +2,6 @@ import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import {
   CommandBand,
-  CommandBandActions,
   CommandBandBody,
   CommandBandHeader,
   CommandBandLede,
@@ -16,8 +15,6 @@ import {
   PageCanvas,
   SectionHeader,
 } from "@repo/design-system/components/blocks/page-shell";
-import { Button } from "@repo/design-system/components/ui/button";
-import { MessageSquare } from "lucide-react";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -68,7 +65,8 @@ export default async function SmsRulesPage() {
             <MonoLabel tone="dark">Operations / Marketing</MonoLabel>
             <DisplayHeading>SMS Rules</DisplayHeading>
             <CommandBandLede>
-              Configure which operational events trigger SMS notifications to employees and role-based recipients.
+              Configure which operational events trigger SMS notifications to
+              employees and role-based recipients.
             </CommandBandLede>
           </div>
         </CommandBandHeader>
@@ -91,7 +89,11 @@ export default async function SmsRulesPage() {
       </CommandBand>
 
       <OperationalColumn>
-        <SectionHeader eyebrow="Automation" title="SMS automation rules" count={`${rules.length}`} />
+        <SectionHeader
+          count={`${rules.length}`}
+          eyebrow="Automation"
+          title="SMS automation rules"
+        />
         <SmsRulesClient rules={serializedRules} />
       </OperationalColumn>
     </PageCanvas>

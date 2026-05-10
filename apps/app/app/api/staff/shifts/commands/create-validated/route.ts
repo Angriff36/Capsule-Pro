@@ -1,9 +1,9 @@
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
-import { type NextRequest, NextResponse } from "next/server";
-import { requireTenantId } from "@/app/lib/tenant";
 import { revalidatePath } from "next/cache";
+import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { requireTenantId } from "@/app/lib/tenant";
 
 const createShiftSchema = z.object({
   scheduleId: z.string().uuid(),
@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     if (!parsed.success) {
       return NextResponse.json(
         { message: "Validation failed", errors: parsed.error.flatten() },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
     if (endDate <= startDate) {
       return NextResponse.json(
         { message: "End time must be after start time" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -67,13 +67,13 @@ export async function POST(request: NextRequest) {
             AND deleted_at IS NULL
             AND shift_start < ${endDate}
             AND shift_end > ${startDate}
-        `,
+        `
       );
 
       if (Number(overlap.count) > 0) {
         return NextResponse.json(
           { message: "Employee has overlapping shifts" },
-          { status: 409 },
+          { status: 409 }
         );
       }
     }
@@ -101,7 +101,7 @@ export async function POST(request: NextRequest) {
         message:
           error instanceof Error ? error.message : "Failed to create shift",
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

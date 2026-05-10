@@ -27,7 +27,7 @@ interface ContractDocumentAPIContext {
  */
 export async function POST(
   request: NextRequest,
-  context: ContractDocumentAPIContext,
+  context: ContractDocumentAPIContext
 ) {
   const { id: contractId } = await context.params;
   const { orgId } = await auth();
@@ -57,7 +57,7 @@ export async function POST(
         {
           error: "Invalid file type. Only PDF and Word documents are allowed.",
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -65,7 +65,7 @@ export async function POST(
     if (file.size > maxSize) {
       return NextResponse.json(
         { error: "File size exceeds 10MB limit" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -81,7 +81,7 @@ export async function POST(
     if (!contract) {
       return NextResponse.json(
         { error: "Contract not found" },
-        { status: 404 },
+        { status: 404 }
       );
     }
 

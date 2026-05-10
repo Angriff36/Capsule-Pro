@@ -84,6 +84,9 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
+# Local Neon schema-only dumps (pg_dump; may contain object names)
+/backups/neon-schema/
+
 # local env files
 .env*.local
 .env.vercel

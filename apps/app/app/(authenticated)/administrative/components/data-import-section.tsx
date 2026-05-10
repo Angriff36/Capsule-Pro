@@ -7,7 +7,6 @@ import {
 } from "@repo/design-system/components/ui/card";
 import { Separator } from "@repo/design-system/components/ui/separator";
 import { FileTextIcon } from "lucide-react";
-import Link from "next/link";
 
 interface DocumentRow {
   id: string;
@@ -94,9 +93,9 @@ function DocumentItem({
       </div>
       <div className="flex items-center justify-between text-xs text-muted-foreground">
         {doc.parse_status === "error" && (
-          <Link className="text-destructive hover:underline" href="#">
+          <span className="text-destructive hover:underline cursor-pointer">
             View Errors
-          </Link>
+          </span>
         )}
         <span className="ml-auto">{getTimeAgo(doc.created_at)}</span>
       </div>

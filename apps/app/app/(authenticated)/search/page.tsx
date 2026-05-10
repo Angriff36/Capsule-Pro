@@ -133,7 +133,7 @@ const GROUP_CONFIG: Record<
   knowledge: {
     label: "Knowledge Base",
     icon: <BookOpen className="size-4" />,
-    href: (item) => `/knowledge/${item.slug}`,
+    href: (item) => `/knowledge-base/${item.slug}`,
     title: (item) => (item.title as string) || "Untitled",
     description: (item) => (
       <p className="text-sm text-muted-foreground">

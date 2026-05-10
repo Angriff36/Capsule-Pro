@@ -135,7 +135,7 @@ export function EquipmentPageClient() {
 
   async function fetchWorkOrders() {
     try {
-      const res = await apiFetch("/api/workorder/list");
+      const res = await apiFetch("/api/facilities/work-orders/list");
       const data = await res.json();
       if (data.success) {
         setWorkOrders(data.workOrders || []);

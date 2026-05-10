@@ -401,7 +401,7 @@ const AnalyticsPage = async () => {
               <Link href="/analytics/clients">Client analytics</Link>
             </Button>
             <Button asChild size="default" variant="on-dark">
-              <Link href="/analytics/financial">Financial detail</Link>
+              <Link href="/analytics/finance">Financial detail</Link>
             </Button>
           </CommandBandActions>
         </CommandBandHeader>

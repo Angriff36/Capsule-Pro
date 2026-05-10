@@ -53,7 +53,7 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-interface CreateTrainingModuleDialogProps {}
+type CreateTrainingModuleDialogProps = {};
 
 export function CreateTrainingModuleDialog({}: CreateTrainingModuleDialogProps) {
   const [open, setOpen] = useState(false);

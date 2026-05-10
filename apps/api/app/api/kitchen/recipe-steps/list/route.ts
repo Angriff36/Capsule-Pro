@@ -1,34 +1,37 @@
 // Auto-generated Next.js API route for RecipeStep
 // Generated from Manifest IR - DO NOT EDIT
 
+import { auth } from "@repo/auth/server";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { database } from "@/lib/database";
-import { manifestErrorResponse, manifestSuccessResponse } from "@/lib/manifest-response";
-import { auth } from "@repo/auth/server";
+import {
+  manifestErrorResponse,
+  manifestSuccessResponse,
+} from "@/lib/manifest-response";
 
 export async function GET(request: NextRequest) {
   try {
-  const { orgId, userId } = await auth();
-  if (!(userId && orgId)) {
-    return manifestErrorResponse("Unauthorized", 401);
-  }
+    const { orgId, userId } = await auth();
+    if (!(userId && orgId)) {
+      return manifestErrorResponse("Unauthorized", 401);
+    }
 
-  const tenantId = await getTenantIdForOrg(orgId);
+    const tenantId = await getTenantIdForOrg(orgId);
 
-  if (!tenantId) {
-    return manifestErrorResponse("Tenant not found", 400);
-  }
+    if (!tenantId) {
+      return manifestErrorResponse("Tenant not found", 400);
+    }
 
-const recipeSteps = await database.recipeStep.findMany({
-    where: {
-        tenantId,
-        deletedAt: null
+    const recipeSteps = await database.recipe_steps.findMany({
+      where: {
+        tenant_id: tenantId,
+        deleted_at: null,
       },
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
+      orderBy: {
+        created_at: "desc",
+      },
+    });
 
     return manifestSuccessResponse({ recipeSteps });
   } catch (error) {

@@ -57,8 +57,7 @@ export default async function MarketingAnalyticsPage() {
   for (const row of emailLogStats) {
     emailCounts[row.status] = row._count.status;
   }
-  const totalSent =
-    Object.values(emailCounts).reduce((a, b) => a + b, 0) || 0;
+  const totalSent = Object.values(emailCounts).reduce((a, b) => a + b, 0) || 0;
   const opened = emailCounts["opened"] || 0;
   const openRate = totalSent > 0 ? Math.round((opened / totalSent) * 100) : 0;
 
@@ -100,7 +99,9 @@ export default async function MarketingAnalyticsPage() {
             </MetricCell>
             <MetricCell>
               <MetricLabel>Open rate</MetricLabel>
-              <MetricValue>{totalSent > 0 ? `${openRate}%` : "\u2014"}</MetricValue>
+              <MetricValue>
+                {totalSent > 0 ? `${openRate}%` : "\u2014"}
+              </MetricValue>
             </MetricCell>
             <MetricCell>
               <MetricLabel>Leads</MetricLabel>

@@ -158,6 +158,10 @@ import {
   PaymentMethodPrismaStore,
   PaymentPrismaStore,
 } from "./prisma-stores/broken-read-batch14-invoice-payment.js";
+import {
+  RolePolicyPrismaStore,
+  TimeOffRequestPrismaStore,
+} from "./prisma-stores/broken-read-batch15-rolepolicy-timeoff.js";
 import { NotificationPrismaStore } from "./prisma-stores/broken-read-notification-parent.js";
 import { PurchaseOrderPrismaStore } from "./prisma-stores/broken-read-po-parent.js";
 import { ProposalPrismaStore } from "./prisma-stores/broken-read-proposal-parent.js";
@@ -1825,6 +1829,10 @@ export function createPrismaStoreProvider(
         return new VarianceReportPrismaStore(prisma, tenantId);
       case "TrainingModule":
         return new TrainingModulePrismaStore(prisma, tenantId);
+      case "RolePolicy":
+        return new RolePolicyPrismaStore(prisma, tenantId);
+      case "TimeOffRequest":
+        return new TimeOffRequestPrismaStore(prisma, tenantId);
       default:
         console.error(
           `[createPrismaStoreProvider] No store for entity "${entityName}" — commands will fail`

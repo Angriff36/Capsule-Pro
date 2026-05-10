@@ -55,6 +55,31 @@ Product-flow tests:
 Do not commit if the relevant product-flow test fails. Fix the failure or
 document the blocker in `IMPLEMENTATION_PLAN.md`.
 
+## Prisma migrate dev and SHADOW_DATABASE_URL
+
+- **App/runtime env** (`@repo/database/keys`, merged into `apps/app/env.ts` and
+  `apps/api/env.ts`): validates **`DATABASE_URL` only**. `SHADOW_DATABASE_URL` is
+  intentionally **not** part of that surface so Next builds, `prisma generate`,
+  and production startup are not coupled to a shadow DB.
+- **`packages/database/prisma.config.ts`** adds `shadowDatabaseUrl` **only when**
+  `SHADOW_DATABASE_URL` is set (Prisma Migrate shadow database for `migrate dev`).
+- **Supported migrate-dev path:** **`pnpm db:dev`** only. It runs
+  `scripts/require-shadow-database-url-for-migrate-dev.mjs` first, then
+  `prisma migrate dev` with the correct workspace filter. **`pnpm migrate`** ends
+  with `db:dev` and is therefore covered.
+- **Unsupported:** invoking `prisma migrate dev` **without** going through
+  `pnpm db:dev` (for example `pnpm --filter @repo/database exec prisma migrate dev`
+  or `npx prisma migrate dev` from ad-hoc shells) — bypasses the guard and is not
+  a supported workflow.
+- **Does not require `SHADOW_DATABASE_URL`:** Next.js build, `prisma generate`,
+  `pnpm db:deploy` / `migrate deploy`, `migrate:status`, `migrate:resolve`, app
+  runtime.
+- **Neon shadow DB bootstrap:** `pnpm db:neon-shadow` (see
+  `docs/database/CONTRIBUTING.md`) creates database **`capsule_shadow`** on
+  `NEON_DEV_BRANCH` (default `dev`), prints a direct `--prisma` connection string,
+  and with `-- --write` appends **`SHADOW_DATABASE_URL`** to
+  **`packages/database/.env.local`** only (not Vercel production).
+
 ## Critical Write Validation
 
 For any command route (`POST /commands/*`), do not trust the command response
@@ -214,18 +239,13 @@ for smoke tests.
 
 ## Test & Logging Hygiene
 
-- **No `console.log` in production code.** Re-verified 2026-04-24: `apps/api/`
-  has **449 `console.log` + 1,727 `console.error` + 16 `console.warn` ≈ 2,192
-  total** — clean up when you touch them and use `@repo/observability` / Sentry
-  instead. Error-path logging is the biggest share; prioritize replacing
-  `console.error` first.
+- **No `console.log` in production code.** Re-verified 2026-05-10 (16-agent audit):
+  **~932 console statements across ~336 files** (~870 in production source) — clean
+  up when you touch them and use `@repo/observability` / Sentry instead. Error-path
+  logging is the biggest share; prioritize replacing `console.error` first.
 - **No `.bak` / `.backup` / `.new` / `.tmp` files in the repo.** Re-verified
-  2026-04-24 (third pass): **21 files violate this** — 11 `.bak` + 6 `.backup` +
-  3 `.new` + 1 `.tmp` (prior note said "17" but the components already summed to
-  21 — arithmetic slip). Includes `AGENTS.md.backup`,
-  `packages/database/prisma/schema.prisma.{bak,backup}`,
-  `apps/app/next.config.ts.bak`, `.autolab/tasks.json.bak`. Delete them when
-  touching surrounding code — use git instead of filename suffixes.
+  2026-05-10 (16-agent audit): **0 files — CLEAN.** Prior count of 21 files has
+  been resolved. All `.bak`, `.backup`, `.new`, and `.tmp` files have been removed.
 - **No `describe.skip` or `test.todo` in committed code without a linked
   issue.** If a test must be skipped, open a follow-up ticket and reference it
   in a comment on the skip line. Current offenders:
@@ -237,7 +257,10 @@ for smoke tests.
   spec files — `integrated-payment-processor` (7), `recipe-scaling` (7),
   `role-aware-empty-states` (4), `illustrated-empty-states` (4),
   `communication-preferences` (2), `getting-started-checklist` (1). Prior note
-  of "35 across 8 files" over-counted.
+  of "35 across 8 files" over-counted. **Additional skipped tests (2026-05-10
+  audit):** ~70 total across all test files: 49 e2e test.skip + 6 describe.skip
+  (operations.test.ts 5 blocks, sales-reporting 1) + 48 manifest-runtime
+  validate.test.ts test.skip + 1 manifest-adapters test.skip.
 
 ## Schema ↔ Migrations ↔ Code Drift
 

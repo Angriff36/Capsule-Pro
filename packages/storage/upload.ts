@@ -13,12 +13,12 @@ export interface StorageUploadResult {
 }
 
 export async function uploadFile(
-  options: StorageUploadOptions,
+  options: StorageUploadOptions
 ): Promise<StorageUploadResult> {
   const token = process.env.BLOB_READ_WRITE_TOKEN;
   if (!token) {
     throw new Error(
-      "BLOB_READ_WRITE_TOKEN is required for file storage. Configure it in your Vercel project settings.",
+      "BLOB_READ_WRITE_TOKEN is required for file storage. Configure it in your Vercel project settings."
     );
   }
 
@@ -45,7 +45,7 @@ export async function deleteFile(url: string): Promise<void> {
 }
 
 export async function getFileMetadata(
-  url: string,
+  url: string
 ): Promise<{ size: number; contentType: string } | null> {
   const token = process.env.BLOB_READ_WRITE_TOKEN;
   if (!token) {

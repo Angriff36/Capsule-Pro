@@ -57,7 +57,7 @@ function formatTriggerType(type: string): string {
 
 export function AnalyticsClient({ initialMetrics }: AnalyticsClientProps) {
   const [windowPeriod, setWindowPeriod] = useState<"30d" | "90d" | "180d">(
-    "30d",
+    "30d"
   );
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(false);
@@ -75,9 +75,7 @@ export function AnalyticsClient({ initialMetrics }: AnalyticsClientProps) {
 
   const leadsBySource = useMemo(() => {
     if (!metrics?.leadsBySource) return [];
-    return Object.entries(metrics.leadsBySource).sort(
-      ([, a], [, b]) => b - a,
-    );
+    return Object.entries(metrics.leadsBySource).sort(([, a], [, b]) => b - a);
   }, [metrics]);
 
   return (
@@ -100,9 +98,7 @@ export function AnalyticsClient({ initialMetrics }: AnalyticsClientProps) {
         ))}
       </div>
 
-      {loading && (
-        <p className="text-sm text-muted-foreground">Loading...</p>
-      )}
+      {loading && <p className="text-sm text-muted-foreground">Loading...</p>}
 
       {!loading && metrics && data && (
         <>
@@ -112,9 +108,7 @@ export function AnalyticsClient({ initialMetrics }: AnalyticsClientProps) {
               {
                 label: "Emails sent",
                 value:
-                  metrics.totalSent > 0
-                    ? String(metrics.totalSent)
-                    : "\u2014",
+                  metrics.totalSent > 0 ? String(metrics.totalSent) : "\u2014",
               },
               {
                 label: "Open rate",
@@ -133,9 +127,7 @@ export function AnalyticsClient({ initialMetrics }: AnalyticsClientProps) {
               {
                 label: "SMS sent",
                 value:
-                  metrics.totalSms > 0
-                    ? String(metrics.totalSms)
-                    : "\u2014",
+                  metrics.totalSms > 0 ? String(metrics.totalSms) : "\u2014",
               },
               {
                 label: "SMS delivery",
@@ -146,8 +138,7 @@ export function AnalyticsClient({ initialMetrics }: AnalyticsClientProps) {
               },
               {
                 label: "Bounced",
-                value:
-                  metrics.bounced > 0 ? String(metrics.bounced) : "\u2014",
+                value: metrics.bounced > 0 ? String(metrics.bounced) : "\u2014",
               },
             ].map((m) => (
               <div
@@ -255,7 +246,7 @@ export function AnalyticsClient({ initialMetrics }: AnalyticsClientProps) {
                       <span
                         className={`inline-flex w-fit rounded-full px-2.5 py-0.5 text-[11px] font-medium uppercase tracking-wide ${
                           rule.isActive
-                            ? "bg-[#1a4d2e] text-white"
+                            ? "bg-ink text-white"
                             : "border border-hairline bg-canvas text-muted-foreground"
                         }`}
                       >

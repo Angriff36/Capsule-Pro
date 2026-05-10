@@ -17,12 +17,14 @@
  */
 
 import { captureException } from "@sentry/nextjs";
-import { manifestErrorResponse, manifestSuccessResponse } from "@/lib/manifest-response";
-import { createManifestRuntime } from "@/lib/manifest-runtime";
-
 // Compiled command registry — source of truth for which entity.command pairs exist.
 // Generated from packages/manifest-ir/ir/kitchen/kitchen.commands.json
 import commandsJson from "@/../../packages/manifest-ir/ir/kitchen/kitchen.commands.json";
+import {
+  manifestErrorResponse,
+  manifestSuccessResponse,
+} from "@/lib/manifest-response";
+import { createManifestRuntime } from "@/lib/manifest-runtime";
 
 // ---------------------------------------------------------------------------
 // IR command registry (lazily built — zero-cost if never called)

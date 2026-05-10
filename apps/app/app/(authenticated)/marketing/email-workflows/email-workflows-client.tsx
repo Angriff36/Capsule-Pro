@@ -82,7 +82,7 @@ export function EmailWorkflowsClient({ workflows }: EmailWorkflowsClientProps) {
       result = result.filter(
         (w) =>
           w.name.toLowerCase().includes(q) ||
-          w.triggerType.toLowerCase().includes(q),
+          w.triggerType.toLowerCase().includes(q)
       );
     }
     return result;
@@ -97,13 +97,13 @@ export function EmailWorkflowsClient({ workflows }: EmailWorkflowsClientProps) {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ isActive: !workflow.isActive }),
-        },
+        }
       );
       if (!res.ok) throw new Error("Failed to update workflow");
       toast.success(
         workflow.isActive
           ? `"${workflow.name}" deactivated`
-          : `"${workflow.name}" activated`,
+          : `"${workflow.name}" activated`
       );
       router.refresh();
     } catch {
@@ -130,7 +130,7 @@ export function EmailWorkflowsClient({ workflows }: EmailWorkflowsClientProps) {
             triggerType: createForm.triggerType,
             isActive: true,
           }),
-        },
+        }
       );
       if (!res.ok) throw new Error("Failed to create workflow");
       toast.success("Workflow created");
@@ -152,7 +152,7 @@ export function EmailWorkflowsClient({ workflows }: EmailWorkflowsClientProps) {
         <p className="mt-1 text-sm text-muted-foreground">
           Create your first automated email workflow.
         </p>
-        <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+        <Dialog onOpenChange={setCreateOpen} open={createOpen}>
           <DialogTrigger asChild>
             <Button className="mt-4" size="sm">
               New workflow
@@ -164,17 +164,17 @@ export function EmailWorkflowsClient({ workflows }: EmailWorkflowsClientProps) {
             </DialogHeader>
             <div className="space-y-4">
               <Input
-                placeholder="Workflow name"
-                value={createForm.name}
                 onChange={(e) =>
                   setCreateForm((f) => ({ ...f, name: e.target.value }))
                 }
+                placeholder="Workflow name"
+                value={createForm.name}
               />
               <Select
-                value={createForm.triggerType}
                 onValueChange={(v) =>
                   setCreateForm((f) => ({ ...f, triggerType: v }))
                 }
+                value={createForm.triggerType}
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -229,7 +229,7 @@ export function EmailWorkflowsClient({ workflows }: EmailWorkflowsClientProps) {
               {f.charAt(0).toUpperCase() + f.slice(1)}
             </button>
           ))}
-          <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+          <Dialog onOpenChange={setCreateOpen} open={createOpen}>
             <DialogTrigger asChild>
               <Button size="sm">New workflow</Button>
             </DialogTrigger>
@@ -239,17 +239,17 @@ export function EmailWorkflowsClient({ workflows }: EmailWorkflowsClientProps) {
               </DialogHeader>
               <div className="space-y-4">
                 <Input
-                  placeholder="Workflow name"
-                  value={createForm.name}
                   onChange={(e) =>
                     setCreateForm((f) => ({ ...f, name: e.target.value }))
                   }
+                  placeholder="Workflow name"
+                  value={createForm.name}
                 />
                 <Select
-                  value={createForm.triggerType}
                   onValueChange={(v) =>
                     setCreateForm((f) => ({ ...f, triggerType: v }))
                   }
+                  value={createForm.triggerType}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -313,7 +313,7 @@ export function EmailWorkflowsClient({ workflows }: EmailWorkflowsClientProps) {
                 <button
                   className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium uppercase tracking-wide transition-colors ${
                     workflow.isActive
-                      ? "bg-[#1a4d2e] text-white"
+                      ? "bg-ink text-white"
                       : "border border-hairline bg-canvas text-muted-foreground"
                   } ${togglingId === workflow.id ? "opacity-50" : ""}`}
                   disabled={togglingId === workflow.id}
