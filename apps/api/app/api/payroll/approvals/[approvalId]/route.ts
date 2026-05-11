@@ -4,14 +4,13 @@
  * PUT    /api/payroll/approvals/[approvalId]      - Update approval status (approve/reject)
  */
 
-import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { InvariantError, invariant } from "@/app/lib/invariant";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { requireApiManager } from "@/app/lib/auth-roles";
 
 const UUID_REGEX =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -43,18 +42,12 @@ interface RouteContext {
  */
 export async function PUT(request: Request, context: RouteContext) {
   try {
-    const { orgId, userId } = await auth();
-    if (!orgId) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    const guard = await requireApiManager();
+    if (!guard.ok) {
+      return guard.response;
     }
-
-    const tenantId = await getTenantIdForOrg(orgId);
-    if (!tenantId) {
-      return NextResponse.json(
-        { message: "Tenant not found" },
-        { status: 404 }
-      );
-    }
+    const { tenantId, user } = guard;
+    const userId = user.id;
 
     const { approvalId } = await context.params;
 

@@ -1,10 +1,9 @@
-import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { requireApiAdmin } from "@/app/lib/auth-roles";
 
 export const runtime = "nodejs";
 
@@ -169,12 +168,11 @@ function generateDisplayName(entityType: string, record: any): string {
  * Restore soft-deleted entities
  */
 export async function POST(request: NextRequest) {
-  const { orgId, userId } = await auth();
-  if (!(orgId && userId)) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  const guard = await requireApiAdmin();
+  if (!guard.ok) {
+    return guard.response;
   }
-
-  const tenantId = await getTenantIdForOrg(orgId);
+  const { tenantId } = guard;
 
   try {
     const body: RestoreRequestBody = await request.json();
@@ -393,12 +391,11 @@ async function restoreDependentEntities(
  * Permanently delete soft-deleted entities (cannot be undone)
  */
 export async function DELETE(request: NextRequest) {
-  const { orgId } = await auth();
-  if (!orgId) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  const guard = await requireApiAdmin();
+  if (!guard.ok) {
+    return guard.response;
   }
-
-  const tenantId = await getTenantIdForOrg(orgId);
+  const { tenantId } = guard;
   const { searchParams } = new URL(request.url);
 
   const entityId = searchParams.get("entityId");
