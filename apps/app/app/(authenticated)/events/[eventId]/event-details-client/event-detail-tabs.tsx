@@ -4,6 +4,7 @@ import { cn } from "@repo/design-system/lib/utils";
 import {
   CalendarCheck,
   ClipboardList,
+  FileText,
   LayoutDashboard,
   Play,
 } from "lucide-react";
@@ -26,6 +27,7 @@ const PLANNING_TABS = [
 const EXECUTION_TABS = [
   "overview",
   "battleboard",
+  "run-sheet",
   "kitchen-tasks",
   "guest-checkin",
   "operations",
@@ -61,6 +63,7 @@ interface EventDetailTabsProps {
   followups: ReactNode;
   explore: ReactNode;
   battleboard?: ReactNode;
+  runSheet?: ReactNode;
   kitchenTasks?: ReactNode;
   guestCheckin?: ReactNode;
   reports?: ReactNode;
@@ -75,6 +78,7 @@ const TAB_LABELS: Record<string, string> = {
   followups: "Follow-Ups",
   explore: "Explore",
   battleboard: "Battle Board",
+  "run-sheet": "Run Sheet",
   "kitchen-tasks": "Kitchen Tasks",
   "guest-checkin": "Check-In",
   reports: "Reports",
@@ -117,6 +121,7 @@ export function EventDetailTabs({
   followups,
   explore,
   battleboard,
+  runSheet,
   kitchenTasks,
   guestCheckin,
   reports,
@@ -203,6 +208,18 @@ export function EventDetailTabs({
           href={`/events/${eventId}/battle-board`}
         >
           Open Battle Board
+        </a>
+      </div>
+    ),
+    "run-sheet": runSheet ?? (
+      <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+        <FileText className="h-12 w-12 mb-3 opacity-40" />
+        <p className="text-sm">Generate a run sheet with menu, staff, timeline, and shopping list.</p>
+        <a
+          className="mt-3 inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+          href={`/events/${eventId}/run-sheet`}
+        >
+          Open Run Sheet
         </a>
       </div>
     ),

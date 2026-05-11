@@ -3,7 +3,7 @@
 import type { Event } from "@repo/database";
 import { GridBackground } from "@repo/design-system/components/ui/grid-background";
 import { Separator } from "@repo/design-system/components/ui/separator";
-import { SwordsIcon } from "lucide-react";
+import { ClipboardList, FileText, SwordsIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type { MutableRefObject } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -31,6 +31,7 @@ import {
   saveTaskBreakdown,
   type TaskBreakdown,
 } from "../../actions/task-breakdown";
+import { generateProposalFromEvent } from "../../actions/generate-proposal";
 import { GenerateEventSummaryModal } from "../../components/event-summary-display";
 import {
   EVENT_TEMPLATES,
@@ -59,6 +60,7 @@ import type {
 import type { PrepTaskSummaryClient } from "../prep-task-contract";
 import { EventDetailTabs } from "./event-detail-tabs";
 // Above-fold critical components loaded eagerly
+import { AllergenSection } from "./allergen-section";
 import { EventOverviewCard } from "./event-overview-card";
 import { GuestManagementSection } from "./guest-management-section";
 // Lazy-loaded below-the-fold components for bundle optimization
@@ -1422,6 +1424,24 @@ export function EventDetailsClient({
     exportBreakdownToCsv(breakdown, event.title);
   }, [breakdown, event.title]);
 
+  const [isGeneratingProposal, setIsGeneratingProposal] = useState(false);
+  const handleGenerateProposal = useCallback(async () => {
+    setIsGeneratingProposal(true);
+    try {
+      const result = await generateProposalFromEvent(event.id);
+      if (result.success && result.proposalId) {
+        toast.success(`Proposal ${result.proposalNumber} created`);
+        router.push(`/crm/proposals/${result.proposalId}`);
+      } else {
+        toast.error(result.error ?? "Failed to generate proposal");
+      }
+    } catch {
+      toast.error("Failed to generate proposal");
+    } finally {
+      setIsGeneratingProposal(false);
+    }
+  }, [event.id, router]);
+
   const editorEvent = {
     id: event.id,
     title: event.title,
@@ -1575,18 +1595,38 @@ export function EventDetailsClient({
             />
           }
           operations={
-            <OperationsSection
-              currentStaffCount={currentStaffCount}
-              eventId={event.id}
-              isGeneratingPrepList={isGeneratingPrepList}
-              onGeneratePrepList={handleGeneratePrepList}
-              onOpenGenerateModal={() => setShowBreakdownModal(true)}
-              prepLists={prepLists}
-              prepTasks={sortedPrepTasks}
-              taskSummary={taskSummary}
-              templateName={templateName}
-              templateStaffing={templateStaffing}
-            />
+            <div className="space-y-6">
+              <OperationsSection
+                currentStaffCount={currentStaffCount}
+                eventId={event.id}
+                isGeneratingPrepList={isGeneratingPrepList}
+                onGeneratePrepList={handleGeneratePrepList}
+                onOpenGenerateModal={() => setShowBreakdownModal(true)}
+                prepLists={prepLists}
+                prepTasks={sortedPrepTasks}
+                taskSummary={taskSummary}
+                templateName={templateName}
+                templateStaffing={templateStaffing}
+              />
+              <AllergenSection eventId={event.id} />
+              <div className="flex flex-wrap gap-2">
+                <a
+                  className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-1.5 text-sm font-medium hover:bg-accent"
+                  href={`/events/${event.id}/run-sheet`}
+                >
+                  <ClipboardList className="h-3.5 w-3.5" /> Run Sheet
+                </a>
+                <button
+                  className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-1.5 text-sm font-medium hover:bg-accent disabled:opacity-50"
+                  disabled={isGeneratingProposal}
+                  onClick={handleGenerateProposal}
+                  type="button"
+                >
+                  <FileText className="h-3.5 w-3.5" />
+                  {isGeneratingProposal ? "Generating..." : "Generate Proposal"}
+                </button>
+              </div>
+            </div>
           }
           overview={
             <div className="space-y-6">
