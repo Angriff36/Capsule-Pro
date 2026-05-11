@@ -483,7 +483,11 @@ describe("NextJsProjection", () => {
 
       // Contract: Must use createManifestRuntime with user context (including tenantId by default)
       expect(code).toContain("createManifestRuntime");
-      expect(code).toContain("user: { id: userId");
+      expect(code).toContain("user: { id: _resolvedUser");
+
+      // Contract: Must resolve user role for RBAC policy evaluation
+      expect(code).toContain("database.user.findFirst");
+      expect(code).toContain("role: _resolvedUser");
 
       // Contract: Must handle guard failure with 422
       expect(code).toContain("guardFailure");
@@ -641,6 +645,32 @@ describe("NextJsProjection", () => {
         options: { authProvider: "none" },
       });
       expect(firstCode(noAuthResult)).toContain("Auth disabled");
+    });
+
+    it("resolves user role for RBAC policy evaluation", async () => {
+      const result = await compileToIR(commandSource);
+      expect(result.ir).not.toBeNull();
+
+      const commandResult = projection.generate(result.ir!, {
+        surface: "nextjs.command",
+        entity: "Recipe",
+        command: "create",
+      });
+
+      const code = firstCode(commandResult);
+
+      // Contract: Must import database for user lookup
+      expect(code).toContain('import { database }');
+
+      // Contract: Must resolve internal user by authUserId for role
+      expect(code).toContain("database.user.findFirst");
+      expect(code).toContain("authUserId: userId");
+
+      // Contract: Must pass resolved role to runtime context
+      expect(code).toContain("role: _resolvedUser");
+
+      // Contract: Must fall back to Clerk userId when user not found
+      expect(code).toContain("_resolvedUser?.id ?? userId");
     });
 
     it("omits instanceId for create commands", async () => {

@@ -25,6 +25,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
+import { log } from "@repo/observability/log";
 
 interface SyncStatus {
   id: string;
@@ -70,7 +71,7 @@ export default function CalendarSyncPage() {
         setSyncs(data.syncs || []);
       }
     } catch (error) {
-      console.error("Failed to fetch sync status:", error);
+      log.error("Failed to fetch sync status:", { error });
     } finally {
       setLoading(false);
     }
@@ -109,7 +110,7 @@ export default function CalendarSyncPage() {
         setActionLoading(null);
       }
     } catch (error) {
-      console.error("Connect error:", error);
+      log.error("Connect error:", { error });
       toast.error("Failed to initiate connection");
       setActionLoading(null);
     }
@@ -135,7 +136,7 @@ export default function CalendarSyncPage() {
         toast.error(`Failed to disconnect: ${error.error}`);
       }
     } catch (error) {
-      console.error("Disconnect error:", error);
+      log.error("Disconnect error:", { error });
       toast.error("Failed to disconnect");
     } finally {
       setActionLoading(null);
@@ -160,7 +161,7 @@ export default function CalendarSyncPage() {
         toast.error(`Sync failed: ${error.error}`);
       }
     } catch (error) {
-      console.error("Sync error:", error);
+      log.error("Sync error:", { error });
       toast.error("Failed to trigger sync");
     } finally {
       setActionLoading(null);
@@ -206,7 +207,7 @@ export default function CalendarSyncPage() {
 
       {/* Success/Error Messages */}
       {connectedProvider && (
-        <Card className="border-green-200 bg-green-50" tone="canvas">
+        <Card className="border-[var(--ds-calendar-shift)] bg-[var(--ds-calendar-shift-light)]" tone="canvas">
           <CardContent className="flex items-center gap-2 pt-6">
             <Check className="h-4 w-4 text-green-600" />
             <span className="text-green-700">
@@ -219,7 +220,7 @@ export default function CalendarSyncPage() {
         </Card>
       )}
       {errorMessage && (
-        <Card className="border-red-200 bg-red-50" tone="canvas">
+        <Card className="border-destructive/30 bg-destructive/5" tone="canvas">
           <CardContent className="flex items-center gap-2 pt-6">
             <X className="h-4 w-4 text-red-600" />
             <span className="text-red-700">

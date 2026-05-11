@@ -6,11 +6,13 @@ import {
   DragOverlay,
   type DragStartEvent,
   PointerSensor,
+  TouchSensor,
   useDraggable,
   useDroppable,
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
+import { BlogFilterChip } from "@repo/design-system/components/blocks/blog-filter-chip";
 import { ResearchTable } from "@repo/design-system/components/blocks/research-table";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
@@ -23,11 +25,6 @@ import {
   DialogTitle,
 } from "@repo/design-system/components/ui/dialog";
 import { Input } from "@repo/design-system/components/ui/input";
-import {
-  Tabs,
-  TabsList,
-  TabsTrigger,
-} from "@repo/design-system/components/ui/tabs";
 import {
   addMonths,
   eachDayOfInterval,
@@ -67,6 +64,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
+import { log } from "@repo/observability/log";
 
 interface CalendarEvent {
   id: string;
@@ -90,11 +88,11 @@ interface UnifiedCalendarProps {
   initialDate?: Date;
 }
 
-// Color scheme for different event types
+// Tokenized color scheme for calendar entry types (FR-103)
 const EVENT_COLORS: Record<string, string> = {
-  event: "bg-blue-500 border-blue-600",
-  shift: "bg-emerald-500 border-emerald-600",
-  timeoff: "bg-amber-500 border-amber-600",
+  event: "bg-[var(--ds-calendar-event)] border-[var(--ds-calendar-event)]",
+  shift: "bg-[var(--ds-calendar-shift)] border-[var(--ds-calendar-shift)]",
+  timeoff: "bg-[var(--ds-calendar-timeoff)] border-[var(--ds-calendar-timeoff)]",
 };
 
 const EVENT_TYPE_LABELS: Record<string, string> = {
@@ -147,7 +145,7 @@ function DraggableEvent({ event, onClick, isDayView }: DraggableEventProps) {
         ${EVENT_COLORS[event.type] || "bg-gray-500"}
         text-white
         ${isDayView ? "py-2 text-sm" : ""}
-        ${isDragging ? "opacity-50 ring-2 ring-blue-400" : "hover:opacity-90"}
+        ${isDragging ? "opacity-50 ring-2 ring-[var(--ds-calendar-event)]" : "hover:opacity-90"}
       `}
       onClick={() => onClick(event)}
       ref={setNodeRef}
@@ -195,8 +193,8 @@ function DroppableDayCell({
         border rounded-lg transition-colors
         ${view === "day" ? "min-h-[500px] p-4" : "min-h-[120px] p-2"}
         ${isCurrentMonth ? "bg-white" : "bg-muted/20"}
-        ${isCurrentDay ? "ring-2 ring-emerald-500" : "border-hairline"}
-        ${isActiveTarget ? "ring-2 ring-blue-400 bg-muted/20" : ""}
+        ${isCurrentDay ? "ring-2 ring-[var(--ds-calendar-shift)]" : "border-hairline"}
+        ${isActiveTarget ? "ring-2 ring-[var(--ds-calendar-event)] bg-muted/20" : ""}
         hover:border-hairline
       `}
       ref={setNodeRef}
@@ -265,11 +263,17 @@ export function UnifiedCalendar({
   }>({ open: false, event: null, newDate: null });
   const [isRescheduling, setIsRescheduling] = useState(false);
 
-  // DnD sensors - require 8px movement before drag starts to avoid accidental drags
+  // DnD sensors — PointerSensor for mouse, TouchSensor with 350ms long-press (FR-702)
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
         distance: 8,
+      },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 350,
+        tolerance: 5,
       },
     })
   );
@@ -313,7 +317,7 @@ export function UnifiedCalendar({
           setEvents(data.events || []);
         }
       } catch (error) {
-        console.error("Failed to fetch calendar data:", error);
+        log.error("Failed to fetch calendar data:", { error });
       } finally {
         setIsLoading(false);
       }
@@ -496,11 +500,11 @@ export function UnifiedCalendar({
   };
 
   const availabilityStatus = getAvailabilityStatus();
-  let availabilityStatusBackground = "bg-red-100";
+  let availabilityStatusBackground = "bg-[var(--ds-calendar-timeoff-light)]";
   if (availabilityStatus?.status === "available") {
-    availabilityStatusBackground = "bg-emerald-100";
+    availabilityStatusBackground = "bg-[var(--ds-calendar-shift-light)]";
   } else if (availabilityStatus?.status === "busy") {
-    availabilityStatusBackground = "bg-amber-100";
+    availabilityStatusBackground = "bg-[var(--ds-calendar-timeoff-light)]";
   }
   const calendarGridColumnsClass =
     view === "day" ? "grid-cols-1" : "grid-cols-7";
@@ -609,7 +613,7 @@ export function UnifiedCalendar({
       );
       setRescheduleDialog({ open: false, event: null, newDate: null });
     } catch (error) {
-      console.error("Failed to reschedule:", error);
+      log.error("Failed to reschedule:", { error });
       toast.error(
         error instanceof Error ? error.message : "Failed to reschedule"
       );
@@ -639,21 +643,25 @@ export function UnifiedCalendar({
           </Button>
         </div>
 
-        <div className="flex items-center gap-4">
-          <Tabs
-            onValueChange={(value) => {
-              if (value === "month" || value === "week" || value === "day") {
-                changeView(value);
-              }
-            }}
-            value={view}
+        <div className="flex items-center gap-2">
+          <BlogFilterChip
+            onSelect={() => changeView("month")}
+            selected={view === "month"}
           >
-            <TabsList>
-              <TabsTrigger value="month">Month</TabsTrigger>
-              <TabsTrigger value="week">Week</TabsTrigger>
-              <TabsTrigger value="day">Day</TabsTrigger>
-            </TabsList>
-          </Tabs>
+            Month
+          </BlogFilterChip>
+          <BlogFilterChip
+            onSelect={() => changeView("week")}
+            selected={view === "week"}
+          >
+            Week
+          </BlogFilterChip>
+          <BlogFilterChip
+            onSelect={() => changeView("day")}
+            selected={view === "day"}
+          >
+            Day
+          </BlogFilterChip>
         </div>
       </div>
 
@@ -859,7 +867,7 @@ export function UnifiedCalendar({
                   px-2 py-1 rounded text-xs truncate border border-hairline
                   ${EVENT_COLORS[activeEvent.type] || "bg-gray-500"}
                   text-white
-                  ring-2 ring-blue-400
+                  ring-2 ring-[var(--ds-calendar-event)]
                 `}
               >
                 {format(activeEvent.start, "HH:mm")} {activeEvent.title}
@@ -1050,10 +1058,10 @@ export function UnifiedCalendar({
                   <span
                     className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
                       e.type === "event"
-                        ? "bg-blue-100 text-blue-700"
+                        ? "bg-[var(--ds-calendar-event-light)] text-blue-700"
                         : e.type === "shift"
-                          ? "bg-green-100 text-green-700"
-                          : "bg-amber-100 text-amber-700"
+                          ? "bg-[var(--ds-calendar-shift-light)] text-green-700"
+                          : "bg-[var(--ds-calendar-timeoff-light)] text-amber-700"
                     }`}
                   >
                     {e.type === "timeoff" ? "Time off" : e.type}

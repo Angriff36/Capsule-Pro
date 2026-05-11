@@ -5,7 +5,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 const push = vi.fn();
 
 vi.mock("next/navigation", () => ({
-  useRouter: () => ({ push }),
+  useRouter: () => ({ push, replace: vi.fn() }),
+  useSearchParams: () => new URLSearchParams(),
 }));
 
 vi.mock("@dnd-kit/core", () => ({
@@ -22,6 +23,7 @@ vi.mock("@dnd-kit/core", () => ({
     isOver: false,
   }),
   PointerSensor: class {},
+  TouchSensor: class {},
   useSensor: () => ({}),
   useSensors: () => [],
 }));
@@ -31,6 +33,35 @@ vi.mock("sonner", () => ({
     success: vi.fn(),
     error: vi.fn(),
   },
+}));
+
+vi.mock("@repo/observability/log", () => ({
+  log: {
+    error: vi.fn(),
+    info: vi.fn(),
+    warn: vi.fn(),
+  },
+}));
+
+vi.mock("@repo/design-system/components/blocks/blog-filter-chip", () => ({
+  BlogFilterChip: ({
+    children,
+    onSelect,
+    selected,
+  }: {
+    children: React.ReactNode;
+    onSelect?: () => void;
+    selected?: boolean;
+  }) => (
+    <button
+      type="button"
+      onClick={onSelect}
+      aria-pressed={selected}
+      data-testid={`chip-${String(children).toLowerCase()}`}
+    >
+      {children}
+    </button>
+  ),
 }));
 
 import { UnifiedCalendar } from "../../app/(authenticated)/calendar/components/unified-calendar";
@@ -95,15 +126,11 @@ describe("UnifiedCalendar", () => {
     render(<UnifiedCalendar initialEvents={[]} tenantId="tenant-1" />);
 
     expect(screen.getAllByText("Sun").length).toBeGreaterThan(0);
-    const [dayTab] = screen.getAllByRole("tab", { name: "Day" });
-    expect(dayTab).toBeDefined();
-    if (!dayTab) {
-      throw new Error("Expected Day tab to be rendered");
-    }
+    const dayButton = screen.getByRole("button", { name: "Day" });
+    expect(dayButton).toBeDefined();
 
-    await user.click(dayTab);
+    await user.click(dayButton);
 
-    expect(dayTab.getAttribute("aria-selected")).toBe("true");
     expect(screen.queryAllByText("Sun")).toHaveLength(0);
     expect(
       screen.getByText(/^[A-Za-z]+, [A-Za-z]+ \d{1,2}, \d{4}$/)

@@ -1,6 +1,6 @@
 # Implementation Plan — Capsule Pro
 
-> Updated 2026-05-11 (v51) — RESOLVED P1.E/partial (calendar API filters FR-402), P1.BT/partial (notification center + email tabs), P1.D/vendor_catalogs RLS bug fix. Collaboration orphaned routes 16→8. Corrected stale P1.BA-BC (resolved), P1.W/preptaskplanworkflow (resolved v34), P1.BZ (DEFERRED), collaboration orphan count (11/25).
+> Updated 2026-05-11 (v52) — RESOLVED P1.AM/partial (manifest-IR generator role field), P1.E/partial (calendar spec compliance: tokenized colors FR-103, BlogFilterChip FR-104, TouchSensor FR-702, pastel cleanup FR-202, console cleanup).
 
 > Priority: P0 = broken/non-functional, P1 = significant missing features, P2 = design alignment/polish, P3 = future/speculative.
 > Status: [ ] not started, [~] partial, [x] done.
@@ -274,8 +274,14 @@ STATUS.md lists 40+ nonexistent files. Backend: 39 routes, 1,453-line agent-loop
 28 DONE, 19 PARTIAL, 21 MISSING, 5 VIOLATED out of ~73 requirements.
 
 - [ ] PageShell violations, all-day time prefix, overflow limit 4 (spec: 8), DST missing
-- [ ] URL query params, mobile responsive, TouchSensor, cross-day rendering all MISSING
-- [ ] Reschedule API has NO validation; time-off not filtered by approved; token stored plaintext
+- [x] ~~URL query params, TouchSensor, cross-day rendering all MISSING~~ RESOLVED (v51/v52): URL params synced, cross-day shifts, TouchSensor with 350ms delay
+- [ ] Mobile responsive layout missing (FR-701)
+- [x] ~~Tokenized color classes for entry pills~~ RESOLVED (v52): CSS custom properties --ds-calendar-event/shift/timeoff
+- [x] ~~BlogFilterChip for view toggle~~ RESOLVED (v52): replaced shadcn Tabs with BlogFilterChip (FR-104)
+- [x] ~~Decorative pastels bg-*-100/50~~ RESOLVED (v52): replaced with CSS custom property light variants
+- [x] ~~Console.error in calendar files~~ RESOLVED (v52): replaced with @repo/observability/log
+- [ ] Reschedule API has NO optimistic concurrency (FR-502); direct DB updates not manifest commands (FR-504)
+- [ ] Token stored plaintext
 
 ### P1.F Contracts — Missing Features
 
@@ -410,7 +416,8 @@ STATUS.md lists 40+ nonexistent files. Backend: 39 routes, 1,453-line agent-loop
 - [x] ~~**Followup**: wire `requireApiManager` into accounting `/payments/[id]` PUT/POST + `/invoices/[id]` PUT/PATCH/POST/DELETE~~ RESOLVED (v46): manager-tier guard applied to all 6 write handlers in those two routes. 5 existing accounting tests gained an `@/app/lib/auth-roles` mock so they remain regression coverage for the underlying business logic. New `apps/api/__tests__/accounting/role-guards.test.ts` (6 cases) asserts each handler short-circuits to 401/403 and never reaches `database.*`, `checkRateLimit`, or the gateway when the guard fails. API suite: 4091 passing / 1 skipped.
 - [ ] **Followup remaining**: `accounting/chart-of-accounts/[id]` (auto-generated, needs IR generator support — see next item), `administrative/chat/threads/[threadId]` PATCH (likely stays at session-only — user-self mgmt), `payroll/approvals/route.ts` POST (goes through manifest runtime — gate at manifest policy instead).
 - [x] ~~**Payroll approvals GET no role gate**~~ RESOLVED (v49): added `requireApiManager()` to GET handler in `apps/api/app/api/payroll/approvals/route.ts`. Previously any authenticated user could see all payroll approval data. Now manager-tier is required, matching the pattern in the [approvalId] PUT route.
-- [ ] **Followup**: extend manifest-IR Next.js generator (`packages/manifest-runtime/src/manifest/projections/nextjs/generator.ts`) to accept a `requireRole` manifest field and emit role-check code after tenantId resolution. Currently generates session-only auth body — affects auto-generated routes like `chart-of-accounts/[id]`, `rate-limits/[id]`.
+- [x] ~~**Followup**: extend manifest-IR Next.js generator to pass user.role to runtime context~~ RESOLVED (v52): generator now emits `database.user.findFirst` lookup after tenant resolution and passes `{ id, tenantId, role }` to `createManifestRuntime`. All generated command routes now have role available for RBAC policy evaluation. Test: new `resolves user role for RBAC policy evaluation` test in generator.test.ts.
+- [ ] **Followup remaining**: `accounting/chart-of-accounts/[id]` (auto-generated, needs rebuild to pick up generator change), `administrative/chat/threads/[threadId]` PATCH (likely stays at session-only — user-self mgmt), `payroll/approvals/route.ts` POST (goes through manifest runtime — gate at manifest policy instead).
 
 ### P1.AL Web SEO Branding Wrong — RESOLVED
 
@@ -660,3 +667,4 @@ Historical pass logs, audit reports, and blocker notes live in:
 | **v44** | **Web SEO branding.** RESOLVED P1.AL: `packages/seo/metadata.ts` rebranded from next-forge/Vercel → Capsule Pro (applicationName, authors, creator, publisher, twitter, openGraph siteName). Propagates to all `apps/web` pages via `createMetadata()`. Split P1.AL/AM section so AM (Session Auth role check) remains open. |
 | **v43** | **Lead source enum + duplicate detection.** RESOLVED P1.BV: closed enum `website|manual|import` enforced at manifest (constraint + create guard), server action (rejects unknown, defaults to `manual`), and UI form (drops free-text select). Duplicate email detection added — `createLead` returns `{ possibleDuplicate, duplicateReason }`; list page batches Client/Lead email lookups and renders `MonoLabel "POSSIBLE DUPLICATE"` per FR-129. Test: 7 cases in `leads-create-action.test.ts`. |
 | **v42** | **Workforce Optimization UI.** RESOLVED P1.J/workforceoptimization: created /scheduling/optimization page client with three tabs over the existing 998-line `workforce-ai-optimizer` service. Analytics tab auto-loads from GET /api/staff/workforce-analytics (period selector + optional location filter) and renders 4-metric overview, trend badges, turnover risk list, top performers, and skill gaps. Schedule Optimizer tab POSTs to /api/staff/optimize-schedule with constraints (max labor cost, max hours, min skill coverage, allow OT) and renders recommended assignments with confidence/cost/risk factors. Performance Prediction tab POSTs to /api/staff/predict-performance with selectable metric set. Added sidebar entry under Scheduling. Also fixed pre-existing app typecheck error (`events/[eventId]/page.tsx` was passing `hasBudget` to `EventDetailsClient` which expects `budget`; reverted to `budget={null}` matching prior contract). |
+| **v52** | **Manifest-IR generator role field + Calendar spec compliance (P1.AM/P1.E).** RESOLVED P1.AM: generator now emits `database.user.findFirst({ where: { AND: [{ tenantId }, { authUserId: userId }] } })` after tenant resolution and passes `{ id, tenantId, role }` to `createManifestRuntime`. All auto-generated command routes now have `user.role` populated for RBAC policy evaluation — eliminates the factory's `resolveUserRole` fallback DB query. New test: `resolves user role for RBAC policy evaluation` in generator.test.ts. RESOLVED P1.E partial: calendar entry pills use tokenized CSS custom properties `--ds-calendar-event/shift/timeoff` (FR-103); view toggle uses BlogFilterChip instead of shadcn Tabs (FR-104); TouchSensor added with 350ms activation delay (FR-702); all `bg-*-100/50` pastels replaced with CSS custom property light variants (FR-202); all `console.error` in calendar files replaced with `@repo/observability/log`. Calendar tests updated for new component mocks. Files: generator.ts, generator.test.ts, unified-calendar.tsx, calendar-view-switcher.tsx, sync/page.tsx, unified-calendar.test.tsx, globals.css. API suite: 4100 passing / 1 skipped. Manifest-runtime suite: 739 passing. App suite: 265 passing. |

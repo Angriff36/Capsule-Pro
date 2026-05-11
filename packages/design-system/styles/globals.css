@@ -33,6 +33,14 @@
   --ds-severity-medium: #eab308; /* alert medium/info border */
   --ds-severity-low: #3b82f6; /* alert low/default border */
 
+  /* Calendar entry pills — tokenized per FR-103 */
+  --ds-calendar-event: #3b82f6;
+  --ds-calendar-event-light: #dbeafe;
+  --ds-calendar-shift: #10b981;
+  --ds-calendar-shift-light: #d1fae5;
+  --ds-calendar-timeoff: #f59e0b;
+  --ds-calendar-timeoff-light: #fef3c7;
+
   /* Backward-compat brand aliases (do not remove — many components reference these) */
   --brand-charcoal: var(--ds-primary);
   --brand-almost-white: var(--ds-canvas);

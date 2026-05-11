@@ -620,17 +620,14 @@ export class NextJsProjection implements ProjectionTarget {
       )
     );
     lines.push(generateImport("{ createManifestRuntime }", runtimeImportPath));
-    if (options.includeTenantFilter) {
-      if (options.tenantProvider) {
-        lines.push(
-          generateImport(
-            `{ ${options.tenantProvider.functionName} }`,
-            options.tenantProvider.importPath
-          )
-        );
-      } else {
-        lines.push(generateImport("{ database }", options.databaseImportPath));
-      }
+    lines.push(generateImport("{ database }", options.databaseImportPath));
+    if (options.includeTenantFilter && options.tenantProvider) {
+      lines.push(
+        generateImport(
+          `{ ${options.tenantProvider.functionName} }`,
+          options.tenantProvider.importPath
+        )
+      );
     }
     const authImport = generateAuthImport(options);
     if (authImport) {
@@ -646,11 +643,19 @@ export class NextJsProjection implements ProjectionTarget {
     if (tenantLookup) {
       lines.push(tenantLookup);
     }
+    if (options.includeTenantFilter) {
+      lines.push("");
+      lines.push("    // Resolve internal user for RBAC policy evaluation");
+      lines.push("    const _resolvedUser = await database.user.findFirst({");
+      lines.push("      where: { AND: [{ tenantId }, { authUserId: userId }] },");
+      lines.push("      select: { id: true, role: true },");
+      lines.push("    });");
+    }
     lines.push("");
     lines.push("    const body = await request.json();");
     lines.push("");
     const tenantCtx = options.includeTenantFilter
-      ? `{ user: { id: userId, ${options.tenantIdProperty}: ${options.tenantIdProperty} } }`
+      ? `{ user: { id: _resolvedUser?.id ?? userId, ${options.tenantIdProperty}: ${options.tenantIdProperty}, role: _resolvedUser?.role } }`
       : `{ user: { id: userId, ${options.tenantIdProperty}: "__no_tenant__" } }`;
     lines.push(
       `    const runtime = await createManifestRuntime(${tenantCtx});`

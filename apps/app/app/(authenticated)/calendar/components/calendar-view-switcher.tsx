@@ -8,9 +8,9 @@ import type { CalendarEvent } from "../page";
 import { UnifiedCalendar } from "./unified-calendar";
 
 const TYPE_COLORS: Record<string, string> = {
-  event: "bg-blue-100 text-blue-700",
-  shift: "bg-green-100 text-green-700",
-  timeoff: "bg-amber-100 text-amber-700",
+  event: "bg-[var(--ds-calendar-event-light)] text-blue-700",
+  shift: "bg-[var(--ds-calendar-shift-light)] text-green-700",
+  timeoff: "bg-[var(--ds-calendar-timeoff-light)] text-amber-700",
 };
 
 function formatMono(d: Date): string {
@@ -50,7 +50,7 @@ export function CalendarViewSwitcher({
       href: getDetailUrl(event),
       pills: (
         <span
-          className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${TYPE_COLORS[event.type] ?? "bg-slate-100 text-slate-600"}`}
+          className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${TYPE_COLORS[event.type] ?? "bg-muted text-muted-foreground"}`}
         >
           {event.type === "timeoff" ? "Time off" : event.type}
         </span>
