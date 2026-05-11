@@ -10,6 +10,16 @@ import {
   CardTitle,
 } from "@repo/design-system/components/ui/card";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@repo/design-system/components/ui/dialog";
+import { Input } from "@repo/design-system/components/ui/input";
+import { Label } from "@repo/design-system/components/ui/label";
+import {
   Tabs,
   TabsContent,
   TabsList,
@@ -21,6 +31,7 @@ import {
   Bell,
   Bluetooth,
   Calendar,
+  Info,
   Plus,
   Radio,
   Thermometer,
@@ -28,6 +39,7 @@ import {
   Wrench,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
 
 interface TemperatureProbe {
@@ -102,6 +114,36 @@ export function IoTPageClient() {
   const [loading, setLoading] = useState(true);
   const [selectedProbe, setSelectedProbe] = useState<string | null>(null);
 
+  // Register probe dialog
+  const [registerDialogOpen, setRegisterDialogOpen] = useState(false);
+  const [registerForm, setRegisterForm] = useState({
+    name: "",
+    probeId: "",
+    probeType: "bluetooth",
+    locationId: "",
+    minTemp: "-40",
+    maxTemp: "300",
+  });
+  const [registerSubmitting, setRegisterSubmitting] = useState(false);
+
+  // Log reading dialog
+  const [readingDialogOpen, setReadingDialogOpen] = useState(false);
+  const [readingProbeId, setReadingProbeId] = useState<string | null>(null);
+  const [readingForm, setReadingForm] = useState({ temperature: "" });
+  const [readingSubmitting, setReadingSubmitting] = useState(false);
+
+  // Probe details dialog
+  const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
+  const [detailsProbe, setDetailsProbe] = useState<TemperatureProbe | null>(
+    null
+  );
+
+  // Resolve alert dialog
+  const [resolveDialogOpen, setResolveDialogOpen] = useState(false);
+  const [resolveAlertId, setResolveAlertId] = useState<string | null>(null);
+  const [resolutionNotes, setResolutionNotes] = useState("");
+  const [resolveSubmitting, setResolveSubmitting] = useState(false);
+
   useEffect(() => {
     Promise.all([fetchProbes(), fetchAlerts()]);
   }, []);
@@ -138,6 +180,154 @@ export function IoTPageClient() {
     } catch (error) {
       console.error("Error fetching alerts:", error);
     }
+  }
+
+  async function handleRegisterProbe() {
+    if (!registerForm.name.trim() || !registerForm.probeId.trim()) {
+      toast.error("Name and Probe ID are required");
+      return;
+    }
+    setRegisterSubmitting(true);
+    try {
+      const res = await apiFetch("/api/kitchen/iot/probes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: registerForm.name,
+          probeId: registerForm.probeId,
+          probeType: registerForm.probeType,
+          locationId: registerForm.locationId || undefined,
+          minTemp: Number(registerForm.minTemp),
+          maxTemp: Number(registerForm.maxTemp),
+        }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Failed to register probe");
+      }
+      toast.success("Probe registered successfully");
+      setRegisterDialogOpen(false);
+      setRegisterForm({
+        name: "",
+        probeId: "",
+        probeType: "bluetooth",
+        locationId: "",
+        minTemp: "-40",
+        maxTemp: "300",
+      });
+      await fetchProbes();
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to register probe"
+      );
+    } finally {
+      setRegisterSubmitting(false);
+    }
+  }
+
+  async function handleLogReading() {
+    if (!readingProbeId || !readingForm.temperature) {
+      toast.error("Temperature is required");
+      return;
+    }
+    setReadingSubmitting(true);
+    try {
+      const res = await apiFetch("/api/kitchen/iot/readings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          probeId: readingProbeId,
+          temperature: Number(readingForm.temperature),
+        }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Failed to log reading");
+      }
+      toast.success("Reading logged successfully");
+      setReadingDialogOpen(false);
+      setReadingForm({ temperature: "" });
+      await Promise.all([
+        fetchProbes(),
+        selectedProbe === readingProbeId
+          ? fetchReadings(readingProbeId)
+          : Promise.resolve(),
+        fetchAlerts(),
+      ]);
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to log reading"
+      );
+    } finally {
+      setReadingSubmitting(false);
+    }
+  }
+
+  async function handleAcknowledgeAlert(alertId: string) {
+    try {
+      const res = await apiFetch(`/api/kitchen/iot/alerts/${alertId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "acknowledged" }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Failed to acknowledge alert");
+      }
+      toast.success("Alert acknowledged");
+      await fetchAlerts();
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to acknowledge alert"
+      );
+    }
+  }
+
+  async function handleResolveAlert() {
+    if (!resolveAlertId) return;
+    setResolveSubmitting(true);
+    try {
+      const res = await apiFetch(`/api/kitchen/iot/alerts/${resolveAlertId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          status: "resolved",
+          resolutionNotes: resolutionNotes || undefined,
+        }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Failed to resolve alert");
+      }
+      toast.success("Alert resolved");
+      setResolveDialogOpen(false);
+      setResolutionNotes("");
+      setResolveAlertId(null);
+      await fetchAlerts();
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to resolve alert"
+      );
+    } finally {
+      setResolveSubmitting(false);
+    }
+  }
+
+  function openLogReadingDialog(probeId: string) {
+    setReadingProbeId(probeId);
+    setReadingForm({ temperature: "" });
+    setReadingDialogOpen(true);
+  }
+
+  function openDetailsDialog(probe: TemperatureProbe) {
+    setDetailsProbe(probe);
+    setDetailsDialogOpen(true);
+  }
+
+  function openResolveDialog(alertId: string) {
+    setResolveAlertId(alertId);
+    setResolutionNotes("");
+    setResolveDialogOpen(true);
   }
 
   function formatDate(date: Date | string | null): string {
@@ -195,9 +385,12 @@ export function IoTPageClient() {
             Real-time temperature monitoring and probe management
           </p>
         </div>
-        <Button disabled type="button">
+        <Button
+          type="button"
+          onClick={() => setRegisterDialogOpen(true)}
+        >
           <Plus className="mr-2 h-4 w-4" />
-          Register probe — not implemented yet
+          Register probe
         </Button>
       </div>
 
@@ -417,20 +610,22 @@ export function IoTPageClient() {
                           onClick={(e) => e.stopPropagation()}
                         >
                           <Button
-                            disabled
                             size="sm"
                             type="button"
                             variant="outline"
+                            onClick={() => openLogReadingDialog(probe.id)}
                           >
-                            Log reading — not implemented
+                            <Thermometer className="mr-1 h-3 w-3" />
+                            Log reading
                           </Button>
                           <Button
-                            disabled
                             size="sm"
                             type="button"
                             variant="ghost"
+                            onClick={() => openDetailsDialog(probe)}
                           >
-                            Details — not implemented
+                            <Info className="mr-1 h-3 w-3" />
+                            Details
                           </Button>
                         </div>
                       </div>
@@ -517,11 +712,21 @@ export function IoTPageClient() {
                           </div>
                         </div>
                         <div className="flex gap-2">
-                          <Button disabled size="sm" variant="outline">
-                            Acknowledge — not implemented
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            type="button"
+                            onClick={() => handleAcknowledgeAlert(alert.id)}
+                          >
+                            Acknowledge
                           </Button>
-                          <Button disabled size="sm" variant="ghost">
-                            Resolve — not implemented
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            type="button"
+                            onClick={() => openResolveDialog(alert.id)}
+                          >
+                            Resolve
                           </Button>
                         </div>
                       </div>
@@ -576,6 +781,321 @@ export function IoTPageClient() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Register Probe Dialog */}
+      <Dialog open={registerDialogOpen} onOpenChange={setRegisterDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Register New Probe</DialogTitle>
+            <DialogDescription>
+              Add a new IoT temperature probe to the system.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="probe-name">Name</Label>
+              <Input
+                id="probe-name"
+                placeholder="e.g. Walk-in Freezer 1"
+                value={registerForm.name}
+                onChange={(e) =>
+                  setRegisterForm((f) => ({ ...f, name: e.target.value }))
+                }
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="probe-id">Hardware Probe ID</Label>
+              <Input
+                id="probe-id"
+                placeholder="e.g. BT-SENSOR-001"
+                value={registerForm.probeId}
+                onChange={(e) =>
+                  setRegisterForm((f) => ({ ...f, probeId: e.target.value }))
+                }
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="probe-type">Type</Label>
+              <select
+                id="probe-type"
+                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                value={registerForm.probeType}
+                onChange={(e) =>
+                  setRegisterForm((f) => ({ ...f, probeType: e.target.value }))
+                }
+              >
+                <option value="bluetooth">Bluetooth</option>
+                <option value="wifi">Wi-Fi</option>
+                <option value="wired">Wired</option>
+              </select>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="probe-location">Location ID (optional)</Label>
+              <Input
+                id="probe-location"
+                placeholder="UUID of location"
+                value={registerForm.locationId}
+                onChange={(e) =>
+                  setRegisterForm((f) => ({
+                    ...f,
+                    locationId: e.target.value,
+                  }))
+                }
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="probe-min-temp">Min Temp (°F)</Label>
+                <Input
+                  id="probe-min-temp"
+                  type="number"
+                  value={registerForm.minTemp}
+                  onChange={(e) =>
+                    setRegisterForm((f) => ({ ...f, minTemp: e.target.value }))
+                  }
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="probe-max-temp">Max Temp (°F)</Label>
+                <Input
+                  id="probe-max-temp"
+                  type="number"
+                  value={registerForm.maxTemp}
+                  onChange={(e) =>
+                    setRegisterForm((f) => ({ ...f, maxTemp: e.target.value }))
+                  }
+                />
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              type="button"
+              onClick={() => setRegisterDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              disabled={registerSubmitting}
+              onClick={handleRegisterProbe}
+            >
+              {registerSubmitting ? "Registering..." : "Register Probe"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Log Reading Dialog */}
+      <Dialog open={readingDialogOpen} onOpenChange={setReadingDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Log Temperature Reading</DialogTitle>
+            <DialogDescription>
+              Manually record a temperature reading for this probe.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="reading-temp">Temperature (°F)</Label>
+              <Input
+                id="reading-temp"
+                type="number"
+                step="0.1"
+                placeholder="e.g. 36.5"
+                value={readingForm.temperature}
+                onChange={(e) =>
+                  setReadingForm({ temperature: e.target.value })
+                }
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              type="button"
+              onClick={() => setReadingDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              disabled={readingSubmitting}
+              onClick={handleLogReading}
+            >
+              {readingSubmitting ? "Logging..." : "Log Reading"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Probe Details Dialog */}
+      <Dialog open={detailsDialogOpen} onOpenChange={setDetailsDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Probe Details</DialogTitle>
+            <DialogDescription>
+              {detailsProbe?.name ?? "Probe information"}
+            </DialogDescription>
+          </DialogHeader>
+          {detailsProbe && (
+            <div className="grid gap-3 py-4 text-sm">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Name</span>
+                <span className="font-medium">{detailsProbe.name}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Hardware ID</span>
+                <span className="font-medium">{detailsProbe.probeId}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Type</span>
+                <span className="font-medium">{detailsProbe.probeType}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Status</span>
+                <Badge
+                  className={
+                    statusColors[
+                      detailsProbe.status as keyof typeof statusColors
+                    ]
+                  }
+                >
+                  {detailsProbe.status.replace(/_/g, " ")}
+                </Badge>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Safe Range</span>
+                <span className="font-medium">
+                  {detailsProbe.minTemp}°F - {detailsProbe.maxTemp}°F
+                </span>
+              </div>
+              {detailsProbe.lastReading !== null && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Last Reading</span>
+                  <span
+                    className={`font-medium ${getTemperatureColor(
+                      detailsProbe.lastReading,
+                      detailsProbe.minTemp,
+                      detailsProbe.maxTemp
+                    )}`}
+                  >
+                    {detailsProbe.lastReading.toFixed(1)}°F
+                  </span>
+                </div>
+              )}
+              {detailsProbe.lastReadingAt && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Last Reading At</span>
+                  <span className="font-medium">
+                    {formatDateTime(detailsProbe.lastReadingAt)}
+                  </span>
+                </div>
+              )}
+              {detailsProbe.batteryLevel !== null && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Battery</span>
+                  <span
+                    className={`font-medium ${getBatteryColor(detailsProbe.batteryLevel)}`}
+                  >
+                    {detailsProbe.batteryLevel}%
+                  </span>
+                </div>
+              )}
+              {detailsProbe.lastCalibration && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Last Calibration</span>
+                  <span className="font-medium">
+                    {formatDate(detailsProbe.lastCalibration)}
+                  </span>
+                </div>
+              )}
+              {detailsProbe.nextCalibration && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Next Calibration</span>
+                  <span
+                    className={
+                      new Date(detailsProbe.nextCalibration) <= new Date()
+                        ? "text-orange-500 font-medium"
+                        : "font-medium"
+                    }
+                  >
+                    {formatDate(detailsProbe.nextCalibration)}
+                  </span>
+                </div>
+              )}
+              {detailsProbe.calibrationIntervalDays && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">
+                    Calibration Interval
+                  </span>
+                  <span className="font-medium">
+                    {detailsProbe.calibrationIntervalDays} days
+                  </span>
+                </div>
+              )}
+              {detailsProbe.locationId && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Location ID</span>
+                  <span className="font-medium font-mono text-xs">
+                    {detailsProbe.locationId}
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setDetailsDialogOpen(false)}
+            >
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Resolve Alert Dialog */}
+      <Dialog open={resolveDialogOpen} onOpenChange={setResolveDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Resolve Alert</DialogTitle>
+            <DialogDescription>
+              Mark this alert as resolved. Optionally add resolution notes.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="resolution-notes">Resolution Notes (optional)</Label>
+              <textarea
+                id="resolution-notes"
+                className="flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                placeholder="Describe what action was taken..."
+                value={resolutionNotes}
+                onChange={(e) => setResolutionNotes(e.target.value)}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              type="button"
+              onClick={() => setResolveDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              disabled={resolveSubmitting}
+              onClick={handleResolveAlert}
+            >
+              {resolveSubmitting ? "Resolving..." : "Resolve Alert"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

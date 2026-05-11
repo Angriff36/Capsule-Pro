@@ -8,6 +8,16 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@repo/design-system/components/ui/dialog";
+import { Label } from "@repo/design-system/components/ui/label";
+import { Textarea } from "@repo/design-system/components/ui/textarea";
 import { ArrowLeft, DollarSign, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
@@ -62,6 +72,8 @@ export default function RequisitionDetailPage() {
   const [requisition, setRequisition] = useState<Requisition | null>(null);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState<string | null>(null);
+  const [reasonDialogOpen, setReasonDialogOpen] = useState(false);
+  const [reasonText, setReasonText] = useState("");
 
   useEffect(() => {
     loadRequisition();
@@ -84,17 +96,14 @@ export default function RequisitionDetailPage() {
 
   const handleAction = async (command: string) => {
     if (!requisition) return;
+    if (command === "reject") {
+      setReasonText("");
+      setReasonDialogOpen(true);
+      return;
+    }
     setUpdating(command);
     try {
       const body: Record<string, unknown> = { id: requisition.id };
-      if (command === "reject") {
-        const reason = prompt("Rejection reason:");
-        if (!reason) {
-          setUpdating(null);
-          return;
-        }
-        body.reason = reason;
-      }
       const res = await apiFetch(
         `/api/procurement/requisitions/commands/${command}`,
         {
@@ -109,6 +118,34 @@ export default function RequisitionDetailPage() {
       }
     } catch (error) {
       console.error(`Failed to execute ${command}:`, error);
+    } finally {
+      setUpdating(null);
+    }
+  };
+
+  const confirmReject = async () => {
+    if (!requisition || !reasonText.trim()) return;
+    setUpdating("reject");
+    setReasonDialogOpen(false);
+    try {
+      const body: Record<string, unknown> = {
+        id: requisition.id,
+        reason: reasonText.trim(),
+      };
+      const res = await apiFetch(
+        "/api/procurement/requisitions/commands/reject",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        }
+      );
+      const data = await res.json();
+      if (data.success) {
+        await loadRequisition();
+      }
+    } catch (error) {
+      console.error("Failed to execute reject:", error);
     } finally {
       setUpdating(null);
     }
@@ -303,6 +340,48 @@ export default function RequisitionDetailPage() {
           </CardContent>
         </Card>
       )}
+
+      {/* Rejection Reason Dialog */}
+      <Dialog
+        onOpenChange={(open) => {
+          if (!open) setReasonDialogOpen(false);
+        }}
+        open={reasonDialogOpen}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Reject Requisition</DialogTitle>
+            <DialogDescription>
+              Provide a reason for rejecting this requisition.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Label htmlFor="reason">Reason</Label>
+            <Textarea
+              id="reason"
+              onChange={(e) => setReasonText(e.target.value)}
+              placeholder="Enter rejection reason..."
+              rows={3}
+              value={reasonText}
+            />
+          </div>
+          <DialogFooter>
+            <Button
+              onClick={() => setReasonDialogOpen(false)}
+              variant="outline"
+            >
+              Cancel
+            </Button>
+            <Button
+              disabled={!reasonText.trim()}
+              onClick={confirmReject}
+              variant="destructive"
+            >
+              Reject
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

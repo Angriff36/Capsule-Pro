@@ -9,6 +9,16 @@ import {
   CardTitle,
 } from "@repo/design-system/components/ui/card";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@repo/design-system/components/ui/alert-dialog";
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -130,6 +140,11 @@ export default function AssetsPage() {
   const [editing, setEditing] = useState<Asset | null>(null);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [assetToDelete, setAssetToDelete] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
   const [form, setForm] = useState({
     name: "",
     assetType: "other",
@@ -282,11 +297,18 @@ export default function AssetsPage() {
         body: JSON.stringify({ assetId }),
       });
       setAssets((prev) => prev.filter((a) => a.id !== assetId));
+      setDeleteDialogOpen(false);
+      setAssetToDelete(null);
     } catch (e) {
       console.error("Failed to delete:", e);
     } finally {
       setDeleting(null);
     }
+  };
+
+  const confirmDelete = (asset: Asset) => {
+    setAssetToDelete({ id: asset.id, name: asset.name });
+    setDeleteDialogOpen(true);
   };
 
   const totalValue = assets
@@ -449,7 +471,7 @@ export default function AssetsPage() {
                         <Button
                           className="text-red-500 hover:text-red-700"
                           disabled={deleting === asset.id}
-                          onClick={() => handleDelete(asset.id)}
+                          onClick={() => confirmDelete(asset)}
                           size="sm"
                           variant="outline"
                         >
@@ -660,6 +682,43 @@ export default function AssetsPage() {
           </form>
         </DialogContent>
       </Dialog>
+
+      {/* Delete Confirmation */}
+      <AlertDialog
+        onOpenChange={(open) => {
+          setDeleteDialogOpen(open);
+          if (!open) setAssetToDelete(null);
+        }}
+        open={deleteDialogOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Asset</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete{" "}
+              <span className="font-semibold">
+                {assetToDelete?.name || "this asset"}
+              </span>
+              ? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-600 hover:bg-red-700"
+              disabled={deleting === assetToDelete?.id}
+              onClick={() => {
+                if (assetToDelete) handleDelete(assetToDelete.id);
+              }}
+            >
+              {deleting === assetToDelete?.id ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : null}
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

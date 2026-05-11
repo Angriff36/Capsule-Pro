@@ -8,6 +8,16 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@repo/design-system/components/ui/dialog";
+import { Label } from "@repo/design-system/components/ui/label";
+import { Textarea } from "@repo/design-system/components/ui/textarea";
 import { ArrowLeft, Loader2, Shield } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -68,6 +78,9 @@ export default function VendorContractDetailPage() {
   const [contract, setContract] = useState<VendorContract | null>(null);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState<string | null>(null);
+  const [reasonDialogOpen, setReasonDialogOpen] = useState(false);
+  const [reasonText, setReasonText] = useState("");
+  const [pendingCommand, setPendingCommand] = useState<string | null>(null);
 
   useEffect(() => {
     loadContract();
@@ -90,19 +103,15 @@ export default function VendorContractDetailPage() {
 
   const handleAction = async (command: string) => {
     if (!contract) return;
+    if (command === "reject" || command === "terminate") {
+      setPendingCommand(command);
+      setReasonText("");
+      setReasonDialogOpen(true);
+      return;
+    }
     setUpdating(command);
     try {
       const body: Record<string, unknown> = { id: contract.id };
-      if (command === "reject" || command === "terminate") {
-        const reason = prompt(
-          command === "reject" ? "Rejection reason:" : "Termination reason:"
-        );
-        if (!reason) {
-          setUpdating(null);
-          return;
-        }
-        body.reason = reason;
-      }
       const res = await apiFetch(
         `/api/procurement/vendor-contracts/commands/${command}`,
         {
@@ -119,6 +128,36 @@ export default function VendorContractDetailPage() {
       console.error(`Failed to execute ${command}:`, error);
     } finally {
       setUpdating(null);
+    }
+  };
+
+  const confirmReasonAction = async () => {
+    if (!contract || !pendingCommand || !reasonText.trim()) return;
+    const command = pendingCommand;
+    setUpdating(command);
+    setReasonDialogOpen(false);
+    try {
+      const body: Record<string, unknown> = {
+        id: contract.id,
+        reason: reasonText.trim(),
+      };
+      const res = await apiFetch(
+        `/api/procurement/vendor-contracts/commands/${command}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        }
+      );
+      const data = await res.json();
+      if (data.success) {
+        await loadContract();
+      }
+    } catch (error) {
+      console.error(`Failed to execute ${command}:`, error);
+    } finally {
+      setUpdating(null);
+      setPendingCommand(null);
     }
   };
 
@@ -333,6 +372,64 @@ export default function VendorContractDetailPage() {
           </CardContent>
         </Card>
       )}
+
+      {/* Reason Dialog */}
+      <Dialog
+        onOpenChange={(open) => {
+          if (!open) {
+            setReasonDialogOpen(false);
+            setPendingCommand(null);
+          }
+        }}
+        open={reasonDialogOpen}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {pendingCommand === "reject"
+                ? "Reject Contract"
+                : "Terminate Contract"}
+            </DialogTitle>
+            <DialogDescription>
+              {pendingCommand === "reject"
+                ? "Provide a reason for rejecting this contract."
+                : "Provide a reason for terminating this contract."}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Label htmlFor="reason">Reason</Label>
+            <Textarea
+              id="reason"
+              onChange={(e) => setReasonText(e.target.value)}
+              placeholder={
+                pendingCommand === "reject"
+                  ? "Enter rejection reason..."
+                  : "Enter termination reason..."
+              }
+              rows={3}
+              value={reasonText}
+            />
+          </div>
+          <DialogFooter>
+            <Button
+              onClick={() => {
+                setReasonDialogOpen(false);
+                setPendingCommand(null);
+              }}
+              variant="outline"
+            >
+              Cancel
+            </Button>
+            <Button
+              disabled={!reasonText.trim()}
+              onClick={confirmReasonAction}
+              variant="destructive"
+            >
+              {pendingCommand === "reject" ? "Reject" : "Terminate"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -1,5 +1,15 @@
 "use client";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@repo/design-system/components/ui/alert-dialog";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -101,6 +111,11 @@ export default function DriversPage() {
   const [editing, setEditing] = useState<Driver | null>(null);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [driverToDelete, setDriverToDelete] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
   const [form, setForm] = useState({
     name: "",
     phone: "",
@@ -207,6 +222,11 @@ export default function DriversPage() {
     }
   };
 
+  const confirmDelete = (driver: { id: string; name: string }) => {
+    setDriverToDelete(driver);
+    setDeleteDialogOpen(true);
+  };
+
   const handleDelete = async (driverId: string) => {
     setDeleting(driverId);
     try {
@@ -220,6 +240,8 @@ export default function DriversPage() {
       console.error("Failed to delete:", e);
     } finally {
       setDeleting(null);
+      setDeleteDialogOpen(false);
+      setDriverToDelete(null);
     }
   };
 
@@ -330,7 +352,12 @@ export default function DriversPage() {
                       <Button
                         className="text-red-500 hover:text-red-700"
                         disabled={deleting === driver.id}
-                        onClick={() => handleDelete(driver.id)}
+                        onClick={() =>
+                          confirmDelete({
+                            id: driver.id,
+                            name: driver.name || "this driver",
+                          })
+                        }
                         size="sm"
                         variant="outline"
                       >
@@ -484,6 +511,27 @@ export default function DriversPage() {
           </form>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Driver?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete &quot;{driverToDelete?.name}
+              &quot;? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => driverToDelete && handleDelete(driverToDelete.id)}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

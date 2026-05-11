@@ -184,8 +184,8 @@ export async function GET(request: NextRequest) {
       total: alerts.length,
       bySeverity: {
         critical: alerts.filter((a) => a.severity === "critical").length,
-        high: alerts.filter((a) => a.severity === "warning").length,
-        medium: alerts.filter((a) => a.severity === "info").length,
+        warning: alerts.filter((a) => a.severity === "warning").length,
+        info: alerts.filter((a) => a.severity === "info").length,
       },
     };
 

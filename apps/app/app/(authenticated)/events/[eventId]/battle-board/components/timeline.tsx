@@ -1,5 +1,15 @@
 "use client";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@repo/design-system/components/ui/alert-dialog";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import { addMinutes, differenceInMinutes, format } from "date-fns";
@@ -97,6 +107,8 @@ export function Timeline({
   const [_editingTaskId, setEditingTaskId] = useState<string | null>(null);
   const [_showStaffPanel, _setShowStaffPanel] = useState(true);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [taskToDelete, setTaskToDelete] = useState<string | null>(null);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -343,35 +355,44 @@ export function Timeline({
     [eventId]
   );
 
-  const handleDeleteTask = useCallback(
-    async (taskId: string) => {
-      if (!confirm("Are you sure you want to delete this task?")) {
-        return;
-      }
+  const requestDeleteTask = useCallback((taskId: string) => {
+    setTaskToDelete(taskId);
+    setDeleteDialogOpen(true);
+  }, []);
 
-      const taskToDelete = tasks.find((t) => t.id === taskId);
+  const confirmDeleteTask = useCallback(async () => {
+    if (!taskToDelete) {
+      return;
+    }
 
-      await deleteTimelineTask(taskId, eventId);
+    const deletedTask = tasks.find((t) => t.id === taskToDelete);
 
-      setTasks((prev) => prev.filter((t) => t.id !== taskId));
-      setSelectedTaskIds((prev) => prev.filter((id) => id !== taskId));
+    await deleteTimelineTask(taskToDelete, eventId);
 
-      if (taskToDelete) {
-        setUndoStack((prev) => [
-          {
-            id: `${Date.now()}`,
-            type: "delete",
-            previousState: taskToDelete,
-          },
-          ...prev,
-        ]);
-        setRedoStack([]);
-      }
+    setTasks((prev) => prev.filter((t) => t.id !== taskToDelete));
+    setSelectedTaskIds((prev) => prev.filter((id) => id !== taskToDelete));
 
-      toast.success("Task deleted");
-    },
-    [tasks, eventId]
-  );
+    if (deletedTask) {
+      setUndoStack((prev) => [
+        {
+          id: `${Date.now()}`,
+          type: "delete",
+          previousState: deletedTask,
+        },
+        ...prev,
+      ]);
+      setRedoStack([]);
+    }
+
+    toast.success("Task deleted");
+    setDeleteDialogOpen(false);
+    setTaskToDelete(null);
+  }, [tasks, eventId, taskToDelete]);
+
+  const cancelDeleteTask = useCallback(() => {
+    setDeleteDialogOpen(false);
+    setTaskToDelete(null);
+  }, []);
 
   const handleUndo = useCallback(() => {
     if (undoStack.length === 0) {
@@ -478,7 +499,7 @@ export function Timeline({
     (e: ReactKeyboardEvent) => {
       if (e.key === "Delete" && selectedTaskIds.length > 0) {
         for (const id of selectedTaskIds) {
-          handleDeleteTask(id);
+          requestDeleteTask(id);
         }
       }
 
@@ -495,7 +516,7 @@ export function Timeline({
         }
       }
     },
-    [selectedTaskIds, handleDeleteTask, handleUndo, handleRedo]
+    [selectedTaskIds, requestDeleteTask, handleUndo, handleRedo]
   );
 
   useEffect(() => {
@@ -938,6 +959,23 @@ export function Timeline({
         onTaskCreated={handleTaskCreated}
         staff={staff}
       />
+
+      <AlertDialog onOpenChange={(open) => { if (!open) cancelDeleteTask(); }} open={deleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Task</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this task? This action cannot be
+              undone from the server, though you can undo it locally before
+              leaving this view.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={cancelDeleteTask}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDeleteTask}>Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

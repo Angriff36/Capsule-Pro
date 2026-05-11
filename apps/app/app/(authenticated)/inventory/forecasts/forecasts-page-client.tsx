@@ -47,6 +47,7 @@ import {
   Search,
   TrendingDown,
 } from "lucide-react";
+import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import {
   Area,
@@ -899,12 +900,14 @@ export const ForecastsPageClient = () => {
                                   </div>
                                   <div className="mt-2 flex items-center gap-2">
                                     <Button
-                                      disabled
+                                      asChild
                                       size="sm"
                                       variant="destructive"
                                     >
-                                      <ArrowDown className="mr-1 size-3" />
-                                      Request Reorder · Coming soon
+                                      <Link href={`/procurement/purchase-orders/new?item=${encodeURIComponent(alert.sku)}`}>
+                                        <ArrowDown className="mr-1 size-3" />
+                                        Request Reorder
+                                      </Link>
                                     </Button>
                                   </div>
                                 </div>
@@ -958,12 +961,14 @@ export const ForecastsPageClient = () => {
                                   </div>
                                   <div className="mt-2 flex items-center gap-2">
                                     <Button
-                                      disabled
+                                      asChild
                                       size="sm"
                                       variant="outline"
                                     >
-                                      <ArrowRight className="mr-1 size-3" />
-                                      Request Reorder · Coming soon
+                                      <Link href={`/procurement/purchase-orders/new?item=${encodeURIComponent(alert.sku)}`}>
+                                        <ArrowRight className="mr-1 size-3" />
+                                        Request Reorder
+                                      </Link>
                                     </Button>
                                   </div>
                                 </div>
@@ -1043,8 +1048,10 @@ export const ForecastsPageClient = () => {
                             </span>
                           </div>
                         </div>
-                        <Button disabled size="sm" variant="outline">
-                          Create PO · Coming soon
+                        <Button asChild size="sm" variant="outline">
+                          <Link href={`/procurement/purchase-orders/new?item=${encodeURIComponent(suggestion.sku)}&qty=${suggestion.recommendedOrderQty}`}>
+                            Create PO
+                          </Link>
                         </Button>
                       </div>
                     ))}

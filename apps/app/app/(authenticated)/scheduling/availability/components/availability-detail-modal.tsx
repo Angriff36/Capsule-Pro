@@ -1,5 +1,15 @@
 "use client";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@repo/design-system/components/ui/alert-dialog";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
   Dialog,
@@ -49,12 +59,14 @@ export function AvailabilityDetailModal({
   availability,
 }: AvailabilityDetailModalProps) {
   const [loading, setLoading] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const handleDelete = async () => {
     if (!availability) {
       return;
     }
 
+    setDeleteDialogOpen(false);
     setLoading(true);
     try {
       await deleteAvailability(availability.id);
@@ -222,7 +234,7 @@ export function AvailabilityDetailModal({
           {availability && (
             <Button
               disabled={loading}
-              onClick={handleDelete}
+              onClick={() => setDeleteDialogOpen(true)}
               variant="destructive"
             >
               <TrashIcon className="h-4 w-4 mr-2" />
@@ -231,6 +243,25 @@ export function AvailabilityDetailModal({
           )}
         </DialogFooter>
       </DialogContent>
+
+      {/* Delete confirmation */}
+      <AlertDialog onOpenChange={setDeleteDialogOpen} open={deleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete availability</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently remove this availability entry. This action
+              cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction className="bg-destructive text-white hover:bg-destructive/90" onClick={handleDelete}>
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Dialog>
   );
 }

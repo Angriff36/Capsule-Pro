@@ -1,5 +1,15 @@
 "use client";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@repo/design-system/components/ui/alert-dialog";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -97,6 +107,11 @@ export default function VehiclesPage() {
   const [editing, setEditing] = useState<Vehicle | null>(null);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [vehicleToDelete, setVehicleToDelete] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
   const [form, setForm] = useState({
     make: "",
     model: "",
@@ -223,6 +238,11 @@ export default function VehiclesPage() {
     }
   };
 
+  const confirmDelete = (vehicle: { id: string; name: string }) => {
+    setVehicleToDelete(vehicle);
+    setDeleteDialogOpen(true);
+  };
+
   const handleDelete = async (vehicleId: string) => {
     setDeleting(vehicleId);
     try {
@@ -236,6 +256,8 @@ export default function VehiclesPage() {
       console.error("Failed to delete:", e);
     } finally {
       setDeleting(null);
+      setDeleteDialogOpen(false);
+      setVehicleToDelete(null);
     }
   };
 
@@ -371,7 +393,12 @@ export default function VehiclesPage() {
                       <Button
                         className="text-red-500 hover:text-red-700"
                         disabled={deleting === vehicle.id}
-                        onClick={() => handleDelete(vehicle.id)}
+                        onClick={() =>
+                          confirmDelete({
+                            id: vehicle.id,
+                            name: `${vehicle.year ? `${vehicle.year} ` : ""}${vehicle.make} ${vehicle.model}`,
+                          })
+                        }
                         size="sm"
                         variant="outline"
                       >
@@ -576,6 +603,29 @@ export default function VehiclesPage() {
           </form>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Vehicle?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete &quot;{vehicleToDelete?.name}
+              &quot;? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() =>
+                vehicleToDelete && handleDelete(vehicleToDelete.id)
+              }
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

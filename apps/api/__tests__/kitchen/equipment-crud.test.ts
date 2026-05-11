@@ -417,14 +417,14 @@ describe("Equipment API", () => {
         alerts: { alertType: string; severity: string }[];
         summary: {
           total: number;
-          bySeverity: { critical: number; high: number; medium: number };
+          bySeverity: { critical: number; warning: number; info: number };
         };
       };
       expect(json.success).toBe(true);
       expect(json.alerts).toHaveLength(1);
       expect(json.alerts[0].alertType).toBe("usage_warning");
       expect(json.alerts[0].severity).toBe("warning");
-      expect(json.summary.bySeverity.high).toBe(1);
+      expect(json.summary.bySeverity.warning).toBe(1);
     });
 
     it("detects critical usage at >= 90%", async () => {

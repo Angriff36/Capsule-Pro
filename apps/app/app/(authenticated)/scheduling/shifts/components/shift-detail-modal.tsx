@@ -1,5 +1,15 @@
 "use client";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@repo/design-system/components/ui/alert-dialog";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -55,16 +65,17 @@ export function ShiftDetailModal({
 }: ShiftDetailModalProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   if (!shift) {
     return null;
   }
 
-  const handleDelete = async () => {
-    if (!confirm("Are you sure you want to delete this shift?")) {
-      return;
-    }
+  const requestDelete = () => {
+    setDeleteDialogOpen(true);
+  };
 
+  const confirmDelete = async () => {
     setIsDeleting(true);
     try {
       await deleteShift(shift.id);
@@ -77,6 +88,7 @@ export function ShiftDetailModal({
       });
     } finally {
       setIsDeleting(false);
+      setDeleteDialogOpen(false);
     }
   };
 
@@ -231,7 +243,7 @@ export function ShiftDetailModal({
             </Button>
             <Button
               disabled={isDeleting}
-              onClick={handleDelete}
+              onClick={requestDelete}
               variant="destructive"
             >
               {isDeleting && (
@@ -242,6 +254,22 @@ export function ShiftDetailModal({
             </Button>
           </div>
         </div>
+
+        <AlertDialog onOpenChange={(open) => { if (!open) setDeleteDialogOpen(false); }} open={deleteDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete Shift</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to delete this shift? This action cannot be
+                undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={confirmDelete}>Delete</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </DialogContent>
     </Dialog>
   );

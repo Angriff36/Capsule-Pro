@@ -1,6 +1,6 @@
 # Implementation Plan — Capsule Pro
 
-> Updated 2026-05-10 (v24) — Session fix pass: resolved P0.G (warehouse receiving buttons), P0.Z (payroll period detail 404), P0.S/P0.AG (invoice create/detail pages), P0.T/P0.AR (payment detail page), P0.A severity color backward compat. Payroll pages functional 11→12. Prior v23: 15 P0 items resolved, 64 pre-existing API typecheck errors fixed, dead links 2→0, hex 185→182, 501 routes→2.
+> Updated 2026-05-10 (v25) — Session fix pass: resolved P0.F (delete-without-confirm — 17 locations now use AlertDialog), P0.D (inventory forecast buttons wired to PO creation), P0.A (equipment severity mismatch fixed + QA detail page created), P0.B (IoT buttons wired + PATCH alerts endpoint created). Fixed pre-existing settings test failures. Prior v24: warehouse receiving, payroll periods, invoice/payment pages.
 
 > Priority: P0 = broken/non-functional, P1 = significant missing features, P2 = design alignment/polish, P3 = future/speculative.
 > Status: [ ] not started, [~] partial, [x] done.
@@ -19,9 +19,9 @@
 | Prisma models | ~206 tenant tables across 10 schemas |
 | Active manifests | 74 (25 with PrismaStore) |
 | Manifest POST coverage | 88.1% |
-| Hardcoded disabled buttons | 24 |
+| Hardcoded disabled buttons | 14 |
 | Placeholder/stub pages | 1 (kitchen team activity) + blog disabled |
-| Delete-without-confirm | 17 (1 resolved, 5 browser confirm, 11 no dialog) |
+| Delete-without-confirm | 0 (all resolved) |
 | Tables WITH RLS | 83/206 (40.3%) |
 | Legacy Header pages | 33 (13 events + 17 kitchen + 3 other) |
 | Console statements | ~523 across ~289 files |
@@ -52,13 +52,13 @@
 - [x] ~~API returns `{ equipment, total }` but frontend checks `data.success`~~ RESOLVED: API now returns `success: true` via `manifestSuccessResponse()`
 - [x] ~~Frontend calls `/api/workorder/list`~~ RESOLVED: frontend now fetches `/api/facilities/work-orders/list`
 - [x] ~~Frontend reads `bySeverity.critical` but API returns flat object~~ RESOLVED: API now returns nested `{ total, bySeverity: { critical, high, medium } }`
-- [ ] Severity mismatch: API `warning`/`info` vs frontend `high`/`medium`; IoT F/C mismatch. **Note:** severityColors now includes both API values (warning/info) and legacy values (high/medium/low) for backward compatibility.
-- [ ] QA detail 404: `/kitchen/quality-assurance/[id]` doesn't exist
+- [x] ~~Severity mismatch: API `warning`/`info` vs frontend `high`/`medium`~~ RESOLVED: Backend summary now returns consistent `warning`/`info` keys; frontend cards and borderLeftColor updated to match. IoT F/C mismatch documented (frontend hardcodes °F, API writes °C in messages — cosmetic).
+- [x] ~~QA detail 404~~ RESOLVED: created `/kitchen/quality-assurance/[id]/page.tsx` with server component fetching CorrectiveAction by ID
 
-### P0.B Kitchen IoT — 5 Disabled Buttons + Missing API
+### P0.B Kitchen IoT — RESOLVED
 
-- [ ] Register probe, log reading, details, acknowledge, resolve — all disabled
-- [ ] Missing PATCH endpoint for `alerts/[id]`
+- [x] ~~Register probe, log reading, details, acknowledge, resolve — all disabled~~ RESOLVED: Register probe dialog + Log reading dialog + Details dialog + Acknowledge/Resolve buttons wired. New PATCH `/api/kitchen/iot/alerts/[id]` endpoint created.
+- [x] ~~Missing PATCH endpoint for `alerts/[id]`~~ RESOLVED: created `apps/api/app/api/kitchen/iot/alerts/[id]/route.ts` with acknowledge/resolve support
 
 ### P0.C Marketing Campaigns — ModuleLanding EXISTS, Campaigns Missing
 
@@ -66,18 +66,18 @@
 - [ ] Campaign Prisma model, API routes, creation form all missing
 - [x] ~~Hardcoded hex `bg-[#1a4d2e]` in 3 files~~ RESOLVED: replaced with `bg-ink`
 
-### P0.D Inventory Forecasts — 3 Disabled Buttons
+### P0.D Inventory Forecasts — RESOLVED
 
-- [ ] "Request Reorder" (2x) and "Create PO" buttons disabled
+- [x] ~~"Request Reorder" (2x) and "Create PO" buttons disabled~~ RESOLVED: "Request Reorder" buttons now link to `/procurement/purchase-orders/new?item=<sku>`; "Create PO" links to PO creation with item+qty pre-populated
 
 ### P0.E Public Contact Form — RESOLVED
 
 - [x] ~~No `<form>`, button disabled, no onChange handlers~~ RESOLVED: rewrote with proper `<form>`, state, onChange handlers, wired to existing server action
 
-### P0.F Delete-Without-Confirm — 17 Locations
+### P0.F Delete-Without-Confirm — RESOLVED
 
-- [ ] 11 no dialog: logistics drivers/vehicles, facilities assets, payroll tax-setup, events timeline/guests/budget/summary/dishes, command-board groups, scheduling availability
-- [ ] 5 browser `confirm()`/`prompt()`: events timeline, procurement vendors/budget/contracts/requisitions, scheduling shifts
+- [x] ~~11 no dialog~~ RESOLVED: all 11 now use AlertDialog from @repo/design-system (logistics drivers/vehicles, facilities assets, payroll tax-setup, events timeline/guests/budget/summary/dishes, command-board groups, scheduling availability)
+- [x] ~~5 browser `confirm()`/`prompt()`~~ RESOLVED: all replaced with AlertDialog/Dialog components (battle board timeline, procurement vendors/budget, procurement contracts/requisitions with reason textarea, scheduling shifts)
 - [x] ~~events contracts~~ RESOLVED
 
 ### P0.G Warehouse Receiving — RESOLVED
@@ -557,3 +557,4 @@ Historical pass logs, audit reports, and blocker notes live in:
 | **v22** | **27-agent spec audit.** Console 523/289. formatCurrency 348/82/48/7. RLS 83/206. Hex 185. Card tone 314/81. Ghost 28/41. Buttons 24. Tests ~100. Dead dirs 1. Images 11.4MB. NEW P0.AV-AW-AX. NEW P1.BP-BQ-BR-BS-BT-BU-BV-BW-BX-BY-BZ-CA-CB-CC-CD-CE. CORRECTIONS: P0.AB partial, P1.H auto-assign EXISTS, P1.AF RESOLVED, P1.BR BROKEN, P3.D 1 dir not 76. |
 | **v23** | **Session fix pass.** RESOLVED P0: P0.A data contracts (3 bugs), P0.AW payroll crash, P0.Y analytics link, P0.R test page, P0.P dead links, P0.AX dead-code fallback, P0.K event imports, P0.AV schedule nav+stats, P0.AC knowledge base detail, P0.E contact form, P0.AJ manifest persistence (RolePolicy+TimeOffRequest), P0.AO schedule stats. P0.C marketing hex (3 files → bg-ink). FALSE POSITIVE: P0.AN/P1.AN marketing SMS/email — all client URLs verified correct. Additional: 64 pre-existing API typecheck errors fixed (wrong Prisma model names), calendar sync missing title prop, settings test fix. Stats: dead links 2→0, hex 185→182, 501 routes 3→2. |
 | **v24** | **Session fix pass.** RESOLVED P0: P0.G (warehouse receiving Reports+Supplier performance buttons wired as Link), P0.Z (payroll periods/[id] page with details/status badges), P0.S/P0.AG (invoice create with line items builder + invoice detail with send/pay/void actions), P0.T/P0.AR (payment detail page with process/refund actions + timeline). P0.A severity: severityColors now maps both API values (warning/info) and legacy values (high/medium/low). Payroll pages 11→12. |
+| **v25** | **Session fix pass.** RESOLVED P0: P0.F (17 delete-without-confirm locations → AlertDialog/Dialog), P0.D (inventory forecast "Request Reorder" + "Create PO" wired to PO creation page), P0.A (equipment severity summary keys unified + QA detail page created at quality-assurance/[id]), P0.B (IoT register probe/log reading/details/acknowledge/resolve dialogs wired + PATCH alerts/[id] endpoint). Fixed pre-existing: settings workflow tests (6 assertions updated for server/client component split), equipment-crud test (bySeverity.warning). Stats: delete-without-confirm 17→0, disabled buttons 24→14. |

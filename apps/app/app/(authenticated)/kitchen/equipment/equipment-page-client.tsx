@@ -462,24 +462,24 @@ export function EquipmentPageClient() {
           <Card tone="canvas">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
-                High
+                Warning
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-orange-600">
-                {alertSummary.bySeverity.high}
+                {alertSummary.bySeverity.warning}
               </div>
             </CardContent>
           </Card>
           <Card tone="canvas">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
-                Medium
+                Info
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-yellow-600">
-                {alertSummary.bySeverity.medium}
+                {alertSummary.bySeverity.info}
               </div>
             </CardContent>
           </Card>
@@ -738,9 +738,9 @@ export function EquipmentPageClient() {
                         borderLeftColor:
                           alert.severity === "critical"
                             ? "#ef4444"
-                            : alert.severity === "high"
+                            : alert.severity === "warning"
                               ? "#f97316"
-                              : alert.severity === "medium"
+                              : alert.severity === "info"
                                 ? "#eab308"
                                 : "#3b82f6",
                       }}

@@ -1,5 +1,15 @@
 "use client";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@repo/design-system/components/ui/alert-dialog";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -67,6 +77,8 @@ export function BudgetDetailClient() {
   const [budget, setBudget] = useState<EventBudget | null>(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [lineItemToDelete, setLineItemToDelete] = useState<string | null>(null);
 
   // Edit mode
   const [editMode, setEditMode] = useState(false);
@@ -229,11 +241,19 @@ export function BudgetDetailClient() {
   };
 
   // Delete line item
-  const handleDeleteLineItem = async (itemId: string) => {
-    if (!budget) {
+  const confirmDeleteLineItem = (itemId: string) => {
+    setLineItemToDelete(itemId);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteLineItem = async () => {
+    if (!budget || !lineItemToDelete) {
       return;
     }
 
+    const itemId = lineItemToDelete;
+    setDeleteDialogOpen(false);
+    setLineItemToDelete(null);
     setActionLoading(true);
     try {
       await deleteLineItem(budgetId, itemId);
@@ -581,7 +601,7 @@ export function BudgetDetailClient() {
                           </Button>
                           <Button
                             disabled={actionLoading}
-                            onClick={() => handleDeleteLineItem(item.id)}
+                            onClick={() => confirmDeleteLineItem(item.id)}
                             size="sm"
                             variant="ghost"
                           >
@@ -597,6 +617,25 @@ export function BudgetDetailClient() {
           </Table>
         </CardContent>
       </Card>
+
+      {/* Delete Confirmation */}
+      <AlertDialog onOpenChange={setDeleteDialogOpen} open={deleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete line item?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently remove this budget line item. This action
+              cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteLineItem}>
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Line Item Modal */}
       {lineItemModalOpen && (

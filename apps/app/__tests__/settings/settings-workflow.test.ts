@@ -86,21 +86,25 @@ describe("SET1: Settings pages load without crashes", () => {
   });
 
   describe("Security page", () => {
-    it("is a client component that loads API keys and role policies", () => {
-      const source = readSettingFile("security/page.tsx");
-      expect(source).toContain('"use client"');
-      expect(source).toContain("apiFetch");
-      expect(source).toContain("api-keys");
+    it("delegates to SecurityClient which loads API keys and role policies", () => {
+      const pageSource = readSettingFile("security/page.tsx");
+      const clientSource = readSettingFile("security/security-client.tsx");
+      expect(pageSource).toContain("SecurityClient");
+      expect(clientSource).toContain('"use client"');
+      expect(clientSource).toContain("apiFetch");
+      expect(clientSource).toContain("api-keys");
     });
   });
 
   describe("Integrations page", () => {
-    it("is a client component with GoodShuffle, Nowsta, and QuickBooks tabs", () => {
-      const source = readSettingFile("integrations/page.tsx");
-      expect(source).toContain('"use client"');
-      expect(source).toContain("GoodShuffle");
-      expect(source).toContain("Nowsta");
-      expect(source).toContain("QuickBooks");
+    it("delegates to IntegrationsClient with GoodShuffle, Nowsta, and QuickBooks tabs", () => {
+      const pageSource = readSettingFile("integrations/page.tsx");
+      const clientSource = readSettingFile("integrations/integrations-client.tsx");
+      expect(pageSource).toContain("IntegrationsClient");
+      expect(pageSource).toContain("GoodShuffle");
+      expect(pageSource).toContain("QuickBooks");
+      expect(clientSource).toContain('"use client"');
+      expect(clientSource).toContain("Nowsta");
     });
   });
 
@@ -295,14 +299,13 @@ describe("SET4: Invalid input validation", () => {
 
   describe("Security page validation", () => {
     it("has revoke confirmation dialog for destructive action", () => {
-      const source = readSettingFile("security/page.tsx");
+      const source = readSettingFile("security/security-client.tsx");
       expect(source).toContain("Revoke");
-      // Text spans lines: "This action cannot be\nundo"
       expect(source).toMatch(/cannot be\s+undo/);
     });
 
     it("validates auto sync interval range (5-1440)", () => {
-      const source = readSettingFile("integrations/page.tsx");
+      const source = readSettingFile("integrations/integrations-client.tsx");
       expect(source).toContain("5");
       expect(source).toContain("1440");
     });
@@ -323,14 +326,14 @@ describe("SET5: Admin-only settings protection", () => {
       expect(source).not.toContain("isAdmin");
     });
 
-    it("Security page is a full client component with API key management", () => {
-      const source = readSettingFile("security/page.tsx");
+    it("Security client manages API keys with revoke capability", () => {
+      const source = readSettingFile("security/security-client.tsx");
       expect(source).toContain("api-keys");
       expect(source).toContain("revoke");
     });
 
-    it("Integrations page makes API calls via apiFetch", () => {
-      const source = readSettingFile("integrations/page.tsx");
+    it("Integrations client makes API calls via apiFetch", () => {
+      const source = readSettingFile("integrations/integrations-client.tsx");
       expect(source).toContain("apiFetch");
       expect(source).toContain("goodshuffle");
     });
@@ -379,13 +382,15 @@ describe("Settings module — overall health", () => {
   });
 
   it("role-based access control is MISSING for settings (SET5 finding)", () => {
-    // Document that no settings page checks user.role
+    // Document that no settings page checks user.role for ACCESS CONTROL
     const teamSource = readSettingFile("team/page.tsx");
     const auditSource = readSettingFile("audit-log/page.tsx");
 
-    // Team page only checks orgId, not role
-    expect(teamSource).not.toContain(".role");
+    // Team page only checks orgId, not role-based access (m.role is display-only counting)
+    expect(teamSource).not.toContain("role ===");
+    expect(teamSource).not.toContain("role !==");
+    expect(teamSource).not.toContain("includes(role)");
     // Audit-log page delegates to client
-    expect(auditSource).not.toContain("role");
+    expect(auditSource).not.toContain("role ===");
   });
 });

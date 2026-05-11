@@ -1,5 +1,15 @@
 "use client";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@repo/design-system/components/ui/alert-dialog";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -72,6 +82,7 @@ export default function BudgetPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<Budget | null>(null);
 
   // Detail view
   const [selectedBudget, setSelectedBudget] = useState<string | null>(null);
@@ -177,17 +188,20 @@ export default function BudgetPage() {
 
   const handleDelete = async (budget: Budget, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!confirm(`Delete budget "${budget.name}"? This cannot be undone.`))
-      return;
+    setDeleteTarget(budget);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
     try {
       const res = await apiFetch("/api/procurement/budget/commands/delete", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ budgetId: budget.id }),
+        body: JSON.stringify({ budgetId: deleteTarget.id }),
       });
       const data = await res.json();
       if (data.success) {
-        if (selectedBudget === budget.id) {
+        if (selectedBudget === deleteTarget.id) {
           setSelectedBudget(null);
           setDetailData(null);
         }
@@ -197,6 +211,8 @@ export default function BudgetPage() {
       }
     } catch (error) {
       console.error("Failed to delete budget:", error);
+    } finally {
+      setDeleteTarget(null);
     }
   };
 
@@ -869,6 +885,30 @@ export default function BudgetPage() {
           </div>
         )}
       </div>
+
+      {/* Delete Confirmation */}
+      <AlertDialog
+        onOpenChange={(open) => {
+          if (!open) setDeleteTarget(null);
+        }}
+        open={!!deleteTarget}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Budget</AlertDialogTitle>
+            <AlertDialogDescription>
+              Delete budget &quot;{deleteTarget?.name}&quot;? This cannot be
+              undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete}>
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

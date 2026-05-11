@@ -1,5 +1,15 @@
 "use client";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@repo/design-system/components/ui/alert-dialog";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -52,6 +62,7 @@ export default function VendorsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<Vendor | null>(null);
 
   // Form state
   const [form, setForm] = useState({
@@ -129,13 +140,16 @@ export default function VendorsPage() {
 
   const handleDelete = async (vendor: Vendor, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!confirm(`Delete vendor "${vendor.name}"? This cannot be undone.`))
-      return;
+    setDeleteTarget(vendor);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
     try {
       const res = await apiFetch("/api/procurement/vendors/commands/delete", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ vendorId: vendor.id }),
+        body: JSON.stringify({ vendorId: deleteTarget.id }),
       });
       const data = await res.json();
       if (data.success) {
@@ -145,6 +159,8 @@ export default function VendorsPage() {
       }
     } catch (error) {
       console.error("Failed to delete vendor:", error);
+    } finally {
+      setDeleteTarget(null);
     }
   };
 
@@ -538,6 +554,30 @@ export default function VendorsPage() {
           ))}
         </div>
       )}
+
+      {/* Delete Confirmation */}
+      <AlertDialog
+        onOpenChange={(open) => {
+          if (!open) setDeleteTarget(null);
+        }}
+        open={!!deleteTarget}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Vendor</AlertDialogTitle>
+            <AlertDialogDescription>
+              Delete vendor &quot;{deleteTarget?.name}&quot;? This cannot be
+              undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete}>
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

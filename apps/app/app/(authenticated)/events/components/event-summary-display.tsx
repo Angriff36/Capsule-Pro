@@ -1,5 +1,15 @@
 "use client";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@repo/design-system/components/ui/alert-dialog";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Card, CardContent } from "@repo/design-system/components/ui/card";
@@ -223,6 +233,7 @@ export function EventSummaryDisplay({
   const [showRatingDialog, setShowRatingDialog] = useState(false);
   const [userRating, setUserRating] = useState<number | null>(null);
   const [showExportDialog, setShowExportDialog] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   useEffect(() => {
     setSummary(initialSummary);
@@ -276,11 +287,16 @@ export function EventSummaryDisplay({
     }
   }, [onGenerate]);
 
+  const confirmDelete = () => {
+    setDeleteDialogOpen(true);
+  };
+
   const handleDelete = useCallback(async () => {
     if (!onDelete) {
       return;
     }
 
+    setDeleteDialogOpen(false);
     try {
       await onDelete();
       setSummary(null);
@@ -499,7 +515,7 @@ ${summary.insights.map((i) => `- ${i.title}: ${i.description}`).join("\n")}
           {onDelete && (
             <Button
               aria-label="Delete summary"
-              onClick={handleDelete}
+              onClick={confirmDelete}
               size="sm"
               variant="outline"
             >
@@ -605,6 +621,24 @@ ${summary.insights.map((i) => `- ${i.title}: ${i.description}`).join("\n")}
           title={SECTION_CONFIG.insights.label}
         />
       </div>
+
+      <AlertDialog onOpenChange={setDeleteDialogOpen} open={deleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete summary?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete the AI-generated event summary. You
+              can regenerate it later if needed.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete}>
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <Dialog onOpenChange={setShowRatingDialog} open={showRatingDialog}>
         <DialogContent>

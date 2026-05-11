@@ -1,5 +1,15 @@
 "use client";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@repo/design-system/components/ui/alert-dialog";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Checkbox } from "@repo/design-system/components/ui/checkbox";
 import { Input } from "@repo/design-system/components/ui/input";
@@ -47,6 +57,8 @@ export function EventTimelineClient({
   const [draft, setDraft] = useState<DraftItem>(EMPTY_DRAFT);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<string | null>(null);
 
   const refresh = () => {
     startTransition(() => {
@@ -145,10 +157,19 @@ export function EventTimelineClient({
     }
   };
 
-  const handleDelete = async (itemId: string) => {
+  const confirmDelete = (itemId: string) => {
+    setItemToDelete(itemId);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDelete = async () => {
+    if (!itemToDelete) return;
+    const itemId = itemToDelete;
     setError(null);
     const previous = items;
     setItems((current) => current.filter((item) => item.id !== itemId));
+    setDeleteDialogOpen(false);
+    setItemToDelete(null);
 
     try {
       const response = await fetch(
@@ -309,7 +330,7 @@ export function EventTimelineClient({
                 </div>
                 <Button
                   className="text-coral hover:text-coral/80"
-                  onClick={() => handleDelete(item.id)}
+                  onClick={() => confirmDelete(item.id)}
                   size="sm"
                   type="button"
                   variant="ghost"
@@ -321,6 +342,24 @@ export function EventTimelineClient({
           ))}
         </ol>
       )}
+
+      <AlertDialog onOpenChange={setDeleteDialogOpen} open={deleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove timeline item?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently remove this timeline item from the event.
+              This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete}>
+              Remove
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

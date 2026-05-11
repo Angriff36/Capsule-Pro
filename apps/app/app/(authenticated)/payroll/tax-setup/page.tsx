@@ -35,6 +35,16 @@ import {
   TabsTrigger,
 } from "@repo/design-system/components/ui/tabs";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@repo/design-system/components/ui/alert-dialog";
+import {
   Calculator,
   CheckCircle2,
   DollarSign,
@@ -204,6 +214,11 @@ export default function TaxSetupPage() {
     TaxPreviewResponse["data"] | null
   >(null);
   const [previewLoading, setPreviewLoading] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [taxConfigToDelete, setTaxConfigToDelete] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -260,7 +275,18 @@ export default function TaxSetupPage() {
       setConfigs((prev) => prev.filter((c) => c.id !== configId));
     } catch (error) {
       console.error("Failed to delete tax config:", error);
+    } finally {
+      setDeleteDialogOpen(false);
+      setTaxConfigToDelete(null);
     }
+  };
+
+  const confirmDeleteStateTax = (config: TaxConfiguration) => {
+    setTaxConfigToDelete({
+      id: config.id,
+      name: config.state_code || config.jurisdiction,
+    });
+    setDeleteDialogOpen(true);
   };
 
   const runTaxPreview = async () => {
@@ -621,7 +647,7 @@ export default function TaxSetupPage() {
                             </Button>
                             <Button
                               className="h-8 w-8 text-red-500"
-                              onClick={() => handleDeleteStateTax(config.id)}
+                              onClick={() => confirmDeleteStateTax(config)}
                               size="icon"
                               variant="ghost"
                             >
@@ -870,6 +896,40 @@ export default function TaxSetupPage() {
           </div>
         </div>
       )}
+
+      {/* Deactivate Confirmation Dialog */}
+      <AlertDialog
+        open={deleteDialogOpen}
+        onOpenChange={(open) => {
+          setDeleteDialogOpen(open);
+          if (!open) setTaxConfigToDelete(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Deactivate Tax Configuration</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to deactivate the{" "}
+              <strong>{taxConfigToDelete?.name}</strong> state tax configuration?
+              This will set it to inactive and remove it from your active
+              withholdings.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+              onClick={() => {
+                if (taxConfigToDelete) {
+                  handleDeleteStateTax(taxConfigToDelete.id);
+                }
+              }}
+            >
+              Deactivate
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

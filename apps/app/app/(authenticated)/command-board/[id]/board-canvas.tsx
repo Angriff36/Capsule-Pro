@@ -1,5 +1,15 @@
 "use client";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@repo/design-system/components/ui/alert-dialog";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
   Dialog,
@@ -164,6 +174,10 @@ export const BoardCanvas = ({
   const [selectedBrowserCategoryId, setSelectedBrowserCategoryId] = useState<
     string | null
   >(null);
+
+  /* ---- delete group confirmation ---- */
+  const [deleteGroupDialogOpen, setDeleteGroupDialogOpen] = useState(false);
+  const [groupToDelete, setGroupToDelete] = useState<string | null>(null);
 
   /* ---- ref for scroll container ---- */
   const canvasRef = useRef<HTMLDivElement>(null);
@@ -430,7 +444,18 @@ export const BoardCanvas = ({
     await toggleGroupCollapseAction(groupId, newCollapsed);
   };
 
-  const handleDeleteGroup = async (groupId: string) => {
+  const confirmDeleteGroup = (groupId: string) => {
+    setGroupToDelete(groupId);
+    setDeleteGroupDialogOpen(true);
+  };
+
+  const handleDeleteGroup = async () => {
+    if (!groupToDelete) return;
+
+    const groupId = groupToDelete;
+    setDeleteGroupDialogOpen(false);
+    setGroupToDelete(null);
+
     // Optimistic
     setLocalGroups((prev) => prev.filter((g) => g.id !== groupId));
     setLocalCards((prev) =>
@@ -561,7 +586,7 @@ export const BoardCanvas = ({
           </div>
           <button
             className="text-muted-foreground/50 hover:text-destructive"
-            onClick={() => handleDeleteGroup(group.id)}
+            onClick={() => confirmDeleteGroup(group.id)}
             title="Delete group"
             type="button"
           >
@@ -918,6 +943,25 @@ export const BoardCanvas = ({
 
       {/* Create group dialog */}
       {renderGroupDialog()}
+
+      {/* Delete group confirmation */}
+      <AlertDialog onOpenChange={setDeleteGroupDialogOpen} open={deleteGroupDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete group</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will remove the group and ungroup all cards inside it. This
+              action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction className="bg-destructive text-white hover:bg-destructive/90" onClick={handleDeleteGroup}>
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

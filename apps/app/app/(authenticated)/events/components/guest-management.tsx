@@ -10,6 +10,16 @@
 "use client";
 
 import type { EventGuest } from "@repo/database";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@repo/design-system/components/ui/alert-dialog";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -160,6 +170,8 @@ export function GuestManagement({ eventId }: GuestManagementProps) {
   const [selectedGuest, setSelectedGuest] = useState<EventGuest | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [eventDishes, setEventDishes] = useState<EventDish[]>([]);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [guestToDelete, setGuestToDelete] = useState<string | null>(null);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -517,7 +529,16 @@ export function GuestManagement({ eventId }: GuestManagementProps) {
   };
 
   // Delete guest
-  const deleteGuest = async (guestId: string) => {
+  const confirmDeleteGuest = (guestId: string) => {
+    setGuestToDelete(guestId);
+    setDeleteDialogOpen(true);
+  };
+
+  const deleteGuest = async () => {
+    if (!guestToDelete) return;
+    const guestId = guestToDelete;
+    setDeleteDialogOpen(false);
+    setGuestToDelete(null);
     setIsDeleting(true);
     try {
       const response = await apiFetch(`/api/events/guests/${guestId}`, {
@@ -1140,7 +1161,7 @@ export function GuestManagement({ eventId }: GuestManagementProps) {
                         <Button
                           aria-label="Delete guest"
                           disabled={isDeleting}
-                          onClick={() => deleteGuest(guest.id)}
+                          onClick={() => confirmDeleteGuest(guest.id)}
                           size="icon"
                           variant="ghost"
                         >
@@ -1155,6 +1176,23 @@ export function GuestManagement({ eventId }: GuestManagementProps) {
           </TableBody>
         </Table>
       </div>
+
+      {/* Delete Confirmation */}
+      <AlertDialog onOpenChange={setDeleteDialogOpen} open={deleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete guest?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently remove this guest from the event. This action
+              cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={deleteGuest}>Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Edit Dialog */}
       <Dialog

@@ -4,6 +4,16 @@ import {
   CollapsibleSectionBlock,
   SectionHeaderBlock,
 } from "@repo/design-system/components/blocks/collapsible-section-block";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@repo/design-system/components/ui/alert-dialog";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -274,6 +284,23 @@ export function MenuDishesSection({
   const [newDishRecipeId, setNewDishRecipeId] = useState("");
   const [newDishCategory, setNewDishCategory] = useState("");
   const [newDishCourse, setNewDishCourse] = useState("");
+
+  // Delete confirmation state
+  const [removeDialogOpen, setRemoveDialogOpen] = useState(false);
+  const [dishToRemove, setDishToRemove] = useState<string | null>(null);
+
+  const confirmRemoveDish = (linkId: string) => {
+    setDishToRemove(linkId);
+    setRemoveDialogOpen(true);
+  };
+
+  const handleRemoveDish = () => {
+    if (!dishToRemove) return;
+    const linkId = dishToRemove;
+    setRemoveDialogOpen(false);
+    setDishToRemove(null);
+    onRemoveDish(linkId);
+  };
 
   // Reset form when dialog closes
   const handleDialogClose = (open: boolean) => {
@@ -680,7 +707,7 @@ export function MenuDishesSection({
                 </Button>
                 <Button
                   className="size-8 text-muted-foreground hover:text-destructive"
-                  onClick={() => onRemoveDish(dish.link_id)}
+                  onClick={() => confirmRemoveDish(dish.link_id)}
                   size="icon"
                   variant="ghost"
                 >
@@ -691,6 +718,24 @@ export function MenuDishesSection({
           ))}
         </div>
       )}
+
+      <AlertDialog onOpenChange={setRemoveDialogOpen} open={removeDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove dish from event?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will unlink this dish from the event menu. The dish itself
+              will not be deleted.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleRemoveDish}>
+              Remove
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </CollapsibleSectionBlock>
   );
 }
