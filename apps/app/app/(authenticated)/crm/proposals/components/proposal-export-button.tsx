@@ -10,26 +10,41 @@ interface ProposalExportButtonProps {
   proposalNumber: string;
 }
 
-/**
- * Export button for downloading proposal as PDF.
- * Uses the browser's print-to-PDF capability since there's no server-side PDF generation endpoint.
- */
 export function ProposalExportButton({
-  proposalNumber,
+  proposalId,
 }: ProposalExportButtonProps) {
   const [isExporting, setIsExporting] = useState(false);
 
   const handleExport = async () => {
     setIsExporting(true);
     try {
-      // Open a print dialog for the current page.
-      // Users can "Save as PDF" from the browser's print dialog.
-      // This is a reliable client-side approach that doesn't require
-      // a server-side PDF generation endpoint.
-      window.print();
-      toast.success("Use 'Save as PDF' in the print dialog to export");
+      const response = await fetch(
+        `/api/crm/proposals/${proposalId}/pdf?download=true`
+      );
+
+      if (!response.ok) {
+        const body = await response.json().catch(() => null);
+        throw new Error(
+          body?.error ?? `Failed to generate PDF (${response.status})`
+        );
+      }
+
+      const blob = await response.blob();
+      const disposition = response.headers.get("Content-Disposition") ?? "";
+      const match = disposition.match(/filename="?(.+?)"?$/);
+      const filename = match?.[1] ?? `proposal-${proposalId}.pdf`;
+
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = filename;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      URL.revokeObjectURL(url);
+
+      toast.success("PDF downloaded");
     } catch (error) {
-      console.error("Failed to export proposal PDF:", error);
       toast.error(
         error instanceof Error ? error.message : "Failed to export proposal PDF"
       );

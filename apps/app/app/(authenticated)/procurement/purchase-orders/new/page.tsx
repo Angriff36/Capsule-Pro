@@ -24,7 +24,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
 import { createPurchaseOrder } from "../../actions";
-import type { POFormData, Vendor } from "../../components/po-form";
+import type { POFormData, Vendor, Location } from "../../components/po-form";
 import { POForm } from "../../components/po-form";
 import {
   type EditableLineItem,
@@ -45,6 +45,7 @@ export default function NewPOPage() {
   const posthog = usePostHog();
   const router = useRouter();
   const [vendors, setVendors] = useState<Vendor[]>([]);
+  const [locations, setLocations] = useState<Location[]>([]);
   const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
@@ -53,6 +54,7 @@ export default function NewPOPage() {
 
   const [form, setForm] = useState<POFormData>({
     vendorId: "",
+    locationId: "",
     expectedDeliveryDate: "",
     notes: "",
   });
@@ -66,14 +68,17 @@ export default function NewPOPage() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [vendorsRes, itemsRes] = await Promise.all([
+      const [vendorsRes, itemsRes, locationsRes] = await Promise.all([
         apiFetch("/api/procurement/vendors/list"),
         apiFetch("/api/inventory/items?limit=200"),
+        apiFetch("/api/locations?isActive=true"),
       ]);
       const vendorsData = await vendorsRes.json();
       const itemsData = await itemsRes.json();
+      const locationsData = await locationsRes.json();
       if (vendorsData.success) setVendors(vendorsData.data.vendors || []);
       if (itemsData.success) setInventoryItems(itemsData.data || []);
+      setLocations(locationsData.locations || []);
     } catch (error) {
       console.error("Failed to load data:", error);
     } finally {
@@ -141,6 +146,7 @@ export default function NewPOPage() {
       // Use the server action for creation
       await createPurchaseOrder({
         vendorId: form.vendorId,
+        locationId: form.locationId || null,
         expectedDeliveryDate: form.expectedDeliveryDate || null,
         notes: form.notes || null,
         items: lineItems.map((li) => ({
@@ -199,6 +205,7 @@ export default function NewPOPage() {
               <CardContent>
                 <POForm
                   form={form}
+                  locations={locations}
                   onChange={(
                     update: Partial<
                       import("../../components/po-form").POFormData

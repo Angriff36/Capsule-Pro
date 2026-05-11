@@ -27,6 +27,7 @@ const purchaseOrderItemSchema = z.object({
 
 const purchaseOrderSchema = z.object({
   vendorId: z.string().uuid("Invalid vendor"),
+  locationId: z.string().uuid("Invalid location").optional().nullable(),
   expectedDeliveryDate: z
     .string()
     .optional()
@@ -121,6 +122,21 @@ export async function createPurchaseOrder(input: CreatePurchaseOrderInput) {
 
   const data = purchaseOrderSchema.parse(input);
 
+  // Resolve locationId: prefer explicit selection, fall back to primary or first active location
+  let locationId = data.locationId;
+  if (!locationId) {
+    const fallback = await database.$queryRaw<Array<{ id: string }>>`
+      SELECT id FROM tenant.locations
+      WHERE tenant_id = ${tenantId} AND deleted_at IS NULL AND is_active = true
+      ORDER BY is_primary DESC, name ASC
+      LIMIT 1
+    `;
+    if (fallback.length > 0) {
+      locationId = fallback[0].id;
+    }
+  }
+  invariant(locationId, "No location available — create a location first");
+
   // Calculate subtotal
   const subtotal = data.items.reduce(
     (sum, item) => sum + item.quantityOrdered * item.unitCost,
@@ -146,8 +162,7 @@ export async function createPurchaseOrder(input: CreatePurchaseOrderInput) {
       submittedBy: userId,
       submittedAt: new Date(),
       status: "draft",
-      // locationId is required by schema but optional in form — use a sentinel
-      locationId: "00000000-0000-0000-0000-000000000000",
+      locationId,
       items: {
         create: data.items.map((item) => ({
           tenantId,

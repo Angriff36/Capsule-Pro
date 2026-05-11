@@ -1,22 +1,7 @@
-import { ModuleSection } from "../../components/module-section";
+import { redirect } from "next/navigation";
 
-interface ModuleSettingsPageProps {
-  params: Promise<{ module: string }>;
-}
-
-const ModuleSettingsPage = async ({ params }: ModuleSettingsPageProps) => {
-  const { module } = await params;
-  const label = module
-    .split("-")
-    .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
-    .join(" ");
-
-  return (
-    <ModuleSection
-      summary={`Module-level settings for ${label}.`}
-      title={`${label} Settings`}
-    />
-  );
+const ModuleSettingsPage = () => {
+  redirect("/settings");
 };
 
 export default ModuleSettingsPage;

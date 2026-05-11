@@ -20,8 +20,14 @@ export interface Vendor {
   name: string;
 }
 
+export interface Location {
+  id: string;
+  name: string;
+}
+
 export interface POFormData {
   vendorId: string;
+  locationId: string;
   expectedDeliveryDate: string;
   notes: string;
 }
@@ -33,12 +39,13 @@ export interface POFormData {
 interface POFormProps {
   form: POFormData;
   vendors: Vendor[];
+  locations: Location[];
   onChange: (update: Partial<POFormData>) => void;
   /** Rendered between vendor section and notes (e.g., line items card) */
   children?: React.ReactNode;
 }
 
-export function POForm({ form, vendors, onChange, children }: POFormProps) {
+export function POForm({ form, vendors, locations, onChange, children }: POFormProps) {
   return (
     <div className="space-y-6">
       {/* Vendor & Dates */}
@@ -56,6 +63,24 @@ export function POForm({ form, vendors, onChange, children }: POFormProps) {
               {vendors.map((v) => (
                 <SelectItem key={v.id} value={v.id}>
                   {v.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-2">
+          <Label>Delivery Location</Label>
+          <Select
+            onValueChange={(v) => onChange({ locationId: v })}
+            value={form.locationId}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Use default location" />
+            </SelectTrigger>
+            <SelectContent>
+              {locations.map((loc) => (
+                <SelectItem key={loc.id} value={loc.id}>
+                  {loc.name}
                 </SelectItem>
               ))}
             </SelectContent>
