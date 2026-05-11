@@ -1,17 +1,24 @@
-import { Separator } from "@repo/design-system/components/ui/separator";
+import {
+  DisplayHeading,
+  MonoLabel,
+  OperationalColumn,
+  PageCanvas,
+} from "@repo/design-system/components/blocks/page-shell";
 import { AiClient } from "./ai-client";
 
 const ToolsAiPage = () => (
-  <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
-    <div className="space-y-0.5">
-      <h1 className="text-2xl font-semibold tracking-tight">AI Integrations</h1>
-      <p className="text-muted-foreground">
-        AI-assisted suggestions, event summaries, and workflow helpers.
-      </p>
-    </div>
-    <Separator />
-    <AiClient />
-  </div>
+  <PageCanvas>
+    <OperationalColumn>
+      <div className="space-y-0.5">
+        <MonoLabel tone="dark">Tools</MonoLabel>
+        <DisplayHeading>AI Integrations</DisplayHeading>
+        <p className="text-muted-foreground">
+          AI-assisted suggestions, event summaries, and workflow helpers.
+        </p>
+      </div>
+      <AiClient />
+    </OperationalColumn>
+  </PageCanvas>
 );
 
 export default ToolsAiPage;

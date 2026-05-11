@@ -393,6 +393,13 @@ export const modules: ModuleDefinition[] = [
         items: [
           { title: "Overview", href: "/accounting" },
           { title: "Chart of Accounts", href: "/accounting/chart-of-accounts" },
+          { title: "Invoices", href: "/accounting/invoices" },
+          { title: "Payments", href: "/accounting/payments" },
+          { title: "Collections", href: "/accounting/collections" },
+          { title: "Revenue Recognition", href: "/accounting/revenue-recognition" },
+          { title: "Payment Methods", href: "/accounting/payment-methods" },
+          { title: "Bank Reconciliation", href: "/accounting/bank-reconciliation" },
+          { title: "Financial Reports", href: "/accounting/financial-reporting" },
         ],
       },
     ],
