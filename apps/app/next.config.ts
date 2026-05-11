@@ -179,6 +179,11 @@ let nextConfig: NextConfig = withToolbar(
   withLogging({
     ...config,
     distDir,
+    // Enable version skew protection on Vercel.
+    // Framework-managed requests (Next.js Link, router) get ?dpl= and x-deployment-id
+    // automatically. Custom fetch() calls (e.g., agent-loop, tool-registry) also need it
+    // but require manual passing — see getApiBaseUrl() in app/lib/api.ts.
+    deploymentId: process.env.VERCEL_DEPLOYMENT_ID,
     // Build-time linting is handled by Biome in this repo.
     eslint: {
       ignoreDuringBuilds: true,

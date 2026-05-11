@@ -3,7 +3,7 @@ import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 // Use the shared helper: server-side → direct API URL; client-side → "" (rewrite proxy)
-import { getApiBaseUrl } from "@/app/lib/api";
+import { getApiBaseUrl, getDeploymentId } from "@/app/lib/api";
 import { createPendingManifestPlan } from "@/app/lib/command-board/manifest-plans";
 import { suggestManifestPlanInputSchema } from "../types/manifest-plan";
 import {
@@ -516,11 +516,13 @@ async function detectConflictsTool(
     payload.entityTypes = args.entityTypes;
   }
 
+  const dpl = getDeploymentId();
   const response = await fetch(`${getApiBaseUrl()}/api/conflicts/detect`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       "x-correlation-id": context.correlationId,
+      ...(dpl ? { "x-deployment-id": dpl } : {}),
       ...(context.authCookie ? { Cookie: context.authCookie } : {}),
     },
     cache: "no-store",
@@ -664,6 +666,7 @@ async function executeManifestCommandRoute(
   }
 
   const endpoint = `${getApiBaseUrl()}${routePath}`;
+  const dpl = getDeploymentId();
 
   const response = await fetch(endpoint, {
     method: "POST",
@@ -671,6 +674,7 @@ async function executeManifestCommandRoute(
       "Content-Type": "application/json",
       "x-correlation-id": context.correlationId,
       "x-idempotency-key": idempotencyKey,
+      ...(dpl ? { "x-deployment-id": dpl } : {}),
       ...(context.authCookie ? { Cookie: context.authCookie } : {}),
     },
     cache: "no-store",

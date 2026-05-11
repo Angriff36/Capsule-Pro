@@ -40,6 +40,15 @@ export const getApiBaseUrl = (): string => {
   return DEFAULT_API_BASE_URL;
 };
 
+/**
+ * Get the deployment ID for skew protection.
+ * Vercel sets VERCEL_DEPLOYMENT_ID automatically.
+ * Returns empty string when not on Vercel or not set.
+ */
+export const getDeploymentId = (): string => {
+  return process.env.VERCEL_DEPLOYMENT_ID ?? "";
+};
+
 export const apiUrl = (path: string): string => {
   if (path.startsWith("http://") || path.startsWith("https://")) {
     return path;
@@ -194,8 +203,15 @@ export const apiFetch = (
     validateRoute(path);
   }
 
+  const deploymentId = getDeploymentId();
+  const headers: HeadersInit = {
+    ...(init?.headers || {}),
+    ...(deploymentId ? { "x-deployment-id": deploymentId } : {}),
+  };
+
   return fetch(apiUrl(path), {
     credentials: "include",
+    headers,
     ...init,
   });
 };
