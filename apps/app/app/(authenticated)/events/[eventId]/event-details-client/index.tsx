@@ -1592,7 +1592,7 @@ export function EventDetailsClient({
                 hasClient={!!event.clientId}
                 hasContract={hasContract}
                 hasMenu={eventDishes.length > 0}
-                hasPrepList={sortedPrepTasks.length > 0}
+                hasPrepList={prepLists.length > 0}
                 hasStaff={staffCount > 0}
                 hasVenue={!!event.venueName}
                 onAssignClient={() => setShowAssignClient(true)}

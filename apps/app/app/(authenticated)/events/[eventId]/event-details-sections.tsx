@@ -29,7 +29,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@repo/design-system/components/ui/dialog";
 import { Input } from "@repo/design-system/components/ui/input";
 import {
@@ -337,12 +336,6 @@ export function MenuDishesSection({
 
   const addDishDialog = (
     <Dialog onOpenChange={handleDialogClose} open={showAddDialog}>
-      <DialogTrigger asChild>
-        <Button size="sm" variant="outline">
-          <PlusIcon className="mr-2 size-3" />
-          Add Dish
-        </Button>
-      </DialogTrigger>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Add Dish to Event</DialogTitle>
@@ -600,25 +593,36 @@ export function MenuDishesSection({
   );
 
   return (
-    <CollapsibleSectionBlock
-      defaultOpen
-      emptyState={{
-        icon: UtensilsIcon,
-        title: "No dishes linked to this event",
-        description:
-          "Add dishes so they can be used for prep lists and task generation",
-        actionLabel: "Add First Dish",
-        onAction: () => onShowAddDialogChange(true),
-      }}
-      headerActions={addDishDialog}
-      icon={UtensilsIcon}
-      iconColor="text-emerald-500"
-      id="dishes"
-      showEmptyState={!isLoading && eventDishes.length === 0}
-      subtitle={`${eventDishes.length} dishes linked to this event`}
-      title="Menu / Dishes"
-      triggerText="View dishes"
-    >
+    <>
+      {/* Trigger button in headerActions — simple button, no Dialog wrapper */}
+      <CollapsibleSectionBlock
+        defaultOpen
+        emptyState={{
+          icon: UtensilsIcon,
+          title: "No dishes linked to this event",
+          description:
+            "Add dishes so they can be used for prep lists and task generation",
+          actionLabel: "Add First Dish",
+          onAction: () => onShowAddDialogChange(true),
+        }}
+        headerActions={
+          <Button
+            onClick={() => onShowAddDialogChange(true)}
+            size="sm"
+            variant="outline"
+          >
+            <PlusIcon className="mr-2 size-3" />
+            Add Dish
+          </Button>
+        }
+        icon={UtensilsIcon}
+        iconColor="text-emerald-500"
+        id="dishes"
+        showEmptyState={!isLoading && eventDishes.length === 0}
+        subtitle={`${eventDishes.length} dishes linked to this event`}
+        title="Menu / Dishes"
+        triggerText="View dishes"
+      >
       {isLoading && (
         <div className="flex items-center justify-center py-8">
           <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
@@ -737,6 +741,9 @@ export function MenuDishesSection({
         </AlertDialogContent>
       </AlertDialog>
     </CollapsibleSectionBlock>
+    {/* Dialog rendered OUTSIDE the collapsible to avoid portal blocking */}
+    {addDishDialog}
+  </>
   );
 }
 

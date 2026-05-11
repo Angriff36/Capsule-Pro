@@ -28,6 +28,10 @@
   --ds-coral: #ff7759; /* taxonomy chip */
   --ds-coral-soft: #ffad9b; /* soft chip border */
   --ds-error: #b30000; /* validation */
+  --ds-severity-critical: #ef4444; /* alert critical border */
+  --ds-severity-high: #f97316; /* alert high/warning border */
+  --ds-severity-medium: #eab308; /* alert medium/info border */
+  --ds-severity-low: #3b82f6; /* alert low/default border */
 
   /* Backward-compat brand aliases (do not remove — many components reference these) */
   --brand-charcoal: var(--ds-primary);

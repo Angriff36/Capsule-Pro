@@ -337,7 +337,7 @@ export function AvailabilityClient() {
       <KitchenOperationalHero
         actions={
           <Button
-            className="rounded-full bg-white px-5 text-[13px] font-medium text-[#17171c] hover:bg-white/90"
+            className="rounded-full bg-white px-5 text-[13px] font-medium text-primary hover:bg-white/90"
             onClick={() => setCreateModalOpen(true)}
             size="sm"
           >

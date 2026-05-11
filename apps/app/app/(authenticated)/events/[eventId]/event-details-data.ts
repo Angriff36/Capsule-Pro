@@ -107,6 +107,23 @@ export const getEventHasContract = cache(
 );
 
 /**
+ * Checks if event has any budgets (for setup checklist).
+ * @tier 1 (Independent)
+ */
+export const getEventHasBudget = cache(
+  async (tenantId: string, eventId: string) => {
+    const count = await database.eventBudget.count({
+      where: {
+        tenantId,
+        eventId,
+        deletedAt: null,
+      },
+    });
+    return count > 0;
+  }
+);
+
+/**
  * Fetches all dishes associated with the event.
  * @tier 1 (Independent)
  */
@@ -528,6 +545,7 @@ export async function fetchAllEventDetailsData(
     hasContract,
     staffCount,
     prepLists,
+    hasBudget,
   ] = await Promise.all([
     getEvent(tenantId, eventId),
     getRsvpCount(tenantId, eventId),
@@ -537,6 +555,7 @@ export async function fetchAllEventDetailsData(
     getEventHasContract(tenantId, eventId),
     getEventStaffCount(tenantId, eventId),
     getEventPrepLists(tenantId, eventId),
+    getEventHasBudget(tenantId, eventId),
   ]);
 
   if (!event) {
@@ -726,5 +745,6 @@ export async function fetchAllEventDetailsData(
     hasContract,
     staffCount,
     prepLists,
+    hasBudget,
   };
 }

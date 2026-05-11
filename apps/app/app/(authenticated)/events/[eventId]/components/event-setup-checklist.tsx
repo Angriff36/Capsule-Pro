@@ -62,8 +62,8 @@ export function EventSetupChecklist({
   hasContract,
   hasBudget,
   eventDate,
-  eventStatus,
-  onEditEvent,
+  eventStatus: _eventStatus,
+  onEditEvent: _onEditEvent,
   onAssignClient,
 }: EventSetupChecklistProps) {
   const [animatedProgress, setAnimatedProgress] = useState(0);
@@ -76,7 +76,7 @@ export function EventSetupChecklist({
         description:
           "Link a client to this event for billing and communication",
         completed: hasClient,
-        href: `/events/${eventSlug || eventId}?tab=details`,
+        href: `#`,
         icon: <Users className="h-4 w-4" />,
         required: true,
         priority: "high",
@@ -87,7 +87,7 @@ export function EventSetupChecklist({
         label: "Venue Selected",
         description: "Choose the event location and setup details",
         completed: hasVenue,
-        href: `/events/${eventSlug || eventId}?tab=details`,
+        href: `#`,
         icon: <MapPin className="h-4 w-4" />,
         required: true,
         priority: "high",
@@ -107,7 +107,7 @@ export function EventSetupChecklist({
         label: "Staff Assigned",
         description: "Assign team members and roles for the event",
         completed: hasStaff,
-        href: `/events/${eventSlug || eventId}?tab=staff`,
+        href: `/events/${eventSlug || eventId}/staff`,
         icon: <Users2 className="h-4 w-4" />,
         required: true,
         priority: "medium",
@@ -127,7 +127,7 @@ export function EventSetupChecklist({
         label: "Contract Created",
         description: "Create and send contract for client signature",
         completed: hasContract,
-        href: `/events/${eventSlug || eventId}?tab=contracts`,
+        href: `/events/${eventSlug || eventId}/contracts`,
         icon: <FileText className="h-4 w-4" />,
         required: false,
         priority: "medium",
@@ -137,7 +137,7 @@ export function EventSetupChecklist({
         label: "Budget Approved",
         description: "Set up event budget and track costs",
         completed: hasBudget,
-        href: `/events/${eventSlug || eventId}?tab=budget`,
+        href: `/events/${eventSlug || eventId}/budget`,
         icon: <DollarSign className="h-4 w-4" />,
         required: false,
         priority: "low",
@@ -309,8 +309,8 @@ export function EventSetupChecklist({
 
 // Compact version for sidebar/quick view
 export function EventSetupChecklistCompact({
-  eventId,
-  eventSlug,
+  eventId: _eventId,
+  eventSlug: _eventSlug,
   hasClient,
   hasVenue,
   hasMenu,

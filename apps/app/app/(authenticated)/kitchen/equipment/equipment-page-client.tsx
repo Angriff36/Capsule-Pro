@@ -968,12 +968,12 @@ export function EquipmentPageClient() {
                       style={{
                         borderLeftColor:
                           alert.severity === "critical"
-                            ? "#ef4444"
+                            ? "var(--ds-severity-critical)"
                             : alert.severity === "warning"
-                              ? "#f97316"
+                              ? "var(--ds-severity-high)"
                               : alert.severity === "info"
-                                ? "#eab308"
-                                : "#3b82f6",
+                                ? "var(--ds-severity-medium)"
+                                : "var(--ds-severity-low)",
                       }}
                     >
                       <div className="flex items-start justify-between">
@@ -1553,12 +1553,12 @@ export function EquipmentPageClient() {
                 style={{
                   borderLeftColor:
                     selectedAlert.severity === "critical"
-                      ? "#ef4444"
+                      ? "var(--ds-severity-critical)"
                       : selectedAlert.severity === "warning"
-                        ? "#f97316"
+                        ? "var(--ds-severity-high)"
                         : selectedAlert.severity === "info"
-                          ? "#eab308"
-                          : "#3b82f6",
+                          ? "var(--ds-severity-medium)"
+                          : "var(--ds-severity-low)",
                 }}
               >
                 <Badge

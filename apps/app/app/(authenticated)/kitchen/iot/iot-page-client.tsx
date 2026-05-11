@@ -667,12 +667,12 @@ export function IoTPageClient() {
                       style={{
                         borderLeftColor:
                           alert.severity === "critical"
-                            ? "#ef4444"
+                            ? "var(--ds-severity-critical)"
                             : alert.severity === "high"
-                              ? "#f97316"
+                              ? "var(--ds-severity-high)"
                               : alert.severity === "medium"
-                                ? "#eab308"
-                                : "#3b82f6",
+                                ? "var(--ds-severity-medium)"
+                                : "var(--ds-severity-low)",
                       }}
                     >
                       <div className="flex items-start justify-between">
