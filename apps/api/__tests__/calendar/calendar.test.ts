@@ -16,6 +16,7 @@ import { GET } from "@/app/api/calendar/route";
 // ---------------------------------------------------------------------------
 
 const mockEventFindMany = vi.fn();
+const mockEventFindFirst = vi.fn();
 const mockScheduleShiftFindMany = vi.fn();
 const mockScheduleShiftFindFirst = vi.fn();
 const mockScheduleShiftUpdate = vi.fn();
@@ -25,6 +26,7 @@ vi.mock("@repo/database", () => ({
   database: {
     event: {
       findMany: (...args: unknown[]) => mockEventFindMany(...args),
+      findFirst: (...args: unknown[]) => mockEventFindFirst(...args),
       update: (...args: unknown[]) => mockEventUpdate(...args),
     },
     scheduleShift: {
@@ -661,6 +663,10 @@ describe("PATCH /api/calendar/reschedule", () => {
       eventDate: new Date("2026-06-15").toISOString(),
       title: "Conference",
     };
+    mockEventFindFirst.mockResolvedValue({
+      id: "evt-1",
+      status: "confirmed",
+    });
     mockEventUpdate.mockResolvedValue({
       id: "evt-1",
       tenantId: TEST_TENANT_ID,
@@ -683,6 +689,10 @@ describe("PATCH /api/calendar/reschedule", () => {
   });
 
   it("should use compound key tenantId_id for event update", async () => {
+    mockEventFindFirst.mockResolvedValue({
+      id: "evt-1",
+      status: "confirmed",
+    });
     mockEventUpdate.mockResolvedValue({ id: "evt-1" });
 
     const req = makePatchRequest({
@@ -804,6 +814,10 @@ describe("PATCH /api/calendar/reschedule", () => {
   // ----- Error handling -----
 
   it("should return 500 on unexpected error", async () => {
+    mockEventFindFirst.mockResolvedValue({
+      id: "evt-1",
+      status: "confirmed",
+    });
     mockEventUpdate.mockRejectedValue(new Error("DB crash") as never);
 
     const req = makePatchRequest({
@@ -833,5 +847,86 @@ describe("PATCH /api/calendar/reschedule", () => {
     expect(res.status).toBe(500);
     const body = await res.json();
     expect(body.error).toBe("Failed to reschedule event");
+  });
+
+  // ----- Reschedule validation (status checks) -----
+
+  it("should return 400 when rescheduling a cancelled event", async () => {
+    mockEventFindFirst.mockResolvedValue({
+      id: "evt-1",
+      status: "cancelled",
+    });
+
+    const req = makePatchRequest({
+      eventId: "evt-1",
+      eventType: "event",
+      newDate: "2026-06-15",
+    });
+    const res = await PATCH(req);
+
+    expect(res.status).toBe(400);
+    const body = await res.json();
+    expect(body.error).toBe("Cannot reschedule a cancelled event");
+    expect(mockEventUpdate).not.toHaveBeenCalled();
+  });
+
+  it("should return 400 when rescheduling a completed event", async () => {
+    mockEventFindFirst.mockResolvedValue({
+      id: "evt-1",
+      status: "completed",
+    });
+
+    const req = makePatchRequest({
+      eventId: "evt-1",
+      eventType: "event",
+      newDate: "2026-06-15",
+    });
+    const res = await PATCH(req);
+
+    expect(res.status).toBe(400);
+    const body = await res.json();
+    expect(body.error).toBe("Cannot reschedule a completed event");
+    expect(mockEventUpdate).not.toHaveBeenCalled();
+  });
+
+  it("should return 404 when event not found", async () => {
+    mockEventFindFirst.mockResolvedValue(null);
+
+    const req = makePatchRequest({
+      eventId: "evt-nonexistent",
+      eventType: "event",
+      newDate: "2026-06-15",
+    });
+    const res = await PATCH(req);
+
+    expect(res.status).toBe(404);
+    const body = await res.json();
+    expect(body.error).toBe("Event not found");
+  });
+
+  it("should return 400 for invalid date format", async () => {
+    const req = makePatchRequest({
+      eventId: "evt-1",
+      eventType: "event",
+      newDate: "not-a-date",
+    });
+    const res = await PATCH(req);
+
+    expect(res.status).toBe(400);
+    const body = await res.json();
+    expect(body.error).toBe("Invalid date format for newDate");
+  });
+
+  it("should return 400 for past date", async () => {
+    const req = makePatchRequest({
+      eventId: "evt-1",
+      eventType: "event",
+      newDate: "2020-01-01",
+    });
+    const res = await PATCH(req);
+
+    expect(res.status).toBe(400);
+    const body = await res.json();
+    expect(body.error).toBe("Cannot reschedule to a past date");
   });
 });

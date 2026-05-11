@@ -1,6 +1,6 @@
 # Implementation Plan — Capsule Pro
 
-> Updated 2026-05-11 (v50) — RESOLVED P1.E/partial (calendar API filters FR-402), P1.BT/partial (notification center + email tabs), P1.D/vendor_catalogs RLS bug fix. Collaboration orphaned routes 16→8.
+> Updated 2026-05-11 (v51) — RESOLVED P1.E/partial (calendar API filters FR-402), P1.BT/partial (notification center + email tabs), P1.D/vendor_catalogs RLS bug fix. Collaboration orphaned routes 16→8. Corrected stale P1.BA-BC (resolved), P1.W/preptaskplanworkflow (resolved v34), P1.BZ (DEFERRED), collaboration orphan count (11/25).
 
 > Priority: P0 = broken/non-functional, P1 = significant missing features, P2 = design alignment/polish, P3 = future/speculative.
 > Status: [ ] not started, [~] partial, [x] done.
@@ -32,7 +32,7 @@
 | formatCurrency | 1 shared utility (@repo/design-system/lib/format-currency.ts); ~48 local defs replaced; 7 server-side packages retain internal versions (pdf, email, sales-reporting + 3 null-display wrappers) |
 | Card without tone | 303 across 79 files |
 | Hardcoded hex colors | 0 (182 → 15 actual → 0 via CSS custom properties) |
-| Collaboration orphaned routes | 8/25 (32%) |
+| Collaboration orphaned routes | 11/25 (44%) |
 | Unoptimized web images | 383KB (Dishes.webp 191KB + RecipesMenus.webp 192KB) |
 | Payroll pages functional | 12 (39 API routes; periods/[id] RESOLVED) |
 | Forecasting service | Production-grade (998 lines) |
@@ -363,7 +363,8 @@ STATUS.md lists 40+ nonexistent files. Backend: 39 routes, 1,453-line agent-loop
 
 - [x] ~~cateringorder/ (6 routes, PrismaStore — P1.BY)~~ RESOLVED (v33)
 - [ ] ai-event-setup/ (5 routes, no Prisma — P1.BZ)
-- [ ] performanceprediction/ (1 route, no Prisma — P1.BZ), preptaskplanworkflow/ (16 routes, PrismaStore — P1.BY)
+- [ ] performanceprediction/ (1 route, no Prisma — P1.BZ)
+- [x] ~~preptaskplanworkflow/ (16 routes, PrismaStore — P1.BY)~~ RESOLVED (v34)
 - [x] ~~variancereport/ (3 routes, PrismaStore — P1.BY)~~ RESOLVED (v35)
 
 ### P1.X Kitchen Allergen Test Page — RESOLVED
@@ -427,7 +428,9 @@ STATUS.md lists 40+ nonexistent files. Backend: 39 routes, 1,453-line agent-loop
 
 ### P1.BA-P1.BH Accounting/Payroll API-Only + Data Bugs
 
-- [ ] P1.BA-BE: Collections, Revenue Recognition, Payment Methods (zero pages); Bank reconciliation not implemented
+- [x] ~~P1.BA-BC: Collections, Revenue Recognition, Payment Methods (zero pages)~~ RESOLVED: full CRUD pages exist at accounting/collections/, accounting/revenue-recognition/, accounting/payment-methods/
+- [ ] P1.BD: Bank reconciliation not implemented
+- [ ] P1.BE: Financial reporting missing entirely
 - [ ] P1.BF-BH: 4 missing Prisma models, hardcoded RoleName, 3 legacy dirs
 
 ### P1.BI-P1.BK CRM/Procurement Stubs — RESOLVED
@@ -469,7 +472,7 @@ STATUS.md lists 40+ nonexistent files. Backend: 39 routes, 1,453-line agent-loop
 - [x] ~~6 notification CRUD routes orphaned~~ RESOLVED (v50): consumed by new `/notifications` page (`apps/app/app/(authenticated)/notifications/page.tsx` + `notifications/notifications-client.tsx`)
 - [x] ~~2 email preferences/history routes orphaned~~ RESOLVED (v50): consumed by new Email History + Email Preferences tabs in `apps/app/app/(authenticated)/settings/notifications/notifications-client.tsx`
 - [x] ~~Sidebar missing Notifications entry~~ RESOLVED (v50): added Notifications entry with BellIcon to `apps/app/app/(authenticated)/components/sidebar.tsx`
-- [ ] 8 remaining orphaned endpoints (down from 16); /workflows/ subtree (5 routes) still orphaned; email templates (7 handlers) no UI
+- [ ] 11 orphaned endpoints (14 consumed, 11 orphaned of which 3 are webhook/programmatic by design = 8 truly orphaned); /workflows/ subtree (5 routes) still orphaned; email templates (7 handlers) no UI
 
 ### P1.BU Marketing — Public Web Surfaces Missing
 
@@ -498,7 +501,7 @@ STATUS.md lists 40+ nonexistent files. Backend: 39 routes, 1,453-line agent-loop
 
 ### P1.BZ BROKEN_PRISMA_READ — 3 Dead Route Groups
 
-- [ ] WorkforceOptimization (4), PerformancePrediction (1), AiEventSetupSession (5) — no Prisma models, JSON-only
+- [ ] WorkforceOptimization (4), PerformancePrediction (1), AiEventSetupSession (5) — no Prisma models, JSON-only. **Note:** All 3 route groups use `store X in memory` in their manifests by design — this is ephemeral session/compute state (AI event parsing sessions, prediction results, optimization runs), not a persistence bug. DEFERRED (intentional ephemeral data, no UI needed).
 
 ### P1.CA Battle Board — Add Staff — RESOLVED
 
@@ -652,6 +655,7 @@ Historical pass logs, audit reports, and blocker notes live in:
 | **v48** | **Search multi-word tokenization (P1.S/FR-106).** `apps/api/app/api/search/route.ts` now token-ANDs multi-word queries — `q.split(/\s+/)` → `AND: tokens.map(t => OR over fields)`. Single-token queries keep the original flat-OR shape so query plans and existing tests stay stable. 4 new tests in `__tests__/search/search.test.ts` cover the AND-vs-OR boundary, token ordering, whitespace collapse, and entity-specific filter preservation (venue `isActive`). API typecheck clean, suite 4095 passing / 1 skipped. **Followup remaining**: saved searches + history (FR-3xx/4xx) need new Prisma models + product decision on FR-304 sharing scope. |
 | **v49** | **Kitchen team activity + events mode toggle + payroll GET role gate.** RESOLVED P0.N+: kitchen production board "Team activity tracking coming soon" stub replaced with live TeamActivityFeed component (GET /api/kitchen/team-activity, 30s auto-refresh, avatars, status transitions, timestamps). New file: `apps/app/app/(authenticated)/kitchen/components/team-activity-feed.tsx`. PARTIALLY RESOLVED P1.B: added Planning/Execution/Reports mode toggle above tab bar in event detail page (auto-selects by event date/status, persisted in localStorage per event). RESOLVED P1.AM followup: `requireApiManager()` added to GET handler in `payroll/approvals/route.ts` (was session-only, now manager-tier matching PUT pattern). Stats: placeholder/stub pages 1→0. |
 | **v50** | **Calendar API filters + collaboration notification center + RLS vendor_catalogs fix.** RESOLVED P1.E partial: calendar API now filters cancelled events (FR-402), approved-only time-off (FR-402), and cross-day shift overlap (FR-402). Applied to both API route and server-side page query. RESOLVED P1.BT partial: built notification center at /notifications consuming 6 manifest-generated collaboration API routes (list, detail, create, mark-read, mark-dismissed, remove). Added Email History and Email Preferences tabs to settings/notifications consuming 2 more routes. Orphaned collaboration routes reduced from 16/25 to 8/25. Created RLS fix migration for vendor_catalogs (singular→plural table name bug from 20260429140000). Files: 2 new (notifications/), 4 modified (calendar API+page, settings notifications, sidebar), 1 new migration. Calendar tests: 37 passing. API suite: 4095 passing / 1 skipped. |
+| **v51** | **Calendar improvements (P1.E).** Cross-day rendering for shifts spanning midnight. URL query params sync (view/date/types). Reschedule API validation (cancelled status, invalid date, past date). Overflow limit fix (spec: 4 month / 8 week). Promise.all for parallel calendar DB queries. Sequential→parallel in page.tsx getCalendarData. |
 | **v46** | **API role guards (P1.AM batch 2).** Wired `requireApiManager` into accounting `/payments/[id]` PUT (process) + POST (refund) and `/invoices/[id]` PUT (update) + PATCH (apply-payment / mark-as-paid / mark-overdue / send-reminder) + POST (send) + DELETE (void). Each guard runs *before* `checkRateLimit`, the body parse, and any DB read — staff-tier sessions short-circuit at 403 and never reach the gateway or invoice ledger. 5 existing accounting tests gained an `@/app/lib/auth-roles` mock so business-logic coverage is preserved; new `accounting/role-guards.test.ts` (6 cases) is the regression test on the boundary itself (asserts the database/gateway/rate-limit mocks are NEVER called on guard failure — so removing the guard fails the test). API suite: 4091 passing / 1 skipped; typecheck clean. |
 | **v44** | **Web SEO branding.** RESOLVED P1.AL: `packages/seo/metadata.ts` rebranded from next-forge/Vercel → Capsule Pro (applicationName, authors, creator, publisher, twitter, openGraph siteName). Propagates to all `apps/web` pages via `createMetadata()`. Split P1.AL/AM section so AM (Session Auth role check) remains open. |
 | **v43** | **Lead source enum + duplicate detection.** RESOLVED P1.BV: closed enum `website|manual|import` enforced at manifest (constraint + create guard), server action (rejects unknown, defaults to `manual`), and UI form (drops free-text select). Duplicate email detection added — `createLead` returns `{ possibleDuplicate, duplicateReason }`; list page batches Client/Lead email lookups and renders `MonoLabel "POSSIBLE DUPLICATE"` per FR-129. Test: 7 cases in `leads-create-action.test.ts`. |

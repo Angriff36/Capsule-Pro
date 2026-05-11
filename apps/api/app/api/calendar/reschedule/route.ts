@@ -27,10 +27,66 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
+    // Validate date is parseable
     const newDateTime = new Date(newDate);
+    if (Number.isNaN(newDateTime.getTime())) {
+      return NextResponse.json(
+        { error: "Invalid date format for newDate" },
+        { status: 400 }
+      );
+    }
+
+    // Reject past dates for events
+    const now = new Date();
+    const newDateOnly = new Date(
+      newDateTime.getFullYear(),
+      newDateTime.getMonth(),
+      newDateTime.getDate()
+    );
+    const todayOnly = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate()
+    );
+    if (newDateOnly < todayOnly) {
+      return NextResponse.json(
+        { error: "Cannot reschedule to a past date" },
+        { status: 400 }
+      );
+    }
 
     if (eventType === "event") {
-      // Update event date
+      // Check event exists and is not cancelled/completed
+      const existing = await database.event.findFirst({
+        where: {
+          tenantId,
+          id: eventId,
+          deletedAt: null,
+        },
+        select: { id: true, status: true },
+      });
+
+      if (!existing) {
+        return NextResponse.json(
+          { error: "Event not found" },
+          { status: 404 }
+        );
+      }
+
+      if (existing.status === "cancelled") {
+        return NextResponse.json(
+          { error: "Cannot reschedule a cancelled event" },
+          { status: 400 }
+        );
+      }
+
+      if (existing.status === "completed") {
+        return NextResponse.json(
+          { error: "Cannot reschedule a completed event" },
+          { status: 400 }
+        );
+      }
+
       const updated = await database.event.update({
         where: {
           tenantId_id: {
@@ -46,7 +102,7 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ success: true, event: updated });
     }
     if (eventType === "shift") {
-      // Update shift start and end, preserving duration
+      // Check shift exists
       const existingShift = await database.scheduleShift.findFirst({
         where: {
           tenantId,

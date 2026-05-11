@@ -31,6 +31,7 @@ import {
 import {
   addMonths,
   eachDayOfInterval,
+  endOfDay,
   endOfMonth,
   endOfWeek,
   format,
@@ -62,8 +63,8 @@ import {
   X,
   XCircle,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
 
@@ -213,8 +214,24 @@ export function UnifiedCalendar({
   initialDate,
 }: UnifiedCalendarProps) {
   const router = useRouter();
-  const [currentDate, setCurrentDate] = useState(initialDate ?? new Date());
-  const [view, setView] = useState<"month" | "week" | "day">("month");
+  const searchParams = useSearchParams();
+
+  // Initialize from URL params or defaults
+  const urlView = searchParams?.get("view");
+  const urlDate = searchParams?.get("date");
+  const urlTypes = searchParams?.get("types");
+
+  const [currentDate, setCurrentDate] = useState<Date>(() => {
+    if (urlDate) {
+      const parsed = new Date(urlDate);
+      return Number.isNaN(parsed.getTime()) ? (initialDate ?? new Date()) : parsed;
+    }
+    return initialDate ?? new Date();
+  });
+  const [view, setView] = useState<"month" | "week" | "day">(() => {
+    if (urlView === "week" || urlView === "day") return urlView;
+    return "month";
+  });
   const [events, setEvents] = useState<CalendarEvent[]>(initialEvents);
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(
     null
@@ -225,11 +242,13 @@ export function UnifiedCalendar({
     date: Date | null;
     events: CalendarEvent[];
   }>({ open: false, date: null, events: [] });
-  const [filters, setFilters] = useState<string[]>([
-    "event",
-    "shift",
-    "timeoff",
-  ]);
+  const [filters, setFilters] = useState<string[]>(() => {
+    if (urlTypes) {
+      const parsed = urlTypes.split(",").filter((t) => ["event", "shift", "timeoff"].includes(t));
+      return parsed.length > 0 ? parsed : ["event", "shift", "timeoff"];
+    }
+    return ["event", "shift", "timeoff"];
+  });
   const [searchQuery, setSearchQuery] = useState("");
   const [_isLoading, setIsLoading] = useState(false);
   const [availabilityDate, setAvailabilityDate] = useState<string>("");
@@ -253,6 +272,25 @@ export function UnifiedCalendar({
         distance: 8,
       },
     })
+  );
+
+  // Sync view/date/types to URL query params
+  const syncUrlParams = useCallback(
+    (newView: string, newDate: Date, newFilters: string[]) => {
+      const params = new URLSearchParams();
+      if (newView !== "month") params.set("view", newView);
+      const today = new Date();
+      if (!isSameDay(newDate, today)) {
+        params.set("date", format(newDate, "yyyy-MM-dd"));
+      }
+      const defaultTypes = ["event", "shift", "timeoff"];
+      if (newFilters.length < 3 || newFilters.some((f) => !defaultTypes.includes(f))) {
+        params.set("types", newFilters.join(","));
+      }
+      const qs = params.toString();
+      router.replace(`/calendar${qs ? `?${qs}` : ""}`, { scroll: false });
+    },
+    [router]
   );
 
   // Fetch calendar data
@@ -296,33 +334,63 @@ export function UnifiedCalendar({
     });
   }, [events, filters, searchQuery]);
 
-  // Get events for a specific day
+  // Get events for a specific day (includes cross-day shifts/timeoff spanning midnight)
   const getEventsForDay = (day: Date) => {
-    return filteredEvents.filter((event) => isSameDay(event.start, day));
+    return filteredEvents.filter((event) => {
+      const dayStart = startOfDay(day);
+      const dayEnd = endOfDay(day);
+      const eventStart = event.start;
+
+      // Event starts on this day
+      if (isSameDay(eventStart, day)) return true;
+
+      // Cross-day: event started before this day and (has no end, or ends on/after this day)
+      if (event.end) {
+        const eventEndDate = new Date(event.end);
+        return eventStart < dayStart && eventEndDate >= dayStart;
+      }
+
+      return false;
+    });
   };
 
   // Navigation
   const nextPeriod = () => {
+    let next: Date;
     if (view === "month") {
-      setCurrentDate(addMonths(currentDate, 1));
+      next = addMonths(currentDate, 1);
     } else if (view === "week") {
-      setCurrentDate(new Date(currentDate.getTime() + 7 * 24 * 60 * 60 * 1000));
+      next = new Date(currentDate.getTime() + 7 * 24 * 60 * 60 * 1000);
     } else {
-      setCurrentDate(new Date(currentDate.getTime() + 24 * 60 * 60 * 1000));
+      next = new Date(currentDate.getTime() + 24 * 60 * 60 * 1000);
     }
+    setCurrentDate(next);
+    syncUrlParams(view, next, filters);
   };
 
   const prevPeriod = () => {
+    let prev: Date;
     if (view === "month") {
-      setCurrentDate(subMonths(currentDate, 1));
+      prev = subMonths(currentDate, 1);
     } else if (view === "week") {
-      setCurrentDate(new Date(currentDate.getTime() - 7 * 24 * 60 * 60 * 1000));
+      prev = new Date(currentDate.getTime() - 7 * 24 * 60 * 60 * 1000);
     } else {
-      setCurrentDate(new Date(currentDate.getTime() - 24 * 60 * 60 * 1000));
+      prev = new Date(currentDate.getTime() - 24 * 60 * 60 * 1000);
     }
+    setCurrentDate(prev);
+    syncUrlParams(view, prev, filters);
   };
 
-  const goToToday = () => setCurrentDate(new Date());
+  const goToToday = () => {
+    const today = new Date();
+    setCurrentDate(today);
+    syncUrlParams(view, today, filters);
+  };
+
+  const changeView = (newView: "month" | "week" | "day") => {
+    setView(newView);
+    syncUrlParams(newView, currentDate, filters);
+  };
 
   const openSelectedEventDetails = () => {
     if (!selectedEvent || selectedEvent.type !== "event") {
@@ -439,11 +507,11 @@ export function UnifiedCalendar({
 
   // Toggle filter
   const toggleFilter = (filter: string) => {
-    setFilters((prev) =>
-      prev.includes(filter)
-        ? prev.filter((f) => f !== filter)
-        : [...prev, filter]
-    );
+    const next = filters.includes(filter)
+      ? filters.filter((f) => f !== filter)
+      : [...filters, filter];
+    setFilters(next);
+    syncUrlParams(view, currentDate, next);
   };
 
   // Handle event click
@@ -575,7 +643,7 @@ export function UnifiedCalendar({
           <Tabs
             onValueChange={(value) => {
               if (value === "month" || value === "week" || value === "day") {
-                setView(value);
+                changeView(value);
               }
             }}
             value={view}
@@ -753,16 +821,16 @@ export function UnifiedCalendar({
                     className={`space-y-1 overflow-y-auto ${view === "day" ? "max-h-[400px]" : "max-h-[90px]"}`}
                   >
                     {dayEvents
-                      .slice(0, view === "day" ? 50 : 4)
+                      .slice(0, view === "day" ? 50 : view === "week" ? 8 : 4)
                       .map((event) => (
                         <DraggableEvent
                           event={event}
                           isDayView={view === "day"}
-                          key={event.id}
+                          key={`${event.id}-${day.toISOString()}`}
                           onClick={handleEventClick}
                         />
                       ))}
-                    {dayEvents.length > (view === "day" ? 50 : 4) && (
+                    {dayEvents.length > (view === "day" ? 50 : view === "week" ? 8 : 4) && (
                       <button
                         className="text-xs text-ink/60 pl-1 underline-offset-2 hover:underline hover:text-ink"
                         onClick={() =>
@@ -774,7 +842,7 @@ export function UnifiedCalendar({
                         }
                         type="button"
                       >
-                        +{dayEvents.length - (view === "day" ? 50 : 4)} more
+                        +{dayEvents.length - (view === "day" ? 50 : view === "week" ? 8 : 4)} more
                       </button>
                     )}
                   </div>

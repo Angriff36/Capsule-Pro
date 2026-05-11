@@ -45,8 +45,6 @@ export interface CalendarEvent {
 }
 
 async function getCalendarData(tenantId: string, start: Date, end: Date) {
-  const events: CalendarEvent[] = [];
-
   // Normalize to UTC date-only for @db.Date column comparisons
   const startUtc = new Date(
     Date.UTC(start.getFullYear(), start.getMonth(), start.getDate())
@@ -55,45 +53,30 @@ async function getCalendarData(tenantId: string, start: Date, end: Date) {
     Date.UTC(end.getFullYear(), end.getMonth(), end.getDate(), 23, 59, 59, 999)
   );
 
-  // Fetch events
-  const dbEvents = await database.event.findMany({
-    where: {
-      tenantId,
-      eventDate: {
-        gte: startUtc,
-        lte: endUtc,
+  // Fetch all three data sources in parallel
+  const [dbEvents, shiftsResult, timeOffResult] = await Promise.all([
+    database.event.findMany({
+      where: {
+        tenantId,
+        eventDate: {
+          gte: startUtc,
+          lte: endUtc,
+        },
+        deletedAt: null,
+        status: { not: "cancelled" },
       },
-      deletedAt: null,
-      status: { not: "cancelled" },
-    },
-    select: {
-      id: true,
-      title: true,
-      eventDate: true,
-      eventType: true,
-      status: true,
-      venueName: true,
-      guestCount: true,
-    },
-    orderBy: { eventDate: "asc" },
-  });
-
-  events.push(
-    ...dbEvents.map((e) => ({
-      id: e.id,
-      title: e.title || `${e.eventType} Event`,
-      start: e.eventDate,
-      type: "event" as const,
-      status: e.status,
-      location: e.venueName || undefined,
-      guestCount: e.guestCount || undefined,
-      details: `Type: ${e.eventType}`,
-    }))
-  );
-
-  // Fetch shifts from tenant_staff.schedule_shifts
-  try {
-    const shifts = await database.scheduleShift.findMany({
+      select: {
+        id: true,
+        title: true,
+        eventDate: true,
+        eventType: true,
+        status: true,
+        venueName: true,
+        guestCount: true,
+      },
+      orderBy: { eventDate: "asc" },
+    }).catch(() => []),
+    database.scheduleShift.findMany({
       where: {
         tenantId,
         OR: [
@@ -111,30 +94,8 @@ async function getCalendarData(tenantId: string, start: Date, end: Date) {
       },
       orderBy: { shift_start: "asc" },
       take: 100,
-    });
-
-    if (shifts && shifts.length > 0) {
-      events.push(
-        ...shifts.map((s) => ({
-          id: s.id,
-          title: `Shift: ${s.role_during_shift || "Staff"}`,
-          start: s.shift_start,
-          end: s.shift_end ?? undefined,
-          type: "shift" as const,
-          details: s.role_during_shift
-            ? `Role: ${s.role_during_shift}`
-            : undefined,
-        }))
-      );
-    }
-  } catch (error) {
-    // Shifts query failed
-    console.log("No shifts found:", error);
-  }
-
-  // Fetch time off requests from tenant_staff.employee_time_off_requests
-  try {
-    const timeOff = await database.employeeTimeOffRequest.findMany({
+    }).catch(() => []),
+    database.employeeTimeOffRequest.findMany({
       where: {
         tenant_id: tenantId,
         start_date: {
@@ -154,23 +115,51 @@ async function getCalendarData(tenantId: string, start: Date, end: Date) {
       },
       orderBy: { start_date: "asc" },
       take: 50,
-    });
+    }).catch(() => []),
+  ]);
 
-    if (timeOff && timeOff.length > 0) {
-      events.push(
-        ...timeOff.map((t) => ({
-          id: t.id,
-          title: `${t.request_type?.replace(/_/g, " ") || "Time Off"}`,
-          start: new Date(t.start_date),
-          end: t.end_date ? new Date(t.end_date) : undefined,
-          type: "timeoff" as const,
-          status: t.status,
-          details: t.reason || undefined,
-        }))
-      );
-    }
-  } catch (error) {
-    console.log("No time off found:", error);
+  const events: CalendarEvent[] = [];
+
+  events.push(
+    ...dbEvents.map((e) => ({
+      id: e.id,
+      title: e.title || `${e.eventType} Event`,
+      start: e.eventDate,
+      type: "event" as const,
+      status: e.status,
+      location: e.venueName || undefined,
+      guestCount: e.guestCount || undefined,
+      details: `Type: ${e.eventType}`,
+    }))
+  );
+
+  if (shiftsResult && shiftsResult.length > 0) {
+    events.push(
+      ...shiftsResult.map((s) => ({
+        id: s.id,
+        title: `Shift: ${s.role_during_shift || "Staff"}`,
+        start: s.shift_start,
+        end: s.shift_end ?? undefined,
+        type: "shift" as const,
+        details: s.role_during_shift
+          ? `Role: ${s.role_during_shift}`
+          : undefined,
+      }))
+    );
+  }
+
+  if (timeOffResult && timeOffResult.length > 0) {
+    events.push(
+      ...timeOffResult.map((t) => ({
+        id: t.id,
+        title: `${t.request_type?.replace(/_/g, " ") || "Time Off"}`,
+        start: new Date(t.start_date),
+        end: t.end_date ? new Date(t.end_date) : undefined,
+        type: "timeoff" as const,
+        status: t.status,
+        details: t.reason || undefined,
+      }))
+    );
   }
 
   return events;
