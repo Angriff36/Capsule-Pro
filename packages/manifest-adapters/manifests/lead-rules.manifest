@@ -28,6 +28,7 @@ entity Lead {
   computed isArchived: boolean = self.deletedAt > 0
 
   constraint validStatus: self.status in ["new", "contacted", "qualified", "proposal", "won", "lost", "disqualified"] "Invalid lead status"
+  constraint validSource: self.source in ["website", "manual", "import"] "Lead source must be one of: website, manual, import"
   constraint validContactName: self.contactName != null and self.contactName != "" "Contact name is required"
   constraint positiveEstimatedValue: self.estimatedValue >= 0 "Estimated value must be non-negative"
 
@@ -51,6 +52,7 @@ entity Lead {
 
   command create(source: string, companyName: string, contactName: string, contactEmail: string, contactPhone: string, eventType: string, eventDate: number, estimatedGuests: number, estimatedValue: number, assignedTo: string, notes: string) {
     guard contactName != null and contactName != "" "Contact name is required"
+    guard source in ["website", "manual", "import"] "Lead source must be one of: website, manual, import"
 
     constraint warnNoContactInfo:warn (contactEmail == null or contactEmail == "") and (contactPhone == null or contactPhone == "") {
       messageTemplate: "Creating lead with no email or phone for '{contactName}'"

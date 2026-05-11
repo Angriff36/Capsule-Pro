@@ -102,7 +102,61 @@ export default async function MarketingLeadsPage() {
       : 0,
   };
 
-  const serializedLeads = leads.map(serializeLead);
+  // Spec FR-129: annotate leads whose contactEmail matches an existing Client
+  // or another Lead with a possibleDuplicate flag so the row can render
+  // MonoLabel "POSSIBLE DUPLICATE". Computed in a single query each to avoid N+1.
+  const leadEmails = Array.from(
+    new Set(
+      leads
+        .map((l) => l.contactEmail?.trim().toLowerCase())
+        .filter((email): email is string => Boolean(email))
+    )
+  );
+
+  let clientEmailSet = new Set<string>();
+  let leadEmailCounts = new Map<string, number>();
+  if (leadEmails.length > 0) {
+    const [matchingClients, matchingLeads] = await Promise.all([
+      database.client.findMany({
+        where: {
+          tenantId,
+          email: { in: leadEmails, mode: "insensitive" },
+        },
+        select: { email: true },
+      }),
+      database.lead.findMany({
+        where: {
+          tenantId,
+          deletedAt: null,
+          contactEmail: { in: leadEmails, mode: "insensitive" },
+        },
+        select: { contactEmail: true },
+      }),
+    ]);
+    clientEmailSet = new Set(
+      matchingClients
+        .map((c) => c.email?.toLowerCase())
+        .filter((e): e is string => Boolean(e))
+    );
+    leadEmailCounts = matchingLeads.reduce((acc, l) => {
+      const e = l.contactEmail?.toLowerCase();
+      if (e) {
+        acc.set(e, (acc.get(e) ?? 0) + 1);
+      }
+      return acc;
+    }, new Map<string, number>());
+  }
+
+  const serializedLeads = leads.map((lead) => {
+    const serialized = serializeLead(lead);
+    const email = lead.contactEmail?.trim().toLowerCase();
+    if (!email) {
+      return serialized;
+    }
+    const clientHit = clientEmailSet.has(email);
+    const leadHit = (leadEmailCounts.get(email) ?? 0) > 1;
+    return { ...serialized, possibleDuplicate: clientHit || leadHit };
+  });
 
   return (
     <PageCanvas>

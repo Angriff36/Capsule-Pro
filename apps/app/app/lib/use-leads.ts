@@ -46,6 +46,13 @@ export interface Lead {
   createdAt: DateOrString;
   updatedAt: DateOrString;
   deletedAt: DateOrString | null;
+  /**
+   * Marketing spec FR-129: when contactEmail matches an existing Client.email
+   * or another Lead.contactEmail in the same tenant, the row is flagged so the
+   * list can render a "POSSIBLE DUPLICATE" annotation. Spec: leads are created
+   * regardless; this is annotation, not rejection.
+   */
+  possibleDuplicate?: boolean;
 }
 
 export interface LeadSummary {

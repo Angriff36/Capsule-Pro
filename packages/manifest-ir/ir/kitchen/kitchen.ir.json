@@ -5,7 +5,7 @@
     "irHash": "",
     "compilerVersion": "0.3.8",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-05-04T10:30:51.903Z",
+    "compiledAt": "2026-05-11T11:33:41.494Z",
     "sources": [
       "admin-chat-participant-rules.manifest",
       "admin-task-rules.manifest",
@@ -26354,6 +26354,51 @@
           },
           "severity": "block",
           "message": "Invalid lead status",
+          "overrideable": false
+        },
+        {
+          "name": "validSource",
+          "code": "validSource",
+          "expression": {
+            "kind": "binary",
+            "operator": "in",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "source"
+            },
+            "right": {
+              "kind": "array",
+              "elements": [
+                {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "website"
+                  }
+                },
+                {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "manual"
+                  }
+                },
+                {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "import"
+                  }
+                }
+              ]
+            }
+          },
+          "severity": "block",
+          "message": "Lead source must be one of: website, manual, import",
           "overrideable": false
         },
         {
@@ -117080,6 +117125,40 @@
               }
             }
           }
+        },
+        {
+          "kind": "binary",
+          "operator": "in",
+          "left": {
+            "kind": "identifier",
+            "name": "source"
+          },
+          "right": {
+            "kind": "array",
+            "elements": [
+              {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "website"
+                }
+              },
+              {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "manual"
+                }
+              },
+              {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "import"
+                }
+              }
+            ]
+          }
         }
       ],
       "constraints": [
@@ -117175,6 +117254,16 @@
             "value": {
               "kind": "string",
               "value": "Contact name is required"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Lead source must be one of: website, manual, import"
             }
           }
         },

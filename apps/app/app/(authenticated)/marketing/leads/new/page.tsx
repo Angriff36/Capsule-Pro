@@ -25,17 +25,6 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { createLead } from "../actions";
 
-const LEAD_SOURCES = [
-  "Website",
-  "Referral",
-  "Event",
-  "Outreach",
-  "Social Media",
-  "Partner",
-  "Cold Call",
-  "Other",
-];
-
 const EVENT_TYPES = [
   "Wedding",
   "Corporate",
@@ -54,7 +43,6 @@ export default function NewLeadPage() {
     companyName: "",
     contactEmail: "",
     contactPhone: "",
-    source: "",
     eventType: "",
     eventDate: "",
     estimatedGuests: "",
@@ -72,12 +60,15 @@ export default function NewLeadPage() {
 
     setLoading(true);
     try {
-      const lead = await createLead({
+      const result = await createLead({
         contactName: formData.contactName,
         companyName: formData.companyName || undefined,
         contactEmail: formData.contactEmail || undefined,
         contactPhone: formData.contactPhone || undefined,
-        source: formData.source || undefined,
+        // Operator-entered leads are always "manual" per spec FR-501 (closed enum
+        // website|manual|import). "website" is reserved for the public form;
+        // "import" is owned by CSV upload tooling.
+        source: "manual",
         eventType: formData.eventType || undefined,
         eventDate: formData.eventDate || undefined,
         estimatedGuests: formData.estimatedGuests
@@ -89,8 +80,17 @@ export default function NewLeadPage() {
         notes: formData.notes || undefined,
       });
 
-      toast.success("Lead created successfully");
-      router.push("/marketing/leads/" + lead.id);
+      if (result.possibleDuplicate) {
+        toast.warning("Lead created — possible duplicate", {
+          description:
+            result.duplicateReason === "client_email"
+              ? "An existing client uses this email address."
+              : "Another lead uses this email address.",
+        });
+      } else {
+        toast.success("Lead created successfully");
+      }
+      router.push("/marketing/leads/" + result.lead.id);
     } catch (error) {
       toast.error("Failed to create lead", {
         description: error instanceof Error ? error.message : "Unknown error",
@@ -194,31 +194,15 @@ export default function NewLeadPage() {
               </div>
             </div>
 
-            {/* Lead Source -- Event */}
+            {/* Event */}
             <div className="space-y-4">
-              <h3 className="text-lg font-medium">Lead Source</h3>
+              <h3 className="text-lg font-medium">Event</h3>
+              <p className="text-xs text-muted-foreground">
+                Source is recorded as <span className="font-mono">manual</span>.
+                Website inquiries flow through the public form; CSV uploads use
+                the import path.
+              </p>
               <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="source">Source</Label>
-                  <Select
-                    onValueChange={(value) =>
-                      setFormData({ ...formData, source: value })
-                    }
-                    value={formData.source}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a source" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {LEAD_SOURCES.map((s) => (
-                        <SelectItem key={s} value={s}>
-                          {s}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
                 <div className="space-y-2">
                   <Label htmlFor="eventType">Event Type</Label>
                   <Select

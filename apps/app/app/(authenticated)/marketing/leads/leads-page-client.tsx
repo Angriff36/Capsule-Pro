@@ -10,6 +10,7 @@
 
 "use client";
 
+import { MonoLabel } from "@repo/design-system/components/blocks/page-shell";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -226,12 +227,22 @@ export function LeadsPageClient({ leads, summary }: LeadsPageClientProps) {
               >
                 {/* Lead info */}
                 <div className="min-w-0">
-                  <a
-                    className="font-medium text-foreground hover:underline"
-                    href={`/marketing/leads/${lead.id}`}
-                  >
-                    {lead.contactName}
-                  </a>
+                  <div className="flex items-center gap-2">
+                    <a
+                      className="font-medium text-foreground hover:underline"
+                      href={`/marketing/leads/${lead.id}`}
+                    >
+                      {lead.contactName}
+                    </a>
+                    {lead.possibleDuplicate && (
+                      <MonoLabel
+                        className="border border-hairline px-1.5 py-0.5 text-[10px] text-amber-700"
+                        title="Email matches an existing client or lead"
+                      >
+                        POSSIBLE DUPLICATE
+                      </MonoLabel>
+                    )}
+                  </div>
                   {lead.companyName && (
                     <p className="truncate text-xs text-muted-foreground">
                       {lead.companyName}
