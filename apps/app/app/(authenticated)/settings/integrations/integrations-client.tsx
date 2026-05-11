@@ -1,5 +1,6 @@
 "use client";
 
+import { ResearchTable } from "@repo/design-system/components/blocks/research-table";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -2005,40 +2006,30 @@ function QuickBooksIntegration() {
               export.
             </p>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b text-left text-muted-foreground">
-                    <th className="pb-2 pr-4 font-medium">Type</th>
-                    <th className="pb-2 pr-4 font-medium">Format</th>
-                    <th className="pb-2 pr-4 font-medium">Records</th>
-                    <th className="pb-2 pr-4 font-medium">Amount</th>
-                    <th className="pb-2 pr-4 font-medium">Filename</th>
-                    <th className="pb-2 font-medium">Exported</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {history.map((entry) => (
-                    <tr className="border-b last:border-0" key={entry.id}>
-                      <td className="py-2 pr-4">{entry.type}</td>
-                      <td className="py-2 pr-4">
-                        <Badge variant="secondary">
-                          {formatLabel(entry.format)}
-                        </Badge>
-                      </td>
-                      <td className="py-2 pr-4">{entry.recordCount}</td>
-                      <td className="py-2 pr-4">
-                        ${entry.totalAmount.toLocaleString()}
-                      </td>
-                      <td className="py-2 pr-4 font-mono text-xs">
-                        {entry.filename}
-                      </td>
-                      <td className="py-2">{formatDate(entry.exportedAt)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <ResearchTable
+              caption={`${history.length} exports`}
+              rows={history.map((entry) => ({
+                id: entry.id,
+                title: (
+                  <div>
+                    <div>{entry.type}</div>
+                    <div className="text-xs text-muted-foreground">{entry.recordCount} records</div>
+                  </div>
+                ),
+                pills: (
+                  <>
+                    <Badge variant="secondary">{formatLabel(entry.format)}</Badge>
+                    <span className="font-medium">${entry.totalAmount.toLocaleString()}</span>
+                  </>
+                ),
+                meta: (
+                  <div>
+                    <div className="font-mono text-xs">{entry.filename}</div>
+                    <div>{formatDate(entry.exportedAt)}</div>
+                  </div>
+                ),
+              }))}
+            />
           )}
         </CardContent>
       </Card>

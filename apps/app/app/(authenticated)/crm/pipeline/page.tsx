@@ -1,5 +1,6 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { ResearchTable } from "@repo/design-system/components/blocks/research-table";
 import {
   CommandBand,
   CommandBandActions,
@@ -266,54 +267,34 @@ export default async function PipelinePage() {
               No proposals are available for this tenant yet.
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-border text-sm">
-                <thead className="bg-muted/40">
-                  <tr className="text-left text-muted-foreground">
-                    <th className="px-6 py-3 font-medium">Deal</th>
-                    <th className="px-6 py-3 font-medium">Client</th>
-                    <th className="px-6 py-3 font-medium">Stage</th>
-                    <th className="px-6 py-3 font-medium">Value</th>
-                    <th className="px-6 py-3 font-medium">Event date</th>
-                    <th className="px-6 py-3 font-medium">Guests</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {deals.map((deal) => (
-                    <tr className="align-top" key={deal.id}>
-                      <td className="px-6 py-4">
-                        <div className="font-medium text-foreground">
-                          {deal.title}
-                        </div>
-                        <div className="mt-1 text-xs text-muted-foreground">
-                          {deal.proposalNumber}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 text-muted-foreground">
-                        {deal.clientName}
-                      </td>
-                      <td className="px-6 py-4">
-                        <Badge
-                          className="capitalize"
-                          variant={stageTone(deal.stage)}
-                        >
-                          {deal.stage}
-                        </Badge>
-                      </td>
-                      <td className="px-6 py-4 text-muted-foreground">
-                        {formatCurrency(deal.total)}
-                      </td>
-                      <td className="px-6 py-4 text-muted-foreground">
-                        {formatDate(deal.eventDate)}
-                      </td>
-                      <td className="px-6 py-4 text-muted-foreground">
-                        {deal.guestCount?.toLocaleString() ?? "—"}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <ResearchTable
+              caption={`${deals.length} deals`}
+              linkComponent={({ href, className, children }) => (
+                <Link className={className} href={href}>{children}</Link>
+              )}
+              rows={deals.map((deal) => ({
+                id: deal.id,
+                title: (
+                  <div>
+                    <div>{deal.title}</div>
+                    <div className="text-xs text-muted-foreground">{deal.proposalNumber} · {deal.clientName}</div>
+                  </div>
+                ),
+                href: `/crm/proposals/${deal.id}`,
+                pills: (
+                  <Badge className="capitalize" variant={stageTone(deal.stage)}>
+                    {deal.stage}
+                  </Badge>
+                ),
+                meta: (
+                  <div>
+                    <div className="font-medium">{formatCurrency(deal.total)}</div>
+                    <div>{formatDate(deal.eventDate)}</div>
+                    {deal.guestCount != null && <div>{deal.guestCount.toLocaleString()} guests</div>}
+                  </div>
+                ),
+              }))}
+            />
           )}
         </section>
       </OperationalColumn>

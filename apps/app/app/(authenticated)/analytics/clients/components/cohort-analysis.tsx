@@ -7,6 +7,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@repo/design-system/components/ui/table";
 import { cn } from "@repo/design-system/lib/utils";
 
 interface CohortAnalysisProps {
@@ -70,54 +78,47 @@ export function CohortAnalysis({ data, className }: CohortAnalysisProps) {
         <CardDescription>Client retention by acquisition month</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr>
-                <th className="text-left font-medium text-muted-foreground pb-2 pr-4">
-                  Cohort
-                </th>
-                {months.map((month) => (
-                  <th
-                    className="text-center font-medium text-muted-foreground pb-2 px-1"
-                    key={month}
-                  >
-                    {month}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {data.map((row) => (
-                <tr key={row.cohort}>
-                  <td className="text-left font-medium py-1 pr-4">
-                    {new Date(`${row.cohort}-01`).toLocaleDateString("en-US", {
-                      month: "short",
-                      year: "2-digit",
-                    })}
-                  </td>
-                  {months.map((_, index) => {
-                    const value = row[
-                      `month${index as 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11}` as keyof typeof row
-                    ] as number;
-                    return (
-                      <td className="py-1 px-0.5" key={index}>
-                        <div
-                          className={cn(
-                            "h-8 w-full rounded text-center text-xs flex items-center justify-center text-white font-medium",
-                            getRetentionColor(value)
-                          )}
-                        >
-                          {value > 0 ? `${value.toFixed(0)}%` : "-"}
-                        </div>
-                      </td>
-                    );
-                  })}
-                </tr>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Cohort</TableHead>
+              {months.map((month) => (
+                <TableHead className="text-center px-1" key={month}>
+                  {month}
+                </TableHead>
               ))}
-            </tbody>
-          </table>
-        </div>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {data.map((row) => (
+              <TableRow key={row.cohort}>
+                <TableCell className="font-medium">
+                  {new Date(`${row.cohort}-01`).toLocaleDateString("en-US", {
+                    month: "short",
+                    year: "2-digit",
+                  })}
+                </TableCell>
+                {months.map((_, index) => {
+                  const value = row[
+                    `month${index as 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11}` as keyof typeof row
+                  ] as number;
+                  return (
+                    <TableCell className="py-1 px-0.5" key={index}>
+                      <div
+                        className={cn(
+                          "h-8 w-full rounded text-center text-xs flex items-center justify-center text-white font-medium",
+                          getRetentionColor(value)
+                        )}
+                      >
+                        {value > 0 ? `${value.toFixed(0)}%` : "-"}
+                      </div>
+                    </TableCell>
+                  );
+                })}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
         <div className="mt-4 flex items-center gap-4 text-xs text-muted-foreground">
           <div className="flex items-center gap-1">
             <div className="h-3 w-3 rounded bg-emerald-500/90" />

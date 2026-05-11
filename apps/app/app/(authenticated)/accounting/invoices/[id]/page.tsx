@@ -9,6 +9,14 @@ import {
   CardTitle,
 } from "@repo/design-system/components/ui/card";
 import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@repo/design-system/components/ui/table";
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -555,36 +563,28 @@ export default function InvoiceDetailPage() {
             <CardTitle>Line Items</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b text-left text-muted-foreground">
-                    <th className="pb-2 pr-4 font-medium">Description</th>
-                    <th className="pb-2 pr-4 text-right font-medium">Qty</th>
-                    <th className="pb-2 pr-4 text-right font-medium">
-                      Unit Price
-                    </th>
-                    <th className="pb-2 pr-4 text-right font-medium">Tax</th>
-                    <th className="pb-2 text-right font-medium">Amount</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {invoice.lineItems.map((item) => (
-                    <tr className="border-b last:border-0" key={item.id}>
-                      <td className="py-2 pr-4">{item.description}</td>
-                      <td className="py-2 pr-4 text-right">{item.quantity}</td>
-                      <td className="py-2 pr-4 text-right">
-                        {formatCurrency(item.unitPrice)}
-                      </td>
-                      <td className="py-2 pr-4 text-right">{item.taxRate}%</td>
-                      <td className="py-2 text-right font-medium">
-                        {formatCurrency(item.amount)}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Description</TableHead>
+                  <TableHead className="text-right">Qty</TableHead>
+                  <TableHead className="text-right">Unit Price</TableHead>
+                  <TableHead className="text-right">Tax</TableHead>
+                  <TableHead className="text-right">Amount</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {invoice.lineItems.map((item) => (
+                  <TableRow key={item.id}>
+                    <TableCell>{item.description}</TableCell>
+                    <TableCell className="text-right">{item.quantity}</TableCell>
+                    <TableCell className="text-right">{formatCurrency(item.unitPrice)}</TableCell>
+                    <TableCell className="text-right">{item.taxRate}%</TableCell>
+                    <TableCell className="text-right font-medium">{formatCurrency(item.amount)}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           </CardContent>
         </Card>
       )}

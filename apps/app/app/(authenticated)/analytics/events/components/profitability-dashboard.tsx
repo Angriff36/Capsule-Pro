@@ -14,6 +14,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@repo/design-system/components/ui/table";
 import { Separator } from "@repo/design-system/components/ui/separator";
 import { useEffect, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
@@ -507,54 +515,32 @@ export function ProfitabilityDashboard({
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b">
-                        <th className="py-2 text-left font-medium">Period</th>
-                        <th className="py-2 text-right font-medium">Events</th>
-                        <th className="py-2 text-right font-medium">Revenue</th>
-                        <th className="py-2 text-right font-medium">
-                          Avg Margin %
-                        </th>
-                        <th className="py-2 text-right font-medium">
-                          Food Cost %
-                        </th>
-                        <th className="py-2 text-right font-medium">
-                          Labor Cost %
-                        </th>
-                        <th className="py-2 text-right font-medium">
-                          Overhead %
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {historical.map((item, index) => (
-                        <tr className="border-b hover:bg-muted/50" key={index}>
-                          <td className="py-2">{item.period}</td>
-                          <td className="py-2 text-right">
-                            {item.totalEvents}
-                          </td>
-                          <td className="py-2 text-right">
-                            ${item.totalRevenue.toFixed(2)}
-                          </td>
-                          <td className="py-2 text-right font-medium">
-                            {item.averageGrossMarginPct.toFixed(1)}%
-                          </td>
-                          <td className="py-2 text-right">
-                            {item.averageFoodCostPct.toFixed(1)}%
-                          </td>
-                          <td className="py-2 text-right">
-                            {item.averageLaborCostPct.toFixed(1)}%
-                          </td>
-                          <td className="py-2 text-right">
-                            {item.averageOverheadPct.toFixed(1)}%
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Period</TableHead>
+                      <TableHead className="text-right">Events</TableHead>
+                      <TableHead className="text-right">Revenue</TableHead>
+                      <TableHead className="text-right">Avg Margin %</TableHead>
+                      <TableHead className="text-right">Food Cost %</TableHead>
+                      <TableHead className="text-right">Labor Cost %</TableHead>
+                      <TableHead className="text-right">Overhead %</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {historical.map((item, index) => (
+                      <TableRow key={index}>
+                        <TableCell>{item.period}</TableCell>
+                        <TableCell className="text-right">{item.totalEvents}</TableCell>
+                        <TableCell className="text-right">${item.totalRevenue.toFixed(2)}</TableCell>
+                        <TableCell className="text-right font-medium">{item.averageGrossMarginPct.toFixed(1)}%</TableCell>
+                        <TableCell className="text-right">{item.averageFoodCostPct.toFixed(1)}%</TableCell>
+                        <TableCell className="text-right">{item.averageLaborCostPct.toFixed(1)}%</TableCell>
+                        <TableCell className="text-right">{item.averageOverheadPct.toFixed(1)}%</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
               </CardContent>
             </Card>
           </section>

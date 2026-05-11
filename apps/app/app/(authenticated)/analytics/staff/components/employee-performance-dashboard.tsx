@@ -14,6 +14,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@repo/design-system/components/ui/table";
 import { Separator } from "@repo/design-system/components/ui/separator";
 import { useEffect, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
@@ -582,65 +590,48 @@ export function EmployeePerformanceDashboard({
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
-                      <thead>
-                        <tr className="border-b">
-                          <th className="py-2 text-left font-medium">Role</th>
-                          <th className="py-2 text-right font-medium">
-                            Employees
-                          </th>
-                          <th className="py-2 text-right font-medium">
-                            Completion %
-                          </th>
-                          <th className="py-2 text-right font-medium">
-                            Quality
-                          </th>
-                          <th className="py-2 text-right font-medium">
-                            Efficiency
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {summary.metricsByRole.map((roleMetrics) => (
-                          <tr
-                            className="border-b hover:bg-muted/50"
-                            key={roleMetrics.role}
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Role</TableHead>
+                        <TableHead className="text-right">Employees</TableHead>
+                        <TableHead className="text-right">Completion %</TableHead>
+                        <TableHead className="text-right">Quality</TableHead>
+                        <TableHead className="text-right">Efficiency</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {summary.metricsByRole.map((roleMetrics) => (
+                        <TableRow key={roleMetrics.role}>
+                          <TableCell>{roleMetrics.role}</TableCell>
+                          <TableCell className="text-right">{roleMetrics.employeeCount}</TableCell>
+                          <TableCell className="text-right">{roleMetrics.avgTaskCompletionRate.toFixed(1)}%</TableCell>
+                          <TableCell
+                            className={`text-right font-medium ${
+                              roleMetrics.avgQualityScore >= 80
+                                ? "text-emerald-600"
+                                : roleMetrics.avgQualityScore >= 60
+                                  ? "text-amber-600"
+                                  : "text-rose-600"
+                            }`}
                           >
-                            <td className="py-2">{roleMetrics.role}</td>
-                            <td className="py-2 text-right">
-                              {roleMetrics.employeeCount}
-                            </td>
-                            <td className="py-2 text-right">
-                              {roleMetrics.avgTaskCompletionRate.toFixed(1)}%
-                            </td>
-                            <td
-                              className={`py-2 text-right font-medium ${
-                                roleMetrics.avgQualityScore >= 80
-                                  ? "text-emerald-600"
-                                  : roleMetrics.avgQualityScore >= 60
-                                    ? "text-amber-600"
-                                    : "text-rose-600"
-                              }`}
-                            >
-                              {roleMetrics.avgQualityScore.toFixed(1)}
-                            </td>
-                            <td
-                              className={`py-2 text-right font-medium ${
-                                roleMetrics.avgEfficiencyScore >= 80
-                                  ? "text-emerald-600"
-                                  : roleMetrics.avgEfficiencyScore >= 60
-                                    ? "text-amber-600"
-                                    : "text-rose-600"
-                              }`}
-                            >
-                              {roleMetrics.avgEfficiencyScore.toFixed(1)}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                            {roleMetrics.avgQualityScore.toFixed(1)}
+                          </TableCell>
+                          <TableCell
+                            className={`text-right font-medium ${
+                              roleMetrics.avgEfficiencyScore >= 80
+                                ? "text-emerald-600"
+                                : roleMetrics.avgEfficiencyScore >= 60
+                                  ? "text-amber-600"
+                                  : "text-rose-600"
+                            }`}
+                          >
+                            {roleMetrics.avgEfficiencyScore.toFixed(1)}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
                 </CardContent>
               </Card>
 

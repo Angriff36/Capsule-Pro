@@ -15,6 +15,7 @@ import {
   Download,
   FileUp,
 } from "lucide-react";
+import { ResearchTable } from "@repo/design-system/components/blocks/research-table";
 import Link from "next/link";
 import { useCallback, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
@@ -332,29 +333,15 @@ export default function InventoryImportPage() {
               </div>
 
               {result.errors.length > 0 && (
-                <div className="max-h-60 overflow-auto rounded-lg border">
-                  <table className="w-full text-sm">
-                    <thead className="bg-muted/50">
-                      <tr>
-                        <th className="px-3 py-2 text-left font-medium">Row</th>
-                        <th className="px-3 py-2 text-left font-medium">
-                          Error
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {result.errors.map((err, i) => (
-                        <tr className="border-t" key={i}>
-                          <td className="px-3 py-2 font-mono text-xs">
-                            {err.row}
-                          </td>
-                          <td className="px-3 py-2 text-red-600">
-                            {err.message}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                <div className="max-h-60 overflow-auto">
+                  <ResearchTable
+                    caption={`${result.errors.length} import errors`}
+                    rows={result.errors.map((err, i) => ({
+                      id: `error-${i}`,
+                      title: <span className="text-red-600">{err.message}</span>,
+                      meta: <span className="font-mono text-xs">Row {err.row}</span>,
+                    }))}
+                  />
                 </div>
               )}
             </div>

@@ -1,6 +1,6 @@
 # Implementation Plan — Capsule Pro
 
-> Updated 2026-05-11 (v38) — RESOLVED P1.BM/formatCurrency consolidation (7 variants → 1 shared utility). RESOLVED P1.AC/RBAC Policy (spec-complete v1). Search now covers 15 entity types.
+> Updated 2026-05-11 (v39) — RESOLVED P1.CD/design-system-tables (9 raw `<table>` → ResearchTable + design system Table components). RESOLVED P1.BM/formatCurrency consolidation (7 variants → 1 shared utility). RESOLVED P1.AC/RBAC Policy (spec-complete v1). Search now covers 15 entity types.
 
 > Priority: P0 = broken/non-functional, P1 = significant missing features, P2 = design alignment/polish, P3 = future/speculative.
 > Status: [ ] not started, [~] partial, [x] done.
@@ -486,9 +486,9 @@ STATUS.md lists 40+ nonexistent files. Backend: 39 routes, 1,453-line agent-loop
 
 - [ ] specs/general/{search,tools,settings,design-system-shell}.md + specs/manifest-migration.md
 
-### P1.CD Design System — 9 Raw `<table>` Elements
+### P1.CD Design System — 9 Raw `<table>` Elements — RESOLVED
 
-- [ ] Across analytics, inventory, events, settings, CRM — should use ResearchTable
+- [x] Across analytics, inventory, events, settings, CRM — RESOLVED: converted all 9 raw `<table>` elements to design system components. 4 list-style tables converted to ResearchTable (inventory/import errors, events/import staff roster, CRM/pipeline deals, settings/integrations export history). 5 data-grid tables converted to design system Table components (analytics profitability dashboard, employee performance by role, cohort retention heatmap, cycle-counting records, invoice line items). All use proper design system imports with consistent styling.
 
 ### P1.CE Events — Spec Documents Fabricated
 
@@ -618,3 +618,4 @@ Historical pass logs, audit reports, and blocker notes live in:
 | **v36** | **Session implementation pass.** RESOLVED P1.S: search API minimum query length (FR-107, reject < 2 chars), tasks entity group added (KitchenTask title/summary search). RESOLVED P1.T: warehouse audits 11 bare Cards now have `tone="canvas"`, deleted 2 dead dashboard components (RecentActivityCard, StockAlertsCard). Stats: Card without tone 314→303, dead code files -2, search entity groups 6→7. |
 | **v37** | **Session implementation pass.** RESOLVED P1.S: search expanded from 7 to 15 entity types — added recipes, dishes, equipment, ingredients, menus, leads, proposals, invoices. Both API route and frontend GROUP_CONFIG updated. Fixed database mock (added `lead` model) and test assertions (7→15 groups). Stats: search entity types 7→15, spec target met. |
 | **v38** | **formatCurrency consolidation.** RESOLVED P1.BM: created shared @repo/design-system/lib/format-currency.ts (formatCurrency/formatCurrencyWhole/formatCurrencyCompact). Replaced ~45 local definitions in apps/app + apps/api with unified imports. 7 behavioral variants consolidated into single options-based API. Server-side packages (pdf, email, sales-reporting) retain internal versions. Fixed formatCompact bug ($ vs USD currency code). Stats: local formatCurrency defs 48→3 (server-side), variants 7→1. RESOLVED P1.AC: RBAC Policy spec-complete v1 — list + detail dialog in /settings/security, adminOnly manifest policy, 10 API routes (5 legacy + 5 manifest-generated), PrismaStore registered, comprehensive test coverage. |
+| **v39** | **Design system table conversion.** RESOLVED P1.CD: converted all 9 raw `<table>` elements to design system components. 4 list-style → ResearchTable (inventory import errors, events import staff roster, CRM pipeline deals, settings integrations export history). 5 data grids → design system Table (analytics profitability/employee-perf/cohort, cycle-counting records, invoice line items). Stats: raw `<table>` elements 9→0. |

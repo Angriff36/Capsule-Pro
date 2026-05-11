@@ -5,6 +5,14 @@ import {
 } from "../actions/records";
 import { getCycleCountSession } from "../actions/sessions";
 import type { CycleCountRecord } from "../types";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@repo/design-system/components/ui/table";
 
 export default async function SessionPage({
   params,
@@ -186,63 +194,34 @@ export default async function SessionPage({
               No count records yet. Start counting items.
             </div>
           ) : (
-            <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-muted/20">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Item Number
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Item Name
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Expected
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Counted
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Variance
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {records.map((record: CycleCountRecord) => (
-                    <tr className="hover:bg-muted/20" key={record.id}>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        {record.itemNumber}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        {record.itemName}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        {record.expectedQuantity.toFixed(3)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        {record.countedQuantity.toFixed(3)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        {(() => {
-                          if (record.variance < 0) {
-                            return (
-                              <span className="text-red-600">
-                                {Math.abs(record.variance).toFixed(3)}
-                              </span>
-                            );
-                          }
-                          return (
-                            <span className="text-green-600">
-                              {Math.abs(record.variance).toFixed(3)}
-                            </span>
-                          );
-                        })()}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Item Number</TableHead>
+                  <TableHead>Item Name</TableHead>
+                  <TableHead className="text-right">Expected</TableHead>
+                  <TableHead className="text-right">Counted</TableHead>
+                  <TableHead className="text-right">Variance</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {records.map((record: CycleCountRecord) => (
+                  <TableRow key={record.id}>
+                    <TableCell>{record.itemNumber}</TableCell>
+                    <TableCell>{record.itemName}</TableCell>
+                    <TableCell className="text-right">{record.expectedQuantity.toFixed(3)}</TableCell>
+                    <TableCell className="text-right font-medium">{record.countedQuantity.toFixed(3)}</TableCell>
+                    <TableCell className="text-right">
+                      {record.variance < 0 ? (
+                        <span className="text-red-600">{Math.abs(record.variance).toFixed(3)}</span>
+                      ) : (
+                        <span className="text-green-600">{Math.abs(record.variance).toFixed(3)}</span>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           )}
         </div>
       </div>

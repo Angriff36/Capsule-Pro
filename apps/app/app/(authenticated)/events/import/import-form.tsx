@@ -1,5 +1,7 @@
 "use client";
 
+import { ResearchTable } from "@repo/design-system/components/blocks/research-table";
+import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
@@ -418,32 +420,18 @@ export function ImportForm() {
 
             {/* Staff Data */}
             {result.mergedStaff && result.mergedStaff.length > 0 && (
-              <div className="flex flex-col gap-3">
-                <Label>Staff Roster ({result.mergedStaff.length} people)</Label>
-                <div className="max-h-48 overflow-auto rounded-lg border">
-                  <table className="w-full text-sm">
-                    <thead className="sticky top-0 bg-muted">
-                      <tr>
-                        <th className="p-2 text-left font-medium">Name</th>
-                        <th className="p-2 text-left font-medium">Position</th>
-                        <th className="p-2 text-left font-medium">Time</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {result.mergedStaff.map((staff, idx) => (
-                        <tr className="border-t" key={idx}>
-                          <td className="p-2">{staff.name}</td>
-                          <td className="p-2">{staff.position || "—"}</td>
-                          <td className="p-2">
-                            {staff.scheduledIn && staff.scheduledOut
-                              ? `${staff.scheduledIn} - ${staff.scheduledOut}`
-                              : "—"}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+              <div className="max-h-48 overflow-auto">
+                <ResearchTable
+                  caption={`${result.mergedStaff.length} staff imported`}
+                  rows={result.mergedStaff.map((staff, idx) => ({
+                    id: `staff-${idx}`,
+                    title: staff.name,
+                    pills: staff.position ? <Badge variant="outline">{staff.position}</Badge> : undefined,
+                    meta: staff.scheduledIn && staff.scheduledOut
+                      ? <span className="font-mono text-xs">{staff.scheduledIn} – {staff.scheduledOut}</span>
+                      : undefined,
+                  }))}
+                />
               </div>
             )}
 
