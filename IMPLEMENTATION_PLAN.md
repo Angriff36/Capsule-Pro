@@ -1,6 +1,6 @@
 # Implementation Plan — Capsule Pro
 
-> Updated 2026-05-11 (v55) — RESOLVED P1.BD (bank reconciliation page + API), P1.BE (financial reporting page + API), P1.I partial (AI tools PageCanvas), P1.H partial (staffing coverage PageCanvas). Accounting sidebar navigation complete (9 entries).
+> Updated 2026-05-11 (v56) — RESOLVED P1.L (payroll Prisma models + PrismaPayrollDataSource BLOCKER comments), P1.T (warehouse putaway + pick/pack pages with PageCanvas shell, FIFO/FEFO badges, API routes).
 
 > Priority: P0 = broken/non-functional, P1 = significant missing features, P2 = design alignment/polish, P3 = future/speculative.
 > Status: [ ] not started, [~] partial, [x] done.
@@ -13,7 +13,7 @@
 |-----------|-------|
 | Spec files analyzed | 54 |
 | Frontend page domains | 28 |
-| API route directories | 123 (93 API-only — 73%) |
+| API route directories | 125 (93 API-only — 73%) |
 | Total route files | 1,383 |
 | Shared packages | 32 (10 with tests, 22 zero tests) |
 | Prisma models | ~206 tenant tables across 10 schemas |
@@ -34,10 +34,10 @@
 | Hardcoded hex colors | 0 (182 → 15 actual → 0 via CSS custom properties) |
 | Collaboration orphaned routes | 11/25 (44%) |
 | Unoptimized web images | 383KB (Dishes.webp 191KB + RecipesMenus.webp 192KB) |
-| Payroll pages functional | 12 (39 API routes; periods/[id] RESOLVED) |
+| Payroll pages functional | 12 (39 API routes; periods/[id] RESOLVED; 4 Prisma models added v56) |
 | Forecasting service | Production-grade (998 lines) |
 | Simulation API | 2,098 lines, zero UI |
-| PageCanvas adoption | ~57 files |
+| PageCanvas adoption | ~61 files |
 | ResearchTable adoption | 5 files |
 | Dead links (href="#") | 0 |
 
@@ -325,8 +325,8 @@ STATUS.md lists 40+ nonexistent files. Backend: 39 routes, 1,453-line agent-loop
 
 ### P1.L Payroll — 4 Missing Models + Data Bugs
 
-- [ ] EmployeeTaxInfo, EmployeePayrollPrefs, TipPool, Department missing from schema
-- [ ] RoleName hardcoded "Default"; 5 BLOCKER comments in PrismaPayrollDataSource
+- [x] ~~EmployeeTaxInfo, EmployeePayrollPrefs, TipPool, Department missing from schema~~ RESOLVED (v56): added 4 Prisma models to tenant_staff schema. EmployeeTaxInfo (filing status, allowances), EmployeePayrollPrefs (pay frequency, rounding), TipPool (per-period allocation with JSON fixed shares), Department (organizational grouping). Added User relations and updated PrismaPayrollDataSource removing all 5 BLOCKER comments.
+- [x] ~~RoleName hardcoded "Default"; 5 BLOCKER comments in PrismaPayrollDataSource~~ RESOLVED (v56): PrismaPayrollDataSource now queries department relation and payrollRole for employee enrichment. All 5 BLOCKER comments eliminated.
 
 ### P1.M Supplier Connectors — Stubs
 
@@ -357,7 +357,7 @@ STATUS.md lists 40+ nonexistent files. Backend: 39 routes, 1,453-line agent-loop
 
 ### P1.T Warehouse — Major Gaps
 
-- [ ] Putaway, pick/pack, FIFO/FEFO all absent
+- [x] ~~Putaway, pick/pack, FIFO/FEFO all absent~~ RESOLVED (v56): created /warehouse/putaway (PageCanvas shell, task table, status filters, GET API) and /warehouse/pick-pack (pick queue + packing station, FIFO/FEFO strategy badges, priority sorting, GET API). Added to warehouse sidebar and landing page. Note: Prisma models for WarehouseZone/PutawayTask/PickTask remain deferred (current implementation derives from existing InventoryTransaction/InventoryStock).
 - [x] ~~11 Cards without tone~~ RESOLVED (v36): added `tone="canvas"` to all 11 in audits section
 - [x] ~~Dead dashboard components~~ RESOLVED (v36): deleted unused RecentActivityCard and StockAlertsCard
 
@@ -444,7 +444,7 @@ STATUS.md lists 40+ nonexistent files. Backend: 39 routes, 1,453-line agent-loop
 - [x] ~~P1.BA-BC: Collections, Revenue Recognition, Payment Methods (zero pages)~~ RESOLVED: full CRUD pages exist at accounting/collections/, accounting/revenue-recognition/, accounting/payment-methods/
 - [x] ~~P1.BD: Bank reconciliation not implemented~~ RESOLVED (v55): created /accounting/bank-reconciliation with PageCanvas shell, metrics, account table with reconciliation status, GET /api/accounting/bank-reconciliation route
 - [x] ~~P1.BE: Financial reporting missing entirely~~ RESOLVED (v55): created /accounting/financial-reporting with PageCanvas shell, report type selector (income statement/balance sheet/cash flow/custom), date range picker, line-item table, CSV export, GET /api/accounting/financial-reports route
-- [ ] P1.BF-BH: 4 missing Prisma models, hardcoded RoleName, 3 legacy dirs
+- [ ] P1.BF-BH: ~~4 missing Prisma models, hardcoded RoleName~~ RESOLVED (v56 — see P1.L), 3 legacy dirs
 
 ### P1.BI-P1.BK CRM/Procurement Stubs — RESOLVED
 
@@ -607,7 +607,7 @@ Largest dead: NutritionLabelCard+AllergenDisplay (642), RecipeOptimizationCard (
 - **Kitchen Allergens** — full CRUD + management modal
 - **Kitchen Production Board** — station filtering + live team activity feed (P0.N+ RESOLVED)
 - **Knowledge Base** — full CRUD API; frontend create + list only (P0.AC)
-- **Payroll** — 39 routes, 12 pages (periods/[id] RESOLVED). 4 models missing (P1.BF).
+- **Payroll** — 39 routes, 12 pages (periods/[id] RESOLVED). 4 models added v56 (EmployeeTaxInfo, EmployeePayrollPrefs, TipPool, Department). PrismaPayrollDataSource BLOCKER comments resolved.
 - **Forecasting** — production-grade 998-line service
 - **Training & Reviews** — full CRUD
 - **Marketing** — ModuleLanding, lead detail, SMS rules, email workflows. Campaigns missing.
@@ -677,3 +677,4 @@ Historical pass logs, audit reports, and blocker notes live in:
 | **v53** | **Events run sheet + proposal generation + dietary/allergen UI (P1.B/partial).** RESOLVED P1.B — Run Sheet: created GET /api/events/{eventId}/run-sheet endpoint aggregating finalized battle board dishes/event menu, staff assignments, timeline, and ingredient shopping list. Created /events/{eventId}/run-sheet/ page with print-friendly layout, CSV export, 4 sections (Menu/Staff/Timeline/Shopping List). Added "run-sheet" tab to EXECUTION_TABS in event-detail-tabs.tsx. Spec: User Story 2 (CommandBand), User Story 3 (Execution tab), FR-505. RESOLVED P1.B — Generate Proposal: created `generateProposalFromEvent()` server action auto-generating CRM Proposal linked to event with auto-generated proposal number and line items from event dishes. "Generate Proposal" button in operations tab of EventDetailsClient; navigates to /crm/proposals/{proposalId} on success. Spec: User Story 2.4, FR-102, FR-301. PARTIALLY RESOLVED P1.B — Dietary/Allergen UI: created allergen-section.tsx component calling existing POST /api/events/allergens/check and GET /api/events/{eventId}/warnings APIs. Displays conflicts with severity badges (critical/dietary), warnings with acknowledge capability. Wired into operations tab of EventDetailsClient. Files: run-sheet API route, run-sheet page, allergen-section.tsx, event-detail-tabs.tsx, EventDetailsClient operations tab. API suite: 4100 passing / 1 skipped. App suite: 265 passing. |
 | **v54** | **Security fixes (P1.H/P1.AM).** RESOLVED P1.H: SQL injection in staffing coverage route — replaced string-interpolated `locationId` with parameterized `$4::uuid` across 5 raw queries (was `locationId.replace(/'/g, "''")` string interpolation). RESOLVED P1.H: added auth guard (`auth()` + `getTenantIdForOrg()`) to staffing recommendations POST — was completely unauthenticated. RESOLVED P1.AM: added `requireApiManager()` role gate to chart-of-accounts `[id]` and `list` GET endpoints (replacing auto-generated session-only auth). Replaced `console.error` with `@repo/observability/log` in coverage route and COA routes. Updated 2 test files with auth mocks. API suite: 4102 passing / 1 skipped. |
 | **v55** | **Accounting bank reconciliation + financial reporting + staffing coverage shell + AI tools PageCanvas (P1.BD/P1.BE/P1.H/P1.I).** RESOLVED P1.BD: bank reconciliation page with PageCanvas shell, metrics, account table, status tracking, API route. RESOLVED P1.BE: financial reporting page with report type selector, date range picker, line-item table, CSV export, API route. RESOLVED P1.I partial: AI tools page migrated from raw div to PageCanvas. RESOLVED P1.H partial: staffing coverage page migrated to PageCanvas shell with design system compliance. Added full accounting sidebar navigation (9 entries). API suite: 4102 passing / 1 skipped. |
+| **v56** | **Payroll Prisma models + warehouse putaway/pick-pack (P1.L/P1.T).** RESOLVED P1.L: added EmployeeTaxInfo, EmployeePayrollPrefs, TipPool, Department Prisma models; updated PrismaPayrollDataSource removing all 5 BLOCKER comments. RESOLVED P1.T: warehouse putaway page + pick & pack page with PageCanvas shell, FIFO/FEFO badges, API routes. API suite: 4102 passing / 1 skipped. |
