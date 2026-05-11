@@ -1,6 +1,6 @@
 # Implementation Plan — Capsule Pro
 
-> Updated 2026-05-11 (v36) — RESOLVED P1.S/search (minimum query length FR-107, tasks entity group added to API). RESOLVED P1.T/warehouse (11 bare Cards with tone, 2 dead components deleted).
+> Updated 2026-05-11 (v37) — RESOLVED P1.S/search (8 new entity types: recipes, dishes, equipment, ingredients, menus, leads, proposals, invoices). Search now covers 15 entity types (spec target met).
 
 > Priority: P0 = broken/non-functional, P1 = significant missing features, P2 = design alignment/polish, P3 = future/speculative.
 > Status: [ ] not started, [~] partial, [x] done.
@@ -335,7 +335,7 @@ STATUS.md lists 40+ nonexistent files. Backend: 39 routes, 1,453-line agent-loop
 - [x] ~~Search results link to dead `/knowledge/`~~ RESOLVED (v23): code already uses `/knowledge-base/`
 - [x] ~~API lacks minimum query length~~ RESOLVED (v36): rejects queries < 2 chars
 - [x] ~~Tasks entity group missing from API search~~ RESOLVED (v36): searches KitchenTask by title/summary
-- [ ] 7/15+ entity types (tasks added; still missing Recipe, Dish, User, Lead, Proposal, Invoice, Equipment, Ingredient, Menu, etc.)
+- [x] ~~7/15+ entity types~~ RESOLVED (v37): now 15 entity types (events, clients, contacts, venues, inventory, tasks, knowledge, recipes, dishes, equipment, ingredients, menus, leads, proposals, invoices)
 - [ ] Saved searches/history missing; no multi-word tokenization
 - [ ] Full spec at `specs/general/search.md` — not referenced
 
@@ -558,7 +558,7 @@ Largest dead: NutritionLabelCard+AllergenDisplay (642), RecipeOptimizationCard (
 - **Communications** — Email templates + workflows CRUD, SMS automation
 - **Facilities** — Create-only UI; edit/delete backend ready but no UI (P1.P)
 - **Logistics** — Driver/vehicle CRUD; route/dispatch/shipment create + status + metadata edit (route edit/delete missing — P0.AA)
-- **Search** — 6 entity types with filtering/pagination (spec wants 15+)
+- **Search** — 15 entity types with filtering/pagination (spec target met)
 - **Inventory** — Stock transfers, cycle counting, barcode scanner all functional
 - **Kitchen Allergens** — full CRUD + management modal
 - **Kitchen Production Board** — station filtering works (team activity stub — P0.N+)
@@ -614,3 +614,4 @@ Historical pass logs, audit reports, and blocker notes live in:
 | **v34** | **Session implementation pass.** RESOLVED P1.BY: container (full CRUD page at /kitchen/containers with metrics, search/filter, create/edit/deactivate dialogs), pricing-tiers (full CRUD page at /inventory/pricing-tiers with metrics, search/filter, create/edit/soft-delete dialogs), preptaskplanworkflow (fixed existing page Prisma _where bug + StatusPill props, added workflows-client.tsx with 14-status config, expandable rows, lifecycle actions). RESOLVED P1.B: events import/[workflowId] workflow detail page with 8-phase progress stepper, auto-refresh, action buttons (resume/retry/cancel). Added sidebar navigation entries for Containers, Prep Task Workflows (Kitchen), and Pricing Tiers (Inventory). Stats: API-only domains with UI: +3, events missing sub-routes: 1→0, kitchen sidebar items: +2, inventory sidebar items: +1. |
 | **v35** | **Session implementation pass.** RESOLVED P1.BY: variancereport (full CRUD page at /inventory/variance-reports with metrics, search/filter, review/approve dialogs + GET /api/variancereport/list), alertsconfig (full CRUD page at /settings/alerts with metrics by channel, search/filter, create/edit/remove dialogs + GET /api/alertsconfig/list). Added sidebar entries for Variance Reports (Inventory) and Alert Configuration (Settings). Stats: API-only domains with UI: +2, settings pages: +1, inventory pages: +1. |
 | **v36** | **Session implementation pass.** RESOLVED P1.S: search API minimum query length (FR-107, reject < 2 chars), tasks entity group added (KitchenTask title/summary search). RESOLVED P1.T: warehouse audits 11 bare Cards now have `tone="canvas"`, deleted 2 dead dashboard components (RecentActivityCard, StockAlertsCard). Stats: Card without tone 314→303, dead code files -2, search entity groups 6→7. |
+| **v37** | **Session implementation pass.** RESOLVED P1.S: search expanded from 7 to 15 entity types — added recipes, dishes, equipment, ingredients, menus, leads, proposals, invoices. Both API route and frontend GROUP_CONFIG updated. Fixed database mock (added `lead` model) and test assertions (7→15 groups). Stats: search entity types 7→15, spec target met. |

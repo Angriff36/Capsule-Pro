@@ -71,6 +71,14 @@ function mockAllModelsEmpty() {
     database.inventoryItem,
     database.knowledgeBaseEntry,
     database.kitchenTask,
+    database.recipe,
+    database.dish,
+    database.equipment,
+    database.ingredient,
+    database.menu,
+    database.lead,
+    database.proposal,
+    database.invoice,
   ] as const;
   for (const model of models) {
     vi.mocked(model.findMany).mockResolvedValue([]);
@@ -468,8 +476,8 @@ describe("Global Search API — GET /api/search", () => {
       expect(response.status).toBe(200);
       expect(body.success).toBe(true);
       expect(body.total).toBe(0);
-      // All 7 entity groups should be present
-      expect(Object.keys(body.groups)).toHaveLength(7);
+      // All 15 entity groups should be present
+      expect(Object.keys(body.groups)).toHaveLength(15);
       for (const group of Object.values(body.groups) as {
         total: number;
         items: unknown[];

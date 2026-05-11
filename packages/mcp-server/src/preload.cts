@@ -14,8 +14,8 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
 const nodePath = require("node:path");
 
-// Use __dirname in CJS context (import.meta.dirname is ESM-only)
-declare const __dirname: string;
+// In CJS context, __dirname is always available; only fall back to cwd
+// eslint-disable-next-line no-undef
 const preloadDir = typeof __dirname !== "undefined" ? __dirname : process.cwd();
 const repoRoot = nodePath.resolve(preloadDir, "../../..");
 

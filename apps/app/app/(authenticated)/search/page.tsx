@@ -24,10 +24,17 @@ import {
   BookOpen,
   CalendarDays,
   CheckSquare,
+  ChefHat,
   ChevronLeft,
   ChevronRight,
+  FileText,
+  Leaf,
   MapPin,
   Package,
+  Receipt,
+  Target,
+  UtensilsCrossed,
+  Wrench,
   User,
   Users,
 } from "lucide-react";
@@ -154,6 +161,105 @@ const GROUP_CONFIG: Record<
         {(item.task_type as string) === "admin" ? "Admin" : "Kitchen"}
         {" · "}
         {item.status as string}
+      </p>
+    ),
+  },
+  recipes: {
+    label: "Recipes",
+    icon: <ChefHat className="size-4" />,
+    href: (item) => `/kitchen/recipes/${item.id}`,
+    title: (item) => (item.name as string) || "Untitled Recipe",
+    description: (item) => (
+      <p className="text-sm text-muted-foreground">
+        {item.category as string}
+        {item.cuisineType ? ` · ${item.cuisineType as string}` : ""}
+      </p>
+    ),
+  },
+  dishes: {
+    label: "Dishes",
+    icon: <UtensilsCrossed className="size-4" />,
+    href: (item) => `/kitchen/dishes/${item.id}`,
+    title: (item) => (item.name as string) || "Untitled Dish",
+    description: (item) => (
+      <p className="text-sm text-muted-foreground">
+        {item.category as string}
+        {item.serviceStyle ? ` · ${item.serviceStyle as string}` : ""}
+      </p>
+    ),
+  },
+  equipment: {
+    label: "Equipment",
+    icon: <Wrench className="size-4" />,
+    href: (item) => `/kitchen/equipment/${item.id}`,
+    title: (item) => (item.name as string) || "Unknown Equipment",
+    description: (item) => (
+      <p className="text-sm text-muted-foreground">
+        {item.type as string}
+        {item.manufacturer ? ` · ${item.manufacturer as string}` : ""}
+      </p>
+    ),
+  },
+  ingredients: {
+    label: "Ingredients",
+    icon: <Leaf className="size-4" />,
+    href: (item) => `/kitchen/ingredients/${item.id}`,
+    title: (item) => (item.name as string) || "Unknown Ingredient",
+    description: (item) => (
+      <p className="text-sm text-muted-foreground">
+        {(item.category as string) || "Uncategorized"}
+      </p>
+    ),
+  },
+  menus: {
+    label: "Menus",
+    icon: <BookOpen className="size-4" />,
+    href: (item) => `/kitchen/menus/${item.id}`,
+    title: (item) => (item.name as string) || "Untitled Menu",
+    description: (item) => (
+      <p className="text-sm text-muted-foreground">
+        {(item.category as string) || "General"}
+      </p>
+    ),
+  },
+  leads: {
+    label: "Leads",
+    icon: <Target className="size-4" />,
+    href: (item) => `/crm/leads/${item.id}`,
+    title: (item) =>
+      (item.companyName as string) ||
+      (item.contactName as string) ||
+      "Unknown Lead",
+    description: (item) => (
+      <p className="text-sm text-muted-foreground">
+        {(item.contactName as string) || ""}
+        {item.source ? ` · ${(item.source as string).replace("_", " ")}` : ""}
+      </p>
+    ),
+  },
+  proposals: {
+    label: "Proposals",
+    icon: <FileText className="size-4" />,
+    href: (item) => `/crm/proposals/${item.id}`,
+    title: (item) =>
+      (item.title as string) || `Proposal #${item.proposalNumber}`,
+    description: (item) => (
+      <p className="text-sm text-muted-foreground">
+        {item.proposalNumber as string}
+        {item.eventType ? ` · ${item.eventType as string}` : ""}
+      </p>
+    ),
+  },
+  invoices: {
+    label: "Invoices",
+    icon: <Receipt className="size-4" />,
+    href: (item) => `/accounting/invoices/${item.id}`,
+    title: (item) =>
+      `Invoice ${item.invoiceNumber as string}` || "Unknown Invoice",
+    description: (item) => (
+      <p className="text-sm text-muted-foreground">
+        {(item.invoiceType as string) || ""}
+        {item.total ? ` · $${Number(item.total).toFixed(2)}` : ""}
       </p>
     ),
   },

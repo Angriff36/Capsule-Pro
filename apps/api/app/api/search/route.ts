@@ -247,6 +247,210 @@ export async function GET(request: NextRequest) {
       groups.knowledge = { items, total };
     }
 
+    if (shouldSearch("recipes")) {
+      const [items, total] = await Promise.all([
+        database.recipe.findMany({
+          where: baseFilter(["name", "description", "category", "cuisineType"]),
+          orderBy: { updatedAt: "desc" },
+          take: limit,
+          skip,
+          select: {
+            id: true,
+            tenantId: true,
+            name: true,
+            category: true,
+            cuisineType: true,
+          },
+        }),
+        database.recipe.count({
+          where: baseFilter(["name", "description", "category", "cuisineType"]),
+        }),
+      ]);
+      groups.recipes = { items, total };
+    }
+
+    if (shouldSearch("dishes")) {
+      const [items, total] = await Promise.all([
+        database.dish.findMany({
+          where: baseFilter(["name", "description", "category", "serviceStyle"]),
+          orderBy: { updatedAt: "desc" },
+          take: limit,
+          skip,
+          select: {
+            id: true,
+            tenantId: true,
+            name: true,
+            category: true,
+            serviceStyle: true,
+          },
+        }),
+        database.dish.count({
+          where: baseFilter(["name", "description", "category", "serviceStyle"]),
+        }),
+      ]);
+      groups.dishes = { items, total };
+    }
+
+    if (shouldSearch("equipment")) {
+      const [items, total] = await Promise.all([
+        database.equipment.findMany({
+          where: baseFilter([
+            "name",
+            "serialNumber",
+            "manufacturer",
+            "model",
+            "type",
+          ]),
+          orderBy: { updatedAt: "desc" },
+          take: limit,
+          skip,
+          select: {
+            id: true,
+            tenantId: true,
+            name: true,
+            type: true,
+            manufacturer: true,
+            status: true,
+          },
+        }),
+        database.equipment.count({
+          where: baseFilter([
+            "name",
+            "serialNumber",
+            "manufacturer",
+            "model",
+            "type",
+          ]),
+        }),
+      ]);
+      groups.equipment = { items, total };
+    }
+
+    if (shouldSearch("ingredients")) {
+      const [items, total] = await Promise.all([
+        database.ingredient.findMany({
+          where: baseFilter(["name", "category"]),
+          orderBy: { updatedAt: "desc" },
+          take: limit,
+          skip,
+          select: {
+            id: true,
+            tenantId: true,
+            name: true,
+            category: true,
+          },
+        }),
+        database.ingredient.count({
+          where: baseFilter(["name", "category"]),
+        }),
+      ]);
+      groups.ingredients = { items, total };
+    }
+
+    if (shouldSearch("menus")) {
+      const [items, total] = await Promise.all([
+        database.menu.findMany({
+          where: baseFilter(["name", "description", "category"]),
+          orderBy: { updatedAt: "desc" },
+          take: limit,
+          skip,
+          select: {
+            id: true,
+            tenantId: true,
+            name: true,
+            category: true,
+          },
+        }),
+        database.menu.count({
+          where: baseFilter(["name", "description", "category"]),
+        }),
+      ]);
+      groups.menus = { items, total };
+    }
+
+    if (shouldSearch("leads")) {
+      const [items, total] = await Promise.all([
+        database.lead.findMany({
+          where: baseFilter([
+            "companyName",
+            "contactName",
+            "contactEmail",
+            "contactPhone",
+            "eventType",
+          ]),
+          orderBy: { createdAt: "desc" },
+          take: limit,
+          skip,
+          select: {
+            id: true,
+            tenantId: true,
+            companyName: true,
+            contactName: true,
+            contactEmail: true,
+            status: true,
+            source: true,
+          },
+        }),
+        database.lead.count({
+          where: baseFilter([
+            "companyName",
+            "contactName",
+            "contactEmail",
+            "contactPhone",
+            "eventType",
+          ]),
+        }),
+      ]);
+      groups.leads = { items, total };
+    }
+
+    if (shouldSearch("proposals")) {
+      const [items, total] = await Promise.all([
+        database.proposal.findMany({
+          where: baseFilter(["title", "proposalNumber", "eventType", "venueName"]),
+          orderBy: { createdAt: "desc" },
+          take: limit,
+          skip,
+          select: {
+            id: true,
+            tenantId: true,
+            title: true,
+            proposalNumber: true,
+            status: true,
+            eventType: true,
+          },
+        }),
+        database.proposal.count({
+          where: baseFilter(["title", "proposalNumber", "eventType", "venueName"]),
+        }),
+      ]);
+      groups.proposals = { items, total };
+    }
+
+    if (shouldSearch("invoices")) {
+      const [items, total] = await Promise.all([
+        database.invoice.findMany({
+          where: baseFilter(["invoiceNumber", "notes"]),
+          orderBy: { createdAt: "desc" },
+          take: limit,
+          skip,
+          select: {
+            id: true,
+            tenantId: true,
+            invoiceNumber: true,
+            invoiceType: true,
+            status: true,
+            total: true,
+            dueDate: true,
+          },
+        }),
+        database.invoice.count({
+          where: baseFilter(["invoiceNumber", "notes"]),
+        }),
+      ]);
+      groups.invoices = { items, total };
+    }
+
     const total = Object.values(groups).reduce((sum, g) => sum + g.total, 0);
 
     return manifestSuccessResponse({ groups, total, page, limit });

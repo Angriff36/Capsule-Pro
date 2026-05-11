@@ -248,6 +248,22 @@ describe("Search API", () => {
     vi.mocked(database.knowledgeBaseEntry.count).mockResolvedValue(0);
     vi.mocked(database.kitchenTask.findMany).mockResolvedValue([]);
     vi.mocked(database.kitchenTask.count).mockResolvedValue(0);
+    vi.mocked(database.recipe.findMany).mockResolvedValue([]);
+    vi.mocked(database.recipe.count).mockResolvedValue(0);
+    vi.mocked(database.dish.findMany).mockResolvedValue([]);
+    vi.mocked(database.dish.count).mockResolvedValue(0);
+    vi.mocked(database.equipment.findMany).mockResolvedValue([]);
+    vi.mocked(database.equipment.count).mockResolvedValue(0);
+    vi.mocked(database.ingredient.findMany).mockResolvedValue([]);
+    vi.mocked(database.ingredient.count).mockResolvedValue(0);
+    vi.mocked(database.menu.findMany).mockResolvedValue([]);
+    vi.mocked(database.menu.count).mockResolvedValue(0);
+    vi.mocked(database.lead.findMany).mockResolvedValue([]);
+    vi.mocked(database.lead.count).mockResolvedValue(0);
+    vi.mocked(database.proposal.findMany).mockResolvedValue([]);
+    vi.mocked(database.proposal.count).mockResolvedValue(0);
+    vi.mocked(database.invoice.findMany).mockResolvedValue([]);
+    vi.mocked(database.invoice.count).mockResolvedValue(0);
 
     const req = createMockRequest(
       "http://localhost:3000/api/search?q=acme&page=1&limit=10"
