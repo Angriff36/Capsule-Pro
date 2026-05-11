@@ -4,6 +4,7 @@
  * POST /api/settings/api-keys/:id/revoke - Revoke an API key
  */
 
+import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
@@ -59,6 +60,54 @@ export const POST = withRateLimit(
         return NextResponse.json(
           { message: "API key is already revoked" },
           { status: 400 }
+        );
+      }
+
+      // Self-revocation prevention.
+      // Why: (1) revoking the key currently being used would terminate the
+      // request session and could leave automated callers without recovery;
+      // (2) revoking a key you created should be intentional via a different
+      // identity to avoid lockout / accidental self-DoS. Both branches return
+      // 403 so the UI can surface a clear error.
+      if (
+        authResult.authMethod === "api_key" &&
+        authResult.apiKeyContext?.id === id
+      ) {
+        return NextResponse.json(
+          { message: "Cannot revoke the API key currently in use" },
+          { status: 403 }
+        );
+      }
+
+      let currentInternalUserId: string | null = null;
+      if (authResult.authMethod === "api_key") {
+        currentInternalUserId = authResult.userId;
+      } else {
+        let clerkId: string | null = null;
+        try {
+          const authData = await auth();
+          clerkId = authData?.userId ?? null;
+        } catch {
+          clerkId = null;
+        }
+        if (clerkId) {
+          const u = await database.user.findFirst({
+            where: {
+              AND: [{ tenantId: authResult.tenantId! }, { authUserId: clerkId }],
+            },
+            select: { id: true },
+          });
+          currentInternalUserId = u?.id ?? null;
+        }
+      }
+
+      if (
+        currentInternalUserId &&
+        existing.createdByUserId === currentInternalUserId
+      ) {
+        return NextResponse.json(
+          { message: "Cannot revoke an API key you created" },
+          { status: 403 }
         );
       }
 

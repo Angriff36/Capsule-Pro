@@ -3,6 +3,7 @@
 // Writes MUST flow through runtime to enforce guards, policies, and constraints
 
 import { auth } from "@repo/auth/server";
+import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -28,6 +29,19 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
+
+    // Self-revocation prevention: a user cannot deactivate their own account.
+    // Why: an admin/manager who deactivates themselves loses access immediately
+    // and there may be no other admin available to restore it.
+    if (body?.userId) {
+      const currentUser = await database.user.findFirst({
+        where: { AND: [{ tenantId }, { authUserId: userId }] },
+        select: { id: true },
+      });
+      if (currentUser && String(body.userId) === currentUser.id) {
+        return manifestErrorResponse("Cannot deactivate your own account", 403);
+      }
+    }
 
     const runtime = await createManifestRuntime({
       user: { id: userId, tenantId },

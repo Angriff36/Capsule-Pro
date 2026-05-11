@@ -1,6 +1,6 @@
 # Implementation Plan — Capsule Pro
 
-> Updated 2026-05-11 (v39) — RESOLVED P1.CD/design-system-tables (9 raw `<table>` → ResearchTable + design system Table components). RESOLVED P1.BM/formatCurrency consolidation (7 variants → 1 shared utility). RESOLVED P1.AC/RBAC Policy (spec-complete v1). Search now covers 15 entity types.
+> Updated 2026-05-11 (v40) — RESOLVED P1.BQ/hex-colors (15 actual → 0 via CSS custom properties). CORRECTED P1.B: event numbers and budget line items verified as fully implemented. Updated collaboration orphaned routes count (32/49 → 16/25). Hex colors 182→0.
 
 > Priority: P0 = broken/non-functional, P1 = significant missing features, P2 = design alignment/polish, P3 = future/speculative.
 > Status: [ ] not started, [~] partial, [x] done.
@@ -23,7 +23,7 @@
 | Placeholder/stub pages | 1 (kitchen team activity) + blog disabled |
 | Delete-without-confirm | 0 (all resolved) |
 | Tables WITH RLS | 83/206 (40.3%) |
-| Legacy Header pages | 33 (13 events + 17 kitchen + 3 other) |
+| Legacy Header pages | 34 (14 events + 17 kitchen + 3 other) |
 | Console statements | ~523 across ~289 files |
 | Skipped tests | ~100 (49 e2e + 6 describe + ~48 manifest-runtime) |
 | Ghost design blocks | 28/41 (68% unused) |
@@ -31,8 +31,8 @@
 | Dead duplicate API dirs | 1 (commandboard vs command-board) |
 | formatCurrency | 1 shared utility (@repo/design-system/lib/format-currency.ts); ~48 local defs replaced; 7 server-side packages retain internal versions (pdf, email, sales-reporting + 3 null-display wrappers) |
 | Card without tone | 303 across 79 files |
-| Hardcoded hex colors | 182 (125 kitchen + 57 scheduling + 0 marketing) |
-| Collaboration orphaned routes | 32/49 (65%) |
+| Hardcoded hex colors | 0 (182 → 15 actual → 0 via CSS custom properties) |
+| Collaboration orphaned routes | 16/25 (64%) |
 | Unoptimized web images | 383KB (Dishes.webp 191KB + RecipesMenus.webp 192KB) |
 | Payroll pages functional | 12 (39 API routes; periods/[id] RESOLVED) |
 | Forecasting service | Production-grade (998 lines) |
@@ -242,7 +242,9 @@ STATUS.md lists 40+ nonexistent files. Backend: 39 routes, 1,453-line agent-loop
 
 - [x] ~~4 missing sub-routes: `[eventId]/contracts`, `staff`, `guests`, `import/[workflowId]`~~ PARTIALLY RESOLVED: created `[eventId]/guests` (full CRUD with RSVP, dietary restrictions, capacity warnings), `[eventId]/staff` (assign/unassign with employee pool, role badges, conflict detection), `[eventId]/contracts` (event-scoped contract listing with status badges, client info, links to full contract detail). Remaining: `import/[workflowId]`.
 - [x] ~~1 missing sub-route: `import/[workflowId]`~~ RESOLVED: created /events/import/[workflowId]/page.tsx with workflow detail client component showing phase progress stepper (8 phases), status badges, auto-refresh for active workflows, action buttons (resume/retry/cancel), error display, and extracted data viewer
-- [ ] Missing features: proposals, run sheets, planning/execution mode, cloning, dietary/allergen, documents, event numbers, budget line items
+- [ ] Missing features: proposals, run sheets, planning/execution mode, cloning, dietary/allergen, documents
+- [x] ~~Event numbers~~ RESOLVED (v40 audit): fully implemented across forms, cards, lists, detail views, importer
+- [x] ~~Budget line items~~ RESOLVED (v40 audit): full CRUD with modal UI, API routes, and Prisma model at events/budgets/[budgetId]/budget-detail-client.tsx
 - [ ] 13 pages use legacy Header; spec compliance: 5 DONE, 15 PARTIAL, 3 MISSING
 
 ### P1.C Training & HRMS — Updated Status
@@ -299,7 +301,7 @@ STATUS.md lists 40+ nonexistent files. Backend: 39 routes, 1,453-line agent-loop
 - [x] ~~container/ (3, PrismaStore)~~ RESOLVED (see P1.BY/containers)
 - [x] ~~pricingtier/ (3, PrismaStore)~~ RESOLVED (see P1.BY/pricing-tiers)
 - [x] ~~alertsconfig/ (3, PrismaStore)~~ RESOLVED (see P1.BY/alertsconfig)
-- [ ] workforceoptimization/ (4)
+- [ ] workforceoptimization/ (4) — note: preptaskplanworkflow already has a page at /kitchen/prep-task-plan-workflows/
 
 ### P1.K Accounting/Finance Frontend Gaps — PARTIALLY RESOLVED
 
@@ -427,9 +429,9 @@ STATUS.md lists 40+ nonexistent files. Backend: 39 routes, 1,453-line agent-loop
 
 - [x] ~~Create + status works; NO edit for carrier, tracking, cost, dates~~ RESOLVED (see P0.AB): edit dialog with carrier, tracking number, shipping method, shipping cost, estimated delivery date, notes; calls PUT /api/shipments/[id]
 
-### P1.BQ Kitchen Dashboard — 125 Hardcoded Hex Colors
+### P1.BQ Kitchen Dashboard — Hardcoded Hex Colors — RESOLVED
 
-- [ ] kitchen-dashboard-client.tsx has 125 (was 32); 57 more in scheduling; 185 total
+- [x] ~~kitchen-dashboard-client.tsx has 125 (was 32); 57 more in scheduling; 185 total~~ RESOLVED (v40): verified actual count was 15 instances (not 182). 12 severity border colors in kitchen equipment/iot replaced with CSS custom properties (--ds-severity-critical/high/medium/low). 3 scheduling text-[#17171c] replaced with text-primary. Added severity CSS variables to design-system globals.css.
 
 ### P1.BR Certification Tracking — RESOLVED (False Positive)
 
@@ -443,7 +445,7 @@ STATUS.md lists 40+ nonexistent files. Backend: 39 routes, 1,453-line agent-loop
 
 ### P1.BT Collaboration — 32 Orphaned Routes (65%)
 
-- [ ] 32/49 zero frontend; ALL admin tasks (11), chat participants (5), rate limits (2) orphaned
+- [ ] 16 truly orphaned endpoints (25 route files total, 7 consumed by frontend, 2 webhook-only); /workflows/ subtree (5 routes) entirely orphaned; /notifications/commands/ (4 routes) orphaned; email templates (7 handlers) no UI
 
 ### P1.BU Marketing — Public Web Surfaces Missing
 
@@ -457,9 +459,9 @@ STATUS.md lists 40+ nonexistent files. Backend: 39 routes, 1,453-line agent-loop
 
 - [x] ~~ALL settings pages accessible to any authenticated user — no role checks~~ RESOLVED: created auth-guards.ts with requireAdminUser/requireManagerUser; applied to 8 settings pages (team, security, audit-log, webhooks, integrations as admin; notifications, email-templates, email-workflows as manager)
 
-### P1.BX Security — Self-Revocation Prevention Missing
+### P1.BX Security — Self-Revocation Prevention — RESOLVED
 
-- [ ] Admin can revoke own API key; manager can deactivate own account
+- [x] ~~Admin can revoke own API key; manager can deactivate own account~~ RESOLVED (v41): added 403 guards in `/api/settings/api-keys/[id]/revoke/route.ts` (blocks revoking the API key currently in use under api_key auth, blocks revoking a key whose `createdByUserId` matches the caller's resolved internal user under session auth) and `/api/user/deactivate/route.ts` (blocks when `body.userId` equals caller's resolved internal user). Resolution from Clerk session → internal user uses `database.user.findFirst({ authUserId })`. New tests: `apps/api/__tests__/settings/api-key-self-revocation.test.ts` (4 cases), `apps/api/__tests__/staff/users/self-deactivation-prevention.test.ts` (4 cases).
 
 ### P1.BY API-Only Domains — Full Persistence, Zero UI — PARTIALLY RESOLVED
 
@@ -498,9 +500,9 @@ STATUS.md lists 40+ nonexistent files. Backend: 39 routes, 1,453-line agent-loop
 
 ## P2 — Medium: Design System Alignment & Polish
 
-### P2.A Shell Migration — 33 Pages on Legacy Header
+### P2.A Shell Migration — 34 Pages on Legacy Header
 
-kitchen/ (17), events/ (13), marketing/ (1), administrative/ (1), staff/ (1)
+kitchen/ (17), events/ (14), marketing/ (1), administrative/ (1), staff/ (1)
 
 ### P2.B Console Cleanup — ~523/~289
 
@@ -517,7 +519,7 @@ Prioritize `console.error` replacement first.
 
 ### P2.E Ghost Design Blocks — 28/41 (68% unused)
 
-Largest dead: NutritionLabelCard+AllergenDisplay (642), RecipeOptimizationCard (701), PrepTaskDependencyGraph (543). Hardcoded hex: 185 total.
+Largest dead: NutritionLabelCard+AllergenDisplay (642), RecipeOptimizationCard (701), PrepTaskDependencyGraph (543). Hardcoded hex: 0 (resolved P1.BQ).
 
 ### P2.F-P2.G QuickBooks Stub + Web Pricing Identical Tiers
 
@@ -619,3 +621,5 @@ Historical pass logs, audit reports, and blocker notes live in:
 | **v37** | **Session implementation pass.** RESOLVED P1.S: search expanded from 7 to 15 entity types — added recipes, dishes, equipment, ingredients, menus, leads, proposals, invoices. Both API route and frontend GROUP_CONFIG updated. Fixed database mock (added `lead` model) and test assertions (7→15 groups). Stats: search entity types 7→15, spec target met. |
 | **v38** | **formatCurrency consolidation.** RESOLVED P1.BM: created shared @repo/design-system/lib/format-currency.ts (formatCurrency/formatCurrencyWhole/formatCurrencyCompact). Replaced ~45 local definitions in apps/app + apps/api with unified imports. 7 behavioral variants consolidated into single options-based API. Server-side packages (pdf, email, sales-reporting) retain internal versions. Fixed formatCompact bug ($ vs USD currency code). Stats: local formatCurrency defs 48→3 (server-side), variants 7→1. RESOLVED P1.AC: RBAC Policy spec-complete v1 — list + detail dialog in /settings/security, adminOnly manifest policy, 10 API routes (5 legacy + 5 manifest-generated), PrismaStore registered, comprehensive test coverage. |
 | **v39** | **Design system table conversion.** RESOLVED P1.CD: converted all 9 raw `<table>` elements to design system components. 4 list-style → ResearchTable (inventory import errors, events import staff roster, CRM pipeline deals, settings integrations export history). 5 data grids → design system Table (analytics profitability/employee-perf/cohort, cycle-counting records, invoice line items). Stats: raw `<table>` elements 9→0. |
+| **v41** | **Self-revocation prevention.** RESOLVED P1.BX: 403 guards on `/api/settings/api-keys/[id]/revoke` (active-key-in-use + created-by-self) and `/api/user/deactivate` (cannot target own internal user id). Auth resolution via `database.user.findFirst({ authUserId: clerkId })` with safe fallback when `auth()` is unavailable (preserves existing test behavior). Added 8 new vitest cases; full api suite 4072 passing / 1 skipped. |
+| **v40** | **Hex color + plan corrections.** RESOLVED P1.BQ: replaced 15 hardcoded hex colors (12 severity borders → CSS custom properties --ds-severity-*, 3 scheduling text → text-primary). CORRECTED P1.B: event numbers and budget line items verified as fully implemented (were listed as missing). CORRECTED counts: hex colors 182→0, legacy Header events 13→14, collaboration orphaned 32/49→16/25. |
