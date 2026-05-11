@@ -165,6 +165,10 @@ model Account {
   crmScoringRules                CrmScoringRule[]
   revenueRecognitionSchedules    RevenueRecognitionSchedule[]
   revenueRecognitionLines        RevenueRecognitionLine[]
+  employeeTaxInfos               EmployeeTaxInfo[]
+  employeePayrollPrefs           EmployeePayrollPrefs[]
+  tipPools                       TipPool[]
+  departments                    Department[]
 
   @@map("accounts")
   @@schema("platform")
@@ -263,6 +267,10 @@ model User {
   preferences           UserPreference[]
   documentVersions      DocumentVersion[]
   bankAccounts          EmployeeBankAccount[]
+  taxInfo               EmployeeTaxInfo?
+  payrollPrefs          EmployeePayrollPrefs?
+  department            Department?            @relation("EmployeeDepartment", fields: [departmentId, tenantId], references: [id, tenantId])
+  departmentId          String?                @map("department_id") @db.Uuid
 
   @@id([tenantId, id])
   @@unique([tenantId, id], map: "employees_tenant_id_unique_idx")
@@ -580,9 +588,9 @@ model Equipment {
   lastHeartbeat     DateTime? @map("last_heartbeat") @db.Timestamptz(6)
   currentSensorData Json?     @map("current_sensor_data")
 
-  workOrders    WorkOrder[]
-  alertRules    IotAlertRule[]
-  tenant        Account         @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  workOrders WorkOrder[]
+  alertRules IotAlertRule[]
+  tenant     Account        @relation(fields: [tenantId], references: [id], onDelete: Restrict)
 
   @@unique([tenantId, id])
   @@index([tenantId, locationId])
@@ -3773,6 +3781,86 @@ model EmployeeDeduction {
   @@schema("tenant_staff")
 }
 
+/// Per-employee W-4 / tax withholding information.
+model EmployeeTaxInfo {
+  tenantId                     String    @map("tenant_id") @db.Uuid
+  id                           String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  employeeId                   String    @map("employee_id") @db.Uuid
+  jurisdiction                 String    @default("FL")
+  filingStatus                 String    @default("single") @map("filing_status")
+  federalWithholdingAllowances Int       @default(0) @map("federal_withholding_allowances")
+  stateWithholdingAllowances   Int       @default(0) @map("state_withholding_allowances")
+  additionalWithholding        Decimal   @default(0) @map("additional_withholding") @db.Decimal(10, 2)
+  createdAt                    DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt                    DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt                    DateTime? @map("deleted_at") @db.Timestamptz(6)
+  tenant                       Account   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  employee                     User      @relation(fields: [tenantId, employeeId], references: [tenantId, id], onDelete: Cascade)
+
+  @@id([tenantId, id])
+  @@unique([tenantId, employeeId], map: "employee_tax_info_employee_unique")
+  @@map("employee_tax_info")
+  @@schema("tenant_staff")
+}
+
+/// Per-employee payroll preferences (pay frequency, rounding rules).
+model EmployeePayrollPrefs {
+  tenantId           String    @map("tenant_id") @db.Uuid
+  id                 String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  employeeId         String    @map("employee_id") @db.Uuid
+  payPeriodFrequency String    @default("biweekly") @map("pay_period_frequency")
+  roundingRule       String    @default("none") @map("rounding_rule")
+  createdAt          DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt          DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt          DateTime? @map("deleted_at") @db.Timestamptz(6)
+  tenant             Account   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  employee           User      @relation(fields: [tenantId, employeeId], references: [tenantId, id], onDelete: Cascade)
+
+  @@id([tenantId, id])
+  @@unique([tenantId, employeeId], map: "employee_payroll_prefs_employee_unique")
+  @@map("employee_payroll_prefs")
+  @@schema("tenant_staff")
+}
+
+/// Tip pool for a payroll period, distributed among employees.
+model TipPool {
+  tenantId       String    @map("tenant_id") @db.Uuid
+  id             String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  periodId       String    @map("period_id") @db.Uuid
+  totalTips      Decimal   @default(0) @map("total_tips") @db.Decimal(10, 2)
+  allocationRule String    @default("by_hours") @map("allocation_rule")
+  fixedShares    Json?     @default("{}") @map("fixed_shares") @db.JsonB
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt      DateTime? @map("deleted_at") @db.Timestamptz(6)
+  tenant         Account   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
+  @@id([tenantId, id])
+  @@index([tenantId, periodId], map: "tip_pools_period_idx")
+  @@map("tip_pools")
+  @@schema("tenant_staff")
+}
+
+/// Organizational department for grouping employees in payroll.
+model Department {
+  tenantId  String    @map("tenant_id") @db.Uuid
+  id        String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name      String
+  code      String?
+  isActive  Boolean   @default(true) @map("is_active")
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
+  tenant    Account   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  employees User[]    @relation("EmployeeDepartment")
+
+  @@id([tenantId, id])
+  @@unique([tenantId, name], map: "departments_name_unique")
+  @@index([tenantId, isActive], map: "departments_active_idx")
+  @@map("departments")
+  @@schema("tenant_staff")
+}
+
 // ============================================
 // TRAINING & HRMS MODELS
 // ============================================
@@ -5895,25 +5983,25 @@ model IoTAlert {
 }
 
 model IotAlertRule {
-  tenantId      String    @map("tenant_id") @db.Uuid
-  id            String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  equipmentId   String    @map("equipment_id") @db.Uuid
-  name          String
-  description   String?
-  sensorType    String    @map("sensor_type")
-  condition     String
-  threshold     Float?
-  thresholdMin  Float?    @map("threshold_min")
-  thresholdMax  Float?    @map("threshold_max")
-  severity      String    @default("warning")
-  durationMs    Int       @default(0) @map("duration_ms")
-  alertAction   String    @default("notification") @map("alert_action")
-  isActive      Boolean   @default(true) @map("is_active")
-  notifyRoles   String[]  @default([]) @map("notify_roles")
-  notifyChannels String[] @default(["in_app"]) @map("notify_channels")
-  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt     DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-  deletedAt     DateTime? @map("deleted_at") @db.Timestamptz(6)
+  tenantId       String    @map("tenant_id") @db.Uuid
+  id             String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  equipmentId    String    @map("equipment_id") @db.Uuid
+  name           String
+  description    String?
+  sensorType     String    @map("sensor_type")
+  condition      String
+  threshold      Float?
+  thresholdMin   Float?    @map("threshold_min")
+  thresholdMax   Float?    @map("threshold_max")
+  severity       String    @default("warning")
+  durationMs     Int       @default(0) @map("duration_ms")
+  alertAction    String    @default("notification") @map("alert_action")
+  isActive       Boolean   @default(true) @map("is_active")
+  notifyRoles    String[]  @default([]) @map("notify_roles")
+  notifyChannels String[]  @default(["in_app"]) @map("notify_channels")
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt      DateTime? @map("deleted_at") @db.Timestamptz(6)
 
   equipment Equipment @relation(fields: [equipmentId, tenantId], references: [id, tenantId], onDelete: Restrict)
   tenant    Account   @relation(fields: [tenantId], references: [id], onDelete: Restrict)

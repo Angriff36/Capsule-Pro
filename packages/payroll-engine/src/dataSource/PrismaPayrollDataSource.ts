@@ -14,6 +14,7 @@ import type {
   TimeEntryInput,
   TipPool,
 } from "../models";
+import type { PayrollPrefs } from "../models";
 import type { PayrollDataSource } from "../services";
 
 /**
@@ -44,6 +45,9 @@ export class PrismaPayrollDataSource implements PayrollDataSource {
       },
       include: {
         payrollRole: true,
+        taxInfo: true,
+        payrollPrefs: true,
+        department: true,
       },
     });
 
@@ -53,12 +57,34 @@ export class PrismaPayrollDataSource implements PayrollDataSource {
         id: user.id,
         tenantId: user.tenantId,
         name: `${user.firstName} ${user.lastName}`,
-        department: undefined,
+        department: user.department?.name ?? undefined,
         roleId: user.roleId!,
         currency: "USD",
         hourlyRate: user.hourlyRate ? Number(user.hourlyRate) : 0,
-        taxInfo: undefined, // BLOCKER: EmployeeTaxInfo model does not exist in schema. Tracked as capsule-pro/TODO:payroll-employee-models
-        payrollPrefs: undefined, // BLOCKER: EmployeePayrollPrefs model does not exist in schema. Tracked as capsule-pro/TODO:payroll-employee-models
+        taxInfo: user.taxInfo
+          ? {
+              jurisdiction: user.taxInfo.jurisdiction,
+              status: user.taxInfo.filingStatus as
+                | "single"
+                | "married"
+                | "head_of_household",
+              federalWithholdingAllowances:
+                user.taxInfo.federalWithholdingAllowances,
+              stateWithholdingAllowances:
+                user.taxInfo.stateWithholdingAllowances,
+              additionalWithholding: Number(user.taxInfo.additionalWithholding),
+            }
+          : undefined,
+        payrollPrefs: user.payrollPrefs
+          ? {
+              payPeriodFrequency: user.payrollPrefs
+                .payPeriodFrequency as PayrollPrefs["payPeriodFrequency"],
+              roundingRule: user.payrollPrefs.roundingRule as
+                | "nearest_quarter"
+                | "nearest_tenth"
+                | "none",
+            }
+          : undefined,
       }));
   }
 
@@ -123,9 +149,28 @@ export class PrismaPayrollDataSource implements PayrollDataSource {
       });
   }
 
-  async getTipPools(_tenantId: string, _periodId: string): Promise<TipPool[]> {
-    // BLOCKER: TipPool model does not exist in schema. Tracked as capsule-pro/TODO:payroll-employee-models
-    return [];
+  async getTipPools(tenantId: string, periodId: string): Promise<TipPool[]> {
+    const pools = await this.#prisma.tipPool.findMany({
+      where: {
+        tenantId,
+        periodId,
+        deletedAt: null,
+      },
+    });
+
+    return pools.map((pool) => ({
+      id: pool.id,
+      tenantId: pool.tenantId,
+      periodId: pool.periodId,
+      totalTips: Number(pool.totalTips),
+      allocationRule: pool.allocationRule as
+        | "by_hours"
+        | "by_headcount"
+        | "fixed_shares",
+      fixedShares: pool.fixedShares as
+        | Record<string, number>
+        | undefined,
+    }));
   }
 
   async getDeductions(tenantId: string): Promise<Deduction[]> {
@@ -362,7 +407,7 @@ export class PrismaPayrollDataSource implements PayrollDataSource {
       },
     });
 
-    // Get employee names
+    // Get employee names and departments
     const employeeIds = lineItems.map(
       (item: { employee_id: string }) => item.employee_id
     );
@@ -374,21 +419,44 @@ export class PrismaPayrollDataSource implements PayrollDataSource {
         id: true,
         firstName: true,
         lastName: true,
+        department: {
+          select: { name: true },
+        },
+        payrollRole: {
+          select: { name: true },
+        },
       },
     });
 
     const employeeMap = new Map(
-      employees.map((e) => [e.id, `${e.firstName} ${e.lastName}`])
+      employees.map((e) => [
+        e.id,
+        {
+          name: `${e.firstName} ${e.lastName}`,
+          department: e.department?.name ?? undefined,
+          roleName: e.payrollRole?.name ?? "Default",
+        },
+      ])
     );
+
+    // Fetch tip pools for this period
+    const tipPoolEntries = await this.getTipPools(tenantId, periodId);
+    const tipsByEmployee = new Map<string, number>();
+    for (const pool of tipPoolEntries) {
+      if (pool.allocationRule === "fixed_shares" && pool.fixedShares) {
+        for (const [empId, share] of Object.entries(pool.fixedShares)) {
+          const current = tipsByEmployee.get(empId) ?? 0;
+          tipsByEmployee.set(empId, current + share);
+        }
+      }
+    }
 
     return lineItems.map((item) => {
       const deductions = JSON.parse((item.deductions as string) || "{}");
       const grossPay = Number(item.gross_pay);
       const netPay = Number(item.net_pay);
 
-      // Reconstruct a minimal Employee for tax calculation.
-      // taxInfo is unavailable at read time (not persisted), so
-      // calculateTaxes uses defaults: single status, FL jurisdiction.
+      const empData = employeeMap.get(item.employee_id);
       const preTaxTotal =
         (deductions.preTax as Array<{ amount: number }>)?.reduce(
           (sum: number, d: { amount: number }) => sum + d.amount,
@@ -398,11 +466,11 @@ export class PrismaPayrollDataSource implements PayrollDataSource {
       const employee: Employee = {
         id: item.employee_id,
         tenantId: item.tenant_id,
-        name: employeeMap.get(item.employee_id) || "Unknown",
+        name: empData?.name ?? "Unknown",
         roleId: "",
         currency: "USD",
         hourlyRate: Number(item.rate_regular),
-        taxInfo: undefined, // Not persisted — tax engine uses defaults
+        taxInfo: undefined,
         payrollPrefs: undefined,
       };
 
@@ -417,14 +485,14 @@ export class PrismaPayrollDataSource implements PayrollDataSource {
         tenantId: item.tenant_id,
         periodId,
         employeeId: item.employee_id,
-        employeeName: employeeMap.get(item.employee_id) || "Unknown",
-        department: undefined, // BLOCKER: Department model not yet linked to employees. Tracked as capsule-pro/TODO:payroll-employee-models
-        roleName: "Default", // BLOCKER: Role join not yet implemented in payroll record query. Tracked as capsule-pro/TODO:payroll-employee-models
+        employeeName: empData?.name ?? "Unknown",
+        department: empData?.department,
+        roleName: empData?.roleName ?? "Default",
         hoursRegular: Number(item.hours_regular),
         hoursOvertime: Number(item.hours_overtime),
         regularPay: Number(item.rate_regular) * Number(item.hours_regular),
         overtimePay: Number(item.rate_overtime) * Number(item.hours_overtime),
-        tips: 0, // BLOCKER: TipPool model does not exist in schema. Tracked as capsule-pro/TODO:payroll-employee-models
+        tips: tipsByEmployee.get(item.employee_id) ?? 0,
         grossPay,
         preTaxDeductions: deductions.preTax || [],
         taxableIncome: taxResult.taxableIncome.toNumber(),

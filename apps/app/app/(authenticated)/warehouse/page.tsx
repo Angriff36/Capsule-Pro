@@ -1,4 +1,5 @@
 import {
+  ArrowRightLeftIcon,
   BoxesIcon,
   ClipboardListIcon,
   PackagePlusIcon,
@@ -18,6 +19,22 @@ const WarehousePage = () => (
         href: "/warehouse/receiving",
         actionLabel: "Receive stock",
         icon: PackagePlusIcon,
+      },
+      {
+        title: "Putaway",
+        description:
+          "Direct received goods to optimal storage locations by zone and product velocity.",
+        href: "/warehouse/putaway",
+        actionLabel: "Manage putaway",
+        icon: ArrowRightLeftIcon,
+      },
+      {
+        title: "Pick & Pack",
+        description:
+          "Fulfill orders using FIFO and FEFO picking strategies with packing verification.",
+        href: "/warehouse/pick-pack",
+        actionLabel: "Pick & pack",
+        icon: BoxesIcon,
       },
       {
         title: "Shipments",
@@ -52,7 +69,7 @@ const WarehousePage = () => (
         icon: WarehouseIcon,
       },
     ]}
-    summary="Receiving, shipments, cycle counts, and inventory — everything that moves through the warehouse."
+    summary="Receiving, putaway, pick & pack, shipments, cycle counts, and inventory — everything that moves through the warehouse."
     title="Warehouse"
   />
 );
