@@ -60,6 +60,27 @@ vi.mock("@/app/lib/tenant", () => ({
   requireTenantId: mocks.requireTenantIdMock,
 }));
 
+// P1.AM: routes now gate on manager-tier role via requireApiManager. Tests
+// don't exercise the auth-roles helper directly — they stub it to grant access
+// using the tenantId the test setup wired into requireTenantIdMock. Role-guard
+// behavior is covered by `auth-roles.test.ts`.
+vi.mock("@/app/lib/auth-roles", () => ({
+  requireApiManager: vi.fn(async () => ({
+    ok: true,
+    user: {
+      id: "user-test",
+      tenantId: await mocks.requireTenantIdMock(),
+      role: "finance_manager",
+      email: "manager@test",
+      firstName: "Test",
+      lastName: "Manager",
+    },
+    tenantId: await mocks.requireTenantIdMock(),
+  })),
+  requireApiAdmin: vi.fn(),
+  requireApiRole: vi.fn(),
+}));
+
 vi.mock("@sentry/nextjs", () => ({
   captureException: mocks.captureExceptionMock,
 }));

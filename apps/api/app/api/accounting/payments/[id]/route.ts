@@ -14,6 +14,7 @@
 import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { type NextRequest, NextResponse } from "next/server";
+import { requireApiManager } from "@/app/lib/auth-roles";
 import { requireTenantId } from "@/app/lib/tenant";
 import { translatePrismaError } from "@/lib/prisma-error";
 import { checkRateLimit } from "@/middleware/rate-limiter";
@@ -119,7 +120,15 @@ export async function GET(request: NextRequest, context: RouteContext) {
  */
 export async function PUT(request: NextRequest, context: RouteContext) {
   try {
-    const tenantId = await requireTenantId();
+    // Manager-tier role guard (P1.AM). Payment processing moves real money and
+    // mutates invoice ledger state — any tenant member with a session must NOT
+    // be able to settle charges. Returns 401/403 with structured body when the
+    // caller lacks finance_manager / operations_manager / staff_manager / admin.
+    const guard = await requireApiManager();
+    if (!guard.ok) {
+      return guard.response;
+    }
+    const { tenantId } = guard;
 
     // Sensitive-mutation throttle. Runs BEFORE any DB read so abusive
     // callers cannot probe for valid payment IDs or burn DB capacity by
@@ -267,7 +276,13 @@ export async function PUT(request: NextRequest, context: RouteContext) {
  */
 export async function POST(request: NextRequest, context: RouteContext) {
   try {
-    const tenantId = await requireTenantId();
+    // Manager-tier role guard (P1.AM). Refunds move real money and re-derive
+    // invoice status — must not be reachable from a base-staff session.
+    const guard = await requireApiManager();
+    if (!guard.ok) {
+      return guard.response;
+    }
+    const { tenantId } = guard;
 
     // Sensitive-mutation throttle. Runs BEFORE we parse the body or touch
     // the DB so refund-spam cannot drive processor calls or generate

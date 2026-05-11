@@ -62,6 +62,28 @@ vi.mock("@/app/lib/tenant", () => ({
   requireTenantId: mocks.requireTenantIdMock,
 }));
 
+// P1.AM: POST /payments/[id] refund now gates on manager-tier role. Stub
+// auth-roles to grant access; refund-clamp arithmetic remains the focus.
+vi.mock("@/app/lib/auth-roles", () => ({
+  requireApiManager: vi.fn(async () => {
+    const tenantId = await mocks.requireTenantIdMock();
+    return {
+      ok: true,
+      user: {
+        id: "user-test",
+        tenantId,
+        role: "finance_manager",
+        email: "m@t",
+        firstName: "T",
+        lastName: "M",
+      },
+      tenantId,
+    };
+  }),
+  requireApiAdmin: vi.fn(),
+  requireApiRole: vi.fn(),
+}));
+
 vi.mock("@sentry/nextjs", () => ({
   captureException: mocks.captureExceptionMock,
 }));

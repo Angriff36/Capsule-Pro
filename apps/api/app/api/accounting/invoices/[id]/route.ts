@@ -9,6 +9,7 @@ import { InvoiceTemplate, resend } from "@repo/email";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
+import { requireApiManager } from "@/app/lib/auth-roles";
 import { requireTenantId } from "@/app/lib/tenant";
 import { translatePrismaError } from "@/lib/prisma-error";
 import {
@@ -120,7 +121,13 @@ export async function GET(request: NextRequest, context: RouteContext) {
  */
 export async function PUT(request: NextRequest, context: RouteContext) {
   try {
-    const tenantId = await requireTenantId();
+    // Manager-tier role guard (P1.AM). Invoice edits change billed totals and
+    // tax/line-item state — must not be reachable from a base-staff session.
+    const guard = await requireApiManager();
+    if (!guard.ok) {
+      return guard.response;
+    }
+    const { tenantId } = guard;
     const { id } = await context.params;
     const body = await request.json();
 
@@ -225,7 +232,14 @@ export async function PUT(request: NextRequest, context: RouteContext) {
  */
 export async function PATCH(request: NextRequest, context: RouteContext) {
   try {
-    const tenantId = await requireTenantId();
+    // Manager-tier role guard (P1.AM). apply-payment / mark-as-paid /
+    // mark-overdue / send-reminder mutate ledger state and trigger customer
+    // emails — staff-tier sessions must not reach these branches.
+    const guard = await requireApiManager();
+    if (!guard.ok) {
+      return guard.response;
+    }
+    const { tenantId } = guard;
     const { id } = await context.params;
     const body = await request.json();
 
@@ -435,7 +449,14 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
  */
 export async function POST(request: NextRequest, context: RouteContext) {
   try {
-    const tenantId = await requireTenantId();
+    // Manager-tier role guard (P1.AM). Sending an invoice transitions it to
+    // SENT and triggers a client-visible email — keep it off staff-tier
+    // sessions.
+    const guard = await requireApiManager();
+    if (!guard.ok) {
+      return guard.response;
+    }
+    const { tenantId } = guard;
     const { id } = await context.params;
 
     const invoice = await database.invoice.findFirst({
@@ -564,7 +585,13 @@ export async function POST(request: NextRequest, context: RouteContext) {
  */
 export async function DELETE(request: NextRequest, context: RouteContext) {
   try {
-    const tenantId = await requireTenantId();
+    // Manager-tier role guard (P1.AM). Voiding an invoice removes a
+    // receivable from the AR ledger — staff-tier sessions must not reach it.
+    const guard = await requireApiManager();
+    if (!guard.ok) {
+      return guard.response;
+    }
+    const { tenantId } = guard;
     const { id } = await context.params;
 
     const invoice = await database.invoice.findFirst({
