@@ -392,7 +392,13 @@ STATUS.md lists 40+ nonexistent files. Backend: 39 routes, 1,453-line agent-loop
 
 ### P1.AJ-P1.AK Collaboration Workflows/Notifications — No Frontend
 
-### P1.AL-P1.AM Web SEO Branding Wrong + Session Auth No Role Check
+### P1.AM Session Auth No Role Check
+
+- [ ] Sensitive routes gated only by session (orgId/userId). Examples: payroll approvals PUT, accounting CoA/payments/invoices [id], administrative/rate-limits [id], administrative/chat threads, administrative/trash/restore. No `requireRole` helper in `packages/auth/server`. Plan: add helper + wire into manifest-IR generator template + hand-written admin routes.
+
+### P1.AL Web SEO Branding Wrong — RESOLVED
+
+- [x] ~~`packages/seo/metadata.ts` hardcoded `next-forge` / Vercel as `applicationName`, `authors`, `creator`, `publisher`, `twitter.creator`, `openGraph.siteName`, `appleWebApp.title`~~ RESOLVED (v44): replaced with Capsule Pro branding (applicationName="Capsule Pro", author/publisher="Capsule Pro" at https://capsule.pro/, twitter="@capsulepro"). All `apps/web` pages consume via `createMetadata()` so the single edit propagates to home, blog, contact, legal pages.
 
 ### P1.AT-P1.AV Logistics GPS/Route Gaps
 
@@ -623,5 +629,6 @@ Historical pass logs, audit reports, and blocker notes live in:
 | **v39** | **Design system table conversion.** RESOLVED P1.CD: converted all 9 raw `<table>` elements to design system components. 4 list-style → ResearchTable (inventory import errors, events import staff roster, CRM pipeline deals, settings integrations export history). 5 data grids → design system Table (analytics profitability/employee-perf/cohort, cycle-counting records, invoice line items). Stats: raw `<table>` elements 9→0. |
 | **v41** | **Self-revocation prevention.** RESOLVED P1.BX: 403 guards on `/api/settings/api-keys/[id]/revoke` (active-key-in-use + created-by-self) and `/api/user/deactivate` (cannot target own internal user id). Auth resolution via `database.user.findFirst({ authUserId: clerkId })` with safe fallback when `auth()` is unavailable (preserves existing test behavior). Added 8 new vitest cases; full api suite 4072 passing / 1 skipped. |
 | **v40** | **Hex color + plan corrections.** RESOLVED P1.BQ: replaced 15 hardcoded hex colors (12 severity borders → CSS custom properties --ds-severity-*, 3 scheduling text → text-primary). CORRECTED P1.B: event numbers and budget line items verified as fully implemented (were listed as missing). CORRECTED counts: hex colors 182→0, legacy Header events 13→14, collaboration orphaned 32/49→16/25. |
+| **v44** | **Web SEO branding.** RESOLVED P1.AL: `packages/seo/metadata.ts` rebranded from next-forge/Vercel → Capsule Pro (applicationName, authors, creator, publisher, twitter, openGraph siteName). Propagates to all `apps/web` pages via `createMetadata()`. Split P1.AL/AM section so AM (Session Auth role check) remains open. |
 | **v43** | **Lead source enum + duplicate detection.** RESOLVED P1.BV: closed enum `website|manual|import` enforced at manifest (constraint + create guard), server action (rejects unknown, defaults to `manual`), and UI form (drops free-text select). Duplicate email detection added — `createLead` returns `{ possibleDuplicate, duplicateReason }`; list page batches Client/Lead email lookups and renders `MonoLabel "POSSIBLE DUPLICATE"` per FR-129. Test: 7 cases in `leads-create-action.test.ts`. |
 | **v42** | **Workforce Optimization UI.** RESOLVED P1.J/workforceoptimization: created /scheduling/optimization page client with three tabs over the existing 998-line `workforce-ai-optimizer` service. Analytics tab auto-loads from GET /api/staff/workforce-analytics (period selector + optional location filter) and renders 4-metric overview, trend badges, turnover risk list, top performers, and skill gaps. Schedule Optimizer tab POSTs to /api/staff/optimize-schedule with constraints (max labor cost, max hours, min skill coverage, allow OT) and renders recommended assignments with confidence/cost/risk factors. Performance Prediction tab POSTs to /api/staff/predict-performance with selectable metric set. Added sidebar entry under Scheduling. Also fixed pre-existing app typecheck error (`events/[eventId]/page.tsx` was passing `hasBudget` to `EventDetailsClient` which expects `budget`; reverted to `budget={null}` matching prior contract). |
