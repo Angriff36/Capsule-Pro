@@ -1,6 +1,6 @@
 # Implementation Plan — Capsule Pro
 
-> Updated 2026-05-10 (v34) — RESOLVED P1.BY/containers (container CRUD page), P1.BY/pricing-tiers (pricing tiers CRUD page), P1.B/prep-task-workflows (prep task plan workflow list + fix existing page), P1.B/import-workflow (events import/[workflowId] workflow detail page). Added sidebar entries for all. Prior v33: P0.O, P1.AX, P1.BI, P1.BY/catering.
+> Updated 2026-05-10 (v35) — RESOLVED P1.BY/variancereport (variance reports CRUD page at /inventory/variance-reports), P1.BY/alertsconfig (alert configuration CRUD page at /settings/alerts). Added sidebar entries for Variance Reports (Inventory) and Alert Configuration (Settings). Prior v34: P1.BY/containers, P1.BY/pricing-tiers, P1.B/prep-task-workflows, P1.B/import-workflow.
 
 > Priority: P0 = broken/non-functional, P1 = significant missing features, P2 = design alignment/polish, P3 = future/speculative.
 > Status: [ ] not started, [~] partial, [x] done.
@@ -37,7 +37,7 @@
 | Payroll pages functional | 12 (39 API routes; periods/[id] RESOLVED) |
 | Forecasting service | Production-grade (998 lines) |
 | Simulation API | 2,098 lines, zero UI |
-| PageCanvas adoption | ~50 files |
+| PageCanvas adoption | ~53 files |
 | ResearchTable adoption | 5 files |
 | Dead links (href="#") | 0 |
 
@@ -298,7 +298,8 @@ STATUS.md lists 40+ nonexistent files. Backend: 39 routes, 1,453-line agent-loop
 
 - [x] ~~container/ (3, PrismaStore)~~ RESOLVED (see P1.BY/containers)
 - [x] ~~pricingtier/ (3, PrismaStore)~~ RESOLVED (see P1.BY/pricing-tiers)
-- [ ] workforceoptimization/ (4), alertsconfig/ (3, PrismaStore)
+- [x] ~~alertsconfig/ (3, PrismaStore)~~ RESOLVED (see P1.BY/alertsconfig)
+- [ ] workforceoptimization/ (4)
 
 ### P1.K Accounting/Finance Frontend Gaps — PARTIALLY RESOLVED
 
@@ -352,7 +353,7 @@ STATUS.md lists 40+ nonexistent files. Backend: 39 routes, 1,453-line agent-loop
 - [x] ~~cateringorder/ (6 routes, PrismaStore — P1.BY)~~ RESOLVED (v33)
 - [ ] ai-event-setup/ (5 routes, no Prisma — P1.BZ)
 - [ ] performanceprediction/ (1 route, no Prisma — P1.BZ), preptaskplanworkflow/ (16 routes, PrismaStore — P1.BY)
-- [ ] variancereport/ (3 routes, PrismaStore — P1.BY)
+- [x] ~~variancereport/ (3 routes, PrismaStore — P1.BY)~~ RESOLVED (v35)
 
 ### P1.X Kitchen Allergen Test Page — Mock Data in Production
 
@@ -459,7 +460,8 @@ STATUS.md lists 40+ nonexistent files. Backend: 39 routes, 1,453-line agent-loop
 - [x] ~~container (3)~~ RESOLVED: created /kitchen/containers/page.tsx with PageCanvas layout, metrics (total/active/inactive/reusable), search + type/status filter, custom grid table, create/edit/deactivate dialogs, pagination
 - [x] ~~pricingtier (3)~~ RESOLVED: created /inventory/pricing-tiers/page.tsx with PageCanvas layout, metrics (total/active/avg cost), search + status filter, custom grid table, create/edit/soft-delete dialogs, pagination
 - [x] ~~preptaskplanworkflow (16)~~ RESOLVED: fixed existing /kitchen/prep-task-plan-workflows/ page (Prisma _where bug, StatusPill props), added workflows-client.tsx with status config for all 14 statuses, expandable row detail with stepper, approve/reject/quick-approve/retry/cancel actions
-- [ ] variancereport (3), alertsconfig (3) — have PrismaStore, no UI
+- [x] ~~variancereport (3)~~ RESOLVED: created /inventory/variance-reports with PageCanvas layout, metrics (total/pending/reviewed/avg accuracy), search + status filter, review + approve dialogs. Added GET /api/variancereport/list route. Added "Variance Reports" to inventory sidebar.
+- [x] ~~alertsconfig (3)~~ RESOLVED: created /settings/alerts with PageCanvas layout, metrics (total/email/SMS/webhook by channel), search + channel filter, create/edit/remove dialogs. Added GET /api/alertsconfig/list route. Added "Alert Configuration" to settings sidebar.
 
 ### P1.BZ BROKEN_PRISMA_READ — 3 Dead Route Groups
 
@@ -605,3 +607,4 @@ Historical pass logs, audit reports, and blocker notes live in:
 | **v32** | **Session fix pass.** RESOLVED P1: P1.V (inventory items [id] detail page with PageCanvas layout + stock status + FSA compliance + supplier info; list page item names now link to detail), P1.AD (kitchen QA command UI — 5 dialog forms: CreateCheckDialog, CompleteCheckDialog, LogTemperatureDialog, CreateCorrectiveActionDialog, ResolveActionDialog wired to all 5 command APIs; QA dashboard tabs now have action buttons), P1.B (events [eventId]/contracts — event-scoped contract listing page with status breakdown metrics, client info, contract cards linking to detail). Stats: missing detail pages: -1, command APIs without UI: 5→0, events missing sub-routes: 2→1. |
 | **v33** | **Session fix pass.** RESOLVED P0: P0.O (module settings dynamic catch-all now redirects to real /settings landing page with 11 implemented pages). RESOLVED P1: P1.AX (scheduling non-functional UI — duplicate of P1.BS, all items already resolved), P1.BI (CRM/procurement stubs — client-interactions clerkId→employeeId documented, ProposalExportButton wired to server-side PDF endpoint, PO locationId added to schema/form with location selector + fallback), P1.BY/catering (full CRUD page at /events/catering with PageCanvas, metrics, status lifecycle buttons, cancel dialog, create form; list API at GET /api/cateringorder/list; Catering added to events sidebar). DEFERRED: P0.C campaigns (4 NEEDS_CLARIFICATION items — campaign type taxonomy, channel scope, budget model, approval workflow). Stats: API-only domains with UI: +1, CRM stubs resolved: 3/3, duplicate P1 entries cleaned: +1. |
 | **v34** | **Session implementation pass.** RESOLVED P1.BY: container (full CRUD page at /kitchen/containers with metrics, search/filter, create/edit/deactivate dialogs), pricing-tiers (full CRUD page at /inventory/pricing-tiers with metrics, search/filter, create/edit/soft-delete dialogs), preptaskplanworkflow (fixed existing page Prisma _where bug + StatusPill props, added workflows-client.tsx with 14-status config, expandable rows, lifecycle actions). RESOLVED P1.B: events import/[workflowId] workflow detail page with 8-phase progress stepper, auto-refresh, action buttons (resume/retry/cancel). Added sidebar navigation entries for Containers, Prep Task Workflows (Kitchen), and Pricing Tiers (Inventory). Stats: API-only domains with UI: +3, events missing sub-routes: 1→0, kitchen sidebar items: +2, inventory sidebar items: +1. |
+| **v35** | **Session implementation pass.** RESOLVED P1.BY: variancereport (full CRUD page at /inventory/variance-reports with metrics, search/filter, review/approve dialogs + GET /api/variancereport/list), alertsconfig (full CRUD page at /settings/alerts with metrics by channel, search/filter, create/edit/remove dialogs + GET /api/alertsconfig/list). Added sidebar entries for Variance Reports (Inventory) and Alert Configuration (Settings). Stats: API-only domains with UI: +2, settings pages: +1, inventory pages: +1. |
