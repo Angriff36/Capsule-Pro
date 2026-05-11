@@ -6,15 +6,26 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@repo/design-system/components/ui/dialog";
+import { Input } from "@repo/design-system/components/ui/input";
+import { Label } from "@repo/design-system/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@repo/design-system/components/ui/select";
 import {
   Table,
   TableBody,
   TableCell,
   TableRow,
 } from "@repo/design-system/components/ui/table";
+import { Textarea } from "@repo/design-system/components/ui/textarea";
 import {
   AlertTriangleIcon,
   CalendarIcon,
@@ -23,6 +34,7 @@ import {
   DollarSignIcon,
   MapPinIcon,
 } from "lucide-react";
+import { useState } from "react";
 
 interface TimeEntry {
   id: string;
@@ -119,6 +131,13 @@ export default function TimecardDetailModal({
   onFlagException,
   onClockOut,
 }: TimecardDetailModalProps) {
+  const [exceptionDialogOpen, setExceptionDialogOpen] = useState(false);
+  const [exceptionNotes, setExceptionNotes] = useState("");
+  const [exceptionType, setExceptionType] = useState("");
+
+  const [editReasonDialogOpen, setEditReasonDialogOpen] = useState(false);
+  const [editReason, setEditReason] = useState("");
+
   if (!timeEntry) {
     return null;
   }
@@ -128,260 +147,364 @@ export default function TimecardDetailModal({
   const isOpen = timeEntry.clock_out === null;
 
   return (
-    <Dialog onOpenChange={onClose} open={open}>
-      <DialogContent className="max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>Timecard Details</DialogTitle>
-          <DialogDescription>
-            Review time entry details and take action
-          </DialogDescription>
-        </DialogHeader>
+    <>
+      <Dialog onOpenChange={onClose} open={open}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Timecard Details</DialogTitle>
+            <DialogDescription>
+              Review time entry details and take action
+            </DialogDescription>
+          </DialogHeader>
 
-        <div className="space-y-6">
-          <div className="grid gap-4 md:grid-cols-2">
-            <div>
-              <h3 className="mb-2 font-semibold">Employee Information</h3>
-              <Table>
-                <TableBody>
-                  <TableRow>
-                    <TableCell className="font-medium">Name</TableCell>
-                    <TableCell>
-                      {getEmployeeName(
-                        timeEntry.employee_first_name,
-                        timeEntry.employee_last_name
-                      )}
-                    </TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium">Email</TableCell>
-                    <TableCell>{timeEntry.employee_email}</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium">Role</TableCell>
-                    <TableCell>{timeEntry.employee_role}</TableCell>
-                  </TableRow>
-                  {timeEntry.employee_number && (
+          <div className="space-y-6">
+            <div className="grid gap-4 md:grid-cols-2">
+              <div>
+                <h3 className="mb-2 font-semibold">Employee Information</h3>
+                <Table>
+                  <TableBody>
                     <TableRow>
-                      <TableCell className="font-medium">Employee #</TableCell>
-                      <TableCell>{timeEntry.employee_number}</TableCell>
+                      <TableCell className="font-medium">Name</TableCell>
+                      <TableCell>
+                        {getEmployeeName(
+                          timeEntry.employee_first_name,
+                          timeEntry.employee_last_name
+                        )}
+                      </TableCell>
                     </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </div>
+                    <TableRow>
+                      <TableCell className="font-medium">Email</TableCell>
+                      <TableCell>{timeEntry.employee_email}</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell className="font-medium">Role</TableCell>
+                      <TableCell>{timeEntry.employee_role}</TableCell>
+                    </TableRow>
+                    {timeEntry.employee_number && (
+                      <TableRow>
+                        <TableCell className="font-medium">Employee #</TableCell>
+                        <TableCell>{timeEntry.employee_number}</TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
 
-            <div>
-              <h3 className="mb-2 font-semibold">Time Details</h3>
-              <Table>
-                <TableBody>
-                  <TableRow>
-                    <TableCell className="font-medium">
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      Date
-                    </TableCell>
-                    <TableCell>{formatDate(timeEntry.clock_in)}</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium">
-                      <ClockIcon className="mr-2 h-4 w-4" />
-                      Clock In
-                    </TableCell>
-                    <TableCell>{formatTime(timeEntry.clock_in)}</TableCell>
-                  </TableRow>
-                  {timeEntry.clock_out && (
+              <div>
+                <h3 className="mb-2 font-semibold">Time Details</h3>
+                <Table>
+                  <TableBody>
+                    <TableRow>
+                      <TableCell className="font-medium">
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        Date
+                      </TableCell>
+                      <TableCell>{formatDate(timeEntry.clock_in)}</TableCell>
+                    </TableRow>
                     <TableRow>
                       <TableCell className="font-medium">
                         <ClockIcon className="mr-2 h-4 w-4" />
-                        Clock Out
+                        Clock In
                       </TableCell>
-                      <TableCell>{formatTime(timeEntry.clock_out)}</TableCell>
+                      <TableCell>{formatTime(timeEntry.clock_in)}</TableCell>
                     </TableRow>
-                  )}
-                  {timeEntry.break_minutes > 0 && (
+                    {timeEntry.clock_out && (
+                      <TableRow>
+                        <TableCell className="font-medium">
+                          <ClockIcon className="mr-2 h-4 w-4" />
+                          Clock Out
+                        </TableCell>
+                        <TableCell>{formatTime(timeEntry.clock_out)}</TableCell>
+                      </TableRow>
+                    )}
+                    {timeEntry.break_minutes > 0 && (
+                      <TableRow>
+                        <TableCell className="font-medium">
+                          Break Duration
+                        </TableCell>
+                        <TableCell>{timeEntry.break_minutes} minutes</TableCell>
+                      </TableRow>
+                    )}
+                    {timeEntry.shift_start && timeEntry.shift_end && (
+                      <TableRow>
+                        <TableCell className="font-medium">
+                          Scheduled Time
+                        </TableCell>
+                        <TableCell>
+                          {formatTime(timeEntry.shift_start)} -{" "}
+                          {formatTime(timeEntry.shift_end)}
+                        </TableCell>
+                      </TableRow>
+                    )}
                     <TableRow>
-                      <TableCell className="font-medium">
-                        Break Duration
-                      </TableCell>
-                      <TableCell>{timeEntry.break_minutes} minutes</TableCell>
+                      <TableCell className="font-medium">Actual Hours</TableCell>
+                      <TableCell>{formatHours(timeEntry.actual_hours)}</TableCell>
                     </TableRow>
-                  )}
-                  {timeEntry.shift_start && timeEntry.shift_end && (
-                    <TableRow>
-                      <TableCell className="font-medium">
-                        Scheduled Time
-                      </TableCell>
-                      <TableCell>
-                        {formatTime(timeEntry.shift_start)} -{" "}
-                        {formatTime(timeEntry.shift_end)}
-                      </TableCell>
-                    </TableRow>
-                  )}
+                    {timeEntry.scheduled_hours && (
+                      <TableRow>
+                        <TableCell className="font-medium">
+                          Scheduled Hours
+                        </TableCell>
+                        <TableCell>
+                          {formatHours(timeEntry.scheduled_hours)}
+                        </TableCell>
+                      </TableRow>
+                    )}
+                    {timeEntry.location_name && (
+                      <TableRow>
+                        <TableCell className="font-medium">
+                          <MapPinIcon className="mr-2 h-4 w-4" />
+                          Location
+                        </TableCell>
+                        <TableCell>{timeEntry.location_name}</TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
+
+            <div>
+              <h3 className="mb-2 font-semibold">Cost & Approval</h3>
+              <Table>
+                <TableBody>
                   <TableRow>
-                    <TableCell className="font-medium">Actual Hours</TableCell>
-                    <TableCell>{formatHours(timeEntry.actual_hours)}</TableCell>
+                    <TableCell className="font-medium">
+                      <DollarSignIcon className="mr-2 h-4 w-4" />
+                      Hourly Rate
+                    </TableCell>
+                    <TableCell>{formatCurrency(timeEntry.hourly_rate)}</TableCell>
                   </TableRow>
-                  {timeEntry.scheduled_hours && (
+                  <TableRow>
+                    <TableCell className="font-medium">Total Cost</TableCell>
+                    <TableCell>{formatCurrency(timeEntry.total_cost)}</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell className="font-medium">Status</TableCell>
+                    <TableCell>
+                      {isApproved ? (
+                        <Badge
+                          className="flex items-center gap-1"
+                          variant="secondary"
+                        >
+                          <CheckCircleIcon className="h-3 w-3" />
+                          Approved
+                        </Badge>
+                      ) : isOpen ? (
+                        <Badge variant="default">
+                          <ClockIcon className="h-3 w-3" />
+                          Open
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline">Pending</Badge>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                  {timeEntry.approver_first_name && (
                     <TableRow>
-                      <TableCell className="font-medium">
-                        Scheduled Hours
-                      </TableCell>
+                      <TableCell className="font-medium">Approved By</TableCell>
                       <TableCell>
-                        {formatHours(timeEntry.scheduled_hours)}
+                        {timeEntry.approver_first_name}{" "}
+                        {timeEntry.approver_last_name?.[0]}
                       </TableCell>
                     </TableRow>
                   )}
-                  {timeEntry.location_name && (
+                  {timeEntry.approved_at && (
+                    <TableRow>
+                      <TableCell className="font-medium">Approved At</TableCell>
+                      <TableCell>
+                        {new Intl.DateTimeFormat("en-US", {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                          hour: "numeric",
+                          minute: "2-digit",
+                          hour12: true,
+                        }).format(timeEntry.approved_at)}
+                      </TableCell>
+                    </TableRow>
+                  )}
+                  {timeEntry.exception_type && (
                     <TableRow>
                       <TableCell className="font-medium">
-                        <MapPinIcon className="mr-2 h-4 w-4" />
-                        Location
+                        <AlertTriangleIcon className="mr-2 h-4 w-4 text-orange-600" />
+                        Exception
                       </TableCell>
-                      <TableCell>{timeEntry.location_name}</TableCell>
+                      <TableCell>
+                        <Badge variant="secondary">
+                          {timeEntry.exception_type
+                            .split("_")
+                            .map(
+                              (word) =>
+                                word.charAt(0).toUpperCase() + word.slice(1)
+                            )
+                            .join(" ")}
+                        </Badge>
+                      </TableCell>
                     </TableRow>
                   )}
                 </TableBody>
               </Table>
             </div>
-          </div>
 
-          <div>
-            <h3 className="mb-2 font-semibold">Cost & Approval</h3>
-            <Table>
-              <TableBody>
-                <TableRow>
-                  <TableCell className="font-medium">
-                    <DollarSignIcon className="mr-2 h-4 w-4" />
-                    Hourly Rate
-                  </TableCell>
-                  <TableCell>{formatCurrency(timeEntry.hourly_rate)}</TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell className="font-medium">Total Cost</TableCell>
-                  <TableCell>{formatCurrency(timeEntry.total_cost)}</TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell className="font-medium">Status</TableCell>
-                  <TableCell>
-                    {isApproved ? (
-                      <Badge
-                        className="flex items-center gap-1"
-                        variant="secondary"
-                      >
-                        <CheckCircleIcon className="h-3 w-3" />
-                        Approved
-                      </Badge>
-                    ) : isOpen ? (
-                      <Badge variant="default">
-                        <ClockIcon className="h-3 w-3" />
-                        Open
-                      </Badge>
-                    ) : (
-                      <Badge variant="outline">Pending</Badge>
-                    )}
-                  </TableCell>
-                </TableRow>
-                {timeEntry.approver_first_name && (
-                  <TableRow>
-                    <TableCell className="font-medium">Approved By</TableCell>
-                    <TableCell>
-                      {timeEntry.approver_first_name}{" "}
-                      {timeEntry.approver_last_name?.[0]}
-                    </TableCell>
-                  </TableRow>
-                )}
-                {timeEntry.approved_at && (
-                  <TableRow>
-                    <TableCell className="font-medium">Approved At</TableCell>
-                    <TableCell>
-                      {new Intl.DateTimeFormat("en-US", {
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                        hour: "numeric",
-                        minute: "2-digit",
-                        hour12: true,
-                      }).format(timeEntry.approved_at)}
-                    </TableCell>
-                  </TableRow>
-                )}
-                {timeEntry.exception_type && (
-                  <TableRow>
-                    <TableCell className="font-medium">
-                      <AlertTriangleIcon className="mr-2 h-4 w-4 text-orange-600" />
-                      Exception
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="secondary">
-                        {timeEntry.exception_type
-                          .split("_")
-                          .map(
-                            (word) =>
-                              word.charAt(0).toUpperCase() + word.slice(1)
-                          )
-                          .join(" ")}
-                      </Badge>
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </div>
-
-          {timeEntry.notes && (
-            <div>
-              <h3 className="mb-2 font-semibold">Notes</h3>
-              <div className="rounded-md bg-muted p-3 text-sm">
-                {timeEntry.notes}
+            {timeEntry.notes && (
+              <div>
+                <h3 className="mb-2 font-semibold">Notes</h3>
+                <div className="rounded-md bg-muted p-3 text-sm">
+                  {timeEntry.notes}
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          <div className="flex items-center justify-end gap-3 border-t pt-4">
-            {isPending && (
-              <>
-                <Button
-                  onClick={() => {
-                    const notes = prompt("Enter exception notes:");
-                    if (notes) {
-                      const type = prompt(
-                        "Enter exception type (missing_clock_out, late_arrival, excessive_break, other):"
-                      );
-                      if (type) {
-                        onFlagException(type, notes);
-                      }
-                    }
-                  }}
-                  variant="outline"
-                >
-                  Flag Exception
+            <div className="flex items-center justify-end gap-3 border-t pt-4">
+              {isPending && (
+                <>
+                  <Button
+                    onClick={() => {
+                      setExceptionNotes("");
+                      setExceptionType("");
+                      setExceptionDialogOpen(true);
+                    }}
+                    variant="outline"
+                  >
+                    Flag Exception
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      setEditReason("");
+                      setEditReasonDialogOpen(true);
+                    }}
+                    variant="outline"
+                  >
+                    Request Edit
+                  </Button>
+                  <Button onClick={onApprove}>Approve</Button>
+                </>
+              )}
+              {isOpen && (
+                <Button onClick={onClockOut} variant="outline">
+                  Clock Out
                 </Button>
-                <Button
-                  onClick={() => {
-                    const reason = prompt("Enter edit request reason:");
-                    if (reason) {
-                      onEditRequest(reason);
-                    }
-                  }}
-                  variant="outline"
-                >
-                  Request Edit
+              )}
+              {isApproved && (
+                <Button onClick={onClose} variant="outline">
+                  Close
                 </Button>
-                <Button onClick={onApprove}>Approve</Button>
-              </>
-            )}
-            {isOpen && (
-              <Button onClick={onClockOut} variant="outline">
-                Clock Out
-              </Button>
-            )}
-            {isApproved && (
-              <Button onClick={onClose} variant="outline">
-                Close
-              </Button>
-            )}
+              )}
+            </div>
           </div>
-        </div>
-      </DialogContent>
-    </Dialog>
+        </DialogContent>
+      </Dialog>
+
+      {/* Flag Exception Dialog */}
+      <Dialog
+        onOpenChange={(isOpen) => {
+          if (!isOpen) {
+            setExceptionDialogOpen(false);
+          }
+        }}
+        open={exceptionDialogOpen}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Flag Exception</DialogTitle>
+            <DialogDescription>
+              Record an exception for this time entry
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="exception-type">Exception Type</Label>
+              <Select onValueChange={setExceptionType} value={exceptionType}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select exception type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="missing_clock_out">Missing Clock Out</SelectItem>
+                  <SelectItem value="late_arrival">Late Arrival</SelectItem>
+                  <SelectItem value="excessive_break">Excessive Break</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="exception-notes">Notes</Label>
+              <Textarea
+                id="exception-notes"
+                onChange={(e) => setExceptionNotes(e.target.value)}
+                placeholder="Describe the exception..."
+                value={exceptionNotes}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              onClick={() => setExceptionDialogOpen(false)}
+              variant="outline"
+            >
+              Cancel
+            </Button>
+            <Button
+              disabled={!exceptionType || !exceptionNotes.trim()}
+              onClick={() => {
+                onFlagException(exceptionType, exceptionNotes);
+                setExceptionDialogOpen(false);
+                setExceptionNotes("");
+                setExceptionType("");
+              }}
+            >
+              Flag Exception
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Request Edit Dialog */}
+      <Dialog
+        onOpenChange={(isOpen) => {
+          if (!isOpen) {
+            setEditReasonDialogOpen(false);
+          }
+        }}
+        open={editReasonDialogOpen}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Request Edit</DialogTitle>
+            <DialogDescription>
+              Provide a reason for requesting an edit to this time entry
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <Label htmlFor="edit-reason">Reason</Label>
+            <Textarea
+              className="mt-2"
+              id="edit-reason"
+              onChange={(e) => setEditReason(e.target.value)}
+              placeholder="Explain why this timecard needs editing..."
+              value={editReason}
+            />
+          </div>
+          <DialogFooter>
+            <Button
+              onClick={() => setEditReasonDialogOpen(false)}
+              variant="outline"
+            >
+              Cancel
+            </Button>
+            <Button
+              disabled={!editReason.trim()}
+              onClick={() => {
+                onEditRequest(editReason);
+                setEditReasonDialogOpen(false);
+                setEditReason("");
+              }}
+            >
+              Submit Request
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

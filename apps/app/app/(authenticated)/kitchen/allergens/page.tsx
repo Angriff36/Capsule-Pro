@@ -17,7 +17,16 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@repo/design-system/components/ui/dialog";
 import { Input } from "@repo/design-system/components/ui/input";
+import { Label } from "@repo/design-system/components/ui/label";
 import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   Tabs,
@@ -92,6 +101,11 @@ export default function AllergenManagementPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
+
+  // Resolve warning dialog state
+  const [resolveDialogOpen, setResolveDialogOpen] = useState(false);
+  const [resolveWarningId, setResolveWarningId] = useState<string | null>(null);
+  const [overrideReason, setOverrideReason] = useState("");
 
   // Data state
   const [warnings, setWarnings] = useState<AllergenWarning[]>([]);
@@ -465,15 +479,9 @@ export default function AllergenManagementPage() {
                                   <Button
                                     disabled={actionLoading}
                                     onClick={() => {
-                                      const reason = prompt(
-                                        "Please provide override reason:"
-                                      );
-                                      if (reason) {
-                                        handleResolveWarning(
-                                          warning.id,
-                                          reason
-                                        );
-                                      }
+                                      setResolveWarningId(warning.id);
+                                      setOverrideReason("");
+                                      setResolveDialogOpen(true);
                                     }}
                                     size="sm"
                                   >
@@ -659,6 +667,47 @@ export default function AllergenManagementPage() {
           </Tabs>
         </section>
       )}
+
+      {/* Resolve Warning Dialog */}
+      <Dialog onOpenChange={setResolveDialogOpen} open={resolveDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Resolve Warning</DialogTitle>
+            <DialogDescription>
+              Please provide an override reason for resolving this allergen
+              warning.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <Label htmlFor="override-reason">Override Reason</Label>
+            <Input
+              id="override-reason"
+              onChange={(e) => setOverrideReason(e.target.value)}
+              placeholder="Enter override reason"
+              value={overrideReason}
+            />
+          </div>
+          <DialogFooter>
+            <Button
+              onClick={() => setResolveDialogOpen(false)}
+              variant="outline"
+            >
+              Cancel
+            </Button>
+            <Button
+              disabled={!overrideReason.trim()}
+              onClick={() => {
+                if (resolveWarningId) {
+                  handleResolveWarning(resolveWarningId, overrideReason);
+                }
+                setResolveDialogOpen(false);
+              }}
+            >
+              Resolve
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

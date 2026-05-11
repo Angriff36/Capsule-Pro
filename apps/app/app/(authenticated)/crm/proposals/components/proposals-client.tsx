@@ -26,7 +26,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@repo/design-system/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@repo/design-system/components/ui/dialog";
 import { Input } from "@repo/design-system/components/ui/input";
+import { Label } from "@repo/design-system/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -182,6 +191,11 @@ export function ProposalsClient({
   const [isDeleting, setIsDeleting] = useState(false);
   const [isSending, setIsSending] = useState(false);
 
+  // Send proposal dialog state
+  const [sendDialogOpen, setSendDialogOpen] = useState(false);
+  const [sendProposal, setSendProposal] = useState<Proposal | null>(null);
+  const [recipientEmail, setRecipientEmail] = useState("");
+
   const fetchProposals = useCallback(async () => {
     setIsLoading(true);
     try {
@@ -283,22 +297,23 @@ export function ProposalsClient({
     }
   };
 
-  const handleSendProposal = async (proposal: Proposal) => {
+  const handleSendProposal = (proposal: Proposal) => {
+    setSendProposal(proposal);
+    setRecipientEmail("");
+    setSendDialogOpen(true);
+  };
+
+  const handleSendSubmit = async () => {
+    if (!sendProposal || !recipientEmail.trim()) return;
+
     setIsSending(true);
     try {
-      // Need a recipient email — prompt the user via a simple prompt
-      const recipientEmail = prompt("Enter recipient email address:");
-      if (!recipientEmail?.trim()) {
-        setIsSending(false);
-        return;
-      }
-
-      await sendProposalAction(proposal.id, {
+      await sendProposalAction(sendProposal.id, {
         recipientEmail: recipientEmail.trim(),
       });
 
       toast.success("Proposal sent successfully");
-
+      setSendDialogOpen(false);
       fetchProposals();
     } catch (error) {
       console.error("Error sending proposal:", error);
@@ -662,6 +677,40 @@ export function ProposalsClient({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Send Proposal Dialog */}
+      <Dialog onOpenChange={setSendDialogOpen} open={sendDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Send Proposal</DialogTitle>
+            <DialogDescription>
+              Enter the recipient email address to send &quot;
+              {sendProposal?.title}&quot;.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <Label htmlFor="recipient-email">Recipient Email</Label>
+            <Input
+              id="recipient-email"
+              onChange={(e) => setRecipientEmail(e.target.value)}
+              placeholder="email@example.com"
+              type="email"
+              value={recipientEmail}
+            />
+          </div>
+          <DialogFooter>
+            <Button onClick={() => setSendDialogOpen(false)} variant="outline">
+              Cancel
+            </Button>
+            <Button
+              disabled={!recipientEmail.trim() || isSending}
+              onClick={handleSendSubmit}
+            >
+              {isSending ? "Sending..." : "Send Proposal"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

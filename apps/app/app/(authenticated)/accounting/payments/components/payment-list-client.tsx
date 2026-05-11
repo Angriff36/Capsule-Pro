@@ -10,6 +10,16 @@ import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import { ButtonGroup } from "@repo/design-system/components/ui/button-group";
 import { Card } from "@repo/design-system/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@repo/design-system/components/ui/dialog";
+import { Input } from "@repo/design-system/components/ui/input";
+import { Label } from "@repo/design-system/components/ui/label";
 import { format } from "date-fns";
 import { Download, Filter, Plus, Search } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -88,6 +98,12 @@ export function PaymentListClient() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<PaymentStatus | "">("");
 
+  // Refund dialog state
+  const [refundDialogOpen, setRefundDialogOpen] = useState(false);
+  const [refundPayment, setRefundPayment] = useState<Payment | null>(null);
+  const [refundReason, setRefundReason] = useState("");
+  const [refundAmountStr, setRefundAmountStr] = useState("");
+
   useEffect(() => {
     fetchPayments();
   }, [page, statusFilter]);
@@ -135,22 +151,27 @@ export function PaymentListClient() {
     }
   };
 
-  const handleRefund = async (payment: Payment) => {
-    const reason = prompt("Enter refund reason:");
-    if (!reason) return;
+  const handleRefund = (payment: Payment) => {
+    setRefundPayment(payment);
+    setRefundReason("");
+    setRefundAmountStr("");
+    setRefundDialogOpen(true);
+  };
 
-    const amountStr = prompt(
-      "Enter refund amount (leave blank for full refund):"
-    );
-    const refundAmount = amountStr ? Number.parseFloat(amountStr) : undefined;
+  const handleRefundSubmit = async () => {
+    if (!refundPayment || !refundReason.trim()) return;
+
+    const refundAmount = refundAmountStr
+      ? Number.parseFloat(refundAmountStr)
+      : undefined;
 
     try {
       const response = await apiFetch(
-        `/api/accounting/payments/${payment.id}`,
+        `/api/accounting/payments/${refundPayment.id}`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ reason, amount: refundAmount }),
+          body: JSON.stringify({ reason: refundReason, amount: refundAmount }),
         }
       );
 
@@ -160,6 +181,7 @@ export function PaymentListClient() {
       }
 
       toast.success("Refund processed successfully");
+      setRefundDialogOpen(false);
       fetchPayments();
     } catch (error) {
       toast.error(
@@ -387,6 +409,56 @@ export function PaymentListClient() {
           )}
         </div>
       </Card>
+
+      {/* Refund Dialog */}
+      <Dialog onOpenChange={setRefundDialogOpen} open={refundDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Process Refund</DialogTitle>
+            <DialogDescription>
+              Enter the reason and optional amount for refunding payment{" "}
+              {refundPayment?.invoiceId?.slice(0, 8)}...
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="refund-reason">Reason</Label>
+              <Input
+                id="refund-reason"
+                onChange={(e) => setRefundReason(e.target.value)}
+                placeholder="Enter refund reason"
+                value={refundReason}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="refund-amount">
+                Amount (leave blank for full refund)
+              </Label>
+              <Input
+                id="refund-amount"
+                onChange={(e) => setRefundAmountStr(e.target.value)}
+                placeholder="Enter refund amount"
+                type="number"
+                value={refundAmountStr}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              onClick={() => setRefundDialogOpen(false)}
+              variant="outline"
+            >
+              Cancel
+            </Button>
+            <Button
+              disabled={!refundReason.trim()}
+              onClick={handleRefundSubmit}
+            >
+              Process Refund
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

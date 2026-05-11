@@ -1,6 +1,6 @@
 # Implementation Plan — Capsule Pro
 
-> Updated 2026-05-10 (v25) — Session fix pass: resolved P0.F (delete-without-confirm — 17 locations now use AlertDialog), P0.D (inventory forecast buttons wired to PO creation), P0.A (equipment severity mismatch fixed + QA detail page created), P0.B (IoT buttons wired + PATCH alerts endpoint created). Fixed pre-existing settings test failures. Prior v24: warehouse receiving, payroll periods, invoice/payment pages.
+> Updated 2026-05-10 (v26) — P0.AH confirmed RESOLVED (stale checkbox). NEW P0.AP: 10 browser `prompt()` calls in payroll (6), accounting (2), kitchen (1), CRM (1). P0.A equipment buttons in progress. Prior v25: delete-without-confirm, forecast buttons, equipment severity, IoT dialogs.
 
 > Priority: P0 = broken/non-functional, P1 = significant missing features, P2 = design alignment/polish, P3 = future/speculative.
 > Status: [ ] not started, [~] partial, [x] done.
@@ -19,7 +19,7 @@
 | Prisma models | ~206 tenant tables across 10 schemas |
 | Active manifests | 74 (25 with PrismaStore) |
 | Manifest POST coverage | 88.1% |
-| Hardcoded disabled buttons | 14 |
+| Hardcoded disabled buttons | 8 (2 scheduling + 2 kitchen + 4 other) |
 | Placeholder/stub pages | 1 (kitchen team activity) + blog disabled |
 | Delete-without-confirm | 0 (all resolved) |
 | Tables WITH RLS | 83/206 (40.3%) |
@@ -45,10 +45,10 @@
 
 ## P0 — Critical: Broken / Non-Functional
 
-### P0.A Kitchen Equipment — 6 Disabled Buttons + DATA CONTRACT BUGS
+### P0.A Kitchen Equipment — RESOLVED
 
-- [ ] "Schedule maintenance" / "Details" / "New work order" buttons disabled
-- [ ] "Update status" / "Details" per work order / "Take action" per alert disabled
+- [x] ~~"Schedule maintenance" / "Details" / "New work order" buttons disabled~~ RESOLVED: wired to Schedule Maintenance dialog + Equipment Details dialog + New Work Order dialog with API calls
+- [x] ~~"Update status" / "Details" per work order / "Take action" per alert disabled~~ RESOLVED: Update Status dialog → POST update-status; Work Order Details dialog; Take Action dialog with contextual actions (schedule maintenance / create work order)
 - [x] ~~API returns `{ equipment, total }` but frontend checks `data.success`~~ RESOLVED: API now returns `success: true` via `manifestSuccessResponse()`
 - [x] ~~Frontend calls `/api/workorder/list`~~ RESOLVED: frontend now fetches `/api/facilities/work-orders/list`
 - [x] ~~Frontend reads `bySeverity.critical` but API returns flat object~~ RESOLVED: API now returns nested `{ total, bySeverity: { critical, high, medium } }`
@@ -168,7 +168,15 @@
 
 ### P0.AH Procurement — browser prompt()
 
-- [ ] Reject/terminate uses `prompt()` — should use AlertDialog
+- [x] ~~Reject/terminate uses `prompt()`~~ RESOLVED: already replaced with Dialog/AlertDialog (stale checkbox)
+
+### P0.AP Browser prompt() — RESOLVED
+
+- [x] ~~payroll/timecards/timecard-detail-modal.tsx:3~~ RESOLVED: replaced with Dialog + Select/Textarea
+- [x] ~~payroll/timecards/page.tsx:3~~ RESOLVED: replaced with Dialog + Select/Textarea
+- [x] ~~accounting/payments/components/payment-list-client.tsx:2~~ RESOLVED: combined into single Dialog with reason + amount fields
+- [x] ~~kitchen/allergens/page.tsx:1~~ RESOLVED: replaced with Dialog + Textarea
+- [x] ~~crm/proposals/components/proposals-client.tsx:1~~ RESOLVED: replaced with Dialog + Input
 
 ### P0.AJ Manifest Persistence — RESOLVED
 
@@ -558,3 +566,4 @@ Historical pass logs, audit reports, and blocker notes live in:
 | **v23** | **Session fix pass.** RESOLVED P0: P0.A data contracts (3 bugs), P0.AW payroll crash, P0.Y analytics link, P0.R test page, P0.P dead links, P0.AX dead-code fallback, P0.K event imports, P0.AV schedule nav+stats, P0.AC knowledge base detail, P0.E contact form, P0.AJ manifest persistence (RolePolicy+TimeOffRequest), P0.AO schedule stats. P0.C marketing hex (3 files → bg-ink). FALSE POSITIVE: P0.AN/P1.AN marketing SMS/email — all client URLs verified correct. Additional: 64 pre-existing API typecheck errors fixed (wrong Prisma model names), calendar sync missing title prop, settings test fix. Stats: dead links 2→0, hex 185→182, 501 routes 3→2. |
 | **v24** | **Session fix pass.** RESOLVED P0: P0.G (warehouse receiving Reports+Supplier performance buttons wired as Link), P0.Z (payroll periods/[id] page with details/status badges), P0.S/P0.AG (invoice create with line items builder + invoice detail with send/pay/void actions), P0.T/P0.AR (payment detail page with process/refund actions + timeline). P0.A severity: severityColors now maps both API values (warning/info) and legacy values (high/medium/low). Payroll pages 11→12. |
 | **v25** | **Session fix pass.** RESOLVED P0: P0.F (17 delete-without-confirm locations → AlertDialog/Dialog), P0.D (inventory forecast "Request Reorder" + "Create PO" wired to PO creation page), P0.A (equipment severity summary keys unified + QA detail page created at quality-assurance/[id]), P0.B (IoT register probe/log reading/details/acknowledge/resolve dialogs wired + PATCH alerts/[id] endpoint). Fixed pre-existing: settings workflow tests (6 assertions updated for server/client component split), equipment-crud test (bySeverity.warning). Stats: delete-without-confirm 17→0, disabled buttons 24→14. |
+| **v26** | **Session fix pass.** P0.AH confirmed RESOLVED (stale checkbox). NEW P0.AP: 10 browser `prompt()` calls in payroll (6), accounting (2), kitchen (1), CRM (1). P0.A equipment buttons implementation in progress. |

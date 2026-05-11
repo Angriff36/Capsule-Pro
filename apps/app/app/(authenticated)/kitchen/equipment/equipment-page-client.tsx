@@ -119,6 +119,36 @@ export function EquipmentPageClient() {
   });
   const [submitting, setSubmitting] = useState(false);
 
+  // Dialog state for equipment actions
+  const [selectedEquipment, setSelectedEquipment] = useState<Equipment | null>(null);
+  const [selectedWorkOrder, setSelectedWorkOrder] = useState<WorkOrder | null>(null);
+  const [selectedAlert, setSelectedAlert] = useState<EquipmentAlert | null>(null);
+  const [isScheduleDialogOpen, setIsScheduleDialogOpen] = useState(false);
+  const [isEquipmentDetailsOpen, setIsEquipmentDetailsOpen] = useState(false);
+  const [isNewWorkOrderOpen, setIsNewWorkOrderOpen] = useState(false);
+  const [isUpdateStatusOpen, setIsUpdateStatusOpen] = useState(false);
+  const [isWorkOrderDetailsOpen, setIsWorkOrderDetailsOpen] = useState(false);
+  const [isTakeActionOpen, setIsTakeActionOpen] = useState(false);
+
+  const [maintenanceForm, setMaintenanceForm] = useState({
+    title: "",
+    description: "",
+    priority: "medium",
+    scheduledDate: "",
+    estimatedCost: "",
+  });
+  const [workOrderForm, setWorkOrderForm] = useState({
+    title: "",
+    workOrderType: "corrective",
+    priority: "medium",
+    description: "",
+    scheduledDate: "",
+  });
+  const [statusForm, setStatusForm] = useState({
+    status: "in_progress",
+    notes: "",
+  });
+
   useEffect(() => {
     Promise.all([fetchEquipment(), fetchWorkOrders(), fetchAlerts()]);
   }, []);
@@ -225,6 +255,126 @@ export function EquipmentPageClient() {
     }
   }
 
+  async function handleScheduleMaintenance() {
+    if (!selectedEquipment) return;
+    if (!maintenanceForm.title.trim()) {
+      toast.error("Title is required");
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const res = await apiFetch(
+        "/api/kitchen/equipment/commands/schedule-maintenance",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            equipmentId: selectedEquipment.id,
+            title: maintenanceForm.title,
+            description: maintenanceForm.description || undefined,
+            priority: maintenanceForm.priority,
+            scheduledDate: maintenanceForm.scheduledDate || undefined,
+            estimatedCost: maintenanceForm.estimatedCost
+              ? Number.parseFloat(maintenanceForm.estimatedCost)
+              : undefined,
+          }),
+        }
+      );
+      if (!res.ok) throw new Error("Failed to schedule maintenance");
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error || "Failed");
+      toast.success("Maintenance scheduled successfully");
+      setIsScheduleDialogOpen(false);
+      setMaintenanceForm({
+        title: "",
+        description: "",
+        priority: "medium",
+        scheduledDate: "",
+        estimatedCost: "",
+      });
+      fetchEquipment();
+      fetchWorkOrders();
+    } catch (error) {
+      toast.error("Failed to schedule maintenance");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  async function handleCreateWorkOrder() {
+    if (!workOrderForm.title.trim()) {
+      toast.error("Title is required");
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const res = await apiFetch(
+        "/api/facilities/work-orders/commands/create",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title: workOrderForm.title,
+            workOrderType: workOrderForm.workOrderType,
+            priority: workOrderForm.priority,
+            description: workOrderForm.description || undefined,
+            scheduledDate: workOrderForm.scheduledDate || undefined,
+            equipmentId: selectedEquipment?.id || undefined,
+          }),
+        }
+      );
+      if (!res.ok) throw new Error("Failed to create work order");
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error || "Failed");
+      toast.success("Work order created successfully");
+      setIsNewWorkOrderOpen(false);
+      setWorkOrderForm({
+        title: "",
+        workOrderType: "corrective",
+        priority: "medium",
+        description: "",
+        scheduledDate: "",
+      });
+      setSelectedEquipment(null);
+      fetchWorkOrders();
+    } catch (error) {
+      toast.error("Failed to create work order");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  async function handleUpdateStatus() {
+    if (!selectedWorkOrder) return;
+    setSubmitting(true);
+    try {
+      const res = await apiFetch(
+        "/api/facilities/work-orders/commands/update-status",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            workOrderId: selectedWorkOrder.id,
+            status: statusForm.status,
+            notes: statusForm.notes || undefined,
+          }),
+        }
+      );
+      if (!res.ok) throw new Error("Failed to update status");
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error || "Failed");
+      toast.success("Status updated successfully");
+      setIsUpdateStatusOpen(false);
+      setStatusForm({ status: "in_progress", notes: "" });
+      setSelectedWorkOrder(null);
+      fetchWorkOrders();
+    } catch (error) {
+      toast.error("Failed to update status");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
   function formatDate(date: Date | string): string {
     const d = typeof date === "string" ? new Date(date) : date;
     return d.toLocaleDateString();
@@ -234,6 +384,38 @@ export function EquipmentPageClient() {
     return equip.maxUsageHours > 0
       ? (equip.usageHours / equip.maxUsageHours) * 100
       : 0;
+  }
+
+  function openScheduleMaintenance(equip: Equipment) {
+    setSelectedEquipment(equip);
+    setMaintenanceForm((prev) => ({
+      ...prev,
+      title: `Maintenance: ${equip.name}`,
+    }));
+    setIsScheduleDialogOpen(true);
+  }
+
+  function openCreateWorkOrderForAlert(alert: EquipmentAlert) {
+    const equip = equipment.find((e) => e.id === alert.equipmentId) || null;
+    setSelectedEquipment(equip);
+    setWorkOrderForm((prev) => ({
+      ...prev,
+      title: `Repair: ${alert.equipmentName}`,
+      description: alert.message,
+    }));
+    setIsTakeActionOpen(false);
+    setIsNewWorkOrderOpen(true);
+  }
+
+  function openScheduleMaintenanceForAlert(alert: EquipmentAlert) {
+    const equip = equipment.find((e) => e.id === alert.equipmentId) || null;
+    setSelectedEquipment(equip);
+    setMaintenanceForm((prev) => ({
+      ...prev,
+      title: `Maintenance: ${alert.equipmentName}`,
+    }));
+    setIsTakeActionOpen(false);
+    setIsScheduleDialogOpen(true);
   }
 
   return (
@@ -610,11 +792,23 @@ export function EquipmentPageClient() {
                           </div>
                         </div>
                         <div className="flex gap-2">
-                          <Button disabled size="sm" variant="outline">
-                            Schedule maintenance — not implemented
+                          <Button
+                            onClick={() => openScheduleMaintenance(equip)}
+                            size="sm"
+                            variant="outline"
+                          >
+                            <Wrench className="mr-1 h-3 w-3" />
+                            Schedule maintenance
                           </Button>
-                          <Button disabled size="sm" variant="ghost">
-                            Details — not implemented
+                          <Button
+                            onClick={() => {
+                              setSelectedEquipment(equip);
+                              setIsEquipmentDetailsOpen(true);
+                            }}
+                            size="sm"
+                            variant="ghost"
+                          >
+                            Details
                           </Button>
                         </div>
                       </div>
@@ -636,9 +830,23 @@ export function EquipmentPageClient() {
                     Track repairs, replacements, and inspections
                   </CardDescription>
                 </div>
-                <Button disabled type="button" variant="default">
+                <Button
+                  onClick={() => {
+                    setSelectedEquipment(null);
+                    setWorkOrderForm({
+                      title: "",
+                      workOrderType: "corrective",
+                      priority: "medium",
+                      description: "",
+                      scheduledDate: "",
+                    });
+                    setIsNewWorkOrderOpen(true);
+                  }}
+                  type="button"
+                  variant="default"
+                >
                   <Plus className="mr-2 h-4 w-4" />
-                  New work order — not implemented
+                  New work order
                 </Button>
               </div>
             </CardHeader>
@@ -692,11 +900,34 @@ export function EquipmentPageClient() {
                         </div>
                       </div>
                       <div className="flex gap-2">
-                        <Button disabled size="sm" variant="outline">
-                          Update status — not implemented
+                        <Button
+                          onClick={() => {
+                            setSelectedWorkOrder(order);
+                            setStatusForm({
+                              status:
+                                order.status === "open"
+                                  ? "in_progress"
+                                  : order.status === "in_progress"
+                                    ? "completed"
+                                    : order.status,
+                              notes: "",
+                            });
+                            setIsUpdateStatusOpen(true);
+                          }}
+                          size="sm"
+                          variant="outline"
+                        >
+                          Update status
                         </Button>
-                        <Button disabled size="sm" variant="ghost">
-                          Details — not implemented
+                        <Button
+                          onClick={() => {
+                            setSelectedWorkOrder(order);
+                            setIsWorkOrderDetailsOpen(true);
+                          }}
+                          size="sm"
+                          variant="ghost"
+                        >
+                          Details
                         </Button>
                       </div>
                     </div>
@@ -769,8 +1000,15 @@ export function EquipmentPageClient() {
                             Recommendation: {alert.recommendedAction}
                           </p>
                         </div>
-                        <Button disabled size="sm" variant="outline">
-                          Take action — not implemented
+                        <Button
+                          onClick={() => {
+                            setSelectedAlert(alert);
+                            setIsTakeActionOpen(true);
+                          }}
+                          size="sm"
+                          variant="outline"
+                        >
+                          Take action
                         </Button>
                       </div>
                     </div>
@@ -781,6 +1019,597 @@ export function EquipmentPageClient() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Schedule Maintenance Dialog */}
+      <Dialog open={isScheduleDialogOpen} onOpenChange={setIsScheduleDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Schedule Maintenance</DialogTitle>
+            <DialogDescription>
+              {selectedEquipment
+                ? `Schedule maintenance for ${selectedEquipment.name}`
+                : "Schedule equipment maintenance"}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label className="text-right">Title *</Label>
+              <Input
+                className="col-span-3"
+                onChange={(e) =>
+                  setMaintenanceForm({ ...maintenanceForm, title: e.target.value })
+                }
+                placeholder="Maintenance task title"
+                value={maintenanceForm.title}
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label className="text-right">Description</Label>
+              <textarea
+                className="col-span-3 flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                onChange={(e) =>
+                  setMaintenanceForm({
+                    ...maintenanceForm,
+                    description: e.target.value,
+                  })
+                }
+                placeholder="Describe the maintenance task"
+                value={maintenanceForm.description}
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label className="text-right">Priority</Label>
+              <select
+                className="col-span-3 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                onChange={(e) =>
+                  setMaintenanceForm({
+                    ...maintenanceForm,
+                    priority: e.target.value,
+                  })
+                }
+                value={maintenanceForm.priority}
+              >
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+                <option value="critical">Critical</option>
+              </select>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label className="text-right">Scheduled Date</Label>
+              <Input
+                className="col-span-3"
+                onChange={(e) =>
+                  setMaintenanceForm({
+                    ...maintenanceForm,
+                    scheduledDate: e.target.value,
+                  })
+                }
+                type="date"
+                value={maintenanceForm.scheduledDate}
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label className="text-right">Est. Cost</Label>
+              <Input
+                className="col-span-3"
+                onChange={(e) =>
+                  setMaintenanceForm({
+                    ...maintenanceForm,
+                    estimatedCost: e.target.value,
+                  })
+                }
+                placeholder="0.00"
+                type="number"
+                value={maintenanceForm.estimatedCost}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              disabled={submitting}
+              onClick={() => setIsScheduleDialogOpen(false)}
+              variant="outline"
+            >
+              Cancel
+            </Button>
+            <Button disabled={submitting} onClick={handleScheduleMaintenance}>
+              {submitting ? "Scheduling..." : "Schedule"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Equipment Details Dialog */}
+      <Dialog
+        open={isEquipmentDetailsOpen}
+        onOpenChange={setIsEquipmentDetailsOpen}
+      >
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Equipment Details</DialogTitle>
+            <DialogDescription>
+              {selectedEquipment?.name}
+            </DialogDescription>
+          </DialogHeader>
+          {selectedEquipment && (
+            <div className="space-y-4 py-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Status
+                  </p>
+                  <Badge
+                    className={
+                      statusColors[
+                        selectedEquipment.status as keyof typeof statusColors
+                      ]
+                    }
+                  >
+                    {selectedEquipment.status}
+                  </Badge>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Condition
+                  </p>
+                  <Badge
+                    className={
+                      conditionColors[
+                        selectedEquipment.condition as keyof typeof conditionColors
+                      ]
+                    }
+                  >
+                    {selectedEquipment.condition}
+                  </Badge>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Type
+                  </p>
+                  <p className="text-sm">{selectedEquipment.type}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Location
+                  </p>
+                  <p className="text-sm font-mono text-xs">
+                    {selectedEquipment.locationId}
+                  </p>
+                </div>
+              </div>
+              {(selectedEquipment.manufacturer ||
+                selectedEquipment.model ||
+                selectedEquipment.serialNumber) && (
+                <div className="border-t pt-4">
+                  <h4 className="font-medium mb-2">Product Information</h4>
+                  <div className="grid grid-cols-2 gap-2 text-sm">
+                    {selectedEquipment.manufacturer && (
+                      <div>
+                        <span className="text-muted-foreground">
+                          Manufacturer:{" "}
+                        </span>
+                        {selectedEquipment.manufacturer}
+                      </div>
+                    )}
+                    {selectedEquipment.model && (
+                      <div>
+                        <span className="text-muted-foreground">Model: </span>
+                        {selectedEquipment.model}
+                      </div>
+                    )}
+                    {selectedEquipment.serialNumber && (
+                      <div>
+                        <span className="text-muted-foreground">
+                          Serial #:{" "}
+                        </span>
+                        {selectedEquipment.serialNumber}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+              <div className="border-t pt-4">
+                <h4 className="font-medium mb-2">Usage</h4>
+                <div className="flex items-center gap-4 text-sm">
+                  <span>
+                    {selectedEquipment.usageHours.toFixed(1)} /{" "}
+                    {selectedEquipment.maxUsageHours} hours
+                  </span>
+                  <span className="text-muted-foreground">
+                    ({getUsagePercentage(selectedEquipment).toFixed(1)}%)
+                  </span>
+                </div>
+                <div className="mt-2 w-full bg-secondary rounded-full h-2">
+                  <div
+                    className={`h-2 rounded-full ${
+                      getUsagePercentage(selectedEquipment) >= 90
+                        ? "bg-red-500"
+                        : getUsagePercentage(selectedEquipment) >= 80
+                          ? "bg-yellow-500"
+                          : "bg-green-500"
+                    }`}
+                    style={{
+                      width: `${Math.min(
+                        getUsagePercentage(selectedEquipment),
+                        100
+                      )}%`,
+                    }}
+                  />
+                </div>
+              </div>
+              {selectedEquipment.nextMaintenanceDate && (
+                <div className="border-t pt-4">
+                  <h4 className="font-medium mb-2">Next Maintenance</h4>
+                  <p className="text-sm">
+                    {formatDate(selectedEquipment.nextMaintenanceDate)}
+                  </p>
+                </div>
+              )}
+              <div className="border-t pt-4">
+                <h4 className="font-medium mb-2">Related Work Orders</h4>
+                {workOrders.filter(
+                  (wo) => wo.equipmentId === selectedEquipment.id
+                ).length === 0 ? (
+                  <p className="text-sm text-muted-foreground">
+                    No work orders for this equipment.
+                  </p>
+                ) : (
+                  <div className="space-y-2">
+                    {workOrders
+                      .filter((wo) => wo.equipmentId === selectedEquipment.id)
+                      .map((wo) => (
+                        <div
+                          key={wo.id}
+                          className="flex items-center justify-between p-2 border rounded text-sm"
+                        >
+                          <div>
+                            <span className="font-medium">{wo.title}</span>
+                            <Badge variant="secondary" className="ml-2 text-xs">
+                              {wo.status.replace(/_/g, " ")}
+                            </Badge>
+                          </div>
+                          <span className="text-muted-foreground">
+                            {formatDate(wo.createdAt)}
+                          </span>
+                        </div>
+                      ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button
+              onClick={() => setIsEquipmentDetailsOpen(false)}
+              variant="outline"
+            >
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* New Work Order Dialog */}
+      <Dialog open={isNewWorkOrderOpen} onOpenChange={setIsNewWorkOrderOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>New Work Order</DialogTitle>
+            <DialogDescription>
+              {selectedEquipment
+                ? `Create a work order for ${selectedEquipment.name}`
+                : "Create a new maintenance work order"}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label className="text-right">Title *</Label>
+              <Input
+                className="col-span-3"
+                onChange={(e) =>
+                  setWorkOrderForm({
+                    ...workOrderForm,
+                    title: e.target.value,
+                  })
+                }
+                placeholder="Work order title"
+                value={workOrderForm.title}
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label className="text-right">Type</Label>
+              <select
+                className="col-span-3 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                onChange={(e) =>
+                  setWorkOrderForm({
+                    ...workOrderForm,
+                    workOrderType: e.target.value,
+                  })
+                }
+                value={workOrderForm.workOrderType}
+              >
+                <option value="preventive">Preventive</option>
+                <option value="corrective">Corrective</option>
+                <option value="emergency">Emergency</option>
+                <option value="inspection">Inspection</option>
+              </select>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label className="text-right">Priority</Label>
+              <select
+                className="col-span-3 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                onChange={(e) =>
+                  setWorkOrderForm({
+                    ...workOrderForm,
+                    priority: e.target.value,
+                  })
+                }
+                value={workOrderForm.priority}
+              >
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+                <option value="critical">Critical</option>
+              </select>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label className="text-right">Description</Label>
+              <textarea
+                className="col-span-3 flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                onChange={(e) =>
+                  setWorkOrderForm({
+                    ...workOrderForm,
+                    description: e.target.value,
+                  })
+                }
+                placeholder="Describe the issue or task"
+                value={workOrderForm.description}
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label className="text-right">Scheduled Date</Label>
+              <Input
+                className="col-span-3"
+                onChange={(e) =>
+                  setWorkOrderForm({
+                    ...workOrderForm,
+                    scheduledDate: e.target.value,
+                  })
+                }
+                type="date"
+                value={workOrderForm.scheduledDate}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              disabled={submitting}
+              onClick={() => setIsNewWorkOrderOpen(false)}
+              variant="outline"
+            >
+              Cancel
+            </Button>
+            <Button disabled={submitting} onClick={handleCreateWorkOrder}>
+              {submitting ? "Creating..." : "Create"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Update Status Dialog */}
+      <Dialog open={isUpdateStatusOpen} onOpenChange={setIsUpdateStatusOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Update Work Order Status</DialogTitle>
+            <DialogDescription>
+              {selectedWorkOrder?.title}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label className="text-right">Status *</Label>
+              <select
+                className="col-span-3 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                onChange={(e) =>
+                  setStatusForm({ ...statusForm, status: e.target.value })
+                }
+                value={statusForm.status}
+              >
+                <option value="open">Open</option>
+                <option value="assigned">Assigned</option>
+                <option value="in_progress">In Progress</option>
+                <option value="parts_ordered">Parts Ordered</option>
+                <option value="completed">Completed</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+            </div>
+            <div className="grid grid-cols-4 items-start gap-4">
+              <Label className="text-right pt-2">Notes</Label>
+              <textarea
+                className="col-span-3 flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                onChange={(e) =>
+                  setStatusForm({ ...statusForm, notes: e.target.value })
+                }
+                placeholder="Add notes about this status change"
+                value={statusForm.notes}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              disabled={submitting}
+              onClick={() => setIsUpdateStatusOpen(false)}
+              variant="outline"
+            >
+              Cancel
+            </Button>
+            <Button disabled={submitting} onClick={handleUpdateStatus}>
+              {submitting ? "Updating..." : "Update"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Work Order Details Dialog */}
+      <Dialog
+        open={isWorkOrderDetailsOpen}
+        onOpenChange={setIsWorkOrderDetailsOpen}
+      >
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Work Order Details</DialogTitle>
+            <DialogDescription>
+              {selectedWorkOrder?.title}
+            </DialogDescription>
+          </DialogHeader>
+          {selectedWorkOrder && (
+            <div className="space-y-4 py-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Status
+                  </p>
+                  <Badge variant="secondary">
+                    {selectedWorkOrder.status.replace(/_/g, " ")}
+                  </Badge>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Priority
+                  </p>
+                  <Badge
+                    className={
+                      severityColors[
+                        selectedWorkOrder.priority as keyof typeof severityColors
+                      ]
+                    }
+                  >
+                    {selectedWorkOrder.priority}
+                  </Badge>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Type
+                  </p>
+                  <p className="text-sm">{selectedWorkOrder.type}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Equipment
+                  </p>
+                  <p className="text-sm">{selectedWorkOrder.equipmentName}</p>
+                </div>
+              </div>
+              {selectedWorkOrder.description && (
+                <div className="border-t pt-4">
+                  <h4 className="font-medium mb-2">Description</h4>
+                  <p className="text-sm">{selectedWorkOrder.description}</p>
+                </div>
+              )}
+              <div className="border-t pt-4">
+                <h4 className="font-medium mb-2">Timeline</h4>
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <div>
+                    <span className="text-muted-foreground">Created: </span>
+                    {formatDate(selectedWorkOrder.createdAt)}
+                  </div>
+                  {selectedWorkOrder.scheduledDate && (
+                    <div>
+                      <span className="text-muted-foreground">
+                        Scheduled:{" "}
+                      </span>
+                      {formatDate(selectedWorkOrder.scheduledDate)}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button
+              onClick={() => setIsWorkOrderDetailsOpen(false)}
+              variant="outline"
+            >
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Take Action Dialog */}
+      <Dialog open={isTakeActionOpen} onOpenChange={setIsTakeActionOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Take Action</DialogTitle>
+            <DialogDescription>
+              {selectedAlert?.equipmentName} —{" "}
+              {selectedAlert?.alertType.replace(/_/g, " ")}
+            </DialogDescription>
+          </DialogHeader>
+          {selectedAlert && (
+            <div className="space-y-4 py-4">
+              <div
+                className="p-3 border rounded-lg border-l-4"
+                style={{
+                  borderLeftColor:
+                    selectedAlert.severity === "critical"
+                      ? "#ef4444"
+                      : selectedAlert.severity === "warning"
+                        ? "#f97316"
+                        : selectedAlert.severity === "info"
+                          ? "#eab308"
+                          : "#3b82f6",
+                }}
+              >
+                <Badge
+                  className={
+                    severityColors[
+                      selectedAlert.severity as keyof typeof severityColors
+                    ]
+                  }
+                >
+                  {selectedAlert.severity}
+                </Badge>
+                <p className="text-sm mt-2">{selectedAlert.message}</p>
+                <p className="text-sm font-medium text-muted-foreground mt-1">
+                  Recommendation: {selectedAlert.recommendedAction}
+                </p>
+              </div>
+              <div className="border-t pt-4">
+                <h4 className="font-medium mb-3">Actions</h4>
+                <div className="space-y-2">
+                  <Button
+                    className="w-full justify-start"
+                    onClick={() =>
+                      openScheduleMaintenanceForAlert(selectedAlert)
+                    }
+                    variant="outline"
+                  >
+                    <Calendar className="mr-2 h-4 w-4" />
+                    Schedule Maintenance
+                  </Button>
+                  <Button
+                    className="w-full justify-start"
+                    onClick={() => openCreateWorkOrderForAlert(selectedAlert)}
+                    variant="outline"
+                  >
+                    <Wrench className="mr-2 h-4 w-4" />
+                    Create Work Order
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button
+              onClick={() => setIsTakeActionOpen(false)}
+              variant="outline"
+            >
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

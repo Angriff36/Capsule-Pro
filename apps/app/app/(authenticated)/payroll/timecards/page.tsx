@@ -8,7 +8,16 @@ import {
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Card, CardContent } from "@repo/design-system/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@repo/design-system/components/ui/dialog";
 import { Input } from "@repo/design-system/components/ui/input";
+import { Label } from "@repo/design-system/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -25,6 +34,7 @@ import {
   TableHeader,
   TableRow,
 } from "@repo/design-system/components/ui/table";
+import { Textarea } from "@repo/design-system/components/ui/textarea";
 import {
   AlertTriangleIcon,
   CalendarIcon,
@@ -177,6 +187,17 @@ export default function TimecardsPage() {
   );
   const [actionLoading, setActionLoading] = useState(false);
   const [generateLoading, setGenerateLoading] = useState(false);
+
+  // Inline edit-request dialog state
+  const [editRequestDialogOpen, setEditRequestDialogOpen] = useState(false);
+  const [editRequestEntryId, setEditRequestEntryId] = useState<string | null>(null);
+  const [editRequestReason, setEditRequestReason] = useState("");
+
+  // Inline flag-exception dialog state
+  const [flagExceptionDialogOpen, setFlagExceptionDialogOpen] = useState(false);
+  const [flagExceptionEntryId, setFlagExceptionEntryId] = useState<string | null>(null);
+  const [flagExceptionType, setFlagExceptionType] = useState("");
+  const [flagExceptionNotes, setFlagExceptionNotes] = useState("");
 
   const fetchTimecards = useCallback(async () => {
     setLoading(true);
@@ -725,12 +746,9 @@ export default function TimecardsPage() {
                               disabled={actionLoading}
                               onClick={(e) => {
                                 e.stopPropagation();
-                                const reason = prompt(
-                                  "Enter edit request reason:"
-                                );
-                                if (reason) {
-                                  handleEditRequest(entry.id, reason);
-                                }
+                                setEditRequestEntryId(entry.id);
+                                setEditRequestReason("");
+                                setEditRequestDialogOpen(true);
                               }}
                               size="icon"
                               variant="ghost"
@@ -742,15 +760,10 @@ export default function TimecardsPage() {
                               disabled={actionLoading}
                               onClick={(e) => {
                                 e.stopPropagation();
-                                const type = prompt(
-                                  "Exception type (missing_clock_out, late_arrival, excessive_break, other):"
-                                );
-                                if (type) {
-                                  const notes = prompt("Exception notes:");
-                                  if (notes) {
-                                    handleFlagException(entry.id, type, notes);
-                                  }
-                                }
+                                setFlagExceptionEntryId(entry.id);
+                                setFlagExceptionType("");
+                                setFlagExceptionNotes("");
+                                setFlagExceptionDialogOpen(true);
                               }}
                               size="icon"
                               variant="ghost"
@@ -814,6 +827,122 @@ export default function TimecardsPage() {
           timeEntry={selectedTimeEntry}
         />
       )}
+
+      {/* Inline Edit Request Dialog */}
+      <Dialog
+        onOpenChange={(isOpen) => {
+          if (!isOpen) setEditRequestDialogOpen(false);
+        }}
+        open={editRequestDialogOpen}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Request Edit</DialogTitle>
+            <DialogDescription>
+              Provide a reason for requesting an edit to this time entry
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <Label htmlFor="inline-edit-reason">Reason</Label>
+            <Textarea
+              className="mt-2"
+              id="inline-edit-reason"
+              onChange={(e) => setEditRequestReason(e.target.value)}
+              placeholder="Explain why this timecard needs editing..."
+              value={editRequestReason}
+            />
+          </div>
+          <DialogFooter>
+            <Button
+              onClick={() => setEditRequestDialogOpen(false)}
+              variant="outline"
+            >
+              Cancel
+            </Button>
+            <Button
+              disabled={!editRequestReason.trim()}
+              onClick={() => {
+                if (editRequestEntryId) {
+                  handleEditRequest(editRequestEntryId, editRequestReason);
+                }
+                setEditRequestDialogOpen(false);
+                setEditRequestReason("");
+                setEditRequestEntryId(null);
+              }}
+            >
+              Submit Request
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Inline Flag Exception Dialog */}
+      <Dialog
+        onOpenChange={(isOpen) => {
+          if (!isOpen) setFlagExceptionDialogOpen(false);
+        }}
+        open={flagExceptionDialogOpen}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Flag Exception</DialogTitle>
+            <DialogDescription>
+              Record an exception for this time entry
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Exception Type</Label>
+              <Select onValueChange={setFlagExceptionType} value={flagExceptionType}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select exception type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="missing_clock_out">Missing Clock Out</SelectItem>
+                  <SelectItem value="late_arrival">Late Arrival</SelectItem>
+                  <SelectItem value="excessive_break">Excessive Break</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="inline-exception-notes">Notes</Label>
+              <Textarea
+                id="inline-exception-notes"
+                onChange={(e) => setFlagExceptionNotes(e.target.value)}
+                placeholder="Describe the exception..."
+                value={flagExceptionNotes}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              onClick={() => setFlagExceptionDialogOpen(false)}
+              variant="outline"
+            >
+              Cancel
+            </Button>
+            <Button
+              disabled={!flagExceptionType || !flagExceptionNotes.trim()}
+              onClick={() => {
+                if (flagExceptionEntryId) {
+                  handleFlagException(
+                    flagExceptionEntryId,
+                    flagExceptionType,
+                    flagExceptionNotes
+                  );
+                }
+                setFlagExceptionDialogOpen(false);
+                setFlagExceptionType("");
+                setFlagExceptionNotes("");
+                setFlagExceptionEntryId(null);
+              }}
+            >
+              Flag Exception
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
