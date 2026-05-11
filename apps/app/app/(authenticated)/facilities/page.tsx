@@ -41,16 +41,29 @@ import {
 } from "@repo/design-system/components/ui/select";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@repo/design-system/components/ui/alert-dialog";
+import {
   Building2,
   Calendar,
   Loader2,
   MapPin,
   Package,
+  Pencil,
   Plus,
+  Trash2,
   Wrench,
 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { apiFetch } from "@/app/lib/api";
 import { createFacility, getFacilities } from "./actions";
 import { UpcomingMaintenanceWidget } from "./components/upcoming-maintenance-widget";
 
@@ -108,6 +121,13 @@ export default function FacilitiesPage() {
   const [loading, setLoading] = useState(true);
   const [showDialog, setShowDialog] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [editing, setEditing] = useState<Facility | null>(null);
+  const [deleting, setDeleting] = useState<string | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [facilityToDelete, setFacilityToDelete] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
   const [form, setForm] = useState({
     name: "",
     code: "",
@@ -137,6 +157,7 @@ export default function FacilitiesPage() {
   };
 
   const openCreate = () => {
+    setEditing(null);
     setForm({
       name: "",
       code: "",
@@ -151,9 +172,92 @@ export default function FacilitiesPage() {
     setShowDialog(true);
   };
 
-  const handleSave = async (formData: FormData) => {
+  const openEdit = (facility: Facility) => {
+    setEditing(facility);
+    setForm({
+      name: facility.name,
+      code: facility.code || "",
+      facilityType: facility.facilityType,
+      addressLine1: facility.addressLine1 || "",
+      city: facility.city || "",
+      state: facility.state || "",
+      postalCode: facility.postalCode || "",
+      phone: facility.phone || "",
+      notes: facility.notes || "",
+    });
+    setShowDialog(true);
+  };
+
+  const handleEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!form.name.trim() || !editing) return;
     setSaving(true);
     try {
+      const res = await apiFetch("/api/facilities/commands/edit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          facilityId: editing.id,
+          name: form.name,
+          code: form.code || null,
+          facilityType: form.facilityType,
+          addressLine1: form.addressLine1 || null,
+          city: form.city || null,
+          state: form.state || null,
+          postalCode: form.postalCode || null,
+          phone: form.phone || null,
+          notes: form.notes || null,
+        }),
+      });
+      if (res.ok) {
+        await loadFacilities();
+        setShowDialog(false);
+      }
+    } catch {
+      // Graceful fallback
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = async (facilityId: string) => {
+    setDeleting(facilityId);
+    try {
+      await apiFetch("/api/facilities/commands/delete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ facilityId }),
+      });
+      setFacilities((prev) => prev.filter((f) => f.id !== facilityId));
+      setDeleteDialogOpen(false);
+      setFacilityToDelete(null);
+    } catch {
+      // Graceful fallback
+    } finally {
+      setDeleting(null);
+    }
+  };
+
+  const confirmDelete = (facility: Facility) => {
+    setFacilityToDelete({ id: facility.id, name: facility.name });
+    setDeleteDialogOpen(true);
+  };
+
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!form.name.trim()) return;
+    setSaving(true);
+    try {
+      const formData = new FormData();
+      formData.append("name", form.name);
+      formData.append("code", form.code);
+      formData.append("facilityType", form.facilityType);
+      formData.append("addressLine1", form.addressLine1);
+      formData.append("city", form.city);
+      formData.append("state", form.state);
+      formData.append("postalCode", form.postalCode);
+      formData.append("phone", form.phone);
+      formData.append("notes", form.notes);
       await createFacility(formData);
       await loadFacilities();
       setShowDialog(false);
@@ -251,6 +355,28 @@ export default function FacilitiesPage() {
                         {facility.phone ? <div>{facility.phone}</div> : null}
                       </div>
                     </div>
+                    <div className="flex items-center gap-1">
+                      <Button
+                        onClick={() => openEdit(facility)}
+                        size="sm"
+                        variant="ghost"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        className="text-red-500 hover:text-red-700"
+                        disabled={deleting === facility.id}
+                        onClick={() => confirmDelete(facility)}
+                        size="sm"
+                        variant="ghost"
+                      >
+                        {deleting === facility.id ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Trash2 className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -284,16 +410,18 @@ export default function FacilitiesPage() {
         </section>
       </OperationalColumn>
 
-      {/* Create Facility Dialog */}
+      {/* Create/Edit Facility Dialog */}
       <Dialog onOpenChange={setShowDialog} open={showDialog}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>Add Facility</DialogTitle>
+            <DialogTitle>{editing ? "Edit Facility" : "Add Facility"}</DialogTitle>
             <DialogDescription>
-              Register a new building or site (kitchen, warehouse, office, …).
+              {editing
+                ? "Update facility information."
+                : "Register a new building or site (kitchen, warehouse, office, …)."}
             </DialogDescription>
           </DialogHeader>
-          <form action={handleSave} className="space-y-4">
+          <form onSubmit={editing ? handleEdit : handleSave} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Name *</Label>
@@ -327,11 +455,13 @@ export default function FacilitiesPage() {
                     )}
                   </SelectContent>
                 </Select>
-                <input
-                  name="facilityType"
-                  type="hidden"
-                  value={form.facilityType}
-                />
+                {!editing && (
+                  <input
+                    name="facilityType"
+                    type="hidden"
+                    value={form.facilityType}
+                  />
+                )}
               </div>
             </div>
 
@@ -431,12 +561,49 @@ export default function FacilitiesPage() {
               </Button>
               <Button disabled={!form.name.trim() || saving} type="submit">
                 {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Add Facility
+                {editing ? "Update" : "Add"} Facility
               </Button>
             </DialogFooter>
           </form>
         </DialogContent>
       </Dialog>
+
+      {/* Delete Confirmation */}
+      <AlertDialog
+        onOpenChange={(open) => {
+          setDeleteDialogOpen(open);
+          if (!open) setFacilityToDelete(null);
+        }}
+        open={deleteDialogOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Facility</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete{" "}
+              <span className="font-semibold">
+                {facilityToDelete?.name || "this facility"}
+              </span>
+              ? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-600 hover:bg-red-700"
+              disabled={deleting === facilityToDelete?.id}
+              onClick={() => {
+                if (facilityToDelete) handleDelete(facilityToDelete.id);
+              }}
+            >
+              {deleting === facilityToDelete?.id ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : null}
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </PageCanvas>
   );
 }

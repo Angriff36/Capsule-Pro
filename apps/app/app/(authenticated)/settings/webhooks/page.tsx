@@ -1,5 +1,7 @@
+import { requireAdminUser } from "@/app/lib/auth-guards";
 import { WebhooksClient } from "./webhooks-client";
 
-export default function WebhooksPage() {
+export default async function WebhooksPage() {
+  await requireAdminUser();
   return <WebhooksClient />;
 }

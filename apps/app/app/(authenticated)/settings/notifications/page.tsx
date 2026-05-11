@@ -13,11 +13,11 @@ import {
   PageCanvas,
 } from "@repo/design-system/components/blocks/page-shell";
 import { BellRing } from "lucide-react";
-import { requireCurrentUser } from "@/app/lib/tenant";
+import { requireManagerUser } from "@/app/lib/auth-guards";
 import { NotificationsClient } from "./notifications-client";
 
 export default async function NotificationsSettingsPage() {
-  const user = await requireCurrentUser();
+  const user = await requireManagerUser();
 
   return (
     <PageCanvas>

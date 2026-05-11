@@ -13,6 +13,7 @@ import {
   PageCanvas,
 } from "@repo/design-system/components/blocks/page-shell";
 import { Mail } from "lucide-react";
+import { requireManagerUser } from "@/app/lib/auth-guards";
 import { EmailTemplatesClient } from "./components/email-templates-client";
 
 export const metadata = {
@@ -21,7 +22,9 @@ export const metadata = {
     "Create and manage branded email templates for proposals, confirmations, reminders, and follow-ups.",
 };
 
-export default function EmailTemplatesPage() {
+export default async function EmailTemplatesPage() {
+  await requireManagerUser();
+
   return (
     <PageCanvas>
       <CommandBand>

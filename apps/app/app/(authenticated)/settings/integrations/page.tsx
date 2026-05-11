@@ -13,9 +13,12 @@ import {
   PageCanvas,
 } from "@repo/design-system/components/blocks/page-shell";
 import { Plug } from "lucide-react";
+import { requireAdminUser } from "@/app/lib/auth-guards";
 import { IntegrationsClient } from "./integrations-client";
 
-export default function IntegrationsSettingsPage() {
+export default async function IntegrationsSettingsPage() {
+  await requireAdminUser();
+
   return (
     <PageCanvas>
       <CommandBand>

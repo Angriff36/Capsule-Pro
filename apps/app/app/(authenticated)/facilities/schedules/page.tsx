@@ -9,6 +9,16 @@ import {
   CardTitle,
 } from "@repo/design-system/components/ui/card";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@repo/design-system/components/ui/alert-dialog";
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -51,10 +61,13 @@ import {
   ChevronRight,
   LayoutGrid,
   Loader2,
+  Pencil,
   Plus,
+  Trash2,
   Wrench,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { apiFetch } from "@/app/lib/api";
 import {
   completeSchedule,
   createPMSchedule,
@@ -96,12 +109,19 @@ export default function SchedulesPage() {
   const [assets, setAssets] = useState<Asset[]>([]);
   const [loading, setLoading] = useState(true);
   const [completing, setCompleting] = useState<string | null>(null);
-  const [showCreateDialog, setShowCreateDialog] = useState(false);
-  const [creating, setCreating] = useState(false);
+  const [showDialog, setShowDialog] = useState(false);
+  const [editing, setEditing] = useState<Schedule | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState<string | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [scheduleToDelete, setScheduleToDelete] = useState<{
+    id: string;
+    title: string;
+  } | null>(null);
   const [view, setView] = useState<"cards" | "calendar">("cards");
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [createForm, setCreateForm] = useState({
+  const [form, setForm] = useState({
     title: "",
     description: "",
     frequency: "monthly",
@@ -141,41 +161,112 @@ export default function SchedulesPage() {
     }
   };
 
-  const handleCreate = async (e: React.FormEvent) => {
+  const openCreate = () => {
+    setEditing(null);
+    setForm({
+      title: "",
+      description: "",
+      frequency: "monthly",
+      nextDueDate: "",
+      estimatedHours: "",
+      estimatedCost: "",
+      equipmentId: "",
+    });
+    setShowDialog(true);
+  };
+
+  const openEdit = (schedule: Schedule) => {
+    setEditing(schedule);
+    setForm({
+      title: schedule.title,
+      description: schedule.description || "",
+      frequency: schedule.frequency,
+      nextDueDate: new Date(schedule.nextDueAt).toISOString().slice(0, 10),
+      estimatedHours: schedule.estimatedHours
+        ? schedule.estimatedHours.toNumber().toString()
+        : "",
+      estimatedCost: schedule.estimatedCost
+        ? schedule.estimatedCost.toNumber().toString()
+        : "",
+      equipmentId: schedule.equipmentId || "",
+    });
+    setShowDialog(true);
+  };
+
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!createForm.title.trim()) return;
-    setCreating(true);
+    if (!form.title.trim()) return;
+    setSaving(true);
     try {
-      await createPMSchedule({
-        title: createForm.title,
-        description: createForm.description || undefined,
-        frequency: createForm.frequency,
-        nextDueAt:
-          createForm.nextDueDate || new Date().toISOString().split("T")[0],
-        estimatedHours: createForm.estimatedHours
-          ? Number.parseFloat(createForm.estimatedHours)
-          : undefined,
-        estimatedCost: createForm.estimatedCost
-          ? Number.parseFloat(createForm.estimatedCost)
-          : undefined,
-        equipmentId: createForm.equipmentId || undefined,
-      });
-      await loadData();
-      setShowCreateDialog(false);
-      setCreateForm({
-        title: "",
-        description: "",
-        frequency: "monthly",
-        nextDueDate: "",
-        estimatedHours: "",
-        estimatedCost: "",
-        equipmentId: "",
-      });
+      if (editing) {
+        const res = await apiFetch("/api/facilities/schedules/commands/edit", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            scheduleId: editing.id,
+            title: form.title,
+            description: form.description || null,
+            frequency: form.frequency,
+            nextDueDate:
+              form.nextDueDate || new Date().toISOString().split("T")[0],
+            estimatedHours: form.estimatedHours
+              ? Number.parseFloat(form.estimatedHours)
+              : null,
+            estimatedCost: form.estimatedCost
+              ? Number.parseFloat(form.estimatedCost)
+              : null,
+          }),
+        });
+        if (res.ok) {
+          await loadData();
+          setShowDialog(false);
+        }
+      } else {
+        await createPMSchedule({
+          title: form.title,
+          description: form.description || undefined,
+          frequency: form.frequency,
+          nextDueAt:
+            form.nextDueDate || new Date().toISOString().split("T")[0],
+          estimatedHours: form.estimatedHours
+            ? Number.parseFloat(form.estimatedHours)
+            : undefined,
+          estimatedCost: form.estimatedCost
+            ? Number.parseFloat(form.estimatedCost)
+            : undefined,
+          equipmentId: form.equipmentId || undefined,
+        });
+        await loadData();
+        setShowDialog(false);
+      }
     } catch (error) {
-      console.error("Failed to create schedule:", error);
+      console.error("Failed to save schedule:", error);
     } finally {
-      setCreating(false);
+      setSaving(false);
     }
+  };
+
+  const handleDelete = async (scheduleId: string) => {
+    setDeleting(scheduleId);
+    try {
+      await apiFetch("/api/facilities/schedules/commands/delete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ scheduleId }),
+      });
+      setSchedules((prev) => prev.filter((s) => s.id !== scheduleId));
+      setDeleteDialogOpen(false);
+      setScheduleToDelete(null);
+    } catch (error) {
+      console.error("Failed to delete schedule:", error);
+    } finally {
+      setDeleting(null);
+    }
+  };
+
+  const confirmDelete = (schedule: Schedule) => {
+    setScheduleToDelete({ id: schedule.id, title: schedule.title });
+    setDeleteDialogOpen(true);
   };
 
   const frequencyColors: Record<string, string> = {
@@ -248,7 +339,7 @@ export default function SchedulesPage() {
                 </TabsTrigger>
               </TabsList>
             </Tabs>
-            <Button onClick={() => setShowCreateDialog(true)}>
+            <Button onClick={openCreate}>
               <Plus className="h-4 w-4 mr-2" />
               Add Schedule
             </Button>
@@ -454,9 +545,31 @@ export default function SchedulesPage() {
                       <CardTitle className="text-base">
                         {schedule.title}
                       </CardTitle>
-                      {isOverdue && (
-                        <AlertTriangle className="h-4 w-4 text-red-500" />
-                      )}
+                      <div className="flex items-center gap-1">
+                        {isOverdue && (
+                          <AlertTriangle className="h-4 w-4 text-red-500" />
+                        )}
+                        <Button
+                          onClick={() => openEdit(schedule)}
+                          size="sm"
+                          variant="ghost"
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          className="text-red-500 hover:text-red-700"
+                          disabled={deleting === schedule.id}
+                          onClick={() => confirmDelete(schedule)}
+                          size="sm"
+                          variant="ghost"
+                        >
+                          {deleting === schedule.id ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Trash2 className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </div>
                     </div>
                     <div className="font-mono text-xs text-muted-foreground">
                       {schedule.scheduleNumber}
@@ -535,40 +648,44 @@ export default function SchedulesPage() {
           </div>
         )}
 
-        {/* Create Schedule Dialog */}
-        <Dialog onOpenChange={setShowCreateDialog} open={showCreateDialog}>
+        {/* Create/Edit Schedule Dialog */}
+        <Dialog onOpenChange={setShowDialog} open={showDialog}>
           <DialogContent className="max-w-lg">
             <DialogHeader>
-              <DialogTitle>Create PM Schedule</DialogTitle>
+              <DialogTitle>
+                {editing ? "Edit PM Schedule" : "Create PM Schedule"}
+              </DialogTitle>
               <DialogDescription>
-                Add a new preventive maintenance schedule.
+                {editing
+                  ? "Update schedule information."
+                  : "Add a new preventive maintenance schedule."}
               </DialogDescription>
             </DialogHeader>
-            <form className="space-y-4" onSubmit={handleCreate}>
+            <form className="space-y-4" onSubmit={handleSave}>
               <div className="space-y-2">
                 <Label htmlFor="pmTitle">Title *</Label>
                 <Input
                   id="pmTitle"
                   onChange={(e) =>
-                    setCreateForm((p) => ({ ...p, title: e.target.value }))
+                    setForm((p) => ({ ...p, title: e.target.value }))
                   }
                   placeholder="e.g., HVAC Filter Replacement"
                   required
-                  value={createForm.title}
+                  value={form.title}
                 />
               </div>
               <div className="space-y-2">
                 <Label>Description</Label>
                 <Textarea
                   onChange={(e) =>
-                    setCreateForm((p) => ({
+                    setForm((p) => ({
                       ...p,
                       description: e.target.value,
                     }))
                   }
                   placeholder="Describe the maintenance task..."
                   rows={2}
-                  value={createForm.description}
+                  value={form.description}
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -576,9 +693,9 @@ export default function SchedulesPage() {
                   <Label>Frequency</Label>
                   <Select
                     onValueChange={(v) =>
-                      setCreateForm((p) => ({ ...p, frequency: v }))
+                      setForm((p) => ({ ...p, frequency: v }))
                     }
-                    value={createForm.frequency}
+                    value={form.frequency}
                   >
                     <SelectTrigger>
                       <SelectValue />
@@ -598,43 +715,45 @@ export default function SchedulesPage() {
                   <Label>Next Due Date</Label>
                   <Input
                     onChange={(e) =>
-                      setCreateForm((p) => ({
+                      setForm((p) => ({
                         ...p,
                         nextDueDate: e.target.value,
                       }))
                     }
                     type="date"
-                    value={createForm.nextDueDate}
+                    value={form.nextDueDate}
                   />
                 </div>
               </div>
-              <div className="space-y-2">
-                <Label>Linked Equipment</Label>
-                <Select
-                  onValueChange={(v) =>
-                    setCreateForm((p) => ({ ...p, equipmentId: v }))
-                  }
-                  value={createForm.equipmentId}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select equipment (optional)" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="">None</SelectItem>
-                    {assets.map((asset) => (
-                      <SelectItem key={asset.id} value={asset.id}>
-                        {asset.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              {!editing && (
+                <div className="space-y-2">
+                  <Label>Linked Equipment</Label>
+                  <Select
+                    onValueChange={(v) =>
+                      setForm((p) => ({ ...p, equipmentId: v }))
+                    }
+                    value={form.equipmentId}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select equipment (optional)" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">None</SelectItem>
+                      {assets.map((asset) => (
+                        <SelectItem key={asset.id} value={asset.id}>
+                          {asset.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Est. Hours</Label>
                   <Input
                     onChange={(e) =>
-                      setCreateForm((p) => ({
+                      setForm((p) => ({
                         ...p,
                         estimatedHours: e.target.value,
                       }))
@@ -642,14 +761,14 @@ export default function SchedulesPage() {
                     placeholder="0"
                     step="0.5"
                     type="number"
-                    value={createForm.estimatedHours}
+                    value={form.estimatedHours}
                   />
                 </div>
                 <div className="space-y-2">
                   <Label>Est. Cost</Label>
                   <Input
                     onChange={(e) =>
-                      setCreateForm((p) => ({
+                      setForm((p) => ({
                         ...p,
                         estimatedCost: e.target.value,
                       }))
@@ -657,31 +776,68 @@ export default function SchedulesPage() {
                     placeholder="0.00"
                     step="0.01"
                     type="number"
-                    value={createForm.estimatedCost}
+                    value={form.estimatedCost}
                   />
                 </div>
               </div>
               <DialogFooter>
                 <Button
-                  onClick={() => setShowCreateDialog(false)}
+                  onClick={() => setShowDialog(false)}
                   type="button"
                   variant="outline"
                 >
                   Cancel
                 </Button>
                 <Button
-                  disabled={!createForm.title.trim() || creating}
+                  disabled={!form.title.trim() || saving}
                   type="submit"
                 >
-                  {creating && (
+                  {saving && (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   )}
-                  Create Schedule
+                  {editing ? "Update" : "Create"} Schedule
                 </Button>
               </DialogFooter>
             </form>
           </DialogContent>
         </Dialog>
+
+        {/* Delete Confirmation */}
+        <AlertDialog
+          onOpenChange={(open) => {
+            setDeleteDialogOpen(open);
+            if (!open) setScheduleToDelete(null);
+          }}
+          open={deleteDialogOpen}
+        >
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete Schedule</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to delete{" "}
+                <span className="font-semibold">
+                  {scheduleToDelete?.title || "this schedule"}
+                </span>
+                ? This action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                className="bg-red-600 hover:bg-red-700"
+                disabled={deleting === scheduleToDelete?.id}
+                onClick={() => {
+                  if (scheduleToDelete) handleDelete(scheduleToDelete.id);
+                }}
+              >
+                {deleting === scheduleToDelete?.id ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : null}
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </div>
   );

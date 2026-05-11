@@ -22,9 +22,12 @@ import {
   PageCanvas,
 } from "@repo/design-system/components/blocks/page-shell";
 import { FileText } from "lucide-react";
+import { requireAdminUser } from "@/app/lib/auth-guards";
 import { AuditLogClient } from "./audit-log-client";
 
 export default async function AuditLogPage() {
+  await requireAdminUser();
+
   return (
     <PageCanvas>
       <CommandBand>

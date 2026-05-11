@@ -22,9 +22,12 @@ import {
   PageCanvas,
 } from "@repo/design-system/components/blocks/page-shell";
 import { Shield } from "lucide-react";
+import { requireAdminUser } from "@/app/lib/auth-guards";
 import { SecurityClient } from "./security-client";
 
-export default function SettingsSecurityPage() {
+export default async function SettingsSecurityPage() {
+  await requireAdminUser();
+
   return (
     <PageCanvas>
       <CommandBand>

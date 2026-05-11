@@ -18,7 +18,7 @@ import {
   StatusPill,
 } from "@repo/design-system/components/blocks/page-shell";
 import { Button } from "@repo/design-system/components/ui/button";
-import { ArrowRight, BookOpen, CreditCard, FileText } from "lucide-react";
+import { ArrowRight, BookOpen, CreditCard, FileText, Scale } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -72,6 +72,12 @@ const moduleLinks = [
     label: "Payments",
     description: "Track recorded payments and reconciliation progress.",
     icon: CreditCard,
+  },
+  {
+    href: "/accounting/collections",
+    label: "Collections",
+    description: "Manage overdue invoices, dunning escalations, and recovery.",
+    icon: Scale,
   },
   {
     href: "/accounting/chart-of-accounts",

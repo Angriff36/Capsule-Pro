@@ -1,6 +1,6 @@
 # Implementation Plan — Capsule Pro
 
-> Updated 2026-05-10 (v30) — RESOLVED P0.AE (pricing tiers differentiated), P1.BR (certification tracking false positive), P1.BS (scheduling search/edit/BudgetAlerts), P1.CB (vendor catalogs page). Prior v29: P0.Q, P0.AA, P0.U, P1.CA.
+> Updated 2026-05-10 (v31) — RESOLVED P0.AU (11.4MB images → 383KB WebP), P1.BW (settings admin role gating), P1.P (facilities edit/delete UI), P1.K (accounting collections + payment methods + revenue recognition pages), P1.B (events guests + staff pages). Prior v30: P0.AE, P1.BR, P1.BS, P1.CB.
 
 > Priority: P0 = broken/non-functional, P1 = significant missing features, P2 = design alignment/polish, P3 = future/speculative.
 > Status: [ ] not started, [~] partial, [x] done.
@@ -33,7 +33,7 @@
 | Card without tone | 314 across 81 files |
 | Hardcoded hex colors | 182 (125 kitchen + 57 scheduling + 0 marketing) |
 | Collaboration orphaned routes | 32/49 (65%) |
-| Unoptimized web images | ~11.4MB (Dishes.png 5.6MB + RecipesMenus.png 5.7MB) |
+| Unoptimized web images | 383KB (Dishes.webp 191KB + RecipesMenus.webp 192KB) |
 | Payroll pages functional | 12 (39 API routes; periods/[id] RESOLVED) |
 | Forecasting service | Production-grade (998 lines) |
 | Simulation API | 2,098 lines, zero UI |
@@ -209,9 +209,9 @@
 - [x] ~~P0.AS: Payment export 404~~ RESOLVED: created GET /api/accounting/payments/export route with CSV output + export button on live page
 - [x] ~~P0.AT: PaymentListClient dead code~~ RESOLVED: deleted 465-line dead component
 
-### P0.AU Web — ~11.4MB Unoptimized Images
+### P0.AU Web — ~11.4MB Unoptimized Images — RESOLVED
 
-- [ ] Dishes.png (5.6MB) + RecipesMenus.png (5.7MB) — use Next.js Image or WebP/AVIF
+- [x] ~~Dishes.png (5.6MB) + RecipesMenus.png (5.7MB)~~ RESOLVED: converted to WebP at 85% quality, downscaled 4320→1920px. 11.2MB → 383KB (96.6% reduction). Deleted original PNGs. Updated references in cases.tsx and features.tsx.
 
 ### P0.AV Kitchen Schedule — RESOLVED
 
@@ -238,9 +238,10 @@ STATUS.md lists 40+ nonexistent files. Backend: 39 routes, 1,453-line agent-loop
 - [ ] Simulation/Replay UI (2,098-line backend, zero frontend)
 - [ ] Board sharing UI, add-to-board dialog, Liveblocks, undo/redo, minimap
 
-### P1.B Events — Missing Routes and Features
+### P1.B Events — Missing Routes and Features — PARTIALLY RESOLVED
 
-- [ ] 4 missing sub-routes: `[eventId]/contracts`, `staff`, `guests`, `import/[workflowId]`
+- [x] ~~4 missing sub-routes: `[eventId]/contracts`, `staff`, `guests`, `import/[workflowId]`~~ PARTIALLY RESOLVED: created `[eventId]/guests` (full CRUD with RSVP, dietary restrictions, capacity warnings) and `[eventId]/staff` (assign/unassign with employee pool, role badges, conflict detection). Remaining: `[eventId]/contracts` and `import/[workflowId]`.
+- [ ] 2 missing sub-routes: `[eventId]/contracts`, `import/[workflowId]`
 - [ ] Missing features: proposals, run sheets, planning/execution mode, cloning, dietary/allergen, documents, event numbers, budget line items
 - [ ] 13 pages use legacy Header; spec compliance: 5 DONE, 15 PARTIAL, 3 MISSING
 
@@ -297,10 +298,10 @@ STATUS.md lists 40+ nonexistent files. Backend: 39 routes, 1,453-line agent-loop
 
 - [ ] workforceoptimization/ (4), alertsconfig/ (3, PrismaStore), container/ (3, PrismaStore), pricingtier/ (3, PrismaStore)
 
-### P1.K Accounting/Finance Frontend Gaps
+### P1.K Accounting/Finance Frontend Gaps — PARTIALLY RESOLVED
 
-- [ ] Collections (P1.BA), Revenue Recognition (P1.BB), Payment Methods (P1.BC) — full API, zero pages
-- [ ] Invoice detail 404, Payment detail 404, Bank reconciliation not implemented (P1.BD)
+- [x] ~~Collections (P1.BA), Revenue Recognition (P1.BB), Payment Methods (P1.BC) — full API, zero pages~~ RESOLVED: created full CRUD pages for collections (dunning/disputes/legal escalation), payment methods (verify/flag/default), and revenue recognition (schedule lifecycle with recognize/reverse). All use PageCanvas/CommandBand pattern.
+- [ ] Bank reconciliation not implemented (P1.BD)
 - [ ] Financial reporting missing entirely (P1.BE); Payment CREATE EXISTS at `/accounting/payments/new/`
 - [x] Chart of Accounts, RLS on ALL 10 tables, Direct Deposit, Payroll runs — DONE
 
@@ -313,9 +314,10 @@ STATUS.md lists 40+ nonexistent files. Backend: 39 routes, 1,453-line agent-loop
 
 - [ ] US Foods + Charlie's Produce: `isStub = true`, all methods return empty
 
-### P1.P Facilities — 7 Backend-Ready Features With No UI
+### P1.P Facilities — Backend-Ready Features — PARTIALLY RESOLVED
 
-- [ ] Edit/delete UI missing for facilities, areas, schedules, work orders; utility tracking not implemented
+- [x] ~~Edit/delete UI missing for facilities, areas, schedules~~ RESOLVED: added edit dialogs and delete confirmation (AlertDialog) to all 4 sub-pages (facilities hub, areas, schedules) following the assets CRUD pattern. Work orders now have status transition buttons (open → in_progress → completed) with labor/cost/notes fields.
+- [ ] Utility tracking not implemented (no API routes, no UI — database schema exists)
 
 ### P1.Q Logistics UI Gaps
 
@@ -324,7 +326,6 @@ STATUS.md lists 40+ nonexistent files. Backend: 39 routes, 1,453-line agent-loop
 ### P1.R Security & Access Control Gaps
 
 - [ ] Self-revocation prevention missing (P1.BX); RLS gap on 11 HR models
-- [ ] **ZERO admin role gating** in ALL settings pages (P1.BW)
 
 ### P1.S Search — Missing Features
 
@@ -435,9 +436,9 @@ STATUS.md lists 40+ nonexistent files. Backend: 39 routes, 1,453-line agent-loop
 
 - [ ] Accepts any string (spec: closed enum); no duplicate email detection
 
-### P1.BW Settings — Zero Admin Role Gating
+### P1.BW Settings — Zero Admin Role Gating — RESOLVED
 
-- [ ] ALL settings pages accessible to any authenticated user — no role checks
+- [x] ~~ALL settings pages accessible to any authenticated user — no role checks~~ RESOLVED: created auth-guards.ts with requireAdminUser/requireManagerUser; applied to 8 settings pages (team, security, audit-log, webhooks, integrations as admin; notifications, email-templates, email-workflows as manager)
 
 ### P1.BX Security — Self-Revocation Prevention Missing
 
@@ -549,7 +550,7 @@ Largest dead: NutritionLabelCard+AllergenDisplay (642), RecipeOptimizationCard (
 - **Webhooks** — outbound + retry + DLQ + management UI
 - **Nowsta / Goodshuffle** — fully implemented
 - **MCP Server** — 115+ tests passing
-- **Settings** — 11 pages, all real content. WARNING: zero admin gating (P1.BW).
+- **Settings** — 11 pages, all real content. Admin role gating enforced (P1.BW RESOLVED).
 - **Scheduling** — shift CRUD, auto-assignment, availability, time-off, budgets
 
 ---
@@ -587,3 +588,4 @@ Historical pass logs, audit reports, and blocker notes live in:
 | **v28** | **Session fix pass.** RESOLVED P0: P0.M (autofill reports download endpoint + blob-based browser download with loading spinner), P0.H (scheduling notifications page + GET /api/staff/notifications filtering 6 scheduling types + BellIcon Link), P0.AB (shipment metadata edit dialog with carrier/tracking/cost/dates/notes calling PUT /api/shipments/[id]), P0.AD ("New Contract" CTA button in CommandBand + empty state linking to /events/contracts CreateContractModal). Stats: disabled buttons 5→4. |
 | **v29** | **Session fix pass.** RESOLVED P0: P0.Q (nearest-neighbor TSP route optimization with Haversine distance, stop reorder, metrics), P0.AA (route update + delete endpoints + edit/delete UI with AlertDialog), P0.U (marked as duplicate of resolved P0.AS — export route and button exist). RESOLVED P1: P1.CA (battle board "Add Staff" wired with server actions + employee selection Dialog). Stats: API routes returning 501: 2→0, disabled buttons: 4→3. |
 | **v30** | **Session fix pass.** RESOLVED P0: P0.AE (pricing tiers $29/$79/Custom with differentiated descriptions). RESOLVED P1: P1.BR (certification tracking — FALSE POSITIVE: Prisma model, generated client, PrismaStore, and factory registration all verified correct), P1.BS (scheduling search extracted to client component with Cmd+K, BudgetAlerts 355-line dead code deleted, availability modal edit button + edit form wired), P1.CB (vendor catalogs CRUD page created, orphan redirect removed from next.config.ts). Stats: dead code -355 lines. |
+| **v31** | **Session fix pass.** RESOLVED P0: P0.AU (11.4MB images → 383KB WebP, 96.6% reduction). RESOLVED P1: P1.BW (settings admin role gating — requireAdminUser/requireManagerUser guards on 8 sensitive settings pages), P1.P (facilities edit/delete UI for facilities, areas, schedules + work order status transitions), P1.K (accounting collections page with dunning/disputes/legal escalation, payment methods page with verify/flag/default, revenue recognition page with schedule lifecycle), P1.B (events [eventId]/guests page with RSVP/capacity/dietary, [eventId]/staff page with assign/unassign/conflict detection). Stats: settings pages without auth gating: 8→0, unoptimized images: 11.4MB→383KB, accounting pages: +3, events sub-routes: +2, facilities with edit/delete: 1→4. |

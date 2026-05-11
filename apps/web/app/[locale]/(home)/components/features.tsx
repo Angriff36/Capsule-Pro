@@ -10,7 +10,7 @@ export const Features = ({ dictionary }: FeaturesProps) => {
     "/marketing/KitchenOverview.png",
     "/marketing/ConsolidatedTasks.png",
     "/marketing/EnterpriseDashboard.png",
-    "/marketing/RecipesMenus.png",
+    "/marketing/RecipesMenus.webp",
   ];
 
   return (

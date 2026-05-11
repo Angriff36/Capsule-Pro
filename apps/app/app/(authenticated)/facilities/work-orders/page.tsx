@@ -47,12 +47,40 @@ interface WorkOrder {
   reported_at: string;
 }
 
+const STATUS_FLOW: Record<string, string[]> = {
+  open: ["in_progress"],
+  in_progress: ["completed"],
+  completed: [],
+  assigned: ["in_progress"],
+  parts_ordered: ["in_progress", "completed"],
+  cancelled: [],
+};
+
+const STATUS_LABELS: Record<string, string> = {
+  open: "Open",
+  in_progress: "In Progress",
+  completed: "Completed",
+  assigned: "Assigned",
+  parts_ordered: "Parts Ordered",
+  cancelled: "Cancelled",
+};
+
 export default function FacilitiesWorkOrdersPage() {
   const [workOrders, setWorkOrders] = useState<WorkOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [creating, setCreating] = useState(false);
   const [viewWorkOrder, setViewWorkOrder] = useState<WorkOrder | null>(null);
+  const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
+  const [showCompleteDialog, setShowCompleteDialog] = useState(false);
+  const [completingWorkOrder, setCompletingWorkOrder] =
+    useState<WorkOrder | null>(null);
+  const [completeForm, setCompleteForm] = useState({
+    laborHours: "",
+    partsCost: "",
+    laborCost: "",
+    notes: "",
+  });
   const [createForm, setCreateForm] = useState({
     title: "",
     description: "",
@@ -123,6 +151,83 @@ export default function FacilitiesWorkOrdersPage() {
       console.error("Failed to create work order:", error);
     } finally {
       setCreating(false);
+    }
+  };
+
+  const handleStatusUpdate = async (
+    workOrderId: string,
+    newStatus: string
+  ) => {
+    if (newStatus === "completed") {
+      const wo = workOrders.find((w) => w.id === workOrderId);
+      if (wo) {
+        setCompletingWorkOrder(wo);
+        setCompleteForm({
+          laborHours: "",
+          partsCost: "",
+          laborCost: "",
+          notes: "",
+        });
+        setShowCompleteDialog(true);
+      }
+      return;
+    }
+
+    setUpdatingStatus(workOrderId);
+    try {
+      const res = await apiFetch(
+        "/api/facilities/work-orders/commands/update-status",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ workOrderId, status: newStatus }),
+        }
+      );
+      if (res.ok) {
+        await loadWorkOrders();
+      }
+    } catch (error) {
+      console.error("Failed to update status:", error);
+    } finally {
+      setUpdatingStatus(null);
+    }
+  };
+
+  const handleComplete = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!completingWorkOrder) return;
+    setUpdatingStatus(completingWorkOrder.id);
+    try {
+      const res = await apiFetch(
+        "/api/facilities/work-orders/commands/update-status",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            workOrderId: completingWorkOrder.id,
+            status: "completed",
+            laborHours: completeForm.laborHours
+              ? Number.parseFloat(completeForm.laborHours)
+              : null,
+            partsCost: completeForm.partsCost
+              ? Number.parseFloat(completeForm.partsCost)
+              : null,
+            laborCost: completeForm.laborCost
+              ? Number.parseFloat(completeForm.laborCost)
+              : null,
+            notes: completeForm.notes || null,
+          }),
+        }
+      );
+      if (res.ok) {
+        await loadWorkOrders();
+        setShowCompleteDialog(false);
+        setCompletingWorkOrder(null);
+      }
+    } catch (error) {
+      console.error("Failed to complete work order:", error);
+    } finally {
+      setUpdatingStatus(null);
     }
   };
 
@@ -203,51 +308,76 @@ export default function FacilitiesWorkOrdersPage() {
               </Card>
             ) : (
               <div className="space-y-3">
-                {workOrders.map((wo) => (
-                  <Card key={wo.id}>
-                    <CardContent className="pt-4">
-                      <div className="flex items-start justify-between">
-                        <div className="space-y-1">
+                {workOrders.map((wo) => {
+                  const nextStatuses = STATUS_FLOW[wo.status] || [];
+                  return (
+                    <Card key={wo.id}>
+                      <CardContent className="pt-4">
+                        <div className="flex items-start justify-between">
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2">
+                              {getStatusIcon(wo.status)}
+                              <span className="font-mono text-sm text-muted-foreground">
+                                {wo.work_order_number}
+                              </span>
+                              <span className="font-medium">{wo.title}</span>
+                            </div>
+                            <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                              <span className="capitalize">
+                                {wo.work_order_type}
+                              </span>
+                              <span>
+                                Assigned: {wo.assigned_vendor || "Unassigned"}
+                              </span>
+                              <span>Due: {formatDate(wo.scheduled_date)}</span>
+                            </div>
+                          </div>
                           <div className="flex items-center gap-2">
-                            {getStatusIcon(wo.status)}
-                            <span className="font-mono text-sm text-muted-foreground">
-                              {wo.work_order_number}
-                            </span>
-                            <span className="font-medium">{wo.title}</span>
-                          </div>
-                          <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                            <span className="capitalize">
-                              {wo.work_order_type}
-                            </span>
-                            <span>
-                              Assigned: {wo.assigned_vendor || "Unassigned"}
-                            </span>
-                            <span>Due: {formatDate(wo.scheduled_date)}</span>
+                            <Badge
+                              variant={
+                                getPriorityColor(wo.priority) as
+                                  | "destructive"
+                                  | "secondary"
+                                  | "outline"
+                              }
+                            >
+                              {wo.priority}
+                            </Badge>
+                            {nextStatuses.map((nextStatus) => (
+                              <Button
+                                disabled={updatingStatus === wo.id}
+                                key={nextStatus}
+                                onClick={() =>
+                                  handleStatusUpdate(wo.id, nextStatus)
+                                }
+                                size="sm"
+                                variant={
+                                  nextStatus === "completed"
+                                    ? "default"
+                                    : "outline"
+                                }
+                              >
+                                {updatingStatus === wo.id ? (
+                                  <Loader2 className="h-4 w-4 animate-spin mr-1" />
+                                ) : null}
+                                {nextStatus === "in_progress"
+                                  ? "Start"
+                                  : STATUS_LABELS[nextStatus] || nextStatus}
+                              </Button>
+                            ))}
+                            <Button
+                              onClick={() => setViewWorkOrder(wo)}
+                              size="sm"
+                              variant="outline"
+                            >
+                              View
+                            </Button>
                           </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <Badge
-                            variant={
-                              getPriorityColor(wo.priority) as
-                                | "destructive"
-                                | "secondary"
-                                | "outline"
-                            }
-                          >
-                            {wo.priority}
-                          </Badge>
-                          <Button
-                            onClick={() => setViewWorkOrder(wo)}
-                            size="sm"
-                            variant="outline"
-                          >
-                            View
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
               </div>
             )}
           </div>
@@ -378,11 +508,104 @@ export default function FacilitiesWorkOrdersPage() {
         </DialogContent>
       </Dialog>
 
+      {/* Complete Work Order Dialog */}
+      <Dialog onOpenChange={setShowCompleteDialog} open={showCompleteDialog}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Complete Work Order</DialogTitle>
+            <DialogDescription>
+              Record final details for{" "}
+              <span className="font-semibold">
+                {completingWorkOrder?.title}
+              </span>
+            </DialogDescription>
+          </DialogHeader>
+          <form className="space-y-4" onSubmit={handleComplete}>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Labor Hours</Label>
+                <Input
+                  onChange={(e) =>
+                    setCompleteForm((p) => ({
+                      ...p,
+                      laborHours: e.target.value,
+                    }))
+                  }
+                  placeholder="0"
+                  step="0.5"
+                  type="number"
+                  value={completeForm.laborHours}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Parts Cost ($)</Label>
+                <Input
+                  onChange={(e) =>
+                    setCompleteForm((p) => ({
+                      ...p,
+                      partsCost: e.target.value,
+                    }))
+                  }
+                  placeholder="0.00"
+                  step="0.01"
+                  type="number"
+                  value={completeForm.partsCost}
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Labor Cost ($)</Label>
+              <Input
+                onChange={(e) =>
+                  setCompleteForm((p) => ({
+                    ...p,
+                    laborCost: e.target.value,
+                  }))
+                }
+                placeholder="0.00"
+                step="0.01"
+                type="number"
+                value={completeForm.laborCost}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Completion Notes</Label>
+              <Textarea
+                onChange={(e) =>
+                  setCompleteForm((p) => ({
+                    ...p,
+                    notes: e.target.value,
+                  }))
+                }
+                placeholder="Describe what was done..."
+                rows={3}
+                value={completeForm.notes}
+              />
+            </div>
+            <DialogFooter>
+              <Button
+                onClick={() => setShowCompleteDialog(false)}
+                type="button"
+                variant="outline"
+              >
+                Cancel
+              </Button>
+              <Button
+                disabled={updatingStatus === completingWorkOrder?.id}
+                type="submit"
+              >
+                {updatingStatus === completingWorkOrder?.id && (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                )}
+                Mark Completed
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
       {/* View Work Order Dialog */}
-      <Dialog
-        onOpenChange={() => setViewWorkOrder(null)}
-        open={!!viewWorkOrder}
-      >
+      <Dialog onOpenChange={() => setViewWorkOrder(null)} open={!!viewWorkOrder}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>{viewWorkOrder?.title}</DialogTitle>

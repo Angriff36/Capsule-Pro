@@ -4,6 +4,16 @@ import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Card, CardContent } from "@repo/design-system/components/ui/card";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@repo/design-system/components/ui/alert-dialog";
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -21,7 +31,7 @@ import {
   SelectValue,
 } from "@repo/design-system/components/ui/select";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
-import { Loader2, Plus } from "lucide-react";
+import { Loader2, Pencil, Plus, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
 import { createFacilityArea } from "../actions";
@@ -30,9 +40,16 @@ import { FacilitiesNavigation } from "../components/facilities-navigation";
 export default function AreasPage() {
   const [areas, setAreas] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showCreateDialog, setShowCreateDialog] = useState(false);
-  const [creating, setCreating] = useState(false);
-  const [createForm, setCreateForm] = useState({
+  const [showDialog, setShowDialog] = useState(false);
+  const [editing, setEditing] = useState<any | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState<string | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [areaToDelete, setAreaToDelete] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
+  const [form, setForm] = useState({
     name: "",
     code: "",
     areaType: "other",
@@ -58,36 +75,99 @@ export default function AreasPage() {
     }
   };
 
-  const handleCreate = async (e: React.FormEvent) => {
+  const openCreate = () => {
+    setEditing(null);
+    setForm({
+      name: "",
+      code: "",
+      areaType: "other",
+      floor: "",
+      squareFeet: "",
+      description: "",
+    });
+    setShowDialog(true);
+  };
+
+  const openEdit = (area: any) => {
+    setEditing(area);
+    setForm({
+      name: area.name,
+      code: area.code || "",
+      areaType: area.area_type || "other",
+      floor: area.floor || "",
+      squareFeet: area.square_feet?.toString() || "",
+      description: area.description || "",
+    });
+    setShowDialog(true);
+  };
+
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!createForm.name.trim()) return;
-    setCreating(true);
+    if (!form.name.trim()) return;
+    setSaving(true);
     try {
-      await createFacilityArea({
-        name: createForm.name,
-        code: createForm.code || undefined,
-        areaType: createForm.areaType,
-        floor: createForm.floor || undefined,
-        squareFeet: createForm.squareFeet
-          ? Number.parseInt(createForm.squareFeet)
-          : undefined,
-        description: createForm.description || undefined,
-      });
-      await loadAreas();
-      setShowCreateDialog(false);
-      setCreateForm({
-        name: "",
-        code: "",
-        areaType: "other",
-        floor: "",
-        squareFeet: "",
-        description: "",
-      });
+      if (editing) {
+        const res = await apiFetch("/api/facilities/areas/commands/edit", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            areaId: editing.id,
+            name: form.name,
+            code: form.code || null,
+            areaType: form.areaType,
+            floor: form.floor || null,
+            squareFeet: form.squareFeet
+              ? Number.parseInt(form.squareFeet)
+              : null,
+            description: form.description || null,
+          }),
+        });
+        if (res.ok) {
+          await loadAreas();
+          setShowDialog(false);
+        }
+      } else {
+        await createFacilityArea({
+          name: form.name,
+          code: form.code || undefined,
+          areaType: form.areaType,
+          floor: form.floor || undefined,
+          squareFeet: form.squareFeet
+            ? Number.parseInt(form.squareFeet)
+            : undefined,
+          description: form.description || undefined,
+        });
+        await loadAreas();
+        setShowDialog(false);
+      }
     } catch (error) {
-      console.error("Failed to create area:", error);
+      console.error("Failed to save area:", error);
     } finally {
-      setCreating(false);
+      setSaving(false);
     }
+  };
+
+  const handleDelete = async (areaId: string) => {
+    setDeleting(areaId);
+    try {
+      await apiFetch("/api/facilities/areas/commands/delete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ areaId }),
+      });
+      setAreas((prev) => prev.filter((a) => a.id !== areaId));
+      setDeleteDialogOpen(false);
+      setAreaToDelete(null);
+    } catch (error) {
+      console.error("Failed to delete area:", error);
+    } finally {
+      setDeleting(null);
+    }
+  };
+
+  const confirmDelete = (area: any) => {
+    setAreaToDelete({ id: area.id, name: area.name });
+    setDeleteDialogOpen(true);
   };
 
   const areaTypeIcons: Record<string, string> = {
@@ -125,7 +205,7 @@ export default function AreasPage() {
               Define and manage areas within your facility.
             </p>
           </div>
-          <Button onClick={() => setShowCreateDialog(true)}>
+          <Button onClick={openCreate}>
             <Plus className="h-4 w-4 mr-2" />
             Add Area
           </Button>
@@ -178,6 +258,28 @@ export default function AreasPage() {
                         )}
                       </div>
                     </div>
+                    <div className="flex items-center gap-1">
+                      <Button
+                        onClick={() => openEdit(area)}
+                        size="sm"
+                        variant="ghost"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        className="text-red-500 hover:text-red-700"
+                        disabled={deleting === area.id}
+                        onClick={() => confirmDelete(area)}
+                        size="sm"
+                        variant="ghost"
+                      >
+                        {deleting === area.id ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Trash2 className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -185,27 +287,29 @@ export default function AreasPage() {
           </div>
         )}
 
-        {/* Create Area Dialog */}
-        <Dialog onOpenChange={setShowCreateDialog} open={showCreateDialog}>
+        {/* Create/Edit Area Dialog */}
+        <Dialog onOpenChange={setShowDialog} open={showDialog}>
           <DialogContent className="max-w-lg">
             <DialogHeader>
-              <DialogTitle>Add Facility Area</DialogTitle>
+              <DialogTitle>{editing ? "Edit Area" : "Add Facility Area"}</DialogTitle>
               <DialogDescription>
-                Define a new area within your facility.
+                {editing
+                  ? "Update area information."
+                  : "Define a new area within your facility."}
               </DialogDescription>
             </DialogHeader>
-            <form className="space-y-4" onSubmit={handleCreate}>
+            <form className="space-y-4" onSubmit={handleSave}>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="areaName">Area Name *</Label>
                   <Input
                     id="areaName"
                     onChange={(e) =>
-                      setCreateForm((p) => ({ ...p, name: e.target.value }))
+                      setForm((p) => ({ ...p, name: e.target.value }))
                     }
                     placeholder="e.g., Main Kitchen"
                     required
-                    value={createForm.name}
+                    value={form.name}
                   />
                 </div>
                 <div className="space-y-2">
@@ -213,10 +317,10 @@ export default function AreasPage() {
                   <Input
                     id="areaCode"
                     onChange={(e) =>
-                      setCreateForm((p) => ({ ...p, code: e.target.value }))
+                      setForm((p) => ({ ...p, code: e.target.value }))
                     }
                     placeholder="e.g., KIT-01"
-                    value={createForm.code}
+                    value={form.code}
                   />
                 </div>
               </div>
@@ -225,9 +329,9 @@ export default function AreasPage() {
                   <Label>Area Type</Label>
                   <Select
                     onValueChange={(v) =>
-                      setCreateForm((p) => ({ ...p, areaType: v }))
+                      setForm((p) => ({ ...p, areaType: v }))
                     }
-                    value={createForm.areaType}
+                    value={form.areaType}
                   >
                     <SelectTrigger>
                       <SelectValue />
@@ -249,10 +353,10 @@ export default function AreasPage() {
                   <Input
                     id="areaFloor"
                     onChange={(e) =>
-                      setCreateForm((p) => ({ ...p, floor: e.target.value }))
+                      setForm((p) => ({ ...p, floor: e.target.value }))
                     }
                     placeholder="e.g., 1st Floor"
-                    value={createForm.floor}
+                    value={form.floor}
                   />
                 </div>
               </div>
@@ -261,48 +365,85 @@ export default function AreasPage() {
                 <Input
                   id="areaSqft"
                   onChange={(e) =>
-                    setCreateForm((p) => ({ ...p, squareFeet: e.target.value }))
+                    setForm((p) => ({ ...p, squareFeet: e.target.value }))
                   }
                   placeholder="0"
                   type="number"
-                  value={createForm.squareFeet}
+                  value={form.squareFeet}
                 />
               </div>
               <div className="space-y-2">
                 <Label>Description</Label>
                 <Textarea
                   onChange={(e) =>
-                    setCreateForm((p) => ({
+                    setForm((p) => ({
                       ...p,
                       description: e.target.value,
                     }))
                   }
                   placeholder="Area description..."
                   rows={2}
-                  value={createForm.description}
+                  value={form.description}
                 />
               </div>
               <DialogFooter>
                 <Button
-                  onClick={() => setShowCreateDialog(false)}
+                  onClick={() => setShowDialog(false)}
                   type="button"
                   variant="outline"
                 >
                   Cancel
                 </Button>
                 <Button
-                  disabled={!createForm.name.trim() || creating}
+                  disabled={!form.name.trim() || saving}
                   type="submit"
                 >
-                  {creating && (
+                  {saving && (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   )}
-                  Add Area
+                  {editing ? "Update" : "Add"} Area
                 </Button>
               </DialogFooter>
             </form>
           </DialogContent>
         </Dialog>
+
+        {/* Delete Confirmation */}
+        <AlertDialog
+          onOpenChange={(open) => {
+            setDeleteDialogOpen(open);
+            if (!open) setAreaToDelete(null);
+          }}
+          open={deleteDialogOpen}
+        >
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete Area</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to delete{" "}
+                <span className="font-semibold">
+                  {areaToDelete?.name || "this area"}
+                </span>
+                ? This action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                className="bg-red-600 hover:bg-red-700"
+                disabled={deleting === areaToDelete?.id}
+                onClick={() => {
+                  if (areaToDelete) handleDelete(areaToDelete.id);
+                }}
+              >
+                {deleting === areaToDelete?.id ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : null}
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </div>
   );

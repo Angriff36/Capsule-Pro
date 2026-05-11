@@ -13,6 +13,7 @@ import {
   PageCanvas,
 } from "@repo/design-system/components/blocks/page-shell";
 import { Workflow } from "lucide-react";
+import { requireManagerUser } from "@/app/lib/auth-guards";
 import { EmailWorkflowsClient } from "./components/email-workflows-client";
 
 export const metadata = {
@@ -21,7 +22,9 @@ export const metadata = {
     "Configure automated email triggers for events, proposals, contracts, and more.",
 };
 
-export default function EmailWorkflowsPage() {
+export default async function EmailWorkflowsPage() {
+  await requireManagerUser();
+
   return (
     <PageCanvas>
       <CommandBand>
