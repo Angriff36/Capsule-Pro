@@ -1,6 +1,6 @@
 # Implementation Plan — Capsule Pro
 
-> Updated 2026-05-11 (v54) — RESOLVED P1.B/partial (events: run sheet API+UI, generate proposal action, dietary/allergen UI section). P1.AM/partial (manifest-IR generator role field), P1.E/partial (calendar spec compliance) carried forward.
+> Updated 2026-05-11 (v55) — RESOLVED P1.BD (bank reconciliation page + API), P1.BE (financial reporting page + API), P1.I partial (AI tools PageCanvas), P1.H partial (staffing coverage PageCanvas). Accounting sidebar navigation complete (9 entries).
 
 > Priority: P0 = broken/non-functional, P1 = significant missing features, P2 = design alignment/polish, P3 = future/speculative.
 > Status: [ ] not started, [~] partial, [x] done.
@@ -13,7 +13,7 @@
 |-----------|-------|
 | Spec files analyzed | 54 |
 | Frontend page domains | 28 |
-| API route directories | 121 (91 API-only — 73%) |
+| API route directories | 123 (93 API-only — 73%) |
 | Total route files | 1,383 |
 | Shared packages | 32 (10 with tests, 22 zero tests) |
 | Prisma models | ~206 tenant tables across 10 schemas |
@@ -37,7 +37,7 @@
 | Payroll pages functional | 12 (39 API routes; periods/[id] RESOLVED) |
 | Forecasting service | Production-grade (998 lines) |
 | Simulation API | 2,098 lines, zero UI |
-| PageCanvas adoption | ~53 files |
+| PageCanvas adoption | ~57 files |
 | ResearchTable adoption | 5 files |
 | Dead links (href="#") | 0 |
 
@@ -301,10 +301,11 @@ STATUS.md lists 40+ nonexistent files. Backend: 39 routes, 1,453-line agent-loop
 - [ ] Shift templates, recurring shifts, dynamic routes, assignment dialogs — MISSING
 - [x] ~~SQL injection in coverage route~~ RESOLVED (v54): replaced string-interpolated `locationId` with parameterized `$4::uuid` across all 5 raw queries in `apps/api/app/api/staffing/coverage/route.ts`
 - [x] ~~Recommendations route unauthenticated~~ RESOLVED (v54): added `auth()` + `getTenantIdForOrg()` session check to `apps/api/app/api/staffing/recommendations/route.ts` POST handler
+- [x] ~~Coverage page untracked, no PageCanvas~~ RESOLVED (v55): migrated staffing/coverage/page.tsx to PageCanvas/CommandBand shell, removed console.error, tokenized coverage colors per spec FR-3xx
 
 ### P1.I Tools — Shell + Stub Issues
 
-- [ ] AI page: raw `<div>`, no PageCanvas; battleboard no finalization state
+- [x] ~~AI page: raw `<div>`, no PageCanvas~~ RESOLVED (v55): migrated tools/ai/page.tsx to PageCanvas shell. battleboard finalization state still outstanding.
 - [ ] Autofill Reports no ResearchTable; bare Card without tone in 3 sub-pages
 
 ### P1.J API Domains With No Frontend
@@ -317,8 +318,9 @@ STATUS.md lists 40+ nonexistent files. Backend: 39 routes, 1,453-line agent-loop
 ### P1.K Accounting/Finance Frontend Gaps — PARTIALLY RESOLVED
 
 - [x] ~~Collections (P1.BA), Revenue Recognition (P1.BB), Payment Methods (P1.BC) — full API, zero pages~~ RESOLVED: created full CRUD pages for collections (dunning/disputes/legal escalation), payment methods (verify/flag/default), and revenue recognition (schedule lifecycle with recognize/reverse). All use PageCanvas/CommandBand pattern.
-- [ ] Bank reconciliation not implemented (P1.BD)
-- [ ] Financial reporting missing entirely (P1.BE); Payment CREATE EXISTS at `/accounting/payments/new/`
+- [x] ~~Bank reconciliation not implemented (P1.BD)~~ RESOLVED (v55): created /accounting/bank-reconciliation with PageCanvas shell, metrics, account table with reconciliation status, GET /api/accounting/bank-reconciliation route
+- [x] ~~Financial reporting missing entirely (P1.BE)~~ RESOLVED (v55): created /accounting/financial-reporting with PageCanvas shell, report type selector (income statement/balance sheet/cash flow/custom), date range picker, line-item table, CSV export, GET /api/accounting/financial-reports route
+- Payment CREATE EXISTS at `/accounting/payments/new/`
 - [x] Chart of Accounts, RLS on ALL 10 tables, Direct Deposit, Payroll runs — DONE
 
 ### P1.L Payroll — 4 Missing Models + Data Bugs
@@ -440,8 +442,8 @@ STATUS.md lists 40+ nonexistent files. Backend: 39 routes, 1,453-line agent-loop
 ### P1.BA-P1.BH Accounting/Payroll API-Only + Data Bugs
 
 - [x] ~~P1.BA-BC: Collections, Revenue Recognition, Payment Methods (zero pages)~~ RESOLVED: full CRUD pages exist at accounting/collections/, accounting/revenue-recognition/, accounting/payment-methods/
-- [ ] P1.BD: Bank reconciliation not implemented
-- [ ] P1.BE: Financial reporting missing entirely
+- [x] ~~P1.BD: Bank reconciliation not implemented~~ RESOLVED (v55): created /accounting/bank-reconciliation with PageCanvas shell, metrics, account table with reconciliation status, GET /api/accounting/bank-reconciliation route
+- [x] ~~P1.BE: Financial reporting missing entirely~~ RESOLVED (v55): created /accounting/financial-reporting with PageCanvas shell, report type selector (income statement/balance sheet/cash flow/custom), date range picker, line-item table, CSV export, GET /api/accounting/financial-reports route
 - [ ] P1.BF-BH: 4 missing Prisma models, hardcoded RoleName, 3 legacy dirs
 
 ### P1.BI-P1.BK CRM/Procurement Stubs — RESOLVED
@@ -595,7 +597,7 @@ Largest dead: NutritionLabelCard+AllergenDisplay (642), RecipeOptimizationCard (
 
 - **CRM** — 19+ pages, full client CRUD with 6-tab detail, proposals, lead scoring, segmentation, venues
 - **Procurement** — full PO/requisition/vendor lifecycle, approval workflows, receiving, budget vs actual
-- **Accounting (partial)** — CoA, RLS all 10 tables, Direct Deposit, Payroll runs. Collections/RevRec/PayMethods/BankRecon/FinReporting API-only or missing.
+- **Accounting (partial)** — CoA, RLS all 10 tables, Direct Deposit, Payroll runs, Collections, RevRec, PayMethods, BankReconciliation, FinancialReporting. All accounting sub-pages have sidebar navigation entries (9 entries). P1.BF-BH models still missing.
 - **Analytics** — 9 pages (sales, finance, events, kitchen, staff, clients, multi-location)
 - **Communications** — Email templates + workflows CRUD, SMS automation
 - **Facilities** — Create-only UI; edit/delete backend ready but no UI (P1.P)
@@ -674,3 +676,4 @@ Historical pass logs, audit reports, and blocker notes live in:
 | **v52** | **Manifest-IR generator role field + Calendar spec compliance (P1.AM/P1.E).** RESOLVED P1.AM: generator now emits `database.user.findFirst({ where: { AND: [{ tenantId }, { authUserId: userId }] } })` after tenant resolution and passes `{ id, tenantId, role }` to `createManifestRuntime`. All auto-generated command routes now have `user.role` populated for RBAC policy evaluation — eliminates the factory's `resolveUserRole` fallback DB query. New test: `resolves user role for RBAC policy evaluation` in generator.test.ts. RESOLVED P1.E partial: calendar entry pills use tokenized CSS custom properties `--ds-calendar-event/shift/timeoff` (FR-103); view toggle uses BlogFilterChip instead of shadcn Tabs (FR-104); TouchSensor added with 350ms activation delay (FR-702); all `bg-*-100/50` pastels replaced with CSS custom property light variants (FR-202); all `console.error` in calendar files replaced with `@repo/observability/log`. Calendar tests updated for new component mocks. Files: generator.ts, generator.test.ts, unified-calendar.tsx, calendar-view-switcher.tsx, sync/page.tsx, unified-calendar.test.tsx, globals.css. API suite: 4100 passing / 1 skipped. Manifest-runtime suite: 739 passing. App suite: 265 passing. |
 | **v53** | **Events run sheet + proposal generation + dietary/allergen UI (P1.B/partial).** RESOLVED P1.B — Run Sheet: created GET /api/events/{eventId}/run-sheet endpoint aggregating finalized battle board dishes/event menu, staff assignments, timeline, and ingredient shopping list. Created /events/{eventId}/run-sheet/ page with print-friendly layout, CSV export, 4 sections (Menu/Staff/Timeline/Shopping List). Added "run-sheet" tab to EXECUTION_TABS in event-detail-tabs.tsx. Spec: User Story 2 (CommandBand), User Story 3 (Execution tab), FR-505. RESOLVED P1.B — Generate Proposal: created `generateProposalFromEvent()` server action auto-generating CRM Proposal linked to event with auto-generated proposal number and line items from event dishes. "Generate Proposal" button in operations tab of EventDetailsClient; navigates to /crm/proposals/{proposalId} on success. Spec: User Story 2.4, FR-102, FR-301. PARTIALLY RESOLVED P1.B — Dietary/Allergen UI: created allergen-section.tsx component calling existing POST /api/events/allergens/check and GET /api/events/{eventId}/warnings APIs. Displays conflicts with severity badges (critical/dietary), warnings with acknowledge capability. Wired into operations tab of EventDetailsClient. Files: run-sheet API route, run-sheet page, allergen-section.tsx, event-detail-tabs.tsx, EventDetailsClient operations tab. API suite: 4100 passing / 1 skipped. App suite: 265 passing. |
 | **v54** | **Security fixes (P1.H/P1.AM).** RESOLVED P1.H: SQL injection in staffing coverage route — replaced string-interpolated `locationId` with parameterized `$4::uuid` across 5 raw queries (was `locationId.replace(/'/g, "''")` string interpolation). RESOLVED P1.H: added auth guard (`auth()` + `getTenantIdForOrg()`) to staffing recommendations POST — was completely unauthenticated. RESOLVED P1.AM: added `requireApiManager()` role gate to chart-of-accounts `[id]` and `list` GET endpoints (replacing auto-generated session-only auth). Replaced `console.error` with `@repo/observability/log` in coverage route and COA routes. Updated 2 test files with auth mocks. API suite: 4102 passing / 1 skipped. |
+| **v55** | **Accounting bank reconciliation + financial reporting + staffing coverage shell + AI tools PageCanvas (P1.BD/P1.BE/P1.H/P1.I).** RESOLVED P1.BD: bank reconciliation page with PageCanvas shell, metrics, account table, status tracking, API route. RESOLVED P1.BE: financial reporting page with report type selector, date range picker, line-item table, CSV export, API route. RESOLVED P1.I partial: AI tools page migrated from raw div to PageCanvas. RESOLVED P1.H partial: staffing coverage page migrated to PageCanvas shell with design system compliance. Added full accounting sidebar navigation (9 entries). API suite: 4102 passing / 1 skipped. |
