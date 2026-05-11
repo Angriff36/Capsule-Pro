@@ -462,14 +462,15 @@ const SchedulingPage = async () => {
               </span>
             </div>
             <Button
-              aria-label="Scheduling notifications — not implemented"
+              aria-label="Scheduling notifications"
+              asChild
               className="border-white/25 bg-transparent text-white hover:bg-white/10"
-              disabled
               size="icon"
-              type="button"
               variant="outline"
             >
-              <BellIcon className="size-4" />
+              <Link href="/scheduling/notifications">
+                <BellIcon className="size-4" />
+              </Link>
             </Button>
             <Button asChild size="default" variant="on-dark">
               <Link href="/scheduling/shifts">

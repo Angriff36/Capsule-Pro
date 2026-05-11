@@ -41,6 +41,7 @@ import {
   Loader2,
   MapPin,
   Package,
+  Pencil,
   Plus,
   Search,
   Truck,
@@ -196,6 +197,16 @@ export function ShipmentsClient() {
   );
   const [showDetailDialog, setShowDetailDialog] = useState(false);
   const [creating, setCreating] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [updating, setUpdating] = useState(false);
+  const [editForm, setEditForm] = useState({
+    trackingNumber: "",
+    carrier: "",
+    shippingMethod: "standard",
+    estimatedDeliveryDate: "",
+    shippingCost: "",
+    notes: "",
+  });
   const [createForm, setCreateForm] = useState({
     trackingNumber: "",
     carrier: "",
@@ -268,6 +279,54 @@ export function ShipmentsClient() {
       console.error("Failed to create shipment:", error);
     } finally {
       setCreating(false);
+    }
+  };
+
+  const openEditDialog = (shipment: Shipment) => {
+    setEditForm({
+      trackingNumber: shipment.trackingNumber || "",
+      carrier: shipment.carrier || "",
+      shippingMethod: shipment.shippingMethod || "standard",
+      estimatedDeliveryDate:
+        shipment.estimatedDeliveryDate?.split("T")[0] || "",
+      shippingCost: shipment.shippingCost?.toString() || "",
+      notes: shipment.notes || "",
+    });
+    setSelectedShipment(shipment);
+    setShowEditDialog(true);
+  };
+
+  const handleEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedShipment) return;
+    setUpdating(true);
+    try {
+      const res = await apiFetch(`/api/shipments/${selectedShipment.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          trackingNumber: editForm.trackingNumber || undefined,
+          carrier: editForm.carrier || undefined,
+          shippingMethod: editForm.shippingMethod || undefined,
+          shippingCost: editForm.shippingCost
+            ? Number.parseFloat(editForm.shippingCost)
+            : undefined,
+          estimatedDeliveryDate: editForm.estimatedDeliveryDate || undefined,
+          notes: editForm.notes || undefined,
+        }),
+      });
+      if (res.ok) {
+        const updated = normalizeShipment(await res.json());
+        setShipments((prev) =>
+          prev.map((s) => (s.id === updated.id ? updated : s))
+        );
+        setSelectedShipment(updated);
+        setShowEditDialog(false);
+      }
+    } catch (error) {
+      console.error("Failed to update shipment:", error);
+    } finally {
+      setUpdating(false);
     }
   };
 
@@ -539,6 +598,18 @@ export function ShipmentsClient() {
 
                         {/* Actions */}
                         <div className="flex items-center gap-2">
+                          {!["delivered", "cancelled", "returned"].includes(
+                            shipment.status
+                          ) && (
+                            <Button
+                              onClick={() => openEditDialog(shipment)}
+                              size="icon"
+                              variant="ghost"
+                              title="Edit shipment details"
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                          )}
                           {nextStatus && (
                             <Button
                               onClick={() =>
@@ -799,6 +870,128 @@ export function ShipmentsClient() {
               )}
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Shipment Dialog */}
+      <Dialog onOpenChange={setShowEditDialog} open={showEditDialog}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Edit Shipment</DialogTitle>
+            <DialogDescription>
+              Update tracking, carrier, and delivery details for{" "}
+              {selectedShipment?.shipmentNumber}.
+            </DialogDescription>
+          </DialogHeader>
+          <form className="space-y-4" onSubmit={handleEdit}>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-trackingNumber">Tracking Number</Label>
+                <Input
+                  id="edit-trackingNumber"
+                  onChange={(e) =>
+                    setEditForm((p) => ({
+                      ...p,
+                      trackingNumber: e.target.value,
+                    }))
+                  }
+                  value={editForm.trackingNumber}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-carrier">Carrier</Label>
+                <Input
+                  id="edit-carrier"
+                  onChange={(e) =>
+                    setEditForm((p) => ({ ...p, carrier: e.target.value }))
+                  }
+                  value={editForm.carrier}
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-shippingMethod">Shipping Method</Label>
+                <Select
+                  onValueChange={(v) =>
+                    setEditForm((p) => ({ ...p, shippingMethod: v }))
+                  }
+                  value={editForm.shippingMethod}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="standard">Standard</SelectItem>
+                    <SelectItem value="express">Express</SelectItem>
+                    <SelectItem value="overnight">Overnight</SelectItem>
+                    <SelectItem value="freight">Freight</SelectItem>
+                    <SelectItem value="will_call">
+                      Will Call / Pickup
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-shippingCost">Shipping Cost</Label>
+                <Input
+                  id="edit-shippingCost"
+                  onChange={(e) =>
+                    setEditForm((p) => ({
+                      ...p,
+                      shippingCost: e.target.value,
+                    }))
+                  }
+                  placeholder="0.00"
+                  step="0.01"
+                  type="number"
+                  value={editForm.shippingCost}
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-estimatedDeliveryDate">
+                Est. Delivery Date
+              </Label>
+              <Input
+                id="edit-estimatedDeliveryDate"
+                onChange={(e) =>
+                  setEditForm((p) => ({
+                    ...p,
+                    estimatedDeliveryDate: e.target.value,
+                  }))
+                }
+                type="date"
+                value={editForm.estimatedDeliveryDate}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-notes">Notes</Label>
+              <Textarea
+                id="edit-notes"
+                onChange={(e) =>
+                  setEditForm((p) => ({ ...p, notes: e.target.value }))
+                }
+                rows={3}
+                value={editForm.notes}
+              />
+            </div>
+            <DialogFooter>
+              <Button
+                onClick={() => setShowEditDialog(false)}
+                type="button"
+                variant="outline"
+              >
+                Cancel
+              </Button>
+              <Button disabled={updating} type="submit">
+                {updating && (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                )}
+                Save Changes
+              </Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
     </div>

@@ -15,6 +15,8 @@ import { MonoLabel } from "@repo/design-system/components/blocks/page-shell";
 import { ResearchTable } from "@repo/design-system/components/blocks/research-table";
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { Button } from "@repo/design-system/components/ui/button";
+import { Plus } from "lucide-react";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -219,6 +221,14 @@ export function ContractsPageClient({ contracts }: ContractsPageClientProps) {
               ? "Try adjusting your filters or search."
               : "Create your first contract to get started."}
           </p>
+          {!search && activeFilter === "all" && (
+            <Button asChild className="mt-4">
+              <Link href="/events/contracts">
+                <Plus className="mr-2 h-4 w-4" />
+                Create Contract
+              </Link>
+            </Button>
+          )}
         </div>
       ) : (
         <>

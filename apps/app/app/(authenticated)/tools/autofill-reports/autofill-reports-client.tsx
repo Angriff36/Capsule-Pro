@@ -237,6 +237,9 @@ function EventReportsTab() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [creating, setCreating] = useState(false);
   const [selectedEventId, setSelectedEventId] = useState("");
+  const [downloadState, setDownloadState] = useState<{
+    loadingId: string | null;
+  }>({ loadingId: null });
 
   const loadReports = useCallback(async () => {
     setLoading(true);
@@ -288,6 +291,40 @@ function EventReportsTab() {
       setCreating(false);
     }
   }, [selectedEventId, loadReports]);
+
+  const handleDownloadReport = useCallback(async (reportId: string) => {
+    setDownloadState({ loadingId: reportId });
+    try {
+      const res = await apiFetch(
+        `/api/events/reports/${reportId}/download`
+      );
+      if (!res.ok) {
+        toast.error("Failed to download report");
+        return;
+      }
+      const blob = await res.blob();
+      const contentDisposition = res.headers.get("Content-Disposition");
+      let filename = "event-report.json";
+      if (contentDisposition) {
+        const match = contentDisposition.match(/filename="([^"]+)"/);
+        if (match?.[1]) {
+          filename = match[1];
+        }
+      }
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch {
+      toast.error("Failed to download report");
+    } finally {
+      setDownloadState({ loadingId: null });
+    }
+  }, []);
 
   const totalReports = reports.length;
   const completedReports = reports.filter(
@@ -378,12 +415,17 @@ function EventReportsTab() {
                     </TableCell>
                     <TableCell className="text-right">
                       <Button
-                        disabled
+                        disabled={downloadState.loadingId === report.id}
                         size="sm"
-                        title="Report download is not yet available"
                         variant="ghost"
+                        title="Download report"
+                        onClick={() => handleDownloadReport(report.id)}
                       >
-                        <Download className="h-4 w-4" />
+                        {downloadState.loadingId === report.id ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Download className="h-4 w-4" />
+                        )}
                       </Button>
                     </TableCell>
                   </TableRow>

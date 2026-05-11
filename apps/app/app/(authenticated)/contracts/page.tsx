@@ -26,7 +26,7 @@ import {
   PageCanvas,
 } from "@repo/design-system/components/blocks/page-shell";
 import { Button } from "@repo/design-system/components/ui/button";
-import { FileSignature } from "lucide-react";
+import { FileSignature, Plus } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -162,6 +162,12 @@ export default async function ContractsPage() {
             </CommandBandLede>
           </div>
           <CommandBandActions>
+            <Button asChild size="sm">
+              <Link href="/events/contracts">
+                <Plus className="mr-2 h-4 w-4" />
+                New Contract
+              </Link>
+            </Button>
             <Button
               asChild
               className="border-white/25 bg-transparent text-white hover:bg-white/10"
