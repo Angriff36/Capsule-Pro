@@ -18,6 +18,7 @@ import {
   StatusPill,
 } from "@repo/design-system/components/blocks/page-shell";
 import { Button } from "@repo/design-system/components/ui/button";
+import { Download } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -148,6 +149,17 @@ export default async function PaymentsPage() {
             </CommandBandLede>
           </div>
           <CommandBandActions>
+            <Button
+              asChild
+              className="border-white/25 bg-transparent text-white hover:bg-white/10"
+              size="sm"
+              variant="outline"
+            >
+              <Link href="/accounting/payments/export" target="_blank">
+                <Download className="mr-2 h-4 w-4" />
+                Export CSV
+              </Link>
+            </Button>
             <Button
               asChild
               className="border-white/25 bg-transparent text-white hover:bg-white/10"

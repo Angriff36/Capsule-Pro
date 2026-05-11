@@ -708,8 +708,8 @@ const SchedulingPage = async () => {
           <section className="space-y-6">
             <SectionHeader
               actions={
-                <Button disabled size="sm" type="button" variant="outline">
-                  View leaderboard — not implemented
+                <Button asChild size="sm" variant="outline">
+                  <Link href="/scheduling/leaderboard">View leaderboard</Link>
                 </Button>
               }
               count="Top 3"

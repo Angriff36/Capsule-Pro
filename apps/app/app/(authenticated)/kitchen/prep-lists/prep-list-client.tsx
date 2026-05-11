@@ -75,10 +75,16 @@ function StationCard({
   station,
   isExpanded,
   onToggle,
+  reviewedIngredients,
+  onReviewIngredient,
+  savedPrepListId,
 }: {
   station: StationPrepList;
   isExpanded: boolean;
   onToggle: () => void;
+  reviewedIngredients: Set<string>;
+  onReviewIngredient: (ingredientId: string) => void;
+  savedPrepListId: string | null;
 }) {
   const Icon =
     STATION_ICONS[station.stationId as keyof typeof STATION_ICONS] ||
@@ -175,11 +181,12 @@ function StationCard({
                         )}
                       </div>
                       <Button
-                        aria-label="Mark ingredient reviewed — coming soon"
-                        className="h-8 w-8 shrink-0"
-                        disabled
+                        aria-label={reviewedIngredients.has(ingredient.ingredientId) ? "Mark as unreviewed" : "Mark ingredient reviewed"}
+                        className={`h-8 w-8 shrink-0 ${reviewedIngredients.has(ingredient.ingredientId) ? "bg-primary/10 text-primary" : ""}`}
+                        disabled={!savedPrepListId}
+                        onClick={() => onReviewIngredient(ingredient.ingredientId)}
                         size="icon"
-                        title="Coming soon"
+                        title={!savedPrepListId ? "Save prep list first" : reviewedIngredients.has(ingredient.ingredientId) ? "Reviewed" : "Mark reviewed"}
                         type="button"
                         variant="ghost"
                       >
@@ -296,6 +303,40 @@ export function PrepListClient({
   const [isGenerating, setIsGenerating] = useState(false);
   const [expandedStations, setExpandedStations] = useState<Set<string>>(
     new Set()
+  );
+  const [reviewedIngredients, setReviewedIngredients] = useState<Set<string>>(
+    new Set()
+  );
+
+  const handleReviewIngredient = useCallback(
+    async (ingredientId: string) => {
+      const isReviewed = reviewedIngredients.has(ingredientId);
+      setReviewedIngredients((prev) => {
+        const next = new Set(prev);
+        if (next.has(ingredientId)) {
+          next.delete(ingredientId);
+        } else {
+          next.add(ingredientId);
+        }
+        return next;
+      });
+      if (savedPrepListId && !isReviewed) {
+        try {
+          await apiFetch(
+            `/api/kitchen/prep-lists/${savedPrepListId}/items/${ingredientId}/complete`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ completed: true }),
+            }
+          );
+        } catch (error) {
+          captureException(error);
+          toast.error("Failed to mark ingredient as reviewed");
+        }
+      }
+    },
+    [savedPrepListId, reviewedIngredients]
   );
 
   const handleGenerate = useCallback(async () => {
@@ -611,7 +652,10 @@ export function PrepListClient({
                   <StationCard
                     isExpanded={expandedStations.has(station.stationId)}
                     key={station.stationId}
+                    onReviewIngredient={handleReviewIngredient}
                     onToggle={() => toggleStation(station.stationId)}
+                    reviewedIngredients={reviewedIngredients}
+                    savedPrepListId={savedPrepListId}
                     station={station}
                   />
                 ))}

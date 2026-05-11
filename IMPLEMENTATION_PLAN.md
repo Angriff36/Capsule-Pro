@@ -1,6 +1,6 @@
 # Implementation Plan — Capsule Pro
 
-> Updated 2026-05-10 (v26) — P0.AH confirmed RESOLVED (stale checkbox). NEW P0.AP: 10 browser `prompt()` calls in payroll (6), accounting (2), kitchen (1), CRM (1). P0.A equipment buttons in progress. Prior v25: delete-without-confirm, forecast buttons, equipment severity, IoT dialogs.
+> Updated 2026-05-10 (v27) — RESOLVED P0.H (scheduling leaderboard), P0.I (mark ingredient reviewed), P0.J (email PDF), P0.AS (payment export), P0.AT (dead code). Prior v26: P0.AP prompt(), P0.AH stale checkbox.
 
 > Priority: P0 = broken/non-functional, P1 = significant missing features, P2 = design alignment/polish, P3 = future/speculative.
 > Status: [ ] not started, [~] partial, [x] done.
@@ -19,7 +19,7 @@
 | Prisma models | ~206 tenant tables across 10 schemas |
 | Active manifests | 74 (25 with PrismaStore) |
 | Manifest POST coverage | 88.1% |
-| Hardcoded disabled buttons | 8 (2 scheduling + 2 kitchen + 4 other) |
+| Hardcoded disabled buttons | 5 (1 scheduling notifications + 4 other) |
 | Placeholder/stub pages | 1 (kitchen team activity) + blog disabled |
 | Delete-without-confirm | 0 (all resolved) |
 | Tables WITH RLS | 83/206 (40.3%) |
@@ -84,13 +84,15 @@
 
 - [x] ~~"Reports" + "Supplier performance" — disabled, but reports page EXISTS at `warehouse/receiving/reports/`~~ RESOLVED: wired 'Reports' and 'Supplier performance' buttons as Link to /warehouse/receiving/reports
 
-### P0.H Scheduling — 2 Disabled Buttons CONFIRMED
+### P0.H Scheduling — Leaderboard RESOLVED, Notifications Pending
 
-- [ ] "Scheduling notifications" (page.tsx:467) and "View leaderboard" (page.tsx:711) — not implemented
+- [ ] "Scheduling notifications" (page.tsx:467) — not implemented
+- [x] ~~"View leaderboard" (page.tsx:711)~~ RESOLVED: wired as Link to /scheduling/leaderboard with full leaderboard page + API route
 
-### P0.I-P0.J Kitchen Prep Lists + Battle Board Export — 2 Disabled Buttons
+### P0.I-P0.J Kitchen Prep Lists + Battle Board Export — RESOLVED
 
-- [ ] "Mark ingredient reviewed" (prep lists) + "Email PDF" (battle board) disabled
+- [x] ~~"Mark ingredient reviewed" (prep lists)~~ RESOLVED: wired to PATCH /api/kitchen/prep-lists/[id]/items/[itemId]/complete, conditionally enabled after prep list save
+- [x] ~~"Email PDF" (battle board)~~ RESOLVED: created email dialog + POST /api/events/[eventId]/battle-board/email endpoint with Resend attachment
 
 ### P0.K Event Source Documents — RESOLVED
 
@@ -192,8 +194,8 @@
 
 - [x] ~~P0.AQ: Invoice create 404~~ RESOLVED (see P0.S/P0.AG)
 - [x] ~~P0.AR: Payment detail 404~~ RESOLVED (see P0.T): created /accounting/payments/[id]/page.tsx with payment details, process/refund actions, timeline
-- [ ] P0.AS: Payment export 404
-- [ ] P0.AT: PaymentListClient dead code
+- [x] ~~P0.AS: Payment export 404~~ RESOLVED: created GET /api/accounting/payments/export route with CSV output + export button on live page
+- [x] ~~P0.AT: PaymentListClient dead code~~ RESOLVED: deleted 465-line dead component
 
 ### P0.AU Web — ~11.4MB Unoptimized Images
 
@@ -567,3 +569,4 @@ Historical pass logs, audit reports, and blocker notes live in:
 | **v24** | **Session fix pass.** RESOLVED P0: P0.G (warehouse receiving Reports+Supplier performance buttons wired as Link), P0.Z (payroll periods/[id] page with details/status badges), P0.S/P0.AG (invoice create with line items builder + invoice detail with send/pay/void actions), P0.T/P0.AR (payment detail page with process/refund actions + timeline). P0.A severity: severityColors now maps both API values (warning/info) and legacy values (high/medium/low). Payroll pages 11→12. |
 | **v25** | **Session fix pass.** RESOLVED P0: P0.F (17 delete-without-confirm locations → AlertDialog/Dialog), P0.D (inventory forecast "Request Reorder" + "Create PO" wired to PO creation page), P0.A (equipment severity summary keys unified + QA detail page created at quality-assurance/[id]), P0.B (IoT register probe/log reading/details/acknowledge/resolve dialogs wired + PATCH alerts/[id] endpoint). Fixed pre-existing: settings workflow tests (6 assertions updated for server/client component split), equipment-crud test (bySeverity.warning). Stats: delete-without-confirm 17→0, disabled buttons 24→14. |
 | **v26** | **Session fix pass.** P0.AH confirmed RESOLVED (stale checkbox). NEW P0.AP: 10 browser `prompt()` calls in payroll (6), accounting (2), kitchen (1), CRM (1). P0.A equipment buttons implementation in progress. |
+| **v27** | **Session fix pass.** RESOLVED P0: P0.H (scheduling leaderboard page + API + Link), P0.I (mark ingredient reviewed wired to API, conditionally enabled), P0.J (email PDF dialog + Resend endpoint), P0.AS (payment CSV export endpoint + button on live page), P0.AT (465-line dead PaymentListClient deleted). Stats: disabled buttons 8→5, dead code files -1. |

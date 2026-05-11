@@ -10,6 +10,7 @@ import {
 import { DownloadIcon, FileTextIcon, LoaderIcon, MailIcon } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { BattleBoardEmailDialog } from "./battle-board-email-dialog";
 
 interface BattleBoardExportButtonProps {
   eventId: string;
@@ -22,13 +23,14 @@ interface BattleBoardExportButtonProps {
  * Provides options to:
  * - Download PDF directly
  * - Get shareable link
- * - Email PDF (placeholder for future)
+ * - Email PDF
  */
 export function BattleBoardExportButton({
   eventId,
   eventName,
 }: BattleBoardExportButtonProps) {
   const [isExporting, setIsExporting] = useState(false);
+  const [emailDialogOpen, setEmailDialogOpen] = useState(false);
 
   const handleDownload = async () => {
     setIsExporting(true);
@@ -91,6 +93,7 @@ export function BattleBoardExportButton({
   };
 
   return (
+    <>
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button disabled={isExporting} size="sm" variant="outline">
@@ -111,11 +114,18 @@ export function BattleBoardExportButton({
           <DownloadIcon className="mr-2 h-4 w-4" />
           Copy PDF Link
         </DropdownMenuItem>
-        <DropdownMenuItem disabled>
+        <DropdownMenuItem onClick={() => setEmailDialogOpen(true)}>
           <MailIcon className="mr-2 h-4 w-4" />
-          Email PDF (Coming Soon)
+          Email PDF
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
+    <BattleBoardEmailDialog
+      eventId={eventId}
+      eventName={eventName}
+      open={emailDialogOpen}
+      onOpenChange={setEmailDialogOpen}
+    />
+    </>
   );
 }
