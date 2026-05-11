@@ -92,13 +92,13 @@ export const InventoryItemsPageClient = () => {
 
   // Selection state
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [batchUpdateDialogOpen, setBatchUpdateDialogOpen] = useState(false);
-  const [batchDeleteDialogOpen, setBatchDeleteDialogOpen] = useState(false);
+  const [_batchUpdateDialogOpen, setBatchUpdateDialogOpen] = useState(false);
+  const [_batchDeleteDialogOpen, setBatchDeleteDialogOpen] = useState(false);
   const [batchUpdateField, setBatchUpdateField] = useState<
     "category" | "fsa_status"
   >("category");
   const [batchUpdateValue, setBatchUpdateValue] = useState<string>("");
-  const [batchUpdating, setBatchUpdating] = useState(false);
+  const [_batchUpdating, setBatchUpdating] = useState(false);
 
   const loadItems = useCallback(async () => {
     setIsLoading(true);
@@ -203,8 +203,10 @@ export const InventoryItemsPageClient = () => {
   }, []);
 
   // Batch update handler
-  const handleBatchUpdate = useCallback(async () => {
-    if (!batchUpdateValue) return;
+  const _handleBatchUpdate = useCallback(async () => {
+    if (!batchUpdateValue) {
+      return;
+    }
     setBatchUpdating(true);
     try {
       const updates: Record<string, string> = {};
@@ -234,7 +236,7 @@ export const InventoryItemsPageClient = () => {
   ]);
 
   // Batch delete handler
-  const handleBatchDelete = useCallback(async () => {
+  const _handleBatchDelete = useCallback(async () => {
     setBatchUpdating(true);
     try {
       await batchDeleteItems(Array.from(selectedIds));
@@ -538,7 +540,12 @@ export const InventoryItemsPageClient = () => {
                         {item.item_number}
                       </TableCell>
                       <TableCell>
-                        <div className="font-medium">{item.name}</div>
+                        <Link
+                          className="font-medium text-primary hover:underline"
+                          href={`/inventory/items/${item.id}`}
+                        >
+                          {item.name}
+                        </Link>
                         {item.tags.length > 0 && (
                           <div className="flex flex-wrap gap-1 mt-1">
                             {item.tags.slice(0, 2).map((tag) => (

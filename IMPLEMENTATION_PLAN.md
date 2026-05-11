@@ -1,6 +1,6 @@
 # Implementation Plan — Capsule Pro
 
-> Updated 2026-05-10 (v31) — RESOLVED P0.AU (11.4MB images → 383KB WebP), P1.BW (settings admin role gating), P1.P (facilities edit/delete UI), P1.K (accounting collections + payment methods + revenue recognition pages), P1.B (events guests + staff pages). Prior v30: P0.AE, P1.BR, P1.BS, P1.CB.
+> Updated 2026-05-10 (v32) — RESOLVED P1.V (inventory items [id] detail page), P1.AD (kitchen QA command UI — 5 dialog forms), P1.B (events [eventId]/contracts page). Prior v31: P0.AU, P1.BW, P1.P, P1.K.
 
 > Priority: P0 = broken/non-functional, P1 = significant missing features, P2 = design alignment/polish, P3 = future/speculative.
 > Status: [ ] not started, [~] partial, [x] done.
@@ -240,8 +240,8 @@ STATUS.md lists 40+ nonexistent files. Backend: 39 routes, 1,453-line agent-loop
 
 ### P1.B Events — Missing Routes and Features — PARTIALLY RESOLVED
 
-- [x] ~~4 missing sub-routes: `[eventId]/contracts`, `staff`, `guests`, `import/[workflowId]`~~ PARTIALLY RESOLVED: created `[eventId]/guests` (full CRUD with RSVP, dietary restrictions, capacity warnings) and `[eventId]/staff` (assign/unassign with employee pool, role badges, conflict detection). Remaining: `[eventId]/contracts` and `import/[workflowId]`.
-- [ ] 2 missing sub-routes: `[eventId]/contracts`, `import/[workflowId]`
+- [x] ~~4 missing sub-routes: `[eventId]/contracts`, `staff`, `guests`, `import/[workflowId]`~~ PARTIALLY RESOLVED: created `[eventId]/guests` (full CRUD with RSVP, dietary restrictions, capacity warnings), `[eventId]/staff` (assign/unassign with employee pool, role badges, conflict detection), `[eventId]/contracts` (event-scoped contract listing with status badges, client info, links to full contract detail). Remaining: `import/[workflowId]`.
+- [ ] 1 missing sub-route: `import/[workflowId]`
 - [ ] Missing features: proposals, run sheets, planning/execution mode, cloning, dietary/allergen, documents, event numbers, budget line items
 - [ ] 13 pages use legacy Header; spec compliance: 5 DONE, 15 PARTIAL, 3 MISSING
 
@@ -341,7 +341,9 @@ STATUS.md lists 40+ nonexistent files. Backend: 39 routes, 1,453-line agent-loop
 
 - [ ] Vendor UUID raw input; PO locationId hardcoded; shipment items resolved (P1.AF fixed)
 
-### P1.V Inventory Items [id] — 404
+### P1.V Inventory Items [id] — RESOLVED
+
+- [x] ~~Detail page 404~~ RESOLVED: created /inventory/items/[id]/page.tsx with PageCanvas layout, stock status badges, supplier info, FSA compliance section. Item names in list page now link to detail.
 
 ### P1.W Orphaned API Domains
 
@@ -359,7 +361,9 @@ STATUS.md lists 40+ nonexistent files. Backend: 39 routes, 1,453-line agent-loop
 
 ### P1.AC RBAC Policy — 10 API Routes, Zero Frontend
 
-### P1.AD Kitchen QA — 5 Command APIs, Zero UI
+### P1.AD Kitchen QA — RESOLVED
+
+- [x] ~~5 command APIs, zero UI~~ RESOLVED: created qa-actions-client.tsx with 5 dialog forms (CreateCheckDialog, CompleteCheckDialog, LogTemperatureDialog, CreateCorrectiveActionDialog, ResolveActionDialog). QA dashboard now has action buttons in each tab header and per-item action buttons.
 
 ### P1.AF Shipment UUID — RESOLVED
 
@@ -589,3 +593,4 @@ Historical pass logs, audit reports, and blocker notes live in:
 | **v29** | **Session fix pass.** RESOLVED P0: P0.Q (nearest-neighbor TSP route optimization with Haversine distance, stop reorder, metrics), P0.AA (route update + delete endpoints + edit/delete UI with AlertDialog), P0.U (marked as duplicate of resolved P0.AS — export route and button exist). RESOLVED P1: P1.CA (battle board "Add Staff" wired with server actions + employee selection Dialog). Stats: API routes returning 501: 2→0, disabled buttons: 4→3. |
 | **v30** | **Session fix pass.** RESOLVED P0: P0.AE (pricing tiers $29/$79/Custom with differentiated descriptions). RESOLVED P1: P1.BR (certification tracking — FALSE POSITIVE: Prisma model, generated client, PrismaStore, and factory registration all verified correct), P1.BS (scheduling search extracted to client component with Cmd+K, BudgetAlerts 355-line dead code deleted, availability modal edit button + edit form wired), P1.CB (vendor catalogs CRUD page created, orphan redirect removed from next.config.ts). Stats: dead code -355 lines. |
 | **v31** | **Session fix pass.** RESOLVED P0: P0.AU (11.4MB images → 383KB WebP, 96.6% reduction). RESOLVED P1: P1.BW (settings admin role gating — requireAdminUser/requireManagerUser guards on 8 sensitive settings pages), P1.P (facilities edit/delete UI for facilities, areas, schedules + work order status transitions), P1.K (accounting collections page with dunning/disputes/legal escalation, payment methods page with verify/flag/default, revenue recognition page with schedule lifecycle), P1.B (events [eventId]/guests page with RSVP/capacity/dietary, [eventId]/staff page with assign/unassign/conflict detection). Stats: settings pages without auth gating: 8→0, unoptimized images: 11.4MB→383KB, accounting pages: +3, events sub-routes: +2, facilities with edit/delete: 1→4. |
+| **v32** | **Session fix pass.** RESOLVED P1: P1.V (inventory items [id] detail page with PageCanvas layout + stock status + FSA compliance + supplier info; list page item names now link to detail), P1.AD (kitchen QA command UI — 5 dialog forms: CreateCheckDialog, CompleteCheckDialog, LogTemperatureDialog, CreateCorrectiveActionDialog, ResolveActionDialog wired to all 5 command APIs; QA dashboard tabs now have action buttons), P1.B (events [eventId]/contracts — event-scoped contract listing page with status breakdown metrics, client info, contract cards linking to detail). Stats: missing detail pages: -1, command APIs without UI: 5→0, events missing sub-routes: 2→1. |
