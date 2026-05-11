@@ -1,6 +1,7 @@
 import { auth } from "@repo/auth/server";
 import { Button } from "@repo/design-system/components/ui/button";
 import { notFound } from "next/navigation";
+import Link from "next/link";
 
 import { getTenantIdForOrg } from "../../../lib/tenant";
 import { Header } from "../../components/header";
@@ -29,13 +30,11 @@ interface EventDetailsPageProps {
  * Server component that fetches all event data using parallel queries
  * via the centralized data module. The data fetching is organized into tiers:
  *
- * Tier 1 (Parallel): event, RSVPs, dishes, prep tasks, related events
+ * Tier 1 (Parallel): event, RSVPs, dishes, prep tasks, related events, contract, staff, budget
  * Tier 2 (Parallel): recipe versions, guest counts for related events
  * Tier 3 (Parallel): recipe ingredients, recipe steps
  * Tier 4 (Sequential): inventory items
  * Tier 5 (Sequential): inventory stock levels
- *
- * This reduces TTFB by ~30% compared to sequential execution.
  *
  * @see event-details-data.ts for query implementation details
  */
@@ -48,8 +47,6 @@ const EventDetailsPage = async ({ params }: EventDetailsPageProps) => {
   }
 
   if (!isEventIdUuid(eventId)) {
-    // Invalid path segment like "/events/settings" should not reach this page
-    // Fail fast to avoid "invalid input syntax for type uuid" errors from Postgres
     notFound();
   }
 
@@ -74,6 +71,7 @@ const EventDetailsPage = async ({ params }: EventDetailsPageProps) => {
     hasContract,
     staffCount,
     prepLists,
+    hasBudget,
   } = data;
 
   // Normalize and validate prep tasks
@@ -94,9 +92,6 @@ const EventDetailsPage = async ({ params }: EventDetailsPageProps) => {
   const prepTasksForClient: Awaited<ReturnType<typeof serializePrepTasks>> =
     serializePrepTasks(prepTasks);
 
-  // Budget model does not exist in schema - set to null
-  const budget: null = null;
-
   return (
     <>
       <Header
@@ -109,23 +104,23 @@ const EventDetailsPage = async ({ params }: EventDetailsPageProps) => {
       >
         <div className="flex items-center gap-2">
           <Button asChild size="sm" variant="outline">
-            <a href={`/events/${eventId}/waitlist`}>Waitlist</a>
+            <Link href={`/events/${eventId}/waitlist`}>Waitlist</Link>
           </Button>
           <Button asChild size="sm" variant="outline">
-            <a href={`/events/${eventId}/budget`}>Budget</a>
+            <Link href={`/events/${eventId}/budget`}>Budget</Link>
           </Button>
           <Button asChild size="sm" variant="outline">
-            <a href={`/events/${eventId}/timeline`}>Timeline</a>
+            <Link href={`/events/${eventId}/timeline`}>Timeline</Link>
           </Button>
           <Button asChild size="sm" variant="outline">
-            <a href={`/events/${eventId}/battle-board`}>Battle Board</a>
+            <Link href={`/events/${eventId}/battle-board`}>Battle Board</Link>
           </Button>
           <EventExportButton eventId={eventId} eventName={event.title} />
           <Button asChild size="sm" variant="ghost">
-            <a href="/events">Back to events</a>
+            <Link href="/events">Back to events</Link>
           </Button>
           <Button asChild size="sm" variant="outline">
-            <a href="/events/import">Import new</a>
+            <Link href="/events/import">Import new</Link>
           </Button>
           <DeleteEventButton
             eventId={eventId}
@@ -135,7 +130,7 @@ const EventDetailsPage = async ({ params }: EventDetailsPageProps) => {
         </div>
       </Header>
       <EventDetailsClient
-        budget={budget}
+        budget={null}
         event={{
           ...event,
           budget: event.budget === null ? null : Number(event.budget),
