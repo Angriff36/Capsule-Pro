@@ -23,6 +23,7 @@ import {
   CalendarIcon,
   ClockIcon,
   InfoIcon,
+  PencilIcon,
   TrashIcon,
   UserIcon,
 } from "lucide-react";
@@ -34,6 +35,7 @@ interface AvailabilityDetailModalProps {
   open: boolean;
   onClose: () => void;
   onDelete: () => void;
+  onEdit: () => void;
   availability: {
     id: string;
     employee_id: string;
@@ -56,6 +58,7 @@ export function AvailabilityDetailModal({
   open,
   onClose,
   onDelete,
+  onEdit,
   availability,
 }: AvailabilityDetailModalProps) {
   const [loading, setLoading] = useState(false);
@@ -232,14 +235,20 @@ export function AvailabilityDetailModal({
             Close
           </Button>
           {availability && (
-            <Button
-              disabled={loading}
-              onClick={() => setDeleteDialogOpen(true)}
-              variant="destructive"
-            >
-              <TrashIcon className="h-4 w-4 mr-2" />
-              {loading ? "Deleting..." : "Delete"}
-            </Button>
+            <>
+              <Button onClick={onEdit} variant="default">
+                <PencilIcon className="h-4 w-4 mr-2" />
+                Edit
+              </Button>
+              <Button
+                disabled={loading}
+                onClick={() => setDeleteDialogOpen(true)}
+                variant="destructive"
+              >
+                <TrashIcon className="h-4 w-4 mr-2" />
+                {loading ? "Deleting..." : "Delete"}
+              </Button>
+            </>
           )}
         </DialogFooter>
       </DialogContent>

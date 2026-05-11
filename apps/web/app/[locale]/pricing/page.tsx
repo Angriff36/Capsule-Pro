@@ -27,7 +27,7 @@ const Pricing = () => (
               than ever for everyone and everywhere.
             </p>
             <p className="mt-8 flex flex-col gap-2 text-xl lg:flex-row lg:items-center">
-              <span className="text-4xl">$40</span>
+              <span className="text-4xl">$29</span>
               <span className="text-muted-foreground text-sm"> / month</span>
             </p>
             <Button asChild className="mt-8 gap-4" variant="outline">
@@ -43,7 +43,7 @@ const Pricing = () => (
               than ever for everyone and everywhere.
             </p>
             <p className="mt-8 flex flex-col gap-2 text-xl lg:flex-row lg:items-center">
-              <span className="text-4xl">$40</span>
+              <span className="text-4xl">$79</span>
               <span className="text-muted-foreground text-sm"> / month</span>
             </p>
             <Button asChild className="mt-8 gap-4">
@@ -59,8 +59,7 @@ const Pricing = () => (
               than ever for everyone and everywhere.
             </p>
             <p className="mt-8 flex flex-col gap-2 text-xl lg:flex-row lg:items-center">
-              <span className="text-4xl">$40</span>
-              <span className="text-muted-foreground text-sm"> / month</span>
+              <span className="text-4xl">Custom</span>
             </p>
             <Button asChild className="mt-8 gap-4" variant="outline">
               <Link href="/contact">

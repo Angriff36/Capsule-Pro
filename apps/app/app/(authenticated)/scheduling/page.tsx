@@ -30,13 +30,11 @@ import {
 } from "@repo/design-system/components/ui/avatar";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
-import { Input } from "@repo/design-system/components/ui/input";
 import {
   BellIcon,
   CalendarCheckIcon,
   ClockIcon,
   PlusIcon,
-  SearchIcon,
   SparklesIcon,
   UsersIcon,
   WalletIcon,
@@ -46,6 +44,7 @@ import { notFound } from "next/navigation";
 import { getTenantIdForOrg } from "../../lib/tenant";
 import { formatDelta } from "./format-delta";
 import SchedulingRealtime from "./scheduling-realtime";
+import { SchedulingSearchInput } from "./components/scheduling-search-input";
 
 interface ScheduleSummaryRow {
   shift_date: Date;
@@ -451,16 +450,7 @@ const SchedulingPage = async () => {
             </CommandBandLede>
           </div>
           <CommandBandActions>
-            <div className="relative w-full max-w-[280px] sm:w-[280px]">
-              <SearchIcon className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-white/60" />
-              <Input
-                className="border-white/25 bg-transparent pr-12 pl-9 text-white placeholder:text-white/50 focus-visible:border-white/60 focus-visible:ring-white/20"
-                placeholder="Search shifts, people, roles…"
-              />
-              <span className="absolute top-1/2 right-3 -translate-y-1/2 rounded-md border border-white/25 px-2 py-1 font-mono text-[10px] text-white/70 uppercase tracking-[0.18em]">
-                ⌘K
-              </span>
-            </div>
+            <SchedulingSearchInput />
             <Button
               aria-label="Scheduling notifications"
               asChild

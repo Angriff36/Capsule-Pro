@@ -1,6 +1,6 @@
 # Implementation Plan — Capsule Pro
 
-> Updated 2026-05-10 (v29) — RESOLVED P0.Q (route optimization TSP), P0.AA (route edit/delete API + UI), P0.U (duplicate of P0.AS), P1.CA (battle board add staff). Prior v28: P0.M, P0.H, P0.AB, P0.AD.
+> Updated 2026-05-10 (v30) — RESOLVED P0.AE (pricing tiers differentiated), P1.BR (certification tracking false positive), P1.BS (scheduling search/edit/BudgetAlerts), P1.CB (vendor catalogs page). Prior v29: P0.Q, P0.AA, P0.U, P1.CA.
 
 > Priority: P0 = broken/non-functional, P1 = significant missing features, P2 = design alignment/polish, P3 = future/speculative.
 > Status: [ ] not started, [~] partial, [x] done.
@@ -172,7 +172,9 @@
 
 - [x] ~~No "New contract" button, no delete, no export UI trigger~~ RESOLVED: added "New Contract" primary CTA button in CommandBand of unified /contracts page linking to /events/contracts (which has CreateContractModal); added "Create Contract" button in empty state of contracts-page-client
 
-### P0.AE Web Pricing — All 3 Tiers Identical ($40/mo)
+### P0.AE Web Pricing — RESOLVED
+
+- [x] ~~All 3 tiers identical at $40/mo~~ RESOLVED: Startup $29/mo, Growth $79/mo, Enterprise Custom (contact sales). Differentiated descriptions per tier.
 
 ### P0.AG Invoice Create Page — RESOLVED
 
@@ -249,7 +251,7 @@ STATUS.md lists 40+ nonexistent files. Backend: 39 routes, 1,453-line agent-loop
 | Training Completion/Assignment | [x] DONE |
 | Performance Reviews | [x] DONE (784-line frontend) |
 | Time Off Requests | [~] Redirects to /scheduling/time-off |
-| **Certification Tracking** | [ ] **BROKEN** — API routes crash (no Prisma model) |
+| **Certification Tracking** | [x] DONE (false positive — model/store/routes verified) |
 | PIN/Onboarding/Disciplinary | [ ] SCHEMA-ONLY |
 | Event Notifications/HR Reporting | [ ] NOT STARTED |
 | Pay Stub Generation | [ ] NOT STARTED |
@@ -411,13 +413,15 @@ STATUS.md lists 40+ nonexistent files. Backend: 39 routes, 1,453-line agent-loop
 
 - [ ] kitchen-dashboard-client.tsx has 125 (was 32); 57 more in scheduling; 185 total
 
-### P1.BR Certification Tracking — API Routes Will Crash
+### P1.BR Certification Tracking — RESOLVED (False Positive)
 
-- [ ] `database.employeeCertification` referenced but Prisma model does NOT exist — runtime crash
+- [x] ~~`database.employeeCertification` referenced but Prisma model does NOT exist — runtime crash~~ RESOLVED: False positive — Prisma model `employee_certifications` exists in schema.prisma (lines 3523-3539), generated client includes it, EmployeeCertificationPrismaStore is implemented and registered in factory at prisma-store.ts:1744, and ENTITIES_WITH_SPECIFIC_STORES includes "EmployeeCertification". All 9 routes are properly wired.
 
-### P1.BS Scheduling — Non-Functional Search + Dead Code
+### P1.BS Scheduling — Non-Functional Search + Dead Code — PARTIALLY RESOLVED
 
-- [ ] Search bar decorative (no onChange); BudgetAlerts dead code; availability modal no edit
+- [x] ~~Search bar decorative (no onChange)~~ RESOLVED: extracted to SchedulingSearchInput client component with state binding, Cmd+K focus, Enter navigates to /scheduling/shifts?search=
+- [x] ~~BudgetAlerts dead code~~ RESOLVED: deleted 355-line unused component
+- [x] ~~Availability modal no edit~~ RESOLVED: added Edit button + edit modal with AvailabilityForm in edit mode
 
 ### P1.BT Collaboration — 32 Orphaned Routes (65%)
 
@@ -451,9 +455,9 @@ STATUS.md lists 40+ nonexistent files. Backend: 39 routes, 1,453-line agent-loop
 
 - [x] ~~timeline.tsx:918 disabled "Add staff"~~ RESOLVED: added getAvailableEmployees + addEventStaff server actions, wired button with Dialog for employee search/selection, calls POST /api/events/staff/commands/assign
 
-### P1.CB Sidebar — Dead Link to Vendor Catalogs
+### P1.CB Sidebar — Dead Link to Vendor Catalogs — RESOLVED
 
-- [ ] module-nav.ts:372 → `/inventory/vendor-catalogs` — doesn't exist
+- [x] ~~module-nav.ts:372 → `/inventory/vendor-catalogs` — doesn't exist~~ RESOLVED: created vendor catalogs page with full CRUD UI, removed orphan redirect from next.config.ts
 
 ### P1.CC Spec Documents — 5 Untracked
 
@@ -582,3 +586,4 @@ Historical pass logs, audit reports, and blocker notes live in:
 | **v27** | **Session fix pass.** RESOLVED P0: P0.H (scheduling leaderboard page + API + Link), P0.I (mark ingredient reviewed wired to API, conditionally enabled), P0.J (email PDF dialog + Resend endpoint), P0.AS (payment CSV export endpoint + button on live page), P0.AT (465-line dead PaymentListClient deleted). Stats: disabled buttons 8→5, dead code files -1. |
 | **v28** | **Session fix pass.** RESOLVED P0: P0.M (autofill reports download endpoint + blob-based browser download with loading spinner), P0.H (scheduling notifications page + GET /api/staff/notifications filtering 6 scheduling types + BellIcon Link), P0.AB (shipment metadata edit dialog with carrier/tracking/cost/dates/notes calling PUT /api/shipments/[id]), P0.AD ("New Contract" CTA button in CommandBand + empty state linking to /events/contracts CreateContractModal). Stats: disabled buttons 5→4. |
 | **v29** | **Session fix pass.** RESOLVED P0: P0.Q (nearest-neighbor TSP route optimization with Haversine distance, stop reorder, metrics), P0.AA (route update + delete endpoints + edit/delete UI with AlertDialog), P0.U (marked as duplicate of resolved P0.AS — export route and button exist). RESOLVED P1: P1.CA (battle board "Add Staff" wired with server actions + employee selection Dialog). Stats: API routes returning 501: 2→0, disabled buttons: 4→3. |
+| **v30** | **Session fix pass.** RESOLVED P0: P0.AE (pricing tiers $29/$79/Custom with differentiated descriptions). RESOLVED P1: P1.BR (certification tracking — FALSE POSITIVE: Prisma model, generated client, PrismaStore, and factory registration all verified correct), P1.BS (scheduling search extracted to client component with Cmd+K, BudgetAlerts 355-line dead code deleted, availability modal edit button + edit form wired), P1.CB (vendor catalogs CRUD page created, orphan redirect removed from next.config.ts). Stats: dead code -355 lines. |

@@ -105,6 +105,9 @@ export function AvailabilityClient() {
     useState<Availability | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editingAvailability, setEditingAvailability] =
+    useState<Availability | null>(null);
 
   // Track initial mount to avoid URL push on first render
   const isMounted = useRef(false);
@@ -556,6 +559,11 @@ export function AvailabilityClient() {
           setModalOpen(false);
           setSelectedAvailability(null);
         }}
+        onEdit={() => {
+          setEditingAvailability(selectedAvailability);
+          setModalOpen(false);
+          setEditModalOpen(true);
+        }}
         open={modalOpen}
       />
 
@@ -578,6 +586,37 @@ export function AvailabilityClient() {
               onCancel={() => setCreateModalOpen(false)}
               onSuccess={() => {
                 setCreateModalOpen(false);
+                fetchAvailability();
+              }}
+            />
+          </div>
+        </div>
+      )}
+
+      {editModalOpen && editingAvailability && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-[22px] border border-hairline bg-canvas p-8">
+            <div className="mb-6 space-y-2">
+              <div className="font-mono text-[11px] text-muted-foreground uppercase tracking-[0.28em]">
+                Scheduling
+              </div>
+              <h2 className="font-normal text-2xl text-ink tracking-[-0.02em]">
+                Edit availability
+              </h2>
+              <p className="text-muted-foreground text-sm">
+                Update this availability entry.
+              </p>
+            </div>
+            <AvailabilityForm
+              availability={editingAvailability}
+              employeeOptions={employees}
+              onCancel={() => {
+                setEditModalOpen(false);
+                setEditingAvailability(null);
+              }}
+              onSuccess={() => {
+                setEditModalOpen(false);
+                setEditingAvailability(null);
                 fetchAvailability();
               }}
             />
