@@ -50,6 +50,10 @@ import {
   CheckCircle,
   Clock,
   Loader2,
+  Mail,
+  MailCheck,
+  MailOpen,
+  MailX,
   MessageSquare,
   Pencil,
   Plus,
@@ -97,6 +101,31 @@ interface SmsLog {
   delivered_at: string | null;
   failed_at: string | null;
   created_at: string;
+}
+
+interface EmailLog {
+  id: string;
+  tenantId: string;
+  workflowId?: string;
+  recipientEmail: string;
+  recipientId?: string;
+  recipientType?: string;
+  subject: string;
+  notificationType: string;
+  status: "pending" | "sent" | "delivered" | "opened" | "failed" | "bounced";
+  resendId?: string;
+  errorMessage?: string;
+  sentAt?: string;
+  deliveredAt?: string;
+  openedAt?: string;
+  failedAt?: string;
+  createdAt: string;
+}
+
+interface EmailPreference {
+  notificationType: string;
+  isEnabled: boolean;
+  channel: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -193,6 +222,55 @@ function smsStatusBadge(status: string) {
         <Badge className="gap-1 bg-blue-600">
           <MessageSquare className="h-3 w-3" />
           Sent
+        </Badge>
+      );
+    case "failed":
+      return (
+        <Badge className="gap-1" variant="destructive">
+          <AlertCircle className="h-3 w-3" />
+          Failed
+        </Badge>
+      );
+    case "pending":
+      return (
+        <Badge className="gap-1" variant="secondary">
+          <Clock className="h-3 w-3" />
+          Pending
+        </Badge>
+      );
+    default:
+      return <Badge variant="outline">{status}</Badge>;
+  }
+}
+
+function emailStatusBadge(status: string) {
+  switch (status) {
+    case "delivered":
+      return (
+        <Badge className="gap-1" variant="default">
+          <MailCheck className="h-3 w-3" />
+          Delivered
+        </Badge>
+      );
+    case "sent":
+      return (
+        <Badge className="gap-1 bg-blue-600">
+          <Mail className="h-3 w-3" />
+          Sent
+        </Badge>
+      );
+    case "opened":
+      return (
+        <Badge className="gap-1 bg-purple-600">
+          <MailOpen className="h-3 w-3" />
+          Opened
+        </Badge>
+      );
+    case "bounced":
+      return (
+        <Badge className="gap-1" variant="destructive">
+          <MailX className="h-3 w-3" />
+          Bounced
         </Badge>
       );
     case "failed":
@@ -1220,6 +1298,371 @@ function SmsPreferencesTab({ employeeId }: { employeeId: string }) {
 }
 
 // ---------------------------------------------------------------------------
+// Email History Tab
+// ---------------------------------------------------------------------------
+
+function EmailHistoryTab() {
+  const [logs, setLogs] = useState<EmailLog[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+
+  const loadHistory = useCallback(async () => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams();
+      if (statusFilter && statusFilter !== "all") {
+        params.set("status", statusFilter);
+      }
+      params.set("limit", "100");
+      const res = await apiFetch(
+        `/api/collaboration/notifications/email/history?${params.toString()}`
+      );
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error("Failed to load email history");
+        return;
+      }
+      setLogs(data.logs ?? []);
+    } catch {
+      toast.error("Failed to load email history");
+    } finally {
+      setLoading(false);
+    }
+  }, [statusFilter]);
+
+  useEffect(() => {
+    loadHistory();
+  }, [loadHistory]);
+
+  // Summary stats
+  const totalSent = logs.length;
+  const delivered = logs.filter((l) => l.status === "delivered").length;
+  const bounced = logs.filter((l) => l.status === "bounced").length;
+  const opened = logs.filter((l) => l.status === "opened").length;
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Summary Cards */}
+      <div className="grid gap-4 sm:grid-cols-4">
+        <Card tone="canvas">
+          <CardHeader className="pb-2">
+            <CardDescription>Total</CardDescription>
+            <CardTitle className="text-2xl">{totalSent}</CardTitle>
+          </CardHeader>
+        </Card>
+        <Card tone="canvas">
+          <CardHeader className="pb-2">
+            <CardDescription>Delivered</CardDescription>
+            <CardTitle className="text-2xl text-green-600">
+              {delivered}
+            </CardTitle>
+          </CardHeader>
+        </Card>
+        <Card tone="canvas">
+          <CardHeader className="pb-2">
+            <CardDescription>Opened</CardDescription>
+            <CardTitle className="text-2xl text-purple-600">{opened}</CardTitle>
+          </CardHeader>
+        </Card>
+        <Card tone="canvas">
+          <CardHeader className="pb-2">
+            <CardDescription>Bounced</CardDescription>
+            <CardTitle className="text-2xl text-red-600">{bounced}</CardTitle>
+          </CardHeader>
+        </Card>
+      </div>
+
+      {/* Filters */}
+      <div className="flex items-center gap-3">
+        <Select onValueChange={setStatusFilter} value={statusFilter}>
+          <SelectTrigger className="w-40">
+            <SelectValue placeholder="Filter status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Status</SelectItem>
+            <SelectItem value="sent">Sent</SelectItem>
+            <SelectItem value="delivered">Delivered</SelectItem>
+            <SelectItem value="opened">Opened</SelectItem>
+            <SelectItem value="bounced">Bounced</SelectItem>
+            <SelectItem value="failed">Failed</SelectItem>
+          </SelectContent>
+        </Select>
+        <Button onClick={loadHistory} size="sm" variant="outline">
+          <RefreshCw className="mr-2 h-4 w-4" />
+          Refresh
+        </Button>
+      </div>
+
+      {/* History Table */}
+      {logs.length === 0 ? (
+        <Card tone="canvas">
+          <CardContent className="py-12 text-center">
+            <Mail className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+            <p className="text-lg font-medium">No email history</p>
+            <p className="text-sm text-muted-foreground">
+              Email delivery logs will appear here once email notifications are
+              sent.
+            </p>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card tone="canvas">
+          <CardContent className="p-0">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Recipient</TableHead>
+                  <TableHead>Subject</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Sent</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {logs.map((log) => (
+                  <TableRow key={log.id}>
+                    <TableCell className="font-mono text-sm">
+                      {log.recipientEmail}
+                    </TableCell>
+                    <TableCell className="max-w-64">
+                      <p className="text-sm truncate">{log.subject}</p>
+                      {log.errorMessage && (
+                        <p className="text-xs text-destructive truncate">
+                          {log.errorMessage}
+                        </p>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline">{log.notificationType}</Badge>
+                    </TableCell>
+                    <TableCell>{emailStatusBadge(log.status)}</TableCell>
+                    <TableCell className="text-sm text-muted-foreground whitespace-nowrap">
+                      {formatDate(log.sentAt ?? log.createdAt)}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Email Preferences Tab
+// ---------------------------------------------------------------------------
+
+function EmailPreferencesTab({ employeeId }: { employeeId: string }) {
+  const [preferences, setPreferences] = useState<Map<string, boolean>>(
+    new Map()
+  );
+  const [loading, setLoading] = useState(true);
+  const [togglingType, setTogglingType] = useState<string | null>(null);
+
+  const loadPreferences = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await apiFetch(
+        `/api/collaboration/notifications/email/preferences?employeeId=${employeeId}`
+      );
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error("Failed to load email preferences");
+        return;
+      }
+      const map = new Map<string, boolean>();
+      for (const pref of data.preferences as EmailPreference[]) {
+        map.set(pref.notificationType, pref.isEnabled);
+      }
+      setPreferences(map);
+    } catch {
+      toast.error("Failed to load email preferences");
+    } finally {
+      setLoading(false);
+    }
+  }, [employeeId]);
+
+  useEffect(() => {
+    loadPreferences();
+  }, [loadPreferences]);
+
+  const handleToggle = useCallback(
+    async (notificationType: string, currentEnabled: boolean) => {
+      setTogglingType(notificationType);
+      try {
+        const res = await apiFetch(
+          "/api/collaboration/notifications/email/preferences",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              employeeId,
+              notificationType,
+              isEnabled: !currentEnabled,
+            }),
+          }
+        );
+        const data = await res.json();
+        if (!res.ok) {
+          toast.error("Failed to update email preference", {
+            description: data.error || "Unknown error",
+          });
+          return;
+        }
+        setPreferences((prev) => {
+          const next = new Map(prev);
+          next.set(notificationType, !currentEnabled);
+          return next;
+        });
+        toast.success(
+          currentEnabled
+            ? `Disabled email for ${notificationType.replace(/_/g, " ")}`
+            : `Enabled email for ${notificationType.replace(/_/g, " ")}`
+        );
+      } catch {
+        toast.error("Failed to update email preference");
+      } finally {
+        setTogglingType(null);
+      }
+    },
+    [employeeId]
+  );
+
+  const totalTypes = NOTIFICATION_CATEGORIES.reduce(
+    (sum, cat) => sum + cat.types.length,
+    0
+  );
+  const enabledCount = Array.from(preferences.values()).filter(Boolean).length;
+  const disabledCount = totalTypes - enabledCount;
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Summary Cards */}
+      <div className="grid gap-4 sm:grid-cols-3">
+        <Card tone="canvas">
+          <CardHeader className="pb-2">
+            <CardDescription>Notification Types</CardDescription>
+            <CardTitle className="text-2xl">{totalTypes}</CardTitle>
+          </CardHeader>
+        </Card>
+        <Card tone="canvas">
+          <CardHeader className="pb-2">
+            <CardDescription>Enabled</CardDescription>
+            <CardTitle className="text-2xl text-green-600">
+              {enabledCount}
+            </CardTitle>
+          </CardHeader>
+        </Card>
+        <Card tone="canvas">
+          <CardHeader className="pb-2">
+            <CardDescription>Disabled</CardDescription>
+            <CardTitle className="text-2xl text-muted-foreground">
+              {disabledCount}
+            </CardTitle>
+          </CardHeader>
+        </Card>
+      </div>
+
+      {/* Quick Actions */}
+      <div className="flex justify-end gap-2">
+        <Button
+          onClick={() => {
+            const allTypes = NOTIFICATION_CATEGORIES.flatMap((c) =>
+              c.types.map((t) => t.value)
+            );
+            for (const type of allTypes) {
+              if (!preferences.get(type)) {
+                handleToggle(type, false);
+              }
+            }
+          }}
+          size="sm"
+          variant="outline"
+        >
+          Enable All
+        </Button>
+        <Button
+          onClick={() => {
+            const allTypes = NOTIFICATION_CATEGORIES.flatMap((c) =>
+              c.types.map((t) => t.value)
+            );
+            for (const type of allTypes) {
+              if (preferences.get(type)) {
+                handleToggle(type, true);
+              }
+            }
+          }}
+          size="sm"
+          variant="outline"
+        >
+          Disable All
+        </Button>
+      </div>
+
+      {/* Preference Groups */}
+      <div className="space-y-4">
+        {NOTIFICATION_CATEGORIES.map((category) => (
+          <Card key={category.label} tone="canvas">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">{category.label}</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {category.types.map((type) => {
+                const isEnabled = preferences.get(type.value) ?? true;
+                return (
+                  <div
+                    className="flex items-center justify-between rounded-lg border p-3"
+                    key={type.value}
+                  >
+                    <div className="flex items-center gap-3">
+                      <Mail className="h-4 w-4 text-muted-foreground" />
+                      <div>
+                        <p className="text-sm font-medium">{type.label}</p>
+                        <p className="text-xs text-muted-foreground">
+                          Receive email when{" "}
+                          {type.label
+                            .toLowerCase()
+                            .replace(/^(a|an|the)\s/i, "")}
+                        </p>
+                      </div>
+                    </div>
+                    <Switch
+                      checked={isEnabled}
+                      disabled={togglingType === type.value}
+                      onCheckedChange={() =>
+                        handleToggle(type.value, isEnabled)
+                      }
+                    />
+                  </div>
+                );
+              })}
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Page
 // ---------------------------------------------------------------------------
 
@@ -1235,11 +1678,19 @@ export function NotificationsClient({ employeeId }: { employeeId: string }) {
           </TabsTrigger>
           <TabsTrigger className="gap-2" value="preferences">
             <BellRing className="h-4 w-4" />
-            Preferences
+            SMS Preferences
           </TabsTrigger>
           <TabsTrigger className="gap-2" value="history">
             <MessageSquare className="h-4 w-4" />
             SMS History
+          </TabsTrigger>
+          <TabsTrigger className="gap-2" value="email-history">
+            <Mail className="h-4 w-4" />
+            Email History
+          </TabsTrigger>
+          <TabsTrigger className="gap-2" value="email-preferences">
+            <MailCheck className="h-4 w-4" />
+            Email Preferences
           </TabsTrigger>
         </TabsList>
         <TabsContent value="automation">
@@ -1250,6 +1701,12 @@ export function NotificationsClient({ employeeId }: { employeeId: string }) {
         </TabsContent>
         <TabsContent value="history">
           <SmsHistoryTab />
+        </TabsContent>
+        <TabsContent value="email-history">
+          <EmailHistoryTab />
+        </TabsContent>
+        <TabsContent value="email-preferences">
+          <EmailPreferencesTab employeeId={employeeId} />
         </TabsContent>
       </Tabs>
     </>

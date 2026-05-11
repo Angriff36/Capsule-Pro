@@ -116,6 +116,7 @@ export async function GET(request: NextRequest) {
               lte: toDateEnd(rawEnd),
             },
             deletedAt: null,
+            status: { not: "cancelled" },
           },
           select: {
             id: true,
@@ -155,10 +156,10 @@ export async function GET(request: NextRequest) {
         const shifts = await database.scheduleShift.findMany({
           where: {
             tenantId,
-            shift_start: {
-              gte: rawStart,
-              lte: rawEnd,
-            },
+            OR: [
+              { shift_start: { gte: rawStart, lte: rawEnd } },
+              { shift_start: { lt: rawStart }, shift_end: { gt: rawStart } },
+            ],
             deletedAt: null,
           },
           select: {
@@ -203,6 +204,7 @@ export async function GET(request: NextRequest) {
               lte: toDateEnd(rawEnd),
             },
             deleted_at: null,
+            status: "approved",
           },
           select: {
             id: true,

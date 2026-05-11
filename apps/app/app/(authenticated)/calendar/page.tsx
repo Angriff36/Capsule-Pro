@@ -64,6 +64,7 @@ async function getCalendarData(tenantId: string, start: Date, end: Date) {
         lte: endUtc,
       },
       deletedAt: null,
+      status: { not: "cancelled" },
     },
     select: {
       id: true,
@@ -95,10 +96,10 @@ async function getCalendarData(tenantId: string, start: Date, end: Date) {
     const shifts = await database.scheduleShift.findMany({
       where: {
         tenantId,
-        shift_start: {
-          gte: start,
-          lte: end,
-        },
+        OR: [
+          { shift_start: { gte: start, lte: end } },
+          { shift_start: { lt: start }, shift_end: { gt: start } },
+        ],
         deletedAt: null,
       },
       select: {
@@ -141,6 +142,7 @@ async function getCalendarData(tenantId: string, start: Date, end: Date) {
           lte: endUtc,
         },
         deleted_at: null,
+        status: "approved",
       },
       select: {
         id: true,

@@ -73,6 +73,11 @@ interface GlobalSidebarProperties {
 const data = {
   navSecondary: [
     {
+      title: "Notifications",
+      url: "/notifications",
+      icon: BellIcon,
+    },
+    {
       title: "Webhooks",
       url: "/webhooks",
       icon: AnchorIcon,
