@@ -488,6 +488,68 @@ describe("Global Search API — GET /api/search", () => {
     });
   });
 
+  // ---------------------------------------------------------------- Tokenization (FR-106)
+  describe("multi-word tokenization (FR-106)", () => {
+    it("uses plain OR filter for single-token queries", async () => {
+      mockAllModelsEmpty();
+      vi.mocked(database.event.findMany).mockResolvedValue([]);
+      vi.mocked(database.event.count).mockResolvedValue(0);
+
+      await GET(makeRequest({ q: "smith", type: "events" }));
+
+      const call = vi.mocked(database.event.findMany).mock.calls[0][0] as {
+        where: { OR?: unknown[]; AND?: unknown[] };
+      };
+      expect(call.where.OR).toBeDefined();
+      expect(call.where.AND).toBeUndefined();
+    });
+
+    it("AND-chains tokens for multi-word queries", async () => {
+      mockAllModelsEmpty();
+      vi.mocked(database.event.findMany).mockResolvedValue([]);
+      vi.mocked(database.event.count).mockResolvedValue(0);
+
+      await GET(makeRequest({ q: "john smith catering", type: "events" }));
+
+      const call = vi.mocked(database.event.findMany).mock.calls[0][0] as {
+        where: {
+          AND?: Array<{ OR: Array<Record<string, unknown>> }>;
+          OR?: unknown[];
+        };
+      };
+      expect(call.where.AND).toHaveLength(3);
+      // Each AND entry is an OR-over-columns for one token.
+      const tokenSubstrings = (call.where.AND ?? []).map((clause) => {
+        const first = clause.OR[0] as Record<string, { contains: string }>;
+        const firstField = Object.keys(first)[0];
+        return first[firstField].contains;
+      });
+      expect(tokenSubstrings).toEqual(["john", "smith", "catering"]);
+      expect(call.where.OR).toBeUndefined();
+    });
+
+    it("collapses consecutive whitespace between tokens", async () => {
+      mockAllModelsEmpty();
+      await GET(makeRequest({ q: "john    smith", type: "events" }));
+
+      const call = vi.mocked(database.event.findMany).mock.calls[0][0] as {
+        where: { AND?: unknown[] };
+      };
+      expect(call.where.AND).toHaveLength(2);
+    });
+
+    it("still preserves entity-specific filters (venue.isActive) alongside AND chain", async () => {
+      mockAllModelsEmpty();
+      await GET(makeRequest({ q: "convention center", type: "venues" }));
+
+      const call = vi.mocked(database.venue.findMany).mock.calls[0][0] as {
+        where: { AND?: unknown[]; isActive?: boolean };
+      };
+      expect(call.where.AND).toHaveLength(2);
+      expect(call.where.isActive).toBe(true);
+    });
+  });
+
   // ---------------------------------------------------------------- Error handling
   describe("error handling", () => {
     it("returns 500 when a database query throws", async () => {

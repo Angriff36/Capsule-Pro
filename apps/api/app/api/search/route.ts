@@ -32,13 +32,32 @@ export async function GET(request: NextRequest) {
     );
     const skip = (page - 1) * limit;
 
-    const baseFilter = (fields: string[]) => ({
-      tenantId,
-      deletedAt: null,
-      OR: fields.map((f) => ({
-        [f]: { contains: q, mode: "insensitive" as const },
-      })),
-    });
+    // FR-106 (specs/general/search.md): multi-word queries split on whitespace
+    // and AND-chain tokens — each token must match SOME searched column.
+    // Single-token queries collapse to a plain OR-over-columns (no AND wrapper).
+    const tokens = q.split(/\s+/).filter((t) => t.length > 0);
+
+    const baseFilter = (fields: string[]) => {
+      const orForToken = (token: string) => ({
+        OR: fields.map((f) => ({
+          [f]: { contains: token, mode: "insensitive" as const },
+        })),
+      });
+      if (tokens.length <= 1) {
+        return {
+          tenantId,
+          deletedAt: null,
+          OR: fields.map((f) => ({
+            [f]: { contains: q, mode: "insensitive" as const },
+          })),
+        };
+      }
+      return {
+        tenantId,
+        deletedAt: null,
+        AND: tokens.map(orForToken),
+      };
+    };
 
     const groups: Record<string, { items: unknown[]; total: number }> = {};
 
