@@ -1,6 +1,6 @@
 # Implementation Plan — Capsule Pro
 
-> Updated 2026-05-11 (v40) — RESOLVED P1.BQ/hex-colors (15 actual → 0 via CSS custom properties). CORRECTED P1.B: event numbers and budget line items verified as fully implemented. Updated collaboration orphaned routes count (32/49 → 16/25). Hex colors 182→0.
+> Updated 2026-05-11 (v49) — RESOLVED P0.N+ (kitchen team activity live feed), P1.B/partial (events planning/execution toggle), P1.AM (payroll approvals GET role gate). Placeholder/stub pages: 0.
 
 > Priority: P0 = broken/non-functional, P1 = significant missing features, P2 = design alignment/polish, P3 = future/speculative.
 > Status: [ ] not started, [~] partial, [x] done.
@@ -20,7 +20,7 @@
 | Active manifests | 74 (25 with PrismaStore) |
 | Manifest POST coverage | 88.1% |
 | Hardcoded disabled buttons | 3 |
-| Placeholder/stub pages | 1 (kitchen team activity) + blog disabled |
+| Placeholder/stub pages | 0 (kitchen team activity resolved) + blog disabled |
 | Delete-without-confirm | 0 (all resolved) |
 | Tables WITH RLS | 83/206 (40.3%) |
 | Legacy Header pages | 34 (14 events + 17 kitchen + 3 other) |
@@ -110,7 +110,9 @@
 
 - [x] ~~Click handlers stubs + API missing~~ RESOLVED
 
-### P0.N+ Kitchen Production Board Team Activity — Stub
+### P0.N+ Kitchen Production Board Team Activity — RESOLVED
+
+- [x] ~~"Team activity tracking coming soon" stub card~~ RESOLVED: replaced with live TeamActivityFeed component fetching from GET /api/kitchen/team-activity. Auto-refreshes every 30s, shows employee avatars, task titles, status transitions, and timestamps. New file: `apps/app/app/(authenticated)/kitchen/components/team-activity-feed.tsx`.
 
 ### P0.O Module Settings Pages — RESOLVED
 
@@ -242,7 +244,8 @@ STATUS.md lists 40+ nonexistent files. Backend: 39 routes, 1,453-line agent-loop
 
 - [x] ~~4 missing sub-routes: `[eventId]/contracts`, `staff`, `guests`, `import/[workflowId]`~~ PARTIALLY RESOLVED: created `[eventId]/guests` (full CRUD with RSVP, dietary restrictions, capacity warnings), `[eventId]/staff` (assign/unassign with employee pool, role badges, conflict detection), `[eventId]/contracts` (event-scoped contract listing with status badges, client info, links to full contract detail). Remaining: `import/[workflowId]`.
 - [x] ~~1 missing sub-route: `import/[workflowId]`~~ RESOLVED: created /events/import/[workflowId]/page.tsx with workflow detail client component showing phase progress stepper (8 phases), status badges, auto-refresh for active workflows, action buttons (resume/retry/cancel), error display, and extracted data viewer
-- [ ] Missing features: proposals, run sheets, planning/execution mode, cloning, dietary/allergen, documents
+- [ ] Missing features: proposals, run sheets, ~~planning/execution mode~~, cloning, dietary/allergen, documents
+- [x] ~~Planning/Execution mode toggle~~ PARTIALLY RESOLVED: added Planning/Execution/Reports mode toggle above tab bar in event detail page. Auto-selects based on event date/status (Planning if >24h away, Execution if ≤24h and in-progress/confirmed, Reports if completed/cancelled). User choice persisted in localStorage per event. Planning mode shows existing 7 tabs. Execution mode adds Battle Board and Kitchen Tasks tabs. Reports mode surfaces reports. Spec reference: User Story 3 (FR-3xx). Modified: event-detail-tabs.tsx (full rewrite) and event-details-client/index.tsx (new props).
 - [x] ~~Event numbers~~ RESOLVED (v40 audit): fully implemented across forms, cards, lists, detail views, importer
 - [x] ~~Budget line items~~ RESOLVED (v40 audit): full CRUD with modal UI, API routes, and Prisma model at events/budgets/[budgetId]/budget-detail-client.tsx
 - [ ] 13 pages use legacy Header; spec compliance: 5 DONE, 15 PARTIAL, 3 MISSING
@@ -402,6 +405,7 @@ STATUS.md lists 40+ nonexistent files. Backend: 39 routes, 1,453-line agent-loop
 - [x] ~~Administrative trash restore/purge gated only on session~~ RESOLVED (v45): `/api/administrative/trash/restore` POST + DELETE now require admin-tier. Restore reverses arbitrary cross-entity soft deletes and is irreversible from audit perspective.
 - [x] ~~**Followup**: wire `requireApiManager` into accounting `/payments/[id]` PUT/POST + `/invoices/[id]` PUT/PATCH/POST/DELETE~~ RESOLVED (v46): manager-tier guard applied to all 6 write handlers in those two routes. 5 existing accounting tests gained an `@/app/lib/auth-roles` mock so they remain regression coverage for the underlying business logic. New `apps/api/__tests__/accounting/role-guards.test.ts` (6 cases) asserts each handler short-circuits to 401/403 and never reaches `database.*`, `checkRateLimit`, or the gateway when the guard fails. API suite: 4091 passing / 1 skipped.
 - [ ] **Followup remaining**: `accounting/chart-of-accounts/[id]` (auto-generated, needs IR generator support — see next item), `administrative/chat/threads/[threadId]` PATCH (likely stays at session-only — user-self mgmt), `payroll/approvals/route.ts` POST (goes through manifest runtime — gate at manifest policy instead).
+- [x] ~~**Payroll approvals GET no role gate**~~ RESOLVED (v49): added `requireApiManager()` to GET handler in `apps/api/app/api/payroll/approvals/route.ts`. Previously any authenticated user could see all payroll approval data. Now manager-tier is required, matching the pattern in the [approvalId] PUT route.
 - [ ] **Followup**: extend manifest-IR Next.js generator (`packages/manifest-runtime/src/manifest/projections/nextjs/generator.ts`) to accept a `requireRole` manifest field and emit role-check code after tenantId resolution. Currently generates session-only auth body — affects auto-generated routes like `chart-of-accounts/[id]`, `rate-limits/[id]`.
 
 ### P1.AL Web SEO Branding Wrong — RESOLVED
@@ -579,7 +583,7 @@ Largest dead: NutritionLabelCard+AllergenDisplay (642), RecipeOptimizationCard (
 - **Search** — 15 entity types with filtering/pagination (spec target met)
 - **Inventory** — Stock transfers, cycle counting, barcode scanner all functional
 - **Kitchen Allergens** — full CRUD + management modal
-- **Kitchen Production Board** — station filtering works (team activity stub — P0.N+)
+- **Kitchen Production Board** — station filtering + live team activity feed (P0.N+ RESOLVED)
 - **Knowledge Base** — full CRUD API; frontend create + list only (P0.AC)
 - **Payroll** — 39 routes, 12 pages (periods/[id] RESOLVED). 4 models missing (P1.BF).
 - **Forecasting** — production-grade 998-line service
@@ -640,6 +644,7 @@ Historical pass logs, audit reports, and blocker notes live in:
 | **v45** | **API role guards (P1.AM partial).** Added `apps/api/app/lib/auth-roles.ts` (`requireApiRole`/`requireApiAdmin`/`requireApiManager`) returning `{ok,user,tenantId} \| {ok,response}` over the existing `requireCurrentUser` resolver. Wired into `payroll/approvals/[approvalId]` PUT (manager-tier) and `administrative/trash/restore` POST+DELETE (admin-tier). Tests: 7 helper unit tests + 3 payroll guard tests + 3 trash guard tests; API suite 4085 passing / 1 skipped. Followups carried in P1.AM for accounting `[id]` routes and manifest-IR generator role-field support. |
 | **v47** | **Allergen test page removal + hasBudget threading.** RESOLVED P1.X: deleted `/kitchen/allergen-warning-test` page (155 lines of hardcoded mock `AllergenWarning` records — tenantId/guests/dishes) and removed Safety & Compliance nav entry in `module-nav.ts`. Also threaded `hasBudget` boolean through `EventDetailsClient` props (page already loads it in parallel tier 1; props panel had been reverted in v42 to satisfy typecheck via `budget={null}` workaround — proper fix is `hasBudget` prop). Typecheck clean. |
 | **v48** | **Search multi-word tokenization (P1.S/FR-106).** `apps/api/app/api/search/route.ts` now token-ANDs multi-word queries — `q.split(/\s+/)` → `AND: tokens.map(t => OR over fields)`. Single-token queries keep the original flat-OR shape so query plans and existing tests stay stable. 4 new tests in `__tests__/search/search.test.ts` cover the AND-vs-OR boundary, token ordering, whitespace collapse, and entity-specific filter preservation (venue `isActive`). API typecheck clean, suite 4095 passing / 1 skipped. **Followup remaining**: saved searches + history (FR-3xx/4xx) need new Prisma models + product decision on FR-304 sharing scope. |
+| **v49** | **Kitchen team activity + events mode toggle + payroll GET role gate.** RESOLVED P0.N+: kitchen production board "Team activity tracking coming soon" stub replaced with live TeamActivityFeed component (GET /api/kitchen/team-activity, 30s auto-refresh, avatars, status transitions, timestamps). New file: `apps/app/app/(authenticated)/kitchen/components/team-activity-feed.tsx`. PARTIALLY RESOLVED P1.B: added Planning/Execution/Reports mode toggle above tab bar in event detail page (auto-selects by event date/status, persisted in localStorage per event). RESOLVED P1.AM followup: `requireApiManager()` added to GET handler in `payroll/approvals/route.ts` (was session-only, now manager-tier matching PUT pattern). Stats: placeholder/stub pages 1→0. |
 | **v46** | **API role guards (P1.AM batch 2).** Wired `requireApiManager` into accounting `/payments/[id]` PUT (process) + POST (refund) and `/invoices/[id]` PUT (update) + PATCH (apply-payment / mark-as-paid / mark-overdue / send-reminder) + POST (send) + DELETE (void). Each guard runs *before* `checkRateLimit`, the body parse, and any DB read — staff-tier sessions short-circuit at 403 and never reach the gateway or invoice ledger. 5 existing accounting tests gained an `@/app/lib/auth-roles` mock so business-logic coverage is preserved; new `accounting/role-guards.test.ts` (6 cases) is the regression test on the boundary itself (asserts the database/gateway/rate-limit mocks are NEVER called on guard failure — so removing the guard fails the test). API suite: 4091 passing / 1 skipped; typecheck clean. |
 | **v44** | **Web SEO branding.** RESOLVED P1.AL: `packages/seo/metadata.ts` rebranded from next-forge/Vercel → Capsule Pro (applicationName, authors, creator, publisher, twitter, openGraph siteName). Propagates to all `apps/web` pages via `createMetadata()`. Split P1.AL/AM section so AM (Session Auth role check) remains open. |
 | **v43** | **Lead source enum + duplicate detection.** RESOLVED P1.BV: closed enum `website|manual|import` enforced at manifest (constraint + create guard), server action (rejects unknown, defaults to `manual`), and UI form (drops free-text select). Duplicate email detection added — `createLead` returns `{ possibleDuplicate, duplicateReason }`; list page batches Client/Lead email lookups and renders `MonoLabel "POSSIBLE DUPLICATE"` per FR-129. Test: 7 cases in `leads-create-action.test.ts`. |

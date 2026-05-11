@@ -40,6 +40,7 @@ import {
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { SuggestionsPanel } from "./components/suggestions-panel";
+import { TeamActivityFeed } from "./components/team-activity-feed";
 import { useSuggestions } from "./lib/use-suggestions";
 import { TaskCard } from "./task-card";
 
@@ -268,16 +269,7 @@ function StatsSidebar({
       </Card>
 
       {/* Team Activity */}
-      <Card className="border-hairline" tone="canvas">
-        <CardHeader className="pb-3">
-          <CardTitle className="font-semibold text-sm">Team Activity</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="text-center py-4 text-muted-foreground text-sm">
-            Team activity tracking coming soon
-          </div>
-        </CardContent>
-      </Card>
+      <TeamActivityFeed />
     </div>
   );
 }

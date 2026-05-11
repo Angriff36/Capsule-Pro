@@ -9,6 +9,7 @@ import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { type NextRequest, NextResponse } from "next/server";
+import { requireApiManager } from "@/app/lib/auth-roles";
 import { InvariantError } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { executeManifestCommand } from "@/lib/manifest-command-handler";
@@ -48,6 +49,9 @@ export async function GET(request: Request) {
     if (!orgId) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
+
+    const guard = await requireApiManager();
+    if (!guard.ok) return guard.response;
 
     const tenantId = await getTenantIdForOrg(orgId);
     if (!tenantId) {

@@ -3,6 +3,7 @@
 import type { Event } from "@repo/database";
 import { GridBackground } from "@repo/design-system/components/ui/grid-background";
 import { Separator } from "@repo/design-system/components/ui/separator";
+import { SwordsIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type { MutableRefObject } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -1457,6 +1458,9 @@ export function EventDetailsClient({
       <div className="relative mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 pb-28 pt-10 sm:px-6 lg:px-8">
         <Separator />
         <EventDetailTabs
+          eventId={event.id}
+          eventDate={event.eventDate ?? undefined}
+          eventStatus={event.status ?? null}
           copilot={
             <AIInsightsPanel
               breakdown={breakdown}
@@ -1643,6 +1647,29 @@ export function EventDetailsClient({
                 timeStatusLabel={timeStatusLabel}
                 timeZoneLabel={timeZoneLabel}
               />
+            </div>
+          }
+          battleboard={
+            <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+              <SwordsIcon className="h-12 w-12 mb-3 opacity-40" />
+              <p className="text-sm">Coordinate menu finalization with the team.</p>
+              <a
+                className="mt-3 inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+                href={`/events/${event.id}/battle-board`}
+              >
+                Open Battle Board
+              </a>
+            </div>
+          }
+          reports={
+            <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+              <p className="text-sm">Generate post-event reports and review performance.</p>
+              <a
+                className="mt-3 inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+                href={`/events/reports`}
+              >
+                View Reports
+              </a>
             </div>
           }
         />
