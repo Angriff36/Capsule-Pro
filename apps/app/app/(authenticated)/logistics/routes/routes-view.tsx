@@ -9,6 +9,16 @@ import {
   CardTitle,
 } from "@repo/design-system/components/ui/card";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@repo/design-system/components/ui/alert-dialog";
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -31,9 +41,11 @@ import {
   Loader2,
   MapPin,
   Navigation,
+  Pencil,
   Play,
   Plus,
   Route,
+  Trash2,
   Truck,
 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -94,6 +106,16 @@ export function RoutesView() {
     description: "",
   });
   const [creating, setCreating] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [editingRoute, setEditingRoute] = useState<DeliveryRoute | null>(null);
+  const [editForm, setEditForm] = useState({
+    name: "",
+    scheduledDate: "",
+    description: "",
+  });
+  const [saving, setSaving] = useState(false);
+  const [deleteRouteId, setDeleteRouteId] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     loadRoutes();
@@ -220,6 +242,79 @@ export function RoutesView() {
       }
     } catch (error) {
       console.error("Failed to complete route:", error);
+    }
+  };
+
+  const handleEditRoute = (route: DeliveryRoute) => {
+    setEditingRoute(route);
+    setEditForm({
+      name: route.name,
+      scheduledDate: route.scheduledDate
+        ? new Date(route.scheduledDate).toISOString().split("T")[0]
+        : "",
+      description: route.description || "",
+    });
+    setShowEditDialog(true);
+  };
+
+  const handleSaveEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingRoute || !editForm.name.trim()) return;
+
+    setSaving(true);
+    try {
+      const res = await apiFetch(
+        "/api/logistics/routes/commands/update",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            routeId: editingRoute.id,
+            name: editForm.name,
+            description: editForm.description || null,
+            scheduledDate: editForm.scheduledDate || null,
+          }),
+        },
+      );
+      const data = await res.json();
+      if (data.route) {
+        setRoutes((prev) =>
+          prev.map((r) => (r.id === editingRoute.id ? data.route : r)),
+        );
+        setShowEditDialog(false);
+        toast.success("Route updated");
+      }
+    } catch (error) {
+      toast.error("Failed to update route");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDeleteRoute = async () => {
+    if (!deleteRouteId) return;
+
+    setDeleting(true);
+    try {
+      const res = await apiFetch(
+        "/api/logistics/routes/commands/delete",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ routeId: deleteRouteId }),
+        },
+      );
+      if (res.ok) {
+        setRoutes((prev) => prev.filter((r) => r.id !== deleteRouteId));
+        toast.success("Route deleted");
+      } else {
+        toast.error("Failed to delete route");
+      }
+    } catch (error) {
+      toast.error("Failed to delete route");
+    } finally {
+      setDeleting(false);
+      setDeleteRouteId(null);
     }
   };
 
@@ -383,6 +478,28 @@ export function RoutesView() {
                         Complete
                       </Button>
                     )}
+                    {route.status !== "in_progress" &&
+                      route.status !== "completed" && (
+                        <Button
+                          onClick={() => handleEditRoute(route)}
+                          size="sm"
+                          variant="outline"
+                        >
+                          <Pencil className="mr-2 h-4 w-4" />
+                          Edit
+                        </Button>
+                      )}
+                    {route.status !== "in_progress" && (
+                      <Button
+                        onClick={() => setDeleteRouteId(route.id)}
+                        size="sm"
+                        variant="outline"
+                        className="text-destructive hover:text-destructive"
+                      >
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Delete
+                      </Button>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -460,6 +577,108 @@ export function RoutesView() {
           </form>
         </DialogContent>
       </Dialog>
+
+      {/* Edit Route Dialog */}
+      <Dialog
+        onOpenChange={(open) => {
+          setShowEditDialog(open);
+          if (!open) setEditingRoute(null);
+        }}
+        open={showEditDialog}
+      >
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit Route</DialogTitle>
+            <DialogDescription>
+              Update route details for {editingRoute?.routeNumber}.
+            </DialogDescription>
+          </DialogHeader>
+          <form className="space-y-4" onSubmit={handleSaveEdit}>
+            <div className="space-y-2">
+              <Label htmlFor="editName">Route Name</Label>
+              <Input
+                id="editName"
+                onChange={(e) =>
+                  setEditForm((prev) => ({ ...prev, name: e.target.value }))
+                }
+                required
+                value={editForm.name}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="editDate">Scheduled Date</Label>
+              <Input
+                id="editDate"
+                onChange={(e) =>
+                  setEditForm((prev) => ({
+                    ...prev,
+                    scheduledDate: e.target.value,
+                  }))
+                }
+                type="date"
+                value={editForm.scheduledDate}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="editDescription">Description</Label>
+              <Textarea
+                id="editDescription"
+                onChange={(e) =>
+                  setEditForm((prev) => ({
+                    ...prev,
+                    description: e.target.value,
+                  }))
+                }
+                value={editForm.description}
+              />
+            </div>
+            <DialogFooter>
+              <Button
+                onClick={() => setShowEditDialog(false)}
+                type="button"
+                variant="outline"
+              >
+                Cancel
+              </Button>
+              <Button
+                disabled={!editForm.name.trim() || saving}
+                type="submit"
+              >
+                {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Save Changes
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Route Confirmation */}
+      <AlertDialog
+        onOpenChange={(open) => {
+          if (!open) setDeleteRouteId(null);
+        }}
+        open={!!deleteRouteId}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Route</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this route? This action cannot be
+              undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={deleting}
+              onClick={handleDeleteRoute}
+            >
+              {deleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

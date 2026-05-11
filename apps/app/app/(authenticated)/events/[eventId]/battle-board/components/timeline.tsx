@@ -12,17 +12,28 @@ import {
 } from "@repo/design-system/components/ui/alert-dialog";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@repo/design-system/components/ui/dialog";
+import { Input } from "@repo/design-system/components/ui/input";
 import { addMinutes, differenceInMinutes, format } from "date-fns";
 import {
   AlertCircleIcon,
   AlertTriangleIcon,
   CalendarIcon,
   ClockIcon,
+  Loader2Icon,
   MoreHorizontalIcon,
   MoveIcon,
   PlusIcon,
   Redo2Icon,
   RefreshCwIcon,
+  SearchIcon,
   Undo2Icon,
   UsersIcon,
   ZoomInIcon,
@@ -38,8 +49,10 @@ import {
 } from "react";
 import { toast } from "sonner";
 import {
+  addEventStaff,
   calculateCriticalPath,
   deleteTimelineTask,
+  getAvailableEmployees,
   updateTimelineTask,
 } from "../actions/tasks";
 import {
@@ -80,7 +93,7 @@ export function Timeline({
 }: TimelineProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [tasks, setTasks] = useState<TimelineTask[]>(initialTasks);
-  const [staff, _setStaff] = useState<StaffMember[]>(initialStaff);
+  const [staff, setStaff] = useState<StaffMember[]>(initialStaff);
   const [selectedTaskIds, setSelectedTaskIds] = useState<string[]>([]);
   const [showDependencies, setShowDependencies] = useState(true);
   const [showCriticalPath, setShowCriticalPath] = useState(true);
@@ -88,6 +101,13 @@ export function Timeline({
   const [_scrollX, setScrollX] = useState(0);
   const [currentTime, setCurrentTime] = useState(() => new Date());
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
+  const [showAddStaff, setShowAddStaff] = useState(false);
+  const [staffSearch, setStaffSearch] = useState("");
+  const [availableEmployees, setAvailableEmployees] = useState<
+    Array<{ id: string; name: string; role: string; avatarUrl?: string }>
+  >([]);
+  const [isLoadingEmployees, setIsLoadingEmployees] = useState(false);
+  const [addingStaffId, setAddingStaffId] = useState<string | null>(null);
   const [undoStack, setUndoStack] = useState<TaskAction[]>([]);
   const [redoStack, setRedoStack] = useState<TaskAction[]>([]);
   const [conflicts, setConflicts] = useState<Map<string, string[]>>(new Map());
@@ -478,6 +498,54 @@ export function Timeline({
       setIsCalculatingCriticalPath(false);
     }
   }, [eventId, tasks]);
+
+  const handleOpenAddStaff = useCallback(async () => {
+    setShowAddStaff(true);
+    setStaffSearch("");
+    setIsLoadingEmployees(true);
+    try {
+      const employees = await getAvailableEmployees(eventId);
+      setAvailableEmployees(employees);
+    } catch {
+      toast.error("Failed to load available employees");
+    } finally {
+      setIsLoadingEmployees(false);
+    }
+  }, [eventId]);
+
+  const handleAddStaff = useCallback(
+    async (employeeId: string, employeeName: string) => {
+      setAddingStaffId(employeeId);
+      try {
+        const result = await addEventStaff(eventId, employeeId);
+
+        // Add the new staff member to the local state
+        const newMember: StaffMember = {
+          id: employeeId,
+          name: employeeName,
+          role: "staff",
+          availability: "available",
+          currentTaskCount: 0,
+          skills: [],
+        };
+        setStaff((prev) => [...prev, newMember]);
+
+        // Remove from available employees list
+        setAvailableEmployees((prev) =>
+          prev.filter((e) => e.id !== employeeId)
+        );
+
+        toast.success(`${result.employeeName} added to event staff`);
+      } catch (error) {
+        toast.error(
+          error instanceof Error ? error.message : "Failed to add staff"
+        );
+      } finally {
+        setAddingStaffId(null);
+      }
+    },
+    [eventId]
+  );
 
   const handleZoomIn = useCallback(() => {
     setZoom((prev) => Math.min(200, prev + 25));
@@ -938,13 +1006,13 @@ export function Timeline({
             <div className="border-t px-4 py-3">
               <Button
                 className="w-full"
-                disabled
+                onClick={handleOpenAddStaff}
                 size="sm"
                 type="button"
                 variant="outline"
               >
                 <PlusIcon className="mr-2 h-4 w-4" />
-                Add staff — not available yet
+                Add Staff
               </Button>
             </div>
           </aside>
@@ -976,6 +1044,88 @@ export function Timeline({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Dialog onOpenChange={setShowAddStaff} open={showAddStaff}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Add Staff to Event</DialogTitle>
+            <DialogDescription>
+              Select an employee to assign to this event.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="relative">
+            <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              className="pl-9"
+              onChange={(e) => setStaffSearch(e.target.value)}
+              placeholder="Search employees..."
+              type="text"
+              value={staffSearch}
+            />
+          </div>
+          <div className="max-h-64 overflow-y-auto">
+            {isLoadingEmployees ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2Icon className="h-6 w-6 animate-spin text-muted-foreground" />
+              </div>
+            ) : availableEmployees.length === 0 ? (
+              <div className="py-8 text-center text-muted-foreground text-sm">
+                {staffSearch
+                  ? "No employees match your search"
+                  : "All employees are already assigned to this event"}
+              </div>
+            ) : (
+              availableEmployees
+                .filter(
+                  (emp) =>
+                    !staffSearch ||
+                    emp.name
+                      .toLowerCase()
+                      .includes(staffSearch.toLowerCase()) ||
+                    emp.role
+                      .toLowerCase()
+                      .includes(staffSearch.toLowerCase())
+                )
+                .map((emp) => (
+                  <button
+                    className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-left transition-colors hover:bg-muted/50 disabled:cursor-not-allowed disabled:opacity-50"
+                    disabled={addingStaffId !== null}
+                    key={emp.id}
+                    onClick={() => handleAddStaff(emp.id, emp.name)}
+                    type="button"
+                  >
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary font-medium text-primary-foreground text-xs">
+                      {emp.name
+                        .split(" ")
+                        .map((n) => n[0])
+                        .join("")}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate font-medium text-sm">
+                        {emp.name}
+                      </div>
+                      <div className="text-muted-foreground text-xs">
+                        {emp.role}
+                      </div>
+                    </div>
+                    {addingStaffId === emp.id && (
+                      <Loader2Icon className="h-4 w-4 animate-spin" />
+                    )}
+                  </button>
+                ))
+            )}
+          </div>
+          <DialogFooter>
+            <Button
+              onClick={() => setShowAddStaff(false)}
+              type="button"
+              variant="outline"
+            >
+              Done
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

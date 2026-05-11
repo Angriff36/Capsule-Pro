@@ -1,6 +1,6 @@
 # Implementation Plan — Capsule Pro
 
-> Updated 2026-05-10 (v28) — RESOLVED P0.M (autofill reports download), P0.H (scheduling notifications), P0.AB (shipment metadata editing), P0.AD (contracts create button). Prior v27: P0.H (leaderboard), P0.I, P0.J, P0.AS, P0.AT.
+> Updated 2026-05-10 (v29) — RESOLVED P0.Q (route optimization TSP), P0.AA (route edit/delete API + UI), P0.U (duplicate of P0.AS), P1.CA (battle board add staff). Prior v28: P0.M, P0.H, P0.AB, P0.AD.
 
 > Priority: P0 = broken/non-functional, P1 = significant missing features, P2 = design alignment/polish, P3 = future/speculative.
 > Status: [ ] not started, [~] partial, [x] done.
@@ -19,7 +19,7 @@
 | Prisma models | ~206 tenant tables across 10 schemas |
 | Active manifests | 74 (25 with PrismaStore) |
 | Manifest POST coverage | 88.1% |
-| Hardcoded disabled buttons | 4 (scheduling notifications resolved) |
+| Hardcoded disabled buttons | 3 |
 | Placeholder/stub pages | 1 (kitchen team activity) + blog disabled |
 | Delete-without-confirm | 0 (all resolved) |
 | Tables WITH RLS | 83/206 (40.3%) |
@@ -27,7 +27,7 @@
 | Console statements | ~523 across ~289 files |
 | Skipped tests | ~100 (49 e2e + 6 describe + ~48 manifest-runtime) |
 | Ghost design blocks | 28/41 (68% unused) |
-| API routes returning 501 | 2 |
+| API routes returning 501 | 0 |
 | Dead duplicate API dirs | 1 (commandboard vs command-board) |
 | formatCurrency | 348 refs, 82 files, 48 local defs, 7 variants |
 | Card without tone | 314 across 81 files |
@@ -120,7 +120,9 @@
 
 - [x] ~~header.tsx breadcrumb + data-import-section.tsx "View Errors"~~ RESOLVED: breadcrumb fallback renders as non-interactive `<span>`, "View Errors" now `<span>` not dead `<Link>`
 
-### P0.Q Logistics Route Optimization — Returns 501
+### P0.Q Logistics Route Optimization — RESOLVED
+
+- [x] ~~Returns 501~~ RESOLVED: implemented nearest-neighbor TSP algorithm with Haversine distance matrix, stop reordering, per-stop distance/time metrics, and route aggregate fields (totalDistance, totalDuration, optimizationScore, optimizationAlgorithm set to "nearest-neighbor-tsp")
 
 ### P0.R Production Test Page — RESOLVED
 
@@ -131,7 +133,9 @@
 - [x] ~~P0.S: Invoice detail/edit page missing (`/accounting/invoices/[id]/`)~~ RESOLVED: created /accounting/invoices/new/page.tsx (create form with line items builder) and /accounting/invoices/[id]/page.tsx (detail view with send, apply payment, mark paid, void actions)
 - [x] ~~P0.T: Payment "View" → 404~~ RESOLVED: created /accounting/payments/[id]/page.tsx with payment details, process/refund actions, timeline
 
-### P0.U Accounting Payments Export — 404
+### P0.U Accounting Payments Export — RESOLVED
+
+- [x] ~~Accounting Payments Export 404~~ RESOLVED: duplicate of P0.AS — GET /api/accounting/payments/export route exists with CSV output + export button on live page
 
 ### P0.V Blog — Functionally Disabled
 
@@ -149,7 +153,11 @@
 
 - [x] ~~Routes to `/payroll/periods/${period.id}` — no `[id]/page.tsx`~~ RESOLVED: created periods/[id]/page.tsx with period details, status badges, date display
 
-### P0.AA Logistics Route Edit/Delete — NO Backend API
+### P0.AA Logistics Route Edit/Delete — RESOLVED
+
+- [x] ~~No update endpoint~~ RESOLVED: created POST /api/logistics/routes/commands/update accepting routeId + optional fields (name, description, scheduledDate, driverId, vehicleId)
+- [x] ~~No delete endpoint~~ RESOLVED: created POST /api/logistics/routes/commands/delete with soft delete (deletedAt)
+- [x] ~~No edit/delete UI~~ RESOLVED: added Edit dialog and Delete confirmation (AlertDialog) to routes-view.tsx with API integration
 
 ### P0.AB Logistics Shipment Editing — RESOLVED
 
@@ -309,7 +317,7 @@ STATUS.md lists 40+ nonexistent files. Backend: 39 routes, 1,453-line agent-loop
 
 ### P1.Q Logistics UI Gaps
 
-- [ ] Route edit/delete — NO backend API (P0.AA)
+- [x] ~~Route edit/delete~~ RESOLVED (see P0.AA)
 
 ### P1.R Security & Access Control Gaps
 
@@ -439,9 +447,9 @@ STATUS.md lists 40+ nonexistent files. Backend: 39 routes, 1,453-line agent-loop
 
 - [ ] WorkforceOptimization (4), PerformancePrediction (1), AiEventSetupSession (5) — no Prisma models, JSON-only
 
-### P1.CA Battle Board — Timeline "Add Staff" Still Disabled
+### P1.CA Battle Board — Add Staff — RESOLVED
 
-- [ ] timeline.tsx:918 — separate from P0.L which was resolved
+- [x] ~~timeline.tsx:918 disabled "Add staff"~~ RESOLVED: added getAvailableEmployees + addEventStaff server actions, wired button with Dialog for employee search/selection, calls POST /api/events/staff/commands/assign
 
 ### P1.CB Sidebar — Dead Link to Vendor Catalogs
 
@@ -573,3 +581,4 @@ Historical pass logs, audit reports, and blocker notes live in:
 | **v26** | **Session fix pass.** P0.AH confirmed RESOLVED (stale checkbox). NEW P0.AP: 10 browser `prompt()` calls in payroll (6), accounting (2), kitchen (1), CRM (1). P0.A equipment buttons implementation in progress. |
 | **v27** | **Session fix pass.** RESOLVED P0: P0.H (scheduling leaderboard page + API + Link), P0.I (mark ingredient reviewed wired to API, conditionally enabled), P0.J (email PDF dialog + Resend endpoint), P0.AS (payment CSV export endpoint + button on live page), P0.AT (465-line dead PaymentListClient deleted). Stats: disabled buttons 8→5, dead code files -1. |
 | **v28** | **Session fix pass.** RESOLVED P0: P0.M (autofill reports download endpoint + blob-based browser download with loading spinner), P0.H (scheduling notifications page + GET /api/staff/notifications filtering 6 scheduling types + BellIcon Link), P0.AB (shipment metadata edit dialog with carrier/tracking/cost/dates/notes calling PUT /api/shipments/[id]), P0.AD ("New Contract" CTA button in CommandBand + empty state linking to /events/contracts CreateContractModal). Stats: disabled buttons 5→4. |
+| **v29** | **Session fix pass.** RESOLVED P0: P0.Q (nearest-neighbor TSP route optimization with Haversine distance, stop reorder, metrics), P0.AA (route update + delete endpoints + edit/delete UI with AlertDialog), P0.U (marked as duplicate of resolved P0.AS — export route and button exist). RESOLVED P1: P1.CA (battle board "Add Staff" wired with server actions + employee selection Dialog). Stats: API routes returning 501: 2→0, disabled buttons: 4→3. |

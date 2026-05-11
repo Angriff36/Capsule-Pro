@@ -395,6 +395,132 @@ export async function getEventStaff(eventId: string) {
   });
 }
 
+export async function getAvailableEmployees(eventId: string) {
+  const { orgId } = await auth();
+
+  if (!orgId) {
+    throw new Error("Unauthorized");
+  }
+
+  const tenantId = await getTenantIdForOrg(orgId);
+
+  // Get employees NOT already assigned to this event
+  const employees = await database.$queryRawUnsafe<
+    Array<{
+      id: string;
+      first_name: string;
+      last_name: string;
+      role: string;
+      avatar_url: string | null;
+    }>
+  >(
+    `SELECT
+        e.id,
+        e.first_name,
+        e.last_name,
+        e.role,
+        e.avatar_url
+      FROM tenant_staff.employees e
+      WHERE e.tenant_id = $1
+        AND e.deleted_at IS NULL
+        AND e.is_active = true
+        AND NOT EXISTS (
+          SELECT 1 FROM tenant_events.event_staff_assignments esa
+          WHERE esa.tenant_id = e.tenant_id
+            AND esa.employee_id = e.id
+            AND esa.event_id = $2
+            AND esa.deleted_at IS NULL
+        )
+      ORDER BY e.first_name, e.last_name`,
+    tenantId,
+    eventId
+  );
+
+  return employees.map((emp) => ({
+    id: emp.id,
+    name: `${emp.first_name} ${emp.last_name}`,
+    role: emp.role,
+    avatarUrl: emp.avatar_url ?? undefined,
+  }));
+}
+
+export async function addEventStaff(
+  eventId: string,
+  employeeId: string,
+  role: string = "staff"
+) {
+  const { orgId } = await auth();
+
+  if (!orgId) {
+    throw new Error("Unauthorized");
+  }
+
+  const tenantId = await getTenantIdForOrg(orgId);
+
+  // Verify the event exists and belongs to this tenant
+  const event = await database.event.findFirst({
+    where: { tenantId, id: eventId },
+  });
+
+  if (!event) {
+    throw new Error("Event not found");
+  }
+
+  // Verify the employee exists and is active
+  const employee = await database.$queryRawUnsafe<
+    Array<{ id: string; first_name: string; last_name: string }>
+  >(
+    `SELECT id, first_name, last_name
+     FROM tenant_staff.employees
+     WHERE tenant_id = $1
+       AND id = $2
+       AND deleted_at IS NULL
+       AND is_active = true`,
+    tenantId,
+    employeeId
+  );
+
+  if (employee.length === 0) {
+    throw new Error("Employee not found or inactive");
+  }
+
+  // Check for existing assignment (avoid duplicates)
+  const existing = await database.$queryRawUnsafe<
+    Array<{ id: string }>
+  >(
+    `SELECT id
+     FROM tenant_events.event_staff_assignments
+     WHERE tenant_id = $1
+       AND event_id = $2
+       AND employee_id = $3
+       AND deleted_at IS NULL`,
+    tenantId,
+    eventId,
+    employeeId
+  );
+
+  if (existing.length > 0) {
+    throw new Error("Employee is already assigned to this event");
+  }
+
+  await database.$executeRawUnsafe(
+    `INSERT INTO tenant_events.event_staff_assignments (
+       tenant_id, event_id, employee_id, role, created_at, updated_at
+     ) VALUES ($1, $2, $3, $4, NOW(), NOW())`,
+    tenantId,
+    eventId,
+    employeeId,
+    role
+  );
+
+  revalidatePath(`/events/${eventId}/battle-board`);
+
+  return {
+    success: true,
+    employeeName: `${employee[0].first_name} ${employee[0].last_name}`,
+  };
+}
+
 /**
  * Calculate and update the critical path for all tasks in an event.
  *
