@@ -8,6 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
+import { formatCurrency } from "@repo/design-system/lib/format-currency";
 import { FileText, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { usePostHog } from "posthog-js/react";
@@ -32,14 +33,6 @@ const statusColors: Record<string, string> = {
   OVERDUE: "destructive",
   VOIDED: "outline",
   PARTIALLY_PAID: "default",
-};
-
-const formatCurrency = (value: number | string) => {
-  const num = typeof value === "string" ? Number.parseFloat(value) : value;
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-  }).format(num || 0);
 };
 
 const formatDate = (date: string) =>

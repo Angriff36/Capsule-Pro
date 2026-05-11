@@ -20,6 +20,7 @@ import {
 } from "@repo/design-system/components/ui/select";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
 import { StatusPill } from "@repo/design-system/components/blocks/page-shell";
+import { formatCurrency } from "@repo/design-system/lib/format-currency";
 import {
 	CheckCircle,
 	ChevronRight,
@@ -105,11 +106,6 @@ const NEXT_ACTION: Record<string, { label: string; command: string }> = {
 	confirmed: { label: "Start Prep", command: "start-prep" },
 	in_progress: { label: "Mark Complete", command: "mark-complete" },
 };
-
-function formatCurrency(value: string | null): string {
-	if (!value) return "$0.00";
-	return `$${Number(value).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-}
 
 function formatDate(iso: string): string {
 	return new Date(iso).toLocaleDateString("en-US", {

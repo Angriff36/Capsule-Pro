@@ -36,6 +36,10 @@ import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
+import { formatCurrency as _formatCurrency } from "@repo/design-system/lib/format-currency";
+
+const formatCurrency = (v: string | number | null) =>
+  _formatCurrency(v, { nullDisplay: "\u2014" });
 
 interface InvoiceClient {
   id: string;
@@ -113,13 +117,6 @@ const typeLabels: Record<string, string> = {
   DEBIT_NOTE: "Debit Note",
 };
 
-const formatCurrency = (amount: string | number | null) => {
-  if (amount == null) return "—";
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-  }).format(Number(amount));
-};
 
 const formatDate = (dateStr: string | null | undefined) => {
   if (!dateStr) return "—";

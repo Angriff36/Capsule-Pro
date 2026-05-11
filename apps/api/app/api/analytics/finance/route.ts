@@ -1,5 +1,6 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { formatCurrencyCompact } from "@repo/design-system/lib/format-currency";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
@@ -352,16 +353,6 @@ function getAlertSeverity(utilization: number): "High" | "Medium" | "Low" {
   return "Low";
 }
 
-function formatCurrency(amount: number): string {
-  if (amount >= 1_000_000) {
-    return `$${(amount / 1_000_000).toFixed(1)}M`;
-  }
-  if (amount >= 1000) {
-    return `$${(amount / 1000).toFixed(0)}k`;
-  }
-  return `$${amount.toFixed(0)}`;
-}
-
 function buildFinanceHighlights(
   metrics: FinanceMetrics,
   variances: ReturnType<typeof calculateVariances>
@@ -370,9 +361,9 @@ function buildFinanceHighlights(
     {
       label: "Revenue vs Budget",
       value:
-        formatCurrency(metrics.actualRevenue) +
+        formatCurrencyCompact(metrics.actualRevenue) +
         " / " +
-        formatCurrency(metrics.budgetedRevenue),
+        formatCurrencyCompact(metrics.budgetedRevenue),
       trend:
         variances.revenueVariance >= 0
           ? `+${variances.revenueVariance.toFixed(1)}% ahead`
@@ -381,13 +372,13 @@ function buildFinanceHighlights(
     },
     {
       label: "Cost of goods sold",
-      value: formatCurrency(metrics.totalCost),
+      value: formatCurrencyCompact(metrics.totalCost),
       trend: getCOGSTrend(variances.cogsPercentage, variances.cogsTrend),
       isPositive: variances.cogsPercentage < 30,
     },
     {
       label: "Labor cadence",
-      value: formatCurrency(metrics.actualLaborCost),
+      value: formatCurrencyCompact(metrics.actualLaborCost),
       trend: getLaborTrend(variances.laborTrend),
       isPositive: variances.laborTrend <= 0,
     },
@@ -398,11 +389,11 @@ function buildLedgerSummary(ledger: LedgerData) {
   return [
     {
       label: "Deposits cleared",
-      amount: formatCurrency(Number(ledger.deposits_received)),
+      amount: formatCurrencyCompact(Number(ledger.deposits_received)),
     },
     {
       label: "Active contracts",
-      amount: formatCurrency(Number(ledger.active_contracts)),
+      amount: formatCurrencyCompact(Number(ledger.active_contracts)),
     },
     {
       label: "Pending proposals",

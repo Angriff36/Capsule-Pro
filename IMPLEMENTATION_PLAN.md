@@ -1,6 +1,6 @@
 # Implementation Plan — Capsule Pro
 
-> Updated 2026-05-11 (v37) — RESOLVED P1.S/search (8 new entity types: recipes, dishes, equipment, ingredients, menus, leads, proposals, invoices). Search now covers 15 entity types (spec target met).
+> Updated 2026-05-11 (v38) — RESOLVED P1.BM/formatCurrency consolidation (7 variants → 1 shared utility). RESOLVED P1.AC/RBAC Policy (spec-complete v1). Search now covers 15 entity types.
 
 > Priority: P0 = broken/non-functional, P1 = significant missing features, P2 = design alignment/polish, P3 = future/speculative.
 > Status: [ ] not started, [~] partial, [x] done.
@@ -29,7 +29,7 @@
 | Ghost design blocks | 28/41 (68% unused) |
 | API routes returning 501 | 0 |
 | Dead duplicate API dirs | 1 (commandboard vs command-board) |
-| formatCurrency | 348 refs, 82 files, 48 local defs, 7 variants |
+| formatCurrency | 1 shared utility (@repo/design-system/lib/format-currency.ts); ~48 local defs replaced; 7 server-side packages retain internal versions (pdf, email, sales-reporting + 3 null-display wrappers) |
 | Card without tone | 303 across 79 files |
 | Hardcoded hex colors | 182 (125 kitchen + 57 scheduling + 0 marketing) |
 | Collaboration orphaned routes | 32/49 (65%) |
@@ -368,7 +368,9 @@ STATUS.md lists 40+ nonexistent files. Backend: 39 routes, 1,453-line agent-loop
 
 - [ ] Events not filtered cancelled; time-off not filtered approved; cross-day shifts only in start-day
 
-### P1.AC RBAC Policy — 10 API Routes, Zero Frontend
+### P1.AC RBAC Policy — RESOLVED (Spec-Complete v1)
+
+- [x] ~~10 API Routes, Zero Frontend~~ RESOLVED: spec (settings.md FR-205) explicitly scopes RolePolicy as read-only in v1 settings UI. Implementation matches spec exactly: list + detail dialog in /settings/security, adminOnly manifest policy, 10 API routes (5 legacy + 5 manifest-generated), PrismaStore registered, comprehensive test coverage.
 
 ### P1.AD Kitchen QA — RESOLVED
 
@@ -415,9 +417,9 @@ STATUS.md lists 40+ nonexistent files. Backend: 39 routes, 1,453-line agent-loop
 
 - [ ] Highest risk: event-parser (4,738 lines), pdf (2,913), ai (2,156), security (zero)
 
-### P1.BM formatCurrency — 348/82/48/7 Variants
+### P1.BM formatCurrency — RESOLVED
 
-- [ ] Extract to shared utility — 7 behavioral variants across 48 local definitions
+- [x] ~~Extract to shared utility — 7 behavioral variants across 48 local definitions~~ RESOLVED (v38): created @repo/design-system/lib/format-currency.ts with formatCurrency/formatCurrencyWhole/formatCurrencyCompact. Replaced ~45 local definitions across apps/app and apps/api. Remaining: 3 server-side packages (pdf, email, sales-reporting) retain internal versions (no @repo/design-system dependency).
 
 ### P1.BN-P1.BO Settings Layout + Tools Shell
 
@@ -615,3 +617,4 @@ Historical pass logs, audit reports, and blocker notes live in:
 | **v35** | **Session implementation pass.** RESOLVED P1.BY: variancereport (full CRUD page at /inventory/variance-reports with metrics, search/filter, review/approve dialogs + GET /api/variancereport/list), alertsconfig (full CRUD page at /settings/alerts with metrics by channel, search/filter, create/edit/remove dialogs + GET /api/alertsconfig/list). Added sidebar entries for Variance Reports (Inventory) and Alert Configuration (Settings). Stats: API-only domains with UI: +2, settings pages: +1, inventory pages: +1. |
 | **v36** | **Session implementation pass.** RESOLVED P1.S: search API minimum query length (FR-107, reject < 2 chars), tasks entity group added (KitchenTask title/summary search). RESOLVED P1.T: warehouse audits 11 bare Cards now have `tone="canvas"`, deleted 2 dead dashboard components (RecentActivityCard, StockAlertsCard). Stats: Card without tone 314→303, dead code files -2, search entity groups 6→7. |
 | **v37** | **Session implementation pass.** RESOLVED P1.S: search expanded from 7 to 15 entity types — added recipes, dishes, equipment, ingredients, menus, leads, proposals, invoices. Both API route and frontend GROUP_CONFIG updated. Fixed database mock (added `lead` model) and test assertions (7→15 groups). Stats: search entity types 7→15, spec target met. |
+| **v38** | **formatCurrency consolidation.** RESOLVED P1.BM: created shared @repo/design-system/lib/format-currency.ts (formatCurrency/formatCurrencyWhole/formatCurrencyCompact). Replaced ~45 local definitions in apps/app + apps/api with unified imports. 7 behavioral variants consolidated into single options-based API. Server-side packages (pdf, email, sales-reporting) retain internal versions. Fixed formatCompact bug ($ vs USD currency code). Stats: local formatCurrency defs 48→3 (server-side), variants 7→1. RESOLVED P1.AC: RBAC Policy spec-complete v1 — list + detail dialog in /settings/security, adminOnly manifest policy, 10 API routes (5 legacy + 5 manifest-generated), PrismaStore registered, comprehensive test coverage. |

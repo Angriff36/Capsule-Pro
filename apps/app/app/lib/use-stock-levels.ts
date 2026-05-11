@@ -1,3 +1,4 @@
+import { formatCurrency } from "@repo/design-system/lib/format-currency";
 import { apiFetch } from "@/app/lib/api";
 /**
  * Stock Levels Client API Functions
@@ -406,15 +407,7 @@ export function getAdjustmentReasonLabel(reason: AdjustmentReason): string {
   return labels[reason] || reason;
 }
 
-/**
- * Format currency value
- */
-export function formatCurrency(value: number): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-  }).format(value);
-}
+export { formatCurrency };
 
 /**
  * Format quantity with fixed decimals

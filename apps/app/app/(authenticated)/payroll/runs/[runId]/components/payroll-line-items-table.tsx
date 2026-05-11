@@ -3,6 +3,7 @@ import {
   AvatarFallback,
   AvatarImage,
 } from "@repo/design-system/components/ui/avatar";
+import { formatCurrency } from "@repo/design-system/lib/format-currency";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Card, CardContent } from "@repo/design-system/components/ui/card";
@@ -49,13 +50,6 @@ interface PayrollLineItem {
 interface PayrollLineItemsTableProps {
   lineItems: PayrollLineItem[];
   runId: string;
-}
-
-function formatCurrency(value: number) {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-  }).format(value);
 }
 
 function formatHours(value: number) {

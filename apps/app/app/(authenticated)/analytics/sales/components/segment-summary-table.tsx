@@ -8,12 +8,7 @@ import {
 } from "@repo/design-system/components/ui/table";
 import type { QuarterlyMetrics } from "../lib/sales-analytics";
 
-const formatCurrency = (value: number) =>
-  new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 0,
-  }).format(value);
+import { formatCurrencyWhole as formatCurrency } from "@repo/design-system/lib/format-currency";
 
 const formatNumber = (value: number) =>
   new Intl.NumberFormat("en-US").format(value);

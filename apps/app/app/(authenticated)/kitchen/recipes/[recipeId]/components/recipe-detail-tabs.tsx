@@ -50,6 +50,7 @@ import {
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
+import { formatCurrency } from "@repo/design-system/lib/format-currency";
 import { apiFetch } from "@/app/lib/api";
 import {
   kitchenRecipeCompositeRestore,
@@ -254,12 +255,6 @@ interface RecipeDetailTabsProps {
 
 const formatMinutes = (minutes?: number | null) =>
   minutes && minutes > 0 ? `${minutes}m` : "-";
-
-const formatCurrency = (value: number) =>
-  new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-  }).format(value);
 
 /** Format duration for display (e.g., "15 min" or "1h 30m") */
 const formatDuration = (minutes: number | null): string | null => {

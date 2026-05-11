@@ -50,6 +50,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
+import { formatCurrency } from "@repo/design-system/lib/format-currency";
 import { createFacilityAsset } from "../actions";
 import { FacilitiesNavigation } from "../components/facilities-navigation";
 
@@ -123,13 +124,9 @@ const ASSET_TYPE_LABELS: Record<string, string> = {
 
 const NO_AREA_ID = "__none__";
 
-const formatCurrency = (n: number | null) =>
-  n
-    ? new Intl.NumberFormat("en-US", {
-        style: "currency",
-        currency: "USD",
-      }).format(n)
-    : "—";
+const formatCurrencyWithDash = (n: number | null) =>
+  formatCurrency(n, { nullDisplay: "\u2014" });
+
 
 export default function AssetsPage() {
   const [assets, setAssets] = useState<Asset[]>([]);
@@ -352,7 +349,7 @@ export default function AssetsPage() {
         <div className="flex gap-2 flex-wrap">
           <Badge variant="secondary">{assets.length} Assets</Badge>
           <Badge variant="outline">
-            Active value: {formatCurrency(totalValue)}
+            Active value: {formatCurrencyWithDash(totalValue)}
           </Badge>
           {warrantyExpiring > 0 && (
             <Badge variant="destructive">
@@ -456,7 +453,7 @@ export default function AssetsPage() {
                           )}
                           {asset.area_name && <span>📍 {asset.area_name}</span>}
                           {asset.purchase_cost != null && (
-                            <span>{formatCurrency(asset.purchase_cost)}</span>
+                            <span>{formatCurrencyWithDash(asset.purchase_cost)}</span>
                           )}
                         </div>
                       </div>

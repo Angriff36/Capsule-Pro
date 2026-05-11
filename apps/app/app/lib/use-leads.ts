@@ -10,6 +10,7 @@
 
 "use client";
 
+import { formatCurrency as _formatCurrency } from "@repo/design-system/lib/format-currency";
 import { apiFetch } from "@/app/lib/api";
 
 // ---------------------------------------------------------------------------
@@ -157,16 +158,9 @@ export async function archiveLead(id: string): Promise<void> {
 // Formatting helpers
 // ---------------------------------------------------------------------------
 
-const currencyFormatter = new Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: "USD",
-  minimumFractionDigits: 0,
-  maximumFractionDigits: 0,
-});
-
+/** Re-export shared formatCurrency (whole-dollar, em dash for null) */
 export function formatCurrency(amount: number | null | undefined): string {
-  if (amount == null) return "\u2014";
-  return currencyFormatter.format(amount);
+  return _formatCurrency(amount, { fractionDigits: 0, nullDisplay: "\u2014" });
 }
 
 const dateFormatter = new Intl.DateTimeFormat("en-US", {

@@ -131,12 +131,7 @@ export function getCategoryColor(category: BudgetLineItemCategory): string {
   return colors[category] || colors.other;
 }
 
-export function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-  }).format(amount);
-}
+export { formatCurrency } from "@repo/design-system/lib/format-currency";
 
 export function getUtilizationColor(percentage: number): string {
   if (percentage >= 100) {

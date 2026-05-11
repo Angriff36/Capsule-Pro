@@ -1,5 +1,6 @@
 "use client";
 
+import { formatCurrency } from "@repo/design-system/lib/format-currency";
 import { apiFetch } from "@/app/lib/api";
 // Type definitions matching the API response
 export const FSA_STATUSES = [
@@ -271,13 +272,7 @@ export function getCategoryLabel(category: ItemCategory): string {
     .join(" ");
 }
 
-// Helper to format currency
-export function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-  }).format(amount);
-}
+export { formatCurrency };
 
 // Helper to format quantity
 export function formatQuantity(quantity: number): string {

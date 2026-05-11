@@ -19,6 +19,7 @@ import {
 	SelectValue,
 } from "@repo/design-system/components/ui/select";
 import { StatusPill } from "@repo/design-system/components/blocks/page-shell";
+import { formatCurrency } from "@repo/design-system/lib/format-currency";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -106,11 +107,6 @@ const EMPTY_FORM: FormState = {
 	effectiveFrom: "",
 	effectiveTo: "",
 };
-
-function formatCurrency(value: string | null): string {
-	if (!value) return "$0.00";
-	return `$${Number(value).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-}
 
 function formatPercent(value: string | null): string {
 	if (!value) return "--";

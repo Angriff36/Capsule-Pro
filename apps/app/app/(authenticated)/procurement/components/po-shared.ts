@@ -1,3 +1,4 @@
+import { formatCurrency } from "@repo/design-system/lib/format-currency";
 import {
   AlertTriangle,
   CheckCircle2,
@@ -58,10 +59,7 @@ export const STATUS_WORKFLOW: Record<string, string[]> = {
   ordered: ["received"],
 };
 
-export const formatCurrency = (n: number) =>
-  new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(
-    Number(n)
-  );
+export { formatCurrency };
 
 export const formatDate = (d: string | null) =>
   d

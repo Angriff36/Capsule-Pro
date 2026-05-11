@@ -22,15 +22,7 @@ import { redirect } from "next/navigation";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { CollectionsClient } from "./collections-client";
 
-const currencyFormatter = new Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: "USD",
-  maximumFractionDigits: 0,
-});
-
-function formatCurrency(value: number) {
-  return currencyFormatter.format(value);
-}
+import { formatCurrencyWhole as formatCurrency } from "@repo/design-system/lib/format-currency";
 
 export default async function CollectionsPage() {
   const { userId, orgId } = await auth();

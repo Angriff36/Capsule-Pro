@@ -23,15 +23,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
-const currencyFormatter = new Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: "USD",
-  maximumFractionDigits: 0,
-});
-
-function formatCurrency(value: number) {
-  return currencyFormatter.format(value);
-}
+import { formatCurrencyWhole as formatCurrency } from "@repo/design-system/lib/format-currency";
 
 function formatDate(value: Date | null) {
   if (!value) return "—";

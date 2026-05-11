@@ -34,12 +34,7 @@ export const createCurrencyFormatter = (locale = "en-US") => {
   });
 };
 
-/**
- * Format a currency value using the specified locale.
- */
-export const formatCurrency = (value: number, locale = "en-US"): string => {
-  return createCurrencyFormatter(locale).format(value);
-};
+export { formatCurrency } from "@repo/design-system/lib/format-currency";
 
 /**
  * Hydration-safe short date formatter (month: short, day: numeric).

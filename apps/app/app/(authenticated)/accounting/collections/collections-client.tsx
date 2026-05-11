@@ -26,6 +26,7 @@ import {
 } from "@repo/design-system/components/ui/select";
 import { StatusPill } from "@repo/design-system/components/blocks/page-shell";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
+import { formatCurrency } from "@repo/design-system/lib/format-currency";
 import {
   AlertTriangle,
   ArrowUpRight,
@@ -114,14 +115,6 @@ interface InitialMetrics {
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-const currencyFmt = new Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: "USD",
-});
-
-const formatCurrency = (v: number | string) =>
-  currencyFmt.format(typeof v === "string" ? Number.parseFloat(v) : v);
 
 const formatDate = (d: string | null) => {
   if (!d) return "\u2014";

@@ -1,3 +1,4 @@
+import { formatCurrency } from "@repo/design-system/lib/format-currency";
 import {
   Ban,
   CheckCircle2,
@@ -60,11 +61,7 @@ export const CONTRACT_TYPE_CONFIG: Record<string, string> = {
   distribution: "Distribution",
 };
 
-export const formatCurrency = (n: number) =>
-  new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-  }).format(Number(n));
+export { formatCurrency };
 
 export const formatDate = (d: string | null | undefined) =>
   d

@@ -181,12 +181,7 @@ const NO_STATE_TAX = ["TX", "FL", "WA", "NV", "WY", "AK", "SD", "NH", "TN"];
 /*  Helpers                                                            */
 /* ------------------------------------------------------------------ */
 
-const formatCurrency = (n: number) =>
-  new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 0,
-  }).format(n);
+import { formatCurrencyWhole as formatCurrency } from "@repo/design-system/lib/format-currency";
 
 const formatPercent = (n: number) => `${(n * 100).toFixed(2)}%`;
 

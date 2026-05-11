@@ -46,6 +46,10 @@ import {
   Loader2Icon,
   ZapIcon,
 } from "lucide-react";
+import { formatCurrency as _formatCurrency } from "@repo/design-system/lib/format-currency";
+
+const formatCurrency = (v: number | null) =>
+  _formatCurrency(v, { nullDisplay: "N/A" });
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -91,15 +95,6 @@ interface PaginationInfo {
   totalPages: number;
 }
 
-function formatCurrency(value: number | null) {
-  if (value === null) {
-    return "N/A";
-  }
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-  }).format(value);
-}
 
 function formatHours(value: number | null) {
   if (value === null) {

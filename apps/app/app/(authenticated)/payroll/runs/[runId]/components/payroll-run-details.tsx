@@ -5,6 +5,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
+import { formatCurrency } from "@repo/design-system/lib/format-currency";
 import { Separator } from "@repo/design-system/components/ui/separator";
 import { CalendarIcon, DollarSignIcon, UsersIcon } from "lucide-react";
 
@@ -37,13 +38,6 @@ interface PayrollRun {
 
 interface PayrollRunDetailsProps {
   run: PayrollRun;
-}
-
-function formatCurrency(value: number) {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-  }).format(value);
 }
 
 function formatDate(date: Date | null) {

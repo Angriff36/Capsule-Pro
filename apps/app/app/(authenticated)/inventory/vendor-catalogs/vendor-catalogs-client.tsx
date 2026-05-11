@@ -52,6 +52,7 @@ import {
   TableRow,
 } from "@repo/design-system/components/ui/table";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
+import { formatCurrency } from "@repo/design-system/lib/format-currency";
 import {
   Loader2Icon,
   MoreHorizontalIcon,
@@ -169,14 +170,6 @@ const UNITS = [
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-const formatCurrency = (value: number, currency = "USD") =>
-  new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency,
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(value);
 
 // ---------------------------------------------------------------------------
 // Component
@@ -752,7 +745,7 @@ export function VendorCatalogsClient() {
                         <TableCell className="text-right font-medium">
                           {formatCurrency(
                             Number(catalog.baseUnitCost),
-                            catalog.currency,
+                            { currency: catalog.currency },
                           )}
                         </TableCell>
                         <TableCell>{catalog.unitOfMeasure}</TableCell>
@@ -1214,7 +1207,7 @@ export function VendorCatalogsClient() {
                   {costTarget
                     ? formatCurrency(
                         Number(costTarget.baseUnitCost),
-                        costTarget.currency,
+                        { currency: costTarget.currency },
                       )
                     : "--"}
                 </span>

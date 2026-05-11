@@ -1,3 +1,4 @@
+import { formatCurrency } from "@repo/design-system/lib/format-currency";
 import {
   ArrowRightLeft,
   Ban,
@@ -61,11 +62,7 @@ export const PRIORITY_CONFIG: Record<string, { label: string; color: string }> =
     critical: { label: "Critical", color: "bg-muted/50 text-foreground" },
   };
 
-export const formatCurrency = (n: number) =>
-  new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-  }).format(Number(n));
+export { formatCurrency };
 
 export const formatDate = (d: string | null | undefined) =>
   d

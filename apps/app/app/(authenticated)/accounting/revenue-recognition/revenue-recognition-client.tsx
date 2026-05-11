@@ -74,21 +74,13 @@ interface Metrics {
 /*  Helpers                                                                   */
 /* -------------------------------------------------------------------------- */
 
-const currencyFormatter = new Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: "USD",
-  maximumFractionDigits: 0,
-});
+import { formatCurrencyWhole as formatCurrency } from "@repo/design-system/lib/format-currency";
 
 const dateFormatter = new Intl.DateTimeFormat("en-US", {
   month: "short",
   day: "numeric",
   year: "numeric",
 });
-
-function formatCurrency(value: number) {
-  return currencyFormatter.format(value);
-}
 
 function formatDate(value: string) {
   return dateFormatter.format(new Date(value));

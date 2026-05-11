@@ -49,6 +49,9 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
+import { formatCurrency } from "@repo/design-system/lib/format-currency";
+
+const fmtCurrency = (v: number | null) => formatCurrency(v, { nullDisplay: "\u2014" });
 
 // Types matching the API
 interface Shipment {
@@ -402,13 +405,6 @@ export function ShipmentsClient() {
     });
   };
 
-  const formatCurrency = (amount: number | null) => {
-    if (!amount) return "—";
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-    }).format(Number(amount));
-  };
 
   if (loading) {
     return (
@@ -473,7 +469,7 @@ export function ShipmentsClient() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {formatCurrency(stats.totalValue)}
+              {fmtCurrency(stats.totalValue)}
             </div>
           </CardContent>
         </Card>
@@ -575,7 +571,7 @@ export function ShipmentsClient() {
                             {shipment.totalValue && (
                               <span className="flex items-center gap-1">
                                 <DollarSign className="h-3 w-3" />
-                                {formatCurrency(shipment.totalValue)}
+                                {fmtCurrency(shipment.totalValue)}
                               </span>
                             )}
                           </div>
@@ -826,13 +822,13 @@ export function ShipmentsClient() {
                 <div>
                   <p className="text-muted-foreground">Shipping Cost</p>
                   <p className="font-medium">
-                    {formatCurrency(selectedShipment.shippingCost)}
+                    {fmtCurrency(selectedShipment.shippingCost)}
                   </p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">Total Value</p>
                   <p className="font-medium">
-                    {formatCurrency(selectedShipment.totalValue)}
+                    {fmtCurrency(selectedShipment.totalValue)}
                   </p>
                 </div>
                 <div>

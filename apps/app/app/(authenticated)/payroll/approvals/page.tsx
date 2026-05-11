@@ -57,6 +57,7 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { formatCurrency } from "@repo/design-system/lib/format-currency";
 import { apiFetch } from "@/app/lib/api";
 
 // --- Types ---
@@ -106,13 +107,6 @@ interface PaginationInfo {
 }
 
 // --- Helpers ---
-
-function formatCurrency(value: number): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-  }).format(value);
-}
 
 function formatDate(value: string | null): string {
   if (!value) {

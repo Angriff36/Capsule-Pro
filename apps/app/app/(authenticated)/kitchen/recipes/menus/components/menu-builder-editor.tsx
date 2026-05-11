@@ -21,6 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
+import { formatCurrency } from "@repo/design-system/lib/format-currency";
 import { ChevronDown, GripVertical, Plus, Search, X } from "lucide-react";
 import type React from "react";
 import { useCallback, useMemo, useState } from "react";
@@ -79,12 +80,6 @@ interface MenuBuilderEditorProps {
 // Generate unique ID for drag-and-drop
 const generateId = () =>
   `md-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
-
-// Format currency
-const formatCurrency = (value: number | null) => {
-  if (value === null || value === undefined) return "-";
-  return `$${value.toFixed(2)}`;
-};
 
 // Calculate margin percentage
 const calculateMargin = (price: number | null, cost: number | null) => {
@@ -321,7 +316,7 @@ export function MenuBuilderEditor({
                     </div>
                     <div className="flex items-center gap-1 shrink-0">
                       <span className="text-xs text-muted-foreground mr-1">
-                        {formatCurrency(dish.pricePerPerson)}
+                        {formatCurrency(dish.pricePerPerson, { nullDisplay: "-" })}
                       </span>
                       <Button
                         className="h-7 w-7"
@@ -440,11 +435,11 @@ export function MenuBuilderEditor({
                               <div className="flex items-center gap-3 shrink-0">
                                 <div className="text-right text-xs">
                                   <div className="text-muted-foreground">
-                                    Cost: {formatCurrency(entry.costPerPerson)}
+                                    Cost: {formatCurrency(entry.costPerPerson, { nullDisplay: "-" })}
                                   </div>
                                   <div className="font-medium">
                                     Price:{" "}
-                                    {formatCurrency(entry.pricePerPerson)}
+                                    {formatCurrency(entry.pricePerPerson, { nullDisplay: "-" })}
                                   </div>
                                   {margin !== null && (
                                     <div

@@ -47,6 +47,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { formatCurrency } from "@repo/design-system/lib/format-currency";
 import { apiFetch } from "@/app/lib/api";
 import {
   type Budget,
@@ -58,13 +59,6 @@ import {
   UtilizationBar,
 } from "../components/budget-shared";
 
-// Re-export for this page's use
-function formatCurrency(n: number) {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-  }).format(Number(n));
-}
 function poFormatDate(d: string | null) {
   return d
     ? new Date(d).toLocaleDateString("en-US", {

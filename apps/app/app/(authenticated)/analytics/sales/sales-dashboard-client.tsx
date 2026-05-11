@@ -64,12 +64,7 @@ import {
 // Formatters
 // ---------------------------------------------------------------------------
 
-const formatCurrency = (value: number) =>
-  new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 0,
-  }).format(value);
+import { formatCurrencyWhole as formatCurrency } from "@repo/design-system/lib/format-currency";
 
 const formatSignedCurrency = (value: number) =>
   value >= 0 ? `+${formatCurrency(value)}` : formatCurrency(value);

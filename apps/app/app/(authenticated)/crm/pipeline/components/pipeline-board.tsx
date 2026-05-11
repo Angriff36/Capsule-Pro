@@ -13,6 +13,10 @@ import { Calendar, DollarSign, GripVertical, Users } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
+import { formatCurrency } from "@repo/design-system/lib/format-currency";
+
+const fmtCurrency = (v: string | number | null) =>
+  formatCurrency(v, { fractionDigits: 0, nullDisplay: "\u2014" });
 
 // ---------------------------------------------------------------------------
 // Types
@@ -110,16 +114,6 @@ function getClientName(deal: Deal): string {
   return "No client";
 }
 
-function formatCurrency(value: string | number | null): string {
-  if (value === null || value === undefined) return "—";
-  const num = typeof value === "string" ? Number.parseFloat(value) : value;
-  if (isNaN(num)) return "—";
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 0,
-  }).format(num);
-}
 
 const stageVariants: Record<
   string,
@@ -166,7 +160,7 @@ function DealCard({
         {deal.total !== null && (
           <span className="flex items-center gap-1 text-xs font-medium text-green-700 dark:text-green-400">
             <DollarSign className="size-3" />
-            {formatCurrency(deal.total)}
+            {fmtCurrency(deal.total)}
           </span>
         )}
         {deal.eventDate && (
@@ -377,7 +371,7 @@ export function PipelineBoard({ initialDeals }: PipelineBoardProps) {
                   {stage.description}
                 </CardDescription>
                 <div className="mt-1 text-sm font-semibold text-green-700 dark:text-green-400">
-                  {formatCurrency(value)}
+                  {fmtCurrency(value)}
                 </div>
               </CardHeader>
 

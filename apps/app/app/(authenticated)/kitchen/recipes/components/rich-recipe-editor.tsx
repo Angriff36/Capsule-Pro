@@ -47,6 +47,7 @@ import {
 // Auth handled at page level via server components
 import Link from "next/link";
 import { useEffect, useMemo, useState, useTransition } from "react";
+import { formatCurrency } from "@repo/design-system/lib/format-currency";
 import { apiFetch } from "@/app/lib/api";
 import { kitchenRecipesSearch } from "@/app/lib/routes";
 
@@ -131,12 +132,6 @@ const commonUnits = [
   { code: "piece", label: "Pieces" },
   { code: "unit", label: "Units" },
 ];
-
-const formatCurrency = (value: number) =>
-  new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-  }).format(value);
 
 function IngredientRowItem({
   ingredient,

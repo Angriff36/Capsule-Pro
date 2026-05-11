@@ -34,6 +34,10 @@ import {
   DollarSignIcon,
   MapPinIcon,
 } from "lucide-react";
+import { formatCurrency as _formatCurrency } from "@repo/design-system/lib/format-currency";
+
+const formatCurrency = (v: number | null) =>
+  _formatCurrency(v, { nullDisplay: "N/A" });
 import { useState } from "react";
 
 interface TimeEntry {
@@ -83,15 +87,6 @@ interface TimecardDetailModalProps {
   onClockOut: () => void;
 }
 
-function formatCurrency(value: number | null) {
-  if (value === null) {
-    return "N/A";
-  }
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-  }).format(value);
-}
 
 function formatHours(value: number | null) {
   if (value === null) {

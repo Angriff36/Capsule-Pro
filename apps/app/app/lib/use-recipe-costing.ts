@@ -457,15 +457,7 @@ export function getCuisineTypes(): { value: CuisineType; label: string }[] {
   }));
 }
 
-/**
- * Format currency value
- */
-export function formatCurrency(value: number): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-  }).format(value);
-}
+export { formatCurrency } from "@repo/design-system/lib/format-currency";
 
 /**
  * Format quantity with fixed decimals

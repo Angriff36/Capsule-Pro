@@ -20,12 +20,10 @@ import { Button } from "@repo/design-system/components/ui/button";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { formatCurrency as _formatCurrency } from "@repo/design-system/lib/format-currency";
 
-const currencyFormatter = new Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: "USD",
-  maximumFractionDigits: 0,
-});
+const formatCurrency = (v: unknown) =>
+  _formatCurrency(typeof v === "number" ? v : Number(v ?? 0), { fractionDigits: 0 });
 
 const dateFormatter = new Intl.DateTimeFormat("en-US", {
   month: "short",
@@ -87,10 +85,6 @@ function getClientName(deal: {
   return "Unassigned client";
 }
 
-function formatCurrency(value: unknown) {
-  const amount = typeof value === "number" ? value : Number(value ?? 0);
-  return currencyFormatter.format(Number.isFinite(amount) ? amount : 0);
-}
 
 function formatDate(value: Date | null) {
   if (!value) return "—";

@@ -39,6 +39,7 @@ import {
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { formatCurrency } from "@repo/design-system/lib/format-currency";
 import { apiFetch } from "@/app/lib/api";
 
 interface PayrollRun {
@@ -68,13 +69,6 @@ interface PaginationInfo {
   limit: number;
   total: number;
   totalPages: number;
-}
-
-function formatCurrency(value: number) {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-  }).format(value);
 }
 
 function formatDate(date: Date) {
