@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
 
     const url = request.nextUrl.searchParams;
     const q = url.get("q")?.trim();
-    if (!q) {
+    if (!q || q.length < 2) {
       return manifestSuccessResponse({ groups: [], total: 0 });
     }
 
@@ -193,6 +193,29 @@ export async function GET(request: NextRequest) {
         }),
       ]);
       groups.inventory = { items, total };
+    }
+
+    if (shouldSearch("tasks")) {
+      const [items, total] = await Promise.all([
+        database.kitchenTask.findMany({
+          where: baseFilter(["title", "summary"]),
+          orderBy: { updatedAt: "desc" },
+          take: limit,
+          skip,
+          select: {
+            id: true,
+            tenantId: true,
+            title: true,
+            summary: true,
+            status: true,
+            priority: true,
+          },
+        }),
+        database.kitchenTask.count({
+          where: baseFilter(["title", "summary"]),
+        }),
+      ]);
+      groups.tasks = { items, total };
     }
 
     if (shouldSearch("knowledge")) {

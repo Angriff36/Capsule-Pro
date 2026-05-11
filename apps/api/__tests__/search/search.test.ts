@@ -70,6 +70,7 @@ function mockAllModelsEmpty() {
     database.venue,
     database.inventoryItem,
     database.knowledgeBaseEntry,
+    database.kitchenTask,
   ] as const;
   for (const model of models) {
     vi.mocked(model.findMany).mockResolvedValue([]);
@@ -143,6 +144,17 @@ describe("Global Search API — GET /api/search", () => {
       expect(database.venue.findMany).not.toHaveBeenCalled();
       expect(database.inventoryItem.findMany).not.toHaveBeenCalled();
       expect(database.knowledgeBaseEntry.findMany).not.toHaveBeenCalled();
+      expect(database.kitchenTask.findMany).not.toHaveBeenCalled();
+    });
+
+    it("returns empty groups when q is a single character (minimum 2 chars)", async () => {
+      const response = await GET(makeRequest({ q: "a" }));
+      const body = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(body.success).toBe(true);
+      expect(body.groups).toEqual([]);
+      expect(body.total).toBe(0);
     });
   });
 
@@ -456,8 +468,8 @@ describe("Global Search API — GET /api/search", () => {
       expect(response.status).toBe(200);
       expect(body.success).toBe(true);
       expect(body.total).toBe(0);
-      // All 6 entity groups should be present
-      expect(Object.keys(body.groups)).toHaveLength(6);
+      // All 7 entity groups should be present
+      expect(Object.keys(body.groups)).toHaveLength(7);
       for (const group of Object.values(body.groups) as {
         total: number;
         items: unknown[];

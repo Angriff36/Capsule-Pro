@@ -246,6 +246,8 @@ describe("Search API", () => {
     vi.mocked(database.inventoryItem.count).mockResolvedValue(0);
     vi.mocked(database.knowledgeBaseEntry.findMany).mockResolvedValue([]);
     vi.mocked(database.knowledgeBaseEntry.count).mockResolvedValue(0);
+    vi.mocked(database.kitchenTask.findMany).mockResolvedValue([]);
+    vi.mocked(database.kitchenTask.count).mockResolvedValue(0);
 
     const req = createMockRequest(
       "http://localhost:3000/api/search?q=acme&page=1&limit=10"
@@ -260,6 +262,7 @@ describe("Search API", () => {
     expect(body.groups).toHaveProperty("venues");
     expect(body.groups).toHaveProperty("inventory");
     expect(body.groups).toHaveProperty("knowledge");
+    expect(body.groups).toHaveProperty("tasks");
     expect(body.total).toBe(0);
     expect(body.page).toBe(1);
     expect(body.limit).toBe(10);

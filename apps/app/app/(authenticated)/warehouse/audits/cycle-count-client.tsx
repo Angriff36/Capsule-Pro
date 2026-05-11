@@ -413,7 +413,7 @@ export const CycleCountClient = () => {
 
       {/* Summary Cards */}
       <div className="grid gap-4 md:grid-cols-4">
-        <Card>
+        <Card tone="canvas">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               Total Sessions
@@ -427,7 +427,7 @@ export const CycleCountClient = () => {
             </p>
           </CardContent>
         </Card>
-        <Card>
+        <Card tone="canvas">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Draft</CardTitle>
             <CheckCircleIcon className="h-4 w-4 text-muted-foreground" />
@@ -439,7 +439,7 @@ export const CycleCountClient = () => {
             </p>
           </CardContent>
         </Card>
-        <Card>
+        <Card tone="canvas">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">In Progress</CardTitle>
             <PlayIcon className="h-4 w-4 text-muted-foreground" />
@@ -451,7 +451,7 @@ export const CycleCountClient = () => {
             </p>
           </CardContent>
         </Card>
-        <Card>
+        <Card tone="canvas">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               Total Variance
@@ -468,7 +468,7 @@ export const CycleCountClient = () => {
       </div>
 
       {/* Filters */}
-      <Card>
+      <Card tone="canvas">
         <CardHeader>
           <CardTitle>Filters</CardTitle>
         </CardHeader>
@@ -520,7 +520,7 @@ export const CycleCountClient = () => {
       </Card>
 
       {/* Sessions Table */}
-      <Card>
+      <Card tone="canvas">
         <CardContent className="p-0">
           <Table>
             <TableHeader>

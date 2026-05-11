@@ -681,7 +681,7 @@ export default function CycleCountSessionDetailPage() {
 
       {/* Summary Cards */}
       <div className="grid gap-4 md:grid-cols-4">
-        <Card>
+        <Card tone="canvas">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Progress</CardTitle>
             <ClipboardCheckIcon className="h-4 w-4 text-muted-foreground" />
@@ -696,7 +696,7 @@ export default function CycleCountSessionDetailPage() {
             </p>
           </CardContent>
         </Card>
-        <Card>
+        <Card tone="canvas">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               Total Variance
@@ -721,7 +721,7 @@ export default function CycleCountSessionDetailPage() {
             </p>
           </CardContent>
         </Card>
-        <Card>
+        <Card tone="canvas">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Verified</CardTitle>
             <CheckCircle2Icon className="h-4 w-4 text-muted-foreground" />
@@ -733,7 +733,7 @@ export default function CycleCountSessionDetailPage() {
             <p className="text-xs text-muted-foreground">Records verified</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card tone="canvas">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Started</CardTitle>
             <ClipboardCheckIcon className="h-4 w-4 text-muted-foreground" />
@@ -754,7 +754,7 @@ export default function CycleCountSessionDetailPage() {
       </div>
 
       {/* Records Table */}
-      <Card>
+      <Card tone="canvas">
         <CardHeader>
           <CardTitle>Count Records</CardTitle>
         </CardHeader>

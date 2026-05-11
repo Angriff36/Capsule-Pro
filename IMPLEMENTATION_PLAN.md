@@ -1,6 +1,6 @@
 # Implementation Plan — Capsule Pro
 
-> Updated 2026-05-10 (v35) — RESOLVED P1.BY/variancereport (variance reports CRUD page at /inventory/variance-reports), P1.BY/alertsconfig (alert configuration CRUD page at /settings/alerts). Added sidebar entries for Variance Reports (Inventory) and Alert Configuration (Settings). Prior v34: P1.BY/containers, P1.BY/pricing-tiers, P1.B/prep-task-workflows, P1.B/import-workflow.
+> Updated 2026-05-11 (v36) — RESOLVED P1.S/search (minimum query length FR-107, tasks entity group added to API). RESOLVED P1.T/warehouse (11 bare Cards with tone, 2 dead components deleted).
 
 > Priority: P0 = broken/non-functional, P1 = significant missing features, P2 = design alignment/polish, P3 = future/speculative.
 > Status: [ ] not started, [~] partial, [x] done.
@@ -30,7 +30,7 @@
 | API routes returning 501 | 0 |
 | Dead duplicate API dirs | 1 (commandboard vs command-board) |
 | formatCurrency | 348 refs, 82 files, 48 local defs, 7 variants |
-| Card without tone | 314 across 81 files |
+| Card without tone | 303 across 79 files |
 | Hardcoded hex colors | 182 (125 kitchen + 57 scheduling + 0 marketing) |
 | Collaboration orphaned routes | 32/49 (65%) |
 | Unoptimized web images | 383KB (Dishes.webp 191KB + RecipesMenus.webp 192KB) |
@@ -332,13 +332,18 @@ STATUS.md lists 40+ nonexistent files. Backend: 39 routes, 1,453-line agent-loop
 
 ### P1.S Search — Missing Features
 
-- [ ] 7/15+ entity types; saved searches/history missing; no multi-word tokenization
-- [ ] Search results link to dead `/knowledge/`; API lacks minimum query length
+- [x] ~~Search results link to dead `/knowledge/`~~ RESOLVED (v23): code already uses `/knowledge-base/`
+- [x] ~~API lacks minimum query length~~ RESOLVED (v36): rejects queries < 2 chars
+- [x] ~~Tasks entity group missing from API search~~ RESOLVED (v36): searches KitchenTask by title/summary
+- [ ] 7/15+ entity types (tasks added; still missing Recipe, Dish, User, Lead, Proposal, Invoice, Equipment, Ingredient, Menu, etc.)
+- [ ] Saved searches/history missing; no multi-word tokenization
 - [ ] Full spec at `specs/general/search.md` — not referenced
 
 ### P1.T Warehouse — Major Gaps
 
-- [ ] Putaway, pick/pack, FIFO/FEFO all absent; 11 Cards without tone; dead dashboard components
+- [ ] Putaway, pick/pack, FIFO/FEFO all absent
+- [x] ~~11 Cards without tone~~ RESOLVED (v36): added `tone="canvas"` to all 11 in audits section
+- [x] ~~Dead dashboard components~~ RESOLVED (v36): deleted unused RecentActivityCard and StockAlertsCard
 
 ### P1.U Procurement — UX Issues
 
@@ -608,3 +613,4 @@ Historical pass logs, audit reports, and blocker notes live in:
 | **v33** | **Session fix pass.** RESOLVED P0: P0.O (module settings dynamic catch-all now redirects to real /settings landing page with 11 implemented pages). RESOLVED P1: P1.AX (scheduling non-functional UI — duplicate of P1.BS, all items already resolved), P1.BI (CRM/procurement stubs — client-interactions clerkId→employeeId documented, ProposalExportButton wired to server-side PDF endpoint, PO locationId added to schema/form with location selector + fallback), P1.BY/catering (full CRUD page at /events/catering with PageCanvas, metrics, status lifecycle buttons, cancel dialog, create form; list API at GET /api/cateringorder/list; Catering added to events sidebar). DEFERRED: P0.C campaigns (4 NEEDS_CLARIFICATION items — campaign type taxonomy, channel scope, budget model, approval workflow). Stats: API-only domains with UI: +1, CRM stubs resolved: 3/3, duplicate P1 entries cleaned: +1. |
 | **v34** | **Session implementation pass.** RESOLVED P1.BY: container (full CRUD page at /kitchen/containers with metrics, search/filter, create/edit/deactivate dialogs), pricing-tiers (full CRUD page at /inventory/pricing-tiers with metrics, search/filter, create/edit/soft-delete dialogs), preptaskplanworkflow (fixed existing page Prisma _where bug + StatusPill props, added workflows-client.tsx with 14-status config, expandable rows, lifecycle actions). RESOLVED P1.B: events import/[workflowId] workflow detail page with 8-phase progress stepper, auto-refresh, action buttons (resume/retry/cancel). Added sidebar navigation entries for Containers, Prep Task Workflows (Kitchen), and Pricing Tiers (Inventory). Stats: API-only domains with UI: +3, events missing sub-routes: 1→0, kitchen sidebar items: +2, inventory sidebar items: +1. |
 | **v35** | **Session implementation pass.** RESOLVED P1.BY: variancereport (full CRUD page at /inventory/variance-reports with metrics, search/filter, review/approve dialogs + GET /api/variancereport/list), alertsconfig (full CRUD page at /settings/alerts with metrics by channel, search/filter, create/edit/remove dialogs + GET /api/alertsconfig/list). Added sidebar entries for Variance Reports (Inventory) and Alert Configuration (Settings). Stats: API-only domains with UI: +2, settings pages: +1, inventory pages: +1. |
+| **v36** | **Session implementation pass.** RESOLVED P1.S: search API minimum query length (FR-107, reject < 2 chars), tasks entity group added (KitchenTask title/summary search). RESOLVED P1.T: warehouse audits 11 bare Cards now have `tone="canvas"`, deleted 2 dead dashboard components (RecentActivityCard, StockAlertsCard). Stats: Card without tone 314→303, dead code files -2, search entity groups 6→7. |
