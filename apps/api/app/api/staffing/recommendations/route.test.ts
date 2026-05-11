@@ -1,7 +1,29 @@
 import { NextRequest } from "next/server";
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+const mocks = vi.hoisted(() => ({
+  auth: vi.fn(),
+  getTenantIdForOrg: vi.fn(),
+}));
+
+vi.mock("@repo/auth/server", () => ({ auth: mocks.auth }));
+vi.mock("@/app/lib/tenant", () => ({
+  getTenantIdForOrg: mocks.getTenantIdForOrg,
+}));
+vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn() }));
+vi.mock("@repo/observability/log", () => ({ log: { error: vi.fn() } }));
 
 import { POST } from "./route";
+
+beforeEach(() => {
+  mocks.auth.mockResolvedValue({
+    orgId: "org_test",
+    userId: "user_test",
+  });
+  mocks.getTenantIdForOrg.mockResolvedValue(
+    "00000000-0000-0000-0000-000000000001"
+  );
+});
 
 describe("POST /api/staffing/recommendations", () => {
   it("accepts the staffing recommendations UI payload and returns a client-compatible recommendation", async () => {

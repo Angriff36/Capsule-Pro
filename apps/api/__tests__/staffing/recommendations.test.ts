@@ -1,14 +1,36 @@
 /**
  * Tests for Staffing Recommendations API
- * Pure computation route — no auth or database mocks needed.
+ * Pure computation route with auth guard — mocks auth/tenant, tests computation.
  * Covers: POST recommendation generation, input validation,
  * service-style multipliers, role allocation, labor cost, and GET 405.
  */
 
 import { NextRequest } from "next/server";
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+const mocks = vi.hoisted(() => ({
+  auth: vi.fn(),
+  getTenantIdForOrg: vi.fn(),
+  captureException: vi.fn(),
+  logError: vi.fn(),
+}));
+
+vi.mock("@repo/auth/server", () => ({ auth: mocks.auth }));
+vi.mock("@/app/lib/tenant", () => ({
+  getTenantIdForOrg: mocks.getTenantIdForOrg,
+}));
+vi.mock("@sentry/nextjs", () => ({
+  captureException: mocks.captureException,
+}));
+vi.mock("@repo/observability/log", () => ({
+  log: { error: mocks.logError },
+}));
 
 import { GET, POST } from "@/app/api/staffing/recommendations/route";
+
+const TENANT_ID = "00000000-0000-0000-0000-000000000001";
+const ORG_ID = "org_test_123";
+const USER_ID = "user_test_456";
 
 function postRequest(body: Record<string, unknown>): NextRequest {
   return new NextRequest("http://localhost/api/staffing/recommendations", {
@@ -17,7 +39,28 @@ function postRequest(body: Record<string, unknown>): NextRequest {
   });
 }
 
+beforeEach(() => {
+  mocks.auth.mockResolvedValue({ orgId: ORG_ID, userId: USER_ID });
+  mocks.getTenantIdForOrg.mockResolvedValue(TENANT_ID);
+});
+
 describe("Staffing Recommendations API", () => {
+  // ── Auth guard ─────────────────────────────────────────────────────
+
+  describe("Auth guard", () => {
+    it("returns 401 when no session", async () => {
+      mocks.auth.mockResolvedValueOnce({ orgId: null, userId: null });
+      const res = await POST(postRequest({ guestCount: 100 }));
+      expect(res.status).toBe(401);
+    });
+
+    it("returns 400 when tenant not found", async () => {
+      mocks.getTenantIdForOrg.mockResolvedValueOnce(null);
+      const res = await POST(postRequest({ guestCount: 100 }));
+      expect(res.status).toBe(400);
+    });
+  });
+
   // ── POST: happy path ─────────────────────────────────────────────
 
   describe("POST /api/staffing/recommendations", () => {

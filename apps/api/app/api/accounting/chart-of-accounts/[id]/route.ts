@@ -1,10 +1,8 @@
-// Auto-generated Next.js API detail route for ChartOfAccount
-// Generated from Manifest IR - DO NOT EDIT
-
-import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { log } from "@repo/observability/log";
+import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { requireApiManager } from "@/app/lib/auth-roles";
 import {
   manifestErrorResponse,
   manifestSuccessResponse,
@@ -15,16 +13,9 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { orgId, userId } = await auth();
-    if (!(userId && orgId)) {
-      return manifestErrorResponse("Unauthorized", 401);
-    }
-
-    const tenantId = await getTenantIdForOrg(orgId);
-
-    if (!tenantId) {
-      return manifestErrorResponse("Tenant not found", 400);
-    }
+    const guard = await requireApiManager();
+    if (!guard.ok) return guard.response;
+    const { tenantId } = guard;
 
     const { id } = await params;
 
@@ -41,7 +32,8 @@ export async function GET(
 
     return manifestSuccessResponse({ chartOfAccount });
   } catch (error) {
-    console.error("Error fetching chartOfAccount:", error);
+    captureException(error);
+    log.error("Error fetching chartOfAccount:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }
