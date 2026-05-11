@@ -872,6 +872,7 @@ interface EventDetailsClientProps {
   hasContract?: boolean;
   staffCount?: number;
   prepLists?: PrepListSummary[];
+  hasBudget?: boolean;
 }
 
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: React component with many state pieces; complexity is inherent to the feature scope
@@ -889,6 +890,7 @@ export function EventDetailsClient({
   hasContract = false,
   staffCount = 0,
   prepLists = [],
+  hasBudget = false,
 }: EventDetailsClientProps) {
   const router = useRouter();
 
@@ -1588,7 +1590,7 @@ export function EventDetailsClient({
                 eventDate={event.eventDate}
                 eventId={event.id}
                 eventStatus={event.status ?? undefined}
-                hasBudget={!!budget && (budget.total_budget_amount ?? 0) > 0}
+                hasBudget={hasBudget ?? false}
                 hasClient={!!event.clientId}
                 hasContract={hasContract}
                 hasMenu={eventDishes.length > 0}

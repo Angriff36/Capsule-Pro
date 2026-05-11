@@ -139,6 +139,7 @@ const EventDetailsPage = async ({ params }: EventDetailsPageProps) => {
         }}
         eventDishes={eventDishes}
         hasContract={hasContract}
+        hasBudget={hasBudget}
         inventoryCoverage={inventoryCoverage}
         prepLists={prepLists}
         prepTasks={prepTasksForClient}

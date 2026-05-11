@@ -119,10 +119,6 @@ export const modules: ModuleDefinition[] = [
           { title: "IoT Monitoring", href: "/kitchen/iot" },
           { title: "Equipment", href: "/kitchen/equipment" },
           { title: "Nutrition Labels", href: "/kitchen/nutrition-labels" },
-          {
-            title: "Allergen Warning Test",
-            href: "/kitchen/allergen-warning-test",
-          },
         ],
       },
       {
