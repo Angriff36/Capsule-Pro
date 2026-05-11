@@ -1,6 +1,6 @@
 # Implementation Plan — Capsule Pro
 
-> Updated 2026-05-10 (v23) — Session fix pass: 15 P0 items resolved (P0.A data contracts, P0.AW payroll crash, P0.Y analytics link, P0.R test page, P0.P dead links, P0.AX dead-code fallback, P0.K event imports, P0.AV schedule nav, P0.AC knowledge base 404, P0.E contact form, P0.AJ manifest persistence). P0.AN false positive. 64 pre-existing API typecheck errors fixed. Console ~523→~519 (4 marketing hex replaced). Hardcoded hex 185→182. Dead links 2→0. API routes returning 501→2.
+> Updated 2026-05-10 (v24) — Session fix pass: resolved P0.G (warehouse receiving buttons), P0.Z (payroll period detail 404), P0.S/P0.AG (invoice create/detail pages), P0.T/P0.AR (payment detail page), P0.A severity color backward compat. Payroll pages functional 11→12. Prior v23: 15 P0 items resolved, 64 pre-existing API typecheck errors fixed, dead links 2→0, hex 185→182, 501 routes→2.
 
 > Priority: P0 = broken/non-functional, P1 = significant missing features, P2 = design alignment/polish, P3 = future/speculative.
 > Status: [ ] not started, [~] partial, [x] done.
@@ -34,7 +34,7 @@
 | Hardcoded hex colors | 182 (125 kitchen + 57 scheduling + 0 marketing) |
 | Collaboration orphaned routes | 32/49 (65%) |
 | Unoptimized web images | ~11.4MB (Dishes.png 5.6MB + RecipesMenus.png 5.7MB) |
-| Payroll pages functional | 11 (39 API routes; periods/[id] 404) |
+| Payroll pages functional | 12 (39 API routes; periods/[id] RESOLVED) |
 | Forecasting service | Production-grade (998 lines) |
 | Simulation API | 2,098 lines, zero UI |
 | PageCanvas adoption | ~50 files |
@@ -52,7 +52,7 @@
 - [x] ~~API returns `{ equipment, total }` but frontend checks `data.success`~~ RESOLVED: API now returns `success: true` via `manifestSuccessResponse()`
 - [x] ~~Frontend calls `/api/workorder/list`~~ RESOLVED: frontend now fetches `/api/facilities/work-orders/list`
 - [x] ~~Frontend reads `bySeverity.critical` but API returns flat object~~ RESOLVED: API now returns nested `{ total, bySeverity: { critical, high, medium } }`
-- [ ] Severity mismatch: API `warning`/`info` vs frontend `high`/`medium`; IoT F/C mismatch
+- [ ] Severity mismatch: API `warning`/`info` vs frontend `high`/`medium`; IoT F/C mismatch. **Note:** severityColors now includes both API values (warning/info) and legacy values (high/medium/low) for backward compatibility.
 - [ ] QA detail 404: `/kitchen/quality-assurance/[id]` doesn't exist
 
 ### P0.B Kitchen IoT — 5 Disabled Buttons + Missing API
@@ -80,9 +80,9 @@
 - [ ] 5 browser `confirm()`/`prompt()`: events timeline, procurement vendors/budget/contracts/requisitions, scheduling shifts
 - [x] ~~events contracts~~ RESOLVED
 
-### P0.G Warehouse Receiving — 2 Buttons Not Wired
+### P0.G Warehouse Receiving — RESOLVED
 
-- [ ] "Reports" + "Supplier performance" — disabled, but reports page EXISTS at `warehouse/receiving/reports/`
+- [x] ~~"Reports" + "Supplier performance" — disabled, but reports page EXISTS at `warehouse/receiving/reports/`~~ RESOLVED: wired 'Reports' and 'Supplier performance' buttons as Link to /warehouse/receiving/reports
 
 ### P0.H Scheduling — 2 Disabled Buttons CONFIRMED
 
@@ -122,10 +122,10 @@
 
 - [x] ~~`apps/app/app/(authenticated)/test-page.tsx` — `<h1>Test</h1>`~~ RESOLVED: deleted
 
-### P0.S-P0.T Accounting Invoice/Payment Pages Missing
+### P0.S-P0.T Accounting Invoice/Payment Pages — RESOLVED
 
-- [ ] P0.S: Invoice detail/edit page missing (`/accounting/invoices/[id]/`)
-- [ ] P0.T: Payment "View" → 404
+- [x] ~~P0.S: Invoice detail/edit page missing (`/accounting/invoices/[id]/`)~~ RESOLVED: created /accounting/invoices/new/page.tsx (create form with line items builder) and /accounting/invoices/[id]/page.tsx (detail view with send, apply payment, mark paid, void actions)
+- [x] ~~P0.T: Payment "View" → 404~~ RESOLVED: created /accounting/payments/[id]/page.tsx with payment details, process/refund actions, timeline
 
 ### P0.U Accounting Payments Export — 404
 
@@ -141,9 +141,9 @@
 
 - [x] ~~`href="/analytics/financial"` should be `/analytics/finance`~~ RESOLVED: fixed link
 
-### P0.Z Payroll "View Details" → 404
+### P0.Z Payroll "View Details" — RESOLVED
 
-- [ ] Routes to `/payroll/periods/${period.id}` — no `[id]/page.tsx`
+- [x] ~~Routes to `/payroll/periods/${period.id}` — no `[id]/page.tsx`~~ RESOLVED: created periods/[id]/page.tsx with period details, status badges, date display
 
 ### P0.AA Logistics Route Edit/Delete — NO Backend API
 
@@ -162,9 +162,9 @@
 
 ### P0.AE Web Pricing — All 3 Tiers Identical ($40/mo)
 
-### P0.AG Invoice Create Page — 404
+### P0.AG Invoice Create Page — RESOLVED
 
-- [ ] `/accounting/invoices/new` doesn't exist
+- [x] ~~`/accounting/invoices/new` doesn't exist~~ RESOLVED: created /accounting/invoices/new/page.tsx (create form with line items builder) and /accounting/invoices/[id]/page.tsx (detail view with send, apply payment, mark paid, void actions)
 
 ### P0.AH Procurement — browser prompt()
 
@@ -182,7 +182,10 @@
 
 ### P0.AQ-P0.AT Accounting Pages Missing
 
-- [ ] P0.AQ: Invoice create 404 / P0.AR: Payment detail 404 / P0.AS: Payment export 404 / P0.AT: PaymentListClient dead code
+- [x] ~~P0.AQ: Invoice create 404~~ RESOLVED (see P0.S/P0.AG)
+- [x] ~~P0.AR: Payment detail 404~~ RESOLVED (see P0.T): created /accounting/payments/[id]/page.tsx with payment details, process/refund actions, timeline
+- [ ] P0.AS: Payment export 404
+- [ ] P0.AT: PaymentListClient dead code
 
 ### P0.AU Web — ~11.4MB Unoptimized Images
 
@@ -515,7 +518,7 @@ Largest dead: NutritionLabelCard+AllergenDisplay (642), RecipeOptimizationCard (
 - **Kitchen Allergens** — full CRUD + management modal
 - **Kitchen Production Board** — station filtering works (team activity stub — P0.N+)
 - **Knowledge Base** — full CRUD API; frontend create + list only (P0.AC)
-- **Payroll** — 39 routes, 11 pages. Gap: periods/[id]. 4 models missing (P1.BF).
+- **Payroll** — 39 routes, 12 pages (periods/[id] RESOLVED). 4 models missing (P1.BF).
 - **Forecasting** — production-grade 998-line service
 - **Training & Reviews** — full CRUD
 - **Marketing** — ModuleLanding, lead detail, SMS rules, email workflows. Campaigns missing.
@@ -553,3 +556,4 @@ Historical pass logs, audit reports, and blocker notes live in:
 | v21 | 30-agent verify. Console 556/250. RLS 86/214. P0.AB RESOLVED. P0.AU. P1.BM-BN/BO. |
 | **v22** | **27-agent spec audit.** Console 523/289. formatCurrency 348/82/48/7. RLS 83/206. Hex 185. Card tone 314/81. Ghost 28/41. Buttons 24. Tests ~100. Dead dirs 1. Images 11.4MB. NEW P0.AV-AW-AX. NEW P1.BP-BQ-BR-BS-BT-BU-BV-BW-BX-BY-BZ-CA-CB-CC-CD-CE. CORRECTIONS: P0.AB partial, P1.H auto-assign EXISTS, P1.AF RESOLVED, P1.BR BROKEN, P3.D 1 dir not 76. |
 | **v23** | **Session fix pass.** RESOLVED P0: P0.A data contracts (3 bugs), P0.AW payroll crash, P0.Y analytics link, P0.R test page, P0.P dead links, P0.AX dead-code fallback, P0.K event imports, P0.AV schedule nav+stats, P0.AC knowledge base detail, P0.E contact form, P0.AJ manifest persistence (RolePolicy+TimeOffRequest), P0.AO schedule stats. P0.C marketing hex (3 files → bg-ink). FALSE POSITIVE: P0.AN/P1.AN marketing SMS/email — all client URLs verified correct. Additional: 64 pre-existing API typecheck errors fixed (wrong Prisma model names), calendar sync missing title prop, settings test fix. Stats: dead links 2→0, hex 185→182, 501 routes 3→2. |
+| **v24** | **Session fix pass.** RESOLVED P0: P0.G (warehouse receiving Reports+Supplier performance buttons wired as Link), P0.Z (payroll periods/[id] page with details/status badges), P0.S/P0.AG (invoice create with line items builder + invoice detail with send/pay/void actions), P0.T/P0.AR (payment detail page with process/refund actions + timeline). P0.A severity: severityColors now maps both API values (warning/info) and legacy values (high/medium/low). Payroll pages 11→12. |

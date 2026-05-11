@@ -74,8 +74,10 @@ interface EquipmentAlert {
   recommendedAction: string;
 }
 
-const severityColors = {
+const severityColors: Record<string, string> = {
   critical: "bg-red-500 text-white",
+  warning: "bg-orange-500 text-white",
+  info: "bg-yellow-500 text-black",
   high: "bg-orange-500 text-white",
   medium: "bg-yellow-500 text-black",
   low: "bg-blue-500 text-white",

@@ -27,6 +27,7 @@ import {
   TrendingUp,
   XCircle,
 } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
 import {
@@ -252,13 +253,17 @@ export default function ReceivingPage() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button className="gap-2" disabled variant="outline">
-            <FileText className="size-4" />
-            Reports — not implemented
+          <Button asChild className="gap-2" variant="outline">
+            <Link href="/warehouse/receiving/reports">
+              <FileText className="size-4" />
+              Reports
+            </Link>
           </Button>
-          <Button className="gap-2" disabled variant="outline">
-            <TrendingUp className="size-4" />
-            Supplier performance — not implemented
+          <Button asChild className="gap-2" variant="outline">
+            <Link href="/warehouse/receiving/reports">
+              <TrendingUp className="size-4" />
+              Supplier performance
+            </Link>
           </Button>
         </div>
       </div>
