@@ -105,6 +105,11 @@ export const modules: ModuleDefinition[] = [
           { title: "Allergens", href: "/kitchen/allergens" },
           { title: "Stations", href: "/kitchen/stations" },
           { title: "Tasks", href: "/kitchen/tasks" },
+          { title: "Containers", href: "/kitchen/containers" },
+          {
+            title: "Prep Task Workflows",
+            href: "/kitchen/prep-task-plan-workflows",
+          },
         ],
       },
       {
@@ -371,6 +376,7 @@ export const modules: ModuleDefinition[] = [
           { title: "Transfers", href: "/inventory/transfers" },
           { title: "Recipe Costs", href: "/inventory/recipe-costs" },
           { title: "Vendor Catalogs", href: "/inventory/vendor-catalogs" },
+          { title: "Pricing Tiers", href: "/inventory/pricing-tiers" },
           { title: "Levels", href: "/inventory/levels" },
           { title: "Forecasts", href: "/inventory/forecasts" },
           { title: "Import", href: "/inventory/import" },

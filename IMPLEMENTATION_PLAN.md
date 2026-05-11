@@ -1,6 +1,6 @@
 # Implementation Plan — Capsule Pro
 
-> Updated 2026-05-10 (v33) — RESOLVED P0.O (module settings redirects), P1.AX (scheduling UI — duplicate of P1.BS), P1.BI (CRM/procurement stubs — 3 items), P1.BY/catering (catering order CRUD page + list API). DEFERRED P0.C (campaigns — 4 NEEDS_CLARIFICATION items). Prior v32: P1.V, P1.AD, P1.B.
+> Updated 2026-05-10 (v34) — RESOLVED P1.BY/containers (container CRUD page), P1.BY/pricing-tiers (pricing tiers CRUD page), P1.B/prep-task-workflows (prep task plan workflow list + fix existing page), P1.B/import-workflow (events import/[workflowId] workflow detail page). Added sidebar entries for all. Prior v33: P0.O, P1.AX, P1.BI, P1.BY/catering.
 
 > Priority: P0 = broken/non-functional, P1 = significant missing features, P2 = design alignment/polish, P3 = future/speculative.
 > Status: [ ] not started, [~] partial, [x] done.
@@ -241,7 +241,7 @@ STATUS.md lists 40+ nonexistent files. Backend: 39 routes, 1,453-line agent-loop
 ### P1.B Events — Missing Routes and Features — PARTIALLY RESOLVED
 
 - [x] ~~4 missing sub-routes: `[eventId]/contracts`, `staff`, `guests`, `import/[workflowId]`~~ PARTIALLY RESOLVED: created `[eventId]/guests` (full CRUD with RSVP, dietary restrictions, capacity warnings), `[eventId]/staff` (assign/unassign with employee pool, role badges, conflict detection), `[eventId]/contracts` (event-scoped contract listing with status badges, client info, links to full contract detail). Remaining: `import/[workflowId]`.
-- [ ] 1 missing sub-route: `import/[workflowId]`
+- [x] ~~1 missing sub-route: `import/[workflowId]`~~ RESOLVED: created /events/import/[workflowId]/page.tsx with workflow detail client component showing phase progress stepper (8 phases), status badges, auto-refresh for active workflows, action buttons (resume/retry/cancel), error display, and extracted data viewer
 - [ ] Missing features: proposals, run sheets, planning/execution mode, cloning, dietary/allergen, documents, event numbers, budget line items
 - [ ] 13 pages use legacy Header; spec compliance: 5 DONE, 15 PARTIAL, 3 MISSING
 
@@ -296,7 +296,9 @@ STATUS.md lists 40+ nonexistent files. Backend: 39 routes, 1,453-line agent-loop
 
 ### P1.J API Domains With No Frontend
 
-- [ ] workforceoptimization/ (4), alertsconfig/ (3, PrismaStore), container/ (3, PrismaStore), pricingtier/ (3, PrismaStore)
+- [x] ~~container/ (3, PrismaStore)~~ RESOLVED (see P1.BY/containers)
+- [x] ~~pricingtier/ (3, PrismaStore)~~ RESOLVED (see P1.BY/pricing-tiers)
+- [ ] workforceoptimization/ (4), alertsconfig/ (3, PrismaStore)
 
 ### P1.K Accounting/Finance Frontend Gaps — PARTIALLY RESOLVED
 
@@ -347,7 +349,8 @@ STATUS.md lists 40+ nonexistent files. Backend: 39 routes, 1,453-line agent-loop
 
 ### P1.W Orphaned API Domains
 
-- [ ] ai-event-setup/ (5 routes, no Prisma — P1.BZ), cateringorder/ (6 routes, PrismaStore — P1.BY)
+- [x] ~~cateringorder/ (6 routes, PrismaStore — P1.BY)~~ RESOLVED (v33)
+- [ ] ai-event-setup/ (5 routes, no Prisma — P1.BZ)
 - [ ] performanceprediction/ (1 route, no Prisma — P1.BZ), preptaskplanworkflow/ (16 routes, PrismaStore — P1.BY)
 - [ ] variancereport/ (3 routes, PrismaStore — P1.BY)
 
@@ -453,7 +456,10 @@ STATUS.md lists 40+ nonexistent files. Backend: 39 routes, 1,453-line agent-loop
 ### P1.BY API-Only Domains — Full Persistence, Zero UI — PARTIALLY RESOLVED
 
 - [x] ~~cateringorder (6 routes)~~ RESOLVED: created full CRUD page at /events/catering with PageCanvas layout, metrics (total/draft/confirmed/in-progress/revenue/cancelled), status lifecycle buttons (confirm/start-prep/mark-complete), cancel dialog, create form with venue/financials/guest-count fields. Added list API route at GET /api/cateringorder/list. Added "Catering" to events sidebar navigation.
-- [ ] preptaskplanworkflow (16), variancereport (3), alertsconfig (3), container (3), pricingtier (3) — all have PrismaStore
+- [x] ~~container (3)~~ RESOLVED: created /kitchen/containers/page.tsx with PageCanvas layout, metrics (total/active/inactive/reusable), search + type/status filter, custom grid table, create/edit/deactivate dialogs, pagination
+- [x] ~~pricingtier (3)~~ RESOLVED: created /inventory/pricing-tiers/page.tsx with PageCanvas layout, metrics (total/active/avg cost), search + status filter, custom grid table, create/edit/soft-delete dialogs, pagination
+- [x] ~~preptaskplanworkflow (16)~~ RESOLVED: fixed existing /kitchen/prep-task-plan-workflows/ page (Prisma _where bug, StatusPill props), added workflows-client.tsx with status config for all 14 statuses, expandable row detail with stepper, approve/reject/quick-approve/retry/cancel actions
+- [ ] variancereport (3), alertsconfig (3) — have PrismaStore, no UI
 
 ### P1.BZ BROKEN_PRISMA_READ — 3 Dead Route Groups
 
@@ -598,3 +604,4 @@ Historical pass logs, audit reports, and blocker notes live in:
 | **v31** | **Session fix pass.** RESOLVED P0: P0.AU (11.4MB images → 383KB WebP, 96.6% reduction). RESOLVED P1: P1.BW (settings admin role gating — requireAdminUser/requireManagerUser guards on 8 sensitive settings pages), P1.P (facilities edit/delete UI for facilities, areas, schedules + work order status transitions), P1.K (accounting collections page with dunning/disputes/legal escalation, payment methods page with verify/flag/default, revenue recognition page with schedule lifecycle), P1.B (events [eventId]/guests page with RSVP/capacity/dietary, [eventId]/staff page with assign/unassign/conflict detection). Stats: settings pages without auth gating: 8→0, unoptimized images: 11.4MB→383KB, accounting pages: +3, events sub-routes: +2, facilities with edit/delete: 1→4. |
 | **v32** | **Session fix pass.** RESOLVED P1: P1.V (inventory items [id] detail page with PageCanvas layout + stock status + FSA compliance + supplier info; list page item names now link to detail), P1.AD (kitchen QA command UI — 5 dialog forms: CreateCheckDialog, CompleteCheckDialog, LogTemperatureDialog, CreateCorrectiveActionDialog, ResolveActionDialog wired to all 5 command APIs; QA dashboard tabs now have action buttons), P1.B (events [eventId]/contracts — event-scoped contract listing page with status breakdown metrics, client info, contract cards linking to detail). Stats: missing detail pages: -1, command APIs without UI: 5→0, events missing sub-routes: 2→1. |
 | **v33** | **Session fix pass.** RESOLVED P0: P0.O (module settings dynamic catch-all now redirects to real /settings landing page with 11 implemented pages). RESOLVED P1: P1.AX (scheduling non-functional UI — duplicate of P1.BS, all items already resolved), P1.BI (CRM/procurement stubs — client-interactions clerkId→employeeId documented, ProposalExportButton wired to server-side PDF endpoint, PO locationId added to schema/form with location selector + fallback), P1.BY/catering (full CRUD page at /events/catering with PageCanvas, metrics, status lifecycle buttons, cancel dialog, create form; list API at GET /api/cateringorder/list; Catering added to events sidebar). DEFERRED: P0.C campaigns (4 NEEDS_CLARIFICATION items — campaign type taxonomy, channel scope, budget model, approval workflow). Stats: API-only domains with UI: +1, CRM stubs resolved: 3/3, duplicate P1 entries cleaned: +1. |
+| **v34** | **Session implementation pass.** RESOLVED P1.BY: container (full CRUD page at /kitchen/containers with metrics, search/filter, create/edit/deactivate dialogs), pricing-tiers (full CRUD page at /inventory/pricing-tiers with metrics, search/filter, create/edit/soft-delete dialogs), preptaskplanworkflow (fixed existing page Prisma _where bug + StatusPill props, added workflows-client.tsx with 14-status config, expandable rows, lifecycle actions). RESOLVED P1.B: events import/[workflowId] workflow detail page with 8-phase progress stepper, auto-refresh, action buttons (resume/retry/cancel). Added sidebar navigation entries for Containers, Prep Task Workflows (Kitchen), and Pricing Tiers (Inventory). Stats: API-only domains with UI: +3, events missing sub-routes: 1→0, kitchen sidebar items: +2, inventory sidebar items: +1. |
