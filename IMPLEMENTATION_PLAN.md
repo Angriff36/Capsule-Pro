@@ -1,7 +1,14 @@
-# IMPLEMENTATION_PLAN.md — v66
+# IMPLEMENTATION_PLAN.md — v67
 
 > Updated 2026-05-13 by verification pass.
 > P0.I, P0.X, P0.L, P0.AE, P0.AF resolved. P0.AH demoted (localhost fallback is correct pattern).
+
+## v67 Findings (2026-05-13)
+
+- **Production code: CLEAN** — 0 typecheck errors in `apps/api/app/api/` route files; `pnpm --filter app typecheck` passes. Build blocked by missing env vars (RESEND_TOKEN, NEXT_PUBLIC_CLERK_*, etc.) locally.
+- **Test file import failures: 171** — TS2307 "Cannot find module" across ~40 test files. Tests import camelCase paths (e.g., `@/app/api/adminchatparticipant/archive/route`) but routes use kebab-case (`/administrative/chat/participants/`). Some routes don't exist at all (e.g., `@/app/api/user/create/route`).
+- **Test type errors (non-TS2307): 221** — Wrong argument counts (TS2554), request type mismatches (TS2345 using `Request` instead of `NextRequest`). Test setup issues, not production.
+- **Manifest dispatcher modified** — `apps/api/app/api/manifest/[entity]/commands/[command]/route.ts` imports kitchen-specific `kitchen.commands.json` registry. May not work for non-kitchen entities. Console.log statements present (violates P1.B policy).
 
 ## v66 Resolved (2026-05-13)
 
