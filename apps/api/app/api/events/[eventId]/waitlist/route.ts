@@ -23,38 +23,43 @@ export async function GET(
     return NextResponse.json({ error: "No tenant" }, { status: 403 });
   }
 
-  // Fetch event with capacity info — uses $queryRaw (tagged template, parameterized)
-  // because max_capacity is not modeled in the Prisma Event schema
-  const event = await database.$queryRaw<
-    Array<{ max_capacity: number | null }>
-  >`
-    SELECT max_capacity FROM tenant_events.events
-    WHERE id = ${eventId}::uuid AND tenant_id = ${tenantId}::uuid AND deleted_at IS NULL
-  `;
-  const maxCapacity = event[0]?.max_capacity ?? null;
+  // Fetch event with capacity info using Prisma
+  const event = await database.event.findUnique({
+    where: { id: eventId, tenantId },
+    select: { maxCapacity: true },
+  });
+  const maxCapacity = event?.maxCapacity ?? null;
 
-  // Fetch all guests — uses $queryRaw because rsvp_status, waitlist_position,
-  // rsvp_responded_at are not modeled in the Prisma EventGuest schema
-  const guests = await database.$queryRaw<
-    Array<{
-      id: string;
-      guest_name: string;
-      guest_email: string | null;
-      guest_phone: string | null;
-      rsvp_status: string;
-      waitlist_position: number | null;
-      rsvp_responded_at: string | null;
-      created_at: string;
-    }>
-  >`
-    SELECT id, guest_name, guest_email, guest_phone, rsvp_status, waitlist_position, rsvp_responded_at, created_at
-    FROM tenant_events.event_guests
-    WHERE event_id = ${eventId}::uuid AND tenant_id = ${tenantId}::uuid AND deleted_at IS NULL
-    ORDER BY
-      CASE WHEN waitlist_position IS NOT NULL THEN 1 ELSE 0 END,
-      waitlist_position ASC NULLS LAST,
-      created_at DESC
-  `;
+  // Fetch all guests using Prisma
+  const dbGuests = await database.eventGuest.findMany({
+    where: { eventId, tenantId, deletedAt: null },
+    select: {
+      id: true,
+      guestName: true,
+      guestEmail: true,
+      guestPhone: true,
+      rsvpStatus: true,
+      waitlistPosition: true,
+      rsvpRespondedAt: true,
+      createdAt: true,
+    },
+    orderBy: [
+      { waitlistPosition: "asc" },
+      { createdAt: "desc" },
+    ],
+  });
+
+  // Convert to legacy field names for compatibility
+  const guests = dbGuests.map((g) => ({
+    id: g.id,
+    guest_name: g.guestName,
+    guest_email: g.guestEmail,
+    guest_phone: g.guestPhone,
+    rsvp_status: g.rsvpStatus,
+    waitlist_position: g.waitlistPosition,
+    rsvp_responded_at: g.rsvpRespondedAt?.toISOString() ?? null,
+    created_at: g.createdAt.toISOString(),
+  }));
 
   // Compute summary
   const confirmed = guests.filter((g) => g.rsvp_status === "confirmed").length;

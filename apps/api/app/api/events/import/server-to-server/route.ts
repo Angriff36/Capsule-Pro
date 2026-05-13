@@ -53,6 +53,8 @@ const TimelineTaskSchema = z.object({
   status: z
     .enum(["pending", "in-progress", "completed", "cancelled"])
     .optional(),
+  priority: z.string().optional().default("medium"),
+  category: z.string().optional().default("general"),
 });
 
 /**
@@ -487,7 +489,7 @@ async function importTimelineTasks(
 
     await database.$executeRaw(
       Prisma.sql`
-        INSERT INTO tenant_events.event_tasks (
+        INSERT INTO tenant_events.timeline_tasks (
           tenant_id,
           id,
           event_id,
@@ -497,7 +499,10 @@ async function importTimelineTasks(
           end_time,
           assignee_id,
           status,
-          created_at
+          priority,
+          category,
+          created_at,
+          updated_at
         )
         VALUES (
           ${tenantId},
@@ -508,7 +513,10 @@ async function importTimelineTasks(
           ${task.startTime ? new Date(task.startTime).toISOString() : null},
           ${task.endTime ? new Date(task.endTime).toISOString() : null},
           ${assigneeId},
-          ${task.status || "pending"},
+          ${task.status || "not_started"},
+          ${task.priority || "medium"},
+          ${task.category || "general"},
+          NOW(),
           NOW()
         )
       `

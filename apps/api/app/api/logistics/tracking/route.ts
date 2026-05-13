@@ -94,7 +94,7 @@ export async function GET(request: NextRequest) {
         Array<{ id: string; name: string }>
       >`
         SELECT id, name
-        FROM tenant_inventory.suppliers
+        FROM tenant_inventory.inventory_suppliers
         WHERE tenant_id = ${tenantId}::uuid
           AND id = ANY(${supplierIds}::uuid[])
       `;

@@ -1,12 +1,15 @@
-# IMPLEMENTATION_PLAN.md — v65
+# IMPLEMENTATION_PLAN.md — v66
 
-> Updated 2026-05-13 by 60+ agent comprehensive audit (7 spec readers, 30 P0 verifiers,
-> 11 domain analysts, 6 spec compliance checkers, 3 security verifiers, 3 new-issue scouts,
-> 1 deep frontend 404 audit).
-> All 30 P0 items re-verified. P0.M REMOVED (false positive). P2.BF REMOVED (sync routes exist).
-> P2.BG CORRECTED (12 missing, not 130). P1.J CORRECTED (619 errors, not 22). P2.BE CORRECTED.
-> P2.BH/P2.BI severity downgraded. 3 new P2 discoveries (BM, BN, BO).
-> Detailed spec comparison at `docs/audits/v61-spec-comparison.md`.
+> Updated 2026-05-13 by verification pass.
+> P0.I, P0.X, P0.L, P0.AE, P0.AF resolved. P0.AH demoted (localhost fallback is correct pattern).
+
+## v66 Resolved (2026-05-13)
+
+- **P0.I — Events: waitlist route uses $queryRaw unnecessarily** [RESOLVED v66] — Replaced raw SQL queries with Prisma ORM for event capacity and guest list. File: `apps/api/app/api/events/[eventId]/waitlist/route.ts`.
+- **P0.X — Scheduling: notifications fetch missing /api/ prefix** [RESOLVED v66] — Added missing `/api/` prefix to notifications API call. File: `apps/app/app/(authenticated)/scheduling/notifications/notifications-client.tsx`.
+- **P0.L — Knowledge Base: client reads wrong response shape** [RESOLVED v66] — Fixed client to read `data.entries` instead of `data.data.entries`. File: `apps/app/app/(authenticated)/knowledge-base/knowledge-base-client.tsx`.
+- **P0.AE — Events: server-to-server import targets wrong table** [RESOLVED v66] — Changed INSERT from `event_tasks` to `timeline_tasks`. Added missing priority/category fields to schema. File: `apps/api/app/api/events/import/server-to-server/route.ts`.
+- **P0.AF — Logistics: tracking queries wrong suppliers table** [RESOLVED v66] — Changed table name from `suppliers` to `inventory_suppliers` (matching @@map on InventorySupplier). File: `apps/api/app/api/logistics/tracking/route.ts`.
 
 ## v65 Resolved (2026-05-13)
 
@@ -18,7 +21,7 @@
 
 ## P0 — Critical Bugs (Fix Immediately)
 
-These cause runtime errors, data loss, or broken user flows. 29 items (was 30; P0.M removed). Plus 12 confirmed missing backend routes (all individually tracked as P0 items).
+These cause runtime errors, data loss, or broken user flows. 21 items (down from 29; 8 resolved in v65-v66, 2 removed as false/non-bugs). Plus 12 confirmed missing backend routes (all individually tracked as P0 items).
 
 ### Confirmed (verified by code inspection)
 
@@ -40,13 +43,13 @@ These cause runtime errors, data loss, or broken user flows. 29 items (was 30; P
 - [ ] **P0.G — Procurement: command route directories missing** [VERIFIED v63]
   UI calls `/api/procurement/requisitions/commands/${command}`. No `commands/` directory exists. AGENTS.md claim of "8+10 command dirs" is fabricated.
 
-- [ ] **P0.I — Events: stale waitlist route uses $queryRaw unnecessarily** [VERIFIED v63]
+- [x] **P0.I — Events: stale waitlist route uses $queryRaw unnecessarily** [RESOLVED v66]
   `apps/api/app/api/events/[eventId]/waitlist/route.ts` — all referenced fields (`Event.maxCapacity`, `EventGuest.rsvpStatus`, `EventGuest.waitlistPosition`) exist in Prisma. Could use ORM.
 
 - [ ] **P0.J — Inventory: barcode lookup queries non-existent column** [VERIFIED v63]
   `apps/api/app/api/inventory/barcode-lookup/route.ts:62-86` queries `barcode` from `InventoryItem`. No such field (exists on `CycleCountRecord` only).
 
-- [ ] **P0.L — Knowledge Base: client reads wrong response shape** [VERIFIED v63]
+- [x] **P0.L — Knowledge Base: client reads wrong response shape** [RESOLVED v66]
   Client reads `data.data.entries` but API returns flat `{ success, entries, hasMore, totalCount }`. TypeError on every load.
 
 - [ ] **P0.O — Cycle Counting: server action passes tenantId as authUserId** [VERIFIED v63]
@@ -76,7 +79,7 @@ These cause runtime errors, data loss, or broken user flows. 29 items (was 30; P
 - [ ] **P0.W — Settings: user update-role and deactivate routes missing** [VERIFIED v63]
   UI calls `/api/user/{update-role,deactivate}`. No `apps/api/app/api/user/` directory.
 
-- [ ] **P0.X — Scheduling: notifications fetch missing /api/ prefix** [VERIFIED v63]
+- [x] **P0.X — Scheduling: notifications fetch missing /api/ prefix** [RESOLVED v66]
   Client calls `apiFetch("/staff/notifications")` without `/api/` prefix.
 
 - [ ] **P0.Y — Events: /api/events/{eventId}/dishes route missing** [VERIFIED v63]
@@ -97,16 +100,16 @@ These cause runtime errors, data loss, or broken user flows. 29 items (was 30; P
 - [ ] **P0.AD — CRM: proposals command routes missing** [VERIFIED v63]
   `apps/app/app/lib/use-proposals.ts:133` calls `POST /api/crm/proposals/commands/${command}`. No `commands/` directory.
 
-- [ ] **P0.AE — Events: server-to-server import targets non-existent event_tasks table** [VERIFIED v63]
+- [x] **P0.AE — Events: server-to-server import targets non-existent event_tasks table** [RESOLVED v66]
   `apps/api/app/api/events/import/server-to-server/route.ts:490` raw SQL INSERT into `event_tasks`. Correct table is `timeline_tasks` (via @@map).
 
-- [ ] **P0.AF — Logistics: tracking queries non-existent suppliers table** [VERIFIED v63]
+- [x] **P0.AF — Logistics: tracking queries non-existent suppliers table** [RESOLVED v66]
   `apps/api/app/api/logistics/tracking/route.ts:97` queries `tenant_inventory.suppliers`. Correct table is `inventory_suppliers` (via @@map on InventorySupplier).
 
 - [ ] **P0.AG — Schema: default zero UUID in production schema** [VERIFIED v63]
   `packages/database/prisma/schema.prisma` has `DEFAULT '00000000-0000-0000-0000-000000000000'` for `storage_location_id`. Every new record gets an invalid FK.
 
-- [ ] **P0.AH — Calendar: hardcoded localhost in production sync** [VERIFIED v63]
+- [REMOVED v66] **P0.AH — Calendar: hardcoded localhost in production sync** — NOT A BUG. Fallback pattern (`NEXT_PUBLIC_APP_URL || "http://localhost:2221"`) is correct for development. Production properly uses `NEXT_PUBLIC_APP_URL` set via Vercel environment.
   `apps/app/app/(authenticated)/calendar/sync/page.tsx:354,388` hardcodes `"http://localhost:2221"` as fallback URL.
 
 ### Items removed from prior versions (verified as false)

@@ -165,7 +165,7 @@ export function NotificationsClient() {
         params.set("type", type);
       }
 
-      const res = await apiFetch(`/staff/notifications?${params}`);
+      const res = await apiFetch(`/api/staff/notifications?${params}`);
       if (!res.ok) {
         throw new Error("Failed to fetch notifications");
       }

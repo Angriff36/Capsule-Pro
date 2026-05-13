@@ -83,7 +83,7 @@ export default function KnowledgeBaseClient() {
       const data = await res.json();
 
       if (data.success) {
-        setEntries(data.data.entries);
+        setEntries(data.entries ?? []);
       }
     } catch (error) {
       console.error("Failed to fetch entries:", error);
