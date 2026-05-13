@@ -105,7 +105,7 @@ async function executeStockAdjustmentTransaction(
         'adjustment',
         ${adjustmentAmount},
         ${itemUnitCost},
-        ${storageLocationId ?? "00000000-0000-0000-0000-000000000000"},
+        ${storageLocationId ?? null},
         ${reason},
         ${notes ?? null},
         ${referenceId ?? null},

@@ -1802,7 +1802,7 @@ model InventoryTransaction {
   notes               String?
   transaction_date    DateTime @default(now()) @db.Timestamptz(6)
   createdAt           DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-  storage_location_id String   @default(dbgenerated("'00000000-0000-0000-0000-000000000000'::uuid")) @db.Uuid
+  storage_location_id String? @db.Uuid
   reason              String   @default("")
   referenceType       String?  @map("reference_type")
   referenceId         String?  @map("reference_id") @db.Uuid

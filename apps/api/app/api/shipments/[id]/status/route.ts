@@ -311,7 +311,7 @@ async function createInventoryTransaction(
       ${userId}::uuid,
       ${"shipment"}::text,
       ${shipmentId}::uuid,
-      ${locationId || "00000000-0000-0000-0000-000000000000"}::uuid,
+      ${locationId}::uuid,
       ${"shipment_receipt"}::text
     )
   `;
@@ -368,7 +368,7 @@ async function createReservationTransaction(
       ${userId}::uuid,
       ${"shipment"}::text,
       ${shipmentId}::uuid,
-      ${locationId || "00000000-0000-0000-0000-000000000000"}::uuid,
+      ${locationId}::uuid,
       ${"shipment_preparation"}::text
     )
   `;
@@ -456,7 +456,7 @@ async function createReversalTransaction(
       ${userId}::uuid,
       ${"shipment"}::text,
       ${shipmentId}::uuid,
-      ${locationId || "00000000-0000-0000-0000-000000000000"}::uuid,
+      ${locationId}::uuid,
       ${"shipment_cancellation"}::text
     )
   `;

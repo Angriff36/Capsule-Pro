@@ -163,9 +163,7 @@ export async function GET(request: Request) {
       ...new Set(
         transactions
           .map((t) => t.storage_location_id)
-          .filter(
-            (id): id is string => id !== "00000000-0000-0000-0000-000000000000"
-          )
+          .filter((id): id is string => id !== null && id.length > 0)
       ),
     ];
 
