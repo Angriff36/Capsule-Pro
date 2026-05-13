@@ -35,8 +35,8 @@ These cause runtime errors, data loss, or broken user flows. 21 items (down from
 - [x] **P0.A — Payroll: generation UI sends empty body** [RESOLVED v65]
   `apps/app/app/(authenticated)/payroll/runs/page.tsx:177` sends `body: JSON.stringify({})`. API at `apps/api/app/api/payroll/generate/route.ts:51` requires `periodStart`/`periodEnd`. Every attempt fails 400.
 
-- [ ] **P0.B — Payroll: 2024 tax rates presented as 2026** [VERIFIED v63]
-  `packages/payroll-engine/src/core/taxEngine.ts` uses 2024 brackets. Additional Medicare computed but discarded (`_additionalMedicare`). `head_of_household` falls through to single brackets.
+- [x] **P0.B — Payroll: 2024 tax rates presented as 2026** [RESOLVED v68]
+  `packages/payroll-engine/src/core/taxEngine.ts` uses 2024 brackets. Updated to 2026 IRS Revenue Procedure 2025-53 brackets. Additional Medicare computed but discarded (`_additionalMedicare`) — now properly added to withholding. `head_of_household` fell through to single brackets — now has dedicated HOH brackets and standard deduction.
 
 - [x] **P0.D — Scheduling: shift_count column doesn't exist** [RESOLVED v65]
   `apps/app/app/(authenticated)/scheduling/shifts/actions.ts:678` raw SQL selects `s.shift_count` from `tenant_staff.schedules`. No such column. Other code correctly uses COUNT(*) aggregate.

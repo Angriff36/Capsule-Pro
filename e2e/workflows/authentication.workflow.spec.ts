@@ -145,34 +145,25 @@ test.describe("Authenticated session management", () => {
 
   // ─── 1C. Post-Auth Redirect & Session Persistence ─────────────────────────
 
-  test("authenticated user lands on /calendar after sign-in", async ({
+  test("authenticated user lands on /events after sign-in", async ({
     page,
   }, testInfo) => {
     // The persistent browser session should already be authenticated.
-    // Navigate to root and verify redirect to /calendar.
+    // Navigate to root and verify redirect to the events dashboard.
     await goto(page, "/");
 
-    // After auth, root redirects to /calendar
-    await waitForURL(page, /\/calendar/, 20_000);
+    // After auth, root redirects to /events — not /calendar.
+    await waitForURL(page, /\/events/, 20_000);
 
-    // The URL is now /calendar — the redirect itself is the primary assertion.
-    // The calendar API may return 404/500 in fresh test environments (no seeded
-    // data), which is an infrastructure issue, not an auth redirect issue.
-    // Filter out calendar-related errors (API 404 + client-side fetch failures).
-    const authErrors = errors.filter(
-      (e) =>
-        !(e.url.includes("/api/calendar") || e.text.includes("calendar data"))
-    );
-
-    if (authErrors.length > 0) {
+    if (errors.length > 0) {
       await failHard(
         page,
         testInfo,
-        authErrors,
-        "post-sign-in calendar redirect"
+        errors,
+        "post-sign-in events redirect"
       );
     }
-    log.ok("No errors at checkpoint: post-sign-in calendar redirect");
+    log.ok("No errors at checkpoint: post-sign-in events redirect");
   });
 
   test("session persists across page navigation", async ({

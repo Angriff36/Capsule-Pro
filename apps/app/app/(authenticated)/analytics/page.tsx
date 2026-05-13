@@ -30,6 +30,17 @@ import {
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTenantIdForOrg } from "../../lib/tenant";
+import {
+  getEventCompletion,
+  getFollowUpMetrics,
+  getLaborMetrics,
+  getMarginMetrics,
+  getRevenueMetrics,
+  getTopEvents,
+  getWasteMetrics,
+} from "../../lib/data/analytics";
+
+export const dynamic = "force-dynamic";
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
   style: "currency",
@@ -91,192 +102,87 @@ const AnalyticsPage = async () => {
   const sixtyDaysAgo = new Date(now);
   sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60);
 
-  let currentRevenueRows: Array<{ total_revenue: string | null }>;
-  let previousRevenueRows: Array<{ total_revenue: string | null }>;
-  let currentLaborRows: Array<{
-    budgeted_labor: string | null;
-    actual_labor: string | null;
-  }>;
-  let previousLaborRows: Array<{
-    budgeted_labor: string | null;
-    actual_labor: string | null;
-  }>;
-  let currentWasteRows: Array<{ waste_cost: string | null }>;
-  let previousWasteRows: Array<{ waste_cost: string | null }>;
-  let marginRows: Array<{ avg_margin: string | null }>;
-  let completionRows: Array<{ total_events: bigint; completed_events: bigint }>;
-  let followUpRows: Array<{
-    total_followups: bigint;
-    completed_followups: bigint;
-  }>;
+  let currentRevenue: number;
+  let previousRevenue: number;
+  let currentLabor: { budgeted_labor: string | null; actual_labor: string | null };
+  let previousLabor: { budgeted_labor: string | null; actual_labor: string | null };
+  let currentWasteCost: number;
+  let previousWasteCost: number;
+  let avgMarginPct: number;
+  let totalEvents: number;
+  let completedEvents: number;
+  let completionRate: number;
+  let followUpTotal: number;
+  let followUpCompleted: number;
+  let followUpCompletionRate: number;
   let topEvents: Array<{
     id: string;
     title: string;
     status: string;
-    revenue: string | null;
-    margin_pct: string | null;
+    revenue: number;
+    marginPct: number;
   }>;
 
   try {
-    [
-      currentRevenueRows,
-      previousRevenueRows,
-      currentLaborRows,
-      previousLaborRows,
-      currentWasteRows,
-      previousWasteRows,
-      marginRows,
-      completionRows,
-      followUpRows,
-      topEvents,
+    const [
+      revenue,
+      labor,
+      waste,
+      avgMargin,
+      completion,
+      followUps,
+      topEventsResult,
     ] = await Promise.all([
-      database.$queryRaw<Array<{ total_revenue: string | null }>>(
-        Prisma.sql`
-        SELECT COALESCE(SUM(total_amount), 0)::numeric AS total_revenue
-        FROM tenant_events.catering_orders
-        WHERE tenant_id = ${tenantId}::uuid
-          AND deleted_at IS NULL
-          AND order_date >= ${weekStart}
-          AND order_date < ${now}
-      `
+      getRevenueMetrics(
+        tenantId,
+        weekStart,
+        now,
+        previousWeekStart,
+        weekStart
       ),
-      database.$queryRaw<Array<{ total_revenue: string | null }>>(
-        Prisma.sql`
-        SELECT COALESCE(SUM(total_amount), 0)::numeric AS total_revenue
-        FROM tenant_events.catering_orders
-        WHERE tenant_id = ${tenantId}::uuid
-          AND deleted_at IS NULL
-          AND order_date >= ${previousWeekStart}
-          AND order_date < ${weekStart}
-      `
+      getLaborMetrics(
+        tenantId,
+        thirtyDaysAgo,
+        now,
+        sixtyDaysAgo,
+        thirtyDaysAgo
       ),
-      database.$queryRaw<
-        Array<{ budgeted_labor: string | null; actual_labor: string | null }>
-      >(
-        Prisma.sql`
-        SELECT
-          COALESCE(SUM(budgeted_labor_cost), 0)::numeric AS budgeted_labor,
-          COALESCE(SUM(actual_labor_cost), 0)::numeric AS actual_labor
-        FROM tenant_events.event_profitability
-        WHERE tenant_id = ${tenantId}::uuid
-          AND deleted_at IS NULL
-          AND calculated_at >= ${thirtyDaysAgo}
-          AND calculated_at < ${now}
-      `
+      getWasteMetrics(
+        tenantId,
+        thirtyDaysAgo,
+        now,
+        sixtyDaysAgo,
+        thirtyDaysAgo
       ),
-      database.$queryRaw<
-        Array<{ budgeted_labor: string | null; actual_labor: string | null }>
-      >(
-        Prisma.sql`
-        SELECT
-          COALESCE(SUM(budgeted_labor_cost), 0)::numeric AS budgeted_labor,
-          COALESCE(SUM(actual_labor_cost), 0)::numeric AS actual_labor
-        FROM tenant_events.event_profitability
-        WHERE tenant_id = ${tenantId}::uuid
-          AND deleted_at IS NULL
-          AND calculated_at >= ${sixtyDaysAgo}
-          AND calculated_at < ${thirtyDaysAgo}
-      `
-      ),
-      database.$queryRaw<Array<{ waste_cost: string | null }>>(
-        Prisma.sql`
-        SELECT COALESCE(SUM("totalCost"), 0)::numeric AS waste_cost
-        FROM tenant_kitchen.waste_entries
-        WHERE tenant_id = ${tenantId}::uuid
-          AND deleted_at IS NULL
-          AND logged_at >= ${thirtyDaysAgo}
-          AND logged_at < ${now}
-      `
-      ),
-      database.$queryRaw<Array<{ waste_cost: string | null }>>(
-        Prisma.sql`
-        SELECT COALESCE(SUM("totalCost"), 0)::numeric AS waste_cost
-        FROM tenant_kitchen.waste_entries
-        WHERE tenant_id = ${tenantId}::uuid
-          AND deleted_at IS NULL
-          AND logged_at >= ${sixtyDaysAgo}
-          AND logged_at < ${thirtyDaysAgo}
-      `
-      ),
-      database.$queryRaw<Array<{ avg_margin: string | null }>>(
-        Prisma.sql`
-        SELECT COALESCE(AVG(actual_gross_margin_pct), 0)::numeric AS avg_margin
-        FROM tenant_events.event_profitability
-        WHERE tenant_id = ${tenantId}::uuid
-          AND deleted_at IS NULL
-          AND calculated_at >= ${thirtyDaysAgo}
-          AND calculated_at < ${now}
-      `
-      ),
-      database.$queryRaw<
-        Array<{ total_events: bigint; completed_events: bigint }>
-      >(
-        Prisma.sql`
-        SELECT
-          COUNT(*)::bigint AS total_events,
-          SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END)::bigint AS completed_events
-        FROM tenant_events.events
-        WHERE tenant_id = ${tenantId}::uuid
-          AND deleted_at IS NULL
-          AND event_date >= ${thirtyDaysAgo}
-          AND event_date <= ${now}
-      `
-      ),
-      database.$queryRaw<
-        Array<{ total_followups: bigint; completed_followups: bigint }>
-      >(
-        Prisma.sql`
-        SELECT
-          COUNT(*)::bigint AS total_followups,
-          SUM(CASE WHEN follow_up_completed THEN 1 ELSE 0 END)::bigint AS completed_followups
-        FROM tenant_crm.client_interactions
-        WHERE tenant_id = ${tenantId}::uuid
-          AND deleted_at IS NULL
-          AND interaction_date >= ${thirtyDaysAgo}
-          AND interaction_date < ${now}
-      `
-      ),
-      database.$queryRaw<
-        Array<{
-          id: string;
-          title: string;
-          status: string;
-          revenue: string | null;
-          margin_pct: string | null;
-        }>
-      >(
-        Prisma.sql`
-        SELECT
-          e.id,
-          e.title,
-          e.status,
-          COALESCE(ep.actual_revenue, e.budget, 0)::numeric AS revenue,
-          COALESCE(ep.actual_gross_margin_pct, ep.budgeted_gross_margin_pct)::numeric AS margin_pct
-        FROM tenant_events.events e
-        LEFT JOIN tenant_events.event_profitability ep
-          ON e.tenant_id = ep.tenant_id AND e.id = ep.event_id AND ep.deleted_at IS NULL
-        WHERE e.tenant_id = ${tenantId}::uuid
-          AND e.deleted_at IS NULL
-          AND e.event_date >= ${startOfWeek}
-          AND e.event_date <= ${endOfWeek}
-        ORDER BY revenue DESC, e.event_date ASC
-        LIMIT 5
-      `
-      ),
+      getMarginMetrics(tenantId, thirtyDaysAgo, now),
+      getEventCompletion(tenantId, thirtyDaysAgo, now),
+      getFollowUpMetrics(tenantId, thirtyDaysAgo, now),
+      getTopEvents(tenantId, startOfWeek, endOfWeek),
     ]);
+
+    currentRevenue = revenue.currentRevenue;
+    previousRevenue = revenue.previousRevenue;
+    currentLabor = labor.current;
+    previousLabor = labor.previous;
+    currentWasteCost = waste.currentWasteCost;
+    previousWasteCost = waste.previousWasteCost;
+    avgMarginPct = avgMargin;
+    totalEvents = completion.totalEvents;
+    completedEvents = completion.completedEvents;
+    completionRate = completion.completionRate;
+    followUpTotal = followUps.totalFollowUps;
+    followUpCompleted = followUps.completedFollowUps;
+    followUpCompletionRate = followUps.completionRate;
+    topEvents = topEventsResult;
   } catch {
     return <Unavailable />;
   }
 
-  const currentRevenue = Number(currentRevenueRows[0]?.total_revenue ?? 0);
-  const previousRevenue = Number(previousRevenueRows[0]?.total_revenue ?? 0);
   const revenueChangePct =
     previousRevenue > 0
       ? ((currentRevenue - previousRevenue) / previousRevenue) * 100
       : 0;
 
-  const currentLabor = currentLaborRows[0];
-  const previousLabor = previousLaborRows[0];
   const currentLaborBudget = Number(currentLabor?.budgeted_labor ?? 0);
   const currentLaborActual = Number(currentLabor?.actual_labor ?? 0);
   const previousLaborBudget = Number(previousLabor?.budgeted_labor ?? 0);
@@ -292,30 +198,10 @@ const AnalyticsPage = async () => {
       : 0;
   const laborChangePct = laborUtilization - previousLaborUtilization;
 
-  const currentWasteCost = Number(currentWasteRows[0]?.waste_cost ?? 0);
-  const previousWasteCost = Number(previousWasteRows[0]?.waste_cost ?? 0);
   const wasteChangePct =
     previousWasteCost > 0
       ? ((currentWasteCost - previousWasteCost) / previousWasteCost) * 100
       : 0;
-
-  const avgMarginPct = Number(marginRows[0]?.avg_margin ?? 0);
-  const completionData = completionRows[0] || {
-    total_events: 0n,
-    completed_events: 0n,
-  };
-  const totalEvents = Number(completionData.total_events ?? 0);
-  const completedEvents = Number(completionData.completed_events ?? 0);
-  const completionRate = totalEvents > 0 ? completedEvents / totalEvents : 0;
-
-  const followUpData = followUpRows[0] || {
-    total_followups: 0n,
-    completed_followups: 0n,
-  };
-  const followUpTotal = Number(followUpData.total_followups ?? 0);
-  const followUpCompleted = Number(followUpData.completed_followups ?? 0);
-  const followUpCompletionRate =
-    followUpTotal > 0 ? followUpCompleted / followUpTotal : 0;
 
   const heroStats = [
     {
@@ -482,12 +368,12 @@ const AnalyticsPage = async () => {
                         {event.title}
                       </TableCell>
                       <TableCell className="text-right font-medium text-ink">
-                        {currencyFormatter.format(Number(event.revenue ?? 0))}
+                        {currencyFormatter.format(event.revenue)}
                       </TableCell>
                       <TableCell className="text-right text-muted-foreground">
-                        {event.margin_pct === null
+                        {event.marginPct === null || event.marginPct === 0
                           ? "—"
-                          : `${Number(event.margin_pct).toFixed(0)}%`}
+                          : `${event.marginPct.toFixed(0)}%`}
                       </TableCell>
                       <TableCell>{statusBadge(event.status)}</TableCell>
                     </TableRow>

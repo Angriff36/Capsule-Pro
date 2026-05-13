@@ -1,5 +1,4 @@
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import {
   Card,
@@ -21,6 +20,13 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { getTenantIdForOrg } from "../../../lib/tenant";
+import {
+  getFinanceOverview,
+  getRecentInvoices,
+  getRecentPayments,
+} from "../../../lib/data/finance";
+
+export const dynamic = "force-dynamic";
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
   style: "currency",
@@ -96,8 +102,6 @@ const paymentStatusVariant = (status: string) => {
   }
 };
 
-export const revalidate = 60;
-
 const AnalyticsFinancePage = async () => {
   const { orgId } = await auth();
 
@@ -109,149 +113,31 @@ const AnalyticsFinancePage = async () => {
   const now = new Date();
 
   const [
-    invoiceSummary,
-    completedPaymentSummary,
-    overdueSummary,
-    budgetSummary,
-    revenueAccountCount,
-    expenseAccountCount,
+    overview,
     recentInvoices,
     recentPayments,
   ] = await Promise.all([
-    database.invoice.aggregate({
-      where: {
-        tenantId,
-        deletedAt: null,
-      },
-      _count: true,
-      _sum: {
-        total: true,
-        amountPaid: true,
-        amountDue: true,
-      },
-    }),
-    database.payment.aggregate({
-      where: {
-        tenantId,
-        deletedAt: null,
-        status: "COMPLETED",
-      },
-      _count: true,
-      _sum: {
-        amount: true,
-      },
-    }),
-    database.invoice.aggregate({
-      where: {
-        tenantId,
-        deletedAt: null,
-        amountDue: { gt: 0 },
-        dueDate: { lt: now },
-      },
-      _count: true,
-      _sum: {
-        amountDue: true,
-      },
-    }),
-    database.eventBudget.aggregate({
-      where: {
-        tenantId,
-        deletedAt: null,
-      },
-      _count: true,
-      _sum: {
-        totalBudgetAmount: true,
-        totalActualAmount: true,
-        varianceAmount: true,
-      },
-    }),
-    database.chartOfAccount.count({
-      where: {
-        tenantId,
-        isActive: true,
-        accountType: "REVENUE",
-      },
-    }),
-    database.chartOfAccount.count({
-      where: {
-        tenantId,
-        isActive: true,
-        accountType: "EXPENSE",
-      },
-    }),
-    database.invoice.findMany({
-      where: {
-        tenantId,
-        deletedAt: null,
-      },
-      orderBy: [{ dueDate: "asc" }, { createdAt: "desc" }],
-      take: 8,
-      select: {
-        id: true,
-        invoiceNumber: true,
-        invoiceType: true,
-        status: true,
-        total: true,
-        amountPaid: true,
-        amountDue: true,
-        dueDate: true,
-        client: {
-          select: {
-            company_name: true,
-            first_name: true,
-            last_name: true,
-          },
-        },
-        event: {
-          select: {
-            title: true,
-          },
-        },
-      },
-    }),
-    database.payment.findMany({
-      where: {
-        tenantId,
-        deletedAt: null,
-      },
-      orderBy: [{ completedAt: "desc" }, { createdAt: "desc" }],
-      take: 8,
-      select: {
-        id: true,
-        amount: true,
-        status: true,
-        methodType: true,
-        completedAt: true,
-        createdAt: true,
-        client: {
-          select: {
-            company_name: true,
-            first_name: true,
-            last_name: true,
-          },
-        },
-        invoice: {
-          select: {
-            invoiceNumber: true,
-          },
-        },
-        event: {
-          select: {
-            title: true,
-          },
-        },
-      },
-    }),
+    getFinanceOverview(tenantId, now),
+    getRecentInvoices(tenantId),
+    getRecentPayments(tenantId),
   ]);
 
-  const invoicedTotal = Number(invoiceSummary._sum.total ?? 0);
-  const collectedTotal = Number(completedPaymentSummary._sum.amount ?? 0);
-  const outstandingTotal = Number(invoiceSummary._sum.amountDue ?? 0);
-  const budgetedTotal = Number(budgetSummary._sum.totalBudgetAmount ?? 0);
-  const actualBudgetTotal = Number(budgetSummary._sum.totalActualAmount ?? 0);
-  const budgetVarianceTotal = Number(budgetSummary._sum.varianceAmount ?? 0);
-  const collectionRate =
-    invoicedTotal > 0 ? (collectedTotal / invoicedTotal) * 100 : 0;
+  const {
+    invoicedTotal,
+    collectedTotal,
+    outstandingTotal,
+    invoiceCount,
+    completedPaymentCount,
+    overdueCount,
+    overdueTotal,
+    budgetedTotal,
+    actualBudgetTotal,
+    budgetVarianceTotal,
+    budgetCount,
+    revenueAccountCount,
+    expenseAccountCount,
+    collectionRate,
+  } = overview;
 
   return (
     <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
@@ -276,7 +162,7 @@ const AnalyticsFinancePage = async () => {
             </CardTitle>
           </CardHeader>
           <CardContent className="text-muted-foreground text-sm">
-            {invoiceSummary._count} invoices issued across accounting.
+            {invoiceCount} invoices issued across accounting.
           </CardContent>
         </Card>
 
@@ -288,7 +174,7 @@ const AnalyticsFinancePage = async () => {
             </CardTitle>
           </CardHeader>
           <CardContent className="text-muted-foreground text-sm">
-            {completedPaymentSummary._count} completed payments,{" "}
+            {completedPaymentCount} completed payments,{" "}
             {collectionRate.toFixed(1)}% collection rate.
           </CardContent>
         </Card>
@@ -301,10 +187,8 @@ const AnalyticsFinancePage = async () => {
             </CardTitle>
           </CardHeader>
           <CardContent className="text-muted-foreground text-sm">
-            {overdueSummary._count} overdue invoices totaling{" "}
-            {currencyFormatter.format(
-              Number(overdueSummary._sum.amountDue ?? 0)
-            )}
+            {overdueCount} overdue invoices totaling{" "}
+            {currencyFormatter.format(overdueTotal)}
             .
           </CardContent>
         </Card>
@@ -317,7 +201,7 @@ const AnalyticsFinancePage = async () => {
             </CardTitle>
           </CardHeader>
           <CardContent className="text-muted-foreground text-sm">
-            {budgetSummary._count} budgets tracked · {revenueAccountCount}{" "}
+            {budgetCount} budgets tracked · {revenueAccountCount}{" "}
             revenue and {expenseAccountCount} expense accounts active.
           </CardContent>
         </Card>

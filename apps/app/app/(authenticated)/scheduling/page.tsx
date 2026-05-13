@@ -45,29 +45,15 @@ import { getTenantIdForOrg } from "../../lib/tenant";
 import { formatDelta } from "./format-delta";
 import SchedulingRealtime from "./scheduling-realtime";
 import { SchedulingSearchInput } from "./components/scheduling-search-input";
-
-interface ScheduleSummaryRow {
-  shift_date: Date;
-  shift_count: number;
-  staff_count: number;
-  open_count: number;
-}
-
-interface HappeningShiftRow {
-  shift_start: Date;
-  shift_end: Date;
-  first_name: string | null;
-  last_name: string | null;
-  role: string | null;
-}
-
-interface LeaderboardRow {
-  employee_id: string;
-  first_name: string | null;
-  last_name: string | null;
-  role: string | null;
-  shift_count: number;
-}
+import {
+  getHappeningToday,
+  getLeaderboard,
+  getScheduleCadence,
+  getSchedulingMetrics,
+  type HappeningShiftRow,
+  type LeaderboardRow,
+  type ScheduleSummaryRow,
+} from "../../lib/data/scheduling";
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
   style: "currency",
@@ -114,7 +100,7 @@ const formatRangeLabel = (start: Date, end: Date) => {
 const formatName = (first?: string | null, last?: string | null) =>
   [first, last].filter(Boolean).join(" ") || "Unassigned";
 
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
 const SchedulingPage = async () => {
   const { orgId, userId } = await auth();
@@ -133,251 +119,27 @@ const SchedulingPage = async () => {
   const endOfToday = addDays(startOfToday, 1);
 
   const [
-    [currentStaff],
-    [previousStaff],
-    [currentHours],
-    [previousHours],
-    [openShifts],
-    [previousOpenShifts],
-    [currentCost],
-    [previousCost],
-    shiftSummary,
-    [shiftTotals],
+    metrics,
+    { shiftSummary, shiftTotals },
     happeningToday,
     leaderboard,
   ] = await Promise.all([
-    database.$queryRaw<{ count: number }[]>(
-      Prisma.sql`
-      SELECT COUNT(*)::int AS count
-      FROM tenant_staff.employees
-      WHERE tenant_id = ${tenantId}
-        AND deleted_at IS NULL
-        AND is_active = true
-    `
-    ),
-    database.$queryRaw<{ count: number }[]>(
-      Prisma.sql`
-      SELECT COUNT(*)::int AS count
-      FROM tenant_staff.employees
-      WHERE tenant_id = ${tenantId}
-        AND deleted_at IS NULL
-        AND is_active = true
-        AND created_at < ${weekStart}
-    `
-    ),
-    database.$queryRaw<{ hours: number }[]>(
-      Prisma.sql`
-      SELECT COALESCE(SUM(EXTRACT(EPOCH FROM (shift_end - shift_start)) / 3600), 0) AS hours
-      FROM tenant_staff.schedule_shifts
-      WHERE tenant_id = ${tenantId}
-        AND deleted_at IS NULL
-        AND shift_start >= ${weekStart}
-        AND shift_start < ${weekEnd}
-    `
-    ),
-    database.$queryRaw<{ hours: number }[]>(
-      Prisma.sql`
-      SELECT COALESCE(SUM(EXTRACT(EPOCH FROM (shift_end - shift_start)) / 3600), 0) AS hours
-      FROM tenant_staff.schedule_shifts
-      WHERE tenant_id = ${tenantId}
-        AND deleted_at IS NULL
-        AND shift_start >= ${previousWeekStart}
-        AND shift_start < ${weekStart}
-    `
-    ),
-    database.$queryRaw<{ count: number }[]>(
-      Prisma.sql`
-      SELECT COUNT(*)::int AS count
-      FROM tenant_staff.open_shifts
-      WHERE tenant_id = ${tenantId}
-        AND deleted_at IS NULL
-        AND status = 'open'
-        AND shift_start >= ${weekStart}
-        AND shift_start < ${weekEnd}
-    `
-    ),
-    database.$queryRaw<{ count: number }[]>(
-      Prisma.sql`
-      SELECT COUNT(*)::int AS count
-      FROM tenant_staff.open_shifts
-      WHERE tenant_id = ${tenantId}
-        AND deleted_at IS NULL
-        AND status = 'open'
-        AND shift_start >= ${previousWeekStart}
-        AND shift_start < ${weekStart}
-    `
-    ),
-    database.$queryRaw<{ cost: number }[]>(
-      Prisma.sql`
-      SELECT COALESCE(
-        SUM(
-          EXTRACT(EPOCH FROM (s.shift_end - s.shift_start)) / 3600 *
-          CASE
-            WHEN e.hourly_rate IS NOT NULL THEN e.hourly_rate
-            WHEN e.salary_annual IS NOT NULL THEN e.salary_annual / 2080
-            ELSE 0
-          END
-        ),
-        0
-      ) AS cost
-      FROM tenant_staff.schedule_shifts s
-      JOIN tenant_staff.employees e
-        ON e.tenant_id = s.tenant_id
-       AND e.id = s.employee_id
-      WHERE s.tenant_id = ${tenantId}
-        AND s.deleted_at IS NULL
-        AND s.shift_start >= ${weekStart}
-        AND s.shift_start < ${weekEnd}
-    `
-    ),
-    database.$queryRaw<{ cost: number }[]>(
-      Prisma.sql`
-      SELECT COALESCE(
-        SUM(
-          EXTRACT(EPOCH FROM (s.shift_end - s.shift_start)) / 3600 *
-          CASE
-            WHEN e.hourly_rate IS NOT NULL THEN e.hourly_rate
-            WHEN e.salary_annual IS NOT NULL THEN e.salary_annual / 2080
-            ELSE 0
-          END
-        ),
-        0
-      ) AS cost
-      FROM tenant_staff.schedule_shifts s
-      JOIN tenant_staff.employees e
-        ON e.tenant_id = s.tenant_id
-       AND e.id = s.employee_id
-      WHERE s.tenant_id = ${tenantId}
-        AND s.deleted_at IS NULL
-        AND s.shift_start >= ${previousWeekStart}
-        AND s.shift_start < ${weekStart}
-    `
-    ),
-    database.$queryRaw<ScheduleSummaryRow[]>(
-      Prisma.sql`
-      WITH scheduled AS (
-        SELECT
-          date_trunc('day', shift_start) AS shift_date,
-          COUNT(*)::int AS shift_count,
-          COUNT(DISTINCT employee_id)::int AS staff_count
-        FROM tenant_staff.schedule_shifts
-        WHERE tenant_id = ${tenantId}
-          AND deleted_at IS NULL
-          AND shift_start >= ${weekStart}
-          AND shift_start < ${weekEnd}
-        GROUP BY shift_date
-      ),
-      open AS (
-        SELECT
-          date_trunc('day', shift_start) AS shift_date,
-          COUNT(*)::int AS open_count
-        FROM tenant_staff.open_shifts
-        WHERE tenant_id = ${tenantId}
-          AND deleted_at IS NULL
-          AND status = 'open'
-          AND shift_start >= ${weekStart}
-          AND shift_start < ${weekEnd}
-        GROUP BY shift_date
-      )
-      SELECT
-        COALESCE(s.shift_date, o.shift_date) AS shift_date,
-        COALESCE(s.shift_count, 0) + COALESCE(o.open_count, 0) AS shift_count,
-        COALESCE(s.staff_count, 0) AS staff_count,
-        COALESCE(o.open_count, 0) AS open_count
-      FROM scheduled s
-      FULL OUTER JOIN open o ON o.shift_date = s.shift_date
-    `
-    ),
-    database.$queryRaw<
-      {
-        shift_count: number;
-        staff_count: number;
-      }[]
-    >(
-      Prisma.sql`
-      SELECT
-        (
-          SELECT COUNT(*)::int
-          FROM tenant_staff.schedule_shifts
-          WHERE tenant_id = ${tenantId}
-            AND deleted_at IS NULL
-            AND shift_start >= ${weekStart}
-            AND shift_start < ${weekEnd}
-        ) +
-        (
-          SELECT COUNT(*)::int
-          FROM tenant_staff.open_shifts
-          WHERE tenant_id = ${tenantId}
-            AND deleted_at IS NULL
-            AND status = 'open'
-            AND shift_start >= ${weekStart}
-            AND shift_start < ${weekEnd}
-        ) AS shift_count,
-        (
-          SELECT COUNT(DISTINCT employee_id)::int
-          FROM tenant_staff.schedule_shifts
-          WHERE tenant_id = ${tenantId}
-            AND deleted_at IS NULL
-            AND shift_start >= ${weekStart}
-            AND shift_start < ${weekEnd}
-        ) AS staff_count
-    `
-    ),
-    database.$queryRaw<HappeningShiftRow[]>(
-      Prisma.sql`
-      SELECT
-        s.shift_start,
-        s.shift_end,
-        e.first_name,
-        e.last_name,
-        e.role
-      FROM tenant_staff.schedule_shifts s
-      JOIN tenant_staff.employees e
-        ON e.tenant_id = s.tenant_id
-       AND e.id = s.employee_id
-      WHERE s.tenant_id = ${tenantId}
-        AND s.deleted_at IS NULL
-        AND s.shift_start >= ${startOfToday}
-        AND s.shift_start < ${endOfToday}
-      UNION ALL
-      SELECT
-        o.shift_start,
-        o.shift_end,
-        NULL::text AS first_name,
-        NULL::text AS last_name,
-        o.role_during_shift AS role
-      FROM tenant_staff.open_shifts o
-      WHERE o.tenant_id = ${tenantId}
-        AND o.deleted_at IS NULL
-        AND o.status = 'open'
-        AND o.shift_start >= ${startOfToday}
-        AND o.shift_start < ${endOfToday}
-      ORDER BY shift_start
-      LIMIT 6
-    `
-    ),
-    database.$queryRaw<LeaderboardRow[]>(
-      Prisma.sql`
-      SELECT
-        s.employee_id,
-        e.first_name,
-        e.last_name,
-        e.role,
-        COUNT(*)::int AS shift_count
-      FROM tenant_staff.schedule_shifts s
-      JOIN tenant_staff.employees e
-        ON e.tenant_id = s.tenant_id
-       AND e.id = s.employee_id
-      WHERE s.tenant_id = ${tenantId}
-        AND s.deleted_at IS NULL
-        AND s.shift_start >= ${weekStart}
-        AND s.shift_start < ${weekEnd}
-      GROUP BY s.employee_id, e.first_name, e.last_name, e.role
-      ORDER BY shift_count DESC, e.last_name ASC
-      LIMIT 3
-    `
-    ),
+    getSchedulingMetrics(tenantId, weekStart, weekEnd, previousWeekStart),
+    getScheduleCadence(tenantId, weekStart, weekEnd),
+    getHappeningToday(tenantId, startOfToday, endOfToday),
+    getLeaderboard(tenantId, weekStart, weekEnd),
   ]);
+
+  const {
+    currentStaff,
+    previousStaff,
+    currentHours,
+    previousHours,
+    openShifts,
+    previousOpenShifts,
+    currentCost,
+    previousCost,
+  } = metrics;
 
   const scheduleMap = new Map(
     shiftSummary.map((row) => [row.shift_date.toDateString(), row])

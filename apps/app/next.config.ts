@@ -252,11 +252,6 @@ let nextConfig: NextConfig = withToolbar(
       env.VERCEL && Boolean(process.env.SENTRY_AUTH_TOKEN),
     redirects: async () => [
       {
-        source: "/",
-        destination: "/calendar",
-        permanent: false,
-      },
-      {
         // Legacy route — moved to /scheduling/availability
         source: "/staff/availability",
         destination: "/scheduling/availability",

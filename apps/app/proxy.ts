@@ -5,7 +5,7 @@ import { type NextRequest, NextResponse } from "next/server";
 const isPublicRoute = createRouteMatcher([
   "/sign-in(.*)",
   "/sign-up(.*)",
-  "/plasmic(.*)", // Public marketing pages
+  "/plasmic(.*)",
 ]);
 const isApiRoute = createRouteMatcher(["/api(.*)", "/trpc(.*)"]);
 
@@ -51,7 +51,6 @@ export default clerkMiddleware(async (auth, req) => {
     return;
   }
 
-  // For programmatic API calls, return JSON 401 instead of Clerk rewrite HTML.
   if (isApiRoute(req)) {
     try {
       const { userId } = await auth();
@@ -75,7 +74,6 @@ export default clerkMiddleware(async (auth, req) => {
   }
 
   try {
-    // Detect auth redirect loops before calling protect()
     const loop = detectAuthLoop(req as NextRequest);
     if (loop.isLoop && loop.response) {
       return loop.response;
@@ -83,7 +81,6 @@ export default clerkMiddleware(async (auth, req) => {
 
     await auth.protect();
   } catch (error) {
-    // Filter out Next.js HTTP error fallbacks (404s, etc.) — not real errors
     const isNextHttpError =
       error instanceof Error &&
       error.message?.startsWith("NEXT_HTTP_ERROR_FALLBACK;");

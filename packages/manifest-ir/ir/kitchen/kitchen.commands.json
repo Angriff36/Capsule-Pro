@@ -145,6 +145,51 @@
     "commandId": "ApiKey.update"
   },
   {
+    "entity": "AutomatedFollowup",
+    "command": "complete",
+    "commandId": "AutomatedFollowup.complete"
+  },
+  {
+    "entity": "AutomatedFollowup",
+    "command": "create",
+    "commandId": "AutomatedFollowup.create"
+  },
+  {
+    "entity": "AutomatedFollowup",
+    "command": "generate",
+    "commandId": "AutomatedFollowup.generate"
+  },
+  {
+    "entity": "AutomatedFollowup",
+    "command": "skip",
+    "commandId": "AutomatedFollowup.skip"
+  },
+  {
+    "entity": "BankAccount",
+    "command": "create",
+    "commandId": "BankAccount.create"
+  },
+  {
+    "entity": "BankAccount",
+    "command": "remove",
+    "commandId": "BankAccount.remove"
+  },
+  {
+    "entity": "BankAccount",
+    "command": "setDefault",
+    "commandId": "BankAccount.setDefault"
+  },
+  {
+    "entity": "BankAccount",
+    "command": "update",
+    "commandId": "BankAccount.update"
+  },
+  {
+    "entity": "BankAccount",
+    "command": "verify",
+    "commandId": "BankAccount.verify"
+  },
+  {
     "entity": "BattleBoard",
     "command": "addDish",
     "commandId": "BattleBoard.addDish"
@@ -178,6 +223,26 @@
     "entity": "BattleBoard",
     "command": "vote",
     "commandId": "BattleBoard.vote"
+  },
+  {
+    "entity": "Budget",
+    "command": "create",
+    "commandId": "Budget.create"
+  },
+  {
+    "entity": "Budget",
+    "command": "refresh",
+    "commandId": "Budget.refresh"
+  },
+  {
+    "entity": "Budget",
+    "command": "remove",
+    "commandId": "Budget.remove"
+  },
+  {
+    "entity": "Budget",
+    "command": "update",
+    "commandId": "Budget.update"
   },
   {
     "entity": "BudgetAlert",
@@ -625,6 +690,16 @@
     "commandId": "CycleCountSession.start"
   },
   {
+    "entity": "Deal",
+    "command": "close",
+    "commandId": "Deal.close"
+  },
+  {
+    "entity": "Deal",
+    "command": "updateStage",
+    "commandId": "Deal.updateStage"
+  },
+  {
     "entity": "Dish",
     "command": "create",
     "commandId": "Dish.create"
@@ -648,6 +723,31 @@
     "entity": "Dish",
     "command": "updatePricing",
     "commandId": "Dish.updatePricing"
+  },
+  {
+    "entity": "DocumentVersion",
+    "command": "create",
+    "commandId": "DocumentVersion.create"
+  },
+  {
+    "entity": "DocumentVersion",
+    "command": "restore",
+    "commandId": "DocumentVersion.restore"
+  },
+  {
+    "entity": "Driver",
+    "command": "create",
+    "commandId": "Driver.create"
+  },
+  {
+    "entity": "Driver",
+    "command": "remove",
+    "commandId": "Driver.remove"
+  },
+  {
+    "entity": "Driver",
+    "command": "update",
+    "commandId": "Driver.update"
   },
   {
     "entity": "EmailTemplate",
@@ -1055,6 +1155,116 @@
     "commandId": "EventSummary.update"
   },
   {
+    "entity": "EventTimelineItem",
+    "command": "completeItem",
+    "commandId": "EventTimelineItem.completeItem"
+  },
+  {
+    "entity": "EventTimelineItem",
+    "command": "createItem",
+    "commandId": "EventTimelineItem.createItem"
+  },
+  {
+    "entity": "EventTimelineItem",
+    "command": "deleteItem",
+    "commandId": "EventTimelineItem.deleteItem"
+  },
+  {
+    "entity": "EventTimelineItem",
+    "command": "updateItem",
+    "commandId": "EventTimelineItem.updateItem"
+  },
+  {
+    "entity": "EventWaitlistEntry",
+    "command": "addGuest",
+    "commandId": "EventWaitlistEntry.addGuest"
+  },
+  {
+    "entity": "EventWaitlistEntry",
+    "command": "promote",
+    "commandId": "EventWaitlistEntry.promote"
+  },
+  {
+    "entity": "EventWaitlistEntry",
+    "command": "updateRsvp",
+    "commandId": "EventWaitlistEntry.updateRsvp"
+  },
+  {
+    "entity": "Facility",
+    "command": "create",
+    "commandId": "Facility.create"
+  },
+  {
+    "entity": "Facility",
+    "command": "edit",
+    "commandId": "Facility.edit"
+  },
+  {
+    "entity": "Facility",
+    "command": "remove",
+    "commandId": "Facility.remove"
+  },
+  {
+    "entity": "FacilityArea",
+    "command": "create",
+    "commandId": "FacilityArea.create"
+  },
+  {
+    "entity": "FacilityArea",
+    "command": "edit",
+    "commandId": "FacilityArea.edit"
+  },
+  {
+    "entity": "FacilityArea",
+    "command": "remove",
+    "commandId": "FacilityArea.remove"
+  },
+  {
+    "entity": "FacilityAsset",
+    "command": "create",
+    "commandId": "FacilityAsset.create"
+  },
+  {
+    "entity": "FacilityAsset",
+    "command": "remove",
+    "commandId": "FacilityAsset.remove"
+  },
+  {
+    "entity": "FacilityAsset",
+    "command": "update",
+    "commandId": "FacilityAsset.update"
+  },
+  {
+    "entity": "FacilitySchedule",
+    "command": "complete",
+    "commandId": "FacilitySchedule.complete"
+  },
+  {
+    "entity": "FacilitySchedule",
+    "command": "create",
+    "commandId": "FacilitySchedule.create"
+  },
+  {
+    "entity": "FacilitySchedule",
+    "command": "edit",
+    "commandId": "FacilitySchedule.edit"
+  },
+  {
+    "entity": "FacilitySchedule",
+    "command": "remove",
+    "commandId": "FacilitySchedule.remove"
+  },
+  {
+    "entity": "FacilityWorkOrder",
+    "command": "create",
+    "commandId": "FacilityWorkOrder.create"
+  },
+  {
+    "entity": "FacilityWorkOrder",
+    "command": "updateStatus",
+    "commandId": "FacilityWorkOrder.updateStatus"
+  },
+  {
     "entity": "Ingredient",
     "command": "create",
     "commandId": "Ingredient.create"
@@ -1133,6 +1343,31 @@
     "entity": "InventoryTransaction",
     "command": "create",
     "commandId": "InventoryTransaction.create"
+  },
+  {
+    "entity": "InventoryTransfer",
+    "command": "approve",
+    "commandId": "InventoryTransfer.approve"
+  },
+  {
+    "entity": "InventoryTransfer",
+    "command": "cancel",
+    "commandId": "InventoryTransfer.cancel"
+  },
+  {
+    "entity": "InventoryTransfer",
+    "command": "create",
+    "commandId": "InventoryTransfer.create"
+  },
+  {
+    "entity": "InventoryTransfer",
+    "command": "receive",
+    "commandId": "InventoryTransfer.receive"
+  },
+  {
+    "entity": "InventoryTransfer",
+    "command": "ship",
+    "commandId": "InventoryTransfer.ship"
   },
   {
     "entity": "Invoice",
@@ -1260,6 +1495,26 @@
     "commandId": "KitchenTask.updateTitle"
   },
   {
+    "entity": "KnowledgeBaseEntry",
+    "command": "create",
+    "commandId": "KnowledgeBaseEntry.create"
+  },
+  {
+    "entity": "KnowledgeBaseEntry",
+    "command": "publishEntry",
+    "commandId": "KnowledgeBaseEntry.publishEntry"
+  },
+  {
+    "entity": "KnowledgeBaseEntry",
+    "command": "remove",
+    "commandId": "KnowledgeBaseEntry.remove"
+  },
+  {
+    "entity": "KnowledgeBaseEntry",
+    "command": "update",
+    "commandId": "KnowledgeBaseEntry.update"
+  },
+  {
     "entity": "LaborBudget",
     "command": "create",
     "commandId": "LaborBudget.create"
@@ -1298,6 +1553,36 @@
     "entity": "Lead",
     "command": "update",
     "commandId": "Lead.update"
+  },
+  {
+    "entity": "LogisticsDispatch",
+    "command": "assign",
+    "commandId": "LogisticsDispatch.assign"
+  },
+  {
+    "entity": "LogisticsRoute",
+    "command": "create",
+    "commandId": "LogisticsRoute.create"
+  },
+  {
+    "entity": "LogisticsRoute",
+    "command": "optimize",
+    "commandId": "LogisticsRoute.optimize"
+  },
+  {
+    "entity": "LogisticsRoute",
+    "command": "remove",
+    "commandId": "LogisticsRoute.remove"
+  },
+  {
+    "entity": "LogisticsRoute",
+    "command": "update",
+    "commandId": "LogisticsRoute.update"
+  },
+  {
+    "entity": "LogisticsRoute",
+    "command": "updateStatus",
+    "commandId": "LogisticsRoute.updateStatus"
   },
   {
     "entity": "Menu",
@@ -1895,6 +2180,31 @@
     "commandId": "PurchaseRequisitionItem.update"
   },
   {
+    "entity": "QACheck",
+    "command": "complete",
+    "commandId": "QACheck.complete"
+  },
+  {
+    "entity": "QACheck",
+    "command": "create",
+    "commandId": "QACheck.create"
+  },
+  {
+    "entity": "QACorrectiveAction",
+    "command": "create",
+    "commandId": "QACorrectiveAction.create"
+  },
+  {
+    "entity": "QACorrectiveAction",
+    "command": "resolve",
+    "commandId": "QACorrectiveAction.resolve"
+  },
+  {
+    "entity": "QATemperatureLog",
+    "command": "log",
+    "commandId": "QATemperatureLog.log"
+  },
+  {
     "entity": "RateLimitConfig",
     "command": "create",
     "commandId": "RateLimitConfig.create"
@@ -2205,6 +2515,26 @@
     "commandId": "SmsAutomationRule.update"
   },
   {
+    "entity": "StaffPerformance",
+    "command": "complete",
+    "commandId": "StaffPerformance.complete"
+  },
+  {
+    "entity": "StaffPerformance",
+    "command": "create",
+    "commandId": "StaffPerformance.create"
+  },
+  {
+    "entity": "StaffPerformance",
+    "command": "remove",
+    "commandId": "StaffPerformance.remove"
+  },
+  {
+    "entity": "StaffPerformance",
+    "command": "update",
+    "commandId": "StaffPerformance.update"
+  },
+  {
     "entity": "Station",
     "command": "activate",
     "commandId": "Station.activate"
@@ -2363,6 +2693,46 @@
     "entity": "VarianceReport",
     "command": "review",
     "commandId": "VarianceReport.review"
+  },
+  {
+    "entity": "Vehicle",
+    "command": "create",
+    "commandId": "Vehicle.create"
+  },
+  {
+    "entity": "Vehicle",
+    "command": "remove",
+    "commandId": "Vehicle.remove"
+  },
+  {
+    "entity": "Vehicle",
+    "command": "update",
+    "commandId": "Vehicle.update"
+  },
+  {
+    "entity": "Vendor",
+    "command": "addContact",
+    "commandId": "Vendor.addContact"
+  },
+  {
+    "entity": "Vendor",
+    "command": "create",
+    "commandId": "Vendor.create"
+  },
+  {
+    "entity": "Vendor",
+    "command": "rate",
+    "commandId": "Vendor.rate"
+  },
+  {
+    "entity": "Vendor",
+    "command": "remove",
+    "commandId": "Vendor.remove"
+  },
+  {
+    "entity": "Vendor",
+    "command": "update",
+    "commandId": "Vendor.update"
   },
   {
     "entity": "VendorCatalog",

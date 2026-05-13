@@ -67,6 +67,26 @@ export function apiKeyDetailPath(id: string): string {
   return "/api/apikey/" + encodeURIComponent(id);
 }
 
+/** GET /api/automatedfollowup/list */
+export function automatedFollowupListPath(): string {
+  return "/api/automatedfollowup/list";
+}
+
+/** GET /api/automatedfollowup/:id */
+export function automatedFollowupDetailPath(id: string): string {
+  return "/api/automatedfollowup/" + encodeURIComponent(id);
+}
+
+/** GET /api/bankaccount/list */
+export function bankAccountListPath(): string {
+  return "/api/bankaccount/list";
+}
+
+/** GET /api/bankaccount/:id */
+export function bankAccountDetailPath(id: string): string {
+  return "/api/bankaccount/" + encodeURIComponent(id);
+}
+
 /** GET /api/battleboard/list */
 export function battleBoardListPath(): string {
   return "/api/battleboard/list";
@@ -75,6 +95,16 @@ export function battleBoardListPath(): string {
 /** GET /api/battleboard/:id */
 export function battleBoardDetailPath(id: string): string {
   return "/api/battleboard/" + encodeURIComponent(id);
+}
+
+/** GET /api/budget/list */
+export function budgetListPath(): string {
+  return "/api/budget/list";
+}
+
+/** GET /api/budget/:id */
+export function budgetDetailPath(id: string): string {
+  return "/api/budget/" + encodeURIComponent(id);
 }
 
 /** GET /api/budgetalert/list */
@@ -287,6 +317,16 @@ export function cycleCountSessionDetailPath(id: string): string {
   return "/api/cyclecountsession/" + encodeURIComponent(id);
 }
 
+/** GET /api/deal/list */
+export function dealListPath(): string {
+  return "/api/deal/list";
+}
+
+/** GET /api/deal/:id */
+export function dealDetailPath(id: string): string {
+  return "/api/deal/" + encodeURIComponent(id);
+}
+
 /** GET /api/dish/list */
 export function dishListPath(): string {
   return "/api/dish/list";
@@ -295,6 +335,26 @@ export function dishListPath(): string {
 /** GET /api/dish/:id */
 export function dishDetailPath(id: string): string {
   return "/api/dish/" + encodeURIComponent(id);
+}
+
+/** GET /api/documentversion/list */
+export function documentVersionListPath(): string {
+  return "/api/documentversion/list";
+}
+
+/** GET /api/documentversion/:id */
+export function documentVersionDetailPath(id: string): string {
+  return "/api/documentversion/" + encodeURIComponent(id);
+}
+
+/** GET /api/driver/list */
+export function driverListPath(): string {
+  return "/api/driver/list";
+}
+
+/** GET /api/driver/:id */
+export function driverDetailPath(id: string): string {
+  return "/api/driver/" + encodeURIComponent(id);
 }
 
 /** GET /api/emailtemplate/list */
@@ -467,6 +527,76 @@ export function eventSummaryDetailPath(id: string): string {
   return "/api/eventsummary/" + encodeURIComponent(id);
 }
 
+/** GET /api/eventtimelineitem/list */
+export function eventTimelineItemListPath(): string {
+  return "/api/eventtimelineitem/list";
+}
+
+/** GET /api/eventtimelineitem/:id */
+export function eventTimelineItemDetailPath(id: string): string {
+  return "/api/eventtimelineitem/" + encodeURIComponent(id);
+}
+
+/** GET /api/eventwaitlistentry/list */
+export function eventWaitlistEntryListPath(): string {
+  return "/api/eventwaitlistentry/list";
+}
+
+/** GET /api/eventwaitlistentry/:id */
+export function eventWaitlistEntryDetailPath(id: string): string {
+  return "/api/eventwaitlistentry/" + encodeURIComponent(id);
+}
+
+/** GET /api/facility/list */
+export function facilityListPath(): string {
+  return "/api/facility/list";
+}
+
+/** GET /api/facility/:id */
+export function facilityDetailPath(id: string): string {
+  return "/api/facility/" + encodeURIComponent(id);
+}
+
+/** GET /api/facilityarea/list */
+export function facilityAreaListPath(): string {
+  return "/api/facilityarea/list";
+}
+
+/** GET /api/facilityarea/:id */
+export function facilityAreaDetailPath(id: string): string {
+  return "/api/facilityarea/" + encodeURIComponent(id);
+}
+
+/** GET /api/facilityasset/list */
+export function facilityAssetListPath(): string {
+  return "/api/facilityasset/list";
+}
+
+/** GET /api/facilityasset/:id */
+export function facilityAssetDetailPath(id: string): string {
+  return "/api/facilityasset/" + encodeURIComponent(id);
+}
+
+/** GET /api/facilityschedule/list */
+export function facilityScheduleListPath(): string {
+  return "/api/facilityschedule/list";
+}
+
+/** GET /api/facilityschedule/:id */
+export function facilityScheduleDetailPath(id: string): string {
+  return "/api/facilityschedule/" + encodeURIComponent(id);
+}
+
+/** GET /api/facilityworkorder/list */
+export function facilityWorkOrderListPath(): string {
+  return "/api/facilityworkorder/list";
+}
+
+/** GET /api/facilityworkorder/:id */
+export function facilityWorkOrderDetailPath(id: string): string {
+  return "/api/facilityworkorder/" + encodeURIComponent(id);
+}
+
 /** GET /api/ingredient/list */
 export function ingredientListPath(): string {
   return "/api/ingredient/list";
@@ -507,6 +637,16 @@ export function inventoryTransactionDetailPath(id: string): string {
   return "/api/inventorytransaction/" + encodeURIComponent(id);
 }
 
+/** GET /api/inventorytransfer/list */
+export function inventoryTransferListPath(): string {
+  return "/api/inventorytransfer/list";
+}
+
+/** GET /api/inventorytransfer/:id */
+export function inventoryTransferDetailPath(id: string): string {
+  return "/api/inventorytransfer/" + encodeURIComponent(id);
+}
+
 /** GET /api/invoice/list */
 export function invoiceListPath(): string {
   return "/api/invoice/list";
@@ -527,6 +667,16 @@ export function kitchenTaskDetailPath(id: string): string {
   return "/api/kitchentask/" + encodeURIComponent(id);
 }
 
+/** GET /api/knowledgebaseentry/list */
+export function knowledgeBaseEntryListPath(): string {
+  return "/api/knowledgebaseentry/list";
+}
+
+/** GET /api/knowledgebaseentry/:id */
+export function knowledgeBaseEntryDetailPath(id: string): string {
+  return "/api/knowledgebaseentry/" + encodeURIComponent(id);
+}
+
 /** GET /api/laborbudget/list */
 export function laborBudgetListPath(): string {
   return "/api/laborbudget/list";
@@ -545,6 +695,26 @@ export function leadListPath(): string {
 /** GET /api/lead/:id */
 export function leadDetailPath(id: string): string {
   return "/api/lead/" + encodeURIComponent(id);
+}
+
+/** GET /api/logisticsdispatch/list */
+export function logisticsDispatchListPath(): string {
+  return "/api/logisticsdispatch/list";
+}
+
+/** GET /api/logisticsdispatch/:id */
+export function logisticsDispatchDetailPath(id: string): string {
+  return "/api/logisticsdispatch/" + encodeURIComponent(id);
+}
+
+/** GET /api/logisticsroute/list */
+export function logisticsRouteListPath(): string {
+  return "/api/logisticsroute/list";
+}
+
+/** GET /api/logisticsroute/:id */
+export function logisticsRouteDetailPath(id: string): string {
+  return "/api/logisticsroute/" + encodeURIComponent(id);
 }
 
 /** GET /api/menu/list */
@@ -777,6 +947,36 @@ export function purchaseRequisitionItemDetailPath(id: string): string {
   return "/api/purchaserequisitionitem/" + encodeURIComponent(id);
 }
 
+/** GET /api/qacheck/list */
+export function qACheckListPath(): string {
+  return "/api/qacheck/list";
+}
+
+/** GET /api/qacheck/:id */
+export function qACheckDetailPath(id: string): string {
+  return "/api/qacheck/" + encodeURIComponent(id);
+}
+
+/** GET /api/qacorrectiveaction/list */
+export function qACorrectiveActionListPath(): string {
+  return "/api/qacorrectiveaction/list";
+}
+
+/** GET /api/qacorrectiveaction/:id */
+export function qACorrectiveActionDetailPath(id: string): string {
+  return "/api/qacorrectiveaction/" + encodeURIComponent(id);
+}
+
+/** GET /api/qatemperaturelog/list */
+export function qATemperatureLogListPath(): string {
+  return "/api/qatemperaturelog/list";
+}
+
+/** GET /api/qatemperaturelog/:id */
+export function qATemperatureLogDetailPath(id: string): string {
+  return "/api/qatemperaturelog/" + encodeURIComponent(id);
+}
+
 /** GET /api/ratelimitconfig/list */
 export function rateLimitConfigListPath(): string {
   return "/api/ratelimitconfig/list";
@@ -917,6 +1117,16 @@ export function smsAutomationRuleDetailPath(id: string): string {
   return "/api/smsautomationrule/" + encodeURIComponent(id);
 }
 
+/** GET /api/staffperformance/list */
+export function staffPerformanceListPath(): string {
+  return "/api/staffperformance/list";
+}
+
+/** GET /api/staffperformance/:id */
+export function staffPerformanceDetailPath(id: string): string {
+  return "/api/staffperformance/" + encodeURIComponent(id);
+}
+
 /** GET /api/station/list */
 export function stationListPath(): string {
   return "/api/station/list";
@@ -995,6 +1205,26 @@ export function varianceReportListPath(): string {
 /** GET /api/variancereport/:id */
 export function varianceReportDetailPath(id: string): string {
   return "/api/variancereport/" + encodeURIComponent(id);
+}
+
+/** GET /api/vehicle/list */
+export function vehicleListPath(): string {
+  return "/api/vehicle/list";
+}
+
+/** GET /api/vehicle/:id */
+export function vehicleDetailPath(id: string): string {
+  return "/api/vehicle/" + encodeURIComponent(id);
+}
+
+/** GET /api/vendor/list */
+export function vendorListPath(): string {
+  return "/api/vendor/list";
+}
+
+/** GET /api/vendor/:id */
+export function vendorDetailPath(id: string): string {
+  return "/api/vendor/" + encodeURIComponent(id);
 }
 
 /** GET /api/vendorcatalog/list */
@@ -1226,6 +1456,51 @@ export function apiKeyUpdatePath(): string {
   return "/api/apikey/update";
 }
 
+/** POST /api/automatedfollowup/complete */
+export function automatedFollowupCompletePath(): string {
+  return "/api/automatedfollowup/complete";
+}
+
+/** POST /api/automatedfollowup/create */
+export function automatedFollowupCreatePath(): string {
+  return "/api/automatedfollowup/create";
+}
+
+/** POST /api/automatedfollowup/generate */
+export function automatedFollowupGeneratePath(): string {
+  return "/api/automatedfollowup/generate";
+}
+
+/** POST /api/automatedfollowup/skip */
+export function automatedFollowupSkipPath(): string {
+  return "/api/automatedfollowup/skip";
+}
+
+/** POST /api/bankaccount/create */
+export function bankAccountCreatePath(): string {
+  return "/api/bankaccount/create";
+}
+
+/** POST /api/bankaccount/remove */
+export function bankAccountRemovePath(): string {
+  return "/api/bankaccount/remove";
+}
+
+/** POST /api/bankaccount/set-default */
+export function bankAccountSetDefaultPath(): string {
+  return "/api/bankaccount/set-default";
+}
+
+/** POST /api/bankaccount/update */
+export function bankAccountUpdatePath(): string {
+  return "/api/bankaccount/update";
+}
+
+/** POST /api/bankaccount/verify */
+export function bankAccountVerifyPath(): string {
+  return "/api/bankaccount/verify";
+}
+
 /** POST /api/battleboard/add-dish */
 export function battleBoardAddDishPath(): string {
   return "/api/battleboard/add-dish";
@@ -1259,6 +1534,26 @@ export function battleBoardStartVotingPath(): string {
 /** POST /api/battleboard/vote */
 export function battleBoardVotePath(): string {
   return "/api/battleboard/vote";
+}
+
+/** POST /api/budget/create */
+export function budgetCreatePath(): string {
+  return "/api/budget/create";
+}
+
+/** POST /api/budget/refresh */
+export function budgetRefreshPath(): string {
+  return "/api/budget/refresh";
+}
+
+/** POST /api/budget/remove */
+export function budgetRemovePath(): string {
+  return "/api/budget/remove";
+}
+
+/** POST /api/budget/update */
+export function budgetUpdatePath(): string {
+  return "/api/budget/update";
 }
 
 /** POST /api/budgetalert/acknowledge */
@@ -1706,6 +2001,16 @@ export function cycleCountSessionStartPath(): string {
   return "/api/cyclecountsession/start";
 }
 
+/** POST /api/deal/close */
+export function dealClosePath(): string {
+  return "/api/deal/close";
+}
+
+/** POST /api/deal/update-stage */
+export function dealUpdateStagePath(): string {
+  return "/api/deal/update-stage";
+}
+
 /** POST /api/dish/create */
 export function dishCreatePath(): string {
   return "/api/dish/create";
@@ -1729,6 +2034,31 @@ export function dishUpdateLeadTimePath(): string {
 /** POST /api/dish/update-pricing */
 export function dishUpdatePricingPath(): string {
   return "/api/dish/update-pricing";
+}
+
+/** POST /api/documentversion/create */
+export function documentVersionCreatePath(): string {
+  return "/api/documentversion/create";
+}
+
+/** POST /api/documentversion/restore */
+export function documentVersionRestorePath(): string {
+  return "/api/documentversion/restore";
+}
+
+/** POST /api/driver/create */
+export function driverCreatePath(): string {
+  return "/api/driver/create";
+}
+
+/** POST /api/driver/remove */
+export function driverRemovePath(): string {
+  return "/api/driver/remove";
+}
+
+/** POST /api/driver/update */
+export function driverUpdatePath(): string {
+  return "/api/driver/update";
 }
 
 /** POST /api/emailtemplate/create */
@@ -2136,6 +2466,116 @@ export function eventSummaryUpdatePath(): string {
   return "/api/eventsummary/update";
 }
 
+/** POST /api/eventtimelineitem/complete-item */
+export function eventTimelineItemCompleteItemPath(): string {
+  return "/api/eventtimelineitem/complete-item";
+}
+
+/** POST /api/eventtimelineitem/create-item */
+export function eventTimelineItemCreateItemPath(): string {
+  return "/api/eventtimelineitem/create-item";
+}
+
+/** POST /api/eventtimelineitem/delete-item */
+export function eventTimelineItemDeleteItemPath(): string {
+  return "/api/eventtimelineitem/delete-item";
+}
+
+/** POST /api/eventtimelineitem/update-item */
+export function eventTimelineItemUpdateItemPath(): string {
+  return "/api/eventtimelineitem/update-item";
+}
+
+/** POST /api/eventwaitlistentry/add-guest */
+export function eventWaitlistEntryAddGuestPath(): string {
+  return "/api/eventwaitlistentry/add-guest";
+}
+
+/** POST /api/eventwaitlistentry/promote */
+export function eventWaitlistEntryPromotePath(): string {
+  return "/api/eventwaitlistentry/promote";
+}
+
+/** POST /api/eventwaitlistentry/update-rsvp */
+export function eventWaitlistEntryUpdateRsvpPath(): string {
+  return "/api/eventwaitlistentry/update-rsvp";
+}
+
+/** POST /api/facility/create */
+export function facilityCreatePath(): string {
+  return "/api/facility/create";
+}
+
+/** POST /api/facility/edit */
+export function facilityEditPath(): string {
+  return "/api/facility/edit";
+}
+
+/** POST /api/facility/remove */
+export function facilityRemovePath(): string {
+  return "/api/facility/remove";
+}
+
+/** POST /api/facilityarea/create */
+export function facilityAreaCreatePath(): string {
+  return "/api/facilityarea/create";
+}
+
+/** POST /api/facilityarea/edit */
+export function facilityAreaEditPath(): string {
+  return "/api/facilityarea/edit";
+}
+
+/** POST /api/facilityarea/remove */
+export function facilityAreaRemovePath(): string {
+  return "/api/facilityarea/remove";
+}
+
+/** POST /api/facilityasset/create */
+export function facilityAssetCreatePath(): string {
+  return "/api/facilityasset/create";
+}
+
+/** POST /api/facilityasset/remove */
+export function facilityAssetRemovePath(): string {
+  return "/api/facilityasset/remove";
+}
+
+/** POST /api/facilityasset/update */
+export function facilityAssetUpdatePath(): string {
+  return "/api/facilityasset/update";
+}
+
+/** POST /api/facilityschedule/complete */
+export function facilityScheduleCompletePath(): string {
+  return "/api/facilityschedule/complete";
+}
+
+/** POST /api/facilityschedule/create */
+export function facilityScheduleCreatePath(): string {
+  return "/api/facilityschedule/create";
+}
+
+/** POST /api/facilityschedule/edit */
+export function facilityScheduleEditPath(): string {
+  return "/api/facilityschedule/edit";
+}
+
+/** POST /api/facilityschedule/remove */
+export function facilityScheduleRemovePath(): string {
+  return "/api/facilityschedule/remove";
+}
+
+/** POST /api/facilityworkorder/create */
+export function facilityWorkOrderCreatePath(): string {
+  return "/api/facilityworkorder/create";
+}
+
+/** POST /api/facilityworkorder/update-status */
+export function facilityWorkOrderUpdateStatusPath(): string {
+  return "/api/facilityworkorder/update-status";
+}
+
 /** POST /api/ingredient/create */
 export function ingredientCreatePath(): string {
   return "/api/ingredient/create";
@@ -2214,6 +2654,31 @@ export function inventorySupplierUpdatePath(): string {
 /** POST /api/inventorytransaction/create */
 export function inventoryTransactionCreatePath(): string {
   return "/api/inventorytransaction/create";
+}
+
+/** POST /api/inventorytransfer/approve */
+export function inventoryTransferApprovePath(): string {
+  return "/api/inventorytransfer/approve";
+}
+
+/** POST /api/inventorytransfer/cancel */
+export function inventoryTransferCancelPath(): string {
+  return "/api/inventorytransfer/cancel";
+}
+
+/** POST /api/inventorytransfer/create */
+export function inventoryTransferCreatePath(): string {
+  return "/api/inventorytransfer/create";
+}
+
+/** POST /api/inventorytransfer/receive */
+export function inventoryTransferReceivePath(): string {
+  return "/api/inventorytransfer/receive";
+}
+
+/** POST /api/inventorytransfer/ship */
+export function inventoryTransferShipPath(): string {
+  return "/api/inventorytransfer/ship";
 }
 
 /** POST /api/invoice/apply-payment */
@@ -2341,6 +2806,26 @@ export function kitchenTaskUpdateTitlePath(): string {
   return "/api/kitchentask/update-title";
 }
 
+/** POST /api/knowledgebaseentry/create */
+export function knowledgeBaseEntryCreatePath(): string {
+  return "/api/knowledgebaseentry/create";
+}
+
+/** POST /api/knowledgebaseentry/publish-entry */
+export function knowledgeBaseEntryPublishEntryPath(): string {
+  return "/api/knowledgebaseentry/publish-entry";
+}
+
+/** POST /api/knowledgebaseentry/remove */
+export function knowledgeBaseEntryRemovePath(): string {
+  return "/api/knowledgebaseentry/remove";
+}
+
+/** POST /api/knowledgebaseentry/update */
+export function knowledgeBaseEntryUpdatePath(): string {
+  return "/api/knowledgebaseentry/update";
+}
+
 /** POST /api/laborbudget/create */
 export function laborBudgetCreatePath(): string {
   return "/api/laborbudget/create";
@@ -2379,6 +2864,36 @@ export function leadDisqualifyPath(): string {
 /** POST /api/lead/update */
 export function leadUpdatePath(): string {
   return "/api/lead/update";
+}
+
+/** POST /api/logisticsdispatch/assign */
+export function logisticsDispatchAssignPath(): string {
+  return "/api/logisticsdispatch/assign";
+}
+
+/** POST /api/logisticsroute/create */
+export function logisticsRouteCreatePath(): string {
+  return "/api/logisticsroute/create";
+}
+
+/** POST /api/logisticsroute/optimize */
+export function logisticsRouteOptimizePath(): string {
+  return "/api/logisticsroute/optimize";
+}
+
+/** POST /api/logisticsroute/remove */
+export function logisticsRouteRemovePath(): string {
+  return "/api/logisticsroute/remove";
+}
+
+/** POST /api/logisticsroute/update */
+export function logisticsRouteUpdatePath(): string {
+  return "/api/logisticsroute/update";
+}
+
+/** POST /api/logisticsroute/update-status */
+export function logisticsRouteUpdateStatusPath(): string {
+  return "/api/logisticsroute/update-status";
 }
 
 /** POST /api/menu/activate */
@@ -2976,6 +3491,31 @@ export function purchaseRequisitionItemUpdatePath(): string {
   return "/api/purchaserequisitionitem/update";
 }
 
+/** POST /api/qacheck/complete */
+export function qACheckCompletePath(): string {
+  return "/api/qacheck/complete";
+}
+
+/** POST /api/qacheck/create */
+export function qACheckCreatePath(): string {
+  return "/api/qacheck/create";
+}
+
+/** POST /api/qacorrectiveaction/create */
+export function qACorrectiveActionCreatePath(): string {
+  return "/api/qacorrectiveaction/create";
+}
+
+/** POST /api/qacorrectiveaction/resolve */
+export function qACorrectiveActionResolvePath(): string {
+  return "/api/qacorrectiveaction/resolve";
+}
+
+/** POST /api/qatemperaturelog/log */
+export function qATemperatureLogLogPath(): string {
+  return "/api/qatemperaturelog/log";
+}
+
 /** POST /api/ratelimitconfig/create */
 export function rateLimitConfigCreatePath(): string {
   return "/api/ratelimitconfig/create";
@@ -3286,6 +3826,26 @@ export function smsAutomationRuleUpdatePath(): string {
   return "/api/smsautomationrule/update";
 }
 
+/** POST /api/staffperformance/complete */
+export function staffPerformanceCompletePath(): string {
+  return "/api/staffperformance/complete";
+}
+
+/** POST /api/staffperformance/create */
+export function staffPerformanceCreatePath(): string {
+  return "/api/staffperformance/create";
+}
+
+/** POST /api/staffperformance/remove */
+export function staffPerformanceRemovePath(): string {
+  return "/api/staffperformance/remove";
+}
+
+/** POST /api/staffperformance/update */
+export function staffPerformanceUpdatePath(): string {
+  return "/api/staffperformance/update";
+}
+
 /** POST /api/station/activate */
 export function stationActivatePath(): string {
   return "/api/station/activate";
@@ -3444,6 +4004,46 @@ export function varianceReportCreatePath(): string {
 /** POST /api/variancereport/review */
 export function varianceReportReviewPath(): string {
   return "/api/variancereport/review";
+}
+
+/** POST /api/vehicle/create */
+export function vehicleCreatePath(): string {
+  return "/api/vehicle/create";
+}
+
+/** POST /api/vehicle/remove */
+export function vehicleRemovePath(): string {
+  return "/api/vehicle/remove";
+}
+
+/** POST /api/vehicle/update */
+export function vehicleUpdatePath(): string {
+  return "/api/vehicle/update";
+}
+
+/** POST /api/vendor/add-contact */
+export function vendorAddContactPath(): string {
+  return "/api/vendor/add-contact";
+}
+
+/** POST /api/vendor/create */
+export function vendorCreatePath(): string {
+  return "/api/vendor/create";
+}
+
+/** POST /api/vendor/rate */
+export function vendorRatePath(): string {
+  return "/api/vendor/rate";
+}
+
+/** POST /api/vendor/remove */
+export function vendorRemovePath(): string {
+  return "/api/vendor/remove";
+}
+
+/** POST /api/vendor/update */
+export function vendorUpdatePath(): string {
+  return "/api/vendor/update";
 }
 
 /** POST /api/vendorcatalog/create */
@@ -3682,8 +4282,14 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "AllergenWarning.get.detail", path: "/api/allergenwarning/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "ApiKey.get.list", path: "/api/apikey/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "ApiKey.get.detail", path: "/api/apikey/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "AutomatedFollowup.get.list", path: "/api/automatedfollowup/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "AutomatedFollowup.get.detail", path: "/api/automatedfollowup/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "BankAccount.get.list", path: "/api/bankaccount/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "BankAccount.get.detail", path: "/api/bankaccount/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "BattleBoard.get.list", path: "/api/battleboard/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "BattleBoard.get.detail", path: "/api/battleboard/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "Budget.get.list", path: "/api/budget/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "Budget.get.detail", path: "/api/budget/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "BudgetAlert.get.list", path: "/api/budgetalert/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "BudgetAlert.get.detail", path: "/api/budgetalert/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "BudgetLineItem.get.list", path: "/api/budgetlineitem/list", method: "GET", source: "entity-read", auth: true, tenant: true },
@@ -3726,8 +4332,14 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "CycleCountRecord.get.detail", path: "/api/cyclecountrecord/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "CycleCountSession.get.list", path: "/api/cyclecountsession/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "CycleCountSession.get.detail", path: "/api/cyclecountsession/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "Deal.get.list", path: "/api/deal/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "Deal.get.detail", path: "/api/deal/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "Dish.get.list", path: "/api/dish/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "Dish.get.detail", path: "/api/dish/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "DocumentVersion.get.list", path: "/api/documentversion/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "DocumentVersion.get.detail", path: "/api/documentversion/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "Driver.get.list", path: "/api/driver/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "Driver.get.detail", path: "/api/driver/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "EmailTemplate.get.list", path: "/api/emailtemplate/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "EmailTemplate.get.detail", path: "/api/emailtemplate/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "EmailWorkflow.get.list", path: "/api/emailworkflow/list", method: "GET", source: "entity-read", auth: true, tenant: true },
@@ -3762,6 +4374,20 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "EventStaff.get.detail", path: "/api/eventstaff/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "EventSummary.get.list", path: "/api/eventsummary/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "EventSummary.get.detail", path: "/api/eventsummary/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "EventTimelineItem.get.list", path: "/api/eventtimelineitem/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "EventTimelineItem.get.detail", path: "/api/eventtimelineitem/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "EventWaitlistEntry.get.list", path: "/api/eventwaitlistentry/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "EventWaitlistEntry.get.detail", path: "/api/eventwaitlistentry/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "Facility.get.list", path: "/api/facility/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "Facility.get.detail", path: "/api/facility/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "FacilityArea.get.list", path: "/api/facilityarea/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "FacilityArea.get.detail", path: "/api/facilityarea/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "FacilityAsset.get.list", path: "/api/facilityasset/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "FacilityAsset.get.detail", path: "/api/facilityasset/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "FacilitySchedule.get.list", path: "/api/facilityschedule/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "FacilitySchedule.get.detail", path: "/api/facilityschedule/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "FacilityWorkOrder.get.list", path: "/api/facilityworkorder/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "FacilityWorkOrder.get.detail", path: "/api/facilityworkorder/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "Ingredient.get.list", path: "/api/ingredient/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "Ingredient.get.detail", path: "/api/ingredient/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "InventoryItem.get.list", path: "/api/inventoryitem/list", method: "GET", source: "entity-read", auth: true, tenant: true },
@@ -3770,14 +4396,22 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "InventorySupplier.get.detail", path: "/api/inventorysupplier/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "InventoryTransaction.get.list", path: "/api/inventorytransaction/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "InventoryTransaction.get.detail", path: "/api/inventorytransaction/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "InventoryTransfer.get.list", path: "/api/inventorytransfer/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "InventoryTransfer.get.detail", path: "/api/inventorytransfer/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "Invoice.get.list", path: "/api/invoice/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "Invoice.get.detail", path: "/api/invoice/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "KitchenTask.get.list", path: "/api/kitchentask/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "KitchenTask.get.detail", path: "/api/kitchentask/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "KnowledgeBaseEntry.get.list", path: "/api/knowledgebaseentry/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "KnowledgeBaseEntry.get.detail", path: "/api/knowledgebaseentry/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "LaborBudget.get.list", path: "/api/laborbudget/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "LaborBudget.get.detail", path: "/api/laborbudget/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "Lead.get.list", path: "/api/lead/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "Lead.get.detail", path: "/api/lead/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "LogisticsDispatch.get.list", path: "/api/logisticsdispatch/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "LogisticsDispatch.get.detail", path: "/api/logisticsdispatch/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "LogisticsRoute.get.list", path: "/api/logisticsroute/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "LogisticsRoute.get.detail", path: "/api/logisticsroute/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "Menu.get.list", path: "/api/menu/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "Menu.get.detail", path: "/api/menu/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "MenuDish.get.list", path: "/api/menudish/list", method: "GET", source: "entity-read", auth: true, tenant: true },
@@ -3824,6 +4458,12 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "PurchaseRequisition.get.detail", path: "/api/purchaserequisition/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "PurchaseRequisitionItem.get.list", path: "/api/purchaserequisitionitem/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "PurchaseRequisitionItem.get.detail", path: "/api/purchaserequisitionitem/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "QACheck.get.list", path: "/api/qacheck/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "QACheck.get.detail", path: "/api/qacheck/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "QACorrectiveAction.get.list", path: "/api/qacorrectiveaction/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "QACorrectiveAction.get.detail", path: "/api/qacorrectiveaction/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "QATemperatureLog.get.list", path: "/api/qatemperaturelog/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "QATemperatureLog.get.detail", path: "/api/qatemperaturelog/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "RateLimitConfig.get.list", path: "/api/ratelimitconfig/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "RateLimitConfig.get.detail", path: "/api/ratelimitconfig/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "Recipe.get.list", path: "/api/recipe/list", method: "GET", source: "entity-read", auth: true, tenant: true },
@@ -3852,6 +4492,8 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "ShipmentItem.get.detail", path: "/api/shipmentitem/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "SmsAutomationRule.get.list", path: "/api/smsautomationrule/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "SmsAutomationRule.get.detail", path: "/api/smsautomationrule/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "StaffPerformance.get.list", path: "/api/staffperformance/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "StaffPerformance.get.detail", path: "/api/staffperformance/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "Station.get.list", path: "/api/station/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "Station.get.detail", path: "/api/station/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "TimecardEditRequest.get.list", path: "/api/timecardeditrequest/list", method: "GET", source: "entity-read", auth: true, tenant: true },
@@ -3868,6 +4510,10 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "User.get.detail", path: "/api/user/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "VarianceReport.get.list", path: "/api/variancereport/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "VarianceReport.get.detail", path: "/api/variancereport/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "Vehicle.get.list", path: "/api/vehicle/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "Vehicle.get.detail", path: "/api/vehicle/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "Vendor.get.list", path: "/api/vendor/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "Vendor.get.detail", path: "/api/vendor/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "VendorCatalog.get.list", path: "/api/vendorcatalog/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "VendorCatalog.get.detail", path: "/api/vendorcatalog/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "VendorContract.get.list", path: "/api/vendorcontract/list", method: "GET", source: "entity-read", auth: true, tenant: true },
@@ -3913,6 +4559,15 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "ApiKey.revoke", path: "/api/apikey/revoke", method: "POST", source: "command", auth: true, tenant: true },
   { id: "ApiKey.softDelete", path: "/api/apikey/soft-delete", method: "POST", source: "command", auth: true, tenant: true },
   { id: "ApiKey.update", path: "/api/apikey/update", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "AutomatedFollowup.complete", path: "/api/automatedfollowup/complete", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "AutomatedFollowup.create", path: "/api/automatedfollowup/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "AutomatedFollowup.generate", path: "/api/automatedfollowup/generate", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "AutomatedFollowup.skip", path: "/api/automatedfollowup/skip", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "BankAccount.create", path: "/api/bankaccount/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "BankAccount.remove", path: "/api/bankaccount/remove", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "BankAccount.setDefault", path: "/api/bankaccount/set-default", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "BankAccount.update", path: "/api/bankaccount/update", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "BankAccount.verify", path: "/api/bankaccount/verify", method: "POST", source: "command", auth: true, tenant: true },
   { id: "BattleBoard.addDish", path: "/api/battleboard/add-dish", method: "POST", source: "command", auth: true, tenant: true },
   { id: "BattleBoard.create", path: "/api/battleboard/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "BattleBoard.finalize", path: "/api/battleboard/finalize", method: "POST", source: "command", auth: true, tenant: true },
@@ -3920,6 +4575,10 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "BattleBoard.removeDish", path: "/api/battleboard/remove-dish", method: "POST", source: "command", auth: true, tenant: true },
   { id: "BattleBoard.startVoting", path: "/api/battleboard/start-voting", method: "POST", source: "command", auth: true, tenant: true },
   { id: "BattleBoard.vote", path: "/api/battleboard/vote", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Budget.create", path: "/api/budget/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Budget.refresh", path: "/api/budget/refresh", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Budget.remove", path: "/api/budget/remove", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Budget.update", path: "/api/budget/update", method: "POST", source: "command", auth: true, tenant: true },
   { id: "BudgetAlert.acknowledge", path: "/api/budgetalert/acknowledge", method: "POST", source: "command", auth: true, tenant: true },
   { id: "BudgetAlert.resolve", path: "/api/budgetalert/resolve", method: "POST", source: "command", auth: true, tenant: true },
   { id: "BudgetLineItem.create", path: "/api/budgetlineitem/create", method: "POST", source: "command", auth: true, tenant: true },
@@ -4009,11 +4668,18 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "CycleCountSession.create", path: "/api/cyclecountsession/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "CycleCountSession.finalize", path: "/api/cyclecountsession/finalize", method: "POST", source: "command", auth: true, tenant: true },
   { id: "CycleCountSession.start", path: "/api/cyclecountsession/start", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Deal.close", path: "/api/deal/close", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Deal.updateStage", path: "/api/deal/update-stage", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Dish.create", path: "/api/dish/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Dish.deactivate", path: "/api/dish/deactivate", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Dish.update", path: "/api/dish/update", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Dish.updateLeadTime", path: "/api/dish/update-lead-time", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Dish.updatePricing", path: "/api/dish/update-pricing", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "DocumentVersion.create", path: "/api/documentversion/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "DocumentVersion.restore", path: "/api/documentversion/restore", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Driver.create", path: "/api/driver/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Driver.remove", path: "/api/driver/remove", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Driver.update", path: "/api/driver/update", method: "POST", source: "command", auth: true, tenant: true },
   { id: "EmailTemplate.create", path: "/api/emailtemplate/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "EmailTemplate.softDelete", path: "/api/emailtemplate/soft-delete", method: "POST", source: "command", auth: true, tenant: true },
   { id: "EmailTemplate.update", path: "/api/emailtemplate/update", method: "POST", source: "command", auth: true, tenant: true },
@@ -4095,6 +4761,28 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "EventSummary.create", path: "/api/eventsummary/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "EventSummary.refresh", path: "/api/eventsummary/refresh", method: "POST", source: "command", auth: true, tenant: true },
   { id: "EventSummary.update", path: "/api/eventsummary/update", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "EventTimelineItem.completeItem", path: "/api/eventtimelineitem/complete-item", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "EventTimelineItem.createItem", path: "/api/eventtimelineitem/create-item", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "EventTimelineItem.deleteItem", path: "/api/eventtimelineitem/delete-item", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "EventTimelineItem.updateItem", path: "/api/eventtimelineitem/update-item", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "EventWaitlistEntry.addGuest", path: "/api/eventwaitlistentry/add-guest", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "EventWaitlistEntry.promote", path: "/api/eventwaitlistentry/promote", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "EventWaitlistEntry.updateRsvp", path: "/api/eventwaitlistentry/update-rsvp", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Facility.create", path: "/api/facility/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Facility.edit", path: "/api/facility/edit", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Facility.remove", path: "/api/facility/remove", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "FacilityArea.create", path: "/api/facilityarea/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "FacilityArea.edit", path: "/api/facilityarea/edit", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "FacilityArea.remove", path: "/api/facilityarea/remove", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "FacilityAsset.create", path: "/api/facilityasset/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "FacilityAsset.remove", path: "/api/facilityasset/remove", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "FacilityAsset.update", path: "/api/facilityasset/update", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "FacilitySchedule.complete", path: "/api/facilityschedule/complete", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "FacilitySchedule.create", path: "/api/facilityschedule/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "FacilitySchedule.edit", path: "/api/facilityschedule/edit", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "FacilitySchedule.remove", path: "/api/facilityschedule/remove", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "FacilityWorkOrder.create", path: "/api/facilityworkorder/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "FacilityWorkOrder.updateStatus", path: "/api/facilityworkorder/update-status", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Ingredient.create", path: "/api/ingredient/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Ingredient.deactivate", path: "/api/ingredient/deactivate", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Ingredient.update", path: "/api/ingredient/update", method: "POST", source: "command", auth: true, tenant: true },
@@ -4111,6 +4799,11 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "InventorySupplier.deactivate", path: "/api/inventorysupplier/deactivate", method: "POST", source: "command", auth: true, tenant: true },
   { id: "InventorySupplier.update", path: "/api/inventorysupplier/update", method: "POST", source: "command", auth: true, tenant: true },
   { id: "InventoryTransaction.create", path: "/api/inventorytransaction/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "InventoryTransfer.approve", path: "/api/inventorytransfer/approve", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "InventoryTransfer.cancel", path: "/api/inventorytransfer/cancel", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "InventoryTransfer.create", path: "/api/inventorytransfer/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "InventoryTransfer.receive", path: "/api/inventorytransfer/receive", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "InventoryTransfer.ship", path: "/api/inventorytransfer/ship", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Invoice.applyPayment", path: "/api/invoice/apply-payment", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Invoice.markAsPaid", path: "/api/invoice/mark-as-paid", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Invoice.markOverdue", path: "/api/invoice/mark-overdue", method: "POST", source: "command", auth: true, tenant: true },
@@ -4136,6 +4829,10 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "KitchenTask.updateSummary", path: "/api/kitchentask/update-summary", method: "POST", source: "command", auth: true, tenant: true },
   { id: "KitchenTask.updateTags", path: "/api/kitchentask/update-tags", method: "POST", source: "command", auth: true, tenant: true },
   { id: "KitchenTask.updateTitle", path: "/api/kitchentask/update-title", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "KnowledgeBaseEntry.create", path: "/api/knowledgebaseentry/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "KnowledgeBaseEntry.publishEntry", path: "/api/knowledgebaseentry/publish-entry", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "KnowledgeBaseEntry.remove", path: "/api/knowledgebaseentry/remove", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "KnowledgeBaseEntry.update", path: "/api/knowledgebaseentry/update", method: "POST", source: "command", auth: true, tenant: true },
   { id: "LaborBudget.create", path: "/api/laborbudget/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "LaborBudget.softDelete", path: "/api/laborbudget/soft-delete", method: "POST", source: "command", auth: true, tenant: true },
   { id: "LaborBudget.update", path: "/api/laborbudget/update", method: "POST", source: "command", auth: true, tenant: true },
@@ -4144,6 +4841,12 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "Lead.create", path: "/api/lead/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Lead.disqualify", path: "/api/lead/disqualify", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Lead.update", path: "/api/lead/update", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "LogisticsDispatch.assign", path: "/api/logisticsdispatch/assign", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "LogisticsRoute.create", path: "/api/logisticsroute/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "LogisticsRoute.optimize", path: "/api/logisticsroute/optimize", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "LogisticsRoute.remove", path: "/api/logisticsroute/remove", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "LogisticsRoute.update", path: "/api/logisticsroute/update", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "LogisticsRoute.updateStatus", path: "/api/logisticsroute/update-status", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Menu.activate", path: "/api/menu/activate", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Menu.create", path: "/api/menu/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Menu.deactivate", path: "/api/menu/deactivate", method: "POST", source: "command", auth: true, tenant: true },
@@ -4263,6 +4966,11 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "PurchaseRequisitionItem.create", path: "/api/purchaserequisitionitem/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "PurchaseRequisitionItem.remove", path: "/api/purchaserequisitionitem/remove", method: "POST", source: "command", auth: true, tenant: true },
   { id: "PurchaseRequisitionItem.update", path: "/api/purchaserequisitionitem/update", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "QACheck.complete", path: "/api/qacheck/complete", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "QACheck.create", path: "/api/qacheck/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "QACorrectiveAction.create", path: "/api/qacorrectiveaction/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "QACorrectiveAction.resolve", path: "/api/qacorrectiveaction/resolve", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "QATemperatureLog.log", path: "/api/qatemperaturelog/log", method: "POST", source: "command", auth: true, tenant: true },
   { id: "RateLimitConfig.create", path: "/api/ratelimitconfig/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "RateLimitConfig.softDelete", path: "/api/ratelimitconfig/soft-delete", method: "POST", source: "command", auth: true, tenant: true },
   { id: "RateLimitConfig.turnOff", path: "/api/ratelimitconfig/turn-off", method: "POST", source: "command", auth: true, tenant: true },
@@ -4325,6 +5033,10 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "SmsAutomationRule.deactivate", path: "/api/smsautomationrule/deactivate", method: "POST", source: "command", auth: true, tenant: true },
   { id: "SmsAutomationRule.softDelete", path: "/api/smsautomationrule/soft-delete", method: "POST", source: "command", auth: true, tenant: true },
   { id: "SmsAutomationRule.update", path: "/api/smsautomationrule/update", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "StaffPerformance.complete", path: "/api/staffperformance/complete", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "StaffPerformance.create", path: "/api/staffperformance/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "StaffPerformance.remove", path: "/api/staffperformance/remove", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "StaffPerformance.update", path: "/api/staffperformance/update", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Station.activate", path: "/api/station/activate", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Station.assignTask", path: "/api/station/assign-task", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Station.create", path: "/api/station/create", method: "POST", source: "command", auth: true, tenant: true },
@@ -4357,6 +5069,14 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "VarianceReport.approve", path: "/api/variancereport/approve", method: "POST", source: "command", auth: true, tenant: true },
   { id: "VarianceReport.create", path: "/api/variancereport/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "VarianceReport.review", path: "/api/variancereport/review", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Vehicle.create", path: "/api/vehicle/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Vehicle.remove", path: "/api/vehicle/remove", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Vehicle.update", path: "/api/vehicle/update", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Vendor.addContact", path: "/api/vendor/add-contact", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Vendor.create", path: "/api/vendor/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Vendor.rate", path: "/api/vendor/rate", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Vendor.remove", path: "/api/vendor/remove", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Vendor.update", path: "/api/vendor/update", method: "POST", source: "command", auth: true, tenant: true },
   { id: "VendorCatalog.create", path: "/api/vendorcatalog/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "VendorCatalog.softDelete", path: "/api/vendorcatalog/soft-delete", method: "POST", source: "command", auth: true, tenant: true },
   { id: "VendorCatalog.update", path: "/api/vendorcatalog/update", method: "POST", source: "command", auth: true, tenant: true },
