@@ -1,7 +1,7 @@
 "use server";
 
 import { database } from "@repo/database";
-import { requireTenantId } from "../../../lib/tenant";
+import { requireCurrentUser, requireTenantId } from "../../../lib/tenant";
 import type {
   CreateSessionInput,
   CycleCountSession,
@@ -116,19 +116,7 @@ export async function createCycleCountSession(
 ): Promise<SessionResult> {
   try {
     const tenantId = await requireTenantId();
-    const user = await database.user.findFirst({
-      where: {
-        tenantId,
-        authUserId: await requireTenantId(),
-      },
-    });
-
-    if (!user) {
-      return {
-        success: false,
-        error: "User not found",
-      };
-    }
+    const user = await requireCurrentUser();
 
     const session = await database.cycleCountSession.create({
       data: {

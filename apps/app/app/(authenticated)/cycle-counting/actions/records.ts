@@ -1,7 +1,7 @@
 "use server";
 
 import { database } from "@repo/database";
-import { requireTenantId } from "../../../lib/tenant";
+import { requireCurrentUser, requireTenantId } from "../../../lib/tenant";
 import type {
   CreateRecordInput,
   CycleCountRecord,
@@ -114,19 +114,7 @@ export async function createCycleCountRecord(
 ): Promise<RecordResult> {
   try {
     const tenantId = await requireTenantId();
-    const user = await database.user.findFirst({
-      where: {
-        tenantId,
-        authUserId: await requireTenantId(),
-      },
-    });
-
-    if (!user) {
-      return {
-        success: false,
-        error: "User not found",
-      };
-    }
+    const user = await requireCurrentUser();
 
     const variance = input.countedQuantity - input.expectedQuantity;
     const variancePct =
@@ -297,19 +285,7 @@ export async function syncCycleCountRecords(
 ): Promise<RecordResult> {
   try {
     const tenantId = await requireTenantId();
-    const user = await database.user.findFirst({
-      where: {
-        tenantId,
-        authUserId: await requireTenantId(),
-      },
-    });
-
-    if (!user) {
-      return {
-        success: false,
-        error: "User not found",
-      };
-    }
+    const user = await requireCurrentUser();
 
     const results = await Promise.all(
       input.records.map(async (recordData) => {

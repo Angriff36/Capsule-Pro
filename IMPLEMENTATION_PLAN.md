@@ -59,11 +59,11 @@ These cause runtime errors, data loss, or broken user flows. 21 items (down from
 - [x] **P0.L — Knowledge Base: client reads wrong response shape** [RESOLVED v66]
   Client reads `data.data.entries` but API returns flat `{ success, entries, hasMore, totalCount }`. TypeError on every load.
 
-- [ ] **P0.O — Cycle Counting: server action passes tenantId as authUserId** [VERIFIED v63]
-  `apps/app/app/(authenticated)/cycle-counting/actions/sessions.ts:119-123` passes `requireTenantId()` as `authUserId`. User lookup always fails.
+- [x] **P0.O — Cycle Counting: server action passes tenantId as authUserId** [RESOLVED v67]
+  `apps/app/app/(authenticated)/cycle-counting/actions/sessions.ts:119-123` and `records.ts:117-121,300-304` passed `requireTenantId()` as `authUserId`. User lookup always failed. Fixed by using `requireCurrentUser()` instead, which properly resolves the Clerk userId and performs correct `(tenantId, authUserId)` lookup.
 
-- [ ] **P0.P — Cycle Counting: hardcoded dummy UUID for locationId** [VERIFIED v63]
-  `apps/app/app/(authenticated)/cycle-counting/page.tsx:74` hardcodes nil UUID. Will fail FK constraint or create orphans.
+- [x] **P0.P — Cycle Counting: hardcoded dummy UUID for locationId** [RESOLVED v67]
+  `apps/app/app/(authenticated)/cycle-counting/page.tsx:74` hardcoded nil UUID. Fixed by adding a location `<Select>` dropdown that fetches locations from the database and passes the selected `locationId` to the server action.
 
 - [x] **P0.Q — Security: plaintext credentials in docs/test-screenshot.ts** [RESOLVED v65]
   Real email `unashamed366@gmail.com` and password `rWon22Jo5HvYCa` from Playwright codegen. Rotate immediately.

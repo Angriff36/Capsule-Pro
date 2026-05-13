@@ -1,3 +1,4 @@
+import { database } from "@repo/database";
 import {
   CommandBand,
   CommandBandHeader,
@@ -13,6 +14,13 @@ import { Button } from "@repo/design-system/components/ui/button";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@repo/design-system/components/ui/select";
+import {
   Table,
   TableBody,
   TableCell,
@@ -22,6 +30,7 @@ import {
 } from "@repo/design-system/components/ui/table";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
 import { redirect } from "next/navigation";
+import { requireTenantId } from "../../lib/tenant";
 import {
   createCycleCountSession,
   listCycleCountSessions,
@@ -43,7 +52,16 @@ const statusLabelMap: Record<string, string> = {
 };
 
 export default async function CycleCountingPage() {
-  const sessions = await listCycleCountSessions();
+  const [sessions, tenantId] = await Promise.all([
+    listCycleCountSessions(),
+    requireTenantId(),
+  ]);
+
+  const locations = await database.location.findMany({
+    where: { tenantId, deletedAt: null },
+    select: { id: true, name: true },
+    orderBy: { name: "asc" },
+  });
 
   return (
     <PageCanvas>
@@ -71,7 +89,7 @@ export default async function CycleCountingPage() {
             action={async (formData) => {
               "use server";
               const result = await createCycleCountSession({
-                locationId: "00000000-0000-0000-0000-000000000000",
+                locationId: formData.get("locationId") as string,
                 sessionName: formData.get("sessionName") as string,
                 countType: "ad_hoc",
                 notes: (formData.get("notes") as string) || undefined,
@@ -95,6 +113,21 @@ export default async function CycleCountingPage() {
                 />
               </div>
               <div className="space-y-2">
+                <Label htmlFor="locationId">Location</Label>
+                <Select name="locationId" required>
+                  <SelectTrigger id="locationId">
+                    <SelectValue placeholder="Select a location" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {locations.map((loc) => (
+                      <SelectItem key={loc.id} value={loc.id}>
+                        {loc.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2 sm:col-span-2">
                 <Label htmlFor="notes">Notes</Label>
                 <Textarea
                   id="notes"
@@ -139,36 +172,46 @@ export default async function CycleCountingPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {sessions.map((session) => (
-                    <TableRow key={session.id}>
-                      <TableCell className="font-medium">
-                        <a
-                          className="text-primary hover:underline"
-                          href={`/cycle-counting/${session.sessionId}`}
-                        >
-                          {session.sessionName}
-                        </a>
-                      </TableCell>
-                      <TableCell className="capitalize text-muted-foreground">
-                        {session.countType.replace("_", " ")}
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          variant={
-                            statusVariantMap[session.status] ?? "outline"
-                          }
-                        >
-                          {statusLabelMap[session.status] ?? session.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        {session.variancePercentage.toFixed(2)}%
-                      </TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {new Date(session.createdAt).toLocaleDateString()}
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                  {sessions.map(
+                    (session: {
+                      id: string;
+                      sessionId: string;
+                      sessionName: string;
+                      status: string;
+                      countType: string;
+                      variancePercentage: number;
+                      createdAt: Date;
+                    }) => (
+                      <TableRow key={session.id}>
+                        <TableCell className="font-medium">
+                          <a
+                            className="text-primary hover:underline"
+                            href={`/cycle-counting/${session.sessionId}`}
+                          >
+                            {session.sessionName}
+                          </a>
+                        </TableCell>
+                        <TableCell className="capitalize text-muted-foreground">
+                          {session.countType.replace("_", " ")}
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            variant={
+                              statusVariantMap[session.status] ?? "outline"
+                            }
+                          >
+                            {statusLabelMap[session.status] ?? session.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          {session.variancePercentage.toFixed(2)}%
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {new Date(session.createdAt).toLocaleDateString()}
+                        </TableCell>
+                      </TableRow>
+                    )
+                  )}
                 </TableBody>
               </Table>
             </div>
