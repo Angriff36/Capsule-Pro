@@ -268,8 +268,8 @@ export type PayrollCalculationInput = z.infer<
 // ============================================
 
 export const GeneratePayrollRequestSchema = z.object({
-  periodStart: z.string(),
-  periodEnd: z.string(),
+  periodStart: z.string().optional(),
+  periodEnd: z.string().optional(),
   jurisdiction: z.string().optional(),
   regenerateOnDataChange: z.boolean().default(false),
 });

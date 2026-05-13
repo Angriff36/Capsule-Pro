@@ -665,7 +665,7 @@ export async function getSchedules(params?: {
       status: string;
       location_id: string;
       location_name: string;
-      shift_count: number;
+      shift_count: bigint;
     }>
   >(
     Prisma.sql`
@@ -675,11 +675,14 @@ export async function getSchedules(params?: {
         s.status,
         s.location_id,
         l.name AS location_name,
-        s.shift_count
+        COUNT(ss.id)::bigint AS shift_count
       FROM tenant_staff.schedules s
       JOIN tenant.locations l
         ON l.tenant_id = s.tenant_id
        AND l.id = s.location_id
+      LEFT JOIN tenant_staff.schedule_shifts ss
+        ON ss.schedule_id = s.id
+       AND ss.deleted_at IS NULL
       WHERE s.tenant_id = ${tenantId}
         AND s.deleted_at IS NULL
         ${hasSearch ? Prisma.sql`AND (
@@ -687,6 +690,7 @@ export async function getSchedules(params?: {
         )` : Prisma.empty}
         ${hasStatus ? Prisma.sql`AND s.status = ${params!.status!}` : Prisma.empty}
         ${hasLocationId ? Prisma.sql`AND s.location_id = ${params!.locationId!}` : Prisma.empty}
+      GROUP BY s.id, s.schedule_date, s.status, s.location_id, l.name
       ORDER BY s.schedule_date DESC
       LIMIT 50
     `

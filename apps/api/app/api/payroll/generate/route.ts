@@ -16,8 +16,8 @@ import { getTenantIdForOrg } from "@/app/lib/tenant";
  *
  * Body:
  * {
- *   periodStart: string (ISO date),
- *   periodEnd: string (ISO date),
+ *   periodStart?: string (ISO date) - defaults to first day of current month,
+ *   periodEnd?: string (ISO date) - defaults to today,
  *   jurisdiction?: string,
  *   regenerateOnDataChange?: boolean
  * }
@@ -61,9 +61,21 @@ export async function POST(request: NextRequest) {
 
     const requestData = parseResult.data;
 
-    // Validate date range
-    const startDate = new Date(requestData.periodStart);
-    const endDate = new Date(requestData.periodEnd);
+    // Default period: current month (start to today) if not provided
+    const now = new Date();
+    const startDate = requestData.periodStart
+      ? new Date(requestData.periodStart)
+      : new Date(now.getFullYear(), now.getMonth(), 1);
+    const endDate = requestData.periodEnd
+      ? new Date(requestData.periodEnd)
+      : now;
+
+    // Merge computed dates back into requestData for the service
+    const serviceRequest = {
+      ...requestData,
+      periodStart: startDate.toISOString(),
+      periodEnd: endDate.toISOString(),
+    };
 
     if (startDate >= endDate) {
       return NextResponse.json(
@@ -94,7 +106,7 @@ export async function POST(request: NextRequest) {
     // Generate payroll
     const result = await payrollService.generatePayroll(
       tenantId,
-      requestData,
+      serviceRequest,
       userId
     );
 

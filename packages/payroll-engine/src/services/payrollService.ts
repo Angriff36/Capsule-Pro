@@ -82,8 +82,14 @@ export class PayrollService {
     request: GeneratePayrollRequest,
     userId?: string
   ): Promise<GeneratePayrollResponse> {
-    const periodStart = new Date(request.periodStart);
-    const periodEnd = new Date(request.periodEnd);
+    // Provide defaults for optional fields (API route should set these, but be defensive)
+    const now = new Date();
+    const periodStart = request.periodStart
+      ? new Date(request.periodStart)
+      : new Date(now.getFullYear(), now.getMonth(), 1);
+    const periodEnd = request.periodEnd
+      ? new Date(request.periodEnd)
+      : now;
     const periodId = this.generatePeriodId(tenantId, periodStart, periodEnd);
     const batchId = randomUUID();
 
