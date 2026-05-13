@@ -734,7 +734,10 @@ describe("Training API", () => {
           body: JSON.stringify({ title: "Test" }),
         }
       );
-      const response = await createModuleCommand(request);
+      const response = await createModuleCommand(
+        request,
+        { params: Promise.resolve({ entity: "TrainingModule", command: "create" }) }
+      );
 
       expect(response.status).toBe(401);
     });
@@ -749,7 +752,10 @@ describe("Training API", () => {
           body: JSON.stringify({ title: "Test" }),
         }
       );
-      const response = await createModuleCommand(request);
+      const response = await createModuleCommand(
+        request,
+        { params: Promise.resolve({ entity: "TrainingModule", command: "create" }) }
+      );
 
       expect(response.status).toBe(400);
       const body = await response.json();
@@ -766,7 +772,10 @@ describe("Training API", () => {
           body: JSON.stringify({ title: "Test" }),
         }
       );
-      const response = await createModuleCommand(request);
+      const response = await createModuleCommand(
+        request,
+        { params: Promise.resolve({ entity: "TrainingModule", command: "create" }) }
+      );
 
       expect(response.status).toBe(400);
       const body = await response.json();
@@ -791,7 +800,10 @@ describe("Training API", () => {
           }),
         }
       );
-      const response = await createModuleCommand(request);
+      const response = await createModuleCommand(
+        request,
+        { params: Promise.resolve({ entity: "TrainingModule", command: "create" }) }
+      );
 
       expect(response.status).toBe(200);
       const body = await response.json();
@@ -818,7 +830,10 @@ describe("Training API", () => {
           body: JSON.stringify({ title: "Unauthorized" }),
         }
       );
-      const response = await createModuleCommand(request);
+      const response = await createModuleCommand(
+        request,
+        { params: Promise.resolve({ entity: "TrainingModule", command: "create" }) }
+      );
 
       expect(response.status).toBe(403);
       const body = await response.json();
@@ -842,7 +857,10 @@ describe("Training API", () => {
           body: JSON.stringify({}),
         }
       );
-      const response = await createModuleCommand(request);
+      const response = await createModuleCommand(
+        request,
+        { params: Promise.resolve({ entity: "TrainingModule", command: "create" }) }
+      );
 
       expect(response.status).toBe(422);
       const body = await response.json();
@@ -863,7 +881,10 @@ describe("Training API", () => {
           body: JSON.stringify({}),
         }
       );
-      const response = await createModuleCommand(request);
+      const response = await createModuleCommand(
+        request,
+        { params: Promise.resolve({ entity: "TrainingModule", command: "create" }) }
+      );
 
       expect(response.status).toBe(400);
       const body = await response.json();
@@ -880,7 +901,10 @@ describe("Training API", () => {
           body: JSON.stringify({ title: "Crash" }),
         }
       );
-      const response = await createModuleCommand(request);
+      const response = await createModuleCommand(
+        request,
+        { params: Promise.resolve({ entity: "TrainingModule", command: "create" }) }
+      );
 
       expect(response.status).toBe(500);
     });
@@ -918,7 +942,10 @@ describe("Training API", () => {
           }),
         }
       );
-      const response = await updateModuleCommand(request);
+      const response = await updateModuleCommand(
+        request,
+        { params: Promise.resolve({ entity: "TrainingModule", command: "update" }) }
+      );
 
       expect(response.status).toBe(200);
       const body = await response.json();
@@ -944,7 +971,10 @@ describe("Training API", () => {
           body: JSON.stringify({ id: "mod-001" }),
         }
       );
-      const response = await updateModuleCommand(request);
+      const response = await updateModuleCommand(
+        request,
+        { params: Promise.resolve({ entity: "TrainingModule", command: "update" }) }
+      );
 
       expect(response.status).toBe(401);
     });
@@ -979,7 +1009,10 @@ describe("Training API", () => {
           body: JSON.stringify({ id: "mod-001" }),
         }
       );
-      const response = await softDeleteModuleCommand(request);
+      const response = await softDeleteModuleCommand(
+        request,
+        { params: Promise.resolve({ entity: "TrainingModule", command: "softDelete" }) }
+      );
 
       expect(response.status).toBe(200);
       const body = await response.json();
@@ -1005,7 +1038,10 @@ describe("Training API", () => {
           body: JSON.stringify({ id: "mod-001" }),
         }
       );
-      const response = await softDeleteModuleCommand(request);
+      const response = await softDeleteModuleCommand(
+        request,
+        { params: Promise.resolve({ entity: "TrainingModule", command: "softDelete" }) }
+      );
 
       expect(response.status).toBe(401);
     });
@@ -1023,7 +1059,10 @@ describe("Training API", () => {
           body: JSON.stringify({ id: "mod-001" }),
         }
       );
-      const response = await softDeleteModuleCommand(request);
+      const response = await softDeleteModuleCommand(
+        request,
+        { params: Promise.resolve({ entity: "TrainingModule", command: "softDelete" }) }
+      );
 
       expect(response.status).toBe(403);
     });
@@ -1434,7 +1473,10 @@ describe("Training API", () => {
           body: JSON.stringify({ moduleId: "mod-001" }),
         }
       );
-      const response = await createAssignmentCommand(request);
+      const response = await createAssignmentCommand(
+        request,
+        { params: Promise.resolve({ entity: "TrainingAssignment", command: "create" }) }
+      );
 
       expect(response.status).toBe(401);
     });
@@ -1457,7 +1499,10 @@ describe("Training API", () => {
           }),
         }
       );
-      const response = await createAssignmentCommand(request);
+      const response = await createAssignmentCommand(
+        request,
+        { params: Promise.resolve({ entity: "TrainingAssignment", command: "create" }) }
+      );
 
       expect(response.status).toBe(200);
       const body = await response.json();
@@ -1487,7 +1532,10 @@ describe("Training API", () => {
           body: JSON.stringify({ moduleId: "mod-001" }),
         }
       );
-      const response = await createAssignmentCommand(request);
+      const response = await createAssignmentCommand(
+        request,
+        { params: Promise.resolve({ entity: "TrainingAssignment", command: "create" }) }
+      );
 
       expect(response.status).toBe(403);
       const body = await response.json();
@@ -1510,7 +1558,10 @@ describe("Training API", () => {
           body: JSON.stringify({}),
         }
       );
-      const response = await createAssignmentCommand(request);
+      const response = await createAssignmentCommand(
+        request,
+        { params: Promise.resolve({ entity: "TrainingAssignment", command: "create" }) }
+      );
 
       expect(response.status).toBe(422);
       const body = await response.json();
@@ -1527,7 +1578,10 @@ describe("Training API", () => {
           body: JSON.stringify({ moduleId: "mod-001" }),
         }
       );
-      const response = await createAssignmentCommand(request);
+      const response = await createAssignmentCommand(
+        request,
+        { params: Promise.resolve({ entity: "TrainingAssignment", command: "create" }) }
+      );
 
       expect(response.status).toBe(500);
     });
@@ -1542,7 +1596,10 @@ describe("Training API", () => {
           body: JSON.stringify({ moduleId: "mod-001" }),
         }
       );
-      const response = await createAssignmentCommand(request);
+      const response = await createAssignmentCommand(
+        request,
+        { params: Promise.resolve({ entity: "TrainingAssignment", command: "create" }) }
+      );
 
       expect(response.status).toBe(400);
       const body = await response.json();
@@ -1579,7 +1636,10 @@ describe("Training API", () => {
           body: JSON.stringify({ id: "assign-001" }),
         }
       );
-      const response = await softDeleteAssignmentCommand(request);
+      const response = await softDeleteAssignmentCommand(
+        request,
+        { params: Promise.resolve({ entity: "TrainingAssignment", command: "softDelete" }) }
+      );
 
       expect(response.status).toBe(200);
       const body = await response.json();
@@ -1605,7 +1665,10 @@ describe("Training API", () => {
           body: JSON.stringify({ id: "assign-001" }),
         }
       );
-      const response = await softDeleteAssignmentCommand(request);
+      const response = await softDeleteAssignmentCommand(
+        request,
+        { params: Promise.resolve({ entity: "TrainingAssignment", command: "softDelete" }) }
+      );
 
       expect(response.status).toBe(401);
     });
