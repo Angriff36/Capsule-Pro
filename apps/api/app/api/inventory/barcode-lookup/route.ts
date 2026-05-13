@@ -61,27 +61,29 @@ export async function GET(request: Request) {
 
     const results = await database.$queryRaw<BarcodeLookupResult[]>`
       SELECT
-        id,
-        tenant_id,
-        item_number,
-        name,
-        description,
-        category,
-        unit_of_measure,
-        unit_cost,
-        quantity_on_hand,
-        par_level,
-        reorder_level,
-        supplier_id,
-        tags,
-        fsa_status,
-        barcode,
-        created_at,
-        updated_at
-      FROM tenant_inventory.inventory_items
-      WHERE tenant_id = ${tenantId}
-        AND barcode = ${barcode.trim()}
-        AND deleted_at IS NULL
+        ii.id,
+        ii.tenant_id,
+        ii.item_number,
+        ii.name,
+        ii.description,
+        ii.category,
+        ii.unit_of_measure,
+        ii.unit_cost,
+        ii.quantity_on_hand,
+        ii.par_level,
+        ii.reorder_level,
+        ii.supplier_id,
+        ii.tags,
+        ii.fsa_status,
+        ccr.barcode,
+        ii.created_at,
+        ii.updated_at
+      FROM tenant_inventory.cycle_count_records ccr
+      JOIN tenant_inventory.inventory_items ii ON ii.id = ccr.item_id AND ii.tenant_id = ccr.tenant_id
+      WHERE ccr.tenant_id = ${tenantId}
+        AND ccr.barcode = ${barcode.trim()}
+        AND ccr.deleted_at IS NULL
+        AND ii.deleted_at IS NULL
       LIMIT 1
     `;
 

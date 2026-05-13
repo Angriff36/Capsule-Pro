@@ -53,8 +53,8 @@ These cause runtime errors, data loss, or broken user flows. 21 items (down from
 - [x] **P0.I — Events: stale waitlist route uses $queryRaw unnecessarily** [RESOLVED v66]
   `apps/api/app/api/events/[eventId]/waitlist/route.ts` — all referenced fields (`Event.maxCapacity`, `EventGuest.rsvpStatus`, `EventGuest.waitlistPosition`) exist in Prisma. Could use ORM.
 
-- [ ] **P0.J — Inventory: barcode lookup queries non-existent column** [VERIFIED v63]
-  `apps/api/app/api/inventory/barcode-lookup/route.ts:62-86` queries `barcode` from `InventoryItem`. No such field (exists on `CycleCountRecord` only).
+- [x] **P0.J — Inventory: barcode lookup queries non-existent column** [RESOLVED v69]
+  `apps/api/app/api/inventory/barcode-lookup/route.ts:62-88` queries `barcode` from `InventoryItem`. No such field (exists on `CycleCountRecord` only). Fixed by JOINing `cycle_count_records` and selecting barcode from that table.
 
 - [x] **P0.L — Knowledge Base: client reads wrong response shape** [RESOLVED v66]
   Client reads `data.data.entries` but API returns flat `{ success, entries, hasMore, totalCount }`. TypeError on every load.
