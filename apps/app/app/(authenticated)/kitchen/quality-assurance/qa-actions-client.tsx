@@ -27,6 +27,8 @@ import {
   SelectValue,
 } from "@repo/design-system/components/ui/select";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
+import { DatePicker } from "@repo/design-system/components/ui/date-picker";
+import { DateTimePicker } from "@repo/design-system/components/ui/date-time-picker";
 import {
   AlertTriangle,
   CheckCircle2,
@@ -217,7 +219,7 @@ export function CreateCheckDialog({ onSuccess }: { onSuccess: () => void }) {
           body.checklistItems = filtered;
         }
         await submitCommand(
-          "/api/kitchen/quality-assurance/checks/commands/create",
+          "/api/manifest/QACheck/commands/create",
           body
         );
         toast.success("Quality check created");
@@ -306,10 +308,10 @@ export function CreateCheckDialog({ onSuccess }: { onSuccess: () => void }) {
 
           <div className="space-y-2">
             <Label htmlFor="qc-scheduled">Scheduled At</Label>
-            <Input
+            <DateTimePicker
               id="qc-scheduled"
               onChange={(e) => setScheduledAt(e.target.value)}
-              type="datetime-local"
+ 
               value={scheduledAt}
             />
           </div>
@@ -462,7 +464,7 @@ export function CompleteCheckDialog({
           body.itemResults = results;
         }
         await submitCommand(
-          "/api/kitchen/quality-assurance/checks/commands/complete",
+          "/api/manifest/QACheck/commands/complete",
           body
         );
         toast.success("Check completed");
@@ -664,7 +666,7 @@ export function LogTemperatureDialog({ onSuccess }: { onSuccess: () => void }) {
           body.notes = notes.trim();
         }
         await submitCommand(
-          "/api/kitchen/quality-assurance/temperature-logs/commands/log",
+          "/api/manifest/QATemperatureLog/commands/log",
           body
         );
         toast.success("Temperature logged");
@@ -897,7 +899,7 @@ export function CreateCorrectiveActionDialog({
           body.dueDate = dueDate;
         }
         await submitCommand(
-          "/api/kitchen/quality-assurance/corrective-actions/commands/create",
+          "/api/manifest/QACorrectiveAction/commands/create",
           body
         );
         toast.success("Corrective action created");
@@ -1034,10 +1036,10 @@ export function CreateCorrectiveActionDialog({
             </div>
             <div className="space-y-2">
               <Label htmlFor="ca-due">Due Date</Label>
-              <Input
+              <DatePicker
                 id="ca-due"
                 onChange={(e) => setDueDate(e.target.value)}
-                type="date"
+ 
                 value={dueDate}
               />
             </div>
@@ -1096,7 +1098,7 @@ export function ResolveActionDialog({
           body.verificationMethod = verificationMethod.trim();
         }
         await submitCommand(
-          "/api/kitchen/quality-assurance/corrective-actions/commands/resolve",
+          "/api/manifest/QACorrectiveAction/commands/resolve",
           body
         );
         toast.success("Action resolved");

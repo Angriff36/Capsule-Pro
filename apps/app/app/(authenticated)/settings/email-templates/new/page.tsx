@@ -207,7 +207,7 @@ export default function NewEmailTemplatePage() {
                     <FormItem>
                       <FormLabel>Template Type</FormLabel>
                       <Select
-                        defaultValue={field.value}
+                        value={field.value}
                         onValueChange={field.onChange}
                       >
                         <FormControl>

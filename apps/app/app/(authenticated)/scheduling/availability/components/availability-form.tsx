@@ -3,6 +3,7 @@
 import { Button } from "@repo/design-system/components/ui/button";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
+import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import {
   Select,
   SelectContent,
@@ -197,23 +198,23 @@ export function AvailabilityForm({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="effectiveFrom">Effective From</Label>
-          <Input
+          <DatePicker
             id="effectiveFrom"
             onChange={(e) => handleInputChange("effectiveFrom", e.target.value)}
             required
-            type="date"
+ 
             value={formData.effectiveFrom}
           />
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="effectiveUntil">Effective Until</Label>
-          <Input
+          <DatePicker
             id="effectiveUntil"
             onChange={(e) =>
               handleInputChange("effectiveUntil", e.target.value)
             }
-            type="date"
+ 
             value={formData.effectiveUntil}
           />
         </div>

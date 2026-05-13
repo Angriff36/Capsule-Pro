@@ -1,0 +1,132 @@
+// Procurement Vendor Rules
+// Manifest spec for vendor management, contacts, and ratings
+
+entity Vendor {
+  property required id: string
+  property required tenantId: string
+  property required name: string
+  property type: string = "supplier"
+  property status: string = "active"
+  property email: string = ""
+  property phone: string = ""
+  property website: string = ""
+  property address: string = ""
+  property city: string = ""
+  property state: string = ""
+  property zip: string = ""
+  property taxId: string = ""
+  property paymentTerms: string = "net30"
+  property rating: number = 0
+  property ratingCount: number = 0
+  property notes: string = ""
+  property createdAt: number = 0
+  property updatedAt: number = 0
+
+  computed averageRating: number = self.ratingCount > 0 ? self.rating / self.ratingCount : 0
+
+  constraint validType: self.type in ["supplier", "manufacturer", "distributor", "service_provider", "other"] "Invalid vendor type"
+  constraint validStatus: self.status in ["active", "inactive", "blacklisted"] "Invalid vendor status"
+  constraint validPaymentTerms: self.paymentTerms in ["net15", "net30", "net60", "due_on_receipt", "prepaid"] "Invalid payment terms"
+
+  command create(name: string, type: string, email: string, phone: string, website: string, address: string, city: string, state: string, zip: string, taxId: string, paymentTerms: string, notes: string) {
+    guard name != null and name != "" "Vendor name is required"
+
+    mutate name = name
+    mutate type = type
+    mutate email = email
+    mutate phone = phone
+    mutate website = website
+    mutate address = address
+    mutate city = city
+    mutate state = state
+    mutate zip = zip
+    mutate taxId = taxId
+    mutate paymentTerms = paymentTerms
+    mutate notes = notes
+    mutate status = "active"
+    mutate rating = 0
+    mutate ratingCount = 0
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit VendorCreated
+  }
+
+  command remove() {
+    mutate status = "inactive"
+    mutate updatedAt = now()
+
+    emit VendorDeleted
+  }
+
+  command update(name: string, type: string, email: string, phone: string, website: string, address: string, city: string, state: string, zip: string, taxId: string, paymentTerms: string, notes: string) {
+    guard name != null and name != "" "Vendor name is required"
+
+    mutate name = name
+    mutate type = type
+    mutate email = email
+    mutate phone = phone
+    mutate website = website
+    mutate address = address
+    mutate city = city
+    mutate state = state
+    mutate zip = zip
+    mutate taxId = taxId
+    mutate paymentTerms = paymentTerms
+    mutate notes = notes
+    mutate updatedAt = now()
+
+    emit VendorUpdated
+  }
+
+  command addContact(name: string, role: string, email: string, phone: string) {
+    guard name != null and name != "" "Contact name is required"
+
+    emit VendorContactAdded
+  }
+
+  command rate(score: number, review: string) {
+    guard score >= 1 and score <= 5 "Rating must be between 1 and 5"
+
+    mutate rating = self.rating + score
+    mutate ratingCount = self.ratingCount + 1
+    mutate updatedAt = now()
+
+    emit VendorRated
+  }
+}
+
+policy ProcurementManagersCanManageVendors execute: user.role in ["procurement_manager", "manager", "admin"] "Only procurement managers can manage vendors"
+
+event VendorCreated: "procurement.vendor.created" {
+  vendorId: string
+  tenantId: string
+  name: string
+  type: string
+  createdAt: number
+}
+
+event VendorDeleted: "procurement.vendor.deleted" {
+  vendorId: string
+  deletedAt: number
+}
+
+event VendorUpdated: "procurement.vendor.updated" {
+  vendorId: string
+  name: string
+  updatedAt: number
+}
+
+event VendorContactAdded: "procurement.vendor.contact.added" {
+  vendorId: string
+  contactName: string
+  role: string
+  addedAt: number
+}
+
+event VendorRated: "procurement.vendor.rated" {
+  vendorId: string
+  score: number
+  averageRating: number
+  ratedAt: number
+}

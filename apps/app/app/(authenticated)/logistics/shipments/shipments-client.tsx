@@ -32,6 +32,7 @@ import {
   TabsTrigger,
 } from "@repo/design-system/components/ui/tabs";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
+import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import {
   AlertCircle,
   Calendar,
@@ -722,7 +723,7 @@ export function ShipmentsClient() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="scheduledDate">Scheduled Date</Label>
-                <Input
+                <DatePicker
                   id="scheduledDate"
                   onChange={(e) =>
                     setCreateForm((p) => ({
@@ -730,13 +731,13 @@ export function ShipmentsClient() {
                       scheduledDate: e.target.value,
                     }))
                   }
-                  type="date"
+ 
                   value={createForm.scheduledDate}
                 />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="estimatedDeliveryDate">Est. Delivery</Label>
-                <Input
+                <DatePicker
                   id="estimatedDeliveryDate"
                   onChange={(e) =>
                     setCreateForm((p) => ({
@@ -744,7 +745,7 @@ export function ShipmentsClient() {
                       estimatedDeliveryDate: e.target.value,
                     }))
                   }
-                  type="date"
+ 
                   value={createForm.estimatedDeliveryDate}
                 />
               </div>
@@ -949,7 +950,7 @@ export function ShipmentsClient() {
               <Label htmlFor="edit-estimatedDeliveryDate">
                 Est. Delivery Date
               </Label>
-              <Input
+              <DatePicker
                 id="edit-estimatedDeliveryDate"
                 onChange={(e) =>
                   setEditForm((p) => ({
@@ -957,7 +958,7 @@ export function ShipmentsClient() {
                     estimatedDeliveryDate: e.target.value,
                   }))
                 }
-                type="date"
+ 
                 value={editForm.estimatedDeliveryDate}
               />
             </div>

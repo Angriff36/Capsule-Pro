@@ -36,6 +36,7 @@ import {
   SelectValue,
 } from "@repo/design-system/components/ui/select";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
+import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import {
   AlertTriangle,
   Archive,
@@ -234,7 +235,7 @@ export default function AssetsPage() {
     setSaving(true);
     try {
       if (editing) {
-        const endpoint = "/api/facilities/assets/commands/update";
+        const endpoint = "/api/manifest/FacilityAsset/commands/update";
         const body = {
           assetId: editing.id,
           name: form.name,
@@ -288,7 +289,7 @@ export default function AssetsPage() {
   const handleDelete = async (assetId: string) => {
     setDeleting(assetId);
     try {
-      await apiFetch("/api/facilities/assets/commands/delete", {
+      await apiFetch("/api/manifest/FacilityAsset/commands/remove", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ assetId }),
@@ -591,11 +592,11 @@ export default function AssetsPage() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Purchase Date</Label>
-                <Input
+                <DatePicker
                   onChange={(e) =>
                     setForm((p) => ({ ...p, purchaseDate: e.target.value }))
                   }
-                  type="date"
+ 
                   value={form.purchaseDate}
                 />
               </div>
@@ -616,11 +617,11 @@ export default function AssetsPage() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Warranty Expiry</Label>
-                <Input
+                <DatePicker
                   onChange={(e) =>
                     setForm((p) => ({ ...p, warrantyExpiry: e.target.value }))
                   }
-                  type="date"
+ 
                   value={form.warrantyExpiry}
                 />
               </div>

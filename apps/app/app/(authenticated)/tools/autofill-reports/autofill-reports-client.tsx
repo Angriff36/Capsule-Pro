@@ -263,7 +263,7 @@ function EventReportsTab() {
     }
     setCreating(true);
     try {
-      const res = await apiFetch("/api/events/reports/commands/create", {
+      const res = await apiFetch("/api/manifest/EventReport/commands/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ eventId: selectedEventId.trim() }),
@@ -610,7 +610,7 @@ function DocumentParserTab() {
           if (details.guestCount) updatePayload.guestCount = details.guestCount;
           if (details.venue) updatePayload.venueName = details.venue;
 
-          const res = await apiFetch("/api/events/event/commands/update", {
+          const res = await apiFetch("/api/manifest/Event/commands/update", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(updatePayload),
@@ -630,7 +630,7 @@ function DocumentParserTab() {
           for (const item of parsed.menuItems) {
             try {
               const dishRes = await apiFetch(
-                "/api/kitchen/dishes/commands/create",
+                "/api/manifest/Dish/commands/create",
                 {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
@@ -646,7 +646,7 @@ function DocumentParserTab() {
               };
               const dishId = dishData.result?.id;
               if (dishId) {
-                await apiFetch("/api/events/event-dishes/commands/create", {
+                await apiFetch("/api/manifest/EventDish/commands/create", {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
                   body: JSON.stringify({
@@ -676,7 +676,7 @@ function DocumentParserTab() {
           const errors: string[] = [];
           for (const shift of parsed.staffShifts) {
             try {
-              const res = await apiFetch("/api/staff/shifts/commands/create", {
+              const res = await apiFetch("/api/manifest/ScheduleShift/commands/create", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({

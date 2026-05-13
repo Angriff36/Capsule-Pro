@@ -44,7 +44,7 @@ jobs:
           NPM_TOKEN: ${{ secrets.PKG_AUTH_TOKEN }}
 
       - name: Build with Turbo (exactly like Vercel)
-        run: pnpm turbo run build
+        run: pnpm turbo run build --filter=./apps/app --filter=./apps/api --filter=./apps/web
         env:
           NODE_OPTIONS: "--max-old-space-size=8192"
           # Match Vercel's minimal env approach

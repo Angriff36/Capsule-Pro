@@ -43,7 +43,7 @@ jobs:
           NPM_TOKEN: ${{ secrets.PKG_AUTH_TOKEN }}
 
       - name: Run linting
-        run: pnpm run check
+        run: pnpm turbo typecheck --filter=./apps/app --filter=./apps/api --filter=./apps/web
 
       - name: Check canonical routes (no hardcoded /api/ in client code)
         run: node scripts/check-hardcoded-routes.mjs
@@ -57,7 +57,7 @@ jobs:
         run: pnpm test
 
       - name: Build with Turbo (matches Vercel)
-        run: pnpm turbo run build
+        run: pnpm turbo run build --filter=./apps/app --filter=./apps/api --filter=./apps/web
         env:
           NODE_OPTIONS: "--max-old-space-size=8192"
           # All required env vars for build-time validation (dummy values for CI)

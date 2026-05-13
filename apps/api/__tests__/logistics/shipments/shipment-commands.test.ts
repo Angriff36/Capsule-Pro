@@ -329,14 +329,15 @@ describe("Shipment Command Routes — success paths", () => {
 
   it("create: forwards body and uses entityName Shipment", async () => {
     const { POST } = await import(
-      "@/app/api/shipments/shipment/commands/create/route"
+      "@/app/api/manifest/[entity]/commands/[command]/route"
     );
     const body = { shipmentNumber: "SHP-100", carrier: "UPS" };
     const response = await POST(
       createMockRequest("http://localhost:3000/test", {
         method: "POST",
         body: JSON.stringify(body),
-      })
+      }),
+      { params: Promise.resolve({ entity: "Shipment", command: "create" }) }
     );
     const data = await response.json();
 
@@ -355,7 +356,7 @@ describe("Shipment Command Routes — success paths", () => {
 
   it("update: forwards body and instanceId from body.id", async () => {
     const { POST } = await import(
-      "@/app/api/shipments/shipment/commands/update/route"
+      "@/app/api/manifest/[entity]/commands/[command]/route"
     );
     const body = {
       id: TEST_SHIPMENT_ID,
@@ -366,7 +367,8 @@ describe("Shipment Command Routes — success paths", () => {
       createMockRequest("http://localhost:3000/test", {
         method: "POST",
         body: JSON.stringify(body),
-      })
+      }),
+      { params: Promise.resolve({ entity: "Shipment", command: "update" }) }
     );
 
     expect(response.status).toBe(200);
@@ -382,7 +384,7 @@ describe("Shipment Command Routes — success paths", () => {
 
   it("cancel: forwards reason and userId fields", async () => {
     const { POST } = await import(
-      "@/app/api/shipments/shipment/commands/cancel/route"
+      "@/app/api/manifest/[entity]/commands/[command]/route"
     );
     const body = {
       id: TEST_SHIPMENT_ID,
@@ -393,7 +395,8 @@ describe("Shipment Command Routes — success paths", () => {
       createMockRequest("http://localhost:3000/test", {
         method: "POST",
         body: JSON.stringify(body),
-      })
+      }),
+      { params: Promise.resolve({ entity: "Shipment", command: "cancel" }) }
     );
 
     expect(response.status).toBe(200);
@@ -409,7 +412,7 @@ describe("Shipment Command Routes — success paths", () => {
 
   it("schedule: forwards scheduledDate", async () => {
     const { POST } = await import(
-      "@/app/api/shipments/shipment/commands/schedule/route"
+      "@/app/api/manifest/[entity]/commands/[command]/route"
     );
     const body = {
       id: TEST_SHIPMENT_ID,
@@ -420,7 +423,8 @@ describe("Shipment Command Routes — success paths", () => {
       createMockRequest("http://localhost:3000/test", {
         method: "POST",
         body: JSON.stringify(body),
-      })
+      }),
+      { params: Promise.resolve({ entity: "Shipment", command: "schedule" }) }
     );
 
     expect(response.status).toBe(200);
@@ -433,7 +437,7 @@ describe("Shipment Command Routes — success paths", () => {
 
   it("ship: forwards trackingNumber", async () => {
     const { POST } = await import(
-      "@/app/api/shipments/shipment/commands/ship/route"
+      "@/app/api/manifest/[entity]/commands/[command]/route"
     );
     const body = {
       id: TEST_SHIPMENT_ID,
@@ -444,7 +448,8 @@ describe("Shipment Command Routes — success paths", () => {
       createMockRequest("http://localhost:3000/test", {
         method: "POST",
         body: JSON.stringify(body),
-      })
+      }),
+      { params: Promise.resolve({ entity: "Shipment", command: "ship" }) }
     );
 
     expect(response.status).toBe(200);
@@ -457,14 +462,15 @@ describe("Shipment Command Routes — success paths", () => {
 
   it("startPreparing: forwards body unchanged", async () => {
     const { POST } = await import(
-      "@/app/api/shipments/shipment/commands/start-preparing/route"
+      "@/app/api/manifest/[entity]/commands/[command]/route"
     );
     const body = { id: TEST_SHIPMENT_ID, userId: TEST_USER_ID };
     const response = await POST(
       createMockRequest("http://localhost:3000/test", {
         method: "POST",
         body: JSON.stringify(body),
-      })
+      }),
+      { params: Promise.resolve({ entity: "Shipment", command: "startPreparing" }) }
     );
 
     expect(response.status).toBe(200);
@@ -477,7 +483,7 @@ describe("Shipment Command Routes — success paths", () => {
 
   it("markDelivered: forwards receivedBy + signature", async () => {
     const { POST } = await import(
-      "@/app/api/shipments/shipment/commands/mark-delivered/route"
+      "@/app/api/manifest/[entity]/commands/[command]/route"
     );
     const body = {
       id: TEST_SHIPMENT_ID,
@@ -489,7 +495,8 @@ describe("Shipment Command Routes — success paths", () => {
       createMockRequest("http://localhost:3000/test", {
         method: "POST",
         body: JSON.stringify(body),
-      })
+      }),
+      { params: Promise.resolve({ entity: "Shipment", command: "markDelivered" }) }
     );
 
     expect(response.status).toBe(200);
@@ -527,13 +534,14 @@ describe("ShipmentItem.create command", () => {
     } as never);
 
     const { POST } = await import(
-      "@/app/api/shipments/shipment-items/commands/create/route"
+      "@/app/api/manifest/[entity]/commands/[command]/route"
     );
     const response = await POST(
       createMockRequest("http://localhost:3000/test", {
         method: "POST",
         body: JSON.stringify({}),
-      })
+      }),
+      { params: Promise.resolve({ entity: "ShipmentItem", command: "create" }) }
     );
 
     expect(response.status).toBe(401);
@@ -547,13 +555,14 @@ describe("ShipmentItem.create command", () => {
     vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
 
     const { POST } = await import(
-      "@/app/api/shipments/shipment-items/commands/create/route"
+      "@/app/api/manifest/[entity]/commands/[command]/route"
     );
     const response = await POST(
       createMockRequest("http://localhost:3000/test", {
         method: "POST",
         body: JSON.stringify({}),
-      })
+      }),
+      { params: Promise.resolve({ entity: "ShipmentItem", command: "create" }) }
     );
 
     expect(response.status).toBe(400);
@@ -568,13 +577,14 @@ describe("ShipmentItem.create command", () => {
     vi.mocked(database.user.findFirst).mockResolvedValue(null);
 
     const { POST } = await import(
-      "@/app/api/shipments/shipment-items/commands/create/route"
+      "@/app/api/manifest/[entity]/commands/[command]/route"
     );
     const response = await POST(
       createMockRequest("http://localhost:3000/test", {
         method: "POST",
         body: JSON.stringify({}),
-      })
+      }),
+      { params: Promise.resolve({ entity: "ShipmentItem", command: "create" }) }
     );
 
     expect(response.status).toBe(400);
@@ -585,7 +595,7 @@ describe("ShipmentItem.create command", () => {
     mockRuntime(runCommand);
 
     const { POST } = await import(
-      "@/app/api/shipments/shipment-items/commands/create/route"
+      "@/app/api/manifest/[entity]/commands/[command]/route"
     );
     const body = {
       shipmentId: TEST_SHIPMENT_ID,
@@ -597,7 +607,8 @@ describe("ShipmentItem.create command", () => {
       createMockRequest("http://localhost:3000/test", {
         method: "POST",
         body: JSON.stringify(body),
-      })
+      }),
+      { params: Promise.resolve({ entity: "ShipmentItem", command: "create" }) }
     );
 
     expect(response.status).toBe(200);
@@ -627,7 +638,7 @@ describe("ShipmentItem.create command", () => {
     );
 
     const { POST } = await import(
-      "@/app/api/shipments/shipment-items/commands/create/route"
+      "@/app/api/manifest/[entity]/commands/[command]/route"
     );
     const response = await POST(
       createMockRequest("http://localhost:3000/test", {
@@ -637,7 +648,8 @@ describe("ShipmentItem.create command", () => {
           itemId: "inv-001",
           quantityShipped: 0,
         }),
-      })
+      }),
+      { params: Promise.resolve({ entity: "ShipmentItem", command: "create" }) }
     );
 
     expect(response.status).toBe(422);
@@ -648,13 +660,14 @@ describe("ShipmentItem.create command", () => {
     vi.mocked(createManifestRuntime).mockRejectedValue(new Error("boom"));
 
     const { POST } = await import(
-      "@/app/api/shipments/shipment-items/commands/create/route"
+      "@/app/api/manifest/[entity]/commands/[command]/route"
     );
     const response = await POST(
       createMockRequest("http://localhost:3000/test", {
         method: "POST",
         body: JSON.stringify({ shipmentId: TEST_SHIPMENT_ID }),
-      })
+      }),
+      { params: Promise.resolve({ entity: "ShipmentItem", command: "create" }) }
     );
 
     expect(response.status).toBe(500);
@@ -680,13 +693,14 @@ describe("ShipmentItem.updateReceived command", () => {
     } as never);
 
     const { POST } = await import(
-      "@/app/api/shipments/shipment-items/commands/update-received/route"
+      "@/app/api/manifest/[entity]/commands/[command]/route"
     );
     const response = await POST(
       createMockRequest("http://localhost:3000/test", {
         method: "POST",
         body: JSON.stringify({}),
-      })
+      }),
+      { params: Promise.resolve({ entity: "ShipmentItem", command: "updateReceived" }) }
     );
 
     expect(response.status).toBe(401);
@@ -700,13 +714,14 @@ describe("ShipmentItem.updateReceived command", () => {
     vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
 
     const { POST } = await import(
-      "@/app/api/shipments/shipment-items/commands/update-received/route"
+      "@/app/api/manifest/[entity]/commands/[command]/route"
     );
     const response = await POST(
       createMockRequest("http://localhost:3000/test", {
         method: "POST",
         body: JSON.stringify({}),
-      })
+      }),
+      { params: Promise.resolve({ entity: "ShipmentItem", command: "updateReceived" }) }
     );
 
     expect(response.status).toBe(400);
@@ -717,7 +732,7 @@ describe("ShipmentItem.updateReceived command", () => {
     mockRuntime(runCommand);
 
     const { POST } = await import(
-      "@/app/api/shipments/shipment-items/commands/update-received/route"
+      "@/app/api/manifest/[entity]/commands/[command]/route"
     );
     const body = {
       shipmentItemId: "item-001",
@@ -731,7 +746,8 @@ describe("ShipmentItem.updateReceived command", () => {
       createMockRequest("http://localhost:3000/test", {
         method: "POST",
         body: JSON.stringify(body),
-      })
+      }),
+      { params: Promise.resolve({ entity: "ShipmentItem", command: "updateReceived" }) }
     );
 
     expect(response.status).toBe(200);
@@ -762,13 +778,14 @@ describe("ShipmentItem.updateReceived command", () => {
     );
 
     const { POST } = await import(
-      "@/app/api/shipments/shipment-items/commands/update-received/route"
+      "@/app/api/manifest/[entity]/commands/[command]/route"
     );
     const response = await POST(
       createMockRequest("http://localhost:3000/test", {
         method: "POST",
         body: JSON.stringify({ quantityReceived: -1 }),
-      })
+      }),
+      { params: Promise.resolve({ entity: "ShipmentItem", command: "updateReceived" }) }
     );
 
     expect(response.status).toBe(422);
@@ -779,13 +796,14 @@ describe("ShipmentItem.updateReceived command", () => {
     vi.mocked(createManifestRuntime).mockRejectedValue(new Error("boom"));
 
     const { POST } = await import(
-      "@/app/api/shipments/shipment-items/commands/update-received/route"
+      "@/app/api/manifest/[entity]/commands/[command]/route"
     );
     const response = await POST(
       createMockRequest("http://localhost:3000/test", {
         method: "POST",
         body: JSON.stringify({}),
-      })
+      }),
+      { params: Promise.resolve({ entity: "ShipmentItem", command: "updateReceived" }) }
     );
 
     expect(response.status).toBe(500);

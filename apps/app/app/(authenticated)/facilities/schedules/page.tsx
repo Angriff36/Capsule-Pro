@@ -41,6 +41,7 @@ import {
   TabsTrigger,
 } from "@repo/design-system/components/ui/tabs";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
+import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import {
   addMonths,
   eachDayOfInterval,
@@ -199,7 +200,7 @@ export default function SchedulesPage() {
     setSaving(true);
     try {
       if (editing) {
-        const res = await apiFetch("/api/facilities/schedules/commands/edit", {
+        const res = await apiFetch("/api/manifest/FacilitySchedule/commands/edit", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -249,7 +250,7 @@ export default function SchedulesPage() {
   const handleDelete = async (scheduleId: string) => {
     setDeleting(scheduleId);
     try {
-      await apiFetch("/api/facilities/schedules/commands/delete", {
+      await apiFetch("/api/manifest/FacilitySchedule/commands/remove", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ scheduleId }),
@@ -713,14 +714,14 @@ export default function SchedulesPage() {
                 </div>
                 <div className="space-y-2">
                   <Label>Next Due Date</Label>
-                  <Input
+                  <DatePicker
                     onChange={(e) =>
                       setForm((p) => ({
                         ...p,
                         nextDueDate: e.target.value,
                       }))
                     }
-                    type="date"
+ 
                     value={form.nextDueDate}
                   />
                 </div>

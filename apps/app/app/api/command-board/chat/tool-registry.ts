@@ -897,7 +897,7 @@ async function createEventDraftTool(
 
   // Execute via manifest command
   const result = await executeManifestCommandRoute(
-    "/api/events/event/commands/create",
+    "/api/manifest/Event/commands/create",
     "Event.create",
     { entityName: "Event", commandName: "create", args: eventPayload },
     context,
@@ -1112,7 +1112,7 @@ async function assignEventStaffTool(
       }
 
       const assignResult = await executeManifestCommandRoute(
-        "/api/events/staff/commands/assign",
+        "/api/manifest/EventStaff/commands/assign",
         "EventStaff.assign",
         {
           entityName: "EventStaff",
@@ -1200,7 +1200,7 @@ async function setEventVenueTool(
   }
 
   const result = await executeManifestCommandRoute(
-    "/api/events/event/commands/update",
+    "/api/manifest/Event/commands/update",
     "Event.update",
     { entityName: "Event", commandName: "update", args: updatePayload },
     context,

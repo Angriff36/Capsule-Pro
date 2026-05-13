@@ -1,0 +1,110 @@
+// Payroll Bank Account Rules
+// Manifest spec for payroll banking destinations
+
+entity BankAccount {
+  property required id: string
+  property required tenantId: string
+  property required employeeId: string
+  property required accountHolderName: string
+  property required accountNumber: string
+  property required routingNumber: string
+  property accountType: string = "checking"
+  property bankName: string = ""
+  property isDefault: boolean = false
+  property status: string = "active"
+  property verifiedAt: number = 0
+  property createdAt: number = 0
+  property updatedAt: number = 0
+
+  constraint validAccountType: self.accountType in ["checking", "savings"] "Invalid account type"
+  constraint validStatus: self.status in ["active", "inactive", "pending_verification"] "Invalid bank account status"
+
+  command create(employeeId: string, accountHolderName: string, accountNumber: string, routingNumber: string, accountType: string, bankName: string, isDefault: boolean) {
+    guard employeeId != null and employeeId != "" "Employee ID is required"
+    guard accountHolderName != null and accountHolderName != "" "Account holder name is required"
+    guard accountNumber != null and accountNumber != "" "Account number is required"
+    guard routingNumber != null and routingNumber != "" "Routing number is required"
+
+    mutate employeeId = employeeId
+    mutate accountHolderName = accountHolderName
+    mutate accountNumber = accountNumber
+    mutate routingNumber = routingNumber
+    mutate accountType = accountType
+    mutate bankName = bankName
+    mutate isDefault = isDefault
+    mutate status = "pending_verification"
+    mutate verifiedAt = 0
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit BankAccountCreated
+  }
+
+  command remove() {
+    mutate status = "inactive"
+    mutate updatedAt = now()
+
+    emit BankAccountDeleted
+  }
+
+  command setDefault() {
+    guard self.status == "active" "Cannot set inactive account as default"
+
+    mutate isDefault = true
+    mutate updatedAt = now()
+
+    emit BankAccountDefaultSet
+  }
+
+  command update(accountHolderName: string, accountNumber: string, routingNumber: string, accountType: string, bankName: string) {
+    mutate accountHolderName = accountHolderName
+    mutate accountNumber = accountNumber
+    mutate routingNumber = routingNumber
+    mutate accountType = accountType
+    mutate bankName = bankName
+    mutate updatedAt = now()
+
+    emit BankAccountUpdated
+  }
+
+  command verify() {
+    guard self.status == "pending_verification" "Account is not pending verification"
+
+    mutate status = "active"
+    mutate verifiedAt = now()
+    mutate updatedAt = now()
+
+    emit BankAccountVerified
+  }
+}
+
+policy PayrollAdminsCanManageBankAccounts execute: user.role in ["payroll_admin", "manager", "admin"] "Only payroll admins can manage bank accounts"
+
+event BankAccountCreated: "payroll.bankaccount.created" {
+  accountId: string
+  tenantId: string
+  employeeId: string
+  accountType: string
+  createdAt: number
+}
+
+event BankAccountDeleted: "payroll.bankaccount.deleted" {
+  accountId: string
+  deletedAt: number
+}
+
+event BankAccountDefaultSet: "payroll.bankaccount.default.set" {
+  accountId: string
+  employeeId: string
+  setAt: number
+}
+
+event BankAccountUpdated: "payroll.bankaccount.updated" {
+  accountId: string
+  updatedAt: number
+}
+
+event BankAccountVerified: "payroll.bankaccount.verified" {
+  accountId: string
+  verifiedAt: number
+}

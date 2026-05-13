@@ -15,10 +15,17 @@
 function isDecimal(
   value: unknown
 ): value is { toNumber: () => number; toString: () => string } {
+  if (value == null || typeof value !== "object") return false;
+  // Duck-type check: Prisma Decimal (decimal.js) always has { s, e, d } internals
+  // plus a toNumber method. Avoid constructor.name — it gets minified to "Decimal2"
+  // when @repo/database is transpiled by Turbopack/webpack (transpilePackages).
+  const v = value as Record<string, unknown>;
   return (
-    value != null &&
-    typeof value === "object" &&
-    (value as Record<string, unknown>).constructor?.name === "Decimal"
+    typeof v.toNumber === "function" &&
+    "s" in v &&
+    "e" in v &&
+    "d" in v &&
+    Array.isArray(v.d)
   );
 }
 

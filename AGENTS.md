@@ -55,30 +55,32 @@ Product-flow tests:
 Do not commit if the relevant product-flow test fails. Fix the failure or
 document the blocker in `IMPLEMENTATION_PLAN.md`.
 
-## Prisma migrate dev and SHADOW_DATABASE_URL
+## Prisma connect strings (DATABASE_URL, DIRECT_URL, SHADOW_DATABASE_URL)
 
-- **App/runtime env** (`@repo/database/keys`, merged into `apps/app/env.ts` and
-  `apps/api/env.ts`): validates **`DATABASE_URL` only**. `SHADOW_DATABASE_URL` is
-  intentionally **not** part of that surface so Next builds, `prisma generate`,
-  and production startup are not coupled to a shadow DB.
-- **`packages/database/prisma.config.ts`** adds `shadowDatabaseUrl` **only when**
-  `SHADOW_DATABASE_URL` is set (Prisma Migrate shadow database for `migrate dev`).
+- **Runtime** (`@repo/database/keys`, `apps/app/env.ts`, `apps/api/env.ts`):
+  validates **`DATABASE_URL` only** (the Neon **pooled** connection string).
+  `keys.ts` auto-rewrites direct URLs to pooler hostnames via `toNeonPoolerUrl()`.
+  `prisma generate`, Vercel builds, and app startup use this — never the shadow DB.
+- **Prisma CLI** (`packages/database/prisma.config.ts`): uses **`DIRECT_URL`**
+  (direct, non-pooled connection) for `migrate dev`, `migrate deploy`, `db push`.
+  Falls back to `DATABASE_URL` if `DIRECT_URL` is not set.
+- **`SHADOW_DATABASE_URL`** is an **optional** emergency fallback for `prisma migrate dev`.
+  Prisma Migrate auto-creates and deletes the shadow database automatically
+  (Neon supports this natively — manual setup is no longer required per
+  [Neon's changelog](https://neon.com/docs/changelog)). Only if `prisma migrate dev`
+  actually fails with a shadow database create permission error should you
+  bootstrap it manually: `pnpm db:neon-shadow -- --write`.
+  `packages/database/prisma.config.ts` sets `shadowDatabaseUrl` **only when**
+  `SHADOW_DATABASE_URL` is present in the environment.
 - **Supported migrate-dev path:** **`pnpm db:dev`** only. It runs
-  `scripts/require-shadow-database-url-for-migrate-dev.mjs` first, then
-  `prisma migrate dev` with the correct workspace filter. **`pnpm migrate`** ends
-  with `db:dev` and is therefore covered.
+  `scripts/require-shadow-database-url-for-migrate-dev.mjs` (now a warning, not a
+  hard error), then `prisma migrate dev` with the correct workspace filter.
 - **Unsupported:** invoking `prisma migrate dev` **without** going through
   `pnpm db:dev` (for example `pnpm --filter @repo/database exec prisma migrate dev`
-  or `npx prisma migrate dev` from ad-hoc shells) — bypasses the guard and is not
-  a supported workflow.
+  or `npx prisma migrate dev` from ad-hoc shells).
 - **Does not require `SHADOW_DATABASE_URL`:** Next.js build, `prisma generate`,
   `pnpm db:deploy` / `migrate deploy`, `migrate:status`, `migrate:resolve`, app
   runtime.
-- **Neon shadow DB bootstrap:** `pnpm db:neon-shadow` (see
-  `docs/database/CONTRIBUTING.md`) creates database **`capsule_shadow`** on
-  `NEON_DEV_BRANCH` (default `dev`), prints a direct `--prisma` connection string,
-  and with `-- --write` appends **`SHADOW_DATABASE_URL`** to
-  **`packages/database/.env.local`** only (not Vercel production).
 
 ## Critical Write Validation
 

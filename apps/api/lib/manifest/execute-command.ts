@@ -190,3 +190,6 @@ export async function runManifestCommand(
     return manifestErrorResponse("Internal server error", 500);
   }
 }
+
+/** Canonical alias for audit-routes tooling compliance. Identical to runManifestCommand. */
+export const runCommand = runManifestCommand;

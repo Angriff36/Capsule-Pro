@@ -65,8 +65,8 @@ const queryRawMock = database.$queryRaw as unknown as ReturnType<typeof vi.fn>;
 
 import { auth } from "@repo/auth/server";
 import { GET as getAssignment } from "@/app/api/training/assignments/[id]/route";
-import { POST as createAssignmentCommand } from "@/app/api/training/assignments/commands/create/route";
-import { POST as softDeleteAssignmentCommand } from "@/app/api/training/assignments/commands/soft-delete/route";
+import { POST as createAssignmentCommand } from "@/app/api/manifest/[entity]/commands/[command]/route";
+import { POST as softDeleteAssignmentCommand } from "@/app/api/manifest/[entity]/commands/[command]/route";
 import { GET as listAssignmentsAutogen } from "@/app/api/training/assignments/list/route";
 import {
   POST as createAssignmentViaHandler,
@@ -78,9 +78,9 @@ import {
   GET as getModule,
   PUT as updateModule,
 } from "@/app/api/training/modules/[id]/route";
-import { POST as createModuleCommand } from "@/app/api/training/modules/commands/create/route";
-import { POST as softDeleteModuleCommand } from "@/app/api/training/modules/commands/soft-delete/route";
-import { POST as updateModuleCommand } from "@/app/api/training/modules/commands/update/route";
+import { POST as createModuleCommand } from "@/app/api/manifest/[entity]/commands/[command]/route";
+import { POST as softDeleteModuleCommand } from "@/app/api/manifest/[entity]/commands/[command]/route";
+import { POST as updateModuleCommand } from "@/app/api/manifest/[entity]/commands/[command]/route";
 import { GET as listModulesAutogen } from "@/app/api/training/modules/list/route";
 // Route handlers
 import {
@@ -728,7 +728,7 @@ describe("Training API", () => {
       } as never);
 
       const request = new NextRequest(
-        "http://localhost/api/training/modules/commands/create",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({ title: "Test" }),
@@ -743,7 +743,7 @@ describe("Training API", () => {
       vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
 
       const request = new NextRequest(
-        "http://localhost/api/training/modules/commands/create",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({ title: "Test" }),
@@ -760,7 +760,7 @@ describe("Training API", () => {
       vi.mocked(database.user.findFirst).mockResolvedValue(null as never);
 
       const request = new NextRequest(
-        "http://localhost/api/training/modules/commands/create",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({ title: "Test" }),
@@ -781,7 +781,7 @@ describe("Training API", () => {
       });
 
       const request = new NextRequest(
-        "http://localhost/api/training/modules/commands/create",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -812,7 +812,7 @@ describe("Training API", () => {
       });
 
       const request = new NextRequest(
-        "http://localhost/api/training/modules/commands/create",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({ title: "Unauthorized" }),
@@ -836,7 +836,7 @@ describe("Training API", () => {
       });
 
       const request = new NextRequest(
-        "http://localhost/api/training/modules/commands/create",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({}),
@@ -857,7 +857,7 @@ describe("Training API", () => {
       });
 
       const request = new NextRequest(
-        "http://localhost/api/training/modules/commands/create",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({}),
@@ -874,7 +874,7 @@ describe("Training API", () => {
       mockRunCommand.mockRejectedValue(new Error("Runtime crash"));
 
       const request = new NextRequest(
-        "http://localhost/api/training/modules/commands/create",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({ title: "Crash" }),
@@ -909,7 +909,7 @@ describe("Training API", () => {
       });
 
       const request = new NextRequest(
-        "http://localhost/api/training/modules/commands/update",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -938,7 +938,7 @@ describe("Training API", () => {
       } as never);
 
       const request = new NextRequest(
-        "http://localhost/api/training/modules/commands/update",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({ id: "mod-001" }),
@@ -973,7 +973,7 @@ describe("Training API", () => {
       });
 
       const request = new NextRequest(
-        "http://localhost/api/training/modules/commands/soft-delete",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({ id: "mod-001" }),
@@ -999,7 +999,7 @@ describe("Training API", () => {
       } as never);
 
       const request = new NextRequest(
-        "http://localhost/api/training/modules/commands/soft-delete",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({ id: "mod-001" }),
@@ -1017,7 +1017,7 @@ describe("Training API", () => {
       });
 
       const request = new NextRequest(
-        "http://localhost/api/training/modules/commands/soft-delete",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({ id: "mod-001" }),
@@ -1428,7 +1428,7 @@ describe("Training API", () => {
       } as never);
 
       const request = new NextRequest(
-        "http://localhost/api/training/assignments/commands/create",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({ moduleId: "mod-001" }),
@@ -1447,7 +1447,7 @@ describe("Training API", () => {
       });
 
       const request = new NextRequest(
-        "http://localhost/api/training/assignments/commands/create",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -1481,7 +1481,7 @@ describe("Training API", () => {
       });
 
       const request = new NextRequest(
-        "http://localhost/api/training/assignments/commands/create",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({ moduleId: "mod-001" }),
@@ -1504,7 +1504,7 @@ describe("Training API", () => {
       });
 
       const request = new NextRequest(
-        "http://localhost/api/training/assignments/commands/create",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({}),
@@ -1521,7 +1521,7 @@ describe("Training API", () => {
       mockRunCommand.mockRejectedValue(new Error("Runtime crash"));
 
       const request = new NextRequest(
-        "http://localhost/api/training/assignments/commands/create",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({ moduleId: "mod-001" }),
@@ -1536,7 +1536,7 @@ describe("Training API", () => {
       vi.mocked(database.user.findFirst).mockResolvedValue(null as never);
 
       const request = new NextRequest(
-        "http://localhost/api/training/assignments/commands/create",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({ moduleId: "mod-001" }),
@@ -1573,7 +1573,7 @@ describe("Training API", () => {
       });
 
       const request = new NextRequest(
-        "http://localhost/api/training/assignments/commands/soft-delete",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({ id: "assign-001" }),
@@ -1599,7 +1599,7 @@ describe("Training API", () => {
       } as never);
 
       const request = new NextRequest(
-        "http://localhost/api/training/assignments/commands/soft-delete",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({ id: "assign-001" }),

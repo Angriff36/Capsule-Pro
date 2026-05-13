@@ -8,29 +8,32 @@ import { useRouter } from "next/navigation";
 import type { MutableRefObject } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { apiFetch } from "@/app/lib/api";
-import { useSuggestions } from "../../../kitchen/lib/use-suggestions";
-import { updateEvent } from "../../actions";
+import { useQueryClient } from "@tanstack/react-query";
 import {
-  addDishToEvent,
+  useEventDetails,
+  useUpdateEvent,
+  useAddDishToEvent,
+  useRemoveDishFromEvent,
+  useCreateDishVariant,
+  useCreateDishAndAdd,
+  useGenerateEventSummary,
+  useDeleteEventSummary,
+  useGenerateTaskBreakdown,
+  useSaveTaskBreakdown,
+  useGeneratePrepList,
+  useQuickRsvp,
+} from "../event-hooks";
+import { useSuggestions } from "../../../kitchen/lib/use-suggestions";
+import {
   createDishAndAddToEvent,
-  createDishVariantForEvent,
   getAvailableDishes,
   getRecipesForDishCreation,
-  removeDishFromEvent,
 } from "../../actions/event-dishes";
 import {
-  deleteEventSummary,
   type GeneratedEventSummary,
-  generateEventSummary,
   getEventSummary,
 } from "../../actions/event-summary";
-import { generateEventPrepList } from "../../actions/prep-list-generation";
-import {
-  generateTaskBreakdown,
-  saveTaskBreakdown,
-  type TaskBreakdown,
-} from "../../actions/task-breakdown";
+import { generateTaskBreakdown, type TaskBreakdown } from "../../actions/task-breakdown";
 import { generateProposalFromEvent } from "../../actions/generate-proposal";
 import { GenerateEventSummaryModal } from "../../components/event-summary-display";
 import {
@@ -342,59 +345,6 @@ interface AggregatedIngredient {
   sources: string[];
 }
 
-interface QuickRsvpDeps {
-  eventId: string;
-  name: string;
-  email: string;
-  rsvpCount: number;
-  setRsvpCount: (fn: (prev: number) => number) => void;
-  setQuickRsvpLoading: (v: boolean) => void;
-  setQuickRsvpName: (v: string) => void;
-  setQuickRsvpEmail: (v: string) => void;
-  setQuickRsvpOpen: (v: boolean) => void;
-}
-
-async function submitQuickRsvp(deps: QuickRsvpDeps): Promise<void> {
-  const {
-    eventId,
-    name,
-    email,
-    setRsvpCount,
-    setQuickRsvpLoading,
-    setQuickRsvpName,
-    setQuickRsvpEmail,
-    setQuickRsvpOpen,
-  } = deps;
-  if (!name.trim()) {
-    toast.error("Guest name is required to RSVP");
-    return;
-  }
-  setQuickRsvpLoading(true);
-  setRsvpCount((prev) => prev + 1);
-  try {
-    const response = await apiFetch(`/api/events/${eventId}/guests`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        guestName: name.trim(),
-        guestEmail: email.trim() || undefined,
-      }),
-    });
-    if (!response.ok) {
-      throw new Error("Failed to add RSVP");
-    }
-    toast.success("RSVP added");
-    setQuickRsvpName("");
-    setQuickRsvpEmail("");
-    setQuickRsvpOpen(false);
-  } catch {
-    setRsvpCount((prev) => Math.max(prev - 1, 0));
-    toast.error("Unable to RSVP. Please try again.");
-  } finally {
-    setQuickRsvpLoading(false);
-  }
-}
-
 async function copyEventLink(eventId: string): Promise<void> {
   const url = `${globalThis.location.origin}/events/${eventId}`;
   try {
@@ -703,76 +653,6 @@ function exportBreakdownToCsv(
   URL.revokeObjectURL(url);
 }
 
-async function addDish(
-  eventId: string,
-  dishId: string,
-  course: string,
-  onSuccess: () => void,
-  onRefresh: () => void
-): Promise<void> {
-  if (!dishId) {
-    toast.error("Please select a dish");
-    return;
-  }
-  const result = await addDishToEvent(eventId, dishId, course || undefined);
-  if (result.success) {
-    toast.success("Dish added to event");
-    onSuccess();
-    onRefresh();
-  } else {
-    toast.error(result.error ?? "Failed to add dish");
-  }
-}
-
-async function removeDish(
-  eventId: string,
-  linkId: string,
-  onRefresh: () => void
-): Promise<void> {
-  const result = await removeDishFromEvent(eventId, linkId);
-  if (result.success) {
-    toast.success("Dish removed from event");
-    onRefresh();
-  } else {
-    toast.error(result.error ?? "Failed to remove dish");
-  }
-}
-
-async function createVariant(
-  eventId: string,
-  linkId: string | null,
-  variantName: string,
-  onSuccess: () => void,
-  onRefresh: () => void
-): Promise<void> {
-  if (!linkId) {
-    return;
-  }
-  const result = await createDishVariantForEvent(eventId, linkId, variantName);
-  if (result.success) {
-    toast.success("Variant created");
-    onSuccess();
-    onRefresh();
-  } else {
-    toast.error(result.error ?? "Failed to create variant");
-  }
-}
-
-async function saveEvent(
-  formData: FormData,
-  onRefresh: () => void
-): Promise<void> {
-  try {
-    await updateEvent(formData);
-    toast.success("Event updated");
-    onRefresh();
-  } catch (e) {
-    const message = e instanceof Error ? e.message : "Failed to update event";
-    toast.error(message);
-    throw e;
-  }
-}
-
 function buildDishRows(
   eventDishes: EventDishSummary[],
   recipeById: Map<string, RecipeDetailSummary>
@@ -864,6 +744,8 @@ interface EventDetailsClientProps {
     budget: number | null;
     ticketPrice: number | null;
   };
+  /** Server-fetched data used as initialData for TanStack Query to avoid double-fetch on mount */
+  allEventData: Awaited<ReturnType<typeof import("./event-details-data").fetchAllEventDetailsData>>;
   prepTasks: PrepTaskSummaryClient[];
   tenantId?: string;
   eventDishes: EventDishSummary[];
@@ -882,6 +764,7 @@ interface EventDetailsClientProps {
 export function EventDetailsClient({
   budget,
   event,
+  allEventData,
   prepTasks: initialPrepTasks,
   tenantId,
   eventDishes,
@@ -896,6 +779,22 @@ export function EventDetailsClient({
   hasBudget = false,
 }: EventDetailsClientProps) {
   const router = useRouter();
+
+  // TanStack Query: replaces all router.refresh() calls with granular
+  // query cache invalidation via the canonical useMutation pattern.
+  const queryClient = useQueryClient();
+  const { data: _eventData } = useEventDetails(event.id, allEventData);
+  const updateEventMutation = useUpdateEvent();
+  const addDishMutation = useAddDishToEvent();
+  const removeDishMutation = useRemoveDishFromEvent();
+  const createVariantMutation = useCreateDishVariant();
+  const createDishAndAddMutation = useCreateDishAndAdd();
+  const generateSummaryMutation = useGenerateEventSummary();
+  const deleteSummaryMutation = useDeleteEventSummary();
+  const generateBreakdownMutation = useGenerateTaskBreakdown();
+  const saveBreakdownMutation = useSaveTaskBreakdown();
+  const generatePrepListMutation = useGeneratePrepList();
+  const quickRsvpMutation = useQuickRsvp();
 
   // Timeline stage navigation - maps stages to tabs
   const handleTimelineStageClick = useCallback(
@@ -986,7 +885,7 @@ export function EventDetailsClient({
         );
         if (result.success) {
           toast.success(`Created "${name}" and added to event`);
-          router.refresh();
+          queryClient.invalidateQueries({ queryKey: ["event", event.id] });
         } else {
           toast.error(result.error || "Failed to create dish");
         }
@@ -998,7 +897,7 @@ export function EventDetailsClient({
         setIsCreatingDish(false);
       }
     },
-    [event.id, router]
+    [event.id, queryClient]
   );
 
   // Variant dialog state
@@ -1006,8 +905,8 @@ export function EventDetailsClient({
 
   // Client assigned callback — refreshes page data after linking
   const handleClientAssigned = useCallback(() => {
-    router.refresh();
-  }, [router]);
+    queryClient.invalidateQueries({ queryKey: ["event", event.id] });
+  }, [event.id, queryClient]);
   const [variantLinkId, setVariantLinkId] = useState<string | null>(null);
   const [variantSourceName, setVariantSourceName] = useState("");
   const [variantName, setVariantName] = useState("");
@@ -1264,17 +1163,28 @@ export function EventDetailsClient({
   const handleToggleSave = toggleSave;
 
   const handleQuickRsvp = async () => {
-    await submitQuickRsvp({
-      eventId: event.id,
-      name: quickRsvpName,
-      email: quickRsvpEmail,
-      rsvpCount,
-      setRsvpCount,
-      setQuickRsvpLoading,
-      setQuickRsvpName,
-      setQuickRsvpEmail,
-      setQuickRsvpOpen,
-    });
+    if (!quickRsvpName.trim()) {
+      toast.error("Guest name is required to RSVP");
+      return;
+    }
+    setQuickRsvpLoading(true);
+    setRsvpCount((prev) => prev + 1);
+    try {
+      await quickRsvpMutation.mutateAsync({
+        eventId: event.id,
+        guestName: quickRsvpName.trim(),
+        guestEmail: quickRsvpEmail.trim() || undefined,
+      });
+      toast.success("RSVP added");
+      setQuickRsvpName("");
+      setQuickRsvpEmail("");
+      setQuickRsvpOpen(false);
+    } catch {
+      setRsvpCount((prev) => Math.max(prev - 1, 0));
+      toast.error("Unable to RSVP. Please try again.");
+    } finally {
+      setQuickRsvpLoading(false);
+    }
   };
 
   const handleGenerateBreakdown = useCallback(
@@ -1288,7 +1198,10 @@ export function EventDetailsClient({
             setBreakdown,
             setShowBreakdownModal,
             cancelledRef: breakdownGenerationCancelledRef,
-            onRefresh: router.refresh,
+            onRefresh: () =>
+              queryClient.invalidateQueries({
+                queryKey: ["event", event.id],
+              }),
             progressIntervalRef: breakdownProgressIntervalRef,
           },
           customInstructions
@@ -1303,7 +1216,9 @@ export function EventDetailsClient({
         throw error;
       }
     },
-    [event.id, router.refresh]
+    [event.id, queryClient, setIsGenerating, setGenerationProgress,
+     setBreakdown, setShowBreakdownModal, breakdownGenerationCancelledRef,
+     breakdownProgressIntervalRef]
   );
 
   const handleCancelBreakdownGeneration = useCallback(() => {
@@ -1321,17 +1236,19 @@ export function EventDetailsClient({
       return;
     }
     try {
-      await saveTaskBreakdown(event.id, breakdown);
-      router.refresh();
+      await saveBreakdownMutation.mutateAsync({
+        eventId: event.id,
+        breakdown,
+      });
     } catch {
       toast.error("Failed to save task breakdown");
     }
-  }, [breakdown, event.id, router]);
+  }, [breakdown, event.id, saveBreakdownMutation]);
 
   const handleGeneratePrepList = useCallback(async () => {
     setIsGeneratingPrepList(true);
     try {
-      const result = await generateEventPrepList({
+      const result = await generatePrepListMutation.mutateAsync({
         eventId: event.id,
       });
 
@@ -1339,7 +1256,6 @@ export function EventDetailsClient({
         toast.success(
           `Prep list generated with ${result.prepList?.totalIngredients ?? 0} ingredients`
         );
-        router.refresh();
       } else {
         toast.error(result.error || "Failed to generate prep list");
       }
@@ -1350,46 +1266,65 @@ export function EventDetailsClient({
     } finally {
       setIsGeneratingPrepList(false);
     }
-  }, [event.id, router]);
+  }, [event.id, generatePrepListMutation]);
 
   const handleGenerateSummary =
     useCallback(async (): Promise<GeneratedEventSummary> => {
-      const result = await generateEventSummary(event.id);
+      const result = await generateSummaryMutation.mutateAsync(event.id);
       setSummary(result);
-      router.refresh();
       return result;
-    }, [event.id, router, setSummary]);
+    }, [event.id, generateSummaryMutation, setSummary]);
 
   const handleDeleteSummary = useCallback(async () => {
     if (!summary?.id) {
       return;
     }
-    await deleteEventSummary(summary.id);
+    await deleteSummaryMutation.mutateAsync({ summaryId: summary.id, eventId: event.id });
     setSummary(null);
-  }, [summary, setSummary]);
+  }, [summary, setSummary, deleteSummaryMutation]);
 
   const handleUpdateEvent = useCallback(
-    (formData: FormData) => saveEvent(formData, router.refresh),
-    [router.refresh]
+    (formData: FormData) => updateEventMutation.mutateAsync(formData),
+    [updateEventMutation]
   );
 
   const handleAddDish = useCallback(async () => {
-    await addDish(
-      event.id,
-      selectedDishIdForAdd,
-      selectedCourse,
-      () => {
-        setShowAddDishDialog(false);
-        setSelectedDishIdForAdd("");
-        setSelectedCourse("");
-      },
-      router.refresh
-    );
-  }, [event.id, selectedCourse, selectedDishIdForAdd, router.refresh]);
+    if (!selectedDishIdForAdd) {
+      toast.error("Please select a dish");
+      return;
+    }
+    try {
+      await addDishMutation.mutateAsync({
+        eventId: event.id,
+        dishId: selectedDishIdForAdd,
+        course: selectedCourse,
+      });
+      toast.success("Dish added to event");
+      setShowAddDishDialog(false);
+      setSelectedDishIdForAdd("");
+      setSelectedCourse("");
+    } catch (e) {
+      toast.error(
+        e instanceof Error ? e.message : "Failed to add dish"
+      );
+    }
+  }, [event.id, selectedCourse, selectedDishIdForAdd, addDishMutation]);
 
   const handleRemoveDish = useCallback(
-    (linkId: string) => removeDish(event.id, linkId, router.refresh),
-    [event.id, router.refresh]
+    async (linkId: string) => {
+      try {
+        await removeDishMutation.mutateAsync({
+          eventId: event.id,
+          linkId,
+        });
+        toast.success("Dish removed from event");
+      } catch (e) {
+        toast.error(
+          e instanceof Error ? e.message : "Failed to remove dish"
+        );
+      }
+    },
+    [event.id, removeDishMutation]
   );
 
   const openVariantDialog = useCallback((linkId: string, name: string) => {
@@ -1400,20 +1335,26 @@ export function EventDetailsClient({
   }, []);
 
   const handleCreateVariant = useCallback(
-    () =>
-      createVariant(
-        event.id,
-        variantLinkId,
-        variantName,
-        () => {
-          setShowVariantDialog(false);
-          setVariantLinkId(null);
-          setVariantSourceName("");
-          setVariantName("");
-        },
-        router.refresh
-      ),
-    [event.id, variantLinkId, variantName, router.refresh]
+    async () => {
+      if (!variantLinkId) return;
+      try {
+        await createVariantMutation.mutateAsync({
+          eventId: event.id,
+          linkId: variantLinkId,
+          newDishName: variantName,
+        });
+        toast.success("Variant created");
+        setShowVariantDialog(false);
+        setVariantLinkId(null);
+        setVariantSourceName("");
+        setVariantName("");
+      } catch (e) {
+        toast.error(
+          e instanceof Error ? e.message : "Failed to create variant"
+        );
+      }
+    },
+    [event.id, variantLinkId, variantName, createVariantMutation]
   );
 
   const handleExportBreakdown = useCallback(() => {

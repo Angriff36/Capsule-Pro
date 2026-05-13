@@ -11,6 +11,7 @@ import {
 import { Button } from "@repo/design-system/components/ui/button";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
+import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import {
   Select,
   SelectContent,
@@ -428,13 +429,13 @@ export function AvailabilityClient() {
               <Label className="text-ink text-xs" htmlFor="av-eff">
                 Effective on
               </Label>
-              <Input
+              <DatePicker
                 className="bg-canvas"
                 id="av-eff"
                 onChange={(e) =>
                   handleFilterChange("effectiveDate", e.target.value)
                 }
-                type="date"
+ 
                 value={filters.effectiveDate}
               />
             </div>

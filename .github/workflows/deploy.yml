@@ -35,7 +35,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.PKG_AUTH_TOKEN }}
 
-  deploy:
+  deploy-app-api-web:
     runs-on: ubuntu-latest
     needs: check-dependabot
     if: needs.check-dependabot.outputs.has-failing-dependabot == 'false'
@@ -95,7 +95,7 @@ jobs:
         run: pnpm prisma:check
 
       - name: Run linting
-        run: pnpm run check
+        run: pnpm turbo typecheck --filter=./apps/app --filter=./apps/api --filter=./apps/web
 
       - name: Generate code for deployment
         run: |
@@ -110,7 +110,7 @@ jobs:
         run: pnpm test
 
       - name: Build all apps
-        run: pnpm run build
+        run: pnpm turbo run build --filter=./apps/app --filter=./apps/api --filter=./apps/web
 
       - name: Load Vercel secrets
         uses: bitwarden/sm-action@v2
@@ -121,7 +121,6 @@ jobs:
             71c979f7-e59c-4370-872b-b43e002162d2 > VERCEL_ORG_ID
             34b541ba-6111-4f9d-9745-b43e002190da > VERCEL_APP_PROJECT_ID
             7b1173c2-ed67-4572-873a-b43e0021a4a5 > VERCEL_API_PROJECT_ID
-            e239cd88-7fb7-4c3b-ab42-b43e0021b4c8 > VERCEL_DOCS_PROJECT_ID
             5e141ec7-b40d-4b83-8efa-b43e0021c700 > VERCEL_WEB_PROJECT_ID
 
       - name: Deploy to Vercel (App)
@@ -142,21 +141,60 @@ jobs:
           vercel-version: 53.1.0
           vercel-args: '--prod'
 
-      - name: Deploy to Vercel (Docs)
-        uses: amondnet/vercel-action@v25
-        with:
-          vercel-token: ${{ env.VERCEL_TOKEN }}
-          vercel-org-id: ${{ env.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ env.VERCEL_DOCS_PROJECT_ID }}
-          vercel-version: 53.1.0
-          vercel-args: '--prod'
-
       - name: Deploy to Vercel (Web)
         uses: amondnet/vercel-action@v25
         with:
           vercel-token: ${{ env.VERCEL_TOKEN }}
           vercel-org-id: ${{ env.VERCEL_ORG_ID }}
           vercel-project-id: ${{ env.VERCEL_WEB_PROJECT_ID }}
+          vercel-version: 53.1.0
+          vercel-args: '--prod'
+
+  deploy-docs:
+    runs-on: ubuntu-latest
+    needs: check-dependabot
+    if: needs.check-dependabot.outputs.has-failing-dependabot == 'false'
+    env:
+      NPM_TOKEN: ${{ secrets.PKG_AUTH_TOKEN }}
+      SKIP_ENV_VALIDATION: true
+      DATABASE_URL: "postgresql://dummy:***@localhost:5432/dummy"
+      NEXT_PUBLIC_DOCS_URL: "https://capsule-pro-docs.vercel.app"
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Install dependencies
+        run: bash scripts/ensure-github-packages-npmrc.sh && pnpm install --frozen-lockfile
+
+      - name: Build docs
+        run: pnpm turbo run build --filter=./apps/docs
+        env:
+          NODE_OPTIONS: "--max-old-space-size=4096"
+
+      - name: Load Vercel secrets
+        uses: bitwarden/sm-action@v2
+        with:
+          access_token: ${{ secrets.BW_ACCESS_TOKEN }}
+          secrets: |
+            9eac2295-b47e-405e-b1cd-b43e00214c72 > VERCEL_TOKEN
+            71c979f7-e59c-4370-872b-b43e002162d2 > VERCEL_ORG_ID
+            e239cd88-7fb7-4c3b-ab42-b43e0021b4c8 > VERCEL_DOCS_PROJECT_ID
+
+      - name: Deploy to Vercel (Docs)
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ env.VERCEL_TOKEN }}
+          vercel-org-id: ${{ env.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ env.VERCEL_DOCS_PROJECT_ID }}
           vercel-version: 53.1.0
           vercel-args: '--prod'
 

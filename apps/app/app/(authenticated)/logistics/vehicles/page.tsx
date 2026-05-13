@@ -185,7 +185,7 @@ export default function VehiclesPage() {
     setSaving(true);
     try {
       if (editing) {
-        const res = await apiFetch("/api/logistics/vehicles/commands/update", {
+        const res = await apiFetch("/api/manifest/Vehicle/commands/update", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -246,7 +246,7 @@ export default function VehiclesPage() {
   const handleDelete = async (vehicleId: string) => {
     setDeleting(vehicleId);
     try {
-      await apiFetch("/api/logistics/vehicles/commands/delete", {
+      await apiFetch("/api/manifest/Vehicle/commands/remove", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ vehicleId }),

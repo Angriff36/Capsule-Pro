@@ -19,6 +19,7 @@ import {
 	SelectValue,
 } from "@repo/design-system/components/ui/select";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
+import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import { StatusPill } from "@repo/design-system/components/blocks/page-shell";
 import { formatCurrency } from "@repo/design-system/lib/format-currency";
 import {
@@ -489,11 +490,11 @@ export function CateringClient({ initialMetrics }: CateringClientProps) {
 						<div className="grid grid-cols-2 gap-4">
 							<div className="space-y-2">
 								<label className="text-sm font-medium">Delivery Date</label>
-								<Input
+								<DatePicker
 									onChange={(e) =>
 										setForm((f) => ({ ...f, deliveryDate: e.target.value }))
 									}
-									type="date"
+ 
 									value={form.deliveryDate}
 								/>
 							</div>

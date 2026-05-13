@@ -384,7 +384,7 @@ describe("Battle Boards API", () => {
       name: "create",
       runtimeName: "create",
       path: "/api/events/battle-boards/commands/create",
-      routePath: "@/app/api/events/battle-boards/commands/create/route",
+      routePath: "@/app/api/manifest/[entity]/commands/[command]/route",
       sampleBody: {
         eventId: TEST_EVENT_ID,
         title: "Battle Royale",
@@ -394,7 +394,7 @@ describe("Battle Boards API", () => {
       name: "add-dish",
       runtimeName: "addDish",
       path: "/api/events/battle-boards/commands/add-dish",
-      routePath: "@/app/api/events/battle-boards/commands/add-dish/route",
+      routePath: "@/app/api/manifest/[entity]/commands/[command]/route",
       sampleBody: {
         id: TEST_BATTLE_BOARD_ID,
         dishId: TEST_DISH_ID,
@@ -404,7 +404,7 @@ describe("Battle Boards API", () => {
       name: "remove-dish",
       runtimeName: "removeDish",
       path: "/api/events/battle-boards/commands/remove-dish",
-      routePath: "@/app/api/events/battle-boards/commands/remove-dish/route",
+      routePath: "@/app/api/manifest/[entity]/commands/[command]/route",
       sampleBody: {
         id: TEST_BATTLE_BOARD_ID,
         dishId: TEST_DISH_ID,
@@ -414,21 +414,21 @@ describe("Battle Boards API", () => {
       name: "open",
       runtimeName: "open",
       path: "/api/events/battle-boards/commands/open",
-      routePath: "@/app/api/events/battle-boards/commands/open/route",
+      routePath: "@/app/api/manifest/[entity]/commands/[command]/route",
       sampleBody: { id: TEST_BATTLE_BOARD_ID },
     },
     {
       name: "start-voting",
       runtimeName: "startVoting",
       path: "/api/events/battle-boards/commands/start-voting",
-      routePath: "@/app/api/events/battle-boards/commands/start-voting/route",
+      routePath: "@/app/api/manifest/[entity]/commands/[command]/route",
       sampleBody: { id: TEST_BATTLE_BOARD_ID },
     },
     {
       name: "vote",
       runtimeName: "vote",
       path: "/api/events/battle-boards/commands/vote",
-      routePath: "@/app/api/events/battle-boards/commands/vote/route",
+      routePath: "@/app/api/manifest/[entity]/commands/[command]/route",
       sampleBody: {
         id: TEST_BATTLE_BOARD_ID,
         dishId: TEST_DISH_ID,
@@ -439,7 +439,7 @@ describe("Battle Boards API", () => {
       name: "finalize",
       runtimeName: "finalize",
       path: "/api/events/battle-boards/commands/finalize",
-      routePath: "@/app/api/events/battle-boards/commands/finalize/route",
+      routePath: "@/app/api/manifest/[entity]/commands/[command]/route",
       sampleBody: { id: TEST_BATTLE_BOARD_ID },
     },
   ];

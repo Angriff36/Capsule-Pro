@@ -210,7 +210,7 @@ export function ContainersClient({ initialMetrics }: ContainersClientProps) {
 			if (form.capacityPortions)
 				payload.capacityPortions = Number(form.capacityPortions);
 
-			const res = await apiFetch("/api/kitchen/containers/commands/create", {
+			const res = await apiFetch("/api/manifest/Container/commands/create", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify(payload),
@@ -252,7 +252,7 @@ export function ContainersClient({ initialMetrics }: ContainersClientProps) {
 				payload.capacityPortions = Number(form.capacityPortions);
 			else payload.capacityPortions = null;
 
-			const res = await apiFetch("/api/kitchen/containers/commands/update", {
+			const res = await apiFetch("/api/manifest/Container/commands/update", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify(payload),
@@ -279,7 +279,7 @@ export function ContainersClient({ initialMetrics }: ContainersClientProps) {
 		setActioning(deactivateTarget.id);
 		try {
 			const res = await apiFetch(
-				"/api/kitchen/containers/commands/deactivate",
+				"/api/manifest/Container/commands/deactivate",
 				{
 					method: "POST",
 					headers: { "Content-Type": "application/json" },

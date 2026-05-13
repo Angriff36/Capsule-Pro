@@ -12,6 +12,7 @@ import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
+import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import {
   Select,
   SelectContent,
@@ -352,13 +353,13 @@ export function TimeOffClient() {
               <Label className="text-ink text-xs" htmlFor="to-start">
                 Start
               </Label>
-              <Input
+              <DatePicker
                 className="bg-canvas"
                 id="to-start"
                 onChange={(e) =>
                   handleFilterChange("startDate", e.target.value)
                 }
-                type="date"
+ 
                 value={filters.startDate}
               />
             </div>
@@ -366,11 +367,11 @@ export function TimeOffClient() {
               <Label className="text-ink text-xs" htmlFor="to-end">
                 End
               </Label>
-              <Input
+              <DatePicker
                 className="bg-canvas"
                 id="to-end"
                 onChange={(e) => handleFilterChange("endDate", e.target.value)}
-                type="date"
+ 
                 value={filters.endDate}
               />
             </div>

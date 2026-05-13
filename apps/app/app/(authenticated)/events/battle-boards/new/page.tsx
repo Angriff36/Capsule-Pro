@@ -80,7 +80,7 @@ export default function NewBattleBoardPage() {
       }
 
       const response = await apiFetch(
-        "/api/events/battle-boards/commands/create",
+        "/api/manifest/BattleBoard/commands/create",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

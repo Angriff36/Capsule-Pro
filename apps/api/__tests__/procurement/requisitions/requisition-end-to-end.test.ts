@@ -341,7 +341,7 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
 
     it("create route does NOT pass instanceId", async () => {
       const { POST } = await import(
-        "@/app/api/procurement/requisitions/commands/create/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       const request = createMockRequest(
         "http://localhost:3000/api/procurement/requisitions/commands/create",
@@ -374,7 +374,7 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
 
     it("update route passes instanceId to runCommand", async () => {
       const { POST } = await import(
-        "@/app/api/procurement/requisitions/commands/update/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       const request = createMockRequest(
         "http://localhost:3000/api/procurement/requisitions/commands/update",
@@ -404,7 +404,7 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
 
     it("submit route passes instanceId to runCommand", async () => {
       const { POST } = await import(
-        "@/app/api/procurement/requisitions/commands/submit/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       const request = createMockRequest(
         "http://localhost:3000/api/procurement/requisitions/commands/submit",
@@ -434,7 +434,7 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
 
     it("approve-manager route passes instanceId to runCommand", async () => {
       const { POST } = await import(
-        "@/app/api/procurement/requisitions/commands/approve-manager/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       const request = createMockRequest(
         "http://localhost:3000/api/procurement/requisitions/commands/approve-manager",
@@ -464,7 +464,7 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
 
     it("reject route passes instanceId to runCommand", async () => {
       const { POST } = await import(
-        "@/app/api/procurement/requisitions/commands/reject/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       const request = createMockRequest(
         "http://localhost:3000/api/procurement/requisitions/commands/reject",
@@ -501,7 +501,7 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
       vi.mocked(auth).mockResolvedValue({ orgId: null } as any);
 
       const { POST } = await import(
-        "@/app/api/procurement/requisitions/commands/create/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       const request = createMockRequest(
         "http://localhost:3000/api/procurement/requisitions/commands/create"
@@ -515,7 +515,7 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
       vi.mocked(auth).mockResolvedValue({ orgId: null } as any);
 
       const { POST } = await import(
-        "@/app/api/procurement/requisitions/commands/update/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       const request = createMockRequest(
         "http://localhost:3000/api/procurement/requisitions/commands/update"
@@ -529,7 +529,7 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
       vi.mocked(auth).mockResolvedValue({ orgId: null } as any);
 
       const { POST } = await import(
-        "@/app/api/procurement/requisitions/commands/submit/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       const request = createMockRequest(
         "http://localhost:3000/api/procurement/requisitions/commands/submit"
@@ -567,7 +567,7 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
       });
 
       const { POST } = await import(
-        "@/app/api/procurement/requisitions/commands/create/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       const request = createMockRequest(
         "http://localhost:3000/api/procurement/requisitions/commands/create",
@@ -588,7 +588,7 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
       });
 
       const { POST } = await import(
-        "@/app/api/procurement/requisitions/commands/create/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       const request = createMockRequest(
         "http://localhost:3000/api/procurement/requisitions/commands/create",
@@ -609,7 +609,7 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
       });
 
       const { POST } = await import(
-        "@/app/api/procurement/requisitions/commands/create/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       const request = createMockRequest(
         "http://localhost:3000/api/procurement/requisitions/commands/create",
@@ -627,7 +627,7 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
       mockRunCommand.mockRejectedValueOnce(new Error("Unexpected error"));
 
       const { POST } = await import(
-        "@/app/api/procurement/requisitions/commands/create/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       const request = createMockRequest(
         "http://localhost:3000/api/procurement/requisitions/commands/create",

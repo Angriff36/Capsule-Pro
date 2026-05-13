@@ -1,0 +1,418 @@
+// Facilities Domain — Facility Management Rules  
+// Covers Facility, FacilityArea, FacilityAsset, FacilitySchedule, FacilityWorkOrder
+
+entity Facility {
+  property required id: string
+  property required tenantId: string
+  property required name: string
+  property type: string = "venue"
+  property address: string = ""
+  property city: string = ""
+  property state: string = ""
+  property zip: string = ""
+  property phone: string = ""
+  property status: string = "active"
+  property capacity: number = 0
+  property description: string = ""
+  property createdAt: number = 0
+  property updatedAt: number = 0
+
+  computed isActive: boolean = self.status == "active"
+  computed hasCapacityInfo: boolean = self.capacity > 0
+
+  constraint validType: self.type in ["venue", "warehouse", "office", "commissary", "other"] "Invalid facility type"
+  constraint validStatus: self.status in ["active", "inactive", "maintenance"] "Invalid facility status"
+
+  command create(name: string, type: string, address: string, city: string, state: string, zip: string, phone: string, capacity: number, description: string) {
+    guard name != null and name != "" "Facility name is required"
+    guard type in ["venue", "warehouse", "office", "commissary", "other"] "Invalid facility type"
+
+    mutate name = name
+    mutate type = type
+    mutate address = address
+    mutate city = city
+    mutate state = state
+    mutate zip = zip
+    mutate phone = phone
+    mutate capacity = capacity
+    mutate description = description
+    mutate status = "active"
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit FacilityCreated
+  }
+
+  command remove() {
+    guard self.status != "active" "Cannot delete an active facility"
+
+    mutate status = "inactive"
+    mutate updatedAt = now()
+
+    emit FacilityDeleted
+  }
+
+  command edit(name: string, type: string, address: string, city: string, state: string, zip: string, phone: string, capacity: number, description: string) {
+    guard name != null and name != "" "Facility name is required"
+
+    mutate name = name
+    mutate type = type
+    mutate address = address
+    mutate city = city
+    mutate state = state
+    mutate zip = zip
+    mutate phone = phone
+    mutate capacity = capacity
+    mutate description = description
+    mutate updatedAt = now()
+
+    emit FacilityUpdated
+  }
+}
+
+entity FacilityArea {
+  property required id: string
+  property required tenantId: string
+  property venueId: string = ""
+  property required name: string
+  property code: string = ""
+  property areaType: string = "other"
+  property floor: string = ""
+  property description: string = ""
+  property squareFeet: number = 0
+  property status: string = "active"
+  property createdAt: number = 0
+  property updatedAt: number = 0
+
+  constraint validAreaType: self.areaType in ["kitchen", "storage", "dining", "prep", "office", "loading_dock", "restroom", "other"] "Invalid area type"
+
+  command create(venueId: string, name: string, code: string, areaType: string, floor: string, description: string, squareFeet: number) {
+    guard name != null and name != "" "Area name is required"
+
+    mutate venueId = venueId
+    mutate name = name
+    mutate code = code
+    mutate areaType = areaType
+    mutate floor = floor
+    mutate description = description
+    mutate squareFeet = squareFeet
+    mutate status = "active"
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit FacilityAreaCreated
+  }
+
+  command remove() {
+    mutate status = "inactive"
+    mutate updatedAt = now()
+
+    emit FacilityAreaDeleted
+  }
+
+  command edit(name: string, code: string, areaType: string, floor: string, description: string, squareFeet: number) {
+    guard name != null and name != "" "Area name is required"
+
+    mutate name = name
+    mutate code = code
+    mutate areaType = areaType
+    mutate floor = floor
+    mutate description = description
+    mutate squareFeet = squareFeet
+    mutate updatedAt = now()
+
+    emit FacilityAreaUpdated
+  }
+}
+
+entity FacilityAsset {
+  property required id: string
+  property required tenantId: string
+  property facilityId: string = ""
+  property areaId: string = ""
+  property required name: string
+  property assetType: string = "other"
+  property assetClass: string = "fixed"
+  property status: string = "operational"
+  property purchaseDate: number = 0
+  property purchasePrice: number = 0
+  property currentValue: number = 0
+  property depreciationRate: number = 0
+  property serialNumber: string = ""
+  property notes: string = ""
+  property createdAt: number = 0
+  property updatedAt: number = 0
+
+  constraint validAssetType: self.assetType in ["equipment", "furniture", "vehicle", "technology", "other"] "Invalid asset type"
+  constraint validStatus: self.status in ["operational", "maintenance", "retired", "sold"] "Invalid asset status"
+
+  command create(facilityId: string, areaId: string, name: string, assetType: string, purchaseDate: number, purchasePrice: number, serialNumber: string, notes: string) {
+    guard name != null and name != "" "Asset name is required"
+
+    mutate facilityId = facilityId
+    mutate areaId = areaId
+    mutate name = name
+    mutate assetType = assetType
+    mutate purchaseDate = purchaseDate
+    mutate purchasePrice = purchasePrice
+    mutate currentValue = purchasePrice
+    mutate serialNumber = serialNumber
+    mutate notes = notes
+    mutate status = "operational"
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit FacilityAssetCreated
+  }
+
+  command remove() {
+    mutate status = "retired"
+    mutate updatedAt = now()
+
+    emit FacilityAssetDeleted
+  }
+
+  command update(name: string, assetType: string, currentValue: number, serialNumber: string, notes: string) {
+    mutate name = name
+    mutate assetType = assetType
+    mutate currentValue = currentValue
+    mutate serialNumber = serialNumber
+    mutate notes = notes
+    mutate updatedAt = now()
+
+    emit FacilityAssetUpdated
+  }
+}
+
+entity FacilitySchedule {
+  property required id: string
+  property required tenantId: string
+  property facilityId: string = ""
+  property areaId: string = ""
+  property required title: string
+  property description: string = ""
+  property scheduleType: string = "maintenance"
+  property status: string = "scheduled"
+  property startDate: number = 0
+  property endDate: number = 0
+  property assignedTo: string = ""
+  property notes: string = ""
+  property createdAt: number = 0
+  property updatedAt: number = 0
+
+  constraint validScheduleType: self.scheduleType in ["maintenance", "cleaning", "inspection", "renovation", "other"] "Invalid schedule type"
+  constraint validStatus: self.status in ["scheduled", "in_progress", "completed", "cancelled"] "Invalid schedule status"
+
+  command create(facilityId: string, areaId: string, title: string, description: string, scheduleType: string, startDate: number, endDate: number, assignedTo: string, notes: string) {
+    guard title != null and title != "" "Schedule title is required"
+    guard facilityId != null and facilityId != "" "Facility ID is required"
+
+    mutate facilityId = facilityId
+    mutate areaId = areaId
+    mutate title = title
+    mutate description = description
+    mutate scheduleType = scheduleType
+    mutate startDate = startDate
+    mutate endDate = endDate
+    mutate assignedTo = assignedTo
+    mutate notes = notes
+    mutate status = "scheduled"
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit FacilityScheduleCreated
+  }
+
+  command remove() {
+    mutate status = "cancelled"
+    mutate updatedAt = now()
+
+    emit FacilityScheduleDeleted
+  }
+
+  command edit(title: string, description: string, scheduleType: string, startDate: number, endDate: number, assignedTo: string, notes: string) {
+    guard title != null and title != "" "Schedule title is required"
+
+    mutate title = title
+    mutate description = description
+    mutate scheduleType = scheduleType
+    mutate startDate = startDate
+    mutate endDate = endDate
+    mutate assignedTo = assignedTo
+    mutate notes = notes
+    mutate updatedAt = now()
+
+    emit FacilityScheduleUpdated
+  }
+
+  command complete(completionNotes: string) {
+    guard self.status == "scheduled" "Only scheduled items can be completed"
+
+    mutate status = "completed"
+    mutate notes = completionNotes
+    mutate updatedAt = now()
+
+    emit FacilityScheduleCompleted
+  }
+}
+
+entity FacilityWorkOrder {
+  property required id: string
+  property required tenantId: string
+  property facilityId: string = ""
+  property areaId: string = ""
+  property assetId: string = ""
+  property required title: string
+  property description: string = ""
+  property priority: string = "medium"
+  property status: string = "open"
+  property category: string = "repair"
+  property requestedBy: string = ""
+  property assignedTo: string = ""
+  property estimatedCost: number = 0
+  property actualCost: number = 0
+  property scheduledDate: number = 0
+  property completedDate: number = 0
+  property notes: string = ""
+  property createdAt: number = 0
+  property updatedAt: number = 0
+
+  constraint validPriority: self.priority in ["low", "medium", "high", "critical"] "Invalid priority"
+  constraint validStatus: self.status in ["open", "in_progress", "completed", "cancelled"] "Invalid work order status"
+
+  command create(facilityId: string, areaId: string, assetId: string, title: string, description: string, priority: string, category: string, requestedBy: string, estimatedCost: number, scheduledDate: number, notes: string) {
+    guard title != null and title != "" "Work order title is required"
+
+    mutate facilityId = facilityId
+    mutate areaId = areaId
+    mutate assetId = assetId
+    mutate title = title
+    mutate description = description
+    mutate priority = priority
+    mutate category = category
+    mutate requestedBy = requestedBy
+    mutate estimatedCost = estimatedCost
+    mutate scheduledDate = scheduledDate
+    mutate notes = notes
+    mutate status = "open"
+    mutate actualCost = 0
+    mutate completedDate = 0
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit FacilityWorkOrderCreated
+  }
+
+  command updateStatus(status: string, notes: string) {
+    guard status in ["open", "in_progress", "completed", "cancelled"] "Invalid status"
+
+    mutate status = status
+    mutate notes = notes
+    mutate updatedAt = now()
+
+    emit FacilityWorkOrderStatusUpdated
+  }
+}
+
+policy ManagersCanManageFacilities execute: user.role in ["facility_manager", "manager", "admin"] "Only managers can manage facilities"
+policy StaffCanViewFacilities execute: user.role in ["staff", "facility_manager", "manager", "admin"] "Staff can view facilities"
+
+event FacilityCreated: "facility.created" {
+  facilityId: string
+  tenantId: string
+  name: string
+  type: string
+  createdAt: number
+}
+
+event FacilityDeleted: "facility.deleted" {
+  facilityId: string
+  deletedAt: number
+}
+
+event FacilityUpdated: "facility.updated" {
+  facilityId: string
+  name: string
+  updatedAt: number
+}
+
+event FacilityAreaCreated: "facility.area.created" {
+  areaId: string
+  tenantId: string
+  name: string
+  areaType: string
+  createdAt: number
+}
+
+event FacilityAreaDeleted: "facility.area.deleted" {
+  areaId: string
+  deletedAt: number
+}
+
+event FacilityAreaUpdated: "facility.area.updated" {
+  areaId: string
+  name: string
+  updatedAt: number
+}
+
+event FacilityAssetCreated: "facility.asset.created" {
+  assetId: string
+  tenantId: string
+  name: string
+  assetType: string
+  createdAt: number
+}
+
+event FacilityAssetDeleted: "facility.asset.deleted" {
+  assetId: string
+  deletedAt: number
+}
+
+event FacilityAssetUpdated: "facility.asset.updated" {
+  assetId: string
+  name: string
+  updatedAt: number
+}
+
+event FacilityScheduleCreated: "facility.schedule.created" {
+  scheduleId: string
+  tenantId: string
+  facilityId: string
+  title: string
+  scheduleType: string
+  createdAt: number
+}
+
+event FacilityScheduleDeleted: "facility.schedule.deleted" {
+  scheduleId: string
+  deletedAt: number
+}
+
+event FacilityScheduleUpdated: "facility.schedule.updated" {
+  scheduleId: string
+  title: string
+  updatedAt: number
+}
+
+event FacilityScheduleCompleted: "facility.schedule.completed" {
+  scheduleId: string
+  completionNotes: string
+  completedAt: number
+}
+
+event FacilityWorkOrderCreated: "facility.workorder.created" {
+  workOrderId: string
+  tenantId: string
+  facilityId: string
+  title: string
+  priority: string
+  createdAt: number
+}
+
+event FacilityWorkOrderStatusUpdated: "facility.workorder.status.updated" {
+  workOrderId: string
+  oldStatus: string
+  newStatus: string
+  notes: string
+  updatedAt: number
+}

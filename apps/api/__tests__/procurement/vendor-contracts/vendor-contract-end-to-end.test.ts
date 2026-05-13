@@ -340,7 +340,7 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
 
     it("create route passes instanceId from body.id", async () => {
       const { POST } = await import(
-        "@/app/api/procurement/vendor-contracts/commands/create/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       const request = createMockRequest(
         "http://localhost:3000/api/procurement/vendor-contracts/commands/create",
@@ -374,7 +374,7 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
 
     it("update route passes instanceId to runCommand", async () => {
       const { POST } = await import(
-        "@/app/api/procurement/vendor-contracts/commands/update/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       const request = createMockRequest(
         "http://localhost:3000/api/procurement/vendor-contracts/commands/update",
@@ -404,7 +404,7 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
 
     it("submit route passes instanceId to runCommand", async () => {
       const { POST } = await import(
-        "@/app/api/procurement/vendor-contracts/commands/submit/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       const request = createMockRequest(
         "http://localhost:3000/api/procurement/vendor-contracts/commands/submit",
@@ -434,7 +434,7 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
 
     it("approve route passes instanceId to runCommand", async () => {
       const { POST } = await import(
-        "@/app/api/procurement/vendor-contracts/commands/approve/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       const request = createMockRequest(
         "http://localhost:3000/api/procurement/vendor-contracts/commands/approve",
@@ -464,7 +464,7 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
 
     it("reject route passes instanceId to runCommand", async () => {
       const { POST } = await import(
-        "@/app/api/procurement/vendor-contracts/commands/reject/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       const request = createMockRequest(
         "http://localhost:3000/api/procurement/vendor-contracts/commands/reject",
@@ -495,7 +495,7 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
 
     it("activate route passes instanceId to runCommand", async () => {
       const { POST } = await import(
-        "@/app/api/procurement/vendor-contracts/commands/activate/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       const request = createMockRequest(
         "http://localhost:3000/api/procurement/vendor-contracts/commands/activate",
@@ -525,7 +525,7 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
 
     it("terminate route passes instanceId to runCommand", async () => {
       const { POST } = await import(
-        "@/app/api/procurement/vendor-contracts/commands/terminate/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       const request = createMockRequest(
         "http://localhost:3000/api/procurement/vendor-contracts/commands/terminate",
@@ -562,7 +562,7 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
       vi.mocked(auth).mockResolvedValue({ orgId: null } as any);
 
       const { POST } = await import(
-        "@/app/api/procurement/vendor-contracts/commands/create/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       const request = createMockRequest(
         "http://localhost:3000/api/procurement/vendor-contracts/commands/create"
@@ -576,7 +576,7 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
       vi.mocked(auth).mockResolvedValue({ orgId: null } as any);
 
       const { POST } = await import(
-        "@/app/api/procurement/vendor-contracts/commands/update/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       const request = createMockRequest(
         "http://localhost:3000/api/procurement/vendor-contracts/commands/update"
@@ -590,7 +590,7 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
       vi.mocked(auth).mockResolvedValue({ orgId: null } as any);
 
       const { POST } = await import(
-        "@/app/api/procurement/vendor-contracts/commands/submit/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       const request = createMockRequest(
         "http://localhost:3000/api/procurement/vendor-contracts/commands/submit"
@@ -631,7 +631,7 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
       });
 
       const { POST } = await import(
-        "@/app/api/procurement/vendor-contracts/commands/create/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       const request = createMockRequest(
         "http://localhost:3000/api/procurement/vendor-contracts/commands/create",
@@ -652,7 +652,7 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
       });
 
       const { POST } = await import(
-        "@/app/api/procurement/vendor-contracts/commands/create/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       const request = createMockRequest(
         "http://localhost:3000/api/procurement/vendor-contracts/commands/create",
@@ -673,7 +673,7 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
       });
 
       const { POST } = await import(
-        "@/app/api/procurement/vendor-contracts/commands/create/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       const request = createMockRequest(
         "http://localhost:3000/api/procurement/vendor-contracts/commands/create",
@@ -691,7 +691,7 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
       mockRunCommand.mockRejectedValueOnce(new Error("Unexpected error"));
 
       const { POST } = await import(
-        "@/app/api/procurement/vendor-contracts/commands/create/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       const request = createMockRequest(
         "http://localhost:3000/api/procurement/vendor-contracts/commands/create",

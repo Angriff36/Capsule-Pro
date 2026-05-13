@@ -96,7 +96,7 @@ import {
   GET as getTaskDetail,
   PATCH as patchTask,
 } from "@/app/api/administrative/tasks/[id]/route";
-import { POST as createTaskCommand } from "@/app/api/administrative/tasks/commands/create/route";
+import { POST as createTaskCommand } from "@/app/api/manifest/[entity]/commands/[command]/route";
 import { GET as getTasksManifestList } from "@/app/api/administrative/tasks/list/route";
 import {
   GET as getTasksList,
@@ -689,7 +689,7 @@ describe("Admin Task API", () => {
         method: "POST",
         body: JSON.stringify({ title: "New Task" }),
       });
-      const response = await createTaskCommand(request);
+      const response = await createTaskCommand(request, { params: Promise.resolve({ entity: "AdminTask", command: "create" }) });
 
       expect(response.status).toBe(401);
       const body = await response.json();
@@ -704,7 +704,7 @@ describe("Admin Task API", () => {
         method: "POST",
         body: JSON.stringify({ title: "New Task" }),
       });
-      const response = await createTaskCommand(request);
+      const response = await createTaskCommand(request, { params: Promise.resolve({ entity: "AdminTask", command: "create" }) });
 
       expect(response.status).toBe(400);
       const body = await response.json();
@@ -722,7 +722,7 @@ describe("Admin Task API", () => {
         method: "POST",
         body: JSON.stringify({ title: "New Task", priority: "high" }),
       });
-      const response = await createTaskCommand(request);
+      const response = await createTaskCommand(request, { params: Promise.resolve({ entity: "AdminTask", command: "create" }) });
 
       expect(response.status).toBe(200);
       const body = await response.json();
@@ -740,7 +740,7 @@ describe("Admin Task API", () => {
         method: "POST",
         body: JSON.stringify({ title: "New Task" }),
       });
-      const response = await createTaskCommand(request);
+      const response = await createTaskCommand(request, { params: Promise.resolve({ entity: "AdminTask", command: "create" }) });
 
       expect(response.status).toBe(403);
       const body = await response.json();
@@ -758,7 +758,7 @@ describe("Admin Task API", () => {
         method: "POST",
         body: JSON.stringify({ title: "A" }),
       });
-      const response = await createTaskCommand(request);
+      const response = await createTaskCommand(request, { params: Promise.resolve({ entity: "AdminTask", command: "create" }) });
 
       expect(response.status).toBe(422);
       const body = await response.json();
@@ -776,7 +776,7 @@ describe("Admin Task API", () => {
         method: "POST",
         body: JSON.stringify({ title: "New Task" }),
       });
-      const response = await createTaskCommand(request);
+      const response = await createTaskCommand(request, { params: Promise.resolve({ entity: "AdminTask", command: "create" }) });
 
       expect(response.status).toBe(400);
       const body = await response.json();
@@ -790,7 +790,7 @@ describe("Admin Task API", () => {
         method: "POST",
         body: JSON.stringify({ title: "New Task" }),
       });
-      const response = await createTaskCommand(request);
+      const response = await createTaskCommand(request, { params: Promise.resolve({ entity: "AdminTask", command: "create" }) });
 
       expect(response.status).toBe(500);
       const body = await response.json();
@@ -808,7 +808,7 @@ describe("Admin Task API", () => {
         method: "POST",
         body: JSON.stringify({ title: "New Task" }),
       });
-      await createTaskCommand(request);
+      await createTaskCommand(request, { params: Promise.resolve({ entity: "AdminTask", command: "create" }) });
 
       expect(createManifestRuntime).toHaveBeenCalledWith({
         user: {
@@ -832,7 +832,7 @@ describe("Admin Task API", () => {
         method: "POST",
         body: JSON.stringify(payload),
       });
-      await createTaskCommand(request);
+      await createTaskCommand(request, { params: Promise.resolve({ entity: "AdminTask", command: "create" }) });
 
       expect(mockRunCommand).toHaveBeenCalledWith("create", payload, {
         entityName: "AdminTask",

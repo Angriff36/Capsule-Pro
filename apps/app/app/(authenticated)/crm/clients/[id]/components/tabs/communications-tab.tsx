@@ -24,6 +24,7 @@ import {
 import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
+import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import {
   CalendarIcon,
   CheckIcon,
@@ -290,12 +291,12 @@ export function CommunicationsTab({ clientId }: CommunicationsTabProps) {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="followUpDate">Follow-up Date</Label>
-                <Input
+                <DatePicker
                   id="followUpDate"
                   onChange={(e) =>
                     setFormData({ ...formData, followUpDate: e.target.value })
                   }
-                  type="date"
+ 
                   value={formData.followUpDate}
                 />
               </div>
@@ -529,12 +530,12 @@ export function CommunicationsTab({ clientId }: CommunicationsTabProps) {
             </div>
             <div className="space-y-2">
               <Label htmlFor="edit-followUpDate">Follow-up Date</Label>
-              <Input
+              <DatePicker
                 id="edit-followUpDate"
                 onChange={(e) =>
                   setFormData({ ...formData, followUpDate: e.target.value })
                 }
-                type="date"
+ 
                 value={formData.followUpDate}
               />
             </div>

@@ -38,12 +38,12 @@ describe("Generated PrepTask.claim route wiring", () => {
 
   it("imports route module and calls createManifestRuntime/runCommand(claim)", async () => {
     const routeModule = await import(
-      "@/app/api/kitchen/prep-tasks/commands/claim/route"
+      "@/app/api/manifest/[entity]/commands/[command]/route"
     );
 
     const response = await routeModule.POST(
       new NextRequest(
-        "http://localhost/api/kitchen/prep-tasks/commands/claim",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -52,7 +52,8 @@ describe("Generated PrepTask.claim route wiring", () => {
             stationId: "station-a",
           }),
         }
-      )
+      ),
+      { params: Promise.resolve({ entity: "PrepTask", command: "claim" }) }
     );
     const json = await response.json();
 

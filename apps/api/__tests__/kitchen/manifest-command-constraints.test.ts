@@ -156,11 +156,11 @@ describe("Manifest Command Constraints - PrepTask Commands", () => {
       vi.mocked(database.outboxEvent.create).mockResolvedValueOnce({} as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/prep-tasks/commands/claim/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/prep-tasks/commands/claim",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -171,7 +171,7 @@ describe("Manifest Command Constraints - PrepTask Commands", () => {
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "claim" }) });
       const data = await response.json();
 
       // WARN constraint should still return success (200)
@@ -224,11 +224,11 @@ describe("Manifest Command Constraints - PrepTask Commands", () => {
       vi.mocked(database.outboxEvent.create).mockResolvedValueOnce({} as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/prep-tasks/commands/claim/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/prep-tasks/commands/claim",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -239,7 +239,7 @@ describe("Manifest Command Constraints - PrepTask Commands", () => {
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "claim" }) });
       const data = await response.json();
 
       expect(response.status).toBeGreaterThanOrEqual(200);
@@ -289,11 +289,11 @@ describe("Manifest Command Constraints - PrepTask Commands", () => {
       vi.mocked(database.outboxEvent.create).mockResolvedValueOnce({} as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/prep-tasks/commands/complete/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/prep-tasks/commands/complete",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -304,7 +304,7 @@ describe("Manifest Command Constraints - PrepTask Commands", () => {
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "claim" }) });
       const data = await response.json();
 
       // WARN constraint should still return success (200)
@@ -353,11 +353,11 @@ describe("Manifest Command Constraints - PrepTask Commands", () => {
       vi.mocked(database.outboxEvent.create).mockResolvedValueOnce({} as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/prep-tasks/commands/complete/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/prep-tasks/commands/complete",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -368,7 +368,7 @@ describe("Manifest Command Constraints - PrepTask Commands", () => {
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "claim" }) });
       const data = await response.json();
 
       expect(response.status).toBeGreaterThanOrEqual(200);
@@ -417,11 +417,11 @@ describe("Manifest Command Constraints - PrepTask Commands", () => {
       vi.mocked(database.outboxEvent.create).mockResolvedValueOnce({} as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/prep-tasks/commands/reassign/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/prep-tasks/commands/reassign",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -432,7 +432,7 @@ describe("Manifest Command Constraints - PrepTask Commands", () => {
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "claim" }) });
       const data = await response.json();
 
       // WARN constraint should still return success (200)
@@ -480,11 +480,11 @@ describe("Manifest Command Constraints - PrepTask Commands", () => {
       vi.mocked(database.outboxEvent.create).mockResolvedValueOnce({} as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/prep-tasks/commands/reassign/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/prep-tasks/commands/reassign",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -495,7 +495,7 @@ describe("Manifest Command Constraints - PrepTask Commands", () => {
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "claim" }) });
       const data = await response.json();
 
       expect(response.status).toBeGreaterThanOrEqual(200);
@@ -544,11 +544,11 @@ describe("Manifest Command Constraints - PrepTask Commands", () => {
       vi.mocked(database.outboxEvent.create).mockResolvedValueOnce({} as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/prep-tasks/commands/update-quantity/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/prep-tasks/commands/update-quantity",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -559,7 +559,7 @@ describe("Manifest Command Constraints - PrepTask Commands", () => {
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "claim" }) });
       const data = await response.json();
 
       // WARN constraint should still return success (200)
@@ -606,11 +606,11 @@ describe("Manifest Command Constraints - PrepTask Commands", () => {
       vi.mocked(database.outboxEvent.create).mockResolvedValueOnce({} as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/prep-tasks/commands/update-quantity/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/prep-tasks/commands/update-quantity",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -621,7 +621,7 @@ describe("Manifest Command Constraints - PrepTask Commands", () => {
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "claim" }) });
       const data = await response.json();
 
       expect(response.status).toBeGreaterThanOrEqual(200);
@@ -669,11 +669,11 @@ describe("Manifest Command Constraints - PrepTask Commands", () => {
       vi.mocked(database.outboxEvent.create).mockResolvedValueOnce({} as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/prep-tasks/commands/cancel/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/prep-tasks/commands/cancel",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -684,7 +684,7 @@ describe("Manifest Command Constraints - PrepTask Commands", () => {
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "claim" }) });
       const data = await response.json();
 
       // WARN constraint should still return success (200)
@@ -731,11 +731,11 @@ describe("Manifest Command Constraints - PrepTask Commands", () => {
       vi.mocked(database.outboxEvent.create).mockResolvedValueOnce({} as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/prep-tasks/commands/cancel/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/prep-tasks/commands/cancel",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -746,7 +746,7 @@ describe("Manifest Command Constraints - PrepTask Commands", () => {
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "claim" }) });
       const data = await response.json();
 
       expect(response.status).toBeGreaterThanOrEqual(200);
@@ -795,11 +795,11 @@ describe("Manifest Command Constraints - Recipe Commands", () => {
       vi.mocked(database.outboxEvent.create).mockResolvedValueOnce({} as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/recipes/commands/update/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/recipes/commands/update",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -813,7 +813,7 @@ describe("Manifest Command Constraints - Recipe Commands", () => {
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "update" }) });
       const data = await response.json();
 
       // WARN constraint should still return success (200)
@@ -854,11 +854,11 @@ describe("Manifest Command Constraints - Recipe Commands", () => {
       vi.mocked(database.outboxEvent.create).mockResolvedValueOnce({} as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/recipes/commands/update/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/recipes/commands/update",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -872,7 +872,7 @@ describe("Manifest Command Constraints - Recipe Commands", () => {
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "update" }) });
       const data = await response.json();
 
       expect(response.status).toBeGreaterThanOrEqual(200);
@@ -928,11 +928,11 @@ describe("Manifest Command Constraints - Dish Commands (Recipe domain)", () => {
       vi.mocked(database.outboxEvent.create).mockResolvedValueOnce({} as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/dishes/commands/update-pricing/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/dishes/commands/update-pricing",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -943,7 +943,7 @@ describe("Manifest Command Constraints - Dish Commands (Recipe domain)", () => {
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "update-pricing" }) });
       const data = await response.json();
 
       // WARN constraint should still return success (200)
@@ -993,11 +993,11 @@ describe("Manifest Command Constraints - Dish Commands (Recipe domain)", () => {
       vi.mocked(database.outboxEvent.create).mockResolvedValueOnce({} as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/dishes/commands/update-pricing/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/dishes/commands/update-pricing",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -1008,7 +1008,7 @@ describe("Manifest Command Constraints - Dish Commands (Recipe domain)", () => {
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "update-pricing" }) });
       const data = await response.json();
 
       // WARN constraint should still return success (200)
@@ -1056,11 +1056,11 @@ describe("Manifest Command Constraints - Dish Commands (Recipe domain)", () => {
       vi.mocked(database.outboxEvent.create).mockResolvedValueOnce({} as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/dishes/commands/update-pricing/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/dishes/commands/update-pricing",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -1071,7 +1071,7 @@ describe("Manifest Command Constraints - Dish Commands (Recipe domain)", () => {
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "update-pricing" }) });
       const data = await response.json();
 
       expect(response.status).toBeGreaterThanOrEqual(200);
@@ -1120,11 +1120,11 @@ describe("Manifest Command Constraints - Menu Commands", () => {
       vi.mocked(database.outboxEvent.create).mockResolvedValueOnce({} as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/menus/commands/update/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/menus/commands/update",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -1141,7 +1141,7 @@ describe("Manifest Command Constraints - Menu Commands", () => {
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "update" }) });
       const data = await response.json();
 
       // WARN constraint should still return success (200)
@@ -1184,11 +1184,11 @@ describe("Manifest Command Constraints - Menu Commands", () => {
       vi.mocked(database.outboxEvent.create).mockResolvedValueOnce({} as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/menus/commands/update/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/menus/commands/update",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -1205,7 +1205,7 @@ describe("Manifest Command Constraints - Menu Commands", () => {
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "update" }) });
       const data = await response.json();
 
       // WARN constraint should still return success (200)
@@ -1246,11 +1246,11 @@ describe("Manifest Command Constraints - Menu Commands", () => {
       vi.mocked(database.outboxEvent.create).mockResolvedValueOnce({} as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/menus/commands/update/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/menus/commands/update",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -1267,7 +1267,7 @@ describe("Manifest Command Constraints - Menu Commands", () => {
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "update" }) });
       const data = await response.json();
 
       expect(response.status).toBeGreaterThanOrEqual(200);
@@ -1321,11 +1321,11 @@ describe("Manifest Command Constraints - PrepList Commands", () => {
       vi.mocked(database.outboxEvent.create).mockResolvedValueOnce({} as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/prep-lists/commands/update/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/prep-lists/commands/update",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -1337,7 +1337,7 @@ describe("Manifest Command Constraints - PrepList Commands", () => {
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "update" }) });
       const data = await response.json();
 
       // WARN constraint should still return success (200)
@@ -1386,11 +1386,11 @@ describe("Manifest Command Constraints - PrepList Commands", () => {
       vi.mocked(database.outboxEvent.create).mockResolvedValueOnce({} as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/prep-lists/commands/update-batch-multiplier/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/prep-lists/commands/update-batch-multiplier",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -1400,7 +1400,7 @@ describe("Manifest Command Constraints - PrepList Commands", () => {
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "update" }) });
       const data = await response.json();
 
       // WARN constraint should still return success (200)
@@ -1446,11 +1446,11 @@ describe("Manifest Command Constraints - PrepList Commands", () => {
       vi.mocked(database.outboxEvent.create).mockResolvedValueOnce({} as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/prep-lists/commands/update-batch-multiplier/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/prep-lists/commands/update-batch-multiplier",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -1460,7 +1460,7 @@ describe("Manifest Command Constraints - PrepList Commands", () => {
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "update" }) });
       const data = await response.json();
 
       expect(response.status).toBeGreaterThanOrEqual(200);
@@ -1525,11 +1525,11 @@ describe("Manifest Command Constraints - PrepListItem Commands (PrepList domain)
       vi.mocked(database.outboxEvent.create).mockResolvedValueOnce({} as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/prep-list-items/commands/update-station/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/prep-list-items/commands/update-station",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -1540,7 +1540,7 @@ describe("Manifest Command Constraints - PrepListItem Commands (PrepList domain)
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "update-station" }) });
       const data = await response.json();
 
       // WARN constraint should still return success (200)
@@ -1597,11 +1597,11 @@ describe("Manifest Command Constraints - PrepListItem Commands (PrepList domain)
       vi.mocked(database.outboxEvent.create).mockResolvedValueOnce({} as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/prep-list-items/commands/update-station/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/prep-list-items/commands/update-station",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -1612,7 +1612,7 @@ describe("Manifest Command Constraints - PrepListItem Commands (PrepList domain)
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "update-station" }) });
       const data = await response.json();
 
       expect(response.status).toBeGreaterThanOrEqual(200);

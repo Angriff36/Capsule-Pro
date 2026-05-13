@@ -81,7 +81,7 @@ export default function EventFollowUpsPage() {
     setGenerating(true);
     try {
       const res = await apiFetch(
-        "/api/events/automated-followups/commands/generate",
+        "/api/manifest/AutomatedFollowup/commands/generate",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -103,7 +103,7 @@ export default function EventFollowUpsPage() {
     setActioning(followupId);
     try {
       const res = await apiFetch(
-        "/api/events/automated-followups/commands/complete",
+        "/api/manifest/AutomatedFollowup/commands/complete",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -124,7 +124,7 @@ export default function EventFollowUpsPage() {
     setActioning(followupId);
     try {
       const res = await apiFetch(
-        "/api/events/automated-followups/commands/skip",
+        "/api/manifest/AutomatedFollowup/commands/skip",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

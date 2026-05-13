@@ -597,7 +597,7 @@ describe("Recipes API", () => {
       name: "create",
       runtimeName: "create",
       path: "/api/kitchen/recipes/commands/create",
-      routePath: "@/app/api/kitchen/recipes/commands/create/route",
+      routePath: "@/app/api/manifest/[entity]/commands/[command]/route",
       sampleBody: {
         name: "Caesar Dressing",
         category: "sauce",
@@ -608,7 +608,7 @@ describe("Recipes API", () => {
       name: "update",
       runtimeName: "update",
       path: "/api/kitchen/recipes/commands/update",
-      routePath: "@/app/api/kitchen/recipes/commands/update/route",
+      routePath: "@/app/api/manifest/[entity]/commands/[command]/route",
       sampleBody: {
         id: TEST_RECIPE_ID,
         description: "Updated description",
@@ -618,14 +618,14 @@ describe("Recipes API", () => {
       name: "activate",
       runtimeName: "activate",
       path: "/api/kitchen/recipes/commands/activate",
-      routePath: "@/app/api/kitchen/recipes/commands/activate/route",
+      routePath: "@/app/api/manifest/[entity]/commands/[command]/route",
       sampleBody: { id: TEST_RECIPE_ID },
     },
     {
       name: "deactivate",
       runtimeName: "deactivate",
       path: "/api/kitchen/recipes/commands/deactivate",
-      routePath: "@/app/api/kitchen/recipes/commands/deactivate/route",
+      routePath: "@/app/api/manifest/[entity]/commands/[command]/route",
       sampleBody: { id: TEST_RECIPE_ID },
     },
   ];

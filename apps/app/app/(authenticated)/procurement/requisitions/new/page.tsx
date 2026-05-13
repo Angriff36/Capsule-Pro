@@ -25,6 +25,7 @@ import {
   SelectValue,
 } from "@repo/design-system/components/ui/select";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
+import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import { ArrowLeft, Loader2, Package, Plus, Search } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -231,10 +232,10 @@ export default function NewRequisitionPage() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="requiredBy">Required By</Label>
-                    <Input
+                    <DatePicker
                       id="requiredBy"
                       onChange={(e) => setRequiredBy(e.target.value)}
-                      type="date"
+ 
                       value={requiredBy}
                     />
                   </div>

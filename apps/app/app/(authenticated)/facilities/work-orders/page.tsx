@@ -21,6 +21,7 @@ import {
   SelectValue,
 } from "@repo/design-system/components/ui/select";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
+import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import {
   AlertTriangle,
   CheckCircle2,
@@ -176,7 +177,7 @@ export default function FacilitiesWorkOrdersPage() {
     setUpdatingStatus(workOrderId);
     try {
       const res = await apiFetch(
-        "/api/facilities/work-orders/commands/update-status",
+        "/api/manifest/FacilityWorkOrder/commands/updateStatus",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -199,7 +200,7 @@ export default function FacilitiesWorkOrdersPage() {
     setUpdatingStatus(completingWorkOrder.id);
     try {
       const res = await apiFetch(
-        "/api/facilities/work-orders/commands/update-status",
+        "/api/manifest/FacilityWorkOrder/commands/updateStatus",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -451,14 +452,14 @@ export default function FacilitiesWorkOrdersPage() {
             </div>
             <div className="space-y-2">
               <Label>Scheduled Date</Label>
-              <Input
+              <DatePicker
                 onChange={(e) =>
                   setCreateForm((prev) => ({
                     ...prev,
                     scheduledDate: e.target.value,
                   }))
                 }
-                type="date"
+ 
                 value={createForm.scheduledDate}
               />
             </div>

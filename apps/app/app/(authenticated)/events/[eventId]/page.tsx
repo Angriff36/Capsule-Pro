@@ -131,6 +131,7 @@ const EventDetailsPage = async ({ params }: EventDetailsPageProps) => {
       </Header>
       <EventDetailsClient
         budget={null}
+        allEventData={data}
         event={{
           ...event,
           budget: event.budget === null ? null : Number(event.budget),

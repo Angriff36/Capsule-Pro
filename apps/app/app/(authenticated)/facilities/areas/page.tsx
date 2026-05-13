@@ -107,7 +107,7 @@ export default function AreasPage() {
     setSaving(true);
     try {
       if (editing) {
-        const res = await apiFetch("/api/facilities/areas/commands/edit", {
+        const res = await apiFetch("/api/manifest/FacilityArea/commands/edit", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -150,7 +150,7 @@ export default function AreasPage() {
   const handleDelete = async (areaId: string) => {
     setDeleting(areaId);
     try {
-      await apiFetch("/api/facilities/areas/commands/delete", {
+      await apiFetch("/api/manifest/FacilityArea/commands/remove", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ areaId }),

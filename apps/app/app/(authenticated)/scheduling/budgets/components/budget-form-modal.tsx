@@ -20,6 +20,7 @@ import {
 } from "@repo/design-system/components/ui/select";
 import { Switch } from "@repo/design-system/components/ui/switch";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
+import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import { Loader2Icon } from "lucide-react";
 import { useState } from "react";
 import type {
@@ -313,13 +314,13 @@ export function BudgetFormModal({
                 <Label htmlFor="periodStart">
                   Period Start <span className="text-red-500">*</span>
                 </Label>
-                <Input
+                <DatePicker
                   disabled={loading}
                   id="periodStart"
                   onChange={(e) =>
                     setFormData({ ...formData, periodStart: e.target.value })
                   }
-                  type="date"
+ 
                   value={formData.periodStart}
                 />
               </div>
@@ -328,13 +329,13 @@ export function BudgetFormModal({
                 <Label htmlFor="periodEnd">
                   Period End <span className="text-red-500">*</span>
                 </Label>
-                <Input
+                <DatePicker
                   disabled={loading}
                   id="periodEnd"
                   onChange={(e) =>
                     setFormData({ ...formData, periodEnd: e.target.value })
                   }
-                  type="date"
+ 
                   value={formData.periodEnd}
                 />
               </div>

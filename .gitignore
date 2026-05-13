@@ -14,6 +14,16 @@
 session-ses_*.md
 .worktrees/
 
+# Hermes agent local workspace
+/.hermes/
+
+# Editor / tool backup files
+*.bak
+
+# Agent-generated audit / report artifacts (local only, not app code)
+/manifest-audit/
+/reports/implementation-theatre/
+
 # Storybook build artifacts
 **/storybook-static/
 

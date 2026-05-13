@@ -20,11 +20,11 @@ import {
   GET as getApiKey,
   PUT as updateApiKey,
 } from "@/app/api/settings/api-keys/[id]/route";
-import { POST as commandCreateApiKey } from "@/app/api/settings/api-keys/commands/create/route";
-import { POST as commandRecordUsage } from "@/app/api/settings/api-keys/commands/record-usage/route";
-import { POST as commandRevokeApiKey } from "@/app/api/settings/api-keys/commands/revoke/route";
-import { POST as commandSoftDeleteApiKey } from "@/app/api/settings/api-keys/commands/soft-delete/route";
-import { POST as commandUpdateApiKey } from "@/app/api/settings/api-keys/commands/update/route";
+import { POST as commandCreateApiKey } from "@/app/api/manifest/[entity]/commands/[command]/route";
+import { POST as commandRecordUsage } from "@/app/api/manifest/[entity]/commands/[command]/route";
+import { POST as commandRevokeApiKey } from "@/app/api/manifest/[entity]/commands/[command]/route";
+import { POST as commandSoftDeleteApiKey } from "@/app/api/manifest/[entity]/commands/[command]/route";
+import { POST as commandUpdateApiKey } from "@/app/api/manifest/[entity]/commands/[command]/route";
 // --- Manifest-generated list ---
 import { GET as listApiKeysManifest } from "@/app/api/settings/api-keys/list/route";
 import {
@@ -930,13 +930,13 @@ describe("Settings API", () => {
         });
 
         const request = new NextRequest(
-          "http://localhost/api/settings/api-keys/commands/create",
+          "http://localhost/api/manifest/[entity]/commands/[command]",
           {
             method: "POST",
             body: JSON.stringify({ name: "Runtime Key" }),
           }
         );
-        const response = await commandCreateApiKey(request);
+        const response = await commandCreateApiKey(request, { params: Promise.resolve({ entity: "ApiKey", command: "create" }) });
 
         expect(response.status).toBe(200);
         const body = await response.json();
@@ -951,13 +951,13 @@ describe("Settings API", () => {
         } as never);
 
         const request = new NextRequest(
-          "http://localhost/api/settings/api-keys/commands/create",
+          "http://localhost/api/manifest/[entity]/commands/[command]",
           {
             method: "POST",
             body: JSON.stringify({ name: "Test" }),
           }
         );
-        const response = await commandCreateApiKey(request);
+        const response = await commandCreateApiKey(request, { params: Promise.resolve({ entity: "ApiKey", command: "create" }) });
 
         expect(response.status).toBe(401);
       });
@@ -966,13 +966,13 @@ describe("Settings API", () => {
         vi.mocked(database.user.findFirst).mockResolvedValue(null as never);
 
         const request = new NextRequest(
-          "http://localhost/api/settings/api-keys/commands/create",
+          "http://localhost/api/manifest/[entity]/commands/[command]",
           {
             method: "POST",
             body: JSON.stringify({ name: "Test" }),
           }
         );
-        const response = await commandCreateApiKey(request);
+        const response = await commandCreateApiKey(request, { params: Promise.resolve({ entity: "ApiKey", command: "create" }) });
 
         expect(response.status).toBe(400);
         const body = await response.json();
@@ -986,13 +986,13 @@ describe("Settings API", () => {
         });
 
         const request = new NextRequest(
-          "http://localhost/api/settings/api-keys/commands/create",
+          "http://localhost/api/manifest/[entity]/commands/[command]",
           {
             method: "POST",
             body: JSON.stringify({ name: "Denied Key" }),
           }
         );
-        const response = await commandCreateApiKey(request);
+        const response = await commandCreateApiKey(request, { params: Promise.resolve({ entity: "ApiKey", command: "create" }) });
 
         expect(response.status).toBe(403);
         const body = await response.json();
@@ -1007,13 +1007,13 @@ describe("Settings API", () => {
         });
 
         const request = new NextRequest(
-          "http://localhost/api/settings/api-keys/commands/create",
+          "http://localhost/api/manifest/[entity]/commands/[command]",
           {
             method: "POST",
             body: JSON.stringify({}),
           }
         );
-        const response = await commandCreateApiKey(request);
+        const response = await commandCreateApiKey(request, { params: Promise.resolve({ entity: "ApiKey", command: "create" }) });
 
         expect(response.status).toBe(422);
         const body = await response.json();
@@ -1027,13 +1027,13 @@ describe("Settings API", () => {
         });
 
         const request = new NextRequest(
-          "http://localhost/api/settings/api-keys/commands/create",
+          "http://localhost/api/manifest/[entity]/commands/[command]",
           {
             method: "POST",
             body: JSON.stringify({}),
           }
         );
-        const response = await commandCreateApiKey(request);
+        const response = await commandCreateApiKey(request, { params: Promise.resolve({ entity: "ApiKey", command: "create" }) });
 
         expect(response.status).toBe(400);
         const body = await response.json();
@@ -1044,13 +1044,13 @@ describe("Settings API", () => {
         mockRunCommand.mockRejectedValue(new Error("Runtime crash"));
 
         const request = new NextRequest(
-          "http://localhost/api/settings/api-keys/commands/create",
+          "http://localhost/api/manifest/[entity]/commands/[command]",
           {
             method: "POST",
             body: JSON.stringify({ name: "Crash" }),
           }
         );
-        const response = await commandCreateApiKey(request);
+        const response = await commandCreateApiKey(request, { params: Promise.resolve({ entity: "ApiKey", command: "create" }) });
 
         expect(response.status).toBe(500);
       });
@@ -1066,13 +1066,13 @@ describe("Settings API", () => {
         });
 
         const request = new NextRequest(
-          "http://localhost/api/settings/api-keys/commands/revoke",
+          "http://localhost/api/manifest/[entity]/commands/[command]",
           {
             method: "POST",
             body: JSON.stringify({ id: "key-001" }),
           }
         );
-        const response = await commandRevokeApiKey(request);
+        const response = await commandRevokeApiKey(request, { params: Promise.resolve({ entity: "ApiKey", command: "revoke" }) });
 
         expect(response.status).toBe(200);
         expect(mockRunCommand).toHaveBeenCalledWith(
@@ -1091,13 +1091,13 @@ describe("Settings API", () => {
         } as never);
 
         const request = new NextRequest(
-          "http://localhost/api/settings/api-keys/commands/revoke",
+          "http://localhost/api/manifest/[entity]/commands/[command]",
           {
             method: "POST",
             body: JSON.stringify({ id: "key-001" }),
           }
         );
-        const response = await commandRevokeApiKey(request);
+        const response = await commandRevokeApiKey(request, { params: Promise.resolve({ entity: "ApiKey", command: "revoke" }) });
 
         expect(response.status).toBe(401);
       });
@@ -1113,13 +1113,13 @@ describe("Settings API", () => {
         });
 
         const request = new NextRequest(
-          "http://localhost/api/settings/api-keys/commands/update",
+          "http://localhost/api/manifest/[entity]/commands/[command]",
           {
             method: "POST",
             body: JSON.stringify({ id: "key-001", name: "Updated" }),
           }
         );
-        const response = await commandUpdateApiKey(request);
+        const response = await commandUpdateApiKey(request, { params: Promise.resolve({ entity: "ApiKey", command: "update" }) });
 
         expect(response.status).toBe(200);
         expect(mockRunCommand).toHaveBeenCalledWith(
@@ -1142,13 +1142,13 @@ describe("Settings API", () => {
         });
 
         const request = new NextRequest(
-          "http://localhost/api/settings/api-keys/commands/soft-delete",
+          "http://localhost/api/manifest/[entity]/commands/[command]",
           {
             method: "POST",
             body: JSON.stringify({ id: "key-001" }),
           }
         );
-        const response = await commandSoftDeleteApiKey(request);
+        const response = await commandSoftDeleteApiKey(request, { params: Promise.resolve({ entity: "ApiKey", command: "softDelete" }) });
 
         expect(response.status).toBe(200);
         expect(mockRunCommand).toHaveBeenCalledWith(
@@ -1171,13 +1171,13 @@ describe("Settings API", () => {
         });
 
         const request = new NextRequest(
-          "http://localhost/api/settings/api-keys/commands/record-usage",
+          "http://localhost/api/manifest/[entity]/commands/[command]",
           {
             method: "POST",
             body: JSON.stringify({ id: "key-001" }),
           }
         );
-        const response = await commandRecordUsage(request);
+        const response = await commandRecordUsage(request, { params: Promise.resolve({ entity: "ApiKey", command: "recordUsage" }) });
 
         expect(response.status).toBe(200);
         expect(mockRunCommand).toHaveBeenCalledWith(
@@ -1193,13 +1193,13 @@ describe("Settings API", () => {
         mockRunCommand.mockRejectedValue(new Error("Unexpected"));
 
         const request = new NextRequest(
-          "http://localhost/api/settings/api-keys/commands/record-usage",
+          "http://localhost/api/manifest/[entity]/commands/[command]",
           {
             method: "POST",
             body: JSON.stringify({ id: "key-001" }),
           }
         );
-        const response = await commandRecordUsage(request);
+        const response = await commandRecordUsage(request, { params: Promise.resolve({ entity: "ApiKey", command: "recordUsage" }) });
 
         expect(response.status).toBe(500);
       });

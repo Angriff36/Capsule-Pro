@@ -157,7 +157,7 @@ export default function VendorDetailPage() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      const res = await apiFetch("/api/procurement/vendors/commands/update", {
+      const res = await apiFetch("/api/manifest/Vendor/commands/update", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ vendorId, ...form }),
@@ -180,7 +180,7 @@ export default function VendorDetailPage() {
     if (!contactForm.contactName.trim()) return;
     try {
       const res = await apiFetch(
-        "/api/procurement/vendors/commands/add-contact",
+        "/api/manifest/Vendor/commands/addContact",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -207,7 +207,7 @@ export default function VendorDetailPage() {
 
   const handleRate = async () => {
     try {
-      const res = await apiFetch("/api/procurement/vendors/commands/rate", {
+      const res = await apiFetch("/api/manifest/Vendor/commands/rate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ vendorId, ...ratingForm }),

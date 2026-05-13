@@ -81,18 +81,18 @@ const { getTenantIdForOrg } = await import("@/app/lib/tenant");
 const { createManifestRuntime } = await import("@/lib/manifest-runtime");
 
 import { GET as getEditRequest } from "@/app/api/timecards/edit-requests/[id]/route";
-import { POST as approveEditRequest } from "@/app/api/timecards/edit-requests/commands/approve/route";
-import { POST as rejectEditRequest } from "@/app/api/timecards/edit-requests/commands/reject/route";
+import { POST as approveEditRequest } from "@/app/api/manifest/[entity]/commands/[command]/route";
+import { POST as rejectEditRequest } from "@/app/api/manifest/[entity]/commands/[command]/route";
 import { GET as listEditRequests } from "@/app/api/timecards/edit-requests/list/route";
 import { GET as getTimeEntry } from "@/app/api/timecards/entries/[id]/route";
-import { POST as addEntry } from "@/app/api/timecards/entries/commands/add-entry/route";
-import { POST as clockIn } from "@/app/api/timecards/entries/commands/clock-in/route";
-import { POST as clockOut } from "@/app/api/timecards/entries/commands/clock-out/route";
+import { POST as addEntry } from "@/app/api/manifest/[entity]/commands/[command]/route";
+import { POST as clockIn } from "@/app/api/manifest/[entity]/commands/[command]/route";
+import { POST as clockOut } from "@/app/api/manifest/[entity]/commands/[command]/route";
 // Route imports (after mocks are set up)
 import { GET as listTimeEntries } from "@/app/api/timecards/entries/list/route";
 import { GET as getTimeOffRequest } from "@/app/api/timecards/time-off-requests/[id]/route";
-import { POST as approveTimeOff } from "@/app/api/timecards/time-off-requests/commands/approve/route";
-import { POST as rejectTimeOff } from "@/app/api/timecards/time-off-requests/commands/reject/route";
+import { POST as approveTimeOff } from "@/app/api/manifest/[entity]/commands/[command]/route";
+import { POST as rejectTimeOff } from "@/app/api/manifest/[entity]/commands/[command]/route";
 import { GET as listTimeOffRequests } from "@/app/api/timecards/time-off-requests/list/route";
 
 // Convenience accessors through the Proxy (auto-creates stubs on first access)
@@ -408,13 +408,13 @@ describe("Timecards API", () => {
       } as never);
 
       const request = new NextRequest(
-        "http://localhost/api/timecards/entries/commands/clock-in",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({ employeeId: "emp-001" }),
         }
       );
-      const response = await clockIn(request);
+      const response = await clockIn(request, { params: Promise.resolve({ entity: "TimeEntry", command: "clockIn" }) });
 
       expect(response.status).toBe(401);
     });
@@ -423,13 +423,13 @@ describe("Timecards API", () => {
       vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
 
       const request = new NextRequest(
-        "http://localhost/api/timecards/entries/commands/clock-in",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({ employeeId: "emp-001" }),
         }
       );
-      const response = await clockIn(request);
+      const response = await clockIn(request, { params: Promise.resolve({ entity: "TimeEntry", command: "clockIn" }) });
 
       expect(response.status).toBe(400);
     });
@@ -438,13 +438,13 @@ describe("Timecards API", () => {
       db.user.findFirst.mockResolvedValue(null);
 
       const request = new NextRequest(
-        "http://localhost/api/timecards/entries/commands/clock-in",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({ employeeId: "emp-001" }),
         }
       );
-      const response = await clockIn(request);
+      const response = await clockIn(request, { params: Promise.resolve({ entity: "TimeEntry", command: "clockIn" }) });
 
       expect(response.status).toBe(400);
       const body = await response.json();
@@ -459,13 +459,13 @@ describe("Timecards API", () => {
       });
 
       const request = new NextRequest(
-        "http://localhost/api/timecards/entries/commands/clock-in",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({ employeeId: "emp-001" }),
         }
       );
-      const response = await clockIn(request);
+      const response = await clockIn(request, { params: Promise.resolve({ entity: "TimeEntry", command: "clockIn" }) });
 
       expect(response.status).toBe(200);
       const body = await response.json();
@@ -486,13 +486,13 @@ describe("Timecards API", () => {
       });
 
       const request = new NextRequest(
-        "http://localhost/api/timecards/entries/commands/clock-in",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({ employeeId: "emp-001" }),
         }
       );
-      const response = await clockIn(request);
+      const response = await clockIn(request, { params: Promise.resolve({ entity: "TimeEntry", command: "clockIn" }) });
 
       expect(response.status).toBe(403);
       const body = await response.json();
@@ -510,13 +510,13 @@ describe("Timecards API", () => {
       });
 
       const request = new NextRequest(
-        "http://localhost/api/timecards/entries/commands/clock-in",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({ employeeId: "emp-001" }),
         }
       );
-      const response = await clockIn(request);
+      const response = await clockIn(request, { params: Promise.resolve({ entity: "TimeEntry", command: "clockIn" }) });
 
       expect(response.status).toBe(422);
       const body = await response.json();
@@ -533,13 +533,13 @@ describe("Timecards API", () => {
       });
 
       const request = new NextRequest(
-        "http://localhost/api/timecards/entries/commands/clock-in",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({ employeeId: "invalid" }),
         }
       );
-      const response = await clockIn(request);
+      const response = await clockIn(request, { params: Promise.resolve({ entity: "TimeEntry", command: "clockIn" }) });
 
       expect(response.status).toBe(400);
       const body = await response.json();
@@ -550,13 +550,13 @@ describe("Timecards API", () => {
       mockRunCommand.mockRejectedValue(new Error("Runtime crash"));
 
       const request = new NextRequest(
-        "http://localhost/api/timecards/entries/commands/clock-in",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({ employeeId: "emp-001" }),
         }
       );
-      const response = await clockIn(request);
+      const response = await clockIn(request, { params: Promise.resolve({ entity: "TimeEntry", command: "clockIn" }) });
 
       expect(response.status).toBe(500);
     });
@@ -581,13 +581,13 @@ describe("Timecards API", () => {
       } as never);
 
       const request = new NextRequest(
-        "http://localhost/api/timecards/entries/commands/clock-out",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({ id: "entry-001" }),
         }
       );
-      const response = await clockOut(request);
+      const response = await clockOut(request, { params: Promise.resolve({ entity: "TimeEntry", command: "clockOut" }) });
 
       expect(response.status).toBe(401);
     });
@@ -596,13 +596,13 @@ describe("Timecards API", () => {
       vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
 
       const request = new NextRequest(
-        "http://localhost/api/timecards/entries/commands/clock-out",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({ id: "entry-001" }),
         }
       );
-      const response = await clockOut(request);
+      const response = await clockOut(request, { params: Promise.resolve({ entity: "TimeEntry", command: "clockOut" }) });
 
       expect(response.status).toBe(400);
     });
@@ -615,13 +615,13 @@ describe("Timecards API", () => {
       });
 
       const request = new NextRequest(
-        "http://localhost/api/timecards/entries/commands/clock-out",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({ id: "entry-001" }),
         }
       );
-      const response = await clockOut(request);
+      const response = await clockOut(request, { params: Promise.resolve({ entity: "TimeEntry", command: "clockOut" }) });
 
       expect(response.status).toBe(200);
       const body = await response.json();
@@ -645,13 +645,13 @@ describe("Timecards API", () => {
       });
 
       const request = new NextRequest(
-        "http://localhost/api/timecards/entries/commands/clock-out",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({ id: "entry-001" }),
         }
       );
-      const response = await clockOut(request);
+      const response = await clockOut(request, { params: Promise.resolve({ entity: "TimeEntry", command: "clockOut" }) });
 
       expect(response.status).toBe(422);
       const body = await response.json();
@@ -666,13 +666,13 @@ describe("Timecards API", () => {
       });
 
       const request = new NextRequest(
-        "http://localhost/api/timecards/entries/commands/clock-out",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({ id: "entry-001" }),
         }
       );
-      const response = await clockOut(request);
+      const response = await clockOut(request, { params: Promise.resolve({ entity: "TimeEntry", command: "clockOut" }) });
 
       expect(response.status).toBe(403);
       const body = await response.json();
@@ -684,13 +684,13 @@ describe("Timecards API", () => {
       mockRunCommand.mockRejectedValue(new Error("Runtime crash"));
 
       const request = new NextRequest(
-        "http://localhost/api/timecards/entries/commands/clock-out",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({ id: "entry-001" }),
         }
       );
-      const response = await clockOut(request);
+      const response = await clockOut(request, { params: Promise.resolve({ entity: "TimeEntry", command: "clockOut" }) });
 
       expect(response.status).toBe(500);
     });
@@ -715,7 +715,7 @@ describe("Timecards API", () => {
       } as never);
 
       const request = new NextRequest(
-        "http://localhost/api/timecards/entries/commands/add-entry",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -725,7 +725,7 @@ describe("Timecards API", () => {
           }),
         }
       );
-      const response = await addEntry(request);
+      const response = await addEntry(request, { params: Promise.resolve({ entity: "TimeEntry", command: "addEntry" }) });
 
       expect(response.status).toBe(401);
     });
@@ -738,7 +738,7 @@ describe("Timecards API", () => {
       });
 
       const request = new NextRequest(
-        "http://localhost/api/timecards/entries/commands/add-entry",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -749,7 +749,7 @@ describe("Timecards API", () => {
           }),
         }
       );
-      const response = await addEntry(request);
+      const response = await addEntry(request, { params: Promise.resolve({ entity: "TimeEntry", command: "addEntry" }) });
 
       expect(response.status).toBe(200);
       const body = await response.json();
@@ -773,7 +773,7 @@ describe("Timecards API", () => {
       });
 
       const request = new NextRequest(
-        "http://localhost/api/timecards/entries/commands/add-entry",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -783,7 +783,7 @@ describe("Timecards API", () => {
           }),
         }
       );
-      const response = await addEntry(request);
+      const response = await addEntry(request, { params: Promise.resolve({ entity: "TimeEntry", command: "addEntry" }) });
 
       expect(response.status).toBe(422);
       const body = await response.json();
@@ -984,13 +984,13 @@ describe("Timecards API", () => {
       } as never);
 
       const request = new NextRequest(
-        "http://localhost/api/timecards/edit-requests/commands/approve",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({ id: "edit-001" }),
         }
       );
-      const response = await approveEditRequest(request);
+      const response = await approveEditRequest(request, { params: Promise.resolve({ entity: "TimecardEditRequest", command: "approve" }) });
 
       expect(response.status).toBe(401);
     });
@@ -1003,13 +1003,13 @@ describe("Timecards API", () => {
       });
 
       const request = new NextRequest(
-        "http://localhost/api/timecards/edit-requests/commands/approve",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({ id: "edit-001" }),
         }
       );
-      const response = await approveEditRequest(request);
+      const response = await approveEditRequest(request, { params: Promise.resolve({ entity: "TimecardEditRequest", command: "approve" }) });
 
       expect(response.status).toBe(200);
       const body = await response.json();
@@ -1030,13 +1030,13 @@ describe("Timecards API", () => {
       });
 
       const request = new NextRequest(
-        "http://localhost/api/timecards/edit-requests/commands/approve",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({ id: "edit-001" }),
         }
       );
-      const response = await approveEditRequest(request);
+      const response = await approveEditRequest(request, { params: Promise.resolve({ entity: "TimecardEditRequest", command: "approve" }) });
 
       expect(response.status).toBe(403);
       const body = await response.json();
@@ -1054,13 +1054,13 @@ describe("Timecards API", () => {
       });
 
       const request = new NextRequest(
-        "http://localhost/api/timecards/edit-requests/commands/approve",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({ id: "edit-001" }),
         }
       );
-      const response = await approveEditRequest(request);
+      const response = await approveEditRequest(request, { params: Promise.resolve({ entity: "TimecardEditRequest", command: "approve" }) });
 
       expect(response.status).toBe(422);
       const body = await response.json();
@@ -1075,13 +1075,13 @@ describe("Timecards API", () => {
       });
 
       const request = new NextRequest(
-        "http://localhost/api/timecards/edit-requests/commands/approve",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({ id: "nonexistent" }),
         }
       );
-      const response = await approveEditRequest(request);
+      const response = await approveEditRequest(request, { params: Promise.resolve({ entity: "TimecardEditRequest", command: "approve" }) });
 
       expect(response.status).toBe(400);
       const body = await response.json();
@@ -1092,13 +1092,13 @@ describe("Timecards API", () => {
       mockRunCommand.mockRejectedValue(new Error("Runtime crash"));
 
       const request = new NextRequest(
-        "http://localhost/api/timecards/edit-requests/commands/approve",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({ id: "edit-001" }),
         }
       );
-      const response = await approveEditRequest(request);
+      const response = await approveEditRequest(request, { params: Promise.resolve({ entity: "TimecardEditRequest", command: "approve" }) });
 
       expect(response.status).toBe(500);
     });
@@ -1123,13 +1123,13 @@ describe("Timecards API", () => {
       } as never);
 
       const request = new NextRequest(
-        "http://localhost/api/timecards/edit-requests/commands/reject",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({ id: "edit-001" }),
         }
       );
-      const response = await rejectEditRequest(request);
+      const response = await rejectEditRequest(request, { params: Promise.resolve({ entity: "TimecardEditRequest", command: "reject" }) });
 
       expect(response.status).toBe(401);
     });
@@ -1142,13 +1142,13 @@ describe("Timecards API", () => {
       });
 
       const request = new NextRequest(
-        "http://localhost/api/timecards/edit-requests/commands/reject",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({ id: "edit-001", reason: "Not justified" }),
         }
       );
-      const response = await rejectEditRequest(request);
+      const response = await rejectEditRequest(request, { params: Promise.resolve({ entity: "TimecardEditRequest", command: "reject" }) });
 
       expect(response.status).toBe(200);
       const body = await response.json();
@@ -1169,13 +1169,13 @@ describe("Timecards API", () => {
       });
 
       const request = new NextRequest(
-        "http://localhost/api/timecards/edit-requests/commands/reject",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({ id: "edit-001" }),
         }
       );
-      const response = await rejectEditRequest(request);
+      const response = await rejectEditRequest(request, { params: Promise.resolve({ entity: "TimecardEditRequest", command: "reject" }) });
 
       expect(response.status).toBe(403);
       const body = await response.json();
@@ -1186,13 +1186,13 @@ describe("Timecards API", () => {
       mockRunCommand.mockRejectedValue(new Error("Runtime crash"));
 
       const request = new NextRequest(
-        "http://localhost/api/timecards/edit-requests/commands/reject",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({ id: "edit-001" }),
         }
       );
-      const response = await rejectEditRequest(request);
+      const response = await rejectEditRequest(request, { params: Promise.resolve({ entity: "TimecardEditRequest", command: "reject" }) });
 
       expect(response.status).toBe(500);
     });
@@ -1402,13 +1402,13 @@ describe("Timecards API", () => {
       } as never);
 
       const request = new NextRequest(
-        "http://localhost/api/timecards/time-off-requests/commands/approve",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({ id: "tor-001" }),
         }
       );
-      const response = await approveTimeOff(request);
+      const response = await approveTimeOff(request, { params: Promise.resolve({ entity: "TimeOffRequest", command: "approve" }) });
 
       expect(response.status).toBe(401);
     });
@@ -1421,13 +1421,13 @@ describe("Timecards API", () => {
       });
 
       const request = new NextRequest(
-        "http://localhost/api/timecards/time-off-requests/commands/approve",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({ id: "tor-001" }),
         }
       );
-      const response = await approveTimeOff(request);
+      const response = await approveTimeOff(request, { params: Promise.resolve({ entity: "TimeOffRequest", command: "approve" }) });
 
       expect(response.status).toBe(200);
       const body = await response.json();
@@ -1448,13 +1448,13 @@ describe("Timecards API", () => {
       });
 
       const request = new NextRequest(
-        "http://localhost/api/timecards/time-off-requests/commands/approve",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({ id: "tor-001" }),
         }
       );
-      const response = await approveTimeOff(request);
+      const response = await approveTimeOff(request, { params: Promise.resolve({ entity: "TimeOffRequest", command: "approve" }) });
 
       expect(response.status).toBe(403);
       const body = await response.json();
@@ -1472,13 +1472,13 @@ describe("Timecards API", () => {
       });
 
       const request = new NextRequest(
-        "http://localhost/api/timecards/time-off-requests/commands/approve",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({ id: "tor-001" }),
         }
       );
-      const response = await approveTimeOff(request);
+      const response = await approveTimeOff(request, { params: Promise.resolve({ entity: "TimeOffRequest", command: "approve" }) });
 
       expect(response.status).toBe(422);
       const body = await response.json();
@@ -1489,13 +1489,13 @@ describe("Timecards API", () => {
       mockRunCommand.mockRejectedValue(new Error("Runtime crash"));
 
       const request = new NextRequest(
-        "http://localhost/api/timecards/time-off-requests/commands/approve",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({ id: "tor-001" }),
         }
       );
-      const response = await approveTimeOff(request);
+      const response = await approveTimeOff(request, { params: Promise.resolve({ entity: "TimeOffRequest", command: "approve" }) });
 
       expect(response.status).toBe(500);
     });
@@ -1520,13 +1520,13 @@ describe("Timecards API", () => {
       } as never);
 
       const request = new NextRequest(
-        "http://localhost/api/timecards/time-off-requests/commands/reject",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({ id: "tor-001" }),
         }
       );
-      const response = await rejectTimeOff(request);
+      const response = await rejectTimeOff(request, { params: Promise.resolve({ entity: "TimeOffRequest", command: "reject" }) });
 
       expect(response.status).toBe(401);
     });
@@ -1539,7 +1539,7 @@ describe("Timecards API", () => {
       });
 
       const request = new NextRequest(
-        "http://localhost/api/timecards/time-off-requests/commands/reject",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -1548,7 +1548,7 @@ describe("Timecards API", () => {
           }),
         }
       );
-      const response = await rejectTimeOff(request);
+      const response = await rejectTimeOff(request, { params: Promise.resolve({ entity: "TimeOffRequest", command: "reject" }) });
 
       expect(response.status).toBe(200);
       const body = await response.json();
@@ -1572,13 +1572,13 @@ describe("Timecards API", () => {
       });
 
       const request = new NextRequest(
-        "http://localhost/api/timecards/time-off-requests/commands/reject",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({ id: "tor-001" }),
         }
       );
-      const response = await rejectTimeOff(request);
+      const response = await rejectTimeOff(request, { params: Promise.resolve({ entity: "TimeOffRequest", command: "reject" }) });
 
       expect(response.status).toBe(403);
       const body = await response.json();
@@ -1592,13 +1592,13 @@ describe("Timecards API", () => {
       });
 
       const request = new NextRequest(
-        "http://localhost/api/timecards/time-off-requests/commands/reject",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({ id: "nonexistent" }),
         }
       );
-      const response = await rejectTimeOff(request);
+      const response = await rejectTimeOff(request, { params: Promise.resolve({ entity: "TimeOffRequest", command: "reject" }) });
 
       expect(response.status).toBe(400);
       const body = await response.json();
@@ -1609,13 +1609,13 @@ describe("Timecards API", () => {
       mockRunCommand.mockRejectedValue(new Error("Runtime crash"));
 
       const request = new NextRequest(
-        "http://localhost/api/timecards/time-off-requests/commands/reject",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({ id: "tor-001" }),
         }
       );
-      const response = await rejectTimeOff(request);
+      const response = await rejectTimeOff(request, { params: Promise.resolve({ entity: "TimeOffRequest", command: "reject" }) });
 
       expect(response.status).toBe(500);
     });

@@ -219,7 +219,7 @@ export default function MobileTimeClockPage() {
         try {
           if (item.action === "clockIn") {
             const response = await apiFetch(
-              "/api/timecards/entries/commands/clock-in",
+              "/api/manifest/TimeEntry/commands/clockIn",
               {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -358,7 +358,7 @@ export default function MobileTimeClockPage() {
 
     try {
       const response = await apiFetch(
-        "/api/timecards/entries/commands/clock-in",
+        "/api/manifest/TimeEntry/commands/clockIn",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

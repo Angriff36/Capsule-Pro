@@ -11,6 +11,7 @@ import {
 	DialogTitle,
 } from "@repo/design-system/components/ui/dialog";
 import { Input } from "@repo/design-system/components/ui/input";
+import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import {
 	Select,
 	SelectContent,
@@ -205,7 +206,7 @@ export function PricingTiersClient({ initialMetrics }: PricingTiersClientProps) 
 			if (form.effectiveTo) payload.effectiveTo = form.effectiveTo;
 
 			const res = await apiFetch(
-				"/api/inventory/pricing-tiers/commands/create",
+				"/api/manifest/PricingTier/commands/create",
 				{
 					method: "POST",
 					headers: { "Content-Type": "application/json" },
@@ -244,7 +245,7 @@ export function PricingTiersClient({ initialMetrics }: PricingTiersClientProps) 
 			if (form.effectiveTo) payload.effectiveTo = form.effectiveTo;
 
 			const res = await apiFetch(
-				"/api/inventory/pricing-tiers/commands/update",
+				"/api/manifest/PricingTier/commands/update",
 				{
 					method: "POST",
 					headers: { "Content-Type": "application/json" },
@@ -273,7 +274,7 @@ export function PricingTiersClient({ initialMetrics }: PricingTiersClientProps) 
 		setActioning(deleteTarget.id);
 		try {
 			const res = await apiFetch(
-				"/api/inventory/pricing-tiers/commands/soft-delete",
+				"/api/manifest/PricingTier/commands/softDelete",
 				{
 					method: "POST",
 					headers: { "Content-Type": "application/json" },
@@ -573,27 +574,27 @@ export function PricingTiersClient({ initialMetrics }: PricingTiersClientProps) 
 						<div className="grid grid-cols-2 gap-4">
 							<div className="space-y-2">
 								<label className="text-sm font-medium">Effective From</label>
-								<Input
+								<DatePicker
 									onChange={(e) =>
 										setForm((f) => ({
 											...f,
 											effectiveFrom: e.target.value,
 										}))
 									}
-									type="date"
+ 
 									value={form.effectiveFrom}
 								/>
 							</div>
 							<div className="space-y-2">
 								<label className="text-sm font-medium">Effective To</label>
-								<Input
+								<DatePicker
 									onChange={(e) =>
 										setForm((f) => ({
 											...f,
 											effectiveTo: e.target.value,
 										}))
 									}
-									type="date"
+ 
 									value={form.effectiveTo}
 								/>
 							</div>
@@ -714,27 +715,27 @@ export function PricingTiersClient({ initialMetrics }: PricingTiersClientProps) 
 						<div className="grid grid-cols-2 gap-4">
 							<div className="space-y-2">
 								<label className="text-sm font-medium">Effective From</label>
-								<Input
+								<DatePicker
 									onChange={(e) =>
 										setForm((f) => ({
 											...f,
 											effectiveFrom: e.target.value,
 										}))
 									}
-									type="date"
+ 
 									value={form.effectiveFrom}
 								/>
 							</div>
 							<div className="space-y-2">
 								<label className="text-sm font-medium">Effective To</label>
-								<Input
+								<DatePicker
 									onChange={(e) =>
 										setForm((f) => ({
 											...f,
 											effectiveTo: e.target.value,
 										}))
 									}
-									type="date"
+ 
 									value={form.effectiveTo}
 								/>
 							</div>

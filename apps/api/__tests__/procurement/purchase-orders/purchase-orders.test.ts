@@ -430,11 +430,11 @@ describe("Procurement Purchase Orders API", () => {
     it("returns 401 when unauthenticated", async () => {
       authMissing();
       const { POST } = await import(
-        "@/app/api/procurement/purchase-orders/commands/create/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       const res = await POST(
         makeRequest(
-          "http://localhost/api/procurement/purchase-orders/commands/create",
+          "http://localhost/api/manifest/[entity]/commands/[command]",
           { body: { vendorId: VENDOR_ID, items: [{}] } }
         )
       );
@@ -444,11 +444,11 @@ describe("Procurement Purchase Orders API", () => {
     it("returns 400 when vendorId is missing", async () => {
       authOk();
       const { POST } = await import(
-        "@/app/api/procurement/purchase-orders/commands/create/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       const res = await POST(
         makeRequest(
-          "http://localhost/api/procurement/purchase-orders/commands/create",
+          "http://localhost/api/manifest/[entity]/commands/[command]",
           {
             body: {
               items: [
@@ -466,11 +466,11 @@ describe("Procurement Purchase Orders API", () => {
     it("returns 400 when items array is empty", async () => {
       authOk();
       const { POST } = await import(
-        "@/app/api/procurement/purchase-orders/commands/create/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       const res = await POST(
         makeRequest(
-          "http://localhost/api/procurement/purchase-orders/commands/create",
+          "http://localhost/api/manifest/[entity]/commands/[command]",
           { body: { vendorId: VENDOR_ID, items: [] } }
         )
       );
@@ -499,11 +499,11 @@ describe("Procurement Purchase Orders API", () => {
         .mockResolvedValueOnce([{}]); // INSERT poi #2
 
       const { POST } = await import(
-        "@/app/api/procurement/purchase-orders/commands/create/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       const res = await POST(
         makeRequest(
-          "http://localhost/api/procurement/purchase-orders/commands/create",
+          "http://localhost/api/manifest/[entity]/commands/[command]",
           {
             body: {
               vendorId: VENDOR_ID,
@@ -535,11 +535,11 @@ describe("Procurement Purchase Orders API", () => {
         .mockResolvedValueOnce([]); // INSERT returned nothing → 500
 
       const { POST } = await import(
-        "@/app/api/procurement/purchase-orders/commands/create/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       const res = await POST(
         makeRequest(
-          "http://localhost/api/procurement/purchase-orders/commands/create",
+          "http://localhost/api/manifest/[entity]/commands/[command]",
           {
             body: {
               vendorId: VENDOR_ID,
@@ -561,11 +561,11 @@ describe("Procurement Purchase Orders API", () => {
     it("returns 401 when unauthenticated", async () => {
       authMissing();
       const { POST } = await import(
-        "@/app/api/procurement/purchase-orders/commands/update-status/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       const res = await POST(
         makeRequest(
-          "http://localhost/api/procurement/purchase-orders/commands/update-status",
+          "http://localhost/api/manifest/[entity]/commands/[command]",
           { body: { orderId: PO_ID, status: "approved" } }
         )
       );
@@ -575,11 +575,11 @@ describe("Procurement Purchase Orders API", () => {
     it("returns 400 when orderId or status missing", async () => {
       authOk();
       const { POST } = await import(
-        "@/app/api/procurement/purchase-orders/commands/update-status/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       const res = await POST(
         makeRequest(
-          "http://localhost/api/procurement/purchase-orders/commands/update-status",
+          "http://localhost/api/manifest/[entity]/commands/[command]",
           { body: { orderId: PO_ID } }
         )
       );
@@ -593,11 +593,11 @@ describe("Procurement Purchase Orders API", () => {
       queryRaw.mockResolvedValueOnce([]); // current status query → empty
 
       const { POST } = await import(
-        "@/app/api/procurement/purchase-orders/commands/update-status/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       const res = await POST(
         makeRequest(
-          "http://localhost/api/procurement/purchase-orders/commands/update-status",
+          "http://localhost/api/manifest/[entity]/commands/[command]",
           { body: { orderId: PO_ID, status: "approved" } }
         )
       );
@@ -611,11 +611,11 @@ describe("Procurement Purchase Orders API", () => {
       queryRaw.mockResolvedValueOnce([{ status: "received" }]);
 
       const { POST } = await import(
-        "@/app/api/procurement/purchase-orders/commands/update-status/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       const res = await POST(
         makeRequest(
-          "http://localhost/api/procurement/purchase-orders/commands/update-status",
+          "http://localhost/api/manifest/[entity]/commands/[command]",
           { body: { orderId: PO_ID, status: "ordered" } }
         )
       );
@@ -633,11 +633,11 @@ describe("Procurement Purchase Orders API", () => {
       queryRaw.mockResolvedValueOnce([{ status: "draft" }]);
 
       const { POST } = await import(
-        "@/app/api/procurement/purchase-orders/commands/update-status/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       const res = await POST(
         makeRequest(
-          "http://localhost/api/procurement/purchase-orders/commands/update-status",
+          "http://localhost/api/manifest/[entity]/commands/[command]",
           { body: { orderId: PO_ID, status: "received" } }
         )
       );
@@ -655,11 +655,11 @@ describe("Procurement Purchase Orders API", () => {
         ]); // update RETURNING
 
       const { POST } = await import(
-        "@/app/api/procurement/purchase-orders/commands/update-status/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       const res = await POST(
         makeRequest(
-          "http://localhost/api/procurement/purchase-orders/commands/update-status",
+          "http://localhost/api/manifest/[entity]/commands/[command]",
           { body: { orderId: PO_ID, status: "submitted" } }
         )
       );
@@ -679,11 +679,11 @@ describe("Procurement Purchase Orders API", () => {
         ]);
 
       const { POST } = await import(
-        "@/app/api/procurement/purchase-orders/commands/update-status/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       const res = await POST(
         makeRequest(
-          "http://localhost/api/procurement/purchase-orders/commands/update-status",
+          "http://localhost/api/manifest/[entity]/commands/[command]",
           { body: { orderId: PO_ID, status: "approved" } }
         )
       );
@@ -701,11 +701,11 @@ describe("Procurement Purchase Orders API", () => {
         ]);
 
       const { POST } = await import(
-        "@/app/api/procurement/purchase-orders/commands/update-status/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       const res = await POST(
         makeRequest(
-          "http://localhost/api/procurement/purchase-orders/commands/update-status",
+          "http://localhost/api/manifest/[entity]/commands/[command]",
           { body: { orderId: PO_ID, status: "rejected" } }
         )
       );
@@ -723,11 +723,11 @@ describe("Procurement Purchase Orders API", () => {
         ]);
 
       const { POST } = await import(
-        "@/app/api/procurement/purchase-orders/commands/update-status/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       const res = await POST(
         makeRequest(
-          "http://localhost/api/procurement/purchase-orders/commands/update-status",
+          "http://localhost/api/manifest/[entity]/commands/[command]",
           { body: { orderId: PO_ID, status: "ordered" } }
         )
       );
@@ -741,11 +741,11 @@ describe("Procurement Purchase Orders API", () => {
       queryRaw.mockResolvedValueOnce([{ status: "cancelled" }]);
 
       const { POST } = await import(
-        "@/app/api/procurement/purchase-orders/commands/update-status/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       const res = await POST(
         makeRequest(
-          "http://localhost/api/procurement/purchase-orders/commands/update-status",
+          "http://localhost/api/manifest/[entity]/commands/[command]",
           { body: { orderId: PO_ID, status: "approved" } }
         )
       );
@@ -761,11 +761,11 @@ describe("Procurement Purchase Orders API", () => {
         .mockRejectedValueOnce(new Error("db error"));
 
       const { POST } = await import(
-        "@/app/api/procurement/purchase-orders/commands/update-status/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       const res = await POST(
         makeRequest(
-          "http://localhost/api/procurement/purchase-orders/commands/update-status",
+          "http://localhost/api/manifest/[entity]/commands/[command]",
           { body: { orderId: PO_ID, status: "submitted" } }
         )
       );
@@ -780,11 +780,11 @@ describe("Procurement Purchase Orders API", () => {
     it("returns 401 when unauthenticated", async () => {
       authMissing();
       const { POST } = await import(
-        "@/app/api/procurement/purchase-orders/commands/receive/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       const res = await POST(
         makeRequest(
-          "http://localhost/api/procurement/purchase-orders/commands/receive",
+          "http://localhost/api/manifest/[entity]/commands/[command]",
           { body: { orderId: PO_ID, items: [{ itemId: POI_ID }] } }
         )
       );
@@ -794,11 +794,11 @@ describe("Procurement Purchase Orders API", () => {
     it("returns 400 when orderId or items missing", async () => {
       authOk();
       const { POST } = await import(
-        "@/app/api/procurement/purchase-orders/commands/receive/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       const res = await POST(
         makeRequest(
-          "http://localhost/api/procurement/purchase-orders/commands/receive",
+          "http://localhost/api/manifest/[entity]/commands/[command]",
           { body: { orderId: PO_ID } }
         )
       );
@@ -815,11 +815,11 @@ describe("Procurement Purchase Orders API", () => {
         .mockResolvedValueOnce([{ count: 1 }]); // remaining count > 0
 
       const { POST } = await import(
-        "@/app/api/procurement/purchase-orders/commands/receive/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       const res = await POST(
         makeRequest(
-          "http://localhost/api/procurement/purchase-orders/commands/receive",
+          "http://localhost/api/manifest/[entity]/commands/[command]",
           {
             body: {
               orderId: PO_ID,
@@ -846,11 +846,11 @@ describe("Procurement Purchase Orders API", () => {
         .mockResolvedValueOnce([{}]); // UPDATE PO status='received'
 
       const { POST } = await import(
-        "@/app/api/procurement/purchase-orders/commands/receive/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       const res = await POST(
         makeRequest(
-          "http://localhost/api/procurement/purchase-orders/commands/receive",
+          "http://localhost/api/manifest/[entity]/commands/[command]",
           {
             body: {
               orderId: PO_ID,
@@ -876,11 +876,11 @@ describe("Procurement Purchase Orders API", () => {
         .mockResolvedValueOnce([{ count: 1 }]); // remaining items
 
       const { POST } = await import(
-        "@/app/api/procurement/purchase-orders/commands/receive/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       const res = await POST(
         makeRequest(
-          "http://localhost/api/procurement/purchase-orders/commands/receive",
+          "http://localhost/api/manifest/[entity]/commands/[command]",
           {
             body: {
               orderId: PO_ID,
@@ -906,11 +906,11 @@ describe("Procurement Purchase Orders API", () => {
         .mockResolvedValueOnce([{}]);
 
       const { POST } = await import(
-        "@/app/api/procurement/purchase-orders/commands/receive/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       const res = await POST(
         makeRequest(
-          "http://localhost/api/procurement/purchase-orders/commands/receive",
+          "http://localhost/api/manifest/[entity]/commands/[command]",
           {
             body: {
               orderId: PO_ID,
@@ -932,11 +932,11 @@ describe("Procurement Purchase Orders API", () => {
       queryRaw.mockRejectedValueOnce(new Error("db error"));
 
       const { POST } = await import(
-        "@/app/api/procurement/purchase-orders/commands/receive/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       const res = await POST(
         makeRequest(
-          "http://localhost/api/procurement/purchase-orders/commands/receive",
+          "http://localhost/api/manifest/[entity]/commands/[command]",
           {
             body: {
               orderId: PO_ID,

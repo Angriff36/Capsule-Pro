@@ -12,6 +12,7 @@ import {
   SelectValue,
 } from "@repo/design-system/components/ui/select";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
+import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import { AlertTriangle, Info, Loader2Icon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -379,7 +380,7 @@ export function TimeOffForm({
         {/* Start Date */}
         <div className="flex flex-col gap-2">
           <Label htmlFor="startDate">Start Date *</Label>
-          <Input
+          <DatePicker
             id="startDate"
             min={new Date().toISOString().split("T")[0]}
             onBlur={(e) => {
@@ -396,7 +397,7 @@ export function TimeOffForm({
                 checkConflicts();
               }
             }}
-            type="date"
+ 
             value={formData.startDate}
           />
           {errors.startDate && (
@@ -407,7 +408,7 @@ export function TimeOffForm({
         {/* End Date */}
         <div className="flex flex-col gap-2">
           <Label htmlFor="endDate">End Date *</Label>
-          <Input
+          <DatePicker
             id="endDate"
             min={formData.startDate}
             onBlur={(e) => {
@@ -424,7 +425,7 @@ export function TimeOffForm({
                 checkConflicts();
               }
             }}
-            type="date"
+ 
             value={formData.endDate}
           />
           {errors.endDate && (

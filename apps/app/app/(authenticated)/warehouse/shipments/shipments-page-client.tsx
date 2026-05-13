@@ -36,6 +36,7 @@ import {
   TableRow,
 } from "@repo/design-system/components/ui/table";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
+import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import {
   BoxIcon,
   DollarSignIcon,
@@ -807,7 +808,7 @@ export const ShipmentsPageClient = () => {
             </div>
             <div className="grid gap-2">
               <Label htmlFor="scheduled_date">Scheduled Date *</Label>
-              <Input
+              <DatePicker
                 id="scheduled_date"
                 onChange={(e) =>
                   setCreateForm({
@@ -815,7 +816,7 @@ export const ShipmentsPageClient = () => {
                     scheduled_date: e.target.value,
                   })
                 }
-                type="date"
+ 
                 value={createForm.scheduled_date || ""}
               />
             </div>
@@ -823,7 +824,7 @@ export const ShipmentsPageClient = () => {
               <Label htmlFor="estimated_delivery_date">
                 Estimated Delivery Date
               </Label>
-              <Input
+              <DatePicker
                 id="estimated_delivery_date"
                 onChange={(e) =>
                   setCreateForm({
@@ -831,7 +832,7 @@ export const ShipmentsPageClient = () => {
                     estimated_delivery_date: e.target.value,
                   })
                 }
-                type="date"
+ 
                 value={createForm.estimated_delivery_date || ""}
               />
             </div>
@@ -979,7 +980,7 @@ export const ShipmentsPageClient = () => {
                     <Label htmlFor="actual_delivery_date">
                       Actual Delivery Date *
                     </Label>
-                    <Input
+                    <DatePicker
                       id="actual_delivery_date"
                       onChange={(e) =>
                         setStatusForm({
@@ -987,7 +988,7 @@ export const ShipmentsPageClient = () => {
                           actual_delivery_date: e.target.value,
                         })
                       }
-                      type="date"
+ 
                       value={statusForm.actual_delivery_date || ""}
                     />
                   </div>

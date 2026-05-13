@@ -90,16 +90,16 @@ function makeRequest(
 // ── import routes (after mocks) ──────────────────────────────────────
 const { GET: listGET } = await import("@/app/api/kitchen/equipment/list/route");
 const { POST: createPOST } = await import(
-  "@/app/api/kitchen/equipment/commands/create/route"
+  "@/app/api/manifest/[entity]/commands/[command]/route"
 );
 const { POST: updateStatusPOST } = await import(
-  "@/app/api/kitchen/equipment/commands/update-status/route"
+  "@/app/api/manifest/[entity]/commands/[command]/route"
 );
 const { POST: scheduleMaintenancePOST } = await import(
-  "@/app/api/kitchen/equipment/commands/schedule-maintenance/route"
+  "@/app/api/manifest/[entity]/commands/[command]/route"
 );
 const { POST: recordUsagePOST } = await import(
-  "@/app/api/kitchen/equipment/commands/record-usage/route"
+  "@/app/api/manifest/[entity]/commands/[command]/route"
 );
 const { GET: alertsGET } = await import(
   "@/app/api/kitchen/equipment/alerts/route"
@@ -226,7 +226,7 @@ describe("Equipment API", () => {
         name: "Oven A",
         locationId: LOCATION_ID,
       });
-      const res = await createPOST(req);
+      const res = await createPOST(req, { params: Promise.resolve({ entity: "Equipment", command: "create" }) });
       expect(res.status).toBe(200);
 
       const json = (await res.json()) as {
@@ -264,7 +264,7 @@ describe("Equipment API", () => {
         id: EQUIPMENT_ID,
         status: "maintenance",
       });
-      const res = await updateStatusPOST(req);
+      const res = await updateStatusPOST(req, { params: Promise.resolve({ entity: "Equipment", command: "updateStatus" }) });
       expect(res.status).toBe(200);
 
       expect(mocks.executeManifestCommand).toHaveBeenCalledWith(
@@ -299,7 +299,7 @@ describe("Equipment API", () => {
         priority: "high",
         scheduledDate: "2026-06-01",
       });
-      const res = await scheduleMaintenancePOST(req);
+      const res = await scheduleMaintenancePOST(req, { params: Promise.resolve({ entity: "Equipment", command: "scheduleMaintenance" }) });
       expect(res.status).toBe(200);
 
       expect(mocks.executeManifestCommand).toHaveBeenCalledWith(
@@ -334,7 +334,7 @@ describe("Equipment API", () => {
         id: EQUIPMENT_ID,
         hours: 50,
       });
-      const res = await recordUsagePOST(req);
+      const res = await recordUsagePOST(req, { params: Promise.resolve({ entity: "Equipment", command: "recordUsage" }) });
       expect(res.status).toBe(200);
 
       const json = (await res.json()) as {

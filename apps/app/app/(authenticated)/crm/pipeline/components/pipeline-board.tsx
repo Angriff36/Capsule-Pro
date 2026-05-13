@@ -260,7 +260,7 @@ export function PipelineBoard({ initialDeals }: PipelineBoardProps) {
 
       setIsUpdating(true);
       try {
-        const res = await apiFetch("/api/crm/deals/commands/update-stage", {
+        const res = await apiFetch("/api/manifest/Deal/commands/updateStage", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ dealId: draggingDeal.id, stage: targetStage }),

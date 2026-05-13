@@ -39,11 +39,11 @@ const { getTenantIdForOrg, requireCurrentUser } = await import(
 
 // --- Route imports ---
 
-import { POST as approveTransfer } from "@/app/api/inventory/transfers/commands/approve/route";
-import { POST as cancelTransfer } from "@/app/api/inventory/transfers/commands/cancel/route";
-import { POST as createTransfer } from "@/app/api/inventory/transfers/commands/create/route";
-import { POST as receiveTransfer } from "@/app/api/inventory/transfers/commands/receive/route";
-import { POST as shipTransfer } from "@/app/api/inventory/transfers/commands/ship/route";
+import { POST as approveTransfer } from "@/app/api/manifest/[entity]/commands/[command]/route";
+import { POST as cancelTransfer } from "@/app/api/manifest/[entity]/commands/[command]/route";
+import { POST as createTransfer } from "@/app/api/manifest/[entity]/commands/[command]/route";
+import { POST as receiveTransfer } from "@/app/api/manifest/[entity]/commands/[command]/route";
+import { POST as shipTransfer } from "@/app/api/manifest/[entity]/commands/[command]/route";
 import { GET as listTransfers } from "@/app/api/inventory/transfers/list/route";
 
 // --- Constants ---
@@ -129,7 +129,7 @@ describe("Inventory Transfers API", () => {
       vi.mocked(requireCurrentUser).mockResolvedValue(null as never);
 
       const request = buildPostRequest(
-        "http://localhost/api/inventory/transfers/commands/create",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           fromLocationId: "a",
           toLocationId: "b",
@@ -147,7 +147,7 @@ describe("Inventory Transfers API", () => {
       mockCurrentUser();
 
       const request = buildPostRequest(
-        "http://localhost/api/inventory/transfers/commands/create",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         { toLocationId: "b", items: [{ itemId: "i1", quantity: 1 }] }
       );
       const response = await createTransfer(request);
@@ -161,7 +161,7 @@ describe("Inventory Transfers API", () => {
       mockCurrentUser();
 
       const request = buildPostRequest(
-        "http://localhost/api/inventory/transfers/commands/create",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         { fromLocationId: "a", items: [{ itemId: "i1", quantity: 1 }] }
       );
       const response = await createTransfer(request);
@@ -175,7 +175,7 @@ describe("Inventory Transfers API", () => {
       mockCurrentUser();
 
       const request = buildPostRequest(
-        "http://localhost/api/inventory/transfers/commands/create",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           fromLocationId: VALID_LOCATION_UUID_A,
           toLocationId: VALID_LOCATION_UUID_B,
@@ -193,7 +193,7 @@ describe("Inventory Transfers API", () => {
       mockCurrentUser();
 
       const request = buildPostRequest(
-        "http://localhost/api/inventory/transfers/commands/create",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           fromLocationId: VALID_LOCATION_UUID_A,
           toLocationId: VALID_LOCATION_UUID_B,
@@ -228,7 +228,7 @@ describe("Inventory Transfers API", () => {
       );
 
       const request = buildPostRequest(
-        "http://localhost/api/inventory/transfers/commands/create",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           fromLocationId: VALID_LOCATION_UUID_A,
           toLocationId: VALID_LOCATION_UUID_B,
@@ -275,7 +275,7 @@ describe("Inventory Transfers API", () => {
       );
 
       const request = buildPostRequest(
-        "http://localhost/api/inventory/transfers/commands/create",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           fromLocationId: VALID_LOCATION_UUID_A,
           toLocationId: VALID_LOCATION_UUID_B,
@@ -299,7 +299,7 @@ describe("Inventory Transfers API", () => {
       vi.mocked(auth).mockResolvedValue({ userId: null, orgId: null } as never);
 
       const request = buildPostRequest(
-        "http://localhost/api/inventory/transfers/commands/approve",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         { transferId: "t1" }
       );
       const response = await approveTransfer(request);
@@ -317,7 +317,7 @@ describe("Inventory Transfers API", () => {
       vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
 
       const request = buildPostRequest(
-        "http://localhost/api/inventory/transfers/commands/approve",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         { transferId: "t1" }
       );
       const response = await approveTransfer(request);
@@ -331,7 +331,7 @@ describe("Inventory Transfers API", () => {
       mockAuthOrg();
 
       const request = buildPostRequest(
-        "http://localhost/api/inventory/transfers/commands/approve",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {}
       );
       const response = await approveTransfer(request);
@@ -348,7 +348,7 @@ describe("Inventory Transfers API", () => {
       );
 
       const request = buildPostRequest(
-        "http://localhost/api/inventory/transfers/commands/approve",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         { transferId: "missing" }
       );
       const response = await approveTransfer(request);
@@ -365,7 +365,7 @@ describe("Inventory Transfers API", () => {
       );
 
       const request = buildPostRequest(
-        "http://localhost/api/inventory/transfers/commands/approve",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         { transferId: "t1" }
       );
       const response = await approveTransfer(request);
@@ -389,7 +389,7 @@ describe("Inventory Transfers API", () => {
       );
 
       const request = buildPostRequest(
-        "http://localhost/api/inventory/transfers/commands/approve",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         { transferId: "transfer-001" }
       );
       const response = await approveTransfer(request);
@@ -419,7 +419,7 @@ describe("Inventory Transfers API", () => {
       );
 
       const request = buildPostRequest(
-        "http://localhost/api/inventory/transfers/commands/approve",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         { transferId: "t1" }
       );
       const response = await approveTransfer(request);
@@ -437,7 +437,7 @@ describe("Inventory Transfers API", () => {
       vi.mocked(auth).mockResolvedValue({ userId: null, orgId: null } as never);
 
       const request = buildPostRequest(
-        "http://localhost/api/inventory/transfers/commands/ship",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         { transferId: "t1" }
       );
       const response = await shipTransfer(request);
@@ -453,7 +453,7 @@ describe("Inventory Transfers API", () => {
       vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
 
       const request = buildPostRequest(
-        "http://localhost/api/inventory/transfers/commands/ship",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         { transferId: "t1" }
       );
       const response = await shipTransfer(request);
@@ -465,7 +465,7 @@ describe("Inventory Transfers API", () => {
       mockAuthOrg();
 
       const request = buildPostRequest(
-        "http://localhost/api/inventory/transfers/commands/ship",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {}
       );
       const response = await shipTransfer(request);
@@ -480,7 +480,7 @@ describe("Inventory Transfers API", () => {
       );
 
       const request = buildPostRequest(
-        "http://localhost/api/inventory/transfers/commands/ship",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         { transferId: "missing" }
       );
       const response = await shipTransfer(request);
@@ -495,7 +495,7 @@ describe("Inventory Transfers API", () => {
       );
 
       const request = buildPostRequest(
-        "http://localhost/api/inventory/transfers/commands/ship",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         { transferId: "t1" }
       );
       const response = await shipTransfer(request);
@@ -516,7 +516,7 @@ describe("Inventory Transfers API", () => {
       );
 
       const request = buildPostRequest(
-        "http://localhost/api/inventory/transfers/commands/ship",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         { transferId: "transfer-001" }
       );
       const response = await shipTransfer(request);
@@ -545,7 +545,7 @@ describe("Inventory Transfers API", () => {
       vi.mocked(auth).mockResolvedValue({ userId: null, orgId: null } as never);
 
       const request = buildPostRequest(
-        "http://localhost/api/inventory/transfers/commands/receive",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         { transferId: "t1" }
       );
       const response = await receiveTransfer(request);
@@ -561,7 +561,7 @@ describe("Inventory Transfers API", () => {
       vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
 
       const request = buildPostRequest(
-        "http://localhost/api/inventory/transfers/commands/receive",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         { transferId: "t1" }
       );
       const response = await receiveTransfer(request);
@@ -573,7 +573,7 @@ describe("Inventory Transfers API", () => {
       mockAuthOrg();
 
       const request = buildPostRequest(
-        "http://localhost/api/inventory/transfers/commands/receive",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {}
       );
       const response = await receiveTransfer(request);
@@ -588,7 +588,7 @@ describe("Inventory Transfers API", () => {
       );
 
       const request = buildPostRequest(
-        "http://localhost/api/inventory/transfers/commands/receive",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         { transferId: "missing" }
       );
       const response = await receiveTransfer(request);
@@ -603,7 +603,7 @@ describe("Inventory Transfers API", () => {
       );
 
       const request = buildPostRequest(
-        "http://localhost/api/inventory/transfers/commands/receive",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         { transferId: "t1" }
       );
       const response = await receiveTransfer(request);
@@ -640,7 +640,7 @@ describe("Inventory Transfers API", () => {
       );
 
       const request = buildPostRequest(
-        "http://localhost/api/inventory/transfers/commands/receive",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           transferId: "transfer-001",
           receivedItems: [
@@ -717,7 +717,7 @@ describe("Inventory Transfers API", () => {
       );
 
       const request = buildPostRequest(
-        "http://localhost/api/inventory/transfers/commands/receive",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         { transferId: "transfer-001", receivedItems: [] }
       );
       const response = await receiveTransfer(request);
@@ -738,7 +738,7 @@ describe("Inventory Transfers API", () => {
       vi.mocked(auth).mockResolvedValue({ userId: null, orgId: null } as never);
 
       const request = buildPostRequest(
-        "http://localhost/api/inventory/transfers/commands/cancel",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         { transferId: "t1" }
       );
       const response = await cancelTransfer(request);
@@ -754,7 +754,7 @@ describe("Inventory Transfers API", () => {
       vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
 
       const request = buildPostRequest(
-        "http://localhost/api/inventory/transfers/commands/cancel",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         { transferId: "t1" }
       );
       const response = await cancelTransfer(request);
@@ -766,7 +766,7 @@ describe("Inventory Transfers API", () => {
       mockAuthOrg();
 
       const request = buildPostRequest(
-        "http://localhost/api/inventory/transfers/commands/cancel",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {}
       );
       const response = await cancelTransfer(request);
@@ -781,7 +781,7 @@ describe("Inventory Transfers API", () => {
       );
 
       const request = buildPostRequest(
-        "http://localhost/api/inventory/transfers/commands/cancel",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         { transferId: "missing" }
       );
       const response = await cancelTransfer(request);
@@ -796,7 +796,7 @@ describe("Inventory Transfers API", () => {
       );
 
       const request = buildPostRequest(
-        "http://localhost/api/inventory/transfers/commands/cancel",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         { transferId: "t1" }
       );
       const response = await cancelTransfer(request);
@@ -811,7 +811,7 @@ describe("Inventory Transfers API", () => {
       );
 
       const request = buildPostRequest(
-        "http://localhost/api/inventory/transfers/commands/cancel",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         { transferId: "t1" }
       );
       const response = await cancelTransfer(request);
@@ -829,7 +829,7 @@ describe("Inventory Transfers API", () => {
       );
 
       const request = buildPostRequest(
-        "http://localhost/api/inventory/transfers/commands/cancel",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         { transferId: "transfer-001", reason: "wrong location" }
       );
       const response = await cancelTransfer(request);
@@ -855,7 +855,7 @@ describe("Inventory Transfers API", () => {
       );
 
       const request = buildPostRequest(
-        "http://localhost/api/inventory/transfers/commands/cancel",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         { transferId: "transfer-001" }
       );
       const response = await cancelTransfer(request);

@@ -89,7 +89,7 @@ describe("Manifest HTTP Integration - PrepTask Commands", () => {
   describe("POST /api/kitchen/prep-tasks/commands/claim", () => {
     it("should import the route handler", async () => {
       const { POST } = await import(
-        "@/app/api/kitchen/prep-tasks/commands/claim/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       expect(POST).toBeDefined();
       expect(typeof POST).toBe("function");
@@ -103,11 +103,11 @@ describe("Manifest HTTP Integration - PrepTask Commands", () => {
       } as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/prep-tasks/commands/claim/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/prep-tasks/commands/claim",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -118,7 +118,7 @@ describe("Manifest HTTP Integration - PrepTask Commands", () => {
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "claim" }) });
       const data = await response.json();
 
       expect(response.status).toBe(401);
@@ -160,11 +160,11 @@ describe("Manifest HTTP Integration - PrepTask Commands", () => {
       vi.mocked(database.outboxEvent.create).mockResolvedValueOnce({} as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/prep-tasks/commands/claim/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/prep-tasks/commands/claim",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -175,7 +175,7 @@ describe("Manifest HTTP Integration - PrepTask Commands", () => {
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "claim" }) });
       const data = await response.json();
 
       // The response should be successful or have appropriate error
@@ -197,7 +197,7 @@ describe("Manifest HTTP Integration - PrepTask Commands", () => {
   describe("POST /api/kitchen/prep-tasks/commands/start", () => {
     it("should import the route handler", async () => {
       const { POST } = await import(
-        "@/app/api/kitchen/prep-tasks/commands/start/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       expect(POST).toBeDefined();
       expect(typeof POST).toBe("function");
@@ -211,11 +211,11 @@ describe("Manifest HTTP Integration - PrepTask Commands", () => {
       } as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/prep-tasks/commands/start/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/prep-tasks/commands/start",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -225,7 +225,7 @@ describe("Manifest HTTP Integration - PrepTask Commands", () => {
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "claim" }) });
       const data = await response.json();
 
       expect(response.status).toBe(401);
@@ -237,7 +237,7 @@ describe("Manifest HTTP Integration - PrepTask Commands", () => {
   describe("POST /api/kitchen/prep-tasks/commands/complete", () => {
     it("should import the route handler", async () => {
       const { POST } = await import(
-        "@/app/api/kitchen/prep-tasks/commands/complete/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       expect(POST).toBeDefined();
       expect(typeof POST).toBe("function");
@@ -251,11 +251,11 @@ describe("Manifest HTTP Integration - PrepTask Commands", () => {
       } as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/prep-tasks/commands/complete/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/prep-tasks/commands/complete",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -266,7 +266,7 @@ describe("Manifest HTTP Integration - PrepTask Commands", () => {
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "claim" }) });
       const data = await response.json();
 
       expect(response.status).toBe(401);
@@ -278,7 +278,7 @@ describe("Manifest HTTP Integration - PrepTask Commands", () => {
   describe("POST /api/kitchen/prep-tasks/commands/release", () => {
     it("should import the route handler", async () => {
       const { POST } = await import(
-        "@/app/api/kitchen/prep-tasks/commands/release/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       expect(POST).toBeDefined();
       expect(typeof POST).toBe("function");
@@ -288,7 +288,7 @@ describe("Manifest HTTP Integration - PrepTask Commands", () => {
   describe("POST /api/kitchen/prep-tasks/commands/reassign", () => {
     it("should import the route handler", async () => {
       const { POST } = await import(
-        "@/app/api/kitchen/prep-tasks/commands/reassign/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       expect(POST).toBeDefined();
       expect(typeof POST).toBe("function");
@@ -298,7 +298,7 @@ describe("Manifest HTTP Integration - PrepTask Commands", () => {
   describe("POST /api/kitchen/prep-tasks/commands/update-quantity", () => {
     it("should import the route handler", async () => {
       const { POST } = await import(
-        "@/app/api/kitchen/prep-tasks/commands/update-quantity/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       expect(POST).toBeDefined();
       expect(typeof POST).toBe("function");
@@ -308,7 +308,7 @@ describe("Manifest HTTP Integration - PrepTask Commands", () => {
   describe("POST /api/kitchen/prep-tasks/commands/cancel", () => {
     it("should import the route handler", async () => {
       const { POST } = await import(
-        "@/app/api/kitchen/prep-tasks/commands/cancel/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       expect(POST).toBeDefined();
       expect(typeof POST).toBe("function");
@@ -324,7 +324,7 @@ describe("Manifest HTTP Integration - Menu Commands", () => {
   describe("POST /api/kitchen/menus/commands/update", () => {
     it("should import the route handler", async () => {
       const { POST } = await import(
-        "@/app/api/kitchen/menus/commands/update/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       expect(POST).toBeDefined();
       expect(typeof POST).toBe("function");
@@ -338,11 +338,11 @@ describe("Manifest HTTP Integration - Menu Commands", () => {
       } as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/menus/commands/update/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/menus/commands/update",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -352,7 +352,7 @@ describe("Manifest HTTP Integration - Menu Commands", () => {
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "update" }) });
       const data = await response.json();
 
       expect(response.status).toBe(401);
@@ -364,7 +364,7 @@ describe("Manifest HTTP Integration - Menu Commands", () => {
   describe("POST /api/kitchen/menus/commands/activate", () => {
     it("should import the route handler", async () => {
       const { POST } = await import(
-        "@/app/api/kitchen/menus/commands/activate/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       expect(POST).toBeDefined();
       expect(typeof POST).toBe("function");
@@ -374,7 +374,7 @@ describe("Manifest HTTP Integration - Menu Commands", () => {
   describe("POST /api/kitchen/menus/commands/deactivate", () => {
     it("should import the route handler", async () => {
       const { POST } = await import(
-        "@/app/api/kitchen/menus/commands/deactivate/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       expect(POST).toBeDefined();
       expect(typeof POST).toBe("function");
@@ -390,7 +390,7 @@ describe("Manifest HTTP Integration - Station Commands", () => {
   describe("POST /api/kitchen/stations/commands/assign-task", () => {
     it("should import the route handler", async () => {
       const { POST } = await import(
-        "@/app/api/kitchen/stations/commands/assign-task/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       expect(POST).toBeDefined();
       expect(typeof POST).toBe("function");
@@ -404,11 +404,11 @@ describe("Manifest HTTP Integration - Station Commands", () => {
       } as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/stations/commands/assign-task/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/stations/commands/assign-task",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -418,7 +418,7 @@ describe("Manifest HTTP Integration - Station Commands", () => {
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "assign-task" }) });
       const data = await response.json();
 
       expect(response.status).toBe(401);
@@ -430,7 +430,7 @@ describe("Manifest HTTP Integration - Station Commands", () => {
   describe("POST /api/kitchen/stations/commands/remove-task", () => {
     it("should import the route handler", async () => {
       const { POST } = await import(
-        "@/app/api/kitchen/stations/commands/remove-task/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       expect(POST).toBeDefined();
       expect(typeof POST).toBe("function");
@@ -440,7 +440,7 @@ describe("Manifest HTTP Integration - Station Commands", () => {
   describe("POST /api/kitchen/stations/commands/update-capacity", () => {
     it("should import the route handler", async () => {
       const { POST } = await import(
-        "@/app/api/kitchen/stations/commands/update-capacity/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       expect(POST).toBeDefined();
       expect(typeof POST).toBe("function");
@@ -450,7 +450,7 @@ describe("Manifest HTTP Integration - Station Commands", () => {
   describe("POST /api/kitchen/stations/commands/activate", () => {
     it("should import the route handler", async () => {
       const { POST } = await import(
-        "@/app/api/kitchen/stations/commands/activate/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       expect(POST).toBeDefined();
       expect(typeof POST).toBe("function");
@@ -460,7 +460,7 @@ describe("Manifest HTTP Integration - Station Commands", () => {
   describe("POST /api/kitchen/stations/commands/deactivate", () => {
     it("should import the route handler", async () => {
       const { POST } = await import(
-        "@/app/api/kitchen/stations/commands/deactivate/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       expect(POST).toBeDefined();
       expect(typeof POST).toBe("function");
@@ -470,7 +470,7 @@ describe("Manifest HTTP Integration - Station Commands", () => {
   describe("POST /api/kitchen/stations/commands/update-equipment", () => {
     it("should import the route handler", async () => {
       const { POST } = await import(
-        "@/app/api/kitchen/stations/commands/update-equipment/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       expect(POST).toBeDefined();
       expect(typeof POST).toBe("function");
@@ -486,7 +486,7 @@ describe("Manifest HTTP Integration - Inventory Commands", () => {
   describe("POST /api/kitchen/inventory/commands/reserve", () => {
     it("should import the route handler", async () => {
       const { POST } = await import(
-        "@/app/api/kitchen/inventory/commands/reserve/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       expect(POST).toBeDefined();
       expect(typeof POST).toBe("function");
@@ -500,11 +500,11 @@ describe("Manifest HTTP Integration - Inventory Commands", () => {
       } as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/inventory/commands/reserve/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/inventory/commands/reserve",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -514,7 +514,7 @@ describe("Manifest HTTP Integration - Inventory Commands", () => {
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "reserve" }) });
       const data = await response.json();
 
       expect(response.status).toBe(401);
@@ -526,7 +526,7 @@ describe("Manifest HTTP Integration - Inventory Commands", () => {
   describe("POST /api/kitchen/inventory/commands/consume", () => {
     it("should import the route handler", async () => {
       const { POST } = await import(
-        "@/app/api/kitchen/inventory/commands/consume/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       expect(POST).toBeDefined();
       expect(typeof POST).toBe("function");
@@ -536,7 +536,7 @@ describe("Manifest HTTP Integration - Inventory Commands", () => {
   describe("POST /api/kitchen/inventory/commands/waste", () => {
     it("should import the route handler", async () => {
       const { POST } = await import(
-        "@/app/api/kitchen/inventory/commands/waste/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       expect(POST).toBeDefined();
       expect(typeof POST).toBe("function");
@@ -546,7 +546,7 @@ describe("Manifest HTTP Integration - Inventory Commands", () => {
   describe("POST /api/kitchen/inventory/commands/adjust", () => {
     it("should import the route handler", async () => {
       const { POST } = await import(
-        "@/app/api/kitchen/inventory/commands/adjust/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       expect(POST).toBeDefined();
       expect(typeof POST).toBe("function");
@@ -556,7 +556,7 @@ describe("Manifest HTTP Integration - Inventory Commands", () => {
   describe("POST /api/kitchen/inventory/commands/restock", () => {
     it("should import the route handler", async () => {
       const { POST } = await import(
-        "@/app/api/kitchen/inventory/commands/restock/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       expect(POST).toBeDefined();
       expect(typeof POST).toBe("function");
@@ -566,7 +566,7 @@ describe("Manifest HTTP Integration - Inventory Commands", () => {
   describe("POST /api/kitchen/inventory/commands/release-reservation", () => {
     it("should import the route handler", async () => {
       const { POST } = await import(
-        "@/app/api/kitchen/inventory/commands/release-reservation/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       expect(POST).toBeDefined();
       expect(typeof POST).toBe("function");
@@ -582,7 +582,7 @@ describe("Manifest HTTP Integration - Recipe Commands", () => {
   describe("POST /api/kitchen/recipes/commands/update", () => {
     it("should import the route handler", async () => {
       const { POST } = await import(
-        "@/app/api/kitchen/recipes/commands/update/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       expect(POST).toBeDefined();
       expect(typeof POST).toBe("function");
@@ -596,11 +596,11 @@ describe("Manifest HTTP Integration - Recipe Commands", () => {
       } as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/recipes/commands/update/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/recipes/commands/update",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -610,7 +610,7 @@ describe("Manifest HTTP Integration - Recipe Commands", () => {
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "update" }) });
       const data = await response.json();
 
       expect(response.status).toBe(401);
@@ -622,7 +622,7 @@ describe("Manifest HTTP Integration - Recipe Commands", () => {
   describe("POST /api/kitchen/recipes/commands/activate", () => {
     it("should import the route handler", async () => {
       const { POST } = await import(
-        "@/app/api/kitchen/recipes/commands/activate/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       expect(POST).toBeDefined();
       expect(typeof POST).toBe("function");
@@ -632,7 +632,7 @@ describe("Manifest HTTP Integration - Recipe Commands", () => {
   describe("POST /api/kitchen/recipes/commands/deactivate", () => {
     it("should import the route handler", async () => {
       const { POST } = await import(
-        "@/app/api/kitchen/recipes/commands/deactivate/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       expect(POST).toBeDefined();
       expect(typeof POST).toBe("function");
@@ -648,7 +648,7 @@ describe("Manifest HTTP Integration - Dish Commands", () => {
   describe("POST /api/kitchen/dishes/commands/update-pricing", () => {
     it("should import the route handler", async () => {
       const { POST } = await import(
-        "@/app/api/kitchen/dishes/commands/update-pricing/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       expect(POST).toBeDefined();
       expect(typeof POST).toBe("function");
@@ -662,11 +662,11 @@ describe("Manifest HTTP Integration - Dish Commands", () => {
       } as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/dishes/commands/update-pricing/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/dishes/commands/update-pricing",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -677,7 +677,7 @@ describe("Manifest HTTP Integration - Dish Commands", () => {
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "update-pricing" }) });
       const data = await response.json();
 
       expect(response.status).toBe(401);
@@ -689,7 +689,7 @@ describe("Manifest HTTP Integration - Dish Commands", () => {
   describe("POST /api/kitchen/dishes/commands/update-lead-time", () => {
     it("should import the route handler", async () => {
       const { POST } = await import(
-        "@/app/api/kitchen/dishes/commands/update-lead-time/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       expect(POST).toBeDefined();
       expect(typeof POST).toBe("function");
@@ -705,7 +705,7 @@ describe("Manifest HTTP Integration - Ingredient Commands", () => {
   describe("POST /api/kitchen/ingredients/commands/update-allergens", () => {
     it("should import the route handler", async () => {
       const { POST } = await import(
-        "@/app/api/kitchen/ingredients/commands/update-allergens/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       expect(POST).toBeDefined();
       expect(typeof POST).toBe("function");
@@ -719,11 +719,11 @@ describe("Manifest HTTP Integration - Ingredient Commands", () => {
       } as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/ingredients/commands/update-allergens/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/ingredients/commands/update-allergens",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -733,7 +733,7 @@ describe("Manifest HTTP Integration - Ingredient Commands", () => {
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "update-allergens" }) });
       const data = await response.json();
 
       expect(response.status).toBe(401);
@@ -751,7 +751,7 @@ describe("Manifest HTTP Integration - RecipeIngredient Commands", () => {
   describe("POST /api/kitchen/recipe-ingredients/commands/update-quantity", () => {
     it("should import the route handler", async () => {
       const { POST } = await import(
-        "@/app/api/kitchen/recipe-ingredients/commands/update-quantity/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       expect(POST).toBeDefined();
       expect(typeof POST).toBe("function");
@@ -765,11 +765,11 @@ describe("Manifest HTTP Integration - RecipeIngredient Commands", () => {
       } as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/recipe-ingredients/commands/update-quantity/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/recipe-ingredients/commands/update-quantity",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -779,7 +779,7 @@ describe("Manifest HTTP Integration - RecipeIngredient Commands", () => {
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "update-quantity" }) });
       const data = await response.json();
 
       expect(response.status).toBe(401);
@@ -797,7 +797,7 @@ describe("Manifest HTTP Integration - PrepList Commands", () => {
   describe("POST /api/kitchen/prep-lists/commands/finalize", () => {
     it("should import the route handler", async () => {
       const { POST } = await import(
-        "@/app/api/kitchen/prep-lists/commands/finalize/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       expect(POST).toBeDefined();
       expect(typeof POST).toBe("function");
@@ -811,11 +811,11 @@ describe("Manifest HTTP Integration - PrepList Commands", () => {
       } as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/prep-lists/commands/finalize/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/prep-lists/commands/finalize",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -824,7 +824,7 @@ describe("Manifest HTTP Integration - PrepList Commands", () => {
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "finalize" }) });
       const data = await response.json();
 
       expect(response.status).toBe(401);
@@ -836,7 +836,7 @@ describe("Manifest HTTP Integration - PrepList Commands", () => {
   describe("POST /api/kitchen/prep-lists/commands/mark-completed", () => {
     it("should import the route handler", async () => {
       const { POST } = await import(
-        "@/app/api/kitchen/prep-lists/commands/mark-completed/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       expect(POST).toBeDefined();
       expect(typeof POST).toBe("function");
@@ -846,7 +846,7 @@ describe("Manifest HTTP Integration - PrepList Commands", () => {
   describe("POST /api/kitchen/prep-lists/commands/update", () => {
     it("should import the route handler", async () => {
       const { POST } = await import(
-        "@/app/api/kitchen/prep-lists/commands/update/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       expect(POST).toBeDefined();
       expect(typeof POST).toBe("function");
@@ -856,7 +856,7 @@ describe("Manifest HTTP Integration - PrepList Commands", () => {
   describe("POST /api/kitchen/prep-lists/commands/update-batch-multiplier", () => {
     it("should import the route handler", async () => {
       const { POST } = await import(
-        "@/app/api/kitchen/prep-lists/commands/update-batch-multiplier/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       expect(POST).toBeDefined();
       expect(typeof POST).toBe("function");
@@ -866,7 +866,7 @@ describe("Manifest HTTP Integration - PrepList Commands", () => {
   describe("POST /api/kitchen/prep-lists/commands/activate", () => {
     it("should import the route handler", async () => {
       const { POST } = await import(
-        "@/app/api/kitchen/prep-lists/commands/activate/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       expect(POST).toBeDefined();
       expect(typeof POST).toBe("function");
@@ -876,7 +876,7 @@ describe("Manifest HTTP Integration - PrepList Commands", () => {
   describe("POST /api/kitchen/prep-lists/commands/deactivate", () => {
     it("should import the route handler", async () => {
       const { POST } = await import(
-        "@/app/api/kitchen/prep-lists/commands/deactivate/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       expect(POST).toBeDefined();
       expect(typeof POST).toBe("function");
@@ -886,7 +886,7 @@ describe("Manifest HTTP Integration - PrepList Commands", () => {
   describe("POST /api/kitchen/prep-lists/commands/cancel", () => {
     it("should import the route handler", async () => {
       const { POST } = await import(
-        "@/app/api/kitchen/prep-lists/commands/cancel/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       expect(POST).toBeDefined();
       expect(typeof POST).toBe("function");

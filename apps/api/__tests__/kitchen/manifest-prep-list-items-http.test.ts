@@ -84,7 +84,7 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
   describe("POST /api/kitchen/prep-list-items/commands/mark-completed", () => {
     it("should import the route handler", async () => {
       const { POST } = await import(
-        "@/app/api/kitchen/prep-list-items/commands/mark-completed/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       expect(POST).toBeDefined();
       expect(typeof POST).toBe("function");
@@ -98,11 +98,11 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
       } as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/prep-list-items/commands/mark-completed/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/prep-list-items/commands/mark-completed",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -112,7 +112,7 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, { params: Promise.resolve({ entity: "PrepListItem", command: "mark-completed" }) });
       const data = await response.json();
 
       expect(response.status).toBe(401);
@@ -125,11 +125,11 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
       vi.mocked(getTenantIdForOrg).mockResolvedValueOnce(null as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/prep-list-items/commands/mark-completed/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/prep-list-items/commands/mark-completed",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -139,7 +139,7 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, { params: Promise.resolve({ entity: "PrepListItem", command: "mark-completed" }) });
       const data = await response.json();
 
       expect(response.status).toBe(400);
@@ -183,11 +183,11 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
       vi.mocked(database.outboxEvent.create).mockResolvedValueOnce({} as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/prep-list-items/commands/mark-completed/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/prep-list-items/commands/mark-completed",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -197,7 +197,7 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, { params: Promise.resolve({ entity: "PrepListItem", command: "mark-completed" }) });
       const data = await response.json();
 
       expect(response.status).toBeGreaterThanOrEqual(200);
@@ -218,7 +218,7 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
   describe("POST /api/kitchen/prep-list-items/commands/mark-uncompleted", () => {
     it("should import the route handler", async () => {
       const { POST } = await import(
-        "@/app/api/kitchen/prep-list-items/commands/mark-uncompleted/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       expect(POST).toBeDefined();
       expect(typeof POST).toBe("function");
@@ -232,11 +232,11 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
       } as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/prep-list-items/commands/mark-uncompleted/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/prep-list-items/commands/mark-uncompleted",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -245,7 +245,7 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, { params: Promise.resolve({ entity: "PrepListItem", command: "mark-completed" }) });
       const data = await response.json();
 
       expect(response.status).toBe(401);
@@ -258,11 +258,11 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
       vi.mocked(getTenantIdForOrg).mockResolvedValueOnce(null as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/prep-list-items/commands/mark-uncompleted/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/prep-list-items/commands/mark-uncompleted",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -271,7 +271,7 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, { params: Promise.resolve({ entity: "PrepListItem", command: "mark-completed" }) });
       const data = await response.json();
 
       expect(response.status).toBe(400);
@@ -315,11 +315,11 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
       vi.mocked(database.outboxEvent.create).mockResolvedValueOnce({} as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/prep-list-items/commands/mark-uncompleted/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/prep-list-items/commands/mark-uncompleted",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -328,7 +328,7 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, { params: Promise.resolve({ entity: "PrepListItem", command: "mark-completed" }) });
       const data = await response.json();
 
       // Log error details for debugging 500 errors
@@ -354,7 +354,7 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
   describe("POST /api/kitchen/prep-list-items/commands/update-prep-notes", () => {
     it("should import the route handler", async () => {
       const { POST } = await import(
-        "@/app/api/kitchen/prep-list-items/commands/update-prep-notes/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       expect(POST).toBeDefined();
       expect(typeof POST).toBe("function");
@@ -368,11 +368,11 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
       } as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/prep-list-items/commands/update-prep-notes/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/prep-list-items/commands/update-prep-notes",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -383,7 +383,7 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, { params: Promise.resolve({ entity: "PrepListItem", command: "mark-completed" }) });
       const data = await response.json();
 
       expect(response.status).toBe(401);
@@ -396,11 +396,11 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
       vi.mocked(getTenantIdForOrg).mockResolvedValueOnce(null as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/prep-list-items/commands/update-prep-notes/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/prep-list-items/commands/update-prep-notes",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -411,7 +411,7 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, { params: Promise.resolve({ entity: "PrepListItem", command: "mark-completed" }) });
       const data = await response.json();
 
       expect(response.status).toBe(400);
@@ -454,11 +454,11 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
       vi.mocked(database.outboxEvent.create).mockResolvedValueOnce({} as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/prep-list-items/commands/update-prep-notes/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/prep-list-items/commands/update-prep-notes",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -469,7 +469,7 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, { params: Promise.resolve({ entity: "PrepListItem", command: "mark-completed" }) });
       const data = await response.json();
 
       expect(response.status).toBeGreaterThanOrEqual(200);
@@ -490,7 +490,7 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
   describe("POST /api/kitchen/prep-list-items/commands/update-quantity", () => {
     it("should import the route handler", async () => {
       const { POST } = await import(
-        "@/app/api/kitchen/prep-list-items/commands/update-quantity/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       expect(POST).toBeDefined();
       expect(typeof POST).toBe("function");
@@ -504,11 +504,11 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
       } as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/prep-list-items/commands/update-quantity/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/prep-list-items/commands/update-quantity",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -521,7 +521,7 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, { params: Promise.resolve({ entity: "PrepListItem", command: "mark-completed" }) });
       const data = await response.json();
 
       expect(response.status).toBe(401);
@@ -534,11 +534,11 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
       vi.mocked(getTenantIdForOrg).mockResolvedValueOnce(null as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/prep-list-items/commands/update-quantity/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/prep-list-items/commands/update-quantity",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -551,7 +551,7 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, { params: Promise.resolve({ entity: "PrepListItem", command: "mark-completed" }) });
       const data = await response.json();
 
       expect(response.status).toBe(400);
@@ -596,11 +596,11 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
       vi.mocked(database.outboxEvent.create).mockResolvedValueOnce({} as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/prep-list-items/commands/update-quantity/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/prep-list-items/commands/update-quantity",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -613,7 +613,7 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, { params: Promise.resolve({ entity: "PrepListItem", command: "mark-completed" }) });
       const data = await response.json();
 
       expect(response.status).toBeGreaterThanOrEqual(200);
@@ -634,7 +634,7 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
   describe("POST /api/kitchen/prep-list-items/commands/update-station", () => {
     it("should import the route handler", async () => {
       const { POST } = await import(
-        "@/app/api/kitchen/prep-list-items/commands/update-station/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       expect(POST).toBeDefined();
       expect(typeof POST).toBe("function");
@@ -648,11 +648,11 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
       } as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/prep-list-items/commands/update-station/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/prep-list-items/commands/update-station",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -663,7 +663,7 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, { params: Promise.resolve({ entity: "PrepListItem", command: "mark-completed" }) });
       const data = await response.json();
 
       expect(response.status).toBe(401);
@@ -676,11 +676,11 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
       vi.mocked(getTenantIdForOrg).mockResolvedValueOnce(null as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/prep-list-items/commands/update-station/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/prep-list-items/commands/update-station",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -691,7 +691,7 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, { params: Promise.resolve({ entity: "PrepListItem", command: "mark-completed" }) });
       const data = await response.json();
 
       expect(response.status).toBe(400);
@@ -733,11 +733,11 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
       vi.mocked(database.outboxEvent.create).mockResolvedValueOnce({} as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/prep-list-items/commands/update-station/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/prep-list-items/commands/update-station",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -748,7 +748,7 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, { params: Promise.resolve({ entity: "PrepListItem", command: "mark-completed" }) });
       const data = await response.json();
 
       expect(response.status).toBeGreaterThanOrEqual(200);

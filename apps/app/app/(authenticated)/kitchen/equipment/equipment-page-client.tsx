@@ -19,6 +19,7 @@ import {
 } from "@repo/design-system/components/ui/dialog";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
+import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import {
   Tabs,
   TabsContent,
@@ -223,7 +224,7 @@ export function EquipmentPageClient() {
       if (formData.warrantyExpiry) {
         body.warrantyExpiry = formData.warrantyExpiry;
       }
-      const res = await apiFetch("/api/kitchen/equipment/commands/create", {
+      const res = await apiFetch("/api/manifest/Equipment/commands/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
@@ -264,7 +265,7 @@ export function EquipmentPageClient() {
     setSubmitting(true);
     try {
       const res = await apiFetch(
-        "/api/kitchen/equipment/commands/schedule-maintenance",
+        "/api/manifest/Equipment/commands/scheduleMaintenance",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -309,7 +310,7 @@ export function EquipmentPageClient() {
     setSubmitting(true);
     try {
       const res = await apiFetch(
-        "/api/facilities/work-orders/commands/create",
+        "/api/manifest/FacilityWorkOrder/commands/create",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -349,7 +350,7 @@ export function EquipmentPageClient() {
     setSubmitting(true);
     try {
       const res = await apiFetch(
-        "/api/facilities/work-orders/commands/update-status",
+        "/api/manifest/FacilityWorkOrder/commands/updateStatus",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -534,13 +535,13 @@ export function EquipmentPageClient() {
               <Label className="text-right" htmlFor="purchaseDate">
                 Purchase Date
               </Label>
-              <Input
+              <DatePicker
                 className="col-span-3"
                 id="purchaseDate"
                 onChange={(e) =>
                   setFormData({ ...formData, purchaseDate: e.target.value })
                 }
-                type="date"
+ 
                 value={formData.purchaseDate}
               />
             </div>
@@ -548,13 +549,13 @@ export function EquipmentPageClient() {
               <Label className="text-right" htmlFor="warrantyExpiry">
                 Warranty Expiry
               </Label>
-              <Input
+              <DatePicker
                 className="col-span-3"
                 id="warrantyExpiry"
                 onChange={(e) =>
                   setFormData({ ...formData, warrantyExpiry: e.target.value })
                 }
-                type="date"
+ 
                 value={formData.warrantyExpiry}
               />
             </div>
@@ -1077,7 +1078,7 @@ export function EquipmentPageClient() {
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label className="text-right">Scheduled Date</Label>
-              <Input
+              <DatePicker
                 className="col-span-3"
                 onChange={(e) =>
                   setMaintenanceForm({
@@ -1085,7 +1086,7 @@ export function EquipmentPageClient() {
                     scheduledDate: e.target.value,
                   })
                 }
-                type="date"
+ 
                 value={maintenanceForm.scheduledDate}
               />
             </div>
@@ -1368,7 +1369,7 @@ export function EquipmentPageClient() {
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label className="text-right">Scheduled Date</Label>
-              <Input
+              <DatePicker
                 className="col-span-3"
                 onChange={(e) =>
                   setWorkOrderForm({
@@ -1376,7 +1377,7 @@ export function EquipmentPageClient() {
                     scheduledDate: e.target.value,
                   })
                 }
-                type="date"
+ 
                 value={workOrderForm.scheduledDate}
               />
             </div>

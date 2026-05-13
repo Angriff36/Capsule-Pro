@@ -35,6 +35,7 @@ import {
   TableRow,
 } from "@repo/design-system/components/ui/table";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
+import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import {
   AlertTriangleIcon,
   CalendarIcon,
@@ -500,17 +501,17 @@ export default function TimecardsPage() {
                 </SelectContent>
               </Select>
 
-              <Input
+              <DatePicker
                 className="w-[160px]"
                 onChange={(e) => setStartDate(e.target.value)}
-                type="date"
+ 
                 value={startDate}
               />
 
-              <Input
+              <DatePicker
                 className="w-[160px]"
                 onChange={(e) => setEndDate(e.target.value)}
-                type="date"
+ 
                 value={endDate}
               />
             </div>

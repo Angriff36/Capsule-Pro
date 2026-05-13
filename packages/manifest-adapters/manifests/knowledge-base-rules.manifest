@@ -1,0 +1,100 @@
+// Knowledge Base Domain — Entry Rules
+// Manifest spec for internal knowledge base articles and documentation
+
+entity KnowledgeBaseEntry {
+  property required id: string
+  property required tenantId: string
+  property required title: string
+  property category: string = "general"
+  property content: string = ""
+  property tags: string = ""
+  property status: string = "draft"
+  property authorId: string = ""
+  property publishedAt: number = 0
+  property viewCount: number = 0
+  property createdAt: number = 0
+  property updatedAt: number = 0
+
+  computed isPublished: boolean = self.status == "published"
+  computed isDraft: boolean = self.status == "draft"
+
+  constraint validStatus: self.status in ["draft", "published", "archived"] "Invalid entry status"
+  constraint validCategory: self.category in ["general", "policies", "procedures", "recipes", "safety", "training", "other"] "Invalid category"
+
+  command create(title: string, category: string, content: string, tags: string, authorId: string) {
+    guard title != null and title != "" "Title is required"
+    guard authorId != null and authorId != "" "Author ID is required"
+
+    mutate title = title
+    mutate category = category
+    mutate content = content
+    mutate tags = tags
+    mutate authorId = authorId
+    mutate status = "draft"
+    mutate viewCount = 0
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit KnowledgeBaseEntryCreated
+  }
+
+  command remove() {
+    mutate status = "archived"
+    mutate updatedAt = now()
+
+    emit KnowledgeBaseEntryDeleted
+  }
+
+  command update(title: string, category: string, content: string, tags: string) {
+    guard title != null and title != "" "Title is required"
+
+    mutate title = title
+    mutate category = category
+    mutate content = content
+    mutate tags = tags
+    mutate updatedAt = now()
+
+    emit KnowledgeBaseEntryUpdated
+  }
+
+  command publishEntry() {
+    guard self.status == "draft" "Only draft entries can be published"
+    guard self.title != "" "Cannot publish an entry with an empty title"
+    guard self.content != "" "Cannot publish an entry with empty content"
+
+    mutate status = "published"
+    mutate publishedAt = now()
+    mutate updatedAt = now()
+
+    emit KnowledgeBaseEntryPublished
+  }
+}
+
+policy EditorsCanManageKB execute: user.role in ["editor", "manager", "admin"] "Editors can manage knowledge base"
+policy StaffCanViewKB execute: user.role in ["staff", "editor", "manager", "admin"] "Staff can view knowledge base"
+
+event KnowledgeBaseEntryCreated: "knowledgebase.entry.created" {
+  entryId: string
+  tenantId: string
+  title: string
+  category: string
+  authorId: string
+  createdAt: number
+}
+
+event KnowledgeBaseEntryDeleted: "knowledgebase.entry.deleted" {
+  entryId: string
+  deletedAt: number
+}
+
+event KnowledgeBaseEntryUpdated: "knowledgebase.entry.updated" {
+  entryId: string
+  title: string
+  updatedAt: number
+}
+
+event KnowledgeBaseEntryPublished: "knowledgebase.entry.published" {
+  entryId: string
+  title: string
+  publishedAt: number
+}

@@ -1,0 +1,269 @@
+// Event Automation Rules — Followups, Timeline Items, Waitlist Entries
+
+entity AutomatedFollowup {
+  property required id: string
+  property required tenantId: string
+  property required eventId: string
+  property type: string = "email"
+  property status: string = "pending"
+  property scheduledDate: number = 0
+  property sentDate: number = 0
+  property recipientId: string = ""
+  property subject: string = ""
+  property body: string = ""
+  property templateId: string = ""
+  property errorMessage: string = ""
+  property createdAt: number = 0
+  property updatedAt: number = 0
+
+  constraint validType: self.type in ["email", "sms", "push"] "Invalid followup type"
+  constraint validStatus: self.status in ["pending", "sent", "failed", "skipped"] "Invalid followup status"
+
+  command create(eventId: string, type: string, scheduledDate: number, recipientId: string, subject: string, body: string, templateId: string) {
+    guard eventId != null and eventId != "" "Event ID is required"
+    guard type in ["email", "sms", "push"] "Invalid followup type"
+
+    mutate eventId = eventId
+    mutate type = type
+    mutate scheduledDate = scheduledDate
+    mutate recipientId = recipientId
+    mutate subject = subject
+    mutate body = body
+    mutate templateId = templateId
+    mutate status = "pending"
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit FollowupCreated
+  }
+
+  command complete(sentDate: number) {
+    guard self.status == "pending" "Only pending followups can be completed"
+
+    mutate status = "sent"
+    mutate sentDate = sentDate
+    mutate updatedAt = now()
+
+    emit FollowupSent
+  }
+
+  command generate() {
+    guard self.status == "pending" "Only pending followups can be generated"
+
+    mutate updatedAt = now()
+
+    emit FollowupGenerated
+  }
+
+  command skip(reason: string) {
+    guard self.status == "pending" "Only pending followups can be skipped"
+
+    mutate status = "skipped"
+    mutate errorMessage = reason
+    mutate updatedAt = now()
+
+    emit FollowupSkipped
+  }
+}
+
+entity EventTimelineItem {
+  property required id: string
+  property required tenantId: string
+  property required eventId: string
+  property required title: string
+  property description: string = ""
+  property itemType: string = "task"
+  property status: string = "pending"
+  property assignedTo: string = ""
+  property dueDate: number = 0
+  property completedAt: number = 0
+  property sortOrder: number = 0
+  property createdAt: number = 0
+  property updatedAt: number = 0
+
+  computed isCompleted: boolean = self.status == "completed"
+  computed isOverdue: boolean = self.dueDate > 0 and self.status != "completed" and now() > self.dueDate
+
+  constraint validItemType: self.itemType in ["task", "milestone", "reminder", "note"] "Invalid timeline item type"
+  constraint validStatus: self.status in ["pending", "in_progress", "completed", "cancelled"] "Invalid timeline item status"
+
+  command createItem(eventId: string, title: string, description: string, itemType: string, assignedTo: string, dueDate: number, sortOrder: number) {
+    guard eventId != null and eventId != "" "Event ID is required"
+    guard title != null and title != "" "Title is required"
+
+    mutate eventId = eventId
+    mutate title = title
+    mutate description = description
+    mutate itemType = itemType
+    mutate assignedTo = assignedTo
+    mutate dueDate = dueDate
+    mutate sortOrder = sortOrder
+    mutate status = "pending"
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit TimelineItemCreated
+  }
+
+  command deleteItem() {
+    mutate status = "cancelled"
+    mutate updatedAt = now()
+
+    emit TimelineItemDeleted
+  }
+
+  command completeItem() {
+    mutate status = "completed"
+    mutate completedAt = now()
+    mutate updatedAt = now()
+
+    emit TimelineItemCompleted
+  }
+
+  command updateItem(title: string, description: string, itemType: string, assignedTo: string, dueDate: number, sortOrder: number) {
+    guard title != null and title != "" "Title is required"
+
+    mutate title = title
+    mutate description = description
+    mutate itemType = itemType
+    mutate assignedTo = assignedTo
+    mutate dueDate = dueDate
+    mutate sortOrder = sortOrder
+    mutate updatedAt = now()
+
+    emit TimelineItemUpdated
+  }
+}
+
+entity EventWaitlistEntry {
+  property required id: string
+  property required tenantId: string
+  property required eventId: string
+  property required guestName: string
+  property email: string = ""
+  property phone: string = ""
+  property partySize: number = 1
+  property status: string = "waiting"
+  property notes: string = ""
+  property joinedAt: number = 0
+  property notifiedAt: number = 0
+  property createdAt: number = 0
+  property updatedAt: number = 0
+
+  constraint validStatus: self.status in ["waiting", "notified", "confirmed", "seated", "cancelled"] "Invalid waitlist status"
+
+  command addGuest(eventId: string, guestName: string, email: string, phone: string, partySize: number, notes: string) {
+    guard eventId != null and eventId != "" "Event ID is required"
+    guard guestName != null and guestName != "" "Guest name is required"
+
+    mutate eventId = eventId
+    mutate guestName = guestName
+    mutate email = email
+    mutate phone = phone
+    mutate partySize = partySize
+    mutate notes = notes
+    mutate status = "waiting"
+    mutate joinedAt = now()
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit WaitlistGuestAdded
+  }
+
+  command promote() {
+    guard self.status in ["waiting", "notified"] "Cannot promote a non-waiting guest"
+
+    mutate status = "confirmed"
+    mutate updatedAt = now()
+
+    emit WaitlistGuestPromoted
+  }
+
+  command updateRsvp(status: string) {
+    guard status in ["waiting", "notified", "confirmed", "seated", "cancelled"] "Invalid RSVP status"
+
+    mutate status = status
+    mutate updatedAt = now()
+
+    emit WaitlistRsvpUpdated
+  }
+}
+
+policy EventManagersCanManageAutomation execute: user.role in ["event_manager", "manager", "admin"] "Only event managers can manage automation"
+
+event FollowupCreated: "event.followup.created" {
+  followupId: string
+  eventId: string
+  type: string
+  scheduledDate: number
+  createdAt: number
+}
+
+event FollowupSent: "event.followup.sent" {
+  followupId: string
+  eventId: string
+  sentDate: number
+}
+
+event FollowupGenerated: "event.followup.generated" {
+  followupId: string
+  eventId: string
+  generatedAt: number
+}
+
+event FollowupSkipped: "event.followup.skipped" {
+  followupId: string
+  eventId: string
+  reason: string
+  skippedAt: number
+}
+
+event TimelineItemCreated: "event.timeline.item.created" {
+  itemId: string
+  eventId: string
+  title: string
+  itemType: string
+  createdAt: number
+}
+
+event TimelineItemDeleted: "event.timeline.item.deleted" {
+  itemId: string
+  eventId: string
+  deletedAt: number
+}
+
+event TimelineItemCompleted: "event.timeline.item.completed" {
+  itemId: string
+  eventId: string
+  completedAt: number
+}
+
+event TimelineItemUpdated: "event.timeline.item.updated" {
+  itemId: string
+  eventId: string
+  title: string
+  updatedAt: number
+}
+
+event WaitlistGuestAdded: "event.waitlist.guest.added" {
+  entryId: string
+  eventId: string
+  guestName: string
+  partySize: number
+  addedAt: number
+}
+
+event WaitlistGuestPromoted: "event.waitlist.guest.promoted" {
+  entryId: string
+  eventId: string
+  guestName: string
+  promotedAt: number
+}
+
+event WaitlistRsvpUpdated: "event.waitlist.rsvp.updated" {
+  entryId: string
+  eventId: string
+  guestName: string
+  newStatus: string
+  updatedAt: number
+}

@@ -229,6 +229,9 @@ let nextConfig: NextConfig = withToolbar(
       // Vercel Toolbar companion
       "localhost:25002",
       "127.0.0.1:25002",
+      // Tailscale — HMR WebSocket over VPN
+      "pop-os.tail78dd9e.ts.net",
+      "pop-os.tail78dd9e.ts.net:2221",
     ],
     experimental: {
       optimizePackageImports: [
@@ -322,12 +325,12 @@ let nextConfig: NextConfig = withToolbar(
               key: "Content-Security-Policy",
               value: [
                 "default-src 'self'",
-                "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.clerk.com https://*.clerk.accounts.dev https://us-assets.i.posthog.com blob:",
+                "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.clerk.com https://*.clerk.accounts.dev https://us-assets.i.posthog.com https://www.googletagmanager.com blob:",
                 "worker-src 'self' blob:",
                 "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
                 "font-src 'self' https://fonts.gstatic.com",
                 "img-src 'self' data: blob: https://img.clerk.com",
-                "connect-src 'self' https://*.clerk.com https://*.clerk.accounts.dev https://clerk-telemetry.com https://*.sentry.io https://us.i.posthog.com https://*.ably.io https://*.ably-realtime.com https://*.ably.net",
+                "connect-src 'self' https://*.clerk.com https://*.clerk.accounts.dev https://clerk-telemetry.com https://*.sentry.io https://us.i.posthog.com https://us-assets.i.posthog.com https://*.ably.io https://*.ably-realtime.com https://*.ably.net",
                 "frame-ancestors 'none'",
                 "frame-src 'self' https://*.clerk.accounts.dev",
                 "base-uri 'self'",

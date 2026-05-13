@@ -16,12 +16,14 @@
   --ds-dark-navy: #071829; /* alt dark band */
   --ds-pale-green: #edfce9; /* wash */
   --ds-pale-blue: #f1f5ff; /* wash */
-  --ds-hairline: #d9d9dd; /* list rule */
-  --ds-border-light: #e5e7eb; /* secondary divider */
-  --ds-card-border: #f2f2f2; /* softest container line */
-  --ds-muted: #93939f; /* muted metadata */
-  --ds-slate: #75758a; /* tertiary */
-  --ds-body-muted: #616161; /* readable muted body */
+  --ds-hairline: #d1d5db; /* list rule (decorative) */
+  --ds-border-light: #e5e7eb; /* secondary divider (decorative) */
+  --ds-card-border: #e5e7eb; /* softest container line */
+  --ds-input-border: #9ca3af; /* WCAG 1.4.11 — UI component boundary, 2.85:1 */
+  --ds-border-strong: #6b7280; /* high-emphasis dividers, 4.83:1 */
+  --ds-muted: #6b7280; /* muted metadata — WCAG AA, 4.83:1 on canvas */
+  --ds-slate: #4b5563; /* tertiary — 7.56:1 on canvas */
+  --ds-body-muted: #616161; /* readable muted body — 6.36:1 on canvas */
   --ds-action-blue: #1863dc; /* editorial link */
   --ds-focus-blue: #4c6ee6; /* focus ring */
   --ds-form-focus: #9b60aa; /* input focus */
@@ -72,7 +74,7 @@
   --info: var(--ds-action-blue);
   --info-foreground: var(--ds-canvas);
   --border: var(--ds-hairline);
-  --input: var(--ds-border-light);
+  --input: var(--ds-input-border);
   --ring: var(--ds-focus-blue);
   --chart-1: var(--ds-deep-green);
   --chart-2: var(--ds-action-blue);
@@ -120,7 +122,7 @@
   --info: var(--ds-focus-blue);
   --info-foreground: var(--ds-canvas);
   --border: #2f2f37;
-  --input: #2f2f37;
+  --input: #4b5563; /* WCAG 1.4.11 — dark-mode input border, 3.41:1 on bg */
   --ring: var(--ds-focus-blue);
   --chart-1: var(--ds-canvas);
   --chart-2: var(--ds-focus-blue);
@@ -319,7 +321,7 @@
   --accent: var(--ds-soft-stone);
   --accent-foreground: var(--ds-ink);
   --border: var(--ds-hairline);
-  --input: var(--ds-border-light);
+  --input: var(--ds-input-border);
   --ring: var(--ds-focus-blue);
 }
 

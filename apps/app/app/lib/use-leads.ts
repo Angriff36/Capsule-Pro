@@ -129,7 +129,7 @@ export async function createLead(data: {
   estimatedValue?: number;
   notes?: string;
 }): Promise<void> {
-  const response = await apiFetch("/api/crm/leads/commands/create", {
+  const response = await apiFetch("/api/manifest/Lead/commands/create", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),

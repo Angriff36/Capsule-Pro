@@ -52,6 +52,7 @@ export const OWNERSHIP_RULE_CODES = new Set([
     "COMMAND_ROUTE_ORPHAN",
     "COMMAND_ROUTE_MISSING_RUNTIME_CALL",
     "WRITE_OUTSIDE_COMMANDS_NAMESPACE",
+    "CONCRETE_COMMAND_ROUTE_NOT_DISPATCHED",
 ]);
 const READ_METHODS = new Set(["GET"]);
 const WRITE_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
@@ -320,6 +321,32 @@ export function auditRouteFileContent(content, file, options, ownershipContext) 
                         message: `Command route "${routeRelative}" has no backing entry in kitchen.commands.json.`,
                         suggestion: "This command route has no IR backing. Delete it or add the command to your manifest.",
                     });
+                }
+            }
+        }
+        // Rule: CONCRETE_COMMAND_ROUTE_NOT_DISPATCHED
+        // Architecture: the ONLY legal command HTTP route is the dynamic dispatcher
+        // at manifest/[entity]/commands/[command]/route.ts.
+        // ALL other files matching */commands/<real-command>/route.ts are illegal,
+        // even if they are generated and even if they call runCommand().
+        if (inCommandsNs) {
+            // Extract the segment after "commands/" to identify the command name
+            const commandsMatch = normalizedFile.match(/\/commands\/([^/]+)\/route\.ts$/);
+            if (commandsMatch) {
+                const commandSegment = commandsMatch[1];
+                // [command] or [...command] = dynamic dispatcher catch-all (legal)
+                // Everything else = concrete per-command route (illegal)
+                if (commandSegment !== "[command]" && commandSegment !== "[...command]") {
+                    const isConcreteExempted = methods.some((m) => isExempted(normalizedFile, m, ownershipContext.exemptions));
+                    if (!isConcreteExempted) {
+                        findings.push({
+                            file,
+                            severity: "error",
+                            code: "CONCRETE_COMMAND_ROUTE_NOT_DISPATCHED",
+                            message: `Concrete command route "commands/${commandSegment}/route.ts" must not exist. All command execution flows through the dynamic dispatcher at manifest/[entity]/commands/[command]/route.ts.`,
+                            suggestion: "Delete this file. If the command has no .manifest entry, create one and run pnpm manifest:compile. All commands execute via the dynamic dispatcher.",
+                        });
+                    }
                 }
             }
         }

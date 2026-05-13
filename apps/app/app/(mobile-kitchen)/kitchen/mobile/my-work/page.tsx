@@ -81,13 +81,13 @@ async function syncSingleItem(
   try {
     let response: Response | undefined;
     if (item.action === "start") {
-      response = await apiFetch("/api/kitchen/kitchen-tasks/commands/start", {
+      response = await apiFetch("/api/manifest/KitchenTask/commands/start", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id: item.taskId }),
       });
     } else if (item.action === "release") {
-      response = await apiFetch("/api/kitchen/kitchen-tasks/commands/release", {
+      response = await apiFetch("/api/manifest/KitchenTask/commands/release", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id: item.taskId, reason: "" }),
@@ -338,7 +338,7 @@ export default function MobileMyWorkPage() {
 
       try {
         const response = await apiFetch(
-          "/api/kitchen/kitchen-tasks/commands/start",
+          "/api/manifest/KitchenTask/commands/start",
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -413,7 +413,7 @@ export default function MobileMyWorkPage() {
 
       try {
         const response = await apiFetch(
-          "/api/kitchen/kitchen-tasks/commands/release",
+          "/api/manifest/KitchenTask/commands/release",
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },

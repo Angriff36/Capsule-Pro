@@ -12,6 +12,7 @@ import {
 import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
 import { Progress } from "@repo/design-system/components/ui/progress";
+import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import {
   Select,
   SelectContent,

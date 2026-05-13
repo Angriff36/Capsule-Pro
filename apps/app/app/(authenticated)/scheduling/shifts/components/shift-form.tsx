@@ -11,6 +11,7 @@ import {
   SelectValue,
 } from "@repo/design-system/components/ui/select";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
+import { DateTimePicker } from "@repo/design-system/components/ui/date-time-picker";
 import { Loader2Icon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -472,12 +473,12 @@ export function ShiftForm({
         {/* Start Time */}
         <div className="flex flex-col gap-2">
           <Label htmlFor="shiftStart">Start Time *</Label>
-          <Input
+          <DateTimePicker
             id="shiftStart"
             onChange={(e) =>
               setFormData({ ...formData, shiftStart: e.target.value })
             }
-            type="datetime-local"
+ 
             value={formData.shiftStart}
           />
           {errors.shiftStart && (
@@ -488,12 +489,12 @@ export function ShiftForm({
         {/* End Time */}
         <div className="flex flex-col gap-2">
           <Label htmlFor="shiftEnd">End Time *</Label>
-          <Input
+          <DateTimePicker
             id="shiftEnd"
             onChange={(e) =>
               setFormData({ ...formData, shiftEnd: e.target.value })
             }
-            type="datetime-local"
+ 
             value={formData.shiftEnd}
           />
           {errors.shiftEnd && (

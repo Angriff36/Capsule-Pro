@@ -32,6 +32,7 @@ import {
   TabsTrigger,
 } from "@repo/design-system/components/ui/tabs";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
+import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import {
   AlertTriangle,
   Calendar,
@@ -211,7 +212,7 @@ export default function PerformancePageClient() {
     if (!(createForm.employeeId && createForm.scheduledDate)) return;
     setCreating(true);
     try {
-      const res = await apiFetch("/api/staff/performance/commands/create", {
+      const res = await apiFetch("/api/manifest/StaffPerformance/commands/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(createForm),
@@ -238,7 +239,7 @@ export default function PerformancePageClient() {
     if (!selectedReview || completeForm.rating === 0) return;
     setCompleting(true);
     try {
-      const res = await apiFetch("/api/staff/performance/commands/complete", {
+      const res = await apiFetch("/api/manifest/StaffPerformance/commands/complete", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -642,7 +643,7 @@ export default function PerformancePageClient() {
               </div>
               <div className="space-y-2">
                 <Label>Scheduled Date *</Label>
-                <Input
+                <DatePicker
                   onChange={(e) =>
                     setCreateForm((p) => ({
                       ...p,
@@ -650,7 +651,7 @@ export default function PerformancePageClient() {
                     }))
                   }
                   required
-                  type="date"
+ 
                   value={createForm.scheduledDate}
                 />
               </div>

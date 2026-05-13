@@ -36,6 +36,7 @@ import {
   SelectValue,
 } from "@repo/design-system/components/ui/select";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
+import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import {
   CheckCircle2,
   Clock,
@@ -185,7 +186,7 @@ export default function DriversPage() {
     setSaving(true);
     try {
       if (editing) {
-        const res = await apiFetch("/api/logistics/drivers/commands/update", {
+        const res = await apiFetch("/api/manifest/Driver/commands/update", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -230,7 +231,7 @@ export default function DriversPage() {
   const handleDelete = async (driverId: string) => {
     setDeleting(driverId);
     try {
-      await apiFetch("/api/logistics/drivers/commands/delete", {
+      await apiFetch("/api/manifest/Driver/commands/remove", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ driverId }),
@@ -456,11 +457,11 @@ export default function DriversPage() {
               </div>
               <div className="space-y-2">
                 <Label>License Expiry</Label>
-                <Input
+                <DatePicker
                   onChange={(e) =>
                     setForm((p) => ({ ...p, licenseExpiry: e.target.value }))
                   }
-                  type="date"
+ 
                   value={form.licenseExpiry}
                 />
               </div>

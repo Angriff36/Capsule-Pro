@@ -78,6 +78,8 @@ export const modules: ModuleDefinition[] = [
         label: "Management",
         items: [
           { title: "Contracts", href: "/events/contracts" },
+          { title: "Event Intake", href: "/events/intake" },
+          { title: "Menu Builder", href: "/events/menu-builder" },
           { title: "Reports", href: "/events/reports" },
           { title: "Imports", href: "/events/import" },
         ],

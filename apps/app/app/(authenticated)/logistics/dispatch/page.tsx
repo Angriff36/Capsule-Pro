@@ -152,7 +152,7 @@ export default function DispatchPage() {
 
     setAssigning(true);
     try {
-      const res = await apiFetch("/api/logistics/dispatch/commands/assign", {
+      const res = await apiFetch("/api/manifest/LogisticsDispatch/commands/assign", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

@@ -12,6 +12,7 @@ import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
+import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import {
   Select,
   SelectContent,
@@ -394,13 +395,13 @@ export function ShiftsClient() {
               <Label className="text-ink text-xs" htmlFor="flt-start">
                 Start date
               </Label>
-              <Input
+              <DatePicker
                 className="bg-canvas"
                 id="flt-start"
                 onChange={(e) =>
                   handleFilterChange("startDate", e.target.value)
                 }
-                type="date"
+ 
                 value={filters.startDate}
               />
             </div>
@@ -408,11 +409,11 @@ export function ShiftsClient() {
               <Label className="text-ink text-xs" htmlFor="flt-end">
                 End date
               </Label>
-              <Input
+              <DatePicker
                 className="bg-canvas"
                 id="flt-end"
                 onChange={(e) => handleFilterChange("endDate", e.target.value)}
-                type="date"
+ 
                 value={filters.endDate}
               />
             </div>

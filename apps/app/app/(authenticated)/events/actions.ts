@@ -270,15 +270,6 @@ export const createEvent = async (
     createdId = created.id;
   } catch (err) {
     console.error("[createEvent] Database error:", err);
-    analytics.capture({
-      distinctId: tenantId,
-      event: "error:api_request_failed",
-      properties: {
-        endpoint: "/api/events/create",
-        status_code: 500,
-        error_code: "database_error",
-      },
-    });
     return { error: "Failed to create event. Please try again." };
   }
 

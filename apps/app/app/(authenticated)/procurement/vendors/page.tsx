@@ -103,7 +103,7 @@ export default function VendorsPage() {
     if (!form.name.trim()) return;
     setSaving(true);
     try {
-      const res = await apiFetch("/api/procurement/vendors/commands/create", {
+      const res = await apiFetch("/api/manifest/Vendor/commands/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
@@ -146,7 +146,7 @@ export default function VendorsPage() {
   const confirmDelete = async () => {
     if (!deleteTarget) return;
     try {
-      const res = await apiFetch("/api/procurement/vendors/commands/delete", {
+      const res = await apiFetch("/api/manifest/Vendor/commands/remove", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ vendorId: deleteTarget.id }),

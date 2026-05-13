@@ -110,7 +110,7 @@ export default function KnowledgeBaseClient() {
     setCreating(true);
     try {
       const res = await apiFetch(
-        "/api/knowledge-base/entries/commands/create",
+        "/api/manifest/KnowledgeBaseEntry/commands/create",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

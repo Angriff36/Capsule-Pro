@@ -10,6 +10,7 @@ import {
   SelectValue,
 } from "@repo/design-system/components/ui/select";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
+import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -88,9 +89,9 @@ export function POForm({ form, vendors, locations, onChange, children }: POFormP
         </div>
         <div className="space-y-2">
           <Label>Expected Delivery Date</Label>
-          <Input
+          <DatePicker
             onChange={(e) => onChange({ expectedDeliveryDate: e.target.value })}
-            type="date"
+ 
             value={form.expectedDeliveryDate}
           />
         </div>

@@ -28,6 +28,7 @@ import {
   SelectValue,
 } from "@repo/design-system/components/ui/select";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
+import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import { Loader2Icon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
@@ -96,7 +97,7 @@ export function CreateContractModal({
 
     setLoading(true);
     try {
-      const response = await apiFetch("/api/events/contracts/commands/create", {
+      const response = await apiFetch("/api/manifest/EventContract/commands/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -240,10 +241,10 @@ export function CreateContractModal({
           {/* Expiration Date */}
           <div className="grid gap-2">
             <Label htmlFor="contract-expires">Expiration Date</Label>
-            <Input
+            <DatePicker
               id="contract-expires"
               onChange={(e) => setExpiresAt(e.target.value)}
-              type="date"
+ 
               value={expiresAt}
             />
           </div>

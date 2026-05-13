@@ -183,7 +183,7 @@ export function EditTrainingModuleDialog({
                   <FormItem>
                     <FormLabel>Content Type</FormLabel>
                     <Select
-                      defaultValue={field.value}
+                      value={field.value}
                       onValueChange={field.onChange}
                     >
                       <FormControl>

@@ -427,11 +427,11 @@ describe("Catering Orders API", () => {
   // POST /api/events/catering-orders/commands/create
   // =========================================================================
   describe("POST /api/events/catering-orders/commands/create", () => {
-    let POST_create: typeof import("@/app/api/events/catering-orders/commands/create/route").POST;
+    let POST_create: typeof import("@/app/api/manifest/[entity]/commands/[command]/route").POST;
 
     beforeEach(async () => {
       const mod = await import(
-        "@/app/api/events/catering-orders/commands/create/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       POST_create = mod.POST;
     });
@@ -451,7 +451,7 @@ describe("Catering Orders API", () => {
         "http://localhost:3000/api/events/catering-orders/commands/create",
         { method: "POST", body: JSON.stringify(body) }
       );
-      const response = await POST_create(request);
+      const response = await POST_create(request, { params: Promise.resolve({ entity: "CateringOrder", command: "create" }) });
       const data = await response.json();
 
       expect(response.status).toBe(200);
@@ -472,7 +472,7 @@ describe("Catering Orders API", () => {
           body: JSON.stringify({ eventId: TEST_EVENT_ID }),
         }
       );
-      await POST_create(request);
+      await POST_create(request, { params: Promise.resolve({ entity: "CateringOrder", command: "create" }) });
 
       expect(mockDb.user.findFirst).toHaveBeenCalledWith({
         where: {
@@ -506,7 +506,7 @@ describe("Catering Orders API", () => {
           body: JSON.stringify({ eventId: TEST_EVENT_ID }),
         }
       );
-      const response = await POST_create(request);
+      const response = await POST_create(request, { params: Promise.resolve({ entity: "CateringOrder", command: "create" }) });
       const data = await response.json();
 
       expect(response.status).toBe(401);
@@ -525,7 +525,7 @@ describe("Catering Orders API", () => {
           body: JSON.stringify({ eventId: TEST_EVENT_ID }),
         }
       );
-      const response = await POST_create(request);
+      const response = await POST_create(request, { params: Promise.resolve({ entity: "CateringOrder", command: "create" }) });
       const data = await response.json();
 
       expect(response.status).toBe(400);
@@ -544,7 +544,7 @@ describe("Catering Orders API", () => {
           body: JSON.stringify({ eventId: TEST_EVENT_ID }),
         }
       );
-      const response = await POST_create(request);
+      const response = await POST_create(request, { params: Promise.resolve({ entity: "CateringOrder", command: "create" }) });
       const data = await response.json();
 
       expect(response.status).toBe(403);
@@ -564,7 +564,7 @@ describe("Catering Orders API", () => {
           body: JSON.stringify({ eventId: TEST_EVENT_ID }),
         }
       );
-      const response = await POST_create(request);
+      const response = await POST_create(request, { params: Promise.resolve({ entity: "CateringOrder", command: "create" }) });
       const data = await response.json();
 
       expect(response.status).toBe(422);
@@ -583,7 +583,7 @@ describe("Catering Orders API", () => {
           body: JSON.stringify({ eventId: TEST_EVENT_ID }),
         }
       );
-      const response = await POST_create(request);
+      const response = await POST_create(request, { params: Promise.resolve({ entity: "CateringOrder", command: "create" }) });
       const data = await response.json();
 
       expect(response.status).toBe(400);
@@ -602,7 +602,7 @@ describe("Catering Orders API", () => {
           body: JSON.stringify({ eventId: TEST_EVENT_ID }),
         }
       );
-      const response = await POST_create(request);
+      const response = await POST_create(request, { params: Promise.resolve({ entity: "CateringOrder", command: "create" }) });
       const data = await response.json();
 
       expect(response.status).toBe(500);
@@ -615,11 +615,11 @@ describe("Catering Orders API", () => {
   // POST /api/events/catering-orders/commands/update
   // =========================================================================
   describe("POST /api/events/catering-orders/commands/update", () => {
-    let POST_update: typeof import("@/app/api/events/catering-orders/commands/update/route").POST;
+    let POST_update: typeof import("@/app/api/manifest/[entity]/commands/[command]/route").POST;
 
     beforeEach(async () => {
       const mod = await import(
-        "@/app/api/events/catering-orders/commands/update/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       POST_update = mod.POST;
     });
@@ -638,7 +638,7 @@ describe("Catering Orders API", () => {
         "http://localhost:3000/api/events/catering-orders/commands/update",
         { method: "POST", body: JSON.stringify(body) }
       );
-      const response = await POST_update(request);
+      const response = await POST_update(request, { params: Promise.resolve({ entity: "CateringOrder", command: "create" }) });
       const data = await response.json();
 
       expect(response.status).toBe(200);
@@ -656,7 +656,7 @@ describe("Catering Orders API", () => {
         "http://localhost:3000/api/events/catering-orders/commands/update",
         { method: "POST", body: JSON.stringify(body) }
       );
-      await POST_update(request);
+      await POST_update(request, { params: Promise.resolve({ entity: "CateringOrder", command: "create" }) });
 
       expect(runCommand).toHaveBeenCalledWith(
         "update",
@@ -675,7 +675,7 @@ describe("Catering Orders API", () => {
           body: JSON.stringify({ instanceId: TEST_ORDER_ID }),
         }
       );
-      const response = await POST_update(request);
+      const response = await POST_update(request, { params: Promise.resolve({ entity: "CateringOrder", command: "create" }) });
 
       expect(response.status).toBe(401);
     });
@@ -685,11 +685,11 @@ describe("Catering Orders API", () => {
   // POST /api/events/catering-orders/commands/confirm
   // =========================================================================
   describe("POST /api/events/catering-orders/commands/confirm", () => {
-    let POST_confirm: typeof import("@/app/api/events/catering-orders/commands/confirm/route").POST;
+    let POST_confirm: typeof import("@/app/api/manifest/[entity]/commands/[command]/route").POST;
 
     beforeEach(async () => {
       const mod = await import(
-        "@/app/api/events/catering-orders/commands/confirm/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       POST_confirm = mod.POST;
     });
@@ -704,7 +704,7 @@ describe("Catering Orders API", () => {
         "http://localhost:3000/api/events/catering-orders/commands/confirm",
         { method: "POST", body: JSON.stringify(body) }
       );
-      const response = await POST_confirm(request);
+      const response = await POST_confirm(request, { params: Promise.resolve({ entity: "CateringOrder", command: "create" }) });
       const data = await response.json();
 
       expect(response.status).toBe(200);
@@ -723,7 +723,7 @@ describe("Catering Orders API", () => {
           body: JSON.stringify({ instanceId: TEST_ORDER_ID }),
         }
       );
-      const response = await POST_confirm(request);
+      const response = await POST_confirm(request, { params: Promise.resolve({ entity: "CateringOrder", command: "create" }) });
       const data = await response.json();
 
       expect(response.status).toBe(403);
@@ -740,7 +740,7 @@ describe("Catering Orders API", () => {
           body: JSON.stringify({ instanceId: TEST_ORDER_ID }),
         }
       );
-      const response = await POST_confirm(request);
+      const response = await POST_confirm(request, { params: Promise.resolve({ entity: "CateringOrder", command: "create" }) });
 
       expect(response.status).toBe(401);
     });
@@ -750,11 +750,11 @@ describe("Catering Orders API", () => {
   // POST /api/events/catering-orders/commands/cancel
   // =========================================================================
   describe("POST /api/events/catering-orders/commands/cancel", () => {
-    let POST_cancel: typeof import("@/app/api/events/catering-orders/commands/cancel/route").POST;
+    let POST_cancel: typeof import("@/app/api/manifest/[entity]/commands/[command]/route").POST;
 
     beforeEach(async () => {
       const mod = await import(
-        "@/app/api/events/catering-orders/commands/cancel/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       POST_cancel = mod.POST;
     });
@@ -772,7 +772,7 @@ describe("Catering Orders API", () => {
         "http://localhost:3000/api/events/catering-orders/commands/cancel",
         { method: "POST", body: JSON.stringify(body) }
       );
-      const response = await POST_cancel(request);
+      const response = await POST_cancel(request, { params: Promise.resolve({ entity: "CateringOrder", command: "create" }) });
       const data = await response.json();
 
       expect(response.status).toBe(200);
@@ -791,7 +791,7 @@ describe("Catering Orders API", () => {
           body: JSON.stringify({ instanceId: TEST_ORDER_ID }),
         }
       );
-      const response = await POST_cancel(request);
+      const response = await POST_cancel(request, { params: Promise.resolve({ entity: "CateringOrder", command: "create" }) });
 
       expect(response.status).toBe(422);
     });
@@ -806,7 +806,7 @@ describe("Catering Orders API", () => {
           body: JSON.stringify({ instanceId: TEST_ORDER_ID }),
         }
       );
-      const response = await POST_cancel(request);
+      const response = await POST_cancel(request, { params: Promise.resolve({ entity: "CateringOrder", command: "create" }) });
 
       expect(response.status).toBe(401);
     });
@@ -816,11 +816,11 @@ describe("Catering Orders API", () => {
   // POST /api/events/catering-orders/commands/start-prep
   // =========================================================================
   describe("POST /api/events/catering-orders/commands/start-prep", () => {
-    let POST_startPrep: typeof import("@/app/api/events/catering-orders/commands/start-prep/route").POST;
+    let POST_startPrep: typeof import("@/app/api/manifest/[entity]/commands/[command]/route").POST;
 
     beforeEach(async () => {
       const mod = await import(
-        "@/app/api/events/catering-orders/commands/start-prep/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       POST_startPrep = mod.POST;
     });
@@ -835,7 +835,7 @@ describe("Catering Orders API", () => {
         "http://localhost:3000/api/events/catering-orders/commands/start-prep",
         { method: "POST", body: JSON.stringify(body) }
       );
-      const response = await POST_startPrep(request);
+      const response = await POST_startPrep(request, { params: Promise.resolve({ entity: "CateringOrder", command: "create" }) });
       const data = await response.json();
 
       expect(response.status).toBe(200);
@@ -853,7 +853,7 @@ describe("Catering Orders API", () => {
         "http://localhost:3000/api/events/catering-orders/commands/start-prep",
         { method: "POST", body: JSON.stringify(body) }
       );
-      await POST_startPrep(request);
+      await POST_startPrep(request, { params: Promise.resolve({ entity: "CateringOrder", command: "create" }) });
 
       expect(runCommand).toHaveBeenCalledWith(
         "startPrep",
@@ -872,7 +872,7 @@ describe("Catering Orders API", () => {
           body: JSON.stringify({ instanceId: TEST_ORDER_ID }),
         }
       );
-      const response = await POST_startPrep(request);
+      const response = await POST_startPrep(request, { params: Promise.resolve({ entity: "CateringOrder", command: "create" }) });
 
       expect(response.status).toBe(401);
     });
@@ -882,11 +882,11 @@ describe("Catering Orders API", () => {
   // POST /api/events/catering-orders/commands/mark-complete
   // =========================================================================
   describe("POST /api/events/catering-orders/commands/mark-complete", () => {
-    let POST_markComplete: typeof import("@/app/api/events/catering-orders/commands/mark-complete/route").POST;
+    let POST_markComplete: typeof import("@/app/api/manifest/[entity]/commands/[command]/route").POST;
 
     beforeEach(async () => {
       const mod = await import(
-        "@/app/api/events/catering-orders/commands/mark-complete/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       POST_markComplete = mod.POST;
     });
@@ -901,7 +901,7 @@ describe("Catering Orders API", () => {
         "http://localhost:3000/api/events/catering-orders/commands/mark-complete",
         { method: "POST", body: JSON.stringify(body) }
       );
-      const response = await POST_markComplete(request);
+      const response = await POST_markComplete(request, { params: Promise.resolve({ entity: "CateringOrder", command: "create" }) });
       const data = await response.json();
 
       expect(response.status).toBe(200);
@@ -919,7 +919,7 @@ describe("Catering Orders API", () => {
         "http://localhost:3000/api/events/catering-orders/commands/mark-complete",
         { method: "POST", body: JSON.stringify(body) }
       );
-      await POST_markComplete(request);
+      await POST_markComplete(request, { params: Promise.resolve({ entity: "CateringOrder", command: "create" }) });
 
       expect(runCommand).toHaveBeenCalledWith(
         "markComplete",
@@ -939,7 +939,7 @@ describe("Catering Orders API", () => {
           body: JSON.stringify({ instanceId: TEST_ORDER_ID }),
         }
       );
-      const response = await POST_markComplete(request);
+      const response = await POST_markComplete(request, { params: Promise.resolve({ entity: "CateringOrder", command: "create" }) });
       const data = await response.json();
 
       expect(response.status).toBe(400);
@@ -956,7 +956,7 @@ describe("Catering Orders API", () => {
           body: JSON.stringify({ instanceId: TEST_ORDER_ID }),
         }
       );
-      const response = await POST_markComplete(request);
+      const response = await POST_markComplete(request, { params: Promise.resolve({ entity: "CateringOrder", command: "create" }) });
 
       expect(response.status).toBe(401);
     });

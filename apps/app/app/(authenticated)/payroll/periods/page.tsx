@@ -22,6 +22,7 @@ import {
   SelectValue,
 } from "@repo/design-system/components/ui/select";
 import { Separator } from "@repo/design-system/components/ui/separator";
+import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import {
   Table,
   TableBody,
@@ -225,19 +226,19 @@ export default function PayrollPeriodsPage() {
             <div className="space-y-4 py-4">
               <div className="space-y-2">
                 <Label htmlFor="periodStart">Period Start Date</Label>
-                <Input
+                <DatePicker
                   id="periodStart"
                   onChange={(e) => setPeriodStart(e.target.value)}
-                  type="date"
+ 
                   value={periodStart}
                 />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="periodEnd">Period End Date</Label>
-                <Input
+                <DatePicker
                   id="periodEnd"
                   onChange={(e) => setPeriodEnd(e.target.value)}
-                  type="date"
+ 
                   value={periodEnd}
                 />
               </div>

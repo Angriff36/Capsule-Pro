@@ -18,6 +18,7 @@ import {
 } from "@repo/design-system/components/ui/select";
 import { Separator } from "@repo/design-system/components/ui/separator";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
+import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import { ArrowLeft, Loader2, Plus, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -222,10 +223,10 @@ export default function NewInvoicePage() {
 
                 <div className="space-y-2">
                   <Label htmlFor="dueDate">Due Date</Label>
-                  <Input
+                  <DatePicker
                     id="dueDate"
                     onChange={(e) => setDueDate(e.target.value)}
-                    type="date"
+ 
                     value={dueDate}
                   />
                 </div>

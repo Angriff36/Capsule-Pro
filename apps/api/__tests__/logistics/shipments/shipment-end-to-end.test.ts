@@ -298,7 +298,7 @@ describe("Shipment Persistence (write → read alignment)", () => {
           }
         );
 
-        await mod.POST(request);
+        await mod.POST(request, { params: Promise.resolve({ entity: "Shipment", command: "create" }) });
 
         expect(mockRunCommand).toHaveBeenCalledWith(
           verb,
@@ -313,7 +313,7 @@ describe("Shipment Persistence (write → read alignment)", () => {
 
     it("create route does NOT pass instanceId", async () => {
       const mod = await import(
-        "@/app/api/shipments/shipment/commands/create/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       const request = createMockRequest(
         "http://localhost:3000/api/shipments/shipment/commands/create",
@@ -326,7 +326,7 @@ describe("Shipment Persistence (write → read alignment)", () => {
         }
       );
 
-      await mod.POST(request);
+      await mod.POST(request, { params: Promise.resolve({ entity: "Shipment", command: "create" }) });
 
       expect(mockRunCommand).toHaveBeenCalledWith(
         "create",

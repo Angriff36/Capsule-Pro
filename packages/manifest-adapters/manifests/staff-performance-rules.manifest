@@ -1,0 +1,118 @@
+// Staff Performance Review Rules
+// Manifest spec for employee performance evaluations and reviews
+
+entity StaffPerformance {
+  property required id: string
+  property required tenantId: string
+  property required employeeId: string
+  property reviewType: string = "quarterly"
+  property status: string = "draft"
+  property rating: number = 0
+  property reviewerId: string = ""
+  property periodStart: number = 0
+  property periodEnd: number = 0
+  property strengths: string = ""
+  property improvements: string = ""
+  property goals: string = ""
+  property notes: string = ""
+  property completedAt: number = 0
+  property createdAt: number = 0
+  property updatedAt: number = 0
+
+  constraint validReviewType: self.reviewType in ["quarterly", "annual", "probation", "promotion", "self"] "Invalid review type"
+  constraint validStatus: self.status in ["draft", "in_review", "completed", "acknowledged", "cancelled"] "Invalid review status"
+  constraint validRating: self.rating >= 0 and self.rating <= 5 "Rating must be between 0 and 5"
+
+  command create(employeeId: string, reviewType: string, reviewerId: string, periodStart: number, periodEnd: number, strengths: string, improvements: string, goals: string, notes: string) {
+    guard employeeId != null and employeeId != "" "Employee ID is required"
+    guard reviewType in ["quarterly", "annual", "probation", "promotion", "self"] "Invalid review type"
+
+    mutate employeeId = employeeId
+    mutate reviewType = reviewType
+    mutate reviewerId = reviewerId
+    mutate periodStart = periodStart
+    mutate periodEnd = periodEnd
+    mutate strengths = strengths
+    mutate improvements = improvements
+    mutate goals = goals
+    mutate notes = notes
+    mutate status = "draft"
+    mutate rating = 0
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit PerformanceReviewCreated
+  }
+
+  command update(employeeId: string, reviewType: string, reviewerId: string, periodStart: number, periodEnd: number, strengths: string, improvements: string, goals: string, notes: string) {
+    guard self.status in ["draft", "in_review"] "Cannot update a completed review"
+    guard reviewType in ["quarterly", "annual", "probation", "promotion", "self"] "Invalid review type"
+
+    mutate employeeId = employeeId
+    mutate reviewType = reviewType
+    mutate reviewerId = reviewerId
+    mutate periodStart = periodStart
+    mutate periodEnd = periodEnd
+    mutate strengths = strengths
+    mutate improvements = improvements
+    mutate goals = goals
+    mutate notes = notes
+    mutate updatedAt = now()
+
+    emit PerformanceReviewUpdated
+  }
+
+  command remove() {
+    guard self.status in ["draft"] "Only draft reviews can be removed"
+
+    mutate status = "cancelled"
+    mutate updatedAt = now()
+
+    emit PerformanceReviewRemoved
+  }
+
+  command complete(rating: number, status: string) {
+    guard rating >= 0 and rating <= 5 "Rating must be between 0 and 5"
+    guard status in ["completed", "in_review"] "Invalid final status"
+
+    mutate rating = rating
+    mutate status = status
+    mutate completedAt = now()
+    mutate updatedAt = now()
+
+    emit PerformanceReviewCompleted
+  }
+}
+
+policy ManagersCanManagePerformance execute: user.role in ["manager", "hr_admin", "admin"] "Only managers can manage performance reviews"
+
+event PerformanceReviewCreated: "staff.performance.created" {
+  reviewId: string
+  tenantId: string
+  employeeId: string
+  reviewType: string
+  reviewerId: string
+  createdAt: number
+}
+
+event PerformanceReviewCompleted: "staff.performance.completed" {
+  reviewId: string
+  employeeId: string
+  rating: number
+  status: string
+  completedAt: number
+}
+
+event PerformanceReviewUpdated: "staff.performance.updated" {
+  reviewId: string
+  employeeId: string
+  reviewType: string
+  reviewerId: string
+  updatedAt: number
+}
+
+event PerformanceReviewRemoved: "staff.performance.removed" {
+  reviewId: string
+  employeeId: string
+  removedAt: number
+}

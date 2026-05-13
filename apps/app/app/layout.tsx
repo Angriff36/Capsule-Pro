@@ -8,6 +8,7 @@ import { Analytics as VercelAnalytics } from "@vercel/analytics/react";
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { fonts } from "@/lib/fonts";
+import { QueryProvider } from "./query-provider";
 import ClerkProviderClient from "./clerk-provider.client";
 import { AuthHeader } from "./components/auth-header";
 
@@ -33,24 +34,26 @@ const RootLayout = async ({ children }: RootLayoutProperties) => {
     <html className={fonts} lang="en" suppressHydrationWarning>
       <body>
         <ClerkProviderClient>
-          <AuthHeader />
-          <AnalyticsProvider>
-            <DesignSystemProvider
-              helpUrl={env.NEXT_PUBLIC_DOCS_URL}
-              privacyUrl={new URL(
-                "/legal/privacy",
-                env.NEXT_PUBLIC_WEB_URL
-              ).toString()}
-              termsUrl={new URL(
-                "/legal/terms",
-                env.NEXT_PUBLIC_WEB_URL
-              ).toString()}
-            >
-              {children}
-            </DesignSystemProvider>
-          </AnalyticsProvider>
-          {Toolbar && <Toolbar />}
-          <Toaster />
+          <QueryProvider>
+            <AuthHeader />
+            <AnalyticsProvider>
+              <DesignSystemProvider
+                helpUrl={env.NEXT_PUBLIC_DOCS_URL}
+                privacyUrl={new URL(
+                  "/legal/privacy",
+                  env.NEXT_PUBLIC_WEB_URL
+                ).toString()}
+                termsUrl={new URL(
+                  "/legal/terms",
+                  env.NEXT_PUBLIC_WEB_URL
+                ).toString()}
+              >
+                {children}
+              </DesignSystemProvider>
+            </AnalyticsProvider>
+            {Toolbar && <Toolbar />}
+            <Toaster />
+          </QueryProvider>
         </ClerkProviderClient>
         {process.env.NODE_ENV === "production" && <VercelAnalytics />}
         {env.NEXT_PUBLIC_GA_MEASUREMENT_ID && (

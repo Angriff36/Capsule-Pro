@@ -168,7 +168,7 @@ export function NotificationsClient({
     setActioningId(id);
     try {
       const res = await apiFetch(
-        "/api/collaboration/notifications/commands/mark-read",
+        "/api/manifest/Notification/commands/markRead",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -201,7 +201,7 @@ export function NotificationsClient({
     setActioningId(id);
     try {
       const res = await apiFetch(
-        "/api/collaboration/notifications/commands/mark-dismissed",
+        "/api/manifest/Notification/commands/markDismissed",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -231,7 +231,7 @@ export function NotificationsClient({
     setActioningId(removeId);
     try {
       const res = await apiFetch(
-        "/api/collaboration/notifications/commands/remove",
+        "/api/manifest/Notification/commands/remove",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -265,7 +265,7 @@ export function NotificationsClient({
     try {
       const results = await Promise.allSettled(
         unread.map((n) =>
-          apiFetch("/api/collaboration/notifications/commands/mark-read", {
+          apiFetch("/api/manifest/Notification/commands/markRead", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ id: n.id }),

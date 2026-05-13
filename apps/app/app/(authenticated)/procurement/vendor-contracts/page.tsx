@@ -31,6 +31,7 @@ import {
   TabsTrigger,
 } from "@repo/design-system/components/ui/tabs";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
+import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import { Eye, FileText, Loader2, Plus, Search } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
@@ -107,7 +108,7 @@ export default function VendorContractsPage() {
     setCreating(true);
     try {
       const res = await apiFetch(
-        "/api/procurement/vendor-contracts/commands/create",
+        "/api/manifest/VendorContract/commands/create",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -381,19 +382,19 @@ export default function VendorContractsPage() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="startDate">Start Date *</Label>
-                <Input
+                <DatePicker
                   id="startDate"
                   onChange={(e) => setStartDate(e.target.value)}
-                  type="date"
+ 
                   value={startDate}
                 />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="endDate">End Date</Label>
-                <Input
+                <DatePicker
                   id="endDate"
                   onChange={(e) => setEndDate(e.target.value)}
-                  type="date"
+ 
                   value={endDate}
                 />
               </div>

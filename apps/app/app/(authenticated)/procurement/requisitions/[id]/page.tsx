@@ -133,7 +133,7 @@ export default function RequisitionDetailPage() {
         reason: reasonText.trim(),
       };
       const res = await apiFetch(
-        "/api/procurement/requisitions/commands/reject",
+        "/api/manifest/PurchaseRequisition/commands/reject",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

@@ -35,6 +35,7 @@ import {
   TabsTrigger,
 } from "@repo/design-system/components/ui/tabs";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
+import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import {
   CheckCircle2,
   Clock,
@@ -139,7 +140,7 @@ export function RoutesView() {
 
     setCreating(true);
     try {
-      const res = await apiFetch("/api/logistics/routes/commands/create", {
+      const res = await apiFetch("/api/manifest/LogisticsRoute/commands/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -164,7 +165,7 @@ export function RoutesView() {
   const handleOptimize = async (routeId: string) => {
     setOptimizing(routeId);
     try {
-      const res = await apiFetch("/api/logistics/routes/commands/optimize", {
+      const res = await apiFetch("/api/manifest/LogisticsRoute/commands/optimize", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ routeId }),
@@ -202,7 +203,7 @@ export function RoutesView() {
   const handleStartRoute = async (routeId: string) => {
     try {
       const res = await apiFetch(
-        "/api/logistics/routes/commands/update-status",
+        "/api/manifest/LogisticsRoute/commands/update-status",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -225,7 +226,7 @@ export function RoutesView() {
   const handleCompleteRoute = async (routeId: string) => {
     try {
       const res = await apiFetch(
-        "/api/logistics/routes/commands/update-status",
+        "/api/manifest/LogisticsRoute/commands/update-status",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -264,7 +265,7 @@ export function RoutesView() {
     setSaving(true);
     try {
       const res = await apiFetch(
-        "/api/logistics/routes/commands/update",
+        "/api/manifest/LogisticsRoute/commands/update",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -297,7 +298,7 @@ export function RoutesView() {
     setDeleting(true);
     try {
       const res = await apiFetch(
-        "/api/logistics/routes/commands/delete",
+        "/api/manifest/LogisticsRoute/commands/remove",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -532,7 +533,7 @@ export function RoutesView() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="scheduledDate">Scheduled Date</Label>
-              <Input
+              <DatePicker
                 id="scheduledDate"
                 onChange={(e) =>
                   setCreateForm((prev) => ({
@@ -540,7 +541,7 @@ export function RoutesView() {
                     scheduledDate: e.target.value,
                   }))
                 }
-                type="date"
+ 
                 value={createForm.scheduledDate}
               />
             </div>
@@ -607,7 +608,7 @@ export function RoutesView() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="editDate">Scheduled Date</Label>
-              <Input
+              <DatePicker
                 id="editDate"
                 onChange={(e) =>
                   setEditForm((prev) => ({
@@ -615,7 +616,7 @@ export function RoutesView() {
                     scheduledDate: e.target.value,
                   }))
                 }
-                type="date"
+ 
                 value={editForm.scheduledDate}
               />
             </div>

@@ -467,7 +467,7 @@ export default function CycleCountSessionDetailPage() {
     setIsUpdating(true);
     try {
       const response = await apiFetch(
-        "/api/inventory/cycle-count/records/commands/update",
+        "/api/manifest/CycleCountRecord/commands/update",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -501,7 +501,7 @@ export default function CycleCountSessionDetailPage() {
   const handleVerifyRecord = async (record: CycleCountRecord) => {
     try {
       const response = await apiFetch(
-        "/api/inventory/cycle-count/records/commands/verify",
+        "/api/manifest/CycleCountRecord/commands/verify",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

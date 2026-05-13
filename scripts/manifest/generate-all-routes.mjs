@@ -1,268 +1,59 @@
 #!/usr/bin/env node
 
 /**
- * Generate Next.js API route handlers for ALL manifest entities.
+ * Manifest Command Registration Validator
  *
- * This script:
- * 1. Reads all .manifest files from packages/manifest-adapters/manifests/
- * 2. Compiles each to IR using the vendored @manifest/runtime compiler
- * 3. Uses NextJsProjection to generate command route handlers
- * 4. Writes route files to the correct domain directories under apps/api/app/api/
+ * ARCHITECTURE RULE: All command writes route through the SINGLE dynamic dispatcher:
+ *   apps/api/app/api/manifest/[entity]/commands/[command]/route.ts
  *
- * Usage: node scripts/manifest/generate-all-routes.mjs [--dry-run]
+ * Concrete per-command route files under domain paths are ILLEGAL.
+ * This script was formerly a route-file generator. It is now a validation-only
+ * pass that verifies every command declared in .manifest files is registered in
+ * kitchen.commands.json.
+ *
+ * To get a command registered:
+ *   1. Define the command in the correct .manifest file.
+ *   2. Run:   pnpm manifest:compile
+ *   3. Run:   node scripts/manifest/generate-all-routes.mjs  (this script — validation)
+ *
+ * Usage:  node scripts/manifest/generate-all-routes.mjs [--verbose]
  */
 
-import {
-  existsSync,
-  mkdirSync,
-  readdirSync,
-  readFileSync,
-  writeFileSync,
-} from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 
-const DRY_RUN = process.argv.includes("--dry-run");
 const VERBOSE = process.argv.includes("--verbose");
-
-// ─── Domain routing: entity → API directory ───
-// Maps each entity to its domain directory under apps/api/app/api/
-const ENTITY_DOMAIN_MAP = {
-  // ─── Kitchen Operations ───
-  PrepTask: "kitchen/prep-tasks",
-  PrepTaskPlanWorkflow: "kitchen/prep-task-plan-workflows",
-  KitchenTask: "kitchen/kitchen-tasks",
-  Recipe: "kitchen/recipes",
-  RecipeVersion: "kitchen/recipe-versions",
-  RecipeIngredient: "kitchen/recipe-ingredients",
-  RecipeStep: "kitchen/recipe-steps",
-  Ingredient: "kitchen/ingredients",
-  Dish: "kitchen/dishes",
-  Menu: "kitchen/menus",
-  MenuDish: "kitchen/menu-dishes",
-  PrepList: "kitchen/prep-lists",
-  PrepListItem: "kitchen/prep-list-items",
-  Station: "kitchen/stations",
-  InventoryItem: "kitchen/inventory",
-  PrepComment: "kitchen/prep-comments",
-  Container: "kitchen/containers",
-  PrepMethod: "kitchen/prep-methods",
-  WasteEntry: "kitchen/waste-entries",
-  AllergenWarning: "kitchen/allergen-warnings",
-  AlertsConfig: "kitchen/alerts-config",
-  OverrideAudit: "kitchen/override-audits",
-  // ─── Events & Catering ───
-  Event: "events/event",
-  EventProfitability: "events/profitability",
-  EventSummary: "events/summaries",
-  EventReport: "events/reports",
-  EventBudget: "events/budgets",
-  BudgetLineItem: "events/budget-line-items",
-  BudgetAlert: "events/budget-alerts",
-  CateringOrder: "events/catering-orders",
-  BattleBoard: "events/battle-boards",
-  EventGuest: "events/guests",
-  EventContract: "events/contracts",
-  ContractSignature: "events/contract-signatures",
-  EventDish: "events/event-dishes",
-  EventStaff: "events/staff",
-  EventImportWorkflow: "events/import-workflows",
-  // ─── CRM & Sales ───
-  Client: "crm/clients",
-  ClientContact: "crm/client-contacts",
-  ClientPreference: "crm/client-preferences",
-  Lead: "crm/leads",
-  Proposal: "crm/proposals",
-  ProposalLineItem: "crm/proposal-line-items",
-  ClientInteraction: "crm/client-interactions",
-  // ─── Purchasing & Inventory ───
-  PurchaseOrder: "inventory/purchase-orders",
-  PurchaseOrderItem: "inventory/purchase-order-items",
-  PurchaseRequisition: "procurement/requisitions",
-  PurchaseRequisitionItem: "procurement/requisition-items",
-  VendorContract: "procurement/vendor-contracts",
-  Shipment: "shipments/shipment",
-  ShipmentItem: "shipments/shipment-items",
-  InventoryTransaction: "inventory/transactions",
-  InventorySupplier: "inventory/suppliers",
-  CycleCountSession: "inventory/cycle-count/sessions",
-  CycleCountRecord: "inventory/cycle-count/records",
-  VarianceReport: "inventory/cycle-count/variance-reports",
-  BulkOrderRule: "inventory/bulk-order-rules",
-  PricingTier: "inventory/pricing-tiers",
-  VendorCatalog: "inventory/vendor-catalogs",
-  // ─── Staff & Scheduling ───
-  User: "staff/employees",
-  Schedule: "staff/schedules",
-  ScheduleShift: "staff/shifts",
-  TimeEntry: "timecards/entries",
-  TimecardEditRequest: "timecards/edit-requests",
-  TimeOffRequest: "timecards/time-off-requests",
-  EmployeeAvailability: "staff/availability",
-  EmployeeCertification: "staff/certifications",
-  // ─── Payroll ───
-  PayrollPeriod: "payroll/periods",
-  PayrollRun: "payroll/runs",
-  PayrollApprovalHistory: "payroll/approval-history",
-  EmployeeDeduction: "payroll/deductions",
-  LaborBudget: "payroll/labor-budgets",
-  // ─── Training ───
-  TrainingAssignment: "training/assignments",
-  TrainingModule: "training/modules",
-  // ─── Command Board ───
-  CommandBoard: "command-board/boards",
-  CommandBoardCard: "command-board/cards",
-  CommandBoardGroup: "command-board/groups",
-  CommandBoardConnection: "command-board/connections",
-  CommandBoardLayout: "command-board/layouts",
-  // ─── Workflows & Notifications ───
-  Workflow: "collaboration/workflows",
-  Notification: "collaboration/notifications",
-  EmailTemplate: "communications/email-templates",
-  EmailWorkflow: "communications/email-workflows",
-  // ─── Administrative ───
-  AdminTask: "administrative/tasks",
-  AdminChatParticipant: "administrative/chat/participants",
-  // ─── Settings ───
-  ApiKey: "settings/api-keys",
-  // ─── Rate Limiting ───
-  RateLimitConfig: "administrative/rate-limits",
-  // ─── Accounting ───
-  ChartOfAccount: "accounting/chart-of-accounts",
-  // ─── Role Policy ───
-  RolePolicy: "rolepolicy/policies",
-};
-
-// Entities that already have hand-written or previously generated command routes
-// These will NOT be overwritten
-const ENTITIES_WITH_EXISTING_ROUTES = new Set([
-  "PrepTask",
-  "KitchenTask",
-  "Recipe",
-  "RecipeVersion",
-  "RecipeIngredient",
-  "Ingredient",
-  "Dish",
-  "Menu",
-  "MenuDish",
-  "PrepList",
-  "PrepListItem",
-  "Station",
-  "InventoryItem",
-]);
 
 const ROOT = resolve(process.cwd());
 const MANIFESTS_DIR = join(ROOT, "packages/manifest-adapters/manifests");
-const API_DIR = join(ROOT, "apps/api/app/api");
+const COMMANDS_JSON = join(
+  ROOT,
+  "packages/manifest-ir/ir/kitchen/kitchen.commands.json"
+);
 
-function toKebabCase(value) {
-  return value
-    .replace(/([a-z0-9])([A-Z])/g, "$1-$2")
-    .replace(/\s+/g, "-")
-    .toLowerCase();
+// ─── Load the canonical command registry ───
+
+if (!existsSync(COMMANDS_JSON)) {
+  console.error(
+    "[generate-all-routes] kitchen.commands.json not found. Run pnpm manifest:compile first."
+  );
+  process.exit(1);
 }
 
-/**
- * Generate a command route handler file content.
- * Matches the pattern from the NextJsProjection but with our specific imports.
- */
-function generateCommandRoute(entityName, commandName) {
-  return `// Auto-generated Next.js command handler for ${entityName}.${commandName}
-// Generated from Manifest IR - DO NOT EDIT
-// Writes MUST flow through runtime.runCommand() to enforce guards, policies, and constraints
-
-import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
-import { captureException } from "@sentry/nextjs";
-import type { NextRequest } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { manifestErrorResponse, manifestSuccessResponse } from "@/lib/manifest-response";
-import { createManifestRuntime } from "@/lib/manifest-runtime";
-
-export const runtime = "nodejs";
-
-export async function POST(request: NextRequest) {
-  try {
-    const { orgId, userId: clerkId } = await auth();
-    if (!(clerkId && orgId)) {
-      return manifestErrorResponse("Unauthorized", 401);
-    }
-
-    const tenantId = await getTenantIdForOrg(orgId);
-    if (!tenantId) {
-      return manifestErrorResponse("Tenant not found", 400);
-    }
-
-    // Resolve internal user from Clerk auth
-    const currentUser = await database.user.findFirst({
-      where: {
-        AND: [{ tenantId }, { authUserId: clerkId }],
-      },
-    });
-
-    if (!currentUser) {
-      return manifestErrorResponse("User not found in database", 400);
-    }
-
-    const body = await request.json();
-
-    console.log("[${toKebabCase(entityName)}/${commandName}] Executing command:", {
-      entityName: "${entityName}",
-      command: "${commandName}",
-      userId: currentUser.id,
-      userRole: currentUser.role,
-      tenantId,
-    });
-
-    const runtime = await createManifestRuntime({
-      user: { id: currentUser.id, tenantId, role: currentUser.role },
-      entityName: "${entityName}",
-    });
-
-    const result = await runtime.runCommand("${commandName}", body, {
-      entityName: "${entityName}",
-    });
-
-    if (!result.success) {
-      console.error("[${toKebabCase(entityName)}/${commandName}] Command failed:", {
-        policyDenial: result.policyDenial,
-        guardFailure: result.guardFailure,
-        error: result.error,
-        userRole: currentUser.role,
-      });
-
-      if (result.policyDenial) {
-        return manifestErrorResponse(
-          \`Access denied: \${result.policyDenial.policyName} (role=\${currentUser.role})\`,
-          403
-        );
-      }
-      if (result.guardFailure) {
-        return manifestErrorResponse(
-          \`Guard \${result.guardFailure.index} failed: \${result.guardFailure.formatted}\`,
-          422
-        );
-      }
-      return manifestErrorResponse(result.error ?? "Command failed", 400);
-    }
-
-    return manifestSuccessResponse({
-      result: result.result,
-      events: result.emittedEvents,
-    });
-  } catch (error) {
-    console.error("[${toKebabCase(entityName)}/${commandName}] Error:", error);
-    captureException(error);
-    return manifestErrorResponse("Internal server error", 500);
-  }
-}
-`;
+const commandsJson = JSON.parse(readFileSync(COMMANDS_JSON, "utf8"));
+if (!Array.isArray(commandsJson)) {
+  console.error(
+    "[generate-all-routes] kitchen.commands.json is not a flat array. Expected [ { entity, command, ... }, ... ]."
+  );
+  process.exit(1);
 }
 
-/**
- * Parse a manifest file to extract entity names and their commands.
- * Simple regex-based parser — doesn't need the full compiler.
- */
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Manifest parser with multiple states
+const registeredCommands = new Set(
+  commandsJson.map((c) => `${c.entity}.${c.command}`)
+);
+
+// ─── Parse .manifest files to extract entity+command declarations ───
+
 function parseManifestCommands(source) {
   const entities = {};
   let currentEntity = null;
@@ -274,7 +65,6 @@ function parseManifestCommands(source) {
   for (const line of lines) {
     const trimmed = line.trim();
 
-    // Match entity declaration
     const entityMatch = trimmed.match(/^entity\s+(\w+)\s*\{/);
     if (entityMatch && !inEntity) {
       currentEntity = entityMatch[1];
@@ -285,23 +75,16 @@ function parseManifestCommands(source) {
     }
 
     if (inEntity) {
-      // Count braces
       for (const ch of trimmed) {
-        if (ch === "{") {
-          braceDepth++;
-        }
-        if (ch === "}") {
-          braceDepth--;
-        }
+        if (ch === "{") braceDepth++;
+        if (ch === "}") braceDepth--;
       }
 
-      // Match command declaration (at entity level, braceDepth >= 1)
       const commandMatch = trimmed.match(/^command\s+(\w+)/);
       if (commandMatch && braceDepth >= 1) {
         entities[currentEntity].push(commandMatch[1]);
       }
 
-      // Entity closed
       if (braceDepth === 0) {
         inEntity = false;
         currentEntity = null;
@@ -314,107 +97,103 @@ function parseManifestCommands(source) {
 
 // ─── Main ───
 
-console.log("=== Manifest Route Generator ===");
-console.log(`Manifests dir: ${MANIFESTS_DIR}`);
-console.log(`API output dir: ${API_DIR}`);
-if (DRY_RUN) {
-  console.log("DRY RUN — no files will be written\n");
+if (!existsSync(MANIFESTS_DIR)) {
+  console.error(
+    `[generate-all-routes] Manifests directory not found: ${MANIFESTS_DIR}`
+  );
+  process.exit(1);
 }
+
+console.log("=== Manifest Command Registration Validator ===\n");
 
 const manifestFiles = readdirSync(MANIFESTS_DIR).filter((f) =>
   f.endsWith(".manifest")
 );
 
-console.log(`Found ${manifestFiles.length} manifest files\n`);
+if (manifestFiles.length === 0) {
+  console.error(
+    "[generate-all-routes] No .manifest files found in manifests directory."
+  );
+  process.exit(1);
+}
 
-let totalRoutes = 0;
-let skippedRoutes = 0;
-let writtenRoutes = 0;
-const errors = [];
+console.log(`Found ${manifestFiles.length} manifest files.`);
+console.log(
+  `Registry: ${registeredCommands.size} registered commands in kitchen.commands.json.\n`
+);
+
+let totalCommands = 0;
+const missingCommands = [];
+const foundCommands = [];
 
 for (const manifestFile of manifestFiles) {
   const manifestPath = join(MANIFESTS_DIR, manifestFile);
   const source = readFileSync(manifestPath, "utf-8");
 
+  let entities;
   try {
-    const entities = parseManifestCommands(source);
-
-    for (const [entityName, commands] of Object.entries(entities)) {
-      const domainDir = ENTITY_DOMAIN_MAP[entityName];
-      if (!domainDir) {
-        console.warn(
-          `  WARN: No domain mapping for entity "${entityName}" in ${manifestFile} — skipping`
-        );
-        continue;
-      }
-
-      // Skip entities that already have routes
-      if (ENTITIES_WITH_EXISTING_ROUTES.has(entityName)) {
-        if (VERBOSE) {
-          console.log(
-            `  SKIP: ${entityName} (${commands.length} commands) — existing routes`
-          );
-        }
-        skippedRoutes += commands.length;
-        continue;
-      }
-
-      for (const commandName of commands) {
-        totalRoutes++;
-        const routeDir = join(
-          API_DIR,
-          domainDir,
-          "commands",
-          toKebabCase(commandName)
-        );
-        const routeFile = join(routeDir, "route.ts");
-
-        // Don't overwrite existing non-generated files
-        if (existsSync(routeFile)) {
-          const existing = readFileSync(routeFile, "utf-8");
-          if (!existing.includes("Generated from Manifest IR - DO NOT EDIT")) {
-            console.warn(`  SKIP: ${routeFile} — non-generated file exists`);
-            skippedRoutes++;
-            continue;
-          }
-        }
-
-        const content = generateCommandRoute(entityName, commandName);
-
-        if (DRY_RUN) {
-          console.log(`  WOULD WRITE: ${routeFile}`);
-        } else {
-          mkdirSync(routeDir, { recursive: true });
-          writeFileSync(routeFile, content, "utf-8");
-          if (VERBOSE) {
-            console.log(`  WROTE: ${routeFile}`);
-          }
-        }
-        writtenRoutes++;
-      }
-
-      console.log(
-        `  ${entityName}: ${commands.length} commands → ${domainDir}/commands/`
-      );
-    }
+    entities = parseManifestCommands(source);
   } catch (error) {
-    console.error(`  ERROR processing ${manifestFile}:`, error.message);
-    errors.push({ file: manifestFile, error: error.message });
+    console.error(`  ERROR parsing ${manifestFile}: ${error.message}`);
+    process.exit(1);
+  }
+
+  for (const [entityName, commands] of Object.entries(entities)) {
+    totalCommands += commands.length;
+
+    for (const commandName of commands) {
+      const key = `${entityName}.${commandName}`;
+      if (registeredCommands.has(key)) {
+        foundCommands.push({ entityName, commandName, manifestFile });
+      } else {
+        missingCommands.push({ entityName, commandName, manifestFile });
+      }
+    }
   }
 }
 
-console.log("\n=== Summary ===");
-console.log(`Total routes: ${totalRoutes}`);
-console.log(`Written: ${writtenRoutes}`);
-console.log(`Skipped (existing): ${skippedRoutes}`);
-console.log(`Errors: ${errors.length}`);
-
-if (errors.length > 0) {
-  console.error("\nErrors:");
-  for (const { file, error } of errors) {
-    console.error(`  ${file}: ${error}`);
+if (VERBOSE) {
+  console.log("Verbose: registered command hits by file:");
+  const byFile = {};
+  for (const fc of foundCommands) {
+    if (!byFile[fc.manifestFile]) byFile[fc.manifestFile] = [];
+    byFile[fc.manifestFile].push(`${fc.entityName}.${fc.commandName}`);
   }
+  for (const [file, cmds] of Object.entries(byFile)) {
+    console.log(`  ${file}: ${cmds.length} commands — ${cmds.join(", ")}`);
+  }
+  console.log("");
+}
+
+// ─── Summary ───
+
+console.log("=== Validation Results ===\n");
+
+if (missingCommands.length > 0) {
+  const byFile = {};
+  for (const mc of missingCommands) {
+    if (!byFile[mc.manifestFile]) byFile[mc.manifestFile] = [];
+    byFile[mc.manifestFile].push(`${mc.entityName}.${mc.commandName}`);
+  }
+  for (const [file, cmds] of Object.entries(byFile)) {
+    console.error(`  MISSING from registry (${file}):`);
+    for (const c of cmds) {
+      console.error(`    - ${c}`);
+    }
+  }
+  console.error(
+    `\n${missingCommands.length} command(s) declared in .manifest files but not in kitchen.commands.json.`
+  );
+  console.error(
+    "Run:  pnpm manifest:compile"
+  );
   process.exit(1);
 }
 
-console.log("\nDone!");
+console.log(
+  `All ${foundCommands.length} manifest commands are registered in kitchen.commands.json. ✓`
+);
+console.log(
+  "No route files were created — the dynamic dispatcher handles all command routing."
+);
+process.exit(0);

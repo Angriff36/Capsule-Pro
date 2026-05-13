@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from "@repo/design-system/components/ui/select";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
+import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import { ArrowLeftIcon, Loader2Icon } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -226,12 +227,12 @@ export default function NewLeadPage() {
 
                 <div className="space-y-2">
                   <Label htmlFor="eventDate">Event Date</Label>
-                  <Input
+                  <DatePicker
                     id="eventDate"
                     onChange={(e) =>
                       setFormData({ ...formData, eventDate: e.target.value })
                     }
-                    type="date"
+ 
                     value={formData.eventDate}
                   />
                 </div>

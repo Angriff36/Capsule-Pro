@@ -152,11 +152,12 @@ export default function WaitlistPage() {
     setAdding(true);
     try {
       const res = await fetch(
-        `/api/events/${eventId}/waitlist/commands/add-guest`,
+        `/api/manifest/EventWaitlistEntry/commands/addGuest`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
+            eventId,
             guestName: form.guestName.trim(),
             guestEmail: form.guestEmail.trim() || null,
             guestPhone: form.guestPhone.trim() || null,
@@ -201,7 +202,7 @@ export default function WaitlistPage() {
     setUpdating(guestId);
     try {
       const res = await fetch(
-        `/api/events/${eventId}/waitlist/commands/update-rsvp`,
+        `/api/manifest/EventWaitlistEntry/commands/updateRsvp`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -228,11 +229,11 @@ export default function WaitlistPage() {
     setUpdating(guestId);
     try {
       const res = await fetch(
-        `/api/events/${eventId}/waitlist/commands/promote`,
+        `/api/manifest/EventWaitlistEntry/commands/promote`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ guestId }),
+          body: JSON.stringify({ eventId, guestId }),
         }
       );
       const json = await res.json();

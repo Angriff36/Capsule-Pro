@@ -1,0 +1,174 @@
+// Kitchen QA Rules — Quality Checks, Corrective Actions, Temperature Logs
+
+entity QACheck {
+  property required id: string
+  property required tenantId: string
+  property location: string = ""
+  property required checkType: string
+  property result: string = "pass"
+  property inspector: string = ""
+  property notes: string = ""
+  property completedAt: number = 0
+  property createdAt: number = 0
+  property updatedAt: number = 0
+
+  constraint validCheckType: self.checkType in ["temperature", "sanitation", "storage", "labeling", "equipment"] "Invalid check type"
+  constraint validResult: self.result in ["pass", "fail", "na"] "Invalid check result"
+
+  command create(location: string, checkType: string, inspector: string, notes: string) {
+    guard checkType in ["temperature", "sanitation", "storage", "labeling", "equipment"] "Invalid check type"
+
+    mutate location = location
+    mutate checkType = checkType
+    mutate inspector = inspector
+    mutate notes = notes
+    mutate result = "pass"
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit QACheckCreated
+  }
+
+  command complete(result: string, inspector: string, notes: string) {
+    guard result in ["pass", "fail", "na"] "Invalid check result"
+
+    mutate result = result
+    mutate inspector = inspector
+    mutate notes = notes
+    mutate completedAt = now()
+    mutate updatedAt = now()
+
+    emit QACheckCompleted
+  }
+}
+
+entity QACorrectiveAction {
+  property required id: string
+  property required tenantId: string
+  property required checkId: string
+  property required description: string
+  property assignedTo: string = ""
+  property priority: string = "medium"
+  property status: string = "open"
+  property resolutionNotes: string = ""
+  property dueDate: number = 0
+  property resolvedAt: number = 0
+  property createdAt: number = 0
+  property updatedAt: number = 0
+
+  constraint validPriority: self.priority in ["low", "medium", "high", "critical"] "Invalid priority"
+  constraint validStatus: self.status in ["open", "in_progress", "resolved", "dismissed"] "Invalid action status"
+
+  command create(checkId: string, description: string, assignedTo: string, priority: string, dueDate: number) {
+    guard checkId != null and checkId != "" "Check ID is required"
+    guard description != null and description != "" "Description is required"
+
+    mutate checkId = checkId
+    mutate description = description
+    mutate assignedTo = assignedTo
+    mutate priority = priority
+    mutate dueDate = dueDate
+    mutate status = "open"
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit CorrectiveActionCreated
+  }
+
+  command resolve(resolutionNotes: string) {
+    guard self.status in ["open", "in_progress"] "Only open actions can be resolved"
+
+    mutate status = "resolved"
+    mutate resolutionNotes = resolutionNotes
+    mutate resolvedAt = now()
+    mutate updatedAt = now()
+
+    emit CorrectiveActionResolved
+  }
+}
+
+entity QATemperatureLog {
+  property required id: string
+  property required tenantId: string
+  property required location: string
+  property required temperature: number
+  property unit: string = "fahrenheit"
+  property equipment: string = ""
+  property recordedBy: string = ""
+  property notes: string = ""
+  property loggedAt: number = 0
+  property createdAt: number = 0
+  property updatedAt: number = 0
+
+  computed isInSafeRange: boolean = self.unit == "fahrenheit" ? (self.temperature >= 0 and self.temperature <= 40) : (self.temperature >= -18 and self.temperature <= 4)
+
+  constraint warnUnsafeTemperature:block !self.isInSafeRange {
+    messageTemplate: "Temperature {temp}{unit} at {location} is outside safe range"
+    details: {
+      location: self.location
+      temp: self.temperature
+      unit: self.unit
+    }
+  }
+
+  command log(location: string, temperature: number, unit: string, equipment: string, recordedBy: string, notes: string) {
+    guard location != null and location != "" "Location is required"
+    guard temperature != null "Temperature is required"
+
+    mutate location = location
+    mutate temperature = temperature
+    mutate unit = unit
+    mutate equipment = equipment
+    mutate recordedBy = recordedBy
+    mutate notes = notes
+    mutate loggedAt = now()
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit TemperatureLogged
+  }
+}
+
+policy KitchenStaffCanManageQA execute: user.role in ["kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen staff can manage QA"
+policy ManagersCanResolveQA execute: user.role in ["kitchen_lead", "manager", "admin"] "Only managers can resolve corrective actions"
+
+event QACheckCreated: "kitchen.qa.check.created" {
+  checkId: string
+  tenantId: string
+  checkType: string
+  location: string
+  createdAt: number
+}
+
+event QACheckCompleted: "kitchen.qa.check.completed" {
+  checkId: string
+  result: string
+  inspector: string
+  completedAt: number
+}
+
+event CorrectiveActionCreated: "kitchen.qa.corrective.created" {
+  actionId: string
+  checkId: string
+  description: string
+  priority: string
+  assignedTo: string
+  createdAt: number
+}
+
+event CorrectiveActionResolved: "kitchen.qa.corrective.resolved" {
+  actionId: string
+  checkId: string
+  resolutionNotes: string
+  resolvedAt: number
+}
+
+event TemperatureLogged: "kitchen.temperature.logged" {
+  logId: string
+  tenantId: string
+  location: string
+  temperature: number
+  unit: string
+  recordedBy: string
+  loggedAt: number
+}

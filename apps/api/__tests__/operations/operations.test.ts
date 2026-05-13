@@ -76,8 +76,8 @@ const { createManifestRuntime } = await import("@/lib/manifest-runtime");
 // --- Route imports ---
 
 // Documents
-import { POST as docVersionCreate } from "@/app/api/documents/versions/commands/create/route";
-import { POST as docVersionRestore } from "@/app/api/documents/versions/commands/restore/route";
+import { POST as docVersionCreate } from "@/app/api/manifest/[entity]/commands/[command]/route";
+import { POST as docVersionRestore } from "@/app/api/manifest/[entity]/commands/[command]/route";
 import { GET as docVersionList } from "@/app/api/documents/versions/list/route";
 import { POST as ktAddTag } from "@/app/api/kitchentask/add-tag/route";
 import { POST as ktCancel } from "@/app/api/kitchentask/cancel/route";

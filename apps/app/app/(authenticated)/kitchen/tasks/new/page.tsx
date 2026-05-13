@@ -9,6 +9,7 @@ import {
 } from "@repo/design-system/components/ui/card";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
+import { DateTimePicker } from "@repo/design-system/components/ui/date-time-picker";
 import {
   Select,
   SelectContent,
@@ -108,7 +109,7 @@ export default function NewKitchenTaskPage() {
 
               <div className="space-y-2">
                 <Label htmlFor="dueDate">Due Date / Time</Label>
-                <Input id="dueDate" name="dueDate" type="datetime-local" />
+                <DateTimePicker id="dueDate" name="dueDate" />
               </div>
             </div>
 

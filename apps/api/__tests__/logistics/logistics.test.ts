@@ -52,13 +52,13 @@ const { getTenantIdForOrg, requireTenantId } = await import("@/app/lib/tenant");
 
 // --- Route imports ---
 
-import { POST as createDriver } from "@/app/api/logistics/drivers/commands/create/route";
-import { POST as deleteDriver } from "@/app/api/logistics/drivers/commands/delete/route";
+import { POST as createDriver } from "@/app/api/manifest/[entity]/commands/[command]/route";
+import { POST as deleteDriver } from "@/app/api/manifest/[entity]/commands/[command]/route";
 import { GET as listDrivers } from "@/app/api/logistics/drivers/list/route";
-import { POST as createRoute } from "@/app/api/logistics/routes/commands/create/route";
+import { POST as createRoute } from "@/app/api/manifest/[entity]/commands/[command]/route";
 import { GET as listRoutes } from "@/app/api/logistics/routes/list/route";
-import { POST as createVehicle } from "@/app/api/logistics/vehicles/commands/create/route";
-import { POST as deleteVehicle } from "@/app/api/logistics/vehicles/commands/delete/route";
+import { POST as createVehicle } from "@/app/api/manifest/[entity]/commands/[command]/route";
+import { POST as deleteVehicle } from "@/app/api/manifest/[entity]/commands/[command]/route";
 import { GET as listVehicles } from "@/app/api/logistics/vehicles/list/route";
 
 // --- Constants ---
@@ -305,7 +305,7 @@ describe("Logistics API", () => {
       } as never);
 
       const request = new NextRequest(
-        "http://localhost/api/logistics/drivers/commands/create",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({ name: "Test Driver" }),
@@ -322,7 +322,7 @@ describe("Logistics API", () => {
       vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
 
       const request = new NextRequest(
-        "http://localhost/api/logistics/drivers/commands/create",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({ name: "Test Driver" }),
@@ -340,7 +340,7 @@ describe("Logistics API", () => {
       mockAuth();
 
       const request = new NextRequest(
-        "http://localhost/api/logistics/drivers/commands/create",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({ phone: "+1-555-0000" }),
@@ -365,7 +365,7 @@ describe("Logistics API", () => {
       vi.mocked(database.driver.create).mockResolvedValue(mockResult as never);
 
       const request = new NextRequest(
-        "http://localhost/api/logistics/drivers/commands/create",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -406,7 +406,7 @@ describe("Logistics API", () => {
       );
 
       const request = new NextRequest(
-        "http://localhost/api/logistics/drivers/commands/create",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({ name: "Crash Driver" }),
@@ -434,7 +434,7 @@ describe("Logistics API", () => {
       } as never);
 
       const request = new NextRequest(
-        "http://localhost/api/logistics/drivers/commands/delete",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({ driverId: "driver-001" }),
@@ -450,7 +450,7 @@ describe("Logistics API", () => {
       mockAuth();
 
       const request = new NextRequest(
-        "http://localhost/api/logistics/drivers/commands/delete",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({}),
@@ -469,7 +469,7 @@ describe("Logistics API", () => {
       vi.mocked(database.driver.update).mockResolvedValue({} as never);
 
       const request = new NextRequest(
-        "http://localhost/api/logistics/drivers/commands/delete",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({ driverId: "driver-001" }),
@@ -498,7 +498,7 @@ describe("Logistics API", () => {
       );
 
       const request = new NextRequest(
-        "http://localhost/api/logistics/drivers/commands/delete",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({ driverId: "driver-999" }),
@@ -643,7 +643,7 @@ describe("Logistics API", () => {
       } as never);
 
       const request = new NextRequest(
-        "http://localhost/api/logistics/vehicles/commands/create",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({ make: "Ford", model: "Transit" }),
@@ -659,7 +659,7 @@ describe("Logistics API", () => {
       mockAuth();
 
       const request = new NextRequest(
-        "http://localhost/api/logistics/vehicles/commands/create",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({ year: 2024 }),
@@ -677,7 +677,7 @@ describe("Logistics API", () => {
       mockAuth();
 
       const request = new NextRequest(
-        "http://localhost/api/logistics/vehicles/commands/create",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({ make: "Ford" }),
@@ -701,7 +701,7 @@ describe("Logistics API", () => {
       vi.mocked(database.$queryRaw).mockResolvedValue([mockResult]);
 
       const request = new NextRequest(
-        "http://localhost/api/logistics/vehicles/commands/create",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -737,7 +737,7 @@ describe("Logistics API", () => {
       );
 
       const request = new NextRequest(
-        "http://localhost/api/logistics/vehicles/commands/create",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({ make: "Ford", model: "Transit" }),
@@ -762,7 +762,7 @@ describe("Logistics API", () => {
       } as never);
 
       const request = new NextRequest(
-        "http://localhost/api/logistics/vehicles/commands/delete",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({ vehicleId: "vehicle-001" }),
@@ -778,7 +778,7 @@ describe("Logistics API", () => {
       mockAuth();
 
       const request = new NextRequest(
-        "http://localhost/api/logistics/vehicles/commands/delete",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({}),
@@ -797,7 +797,7 @@ describe("Logistics API", () => {
       vi.mocked(database.$queryRaw).mockResolvedValue(undefined);
 
       const request = new NextRequest(
-        "http://localhost/api/logistics/vehicles/commands/delete",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({ vehicleId: "vehicle-001" }),
@@ -820,7 +820,7 @@ describe("Logistics API", () => {
       );
 
       const request = new NextRequest(
-        "http://localhost/api/logistics/vehicles/commands/delete",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({ vehicleId: "vehicle-999" }),
@@ -972,7 +972,7 @@ describe("Logistics API", () => {
       );
 
       const request = new NextRequest(
-        "http://localhost/api/logistics/routes/commands/create",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -1014,7 +1014,7 @@ describe("Logistics API", () => {
       );
 
       const request = new NextRequest(
-        "http://localhost/api/logistics/routes/commands/create",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({ name: "Next Route" }),
@@ -1055,7 +1055,7 @@ describe("Logistics API", () => {
       );
 
       const request = new NextRequest(
-        "http://localhost/api/logistics/routes/commands/create",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -1109,7 +1109,7 @@ describe("Logistics API", () => {
       );
 
       const request = new NextRequest(
-        "http://localhost/api/logistics/routes/commands/create",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({}),
@@ -1134,7 +1134,7 @@ describe("Logistics API", () => {
       );
 
       const request = new NextRequest(
-        "http://localhost/api/logistics/routes/commands/create",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({ name: "Fail Route" }),

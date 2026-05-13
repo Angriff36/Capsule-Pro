@@ -92,9 +92,9 @@ export const kitchenTasksAvailable = (): string =>
 /** GET /api/kitchen/tasks/my-tasks */
 export const kitchenTasksMyTasks = (): string => "/api/kitchen/tasks/my-tasks";
 
-/** POST /api/kitchen/kitchen-tasks/commands/claim */
+/** POST /api/manifest/KitchenTask/commands/claim */
 export const kitchenTasksCommandsClaim = (): string =>
-  "/api/kitchen/kitchen-tasks/commands/claim";
+  "/api/manifest/KitchenTask/commands/claim";
 
 // ---------------------------------------------------------------------------
 // Kitchen — Waste

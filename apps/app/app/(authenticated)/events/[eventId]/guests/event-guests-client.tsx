@@ -380,7 +380,7 @@ export function EventGuestsClient({
   const handleUpdateRSVP = (guestId: string, status: string) => {
     startTransition(async () => {
       try {
-        const res = await fetch("/api/events/guests/commands/update", {
+        const res = await fetch("/api/manifest/EventGuest/commands/update", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ id: guestId, rsvpStatus: status }),
@@ -404,7 +404,7 @@ export function EventGuestsClient({
   const handleDeleteGuest = (guestId: string) => {
     startTransition(async () => {
       try {
-        const res = await fetch("/api/events/guests/commands/soft-delete", {
+        const res = await fetch("/api/manifest/EventGuest/commands/softDelete", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ id: guestId }),
@@ -444,7 +444,7 @@ export function EventGuestsClient({
     }
     startTransition(async () => {
       try {
-        const res = await fetch("/api/events/guests/commands/update", {
+        const res = await fetch("/api/manifest/EventGuest/commands/update", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ id: editingId, ...editForm }),

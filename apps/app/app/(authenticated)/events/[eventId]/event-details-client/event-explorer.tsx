@@ -12,6 +12,7 @@ import {
 import { Checkbox } from "@repo/design-system/components/ui/checkbox";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
+import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import {
   Popover,
   PopoverContent,
@@ -419,21 +420,21 @@ export function EventExplorer({
     <div className={cn("space-y-5", className)}>
       <div className="space-y-2">
         <Label htmlFor="explorer-start">Start date</Label>
-        <Input
+        <DatePicker
           id="explorer-start"
           onChange={(eventInput) =>
             setSelectedDateStart(eventInput.target.value)
           }
-          type="date"
+ 
           value={selectedDateStart}
         />
       </div>
       <div className="space-y-2">
         <Label htmlFor="explorer-end">End date</Label>
-        <Input
+        <DatePicker
           id="explorer-end"
           onChange={(eventInput) => setSelectedDateEnd(eventInput.target.value)}
-          type="date"
+ 
           value={selectedDateEnd}
         />
       </div>

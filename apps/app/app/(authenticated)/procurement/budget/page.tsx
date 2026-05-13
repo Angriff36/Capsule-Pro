@@ -35,6 +35,7 @@ import {
   SelectValue,
 } from "@repo/design-system/components/ui/select";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
+import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import {
   AlertTriangle,
   DollarSign,
@@ -123,7 +124,7 @@ export default function BudgetPage() {
   const handleRefresh = async () => {
     setRefreshing(true);
     try {
-      await apiFetch("/api/procurement/budget/commands/refresh", {
+      await apiFetch("/api/manifest/Budget/commands/refresh", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({}),
@@ -142,7 +143,7 @@ export default function BudgetPage() {
     if (!(form.name.trim() && form.budgetAmount)) return;
     setSaving(true);
     try {
-      const res = await apiFetch("/api/procurement/budget/commands/create", {
+      const res = await apiFetch("/api/manifest/Budget/commands/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -188,7 +189,7 @@ export default function BudgetPage() {
   const confirmDelete = async () => {
     if (!deleteTarget) return;
     try {
-      const res = await apiFetch("/api/procurement/budget/commands/delete", {
+      const res = await apiFetch("/api/manifest/Budget/commands/remove", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ budgetId: deleteTarget.id }),
@@ -384,21 +385,21 @@ export default function BudgetPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>Period Start</Label>
-                    <Input
+                    <DatePicker
                       onChange={(e) =>
                         setForm({ ...form, periodStart: e.target.value })
                       }
-                      type="date"
+ 
                       value={form.periodStart}
                     />
                   </div>
                   <div className="space-y-2">
                     <Label>Period End</Label>
-                    <Input
+                    <DatePicker
                       onChange={(e) =>
                         setForm({ ...form, periodEnd: e.target.value })
                       }
-                      type="date"
+ 
                       value={form.periodEnd}
                     />
                   </div>

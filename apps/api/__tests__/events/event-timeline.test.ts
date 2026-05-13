@@ -63,10 +63,10 @@ vi.mock("@repo/database", () => ({
   },
 }));
 
-import { POST as createPOST } from "@/app/api/events/[eventId]/timeline/commands/create-item/route";
-import { POST as deletePOST } from "@/app/api/events/[eventId]/timeline/commands/delete-item/route";
-import { POST as togglePOST } from "@/app/api/events/[eventId]/timeline/commands/toggle-completed/route";
-import { POST as updatePOST } from "@/app/api/events/[eventId]/timeline/commands/update-item/route";
+import { POST as createPOST } from "@/app/api/manifest/[entity]/commands/[command]/route";
+import { POST as deletePOST } from "@/app/api/manifest/[entity]/commands/[command]/route";
+import { POST as togglePOST } from "@/app/api/manifest/[entity]/commands/[command]/route";
+import { POST as updatePOST } from "@/app/api/manifest/[entity]/commands/[command]/route";
 import { GET as listGET } from "@/app/api/events/[eventId]/timeline/route";
 
 function setAuthOk() {

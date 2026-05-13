@@ -131,11 +131,11 @@ describe("Manifest HTTP Constraint Enforcement - Recipe Commands", () => {
       } as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/recipes/commands/update/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/recipes/commands/update",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -145,7 +145,7 @@ describe("Manifest HTTP Constraint Enforcement - Recipe Commands", () => {
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "update" }) });
       const data = await response.json();
 
       expect(response.status).toBe(401);
@@ -158,11 +158,11 @@ describe("Manifest HTTP Constraint Enforcement - Recipe Commands", () => {
       vi.mocked(getTenantIdForOrg).mockResolvedValueOnce(null as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/recipes/commands/update/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/recipes/commands/update",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -172,7 +172,7 @@ describe("Manifest HTTP Constraint Enforcement - Recipe Commands", () => {
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "update" }) });
       const data = await response.json();
 
       expect(response.status).toBe(400);
@@ -205,11 +205,11 @@ describe("Manifest HTTP Constraint Enforcement - Recipe Commands", () => {
       vi.mocked(database.outboxEvent.create).mockResolvedValueOnce({} as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/recipes/commands/update/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/recipes/commands/update",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -222,7 +222,7 @@ describe("Manifest HTTP Constraint Enforcement - Recipe Commands", () => {
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "update" }) });
 
       // Response should be successful or have appropriate error
       expect(response.status).toBeGreaterThanOrEqual(200);
@@ -245,11 +245,11 @@ describe("Manifest HTTP Constraint Enforcement - Dish Commands", () => {
       } as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/dishes/commands/update-pricing/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/dishes/commands/update-pricing",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -260,7 +260,7 @@ describe("Manifest HTTP Constraint Enforcement - Dish Commands", () => {
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "update-pricing" }) });
       const data = await response.json();
 
       expect(response.status).toBe(401);
@@ -293,11 +293,11 @@ describe("Manifest HTTP Constraint Enforcement - Dish Commands", () => {
       vi.mocked(database.outboxEvent.create).mockResolvedValueOnce({} as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/dishes/commands/update-pricing/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/dishes/commands/update-pricing",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -308,7 +308,7 @@ describe("Manifest HTTP Constraint Enforcement - Dish Commands", () => {
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "update-pricing" }) });
 
       // Response should be successful or have appropriate error
       expect(response.status).toBeGreaterThanOrEqual(200);
@@ -325,11 +325,11 @@ describe("Manifest HTTP Constraint Enforcement - Dish Commands", () => {
       } as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/dishes/commands/update-lead-time/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/dishes/commands/update-lead-time",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -340,7 +340,7 @@ describe("Manifest HTTP Constraint Enforcement - Dish Commands", () => {
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "update-pricing" }) });
       const data = await response.json();
 
       expect(response.status).toBe(401);
@@ -364,11 +364,11 @@ describe("Manifest HTTP Constraint Enforcement - Menu Commands", () => {
       } as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/menus/commands/update/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/menus/commands/update",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -378,7 +378,7 @@ describe("Manifest HTTP Constraint Enforcement - Menu Commands", () => {
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "update" }) });
       const data = await response.json();
 
       expect(response.status).toBe(401);
@@ -410,11 +410,11 @@ describe("Manifest HTTP Constraint Enforcement - Menu Commands", () => {
       vi.mocked(database.outboxEvent.create).mockResolvedValueOnce({} as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/menus/commands/update/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/menus/commands/update",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -426,7 +426,7 @@ describe("Manifest HTTP Constraint Enforcement - Menu Commands", () => {
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "update" }) });
 
       // Response should be successful or have appropriate error
       expect(response.status).toBeGreaterThanOrEqual(200);
@@ -443,11 +443,11 @@ describe("Manifest HTTP Constraint Enforcement - Menu Commands", () => {
       } as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/menus/commands/activate/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/menus/commands/activate",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -456,7 +456,7 @@ describe("Manifest HTTP Constraint Enforcement - Menu Commands", () => {
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "update" }) });
       const data = await response.json();
 
       expect(response.status).toBe(401);
@@ -474,11 +474,11 @@ describe("Manifest HTTP Constraint Enforcement - Menu Commands", () => {
       } as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/menus/commands/deactivate/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/menus/commands/deactivate",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -487,7 +487,7 @@ describe("Manifest HTTP Constraint Enforcement - Menu Commands", () => {
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "update" }) });
       const data = await response.json();
 
       expect(response.status).toBe(401);
@@ -511,11 +511,11 @@ describe("Manifest HTTP Constraint Enforcement - PrepTask Commands", () => {
       } as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/prep-tasks/commands/claim/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/prep-tasks/commands/claim",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -526,7 +526,7 @@ describe("Manifest HTTP Constraint Enforcement - PrepTask Commands", () => {
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "claim" }) });
       const data = await response.json();
 
       expect(response.status).toBe(401);
@@ -544,11 +544,11 @@ describe("Manifest HTTP Constraint Enforcement - PrepTask Commands", () => {
       } as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/prep-tasks/commands/start/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/prep-tasks/commands/start",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -558,7 +558,7 @@ describe("Manifest HTTP Constraint Enforcement - PrepTask Commands", () => {
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "claim" }) });
       const data = await response.json();
 
       expect(response.status).toBe(401);
@@ -576,11 +576,11 @@ describe("Manifest HTTP Constraint Enforcement - PrepTask Commands", () => {
       } as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/prep-tasks/commands/complete/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/prep-tasks/commands/complete",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -591,7 +591,7 @@ describe("Manifest HTTP Constraint Enforcement - PrepTask Commands", () => {
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "claim" }) });
       const data = await response.json();
 
       expect(response.status).toBe(401);
@@ -615,11 +615,11 @@ describe("Manifest HTTP Constraint Enforcement - PrepListItem Commands", () => {
       } as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/prep-list-items/commands/update-quantity/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/prep-list-items/commands/update-quantity",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -632,7 +632,7 @@ describe("Manifest HTTP Constraint Enforcement - PrepListItem Commands", () => {
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "update-quantity" }) });
       const data = await response.json();
 
       expect(response.status).toBe(401);
@@ -676,11 +676,11 @@ describe("Manifest HTTP Constraint Enforcement - PrepListItem Commands", () => {
       vi.mocked(database.outboxEvent.create).mockResolvedValueOnce({} as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/prep-list-items/commands/update-quantity/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/prep-list-items/commands/update-quantity",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -693,7 +693,7 @@ describe("Manifest HTTP Constraint Enforcement - PrepListItem Commands", () => {
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "update-quantity" }) });
       const data = await response.json();
 
       // WARN constraints should allow the operation to succeed (200)
@@ -744,11 +744,11 @@ describe("Manifest HTTP Constraint Enforcement - PrepListItem Commands", () => {
       vi.mocked(database.outboxEvent.create).mockResolvedValueOnce({} as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/prep-list-items/commands/update-quantity/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/prep-list-items/commands/update-quantity",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -761,7 +761,7 @@ describe("Manifest HTTP Constraint Enforcement - PrepListItem Commands", () => {
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "update-quantity" }) });
       const data = await response.json();
 
       // Should succeed without warnings
@@ -786,11 +786,11 @@ describe("Manifest HTTP Constraint Enforcement - PrepListItem Commands", () => {
       } as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/prep-list-items/commands/update-station/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/prep-list-items/commands/update-station",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -801,7 +801,7 @@ describe("Manifest HTTP Constraint Enforcement - PrepListItem Commands", () => {
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "update-quantity" }) });
       const data = await response.json();
 
       expect(response.status).toBe(401);
@@ -843,11 +843,11 @@ describe("Manifest HTTP Constraint Enforcement - PrepListItem Commands", () => {
       vi.mocked(database.outboxEvent.create).mockResolvedValueOnce({} as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/prep-list-items/commands/update-station/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/prep-list-items/commands/update-station",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -858,7 +858,7 @@ describe("Manifest HTTP Constraint Enforcement - PrepListItem Commands", () => {
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "update-quantity" }) });
       const data = await response.json();
 
       // WARN constraints should allow the operation to succeed (200)
@@ -907,11 +907,11 @@ describe("Manifest HTTP Constraint Enforcement - PrepListItem Commands", () => {
       vi.mocked(database.outboxEvent.create).mockResolvedValueOnce({} as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/prep-list-items/commands/update-station/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/prep-list-items/commands/update-station",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -922,7 +922,7 @@ describe("Manifest HTTP Constraint Enforcement - PrepListItem Commands", () => {
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "update-quantity" }) });
       const data = await response.json();
 
       // Should succeed without warnings
@@ -957,7 +957,7 @@ describe("Manifest HTTP Constraint Enforcement - RecipeVersion Commands", () => 
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/recipes/versions/commands/create",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -974,7 +974,7 @@ describe("Manifest HTTP Constraint Enforcement - RecipeVersion Commands", () => 
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "create" }) });
       const data = await response.json();
 
       expect(response.status).toBe(401);
@@ -1004,7 +1004,7 @@ describe("Manifest HTTP Constraint Enforcement - RecipeVersion Commands", () => 
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/recipes/versions/commands/create",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -1021,7 +1021,7 @@ describe("Manifest HTTP Constraint Enforcement - RecipeVersion Commands", () => 
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "create" }) });
       const data = await response.json();
 
       // BLOCK constraint should return 422 with proper error message
@@ -1053,7 +1053,7 @@ describe("Manifest HTTP Constraint Enforcement - RecipeVersion Commands", () => 
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/recipes/versions/commands/create",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -1070,7 +1070,7 @@ describe("Manifest HTTP Constraint Enforcement - RecipeVersion Commands", () => 
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "create" }) });
       const data = await response.json();
 
       // BLOCK constraint should return 422 with proper error message
@@ -1123,7 +1123,7 @@ describe("Manifest HTTP Constraint Enforcement - RecipeVersion Commands", () => 
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/recipes/versions/commands/create",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -1140,7 +1140,7 @@ describe("Manifest HTTP Constraint Enforcement - RecipeVersion Commands", () => 
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "create" }) });
       const data = await response.json();
 
       // WARN constraints should allow the operation to succeed (200)
@@ -1199,7 +1199,7 @@ describe("Manifest HTTP Constraint Enforcement - RecipeVersion Commands", () => 
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/recipes/versions/commands/create",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -1217,7 +1217,7 @@ describe("Manifest HTTP Constraint Enforcement - RecipeVersion Commands", () => 
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "create" }) });
       const data = await response.json();
 
       // WARN constraints should allow the operation to succeed (200)
@@ -1275,7 +1275,7 @@ describe("Manifest HTTP Constraint Enforcement - RecipeVersion Commands", () => 
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/recipes/versions/commands/create",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -1293,7 +1293,7 @@ describe("Manifest HTTP Constraint Enforcement - RecipeVersion Commands", () => 
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "create" }) });
       const data = await response.json();
 
       // Should succeed without warnings

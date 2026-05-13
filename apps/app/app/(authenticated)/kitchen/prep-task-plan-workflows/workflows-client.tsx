@@ -265,7 +265,7 @@ export function WorkflowsClient({ initialMetrics }: WorkflowsClientProps) {
 			}
 
 			const res = await apiFetch(
-				"/api/kitchen/prep-task-plan-workflows/commands/create",
+				"/api/manifest/PrepTaskPlanWorkflow/commands/create",
 				{
 					method: "POST",
 					headers: { "Content-Type": "application/json" },

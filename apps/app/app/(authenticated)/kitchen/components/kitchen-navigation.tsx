@@ -11,6 +11,7 @@ import {
   FileText,
   Package,
   Smartphone,
+  Upload,
   Users,
   UtensilsCrossed,
   Warehouse,
@@ -83,6 +84,11 @@ const navigationItems = [
     title: "Nutrition Labels",
     href: "/kitchen/nutrition-labels",
     icon: FileBarChart,
+  },
+  {
+    title: "Import",
+    href: "/kitchen/import",
+    icon: Upload,
   },
 ];
 

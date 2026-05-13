@@ -178,7 +178,7 @@ export default function DirectDepositPage() {
       if (editingAccount) {
         body.id = editingAccount.id;
         const res = await apiFetch(
-          "/api/payroll/bank-accounts/commands/update",
+          "/api/manifest/BankAccount/commands/update",
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -199,7 +199,7 @@ export default function DirectDepositPage() {
           return;
         }
         const res = await apiFetch(
-          "/api/payroll/bank-accounts/commands/create",
+          "/api/manifest/BankAccount/commands/create",
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -227,7 +227,7 @@ export default function DirectDepositPage() {
     if (!confirm("Delete this bank account?")) return;
     setActionLoading(accountId);
     try {
-      const res = await apiFetch("/api/payroll/bank-accounts/commands/delete", {
+      const res = await apiFetch("/api/manifest/BankAccount/commands/remove", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id: accountId }),
@@ -246,7 +246,7 @@ export default function DirectDepositPage() {
     setActionLoading(accountId);
     try {
       const res = await apiFetch(
-        "/api/payroll/bank-accounts/commands/set-default",
+        "/api/manifest/BankAccount/commands/setDefault",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -267,7 +267,7 @@ export default function DirectDepositPage() {
     if (!verifyTarget) return;
     setActionLoading("verify");
     try {
-      const res = await apiFetch("/api/payroll/bank-accounts/commands/verify", {
+      const res = await apiFetch("/api/manifest/BankAccount/commands/verify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id: verifyTarget.id, method: verifyMethod }),

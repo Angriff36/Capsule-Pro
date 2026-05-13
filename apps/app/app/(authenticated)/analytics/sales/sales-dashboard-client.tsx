@@ -24,6 +24,7 @@ import {
   SelectValue,
 } from "@repo/design-system/components/ui/select";
 import { Separator } from "@repo/design-system/components/ui/separator";
+import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import {
   Tabs,
   TabsContent,
@@ -734,25 +735,25 @@ export function SalesDashboardClient() {
               <div className="grid gap-4 md:grid-cols-3">
                 <div className="space-y-2">
                   <Label>Week anchor</Label>
-                  <Input
+                  <DatePicker
                     onChange={(e) => setWeekAnchor(e.target.value)}
-                    type="date"
+ 
                     value={weekAnchor}
                   />
                 </div>
                 <div className="space-y-2">
                   <Label>Month anchor</Label>
-                  <Input
+                  <DatePicker
                     onChange={(e) => setMonthAnchor(e.target.value)}
-                    type="date"
+ 
                     value={monthAnchor}
                   />
                 </div>
                 <div className="space-y-2">
                   <Label>Quarter anchor</Label>
-                  <Input
+                  <DatePicker
                     onChange={(e) => setQuarterAnchor(e.target.value)}
-                    type="date"
+ 
                     value={quarterAnchor}
                   />
                 </div>

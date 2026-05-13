@@ -25,6 +25,7 @@ import {
   DialogTitle,
 } from "@repo/design-system/components/ui/dialog";
 import { Input } from "@repo/design-system/components/ui/input";
+import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import {
   addMonths,
   eachDayOfInterval,
@@ -674,11 +675,11 @@ export function UnifiedCalendar({
           </span>
         </div>
         <div className="flex items-center gap-3">
-          <Input
+          <DatePicker
             className="w-48"
             onChange={(e) => checkAvailability(e.target.value)}
             placeholder="Select date..."
-            type="date"
+ 
             value={availabilityDate}
           />
           {availabilityStatus && (

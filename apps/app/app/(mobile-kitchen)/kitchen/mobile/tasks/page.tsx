@@ -433,7 +433,7 @@ export default function MobileTasksPage() {
 
       try {
         const response = await apiFetch(
-          "/api/kitchen/kitchen-tasks/commands/claim",
+          "/api/manifest/KitchenTask/commands/claim",
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -482,7 +482,7 @@ export default function MobileTasksPage() {
 
       try {
         const response = await apiFetch(
-          "/api/kitchen/kitchen-tasks/commands/release",
+          "/api/manifest/KitchenTask/commands/release",
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },

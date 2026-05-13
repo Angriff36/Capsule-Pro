@@ -300,7 +300,7 @@ describe("Schedule Persistence (write → read alignment)", () => {
           }
         );
 
-        await mod.POST(request);
+        await mod.POST(request, { params: Promise.resolve({ entity: "Schedule", command: "create" }) });
 
         expect(mockRunCommand).toHaveBeenCalledWith(
           verb,
@@ -315,7 +315,7 @@ describe("Schedule Persistence (write → read alignment)", () => {
 
     it("create route does NOT pass instanceId", async () => {
       const mod = await import(
-        "@/app/api/staff/schedules/commands/create/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       const request = createMockRequest(
         "http://localhost:3000/api/staff/schedules/commands/create",
@@ -328,7 +328,7 @@ describe("Schedule Persistence (write → read alignment)", () => {
         }
       );
 
-      await mod.POST(request);
+      await mod.POST(request, { params: Promise.resolve({ entity: "Schedule", command: "create" }) });
 
       expect(mockRunCommand).toHaveBeenCalledWith(
         "create",

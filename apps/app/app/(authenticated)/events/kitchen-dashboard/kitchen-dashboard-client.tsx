@@ -19,6 +19,7 @@ import {
 } from "@repo/design-system/components/ui/drawer";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
+import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import {
   Popover,
   PopoverContent,
@@ -222,19 +223,19 @@ function FiltersPanel({
     <div className={cn("space-y-5", className)}>
       <div className="space-y-2">
         <Label htmlFor="filter-start-date">Start date</Label>
-        <Input
+        <DatePicker
           id="filter-start-date"
           onChange={(event) => setStartDate(event.target.value)}
-          type="date"
+ 
           value={startDate}
         />
       </div>
       <div className="space-y-2">
         <Label htmlFor="filter-end-date">End date</Label>
-        <Input
+        <DatePicker
           id="filter-end-date"
           onChange={(event) => setEndDate(event.target.value)}
-          type="date"
+ 
           value={endDate}
         />
       </div>

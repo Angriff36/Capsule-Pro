@@ -268,6 +268,83 @@ export async function POST(request: Request) {
     });
   });
 
+  describe("CONCRETE_COMMAND_ROUTE_NOT_DISPATCHED (Test D2)", () => {
+    it("flags a concrete command route (architecture violation)", () => {
+      const content = `
+export async function POST(request: NextRequest) {
+  const body = await request.json();
+  const runtime = createManifestRuntime({ user: { id: userId, tenantId } });
+  return runtime.runCommand("create", body);
+}
+`;
+      const ctx = makeOwnershipContext();
+      const result = auditRouteFileContent(
+        content,
+        "/repo/apps/api/app/api/kitchen/prep-tasks/commands/create/route.ts",
+        OPTIONS,
+        ctx
+      );
+      expect(
+        result.findings.some(
+          (f) => f.code === "CONCRETE_COMMAND_ROUTE_NOT_DISPATCHED"
+        )
+      ).toBe(true);
+    });
+
+    it("accepts the dynamic dispatcher [command] path (only legal command route)", () => {
+      const content = `
+export async function POST(request: NextRequest) {
+  return runManifestCommand(request, { entityName: "KitchenTask", commandName: "create" });
+}
+`;
+      const ctx = makeOwnershipContext();
+      const result = auditRouteFileContent(
+        content,
+        "/repo/apps/api/app/api/manifest/[entity]/commands/[command]/route.ts",
+        OPTIONS,
+        ctx
+      );
+      expect(
+        result.findings.some(
+          (f) => f.code === "CONCRETE_COMMAND_ROUTE_NOT_DISPATCHED"
+        )
+      ).toBe(false);
+    });
+
+    it("accepts an exempted concrete command route", () => {
+      const content = `
+export async function POST(request: NextRequest) {
+  const body = await request.json();
+  const runtime = createManifestRuntime({ user: { id: userId, tenantId } });
+  return runtime.runCommand("create", body);
+}
+`;
+      const ctx = makeOwnershipContext({
+        exemptions: [
+          {
+            path: "kitchen/prep-tasks/commands/create",
+            methods: ["POST"],
+            owner: "bill",
+            reason: "Legacy concrete route — to be deleted after manifest migration.",
+            expiresOn: "2026-06-01",
+            category: "legacy-route",
+          },
+        ],
+      });
+      const result = auditRouteFileContent(
+        content,
+        "/repo/apps/api/app/api/kitchen/prep-tasks/commands/create/route.ts",
+        OPTIONS,
+        ctx
+      );
+      expect(
+        result.findings.some(
+          (f) => f.code === "CONCRETE_COMMAND_ROUTE_NOT_DISPATCHED"
+        )
+      ).toBe(false);
+    });
+  });
+
   describe("WRITE_OUTSIDE_COMMANDS_NAMESPACE (Test E)", () => {
     it("flags a write route outside commands namespace with no exemption", () => {
       const content = `
@@ -427,8 +504,8 @@ export async function POST(request: Request) {
   });
 
   describe("OWNERSHIP_RULE_CODES canonical set", () => {
-    it("contains exactly the three ownership rules", () => {
-      expect(OWNERSHIP_RULE_CODES.size).toBe(3);
+    it("contains exactly the four ownership rules", () => {
+      expect(OWNERSHIP_RULE_CODES.size).toBe(4);
       expect(OWNERSHIP_RULE_CODES.has("COMMAND_ROUTE_ORPHAN")).toBe(true);
       expect(
         OWNERSHIP_RULE_CODES.has("COMMAND_ROUTE_MISSING_RUNTIME_CALL")
@@ -436,6 +513,9 @@ export async function POST(request: Request) {
       expect(OWNERSHIP_RULE_CODES.has("WRITE_OUTSIDE_COMMANDS_NAMESPACE")).toBe(
         true
       );
+      expect(
+        OWNERSHIP_RULE_CODES.has("CONCRETE_COMMAND_ROUTE_NOT_DISPATCHED")
+      ).toBe(true);
     });
 
     it("does not contain quality/hygiene rules", () => {

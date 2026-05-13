@@ -101,11 +101,11 @@ describe("Negative Command Tests - PrepTask Commands", () => {
       });
 
       const { POST } = await import(
-        "@/app/api/kitchen/prep-tasks/commands/claim/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/prep-tasks/commands/claim",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -116,7 +116,7 @@ describe("Negative Command Tests - PrepTask Commands", () => {
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "claim" }) });
       const data = await response.json();
 
       expect(response.status).toBe(400);
@@ -134,18 +134,18 @@ describe("Negative Command Tests - PrepTask Commands", () => {
       });
 
       const { POST } = await import(
-        "@/app/api/kitchen/prep-tasks/commands/claim/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/prep-tasks/commands/claim",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({}),
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "claim" }) });
       const data = await response.json();
 
       expect(response.status).toBe(400);
@@ -189,11 +189,11 @@ describe("Negative Command Tests - PrepTask Commands", () => {
       });
 
       const { POST } = await import(
-        "@/app/api/kitchen/prep-tasks/commands/claim/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/prep-tasks/commands/claim",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -204,7 +204,7 @@ describe("Negative Command Tests - PrepTask Commands", () => {
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "claim" }) });
       const data = await response.json();
 
       expect(response.status).toBe(422);
@@ -228,11 +228,11 @@ describe("Negative Command Tests - PrepTask Commands", () => {
       });
 
       const { POST } = await import(
-        "@/app/api/kitchen/prep-tasks/commands/claim/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/prep-tasks/commands/claim",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({
@@ -243,7 +243,7 @@ describe("Negative Command Tests - PrepTask Commands", () => {
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "claim" }) });
       const data = await response.json();
 
       expect(response.status).toBe(403);
@@ -262,18 +262,18 @@ describe("Negative Command Tests - PrepTask Commands", () => {
       });
 
       const { POST } = await import(
-        "@/app/api/kitchen/prep-tasks/commands/claim/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/prep-tasks/commands/claim",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({}),
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "claim" }) });
       const data = await response.json();
 
       // Should only have success and message, no extra fields
@@ -292,18 +292,18 @@ describe("Negative Command Tests - PrepTask Commands", () => {
       });
 
       const { POST } = await import(
-        "@/app/api/kitchen/prep-tasks/commands/claim/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/prep-tasks/commands/claim",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({}),
         }
       );
 
-      await POST(request);
+      await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "claim" }) });
       expect(console.error).not.toHaveBeenCalled();
     });
 
@@ -317,18 +317,18 @@ describe("Negative Command Tests - PrepTask Commands", () => {
       });
 
       const { POST } = await import(
-        "@/app/api/kitchen/prep-tasks/commands/claim/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/prep-tasks/commands/claim",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({ id: "t" }),
         }
       );
 
-      await POST(request);
+      await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "claim" }) });
       expect(console.error).not.toHaveBeenCalled();
     });
 
@@ -339,18 +339,18 @@ describe("Negative Command Tests - PrepTask Commands", () => {
       });
 
       const { POST } = await import(
-        "@/app/api/kitchen/prep-tasks/commands/claim/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/prep-tasks/commands/claim",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
           body: JSON.stringify({ id: "t" }),
         }
       );
 
-      await POST(request);
+      await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "claim" }) });
       expect(console.error).not.toHaveBeenCalled();
     });
   });

@@ -77,11 +77,12 @@ export function EventTimelineClient({
 
     try {
       const response = await fetch(
-        `/api/events/${eventId}/timeline/commands/create-item`,
+        `/api/manifest/EventTimelineItem/commands/createItem`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
+            eventId,
             timelineTime: draft.timelineTime,
             description: draft.description.trim(),
             responsibleRole: draft.responsibleRole.trim() || null,
@@ -124,11 +125,11 @@ export function EventTimelineClient({
 
     try {
       const response = await fetch(
-        `/api/events/${eventId}/timeline/commands/toggle-completed`,
+        `/api/manifest/EventTimelineItem/commands/completeItem`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ itemId, isCompleted }),
+          body: JSON.stringify({ eventId, itemId }),
         }
       );
 
@@ -173,11 +174,11 @@ export function EventTimelineClient({
 
     try {
       const response = await fetch(
-        `/api/events/${eventId}/timeline/commands/delete-item`,
+        `/api/manifest/EventTimelineItem/commands/deleteItem`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ itemId }),
+          body: JSON.stringify({ eventId, itemId }),
         }
       );
 

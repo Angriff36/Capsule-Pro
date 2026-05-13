@@ -28,6 +28,7 @@ import {
   SelectValue,
 } from "@repo/design-system/components/ui/select";
 import { Separator } from "@repo/design-system/components/ui/separator";
+import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import {
   Tabs,
   TabsContent,
@@ -1804,19 +1805,19 @@ function QuickBooksIntegration() {
           <div className="grid gap-4 sm:grid-cols-3">
             <div className="space-y-2">
               <Label htmlFor="qb-bills-start">Start Date</Label>
-              <Input
+              <DatePicker
                 id="qb-bills-start"
                 onChange={(e) => setBillsStartDate(e.target.value)}
-                type="date"
+ 
                 value={billsStartDate}
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="qb-bills-end">End Date</Label>
-              <Input
+              <DatePicker
                 id="qb-bills-end"
                 onChange={(e) => setBillsEndDate(e.target.value)}
-                type="date"
+ 
                 value={billsEndDate}
               />
             </div>
@@ -1856,19 +1857,19 @@ function QuickBooksIntegration() {
           <div className="grid gap-4 sm:grid-cols-3">
             <div className="space-y-2">
               <Label htmlFor="qb-inv-start">Start Date</Label>
-              <Input
+              <DatePicker
                 id="qb-inv-start"
                 onChange={(e) => setInvoicesStartDate(e.target.value)}
-                type="date"
+ 
                 value={invoicesStartDate}
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="qb-inv-end">End Date</Label>
-              <Input
+              <DatePicker
                 id="qb-inv-end"
                 onChange={(e) => setInvoicesEndDate(e.target.value)}
-                type="date"
+ 
                 value={invoicesEndDate}
               />
             </div>

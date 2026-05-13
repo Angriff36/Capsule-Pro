@@ -143,7 +143,7 @@ function ChangeRoleDialog({
     }
     setLoading(true);
     try {
-      const res = await apiFetch("/api/staff/employees/commands/update-role", {
+      const res = await apiFetch("/api/manifest/User/commands/updateRole", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: employee.id, role }),
@@ -486,7 +486,7 @@ export const UsersClient = () => {
     }
     setActionLoading(true);
     try {
-      const res = await apiFetch("/api/staff/employees/commands/deactivate", {
+      const res = await apiFetch("/api/manifest/User/commands/deactivate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: confirmAction.employee.id }),
@@ -511,7 +511,7 @@ export const UsersClient = () => {
     }
     setActionLoading(true);
     try {
-      const res = await apiFetch("/api/staff/employees/commands/terminate", {
+      const res = await apiFetch("/api/manifest/User/commands/terminate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: confirmAction.employee.id }),

@@ -52,6 +52,7 @@ import {
   TableRow,
 } from "@repo/design-system/components/ui/table";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
+import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import { formatCurrency } from "@repo/design-system/lib/format-currency";
 import {
   Loader2Icon,
@@ -375,8 +376,8 @@ export function VendorCatalogsClient() {
       };
 
       const endpoint = editingCatalog
-        ? "/api/inventory/vendor-catalogs/commands/update"
-        : "/api/inventory/vendor-catalogs/commands/create";
+        ? "/api/manifest/VendorCatalog/commands/update"
+        : "/api/manifest/VendorCatalog/commands/create";
 
       const body = editingCatalog ? { id: editingCatalog.id, ...payload } : payload;
 
@@ -416,7 +417,7 @@ export function VendorCatalogsClient() {
     setIsDeleting(true);
     try {
       const res = await apiFetch(
-        "/api/inventory/vendor-catalogs/commands/soft-delete",
+        "/api/manifest/VendorCatalog/commands/softDelete",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -448,7 +449,7 @@ export function VendorCatalogsClient() {
     setIsDeactivating(true);
     try {
       const res = await apiFetch(
-        "/api/inventory/vendor-catalogs/commands/deactivate",
+        "/api/manifest/VendorCatalog/commands/deactivate",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -500,7 +501,7 @@ export function VendorCatalogsClient() {
     setIsUpdatingCost(true);
     try {
       const res = await apiFetch(
-        "/api/inventory/vendor-catalogs/commands/update-cost",
+        "/api/manifest/VendorCatalog/commands/updateCost",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -1057,12 +1058,12 @@ export function VendorCatalogsClient() {
               {/* Effective From */}
               <div className="space-y-2">
                 <Label htmlFor="effectiveFrom">Effective From</Label>
-                <Input
+                <DatePicker
                   id="effectiveFrom"
                   onChange={(e) =>
                     handleFormChange("effectiveFrom", e.target.value)
                   }
-                  type="date"
+ 
                   value={formData.effectiveFrom}
                 />
               </div>
@@ -1070,12 +1071,12 @@ export function VendorCatalogsClient() {
               {/* Effective To */}
               <div className="space-y-2">
                 <Label htmlFor="effectiveTo">Effective To</Label>
-                <Input
+                <DatePicker
                   id="effectiveTo"
                   onChange={(e) =>
                     handleFormChange("effectiveTo", e.target.value)
                   }
-                  type="date"
+ 
                   value={formData.effectiveTo}
                 />
               </div>

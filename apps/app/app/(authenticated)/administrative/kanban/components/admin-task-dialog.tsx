@@ -13,6 +13,7 @@ import {
 import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
+import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import { createAdminTask } from "../actions";
 
 const priorities = [
@@ -98,7 +99,7 @@ export function AdminTaskDialog() {
           </div>
           <div className="space-y-2">
             <Label htmlFor="dueDate">Due date</Label>
-            <Input id="dueDate" name="dueDate" type="date" />
+            <DatePicker id="dueDate" name="dueDate" />
           </div>
           <DialogFooter>
             <Button type="submit">Create task</Button>

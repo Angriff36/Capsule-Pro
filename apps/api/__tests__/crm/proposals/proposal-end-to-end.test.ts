@@ -393,7 +393,7 @@ describe("Proposal Persistence (write → read alignment)", () => {
           }
         );
 
-        await mod.POST(request);
+        await mod.POST(request, { params: Promise.resolve({ entity: "Proposal", command: "create" }) });
 
         expect(mockRunCommand).toHaveBeenCalledWith(
           verb,
@@ -407,7 +407,7 @@ describe("Proposal Persistence (write → read alignment)", () => {
     }
 
     it("create route does NOT pass instanceId", async () => {
-      const mod = await import("@/app/api/crm/proposals/commands/create/route");
+      const mod = await import("@/app/api/manifest/[entity]/commands/[command]/route");
       const request = createMockRequest(
         "http://localhost:3000/api/crm/proposals/commands/create",
         {
@@ -416,7 +416,7 @@ describe("Proposal Persistence (write → read alignment)", () => {
         }
       );
 
-      await mod.POST(request);
+      await mod.POST(request, { params: Promise.resolve({ entity: "Proposal", command: "create" }) });
 
       expect(mockRunCommand).toHaveBeenCalledWith(
         "create",

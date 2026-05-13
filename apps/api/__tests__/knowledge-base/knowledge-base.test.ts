@@ -9,7 +9,7 @@
 
 import { NextRequest } from "next/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { POST } from "@/app/api/knowledge-base/entries/commands/create/route";
+import { POST } from "@/app/api/manifest/[entity]/commands/[command]/route";
 import { GET } from "@/app/api/knowledge-base/entries/list/route";
 
 // ---------------------------------------------------------------------------
@@ -90,7 +90,7 @@ function makeGetRequest(params: Record<string, string> = {}) {
 
 function makePostRequest(body: Record<string, unknown>) {
   return new NextRequest(
-    "http://localhost/api/knowledge-base/entries/commands/create",
+    "http://localhost/api/manifest/[entity]/commands/[command]",
     {
       method: "POST",
       body: JSON.stringify(body),

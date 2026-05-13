@@ -113,7 +113,7 @@ export function InventoryTransfersClient() {
   const handleCreateTransfer = async () => {
     try {
       const response = await apiFetch(
-        "/api/inventory/transfers/commands/create",
+        "/api/manifest/InventoryTransfer/commands/create",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -144,7 +144,7 @@ export function InventoryTransfersClient() {
   const handleAction = async (action: string, transferId: string) => {
     try {
       const response = await apiFetch(
-        `/api/inventory/transfers/commands/${action}`,
+        `/api/manifest/InventoryTransfer/commands/${action}`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

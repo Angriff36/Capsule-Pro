@@ -10,16 +10,16 @@
 import { database } from "@repo/database";
 import { NextRequest } from "next/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { POST as createArea } from "@/app/api/facilities/areas/commands/create/route";
-import { POST as deleteArea } from "@/app/api/facilities/areas/commands/delete/route";
-import { POST as editArea } from "@/app/api/facilities/areas/commands/edit/route";
+import { POST as createArea } from "@/app/api/manifest/[entity]/commands/[command]/route";
+import { POST as deleteArea } from "@/app/api/manifest/[entity]/commands/[command]/route";
+import { POST as editArea } from "@/app/api/manifest/[entity]/commands/[command]/route";
 import { GET as listAreas } from "@/app/api/facilities/areas/list/route";
 // Route imports
-import { POST as createFacility } from "@/app/api/facilities/commands/create/route";
-import { POST as deleteFacility } from "@/app/api/facilities/commands/delete/route";
-import { POST as editFacility } from "@/app/api/facilities/commands/edit/route";
-import { POST as createWorkOrder } from "@/app/api/facilities/work-orders/commands/create/route";
-import { POST as updateWorkOrderStatus } from "@/app/api/facilities/work-orders/commands/update-status/route";
+import { POST as createFacility } from "@/app/api/manifest/[entity]/commands/[command]/route";
+import { POST as deleteFacility } from "@/app/api/manifest/[entity]/commands/[command]/route";
+import { POST as editFacility } from "@/app/api/manifest/[entity]/commands/[command]/route";
+import { POST as createWorkOrder } from "@/app/api/manifest/[entity]/commands/[command]/route";
+import { POST as updateWorkOrderStatus } from "@/app/api/manifest/[entity]/commands/[command]/route";
 import { GET as listWorkOrders } from "@/app/api/facilities/work-orders/list/route";
 
 // Mock dependencies
@@ -159,12 +159,12 @@ describe("Facilities Command Routes", () => {
       } as never);
 
       const req = createNextRequest(
-        "http://localhost/api/facilities/commands/create",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           name: "Test Facility",
         }
       );
-      const res = await createFacility(req);
+      const res = await createFacility(req, { params: Promise.resolve({ entity: "Facility", command: "create" }) });
 
       expect(res.status).toBe(401);
       const body = await res.json();
@@ -176,12 +176,12 @@ describe("Facilities Command Routes", () => {
       vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
 
       const req = createNextRequest(
-        "http://localhost/api/facilities/commands/create",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           name: "Test Facility",
         }
       );
-      const res = await createFacility(req);
+      const res = await createFacility(req, { params: Promise.resolve({ entity: "Facility", command: "create" }) });
 
       expect(res.status).toBe(400);
       const body = await res.json();
@@ -191,12 +191,12 @@ describe("Facilities Command Routes", () => {
 
     it("should return 400 when name is missing", async () => {
       const req = createNextRequest(
-        "http://localhost/api/facilities/commands/create",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           code: "FAC-001",
         }
       );
-      const res = await createFacility(req);
+      const res = await createFacility(req, { params: Promise.resolve({ entity: "Facility", command: "create" }) });
 
       expect(res.status).toBe(400);
       const body = await res.json();
@@ -206,12 +206,12 @@ describe("Facilities Command Routes", () => {
 
     it("should return 400 when name is empty string", async () => {
       const req = createNextRequest(
-        "http://localhost/api/facilities/commands/create",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           name: "   ",
         }
       );
-      const res = await createFacility(req);
+      const res = await createFacility(req, { params: Promise.resolve({ entity: "Facility", command: "create" }) });
 
       expect(res.status).toBe(400);
       const body = await res.json();
@@ -224,7 +224,7 @@ describe("Facilities Command Routes", () => {
       vi.mocked(database.$queryRaw).mockResolvedValue([mockFacility]);
 
       const req = createNextRequest(
-        "http://localhost/api/facilities/commands/create",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           name: "Main Kitchen",
           code: "MK-001",
@@ -238,7 +238,7 @@ describe("Facilities Command Routes", () => {
           notes: "Primary commissary",
         }
       );
-      const res = await createFacility(req);
+      const res = await createFacility(req, { params: Promise.resolve({ entity: "Facility", command: "create" }) });
 
       expect(res.status).toBe(200);
       const body = await res.json();
@@ -252,13 +252,13 @@ describe("Facilities Command Routes", () => {
       vi.mocked(database.$queryRaw).mockResolvedValue([mockFacility]);
 
       const req = createNextRequest(
-        "http://localhost/api/facilities/commands/create",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           name: "Test Facility",
           facilityType: "invalid_type",
         }
       );
-      const res = await createFacility(req);
+      const res = await createFacility(req, { params: Promise.resolve({ entity: "Facility", command: "create" }) });
 
       expect(res.status).toBe(200);
       expect(database.$queryRaw).toHaveBeenCalled();
@@ -278,13 +278,13 @@ describe("Facilities Command Routes", () => {
         ]);
 
         const req = createNextRequest(
-          "http://localhost/api/facilities/commands/create",
+          "http://localhost/api/manifest/[entity]/commands/[command]",
           {
             name: `Facility ${fType}`,
             facilityType: fType,
           }
         );
-        const res = await createFacility(req);
+        const res = await createFacility(req, { params: Promise.resolve({ entity: "Facility", command: "create" }) });
 
         expect(res.status).toBe(200);
       }
@@ -296,12 +296,12 @@ describe("Facilities Command Routes", () => {
       );
 
       const req = createNextRequest(
-        "http://localhost/api/facilities/commands/create",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           name: "Main Kitchen",
         }
       );
-      const res = await createFacility(req);
+      const res = await createFacility(req, { params: Promise.resolve({ entity: "Facility", command: "create" }) });
 
       expect(res.status).toBe(500);
       const body = await res.json();
@@ -319,13 +319,13 @@ describe("Facilities Command Routes", () => {
       } as never);
 
       const req = createNextRequest(
-        "http://localhost/api/facilities/commands/edit",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           facilityId: "fac-001",
           name: "Updated",
         }
       );
-      const res = await editFacility(req);
+      const res = await editFacility(req, { params: Promise.resolve({ entity: "Facility", command: "edit" }) });
 
       expect(res.status).toBe(401);
     });
@@ -334,25 +334,25 @@ describe("Facilities Command Routes", () => {
       vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
 
       const req = createNextRequest(
-        "http://localhost/api/facilities/commands/edit",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           facilityId: "fac-001",
           name: "Updated",
         }
       );
-      const res = await editFacility(req);
+      const res = await editFacility(req, { params: Promise.resolve({ entity: "Facility", command: "edit" }) });
 
       expect(res.status).toBe(400);
     });
 
     it("should return 400 when facilityId is missing", async () => {
       const req = createNextRequest(
-        "http://localhost/api/facilities/commands/edit",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           name: "Updated Name",
         }
       );
-      const res = await editFacility(req);
+      const res = await editFacility(req, { params: Promise.resolve({ entity: "Facility", command: "edit" }) });
 
       expect(res.status).toBe(400);
       const body = await res.json();
@@ -365,13 +365,13 @@ describe("Facilities Command Routes", () => {
       vi.mocked(database.$queryRaw).mockResolvedValue([updated]);
 
       const req = createNextRequest(
-        "http://localhost/api/facilities/commands/edit",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           facilityId: "fac-001",
           name: "Updated Kitchen",
         }
       );
-      const res = await editFacility(req);
+      const res = await editFacility(req, { params: Promise.resolve({ entity: "Facility", command: "edit" }) });
 
       expect(res.status).toBe(200);
       const body = await res.json();
@@ -383,13 +383,13 @@ describe("Facilities Command Routes", () => {
       vi.mocked(database.$queryRaw).mockResolvedValue([]);
 
       const req = createNextRequest(
-        "http://localhost/api/facilities/commands/edit",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           facilityId: "nonexistent-id",
           name: "Ghost",
         }
       );
-      const res = await editFacility(req);
+      const res = await editFacility(req, { params: Promise.resolve({ entity: "Facility", command: "edit" }) });
 
       expect(res.status).toBe(404);
       const body = await res.json();
@@ -401,13 +401,13 @@ describe("Facilities Command Routes", () => {
       vi.mocked(database.$queryRaw).mockRejectedValue(new Error("Timeout"));
 
       const req = createNextRequest(
-        "http://localhost/api/facilities/commands/edit",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           facilityId: "fac-001",
           name: "Updated",
         }
       );
-      const res = await editFacility(req);
+      const res = await editFacility(req, { params: Promise.resolve({ entity: "Facility", command: "edit" }) });
 
       expect(res.status).toBe(500);
       const body = await res.json();
@@ -424,12 +424,12 @@ describe("Facilities Command Routes", () => {
       } as never);
 
       const req = createNextRequest(
-        "http://localhost/api/facilities/commands/delete",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           facilityId: "fac-001",
         }
       );
-      const res = await deleteFacility(req);
+      const res = await deleteFacility(req, { params: Promise.resolve({ entity: "Facility", command: "remove" }) });
 
       expect(res.status).toBe(401);
     });
@@ -438,22 +438,22 @@ describe("Facilities Command Routes", () => {
       vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
 
       const req = createNextRequest(
-        "http://localhost/api/facilities/commands/delete",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           facilityId: "fac-001",
         }
       );
-      const res = await deleteFacility(req);
+      const res = await deleteFacility(req, { params: Promise.resolve({ entity: "Facility", command: "remove" }) });
 
       expect(res.status).toBe(400);
     });
 
     it("should return 400 when facilityId is missing", async () => {
       const req = createNextRequest(
-        "http://localhost/api/facilities/commands/delete",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {}
       );
-      const res = await deleteFacility(req);
+      const res = await deleteFacility(req, { params: Promise.resolve({ entity: "Facility", command: "remove" }) });
 
       expect(res.status).toBe(400);
       const body = await res.json();
@@ -465,12 +465,12 @@ describe("Facilities Command Routes", () => {
       vi.mocked(database.$queryRaw).mockResolvedValue(undefined);
 
       const req = createNextRequest(
-        "http://localhost/api/facilities/commands/delete",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           facilityId: "fac-001",
         }
       );
-      const res = await deleteFacility(req);
+      const res = await deleteFacility(req, { params: Promise.resolve({ entity: "Facility", command: "remove" }) });
 
       expect(res.status).toBe(200);
       const body = await res.json();
@@ -482,12 +482,12 @@ describe("Facilities Command Routes", () => {
       vi.mocked(database.$queryRaw).mockResolvedValue(undefined);
 
       const req = createNextRequest(
-        "http://localhost/api/facilities/commands/delete",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           facilityId: "fac-001",
         }
       );
-      await deleteFacility(req);
+      await deleteFacility(req, { params: Promise.resolve({ entity: "Facility", command: "remove" }) });
 
       expect(database.$queryRaw).toHaveBeenCalledTimes(1);
     });
@@ -496,12 +496,12 @@ describe("Facilities Command Routes", () => {
       vi.mocked(database.$queryRaw).mockRejectedValue(new Error("DB error"));
 
       const req = createNextRequest(
-        "http://localhost/api/facilities/commands/delete",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           facilityId: "fac-001",
         }
       );
-      const res = await deleteFacility(req);
+      const res = await deleteFacility(req, { params: Promise.resolve({ entity: "Facility", command: "remove" }) });
 
       expect(res.status).toBe(500);
       const body = await res.json();
@@ -533,12 +533,12 @@ describe("Facility Areas Command Routes", () => {
       } as never);
 
       const req = createNextRequest(
-        "http://localhost/api/facilities/areas/commands/create",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           name: "Prep Area",
         }
       );
-      const res = await createArea(req);
+      const res = await createArea(req, { params: Promise.resolve({ entity: "FacilityArea", command: "create" }) });
 
       expect(res.status).toBe(401);
       const body = await res.json();
@@ -550,24 +550,24 @@ describe("Facility Areas Command Routes", () => {
       vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
 
       const req = createNextRequest(
-        "http://localhost/api/facilities/areas/commands/create",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           name: "Prep Area",
         }
       );
-      const res = await createArea(req);
+      const res = await createArea(req, { params: Promise.resolve({ entity: "FacilityArea", command: "create" }) });
 
       expect(res.status).toBe(400);
     });
 
     it("should return 400 when name is missing", async () => {
       const req = createNextRequest(
-        "http://localhost/api/facilities/areas/commands/create",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           code: "PA-001",
         }
       );
-      const res = await createArea(req);
+      const res = await createArea(req, { params: Promise.resolve({ entity: "FacilityArea", command: "create" }) });
 
       expect(res.status).toBe(400);
       const body = await res.json();
@@ -584,7 +584,7 @@ describe("Facility Areas Command Routes", () => {
         .mockResolvedValueOnce([mockArea]); // insert result
 
       const req = createNextRequest(
-        "http://localhost/api/facilities/areas/commands/create",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           venueId: "fac-001",
           name: "Prep Area",
@@ -595,7 +595,7 @@ describe("Facility Areas Command Routes", () => {
           squareFeet: 1200,
         }
       );
-      const res = await createArea(req);
+      const res = await createArea(req, { params: Promise.resolve({ entity: "FacilityArea", command: "create" }) });
 
       expect(res.status).toBe(200);
       const body = await res.json();
@@ -612,14 +612,14 @@ describe("Facility Areas Command Routes", () => {
       ]);
 
       const req = createNextRequest(
-        "http://localhost/api/facilities/areas/commands/create",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           venueId: "fac-001",
           name: "Duplicate Area",
           code: "PA-001",
         }
       );
-      const res = await createArea(req);
+      const res = await createArea(req, { params: Promise.resolve({ entity: "FacilityArea", command: "create" }) });
 
       expect(res.status).toBe(400);
       const body = await res.json();
@@ -633,14 +633,14 @@ describe("Facility Areas Command Routes", () => {
       vi.mocked(database.$queryRaw).mockResolvedValue([mockArea]);
 
       const req = createNextRequest(
-        "http://localhost/api/facilities/areas/commands/create",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           venueId: "fac-001",
           name: "Mystery Area",
           areaType: "nonexistent_type",
         }
       );
-      const res = await createArea(req);
+      const res = await createArea(req, { params: Promise.resolve({ entity: "FacilityArea", command: "create" }) });
 
       expect(res.status).toBe(200);
       expect(database.$queryRaw).toHaveBeenCalledTimes(1);
@@ -664,14 +664,14 @@ describe("Facility Areas Command Routes", () => {
         ]);
 
         const req = createNextRequest(
-          "http://localhost/api/facilities/areas/commands/create",
+          "http://localhost/api/manifest/[entity]/commands/[command]",
           {
             venueId: "fac-001",
             name: `Area ${aType}`,
             areaType: aType,
           }
         );
-        const res = await createArea(req);
+        const res = await createArea(req, { params: Promise.resolve({ entity: "FacilityArea", command: "create" }) });
 
         expect(res.status).toBe(200);
       }
@@ -682,13 +682,13 @@ describe("Facility Areas Command Routes", () => {
       vi.mocked(database.$queryRaw).mockResolvedValue([mockArea]);
 
       const req = createNextRequest(
-        "http://localhost/api/facilities/areas/commands/create",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           venueId: "fac-001",
           name: "No Code Area",
         }
       );
-      const res = await createArea(req);
+      const res = await createArea(req, { params: Promise.resolve({ entity: "FacilityArea", command: "create" }) });
 
       expect(res.status).toBe(200);
       // Only one $queryRaw call (the INSERT), no duplicate check
@@ -699,13 +699,13 @@ describe("Facility Areas Command Routes", () => {
       vi.mocked(database.$queryRaw).mockRejectedValue(new Error("DB failure"));
 
       const req = createNextRequest(
-        "http://localhost/api/facilities/areas/commands/create",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           venueId: "fac-001",
           name: "Prep Area",
         }
       );
-      const res = await createArea(req);
+      const res = await createArea(req, { params: Promise.resolve({ entity: "FacilityArea", command: "create" }) });
 
       expect(res.status).toBe(500);
       const body = await res.json();
@@ -722,13 +722,13 @@ describe("Facility Areas Command Routes", () => {
       } as never);
 
       const req = createNextRequest(
-        "http://localhost/api/facilities/areas/commands/edit",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           areaId: "area-001",
           name: "Updated",
         }
       );
-      const res = await editArea(req);
+      const res = await editArea(req, { params: Promise.resolve({ entity: "FacilityArea", command: "edit" }) });
 
       expect(res.status).toBe(401);
     });
@@ -737,25 +737,25 @@ describe("Facility Areas Command Routes", () => {
       vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
 
       const req = createNextRequest(
-        "http://localhost/api/facilities/areas/commands/edit",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           areaId: "area-001",
           name: "Updated",
         }
       );
-      const res = await editArea(req);
+      const res = await editArea(req, { params: Promise.resolve({ entity: "FacilityArea", command: "edit" }) });
 
       expect(res.status).toBe(400);
     });
 
     it("should return 400 when areaId is missing", async () => {
       const req = createNextRequest(
-        "http://localhost/api/facilities/areas/commands/edit",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           name: "Updated",
         }
       );
-      const res = await editArea(req);
+      const res = await editArea(req, { params: Promise.resolve({ entity: "FacilityArea", command: "edit" }) });
 
       expect(res.status).toBe(400);
       const body = await res.json();
@@ -768,13 +768,13 @@ describe("Facility Areas Command Routes", () => {
       vi.mocked(database.$queryRaw).mockResolvedValue([updated]);
 
       const req = createNextRequest(
-        "http://localhost/api/facilities/areas/commands/edit",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           areaId: "area-001",
           name: "Updated Prep Area",
         }
       );
-      const res = await editArea(req);
+      const res = await editArea(req, { params: Promise.resolve({ entity: "FacilityArea", command: "edit" }) });
 
       expect(res.status).toBe(200);
       const body = await res.json();
@@ -786,13 +786,13 @@ describe("Facility Areas Command Routes", () => {
       vi.mocked(database.$queryRaw).mockResolvedValue([]);
 
       const req = createNextRequest(
-        "http://localhost/api/facilities/areas/commands/edit",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           areaId: "nonexistent",
           name: "Ghost",
         }
       );
-      const res = await editArea(req);
+      const res = await editArea(req, { params: Promise.resolve({ entity: "FacilityArea", command: "edit" }) });
 
       expect(res.status).toBe(404);
       const body = await res.json();
@@ -806,13 +806,13 @@ describe("Facility Areas Command Routes", () => {
       );
 
       const req = createNextRequest(
-        "http://localhost/api/facilities/areas/commands/edit",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           areaId: "area-001",
           name: "Updated",
         }
       );
-      const res = await editArea(req);
+      const res = await editArea(req, { params: Promise.resolve({ entity: "FacilityArea", command: "edit" }) });
 
       expect(res.status).toBe(500);
     });
@@ -827,12 +827,12 @@ describe("Facility Areas Command Routes", () => {
       } as never);
 
       const req = createNextRequest(
-        "http://localhost/api/facilities/areas/commands/delete",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           areaId: "area-001",
         }
       );
-      const res = await deleteArea(req);
+      const res = await deleteArea(req, { params: Promise.resolve({ entity: "FacilityArea", command: "remove" }) });
 
       expect(res.status).toBe(401);
     });
@@ -841,22 +841,22 @@ describe("Facility Areas Command Routes", () => {
       vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
 
       const req = createNextRequest(
-        "http://localhost/api/facilities/areas/commands/delete",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           areaId: "area-001",
         }
       );
-      const res = await deleteArea(req);
+      const res = await deleteArea(req, { params: Promise.resolve({ entity: "FacilityArea", command: "remove" }) });
 
       expect(res.status).toBe(400);
     });
 
     it("should return 400 when areaId is missing", async () => {
       const req = createNextRequest(
-        "http://localhost/api/facilities/areas/commands/delete",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {}
       );
-      const res = await deleteArea(req);
+      const res = await deleteArea(req, { params: Promise.resolve({ entity: "FacilityArea", command: "remove" }) });
 
       expect(res.status).toBe(400);
       const body = await res.json();
@@ -868,12 +868,12 @@ describe("Facility Areas Command Routes", () => {
       vi.mocked(database.$queryRaw).mockResolvedValue(undefined);
 
       const req = createNextRequest(
-        "http://localhost/api/facilities/areas/commands/delete",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           areaId: "area-001",
         }
       );
-      const res = await deleteArea(req);
+      const res = await deleteArea(req, { params: Promise.resolve({ entity: "FacilityArea", command: "remove" }) });
 
       expect(res.status).toBe(200);
       const body = await res.json();
@@ -884,12 +884,12 @@ describe("Facility Areas Command Routes", () => {
       vi.mocked(database.$queryRaw).mockRejectedValue(new Error("DB error"));
 
       const req = createNextRequest(
-        "http://localhost/api/facilities/areas/commands/delete",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           areaId: "area-001",
         }
       );
-      const res = await deleteArea(req);
+      const res = await deleteArea(req, { params: Promise.resolve({ entity: "FacilityArea", command: "remove" }) });
 
       expect(res.status).toBe(500);
       const body = await res.json();
@@ -1189,12 +1189,12 @@ describe("Work Orders Command Routes", () => {
       } as never);
 
       const req = createNextRequest(
-        "http://localhost/api/facilities/work-orders/commands/create",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           title: "Fix oven",
         }
       );
-      const res = await createWorkOrder(req);
+      const res = await createWorkOrder(req, { params: Promise.resolve({ entity: "WorkOrder", command: "create" }) });
 
       expect(res.status).toBe(401);
       const body = await res.json();
@@ -1206,25 +1206,25 @@ describe("Work Orders Command Routes", () => {
       vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
 
       const req = createNextRequest(
-        "http://localhost/api/facilities/work-orders/commands/create",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           title: "Fix oven",
         }
       );
-      const res = await createWorkOrder(req);
+      const res = await createWorkOrder(req, { params: Promise.resolve({ entity: "WorkOrder", command: "create" }) });
 
       expect(res.status).toBe(400);
     });
 
     it("should return 400 when title is missing", async () => {
       const req = createNextRequest(
-        "http://localhost/api/facilities/work-orders/commands/create",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           workOrderType: "corrective",
           priority: "medium",
         }
       );
-      const res = await createWorkOrder(req);
+      const res = await createWorkOrder(req, { params: Promise.resolve({ entity: "WorkOrder", command: "create" }) });
 
       expect(res.status).toBe(400);
       const body = await res.json();
@@ -1234,13 +1234,13 @@ describe("Work Orders Command Routes", () => {
 
     it("should return 400 when workOrderType is invalid", async () => {
       const req = createNextRequest(
-        "http://localhost/api/facilities/work-orders/commands/create",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           title: "Fix oven",
           workOrderType: "invalid_type",
         }
       );
-      const res = await createWorkOrder(req);
+      const res = await createWorkOrder(req, { params: Promise.resolve({ entity: "WorkOrder", command: "create" }) });
 
       expect(res.status).toBe(400);
       const body = await res.json();
@@ -1254,14 +1254,14 @@ describe("Work Orders Command Routes", () => {
 
     it("should return 400 when priority is invalid", async () => {
       const req = createNextRequest(
-        "http://localhost/api/facilities/work-orders/commands/create",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           title: "Fix oven",
           workOrderType: "corrective",
           priority: "super_urgent",
         }
       );
-      const res = await createWorkOrder(req);
+      const res = await createWorkOrder(req, { params: Promise.resolve({ entity: "WorkOrder", command: "create" }) });
 
       expect(res.status).toBe(400);
       const body = await res.json();
@@ -1281,7 +1281,7 @@ describe("Work Orders Command Routes", () => {
         .mockResolvedValueOnce([mockWO]);
 
       const req = createNextRequest(
-        "http://localhost/api/facilities/work-orders/commands/create",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           areaId: "area-001",
           workOrderType: "corrective",
@@ -1290,7 +1290,7 @@ describe("Work Orders Command Routes", () => {
           description: "Hinge is broken",
         }
       );
-      const res = await createWorkOrder(req);
+      const res = await createWorkOrder(req, { params: Promise.resolve({ entity: "WorkOrder", command: "create" }) });
 
       expect(res.status).toBe(200);
       const body = await res.json();
@@ -1309,14 +1309,14 @@ describe("Work Orders Command Routes", () => {
         .mockResolvedValueOnce([mockWO]);
 
       const req = createNextRequest(
-        "http://localhost/api/facilities/work-orders/commands/create",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           title: "New WO",
           workOrderType: "corrective",
           priority: "medium",
         }
       );
-      const res = await createWorkOrder(req);
+      const res = await createWorkOrder(req, { params: Promise.resolve({ entity: "WorkOrder", command: "create" }) });
 
       expect(res.status).toBe(200);
       // Verify the count query was called first to generate the number
@@ -1338,14 +1338,14 @@ describe("Work Orders Command Routes", () => {
           ]);
 
         const req = createNextRequest(
-          "http://localhost/api/facilities/work-orders/commands/create",
+          "http://localhost/api/manifest/[entity]/commands/[command]",
           {
             title: `WO ${wType}`,
             workOrderType: wType,
             priority: "medium",
           }
         );
-        const res = await createWorkOrder(req);
+        const res = await createWorkOrder(req, { params: Promise.resolve({ entity: "WorkOrder", command: "create" }) });
 
         expect(res.status).toBe(200);
       }
@@ -1359,14 +1359,14 @@ describe("Work Orders Command Routes", () => {
           .mockResolvedValueOnce([createMockWorkOrder({ priority: prio })]);
 
         const req = createNextRequest(
-          "http://localhost/api/facilities/work-orders/commands/create",
+          "http://localhost/api/manifest/[entity]/commands/[command]",
           {
             title: `WO ${prio}`,
             workOrderType: "corrective",
             priority: prio,
           }
         );
-        const res = await createWorkOrder(req);
+        const res = await createWorkOrder(req, { params: Promise.resolve({ entity: "WorkOrder", command: "create" }) });
 
         expect(res.status).toBe(200);
       }
@@ -1383,12 +1383,12 @@ describe("Work Orders Command Routes", () => {
         .mockResolvedValueOnce([mockWO]);
 
       const req = createNextRequest(
-        "http://localhost/api/facilities/work-orders/commands/create",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           title: "Default WO",
         }
       );
-      const res = await createWorkOrder(req);
+      const res = await createWorkOrder(req, { params: Promise.resolve({ entity: "WorkOrder", command: "create" }) });
 
       expect(res.status).toBe(200);
       expect(database.$queryRaw).toHaveBeenCalledTimes(2);
@@ -1398,14 +1398,14 @@ describe("Work Orders Command Routes", () => {
       vi.mocked(database.$queryRaw).mockRejectedValue(new Error("DB down"));
 
       const req = createNextRequest(
-        "http://localhost/api/facilities/work-orders/commands/create",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           title: "Fix oven",
           workOrderType: "corrective",
           priority: "medium",
         }
       );
-      const res = await createWorkOrder(req);
+      const res = await createWorkOrder(req, { params: Promise.resolve({ entity: "WorkOrder", command: "create" }) });
 
       expect(res.status).toBe(500);
       const body = await res.json();
@@ -1422,13 +1422,13 @@ describe("Work Orders Command Routes", () => {
       } as never);
 
       const req = createNextRequest(
-        "http://localhost/api/facilities/work-orders/commands/update-status",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           workOrderId: "wo-001",
           status: "in_progress",
         }
       );
-      const res = await updateWorkOrderStatus(req);
+      const res = await updateWorkOrderStatus(req, { params: Promise.resolve({ entity: "WorkOrder", command: "updateStatus" }) });
 
       expect(res.status).toBe(401);
       const body = await res.json();
@@ -1440,25 +1440,25 @@ describe("Work Orders Command Routes", () => {
       vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
 
       const req = createNextRequest(
-        "http://localhost/api/facilities/work-orders/commands/update-status",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           workOrderId: "wo-001",
           status: "in_progress",
         }
       );
-      const res = await updateWorkOrderStatus(req);
+      const res = await updateWorkOrderStatus(req, { params: Promise.resolve({ entity: "WorkOrder", command: "updateStatus" }) });
 
       expect(res.status).toBe(400);
     });
 
     it("should return 400 when workOrderId is missing", async () => {
       const req = createNextRequest(
-        "http://localhost/api/facilities/work-orders/commands/update-status",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           status: "in_progress",
         }
       );
-      const res = await updateWorkOrderStatus(req);
+      const res = await updateWorkOrderStatus(req, { params: Promise.resolve({ entity: "WorkOrder", command: "updateStatus" }) });
 
       expect(res.status).toBe(400);
       const body = await res.json();
@@ -1468,13 +1468,13 @@ describe("Work Orders Command Routes", () => {
 
     it("should return 400 when status is invalid", async () => {
       const req = createNextRequest(
-        "http://localhost/api/facilities/work-orders/commands/update-status",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           workOrderId: "wo-001",
           status: "bogus_status",
         }
       );
-      const res = await updateWorkOrderStatus(req);
+      const res = await updateWorkOrderStatus(req, { params: Promise.resolve({ entity: "WorkOrder", command: "updateStatus" }) });
 
       expect(res.status).toBe(400);
       const body = await res.json();
@@ -1493,13 +1493,13 @@ describe("Work Orders Command Routes", () => {
       vi.mocked(database.$queryRaw).mockResolvedValueOnce([]);
 
       const req = createNextRequest(
-        "http://localhost/api/facilities/work-orders/commands/update-status",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           workOrderId: "nonexistent",
           status: "in_progress",
         }
       );
-      const res = await updateWorkOrderStatus(req);
+      const res = await updateWorkOrderStatus(req, { params: Promise.resolve({ entity: "WorkOrder", command: "updateStatus" }) });
 
       expect(res.status).toBe(404);
       const body = await res.json();
@@ -1516,13 +1516,13 @@ describe("Work Orders Command Routes", () => {
         .mockResolvedValueOnce([updatedWO]);
 
       const req = createNextRequest(
-        "http://localhost/api/facilities/work-orders/commands/update-status",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           workOrderId: "wo-001",
           status: "in_progress",
         }
       );
-      const res = await updateWorkOrderStatus(req);
+      const res = await updateWorkOrderStatus(req, { params: Promise.resolve({ entity: "WorkOrder", command: "updateStatus" }) });
 
       expect(res.status).toBe(200);
       const body = await res.json();
@@ -1549,13 +1549,13 @@ describe("Work Orders Command Routes", () => {
           .mockResolvedValueOnce([updatedWO]);
 
         const req = createNextRequest(
-          "http://localhost/api/facilities/work-orders/commands/update-status",
+          "http://localhost/api/manifest/[entity]/commands/[command]",
           {
             workOrderId: "wo-001",
             status,
           }
         );
-        const res = await updateWorkOrderStatus(req);
+        const res = await updateWorkOrderStatus(req, { params: Promise.resolve({ entity: "WorkOrder", command: "updateStatus" }) });
 
         expect(res.status).toBe(200);
         const body = await res.json();
@@ -1578,7 +1578,7 @@ describe("Work Orders Command Routes", () => {
         .mockResolvedValueOnce([updatedWO]);
 
       const req = createNextRequest(
-        "http://localhost/api/facilities/work-orders/commands/update-status",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           workOrderId: "wo-001",
           status: "completed",
@@ -1588,7 +1588,7 @@ describe("Work Orders Command Routes", () => {
           notes: "All fixed",
         }
       );
-      const res = await updateWorkOrderStatus(req);
+      const res = await updateWorkOrderStatus(req, { params: Promise.resolve({ entity: "WorkOrder", command: "updateStatus" }) });
 
       expect(res.status).toBe(200);
       const body = await res.json();
@@ -1599,13 +1599,13 @@ describe("Work Orders Command Routes", () => {
       vi.mocked(database.$queryRaw).mockRejectedValue(new Error("DB failure"));
 
       const req = createNextRequest(
-        "http://localhost/api/facilities/work-orders/commands/update-status",
+        "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           workOrderId: "wo-001",
           status: "completed",
         }
       );
-      const res = await updateWorkOrderStatus(req);
+      const res = await updateWorkOrderStatus(req, { params: Promise.resolve({ entity: "WorkOrder", command: "updateStatus" }) });
 
       expect(res.status).toBe(500);
       const body = await res.json();

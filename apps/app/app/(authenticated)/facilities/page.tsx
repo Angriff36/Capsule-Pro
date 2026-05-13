@@ -6,7 +6,7 @@
  * Lists every top-level facility (building/site) the tenant has registered,
  * plus the four domain links (Work Orders, PM Schedules, Areas, Assets).
  * The "Add Facility" CTA opens the create dialog and persists via
- * POST /api/facilities/commands/create.
+ * POST /api/manifest/Facility/commands/create.
  */
 
 import {
@@ -193,7 +193,7 @@ export default function FacilitiesPage() {
     if (!form.name.trim() || !editing) return;
     setSaving(true);
     try {
-      const res = await apiFetch("/api/facilities/commands/edit", {
+      const res = await apiFetch("/api/manifest/Facility/commands/edit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -223,7 +223,7 @@ export default function FacilitiesPage() {
   const handleDelete = async (facilityId: string) => {
     setDeleting(facilityId);
     try {
-      await apiFetch("/api/facilities/commands/delete", {
+      await apiFetch("/api/manifest/Facility/commands/remove", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ facilityId }),

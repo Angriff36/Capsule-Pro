@@ -229,7 +229,7 @@ function EventContractDetail({
   if (contract.status === "draft") {
     statusActions.push({
       label: "Send",
-      command: "/api/events/contracts/commands/send",
+      command: "/api/manifest/EventContract/commands/send",
       icon: <Send className="mr-2 h-4 w-4" />,
     });
   }
@@ -570,7 +570,7 @@ function VendorContractDetail({
   if (contract.status === "draft") {
     statusActions.push({
       label: "Submit",
-      command: "/api/procurement/vendor-contracts/commands/submit",
+      command: "/api/manifest/VendorContract/commands/submit",
       icon: <Send className="mr-2 h-4 w-4" />,
     });
   }
@@ -578,12 +578,12 @@ function VendorContractDetail({
     statusActions.push(
       {
         label: "Approve",
-        command: "/api/procurement/vendor-contracts/commands/approve",
+        command: "/api/manifest/VendorContract/commands/approve",
         icon: <CheckCircle2 className="mr-2 h-4 w-4" />,
       },
       {
         label: "Reject",
-        command: "/api/procurement/vendor-contracts/commands/reject",
+        command: "/api/manifest/VendorContract/commands/reject",
         icon: <XCircle className="mr-2 h-4 w-4" />,
         variant: "destructive",
       }
@@ -592,7 +592,7 @@ function VendorContractDetail({
   if (contract.status === "approved") {
     statusActions.push({
       label: "Activate",
-      command: "/api/procurement/vendor-contracts/commands/activate",
+      command: "/api/manifest/VendorContract/commands/activate",
       icon: <ArrowRight className="mr-2 h-4 w-4" />,
     });
   }
@@ -600,13 +600,13 @@ function VendorContractDetail({
     statusActions.push(
       {
         label: "Renew",
-        command: "/api/procurement/vendor-contracts/commands/renew",
+        command: "/api/manifest/VendorContract/commands/renew",
         icon: <RefreshCw className="mr-2 h-4 w-4" />,
         variant: "outline",
       },
       {
         label: "Terminate",
-        command: "/api/procurement/vendor-contracts/commands/terminate",
+        command: "/api/manifest/VendorContract/commands/terminate",
         icon: <Gavel className="mr-2 h-4 w-4" />,
         variant: "destructive",
       }
@@ -901,7 +901,7 @@ function VendorContractDetail({
               disabled={actionLoading !== null}
               onClick={() =>
                 executeCommand(
-                  "/api/procurement/vendor-contracts/commands/record-sla-breach",
+                  "/api/manifest/VendorContract/commands/recordSlaBreach",
                   "Record SLA breach"
                 )
               }

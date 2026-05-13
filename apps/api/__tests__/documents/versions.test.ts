@@ -154,7 +154,7 @@ describe("Document Versioning API Routes", () => {
       } as never);
 
       const { POST } = await import(
-        "@/app/api/documents/versions/commands/create/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       const res = await POST(
         makePostRequest({
@@ -177,7 +177,7 @@ describe("Document Versioning API Routes", () => {
       vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
 
       const { POST } = await import(
-        "@/app/api/documents/versions/commands/create/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       const res = await POST(
         makePostRequest({
@@ -196,7 +196,7 @@ describe("Document Versioning API Routes", () => {
       mockAuthenticated();
 
       const { POST } = await import(
-        "@/app/api/documents/versions/commands/create/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       const res = await POST(
         makePostRequest({
@@ -214,7 +214,7 @@ describe("Document Versioning API Routes", () => {
       mockAuthenticated();
 
       const { POST } = await import(
-        "@/app/api/documents/versions/commands/create/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       const res = await POST(
         makePostRequest({
@@ -232,7 +232,7 @@ describe("Document Versioning API Routes", () => {
       mockAuthenticated();
 
       const { POST } = await import(
-        "@/app/api/documents/versions/commands/create/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       const res = await POST(
         makePostRequest({
@@ -256,7 +256,7 @@ describe("Document Versioning API Routes", () => {
       );
 
       const { POST } = await import(
-        "@/app/api/documents/versions/commands/create/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       const res = await POST(
         makePostRequest({
@@ -301,7 +301,7 @@ describe("Document Versioning API Routes", () => {
       );
 
       const { POST } = await import(
-        "@/app/api/documents/versions/commands/create/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       const res = await POST(
         makePostRequest({
@@ -335,7 +335,7 @@ describe("Document Versioning API Routes", () => {
       );
 
       const { POST } = await import(
-        "@/app/api/documents/versions/commands/create/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       const res = await POST(
         makePostRequest({
@@ -362,7 +362,7 @@ describe("Document Versioning API Routes", () => {
       mockDocumentVersion.create.mockResolvedValue(createMockVersion());
 
       const { POST } = await import(
-        "@/app/api/documents/versions/commands/create/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       const res = await POST(
         makePostRequest({
@@ -399,7 +399,7 @@ describe("Document Versioning API Routes", () => {
       );
 
       const { POST } = await import(
-        "@/app/api/documents/versions/commands/create/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       const res = await POST(
         makePostRequest({
@@ -427,7 +427,7 @@ describe("Document Versioning API Routes", () => {
       } as never);
 
       const { POST } = await import(
-        "@/app/api/documents/versions/commands/restore/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       const res = await POST(makePostRequest({ versionId: TEST_VERSION_ID }));
       const data = await res.json();
@@ -440,7 +440,7 @@ describe("Document Versioning API Routes", () => {
       mockAuthenticated();
 
       const { POST } = await import(
-        "@/app/api/documents/versions/commands/restore/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       const res = await POST(makePostRequest({}));
       const data = await res.json();
@@ -455,7 +455,7 @@ describe("Document Versioning API Routes", () => {
       mockDocumentVersion.findFirst.mockResolvedValue(null);
 
       const { POST } = await import(
-        "@/app/api/documents/versions/commands/restore/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       const res = await POST(makePostRequest({ versionId: "nonexistent-id" }));
       const data = await res.json();
@@ -489,7 +489,7 @@ describe("Document Versioning API Routes", () => {
       );
 
       const { POST } = await import(
-        "@/app/api/documents/versions/commands/restore/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       const res = await POST(makePostRequest({ versionId: "ver-old" }));
       const data = await res.json();
@@ -543,7 +543,7 @@ describe("Document Versioning API Routes", () => {
       );
 
       const { POST } = await import(
-        "@/app/api/documents/versions/commands/restore/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       const res = await POST(makePostRequest({ versionId: "ver-old" }));
 
@@ -565,7 +565,7 @@ describe("Document Versioning API Routes", () => {
       );
 
       const { POST } = await import(
-        "@/app/api/documents/versions/commands/restore/route"
+        "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       const res = await POST(makePostRequest({ versionId: TEST_VERSION_ID }));
       const data = await res.json();

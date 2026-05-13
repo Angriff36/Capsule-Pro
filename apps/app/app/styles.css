@@ -20,11 +20,11 @@
   --secondary: var(--brand-avocado-mash);
   --secondary-foreground: var(--brand-charcoal);
   --muted: #efe9e0;
-  --muted-foreground: #6d685f;
+  --muted-foreground: #5f5a52; /* 6.6:1 on almost-white — WCAG AA body */
   --accent: var(--brand-spiced-orange);
   --accent-foreground: var(--brand-almost-white);
-  --border: #e0d7cc;
-  --input: #e0d7cc;
+  --border: #c9bfb1; /* warm hairline divider */
+  --input: #9b9388; /* WCAG 1.4.11 — 3.05:1 on almost-white */
   --ring: var(--brand-golden-zest);
   --sidebar: var(--brand-charcoal);
   --sidebar-foreground: var(--brand-almost-white);
@@ -52,7 +52,7 @@
   --accent: var(--brand-spiced-orange);
   --accent-foreground: var(--brand-charcoal);
   --border: #332f2c;
-  --input: #332f2c;
+  --input: #6b5f51; /* 3.1:1 on charcoal — visible dark-mode input border */
   --ring: var(--brand-golden-zest);
   --sidebar: #191715;
   --sidebar-foreground: var(--brand-almost-white);
@@ -769,4 +769,45 @@ body.dev-console > header {
   border: 1px solid hsl(var(--border));
   border-radius: 6px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+/* ── Event Intake / Menu Builder wizard utilities ── */
+@layer utilities {
+  .animate-fadeIn {
+    animation: intakeFadeIn 0.35s ease-out;
+  }
+}
+
+@keyframes intakeFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 9999px;
+  background: #e7e5e4;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #292524;
+  margin-top: -7px;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  transition: transform 0.15s ease;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
 }

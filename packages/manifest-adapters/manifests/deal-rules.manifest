@@ -1,0 +1,69 @@
+// CRM Deal Rules
+// Manifest spec for deal pipeline management
+
+entity Deal {
+  property required id: string
+  property required tenantId: string
+  property required leadId: string
+  property required title: string
+  property value: number = 0
+  property currency: string = "USD"
+  property stage: string = "new"
+  property status: string = "open"
+  property probability: number = 0
+  property expectedCloseDate: number = 0
+  property actualCloseDate: number = 0
+  property assignedTo: string = ""
+  property notes: string = ""
+  property createdAt: number = 0
+  property updatedAt: number = 0
+
+  computed isWon: boolean = self.status == "won"
+  computed isLost: boolean = self.status == "lost"
+  computed isActive: boolean = self.status == "open"
+
+  constraint validStage: self.stage in ["new", "contacted", "qualified", "proposal", "negotiation", "closed"] "Invalid deal stage"
+  constraint validStatus: self.status in ["open", "won", "lost", "abandoned"] "Invalid deal status"
+  constraint positiveValue: self.value >= 0 "Deal value cannot be negative"
+
+  command updateStage(stage: string, notes: string) {
+    guard stage in ["new", "contacted", "qualified", "proposal", "negotiation", "closed"] "Invalid deal stage"
+    guard self.status == "open" "Cannot update stage of a closed deal"
+
+    mutate stage = stage
+    mutate notes = notes
+    mutate updatedAt = now()
+
+    emit DealStageUpdated
+  }
+
+  command close(status: string) {
+    guard status in ["won", "lost"] "Status must be won or lost"
+    guard self.status == "open" "Cannot close an already closed deal"
+
+    mutate status = status
+    mutate actualCloseDate = now()
+    mutate updatedAt = now()
+
+    emit DealClosed
+  }
+}
+
+policy SalesCanManageDeals execute: user.role in ["sales_rep", "sales_manager", "manager", "admin"] "Only sales team can manage deals"
+
+event DealStageUpdated: "crm.deal.stage.updated" {
+  dealId: string
+  leadId: string
+  oldStage: string
+  newStage: string
+  notes: string
+  updatedAt: number
+}
+
+event DealClosed: "crm.deal.closed" {
+  dealId: string
+  leadId: string
+  status: string
+  actualCloseDate: number
+  closedAt: number
+}

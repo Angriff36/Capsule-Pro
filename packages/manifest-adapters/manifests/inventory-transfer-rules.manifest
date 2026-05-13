@@ -1,0 +1,117 @@
+// Inventory Transfer Rules
+// Manifest spec for inter-location inventory movements
+
+entity InventoryTransfer {
+  property required id: string
+  property required tenantId: string
+  property fromLocationId: string = ""
+  property toLocationId: string = ""
+  property status: string = "draft"
+  property requestedBy: string = ""
+  property approvedBy: string = ""
+  property shippedBy: string = ""
+  property receivedBy: string = ""
+  property shipDate: number = 0
+  property receiveDate: number = 0
+  property notes: string = ""
+  property createdAt: number = 0
+  property updatedAt: number = 0
+
+  computed isApproved: boolean = self.status == "approved"
+  computed isInTransit: boolean = self.status == "in_transit"
+
+  constraint validStatus: self.status in ["draft", "pending_approval", "approved", "in_transit", "received", "cancelled"] "Invalid transfer status"
+
+  command create(fromLocationId: string, toLocationId: string, requestedBy: string, notes: string) {
+    guard fromLocationId != null and fromLocationId != "" "Source location is required"
+    guard toLocationId != null and toLocationId != "" "Destination location is required"
+    guard fromLocationId != toLocationId "Source and destination must be different"
+
+    mutate fromLocationId = fromLocationId
+    mutate toLocationId = toLocationId
+    mutate requestedBy = requestedBy
+    mutate notes = notes
+    mutate status = "draft"
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit TransferCreated
+  }
+
+  command approve(approvedBy: string) {
+    guard self.status == "pending_approval" "Transfer must be pending approval"
+
+    mutate approvedBy = approvedBy
+    mutate status = "approved"
+    mutate updatedAt = now()
+
+    emit TransferApproved
+  }
+
+  command ship(shippedBy: string) {
+    guard self.status == "approved" "Transfer must be approved before shipping"
+
+    mutate shippedBy = shippedBy
+    mutate shipDate = now()
+    mutate status = "in_transit"
+    mutate updatedAt = now()
+
+    emit TransferShipped
+  }
+
+  command receive(receivedBy: string) {
+    guard self.status == "in_transit" "Transfer must be in transit before receiving"
+
+    mutate receivedBy = receivedBy
+    mutate receiveDate = now()
+    mutate status = "received"
+    mutate updatedAt = now()
+
+    emit TransferReceived
+  }
+
+  command cancel(reason: string) {
+    guard self.status in ["draft", "pending_approval"] "Cannot cancel a transfer already in progress"
+
+    mutate status = "cancelled"
+    mutate notes = reason
+    mutate updatedAt = now()
+
+    emit TransferCancelled
+  }
+}
+
+policy InventoryManagersCanTransfer execute: user.role in ["inventory_manager", "manager", "admin"] "Only inventory managers can manage transfers"
+
+event TransferCreated: "inventory.transfer.created" {
+  transferId: string
+  tenantId: string
+  fromLocationId: string
+  toLocationId: string
+  requestedBy: string
+  createdAt: number
+}
+
+event TransferApproved: "inventory.transfer.approved" {
+  transferId: string
+  approvedBy: string
+  approvedAt: number
+}
+
+event TransferShipped: "inventory.transfer.shipped" {
+  transferId: string
+  shippedBy: string
+  shippedAt: number
+}
+
+event TransferReceived: "inventory.transfer.received" {
+  transferId: string
+  receivedBy: string
+  receivedAt: number
+}
+
+event TransferCancelled: "inventory.transfer.cancelled" {
+  transferId: string
+  reason: string
+  cancelledAt: number
+}

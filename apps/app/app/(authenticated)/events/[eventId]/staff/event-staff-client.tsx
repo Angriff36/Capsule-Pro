@@ -130,7 +130,7 @@ export function EventStaffClient({
       try {
         const [assignRes, _availRes] = await Promise.all([
           fetch(`/api/events/staff/list?eventId=${eventId}`),
-          fetch("/api/events/staff/commands/assign", { method: "GET" }).catch(
+          fetch("/api/manifest/EventStaff/commands/assign", { method: "GET" }).catch(
             () => null
           ),
         ]);
@@ -174,7 +174,7 @@ export function EventStaffClient({
 
     startTransition(async () => {
       try {
-        const res = await fetch("/api/events/staff/commands/assign", {
+        const res = await fetch("/api/manifest/EventStaff/commands/assign", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -225,7 +225,7 @@ export function EventStaffClient({
   const handleUnassign = (assignmentId: string) => {
     startTransition(async () => {
       try {
-        const res = await fetch("/api/events/staff/commands/unassign", {
+        const res = await fetch("/api/manifest/EventStaff/commands/unassign", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ id: assignmentId }),
