@@ -113,8 +113,8 @@ These cause runtime errors, data loss, or broken user flows. 21 items (down from
 - [x] **P0.AF — Logistics: tracking queries non-existent suppliers table** [RESOLVED v66]
   `apps/api/app/api/logistics/tracking/route.ts:97` queries `tenant_inventory.suppliers`. Correct table is `inventory_suppliers` (via @@map on InventorySupplier).
 
-- [ ] **P0.AG — Schema: default zero UUID in production schema** [VERIFIED v63]
-  `packages/database/prisma/schema.prisma` has `DEFAULT '00000000-0000-0000-0000-000000000000'` for `storage_location_id`. Every new record gets an invalid FK.
+- [x] **P0.AG — Schema: default zero UUID in production schema** [RESOLVED v68]
+  `packages/database/prisma/schema.prisma` had `DEFAULT '00000000-0000-0000-0000-000000000000'` for `storage_location_id` in `InventoryTransaction`. Changed to nullable (String? @db.Uuid). Updated all code paths that used zero UUID as fallback.
 
 - [REMOVED v66] **P0.AH — Calendar: hardcoded localhost in production sync** — NOT A BUG. Fallback pattern (`NEXT_PUBLIC_APP_URL || "http://localhost:2221"`) is correct for development. Production properly uses `NEXT_PUBLIC_APP_URL` set via Vercel environment.
   `apps/app/app/(authenticated)/calendar/sync/page.tsx:354,388` hardcodes `"http://localhost:2221"` as fallback URL.
