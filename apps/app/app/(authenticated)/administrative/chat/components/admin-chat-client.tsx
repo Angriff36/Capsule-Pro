@@ -39,8 +39,9 @@ import {
 } from "@repo/design-system/components/ui/select";
 import { Skeleton } from "@repo/design-system/components/ui/skeleton";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
-import Ably from "ably";
+import type Ably from "ably";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { getAblyClient } from "@/app/ably-provider";
 import { apiFetch } from "@/app/lib/api";
 
 interface AdminChatMessage {
@@ -393,29 +394,7 @@ export function AdministrativeChatClient({
           return;
         }
 
-        const client = new Ably.Realtime({
-          authCallback: async (_, callback) => {
-            try {
-              const response = await fetch(authUrl, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                credentials: "include",
-                body: JSON.stringify({ tenantId }),
-              });
-
-              if (!response.ok) {
-                throw new Error(`Ably auth failed: ${response.status}`);
-              }
-
-              const tokenRequest = await response.json();
-              callback(null, tokenRequest);
-            } catch (error) {
-              const message =
-                error instanceof Error ? error.message : "Ably auth failed.";
-              callback(message, null);
-            }
-          },
-        });
+        const client = getAblyClient(tenantId, authUrl);
 
         clientRef.current = client;
 

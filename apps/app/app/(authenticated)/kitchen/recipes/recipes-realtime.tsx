@@ -1,71 +1,37 @@
 "use client";
 
-import Ably from "ably";
+import type { Message } from "ably";
+import { useChannel } from "ably/react";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
 
 interface RecipesRealtimeProps {
   tenantId: string;
   userId?: string | null;
 }
 
-const authUrl = "/ably/auth";
-
 const isRecipeEvent = (eventName?: string) =>
   eventName?.startsWith("recipe.") ?? false;
 
-const RecipesRealtime = ({ tenantId, userId }: RecipesRealtimeProps) => {
+function RecipesRealtimeSubscription({ tenantId }: { tenantId: string }) {
   const router = useRouter();
 
-  useEffect(() => {
-    // Skip if Ably is not configured in this environment.
-    // Set NEXT_PUBLIC_ABLY_ENABLED=true alongside ABLY_API_KEY to enable.
-    if (!(tenantId && process.env.NEXT_PUBLIC_ABLY_ENABLED)) {
+  useChannel(`tenant:${tenantId}`, (message: Message) => {
+    if (!isRecipeEvent(message.name)) {
       return;
     }
 
-    const client = new Ably.Realtime({
-      authCallback: async (_, callback) => {
-        try {
-          const response = await fetch(authUrl, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            credentials: "include",
-            body: JSON.stringify({ tenantId }),
-          });
-          if (!response.ok) {
-            throw new Error(`Ably auth failed: ${response.status}`);
-          }
-          const tokenRequest = await response.json();
-          callback(null, tokenRequest);
-        } catch (error) {
-          const message =
-            error instanceof Error ? error.message : "Ably auth failed.";
-          callback(message, null);
-        }
-      },
-    });
-
-    const channel = client.channels.get(`tenant:${tenantId}`);
-    const handleMessage = (message: { name?: string }) => {
-      if (!isRecipeEvent(message.name)) {
-        return;
-      }
-      router.refresh();
-    };
-
-    channel.subscribe(handleMessage);
-
-    return () => {
-      channel.unsubscribe(handleMessage);
-      // Note: We don't close the client here because:
-      // 1. Multiple components may share the same connection
-      // 2. The connection lifecycle should be managed at the app level
-      // 3. Closing and recreating connections causes "Connection closed" errors
-    };
-  }, [tenantId, router]);
+    router.refresh();
+  });
 
   return null;
+}
+
+const RecipesRealtime = ({ tenantId }: RecipesRealtimeProps) => {
+  if (!(tenantId && process.env.NEXT_PUBLIC_ABLY_ENABLED)) {
+    return null;
+  }
+
+  return <RecipesRealtimeSubscription tenantId={tenantId} />;
 };
 
 export default RecipesRealtime;

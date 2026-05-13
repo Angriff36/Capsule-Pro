@@ -745,7 +745,7 @@ interface EventDetailsClientProps {
     ticketPrice: number | null;
   };
   /** Server-fetched data used as initialData for TanStack Query to avoid double-fetch on mount */
-  allEventData: Awaited<ReturnType<typeof import("./event-details-data").fetchAllEventDetailsData>>;
+  allEventData: Awaited<ReturnType<typeof import("../event-details-data").fetchAllEventDetailsData>>;
   prepTasks: PrepTaskSummaryClient[];
   tenantId?: string;
   eventDishes: EventDishSummary[];

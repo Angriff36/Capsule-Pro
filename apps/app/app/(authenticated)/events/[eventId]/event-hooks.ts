@@ -337,8 +337,11 @@ export function useQuickRsvp() {
         queryClient.setQueryData(eventKeys.detail(eventId), context.previous);
       }
     },
-    onSettled: ({ eventId }) => {
-      queryClient.invalidateQueries({ queryKey: eventKeys.detail(eventId) });
+    onSettled: (result) => {
+      if (!result) {
+        return;
+      }
+      queryClient.invalidateQueries({ queryKey: eventKeys.detail(result.eventId) });
     },
   });
 }

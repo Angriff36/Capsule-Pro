@@ -3,6 +3,8 @@ import { SidebarProvider } from "@repo/design-system/components/ui/sidebar";
 import { showBetaFeature } from "@repo/feature-flags";
 import { secure } from "@repo/security";
 import type { ReactNode } from "react";
+import { AblyProvider } from "@/app/ably-provider";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { env } from "@/env";
 import {
   AiAssistantButton,
@@ -29,7 +31,7 @@ const AppLayout = async ({ children }: AppLayoutProperties) => {
     await secure(["CATEGORY:PREVIEW"]);
   }
 
-  const { userId, redirectToSignIn } = await auth();
+  const { orgId, userId, redirectToSignIn } = await auth();
 
   if (!userId) {
     return redirectToSignIn();
@@ -37,6 +39,7 @@ const AppLayout = async ({ children }: AppLayoutProperties) => {
 
   const user = await currentUser();
   const betaFeature = await showBetaFeature();
+  const tenantId = orgId ? await getTenantIdForOrg(orgId) : null;
 
   if (!user) {
     return redirectToSignIn();
@@ -44,18 +47,20 @@ const AppLayout = async ({ children }: AppLayoutProperties) => {
 
   return (
     <SidebarProvider>
-      <AiAssistantProvider>
-        <GlobalSidebar userId={user.id}>
-          {betaFeature && (
-            <div className="m-4 rounded-full bg-blue-500 p-1.5 text-center text-sm text-white">
-              Beta feature now available
-            </div>
-          )}
-          {children}
-        </GlobalSidebar>
-        <AiAssistantButton />
-        <AiAssistantPanel />
-      </AiAssistantProvider>
+      <AblyProvider tenantId={tenantId}>
+        <AiAssistantProvider>
+          <GlobalSidebar userId={user.id}>
+            {betaFeature && (
+              <div className="m-4 rounded-full bg-blue-500 p-1.5 text-center text-sm text-white">
+                Beta feature now available
+              </div>
+            )}
+            {children}
+          </GlobalSidebar>
+          <AiAssistantButton />
+          <AiAssistantPanel />
+        </AiAssistantProvider>
+      </AblyProvider>
     </SidebarProvider>
   );
 };
