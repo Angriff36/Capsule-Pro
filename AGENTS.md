@@ -295,12 +295,10 @@ before the route.
 
 ## RLS Reminder
 
-Tenant isolation is enforced via Postgres RLS policies on `tenant_*` schemas,
-but coverage is incomplete. Current critical gaps (no RLS policy):
-
-- `tenant_accounting.*` (all tables)
-- `tenant_inventory.vendor_catalogs`, `pricing_tiers`, `bulk_order_rules`,
-  `procurement_budgets`, `vendor_contacts`
+Tenant isolation is enforced via Postgres RLS policies on `tenant_*` schemas.
+All tables now have RLS enabled (verified 2026-05-14):
+- `tenant_accounting.*` — all 10+ tables with RLS via `20260514000000_add_rls_tenant_accounting`
+- `tenant_inventory.vendor_catalogs`, `pricing_tiers`, `bulk_order_rules`, `procurement_budgets`, `vendor_contacts`, `vendor_ratings`
 - ~~`tenant_staff.employee_bank_accounts`~~ **RLS now enabled** (resolved
   2026-04-28)
 

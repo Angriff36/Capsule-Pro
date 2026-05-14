@@ -26,11 +26,12 @@ All 22 P0 items resolved. See `docs/implementation-history/v77-v80-test-suite-re
 
 ~974 total across ~364 files. `console.log`: 429/52 files. `console.error`: 501/293 files.
 
-### P1.C — RLS Gaps [PARTIAL]
+### P1.C — RLS Gaps [RESOLVED]
 
-14 migration files enable RLS across 20+ tables. Tables without RLS:
-- `tenant_accounting.*` (all tables)
-- `tenant_inventory.vendor_catalogs`, `pricing_tiers`, `bulk_order_rules`, `procurement_budgets`, `vendor_contacts`
+14 migration files enable RLS across 20+ tables. All tables now have RLS enabled:
+- ✅ `tenant_accounting.*` — 14 tables: chart_of_accounts, invoices, payment_methods, payments, payment_refund_attempts, collection_cases, collection_actions, collection_payment_plans, revenue_recognition_schedules, revenue_recognition_lines, accounts
+- ✅ `tenant_inventory.vendor_catalogs`, `pricing_tiers`, `bulk_order_rules`, `procurement_budgets`, `vendor_contacts`, `vendor_ratings`
+- Migration: `20260514000000_add_rls_tenant_accounting` (2026-05-14)
 
 ---
 
