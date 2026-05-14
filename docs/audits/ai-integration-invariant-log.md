@@ -320,3 +320,22 @@ Concrete command route count: 72 total non-dispatcher (70 in apps/api + 2 in app
 **Previously reported bugs status:** Git HEAD unchanged (c8f7c694) — no code fixes landed since prior run (09:06Z). All bugs persist. No regressions. Main report refreshed at `docs/audits/ai-integration-invariants-2026-05-13.md`.
 
 ---
+
+### Run: 2026-05-14T10:11Z (scheduled cron)
+
+**Git HEAD:** b10436ed77ef793ab505f3ca816aa18cddb4993c *(new commit since prior run — was c8f7c694)*
+
+**Summary:** 4 confirmed bugs, 3 suspicious items, 7 false alarms. No change in bug categories or counts.
+
+Concrete command route count: 72 total non-dispatcher (70 in apps/api + 2 in apps/app). Unchanged.
+
+**Confirmed Bugs:**
+
+1. **BUG-1** — `apps/app/app/clerk-provider.client.tsx:13` — `useTheme()` called above `ThemeProvider`; Clerk dark theme never applied. UNRESOLVED.
+2. **BUG-2** — `apps/app/app/layout.tsx:55` + `packages/design-system/index.tsx:23` — Duplicate `<Toaster />` rendered; doubled toasts. UNRESOLVED.
+3. **BUG-3** — `apps/app/app/api/staff/shifts/commands/{create-validated,update-validated}/route.ts` — Concrete command routes in frontend app; bypass API-layer rate limiting and key auth. UNRESOLVED.
+4. **BUG-4** — 70 concrete command `route.ts` files in `apps/api` outside manifest single-dispatcher (+ 2 in apps/app = 72 total). UNRESOLVED.
+
+**Previously reported bugs status:** New HEAD (b10436ed) — no fixes landed for any of the four bugs since last run (c8f7c694). All bugs persist. No regressions. Main report updated at `docs/audits/ai-integration-invariants-2026-05-13.md`.
+
+---

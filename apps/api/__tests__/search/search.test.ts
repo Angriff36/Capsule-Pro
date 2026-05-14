@@ -132,27 +132,23 @@ describe("Global Search API — GET /api/search", () => {
 
   // ---------------------------------------------------------------- No query
   describe("missing or empty query parameter", () => {
-    it("returns empty groups when q is not provided", async () => {
+    it("returns 400 when q is not provided", async () => {
       const response = await GET(makeRequest());
       const body = await response.json();
 
-      expect(response.status).toBe(200);
-      expect(body.success).toBe(true);
-      expect(body.groups).toEqual([]);
-      expect(body.total).toBe(0);
+      expect(response.status).toBe(400);
+      expect(body.success).toBe(false);
     });
 
-    it("returns empty groups when q is whitespace-only", async () => {
+    it("returns 400 when q is whitespace-only", async () => {
       const response = await GET(makeRequest({ q: "   " }));
       const body = await response.json();
 
-      expect(response.status).toBe(200);
-      expect(body.success).toBe(true);
-      expect(body.groups).toEqual([]);
-      expect(body.total).toBe(0);
+      expect(response.status).toBe(400);
+      expect(body.success).toBe(false);
     });
 
-    it("does not call any database model when q is empty", async () => {
+    it("does not call any database model when q is not provided", async () => {
       await GET(makeRequest());
 
       expect(database.event.findMany).not.toHaveBeenCalled();
@@ -164,14 +160,13 @@ describe("Global Search API — GET /api/search", () => {
       expect(database.kitchenTask.findMany).not.toHaveBeenCalled();
     });
 
-    it("returns empty groups when q is a single character (minimum 2 chars)", async () => {
+    it("returns 400 when q is a single character (minimum 2 chars)", async () => {
       const response = await GET(makeRequest({ q: "a" }));
       const body = await response.json();
 
-      expect(response.status).toBe(200);
-      expect(body.success).toBe(true);
-      expect(body.groups).toEqual([]);
-      expect(body.total).toBe(0);
+      expect(response.status).toBe(400);
+      expect(body.success).toBe(false);
+      expect(body.message).toBe("Search query must be at least 2 characters");
     });
   });
 

@@ -49,13 +49,13 @@ All 22 P0 items resolved. See `docs/implementation-history/v77-v80-test-suite-re
 
 ### P2.D — Payroll
 - [ ] State tax coverage only 8/50 states
-- [ ] Period ID generation produces non-UUID strings
+- [x] ~~Period ID generation produces non-UUID strings~~ RESOLVED 2026-05-14
 
 ### P2.E — Scheduling
 - [ ] No `apps/api/app/api/scheduling/` directory — no scheduling API exists at all
 
 ### P2.G — Search
-- [ ] FR-107 violation: single-char queries return 200+empty not 400
+- [x] ~~FR-107 violation: single-char queries return 200+empty not 400~~ RESOLVED 2026-05-14
 - [ ] No saved searches, no search history
 
 ### P2.O — Command Board
