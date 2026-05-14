@@ -27,8 +27,7 @@ export async function GET(
 
     const prepListItem = await database.prepListItem.findUnique({
       where: {
-        id,
-        tenantId,
+        tenantId_id: { tenantId, id },
         deletedAt: null
       },
     });

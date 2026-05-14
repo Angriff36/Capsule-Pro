@@ -27,8 +27,7 @@ export async function GET(
 
     const station = await database.station.findUnique({
       where: {
-        id,
-        tenantId,
+        tenantId_id: { tenantId, id },
         deletedAt: null
       },
     });

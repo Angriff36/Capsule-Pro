@@ -164,7 +164,7 @@ export async function GET(request: Request) {
     // Build pick queue from transactions
     const pickQueue: PickQueueItem[] = transactions.map((t) => {
       const item = itemMap.get(t.itemId);
-      const location = locationMap.get(t.storage_location_id);
+      const location = t.storage_location_id ? locationMap.get(t.storage_location_id) : null;
 
       return {
         id: t.id,

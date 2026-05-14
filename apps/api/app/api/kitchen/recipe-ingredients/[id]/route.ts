@@ -27,8 +27,7 @@ export async function GET(
 
     const recipeIngredient = await database.recipeIngredient.findUnique({
       where: {
-        id,
-        tenantId,
+        tenantId_id: { tenantId, id },
         deletedAt: null
       },
     });

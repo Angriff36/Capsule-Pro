@@ -27,8 +27,7 @@ export async function GET(
 
     const prepTaskPlanWorkflow = await database.prepTaskPlanWorkflow.findUnique({
       where: {
-        id,
-        tenantId,
+        tenantId_idempotencyKey: { tenantId, idempotencyKey: id },
         deletedAt: null
       },
     });

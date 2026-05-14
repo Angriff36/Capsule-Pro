@@ -27,8 +27,7 @@ export async function GET(
 
     const prepMethod = await database.prepMethod.findUnique({
       where: {
-        id,
-        tenantId,
+        tenantId_id: { tenantId, id },
         deletedAt: null
       },
     });

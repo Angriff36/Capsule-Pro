@@ -209,7 +209,7 @@ export async function GET(request: Request) {
     // Build response with details
     const data = transactions.map((transaction) => {
       const item = itemsMap.get(transaction.itemId);
-      const location = locationsMap.get(transaction.storage_location_id);
+      const location = transaction.storage_location_id ? locationsMap.get(transaction.storage_location_id) : null;
       const user = transaction.employee_id
         ? usersMap.get(transaction.employee_id)
         : null;

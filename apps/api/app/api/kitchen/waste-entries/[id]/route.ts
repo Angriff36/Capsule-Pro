@@ -27,8 +27,7 @@ export async function GET(
 
     const wasteEntry = await database.wasteEntry.findUnique({
       where: {
-        id,
-        tenantId,
+        tenantId_id: { tenantId, id },
         deletedAt: null
       },
     });
