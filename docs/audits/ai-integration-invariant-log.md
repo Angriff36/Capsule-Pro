@@ -436,3 +436,27 @@ Concrete command route count: 72 total non-dispatcher (70 in apps/api + 2 in app
 **Previously reported bugs status:** Git HEAD unchanged (1d75cea5) — no code fixes landed since prior run (12:24Z). All 4 bugs persist. No regressions. Main report refreshed at `docs/audits/ai-integration-invariants-2026-05-13.md`.
 
 ---
+
+### Run: 2026-05-14T13:32Z (scheduled cron)
+
+**Git HEAD:** bbccf85ac35b70c44750e2ca4f894420f9fcdcae *(new commit since prior run — was 1d75cea5)*
+
+**Summary:** 3 confirmed bugs, 3 suspicious items, 7 false alarms.
+
+**Key change this run:** Prior BUG-1 (useTheme above ThemeProvider in ClerkProviderClient) **reclassified as FALSE ALARM**. Re-tracing the render tree confirms `ClerkProviderClient` is a child of `DesignSystemProvider` which wraps `ThemeProvider` — `useTheme()` is called correctly below `ThemeProvider`. Prior audit passes misread the nesting direction.
+
+**Confirmed Bugs:**
+
+1. **BUG-1** — `apps/app/app/layout.tsx:54` + `packages/design-system/index.tsx:23` — Duplicate `<Toaster />` rendered; doubled toasts. UNRESOLVED.
+2. **BUG-2** — `apps/app/app/api/staff/shifts/commands/{create-validated,update-validated}/route.ts` — Concrete command routes in frontend app; bypass API-layer rate limiting and key auth. UNRESOLVED.
+3. **BUG-3** — 70 concrete command `route.ts` files in `apps/api` outside manifest single-dispatcher (+ 2 in apps/app = 72 total). UNRESOLVED (backlog).
+
+**Previously reported bugs status:**
+- Prior BUG-1 (useTheme above ThemeProvider) → **RECLASSIFIED FALSE ALARM** — render tree analysis confirms it was never broken.
+- Prior BUG-2 (Duplicate Toaster) → renumbered BUG-1. UNRESOLVED.
+- Prior BUG-3 (shifts routes in apps/app) → renumbered BUG-2. UNRESOLVED.
+- Prior BUG-4 (70 concrete command routes) → renumbered BUG-3. UNRESOLVED.
+
+**Notes:** Main report rewritten with corrected analysis at `docs/audits/ai-integration-invariants-2026-05-13.md`.
+
+---

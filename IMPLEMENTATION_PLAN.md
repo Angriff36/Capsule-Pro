@@ -1,10 +1,10 @@
-# IMPLEMENTATION_PLAN.md — v88
+# IMPLEMENTATION_PLAN.md — v89
 
 > Updated 2026-05-14
-> Synthesized from v88 re-audit correcting significant v87 errors.
+> Synthesized from v89 multi-agent verification correcting v88 metric errors.
 > All 22 P0 items resolved (v65-v72). Test suite repair complete (v77-v80).
 > v0.12.2 tag created with RLS fixes and console statements audit baseline.
-> **v88 KEY CORRECTIONS:** Console statements total 1,078 (v87 had debug/log SWAPPED: debug=1 not 420, log=420 not 1; error=555 not 367; warn=33 not 70; info=70 not 33). Hardcoded /api/ paths 620 (NOT 331 — v87 undercounted by 289). RLS actual 82/214=38.3% (NOT 97/221=43.8% — v87 had duplicate counts and wrong totals). Inventory routes 58 (NOT 24 — v87 undercounted by 34). Events routes 87 (MISSING from v87 entirely). Procurement 24 routes (NOT 58 — v87 included inventory). Documents 1 route (NOT 7). tenant_facilities 2/6=33.3% (NOT 5/5=100%). packages/ai is DEAD (v87 said ALIVE with 12 imports). packages/brand is DEAD (v87 said ALIVE with 8 files). packages/auth is 2nd heaviest with 714 imports (OMITTED from v87). packages/feature-flags EXISTS with 11 imports (v87 said "does not exist"). packages/sales-reporting has 1 import (NOT 7). P0.3 manifest POST gap RESOLVED (was 242, now 0). AllergenWarning manifest wiring RESOLVED. :any types 18 (NOT 12). Kitchen has 11 singular/plural route directory pairs (65+ likely duplicate routes). 22 domains not in v87 accounting for 96 routes. 241 test files (NOT 243). 47 skips (NOT 42). E2E skips 41 (NOT 37). Manifest runtime commands 40 (NOT 37). routes.manifest.json 849 routes (589 POST + 260 GET).
+> **v89 KEY CORRECTIONS:** Console statements total 864 (v88 overcounted by 214; info=4 not 70). Pastel backgrounds 210 (v88 undercounted by 93). Hardcoded /api/ paths 705 (+85). RLS 86/218=39.4% (+4/+4). tenant_facilities 5/5=100% (v88 said 2/6=33.3%). NEW tenant_facility (singular) schema 0/4=0% RLS. Kitchen 149 routes (+1). Events 90 routes (+3). Unlisted domains 20/83 routes (v88 said 22/96). Inventory 5/58 manifest commands (v88 said 0). NEW P0.6: 8 frontend 404s. NEW P0.7: OAuth plaintext. NEW P2.Z: security gaps (auth 78.6%, rate-limit 3.8%). NEW P2.AA: 176/632 orphan routes. P0.1 NOW REMOVABLE (all apps pass tsc --noEmit). P0.2 CI gap: no prisma generate before typecheck. P0.4 CI step mislabeled, no Biome lint, 2 package script mismatches.
 
 ---
 
@@ -12,9 +12,9 @@
 
 These items block production safety or allow regressions to ship undetected.
 
-### P0.1 — Remove `ignoreBuildErrors` [READY TO REMOVE]
+### P0.1 — Remove `ignoreBuildErrors` [NOW REMOVABLE]
 
-**Status:** All three apps still have the flag set. Comment says typecheck done via `pnpm tsc --noEmit` in CI but that only covers apps.
+**Status:** All 3 apps pass `tsc --noEmit` with ZERO errors. Flag is not masking any type errors. Safe to remove.
 
 - `apps/app/next.config.ts:17` — `ignoreBuildErrors: true`
 - `apps/api/next.config.ts:102` — `ignoreBuildErrors: true`
@@ -23,17 +23,17 @@ These items block production safety or allow regressions to ship undetected.
 
 **Steps:**
 1. Remove `ignoreBuildErrors` from all three `next.config.ts` files
-2. Verify clean build with zero errors
-3. Optionally address `skipLibCheck` in a follow-up
+2. Verify `next build` succeeds (currently fails on missing RESEND_FROM/RESEND_TOKEN env vars, not TS)
+3. Monitor next Vercel deployment for parenthesized route group lstat issue
 
 ### P0.2 — Add Prisma Generate + db:check to CI [NOT STARTED]
 
-**Status:** ci.yml has NO dedicated Prisma generate or db:check step. `prisma migrate deploy` only runs in E2E job. Main CI relies on implicit postinstall. `scripts/db-drift-check.mjs` is a **no-op placeholder** that always exits 0.
+**Status:** ci.yml has NO `prisma generate` before typecheck step — latent ordering bug (typecheck runs before build's implicit generate). `scripts/db-drift-check.mjs` confirmed unconditional no-op. No `prisma migrate status` or `prisma validate` in CI.
 
 **Steps:**
-1. Add explicit step after install in main CI job
-2. Make it a HARD gate (no `continue-on-error`)
-3. Fix or replace `scripts/db-drift-check.mjs` with real drift detection
+1. Add `pnpm prisma:check` before typecheck step in main CI job
+2. Replace `scripts/db-drift-check.mjs` no-op with real validation
+3. Make both HARD gates (no `continue-on-error`)
 
 **Files:** `.github/workflows/ci.yml`, `scripts/db-drift-check.mjs`
 
@@ -45,15 +45,42 @@ These items block production safety or allow regressions to ship undetected.
 
 ### P0.4 — Extend TypeScript Typecheck to Packages + Fix CI Step Label [NOT STARTED]
 
-**Status:** CI typecheck (ci.yml line 45) is MISLABELED as "Run linting" but actually runs typecheck. Only covers 3 apps. No packages are typechecked. 6 apps never typechecked (docs, email, mobile, storybook, studio). No Biome lint gate in CI. `skipLibCheck: true` everywhere.
+**Status:** CI typecheck step labeled "Run linting" but actually runs typecheck. Only covers 3 apps. 28 packages have typecheck scripts but none run in CI. `event-parser` has `"type-check"` instead of `"typecheck"` (naming mismatch). `sales-reporting` has no typecheck script. No Biome/Ultracite lint step in CI.
 
 **Steps:**
-1. Fix step name from "Run linting" to "Run typecheck"
-2. Add package typecheck to CI
-3. Add typecheck scripts to 6 packages that lack them
-4. Add actual linting step (Biome) or document that lint runs locally only
+1. Rename step from "Run linting" to "Run typecheck"
+2. Add `pnpm turbo typecheck` (no filter) to CI
+3. Fix 2 package script naming mismatches
+4. Add `pnpm lint` step for Biome
 
-**Files:** `.github/workflows/ci.yml`
+**Files:** `.github/workflows/ci.yml`, `packages/event-parser/package.json`, `packages/sales-reporting/package.json`
+
+### P0.5 — [RESERVED — DO NOT REOPEN]
+~Was @repo/observability zero-import claim — RESOLVED v85~
+
+### P0.6 — Frontend Calls to Non-Existent API Routes [NEW — NOT STARTED]
+
+**Status:** 8 frontend calls will cause runtime 404s:
+
+- 3 alertsconfig commands (create, update, remove) — `settings/alerts/alerts-client.tsx`
+- 2 cateringorder commands (create, cancel) — `events/catering/catering-client.tsx` (commands live at `events/catering-orders/commands/`)
+- 2 variancereport commands (approve, review) — `inventory/variance-reports/variance-reports-client.tsx`
+- 1 menus command (create) — no `/api/menus/` exists
+
+**Steps:**
+1. Fix frontend paths to match actual API route locations
+2. Create missing `/api/menus/` route or remove dead frontend call
+
+### P0.7 — Calendar OAuth Tokens Stored Plaintext [NEW — NOT STARTED]
+
+**Status:** `ProviderSync` model stores `accessToken`/`refreshToken` as plaintext `String @db.Text`. Zero encryption. Calendar sync callbacks write tokens directly from provider response. **HIGH severity** — if DB is compromised, all connected calendar tokens are immediately usable.
+
+**Steps:**
+1. Implement token encryption at rest (application-level encryption before DB write)
+2. Migrate existing plaintext tokens to encrypted storage
+3. Add decryption layer in calendar sync read path
+
+**Files:** `packages/database/prisma/schema.prisma`, calendar sync routes
 
 ---
 
@@ -63,314 +90,151 @@ These items block production safety or allow regressions to ship undetected.
 
 **Status:** Multiple runtime-level bugs prevent correct payroll operation.
 
-- **CRITICAL:** `tax/list/route.ts` references `tenant_payroll.tax_configurations` — schema DOES NOT EXIST. Route will crash at runtime
-- **CRITICAL:** Federal bracket values inconsistent — 3 copies with 2 different value sets: `taxEngine.ts` (canonical), `tax/brackets/route.ts` (hardcoded override), `tax/list/route.ts` (another copy)
-- Missing `PayrollPeriod`/`PayrollRun`/`PayrollLineItem` Prisma models (models exist but in wrong schema context)
-- State tax coverage: 9/50 states (only 8 with actual tax logic — CA, NY, OH, PA, IL, TX, FL, WA)
-- No pay stub generation
-- No W-4/withholding form management
-- `payroll-engine` package exists with core calculations
-- No spec at `specs/payroll.md`
-
-**Steps:**
-1. Fix `tenant_payroll` schema reference in `tax/list` route (should use correct schema)
-2. Reconcile federal bracket values across all 3 copies (single source of truth)
-3. Ensure `PayrollPeriod`/`PayrollRun`/`PayrollLineItem` models align with actual DB schema
-4. Author payroll spec at `specs/payroll.md`
-
-**Files:** `apps/api/app/api/payroll/`, `packages/database/prisma/schema.prisma`
+- **CRITICAL:** `tenant_payroll` schema crash CONFIRMED — `tax/list/route.ts` references nonexistent schema
+- **CRITICAL:** Federal bracket inconsistency — 3 files with 2 different value sets:
+  - `taxEngine.ts`: 11,725 / 47,525 / 101,175 / 193,250 / 245,650 / 609,300
+  - `brackets/route.ts` + `list/route.ts`: 11,600 / 47,150 / 100,525 / 191,950 / 243,725 / 609,350
+- Prisma models exist in correct `tenant_staff` schema (NOT "wrong schema context")
+- State coverage: 8/50 (5 with tax logic + 3 zero-tax states)
+- No pay stub generation — CONFIRMED
+- No W-4/withholding form management — CONFIRMED
+- No spec at `specs/payroll.md` — CONFIRMED
 
 ### P1.B — CRM Pipeline Persistence Broken [NOT STARTED]
 
-**Status:** Deal model DOES NOT EXIST. Deals routes are virtual view over Proposals. No PUT/PATCH for pipeline stage changes — drag-and-drop is ephemeral. 41 route files. Pipeline functionally broken for persistence. No spec at `specs/crm.md`.
+**Status:** Deal model DOES NOT EXIST — CONFIRMED. Deals are virtual view over Proposals with derived stages. No PUT/PATCH for pipeline stage changes — drag-and-drop cannot persist. 41 route files. No spec at `specs/crm.md`.
 
-**Steps:**
-1. Wire CRM manifests to Prisma stores (BROKEN_PRISMA_READ pattern)
-2. Fix pipeline drag-and-drop to use existing Proposal model
-3. Author CRM spec at `specs/crm.md`
+### P1.C — Console Statement Cleanup [CORRECTED — 864 TOTAL]
 
-**Files:** CRM manifest files, `apps/api/app/api/crm/`
+**Status:** v89 CORRECTION: **864 console statements** (NOT 1,078 — v88 overcounted by 214).
 
-### P1.C — Console Statement Cleanup [CORRECTED — 1,078 TOTAL]
+**Breakdown (v89 verified):**
+- 527 `console.error` (NOT 555)
+- 304 `console.log` (NOT 420)
+- 30 `console.warn` (NOT 33)
+- 4 `console.info` (NOT 70 — v88 MAJOR overcount)
+- 1 `console.debug` (unchanged)
 
-**Status:** v88 CORRECTION: **1,078 console statements** (NOT 891 — v87 undercounted). v87 had debug/log SWAPPED.
+**@repo/observability:** 390 file imports. The replacement path IS wired.
 
-**Breakdown (v88 corrected):**
-- 555 `console.error` (NOT 367 — largest block)
-- 420 `console.log` (NOT 1 — v87 SWAPPED debug/log)
-- 70 `console.info` (NOT 33 — v87 SWAPPED warn/info)
-- 33 `console.warn` (NOT 70 — v87 SWAPPED warn/info)
-- 1 `console.debug` (NOT 420 — v87 SWAPPED debug/log)
-
-**@repo/observability:** 390 file imports (388 apps, 2 packages). 376 files import `{ log }` from `@repo/observability/log`. The replacement path IS wired and well-adopted.
-
-**Priority order:**
-1. Replace `console.error` in API route catch blocks (555 instances — largest block)
-2. Replace `console.log` calls (420 instances — bulk cleanup)
-3. Replace remaining `console.warn`/`console.info`/`console.debug`
+**Priority:** Replace `console.error` first (527), then `console.log` (304).
 
 ### P1.D — Design System: Pastel Backgrounds + Bare Card [CORRECTED]
 
-**Status:** Bare Card is **279** (unchanged from v87). Pastel backgrounds **117** (NOT 138 — v87 overcounted by 21).
+**Status:** Bare Card 279 (unchanged). Pastel backgrounds **210** (v88 said 117 — undercounted by 93).
 
 - Bare `<Card>` without tone: **279**
-- Pastel background violations: **117** (v87 said 138)
-- shadow-* violations: 37 (unchanged)
-- BlogFilterChip: 39 imports across 7 files
-- ResearchTable: 23 imports across 10 files
-- StatusPill: 67 imports across 17 files
-
-**Steps:**
-1. Systematic removal of 117 pastel background violations
-2. Audit bare Card usage — determine which need `tone` prop (279 instances)
-3. Drive BlogFilterChip and ResearchTable adoption
+- Pastel background violations: **210** (v88 said 117)
+- shadow-* violations: **39 total** (37 standard + 2 non-standard naming patterns)
+- BlogFilterChip: 39 imports, ResearchTable: 23 imports, StatusPill: 67 imports
 
 ### P1.E — TypeScript Strictness [CORRECTED]
 
-**Status:** v88 CORRECTION: `:any` types is **18** (NOT 12 — v87 undercounted by 6).
-- `:any` types: **18** (NOT 12)
-- `@ts-ignore`: **0** (confirmed clean)
-- `@ts-expect-error`: **7** (stable)
-- TODO in production source: **7** (stable)
-- FIXME: **0** (clean)
-- HACK: **0** (clean)
-
-**Steps:**
-1. Resolve 18 `:any` types in non-generated code
-2. Add justification comments on all 7 `@ts-expect-error` suppressions
-3. Triage 7 TODO items in production source
+**Status:** v89 CORRECTION: `:any` types in apps is **14** (NOT 18 — 4 were in packages/). New full-scope metric: **98 `:any` types across apps+packages**.
+- `:any` types (apps): **14** (NOT 18)
+- `:any` types (apps+packages): **98** (NEW metric)
+- `@ts-ignore`: **0** (clean)
+- `@ts-expect-error` (apps): **2** (5 others in packages/)
+- `@ts-expect-error` (apps+packages): **7** (unchanged)
+- TODO in production: **7**, FIXME: **0**, HACK: **0**
 
 ### P1.F — Accounting: Financial Reports Expenses Hardcoded to Zero [CONFIRMED]
 
-**Status:** `.reduce(() => 0, 0)` at `financial-reports/route.ts:262` confirmed. Expenses always report as zero. Journal entries and general ledger MISSING ENTIRELY. Accounts receivable MISSING. Bank reconciliation FULLY SIMULATED.
-
-- 17 route files, 36 HTTP handlers
-- 21 manifest references
-- Invoicing, payments, revenue recognition, collections: fully implemented
-- No spec at `specs/accounting.md`
-
-**Steps:**
-1. Fix `.reduce(() => 0, 0)` to actually compute expense totals
-2. Implement journal entries / general ledger foundation
-3. Implement accounts receivable workflow
-
-**Files:** `apps/api/app/api/accounting/`
+**Status:** `.reduce(() => 0, 0)` at `financial-reports/route.ts:258-262` CONFIRMED STILL PRESENT. Journal entries/general ledger MISSING ENTIRELY. Bank reconciliation FULLY SIMULATED (no Prisma model, fake data via modular arithmetic). Accounts receivable handled implicitly through invoices/payments. No spec.
 
 ### P1.G — Inventory Route Manifest Gap [CORRECTED]
 
-**Status:** v88 CORRECTION: Inventory has **58 routes** (NOT 24 — v87 undercounted by 34). Still 0 manifest commands.
+**Status:** v89 CORRECTION: Inventory has **58 routes, 5 manifest commands** (9% — NOT 0% as v88 claimed). Transfer lifecycle incomplete — only list route exists. **28/58 routes (48%) have NO frontend consumer.** No spec.
 
-- **Inventory: 58 routes, 0 manifest commands** — this is a major gap
-- Only 1 transfer route exists (list). Create, approve, cancel, receive, ship commands defined in manifest IR but have NO API routes
+### P1.H — Hardcoded API Paths [CORRECTED — 705]
 
-**Steps:**
-1. Wire inventory routes to manifest commands (58 routes, 0 coverage)
-2. Author inventory spec at `specs/inventory.md`
-
-**Files:** `apps/api/app/api/inventory/`
-
-### P1.H — Hardcoded API Paths [CORRECTED — 620]
-
-**Status:** v88 CORRECTION: **620 hardcoded `/api/` paths** (NOT 331 — v87 undercounted by 289). Breakdown: 351 double-quoted + 269 template literals.
-
-**Steps:**
-1. Extract API base URL to shared constant
-2. Migrate hardcoded paths to use the constant or typed API client
-3. Verify `check-hardcoded-routes.mjs` catches new violations
+**Status:** v89 CORRECTION: **705 hardcoded `/api/` paths** (NOT 620 — growing, +85 since v88).
 
 ---
 
 ## P2 — Medium Priority
 
-### P2.A — Calendar (8 routes, spec violations confirmed)
+### P2.A — Calendar (8 routes)
 
-- [x] Drag-and-drop: DONE (dnd-kit)
-- [x] ResearchTable: DONE
-- [x] BlogFilterChip: DONE for view toggle
-- [ ] CRITICAL: Reschedule uses direct `database.event.update()` / `database.scheduleShift.update()` — NO manifest commands (FR-504 confirmed)
-- [ ] CRITICAL: OAuth tokens stored PLAINTEXT in providerSync table (FR-604 confirmed)
-- [ ] 0 manifest commands out of 8 routes
-- [ ] No optimistic concurrency control (FR-502)
-- [ ] No mobile responsive layout for drag-and-drop
-- [ ] No E2E tests for calendar reschedule
+- [x] Drag-and-drop (dnd-kit), ResearchTable, BlogFilterChip — DONE
+- [ ] OAuth tokens PLAINTEXT — escalated to P0.7
+- [ ] 0 manifest commands, no optimistic concurrency control (FR-502)
+- [ ] No mobile responsive layout for drag-and-drop, no E2E tests for reschedule
 
-### P2.B — Accounting (17 routes, significant gaps)
+### P2.B — Accounting (17 routes)
 
-- [x] Comprehensive invoicing, payments, collections, revenue recognition
-- [ ] Financial reports expenses HARDCODED TO ZERO (see P1.F)
-- [ ] Journal entries / general ledger: MISSING ENTIRELY
-- [ ] Bank reconciliation: FULLY SIMULATED
-- [ ] Accounts receivable: MISSING
-- [ ] 21 manifest references (good coverage for existing features)
+- [x] Invoicing, payments, revenue recognition, collections
+- [ ] Financial reports expenses HARDCODED TO ZERO (P1.F)
+- [ ] Journal entries / general ledger: MISSING. Bank reconciliation: SIMULATED
 
 ### P2.C — Contracts (1 top-level route + public signing)
 
-- [x] 8 EventContract commands confirmed (matching target)
-- [x] Public signing surface exists at /api/public/contracts/[token]/
-- [x] VendorContract commands exist (10 routes confirmed)
-- [ ] Public signing uses direct DB writes (FR-504 violation)
-- [ ] Public sign returns 400 not 409 for duplicates
+- [x] 8 EventContract commands, 10 VendorContract commands, public signing surface
+- [ ] Public signing uses direct DB writes (FR-504), returns 400 not 409 for duplicates
+- [ ] No rate limiting on unauthenticated public signing endpoint
 
-### P2.D — Events (87 routes — v88 CORRECTION)
+### P2.D — Events (90 routes — v89 CORRECTION)
 
-**v88 CORRECTION:** Events has **87 routes** (v87 said "8 routes" — was off by 79). This is the 2nd largest domain after Kitchen.
+**v89 CORRECTION:** Events has **90 routes** (v88 said 87). Spec EXISTS at `specs/events/SPEC.md`.
 
-- [ ] `Event.importWorkflowId` NOT in schema
-- [ ] `EventImportWorkflow` model missing entirely
-- [ ] Event import code commented out at `apps/api/app/api/events/documents/parse/route.ts:936-944`
-- [ ] 6-stage import workflow at 30% (UI shows 8-phase display; backend has flat `parseStatus`)
-- [ ] Battle board at 40%
-- [ ] AI confidence field missing
-- [ ] 13/21 pages use legacy Header imports
-- [ ] Spec needed at `specs/events.md`
+- [ ] `Event.importWorkflowId` STILL MISSING from schema
+- [ ] `EventImportWorkflow` model PARTIALLY exists (EventImport lacks 6-stage columns)
+- [ ] Import code at `documents/parse/route.ts:936-979` STILL COMMENTED OUT
+- [ ] 6-stage workflow ~50% (16 manifest commands, flat Prisma model)
+- [ ] Battle board ~35% (model exists, no vote/nominate/finalize endpoints)
+- [ ] AI confidence field STILL MISSING from EventSummary
+- [ ] Event model missing back-relations to EventSummary, EventGuest, EventStaffAssignment, EventImport
+- [ ] Legacy Header: 14/28 pages
+- [ ] **NEW: 65/90 routes outside manifest IR (72%)**
 
-### P2.E — Kitchen (148 routes — largest domain, no spec)
+### P2.E — Kitchen (149 routes — v89 CORRECTION)
 
-- [ ] 21 manifest commands (NOT 39 — v86 overcounted)
-- [ ] 21/148 routes use manifest commands (14.2%)
-- [ ] **11 singular/plural route directory pairs** (dish/dishes, ingredient/ingredients, recipe/recipes, etc.) — likely legacy duplicates accounting for 65+ routes
-- [ ] No hardcoded nutrition ingredients found (v86 claim was incorrect)
-- [ ] Spec needed at `specs/kitchen.md`
+**v89 CORRECTION:** Kitchen has **149 routes** (v88 said 148). Manifest coverage **25.5%** (38/149 — NOT 14.2%).
 
-### P2.F — Logistics (5 routes, 0 manifest commands)
+- [ ] **12 singular/plural duplicate pairs** (22 routes should be deleted)
+- [ ] 46 orphan routes (no frontend consumer)
+- [ ] 2 zero-UUID placeholders in import route
+- [ ] Server actions bypass API layer with raw SQL
+- [ ] No spec
 
-- [x] 5 GET routes (vehicles, drivers, routes, shipments, dispatch)
-- [ ] 0 manifest commands have API route implementations
-- [ ] GPS tracking: SIMULATED (not real)
-- [ ] Spec needed at `specs/logistics.md`
-
-### P2.G — Staffing (2 routes, 5 queryRawUnsafe — ALL PARAMETERIZED)
-
-- [ ] CoverageBar primitive NOT authored (4 inline implementations)
-- [ ] 5 `queryRawUnsafe` calls in `staffing/coverage/route.ts` (lines 70, 88, 112, 128, 147) — all parameterized with `$1`/`$2`, safe but cosmetic cleanup needed
-- [ ] 4 other files converted (now just comments)
-- [ ] Labor budget alerts backend NOT surfaced on frontend
-
-### P2.H — Staff (35 routes — DIFFERENT DOMAIN from staffing)
-
-- 35 route files under `apps/api/app/api/staff/`
-- Scheduling is fully implemented here (18+ API routes)
-
+### P2.F — Logistics (5 routes, 0 manifest commands, GPS SIMULATED)
+### P2.G — Staffing (2 routes, 5 queryRawUnsafe — all parameterized, cosmetic only)
+### P2.H — Staff (35 routes — scheduling domain)
 ### P2.I — Settings (10 routes, fully implemented)
-
-- 10 route files
-- Billing blocked on model
-
-### P2.J — Analytics (5 routes, fully implemented)
-
-- 5 routes, fully implemented
-- Revenue computed 4 different ways across pages — no shared metrics contracts
-- Spec needed at `specs/analytics.md`
-
-### P2.K — Marketing (1 route — minimal)
-
-- 1 route (analytics only)
-- Campaigns: "Coming Soon" placeholder with legacy Header
-- Zero BlogFilterChip, ResearchTable, ContactFormCard, StatusPill usage
-
-### P2.L — Command Board (22 routes, 10 with write capabilities)
-
-- [x] 22 routes, 10 with write capabilities
-- [x] Shell score: 3/3 (full compliance)
-- [ ] AI Chat UI: NOT IMPLEMENTED (APIs exist)
-- [ ] Simulation: backend only, no UI
-- [ ] Entity Detail Panel: NOT IMPLEMENTED
-- [ ] Plan Approval UI: NOT IMPLEMENTED (APIs exist)
-- [ ] Board templates return 501
-- [ ] Data model divergence: frontend uses `CommandBoardCard`, API uses `BoardProjection`
-- [ ] Template sharing blocked
-
-### P2.M — Knowledge Base (3 routes, all read-only)
-
-- 3 routes, all read-only
-- No write/command surface for creating or editing articles
-
-### P2.N — Integrations (25 routes — v88 CORRECTION)
-
-**v88 CORRECTION:** 25 routes (NOT 23 — v87 undercounted by 2).
-
-- GoodShuffle: 10 routes
-- Nowsta: 6 routes
-- QuickBooks: 1 route
-- Webhooks: 9 routes (includes retry mechanism)
-
+### P2.J — Analytics (5 routes, revenue computed 4 different ways)
+### P2.K — Marketing (1 route, minimal)
+### P2.L — Command Board (22 routes, shell 3/3, AI Chat/Simulation UI NOT IMPLEMENTED)
+### P2.M — Knowledge Base (3 routes, read-only)
+### P2.N — Integrations (25 routes: GoodShuffle 10, Nowsta 6, QuickBooks 1, Webhooks 9)
 ### P2.O — Training (7 routes)
-
-- 7 route files
-- Training module with moderate coverage
-
 ### P2.P — Search [RESOLVED — DO NOT REOPEN]
+### P2.Q — Procurement (24 routes, requisitions 8/8 complete, vendor-contracts 10/10 complete)
+### P2.R — Timecards (10 routes)
+### P2.S — Documents (1 route)
+### P2.T — Catering (1 route, list only)
+### P2.U — Warehouse (2 routes, GET-only)
+### P2.V — Communications/Collaboration Fragmentation (zero manifest commands)
+### P2.W — Frontend Module Design System (13/15 at 3/3; Kitchen 2/3)
 
-- [x] FR-107 resolved: single-char queries return 400
-- [x] Entity coverage at 15 (meets spec requirement of 15+)
-- [x] Multi-word AND-chaining IS implemented
-- [ ] No saved searches, no search history (low priority)
+### P2.X — Unlisted Domains (20 domains, 83 routes — v89 CORRECTION)
 
-### P2.Q — Procurement (24 routes — v88 CORRECTION)
+**v89 CORRECTION:** **20 domains with 83 routes** (v88 said 22/96). Need individual assessment.
 
-**v88 CORRECTION:** Procurement has **24 routes** (NOT 58 — v87 included inventory routes).
+### P2.Y — Payroll (24 routes — runtime bugs at P1.A)
 
-- Requisitions: 8/8 command routes COMPLETE
-- Vendor-contracts: 10/10 command routes COMPLETE
-- Vendors: some command routes exist
-- Spec needed at `specs/procurement.md`
+### P2.Z — Security Coverage Gaps [NEW]
 
-### P2.R — Timecards (10 routes, no dual implementation)
+- **Auth coverage:** 78.6% (497/632 routes call `auth()`) — 135 routes lack auth
+- **Rate limiting:** 3.8% (24/632 routes) — 608 routes unprotected
+- **tenant_facility (singular):** 4 tables with 0% RLS (facility_spaces, facility_bookings, utility_meters, utility_readings)
+- **`$queryRawUnsafe`:** 5 calls in `staffing/coverage/route.ts` — potential SQL injection if user input interpolated
+- **Public contract signing:** no rate limiting on unauthenticated endpoint
 
-- 10 routes. No dual implementation exists.
+### P2.AA — Orphan Route Cleanup [NEW]
 
-### P2.S — Documents (1 route — v88 CORRECTION)
-
-**v88 CORRECTION:** Documents has **1 route** (NOT 7 — v87 overcounted by 6).
-
-### P2.T — Catering (1 route)
-
-- 1 route (list only)
-- No create/update/delete command routes
-- No manifest command surface
-
-### P2.U — Warehouse (2 routes, no writes)
-
-- Only 2 GET-only list routes
-- All write operations missing (create, update, delete, transfer)
-- No manifest command surface
-
-### P2.V — Communications/Collaboration Fragmentation
-
-**Status:** `communications/` and `collaboration/notifications/` duplicate email/SMS functionality. Zero manifest command routes. SMS automation has camelCase/kebab route duplication.
-
-### P2.W — Frontend Module Design System Compliance
-
-**Status:** 13/15 modules score 3/3. Kitchen 2/3.
-
-| Module | Score | Notes |
-|--------|-------|-------|
-| accounting | 3/3 | Full PageCanvas/CommandBand/MetricBand/OperationalColumn |
-| analytics | 3/3 | Complete shell |
-| calendar | 3/3 | Complete shell |
-| collaboration | 3/3 | Complete shell |
-| command-board | 3/3 | Full compliance |
-| communications | 3/3 | Complete shell |
-| crm | 3/3 | Complete shell |
-| events | 3/3 | Complete shell |
-| inventory | 3/3 | Complete shell |
-| kitchen | 2/3 | Still needs full shell adoption |
-| logistics | 3/3 | Complete shell |
-| marketing | 3/3 | Complete shell |
-| procurement | 3/3 | Complete shell |
-| scheduling | 3/3 | Complete shell |
-| settings | 3/3 | Complete shell |
-
-**Priority fix:**
-1. Kitchen (2/3) — 148 routes, largest domain, needs OperationalColumn integration
-
-### P2.X — 22 Unlisted Domains (96 routes — v88 NEW)
-
-v87 only tracked 15 domains. 22 additional domains account for **96 routes** not individually tracked. These need individual assessment for manifest coverage, spec gaps, and RLS status.
-
-### P2.Y — Payroll (24 routes — v88 CORRECTION)
-
-**v88 CORRECTION:** Payroll has **24 routes** (NOT 25 — v87 overcounted by 1). Runtime bugs documented at P1.A.
+- **176/632 API routes (28%)** have no frontend consumer
+- Kitchen: 66 orphans (45%), Inventory: 26 (45%), Collaboration: 8 (47%), Administrative: 7 (54%), Communications: 5 (71%)
+- 20 unlisted domains with 83 routes need individual assessment
 
 ---
 
@@ -378,207 +242,102 @@ v87 only tracked 15 domains. 22 additional domains account for **96 routes** not
 
 ### P3.A — Dead Package Cleanup
 
-**v88 CORRECTION:** packages/ai and packages/brand are DEAD (v87 wrongly said ALIVE). packages/feature-flags EXISTS (v87 wrongly said "does not exist"). packages/sales-reporting has 1 import (v87 said 7).
-
-**Confirmed dead (zero consumers):**
-
-| Package | LOC | Notes |
-|---------|-----|-------|
-| packages/storage | — | Zero imports |
-| packages/ai | — | Zero imports (v87 said 12 — WRONG) |
-| packages/brand | — | Zero imports (v87 said 8 files — WRONG) |
-| packages/kitchen-state-transitions | 282 | Covered by @repo/database enums |
-| packages/apps/app | 0 | Dead shell (phantom package.json, no source) |
-| packages/mcp-server | — | Zero imports from app/api (standalone) |
-
-**v88 Newly Tracked Packages:**
-
-| Package | Imports | Notes |
-|---------|---------|-------|
-| auth | 714 | 2nd heaviest package — OMITTED from v87 |
-| notifications | 26 | Not in v87 |
-| sentry-integration | 14 | Not in v87 |
-| internationalization | 16 | Not in v87 |
-| feature-flags | 11 | v87 said "does not exist" — WRONG |
-| manifest-ir | — | Not tracked in v87 |
-| seo, pdf, rate-limit, payments, payroll-engine, supplier-connectors, collaboration, webhooks, next-config, email | — | All exist, not individually tracked |
+**Dead (zero consumers):** packages/storage, packages/ai, packages/brand, packages/kitchen-state-transitions (282 LOC), packages/apps/app (dead shell), packages/mcp-server (standalone).
 
 ### P3.B — Spec Authoring
 
-**v88 CORRECTION:** Many critical domains lack specs.
-
-| Domain | API Routes | Priority | Notes |
-|--------|-----------|----------|-------|
-| kitchen/ | 148 | CRITICAL | Largest domain, no spec |
-| events/ | 87 | CRITICAL | 2nd largest, no spec |
-| payroll/ | 24 | CRITICAL | Runtime bugs, no spec |
-| inventory/ | 58 | HIGH | No spec |
-| crm/ | 41 | HIGH | Pipeline broken |
-| logistics/ | 5 | HIGH | GPS simulated, no spec |
-| analytics/ | 5 | HIGH | Revenue computed 4 ways |
-| procurement/ | 24 | MEDIUM | No spec |
-| accounting/ | 17 | MEDIUM | Expenses hardcoded to zero |
-| scheduling/ | — | LOW | Full implementation, no spec |
-
-4 `_TODO` spec directories are implemented but not graduated (SMS, Nowsta, Training, Webhooks). `specs/README.md` references `.automaker/features/` which does not exist.
+| Domain | Routes | Priority | Notes |
+|--------|--------|----------|-------|
+| Kitchen | 149 | CRITICAL | Largest, no spec |
+| Events | 90 | CRITICAL | Spec EXISTS at specs/events/SPEC.md |
+| Inventory | 58 | HIGH | No spec |
+| CRM | 41 | HIGH | Pipeline broken |
+| Payroll | 24 | HIGH | Runtime bugs |
+| Procurement | 24 | MEDIUM | No spec |
+| Accounting | 17 | MEDIUM | Expenses hardcoded to zero |
+| Logistics | 5 | HIGH | GPS simulated |
+| Analytics | 5 | HIGH | Revenue computed 4 ways |
 
 ### P3.C — Cron HTTP Method Inconsistency
 
-8 cron jobs scheduled in vercel.json:
-
-| Route | Schedule | HTTP Method Issue |
-|-------|----------|-------------------|
-| cron/webhook-retry | `*/5 * * * *` | GET for mutation |
-| cron/inventory-audit | `0 6 * * *` | GET for mutation |
-| sentry-fixer/process | `0 0 * * *` | — |
-| cron/contract-expiration-alerts | `0 7 * * *` | — |
-| cron/email-reminders | `*/15 * * * *` | — |
-| cron/idempotency-cleanup | `0 3 * * *` | GET for mutation |
-| cron/integration-auto-sync | varies | GET for mutation |
-| cron/outbox/publish | varies | — |
-
-4 cron endpoints use GET for mutating operations (should be POST).
+8 cron jobs in vercel.json; 4 use GET for mutating operations (should be POST): webhook-retry, inventory-audit, idempotency-cleanup, integration-auto-sync.
 
 ### P3.D — Route Architecture
 
-- **632 total API route files** (verified across v87 and v88)
-- 86 active manifests, 6 disabled
-- **40 manifest runtime commands** across all domains (NOT 37 — v87 undercounted)
-- `routes.manifest.json`: 849 routes (589 POST + 260 GET, 0 PUT/PATCH/DELETE)
-- **POST route gap: 0** (was 242, fully closed — P0.3 RESOLVED)
-- Only 1 write handler uncovered: DELETE /api/inventory/audit/reports/[id]
+- **632 total API route files**, 86 active manifests, 6 disabled
+- **40 manifest runtime commands**, `routes.manifest.json`: 849 routes (589 POST + 260 GET)
+- **POST route gap: 0** (RESOLVED). Only 1 uncovered: DELETE /api/inventory/audit/reports/[id]
 - Manifest wiring: User BROKEN_RAW_SQL, ShipmentItem BROKEN_PRISMA_READ
-- AllergenWarning wiring: RESOLVED (now in ENTITIES_WITH_SPECIFIC_STORES with full PrismaStore)
-- `routes.manifest.json` only tracks POST/GET — PUT/PATCH/DELETE not in IR
 
 ### P3.E — AGENTS.md Corrections Needed
 
-1. **Console count** — says ~932 across ~336 files; actual is **1,078** (v87 said 891 — also wrong)
-2. **RLS** — implied all tables; actual is **82/214=38.3%** (v87 said 97/221=43.8% — also wrong)
-3. **Cron registry** — says 6; actual is 8
-4. **Calendar routes** — not explicitly listed; should note 8 routes
-5. **Staff vs Staffing** — needs clarification (staff=35 routes, staffing=2 routes)
-6. **Sales-reporting** — says dead; actual has 1 import (not 7 as v87 claimed)
-7. **Feature-flags** — does not exist? WRONG — exists with 11 imports
-8. **Inventory** — says 24 routes; actual is **58**
-9. **Events** — not listed as separate tracked domain; actual is **87 routes**
-10. **Packages ai/brand** — AGENTS.md does not list them; both are DEAD (zero imports)
-11. **Package auth** — OMITTED; 2nd heaviest package at 714 imports
-
-### P3.F — Manifest Wiring Gaps (v88 CORRECTED)
-
-- ~~`AllergenWarning`: Missing from `ENTITIES_WITH_SPECIFIC_STORES`~~ — **RESOLVED** (now in ENTITIES_WITH_SPECIFIC_STORES line 194, with full AllergenWarningPrismaStore class)
-- `User`: Store exists but broken (BROKEN_RAW_SQL)
-- `ShipmentItem`: Registered but store broken (BROKEN_PRISMA_READ)
-
-### P3.G — Test Suite Status (v88 CORRECTED)
-
-- **241** test files total (NOT 243 — 2 app tests removed): 139 API + 41 app + 61 E2E
-- **47** skips total (NOT 42): 6 API (NOT 5) + **41 E2E** (NOT 37) + 0 manifest-runtime + 0 app
-- 0 test.todo, 0 .only: VERIFIED
+1. Console count ~932 — actual **864** (v89)
+2. RLS implied all tables — actual **86/218=39.4%** (v89)
+3. Cron registry says 6 — actual 8
+4. Inventory says 24 routes — actual **58**
+5. Events not listed — actual **90 routes**
+6. Staff vs Staffing not clarified (staff=35, staffing=2)
 
 ---
 
 ## Code Quality Metrics
 
-| Metric | v87 Count | v88 Count | Change | Notes |
+| Metric | v88 Count | v89 Count | Change | Notes |
 |--------|-----------|-----------|--------|-------|
-| `console.*` statements | 891 | **1,078** | +187 | v87 undercounted |
-| console.error | 367 | **555** | +188 | v87 undercounted |
-| console.log | 1 | **420** | +419 | v87 SWAPPED debug/log |
-| console.debug | 420 | **1** | -419 | v87 SWAPPED debug/log |
-| console.warn | 70 | **33** | -37 | v87 SWAPPED warn/info |
-| console.info | 33 | **70** | +37 | v87 SWAPPED warn/info |
-| `:any` types (non-gen) | 12 | **18** | +6 | v87 undercounted |
+| `console.*` statements | 1,078 | **864** | -214 | v88 overcounted |
+| console.error | 555 | **527** | -28 | |
+| console.log | 420 | **304** | -116 | |
+| console.warn | 33 | **30** | -3 | |
+| console.info | 70 | **4** | -66 | v88 MAJOR overcount |
+| console.debug | 1 | **1** | — | |
+| `:any` types (apps) | 18 | **14** | -4 | 4 were in packages/ |
+| `:any` types (apps+pkgs) | — | **98** | NEW | Full-scope metric |
 | `@ts-ignore` | 0 | **0** | — | CLEAN |
-| `@ts-expect-error` | 7 | **7** | — | STABLE |
-| Bare `<Card>` without tone | 279 | **279** | — | STABLE |
-| Pastel backgrounds | 138 | **117** | -21 | v87 overcounted |
-| Hardcoded `/api/` paths | 331 | **620** | +289 | v87 undercounted badly |
-| shadow-* violations | 37 | **37** | — | STABLE |
-| TODO (production) | 7 | **7** | — | VERIFIED |
-| FIXME | 0 | **0** | — | CLEAN |
-| HACK | 0 | **0** | — | CLEAN |
-| BlogFilterChip imports | 39 | **39** | — | STABLE |
-| ResearchTable imports | 23 | **23** | — | STABLE |
-| StatusPill imports | 67 | **67** | — | STABLE |
-| ContactFormCard imports | 0 | **0** | — | UNUSED |
+| `@ts-expect-error` (apps) | 7 | **2** | -5 | 5 others in packages/ |
+| `@ts-expect-error` (all) | 7 | **7** | — | |
+| Bare `<Card>` | 279 | **279** | — | STABLE |
+| Pastel backgrounds | 117 | **210** | +93 | v88 MAJOR undercount |
+| Hardcoded `/api/` paths | 620 | **705** | +85 | Growing |
+| shadow-* violations | 37 | **39** | +2 | 37 std + 2 non-standard |
+| Auth coverage | — | **78.6%** | NEW | 497/632 routes |
+| Rate limit coverage | — | **3.8%** | NEW | 24/632 routes |
+| Orphan routes | — | **176/632** | NEW | 28% no frontend consumer |
 
 ---
 
-## Package Utilization (v88 CORRECTED)
+## RLS Coverage (86/218 = 39.4%)
 
-| Package | Imports | Status | v87 Claim |
-|---------|---------|--------|-----------|
-| design-system | 2,341+ | ALIVE | — |
-| auth | **714** | ALIVE | **OMITTED entirely** |
-| database | 791 | ALIVE | — |
-| observability | 390 | ALIVE | — |
-| @angriff36/manifest | 178 | ALIVE | v87 searched wrong name |
-| manifest-adapters | 72 | ALIVE | — |
-| notifications | 26 | ALIVE | Not in v87 |
-| realtime | 19 | ALIVE | — |
-| internationalization | 16 | ALIVE | Not in v87 |
-| analytics | 14 | ALIVE | — |
-| sentry-integration | 14 | ALIVE | Not in v87 |
-| feature-flags | **11** | **ALIVE** | **v87: "does not exist"** |
-| security | 9 | ALIVE | — |
-| cms | 8 | ALIVE | — |
-| event-parser | 3 | ALIVE | — |
-| types | 6 | ALIVE | — |
-| sales-reporting | **1** | ALIVE | v87 said 7 |
-| **ai** | **0** | **DEAD** | **v87 said ALIVE (12 imports)** |
-| **brand** | **0** | **DEAD** | **v87 said ALIVE (8 files)** |
-| storage | 0 | DEAD | — |
-| kitchen-state-transitions | 0 | DEAD | — |
-| apps/app | 0 | DEAD SHELL | — |
+**v89 CORRECTION:** v88 reported 82/214=38.3%. Actual: **86/218=39.4%** — +4 RLS policies, +4 tables discovered.
 
----
+| Schema | Tables | RLS | Coverage | v88 Delta |
+|--------|--------|-----|----------|-----------|
+| tenant_facilities | 5 | 5 | 100% | v88 said 2/6=33.3% — CORRECTED |
+| tenant_logistics | 4 | 4 | 100% | VERIFIED |
+| tenant_accounting | 11 | 10 | 90.9% | +1 table, unchanged RLS |
+| tenant_crm | 8 | 6 | 75.0% | Table count corrected |
+| tenant_inventory | 33 | 18 | 54.5% | Table count corrected |
+| tenant_staff | 37 | 16 | 43.2% | Table count corrected |
+| tenant_admin | 36 | 8 | 22.2% | Table count corrected |
+| tenant_events | 29 | 7 | 24.1% | Table count corrected |
+| tenant_kitchen | 43 | 11 | 25.6% | Table count corrected |
+| tenant_facility (singular) | 4 | 0 | 0% | NEW schema, 0% RLS |
+| tenant (core) | 8 | 1 | 12.5% | VERIFIED |
+| **TOTAL** | **218** | **86** | **39.4%** | +4/+4 from v88 |
 
-## RLS Coverage (82/214 = 38.3% — CRITICAL)
-
-**v88 CORRECTION:** v87 reported 97/221 = 43.8%. Actual: **82/214 = 38.3%** — still less than half. v87 had duplicate RLS statements counted and wrong table totals.
-
-| Schema | v87 RLS/Total | v88 Actual | Change |
-|--------|--------------|-----------|--------|
-| tenant_facilities | 5/5=100% | **2/6=33.3%** | v87 WRONG |
-| tenant_logistics | 4/4=100% | **4/4=100%** | VERIFIED |
-| tenant_accounting | 20/16=125% | **10/11=90.9%** | CORRECTED |
-| tenant_crm | 6/9=66.6% | **6/9=66.7%** | VERIFIED |
-| tenant_inventory | 18/32=56.2% | **16/31=51.6%** | CORRECTED |
-| tenant_staff | 17/42=40.4% | **16/39=41.0%** | CORRECTED |
-| tenant_kitchen | 11/37=29.7% | **11/36=30.6%** | CORRECTED |
-| tenant_events | 7/27=25.9% | **6/22=27.3%** | CORRECTED |
-| tenant_admin | 8/49=16.3% | **8/36=22.2%** | CORRECTED (not as bad) |
-| tenant (core) | 1/8=12.5% | **1/8=12.5%** | VERIFIED |
-| **Total** | **97/221=43.8%** | **82/214=38.3%** | CORRECTED |
-
-**Gap concentrated in tenant_admin (28 unprotected tables), tenant_core (7 unprotected), tenant_events (16 unprotected), and tenant_kitchen (25 unprotected).**
+**Gaps:** tenant_kitchen (32 unprotected), tenant_admin (28 unprotected), tenant_events (22 unprotected), tenant_facility singular (4 unprotected).
 
 ---
 
 ## Security Summary
 
-- **5 `queryRawUnsafe` calls in 1 file** — all parameterized, no injection risk (cosmetic cleanup only)
-- Calendar OAuth tokens stored in PLAINTEXT (ProviderSync model) — FR-604
-- Contracts public signing uses direct DB writes — FR-504
-- Auth coverage strong: 604 call sites
-- Rate limiting: two-tier, 41 route call sites
-- **RLS covers only 82/214 tables (38.3%)** — tenant_admin has 28 unprotected tables
-- **POST route gap: 0** (RESOLVED — was 242)
-- Only 1 uncovered write handler: DELETE /api/inventory/audit/reports/[id]
-
----
-
-## Dead Packages Summary
-
-| Package | LOC | Reason |
-|---------|-----|--------|
-| packages/ai/ | — | Zero imports (v87 wrongly said ALIVE) |
-| packages/brand/ | — | Zero imports (v87 wrongly said ALIVE) |
-| packages/storage/ | — | Zero imports |
-| packages/kitchen-state-transitions/ | 282 | Covered by @repo/database enums |
-| packages/apps/app/ | 0 | Dead shell — phantom package.json, no source |
+- **5 `queryRawUnsafe` calls** in 1 file (staffing/coverage) — potential SQL injection risk if user input interpolated
+- **Calendar OAuth tokens PLAINTEXT** in ProviderSync — HIGH severity (P0.7)
+- **Contracts public signing:** no rate limiting on unauthenticated endpoint
+- **Auth coverage:** 78.6% (497/632 routes call `auth()`) — 135 routes lack auth
+- **Rate limiting:** 3.8% (24/632 routes have rate limiting) — 608 unprotected
+- **RLS:** 86/218=39.4% — tenant_kitchen (32), tenant_admin (28), tenant_events (22), tenant_facility singular (4) unprotected
+- **POST route gap: 0** (RESOLVED)
+- **tenant_facility (singular):** 4 tables with 0% RLS
 
 ---
 
@@ -605,11 +364,12 @@ These items have been verified as resolved by multiple audit passes. Do not re-i
 - The console replacement path IS wired.
 
 ### RLS Coverage (Partially Resolved 2026-05-14)
-- v83 claimed "all tables have RLS enabled" — INCORRECT
-- v84/v85 claimed 97/113 = 85.8% — INCORRECT (undercounted total tables)
-- v86 claimed 86/221 = 38.9% — INCORRECT (undercounted RLS-enabled tables)
-- v87 claimed 97/221 = 43.8% — INCORRECT (had duplicate RLS counts, wrong table totals)
-- v88 actual: **82/214 = 38.3%**
+- v83: "all tables have RLS" — INCORRECT
+- v84/v85: 97/113=85.8% — INCORRECT
+- v86: 86/221=38.9% — INCORRECT
+- v87: 97/221=43.8% — INCORRECT (duplicate counts, wrong totals)
+- v88: 82/214=38.3% — CORRECTED
+- **v89: 86/218=39.4%**
 - `20260514000000_add_rls_tenant_accounting` added RLS to all tenant_accounting tables
 
 ### Scheduling API (RESOLVED — DO NOT REOPEN)
@@ -620,38 +380,41 @@ These items have been verified as resolved by multiple audit passes. Do not re-i
 - v88 verified: 6 API skips + 41 E2E skips, 0 test.todo, 0 .only
 
 ### Payroll Period ID (RESOLVED 2026-05-14)
-- Period ID generation now produces proper UUID strings
-
 ### Search FR-107 + Entity Coverage + Multi-word (RESOLVED 2026-05-14)
-- Single-char queries now return 400 as required
-- Entity coverage at 15 (meets spec requirement of 15+)
-- Multi-word AND-chaining IS implemented
-
 ### Calendar Features (RESOLVED — DO NOT REOPEN)
-- Drag-and-drop implemented with dnd-kit
-- List view with ResearchTable implemented
-- BlogFilterChip filters implemented
-- Sync page implemented
-
 ### Bare Table Violations (RESOLVED v84)
-- Down from 125+ (v82) to 23 (v83) to 0 (v84/v85)
+
+### v88 False Claims (RESOLVED as FALSE — DO NOT REOPEN)
+- Console 1,078 — FALSE (actual: 864; v88 overcounted by 214)
+- Console info=70 — FALSE (actual: 4; v88 MAJOR overcount)
+- Pastel backgrounds 117 — FALSE (actual: 210; v88 undercounted by 93)
+- Hardcoded /api/ 620 — FALSE (actual: 705; growing)
+- RLS 82/214=38.3% — FALSE (actual: 86/218=39.4%)
+- tenant_facilities 2/6=33.3% — FALSE (actual: 5/5=100%)
+- Events 87 routes — FALSE (actual: 90)
+- Kitchen 148 routes — FALSE (actual: 149)
+- Inventory 0 manifest commands — FALSE (actual: 5, 9%)
+- :any types 18 (apps) — FALSE (actual: 14; 4 were in packages/)
+- @ts-expect-error 7 (apps) — FALSE (actual: 2; 5 in packages/)
+- shadow-* 37 — FALSE (actual: 39; 2 non-standard naming)
+- Unlisted domains 22/96 — FALSE (actual: 20/83)
 
 ### v87 False Claims (RESOLVED as FALSE — DO NOT REOPEN)
-- Console 891 — FALSE (actual: 1,078; v87 also had debug/log and warn/info SWAPPED)
-- Hardcoded /api/ 331 — FALSE (actual: 620; v87 undercounted by 289)
-- RLS 97/221=43.8% — FALSE (actual: 82/214=38.3%; v87 had duplicate counts)
+- Console 891 — FALSE (actual: 864; v87 also had debug/log and warn/info SWAPPED)
+- Hardcoded /api/ 331 — FALSE (actual: 705)
+- RLS 97/221=43.8% — FALSE (actual: 86/218=39.4%)
 - Inventory 24 routes — FALSE (actual: 58)
-- Events "8 routes" — FALSE (actual: 87 — MISSING from v87 entirely)
+- Events "8 routes" — FALSE (actual: 90)
 - Procurement 58 routes — FALSE (actual: 24; v87 included inventory)
 - Documents 7 routes — FALSE (actual: 1)
-- tenant_facilities 100% — FALSE (actual: 33.3%)
+- tenant_facilities 100% — FALSE (actual: 100% — v88 wrongly corrected to 33.3%)
 - packages/ai ALIVE 12 imports — FALSE (DEAD, zero imports)
 - packages/brand ALIVE 8 files — FALSE (DEAD, zero imports)
 - packages/feature-flags "does not exist" — FALSE (exists with 11 imports)
 - packages/sales-reporting 7 imports — FALSE (actual: 1)
 - packages/auth OMITTED — FALSE (714 imports, 2nd heaviest)
-- :any types 12 — FALSE (actual: 18)
-- Pastel backgrounds 138 — FALSE (actual: 117)
+- :any types 12 — FALSE (actual: 14 apps / 98 apps+pkgs)
+- Pastel backgrounds 138 — FALSE (actual: 210)
 - Test files 243 — FALSE (actual: 241)
 - Test skips 42 — FALSE (actual: 47)
 - API skips 5 — FALSE (actual: 6)
@@ -661,18 +424,17 @@ These items have been verified as resolved by multiple audit passes. Do not re-i
 - Payroll 25 routes — FALSE (actual: 24)
 
 ### v86 False Claims (RESOLVED as FALSE — DO NOT REOPEN)
-- queryRawUnsafe "60 across 9 files" — FALSE (actual: 5 in 1 file, all parameterized)
+- queryRawUnsafe "60 across 9 files" — FALSE (actual: 5 in 1 file)
 - Bare Card "~2,750" — FALSE (actual: 279)
-- TODO "517" — FALSE (actual: 7 in production source)
-- FIXME "22" — FALSE (actual: 0)
-- HACK "4" — FALSE (actual: 0)
-- Timecards dual implementation — FALSE (no dual implementation)
-- Total routes 632 — VERIFIED correct (v87 agent overcount was rejected)
+- TODO "517" — FALSE (actual: 7)
+- FIXME "22" / HACK "4" — FALSE (actual: 0/0)
+- Timecards dual implementation — FALSE
+- Total routes 632 — VERIFIED correct
 - Command-board shell 2/3 — FALSE (actual: 3/3)
 - Kitchen shell 1/3 — FALSE (actual: 2/3)
 - CRM routes 47 — FALSE (actual: 41)
-- Manifest CI "no enforcement" — FALSE (manifest-ci.yml IS a hard gate)
-- Kitchen manifest commands 39 — FALSE (actual: 21)
+- Manifest CI "no enforcement" — FALSE
+- Kitchen manifest commands 39 — FALSE (actual: 38 in v89)
 
 ### Packages Confirmed ALIVE (v88 — DO NOT REOPEN as dead)
 - `packages/observability/` — 390 file imports
@@ -680,22 +442,22 @@ These items have been verified as resolved by multiple audit passes. Do not re-i
 - `packages/analytics/` — 14 imports
 - `packages/event-parser/` — 3 imports
 - `packages/cms/` — 8 imports
-- `packages/sales-reporting/` — 1 import (v88 corrected from v87's "7")
-- `packages/feature-flags/` — 11 imports (v87 wrongly said "does not exist")
+- `packages/sales-reporting/` — 1 import
+- `packages/feature-flags/` — 11 imports
 
 ### Packages Confirmed DEAD (v88 — DO NOT REOPEN as alive)
-- `packages/ai/` — ZERO imports (v87 wrongly said ALIVE with 12 imports)
-- `packages/brand/` — ZERO imports (v87 wrongly said ALIVE with 8 files)
+- `packages/ai/` — ZERO imports
+- `packages/brand/` — ZERO imports
 
 ---
 
-## Route Inventory (v88 Complete)
+## Route Inventory (v89 Complete)
 
-| Domain | Routes | Manifest Commands | Spec | Notes |
-|--------|--------|-------------------|------|-------|
-| Kitchen | 148 | 21 | NONE | 11 singular/plural duplicate pairs |
-| Events | 87 | — | NONE | v88: was missing from v87 |
-| Inventory | 58 | 0 | NONE | v88: was 24 in v87 |
+| Domain | Routes | Manifest | Spec | Notes |
+|--------|--------|----------|------|-------|
+| Kitchen | 149 | 38 (25.5%) | NONE | 12 duplicate pairs, 46 orphans |
+| Events | 90 | — | EXISTS | 65/90 outside IR (72%) |
+| Inventory | 58 | 5 (9%) | NONE | 28 orphans (48%) |
 | CRM | 41 | — | NONE | Pipeline broken |
 | Staff | 35 | — | — | Scheduling domain |
 | Logistics | 5 | 0 | NONE | GPS simulated |
@@ -704,62 +466,42 @@ These items have been verified as resolved by multiple audit passes. Do not re-i
 | Integrations | 25 | — | — | GoodShuffle/Nowsta/QB/Webhooks |
 | Command-board | 22 | 10 writes | — | Shell 3/3 |
 | Accounting | 17 | 21 refs | NONE | Expenses hardcoded to zero |
-| Staffing | 2 | — | — | 5 queryRawUnsafe (safe) |
+| Staffing | 2 | — | — | 5 queryRawUnsafe (parameterized) |
 | Settings | 10 | — | — | Fully implemented |
-| Calendar | 8 | 0 | — | OAuth plaintext |
+| Calendar | 8 | 0 | — | OAuth plaintext (P0.7) |
 | Marketing | 1 | — | — | Minimal |
-| Documents | 1 | — | — | v88: was 7 in v87 |
-| +22 other domains | 96 | — | — | Not individually tracked |
+| Documents | 1 | — | — | |
+| +20 other domains | 83 | — | — | Not individually tracked |
 | **Total** | **632** | **40** | | |
 
 ---
 
-## Verification Commands (v88)
+## Verification Commands (v89)
 
 ```bash
-# P0.1: ignoreBuildErrors
+# P0.1: ignoreBuildErrors (NOW REMOVABLE)
 grep -rn 'ignoreBuildErrors' --include='*.ts' apps/*/next.config.ts
-# Expected: 3 matches (apps/app, apps/api, apps/web)
+# Expected: 3 matches — safe to remove
 
-# P0.2: CI gaps
-grep -n 'continue-on-error' .github/workflows/ci.yml
-# Expected: 2 matches (soft gates)
-head -5 scripts/db-drift-check.mjs
-# Expected: no-op placeholder
-
-# P0.4: TypeScript strictness
-grep -n 'Run linting' .github/workflows/ci.yml
-# Expected: line 45 (mislabeled — actually runs typecheck)
+# P0.6: Frontend 404s
+grep -rn 'alertsconfig' apps/app/app --include='*.tsx' | head -5
+grep -rn 'cateringorder' apps/app/app --include='*.tsx' | head -5
 
 # Metrics
 grep -rn 'console\.' --include='*.ts' --include='*.tsx' apps/ packages/ --exclude-dir=node_modules --exclude-dir=.next | wc -l
-# Expected: ~1,078
-grep -rn 'queryRawUnsafe' --include='*.ts' apps/api/app/api/ | grep -v 'test\|spec\|//' | wc -l
-# Expected: 5
-grep -rn 'TODO' --include='*.ts' --include='*.tsx' apps/api/app/api apps/app/app | wc -l
-# Expected: ~7
-grep -rn 'FIXME' --include='*.ts' --include='*.tsx' apps/api/app/api apps/app/app | wc -l
-# Expected: 0
+# Expected: ~864
 
 # RLS
 grep -r 'ENABLE ROW LEVEL SECURITY' packages/database/prisma/migrations/ --include='*.sql' | sort -u | wc -l
-# Expected: 82
+# Expected: 86
 
 # Design system
-grep -rn '<Card>' apps/app/app --include='*.tsx' --exclude-dir=node_modules | wc -l
-# Expected: ~279
 grep -rn 'bg-blue-50\|bg-green-50\|bg-red-50\|bg-yellow-50' apps/app/app --include='*.tsx' | wc -l
-# Expected: ~117
+# Expected: ~210
 
 # Hardcoded API paths
-grep -rn '"/api/' --include='*.ts' --include='*.tsx' apps/ packages/ --exclude-dir=node_modules | wc -l
-# Expected: ~351 double-quoted
-grep -rn '`/api/' --include='*.ts' --include='*.tsx' apps/ packages/ --exclude-dir=node_modules | wc -l
-# Expected: ~269 template
-
-# Build
-pnpm --filter api typecheck
-pnpm --filter app typecheck
+grep -rn '"/api/\|`/api/' --include='*.ts' --include='*.tsx' apps/ packages/ --exclude-dir=node_modules | wc -l
+# Expected: ~705
 ```
 
 ---
@@ -777,13 +519,9 @@ Completed pass write-ups and historical notes:
 
 ## Methodology
 
-- **v88**: Parallel re-audit correcting significant v87 errors. Key corrections: console 1,078 with debug/log and warn/info SWAPPED in v87 (debug=1 not 420, log=420 not 1, error=555 not 367, warn=33 not 70, info=70 not 33). Hardcoded /api/ paths 620 (NOT 331 — v87 undercounted by 289). RLS 82/214=38.3% (NOT 97/221=43.8% — v87 had duplicate RLS counts and wrong table totals). Inventory 58 routes (NOT 24). Events 87 routes (MISSING from v87). Procurement 24 routes (NOT 58 — v87 included inventory). Documents 1 route (NOT 7). tenant_facilities 33.3% (NOT 100%). packages/ai DEAD (v87 said ALIVE). packages/brand DEAD (v87 said ALIVE). packages/auth 714 imports (OMITTED from v87). packages/feature-flags EXISTS with 11 imports (v87 said "does not exist"). packages/sales-reporting 1 import (NOT 7). P0.3 manifest POST gap RESOLVED (was 242, now 0). AllergenWarning wiring RESOLVED. :any types 18 (NOT 12). Pastel backgrounds 117 (NOT 138). Kitchen has 11 singular/plural route directory pairs. 22 unlisted domains = 96 routes. 241 test files (NOT 243). 47 skips (NOT 42). E2E skips 41 (NOT 37). API skips 6 (NOT 5). Manifest runtime 40 commands (NOT 37). routes.manifest.json 849 routes. Integrations 25 routes (NOT 23). Payroll 24 routes (NOT 25).
-- **v87**: Parallel re-audit correcting significant v86 errors. **MANY v87 FINDINGS PROVEN FALSE IN v88** — see Resolved section.
-- **v86**: Parallel re-audit correcting v85 errors. **MANY v86 FINDINGS PROVEN FALSE IN v87** — see Resolved section.
-- **v85**: Re-audit correcting v84 errors. Observability 407 imports, ai/brand ALIVE (WRONG per v88), pastel 294, /api/ 351.
-- **v84**: 33-agent parallel audit. CI gaps, RLS, event CRUD gaps, logistics correction, facilities, CRM pipeline broken, payroll runtime bugs, security, console, design system, TypeScript, domain spec compliance.
-- **v83**: 20-agent parallel audit. ignoreBuildErrors, CI gaps, RLS, event CRUD, console, design system, TypeScript, dead packages, route architecture.
-- **v82**: 17-agent parallel audit. ignoreBuildErrors, CI gaps, manifest enforcement, RLS, test suite, console, TODO/FIXME, TypeScript, specs vs implementation.
-- **v81**: P2.D payroll period ID and P2.G search FR-107 fixes. RLS for tenant_accounting.
-- **v77-v80**: Test suite repair. Progress: 678 -> 527 -> 473 -> 0 failing tests.
+- **v89**: Multi-agent verification correcting v88 metric errors. Key corrections: console 864 (v88 overcounted by 214; info=4 not 70, log=304 not 420, error=527 not 555). Pastel backgrounds 210 (v88 undercounted by 93). Hardcoded /api/ 705 (+85). RLS 86/218=39.4% (+4/+4). tenant_facilities 5/5=100% (v88 wrongly said 2/6=33.3%). NEW tenant_facility (singular) schema 0/4=0%. Kitchen 149 routes (+1). Events 90 routes (+3). Inventory 5 manifest commands (v88 said 0). NEW P0.6: 8 frontend 404s. NEW P0.7: OAuth plaintext HIGH. NEW P2.Z: security gaps (auth 78.6%, rate-limit 3.8%, queryRawUnsafe risk). NEW P2.AA: 176/632 orphan routes (28%). P0.1 NOW REMOVABLE. :any 14 apps / 98 total. @ts-expect-error 2 apps / 7 total. Unlisted domains 20/83 (v88 said 22/96). Kitchen manifest 25.5% (v88 said 14.2%).
+- **v88**: Parallel re-audit correcting v87 errors. Console 1,078 (v87 had debug/log SWAPPED). /api/ 620. RLS 82/214=38.3%. Inventory 58. Events 87. **MANY v88 FINDINGS PROVEN FALSE IN v89** — see Resolved section.
+- **v87**: Parallel re-audit correcting v86 errors. **MANY v87 FINDINGS PROVEN FALSE** — see Resolved section.
+- **v86-v81**: See prior versions. Multiple false claims corrected in later passes.
+- **v77-v80**: Test suite repair. 678 -> 0 failing tests.
 - **v65-v72**: All 22 P0 items resolved.

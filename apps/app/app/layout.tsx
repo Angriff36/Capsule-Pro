@@ -3,7 +3,6 @@ import "./styles.css";
 import { GoogleAnalytics } from "@next/third-parties/google";
 import { AnalyticsProvider } from "@repo/analytics/provider";
 import { DesignSystemProvider } from "@repo/design-system";
-import { Toaster } from "@repo/design-system/components/ui/sonner";
 import { Analytics as VercelAnalytics } from "@vercel/analytics/react";
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
@@ -51,7 +50,6 @@ const RootLayout = async ({ children }: RootLayoutProperties) => {
                 {children}
               </AnalyticsProvider>
               {Toolbar && <Toolbar />}
-              <Toaster />
             </QueryProvider>
           </ClerkProviderClient>
         </DesignSystemProvider>
