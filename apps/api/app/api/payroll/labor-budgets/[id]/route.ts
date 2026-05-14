@@ -28,7 +28,7 @@ export async function GET(
 
     const { id } = await params;
 
-    const laborBudget = await database.laborBudget.findUnique({
+    const laborBudget = await database.laborBudget.findFirst({
       where: {
         id,
         tenantId,

@@ -28,7 +28,7 @@ export async function GET(
 
     const { id } = await params;
 
-    const payrollPeriod = await database.payrollPeriod.findUnique({
+    const payrollPeriod = await database.payrollPeriod.findFirst({
       where: {
         id,
         tenantId,

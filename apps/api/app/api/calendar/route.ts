@@ -166,7 +166,7 @@ export async function GET(request: NextRequest) {
             })
         : Promise.resolve([]),
       types.includes("timeoff")
-        ? database.employeeTimeOffRequest
+        ? database.timeOffRequest
             .findMany({
               where: {
                 tenant_id: tenantId,

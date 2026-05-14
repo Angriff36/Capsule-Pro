@@ -13,7 +13,7 @@
  *   - Required fields: employee_id, request_type, start_date, end_date, hours
  *   - Status enum: PENDING, APPROVED, REJECTED, CANCELLED
  *   - Soft-delete via deleted_at
- *   - Prisma model: EmployeeTimeOffRequest, client accessor: prisma.employeeTimeOffRequest
+ *   - Prisma model: EmployeeTimeOffRequest, client accessor: prisma.timeOffRequest
  *   - Manifest entity name: "TimeOffRequest"
  */
 
@@ -148,7 +148,7 @@ export class TimeOffRequestPrismaStore implements Store<EntityInstance> {
   ) {}
 
   async getAll(): Promise<EntityInstance[]> {
-    const rows = await this.prisma.employeeTimeOffRequest.findMany({
+    const rows = await this.prisma.timeOffRequest.findMany({
       where: { tenant_id: this.tenantId, deleted_at: null },
       orderBy: { submitted_at: "desc" },
     });
@@ -156,7 +156,7 @@ export class TimeOffRequestPrismaStore implements Store<EntityInstance> {
   }
 
   async getById(id: string): Promise<EntityInstance | undefined> {
-    const row = await this.prisma.employeeTimeOffRequest.findFirst({
+    const row = await this.prisma.timeOffRequest.findFirst({
       where: { tenant_id: this.tenantId, id, deleted_at: null },
     });
     return row ? this.mapToManifestEntity(row) : undefined;
@@ -164,7 +164,7 @@ export class TimeOffRequestPrismaStore implements Store<EntityInstance> {
 
   async create(data: Partial<EntityInstance>): Promise<EntityInstance> {
     const id = (data.id as string | undefined) ?? crypto.randomUUID();
-    const row = await this.prisma.employeeTimeOffRequest.create({
+    const row = await this.prisma.timeOffRequest.create({
       data: {
         tenant_id: this.tenantId,
         id,
@@ -207,7 +207,7 @@ export class TimeOffRequestPrismaStore implements Store<EntityInstance> {
       if (data.rejectionReason !== undefined)
         patch.rejection_reason = asNullableString(data.rejectionReason);
 
-      const row = await this.prisma.employeeTimeOffRequest.update({
+      const row = await this.prisma.timeOffRequest.update({
         where: { tenant_id_id: { tenant_id: this.tenantId, id } },
         data: patch,
       });
@@ -220,7 +220,7 @@ export class TimeOffRequestPrismaStore implements Store<EntityInstance> {
 
   async delete(id: string): Promise<boolean> {
     try {
-      await this.prisma.employeeTimeOffRequest.update({
+      await this.prisma.timeOffRequest.update({
         where: { tenant_id_id: { tenant_id: this.tenantId, id } },
         data: { deleted_at: new Date() },
       });
@@ -232,7 +232,7 @@ export class TimeOffRequestPrismaStore implements Store<EntityInstance> {
   }
 
   async clear(): Promise<void> {
-    await this.prisma.employeeTimeOffRequest.deleteMany({
+    await this.prisma.timeOffRequest.deleteMany({
       where: { tenant_id: this.tenantId },
     });
   }

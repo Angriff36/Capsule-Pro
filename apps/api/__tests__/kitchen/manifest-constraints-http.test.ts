@@ -121,7 +121,7 @@ vi.mock("@/app/lib/tenant", () => ({
 import { POST as manifestDispatch } from "@/app/api/manifest/[entity]/commands/[command]/route";
 
 function createRecipeVersionHandler(command: string) {
-  return async (req: NextRequest) =>
+  return async (req: NextRequest, _ctx?: unknown) =>
     manifestDispatch(req, {
       params: Promise.resolve({ entity: "RecipeVersion", command }),
     });

@@ -28,7 +28,7 @@ export async function GET(
 
     const { id } = await params;
 
-    const prepTask = await database.prepTask.findUnique({
+    const prepTask = await database.prepTask.findFirst({
       where: {
         id,
         tenantId,

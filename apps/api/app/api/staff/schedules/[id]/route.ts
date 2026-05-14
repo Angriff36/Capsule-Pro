@@ -28,7 +28,7 @@ export async function GET(
 
     const { id } = await params;
 
-    const schedule = await database.schedule.findUnique({
+    const schedule = await database.schedule.findFirst({
       where: {
         id,
         tenantId,

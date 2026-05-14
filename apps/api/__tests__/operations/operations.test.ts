@@ -80,8 +80,10 @@ import { GET as docVersionList } from "@/app/api/documents/versions/list/route";
 // Dispatcher
 import { POST as manifestDispatch } from "@/app/api/manifest/[entity]/commands/[command]/route";
 
-const dispatch = (entity: string, command: string) => (req: NextRequest) =>
-  manifestDispatch(req, { params: Promise.resolve({ entity, command }) });
+const dispatch =
+  (entity: string, command: string) =>
+  (req: NextRequest, _ctx?: unknown) =>
+    manifestDispatch(req, { params: Promise.resolve({ entity, command }) });
 
 // Kitchen Tasks (manifest)
 const ktAddTag = dispatch("KitchenTask", "addTag");

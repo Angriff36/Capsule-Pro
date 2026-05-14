@@ -106,7 +106,7 @@ const db = {
     return mockDatabase.timecardEditRequest;
   },
   get employeeTimeOffRequest() {
-    return mockDatabase.employeeTimeOffRequest;
+    return mockDatabase.timeOffRequest;
   },
   get user() {
     return mockDatabase.user;
@@ -1328,7 +1328,7 @@ describe("Timecards API", () => {
         }),
       ];
 
-      db.employeeTimeOffRequest.findMany.mockResolvedValue(
+      db.timeOffRequest.findMany.mockResolvedValue(
         mockRequests as never
       );
 
@@ -1344,14 +1344,14 @@ describe("Timecards API", () => {
     });
 
     it("should filter by tenant_id and exclude soft-deleted", async () => {
-      db.employeeTimeOffRequest.findMany.mockResolvedValue([]);
+      db.timeOffRequest.findMany.mockResolvedValue([]);
 
       const request = new NextRequest(
         "http://localhost/api/timecards/time-off-requests/list"
       );
       await listTimeOffRequests(request);
 
-      expect(db.employeeTimeOffRequest.findMany).toHaveBeenCalledWith(
+      expect(db.timeOffRequest.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: {
             tenant_id: TEST_TENANT_ID,
@@ -1362,14 +1362,14 @@ describe("Timecards API", () => {
     });
 
     it("should order results by created_at descending", async () => {
-      db.employeeTimeOffRequest.findMany.mockResolvedValue([]);
+      db.timeOffRequest.findMany.mockResolvedValue([]);
 
       const request = new NextRequest(
         "http://localhost/api/timecards/time-off-requests/list"
       );
       await listTimeOffRequests(request);
 
-      expect(db.employeeTimeOffRequest.findMany).toHaveBeenCalledWith(
+      expect(db.timeOffRequest.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           orderBy: { created_at: "desc" },
         })
@@ -1377,7 +1377,7 @@ describe("Timecards API", () => {
     });
 
     it("should return 500 on database error", async () => {
-      db.employeeTimeOffRequest.findMany.mockRejectedValue(
+      db.timeOffRequest.findMany.mockRejectedValue(
         new Error("Database connection failed")
       );
 
@@ -1398,7 +1398,7 @@ describe("Timecards API", () => {
     it("should return a single time-off request by ID", async () => {
       const mockRequest = createMockTimeOffRequest({ id: "tor-001" });
 
-      db.employeeTimeOffRequest.findFirst.mockResolvedValue(
+      db.timeOffRequest.findFirst.mockResolvedValue(
         mockRequest as never
       );
 
@@ -1416,7 +1416,7 @@ describe("Timecards API", () => {
     });
 
     it("should return 404 when time-off request not found", async () => {
-      db.employeeTimeOffRequest.findFirst.mockResolvedValue(null);
+      db.timeOffRequest.findFirst.mockResolvedValue(null);
 
       const request = new NextRequest(
         "http://localhost/api/timecards/time-off-requests/nonexistent"
@@ -1432,7 +1432,7 @@ describe("Timecards API", () => {
     });
 
     it("should enforce tenant isolation on detail queries", async () => {
-      db.employeeTimeOffRequest.findFirst.mockResolvedValue(null);
+      db.timeOffRequest.findFirst.mockResolvedValue(null);
 
       const request = new NextRequest(
         "http://localhost/api/timecards/time-off-requests/tor-001"
@@ -1441,7 +1441,7 @@ describe("Timecards API", () => {
         params: Promise.resolve({ id: "tor-001" }),
       });
 
-      expect(db.employeeTimeOffRequest.findFirst).toHaveBeenCalledWith(
+      expect(db.timeOffRequest.findFirst).toHaveBeenCalledWith(
         expect.objectContaining({
           where: {
             id: "tor-001",

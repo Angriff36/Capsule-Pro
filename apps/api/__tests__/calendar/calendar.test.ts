@@ -34,7 +34,7 @@ vi.mock("@repo/database", () => ({
       findFirst: (...args: unknown[]) => mockScheduleShiftFindFirst(...args),
       update: (...args: unknown[]) => mockScheduleShiftUpdate(...args),
     },
-    employeeTimeOffRequest: {
+    timeOffRequest: {
       findMany: vi.fn(),
     },
   },
@@ -253,7 +253,7 @@ describe("GET /api/calendar", () => {
       makeDbEvent({ id: "evt-1", title: "Conference" }),
     ]);
     mockScheduleShiftFindMany.mockResolvedValue([]);
-    vi.mocked(database.employeeTimeOffRequest.findMany).mockResolvedValue([]);
+    vi.mocked(database.timeOffRequest.findMany).mockResolvedValue([]);
 
     const req = makeGetRequest({
       start: "2026-05-01",
@@ -281,7 +281,7 @@ describe("GET /api/calendar", () => {
     });
     mockEventFindMany.mockResolvedValue([dbEvt]);
     mockScheduleShiftFindMany.mockResolvedValue([]);
-    vi.mocked(database.employeeTimeOffRequest.findMany).mockResolvedValue([]);
+    vi.mocked(database.timeOffRequest.findMany).mockResolvedValue([]);
 
     const req = makeGetRequest({
       start: "2026-06-01",
@@ -306,7 +306,7 @@ describe("GET /api/calendar", () => {
       makeDbEvent({ title: null, eventType: "birthday" }),
     ]);
     mockScheduleShiftFindMany.mockResolvedValue([]);
-    vi.mocked(database.employeeTimeOffRequest.findMany).mockResolvedValue([]);
+    vi.mocked(database.timeOffRequest.findMany).mockResolvedValue([]);
 
     const req = makeGetRequest({
       start: "2026-05-01",
@@ -321,7 +321,7 @@ describe("GET /api/calendar", () => {
   it("should return shifts from database.scheduleShift.findMany", async () => {
     mockEventFindMany.mockResolvedValue([]);
     mockScheduleShiftFindMany.mockResolvedValue([makeDbShift()]);
-    vi.mocked(database.employeeTimeOffRequest.findMany).mockResolvedValue([]);
+    vi.mocked(database.timeOffRequest.findMany).mockResolvedValue([]);
 
     const req = makeGetRequest({
       start: "2026-05-01",
@@ -338,10 +338,10 @@ describe("GET /api/calendar", () => {
     expect(body.events[0].end).toBe("2026-05-10T16:00:00.000Z");
   });
 
-  it("should return time-off requests from database.employeeTimeOffRequest.findMany", async () => {
+  it("should return time-off requests from database.timeOffRequest.findMany", async () => {
     mockEventFindMany.mockResolvedValue([]);
     mockScheduleShiftFindMany.mockResolvedValue([]);
-    vi.mocked(database.employeeTimeOffRequest.findMany).mockResolvedValue([
+    vi.mocked(database.timeOffRequest.findMany).mockResolvedValue([
       makeDbTimeOff(),
     ]);
 
@@ -363,7 +363,7 @@ describe("GET /api/calendar", () => {
   it("should combine events, shifts, and time-off into single array", async () => {
     mockEventFindMany.mockResolvedValue([makeDbEvent({ id: "e1" })]);
     mockScheduleShiftFindMany.mockResolvedValue([makeDbShift({ id: "s1" })]);
-    vi.mocked(database.employeeTimeOffRequest.findMany).mockResolvedValue([
+    vi.mocked(database.timeOffRequest.findMany).mockResolvedValue([
       makeDbTimeOff({ id: "t1" }),
     ]);
 
@@ -418,7 +418,7 @@ describe("GET /api/calendar", () => {
   it("should default types to all when not provided", async () => {
     mockEventFindMany.mockResolvedValue([]);
     mockScheduleShiftFindMany.mockResolvedValue([]);
-    vi.mocked(database.employeeTimeOffRequest.findMany).mockResolvedValue([]);
+    vi.mocked(database.timeOffRequest.findMany).mockResolvedValue([]);
 
     const req = makeGetRequest({
       start: "2026-05-01",
@@ -428,7 +428,7 @@ describe("GET /api/calendar", () => {
 
     expect(mockEventFindMany).toHaveBeenCalled();
     expect(mockScheduleShiftFindMany).toHaveBeenCalled();
-    expect(database.employeeTimeOffRequest.findMany).toHaveBeenCalled();
+    expect(database.timeOffRequest.findMany).toHaveBeenCalled();
   });
 
   // ----- Individual query resilience -----
@@ -436,7 +436,7 @@ describe("GET /api/calendar", () => {
   it("should continue if event query fails", async () => {
     mockEventFindMany.mockRejectedValue(new Error("DB down"));
     mockScheduleShiftFindMany.mockResolvedValue([makeDbShift()]);
-    vi.mocked(database.employeeTimeOffRequest.findMany).mockResolvedValue([]);
+    vi.mocked(database.timeOffRequest.findMany).mockResolvedValue([]);
 
     const req = makeGetRequest({
       start: "2026-05-01",
@@ -453,7 +453,7 @@ describe("GET /api/calendar", () => {
   it("should continue if shift query fails", async () => {
     mockEventFindMany.mockResolvedValue([makeDbEvent()]);
     mockScheduleShiftFindMany.mockRejectedValue(new Error("Shift DB down"));
-    vi.mocked(database.employeeTimeOffRequest.findMany).mockResolvedValue([]);
+    vi.mocked(database.timeOffRequest.findMany).mockResolvedValue([]);
 
     const req = makeGetRequest({
       start: "2026-05-01",
@@ -470,7 +470,7 @@ describe("GET /api/calendar", () => {
   it("should continue if time-off query fails", async () => {
     mockEventFindMany.mockResolvedValue([]);
     mockScheduleShiftFindMany.mockResolvedValue([makeDbShift()]);
-    vi.mocked(database.employeeTimeOffRequest.findMany).mockRejectedValue(
+    vi.mocked(database.timeOffRequest.findMany).mockRejectedValue(
       new Error("TimeOff DB down")
     );
 
@@ -491,7 +491,7 @@ describe("GET /api/calendar", () => {
   it("should return empty events array when no data matches", async () => {
     mockEventFindMany.mockResolvedValue([]);
     mockScheduleShiftFindMany.mockResolvedValue([]);
-    vi.mocked(database.employeeTimeOffRequest.findMany).mockResolvedValue([]);
+    vi.mocked(database.timeOffRequest.findMany).mockResolvedValue([]);
 
     const req = makeGetRequest({
       start: "2026-05-01",
@@ -530,7 +530,7 @@ describe("GET /api/calendar", () => {
   it("should pass tenantId and date range to event.findMany", async () => {
     mockEventFindMany.mockResolvedValue([]);
     mockScheduleShiftFindMany.mockResolvedValue([]);
-    vi.mocked(database.employeeTimeOffRequest.findMany).mockResolvedValue([]);
+    vi.mocked(database.timeOffRequest.findMany).mockResolvedValue([]);
 
     const req = makeGetRequest({
       start: "2026-05-01T00:00:00Z",

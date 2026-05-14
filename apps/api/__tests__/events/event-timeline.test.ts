@@ -18,6 +18,7 @@
  * @vitest-environment node
  */
 
+import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const TEST_TENANT_ID = "a0000000-0000-4000-a000-000000000001";
@@ -64,12 +65,17 @@ vi.mock("@repo/database", () => ({
 }));
 
 import { GET as listGET } from "@/app/api/events/[eventId]/timeline/route";
-import {
-  POST as createPOST,
-  POST as deletePOST,
-  POST as togglePOST,
-  POST as updatePOST,
-} from "@/app/api/manifest/[entity]/commands/[command]/route";
+import { POST as manifestDispatch } from "@/app/api/manifest/[entity]/commands/[command]/route";
+
+const dispatch =
+  (entity: string, command: string) =>
+  (req: NextRequest, _ctx?: unknown) =>
+    manifestDispatch(req, { params: Promise.resolve({ entity, command }) });
+
+const createPOST = dispatch("EventTimelineItem", "createItem");
+const deletePOST = dispatch("EventTimelineItem", "deleteItem");
+const togglePOST = dispatch("EventTimelineItem", "completeItem");
+const updatePOST = dispatch("EventTimelineItem", "updateItem");
 
 function setAuthOk() {
   mocks.authMock.mockResolvedValue({
@@ -91,8 +97,8 @@ function setAuthMissingTenant() {
   mocks.tenantMock.mockResolvedValue(null);
 }
 
-function makeReq(body: unknown): Request {
-  return new Request("http://localhost/api/test", {
+function makeReq(body: unknown): NextRequest {
+  return new NextRequest("http://localhost/api/test", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
@@ -116,7 +122,7 @@ describe("Event Timeline API", () => {
     it("returns 401 when unauthenticated", async () => {
       setAuthMissingUser();
       const res = await listGET(
-        new Request("http://localhost"),
+        new NextRequest("http://localhost"),
         eventParams(TEST_EVENT_ID)
       );
       expect(res.status).toBe(401);
@@ -125,7 +131,7 @@ describe("Event Timeline API", () => {
     it("returns 400 for invalid eventId", async () => {
       setAuthOk();
       const res = await listGET(
-        new Request("http://localhost"),
+        new NextRequest("http://localhost"),
         eventParams(INVALID_UUID)
       );
       expect(res.status).toBe(400);
@@ -134,7 +140,7 @@ describe("Event Timeline API", () => {
     it("returns 403 when tenant is missing", async () => {
       setAuthMissingTenant();
       const res = await listGET(
-        new Request("http://localhost"),
+        new NextRequest("http://localhost"),
         eventParams(TEST_EVENT_ID)
       );
       expect(res.status).toBe(403);
@@ -144,7 +150,7 @@ describe("Event Timeline API", () => {
       setAuthOk();
       mocks.eventFindFirstMock.mockResolvedValue(null);
       const res = await listGET(
-        new Request("http://localhost"),
+        new NextRequest("http://localhost"),
         eventParams(TEST_EVENT_ID)
       );
       expect(res.status).toBe(404);
@@ -187,7 +193,7 @@ describe("Event Timeline API", () => {
       ]);
 
       const res = await listGET(
-        new Request("http://localhost"),
+        new NextRequest("http://localhost"),
         eventParams(TEST_EVENT_ID)
       );
       expect(res.status).toBe(200);
