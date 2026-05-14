@@ -89,7 +89,7 @@ export default async function SessionPage({
               Item Number
             </label>
             <input
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               id="itemNumber"
               name="itemNumber"
               placeholder="Enter item number"
@@ -106,7 +106,7 @@ export default async function SessionPage({
               Item Name
             </label>
             <input
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               id="itemName"
               name="itemName"
               placeholder="Enter item name"
@@ -123,7 +123,7 @@ export default async function SessionPage({
               Expected Quantity
             </label>
             <input
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               id="expectedQuantity"
               name="expectedQuantity"
               placeholder="Enter expected quantity"
@@ -141,7 +141,7 @@ export default async function SessionPage({
               Counted Quantity
             </label>
             <input
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               id="countedQuantity"
               name="countedQuantity"
               placeholder="Enter counted quantity"
@@ -156,7 +156,7 @@ export default async function SessionPage({
               Barcode (optional)
             </label>
             <input
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               id="barcode"
               name="barcode"
               placeholder="Scan or enter barcode"
@@ -169,7 +169,7 @@ export default async function SessionPage({
               Notes (optional)
             </label>
             <textarea
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               id="notes"
               name="notes"
               placeholder="Optional notes..."
@@ -178,7 +178,7 @@ export default async function SessionPage({
           </div>
 
           <button
-            className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="bg-blue-600 text-white px-4 py-2 rounded-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
             formAction="submit"
             type="submit"
           >

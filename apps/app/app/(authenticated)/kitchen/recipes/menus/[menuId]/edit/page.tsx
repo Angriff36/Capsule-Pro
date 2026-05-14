@@ -58,7 +58,7 @@ export default async function EditMenuPage({
                         Menu Name *
                       </label>
                       <input
-                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                        className="flex h-10 w-full rounded-sm border border-input bg-background px-3 py-2 text-sm"
                         defaultValue={menu.name}
                         id="name"
                         name="name"
@@ -75,7 +75,7 @@ export default async function EditMenuPage({
                         Description
                       </label>
                       <input
-                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                        className="flex h-10 w-full rounded-sm border border-input bg-background px-3 py-2 text-sm"
                         defaultValue={menu.description ?? ""}
                         id="description"
                         name="description"
@@ -88,7 +88,7 @@ export default async function EditMenuPage({
                         Category
                       </label>
                       <input
-                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                        className="flex h-10 w-full rounded-sm border border-input bg-background px-3 py-2 text-sm"
                         defaultValue={menu.category ?? ""}
                         id="category"
                         name="category"
@@ -101,7 +101,7 @@ export default async function EditMenuPage({
                         Status
                       </label>
                       <select
-                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                        className="flex h-10 w-full rounded-sm border border-input bg-background px-3 py-2 text-sm"
                         defaultValue={menu.isActive ? "true" : "false"}
                         id="isActive"
                         name="isActive"
@@ -125,7 +125,7 @@ export default async function EditMenuPage({
                           Base Price ($)
                         </label>
                         <input
-                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                          className="flex h-10 w-full rounded-sm border border-input bg-background px-3 py-2 text-sm"
                           defaultValue={menu.basePrice ?? ""}
                           id="basePrice"
                           name="basePrice"
@@ -143,7 +143,7 @@ export default async function EditMenuPage({
                           Price Per Person ($)
                         </label>
                         <input
-                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                          className="flex h-10 w-full rounded-sm border border-input bg-background px-3 py-2 text-sm"
                           defaultValue={menu.pricePerPerson ?? ""}
                           id="pricePerPerson"
                           name="pricePerPerson"
@@ -163,7 +163,7 @@ export default async function EditMenuPage({
                           Min Guests
                         </label>
                         <input
-                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                          className="flex h-10 w-full rounded-sm border border-input bg-background px-3 py-2 text-sm"
                           defaultValue={menu.minGuests ?? ""}
                           id="minGuests"
                           name="minGuests"
@@ -180,7 +180,7 @@ export default async function EditMenuPage({
                           Max Guests
                         </label>
                         <input
-                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                          className="flex h-10 w-full rounded-sm border border-input bg-background px-3 py-2 text-sm"
                           defaultValue={menu.maxGuests ?? ""}
                           id="maxGuests"
                           name="maxGuests"
@@ -197,13 +197,13 @@ export default async function EditMenuPage({
                   {/* Submit Button */}
                   <div className="flex justify-end gap-4">
                     <a
-                      className="inline-flex items-center justify-center rounded-md text-sm font-medium h-10 px-4 py-2 border border-input bg-background hover:bg-accent hover:text-accent-foreground"
+                      className="inline-flex items-center justify-center rounded-sm text-sm font-medium h-10 px-4 py-2 border border-input bg-background hover:bg-accent hover:text-accent-foreground"
                       href={`/kitchen/recipes/menus/${menuId}`}
                     >
                       Cancel
                     </a>
                     <button
-                      className="inline-flex items-center justify-center rounded-md text-sm font-medium h-10 px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:pointer-events-none"
+                      className="inline-flex items-center justify-center rounded-sm text-sm font-medium h-10 px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:pointer-events-none"
                       disabled={isSubmitting}
                       type="submit"
                     >

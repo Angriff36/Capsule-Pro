@@ -271,7 +271,7 @@ export function NewRecipeForm({ units }: NewRecipeFormProps) {
                   Recipe name
                 </label>
                 <input
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  className="flex h-10 w-full rounded-sm border border-input bg-background px-3 py-2 text-sm"
                   id="name"
                   name="name"
                   placeholder="Herb Crusted Rack of Lamb"
@@ -283,7 +283,7 @@ export function NewRecipeForm({ units }: NewRecipeFormProps) {
                   Category
                 </label>
                 <input
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  className="flex h-10 w-full rounded-sm border border-input bg-background px-3 py-2 text-sm"
                   id="category"
                   name="category"
                   placeholder="Main course"
@@ -295,7 +295,7 @@ export function NewRecipeForm({ units }: NewRecipeFormProps) {
                 Description
               </label>
               <textarea
-                className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                className="flex min-h-[80px] w-full rounded-sm border border-input bg-background px-3 py-2 text-sm"
                 id="description"
                 name="description"
                 placeholder="Short summary for the kitchen team."
@@ -308,7 +308,7 @@ export function NewRecipeForm({ units }: NewRecipeFormProps) {
                   Yield quantity *
                 </label>
                 <input
-                  className={`flex h-10 w-full rounded-md border bg-background px-3 py-2 text-sm ${yieldQtyError ? "border-red-500" : "border-input"}`}
+                  className={`flex h-10 w-full rounded-sm border bg-background px-3 py-2 text-sm ${yieldQtyError ? "border-red-500" : "border-input"}`}
                   defaultValue="1"
                   id="yieldQuantity"
                   min="1"
@@ -334,7 +334,7 @@ export function NewRecipeForm({ units }: NewRecipeFormProps) {
                   Yield unit
                 </label>
                 <select
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  className="flex h-10 w-full rounded-sm border border-input bg-background px-3 py-2 text-sm"
                   defaultValue={
                     units.find((u) => u.code.toLowerCase() === "servings")
                       ?.code ??
@@ -359,7 +359,7 @@ export function NewRecipeForm({ units }: NewRecipeFormProps) {
                   Yield notes
                 </label>
                 <input
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  className="flex h-10 w-full rounded-sm border border-input bg-background px-3 py-2 text-sm"
                   id="yieldDescription"
                   name="yieldDescription"
                   placeholder="Serves 4"
@@ -375,7 +375,7 @@ export function NewRecipeForm({ units }: NewRecipeFormProps) {
                   Prep time (min)
                 </label>
                 <input
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  className="flex h-10 w-full rounded-sm border border-input bg-background px-3 py-2 text-sm"
                   id="prepTimeMinutes"
                   min="0"
                   name="prepTimeMinutes"
@@ -390,7 +390,7 @@ export function NewRecipeForm({ units }: NewRecipeFormProps) {
                   Cook time (min)
                 </label>
                 <input
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  className="flex h-10 w-full rounded-sm border border-input bg-background px-3 py-2 text-sm"
                   id="cookTimeMinutes"
                   min="0"
                   name="cookTimeMinutes"
@@ -405,7 +405,7 @@ export function NewRecipeForm({ units }: NewRecipeFormProps) {
                   Rest time (min)
                 </label>
                 <input
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  className="flex h-10 w-full rounded-sm border border-input bg-background px-3 py-2 text-sm"
                   id="restTimeMinutes"
                   min="0"
                   name="restTimeMinutes"
@@ -422,7 +422,7 @@ export function NewRecipeForm({ units }: NewRecipeFormProps) {
                   Difficulty (1-5)
                 </label>
                 <input
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  className="flex h-10 w-full rounded-sm border border-input bg-background px-3 py-2 text-sm"
                   id="difficultyLevel"
                   max="5"
                   min="1"
@@ -435,7 +435,7 @@ export function NewRecipeForm({ units }: NewRecipeFormProps) {
                   Tags (comma separated)
                 </label>
                 <input
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  className="flex h-10 w-full rounded-sm border border-input bg-background px-3 py-2 text-sm"
                   id="tags"
                   name="tags"
                   placeholder="GF, seasonal"
@@ -456,7 +456,7 @@ export function NewRecipeForm({ units }: NewRecipeFormProps) {
                 Ingredients (one per line)
               </label>
               <textarea
-                className="flex min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                className="flex min-h-[120px] w-full rounded-sm border border-input bg-background px-3 py-2 text-sm"
                 id="ingredients"
                 name="ingredients"
                 placeholder="2 lb rack of lamb"
@@ -472,7 +472,7 @@ export function NewRecipeForm({ units }: NewRecipeFormProps) {
                 Steps (one per line)
               </label>
               <textarea
-                className="flex min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                className="flex min-h-[120px] w-full rounded-sm border border-input bg-background px-3 py-2 text-sm"
                 id="steps"
                 name="steps"
                 placeholder="Trim the racks and season generously."
@@ -494,7 +494,7 @@ export function NewRecipeForm({ units }: NewRecipeFormProps) {
               </label>
               <input
                 accept="image/*"
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                className="flex h-10 w-full rounded-sm border border-input bg-background px-3 py-2 text-sm"
                 id="imageFile"
                 name="imageFile"
                 type="file"
@@ -505,7 +505,7 @@ export function NewRecipeForm({ units }: NewRecipeFormProps) {
                 Kitchen notes
               </label>
               <textarea
-                className="flex min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                className="flex min-h-[100px] w-full rounded-sm border border-input bg-background px-3 py-2 text-sm"
                 id="notes"
                 name="notes"
                 placeholder="Share plating or storage notes for staff."
@@ -515,14 +515,14 @@ export function NewRecipeForm({ units }: NewRecipeFormProps) {
             <div className="h-px bg-border" />
             <div className="flex flex-col gap-2">
               <button
-                className="inline-flex items-center justify-center rounded-md text-sm font-medium h-10 px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:pointer-events-none"
+                className="inline-flex items-center justify-center rounded-sm text-sm font-medium h-10 px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:pointer-events-none"
                 disabled={isPending}
                 type="submit"
               >
                 {isPending ? "Creating..." : "Create recipe"}
               </button>
               <a
-                className="inline-flex items-center justify-center rounded-md text-sm font-medium h-10 px-4 py-2 border border-input bg-background hover:bg-accent hover:text-accent-foreground"
+                className="inline-flex items-center justify-center rounded-sm text-sm font-medium h-10 px-4 py-2 border border-input bg-background hover:bg-accent hover:text-accent-foreground"
                 href="/kitchen/recipes"
               >
                 Cancel

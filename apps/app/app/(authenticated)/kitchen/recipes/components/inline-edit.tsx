@@ -51,7 +51,7 @@ export function InlineTextInput({
     return (
       <button
         className={cn(
-          "group/edit inline-flex items-center gap-1 rounded-md border border-transparent px-1.5 py-0.5 -ml-1.5 text-left cursor-pointer outline-none transition-all",
+          "group/edit inline-flex items-center gap-1 rounded-sm border border-transparent px-1.5 py-0.5 -ml-1.5 text-left cursor-pointer outline-none transition-all",
           "hover:border-border hover:bg-muted/60 focus-visible:ring-1 focus-visible:ring-ring",
           className
         )}
@@ -71,7 +71,7 @@ export function InlineTextInput({
   return (
     <div
       className={cn(
-        "inline-flex items-center gap-1 rounded-md border border-ring bg-background px-1 py-0.5",
+        "inline-flex items-center gap-1 rounded-sm border border-ring bg-background px-1 py-0.5",
         className
       )}
       onClick={(e) => e.stopPropagation()}
@@ -171,7 +171,7 @@ export function InlinePriceInput({
     return (
       <button
         className={cn(
-          "group/edit inline-flex items-center gap-1 rounded-md border border-transparent px-1.5 py-0.5 -ml-1.5 text-left cursor-pointer outline-none transition-all",
+          "group/edit inline-flex items-center gap-1 rounded-sm border border-transparent px-1.5 py-0.5 -ml-1.5 text-left cursor-pointer outline-none transition-all",
           "hover:border-border hover:bg-muted/60 focus-visible:ring-1 focus-visible:ring-ring",
           className
         )}
@@ -191,7 +191,7 @@ export function InlinePriceInput({
   return (
     <div
       className={cn(
-        "inline-flex items-center gap-1 rounded-md border border-ring bg-background px-1 py-0.5",
+        "inline-flex items-center gap-1 rounded-sm border border-ring bg-background px-1 py-0.5",
         className
       )}
       onClick={(e) => e.stopPropagation()}
