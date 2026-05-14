@@ -15,6 +15,11 @@ import {
 } from "@/lib/manifest-response";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
 
+// Convert kebab-case to camelCase: "mark-dismissed" → "markDismissed"
+function kebabToCamelCase(str: string): string {
+  return str.replace(/-([a-z])/g, (_, char) => char.toUpperCase());
+}
+
 // Build a lookup set: "EntityName.commandName" → true
 const COMMAND_REGISTRY: Set<string> = new Set(
   (commandsJson as Array<{ entity: string; command: string }>).map(
@@ -29,7 +34,9 @@ export async function POST(
   { params }: { params: Promise<{ entity: string; command: string }> }
 ): Promise<Response> {
   try {
-    const { entity, command } = await params;
+    const { entity, command: rawCommand } = await params;
+    // Normalize command name: kebab-case from URL → camelCase for registry
+    const command = kebabToCamelCase(rawCommand);
 
     // ── Validation: command must exist in compiled IR ──
     const commandKey = `${entity}.${command}`;

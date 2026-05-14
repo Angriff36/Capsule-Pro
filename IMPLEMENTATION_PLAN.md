@@ -1,9 +1,8 @@
-# IMPLEMENTATION_PLAN.md — v78
+# IMPLEMENTATION_PLAN.md — v79
 
 > Updated 2026-05-14 by test suite repair.
+> v79: Fixed manifest command route kebab-case normalization. Route at `apps/api/app/api/manifest/[entity]/commands/[command]/route.ts` now converts kebab-case command names (e.g., "mark-dismissed") to camelCase (e.g., "markDismissed") to match the command registry in `kitchen.commands.json`. Also fixed notification-commands.test.ts expectations to match actual route behavior (auto-provisions users instead of returning 400). Test count: 473 failing / 2706 passing / 16 skipped.
 > v78: Fixed proposal-end-to-end.test.ts (10 tests now pass). Root cause: `executeManifestCommand` was mocked, blocking `runCommand` from being called. Fixed by mocking `executeManifestCommand` directly and verifying it receives correct entityName/commandName. Also fixed recipes.test.ts (findFirst → findUnique mismatch). Test count: 527 failing / 2652 passing / 16 skipped.
-> v77: Fixed InvariantError class mismatch in recipes.test.ts. Fixed user resolution test. Fixed runtime assertion (role field). Fixed policy denial message format. Test count: 535 failing / 2646 passing / 16 skipped.
-> v76: Resolved additional requireCurrentUser mock issues. Fixed manifest route params argument. Added InvariantError handling to auth tests. Test count: 678 failing / 2503 passing / 16 skipped.
 
 ## v78 Findings (2026-05-14)
 
