@@ -46,6 +46,7 @@ vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
 vi.mock("@/app/lib/tenant", () => ({
   getTenantIdForOrg: vi.fn(),
   requireTenantId: vi.fn(),
+  requireCurrentUser: vi.fn(),
 }));
 
 vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn() }));
@@ -85,23 +86,30 @@ const { createManifestRuntime } = await import("@/lib/manifest-runtime");
 
 import { GET as getActivityFeedList } from "@/app/api/activity-feed/list/route";
 import { GET as getActivityFeedStats } from "@/app/api/activity-feed/stats/route";
-import { POST as archiveParticipant } from "@/app/api/adminchatparticipant/archive/route";
-import { POST as clearHistory } from "@/app/api/adminchatparticipant/clear-history/route";
-import { POST as unarchiveParticipant } from "@/app/api/adminchatparticipant/unarchive/route";
 import { POST as aiEventSetupParse } from "@/app/api/ai-event-setup/parse/route";
-import { POST as sessionCancel } from "@/app/api/aieventsetupsession/cancel/route";
-import { POST as sessionConfirm } from "@/app/api/aieventsetupsession/confirm/route";
-import { POST as sessionMarkCreated } from "@/app/api/aieventsetupsession/mark-created/route";
-import { POST as sessionParse } from "@/app/api/aieventsetupsession/parse/route";
-import { POST as sessionUpdateConfidence } from "@/app/api/aieventsetupsession/update-confidence/route";
-import { POST as alertsConfigCreate } from "@/app/api/alertsconfig/create/route";
-import { POST as alertsConfigRemove } from "@/app/api/alertsconfig/remove/route";
-import { POST as alertsConfigUpdate } from "@/app/api/alertsconfig/update/route";
-import { POST as allergenAcknowledge } from "@/app/api/allergenwarning/acknowledge/route";
-import { POST as allergenApplyOverride } from "@/app/api/allergenwarning/apply-override/route";
-import { POST as allergenCreate } from "@/app/api/allergenwarning/create/route";
-import { POST as allergenResolve } from "@/app/api/allergenwarning/resolve/route";
-import { POST as allergenSoftDelete } from "@/app/api/allergenwarning/soft-delete/route";
+import { POST as manifestDispatch } from "@/app/api/manifest/[entity]/commands/[command]/route";
+
+const dispatch = (entity: string, command: string) => (req: NextRequest) =>
+  manifestDispatch(req, {
+    params: Promise.resolve({ entity, command }),
+  });
+
+const archiveParticipant = dispatch("AdminChatParticipant", "archive");
+const clearHistory = dispatch("AdminChatParticipant", "clearHistory");
+const unarchiveParticipant = dispatch("AdminChatParticipant", "unarchive");
+const sessionCancel = dispatch("AiEventSetupSession", "cancel");
+const sessionConfirm = dispatch("AiEventSetupSession", "confirm");
+const sessionMarkCreated = dispatch("AiEventSetupSession", "markCreated");
+const sessionParse = dispatch("AiEventSetupSession", "parse");
+const sessionUpdateConfidence = dispatch("AiEventSetupSession", "updateConfidence");
+const alertsConfigCreate = dispatch("AlertsConfig", "create");
+const alertsConfigRemove = dispatch("AlertsConfig", "remove");
+const alertsConfigUpdate = dispatch("AlertsConfig", "update");
+const allergenAcknowledge = dispatch("AllergenWarning", "acknowledge");
+const allergenApplyOverride = dispatch("AllergenWarning", "applyOverride");
+const allergenCreate = dispatch("AllergenWarning", "create");
+const allergenResolve = dispatch("AllergenWarning", "resolve");
+const allergenSoftDelete = dispatch("AllergenWarning", "softDelete");
 
 // --- Constants ---
 

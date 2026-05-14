@@ -8,15 +8,21 @@
 
 import { NextRequest } from "next/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { POST as archiveClient } from "@/app/api/client/archive/route";
-import { POST as createClient } from "@/app/api/client/create/route";
-import { POST as reactivateClient } from "@/app/api/client/reactivate/route";
-import { POST as updateClient } from "@/app/api/client/update/route";
+import { POST as manifestDispatch } from "@/app/api/manifest/[entity]/commands/[command]/route";
+
+const dispatch = (entity: string, command: string) => (req: NextRequest) =>
+  manifestDispatch(req, { params: Promise.resolve({ entity, command }) });
+
+const archiveClient = dispatch("Client", "archive");
+const createClient = dispatch("Client", "create");
+const reactivateClient = dispatch("Client", "reactivate");
+const updateClient = dispatch("Client", "update");
 
 // Mock dependencies
 vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
 vi.mock("@/app/lib/tenant", () => ({
   getTenantIdForOrg: vi.fn(),
+  requireCurrentUser: vi.fn(),
 }));
 vi.mock("@/lib/manifest-runtime", () => ({
   createManifestRuntime: vi.fn(),

@@ -18,7 +18,10 @@ import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
-vi.mock("@/app/lib/tenant", () => ({ getTenantIdForOrg: vi.fn() }));
+vi.mock("@/app/lib/tenant", () => ({
+  getTenantIdForOrg: vi.fn(),
+  requireCurrentUser: vi.fn(),
+}));
 vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn() }));
 vi.mock("@/lib/manifest-runtime", () => ({
   createManifestRuntime: vi.fn(),
@@ -27,6 +30,15 @@ vi.mock("@/lib/manifest-runtime", () => ({
 const { auth } = await import("@repo/auth/server");
 const { getTenantIdForOrg } = await import("@/app/lib/tenant");
 const { createManifestRuntime } = await import("@/lib/manifest-runtime");
+
+import { POST as manifestDispatch } from "@/app/api/manifest/[entity]/commands/[command]/route";
+
+function createDishHandler(command: string) {
+  return async (req: NextRequest) =>
+    manifestDispatch(req, {
+      params: Promise.resolve({ entity: "Dish", command }),
+    });
+}
 
 const TEST_TENANT_ID = "b0000000-0000-4000-b000-000000000002";
 const TEST_USER_ID = "user_test_dish";
@@ -97,7 +109,7 @@ describe("Dish API Routes", () => {
     it("returns 401 when unauthenticated", async () => {
       vi.mocked(auth).mockResolvedValue({ orgId: null, userId: null } as never);
 
-      const { POST } = await import("@/app/api/dish/create/route");
+      const POST = createDishHandler("create");
       const res = await POST(makeRequest({ name: "Caesar Salad" }));
       const data = await res.json();
 
@@ -113,7 +125,7 @@ describe("Dish API Routes", () => {
       } as never);
       vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
 
-      const { POST } = await import("@/app/api/dish/create/route");
+      const POST = createDishHandler("create");
       const res = await POST(makeRequest({ name: "Caesar Salad" }));
       const data = await res.json();
 
@@ -131,7 +143,7 @@ describe("Dish API Routes", () => {
         salesPriceCents: 1200,
       });
 
-      const { POST } = await import("@/app/api/dish/create/route");
+      const POST = createDishHandler("create");
       const res = await POST(makeRequest({ name: "Caesar Salad" }));
       const data = await res.json();
 
@@ -144,7 +156,7 @@ describe("Dish API Routes", () => {
       mockAuthenticated();
       mockRuntimePolicyDenial("chefOnly");
 
-      const { POST } = await import("@/app/api/dish/create/route");
+      const POST = createDishHandler("create");
       const res = await POST(makeRequest({ name: "Caesar Salad" }));
       const data = await res.json();
 
@@ -159,7 +171,7 @@ describe("Dish API Routes", () => {
         new Error("Connection refused") as never
       );
 
-      const { POST } = await import("@/app/api/dish/create/route");
+      const POST = createDishHandler("create");
       const res = await POST(makeRequest({ name: "Caesar Salad" }));
       const data = await res.json();
 
@@ -175,7 +187,7 @@ describe("Dish API Routes", () => {
     it("returns 401 when unauthenticated", async () => {
       vi.mocked(auth).mockResolvedValue({ orgId: null, userId: null } as never);
 
-      const { POST } = await import("@/app/api/dish/update/route");
+      const POST = createDishHandler("update");
       const res = await POST(makeRequest({ id: "dish-001", name: "Updated" }));
       const data = await res.json();
 
@@ -186,7 +198,7 @@ describe("Dish API Routes", () => {
       mockAuthenticated();
       mockRuntimeSuccess({ id: "dish-001", name: "Greek Salad" });
 
-      const { POST } = await import("@/app/api/dish/update/route");
+      const POST = createDishHandler("update");
       const res = await POST(
         makeRequest({ id: "dish-001", name: "Greek Salad" })
       );
@@ -208,7 +220,7 @@ describe("Dish API Routes", () => {
         runCommand,
       } as never);
 
-      const { POST } = await import("@/app/api/dish/update/route");
+      const POST = createDishHandler("update");
       await POST(makeRequest({ id: "dish-001", name: "Updated" }));
 
       expect(runCommand).toHaveBeenCalledWith(
@@ -222,7 +234,7 @@ describe("Dish API Routes", () => {
       mockAuthenticated();
       mockRuntimeGuardFailure(1, "name must not be empty");
 
-      const { POST } = await import("@/app/api/dish/update/route");
+      const POST = createDishHandler("update");
       const res = await POST(makeRequest({ id: "dish-001", name: "" }));
       const data = await res.json();
 
@@ -237,7 +249,7 @@ describe("Dish API Routes", () => {
     it("returns 401 when unauthenticated", async () => {
       vi.mocked(auth).mockResolvedValue({ orgId: null, userId: null } as never);
 
-      const { POST } = await import("@/app/api/dish/deactivate/route");
+      const POST = createDishHandler("deactivate");
       const res = await POST(makeRequest({ id: "dish-001" }));
 
       expect(res.status).toBe(401);
@@ -247,7 +259,7 @@ describe("Dish API Routes", () => {
       mockAuthenticated();
       mockRuntimeSuccess({ id: "dish-001", isActive: false });
 
-      const { POST } = await import("@/app/api/dish/deactivate/route");
+      const POST = createDishHandler("deactivate");
       const res = await POST(makeRequest({ id: "dish-001" }));
       const data = await res.json();
 
@@ -260,7 +272,7 @@ describe("Dish API Routes", () => {
       mockAuthenticated();
       mockRuntimeFailure("Dish not found");
 
-      const { POST } = await import("@/app/api/dish/deactivate/route");
+      const POST = createDishHandler("deactivate");
       const res = await POST(makeRequest({ id: "dish-999" }));
       const data = await res.json();
 
@@ -275,7 +287,7 @@ describe("Dish API Routes", () => {
     it("returns 401 when unauthenticated", async () => {
       vi.mocked(auth).mockResolvedValue({ orgId: null, userId: null } as never);
 
-      const { POST } = await import("@/app/api/dish/update-lead-time/route");
+      const POST = createDishHandler("updateLeadTime");
       const res = await POST(
         makeRequest({
           id: "dish-001",
@@ -297,7 +309,7 @@ describe("Dish API Routes", () => {
         cookTimeMinutes: 30,
       });
 
-      const { POST } = await import("@/app/api/dish/update-lead-time/route");
+      const POST = createDishHandler("updateLeadTime");
       const res = await POST(
         makeRequest({
           id: "dish-001",
@@ -325,7 +337,7 @@ describe("Dish API Routes", () => {
       } as never);
 
       const body = { id: "dish-001", prepTimeMinutes: 60 };
-      const { POST } = await import("@/app/api/dish/update-lead-time/route");
+      const POST = createDishHandler("updateLeadTime");
       await POST(makeRequest(body));
 
       expect(runCommand).toHaveBeenCalledWith("updateLeadTime", body, {
@@ -340,7 +352,7 @@ describe("Dish API Routes", () => {
     it("returns 401 when unauthenticated", async () => {
       vi.mocked(auth).mockResolvedValue({ orgId: null, userId: null } as never);
 
-      const { POST } = await import("@/app/api/dish/update-pricing/route");
+      const POST = createDishHandler("updatePricing");
       const res = await POST(
         makeRequest({
           id: "dish-001",
@@ -361,7 +373,7 @@ describe("Dish API Routes", () => {
         salesPriceCents: 1500,
       });
 
-      const { POST } = await import("@/app/api/dish/update-pricing/route");
+      const POST = createDishHandler("updatePricing");
       const res = await POST(
         makeRequest({
           id: "dish-001",
@@ -392,7 +404,7 @@ describe("Dish API Routes", () => {
         costPerPortionCents: 600,
         salesPriceCents: 1800,
       };
-      const { POST } = await import("@/app/api/dish/update-pricing/route");
+      const POST = createDishHandler("updatePricing");
       await POST(makeRequest(body));
 
       expect(runCommand).toHaveBeenCalledWith("updatePricing", body, {
@@ -404,7 +416,7 @@ describe("Dish API Routes", () => {
       mockAuthenticated();
       mockRuntimePolicyDenial("financeOnly");
 
-      const { POST } = await import("@/app/api/dish/update-pricing/route");
+      const POST = createDishHandler("updatePricing");
       const res = await POST(
         makeRequest({
           id: "dish-001",
@@ -424,7 +436,7 @@ describe("Dish API Routes", () => {
         new Error("Unexpected") as never
       );
 
-      const { POST } = await import("@/app/api/dish/update-pricing/route");
+      const POST = createDishHandler("updatePricing");
       const res = await POST(
         makeRequest({
           id: "dish-001",

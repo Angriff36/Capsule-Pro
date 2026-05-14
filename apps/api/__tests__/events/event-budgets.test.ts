@@ -27,6 +27,7 @@ vi.mock("@repo/auth/server", () => ({
 // Mock tenant
 vi.mock("@/app/lib/tenant", () => ({
   getTenantIdForOrg: vi.fn(),
+  requireCurrentUser: vi.fn(),
 }));
 
 // Mock manifest runtime
@@ -44,13 +45,17 @@ vi.mock("@sentry/nextjs", () => ({
 
 // Import mocked modules
 import { auth } from "@repo/auth/server";
-import { POST as approvePOST } from "@/app/api/eventbudget/approve/route";
-// Import route handlers
-import { POST as createPOST } from "@/app/api/eventbudget/create/route";
-import { POST as finalizePOST } from "@/app/api/eventbudget/finalize/route";
-import { POST as updatePOST } from "@/app/api/eventbudget/update/route";
+import { POST as manifestDispatch } from "@/app/api/manifest/[entity]/commands/[command]/route";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
+
+const dispatch = (entity: string, command: string) => (req: NextRequest) =>
+  manifestDispatch(req, { params: Promise.resolve({ entity, command }) });
+
+const approvePOST = dispatch("EventBudget", "approve");
+const createPOST = dispatch("EventBudget", "create");
+const finalizePOST = dispatch("EventBudget", "finalize");
+const updatePOST = dispatch("EventBudget", "update");
 
 // Test constants
 const TEST_TENANT_ID = "a0000000-0000-4000-a000-000000000001";

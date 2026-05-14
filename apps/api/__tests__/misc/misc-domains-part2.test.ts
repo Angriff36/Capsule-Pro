@@ -23,6 +23,7 @@ vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
 vi.mock("@/app/lib/tenant", () => ({
   getTenantIdForOrg: vi.fn(),
   requireTenantId: vi.fn(),
+  requireCurrentUser: vi.fn(),
 }));
 vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn() }));
 vi.mock("@/lib/manifest-response", async () => {
@@ -57,26 +58,32 @@ const { createManifestRuntime } = await import("@/lib/manifest-runtime");
 
 // --- Route imports ---
 
+// Dispatcher
+import { POST as manifestDispatch } from "@/app/api/manifest/[entity]/commands/[command]/route";
+
+const dispatch = (entity: string, command: string) => (req: NextRequest) =>
+  manifestDispatch(req, { params: Promise.resolve({ entity, command }) });
+
 // MenuDish
-import { POST as menuDishCreate } from "@/app/api/menudish/create/route";
-import { POST as menuDishRemove } from "@/app/api/menudish/remove/route";
-import { POST as menuDishUpdateCourse } from "@/app/api/menudish/update-course/route";
+const menuDishCreate = dispatch("MenuDish", "create");
+const menuDishRemove = dispatch("MenuDish", "remove");
+const menuDishUpdateCourse = dispatch("MenuDish", "updateCourse");
 // ProposalLineItem
-import { POST as proposalLineItemCreate } from "@/app/api/proposallineitem/create/route";
-import { POST as proposalLineItemRemove } from "@/app/api/proposallineitem/remove/route";
-import { POST as proposalLineItemUpdate } from "@/app/api/proposallineitem/update/route";
+const proposalLineItemCreate = dispatch("ProposalLineItem", "create");
+const proposalLineItemRemove = dispatch("ProposalLineItem", "remove");
+const proposalLineItemUpdate = dispatch("ProposalLineItem", "update");
 // PurchaseOrderItem
-import { POST as purchaseOrderItemCreate } from "@/app/api/purchaseorderitem/create/route";
-import { POST as purchaseOrderItemRemove } from "@/app/api/purchaseorderitem/remove/route";
-import { POST as purchaseOrderItemUpdate } from "@/app/api/purchaseorderitem/update/route";
-import { POST as sampleDataClear } from "@/app/api/sampledata/clear/route";
-import { POST as sampleDataReseed } from "@/app/api/sampledata/reseed/route";
+const purchaseOrderItemCreate = dispatch("PurchaseOrderItem", "create");
+const purchaseOrderItemRemove = dispatch("PurchaseOrderItem", "remove");
+const purchaseOrderItemUpdate = dispatch("PurchaseOrderItem", "update");
+const sampleDataClear = dispatch("SampleData", "clear");
+const sampleDataReseed = dispatch("SampleData", "reseed");
 // SampleData
-import { POST as sampleDataSeed } from "@/app/api/sampledata/seed/route";
+const sampleDataSeed = dispatch("SampleData", "seed");
 // ScheduleShift
-import { POST as scheduleShiftCreate } from "@/app/api/scheduleshift/create/route";
-import { POST as scheduleShiftRemove } from "@/app/api/scheduleshift/remove/route";
-import { POST as scheduleShiftUpdate } from "@/app/api/scheduleshift/update/route";
+const scheduleShiftCreate = dispatch("ScheduleShift", "create");
+const scheduleShiftRemove = dispatch("ScheduleShift", "remove");
+const scheduleShiftUpdate = dispatch("ScheduleShift", "update");
 // User Preferences
 import {
   GET as userPreferencesGet,

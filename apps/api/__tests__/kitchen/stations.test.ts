@@ -13,7 +13,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 // --- Mocks ---
 
 vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
-vi.mock("@/app/lib/tenant", () => ({ getTenantIdForOrg: vi.fn() }));
+vi.mock("@/app/lib/tenant", () => ({
+  getTenantIdForOrg: vi.fn(),
+  requireCurrentUser: vi.fn(),
+}));
 vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn() }));
 
 // Manifest runtime must be mocked so command routes can call runCommand.
@@ -59,13 +62,18 @@ const { createManifestRuntime } = await import("@/lib/manifest-runtime");
 
 import { GET as getStationDetail } from "@/app/api/kitchen/stations/[id]/route";
 import { GET as getStationsList } from "@/app/api/kitchen/stations/route";
-import { POST as activateStation } from "@/app/api/station/activate/route";
-import { POST as assignTask } from "@/app/api/station/assign-task/route";
-import { POST as createStation } from "@/app/api/station/create/route";
-import { POST as deactivateStation } from "@/app/api/station/deactivate/route";
-import { POST as removeTask } from "@/app/api/station/remove-task/route";
-import { POST as updateCapacity } from "@/app/api/station/update-capacity/route";
-import { POST as updateEquipment } from "@/app/api/station/update-equipment/route";
+import { POST as manifestDispatch } from "@/app/api/manifest/[entity]/commands/[command]/route";
+
+const dispatch = (entity: string, command: string) => (req: NextRequest) =>
+  manifestDispatch(req, { params: Promise.resolve({ entity, command }) });
+
+const activateStation = dispatch("Station", "activate");
+const assignTask = dispatch("Station", "assignTask");
+const createStation = dispatch("Station", "create");
+const deactivateStation = dispatch("Station", "deactivate");
+const removeTask = dispatch("Station", "removeTask");
+const updateCapacity = dispatch("Station", "updateCapacity");
+const updateEquipment = dispatch("Station", "updateEquipment");
 
 // --- Constants ---
 

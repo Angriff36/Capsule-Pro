@@ -17,6 +17,7 @@ vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
 vi.mock("@/app/lib/tenant", () => ({
   getTenantIdForOrg: vi.fn(),
   requireTenantId: vi.fn(),
+  requireCurrentUser: vi.fn(),
 }));
 vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn() }));
 vi.mock("@/lib/manifest-response", async () => {
@@ -48,25 +49,30 @@ const { auth } = await import("@repo/auth/server");
 const { getTenantIdForOrg } = await import("@/app/lib/tenant");
 const { createManifestRuntime } = await import("@/lib/manifest-runtime");
 
+// Import dispatcher
+import { POST as manifestDispatch } from "@/app/api/manifest/[entity]/commands/[command]/route";
+
+const dispatch = (entity: string, command: string) => (req: NextRequest) =>
+  manifestDispatch(req, { params: Promise.resolve({ entity, command }) });
+
 // BulkOrderRule
-import { POST as bulkOrderCreate } from "@/app/api/bulkorderrule/create/route";
-import { POST as bulkOrderSoftDelete } from "@/app/api/bulkorderrule/soft-delete/route";
-import { POST as bulkOrderUpdate } from "@/app/api/bulkorderrule/update/route";
-// Import route handlers
+const bulkOrderCreate = dispatch("BulkOrderRule", "create");
+const bulkOrderSoftDelete = dispatch("BulkOrderRule", "softDelete");
+const bulkOrderUpdate = dispatch("BulkOrderRule", "update");
 // InventorySupplier
-import { POST as supplierCreate } from "@/app/api/inventorysupplier/create/route";
-import { POST as supplierDeactivate } from "@/app/api/inventorysupplier/deactivate/route";
-import { POST as supplierUpdate } from "@/app/api/inventorysupplier/update/route";
+const supplierCreate = dispatch("InventorySupplier", "create");
+const supplierDeactivate = dispatch("InventorySupplier", "deactivate");
+const supplierUpdate = dispatch("InventorySupplier", "update");
 // InventoryTransaction
-import { POST as transactionCreate } from "@/app/api/inventorytransaction/create/route";
+const transactionCreate = dispatch("InventoryTransaction", "create");
 // PricingTier
-import { POST as pricingTierCreate } from "@/app/api/pricingtier/create/route";
-import { POST as pricingTierSoftDelete } from "@/app/api/pricingtier/soft-delete/route";
-import { POST as pricingTierUpdate } from "@/app/api/pricingtier/update/route";
+const pricingTierCreate = dispatch("PricingTier", "create");
+const pricingTierSoftDelete = dispatch("PricingTier", "softDelete");
+const pricingTierUpdate = dispatch("PricingTier", "update");
 // VendorCatalog
-import { POST as vendorCatalogCreate } from "@/app/api/vendorcatalog/create/route";
-import { POST as vendorCatalogSoftDelete } from "@/app/api/vendorcatalog/soft-delete/route";
-import { POST as vendorCatalogUpdate } from "@/app/api/vendorcatalog/update/route";
+const vendorCatalogCreate = dispatch("VendorCatalog", "create");
+const vendorCatalogSoftDelete = dispatch("VendorCatalog", "softDelete");
+const vendorCatalogUpdate = dispatch("VendorCatalog", "update");
 
 // --- Constants ---
 

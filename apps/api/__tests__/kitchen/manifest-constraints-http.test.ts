@@ -114,8 +114,19 @@ vi.mock("@/lib/manifest-runtime", () => ({
 
 // Mock getTenantIdForOrg
 vi.mock("@/app/lib/tenant", () => ({
+  requireCurrentUser: vi.fn(),
   getTenantIdForOrg: vi.fn(() => Promise.resolve("test-tenant")),
 }));
+
+import { POST as manifestDispatch } from "@/app/api/manifest/[entity]/commands/[command]/route";
+
+function createRecipeVersionHandler(command: string) {
+  return async (req: NextRequest) =>
+    manifestDispatch(req, {
+      params: Promise.resolve({ entity: "RecipeVersion", command }),
+    });
+}
+
 
 describe("Manifest HTTP Constraint Enforcement - Recipe Commands", () => {
   beforeEach(() => {
@@ -1017,9 +1028,7 @@ describe("Manifest HTTP Constraint Enforcement - RecipeVersion Commands", () => 
         userId: null,
       } as never);
 
-      const { POST } = await import(
-        "@/app/api/kitchen/recipes/versions/commands/create/route"
-      );
+      const POST = createRecipeVersionHandler("create");
 
       const request = new NextRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -1066,9 +1075,7 @@ describe("Manifest HTTP Constraint Enforcement - RecipeVersion Commands", () => 
       // Mock existing versions lookup
       vi.mocked(database.recipeVersion.findMany).mockResolvedValueOnce([]);
 
-      const { POST } = await import(
-        "@/app/api/kitchen/recipes/versions/commands/create/route"
-      );
+      const POST = createRecipeVersionHandler("create");
 
       const request = new NextRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -1117,9 +1124,7 @@ describe("Manifest HTTP Constraint Enforcement - RecipeVersion Commands", () => 
       // Mock existing versions lookup
       vi.mocked(database.recipeVersion.findMany).mockResolvedValueOnce([]);
 
-      const { POST } = await import(
-        "@/app/api/kitchen/recipes/versions/commands/create/route"
-      );
+      const POST = createRecipeVersionHandler("create");
 
       const request = new NextRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -1189,9 +1194,7 @@ describe("Manifest HTTP Constraint Enforcement - RecipeVersion Commands", () => 
       // Mock outbox event creation
       vi.mocked(database.outboxEvent.create).mockResolvedValueOnce({} as never);
 
-      const { POST } = await import(
-        "@/app/api/kitchen/recipes/versions/commands/create/route"
-      );
+      const POST = createRecipeVersionHandler("create");
 
       const request = new NextRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -1267,9 +1270,7 @@ describe("Manifest HTTP Constraint Enforcement - RecipeVersion Commands", () => 
       // Mock outbox event creation
       vi.mocked(database.outboxEvent.create).mockResolvedValueOnce({} as never);
 
-      const { POST } = await import(
-        "@/app/api/kitchen/recipes/versions/commands/create/route"
-      );
+      const POST = createRecipeVersionHandler("create");
 
       const request = new NextRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -1345,9 +1346,7 @@ describe("Manifest HTTP Constraint Enforcement - RecipeVersion Commands", () => 
       // Mock outbox event creation
       vi.mocked(database.outboxEvent.create).mockResolvedValueOnce({} as never);
 
-      const { POST } = await import(
-        "@/app/api/kitchen/recipes/versions/commands/create/route"
-      );
+      const POST = createRecipeVersionHandler("create");
 
       const request = new NextRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",

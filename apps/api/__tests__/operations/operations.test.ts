@@ -25,6 +25,7 @@ vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
 vi.mock("@/app/lib/tenant", () => ({
   getTenantIdForOrg: vi.fn(),
   requireTenantId: vi.fn(),
+  requireCurrentUser: vi.fn(),
 }));
 vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn() }));
 
@@ -76,35 +77,39 @@ const { createManifestRuntime } = await import("@/lib/manifest-runtime");
 // --- Route imports ---
 
 import { GET as docVersionList } from "@/app/api/documents/versions/list/route";
-import { POST as ktAddTag } from "@/app/api/kitchentask/add-tag/route";
-import { POST as ktCancel } from "@/app/api/kitchentask/cancel/route";
-import { POST as ktClaim } from "@/app/api/kitchentask/claim/route";
-import { POST as ktComplete } from "@/app/api/kitchentask/complete/route";
+// Dispatcher
+import { POST as manifestDispatch } from "@/app/api/manifest/[entity]/commands/[command]/route";
+
+const dispatch = (entity: string, command: string) => (req: NextRequest) =>
+  manifestDispatch(req, { params: Promise.resolve({ entity, command }) });
+
 // Kitchen Tasks (manifest)
-import { POST as ktCreate } from "@/app/api/kitchentask/create/route";
-import { POST as ktReassign } from "@/app/api/kitchentask/reassign/route";
-import { POST as ktRelease } from "@/app/api/kitchentask/release/route";
-import { POST as ktRemoveTag } from "@/app/api/kitchentask/remove-tag/route";
-import { POST as ktStart } from "@/app/api/kitchentask/start/route";
-import { POST as ktUpdateComplexity } from "@/app/api/kitchentask/update-complexity/route";
-import { POST as ktUpdatePriority } from "@/app/api/kitchentask/update-priority/route";
+const ktAddTag = dispatch("KitchenTask", "addTag");
+const ktCancel = dispatch("KitchenTask", "cancel");
+const ktClaim = dispatch("KitchenTask", "claim");
+const ktComplete = dispatch("KitchenTask", "complete");
+const ktCreate = dispatch("KitchenTask", "create");
+const ktReassign = dispatch("KitchenTask", "reassign");
+const ktRelease = dispatch("KitchenTask", "release");
+const ktRemoveTag = dispatch("KitchenTask", "removeTag");
+const ktStart = dispatch("KitchenTask", "start");
+const ktUpdateComplexity = dispatch("KitchenTask", "updateComplexity");
+const ktUpdatePriority = dispatch("KitchenTask", "updatePriority");
 // Documents
-import {
-  POST as docVersionCreate,
-  POST as docVersionRestore,
-} from "@/app/api/manifest/[entity]/commands/[command]/route";
+const docVersionCreate = dispatch("DocumentVersion", "create");
+const docVersionRestore = dispatch("DocumentVersion", "restore");
 // Search
 import { GET as searchGet } from "@/app/api/search/route";
-import { POST as workflowActivate } from "@/app/api/workflow/activate/route";
 // Workflow (manifest)
-import { POST as workflowCreate } from "@/app/api/workflow/create/route";
-import { POST as workflowDeactivate } from "@/app/api/workflow/deactivate/route";
-import { POST as workflowUpdate } from "@/app/api/workflow/update/route";
-import { POST as wfOptComplete } from "@/app/api/workforceoptimization/complete/route";
+const workflowActivate = dispatch("Workflow", "activate");
+const workflowCreate = dispatch("Workflow", "create");
+const workflowDeactivate = dispatch("Workflow", "deactivate");
+const workflowUpdate = dispatch("Workflow", "update");
 // Workforce Optimization (manifest)
-import { POST as wfOptCreate } from "@/app/api/workforceoptimization/create/route";
-import { POST as wfOptFail } from "@/app/api/workforceoptimization/fail/route";
-import { POST as wfOptStart } from "@/app/api/workforceoptimization/start/route";
+const wfOptComplete = dispatch("WorkforceOptimization", "complete");
+const wfOptCreate = dispatch("WorkforceOptimization", "create");
+const wfOptFail = dispatch("WorkforceOptimization", "fail");
+const wfOptStart = dispatch("WorkforceOptimization", "start");
 
 // --- Constants ---
 

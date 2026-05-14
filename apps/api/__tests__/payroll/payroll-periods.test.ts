@@ -106,7 +106,7 @@ describe("Payroll Periods API", () => {
         }),
       ];
 
-      vi.mocked(database.payroll_periods.findMany).mockResolvedValue(
+      vi.mocked(database.payrollPeriod.findMany).mockResolvedValue(
         mockPeriods as never
       );
 
@@ -122,7 +122,7 @@ describe("Payroll Periods API", () => {
     });
 
     it("should filter by tenant_id and exclude soft-deleted", async () => {
-      vi.mocked(database.payroll_periods.findMany).mockResolvedValue(
+      vi.mocked(database.payrollPeriod.findMany).mockResolvedValue(
         [] as never
       );
 
@@ -131,7 +131,7 @@ describe("Payroll Periods API", () => {
       );
       await listPeriods(request);
 
-      expect(database.payroll_periods.findMany).toHaveBeenCalledWith(
+      expect(database.payrollPeriod.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: {
             tenant_id: TEST_TENANT_ID,
@@ -142,7 +142,7 @@ describe("Payroll Periods API", () => {
     });
 
     it("should order results by created_at descending", async () => {
-      vi.mocked(database.payroll_periods.findMany).mockResolvedValue(
+      vi.mocked(database.payrollPeriod.findMany).mockResolvedValue(
         [] as never
       );
 
@@ -151,7 +151,7 @@ describe("Payroll Periods API", () => {
       );
       await listPeriods(request);
 
-      expect(database.payroll_periods.findMany).toHaveBeenCalledWith(
+      expect(database.payrollPeriod.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           orderBy: { created_at: "desc" },
         })
@@ -159,7 +159,7 @@ describe("Payroll Periods API", () => {
     });
 
     it("should return 500 on database error", async () => {
-      vi.mocked(database.payroll_periods.findMany).mockRejectedValue(
+      vi.mocked(database.payrollPeriod.findMany).mockRejectedValue(
         new Error("Database connection failed")
       );
 
@@ -180,7 +180,7 @@ describe("Payroll Periods API", () => {
     it("should return a single payroll period by ID", async () => {
       const mockPeriod = createMockPeriod({ id: "period-001" });
 
-      vi.mocked(database.payroll_periods.findFirst).mockResolvedValue(
+      vi.mocked(database.payrollPeriod.findFirst).mockResolvedValue(
         mockPeriod as never
       );
 
@@ -198,7 +198,7 @@ describe("Payroll Periods API", () => {
     });
 
     it("should return 404 when period not found", async () => {
-      vi.mocked(database.payroll_periods.findFirst).mockResolvedValue(
+      vi.mocked(database.payrollPeriod.findFirst).mockResolvedValue(
         null as never
       );
 
@@ -216,7 +216,7 @@ describe("Payroll Periods API", () => {
     });
 
     it("should enforce tenant isolation on detail queries", async () => {
-      vi.mocked(database.payroll_periods.findFirst).mockResolvedValue(
+      vi.mocked(database.payrollPeriod.findFirst).mockResolvedValue(
         null as never
       );
 
@@ -227,7 +227,7 @@ describe("Payroll Periods API", () => {
         params: Promise.resolve({ id: "period-001" }),
       });
 
-      expect(database.payroll_periods.findFirst).toHaveBeenCalledWith(
+      expect(database.payrollPeriod.findFirst).toHaveBeenCalledWith(
         expect.objectContaining({
           where: {
             id: "period-001",

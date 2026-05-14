@@ -91,7 +91,7 @@ describe("Payroll Runs API", () => {
         createMockRun({ id: "run-2", status: "pending" }),
       ];
 
-      vi.mocked(database.payroll_runs.findMany).mockResolvedValue(
+      vi.mocked(database.payrollRun.findMany).mockResolvedValue(
         mockRuns as never
       );
 
@@ -105,12 +105,12 @@ describe("Payroll Runs API", () => {
     });
 
     it("should filter by tenant_id and exclude soft-deleted", async () => {
-      vi.mocked(database.payroll_runs.findMany).mockResolvedValue([] as never);
+      vi.mocked(database.payrollRun.findMany).mockResolvedValue([] as never);
 
       const request = new NextRequest("http://localhost/api/payroll/runs/list");
       await listRuns(request);
 
-      expect(database.payroll_runs.findMany).toHaveBeenCalledWith(
+      expect(database.payrollRun.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: {
             tenant_id: TEST_TENANT_ID,
@@ -121,12 +121,12 @@ describe("Payroll Runs API", () => {
     });
 
     it("should order results by created_at descending", async () => {
-      vi.mocked(database.payroll_runs.findMany).mockResolvedValue([] as never);
+      vi.mocked(database.payrollRun.findMany).mockResolvedValue([] as never);
 
       const request = new NextRequest("http://localhost/api/payroll/runs/list");
       await listRuns(request);
 
-      expect(database.payroll_runs.findMany).toHaveBeenCalledWith(
+      expect(database.payrollRun.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           orderBy: { created_at: "desc" },
         })
@@ -134,7 +134,7 @@ describe("Payroll Runs API", () => {
     });
 
     it("should return 500 on database error", async () => {
-      vi.mocked(database.payroll_runs.findMany).mockRejectedValue(
+      vi.mocked(database.payrollRun.findMany).mockRejectedValue(
         new Error("Connection timeout")
       );
 
@@ -148,7 +148,7 @@ describe("Payroll Runs API", () => {
     });
 
     it("should return empty array when no runs exist", async () => {
-      vi.mocked(database.payroll_runs.findMany).mockResolvedValue([] as never);
+      vi.mocked(database.payrollRun.findMany).mockResolvedValue([] as never);
 
       const request = new NextRequest("http://localhost/api/payroll/runs/list");
       const response = await listRuns(request);
@@ -168,7 +168,7 @@ describe("Payroll Runs API", () => {
         total_net: 11_500.0,
       });
 
-      vi.mocked(database.payroll_runs.findFirst).mockResolvedValue(
+      vi.mocked(database.payrollRun.findFirst).mockResolvedValue(
         mockRun as never
       );
 
@@ -187,7 +187,7 @@ describe("Payroll Runs API", () => {
     });
 
     it("should return 404 when run not found", async () => {
-      vi.mocked(database.payroll_runs.findFirst).mockResolvedValue(
+      vi.mocked(database.payrollRun.findFirst).mockResolvedValue(
         null as never
       );
 
@@ -205,7 +205,7 @@ describe("Payroll Runs API", () => {
     });
 
     it("should enforce tenant isolation on detail queries", async () => {
-      vi.mocked(database.payroll_runs.findFirst).mockResolvedValue(
+      vi.mocked(database.payrollRun.findFirst).mockResolvedValue(
         null as never
       );
 
@@ -216,7 +216,7 @@ describe("Payroll Runs API", () => {
         params: Promise.resolve({ id: "run-001" }),
       });
 
-      expect(database.payroll_runs.findFirst).toHaveBeenCalledWith(
+      expect(database.payrollRun.findFirst).toHaveBeenCalledWith(
         expect.objectContaining({
           where: {
             id: "run-001",
@@ -228,7 +228,7 @@ describe("Payroll Runs API", () => {
     });
 
     it("should not return soft-deleted runs", async () => {
-      vi.mocked(database.payroll_runs.findFirst).mockResolvedValue(
+      vi.mocked(database.payrollRun.findFirst).mockResolvedValue(
         null as never
       );
 
@@ -260,7 +260,7 @@ describe("Payroll Runs API", () => {
     });
 
     it("should return 500 on database error", async () => {
-      vi.mocked(database.payroll_runs.findFirst).mockRejectedValue(
+      vi.mocked(database.payrollRun.findFirst).mockRejectedValue(
         new Error("DB error")
       );
 

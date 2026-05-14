@@ -49,6 +49,7 @@ vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
 vi.mock("@/app/lib/tenant", () => ({
   getTenantIdForOrg: vi.fn(),
   requireTenantId: vi.fn(),
+  requireCurrentUser: vi.fn(),
 }));
 vi.mock("@/lib/manifest-runtime", () => ({
   createManifestRuntime: vi.fn(),
@@ -88,35 +89,41 @@ const { database } = await import("@repo/database");
 // Route imports
 // ---------------------------------------------------------------------------
 
+// Dispatcher
+import { POST as manifestDispatch } from "@/app/api/manifest/[entity]/commands/[command]/route";
+
+const dispatch = (entity: string, command: string) => (req: NextRequest) =>
+  manifestDispatch(req, { params: Promise.resolve({ entity, command }) });
+
 // Container
-import { POST as containerCreate } from "@/app/api/container/create/route";
-import { POST as containerDeactivate } from "@/app/api/container/deactivate/route";
-import { POST as containerUpdate } from "@/app/api/container/update/route";
+const containerCreate = dispatch("Container", "create");
+const containerDeactivate = dispatch("Container", "deactivate");
+const containerUpdate = dispatch("Container", "update");
 
 // Cycle Count Records
-import { POST as ccrCreate } from "@/app/api/cyclecountrecord/create/route";
-import { POST as ccrRemove } from "@/app/api/cyclecountrecord/remove/route";
-import { POST as ccrUpdate } from "@/app/api/cyclecountrecord/update/route";
-import { POST as ccrVerify } from "@/app/api/cyclecountrecord/verify/route";
-import { POST as ccsCancel } from "@/app/api/cyclecountsession/cancel/route";
-import { POST as ccsComplete } from "@/app/api/cyclecountsession/complete/route";
+const ccrCreate = dispatch("CycleCountRecord", "create");
+const ccrRemove = dispatch("CycleCountRecord", "remove");
+const ccrUpdate = dispatch("CycleCountRecord", "update");
+const ccrVerify = dispatch("CycleCountRecord", "verify");
+const ccsCancel = dispatch("CycleCountSession", "cancel");
+const ccsComplete = dispatch("CycleCountSession", "complete");
 // Cycle Count Sessions
-import { POST as ccsCreate } from "@/app/api/cyclecountsession/create/route";
-import { POST as ccsFinalize } from "@/app/api/cyclecountsession/finalize/route";
-import { POST as ccsStart } from "@/app/api/cyclecountsession/start/route";
+const ccsCreate = dispatch("CycleCountSession", "create");
+const ccsFinalize = dispatch("CycleCountSession", "finalize");
+const ccsStart = dispatch("CycleCountSession", "start");
 
 // Locations
 import { GET as locationsList } from "@/app/api/locations/route";
-import { POST as overrideAuditAuthorize } from "@/app/api/overrideaudit/authorize/route";
+const overrideAuditAuthorize = dispatch("OverrideAudit", "authorize");
 // Override Audit
-import { POST as overrideAuditCreate } from "@/app/api/overrideaudit/create/route";
+const overrideAuditCreate = dispatch("OverrideAudit", "create");
 
 // Performance Prediction
-import { POST as perfPredictionCreate } from "@/app/api/performanceprediction/create/route";
-import { POST as varianceReportApprove } from "@/app/api/variancereport/approve/route";
+const perfPredictionCreate = dispatch("PerformancePrediction", "create");
+const varianceReportApprove = dispatch("VarianceReport", "approve");
 // Variance Reports
-import { POST as varianceReportCreate } from "@/app/api/variancereport/create/route";
-import { POST as varianceReportReview } from "@/app/api/variancereport/review/route";
+const varianceReportCreate = dispatch("VarianceReport", "create");
+const varianceReportReview = dispatch("VarianceReport", "review");
 
 // ---------------------------------------------------------------------------
 // Constants

@@ -17,7 +17,10 @@ import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
-vi.mock("@/app/lib/tenant", () => ({ getTenantIdForOrg: vi.fn() }));
+vi.mock("@/app/lib/tenant", () => ({
+  getTenantIdForOrg: vi.fn(),
+  requireCurrentUser: vi.fn(),
+}));
 vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn() }));
 vi.mock("@/lib/manifest-runtime", () => ({
   createManifestRuntime: vi.fn(),
@@ -26,6 +29,15 @@ vi.mock("@/lib/manifest-runtime", () => ({
 const { auth } = await import("@repo/auth/server");
 const { getTenantIdForOrg } = await import("@/app/lib/tenant");
 const { createManifestRuntime } = await import("@/lib/manifest-runtime");
+
+import { POST as manifestDispatch } from "@/app/api/manifest/[entity]/commands/[command]/route";
+
+function createMenuHandler(command: string) {
+  return async (req: NextRequest) =>
+    manifestDispatch(req, {
+      params: Promise.resolve({ entity: "Menu", command }),
+    });
+}
 
 const TEST_TENANT_ID = "a0000000-0000-4000-a000-000000000001";
 const TEST_USER_ID = "user_test_menu";
@@ -96,7 +108,7 @@ describe("Menu API Routes", () => {
     it("returns 401 when unauthenticated", async () => {
       vi.mocked(auth).mockResolvedValue({ orgId: null, userId: null } as never);
 
-      const { POST } = await import("@/app/api/menu/create/route");
+      const POST = createMenuHandler("create");
       const res = await POST(makeRequest({ name: "Brunch Menu" }));
       const data = await res.json();
 
@@ -112,7 +124,7 @@ describe("Menu API Routes", () => {
       } as never);
       vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
 
-      const { POST } = await import("@/app/api/menu/create/route");
+      const POST = createMenuHandler("create");
       const res = await POST(makeRequest({ name: "Brunch Menu" }));
       const data = await res.json();
 
@@ -125,7 +137,7 @@ describe("Menu API Routes", () => {
       mockAuthenticated();
       mockRuntimeSuccess({ id: "menu-001", name: "Brunch Menu" });
 
-      const { POST } = await import("@/app/api/menu/create/route");
+      const POST = createMenuHandler("create");
       const res = await POST(makeRequest({ name: "Brunch Menu" }));
       const data = await res.json();
 
@@ -139,7 +151,7 @@ describe("Menu API Routes", () => {
       mockAuthenticated();
       mockRuntimePolicyDenial("adminOnly");
 
-      const { POST } = await import("@/app/api/menu/create/route");
+      const POST = createMenuHandler("create");
       const res = await POST(makeRequest({ name: "Brunch Menu" }));
       const data = await res.json();
 
@@ -153,7 +165,7 @@ describe("Menu API Routes", () => {
       mockAuthenticated();
       mockRuntimeGuardFailure(0, "name is required");
 
-      const { POST } = await import("@/app/api/menu/create/route");
+      const POST = createMenuHandler("create");
       const res = await POST(makeRequest({}));
       const data = await res.json();
 
@@ -167,7 +179,7 @@ describe("Menu API Routes", () => {
       mockAuthenticated();
       mockRuntimeFailure("Something went wrong");
 
-      const { POST } = await import("@/app/api/menu/create/route");
+      const POST = createMenuHandler("create");
       const res = await POST(makeRequest({ name: "Brunch Menu" }));
       const data = await res.json();
 
@@ -182,7 +194,7 @@ describe("Menu API Routes", () => {
         new Error("DB connection lost") as never
       );
 
-      const { POST } = await import("@/app/api/menu/create/route");
+      const POST = createMenuHandler("create");
       const res = await POST(makeRequest({ name: "Brunch Menu" }));
       const data = await res.json();
 
@@ -198,7 +210,7 @@ describe("Menu API Routes", () => {
     it("returns 401 when unauthenticated", async () => {
       vi.mocked(auth).mockResolvedValue({ orgId: null, userId: null } as never);
 
-      const { POST } = await import("@/app/api/menu/update/route");
+      const POST = createMenuHandler("update");
       const res = await POST(makeRequest({ id: "menu-001", name: "Updated" }));
       const data = await res.json();
 
@@ -210,7 +222,7 @@ describe("Menu API Routes", () => {
       mockAuthenticated();
       mockRuntimeSuccess({ id: "menu-001", name: "Dinner Menu" });
 
-      const { POST } = await import("@/app/api/menu/update/route");
+      const POST = createMenuHandler("update");
       const res = await POST(
         makeRequest({ id: "menu-001", name: "Dinner Menu" })
       );
@@ -232,7 +244,7 @@ describe("Menu API Routes", () => {
         runCommand,
       } as never);
 
-      const { POST } = await import("@/app/api/menu/update/route");
+      const POST = createMenuHandler("update");
       await POST(makeRequest({ id: "menu-001", name: "Updated" }));
 
       expect(runCommand).toHaveBeenCalledWith(
@@ -248,7 +260,7 @@ describe("Menu API Routes", () => {
         new Error("Unexpected") as never
       );
 
-      const { POST } = await import("@/app/api/menu/update/route");
+      const POST = createMenuHandler("update");
       const res = await POST(makeRequest({ id: "menu-001" }));
 
       expect(res.status).toBe(500);
@@ -261,7 +273,7 @@ describe("Menu API Routes", () => {
     it("returns 401 when unauthenticated", async () => {
       vi.mocked(auth).mockResolvedValue({ orgId: null, userId: null } as never);
 
-      const { POST } = await import("@/app/api/menu/activate/route");
+      const POST = createMenuHandler("activate");
       const res = await POST(makeRequest({ id: "menu-001" }));
       const data = await res.json();
 
@@ -273,7 +285,7 @@ describe("Menu API Routes", () => {
       mockAuthenticated();
       mockRuntimeSuccess({ id: "menu-001", isActive: true });
 
-      const { POST } = await import("@/app/api/menu/activate/route");
+      const POST = createMenuHandler("activate");
       const res = await POST(makeRequest({ id: "menu-001" }));
       const data = await res.json();
 
@@ -293,7 +305,7 @@ describe("Menu API Routes", () => {
         runCommand,
       } as never);
 
-      const { POST } = await import("@/app/api/menu/activate/route");
+      const POST = createMenuHandler("activate");
       await POST(makeRequest({ id: "menu-001" }));
 
       expect(runCommand).toHaveBeenCalledWith(
@@ -310,7 +322,7 @@ describe("Menu API Routes", () => {
     it("returns 401 when unauthenticated", async () => {
       vi.mocked(auth).mockResolvedValue({ orgId: null, userId: null } as never);
 
-      const { POST } = await import("@/app/api/menu/deactivate/route");
+      const POST = createMenuHandler("deactivate");
       const res = await POST(makeRequest({ id: "menu-001" }));
       const data = await res.json();
 
@@ -322,7 +334,7 @@ describe("Menu API Routes", () => {
       mockAuthenticated();
       mockRuntimeSuccess({ id: "menu-001", isActive: false });
 
-      const { POST } = await import("@/app/api/menu/deactivate/route");
+      const POST = createMenuHandler("deactivate");
       const res = await POST(makeRequest({ id: "menu-001" }));
       const data = await res.json();
 
@@ -335,7 +347,7 @@ describe("Menu API Routes", () => {
       mockAuthenticated();
       mockRuntimePolicyDenial("managerOnly");
 
-      const { POST } = await import("@/app/api/menu/deactivate/route");
+      const POST = createMenuHandler("deactivate");
       const res = await POST(makeRequest({ id: "menu-001" }));
       const data = await res.json();
 

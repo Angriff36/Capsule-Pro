@@ -18,7 +18,10 @@ import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
-vi.mock("@/app/lib/tenant", () => ({ getTenantIdForOrg: vi.fn() }));
+vi.mock("@/app/lib/tenant", () => ({
+  getTenantIdForOrg: vi.fn(),
+  requireCurrentUser: vi.fn(),
+}));
 vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn() }));
 vi.mock("@/lib/manifest-runtime", () => ({
   createManifestRuntime: vi.fn(),
@@ -27,6 +30,15 @@ vi.mock("@/lib/manifest-runtime", () => ({
 const { auth } = await import("@repo/auth/server");
 const { getTenantIdForOrg } = await import("@/app/lib/tenant");
 const { createManifestRuntime } = await import("@/lib/manifest-runtime");
+
+import { POST as manifestDispatch } from "@/app/api/manifest/[entity]/commands/[command]/route";
+
+function createIngredientHandler(command: string) {
+  return async (req: NextRequest) =>
+    manifestDispatch(req, {
+      params: Promise.resolve({ entity: "Ingredient", command }),
+    });
+}
 
 const TEST_TENANT_ID = "c0000000-0000-4000-c000-000000000003";
 const TEST_USER_ID = "user_test_ingredient";
@@ -97,7 +109,7 @@ describe("Ingredient API Routes", () => {
     it("returns 401 when unauthenticated", async () => {
       vi.mocked(auth).mockResolvedValue({ orgId: null, userId: null } as never);
 
-      const { POST } = await import("@/app/api/ingredient/create/route");
+      const POST = createIngredientHandler("create");
       const res = await POST(makeRequest({ name: "Olive Oil" }));
       const data = await res.json();
 
@@ -113,7 +125,7 @@ describe("Ingredient API Routes", () => {
       } as never);
       vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
 
-      const { POST } = await import("@/app/api/ingredient/create/route");
+      const POST = createIngredientHandler("create");
       const res = await POST(makeRequest({ name: "Olive Oil" }));
       const data = await res.json();
 
@@ -131,7 +143,7 @@ describe("Ingredient API Routes", () => {
         allergens: [],
       });
 
-      const { POST } = await import("@/app/api/ingredient/create/route");
+      const POST = createIngredientHandler("create");
       const res = await POST(makeRequest({ name: "Olive Oil" }));
       const data = await res.json();
 
@@ -144,7 +156,7 @@ describe("Ingredient API Routes", () => {
       mockAuthenticated();
       mockRuntimePolicyDenial("managerOnly");
 
-      const { POST } = await import("@/app/api/ingredient/create/route");
+      const POST = createIngredientHandler("create");
       const res = await POST(makeRequest({ name: "Olive Oil" }));
       const data = await res.json();
 
@@ -157,7 +169,7 @@ describe("Ingredient API Routes", () => {
       mockAuthenticated();
       mockRuntimeGuardFailure(0, "name must not be empty");
 
-      const { POST } = await import("@/app/api/ingredient/create/route");
+      const POST = createIngredientHandler("create");
       const res = await POST(makeRequest({ name: "" }));
       const data = await res.json();
 
@@ -171,7 +183,7 @@ describe("Ingredient API Routes", () => {
         new Error("DB down") as never
       );
 
-      const { POST } = await import("@/app/api/ingredient/create/route");
+      const POST = createIngredientHandler("create");
       const res = await POST(makeRequest({ name: "Olive Oil" }));
       const data = await res.json();
 
@@ -187,7 +199,7 @@ describe("Ingredient API Routes", () => {
     it("returns 401 when unauthenticated", async () => {
       vi.mocked(auth).mockResolvedValue({ orgId: null, userId: null } as never);
 
-      const { POST } = await import("@/app/api/ingredient/update/route");
+      const POST = createIngredientHandler("update");
       const res = await POST(
         makeRequest({ id: "ingredient-001", name: "Extra Virgin Olive Oil" })
       );
@@ -203,7 +215,7 @@ describe("Ingredient API Routes", () => {
         name: "Extra Virgin Olive Oil",
       });
 
-      const { POST } = await import("@/app/api/ingredient/update/route");
+      const POST = createIngredientHandler("update");
       const res = await POST(
         makeRequest({ id: "ingredient-001", name: "Extra Virgin Olive Oil" })
       );
@@ -226,7 +238,7 @@ describe("Ingredient API Routes", () => {
       } as never);
 
       const body = { id: "ingredient-001", name: "Updated" };
-      const { POST } = await import("@/app/api/ingredient/update/route");
+      const POST = createIngredientHandler("update");
       await POST(makeRequest(body));
 
       expect(runCommand).toHaveBeenCalledWith("update", body, {
@@ -238,7 +250,7 @@ describe("Ingredient API Routes", () => {
       mockAuthenticated();
       mockRuntimeFailure("Ingredient not found");
 
-      const { POST } = await import("@/app/api/ingredient/update/route");
+      const POST = createIngredientHandler("update");
       const res = await POST(makeRequest({ id: "ingredient-999", name: "X" }));
       const data = await res.json();
 
@@ -253,7 +265,7 @@ describe("Ingredient API Routes", () => {
     it("returns 401 when unauthenticated", async () => {
       vi.mocked(auth).mockResolvedValue({ orgId: null, userId: null } as never);
 
-      const { POST } = await import("@/app/api/ingredient/deactivate/route");
+      const POST = createIngredientHandler("deactivate");
       const res = await POST(makeRequest({ id: "ingredient-001" }));
       const data = await res.json();
 
@@ -265,7 +277,7 @@ describe("Ingredient API Routes", () => {
       mockAuthenticated();
       mockRuntimeSuccess({ id: "ingredient-001", isActive: false });
 
-      const { POST } = await import("@/app/api/ingredient/deactivate/route");
+      const POST = createIngredientHandler("deactivate");
       const res = await POST(makeRequest({ id: "ingredient-001" }));
       const data = await res.json();
 
@@ -285,7 +297,7 @@ describe("Ingredient API Routes", () => {
         runCommand,
       } as never);
 
-      const { POST } = await import("@/app/api/ingredient/deactivate/route");
+      const POST = createIngredientHandler("deactivate");
       await POST(makeRequest({ id: "ingredient-001" }));
 
       expect(runCommand).toHaveBeenCalledWith(
@@ -302,9 +314,7 @@ describe("Ingredient API Routes", () => {
     it("returns 401 when unauthenticated", async () => {
       vi.mocked(auth).mockResolvedValue({ orgId: null, userId: null } as never);
 
-      const { POST } = await import(
-        "@/app/api/ingredient/update-allergens/route"
-      );
+      const POST = createIngredientHandler("updateAllergens");
       const res = await POST(
         makeRequest({ id: "ingredient-001", allergens: ["nuts", "dairy"] })
       );
@@ -320,9 +330,7 @@ describe("Ingredient API Routes", () => {
         allergens: ["nuts", "dairy"],
       });
 
-      const { POST } = await import(
-        "@/app/api/ingredient/update-allergens/route"
-      );
+      const POST = createIngredientHandler("updateAllergens");
       const res = await POST(
         makeRequest({ id: "ingredient-001", allergens: ["nuts", "dairy"] })
       );
@@ -345,9 +353,7 @@ describe("Ingredient API Routes", () => {
       } as never);
 
       const body = { id: "ingredient-001", allergens: ["gluten"] };
-      const { POST } = await import(
-        "@/app/api/ingredient/update-allergens/route"
-      );
+      const POST = createIngredientHandler("updateAllergens");
       await POST(makeRequest(body));
 
       expect(runCommand).toHaveBeenCalledWith("updateAllergens", body, {
@@ -359,9 +365,7 @@ describe("Ingredient API Routes", () => {
       mockAuthenticated();
       mockRuntimeGuardFailure(0, "allergens must be an array");
 
-      const { POST } = await import(
-        "@/app/api/ingredient/update-allergens/route"
-      );
+      const POST = createIngredientHandler("updateAllergens");
       const res = await POST(
         makeRequest({ id: "ingredient-001", allergens: "invalid" })
       );
@@ -377,9 +381,7 @@ describe("Ingredient API Routes", () => {
         new Error("Unexpected") as never
       );
 
-      const { POST } = await import(
-        "@/app/api/ingredient/update-allergens/route"
-      );
+      const POST = createIngredientHandler("updateAllergens");
       const res = await POST(
         makeRequest({ id: "ingredient-001", allergens: [] })
       );
@@ -394,9 +396,7 @@ describe("Ingredient API Routes", () => {
     it("returns 401 when unauthenticated", async () => {
       vi.mocked(auth).mockResolvedValue({ orgId: null, userId: null } as never);
 
-      const { POST } = await import(
-        "@/app/api/ingredient/update-shelf-life/route"
-      );
+      const POST = createIngredientHandler("updateShelfLife");
       const res = await POST(
         makeRequest({ id: "ingredient-001", shelfLifeDays: 14 })
       );
@@ -410,9 +410,7 @@ describe("Ingredient API Routes", () => {
       mockAuthenticated();
       mockRuntimeSuccess({ id: "ingredient-001", shelfLifeDays: 14 });
 
-      const { POST } = await import(
-        "@/app/api/ingredient/update-shelf-life/route"
-      );
+      const POST = createIngredientHandler("updateShelfLife");
       const res = await POST(
         makeRequest({ id: "ingredient-001", shelfLifeDays: 14 })
       );
@@ -435,9 +433,7 @@ describe("Ingredient API Routes", () => {
       } as never);
 
       const body = { id: "ingredient-001", shelfLifeDays: 7 };
-      const { POST } = await import(
-        "@/app/api/ingredient/update-shelf-life/route"
-      );
+      const POST = createIngredientHandler("updateShelfLife");
       await POST(makeRequest(body));
 
       expect(runCommand).toHaveBeenCalledWith("updateShelfLife", body, {
@@ -449,9 +445,7 @@ describe("Ingredient API Routes", () => {
       mockAuthenticated();
       mockRuntimePolicyDenial("adminOnly");
 
-      const { POST } = await import(
-        "@/app/api/ingredient/update-shelf-life/route"
-      );
+      const POST = createIngredientHandler("updateShelfLife");
       const res = await POST(
         makeRequest({ id: "ingredient-001", shelfLifeDays: 14 })
       );
@@ -465,9 +459,7 @@ describe("Ingredient API Routes", () => {
       mockAuthenticated();
       mockRuntimeFailure("Invalid shelf life value");
 
-      const { POST } = await import(
-        "@/app/api/ingredient/update-shelf-life/route"
-      );
+      const POST = createIngredientHandler("updateShelfLife");
       const res = await POST(
         makeRequest({ id: "ingredient-001", shelfLifeDays: -1 })
       );

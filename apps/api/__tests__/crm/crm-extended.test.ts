@@ -18,26 +18,32 @@
 
 import { NextRequest } from "next/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { POST as contactCreate } from "@/app/api/clientcontact/create/route";
-import { POST as contactRemove } from "@/app/api/clientcontact/remove/route";
-import { POST as contactSetPrimary } from "@/app/api/clientcontact/set-primary/route";
-import { POST as contactUpdate } from "@/app/api/clientcontact/update/route";
-import { POST as interactionComplete } from "@/app/api/clientinteraction/complete/route";
-import { POST as interactionCreate } from "@/app/api/clientinteraction/create/route";
-import { POST as interactionUpdate } from "@/app/api/clientinteraction/update/route";
-import { POST as preferenceCreate } from "@/app/api/clientpreference/create/route";
-import { POST as preferenceRemove } from "@/app/api/clientpreference/remove/route";
-import { POST as preferenceUpdate } from "@/app/api/clientpreference/update/route";
-import { POST as leadArchive } from "@/app/api/lead/archive/route";
-import { POST as leadConvertToClient } from "@/app/api/lead/convert-to-client/route";
-import { POST as leadCreate } from "@/app/api/lead/create/route";
-import { POST as leadDisqualify } from "@/app/api/lead/disqualify/route";
-import { POST as leadUpdate } from "@/app/api/lead/update/route";
+import { POST as manifestDispatch } from "@/app/api/manifest/[entity]/commands/[command]/route";
+
+const dispatch = (entity: string, command: string) => (req: NextRequest) =>
+  manifestDispatch(req, { params: Promise.resolve({ entity, command }) });
+
+const contactCreate = dispatch("ClientContact", "create");
+const contactRemove = dispatch("ClientContact", "remove");
+const contactSetPrimary = dispatch("ClientContact", "setPrimary");
+const contactUpdate = dispatch("ClientContact", "update");
+const interactionComplete = dispatch("ClientInteraction", "complete");
+const interactionCreate = dispatch("ClientInteraction", "create");
+const interactionUpdate = dispatch("ClientInteraction", "update");
+const preferenceCreate = dispatch("ClientPreference", "create");
+const preferenceRemove = dispatch("ClientPreference", "remove");
+const preferenceUpdate = dispatch("ClientPreference", "update");
+const leadArchive = dispatch("Lead", "archive");
+const leadConvertToClient = dispatch("Lead", "convertToClient");
+const leadCreate = dispatch("Lead", "create");
+const leadDisqualify = dispatch("Lead", "disqualify");
+const leadUpdate = dispatch("Lead", "update");
 
 // Mock dependencies
 vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
 vi.mock("@/app/lib/tenant", () => ({
   getTenantIdForOrg: vi.fn(),
+  requireCurrentUser: vi.fn(),
 }));
 vi.mock("@/lib/manifest-runtime", () => ({
   createManifestRuntime: vi.fn(),
