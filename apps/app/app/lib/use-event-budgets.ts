@@ -1,5 +1,6 @@
 "use client";
 
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
 
@@ -103,7 +104,25 @@ export interface EventBudgetListResponse {
 // API Base URL
 const API_BASE = "/api/events/budgets";
 
+// ============================================================================
+// Query Key Factory
+// ============================================================================
+
+export const budgetKeys = {
+  all: ["event-budgets"] as const,
+  lists: () => [...budgetKeys.all, "list"] as const,
+  list: (filters: EventBudgetFilters) =>
+    [...budgetKeys.lists(), filters] as const,
+  details: () => [...budgetKeys.all, "detail"] as const,
+  detail: (id: string) => [...budgetKeys.details(), id] as const,
+  lineItems: (budgetId: string) =>
+    [...budgetKeys.detail(budgetId), "line-items"] as const,
+};
+
+// ============================================================================
 // Helper functions
+// ============================================================================
+
 export function getStatusColor(status: EventBudgetStatus): string {
   const colors = {
     draft: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100",
@@ -146,7 +165,10 @@ export function getUtilizationColor(percentage: number): string {
   return "text-green-600 dark:text-green-400";
 }
 
-// API Functions
+// ============================================================================
+// Plain API Functions (kept for server components / backwards compat)
+// ============================================================================
+
 export async function getBudgets(
   filters: EventBudgetFilters = {}
 ): Promise<EventBudget[]> {
@@ -340,37 +362,169 @@ export async function deleteLineItem(
   }
 }
 
-// React Hook
-export function useEventBudgets(filters?: EventBudgetFilters) {
-  const [budgets, setBudgets] = useState<EventBudget[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
+// ============================================================================
+// TanStack Query Hooks
+// ============================================================================
 
-  const fetchBudgets = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await getBudgets(filters);
-      setBudgets(data);
-    } catch (err) {
-      const error = err instanceof Error ? err : new Error("Unknown error");
-      setError(error);
-      toast.error(error.message);
-    } finally {
-      setLoading(false);
-    }
-  }, [filters]);
-
-  useEffect(() => {
-    fetchBudgets();
-  }, [fetchBudgets]);
-
-  return {
-    budgets,
-    loading,
-    error,
-    refetch: fetchBudgets,
-  };
+/** List budgets with automatic caching and refetch */
+export function useBudgets(filters: EventBudgetFilters = {}) {
+  return useQuery({
+    queryKey: budgetKeys.list(filters),
+    queryFn: () => getBudgets(filters),
+    staleTime: 30_000, // Budgets change less frequently than events
+  });
 }
 
-import { useCallback, useEffect, useState } from "react";
+/** Get a single budget by ID */
+export function useBudget(budgetId: string) {
+  return useQuery({
+    queryKey: budgetKeys.detail(budgetId),
+    queryFn: () => getBudget(budgetId),
+    enabled: !!budgetId,
+  });
+}
+
+/** Get line items for a budget */
+export function useBudgetLineItems(budgetId: string) {
+  return useQuery({
+    queryKey: budgetKeys.lineItems(budgetId),
+    queryFn: () => getLineItems(budgetId),
+    enabled: !!budgetId,
+  });
+}
+
+/** Create a budget — invalidates the list */
+export function useCreateBudget() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (input: CreateEventBudgetInput) => createBudget(input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: budgetKeys.lists() });
+      toast.success("Budget created");
+    },
+    onError: (error: Error) => {
+      toast.error(error.message);
+    },
+  });
+}
+
+/** Update a budget — invalidates the list and detail */
+export function useUpdateBudget() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      budgetId,
+      input,
+    }: {
+      budgetId: string;
+      input: UpdateEventBudgetInput;
+    }) => updateBudget(budgetId, input),
+    onSuccess: (_data, { budgetId }) => {
+      queryClient.invalidateQueries({ queryKey: budgetKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: budgetKeys.detail(budgetId) });
+      toast.success("Budget updated");
+    },
+    onError: (error: Error) => {
+      toast.error(error.message);
+    },
+  });
+}
+
+/** Delete a budget — invalidates the list and removes detail */
+export function useDeleteBudget() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (budgetId: string) => deleteBudget(budgetId),
+    onSuccess: (_data, budgetId) => {
+      queryClient.invalidateQueries({ queryKey: budgetKeys.lists() });
+      queryClient.removeQueries({ queryKey: budgetKeys.detail(budgetId) });
+      toast.success("Budget deleted");
+    },
+    onError: (error: Error) => {
+      toast.error(error.message);
+    },
+  });
+}
+
+/** Create a line item — invalidates the parent budget's line items */
+export function useCreateLineItem() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      budgetId,
+      input,
+    }: {
+      budgetId: string;
+      input: CreateBudgetLineItemInput;
+    }) => createLineItem(budgetId, input),
+    onSuccess: (_data, { budgetId }) => {
+      queryClient.invalidateQueries({
+        queryKey: budgetKeys.lineItems(budgetId),
+      });
+      queryClient.invalidateQueries({ queryKey: budgetKeys.detail(budgetId) });
+    },
+    onError: (error: Error) => {
+      toast.error(error.message);
+    },
+  });
+}
+
+/** Update a line item */
+export function useUpdateLineItem() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      budgetId,
+      lineItemId,
+      input,
+    }: {
+      budgetId: string;
+      lineItemId: string;
+      input: UpdateBudgetLineItemInput;
+    }) => updateLineItem(budgetId, lineItemId, input),
+    onSuccess: (_data, { budgetId }) => {
+      queryClient.invalidateQueries({
+        queryKey: budgetKeys.lineItems(budgetId),
+      });
+      queryClient.invalidateQueries({ queryKey: budgetKeys.detail(budgetId) });
+    },
+    onError: (error: Error) => {
+      toast.error(error.message);
+    },
+  });
+}
+
+/** Delete a line item */
+export function useDeleteLineItem() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      budgetId,
+      lineItemId,
+    }: {
+      budgetId: string;
+      lineItemId: string;
+    }) => deleteLineItem(budgetId, lineItemId),
+    onSuccess: (_data, { budgetId }) => {
+      queryClient.invalidateQueries({
+        queryKey: budgetKeys.lineItems(budgetId),
+      });
+      queryClient.invalidateQueries({ queryKey: budgetKeys.detail(budgetId) });
+    },
+    onError: (error: Error) => {
+      toast.error(error.message);
+    },
+  });
+}
+
+// Legacy hook — re-exports useBudgets for backward compatibility.
+// Consumers should migrate to useBudgets, useCreateBudget, etc.
+export function useEventBudgets(filters?: EventBudgetFilters) {
+  return useBudgets(filters);
+}

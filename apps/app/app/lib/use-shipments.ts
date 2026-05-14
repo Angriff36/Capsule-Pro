@@ -745,3 +745,127 @@ export function getShipmentStatuses(): ShipmentStatus[] {
 export function getItemConditions(): ItemCondition[] {
   return [...ITEM_CONDITIONS];
 }
+
+// ============================================================================
+// TanStack Query Hooks
+// ============================================================================
+
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+
+export const shipmentKeys = {
+  all: ["shipments"] as const,
+  lists: () => [...shipmentKeys.all, "list"] as const,
+  list: (filters: Record<string, unknown>) =>
+    [...shipmentKeys.lists(), filters] as const,
+  details: () => [...shipmentKeys.all, "detail"] as const,
+  detail: (id: string) => [...shipmentKeys.details(), id] as const,
+  items: (shipmentId: string) =>
+    [...shipmentKeys.detail(shipmentId), "items"] as const,
+};
+
+export function useShipments(
+  filters: ShipmentFilters & { page?: number; limit?: number } = {}
+) {
+  return useQuery({
+    queryKey: shipmentKeys.list(filters as Record<string, unknown>),
+    queryFn: () => listShipments(filters),
+    staleTime: 30_000,
+  });
+}
+
+export function useShipment(shipmentId: string) {
+  return useQuery({
+    queryKey: shipmentKeys.detail(shipmentId),
+    queryFn: () => getShipment(shipmentId),
+    enabled: !!shipmentId,
+  });
+}
+
+export function useShipmentItems(shipmentId: string) {
+  return useQuery({
+    queryKey: shipmentKeys.items(shipmentId),
+    queryFn: () => listShipmentItems(shipmentId),
+    enabled: !!shipmentId,
+  });
+}
+
+export function useCreateShipment() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (request: CreateShipmentRequest) => createShipment(request),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: shipmentKeys.lists() });
+    },
+  });
+}
+
+export function useUpdateShipment() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ shipmentId, request }: { shipmentId: string; request: UpdateShipmentRequest }) =>
+      updateShipment(shipmentId, request),
+    onSuccess: (_data, { shipmentId }) => {
+      queryClient.invalidateQueries({ queryKey: shipmentKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: shipmentKeys.detail(shipmentId) });
+    },
+  });
+}
+
+export function useDeleteShipment() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (shipmentId: string) => deleteShipment(shipmentId),
+    onSuccess: (_data, shipmentId) => {
+      queryClient.invalidateQueries({ queryKey: shipmentKeys.lists() });
+      queryClient.removeQueries({ queryKey: shipmentKeys.detail(shipmentId) });
+    },
+  });
+}
+
+export function useUpdateShipmentStatus() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ shipmentId, request }: { shipmentId: string; request: UpdateShipmentStatusRequest }) =>
+      updateShipmentStatus(shipmentId, request),
+    onSuccess: (_data, { shipmentId }) => {
+      queryClient.invalidateQueries({ queryKey: shipmentKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: shipmentKeys.detail(shipmentId) });
+    },
+  });
+}
+
+export function useAddShipmentItem() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ shipmentId, request }: { shipmentId: string; request: CreateShipmentItemRequest }) =>
+      addShipmentItem(shipmentId, request),
+    onSuccess: (_data, { shipmentId }) => {
+      queryClient.invalidateQueries({ queryKey: shipmentKeys.items(shipmentId) });
+      queryClient.invalidateQueries({ queryKey: shipmentKeys.detail(shipmentId) });
+    },
+  });
+}
+
+export function useUpdateShipmentItem() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ shipmentId, itemId, request }: { shipmentId: string; itemId: string; request: UpdateShipmentItemRequest }) =>
+      updateShipmentItem(shipmentId, itemId, request),
+    onSuccess: (_data, { shipmentId }) => {
+      queryClient.invalidateQueries({ queryKey: shipmentKeys.items(shipmentId) });
+      queryClient.invalidateQueries({ queryKey: shipmentKeys.detail(shipmentId) });
+    },
+  });
+}
+
+export function useDeleteShipmentItem() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ shipmentId, itemId }: { shipmentId: string; itemId: string }) =>
+      deleteShipmentItem(shipmentId, itemId),
+    onSuccess: (_data, { shipmentId }) => {
+      queryClient.invalidateQueries({ queryKey: shipmentKeys.items(shipmentId) });
+      queryClient.invalidateQueries({ queryKey: shipmentKeys.detail(shipmentId) });
+    },
+  });
+}

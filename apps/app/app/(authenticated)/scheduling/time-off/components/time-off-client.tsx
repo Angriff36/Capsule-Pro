@@ -37,7 +37,8 @@ import {
 import { Loader2Icon, PlusIcon } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import type { ReactNode } from "react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import type {
   TimeOffRequest,
@@ -66,18 +67,6 @@ export function TimeOffClient() {
   const router = useRouter();
   const searchParams = useSearchParams() ?? new URLSearchParams();
 
-  // State
-  const [timeOffRequests, setTimeOffRequests] = useState<TimeOffRequest[]>([]);
-  const [employees, setEmployees] = useState<Employee[]>([]);
-  const [locations, setLocations] = useState<Location[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [pagination, setPagination] = useState({
-    page: 1,
-    limit: 50,
-    total: 0,
-    totalPages: 0,
-  });
-
   // Filters
   const [filters, setFilters] = useState({
     startDate: searchParams.get("startDate") || "",
@@ -98,10 +87,20 @@ export function TimeOffClient() {
   // Track initial mount to avoid URL push on first render
   const isMounted = useRef(false);
 
-  // Fetch time off requests
-  const fetchTimeOffRequests = useCallback(async () => {
-    setLoading(true);
-    try {
+  // Pagination (UI state — independent of query cache)
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
+  const [total, setTotal] = useState(0);
+
+  // =========================================================================
+  // TanStack Query: time-off requests
+  // =========================================================================
+  const {
+    data: timeOffData,
+    isLoading: loading,
+  } = useQuery({
+    queryKey: ["scheduling", "time-off", filters, page],
+    queryFn: async () => {
       const data = await getTimeOffRequests({
         employeeId: filters.employeeId || undefined,
         status:
@@ -113,39 +112,36 @@ export function TimeOffClient() {
         startDate: filters.startDate || undefined,
         endDate: filters.endDate || undefined,
         requestType: (filters.type as TimeOffType) || undefined,
-        page: pagination.page,
-        limit: pagination.limit,
+        page,
+        limit: 50,
       });
-      setTimeOffRequests(data.requests || []);
-      setPagination(data.pagination || pagination);
-    } catch (error) {
-      toast.error("Failed to load time off requests", {
-        description: error instanceof Error ? error.message : "Unknown error",
-      });
-    } finally {
-      setLoading(false);
-    }
-  }, [filters, pagination.page, pagination]);
+      if (data.pagination) {
+        setTotalPages(data.pagination.totalPages);
+        setTotal(data.pagination.total);
+      }
+      return data;
+    },
+    staleTime: 30_000,
+  });
 
-  // Fetch filter options
-  const fetchFilterOptions = useCallback(async () => {
-    try {
-      const [employeesData, locationsData] = await Promise.all([
-        getEmployees(),
-        getLocations(),
-      ]);
-      setEmployees(employeesData.employees || []);
-      setLocations(locationsData.locations || []);
-    } catch (error) {
-      console.warn("Failed to load filter options:", error);
-    }
-  }, []);
+  const timeOffRequests = timeOffData?.requests ?? [];
+  const pagination = { page, limit: 50, total, totalPages };
 
-  // Initial load
-  useEffect(() => {
-    fetchTimeOffRequests();
-    fetchFilterOptions();
-  }, [fetchTimeOffRequests, fetchFilterOptions]);
+  // TanStack Query: shared employee/location caches
+  const { data: employeesData } = useQuery({
+    queryKey: ["scheduling", "employees"],
+    queryFn: async () => getEmployees(),
+    staleTime: 5 * 60_000,
+  });
+
+  const { data: locationsData } = useQuery({
+    queryKey: ["scheduling", "locations"],
+    queryFn: async () => getLocations(),
+    staleTime: 5 * 60_000,
+  });
+
+  const employees: Employee[] = employeesData?.employees ?? [];
+  const locations: Location[] = locationsData?.locations ?? [];
 
   // Update URL when filters change (skip initial mount)
   useEffect(() => {
@@ -165,7 +161,7 @@ export function TimeOffClient() {
 
   const handleFilterChange = (key: string, value: string) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
-    setPagination((prev) => ({ ...prev, page: 1 }));
+    setPage(1);
   };
 
   const handleRowClick = (timeOff: TimeOffRequest) => {
@@ -535,7 +531,7 @@ export function TimeOffClient() {
                 <Button
                   disabled={pagination.page === 1}
                   onClick={() =>
-                    setPagination((prev) => ({ ...prev, page: prev.page - 1 }))
+                    setPage((p) => p - 1)
                   }
                   size="sm"
                   variant="outline"
@@ -545,7 +541,7 @@ export function TimeOffClient() {
                 <Button
                   disabled={pagination.page === pagination.totalPages}
                   onClick={() =>
-                    setPagination((prev) => ({ ...prev, page: prev.page + 1 }))
+                    setPage((p) => p + 1)
                   }
                   size="sm"
                   variant="outline"
@@ -564,7 +560,6 @@ export function TimeOffClient() {
           setSelectedTimeOff(null);
         }}
         onDelete={() => {
-          fetchTimeOffRequests();
           setModalOpen(false);
           setSelectedTimeOff(null);
         }}
@@ -590,7 +585,6 @@ export function TimeOffClient() {
               onCancel={() => setCreateModalOpen(false)}
               onSuccess={() => {
                 setCreateModalOpen(false);
-                fetchTimeOffRequests();
               }}
             />
           </div>

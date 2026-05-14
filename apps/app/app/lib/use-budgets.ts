@@ -1,6 +1,8 @@
 "use client";
 
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "@/app/lib/api";
+
 // Type definitions matching the API response
 export type EventBudgetStatus = "draft" | "approved" | "locked";
 export type BudgetCategory = "food" | "labor" | "rentals" | "miscellaneous";
@@ -100,9 +102,24 @@ export interface UpdateLineItemRequest {
   notes?: string;
 }
 
-/**
- * Client-side hooks for budget operations
- */
+// ============================================================================
+// Query Key Factory
+// ============================================================================
+
+export const altBudgetKeys = {
+  all: ["budgets"] as const,
+  lists: () => [...altBudgetKeys.all, "list"] as const,
+  list: (filters: Record<string, unknown>) =>
+    [...altBudgetKeys.lists(), filters] as const,
+  details: () => [...altBudgetKeys.all, "detail"] as const,
+  detail: (id: string) => [...altBudgetKeys.details(), id] as const,
+  lineItems: (budgetId: string) =>
+    [...altBudgetKeys.detail(budgetId), "line-items"] as const,
+};
+
+// ============================================================================
+// Plain API Functions (kept for backwards compat)
+// ============================================================================
 
 // List budgets with pagination and filters
 export async function listBudgets(params: {
@@ -278,7 +295,160 @@ export async function deleteLineItem(
   }
 }
 
-// Helper to get budget status badge color
+// ============================================================================
+// TanStack Query Hooks
+// ============================================================================
+
+/** List budgets with caching */
+export function useListBudgets(params: {
+  eventId?: string;
+  status?: EventBudgetStatus;
+  page?: number;
+  limit?: number;
+} = {}) {
+  return useQuery({
+    queryKey: altBudgetKeys.list(params),
+    queryFn: () => listBudgets(params),
+    staleTime: 30_000,
+  });
+}
+
+/** Get a single budget */
+export function useGetBudget(budgetId: string) {
+  return useQuery({
+    queryKey: altBudgetKeys.detail(budgetId),
+    queryFn: () => getBudget(budgetId),
+    enabled: !!budgetId,
+  });
+}
+
+/** Get line items for a budget */
+export function useGetLineItems(budgetId: string) {
+  return useQuery({
+    queryKey: altBudgetKeys.lineItems(budgetId),
+    queryFn: () => getLineItems(budgetId),
+    enabled: !!budgetId,
+  });
+}
+
+/** Create a budget */
+export function useCreateBudget() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (request: CreateBudgetRequest) => createBudget(request),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: altBudgetKeys.lists() });
+    },
+    onError: (error: Error) => {
+      // Error handling via return value; caller can toast
+    },
+  });
+}
+
+/** Update a budget */
+export function useUpdateBudget() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      budgetId,
+      request,
+    }: {
+      budgetId: string;
+      request: UpdateBudgetRequest;
+    }) => updateBudget(budgetId, request),
+    onSuccess: (_data, { budgetId }) => {
+      queryClient.invalidateQueries({ queryKey: altBudgetKeys.lists() });
+      queryClient.invalidateQueries({
+        queryKey: altBudgetKeys.detail(budgetId),
+      });
+    },
+  });
+}
+
+/** Delete a budget */
+export function useDeleteBudget() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (budgetId: string) => deleteBudget(budgetId),
+    onSuccess: (_data, budgetId) => {
+      queryClient.invalidateQueries({ queryKey: altBudgetKeys.lists() });
+      queryClient.removeQueries({ queryKey: altBudgetKeys.detail(budgetId) });
+    },
+  });
+}
+
+/** Create a line item */
+export function useCreateLineItem() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (request: CreateLineItemRequest) => createLineItem(request),
+    onSuccess: (_data, { budgetId }) => {
+      queryClient.invalidateQueries({
+        queryKey: altBudgetKeys.lineItems(budgetId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: altBudgetKeys.detail(budgetId),
+      });
+    },
+  });
+}
+
+/** Update a line item */
+export function useUpdateLineItem() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      budgetId,
+      lineItemId,
+      request,
+    }: {
+      budgetId: string;
+      lineItemId: string;
+      request: UpdateLineItemRequest;
+    }) => updateLineItem(budgetId, lineItemId, request),
+    onSuccess: (_data, { budgetId }) => {
+      queryClient.invalidateQueries({
+        queryKey: altBudgetKeys.lineItems(budgetId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: altBudgetKeys.detail(budgetId),
+      });
+    },
+  });
+}
+
+/** Delete a line item */
+export function useDeleteLineItem() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      budgetId,
+      lineItemId,
+    }: {
+      budgetId: string;
+      lineItemId: string;
+    }) => deleteLineItem(budgetId, lineItemId),
+    onSuccess: (_data, { budgetId }) => {
+      queryClient.invalidateQueries({
+        queryKey: altBudgetKeys.lineItems(budgetId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: altBudgetKeys.detail(budgetId),
+      });
+    },
+  });
+}
+
+// ============================================================================
+// Helper functions (unchanged)
+// ============================================================================
+
 export function getBudgetStatusColor(status: EventBudgetStatus): string {
   switch (status) {
     case "draft":
@@ -292,23 +462,20 @@ export function getBudgetStatusColor(status: EventBudgetStatus): string {
   }
 }
 
-// Helper to get variance color
 export function getVarianceColor(variance: number): string {
   if (variance < 0) {
-    return "text-red-600"; // Over budget
+    return "text-red-600";
   }
   if (variance === 0) {
-    return "text-gray-600"; // On budget
+    return "text-gray-600";
   }
-  return "text-green-600"; // Under budget
+  return "text-green-600";
 }
 
-// Helper to check if budget is editable
 export function isBudgetEditable(status: EventBudgetStatus): boolean {
   return status === "draft" || status === "approved";
 }
 
-// Helper to get budget status label
 export function getBudgetStatusLabel(status: EventBudgetStatus): string {
   switch (status) {
     case "draft":
@@ -322,7 +489,6 @@ export function getBudgetStatusLabel(status: EventBudgetStatus): string {
   }
 }
 
-// Helper to get category label
 export function getCategoryLabel(category: BudgetCategory): string {
   switch (category) {
     case "food":

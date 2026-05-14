@@ -33,28 +33,28 @@ const RootLayout = async ({ children }: RootLayoutProperties) => {
   return (
     <html className={fonts} lang="en" suppressHydrationWarning>
       <body>
-        <ClerkProviderClient>
-          <QueryProvider>
-            <AuthHeader />
-            <AnalyticsProvider>
-              <DesignSystemProvider
-                helpUrl={env.NEXT_PUBLIC_DOCS_URL}
-                privacyUrl={new URL(
-                  "/legal/privacy",
-                  env.NEXT_PUBLIC_WEB_URL
-                ).toString()}
-                termsUrl={new URL(
-                  "/legal/terms",
-                  env.NEXT_PUBLIC_WEB_URL
-                ).toString()}
-              >
+        <DesignSystemProvider
+          helpUrl={env.NEXT_PUBLIC_DOCS_URL}
+          privacyUrl={new URL(
+            "/legal/privacy",
+            env.NEXT_PUBLIC_WEB_URL
+          ).toString()}
+          termsUrl={new URL(
+            "/legal/terms",
+            env.NEXT_PUBLIC_WEB_URL
+          ).toString()}
+        >
+          <ClerkProviderClient>
+            <QueryProvider>
+              <AuthHeader />
+              <AnalyticsProvider>
                 {children}
-              </DesignSystemProvider>
-            </AnalyticsProvider>
-            {Toolbar && <Toolbar />}
-            <Toaster />
-          </QueryProvider>
-        </ClerkProviderClient>
+              </AnalyticsProvider>
+              {Toolbar && <Toolbar />}
+              <Toaster />
+            </QueryProvider>
+          </ClerkProviderClient>
+        </DesignSystemProvider>
         {process.env.NODE_ENV === "production" && <VercelAnalytics />}
         {env.NEXT_PUBLIC_GA_MEASUREMENT_ID && (
           <GoogleAnalytics gaId={env.NEXT_PUBLIC_GA_MEASUREMENT_ID} />

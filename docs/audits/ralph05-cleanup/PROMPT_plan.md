@@ -9,8 +9,4 @@ IMPORTANT: Plan only. Do NOT implement anything. Do NOT assume functionality is 
 
 Do not run `git push` (or otherwise publish to origin) from this workflow. Keep planning edits local unless a human intentionally promotes them; this avoids CI and Vercel deploy churn. The `loop.sh` plan mode also skips pushing by default.
 
-ULTIMATE GOAL: We want to achieve ignoreBuildErrors is removed or gated so production cannot ship TypeScript errors.
-CI has hard gates for typecheck, tests, Prisma generate/checks, and route architecture.
-The manifest rule is enforced: no new concrete per-command route files unless explicitly approved.
-v81 gets exact verification commands/results for P0, tests, RLS, console count, and build status.
-The plan gets a “do not reopen” archive for resolved/false-positive issue. All API routes for all systems are confirmed to exist and all api routes are confirmed to be in use. If an element is missing, search first to confirm it doesn't exist, then if needed author the specification at specs/FILENAME.md. If you create a new element then document the plan to implement it in @IMPLEMENTATION_PLAN.md using a subagent.
+ULTIMATE GOAL: We want to achieve accurate understanding of the TODO.md fix list. Find out if each fix is something that actually needs to be addressed or not. If you find other issues while investigating you may add them to the @IMPLEMENTATION_PLAN.md Consider missing elements and plan accordingly. If an element is missing, search first to confirm it doesn't exist, then if needed author the specification at specs/FILENAME.md. If you create a new element then document the plan to implement it in @IMPLEMENTATION_PLAN.md using a subagent.

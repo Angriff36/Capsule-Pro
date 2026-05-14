@@ -36,7 +36,8 @@ import {
 import { Loader2Icon, PlusIcon } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import type { ReactNode } from "react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import type { DayOfWeek } from "@/app/lib/staff/availability/types";
 import { getLocations } from "../../shifts/actions";
@@ -78,18 +79,6 @@ export function AvailabilityClient() {
   const router = useRouter();
   const searchParams = useSearchParams() ?? new URLSearchParams();
 
-  // State
-  const [availability, setAvailability] = useState<Availability[]>([]);
-  const [employees, setEmployees] = useState<Employee[]>([]);
-  const [_locations, setLocations] = useState<Location[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [pagination, setPagination] = useState({
-    page: 1,
-    limit: 50,
-    total: 0,
-    totalPages: 0,
-  });
-
   // Filters
   const [filters, setFilters] = useState({
     employeeId: searchParams.get("employeeId") || "",
@@ -112,48 +101,55 @@ export function AvailabilityClient() {
   // Track initial mount to avoid URL push on first render
   const isMounted = useRef(false);
 
-  // Fetch availability entries
-  const fetchAvailability = useCallback(async () => {
-    setLoading(true);
-    try {
+  // Pagination (UI state — independent of query cache)
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
+  const [total, setTotal] = useState(0);
+
+  // =========================================================================
+  // TanStack Query: availability entries
+  // =========================================================================
+  const {
+    data: availabilityData,
+    isLoading: loading,
+  } = useQuery({
+    queryKey: ["scheduling", "availability", filters, page],
+    queryFn: async () => {
       const data = await getAvailability({
         employeeId: filters.employeeId || undefined,
         dayOfWeek: filters.dayOfWeek as DayOfWeek | undefined,
         effectiveDate: filters.effectiveDate || undefined,
         isActive: filters.isActive,
-        page: pagination.page,
-        limit: pagination.limit,
+        page,
+        limit: 50,
       });
-      setAvailability(data.availability || []);
-      setPagination(data.pagination || pagination);
-    } catch (error) {
-      toast.error("Failed to load availability entries", {
-        description: error instanceof Error ? error.message : "Unknown error",
-      });
-    } finally {
-      setLoading(false);
-    }
-  }, [filters, pagination.page, pagination]);
+      if (data.pagination) {
+        setTotalPages(data.pagination.totalPages);
+        setTotal(data.pagination.total);
+      }
+      return data;
+    },
+    staleTime: 30_000,
+  });
 
-  // Fetch filter options
-  const fetchFilterOptions = useCallback(async () => {
-    try {
-      const [employeesData, locationsData] = await Promise.all([
-        getEmployees(),
-        getLocations(),
-      ]);
-      setEmployees(employeesData.employees || []);
-      setLocations(locationsData.locations || []);
-    } catch (error) {
-      console.warn("Failed to load filter options:", error);
-    }
-  }, []);
+  const availability = availabilityData?.availability ?? [];
+  const pagination = { page, limit: 50, total, totalPages };
 
-  // Initial load
-  useEffect(() => {
-    fetchAvailability();
-    fetchFilterOptions();
-  }, [fetchAvailability, fetchFilterOptions]);
+  // TanStack Query: shared employee/location caches
+  const { data: employeesData } = useQuery({
+    queryKey: ["scheduling", "employees"],
+    queryFn: async () => getEmployees(),
+    staleTime: 5 * 60_000,
+  });
+
+  const { data: locationsData } = useQuery({
+    queryKey: ["scheduling", "locations"],
+    queryFn: async () => getLocations(),
+    staleTime: 5 * 60_000,
+  });
+
+  const employees: Employee[] = employeesData?.employees ?? [];
+  const _locations: Location[] = locationsData?.locations ?? [];
 
   // Update URL when filters change (skip initial mount)
   useEffect(() => {
@@ -178,7 +174,7 @@ export function AvailabilityClient() {
     value: string | number | boolean | undefined
   ) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
-    setPagination((prev) => ({ ...prev, page: 1 }));
+    setPage(1);
   };
 
   const handleRowClick = (entry: Availability) => {
@@ -524,7 +520,7 @@ export function AvailabilityClient() {
                 <Button
                   disabled={pagination.page === 1}
                   onClick={() =>
-                    setPagination((prev) => ({ ...prev, page: prev.page - 1 }))
+                    setPage((p) => p - 1)
                   }
                   size="sm"
                   variant="outline"
@@ -534,7 +530,7 @@ export function AvailabilityClient() {
                 <Button
                   disabled={pagination.page === pagination.totalPages}
                   onClick={() =>
-                    setPagination((prev) => ({ ...prev, page: prev.page + 1 }))
+                    setPage((p) => p + 1)
                   }
                   size="sm"
                   variant="outline"
@@ -554,7 +550,6 @@ export function AvailabilityClient() {
           setSelectedAvailability(null);
         }}
         onDelete={() => {
-          fetchAvailability();
           setModalOpen(false);
           setSelectedAvailability(null);
         }}
@@ -585,7 +580,6 @@ export function AvailabilityClient() {
               onCancel={() => setCreateModalOpen(false)}
               onSuccess={() => {
                 setCreateModalOpen(false);
-                fetchAvailability();
               }}
             />
           </div>
@@ -616,7 +610,6 @@ export function AvailabilityClient() {
               onSuccess={() => {
                 setEditModalOpen(false);
                 setEditingAvailability(null);
-                fetchAvailability();
               }}
             />
           </div>
