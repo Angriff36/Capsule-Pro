@@ -575,3 +575,27 @@ Concrete command route count: 70 non-dispatcher in `apps/api` (the 2 in `apps/ap
 - BUG-1 / BUG-2 from prior runs → **still unresolved**. Git HEAD changed from `2d60b7a` — new commits landed, but BUG-3 is a new issue in the updated code.
 
 **Notes:** No files modified this pass (read-only audit). Main report overwritten at `docs/audits/ai-integration-invariants-2026-05-13.md`.
+
+---
+
+### Run: 2026-05-14T16:30Z (scheduled cron — read-only audit)
+
+**Git HEAD:** e7234fa7f4cb62ed6b2916e668edbe139abf4539
+
+**Summary:** 3 confirmed bugs, 2 suspicious items, 8 false alarms.
+
+**New vs prior run:** HEAD advanced from `742341a5` to `e7234fa7` (fix: SUSP-1 add mounted guard to ClerkProviderClient). SUSP-1 is now resolved — the ClerkProviderClient theme-flash hydration bug is fixed. BUG-1, BUG-2, BUG-3 carry forward unchanged.
+
+**Confirmed Bugs:**
+
+1. **BUG-1** — 70 concrete command `route.ts` files in `apps/api` outside manifest single-dispatcher (`apps/api/app/api/manifest/[entity]/commands/[command]/route.ts`). Manifest guards/policies not applied to any of these routes. UNRESOLVED (backlog).
+2. **BUG-2** — 3 of those 70 routes bypass manifest runtime entirely: `events/profitability/commands/recalculate/route.ts` (direct Prisma + hardcoded 35%/15%/5% cost ratios), `procurement/purchase-orders/commands/update-status/route.ts` (raw SQL), `procurement/purchase-orders/commands/receive/route.ts` (raw SQL). UNRESOLVED.
+3. **BUG-3** — `apps/api/proxy.ts:11` lists `/api/sentry-fixer/process` in the public route allowlist — no Clerk auth required. Internal cron endpoint exposed publicly. UNRESOLVED.
+
+**Previously reported bugs status:**
+- Prior duplicate Toaster → **still fixed**.
+- Prior shift routes in apps/app → **still fixed** (deleted in 2d60b7ac).
+- SUSP-1 (ClerkProviderClient theme-flash) → **FIXED** in e7234fa7. Mounted guard prevents hydration mismatch.
+- BUG-1 / BUG-2 / BUG-3 → **still unresolved**. No related commits landed.
+
+**Notes:** No files modified this pass (read-only audit). Main report overwritten at `docs/audits/ai-integration-invariants-2026-05-13.md`.

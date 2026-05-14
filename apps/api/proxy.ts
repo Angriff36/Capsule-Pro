@@ -8,7 +8,6 @@ const isPublicRoute = createRouteMatcher([
   "/webhooks(.*)",
   "/outbox/publish",
   "/api/health(.*)",
-  "/api/sentry-fixer/process",
 ]);
 
 const API_KEY_BEARER_PREFIX = "Bearer cp_";
@@ -16,6 +15,13 @@ const API_KEY_BEARER_PREFIX = "Bearer cp_";
 const middleware: NextMiddleware = clerkMiddleware(async (auth, req) => {
   try {
     if (isPublicRoute(req)) {
+      return;
+    }
+
+    // Vercel Cron jobs carry x-vercel-cron header — allow through.
+    // The route handler performs its own authentication.
+    const vercelCronHeader = req.headers.get("x-vercel-cron");
+    if (vercelCronHeader === "1" || vercelCronHeader === "true") {
       return;
     }
 
