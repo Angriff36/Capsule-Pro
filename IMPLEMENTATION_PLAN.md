@@ -1,20 +1,29 @@
-# IMPLEMENTATION_PLAN.md — v76
+# IMPLEMENTATION_PLAN.md — v77
 
 > Updated 2026-05-14 by test suite repair.
+> v77: Fixed InvariantError class mismatch in recipes.test.ts. Fixed user resolution test. Fixed runtime assertion (role field). Fixed policy denial message format. Test count: 535 failing / 2646 passing / 16 skipped.
 > v76: Resolved additional requireCurrentUser mock issues. Fixed manifest route params argument. Added InvariantError handling to auth tests. Test count: 678 failing / 2503 passing / 16 skipped.
-> v75: Resolved test failures by fixing requireCurrentUser mock setup in 91 test files. Added InvariantError handling to manifest dispatcher to return 401 for auth failures.
 
-## v76 Findings (2026-05-14)
+## v77 Findings (2026-05-14)
 
-- **Progress made**: Reduced failing tests from 976 to 678 while increasing passing from 2274 to 2503.
-- **requireCurrentUser mock fix (continued)**: Fixed additional 8+ test files that were missing the mock setup in beforeEach/setup functions:
-  - `admin/admin-extended.test.ts` - added to `makeAuthedUser()`
-  - `events/battle-boards.test.ts` - added to `authed()` helper
-  - `kitchen/recipes/recipes.test.ts` - added to `authed()` helper
-  - `events/event-lifecycle.test.ts`, `logistics/logistics.test.ts`, `knowledge-base/knowledge-base.test.ts`, `timecards/timecards.test.ts`, `facilities/facilities-commands.test.ts`, `communications/communications.test.ts`
-- **params argument missing**: Fixed tests calling manifest route POST without required `{ params }` argument (Next.js 15 async params pattern)
-- **Auth test handling**: Updated `unauthed()` functions to throw `InvariantError` from `requireCurrentUser` mock for proper 401 responses
-- **E2E auth tests**: Fixed `requisition-end-to-end.test.ts` and `vendor-contract-end-to-end.test.ts` by adding InvariantError mock for unauthenticated test cases
+- **Progress made**: Reduced failing tests from 678 to 535 while increasing passing from 2503 to 2646.
+- **InvariantError class mismatch**: Fixed `recipes.test.ts` - tests were creating local `InvariantError` class which didn't match the real class in route.ts. Solution: import the real `InvariantError` from `@/app/lib/invariant` and use it in `unauthed()` helper.
+- **User resolution test fixed**: "returns 400 when tenant cannot be resolved" test changed to "returns 401 when user resolution fails" - manifest route catches `InvariantError` and returns 401, not 400.
+- **Runtime assertion fixed**: Updated test to expect `role: "admin"` in runtime user object (route.ts now passes role for RBAC).
+- **Policy denial message fixed**: Updated test to expect `role=admin` suffix in policy denial message (route.ts includes `(role=${currentUser.role})`).
+
+## v77 Resolved (2026-05-14)
+
+- **InvariantError Class Import Fix** [RESOLVED v77] — Imported real `InvariantError` from `@/app/lib/invariant` in `recipes.test.ts`. Previously local class didn't pass `instanceof` check in route.ts.
+- **User Resolution Test** [RESOLVED v77] — Changed test name from "returns 400 when tenant cannot be resolved" to "returns 401 when user resolution fails" to match route behavior.
+- **Runtime User Context** [RESOLVED v77] — Updated assertion to include `role: "admin"` in user object passed to `createManifestRuntime()`.
+- **Policy Denial Format** [RESOLVED v77] — Updated assertion to expect `Access denied: policyName (role=admin)` format.
+
+## v76 Resolved (2026-05-14)
+
+- **Additional requireCurrentUser Mock Fixes** [RESOLVED v76] — Fixed 8+ files with partial auth mocks. Tests now properly set up `requireCurrentUser.mockResolvedValue()` with user object.
+- **Manifest Route params Fix** [RESOLVED v76] — Added missing `{ params: Promise.resolve({ entity, command }) }` argument to manifest route POST calls.
+- **E2E Test Auth Fixes** [RESOLVED v76] — Fixed procurement E2E tests by properly mocking auth rejection paths.
 
 ## v76 Resolved (2026-05-14)
 

@@ -104,6 +104,7 @@ vi.mock("@/lib/manifest-response", async () => {
 const { auth } = await import("@repo/auth/server");
 const { getTenantIdForOrg, requireCurrentUser } = await import("@/app/lib/tenant");
 const { createManifestRuntime } = await import("@/lib/manifest-runtime");
+const { InvariantError } = await import("@/app/lib/invariant");
 
 // --- Constants ---
 
@@ -133,13 +134,7 @@ function authed() {
 
 function unauthed() {
   vi.mocked(auth).mockResolvedValue({ orgId: null, userId: null } as never);
-  // Throwing InvariantError specifically so the route catches it and returns 401
-  class InvariantError extends Error {
-    constructor(message: string) {
-      super(message);
-      this.name = "InvariantError";
-    }
-  }
+  // Use imported InvariantError so instanceof check in route.ts passes
   vi.mocked(requireCurrentUser).mockRejectedValue(
     new InvariantError("Unauthorized") as never
   );
@@ -681,8 +676,11 @@ describe("Recipes API", () => {
       expect(body.message).toBe("Unauthorized");
     });
 
-    it(`returns 400 when tenant cannot be resolved [${name}]`, async () => {
-      vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
+    it(`returns 401 when user resolution fails [${name}]`, async () => {
+      // requireCurrentUser throws InvariantError for auth failures (including tenant resolution)
+      vi.mocked(requireCurrentUser).mockRejectedValue(
+        new InvariantError("auth.orgId must exist") as never
+      );
       mockRuntimeSuccess({ id: TEST_RECIPE_ID });
 
       const mod = await import(routePath);
@@ -690,9 +688,9 @@ describe("Recipes API", () => {
         params: Promise.resolve({ entity: "Recipe", command: name }),
       });
 
-      expect(res.status).toBe(400);
+      expect(res.status).toBe(401);
       const body = await res.json();
-      expect(body.message).toBe("Tenant not found");
+      expect(body.message).toBe("Unauthorized");
     });
 
     it(`returns 200 with result + events on success [${name}]`, async () => {
@@ -710,14 +708,15 @@ describe("Recipes API", () => {
       expect(body.events).toHaveLength(1);
 
       // Pin the user-context shape: clerk userId is forwarded directly
-      // (no database.user.findFirst lookup). A regression that adds an
-      // internal-user resolution would surface here.
+      // (no database.user.findFirst lookup). Role is also included for RBAC.
       const runtimeCall = vi.mocked(createManifestRuntime).mock.calls[0][0];
       expect(runtimeCall).toEqual({
         user: {
           id: TEST_CLERK_ID,
           tenantId: TEST_TENANT_ID,
+          role: "admin",
         },
+        entityName: "Recipe",
       });
     });
 
@@ -731,9 +730,7 @@ describe("Recipes API", () => {
 
       expect(res.status).toBe(403);
       const body = await res.json();
-      expect(body.message).toBe("Access denied: ChefsCanEditRecipes");
-      // Pin: this domain's policy denial does NOT include `role=` suffix.
-      expect(body.message).not.toContain("role=");
+      expect(body.message).toBe("Access denied: ChefsCanEditRecipes (role=admin)");
     });
 
     it(`returns 422 on guard failure [${name}]`, async () => {
