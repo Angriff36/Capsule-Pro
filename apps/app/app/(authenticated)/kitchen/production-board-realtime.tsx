@@ -16,7 +16,11 @@ interface ProductionBoardRealtimeProps {
 const isKitchenTaskEvent = (eventName?: string) =>
   eventName?.startsWith("kitchen.task.") ?? false;
 
-function ProductionBoardRealtimeSubscription({ tenantId }: { tenantId: string }) {
+function ProductionBoardRealtimeSubscription({
+  tenantId,
+}: {
+  tenantId: string;
+}) {
   const router = useRouter();
 
   useConnectionStateListener(["failed", "suspended"], (stateChange) => {

@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@repo/design-system/components/ui/button";
+import { DateTimePicker } from "@repo/design-system/components/ui/date-time-picker";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
 import {
@@ -11,7 +12,6 @@ import {
   SelectValue,
 } from "@repo/design-system/components/ui/select";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
-import { DateTimePicker } from "@repo/design-system/components/ui/date-time-picker";
 import { Loader2Icon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -478,7 +478,6 @@ export function ShiftForm({
             onChange={(e) =>
               setFormData({ ...formData, shiftStart: e.target.value })
             }
- 
             value={formData.shiftStart}
           />
           {errors.shiftStart && (
@@ -494,7 +493,6 @@ export function ShiftForm({
             onChange={(e) =>
               setFormData({ ...formData, shiftEnd: e.target.value })
             }
- 
             value={formData.shiftEnd}
           />
           {errors.shiftEnd && (

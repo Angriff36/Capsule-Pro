@@ -183,7 +183,7 @@ export function IoTPageClient() {
   }
 
   async function handleRegisterProbe() {
-    if (!registerForm.name.trim() || !registerForm.probeId.trim()) {
+    if (!(registerForm.name.trim() && registerForm.probeId.trim())) {
       toast.error("Name and Probe ID are required");
       return;
     }
@@ -226,7 +226,7 @@ export function IoTPageClient() {
   }
 
   async function handleLogReading() {
-    if (!readingProbeId || !readingForm.temperature) {
+    if (!(readingProbeId && readingForm.temperature)) {
       toast.error("Temperature is required");
       return;
     }
@@ -385,10 +385,7 @@ export function IoTPageClient() {
             Real-time temperature monitoring and probe management
           </p>
         </div>
-        <Button
-          type="button"
-          onClick={() => setRegisterDialogOpen(true)}
-        >
+        <Button onClick={() => setRegisterDialogOpen(true)} type="button">
           <Plus className="mr-2 h-4 w-4" />
           Register probe
         </Button>
@@ -610,19 +607,19 @@ export function IoTPageClient() {
                           onClick={(e) => e.stopPropagation()}
                         >
                           <Button
+                            onClick={() => openLogReadingDialog(probe.id)}
                             size="sm"
                             type="button"
                             variant="outline"
-                            onClick={() => openLogReadingDialog(probe.id)}
                           >
                             <Thermometer className="mr-1 h-3 w-3" />
                             Log reading
                           </Button>
                           <Button
+                            onClick={() => openDetailsDialog(probe)}
                             size="sm"
                             type="button"
                             variant="ghost"
-                            onClick={() => openDetailsDialog(probe)}
                           >
                             <Info className="mr-1 h-3 w-3" />
                             Details
@@ -713,18 +710,18 @@ export function IoTPageClient() {
                         </div>
                         <div className="flex gap-2">
                           <Button
-                            size="sm"
-                            variant="outline"
-                            type="button"
                             onClick={() => handleAcknowledgeAlert(alert.id)}
+                            size="sm"
+                            type="button"
+                            variant="outline"
                           >
                             Acknowledge
                           </Button>
                           <Button
-                            size="sm"
-                            variant="ghost"
-                            type="button"
                             onClick={() => openResolveDialog(alert.id)}
+                            size="sm"
+                            type="button"
+                            variant="ghost"
                           >
                             Resolve
                           </Button>
@@ -783,7 +780,7 @@ export function IoTPageClient() {
       </Tabs>
 
       {/* Register Probe Dialog */}
-      <Dialog open={registerDialogOpen} onOpenChange={setRegisterDialogOpen}>
+      <Dialog onOpenChange={setRegisterDialogOpen} open={registerDialogOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Register New Probe</DialogTitle>
@@ -796,33 +793,33 @@ export function IoTPageClient() {
               <Label htmlFor="probe-name">Name</Label>
               <Input
                 id="probe-name"
-                placeholder="e.g. Walk-in Freezer 1"
-                value={registerForm.name}
                 onChange={(e) =>
                   setRegisterForm((f) => ({ ...f, name: e.target.value }))
                 }
+                placeholder="e.g. Walk-in Freezer 1"
+                value={registerForm.name}
               />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="probe-id">Hardware Probe ID</Label>
               <Input
                 id="probe-id"
-                placeholder="e.g. BT-SENSOR-001"
-                value={registerForm.probeId}
                 onChange={(e) =>
                   setRegisterForm((f) => ({ ...f, probeId: e.target.value }))
                 }
+                placeholder="e.g. BT-SENSOR-001"
+                value={registerForm.probeId}
               />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="probe-type">Type</Label>
               <select
-                id="probe-type"
                 className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                value={registerForm.probeType}
+                id="probe-type"
                 onChange={(e) =>
                   setRegisterForm((f) => ({ ...f, probeType: e.target.value }))
                 }
+                value={registerForm.probeType}
               >
                 <option value="bluetooth">Bluetooth</option>
                 <option value="wifi">Wi-Fi</option>
@@ -833,14 +830,14 @@ export function IoTPageClient() {
               <Label htmlFor="probe-location">Location ID (optional)</Label>
               <Input
                 id="probe-location"
-                placeholder="UUID of location"
-                value={registerForm.locationId}
                 onChange={(e) =>
                   setRegisterForm((f) => ({
                     ...f,
                     locationId: e.target.value,
                   }))
                 }
+                placeholder="UUID of location"
+                value={registerForm.locationId}
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
@@ -848,38 +845,38 @@ export function IoTPageClient() {
                 <Label htmlFor="probe-min-temp">Min Temp (°F)</Label>
                 <Input
                   id="probe-min-temp"
-                  type="number"
-                  value={registerForm.minTemp}
                   onChange={(e) =>
                     setRegisterForm((f) => ({ ...f, minTemp: e.target.value }))
                   }
+                  type="number"
+                  value={registerForm.minTemp}
                 />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="probe-max-temp">Max Temp (°F)</Label>
                 <Input
                   id="probe-max-temp"
-                  type="number"
-                  value={registerForm.maxTemp}
                   onChange={(e) =>
                     setRegisterForm((f) => ({ ...f, maxTemp: e.target.value }))
                   }
+                  type="number"
+                  value={registerForm.maxTemp}
                 />
               </div>
             </div>
           </div>
           <DialogFooter>
             <Button
-              variant="outline"
-              type="button"
               onClick={() => setRegisterDialogOpen(false)}
+              type="button"
+              variant="outline"
             >
               Cancel
             </Button>
             <Button
-              type="button"
               disabled={registerSubmitting}
               onClick={handleRegisterProbe}
+              type="button"
             >
               {registerSubmitting ? "Registering..." : "Register Probe"}
             </Button>
@@ -888,7 +885,7 @@ export function IoTPageClient() {
       </Dialog>
 
       {/* Log Reading Dialog */}
-      <Dialog open={readingDialogOpen} onOpenChange={setReadingDialogOpen}>
+      <Dialog onOpenChange={setReadingDialogOpen} open={readingDialogOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Log Temperature Reading</DialogTitle>
@@ -901,28 +898,28 @@ export function IoTPageClient() {
               <Label htmlFor="reading-temp">Temperature (°F)</Label>
               <Input
                 id="reading-temp"
-                type="number"
-                step="0.1"
-                placeholder="e.g. 36.5"
-                value={readingForm.temperature}
                 onChange={(e) =>
                   setReadingForm({ temperature: e.target.value })
                 }
+                placeholder="e.g. 36.5"
+                step="0.1"
+                type="number"
+                value={readingForm.temperature}
               />
             </div>
           </div>
           <DialogFooter>
             <Button
-              variant="outline"
-              type="button"
               onClick={() => setReadingDialogOpen(false)}
+              type="button"
+              variant="outline"
             >
               Cancel
             </Button>
             <Button
-              type="button"
               disabled={readingSubmitting}
               onClick={handleLogReading}
+              type="button"
             >
               {readingSubmitting ? "Logging..." : "Log Reading"}
             </Button>
@@ -931,7 +928,7 @@ export function IoTPageClient() {
       </Dialog>
 
       {/* Probe Details Dialog */}
-      <Dialog open={detailsDialogOpen} onOpenChange={setDetailsDialogOpen}>
+      <Dialog onOpenChange={setDetailsDialogOpen} open={detailsDialogOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Probe Details</DialogTitle>
@@ -1005,7 +1002,9 @@ export function IoTPageClient() {
               )}
               {detailsProbe.lastCalibration && (
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Last Calibration</span>
+                  <span className="text-muted-foreground">
+                    Last Calibration
+                  </span>
                   <span className="font-medium">
                     {formatDate(detailsProbe.lastCalibration)}
                   </span>
@@ -1013,7 +1012,9 @@ export function IoTPageClient() {
               )}
               {detailsProbe.nextCalibration && (
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Next Calibration</span>
+                  <span className="text-muted-foreground">
+                    Next Calibration
+                  </span>
                   <span
                     className={
                       new Date(detailsProbe.nextCalibration) <= new Date()
@@ -1047,9 +1048,9 @@ export function IoTPageClient() {
           )}
           <DialogFooter>
             <Button
+              onClick={() => setDetailsDialogOpen(false)}
               type="button"
               variant="outline"
-              onClick={() => setDetailsDialogOpen(false)}
             >
               Close
             </Button>
@@ -1058,7 +1059,7 @@ export function IoTPageClient() {
       </Dialog>
 
       {/* Resolve Alert Dialog */}
-      <Dialog open={resolveDialogOpen} onOpenChange={setResolveDialogOpen}>
+      <Dialog onOpenChange={setResolveDialogOpen} open={resolveDialogOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Resolve Alert</DialogTitle>
@@ -1068,28 +1069,30 @@ export function IoTPageClient() {
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <Label htmlFor="resolution-notes">Resolution Notes (optional)</Label>
+              <Label htmlFor="resolution-notes">
+                Resolution Notes (optional)
+              </Label>
               <textarea
-                id="resolution-notes"
                 className="flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                id="resolution-notes"
+                onChange={(e) => setResolutionNotes(e.target.value)}
                 placeholder="Describe what action was taken..."
                 value={resolutionNotes}
-                onChange={(e) => setResolutionNotes(e.target.value)}
               />
             </div>
           </div>
           <DialogFooter>
             <Button
-              variant="outline"
-              type="button"
               onClick={() => setResolveDialogOpen(false)}
+              type="button"
+              variant="outline"
             >
               Cancel
             </Button>
             <Button
-              type="button"
               disabled={resolveSubmitting}
               onClick={handleResolveAlert}
+              type="button"
             >
               {resolveSubmitting ? "Resolving..." : "Resolve Alert"}
             </Button>

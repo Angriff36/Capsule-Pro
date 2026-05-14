@@ -8,12 +8,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
+import { formatCurrency } from "@repo/design-system/lib/format-currency";
 import { format } from "date-fns";
 import { Calendar, DollarSign, GripVertical, Users } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
-import { formatCurrency } from "@repo/design-system/lib/format-currency";
 
 const fmtCurrency = (v: string | number | null) =>
   formatCurrency(v, { fractionDigits: 0, nullDisplay: "\u2014" });
@@ -113,7 +113,6 @@ function getClientName(deal: Deal): string {
   if (deal.lead?.contactName) return deal.lead.contactName;
   return "No client";
 }
-
 
 const stageVariants: Record<
   string,

@@ -12,6 +12,13 @@
 import { database } from "@repo/database";
 import { NextRequest } from "next/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  POST as commandCreateApiKey,
+  POST as commandRecordUsage,
+  POST as commandRevokeApiKey,
+  POST as commandSoftDeleteApiKey,
+  POST as commandUpdateApiKey,
+} from "@/app/api/manifest/[entity]/commands/[command]/route";
 import { POST as revokeApiKey } from "@/app/api/settings/api-keys/[id]/revoke/route";
 import { POST as rotateApiKey } from "@/app/api/settings/api-keys/[id]/rotate/route";
 // --- Direct route handlers (use requireCurrentUser + withRateLimit) ---
@@ -20,11 +27,6 @@ import {
   GET as getApiKey,
   PUT as updateApiKey,
 } from "@/app/api/settings/api-keys/[id]/route";
-import { POST as commandCreateApiKey } from "@/app/api/manifest/[entity]/commands/[command]/route";
-import { POST as commandRecordUsage } from "@/app/api/manifest/[entity]/commands/[command]/route";
-import { POST as commandRevokeApiKey } from "@/app/api/manifest/[entity]/commands/[command]/route";
-import { POST as commandSoftDeleteApiKey } from "@/app/api/manifest/[entity]/commands/[command]/route";
-import { POST as commandUpdateApiKey } from "@/app/api/manifest/[entity]/commands/[command]/route";
 // --- Manifest-generated list ---
 import { GET as listApiKeysManifest } from "@/app/api/settings/api-keys/list/route";
 import {
@@ -936,7 +938,9 @@ describe("Settings API", () => {
             body: JSON.stringify({ name: "Runtime Key" }),
           }
         );
-        const response = await commandCreateApiKey(request, { params: Promise.resolve({ entity: "ApiKey", command: "create" }) });
+        const response = await commandCreateApiKey(request, {
+          params: Promise.resolve({ entity: "ApiKey", command: "create" }),
+        });
 
         expect(response.status).toBe(200);
         const body = await response.json();
@@ -957,7 +961,9 @@ describe("Settings API", () => {
             body: JSON.stringify({ name: "Test" }),
           }
         );
-        const response = await commandCreateApiKey(request, { params: Promise.resolve({ entity: "ApiKey", command: "create" }) });
+        const response = await commandCreateApiKey(request, {
+          params: Promise.resolve({ entity: "ApiKey", command: "create" }),
+        });
 
         expect(response.status).toBe(401);
       });
@@ -972,7 +978,9 @@ describe("Settings API", () => {
             body: JSON.stringify({ name: "Test" }),
           }
         );
-        const response = await commandCreateApiKey(request, { params: Promise.resolve({ entity: "ApiKey", command: "create" }) });
+        const response = await commandCreateApiKey(request, {
+          params: Promise.resolve({ entity: "ApiKey", command: "create" }),
+        });
 
         expect(response.status).toBe(400);
         const body = await response.json();
@@ -992,7 +1000,9 @@ describe("Settings API", () => {
             body: JSON.stringify({ name: "Denied Key" }),
           }
         );
-        const response = await commandCreateApiKey(request, { params: Promise.resolve({ entity: "ApiKey", command: "create" }) });
+        const response = await commandCreateApiKey(request, {
+          params: Promise.resolve({ entity: "ApiKey", command: "create" }),
+        });
 
         expect(response.status).toBe(403);
         const body = await response.json();
@@ -1013,7 +1023,9 @@ describe("Settings API", () => {
             body: JSON.stringify({}),
           }
         );
-        const response = await commandCreateApiKey(request, { params: Promise.resolve({ entity: "ApiKey", command: "create" }) });
+        const response = await commandCreateApiKey(request, {
+          params: Promise.resolve({ entity: "ApiKey", command: "create" }),
+        });
 
         expect(response.status).toBe(422);
         const body = await response.json();
@@ -1033,7 +1045,9 @@ describe("Settings API", () => {
             body: JSON.stringify({}),
           }
         );
-        const response = await commandCreateApiKey(request, { params: Promise.resolve({ entity: "ApiKey", command: "create" }) });
+        const response = await commandCreateApiKey(request, {
+          params: Promise.resolve({ entity: "ApiKey", command: "create" }),
+        });
 
         expect(response.status).toBe(400);
         const body = await response.json();
@@ -1050,7 +1064,9 @@ describe("Settings API", () => {
             body: JSON.stringify({ name: "Crash" }),
           }
         );
-        const response = await commandCreateApiKey(request, { params: Promise.resolve({ entity: "ApiKey", command: "create" }) });
+        const response = await commandCreateApiKey(request, {
+          params: Promise.resolve({ entity: "ApiKey", command: "create" }),
+        });
 
         expect(response.status).toBe(500);
       });
@@ -1072,7 +1088,9 @@ describe("Settings API", () => {
             body: JSON.stringify({ id: "key-001" }),
           }
         );
-        const response = await commandRevokeApiKey(request, { params: Promise.resolve({ entity: "ApiKey", command: "revoke" }) });
+        const response = await commandRevokeApiKey(request, {
+          params: Promise.resolve({ entity: "ApiKey", command: "revoke" }),
+        });
 
         expect(response.status).toBe(200);
         expect(mockRunCommand).toHaveBeenCalledWith(
@@ -1097,7 +1115,9 @@ describe("Settings API", () => {
             body: JSON.stringify({ id: "key-001" }),
           }
         );
-        const response = await commandRevokeApiKey(request, { params: Promise.resolve({ entity: "ApiKey", command: "revoke" }) });
+        const response = await commandRevokeApiKey(request, {
+          params: Promise.resolve({ entity: "ApiKey", command: "revoke" }),
+        });
 
         expect(response.status).toBe(401);
       });
@@ -1119,7 +1139,9 @@ describe("Settings API", () => {
             body: JSON.stringify({ id: "key-001", name: "Updated" }),
           }
         );
-        const response = await commandUpdateApiKey(request, { params: Promise.resolve({ entity: "ApiKey", command: "update" }) });
+        const response = await commandUpdateApiKey(request, {
+          params: Promise.resolve({ entity: "ApiKey", command: "update" }),
+        });
 
         expect(response.status).toBe(200);
         expect(mockRunCommand).toHaveBeenCalledWith(
@@ -1148,7 +1170,9 @@ describe("Settings API", () => {
             body: JSON.stringify({ id: "key-001" }),
           }
         );
-        const response = await commandSoftDeleteApiKey(request, { params: Promise.resolve({ entity: "ApiKey", command: "softDelete" }) });
+        const response = await commandSoftDeleteApiKey(request, {
+          params: Promise.resolve({ entity: "ApiKey", command: "softDelete" }),
+        });
 
         expect(response.status).toBe(200);
         expect(mockRunCommand).toHaveBeenCalledWith(
@@ -1177,7 +1201,9 @@ describe("Settings API", () => {
             body: JSON.stringify({ id: "key-001" }),
           }
         );
-        const response = await commandRecordUsage(request, { params: Promise.resolve({ entity: "ApiKey", command: "recordUsage" }) });
+        const response = await commandRecordUsage(request, {
+          params: Promise.resolve({ entity: "ApiKey", command: "recordUsage" }),
+        });
 
         expect(response.status).toBe(200);
         expect(mockRunCommand).toHaveBeenCalledWith(
@@ -1199,7 +1225,9 @@ describe("Settings API", () => {
             body: JSON.stringify({ id: "key-001" }),
           }
         );
-        const response = await commandRecordUsage(request, { params: Promise.resolve({ entity: "ApiKey", command: "recordUsage" }) });
+        const response = await commandRecordUsage(request, {
+          params: Promise.resolve({ entity: "ApiKey", command: "recordUsage" }),
+        });
 
         expect(response.status).toBe(500);
       });

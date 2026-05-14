@@ -8,12 +8,13 @@
  * @see packages/manifest-ir/ir/kitchen/kitchen.commands.json
  * @see packages/manifest-runtime/packages/cli/src/commands/audit-routes.ts
  */
-import { describe, it, expect } from "vitest";
-import { readFileSync, existsSync } from "node:fs";
-import { resolve } from "node:path";
-import { execSync } from "node:child_process";
 
-const PROJECT_ROOT = resolve(__dirname, "../../..");
+import { execSync } from "node:child_process";
+import { existsSync, readFileSync } from "node:fs";
+import { resolve } from "node:path";
+import { describe, expect, it } from "vitest";
+
+const PROJECT_ROOT = resolve(import.meta.dirname, "../../..");
 const COMMANDS_JSON = resolve(
   PROJECT_ROOT,
   "packages/manifest-ir/ir/kitchen/kitchen.commands.json"
@@ -82,14 +83,30 @@ describe("Manifest Command Registry (kitchen.commands.json)", () => {
 
   describe("dispatcher-required entity coverage", () => {
     const expectedEntities = [
-      "Facility", "FacilityArea", "FacilityAsset",
-      "FacilitySchedule", "FacilityWorkOrder",
-      "Driver", "Vehicle", "LogisticsRoute", "LogisticsDispatch",
-      "KnowledgeBaseEntry", "DocumentVersion",
-      "AutomatedFollowup", "EventTimelineItem", "EventWaitlistEntry",
-      "QACheck", "QACorrectiveAction", "QATemperatureLog",
-      "InventoryTransfer", "BankAccount", "Budget", "Vendor",
-      "StaffPerformance", "Deal", "Equipment",
+      "Facility",
+      "FacilityArea",
+      "FacilityAsset",
+      "FacilitySchedule",
+      "FacilityWorkOrder",
+      "Driver",
+      "Vehicle",
+      "LogisticsRoute",
+      "LogisticsDispatch",
+      "KnowledgeBaseEntry",
+      "DocumentVersion",
+      "AutomatedFollowup",
+      "EventTimelineItem",
+      "EventWaitlistEntry",
+      "QACheck",
+      "QACorrectiveAction",
+      "QATemperatureLog",
+      "InventoryTransfer",
+      "BankAccount",
+      "Budget",
+      "Vendor",
+      "StaffPerformance",
+      "Deal",
+      "Equipment",
     ];
 
     for (const entity of expectedEntities) {

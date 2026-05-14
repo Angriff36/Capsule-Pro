@@ -9,12 +9,12 @@ import type {
   Employee,
   PayrollAudit,
   PayrollPeriod,
+  PayrollPrefs,
   PayrollRecord,
   Role,
   TimeEntryInput,
   TipPool,
 } from "../models";
-import type { PayrollPrefs } from "../models";
 import type { PayrollDataSource } from "../services";
 
 /**
@@ -167,9 +167,7 @@ export class PrismaPayrollDataSource implements PayrollDataSource {
         | "by_hours"
         | "by_headcount"
         | "fixed_shares",
-      fixedShares: pool.fixedShares as
-        | Record<string, number>
-        | undefined,
+      fixedShares: pool.fixedShares as Record<string, number> | undefined,
     }));
   }
 

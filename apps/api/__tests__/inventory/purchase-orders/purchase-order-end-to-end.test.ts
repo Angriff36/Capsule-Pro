@@ -266,7 +266,12 @@ describe("PurchaseOrder Persistence (write → read alignment)", () => {
           }
         );
 
-        await mod.POST(request, { params: Promise.resolve({ entity: "PurchaseOrder", command: "create" }) });
+        await mod.POST(request, {
+          params: Promise.resolve({
+            entity: "PurchaseOrder",
+            command: "create",
+          }),
+        });
 
         expect(mockRunCommand).toHaveBeenCalledWith(
           verb,
@@ -294,7 +299,9 @@ describe("PurchaseOrder Persistence (write → read alignment)", () => {
         }
       );
 
-      await mod.POST(request, { params: Promise.resolve({ entity: "PurchaseOrder", command: "create" }) });
+      await mod.POST(request, {
+        params: Promise.resolve({ entity: "PurchaseOrder", command: "create" }),
+      });
 
       expect(mockRunCommand).toHaveBeenCalledWith(
         "create",

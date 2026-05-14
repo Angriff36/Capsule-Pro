@@ -8,8 +8,8 @@
 import { database } from "@repo/database";
 import { NextRequest } from "next/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { GET as getPeriod } from "@/app/api/payroll/periods/[id]/route";
 import { POST as createPeriod } from "@/app/api/manifest/[entity]/commands/[command]/route";
+import { GET as getPeriod } from "@/app/api/payroll/periods/[id]/route";
 import { GET as listPeriods } from "@/app/api/payroll/periods/list/route";
 
 // Mock dependencies
@@ -290,7 +290,9 @@ describe("Payroll Periods API", () => {
           }),
         }
       );
-      const response = await createPeriod(request, { params: Promise.resolve({ entity: "PayrollPeriod", command: "create" }) });
+      const response = await createPeriod(request, {
+        params: Promise.resolve({ entity: "PayrollPeriod", command: "create" }),
+      });
 
       expect(response.status).toBe(401);
     });
@@ -309,7 +311,9 @@ describe("Payroll Periods API", () => {
           }),
         }
       );
-      const response = await createPeriod(request, { params: Promise.resolve({ entity: "PayrollPeriod", command: "create" }) });
+      const response = await createPeriod(request, {
+        params: Promise.resolve({ entity: "PayrollPeriod", command: "create" }),
+      });
 
       expect(response.status).toBe(400);
     });
@@ -333,7 +337,9 @@ describe("Payroll Periods API", () => {
           }),
         }
       );
-      const response = await createPeriod(request, { params: Promise.resolve({ entity: "PayrollPeriod", command: "create" }) });
+      const response = await createPeriod(request, {
+        params: Promise.resolve({ entity: "PayrollPeriod", command: "create" }),
+      });
 
       expect(response.status).toBe(200);
       const body = await response.json();
@@ -360,7 +366,9 @@ describe("Payroll Periods API", () => {
           body: JSON.stringify({ name: "Unauthorized Period" }),
         }
       );
-      const response = await createPeriod(request, { params: Promise.resolve({ entity: "PayrollPeriod", command: "create" }) });
+      const response = await createPeriod(request, {
+        params: Promise.resolve({ entity: "PayrollPeriod", command: "create" }),
+      });
 
       expect(response.status).toBe(403);
       const body = await response.json();
@@ -388,7 +396,9 @@ describe("Payroll Periods API", () => {
           }),
         }
       );
-      const response = await createPeriod(request, { params: Promise.resolve({ entity: "PayrollPeriod", command: "create" }) });
+      const response = await createPeriod(request, {
+        params: Promise.resolve({ entity: "PayrollPeriod", command: "create" }),
+      });
 
       expect(response.status).toBe(422);
       const body = await response.json();
@@ -408,7 +418,9 @@ describe("Payroll Periods API", () => {
           body: JSON.stringify({}),
         }
       );
-      const response = await createPeriod(request, { params: Promise.resolve({ entity: "PayrollPeriod", command: "create" }) });
+      const response = await createPeriod(request, {
+        params: Promise.resolve({ entity: "PayrollPeriod", command: "create" }),
+      });
 
       expect(response.status).toBe(400);
       const body = await response.json();
@@ -425,7 +437,9 @@ describe("Payroll Periods API", () => {
           body: JSON.stringify({ name: "Crash Period" }),
         }
       );
-      const response = await createPeriod(request, { params: Promise.resolve({ entity: "PayrollPeriod", command: "create" }) });
+      const response = await createPeriod(request, {
+        params: Promise.resolve({ entity: "PayrollPeriod", command: "create" }),
+      });
 
       expect(response.status).toBe(500);
     });
@@ -440,7 +454,9 @@ describe("Payroll Periods API", () => {
           body: JSON.stringify({ name: "Orphan User Period" }),
         }
       );
-      const response = await createPeriod(request, { params: Promise.resolve({ entity: "PayrollPeriod", command: "create" }) });
+      const response = await createPeriod(request, {
+        params: Promise.resolve({ entity: "PayrollPeriod", command: "create" }),
+      });
 
       expect(response.status).toBe(400);
       const body = await response.json();

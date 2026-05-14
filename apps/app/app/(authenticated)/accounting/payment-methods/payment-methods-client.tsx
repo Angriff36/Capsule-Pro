@@ -27,14 +27,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
-import { StatusPill } from "@repo/design-system/components/blocks/page-shell";
 import {
   CheckCircle,
   CreditCard,
   Loader2,
   MoreHorizontal,
   Plus,
-  Shield,
   ShieldAlert,
   Star,
   Trash2,
@@ -85,11 +83,14 @@ const STATUS_OPTIONS = [
 ] as const;
 
 function formatTypeLabel(type: string): string {
-  return type.replaceAll("_", " ").toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
+  return type
+    .replaceAll("_", " ")
+    .toLowerCase()
+    .replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 function getStatusBadgeVariant(
-  status: string,
+  status: string
 ): "default" | "secondary" | "destructive" | "outline" {
   switch (status) {
     case "ACTIVE":
@@ -205,57 +206,53 @@ export function PaymentMethodsClient({
     resetCreateForm,
   ]);
 
-  const handleAction = useCallback(
-    async (methodId: string, action: string) => {
-      setActionLoading(methodId);
-      try {
-        const res = await fetch(`/api/accounting/payment-methods/${methodId}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ action }),
-        });
+  const handleAction = useCallback(async (methodId: string, action: string) => {
+    setActionLoading(methodId);
+    try {
+      const res = await fetch(`/api/accounting/payment-methods/${methodId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action }),
+      });
 
-        if (!res.ok) {
-          const err = await res.json();
-          throw new Error(err.error || "Action failed");
-        }
-
-        if (action === "remove") {
-          setMethods((prev) => prev.filter((m) => m.id !== methodId));
-        } else {
-          const updated = await res.json();
-          setMethods((prev) =>
-            prev.map((m) =>
-              m.id === methodId
-                ? {
-                    ...m,
-                    isDefault:
-                      action === "mark-as-default" ? true : m.isDefault,
-                    status:
-                      action === "verify"
-                        ? "VERIFIED"
-                        : action === "flag-for-fraud"
-                          ? "FLAGGED"
-                          : action === "mark-expired"
-                            ? "EXPIRED"
-                            : m.status,
-                    displayInfo: updated.displayInfo ?? m.displayInfo,
-                  }
-                : action === "mark-as-default" && m.clientId === updated.clientId
-                  ? { ...m, isDefault: false }
-                  : m,
-            ),
-          );
-        }
-      } catch (err) {
-        const message = err instanceof Error ? err.message : "Unknown error";
-        alert(message);
-      } finally {
-        setActionLoading(null);
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || "Action failed");
       }
-    },
-    [],
-  );
+
+      if (action === "remove") {
+        setMethods((prev) => prev.filter((m) => m.id !== methodId));
+      } else {
+        const updated = await res.json();
+        setMethods((prev) =>
+          prev.map((m) =>
+            m.id === methodId
+              ? {
+                  ...m,
+                  isDefault: action === "mark-as-default" ? true : m.isDefault,
+                  status:
+                    action === "verify"
+                      ? "VERIFIED"
+                      : action === "flag-for-fraud"
+                        ? "FLAGGED"
+                        : action === "mark-expired"
+                          ? "EXPIRED"
+                          : m.status,
+                  displayInfo: updated.displayInfo ?? m.displayInfo,
+                }
+              : action === "mark-as-default" && m.clientId === updated.clientId
+                ? { ...m, isDefault: false }
+                : m
+          )
+        );
+      }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      alert(message);
+    } finally {
+      setActionLoading(null);
+    }
+  }, []);
 
   return (
     <div className="space-y-4">
@@ -331,7 +328,7 @@ export function PaymentMethodsClient({
                           <SelectItem key={opt.value} value={opt.value}>
                             {opt.label}
                           </SelectItem>
-                        ),
+                        )
                       )}
                     </SelectContent>
                   </Select>
@@ -360,9 +357,7 @@ export function PaymentMethodsClient({
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="VISA">Visa</SelectItem>
-                          <SelectItem value="MASTERCARD">
-                            Mastercard
-                          </SelectItem>
+                          <SelectItem value="MASTERCARD">Mastercard</SelectItem>
                           <SelectItem value="AMEX">Amex</SelectItem>
                           <SelectItem value="DISCOVER">Discover</SelectItem>
                           <SelectItem value="DINERS_CLUB">
@@ -392,7 +387,9 @@ export function PaymentMethodsClient({
                   disabled={creating || !formClientId}
                   onClick={handleCreate}
                 >
-                  {creating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  {creating && (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  )}
                   {creating ? "Creating..." : "Create method"}
                 </Button>
               </DialogFooter>

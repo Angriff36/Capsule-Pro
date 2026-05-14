@@ -316,7 +316,9 @@ export function MenuBuilderEditor({
                     </div>
                     <div className="flex items-center gap-1 shrink-0">
                       <span className="text-xs text-muted-foreground mr-1">
-                        {formatCurrency(dish.pricePerPerson, { nullDisplay: "-" })}
+                        {formatCurrency(dish.pricePerPerson, {
+                          nullDisplay: "-",
+                        })}
                       </span>
                       <Button
                         className="h-7 w-7"
@@ -435,11 +437,16 @@ export function MenuBuilderEditor({
                               <div className="flex items-center gap-3 shrink-0">
                                 <div className="text-right text-xs">
                                   <div className="text-muted-foreground">
-                                    Cost: {formatCurrency(entry.costPerPerson, { nullDisplay: "-" })}
+                                    Cost:{" "}
+                                    {formatCurrency(entry.costPerPerson, {
+                                      nullDisplay: "-",
+                                    })}
                                   </div>
                                   <div className="font-medium">
                                     Price:{" "}
-                                    {formatCurrency(entry.pricePerPerson, { nullDisplay: "-" })}
+                                    {formatCurrency(entry.pricePerPerson, {
+                                      nullDisplay: "-",
+                                    })}
                                   </div>
                                   {margin !== null && (
                                     <div

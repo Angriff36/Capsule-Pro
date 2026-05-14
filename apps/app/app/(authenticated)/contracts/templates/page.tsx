@@ -86,8 +86,9 @@ export default async function ContractTemplatesPage() {
             <MonoLabel tone="dark">Operations / Contracts</MonoLabel>
             <DisplayHeading>Contract Templates</DisplayHeading>
             <CommandBandLede>
-              Create reusable templates for event and vendor contracts. Standardize
-              terms, clauses, and structures across your organization.
+              Create reusable templates for event and vendor contracts.
+              Standardize terms, clauses, and structures across your
+              organization.
             </CommandBandLede>
           </div>
           <CommandBandActions>

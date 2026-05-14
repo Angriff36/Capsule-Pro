@@ -426,10 +426,15 @@ export function ImportForm() {
                   rows={result.mergedStaff.map((staff, idx) => ({
                     id: `staff-${idx}`,
                     title: staff.name,
-                    pills: staff.position ? <Badge variant="outline">{staff.position}</Badge> : undefined,
-                    meta: staff.scheduledIn && staff.scheduledOut
-                      ? <span className="font-mono text-xs">{staff.scheduledIn} – {staff.scheduledOut}</span>
-                      : undefined,
+                    pills: staff.position ? (
+                      <Badge variant="outline">{staff.position}</Badge>
+                    ) : undefined,
+                    meta:
+                      staff.scheduledIn && staff.scheduledOut ? (
+                        <span className="font-mono text-xs">
+                          {staff.scheduledIn} – {staff.scheduledOut}
+                        </span>
+                      ) : undefined,
                   }))}
                 />
               </div>

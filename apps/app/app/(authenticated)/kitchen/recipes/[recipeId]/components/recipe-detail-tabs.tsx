@@ -32,6 +32,7 @@ import {
   TabsList,
   TabsTrigger,
 } from "@repo/design-system/components/ui/tabs";
+import { formatCurrency } from "@repo/design-system/lib/format-currency";
 import { captureException } from "@sentry/nextjs";
 import {
   AlertTriangle,
@@ -50,7 +51,6 @@ import {
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
-import { formatCurrency } from "@repo/design-system/lib/format-currency";
 import { apiFetch } from "@/app/lib/api";
 import {
   kitchenRecipeCompositeRestore,

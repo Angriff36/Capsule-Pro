@@ -470,7 +470,12 @@ describe("Shipment Command Routes — success paths", () => {
         method: "POST",
         body: JSON.stringify(body),
       }),
-      { params: Promise.resolve({ entity: "Shipment", command: "startPreparing" }) }
+      {
+        params: Promise.resolve({
+          entity: "Shipment",
+          command: "startPreparing",
+        }),
+      }
     );
 
     expect(response.status).toBe(200);
@@ -496,7 +501,12 @@ describe("Shipment Command Routes — success paths", () => {
         method: "POST",
         body: JSON.stringify(body),
       }),
-      { params: Promise.resolve({ entity: "Shipment", command: "markDelivered" }) }
+      {
+        params: Promise.resolve({
+          entity: "Shipment",
+          command: "markDelivered",
+        }),
+      }
     );
 
     expect(response.status).toBe(200);
@@ -700,7 +710,12 @@ describe("ShipmentItem.updateReceived command", () => {
         method: "POST",
         body: JSON.stringify({}),
       }),
-      { params: Promise.resolve({ entity: "ShipmentItem", command: "updateReceived" }) }
+      {
+        params: Promise.resolve({
+          entity: "ShipmentItem",
+          command: "updateReceived",
+        }),
+      }
     );
 
     expect(response.status).toBe(401);
@@ -721,7 +736,12 @@ describe("ShipmentItem.updateReceived command", () => {
         method: "POST",
         body: JSON.stringify({}),
       }),
-      { params: Promise.resolve({ entity: "ShipmentItem", command: "updateReceived" }) }
+      {
+        params: Promise.resolve({
+          entity: "ShipmentItem",
+          command: "updateReceived",
+        }),
+      }
     );
 
     expect(response.status).toBe(400);
@@ -747,7 +767,12 @@ describe("ShipmentItem.updateReceived command", () => {
         method: "POST",
         body: JSON.stringify(body),
       }),
-      { params: Promise.resolve({ entity: "ShipmentItem", command: "updateReceived" }) }
+      {
+        params: Promise.resolve({
+          entity: "ShipmentItem",
+          command: "updateReceived",
+        }),
+      }
     );
 
     expect(response.status).toBe(200);
@@ -785,7 +810,12 @@ describe("ShipmentItem.updateReceived command", () => {
         method: "POST",
         body: JSON.stringify({ quantityReceived: -1 }),
       }),
-      { params: Promise.resolve({ entity: "ShipmentItem", command: "updateReceived" }) }
+      {
+        params: Promise.resolve({
+          entity: "ShipmentItem",
+          command: "updateReceived",
+        }),
+      }
     );
 
     expect(response.status).toBe(422);
@@ -803,7 +833,12 @@ describe("ShipmentItem.updateReceived command", () => {
         method: "POST",
         body: JSON.stringify({}),
       }),
-      { params: Promise.resolve({ entity: "ShipmentItem", command: "updateReceived" }) }
+      {
+        params: Promise.resolve({
+          entity: "ShipmentItem",
+          command: "updateReceived",
+        }),
+      }
     );
 
     expect(response.status).toBe(500);

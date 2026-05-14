@@ -1,8 +1,8 @@
-import type { MenuFormData, DishCost } from '../../types/menu';
-import StepHeader from '../ui/StepHeader';
-import MenuItemCard from '../menu/MenuItemCard';
-import { getAvailableItems } from '../../engine/menuConstraints';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle } from "lucide-react";
+import { getAvailableItems } from "../../engine/menuConstraints";
+import type { DishCost, MenuFormData } from "../../types/menu";
+import MenuItemCard from "../menu/MenuItemCard";
+import StepHeader from "../ui/StepHeader";
 
 interface Props {
   formData: MenuFormData;
@@ -12,17 +12,25 @@ interface Props {
   costCache?: Record<string, DishCost>;
 }
 
-export default function MenuMainsStep({ formData, toggleMenuItem, showPrice, showCost, costCache }: Props) {
+export default function MenuMainsStep({
+  formData,
+  toggleMenuItem,
+  showPrice,
+  showCost,
+  costCache,
+}: Props) {
   const available = getAvailableItems(formData.serviceStyle, formData.season);
-  const mains = available.filter(item => item.category === 'main');
-  const appetizers = available.filter(item => item.category === 'appetizer');
-  const selectedMains = mains.filter(m => formData.selectedItems.includes(m.id));
+  const mains = available.filter((item) => item.category === "main");
+  const appetizers = available.filter((item) => item.category === "appetizer");
+  const selectedMains = mains.filter((m) =>
+    formData.selectedItems.includes(m.id)
+  );
 
   return (
     <div className="space-y-8">
       <StepHeader
-        title="Choose your main courses"
         subtitle="Select one or more proteins and entrees. We recommend 2-3 options for variety."
+        title="Choose your main courses"
       />
 
       {selectedMains.length === 0 && (
@@ -37,15 +45,15 @@ export default function MenuMainsStep({ formData, toggleMenuItem, showPrice, sho
           Main Courses
         </label>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {mains.map(item => (
+          {mains.map((item) => (
             <MenuItemCard
-              key={item.id}
-              item={item}
-              selected={formData.selectedItems.includes(item.id)}
-              onToggle={() => toggleMenuItem(item.id)}
-              showPrice={showPrice}
-              showCost={showCost}
               cost={costCache?.[item.id]}
+              item={item}
+              key={item.id}
+              onToggle={() => toggleMenuItem(item.id)}
+              selected={formData.selectedItems.includes(item.id)}
+              showCost={showCost}
+              showPrice={showPrice}
             />
           ))}
         </div>
@@ -57,15 +65,15 @@ export default function MenuMainsStep({ formData, toggleMenuItem, showPrice, sho
             Appetizers
           </label>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {appetizers.map(item => (
+            {appetizers.map((item) => (
               <MenuItemCard
-                key={item.id}
-                item={item}
-                selected={formData.selectedItems.includes(item.id)}
-                onToggle={() => toggleMenuItem(item.id)}
-                showPrice={showPrice}
-                showCost={showCost}
                 cost={costCache?.[item.id]}
+                item={item}
+                key={item.id}
+                onToggle={() => toggleMenuItem(item.id)}
+                selected={formData.selectedItems.includes(item.id)}
+                showCost={showCost}
+                showPrice={showPrice}
               />
             ))}
           </div>

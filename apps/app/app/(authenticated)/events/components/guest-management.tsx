@@ -1183,8 +1183,8 @@ export function GuestManagement({ eventId }: GuestManagementProps) {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete guest?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently remove this guest from the event. This action
-              cannot be undone.
+              This will permanently remove this guest from the event. This
+              action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

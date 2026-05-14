@@ -156,12 +156,7 @@ test.describe("Authenticated session management", () => {
     await waitForURL(page, /\/events/, 20_000);
 
     if (errors.length > 0) {
-      await failHard(
-        page,
-        testInfo,
-        errors,
-        "post-sign-in events redirect"
-      );
+      await failHard(page, testInfo, errors, "post-sign-in events redirect");
     }
     log.ok("No errors at checkpoint: post-sign-in events redirect");
   });

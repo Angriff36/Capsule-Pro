@@ -1,3 +1,4 @@
+"use strict";
 // Preload root .env.local before Next.js config validates env vars.
 // Loaded via: NODE_OPTIONS="-r ./env-preload.cjs"
 const { config } = require("dotenv");

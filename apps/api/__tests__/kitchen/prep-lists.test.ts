@@ -722,8 +722,7 @@ describe("Prep Lists API", () => {
       name: "update-batch-multiplier",
       runtimeName: "updateBatchMultiplier",
       path: "/api/kitchen/prep-lists/commands/update-batch-multiplier",
-      routePath:
-        "@/app/api/manifest/[entity]/commands/[command]/route",
+      routePath: "@/app/api/manifest/[entity]/commands/[command]/route",
       sampleBody: { id: TEST_PREP_LIST_ID, batchMultiplier: 2.5 },
     },
   ];

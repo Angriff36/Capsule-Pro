@@ -93,7 +93,10 @@ export const POST = withRateLimit(
         if (clerkId) {
           const u = await database.user.findFirst({
             where: {
-              AND: [{ tenantId: authResult.tenantId! }, { authUserId: clerkId }],
+              AND: [
+                { tenantId: authResult.tenantId! },
+                { authUserId: clerkId },
+              ],
             },
             select: { id: true },
           });

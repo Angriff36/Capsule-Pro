@@ -61,10 +61,7 @@ export async function GET(request: NextRequest) {
       searchParams.get("startDate"),
       new Date(new Date().getFullYear(), 0, 1)
     );
-    const endDate = parseDate(
-      searchParams.get("endDate"),
-      new Date()
-    );
+    const endDate = parseDate(searchParams.get("endDate"), new Date());
 
     // Fetch all relevant financial data in parallel
     const [
@@ -83,7 +80,12 @@ export async function GET(request: NextRequest) {
           issuedAt: { gte: startDate, lte: endDate },
           status: { notIn: ["VOID", "WRITE_OFF"] },
         },
-        _sum: { total: true, amountPaid: true, amountDue: true, taxAmount: true },
+        _sum: {
+          total: true,
+          amountPaid: true,
+          amountDue: true,
+          taxAmount: true,
+        },
         _count: true,
       }),
       // Void/write-off invoices in the period

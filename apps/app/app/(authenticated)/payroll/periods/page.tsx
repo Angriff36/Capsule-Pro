@@ -3,6 +3,7 @@
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Card, CardContent } from "@repo/design-system/components/ui/card";
+import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import {
   Dialog,
   DialogContent,
@@ -12,7 +13,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@repo/design-system/components/ui/dialog";
-import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
 import {
   Select,
@@ -22,7 +22,6 @@ import {
   SelectValue,
 } from "@repo/design-system/components/ui/select";
 import { Separator } from "@repo/design-system/components/ui/separator";
-import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import {
   Table,
   TableBody,
@@ -229,7 +228,6 @@ export default function PayrollPeriodsPage() {
                 <DatePicker
                   id="periodStart"
                   onChange={(e) => setPeriodStart(e.target.value)}
- 
                   value={periodStart}
                 />
               </div>
@@ -238,7 +236,6 @@ export default function PayrollPeriodsPage() {
                 <DatePicker
                   id="periodEnd"
                   onChange={(e) => setPeriodEnd(e.target.value)}
- 
                   value={periodEnd}
                 />
               </div>

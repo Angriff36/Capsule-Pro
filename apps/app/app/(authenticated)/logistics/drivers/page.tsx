@@ -18,6 +18,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
+import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import {
   Dialog,
   DialogContent,
@@ -36,7 +37,6 @@ import {
   SelectValue,
 } from "@repo/design-system/components/ui/select";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
-import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import {
   CheckCircle2,
   Clock,
@@ -461,7 +461,6 @@ export default function DriversPage() {
                   onChange={(e) =>
                     setForm((p) => ({ ...p, licenseExpiry: e.target.value }))
                   }
- 
                   value={form.licenseExpiry}
                 />
               </div>
@@ -513,7 +512,7 @@ export default function DriversPage() {
         </DialogContent>
       </Dialog>
 
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+      <AlertDialog onOpenChange={setDeleteDialogOpen} open={deleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Driver?</AlertDialogTitle>

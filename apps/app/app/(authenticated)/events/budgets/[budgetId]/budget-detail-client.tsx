@@ -247,7 +247,7 @@ export function BudgetDetailClient() {
   };
 
   const handleDeleteLineItem = async () => {
-    if (!budget || !lineItemToDelete) {
+    if (!(budget && lineItemToDelete)) {
       return;
     }
 

@@ -162,11 +162,7 @@ export const getWasteMetrics = cache(
 // ============================================================================
 
 export const getMarginMetrics = cache(
-  async (
-    tenantId: string,
-    start: Date,
-    end: Date
-  ): Promise<number> => {
+  async (tenantId: string, start: Date, end: Date): Promise<number> => {
     const rows = await timedQueryRaw<Array<{ avg_margin: string | null }>>(
       Prisma.sql`
         SELECT COALESCE(AVG(actual_gross_margin_pct), 0)::numeric AS avg_margin

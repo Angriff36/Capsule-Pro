@@ -1,7 +1,6 @@
 "use client";
 
 import { Button } from "@repo/design-system/components/ui/button";
-import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import {
   Select,
   SelectContent,
@@ -9,12 +8,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
-import {
-  MetricBand,
-  MetricCell,
-  MetricLabel,
-  MetricValue,
-} from "@repo/design-system/components/blocks/page-shell";
 import { formatCurrencyWhole as formatCurrency } from "@repo/design-system/lib/format-currency";
 import { Download } from "lucide-react";
 import { useCallback, useState } from "react";
@@ -114,7 +107,8 @@ export function FinancialReportingClient({
       if (!res.ok) {
         const errBody = await res.json().catch(() => ({}));
         throw new Error(
-          (errBody as Record<string, string>).error || "Failed to generate report"
+          (errBody as Record<string, string>).error ||
+            "Failed to generate report"
         );
       }
       const data = (await res.json()) as ReportData;
@@ -275,11 +269,7 @@ export function FinancialReportingClient({
             {isLoading ? "Generating..." : "Generate Report"}
           </Button>
           {reportData && (
-            <Button
-              onClick={handleExport}
-              size="sm"
-              variant="outline"
-            >
+            <Button onClick={handleExport} size="sm" variant="outline">
               <Download className="mr-2 h-4 w-4" />
               Export CSV
             </Button>
@@ -325,7 +315,7 @@ export function FinancialReportingClient({
       </div>
 
       {/* Report Table */}
-      {!reportData && !isLoading && (
+      {!(reportData || isLoading) && (
         <div className="rounded-[22px] border border-dashed border-hairline bg-canvas p-8 text-sm text-muted-foreground">
           Select a report type and date range, then click &quot;Generate
           Report&quot; to view your financial data.

@@ -8,6 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
+import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import {
   Dialog,
   DialogContent,
@@ -31,7 +32,6 @@ import {
   TabsTrigger,
 } from "@repo/design-system/components/ui/tabs";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
-import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import { Eye, FileText, Loader2, Plus, Search } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
@@ -385,7 +385,6 @@ export default function VendorContractsPage() {
                 <DatePicker
                   id="startDate"
                   onChange={(e) => setStartDate(e.target.value)}
- 
                   value={startDate}
                 />
               </div>
@@ -394,7 +393,6 @@ export default function VendorContractsPage() {
                 <DatePicker
                   id="endDate"
                   onChange={(e) => setEndDate(e.target.value)}
- 
                   value={endDate}
                 />
               </div>

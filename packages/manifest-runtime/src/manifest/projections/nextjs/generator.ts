@@ -647,7 +647,9 @@ export class NextJsProjection implements ProjectionTarget {
       lines.push("");
       lines.push("    // Resolve internal user for RBAC policy evaluation");
       lines.push("    const _resolvedUser = await database.user.findFirst({");
-      lines.push("      where: { AND: [{ tenantId }, { authUserId: userId }] },");
+      lines.push(
+        "      where: { AND: [{ tenantId }, { authUserId: userId }] },"
+      );
       lines.push("      select: { id: true, role: true },");
       lines.push("    });");
     }

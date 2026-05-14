@@ -8,6 +8,7 @@ import {
 } from "@repo/design-system/components/ui/alert";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Checkbox } from "@repo/design-system/components/ui/checkbox";
+import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import {
   Drawer,
   DrawerClose,
@@ -17,9 +18,7 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@repo/design-system/components/ui/drawer";
-import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
-import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import {
   Popover,
   PopoverContent,
@@ -226,7 +225,6 @@ function FiltersPanel({
         <DatePicker
           id="filter-start-date"
           onChange={(event) => setStartDate(event.target.value)}
- 
           value={startDate}
         />
       </div>
@@ -235,7 +233,6 @@ function FiltersPanel({
         <DatePicker
           id="filter-end-date"
           onChange={(event) => setEndDate(event.target.value)}
- 
           value={endDate}
         />
       </div>

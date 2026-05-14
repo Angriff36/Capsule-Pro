@@ -1,20 +1,26 @@
-import { formatCurrency } from '../../utils/webhookPayload';
-import type { PriceEstimate } from '../../types/wizard';
-import { TrendingUp } from 'lucide-react';
+import { TrendingUp } from "lucide-react";
+import type { PriceEstimate } from "../../types/wizard";
+import { formatCurrency } from "../../utils/webhookPayload";
 
 interface PriceEstimateBadgeProps {
   estimate: PriceEstimate;
   compact?: boolean;
 }
 
-export default function PriceEstimateBadge({ estimate, compact }: PriceEstimateBadgeProps) {
+export default function PriceEstimateBadge({
+  estimate,
+  compact,
+}: PriceEstimateBadgeProps) {
   if (estimate.low === 0 && estimate.high === 0) return null;
 
   if (compact) {
     return (
       <div className="flex items-center gap-2 text-xs text-stone-500 bg-stone-50 rounded-full px-3 py-1.5">
         <TrendingUp className="w-3 h-3" />
-        <span>Est. {formatCurrency(estimate.low)} &ndash; {formatCurrency(estimate.high)}</span>
+        <span>
+          Est. {formatCurrency(estimate.low)} &ndash;{" "}
+          {formatCurrency(estimate.high)}
+        </span>
       </div>
     );
   }

@@ -4,17 +4,15 @@
  */
 
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
+import { database, Prisma } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
-import { Prisma } from "@repo/database";
 
 interface RecalculateRequestBody {
   instanceId: string;
@@ -60,11 +58,9 @@ async function calculateBudgetTotals(
     },
   });
 
-  const budgetedRevenue = event?.budget
-    ? Number(event.budget)
-    : 0;
+  const budgetedRevenue = event?.budget ? Number(event.budget) : 0;
 
-  if (!eventBudget || !eventBudget.lineItems.length) {
+  if (!(eventBudget && eventBudget.lineItems.length)) {
     return {
       budgetedRevenue,
       budgetedFoodCost: 0,
@@ -82,11 +78,23 @@ async function calculateBudgetTotals(
     const amount = Number(item.budgetedAmount);
     const category = item.category.toLowerCase();
 
-    if (category.includes("food") || category.includes("catering") || category.includes("menu")) {
+    if (
+      category.includes("food") ||
+      category.includes("catering") ||
+      category.includes("menu")
+    ) {
       budgetedFoodCost += amount;
-    } else if (category.includes("labor") || category.includes("staff") || category.includes("service")) {
+    } else if (
+      category.includes("labor") ||
+      category.includes("staff") ||
+      category.includes("service")
+    ) {
       budgetedLaborCost += amount;
-    } else if (category.includes("overhead") || category.includes("facility") || category.includes("equipment")) {
+    } else if (
+      category.includes("overhead") ||
+      category.includes("facility") ||
+      category.includes("equipment")
+    ) {
       budgetedOverhead += amount;
     } else {
       // Default: food costs
@@ -94,7 +102,8 @@ async function calculateBudgetTotals(
     }
   }
 
-  const budgetedTotalCost = budgetedFoodCost + budgetedLaborCost + budgetedOverhead;
+  const budgetedTotalCost =
+    budgetedFoodCost + budgetedLaborCost + budgetedOverhead;
 
   return {
     budgetedRevenue,
@@ -137,7 +146,10 @@ async function calculateActualTotals(
     actualRevenue += Number(order.subtotal_amount);
 
     // Estimated costs from order items
-    if (order.order_status === "confirmed" || order.order_status === "completed") {
+    if (
+      order.order_status === "confirmed" ||
+      order.order_status === "completed"
+    ) {
       actualFoodCost += Number(order.subtotal_amount) * 0.35; // Estimate food cost at 35% of revenue
       actualLaborCost += Number(order.subtotal_amount) * 0.15; // Estimate labor cost at 15% of revenue
       actualOverhead += Number(order.subtotal_amount) * 0.05; // Estimate overhead at 5% of revenue
@@ -198,9 +210,10 @@ function calculateVariances(
   // Calculate margin variance percentage
   const budgetedMargin = budgeted.revenue - budgeted.totalCost;
   const actualMargin = actual.revenue - actual.totalCost;
-  const marginVariancePct = budgeted.revenue > 0
-    ? ((budgetedMargin - actualMargin) / budgeted.revenue) * 100
-    : 0;
+  const marginVariancePct =
+    budgeted.revenue > 0
+      ? ((budgetedMargin - actualMargin) / budgeted.revenue) * 100
+      : 0;
 
   return {
     revenueVariance,
@@ -227,7 +240,10 @@ export async function POST(request: NextRequest) {
     const { instanceId: profitabilityId } = body;
 
     if (!profitabilityId) {
-      return manifestErrorResponse("Profitability ID (instanceId) is required", 400);
+      return manifestErrorResponse(
+        "Profitability ID (instanceId) is required",
+        400
+      );
     }
 
     // Get the existing profitability record
@@ -298,7 +314,9 @@ export async function POST(request: NextRequest) {
         budgetedOverhead: new Prisma.Decimal(budgetTotals.budgetedOverhead),
         budgetedTotalCost: new Prisma.Decimal(budgetTotals.budgetedTotalCost),
         budgetedGrossMargin: new Prisma.Decimal(budgetedMargins.grossMargin),
-        budgetedGrossMarginPct: new Prisma.Decimal(budgetedMargins.grossMarginPct),
+        budgetedGrossMarginPct: new Prisma.Decimal(
+          budgetedMargins.grossMarginPct
+        ),
         actualRevenue: new Prisma.Decimal(actualTotals.actualRevenue),
         actualFoodCost: new Prisma.Decimal(actualTotals.actualFoodCost),
         actualLaborCost: new Prisma.Decimal(actualTotals.actualLaborCost),

@@ -1,6 +1,6 @@
 "use client";
 
-import { apiFetch } from "@/app/lib/api";
+import { StatusPill } from "@repo/design-system/components/blocks/page-shell";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
   Dialog,
@@ -10,30 +10,30 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@repo/design-system/components/ui/dialog";
-import { StatusPill } from "@repo/design-system/components/blocks/page-shell";
 import {
   AlertCircle,
   ArrowLeft,
+  CalendarCheck,
   CheckCircle2,
   Clock,
+  FileText,
+  ListChecks,
   Loader2,
+  PartyPopper,
   PauseCircle,
   PlayCircle,
   RefreshCw,
+  Rocket,
   RotateCcw,
-  XCircle,
-  FileText,
-  Zap,
   Search,
   ShieldCheck,
-  CalendarCheck,
-  ListChecks,
-  Rocket,
-  PartyPopper,
+  XCircle,
+  Zap,
 } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { apiFetch } from "@/app/lib/api";
 
 interface EventImport {
   id: string;
@@ -67,10 +67,12 @@ const WORKFLOW_PHASES = [
   { key: "completed", label: "Completed", icon: PartyPopper },
 ] as const;
 
-
 const STATUS_CONFIG: Record<
   string,
-  { label: string; variant: "success" | "info" | "warning" | "error" | "neutral" }
+  {
+    label: string;
+    variant: "success" | "info" | "warning" | "error" | "neutral";
+  }
 > = {
   pending: { label: "Pending", variant: "neutral" },
   extracting: { label: "Extracting", variant: "info" },
@@ -121,9 +123,7 @@ function formatDate(iso: string): string {
 }
 
 function formatTimeAgo(iso: string): string {
-  const seconds = Math.floor(
-    (Date.now() - new Date(iso).getTime()) / 1000,
-  );
+  const seconds = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
   if (seconds < 60) return `${seconds}s ago`;
   const minutes = Math.floor(seconds / 60);
   if (minutes < 60) return `${minutes}m ago`;
@@ -137,7 +137,9 @@ interface WorkflowDetailClientProps {
   workflowId: string;
 }
 
-export function WorkflowDetailClient({ workflowId }: WorkflowDetailClientProps) {
+export function WorkflowDetailClient({
+  workflowId,
+}: WorkflowDetailClientProps) {
   const [workflow, setWorkflow] = useState<EventImport | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -150,9 +152,7 @@ export function WorkflowDetailClient({ workflowId }: WorkflowDetailClientProps) 
 
   const loadWorkflow = useCallback(async () => {
     try {
-      const res = await apiFetch(
-        `/api/events/import-workflows/${workflowId}`,
-      );
+      const res = await apiFetch(`/api/events/import-workflows/${workflowId}`);
       if (!res.ok) {
         if (res.status === 404) {
           setError("Workflow not found");
@@ -161,7 +161,9 @@ export function WorkflowDetailClient({ workflowId }: WorkflowDetailClientProps) 
         throw new Error("Failed to load workflow");
       }
       const data = await res.json();
-      setWorkflow(data.data?.eventImportWorkflow ?? data.eventImportWorkflow ?? null);
+      setWorkflow(
+        data.data?.eventImportWorkflow ?? data.eventImportWorkflow ?? null
+      );
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load workflow");
@@ -196,12 +198,12 @@ export function WorkflowDetailClient({ workflowId }: WorkflowDetailClientProps) 
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ id: workflowId }),
-        },
+        }
       );
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
         throw new Error(
-          err.error ?? err.message ?? `Failed to ${command} workflow`,
+          err.error ?? err.message ?? `Failed to ${command} workflow`
         );
       }
       toast.success(`Workflow ${command}ed successfully`);
@@ -246,8 +248,7 @@ export function WorkflowDetailClient({ workflowId }: WorkflowDetailClientProps) 
   const isCompleted = workflow.parseStatus.toLowerCase() === "completed";
   const isTerminal = isTerminalStatus(workflow.parseStatus);
   const statusCfg =
-    STATUS_CONFIG[workflow.parseStatus.toLowerCase()] ??
-    STATUS_CONFIG.pending!;
+    STATUS_CONFIG[workflow.parseStatus.toLowerCase()] ?? STATUS_CONFIG.pending!;
 
   return (
     <>
@@ -282,8 +283,7 @@ export function WorkflowDetailClient({ workflowId }: WorkflowDetailClientProps) 
             <p className="text-sm text-muted-foreground">
               {workflow.fileType.toUpperCase()} &middot;{" "}
               {formatBytes(workflow.fileSize)}
-              {workflow.detectedFormat &&
-                ` \u00B7 ${workflow.detectedFormat}`}
+              {workflow.detectedFormat && ` \u00B7 ${workflow.detectedFormat}`}
               {workflow.confidence !== null &&
                 ` \u00B7 ${workflow.confidence}% confidence`}
             </p>
@@ -318,7 +318,7 @@ export function WorkflowDetailClient({ workflowId }: WorkflowDetailClientProps) 
                 Retry
               </Button>
             )}
-            {!isTerminal && !isPaused && (
+            {!(isTerminal || isPaused) && (
               <Button
                 disabled={actioning}
                 onClick={() =>
@@ -340,7 +340,9 @@ export function WorkflowDetailClient({ workflowId }: WorkflowDetailClientProps) 
             <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
               Created
             </p>
-            <p className="mt-1 text-sm font-medium">{formatDate(workflow.createdAt)}</p>
+            <p className="mt-1 text-sm font-medium">
+              {formatDate(workflow.createdAt)}
+            </p>
             <p className="text-xs text-muted-foreground">
               {formatTimeAgo(workflow.createdAt)}
             </p>
@@ -349,7 +351,9 @@ export function WorkflowDetailClient({ workflowId }: WorkflowDetailClientProps) 
             <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
               Last Updated
             </p>
-            <p className="mt-1 text-sm font-medium">{formatDate(workflow.updatedAt)}</p>
+            <p className="mt-1 text-sm font-medium">
+              {formatDate(workflow.updatedAt)}
+            </p>
             <p className="text-xs text-muted-foreground">
               {formatTimeAgo(workflow.updatedAt)}
             </p>
@@ -359,7 +363,13 @@ export function WorkflowDetailClient({ workflowId }: WorkflowDetailClientProps) 
               Current Phase
             </p>
             <p className="mt-1 text-sm font-medium capitalize">
-              {isFailed ? "Failed" : isPaused ? "Paused" : isCancelled ? "Cancelled" : workflow.parseStatus}
+              {isFailed
+                ? "Failed"
+                : isPaused
+                  ? "Paused"
+                  : isCancelled
+                    ? "Cancelled"
+                    : workflow.parseStatus}
             </p>
             <p className="text-xs text-muted-foreground">
               {isFailed
@@ -397,7 +407,11 @@ export function WorkflowDetailClient({ workflowId }: WorkflowDetailClientProps) 
           {/* Horizontal stepper */}
           <div className="flex items-start justify-between">
             {WORKFLOW_PHASES.map((phase, index) => {
-              const completed = isCompletedPhase(index, currentPhaseIndex, workflow.parseStatus);
+              const completed = isCompletedPhase(
+                index,
+                currentPhaseIndex,
+                workflow.parseStatus
+              );
               const active = index === currentPhaseIndex;
               const Icon = phase.icon;
 
@@ -405,7 +419,10 @@ export function WorkflowDetailClient({ workflowId }: WorkflowDetailClientProps) 
                 <div
                   className="flex flex-col items-center"
                   key={phase.key}
-                  style={{ flex: 1, maxWidth: `${100 / WORKFLOW_PHASES.length}%` }}
+                  style={{
+                    flex: 1,
+                    maxWidth: `${100 / WORKFLOW_PHASES.length}%`,
+                  }}
                 >
                   {/* Circle with connector line */}
                   <div className="relative flex w-full items-center">
@@ -569,24 +586,19 @@ export function WorkflowDetailClient({ workflowId }: WorkflowDetailClientProps) 
             </DialogTitle>
             <DialogDescription>
               {confirmAction?.type === "cancel"
-                ? `Are you sure you want to cancel this import workflow? This will stop all processing and cannot be undone.`
+                ? "Are you sure you want to cancel this import workflow? This will stop all processing and cannot be undone."
                 : confirmAction?.type === "resume"
                   ? "Resume this paused workflow? Processing will continue from where it left off."
                   : "Retry this failed workflow? Processing will restart from the failed phase."}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button
-              onClick={() => setConfirmAction(null)}
-              variant="outline"
-            >
+            <Button onClick={() => setConfirmAction(null)} variant="outline">
               Go Back
             </Button>
             <Button
               disabled={actioning}
-              onClick={() =>
-                confirmAction && handleCommand(confirmAction.type)
-              }
+              onClick={() => confirmAction && handleCommand(confirmAction.type)}
               variant={
                 confirmAction?.type === "cancel" ? "destructive" : "default"
               }
@@ -604,7 +616,7 @@ export function WorkflowDetailClient({ workflowId }: WorkflowDetailClientProps) 
 function isCompletedPhase(
   phaseIndex: number,
   currentPhaseIndex: number,
-  status: string,
+  status: string
 ): boolean {
   if (status.toLowerCase() === "completed") return true;
   if (phaseIndex < currentPhaseIndex) return true;

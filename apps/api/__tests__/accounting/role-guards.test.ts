@@ -144,10 +144,7 @@ describe("invoices/[id] role guard", () => {
       response: UNAUTHORIZED_RESPONSE(),
     });
 
-    const res = await PATCH_INVOICE(
-      reqJSON({ action: "mark-as-paid" }),
-      ctx
-    );
+    const res = await PATCH_INVOICE(reqJSON({ action: "mark-as-paid" }), ctx);
 
     expect(res.status).toBe(401);
     expect(mocks.invoiceFindFirstMock).not.toHaveBeenCalled();

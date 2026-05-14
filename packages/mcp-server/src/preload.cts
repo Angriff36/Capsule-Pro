@@ -16,7 +16,10 @@ const nodePath = require("node:path");
 
 // In CJS context, __dirname is always available; only fall back to cwd
 // eslint-disable-next-line no-undef
-const preloadDir = typeof __dirname !== "undefined" ? __dirname : process.cwd();
+const preloadDir =
+  typeof import.meta.dirname !== "undefined"
+    ? import.meta.dirname
+    : process.cwd();
 const repoRoot = nodePath.resolve(preloadDir, "../../..");
 
 // MCP/Cursor may spawn with cwd = home; set project root so loadPrecompiledIR finds IR

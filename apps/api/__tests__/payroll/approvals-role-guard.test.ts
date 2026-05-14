@@ -49,14 +49,11 @@ const baseUser = {
 };
 
 function makeRequest(body: unknown): Request {
-  return new Request(
-    `http://localhost/api/payroll/approvals/${APPROVAL_ID}`,
-    {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    }
-  );
+  return new Request(`http://localhost/api/payroll/approvals/${APPROVAL_ID}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
 }
 
 const routeContext = {

@@ -19,22 +19,30 @@ const scheduleParams = (command: string) => ({
 
 // Helper functions to get POST handlers with params bound
 async function getCreateSchedule() {
-  const mod = await import("@/app/api/manifest/[entity]/commands/[command]/route");
+  const mod = await import(
+    "@/app/api/manifest/[entity]/commands/[command]/route"
+  );
   return (req: NextRequest) => mod.POST(req, scheduleParams("create"));
 }
 
 async function getUpdateSchedule() {
-  const mod = await import("@/app/api/manifest/[entity]/commands/[command]/route");
+  const mod = await import(
+    "@/app/api/manifest/[entity]/commands/[command]/route"
+  );
   return (req: NextRequest) => mod.POST(req, scheduleParams("update"));
 }
 
 async function getCloseSchedule() {
-  const mod = await import("@/app/api/manifest/[entity]/commands/[command]/route");
+  const mod = await import(
+    "@/app/api/manifest/[entity]/commands/[command]/route"
+  );
   return (req: NextRequest) => mod.POST(req, scheduleParams("close"));
 }
 
 async function getReleaseSchedule() {
-  const mod = await import("@/app/api/manifest/[entity]/commands/[command]/route");
+  const mod = await import(
+    "@/app/api/manifest/[entity]/commands/[command]/route"
+  );
   return (req: NextRequest) => mod.POST(req, scheduleParams("release"));
 }
 

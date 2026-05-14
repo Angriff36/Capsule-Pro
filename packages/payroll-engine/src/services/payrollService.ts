@@ -87,9 +87,7 @@ export class PayrollService {
     const periodStart = request.periodStart
       ? new Date(request.periodStart)
       : new Date(now.getFullYear(), now.getMonth(), 1);
-    const periodEnd = request.periodEnd
-      ? new Date(request.periodEnd)
-      : now;
+    const periodEnd = request.periodEnd ? new Date(request.periodEnd) : now;
     const periodId = this.generatePeriodId(tenantId, periodStart, periodEnd);
     const batchId = randomUUID();
 

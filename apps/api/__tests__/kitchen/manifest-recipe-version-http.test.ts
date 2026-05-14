@@ -151,7 +151,9 @@ describe("Manifest HTTP - RecipeVersion Commands", () => {
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "RecipeVersion", command: "create" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({ entity: "RecipeVersion", command: "create" }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(401);
@@ -185,7 +187,9 @@ describe("Manifest HTTP - RecipeVersion Commands", () => {
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "RecipeVersion", command: "create" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({ entity: "RecipeVersion", command: "create" }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(400);
@@ -253,7 +257,9 @@ describe("Manifest HTTP - RecipeVersion Commands", () => {
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "RecipeVersion", command: "create" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({ entity: "RecipeVersion", command: "create" }),
+      });
       const data = await response.json();
 
       expect(response.status).toBeGreaterThanOrEqual(200);
@@ -327,7 +333,9 @@ describe("Manifest HTTP - RecipeVersion Commands", () => {
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "RecipeVersion", command: "create" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({ entity: "RecipeVersion", command: "create" }),
+      });
       const data = await response.json();
 
       // Should succeed even with warn constraint
@@ -403,7 +411,9 @@ describe("Manifest HTTP - RecipeVersion Commands", () => {
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "RecipeVersion", command: "create" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({ entity: "RecipeVersion", command: "create" }),
+      });
       const data = await response.json();
 
       // Should succeed even with long recipe warning
@@ -457,7 +467,9 @@ describe("Manifest HTTP - RecipeVersion Commands", () => {
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "RecipeVersion", command: "create" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({ entity: "RecipeVersion", command: "create" }),
+      });
       const data = await response.json();
 
       // Should fail with 422 for invalid difficulty
@@ -506,7 +518,9 @@ describe("Manifest HTTP - RecipeVersion Commands", () => {
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "RecipeVersion", command: "create" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({ entity: "RecipeVersion", command: "create" }),
+      });
       const data = await response.json();
 
       // Should fail with 422 for negative time

@@ -124,7 +124,7 @@ export default function RequisitionDetailPage() {
   };
 
   const confirmReject = async () => {
-    if (!requisition || !reasonText.trim()) return;
+    if (!(requisition && reasonText.trim())) return;
     setUpdating("reject");
     setReasonDialogOpen(false);
     try {

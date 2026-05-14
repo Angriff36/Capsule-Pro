@@ -39,12 +39,14 @@ const { getTenantIdForOrg, requireCurrentUser } = await import(
 
 // --- Route imports ---
 
-import { POST as approveTransfer } from "@/app/api/manifest/[entity]/commands/[command]/route";
-import { POST as cancelTransfer } from "@/app/api/manifest/[entity]/commands/[command]/route";
-import { POST as createTransfer } from "@/app/api/manifest/[entity]/commands/[command]/route";
-import { POST as receiveTransfer } from "@/app/api/manifest/[entity]/commands/[command]/route";
-import { POST as shipTransfer } from "@/app/api/manifest/[entity]/commands/[command]/route";
 import { GET as listTransfers } from "@/app/api/inventory/transfers/list/route";
+import {
+  POST as approveTransfer,
+  POST as cancelTransfer,
+  POST as createTransfer,
+  POST as receiveTransfer,
+  POST as shipTransfer,
+} from "@/app/api/manifest/[entity]/commands/[command]/route";
 
 // --- Constants ---
 
@@ -140,7 +142,10 @@ describe("Inventory Transfers API", () => {
           items: [{ itemId: "i1", quantity: 1 }],
         }
       );
-      const response = await createTransfer(request, makeManifestParams("InventoryTransfer", "create"));
+      const response = await createTransfer(
+        request,
+        makeManifestParams("InventoryTransfer", "create")
+      );
 
       expect(response.status).toBe(401);
       const body = await response.json();
@@ -154,7 +159,10 @@ describe("Inventory Transfers API", () => {
         "http://localhost/api/manifest/[entity]/commands/[command]",
         { toLocationId: "b", items: [{ itemId: "i1", quantity: 1 }] }
       );
-      const response = await createTransfer(request, makeManifestParams("InventoryTransfer", "create"));
+      const response = await createTransfer(
+        request,
+        makeManifestParams("InventoryTransfer", "create")
+      );
 
       expect(response.status).toBe(400);
       const body = await response.json();
@@ -168,7 +176,10 @@ describe("Inventory Transfers API", () => {
         "http://localhost/api/manifest/[entity]/commands/[command]",
         { fromLocationId: "a", items: [{ itemId: "i1", quantity: 1 }] }
       );
-      const response = await createTransfer(request, makeManifestParams("InventoryTransfer", "create"));
+      const response = await createTransfer(
+        request,
+        makeManifestParams("InventoryTransfer", "create")
+      );
 
       expect(response.status).toBe(400);
       const body = await response.json();
@@ -186,7 +197,10 @@ describe("Inventory Transfers API", () => {
           items: [],
         }
       );
-      const response = await createTransfer(request, makeManifestParams("InventoryTransfer", "create"));
+      const response = await createTransfer(
+        request,
+        makeManifestParams("InventoryTransfer", "create")
+      );
 
       expect(response.status).toBe(400);
       const body = await response.json();
@@ -204,7 +218,10 @@ describe("Inventory Transfers API", () => {
           items: "not-array",
         }
       );
-      const response = await createTransfer(request, makeManifestParams("InventoryTransfer", "create"));
+      const response = await createTransfer(
+        request,
+        makeManifestParams("InventoryTransfer", "create")
+      );
 
       expect(response.status).toBe(400);
       const body = await response.json();
@@ -243,7 +260,10 @@ describe("Inventory Transfers API", () => {
           ],
         }
       );
-      const response = await createTransfer(request, makeManifestParams("InventoryTransfer", "create"));
+      const response = await createTransfer(
+        request,
+        makeManifestParams("InventoryTransfer", "create")
+      );
 
       expect(response.status).toBe(200);
       const body = await response.json();
@@ -286,7 +306,10 @@ describe("Inventory Transfers API", () => {
           items: [{ itemId: VALID_ITEM_UUID_1, quantity: 1 }],
         }
       );
-      const response = await createTransfer(request, makeManifestParams("InventoryTransfer", "create"));
+      const response = await createTransfer(
+        request,
+        makeManifestParams("InventoryTransfer", "create")
+      );
 
       expect(response.status).toBe(500);
       const body = await response.json();
@@ -306,7 +329,10 @@ describe("Inventory Transfers API", () => {
         "http://localhost/api/manifest/[entity]/commands/[command]",
         { transferId: "t1" }
       );
-      const response = await approveTransfer(request, makeManifestParams("InventoryTransfer", "approve"));
+      const response = await approveTransfer(
+        request,
+        makeManifestParams("InventoryTransfer", "approve")
+      );
 
       expect(response.status).toBe(401);
       const body = await response.json();
@@ -324,7 +350,10 @@ describe("Inventory Transfers API", () => {
         "http://localhost/api/manifest/[entity]/commands/[command]",
         { transferId: "t1" }
       );
-      const response = await approveTransfer(request, makeManifestParams("InventoryTransfer", "approve"));
+      const response = await approveTransfer(
+        request,
+        makeManifestParams("InventoryTransfer", "approve")
+      );
 
       expect(response.status).toBe(400);
       const body = await response.json();
@@ -338,7 +367,10 @@ describe("Inventory Transfers API", () => {
         "http://localhost/api/manifest/[entity]/commands/[command]",
         {}
       );
-      const response = await approveTransfer(request, makeManifestParams("InventoryTransfer", "approve"));
+      const response = await approveTransfer(
+        request,
+        makeManifestParams("InventoryTransfer", "approve")
+      );
 
       expect(response.status).toBe(400);
       const body = await response.json();
@@ -355,7 +387,10 @@ describe("Inventory Transfers API", () => {
         "http://localhost/api/manifest/[entity]/commands/[command]",
         { transferId: "missing" }
       );
-      const response = await approveTransfer(request, makeManifestParams("InventoryTransfer", "approve"));
+      const response = await approveTransfer(
+        request,
+        makeManifestParams("InventoryTransfer", "approve")
+      );
 
       expect(response.status).toBe(404);
       const body = await response.json();
@@ -372,7 +407,10 @@ describe("Inventory Transfers API", () => {
         "http://localhost/api/manifest/[entity]/commands/[command]",
         { transferId: "t1" }
       );
-      const response = await approveTransfer(request, makeManifestParams("InventoryTransfer", "approve"));
+      const response = await approveTransfer(
+        request,
+        makeManifestParams("InventoryTransfer", "approve")
+      );
 
       expect(response.status).toBe(400);
       const body = await response.json();
@@ -396,7 +434,10 @@ describe("Inventory Transfers API", () => {
         "http://localhost/api/manifest/[entity]/commands/[command]",
         { transferId: "transfer-001" }
       );
-      const response = await approveTransfer(request, makeManifestParams("InventoryTransfer", "approve"));
+      const response = await approveTransfer(
+        request,
+        makeManifestParams("InventoryTransfer", "approve")
+      );
 
       expect(response.status).toBe(200);
       const body = await response.json();
@@ -426,7 +467,10 @@ describe("Inventory Transfers API", () => {
         "http://localhost/api/manifest/[entity]/commands/[command]",
         { transferId: "t1" }
       );
-      const response = await approveTransfer(request, makeManifestParams("InventoryTransfer", "approve"));
+      const response = await approveTransfer(
+        request,
+        makeManifestParams("InventoryTransfer", "approve")
+      );
 
       expect(response.status).toBe(500);
     });
@@ -444,7 +488,10 @@ describe("Inventory Transfers API", () => {
         "http://localhost/api/manifest/[entity]/commands/[command]",
         { transferId: "t1" }
       );
-      const response = await shipTransfer(request, makeManifestParams("InventoryTransfer", "ship"));
+      const response = await shipTransfer(
+        request,
+        makeManifestParams("InventoryTransfer", "ship")
+      );
 
       expect(response.status).toBe(401);
     });
@@ -460,7 +507,10 @@ describe("Inventory Transfers API", () => {
         "http://localhost/api/manifest/[entity]/commands/[command]",
         { transferId: "t1" }
       );
-      const response = await shipTransfer(request, makeManifestParams("InventoryTransfer", "ship"));
+      const response = await shipTransfer(
+        request,
+        makeManifestParams("InventoryTransfer", "ship")
+      );
 
       expect(response.status).toBe(400);
     });
@@ -472,7 +522,10 @@ describe("Inventory Transfers API", () => {
         "http://localhost/api/manifest/[entity]/commands/[command]",
         {}
       );
-      const response = await shipTransfer(request, makeManifestParams("InventoryTransfer", "ship"));
+      const response = await shipTransfer(
+        request,
+        makeManifestParams("InventoryTransfer", "ship")
+      );
 
       expect(response.status).toBe(400);
     });
@@ -487,7 +540,10 @@ describe("Inventory Transfers API", () => {
         "http://localhost/api/manifest/[entity]/commands/[command]",
         { transferId: "missing" }
       );
-      const response = await shipTransfer(request, makeManifestParams("InventoryTransfer", "ship"));
+      const response = await shipTransfer(
+        request,
+        makeManifestParams("InventoryTransfer", "ship")
+      );
 
       expect(response.status).toBe(404);
     });
@@ -502,7 +558,10 @@ describe("Inventory Transfers API", () => {
         "http://localhost/api/manifest/[entity]/commands/[command]",
         { transferId: "t1" }
       );
-      const response = await shipTransfer(request, makeManifestParams("InventoryTransfer", "ship"));
+      const response = await shipTransfer(
+        request,
+        makeManifestParams("InventoryTransfer", "ship")
+      );
 
       expect(response.status).toBe(400);
     });
@@ -523,7 +582,10 @@ describe("Inventory Transfers API", () => {
         "http://localhost/api/manifest/[entity]/commands/[command]",
         { transferId: "transfer-001" }
       );
-      const response = await shipTransfer(request, makeManifestParams("InventoryTransfer", "ship"));
+      const response = await shipTransfer(
+        request,
+        makeManifestParams("InventoryTransfer", "ship")
+      );
 
       expect(response.status).toBe(200);
       expect(database.inventoryTransfer.update).toHaveBeenCalledWith(
@@ -552,7 +614,10 @@ describe("Inventory Transfers API", () => {
         "http://localhost/api/manifest/[entity]/commands/[command]",
         { transferId: "t1" }
       );
-      const response = await receiveTransfer(request, makeManifestParams("InventoryTransfer", "receive"));
+      const response = await receiveTransfer(
+        request,
+        makeManifestParams("InventoryTransfer", "receive")
+      );
 
       expect(response.status).toBe(401);
     });
@@ -568,7 +633,10 @@ describe("Inventory Transfers API", () => {
         "http://localhost/api/manifest/[entity]/commands/[command]",
         { transferId: "t1" }
       );
-      const response = await receiveTransfer(request, makeManifestParams("InventoryTransfer", "receive"));
+      const response = await receiveTransfer(
+        request,
+        makeManifestParams("InventoryTransfer", "receive")
+      );
 
       expect(response.status).toBe(400);
     });
@@ -580,7 +648,10 @@ describe("Inventory Transfers API", () => {
         "http://localhost/api/manifest/[entity]/commands/[command]",
         {}
       );
-      const response = await receiveTransfer(request, makeManifestParams("InventoryTransfer", "receive"));
+      const response = await receiveTransfer(
+        request,
+        makeManifestParams("InventoryTransfer", "receive")
+      );
 
       expect(response.status).toBe(400);
     });
@@ -595,7 +666,10 @@ describe("Inventory Transfers API", () => {
         "http://localhost/api/manifest/[entity]/commands/[command]",
         { transferId: "missing" }
       );
-      const response = await receiveTransfer(request, makeManifestParams("InventoryTransfer", "receive"));
+      const response = await receiveTransfer(
+        request,
+        makeManifestParams("InventoryTransfer", "receive")
+      );
 
       expect(response.status).toBe(404);
     });
@@ -610,7 +684,10 @@ describe("Inventory Transfers API", () => {
         "http://localhost/api/manifest/[entity]/commands/[command]",
         { transferId: "t1" }
       );
-      const response = await receiveTransfer(request, makeManifestParams("InventoryTransfer", "receive"));
+      const response = await receiveTransfer(
+        request,
+        makeManifestParams("InventoryTransfer", "receive")
+      );
 
       expect(response.status).toBe(400);
     });
@@ -653,7 +730,10 @@ describe("Inventory Transfers API", () => {
           ],
         }
       );
-      const response = await receiveTransfer(request, makeManifestParams("InventoryTransfer", "receive"));
+      const response = await receiveTransfer(
+        request,
+        makeManifestParams("InventoryTransfer", "receive")
+      );
 
       expect(response.status).toBe(200);
 
@@ -724,7 +804,10 @@ describe("Inventory Transfers API", () => {
         "http://localhost/api/manifest/[entity]/commands/[command]",
         { transferId: "transfer-001", receivedItems: [] }
       );
-      const response = await receiveTransfer(request, makeManifestParams("InventoryTransfer", "receive"));
+      const response = await receiveTransfer(
+        request,
+        makeManifestParams("InventoryTransfer", "receive")
+      );
 
       expect(response.status).toBe(200);
       // No item or transaction work when nothing is received
@@ -745,7 +828,10 @@ describe("Inventory Transfers API", () => {
         "http://localhost/api/manifest/[entity]/commands/[command]",
         { transferId: "t1" }
       );
-      const response = await cancelTransfer(request, makeManifestParams("InventoryTransfer", "cancel"));
+      const response = await cancelTransfer(
+        request,
+        makeManifestParams("InventoryTransfer", "cancel")
+      );
 
       expect(response.status).toBe(401);
     });
@@ -761,7 +847,10 @@ describe("Inventory Transfers API", () => {
         "http://localhost/api/manifest/[entity]/commands/[command]",
         { transferId: "t1" }
       );
-      const response = await cancelTransfer(request, makeManifestParams("InventoryTransfer", "cancel"));
+      const response = await cancelTransfer(
+        request,
+        makeManifestParams("InventoryTransfer", "cancel")
+      );
 
       expect(response.status).toBe(400);
     });
@@ -773,7 +862,10 @@ describe("Inventory Transfers API", () => {
         "http://localhost/api/manifest/[entity]/commands/[command]",
         {}
       );
-      const response = await cancelTransfer(request, makeManifestParams("InventoryTransfer", "cancel"));
+      const response = await cancelTransfer(
+        request,
+        makeManifestParams("InventoryTransfer", "cancel")
+      );
 
       expect(response.status).toBe(400);
     });
@@ -788,7 +880,10 @@ describe("Inventory Transfers API", () => {
         "http://localhost/api/manifest/[entity]/commands/[command]",
         { transferId: "missing" }
       );
-      const response = await cancelTransfer(request, makeManifestParams("InventoryTransfer", "cancel"));
+      const response = await cancelTransfer(
+        request,
+        makeManifestParams("InventoryTransfer", "cancel")
+      );
 
       expect(response.status).toBe(404);
     });
@@ -803,7 +898,10 @@ describe("Inventory Transfers API", () => {
         "http://localhost/api/manifest/[entity]/commands/[command]",
         { transferId: "t1" }
       );
-      const response = await cancelTransfer(request, makeManifestParams("InventoryTransfer", "cancel"));
+      const response = await cancelTransfer(
+        request,
+        makeManifestParams("InventoryTransfer", "cancel")
+      );
 
       expect(response.status).toBe(400);
     });
@@ -818,7 +916,10 @@ describe("Inventory Transfers API", () => {
         "http://localhost/api/manifest/[entity]/commands/[command]",
         { transferId: "t1" }
       );
-      const response = await cancelTransfer(request, makeManifestParams("InventoryTransfer", "cancel"));
+      const response = await cancelTransfer(
+        request,
+        makeManifestParams("InventoryTransfer", "cancel")
+      );
 
       expect(response.status).toBe(400);
     });
@@ -836,7 +937,10 @@ describe("Inventory Transfers API", () => {
         "http://localhost/api/manifest/[entity]/commands/[command]",
         { transferId: "transfer-001", reason: "wrong location" }
       );
-      const response = await cancelTransfer(request, makeManifestParams("InventoryTransfer", "cancel"));
+      const response = await cancelTransfer(
+        request,
+        makeManifestParams("InventoryTransfer", "cancel")
+      );
 
       expect(response.status).toBe(200);
       const updateCall = vi.mocked(database.inventoryTransfer.update).mock
@@ -862,7 +966,10 @@ describe("Inventory Transfers API", () => {
         "http://localhost/api/manifest/[entity]/commands/[command]",
         { transferId: "transfer-001" }
       );
-      const response = await cancelTransfer(request, makeManifestParams("InventoryTransfer", "cancel"));
+      const response = await cancelTransfer(
+        request,
+        makeManifestParams("InventoryTransfer", "cancel")
+      );
 
       expect(response.status).toBe(200);
     });

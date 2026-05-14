@@ -15,10 +15,8 @@ import {
   OperationalColumn,
   PageCanvas,
   SectionHeader,
-  StatusPill,
 } from "@repo/design-system/components/blocks/page-shell";
 import { Button } from "@repo/design-system/components/ui/button";
-import { Plus } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -38,7 +36,7 @@ function getClientLabel(
     company_name: string | null;
     first_name: string | null;
     last_name: string | null;
-  } | null,
+  } | null
 ) {
   if (!client) return "No client";
 
@@ -76,48 +74,43 @@ export default async function PaymentMethodsPage() {
   const tenantId = await getTenantIdForOrg(orgId);
   if (!tenantId) redirect("/");
 
-  const [
-    totalCount,
-    activeCount,
-    verifiedCount,
-    flaggedCount,
-    paymentMethods,
-  ] = await Promise.all([
-    database.paymentMethod.count({
-      where: { tenantId, deletedAt: null },
-    }),
-    database.paymentMethod.count({
-      where: { tenantId, deletedAt: null, status: "ACTIVE" },
-    }),
-    database.paymentMethod.count({
-      where: { tenantId, deletedAt: null, status: "VERIFIED" },
-    }),
-    database.paymentMethod.count({
-      where: { tenantId, deletedAt: null, status: "FLAGGED" },
-    }),
-    database.paymentMethod.findMany({
-      where: { tenantId, deletedAt: null },
-      orderBy: { createdAt: "desc" },
-      take: 50,
-      select: {
-        id: true,
-        type: true,
-        cardLastFour: true,
-        cardNetwork: true,
-        isDefault: true,
-        status: true,
-        clientId: true,
-        createdAt: true,
-        client: {
-          select: {
-            company_name: true,
-            first_name: true,
-            last_name: true,
+  const [totalCount, activeCount, verifiedCount, flaggedCount, paymentMethods] =
+    await Promise.all([
+      database.paymentMethod.count({
+        where: { tenantId, deletedAt: null },
+      }),
+      database.paymentMethod.count({
+        where: { tenantId, deletedAt: null, status: "ACTIVE" },
+      }),
+      database.paymentMethod.count({
+        where: { tenantId, deletedAt: null, status: "VERIFIED" },
+      }),
+      database.paymentMethod.count({
+        where: { tenantId, deletedAt: null, status: "FLAGGED" },
+      }),
+      database.paymentMethod.findMany({
+        where: { tenantId, deletedAt: null },
+        orderBy: { createdAt: "desc" },
+        take: 50,
+        select: {
+          id: true,
+          type: true,
+          cardLastFour: true,
+          cardNetwork: true,
+          isDefault: true,
+          status: true,
+          clientId: true,
+          createdAt: true,
+          client: {
+            select: {
+              company_name: true,
+              first_name: true,
+              last_name: true,
+            },
           },
         },
-      },
-    }),
-  ]);
+      }),
+    ]);
 
   const serializedMethods = paymentMethods.map((pm) => ({
     id: pm.id,
@@ -170,30 +163,22 @@ export default async function PaymentMethodsPage() {
             <MetricCell>
               <MetricLabel>Total methods</MetricLabel>
               <MetricValue>{totalCount}</MetricValue>
-              <p className="text-sm text-white/70">
-                Saved across all clients
-              </p>
+              <p className="text-sm text-white/70">Saved across all clients</p>
             </MetricCell>
             <MetricCell>
               <MetricLabel>Active</MetricLabel>
               <MetricValue>{activeCount}</MetricValue>
-              <p className="text-sm text-white/70">
-                Ready for transactions
-              </p>
+              <p className="text-sm text-white/70">Ready for transactions</p>
             </MetricCell>
             <MetricCell>
               <MetricLabel>Verified</MetricLabel>
               <MetricValue>{verifiedCount}</MetricValue>
-              <p className="text-sm text-white/70">
-                Confirmed and trusted
-              </p>
+              <p className="text-sm text-white/70">Confirmed and trusted</p>
             </MetricCell>
             <MetricCell>
               <MetricLabel>Flagged</MetricLabel>
               <MetricValue>{flaggedCount}</MetricValue>
-              <p className="text-sm text-white/70">
-                Under review for fraud
-              </p>
+              <p className="text-sm text-white/70">Under review for fraud</p>
             </MetricCell>
           </MetricBand>
         </CommandBandBody>

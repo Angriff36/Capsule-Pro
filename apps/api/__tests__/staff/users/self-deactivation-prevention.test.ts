@@ -47,9 +47,13 @@ const OTHER_INTERNAL = "user-other-002";
 
 // Helper function to get manifest dispatcher POST with params
 async function getDeactivateHandler() {
-  const mod = await import("@/app/api/manifest/[entity]/commands/[command]/route");
+  const mod = await import(
+    "@/app/api/manifest/[entity]/commands/[command]/route"
+  );
   return (req: NextRequest) =>
-    mod.POST(req, { params: Promise.resolve({ entity: "User", command: "deactivate" }) });
+    mod.POST(req, {
+      params: Promise.resolve({ entity: "User", command: "deactivate" }),
+    });
 }
 
 function makeRequest(body: unknown): NextRequest {
@@ -85,7 +89,9 @@ describe("POST /api/user/deactivate — self-deactivation prevention", () => {
     mockDatabase.user.findFirst.mockResolvedValue({ id: SELF_INTERNAL });
 
     const deactivate = await getDeactivateHandler();
-    const res = await deactivate(makeRequest({ userId: SELF_INTERNAL, reason: "x" }));
+    const res = await deactivate(
+      makeRequest({ userId: SELF_INTERNAL, reason: "x" })
+    );
 
     expect(res.status).toBe(403);
     const json = await res.json();
@@ -122,7 +128,9 @@ describe("POST /api/user/deactivate — self-deactivation prevention", () => {
     mockDatabase.user.findFirst.mockResolvedValue(null);
 
     const deactivate = await getDeactivateHandler();
-    const res = await deactivate(makeRequest({ userId: SELF_INTERNAL, reason: "x" }));
+    const res = await deactivate(
+      makeRequest({ userId: SELF_INTERNAL, reason: "x" })
+    );
 
     expect(res.status).toBe(200);
     expect(runCommand).toHaveBeenCalled();

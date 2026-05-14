@@ -5,8 +5,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
-import { formatCurrency } from "@repo/design-system/lib/format-currency";
 import { Separator } from "@repo/design-system/components/ui/separator";
+import { formatCurrency } from "@repo/design-system/lib/format-currency";
 import { CalendarIcon, DollarSignIcon, UsersIcon } from "lucide-react";
 
 type PayrollRunStatus =

@@ -730,8 +730,7 @@ describe("Prep Tasks API", () => {
       name: "update-assignment",
       runtimeName: "updateAssignment",
       path: "/api/kitchen/prep-tasks/commands/update-assignment",
-      routePath:
-        "@/app/api/manifest/[entity]/commands/[command]/route",
+      routePath: "@/app/api/manifest/[entity]/commands/[command]/route",
       sampleBody: {
         id: TEST_PREP_TASK_ID,
         assigneeId: "user-2",

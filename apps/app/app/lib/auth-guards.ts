@@ -3,11 +3,7 @@ import "server-only";
 import { notFound } from "next/navigation";
 import { requireCurrentUser } from "./tenant";
 
-const ADMIN_ROLES = new Set([
-  "super_admin",
-  "tenant_admin",
-  "admin",
-]);
+const ADMIN_ROLES = new Set(["super_admin", "tenant_admin", "admin"]);
 
 const MANAGER_ROLES = new Set([
   "super_admin",

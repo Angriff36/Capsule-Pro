@@ -30,13 +30,7 @@ import {
   SelectValue,
 } from "@repo/design-system/components/ui/select";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
-import {
-  Calendar,
-  FileText,
-  Plus,
-  Search,
-  Store,
-} from "lucide-react";
+import { Calendar, FileText, Plus, Search, Store } from "lucide-react";
 import { useMemo, useState } from "react";
 
 // ---------------------------------------------------------------------------
@@ -146,13 +140,22 @@ export function TemplatesClient({ templates }: TemplatesClientProps) {
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-ink" htmlFor="template-name">
+                <label
+                  className="text-sm font-medium text-ink"
+                  htmlFor="template-name"
+                >
                   Template Name
                 </label>
-                <Input id="template-name" placeholder="e.g. Standard Event Agreement" />
+                <Input
+                  id="template-name"
+                  placeholder="e.g. Standard Event Agreement"
+                />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-ink" htmlFor="template-type">
+                <label
+                  className="text-sm font-medium text-ink"
+                  htmlFor="template-type"
+                >
                   Type
                 </label>
                 <Select>
@@ -166,7 +169,10 @@ export function TemplatesClient({ templates }: TemplatesClientProps) {
                 </Select>
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-ink" htmlFor="template-desc">
+                <label
+                  className="text-sm font-medium text-ink"
+                  htmlFor="template-desc"
+                >
                   Description
                 </label>
                 <Textarea
@@ -261,7 +267,8 @@ export function TemplatesClient({ templates }: TemplatesClientProps) {
 
                   <div className="flex items-center justify-between border-t border-hairline pt-3">
                     <span className="ds-mono text-xs text-ink/50">
-                      Used {template.usageCount} time{template.usageCount !== 1 ? "s" : ""}
+                      Used {template.usageCount} time
+                      {template.usageCount !== 1 ? "s" : ""}
                     </span>
                     <span className="ds-mono text-xs text-ink/50">
                       {formatDate(template.lastModified)}

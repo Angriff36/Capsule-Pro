@@ -1,6 +1,6 @@
 "use client";
 
-import { Input } from "@repo/design-system/components/ui/input";
+import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import { Label } from "@repo/design-system/components/ui/label";
 import {
   Select,
@@ -10,7 +10,6 @@ import {
   SelectValue,
 } from "@repo/design-system/components/ui/select";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
-import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -46,7 +45,13 @@ interface POFormProps {
   children?: React.ReactNode;
 }
 
-export function POForm({ form, vendors, locations, onChange, children }: POFormProps) {
+export function POForm({
+  form,
+  vendors,
+  locations,
+  onChange,
+  children,
+}: POFormProps) {
   return (
     <div className="space-y-6">
       {/* Vendor & Dates */}
@@ -91,7 +96,6 @@ export function POForm({ form, vendors, locations, onChange, children }: POFormP
           <Label>Expected Delivery Date</Label>
           <DatePicker
             onChange={(e) => onChange({ expectedDeliveryDate: e.target.value })}
- 
             value={form.expectedDeliveryDate}
           />
         </div>

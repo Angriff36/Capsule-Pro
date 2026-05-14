@@ -1,4 +1,5 @@
 import { auth } from "@repo/auth/server";
+import { database } from "@repo/database";
 import {
   CommandBand,
   CommandBandActions,
@@ -15,7 +16,6 @@ import {
   PageCanvas,
   SectionHeader,
 } from "@repo/design-system/components/blocks/page-shell";
-import { database } from "@repo/database";
 import { redirect } from "next/navigation";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { PickPackClient } from "./pick-pack-client";
@@ -28,33 +28,32 @@ export default async function PickPackPage() {
   if (!tenantId) redirect("/");
 
   // Fetch metrics server-side
-  const [usageTransactions, transfersToday, packedItems] =
-    await Promise.all([
-      database.inventoryTransaction.count({
-        where: {
-          tenantId,
-          transactionType: { in: ["usage", "transfer"] },
+  const [usageTransactions, transfersToday, packedItems] = await Promise.all([
+    database.inventoryTransaction.count({
+      where: {
+        tenantId,
+        transactionType: { in: ["usage", "transfer"] },
+      },
+    }),
+    database.inventoryTransaction.count({
+      where: {
+        tenantId,
+        transactionType: "transfer",
+        transaction_date: {
+          gte: new Date(new Date().setHours(0, 0, 0, 0)).toISOString(),
         },
-      }),
-      database.inventoryTransaction.count({
-        where: {
-          tenantId,
-          transactionType: "transfer",
-          transaction_date: {
-            gte: new Date(new Date().setHours(0, 0, 0, 0)).toISOString(),
-          },
+      },
+    }),
+    database.inventoryTransaction.count({
+      where: {
+        tenantId,
+        transactionType: "usage",
+        transaction_date: {
+          gte: new Date(new Date().setHours(0, 0, 0, 0)).toISOString(),
         },
-      }),
-      database.inventoryTransaction.count({
-        where: {
-          tenantId,
-          transactionType: "usage",
-          transaction_date: {
-            gte: new Date(new Date().setHours(0, 0, 0, 0)).toISOString(),
-          },
-        },
-      }),
-    ]);
+      },
+    }),
+  ]);
 
   return (
     <PageCanvas>
@@ -99,9 +98,7 @@ export default async function PickPackPage() {
             <MetricCell>
               <MetricLabel>Avg pick time</MetricLabel>
               <MetricValue>--</MetricValue>
-              <p className="text-sm text-white/70">
-                Average pick-to-pack time
-              </p>
+              <p className="text-sm text-white/70">Average pick-to-pack time</p>
             </MetricCell>
           </MetricBand>
         </CommandBandBody>

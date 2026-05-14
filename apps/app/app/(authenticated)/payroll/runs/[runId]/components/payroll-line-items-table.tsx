@@ -3,7 +3,6 @@ import {
   AvatarFallback,
   AvatarImage,
 } from "@repo/design-system/components/ui/avatar";
-import { formatCurrency } from "@repo/design-system/lib/format-currency";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Card, CardContent } from "@repo/design-system/components/ui/card";
@@ -23,6 +22,7 @@ import {
   TableHeader,
   TableRow,
 } from "@repo/design-system/components/ui/table";
+import { formatCurrency } from "@repo/design-system/lib/format-currency";
 import { SearchIcon } from "lucide-react";
 import { useState } from "react";
 

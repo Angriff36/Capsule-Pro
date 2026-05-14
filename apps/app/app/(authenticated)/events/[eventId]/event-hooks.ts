@@ -1,26 +1,24 @@
 "use client";
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { refreshEventDetailsData } from "./event-query-actions";
-import { updateEventForMutation } from "./event-mutation-actions";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   addDishToEvent,
-  removeDishFromEvent,
-  createDishVariantForEvent,
   createDishAndAddToEvent,
+  createDishVariantForEvent,
+  removeDishFromEvent,
 } from "../actions/event-dishes";
 import {
-  generateEventSummary,
   deleteEventSummary,
+  generateEventSummary,
 } from "../actions/event-summary";
+import type { GenerateEventPrepListInput } from "../actions/prep-list-generation";
+import { generateEventPrepList } from "../actions/prep-list-generation";
 import {
   generateTaskBreakdown,
   saveTaskBreakdown,
 } from "../actions/task-breakdown";
-import {
-  generateEventPrepList,
-} from "../actions/prep-list-generation";
-import type { GenerateEventPrepListInput } from "../actions/prep-list-generation";
+import { updateEventForMutation } from "./event-mutation-actions";
+import { refreshEventDetailsData } from "./event-query-actions";
 
 // ============================================================================
 // Query Keys
@@ -341,7 +339,9 @@ export function useQuickRsvp() {
       if (!result) {
         return;
       }
-      queryClient.invalidateQueries({ queryKey: eventKeys.detail(result.eventId) });
+      queryClient.invalidateQueries({
+        queryKey: eventKeys.detail(result.eventId),
+      });
     },
   });
 }

@@ -152,7 +152,8 @@ export async function GET(request: NextRequest) {
           taskTitle: taskTitleById.get(row.taskId) ?? null,
           employeeId: row.employeeId,
           employeeName: formatName(row.employeeId),
-          employeeAvatarUrl: employeeById.get(row.employeeId)?.avatarUrl ?? null,
+          employeeAvatarUrl:
+            employeeById.get(row.employeeId)?.avatarUrl ?? null,
           action: "released",
           detail: row.releaseReason ?? null,
           oldStatus: null,

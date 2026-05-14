@@ -3,6 +3,7 @@
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Card, CardContent } from "@repo/design-system/components/ui/card";
+import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import {
   Dialog,
   DialogContent,
@@ -21,7 +22,6 @@ import {
   SelectValue,
 } from "@repo/design-system/components/ui/select";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
-import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import {
   AlertTriangle,
   CheckCircle2,
@@ -155,10 +155,7 @@ export default function FacilitiesWorkOrdersPage() {
     }
   };
 
-  const handleStatusUpdate = async (
-    workOrderId: string,
-    newStatus: string
-  ) => {
+  const handleStatusUpdate = async (workOrderId: string, newStatus: string) => {
     if (newStatus === "completed") {
       const wo = workOrders.find((w) => w.id === workOrderId);
       if (wo) {
@@ -459,7 +456,6 @@ export default function FacilitiesWorkOrdersPage() {
                     scheduledDate: e.target.value,
                   }))
                 }
- 
                 value={createForm.scheduledDate}
               />
             </div>
@@ -606,7 +602,10 @@ export default function FacilitiesWorkOrdersPage() {
       </Dialog>
 
       {/* View Work Order Dialog */}
-      <Dialog onOpenChange={() => setViewWorkOrder(null)} open={!!viewWorkOrder}>
+      <Dialog
+        onOpenChange={() => setViewWorkOrder(null)}
+        open={!!viewWorkOrder}
+      >
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>{viewWorkOrder?.title}</DialogTitle>

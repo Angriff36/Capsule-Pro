@@ -50,6 +50,7 @@ import {
   TabsList,
   TabsTrigger,
 } from "@repo/design-system/components/ui/tabs";
+import { formatCurrency } from "@repo/design-system/lib/format-currency";
 import {
   AlertCircle,
   BarChart3,
@@ -68,7 +69,6 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { formatCurrency } from "@repo/design-system/lib/format-currency";
 import { apiFetch } from "@/app/lib/api";
 
 // ---------------------------------------------------------------------------
@@ -289,9 +289,7 @@ function EventReportsTab() {
   const handleDownloadReport = useCallback(async (reportId: string) => {
     setDownloadState({ loadingId: reportId });
     try {
-      const res = await apiFetch(
-        `/api/events/reports/${reportId}/download`
-      );
+      const res = await apiFetch(`/api/events/reports/${reportId}/download`);
       if (!res.ok) {
         toast.error("Failed to download report");
         return;
@@ -410,10 +408,10 @@ function EventReportsTab() {
                     <TableCell className="text-right">
                       <Button
                         disabled={downloadState.loadingId === report.id}
-                        size="sm"
-                        variant="ghost"
-                        title="Download report"
                         onClick={() => handleDownloadReport(report.id)}
+                        size="sm"
+                        title="Download report"
+                        variant="ghost"
                       >
                         {downloadState.loadingId === report.id ? (
                           <Loader2 className="h-4 w-4 animate-spin" />
@@ -676,16 +674,19 @@ function DocumentParserTab() {
           const errors: string[] = [];
           for (const shift of parsed.staffShifts) {
             try {
-              const res = await apiFetch("/api/manifest/ScheduleShift/commands/create", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  eventId: selectedEventId,
-                  role: shift.role,
-                  employeeName: shift.name,
-                  shiftTime: shift.time,
-                }),
-              });
+              const res = await apiFetch(
+                "/api/manifest/ScheduleShift/commands/create",
+                {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    eventId: selectedEventId,
+                    role: shift.role,
+                    employeeName: shift.name,
+                    shiftTime: shift.time,
+                  }),
+                }
+              );
               if (res.ok) {
                 created++;
               } else {

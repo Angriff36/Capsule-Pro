@@ -623,127 +623,127 @@ export function MenuDishesSection({
         title="Menu / Dishes"
         triggerText="View dishes"
       >
-      {isLoading && (
-        <div className="flex items-center justify-center py-8">
-          <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-        </div>
-      )}
-
-      {/* Template Suggestions Section */}
-      {!isLoading && templateSuggestions.length > 0 && (
-        <div className="mb-4 rounded-lg border border-primary/30 bg-primary/5 p-4">
-          <div className="mb-3 flex items-center gap-2">
-            <SparklesIcon className="size-4 text-primary" />
-            <span className="font-medium text-sm">
-              Suggested Dishes from Template
-            </span>
+        {isLoading && (
+          <div className="flex items-center justify-center py-8">
+            <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
           </div>
-          <p className="mb-3 text-muted-foreground text-xs">
-            Quick-add suggestions based on the event template. Click to create
-            and add to menu.
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {templateSuggestions.map((suggestion, index) => (
-              <Button
-                className={suggestion.added ? "opacity-50" : ""}
-                disabled={suggestion.added || !onAddSuggestedDish}
-                key={index}
-                onClick={() => onAddSuggestedDish?.(suggestion.name)}
-                size="sm"
-                variant={suggestion.added ? "secondary" : "outline"}
+        )}
+
+        {/* Template Suggestions Section */}
+        {!isLoading && templateSuggestions.length > 0 && (
+          <div className="mb-4 rounded-lg border border-primary/30 bg-primary/5 p-4">
+            <div className="mb-3 flex items-center gap-2">
+              <SparklesIcon className="size-4 text-primary" />
+              <span className="font-medium text-sm">
+                Suggested Dishes from Template
+              </span>
+            </div>
+            <p className="mb-3 text-muted-foreground text-xs">
+              Quick-add suggestions based on the event template. Click to create
+              and add to menu.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {templateSuggestions.map((suggestion, index) => (
+                <Button
+                  className={suggestion.added ? "opacity-50" : ""}
+                  disabled={suggestion.added || !onAddSuggestedDish}
+                  key={index}
+                  onClick={() => onAddSuggestedDish?.(suggestion.name)}
+                  size="sm"
+                  variant={suggestion.added ? "secondary" : "outline"}
+                >
+                  {suggestion.added ? (
+                    <>
+                      <span className="mr-1">✓</span>
+                      {suggestion.name}
+                    </>
+                  ) : (
+                    <>
+                      <PlusIcon className="mr-1 size-3" />
+                      {suggestion.name}
+                    </>
+                  )}
+                </Button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {!isLoading && eventDishes.length > 0 && (
+          <div className="grid gap-3">
+            {eventDishes.map((dish) => (
+              <div
+                className="flex flex-wrap items-center justify-between gap-4 rounded-lg border px-4 py-3"
+                key={dish.link_id}
               >
-                {suggestion.added ? (
-                  <>
-                    <span className="mr-1">✓</span>
-                    {suggestion.name}
-                  </>
-                ) : (
-                  <>
-                    <PlusIcon className="mr-1 size-3" />
-                    {suggestion.name}
-                  </>
-                )}
-              </Button>
+                <div className="flex flex-1 flex-col">
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium">{dish.name}</span>
+                    {dish.course && (
+                      <Badge className="text-xs" variant="secondary">
+                        {dish.course}
+                      </Badge>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2 text-muted-foreground text-xs">
+                    {dish.recipe_name ? (
+                      <span>Recipe: {dish.recipe_name}</span>
+                    ) : (
+                      <span className="text-amber-600">No recipe linked</span>
+                    )}
+                    {(dish.dietary_tags ?? []).length > 0 && (
+                      <Badge className="text-xs" variant="outline">
+                        {(dish.dietary_tags ?? []).join(", ")}
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-muted-foreground text-xs">
+                    {dish.quantity_servings} servings
+                  </span>
+                  <Button
+                    onClick={() => onOpenVariantDialog(dish.link_id, dish.name)}
+                    size="sm"
+                    variant="outline"
+                  >
+                    Create variant
+                  </Button>
+                  <Button
+                    className="size-8 text-muted-foreground hover:text-destructive"
+                    onClick={() => confirmRemoveDish(dish.link_id)}
+                    size="icon"
+                    variant="ghost"
+                  >
+                    <TrashIcon className="size-4" />
+                  </Button>
+                </div>
+              </div>
             ))}
           </div>
-        </div>
-      )}
+        )}
 
-      {!isLoading && eventDishes.length > 0 && (
-        <div className="grid gap-3">
-          {eventDishes.map((dish) => (
-            <div
-              className="flex flex-wrap items-center justify-between gap-4 rounded-lg border px-4 py-3"
-              key={dish.link_id}
-            >
-              <div className="flex flex-1 flex-col">
-                <div className="flex items-center gap-2">
-                  <span className="font-medium">{dish.name}</span>
-                  {dish.course && (
-                    <Badge className="text-xs" variant="secondary">
-                      {dish.course}
-                    </Badge>
-                  )}
-                </div>
-                <div className="flex items-center gap-2 text-muted-foreground text-xs">
-                  {dish.recipe_name ? (
-                    <span>Recipe: {dish.recipe_name}</span>
-                  ) : (
-                    <span className="text-amber-600">No recipe linked</span>
-                  )}
-                  {(dish.dietary_tags ?? []).length > 0 && (
-                    <Badge className="text-xs" variant="outline">
-                      {(dish.dietary_tags ?? []).join(", ")}
-                    </Badge>
-                  )}
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-muted-foreground text-xs">
-                  {dish.quantity_servings} servings
-                </span>
-                <Button
-                  onClick={() => onOpenVariantDialog(dish.link_id, dish.name)}
-                  size="sm"
-                  variant="outline"
-                >
-                  Create variant
-                </Button>
-                <Button
-                  className="size-8 text-muted-foreground hover:text-destructive"
-                  onClick={() => confirmRemoveDish(dish.link_id)}
-                  size="icon"
-                  variant="ghost"
-                >
-                  <TrashIcon className="size-4" />
-                </Button>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      <AlertDialog onOpenChange={setRemoveDialogOpen} open={removeDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Remove dish from event?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This will unlink this dish from the event menu. The dish itself
-              will not be deleted.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleRemoveDish}>
-              Remove
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </CollapsibleSectionBlock>
-    {/* Dialog rendered OUTSIDE the collapsible to avoid portal blocking */}
-    {addDishDialog}
-  </>
+        <AlertDialog onOpenChange={setRemoveDialogOpen} open={removeDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Remove dish from event?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This will unlink this dish from the event menu. The dish itself
+                will not be deleted.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={handleRemoveDish}>
+                Remove
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </CollapsibleSectionBlock>
+      {/* Dialog rendered OUTSIDE the collapsible to avoid portal blocking */}
+      {addDishDialog}
+    </>
   );
 }
 

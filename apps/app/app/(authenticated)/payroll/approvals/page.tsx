@@ -42,6 +42,7 @@ import {
   TableHeader,
   TableRow,
 } from "@repo/design-system/components/ui/table";
+import { formatCurrency } from "@repo/design-system/lib/format-currency";
 import {
   CheckCircleIcon,
   CheckIcon,
@@ -57,7 +58,6 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { formatCurrency } from "@repo/design-system/lib/format-currency";
 import { apiFetch } from "@/app/lib/api";
 
 // --- Types ---

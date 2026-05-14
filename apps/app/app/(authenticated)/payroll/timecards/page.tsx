@@ -8,6 +8,7 @@ import {
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Card, CardContent } from "@repo/design-system/components/ui/card";
+import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import {
   Dialog,
   DialogContent,
@@ -35,7 +36,7 @@ import {
   TableRow,
 } from "@repo/design-system/components/ui/table";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
-import { DatePicker } from "@repo/design-system/components/ui/date-picker";
+import { formatCurrency as _formatCurrency } from "@repo/design-system/lib/format-currency";
 import {
   AlertTriangleIcon,
   CalendarIcon,
@@ -47,10 +48,10 @@ import {
   Loader2Icon,
   ZapIcon,
 } from "lucide-react";
-import { formatCurrency as _formatCurrency } from "@repo/design-system/lib/format-currency";
 
 const formatCurrency = (v: number | null) =>
   _formatCurrency(v, { nullDisplay: "N/A" });
+
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -95,7 +96,6 @@ interface PaginationInfo {
   total: number;
   totalPages: number;
 }
-
 
 function formatHours(value: number | null) {
   if (value === null) {
@@ -186,12 +186,16 @@ export default function TimecardsPage() {
 
   // Inline edit-request dialog state
   const [editRequestDialogOpen, setEditRequestDialogOpen] = useState(false);
-  const [editRequestEntryId, setEditRequestEntryId] = useState<string | null>(null);
+  const [editRequestEntryId, setEditRequestEntryId] = useState<string | null>(
+    null
+  );
   const [editRequestReason, setEditRequestReason] = useState("");
 
   // Inline flag-exception dialog state
   const [flagExceptionDialogOpen, setFlagExceptionDialogOpen] = useState(false);
-  const [flagExceptionEntryId, setFlagExceptionEntryId] = useState<string | null>(null);
+  const [flagExceptionEntryId, setFlagExceptionEntryId] = useState<
+    string | null
+  >(null);
   const [flagExceptionType, setFlagExceptionType] = useState("");
   const [flagExceptionNotes, setFlagExceptionNotes] = useState("");
 
@@ -504,14 +508,12 @@ export default function TimecardsPage() {
               <DatePicker
                 className="w-[160px]"
                 onChange={(e) => setStartDate(e.target.value)}
- 
                 value={startDate}
               />
 
               <DatePicker
                 className="w-[160px]"
                 onChange={(e) => setEndDate(e.target.value)}
- 
                 value={endDate}
               />
             </div>
@@ -889,14 +891,21 @@ export default function TimecardsPage() {
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <Label>Exception Type</Label>
-              <Select onValueChange={setFlagExceptionType} value={flagExceptionType}>
+              <Select
+                onValueChange={setFlagExceptionType}
+                value={flagExceptionType}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select exception type" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="missing_clock_out">Missing Clock Out</SelectItem>
+                  <SelectItem value="missing_clock_out">
+                    Missing Clock Out
+                  </SelectItem>
                   <SelectItem value="late_arrival">Late Arrival</SelectItem>
-                  <SelectItem value="excessive_break">Excessive Break</SelectItem>
+                  <SelectItem value="excessive_break">
+                    Excessive Break
+                  </SelectItem>
                   <SelectItem value="other">Other</SelectItem>
                 </SelectContent>
               </Select>
@@ -919,7 +928,7 @@ export default function TimecardsPage() {
               Cancel
             </Button>
             <Button
-              disabled={!flagExceptionType || !flagExceptionNotes.trim()}
+              disabled={!(flagExceptionType && flagExceptionNotes.trim())}
               onClick={() => {
                 if (flagExceptionEntryId) {
                   handleFlagException(

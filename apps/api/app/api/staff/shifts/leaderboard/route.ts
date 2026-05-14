@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const limit = Math.min(
       Math.max(Number(searchParams.get("limit") || "50"), 1),
-      200,
+      200
     );
 
     const leaderboard = await database.$queryRaw<LeaderboardRow[]>(
@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
       GROUP BY s.employee_id, e.first_name, e.last_name, e.role
       ORDER BY shift_count DESC, e.last_name ASC
       LIMIT ${limit}
-      `,
+      `
     );
 
     return NextResponse.json({ data: leaderboard });
@@ -47,7 +47,7 @@ export async function GET(request: NextRequest) {
     log.error("Error fetching shift leaderboard:", error);
     return NextResponse.json(
       { error: "Failed to fetch leaderboard" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

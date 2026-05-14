@@ -13,6 +13,7 @@ import {
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Card, CardContent } from "@repo/design-system/components/ui/card";
+import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import {
   Dialog,
   DialogContent,
@@ -24,7 +25,6 @@ import {
 import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
-import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import {
   CalendarIcon,
   CheckIcon,
@@ -296,7 +296,6 @@ export function CommunicationsTab({ clientId }: CommunicationsTabProps) {
                   onChange={(e) =>
                     setFormData({ ...formData, followUpDate: e.target.value })
                   }
- 
                   value={formData.followUpDate}
                 />
               </div>
@@ -535,7 +534,6 @@ export function CommunicationsTab({ clientId }: CommunicationsTabProps) {
                 onChange={(e) =>
                   setFormData({ ...formData, followUpDate: e.target.value })
                 }
- 
                 value={formData.followUpDate}
               />
             </div>

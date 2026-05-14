@@ -1,5 +1,6 @@
 "use client";
 
+import { StatusPill } from "@repo/design-system/components/blocks/page-shell";
 import {
   Select,
   SelectContent,
@@ -7,13 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
-import { StatusPill } from "@repo/design-system/components/blocks/page-shell";
-import {
-  BoxSelect,
-  Clock,
-  PackageCheck,
-  ShoppingCart,
-} from "lucide-react";
+import { BoxSelect, Clock, PackageCheck, ShoppingCart } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
 
@@ -124,7 +119,7 @@ export function PickPackClient({ initialMetrics }: PickPackClientProps) {
     <div className="space-y-6">
       {/* Filter */}
       <div className="flex items-center gap-3">
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
+        <Select onValueChange={setStatusFilter} value={statusFilter}>
           <SelectTrigger className="w-[160px]">
             <SelectValue placeholder="Status" />
           </SelectTrigger>
@@ -254,7 +249,8 @@ export function PickPackClient({ initialMetrics }: PickPackClientProps) {
               <PackageCheck className="size-4" />
               <span>Packing Station</span>
               <span className="text-ink/50 font-normal">
-                ({packingItems.length} item{packingItems.length === 1 ? "" : "s"})
+                ({packingItems.length} item
+                {packingItems.length === 1 ? "" : "s"})
               </span>
             </div>
 
@@ -277,9 +273,7 @@ export function PickPackClient({ initialMetrics }: PickPackClientProps) {
                       <span className="font-medium text-ink text-sm">
                         {item.itemName}
                       </span>
-                      <StatusPill
-                        className={PICK_STATUS_STYLES[item.status]}
-                      >
+                      <StatusPill className={PICK_STATUS_STYLES[item.status]}>
                         {PICK_STATUS_LABELS[item.status]}
                       </StatusPill>
                     </div>
@@ -317,9 +311,9 @@ export function PickPackClient({ initialMetrics }: PickPackClientProps) {
           {/* Summary footer */}
           <div className="flex items-center justify-between text-xs text-ink/50 pt-2">
             <span>
-              {pickQueue.length} pick{pickQueue.length === 1 ? "" : "s"} in queue
-              {packingItems.length > 0 &&
-                ` / ${packingItems.length} packing`}
+              {pickQueue.length} pick{pickQueue.length === 1 ? "" : "s"} in
+              queue
+              {packingItems.length > 0 && ` / ${packingItems.length} packing`}
             </span>
             <span>
               {initialMetrics.openPicks} open / {initialMetrics.packComplete}{" "}

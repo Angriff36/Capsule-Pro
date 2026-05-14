@@ -189,8 +189,7 @@ describe("Notification Commands API", () => {
       name: "mark-dismissed",
       runtimeName: "markDismissed",
       path: "/api/collaboration/notifications/commands/mark-dismissed",
-      routePath:
-        "@/app/api/manifest/[entity]/commands/[command]/route",
+      routePath: "@/app/api/manifest/[entity]/commands/[command]/route",
       sampleBody: { id: TEST_NOTIFICATION_ID },
       hasInstanceId: true,
     },
@@ -198,8 +197,7 @@ describe("Notification Commands API", () => {
       name: "mark-read",
       runtimeName: "markRead",
       path: "/api/collaboration/notifications/commands/mark-read",
-      routePath:
-        "@/app/api/manifest/[entity]/commands/[command]/route",
+      routePath: "@/app/api/manifest/[entity]/commands/[command]/route",
       sampleBody: { id: TEST_NOTIFICATION_ID },
       hasInstanceId: true,
     },

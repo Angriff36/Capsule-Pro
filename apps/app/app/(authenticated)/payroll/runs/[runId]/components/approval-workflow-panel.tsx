@@ -3,11 +3,11 @@ import {
   AlertDescription,
   AlertTitle,
 } from "@repo/design-system/components/ui/alert";
-import { formatCurrency } from "@repo/design-system/lib/format-currency";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Card, CardContent } from "@repo/design-system/components/ui/card";
 import { Separator } from "@repo/design-system/components/ui/separator";
+import { formatCurrency } from "@repo/design-system/lib/format-currency";
 import {
   AlertCircleIcon,
   AlertTriangleIcon,

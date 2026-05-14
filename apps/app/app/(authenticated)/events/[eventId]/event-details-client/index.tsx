@@ -3,26 +3,12 @@
 import type { Event } from "@repo/database";
 import { GridBackground } from "@repo/design-system/components/ui/grid-background";
 import { Separator } from "@repo/design-system/components/ui/separator";
+import { useQueryClient } from "@tanstack/react-query";
 import { ClipboardList, FileText, SwordsIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type { MutableRefObject } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { useQueryClient } from "@tanstack/react-query";
-import {
-  useEventDetails,
-  useUpdateEvent,
-  useAddDishToEvent,
-  useRemoveDishFromEvent,
-  useCreateDishVariant,
-  useCreateDishAndAdd,
-  useGenerateEventSummary,
-  useDeleteEventSummary,
-  useGenerateTaskBreakdown,
-  useSaveTaskBreakdown,
-  useGeneratePrepList,
-  useQuickRsvp,
-} from "../event-hooks";
 import { useSuggestions } from "../../../kitchen/lib/use-suggestions";
 import {
   createDishAndAddToEvent,
@@ -33,8 +19,11 @@ import {
   type GeneratedEventSummary,
   getEventSummary,
 } from "../../actions/event-summary";
-import { generateTaskBreakdown, type TaskBreakdown } from "../../actions/task-breakdown";
 import { generateProposalFromEvent } from "../../actions/generate-proposal";
+import {
+  generateTaskBreakdown,
+  type TaskBreakdown,
+} from "../../actions/task-breakdown";
 import { GenerateEventSummaryModal } from "../../components/event-summary-display";
 import {
   EVENT_TEMPLATES,
@@ -60,10 +49,24 @@ import type {
   RecipeDetailSummary,
   RelatedEventSummary,
 } from "../event-details-types";
+import {
+  useAddDishToEvent,
+  useCreateDishAndAdd,
+  useCreateDishVariant,
+  useDeleteEventSummary,
+  useEventDetails,
+  useGenerateEventSummary,
+  useGeneratePrepList,
+  useGenerateTaskBreakdown,
+  useQuickRsvp,
+  useRemoveDishFromEvent,
+  useSaveTaskBreakdown,
+  useUpdateEvent,
+} from "../event-hooks";
 import type { PrepTaskSummaryClient } from "../prep-task-contract";
-import { EventDetailTabs } from "./event-detail-tabs";
 // Above-fold critical components loaded eagerly
 import { AllergenSection } from "./allergen-section";
+import { EventDetailTabs } from "./event-detail-tabs";
 import { EventOverviewCard } from "./event-overview-card";
 import { GuestManagementSection } from "./guest-management-section";
 // Lazy-loaded below-the-fold components for bundle optimization
@@ -745,7 +748,9 @@ interface EventDetailsClientProps {
     ticketPrice: number | null;
   };
   /** Server-fetched data used as initialData for TanStack Query to avoid double-fetch on mount */
-  allEventData: Awaited<ReturnType<typeof import("../event-details-data").fetchAllEventDetailsData>>;
+  allEventData: Awaited<
+    ReturnType<typeof import("../event-details-data").fetchAllEventDetailsData>
+  >;
   prepTasks: PrepTaskSummaryClient[];
   tenantId?: string;
   eventDishes: EventDishSummary[];
@@ -1216,9 +1221,16 @@ export function EventDetailsClient({
         throw error;
       }
     },
-    [event.id, queryClient, setIsGenerating, setGenerationProgress,
-     setBreakdown, setShowBreakdownModal, breakdownGenerationCancelledRef,
-     breakdownProgressIntervalRef]
+    [
+      event.id,
+      queryClient,
+      setIsGenerating,
+      setGenerationProgress,
+      setBreakdown,
+      setShowBreakdownModal,
+      breakdownGenerationCancelledRef,
+      breakdownProgressIntervalRef,
+    ]
   );
 
   const handleCancelBreakdownGeneration = useCallback(() => {
@@ -1279,7 +1291,10 @@ export function EventDetailsClient({
     if (!summary?.id) {
       return;
     }
-    await deleteSummaryMutation.mutateAsync({ summaryId: summary.id, eventId: event.id });
+    await deleteSummaryMutation.mutateAsync({
+      summaryId: summary.id,
+      eventId: event.id,
+    });
     setSummary(null);
   }, [summary, setSummary, deleteSummaryMutation]);
 
@@ -1304,9 +1319,7 @@ export function EventDetailsClient({
       setSelectedDishIdForAdd("");
       setSelectedCourse("");
     } catch (e) {
-      toast.error(
-        e instanceof Error ? e.message : "Failed to add dish"
-      );
+      toast.error(e instanceof Error ? e.message : "Failed to add dish");
     }
   }, [event.id, selectedCourse, selectedDishIdForAdd, addDishMutation]);
 
@@ -1319,9 +1332,7 @@ export function EventDetailsClient({
         });
         toast.success("Dish removed from event");
       } catch (e) {
-        toast.error(
-          e instanceof Error ? e.message : "Failed to remove dish"
-        );
+        toast.error(e instanceof Error ? e.message : "Failed to remove dish");
       }
     },
     [event.id, removeDishMutation]
@@ -1334,28 +1345,23 @@ export function EventDetailsClient({
     setShowVariantDialog(true);
   }, []);
 
-  const handleCreateVariant = useCallback(
-    async () => {
-      if (!variantLinkId) return;
-      try {
-        await createVariantMutation.mutateAsync({
-          eventId: event.id,
-          linkId: variantLinkId,
-          newDishName: variantName,
-        });
-        toast.success("Variant created");
-        setShowVariantDialog(false);
-        setVariantLinkId(null);
-        setVariantSourceName("");
-        setVariantName("");
-      } catch (e) {
-        toast.error(
-          e instanceof Error ? e.message : "Failed to create variant"
-        );
-      }
-    },
-    [event.id, variantLinkId, variantName, createVariantMutation]
-  );
+  const handleCreateVariant = useCallback(async () => {
+    if (!variantLinkId) return;
+    try {
+      await createVariantMutation.mutateAsync({
+        eventId: event.id,
+        linkId: variantLinkId,
+        newDishName: variantName,
+      });
+      toast.success("Variant created");
+      setShowVariantDialog(false);
+      setVariantLinkId(null);
+      setVariantSourceName("");
+      setVariantName("");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to create variant");
+    }
+  }, [event.id, variantLinkId, variantName, createVariantMutation]);
 
   const handleExportBreakdown = useCallback(() => {
     if (!breakdown) {
@@ -1419,9 +1425,20 @@ export function EventDetailsClient({
       <div className="relative mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 pb-28 pt-10 sm:px-6 lg:px-8">
         <Separator />
         <EventDetailTabs
-          eventId={event.id}
-          eventDate={event.eventDate ?? undefined}
-          eventStatus={event.status ?? null}
+          battleboard={
+            <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+              <SwordsIcon className="h-12 w-12 mb-3 opacity-40" />
+              <p className="text-sm">
+                Coordinate menu finalization with the team.
+              </p>
+              <a
+                className="mt-3 inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+                href={`/events/${event.id}/battle-board`}
+              >
+                Open Battle Board
+              </a>
+            </div>
+          }
           copilot={
             <AIInsightsPanel
               breakdown={breakdown}
@@ -1457,6 +1474,9 @@ export function EventDetailsClient({
               summary={summary}
             />
           }
+          eventDate={event.eventDate ?? undefined}
+          eventId={event.id}
+          eventStatus={event.status ?? null}
           explore={
             <EventExplorer
               explorerView={explorerView}
@@ -1630,24 +1650,14 @@ export function EventDetailsClient({
               />
             </div>
           }
-          battleboard={
-            <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-              <SwordsIcon className="h-12 w-12 mb-3 opacity-40" />
-              <p className="text-sm">Coordinate menu finalization with the team.</p>
-              <a
-                className="mt-3 inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-                href={`/events/${event.id}/battle-board`}
-              >
-                Open Battle Board
-              </a>
-            </div>
-          }
           reports={
             <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-              <p className="text-sm">Generate post-event reports and review performance.</p>
+              <p className="text-sm">
+                Generate post-event reports and review performance.
+              </p>
               <a
                 className="mt-3 inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-                href={`/events/reports`}
+                href={"/events/reports"}
               >
                 View Reports
               </a>

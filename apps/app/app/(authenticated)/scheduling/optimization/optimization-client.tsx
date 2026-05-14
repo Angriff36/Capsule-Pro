@@ -12,7 +12,6 @@ import {
 import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
 import { Progress } from "@repo/design-system/components/ui/progress";
-import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import {
   Select,
   SelectContent,
@@ -151,9 +150,13 @@ const confidenceTone: Record<Confidence, string> = {
 function TrendBadge({ trend }: { readonly trend: Trend }) {
   const isUp = trend === "increasing" || trend === "improving";
   const isDown = trend === "decreasing" || trend === "declining";
-  const Icon = isUp ? TrendingUpIcon : isDown ? TrendingDownIcon : RefreshCwIcon;
+  const Icon = isUp
+    ? TrendingUpIcon
+    : isDown
+      ? TrendingDownIcon
+      : RefreshCwIcon;
   return (
-    <Badge variant="outline" className="gap-1 capitalize">
+    <Badge className="gap-1 capitalize" variant="outline">
       <Icon className="h-3 w-3" />
       {trend}
     </Badge>
@@ -173,7 +176,7 @@ export function OptimizationDashboard(_props: OptimizationDashboardProps) {
       if (locationId) params.set("locationId", locationId);
       const res = await fetch(`/api/staff/workforce-analytics?${params}`);
       const json = await res.json();
-      if (!res.ok || !json.success) {
+      if (!(res.ok && json.success)) {
         throw new Error(json.message || "Failed to load analytics");
       }
       setAnalytics(json.data as AnalyticsResult);
@@ -191,33 +194,33 @@ export function OptimizationDashboard(_props: OptimizationDashboardProps) {
   }, [loadAnalytics]);
 
   return (
-    <Tabs defaultValue="analytics" className="space-y-6">
+    <Tabs className="space-y-6" defaultValue="analytics">
       <TabsList>
-        <TabsTrigger value="analytics" className="gap-2">
+        <TabsTrigger className="gap-2" value="analytics">
           <BarChart3Icon className="h-4 w-4" />
           Analytics
         </TabsTrigger>
-        <TabsTrigger value="optimize" className="gap-2">
+        <TabsTrigger className="gap-2" value="optimize">
           <BrainCircuitIcon className="h-4 w-4" />
           Schedule Optimizer
         </TabsTrigger>
-        <TabsTrigger value="predict" className="gap-2">
+        <TabsTrigger className="gap-2" value="predict">
           <UsersIcon className="h-4 w-4" />
           Performance Prediction
         </TabsTrigger>
       </TabsList>
 
-      <TabsContent value="analytics" className="space-y-6">
+      <TabsContent className="space-y-6" value="analytics">
         <Card>
           <CardHeader>
             <div className="flex flex-wrap items-end gap-4">
               <div className="space-y-1">
                 <Label htmlFor="period">Period (days)</Label>
                 <Select
-                  value={String(days)}
                   onValueChange={(v) => setDays(Number(v))}
+                  value={String(days)}
                 >
-                  <SelectTrigger id="period" className="w-[160px]">
+                  <SelectTrigger className="w-[160px]" id="period">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -231,17 +234,17 @@ export function OptimizationDashboard(_props: OptimizationDashboardProps) {
               <div className="space-y-1">
                 <Label htmlFor="loc">Location ID (optional)</Label>
                 <Input
+                  className="w-[260px]"
                   id="loc"
-                  value={locationId}
                   onChange={(e) => setLocationId(e.target.value)}
                   placeholder="All locations"
-                  className="w-[260px]"
+                  value={locationId}
                 />
               </div>
               <Button
-                onClick={loadAnalytics}
-                disabled={analyticsLoading}
                 className="gap-2"
+                disabled={analyticsLoading}
+                onClick={loadAnalytics}
               >
                 {analyticsLoading ? (
                   <Loader2Icon className="h-4 w-4 animate-spin" />
@@ -313,8 +316,8 @@ export function OptimizationDashboard(_props: OptimizationDashboardProps) {
                     <ul className="space-y-2">
                       {analytics.metrics.turnoverRisk.map((r) => (
                         <li
-                          key={r.employeeId}
                           className="flex items-start justify-between gap-3 rounded-md border border-border p-3"
+                          key={r.employeeId}
                         >
                           <div className="space-y-1">
                             <p className="font-medium text-sm">
@@ -327,8 +330,8 @@ export function OptimizationDashboard(_props: OptimizationDashboardProps) {
                             ) : null}
                           </div>
                           <Badge
-                            variant="outline"
                             className={`capitalize ${riskTone[r.riskLevel]}`}
+                            variant="outline"
                           >
                             {r.riskLevel}
                           </Badge>
@@ -342,7 +345,9 @@ export function OptimizationDashboard(_props: OptimizationDashboardProps) {
               <Card>
                 <CardHeader>
                   <CardTitle>Top Performers</CardTitle>
-                  <CardDescription>By weighted performance score</CardDescription>
+                  <CardDescription>
+                    By weighted performance score
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   {analytics.metrics.topPerformers.length === 0 ? (
@@ -353,10 +358,12 @@ export function OptimizationDashboard(_props: OptimizationDashboardProps) {
                     <ul className="space-y-2">
                       {analytics.metrics.topPerformers.map((p) => (
                         <li
-                          key={p.employeeId}
                           className="flex items-center justify-between rounded-md border border-border p-3"
+                          key={p.employeeId}
                         >
-                          <p className="font-medium text-sm">{p.employeeName}</p>
+                          <p className="font-medium text-sm">
+                            {p.employeeName}
+                          </p>
                           <Badge variant="outline">{p.score}</Badge>
                         </li>
                       ))}
@@ -382,12 +389,12 @@ export function OptimizationDashboard(_props: OptimizationDashboardProps) {
                   <ul className="space-y-2">
                     {analytics.metrics.skillGaps.map((g) => (
                       <li
-                        key={g.skillName}
                         className="rounded-md border border-border p-3"
+                        key={g.skillName}
                       >
                         <div className="flex items-center justify-between">
                           <p className="font-medium text-sm">{g.skillName}</p>
-                          <Badge variant="outline" className="text-rose-700">
+                          <Badge className="text-rose-700" variant="outline">
                             Gap of {g.gap}
                           </Badge>
                         </div>
@@ -446,7 +453,13 @@ function MetricCard({
   );
 }
 
-function TrendRow({ label, trend }: { readonly label: string; readonly trend: Trend }) {
+function TrendRow({
+  label,
+  trend,
+}: {
+  readonly label: string;
+  readonly trend: Trend;
+}) {
   return (
     <div className="space-y-1">
       <p className="text-muted-foreground text-xs uppercase tracking-wide">
@@ -503,7 +516,7 @@ function ScheduleOptimizer() {
         }),
       });
       const json = await res.json();
-      if (!res.ok || !json.success) {
+      if (!(res.ok && json.success)) {
         throw new Error(json.message || "Optimization failed");
       }
       setResult(json.data as OptimizationResult);
@@ -530,61 +543,61 @@ function ScheduleOptimizer() {
         <CardContent className="grid gap-4 md:grid-cols-2">
           <Field
             label="Schedule ID"
-            value={scheduleId}
             onChange={setScheduleId}
             placeholder="schedule UUID"
+            value={scheduleId}
           />
           <Field
             label="Location ID"
-            value={locationId}
             onChange={setLocationId}
             placeholder="location UUID"
+            value={locationId}
           />
           <Field
             label="Start date"
+            onChange={setStartDate}
             type="date"
             value={startDate}
-            onChange={setStartDate}
           />
           <Field
             label="End date"
+            onChange={setEndDate}
             type="date"
             value={endDate}
-            onChange={setEndDate}
           />
           <Field
             label="Max labor cost (USD)"
-            type="number"
-            value={maxLaborCost}
             onChange={setMaxLaborCost}
             placeholder="optional"
+            type="number"
+            value={maxLaborCost}
           />
           <Field
             label="Max hours per employee"
-            type="number"
-            value={maxHoursPerEmployee}
             onChange={setMaxHoursPerEmployee}
             placeholder="optional"
+            type="number"
+            value={maxHoursPerEmployee}
           />
           <Field
             label="Min skill coverage (0-1)"
-            type="number"
-            value={minSkillCoverage}
             onChange={setMinSkillCoverage}
             placeholder="e.g. 0.8"
+            type="number"
+            value={minSkillCoverage}
           />
           <div className="flex items-end gap-2">
             <label className="flex items-center gap-2 text-sm">
               <input
-                type="checkbox"
                 checked={allowOvertime}
                 onChange={(e) => setAllowOvertime(e.target.checked)}
+                type="checkbox"
               />
               Allow overtime
             </label>
           </div>
           <div className="md:col-span-2">
-            <Button onClick={submit} disabled={loading} className="gap-2">
+            <Button className="gap-2" disabled={loading} onClick={submit}>
               {loading ? (
                 <Loader2Icon className="h-4 w-4 animate-spin" />
               ) : (
@@ -624,23 +637,23 @@ function ScheduleOptimizer() {
             <CardContent className="space-y-4">
               <MeterRow
                 label="Average Confidence"
-                value={result.summary.averageConfidence}
                 max={100}
+                value={result.summary.averageConfidence}
               />
               <MeterRow
                 label="Skill Coverage"
-                value={Math.round(result.summary.skillCoverage * 100)}
                 max={100}
+                value={Math.round(result.summary.skillCoverage * 100)}
               />
               <MeterRow
                 label="Seniority Balance"
-                value={Math.round(result.summary.seniorityBalance * 100)}
                 max={100}
+                value={Math.round(result.summary.seniorityBalance * 100)}
               />
               {result.appliedStrategies.length > 0 ? (
                 <div className="flex flex-wrap gap-2">
                   {result.appliedStrategies.map((s) => (
-                    <Badge key={s} variant="outline" className="capitalize">
+                    <Badge className="capitalize" key={s} variant="outline">
                       {s.replaceAll("_", " ")}
                     </Badge>
                   ))}
@@ -683,20 +696,22 @@ function ScheduleOptimizer() {
                 <ul className="space-y-3">
                   {result.optimizedAssignments.map((a) => (
                     <li
-                      key={a.shiftId}
                       className="rounded-md border border-border p-3"
+                      key={a.shiftId}
                     >
                       <div className="flex flex-wrap items-start justify-between gap-2">
                         <div>
-                          <p className="font-medium text-sm">{a.employeeName}</p>
+                          <p className="font-medium text-sm">
+                            {a.employeeName}
+                          </p>
                           <p className="text-muted-foreground text-xs">
                             Shift {a.shiftId.slice(0, 8)}… •{" "}
                             {formatCurrency(a.estimatedCost)}
                           </p>
                         </div>
                         <Badge
-                          variant="outline"
                           className={`capitalize ${confidenceTone[a.confidence]}`}
+                          variant="outline"
                         >
                           {a.confidence} confidence
                         </Badge>
@@ -710,9 +725,9 @@ function ScheduleOptimizer() {
                         <div className="mt-2 flex flex-wrap gap-1">
                           {a.riskFactors.map((r) => (
                             <Badge
+                              className="text-rose-700 text-xs"
                               key={r}
                               variant="outline"
-                              className="text-rose-700 text-xs"
                             >
                               {r}
                             </Badge>
@@ -748,8 +763,9 @@ function PerformancePredictor() {
     setMetrics((m) => ({ ...m, [key]: !m[key] }));
 
   const submit = async () => {
-    const selected = (Object.keys(metrics) as Array<keyof typeof metrics>)
-      .filter((k) => metrics[k]);
+    const selected = (
+      Object.keys(metrics) as Array<keyof typeof metrics>
+    ).filter((k) => metrics[k]);
     if (!employeeId) {
       toast.error("Employee ID is required");
       return;
@@ -771,7 +787,7 @@ function PerformancePredictor() {
         }),
       });
       const json = await res.json();
-      if (!res.ok || !json.success) {
+      if (!(res.ok && json.success)) {
         throw new Error(json.message || "Prediction failed");
       }
       setResult(json.data as PredictionResult);
@@ -796,42 +812,41 @@ function PerformancePredictor() {
         <CardContent className="grid gap-4 md:grid-cols-2">
           <Field
             label="Employee ID"
-            value={employeeId}
             onChange={setEmployeeId}
             placeholder="employee UUID"
+            value={employeeId}
           />
           <Field
             label="Schedule ID (optional)"
-            value={scheduleId}
             onChange={setScheduleId}
             placeholder="schedule UUID"
+            value={scheduleId}
           />
           <Field
             label="Prediction horizon (days)"
+            onChange={setHorizon}
             type="number"
             value={horizon}
-            onChange={setHorizon}
           />
           <div className="space-y-2">
             <Label>Metrics</Label>
             <div className="grid grid-cols-2 gap-2 text-sm">
-              {(Object.keys(metrics) as Array<keyof typeof metrics>).map((k) => (
-                <label
-                  key={k}
-                  className="flex items-center gap-2 capitalize"
-                >
-                  <input
-                    type="checkbox"
-                    checked={metrics[k]}
-                    onChange={() => toggle(k)}
-                  />
-                  {k.replaceAll("_", " ")}
-                </label>
-              ))}
+              {(Object.keys(metrics) as Array<keyof typeof metrics>).map(
+                (k) => (
+                  <label className="flex items-center gap-2 capitalize" key={k}>
+                    <input
+                      checked={metrics[k]}
+                      onChange={() => toggle(k)}
+                      type="checkbox"
+                    />
+                    {k.replaceAll("_", " ")}
+                  </label>
+                )
+              )}
             </div>
           </div>
           <div className="md:col-span-2">
-            <Button onClick={submit} disabled={loading} className="gap-2">
+            <Button className="gap-2" disabled={loading} onClick={submit}>
               {loading ? (
                 <Loader2Icon className="h-4 w-4 animate-spin" />
               ) : (
@@ -855,8 +870,8 @@ function PerformancePredictor() {
             <CardContent>
               <MeterRow
                 label="Performance"
-                value={result.overallPerformanceScore}
                 max={100}
+                value={result.overallPerformanceScore}
               />
               {result.recommendations.length > 0 ? (
                 <ul className="mt-4 list-disc space-y-1 pl-5 text-sm">
@@ -877,15 +892,15 @@ function PerformancePredictor() {
                 <CardContent className="space-y-3">
                   <MeterRow
                     label="Predicted score"
-                    value={result.predictions.productivity.predictedScore}
                     max={100}
+                    value={result.predictions.productivity.predictedScore}
                   />
                   <TrendBadge trend={result.predictions.productivity.trend} />
                   <ul className="space-y-1 text-sm">
                     {result.predictions.productivity.factors.map((f) => (
-                      <li key={f.factor} className="flex justify-between">
+                      <li className="flex justify-between" key={f.factor}>
                         <span>{f.factor}</span>
-                        <Badge variant="outline" className="capitalize">
+                        <Badge className="capitalize" variant="outline">
                           {f.impact}
                         </Badge>
                       </li>
@@ -903,15 +918,15 @@ function PerformancePredictor() {
                 <CardContent className="space-y-3">
                   <MeterRow
                     label="Predicted rate"
+                    max={100}
                     value={Math.round(
                       result.predictions.attendance.predictedAttendanceRate *
                         100
                     )}
-                    max={100}
                   />
                   <Badge
-                    variant="outline"
                     className={`capitalize ${riskTone[result.predictions.attendance.riskLevel]}`}
+                    variant="outline"
                   >
                     {result.predictions.attendance.riskLevel} risk
                   </Badge>
@@ -933,8 +948,8 @@ function PerformancePredictor() {
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <Badge
-                    variant="outline"
                     className={`capitalize ${riskTone[result.predictions.overtimeRisk.riskLevel]}`}
+                    variant="outline"
                   >
                     {result.predictions.overtimeRisk.riskLevel}
                   </Badge>
@@ -969,11 +984,11 @@ function PerformancePredictor() {
                 <CardContent className="space-y-3">
                   <MeterRow
                     label="Overall match"
-                    value={result.predictions.skillMatch.overallMatchScore}
                     max={100}
+                    value={result.predictions.skillMatch.overallMatchScore}
                   />
-                  {result.predictions.skillMatch.trainingRecommendations.length >
-                  0 ? (
+                  {result.predictions.skillMatch.trainingRecommendations
+                    .length > 0 ? (
                     <ul className="list-disc space-y-1 pl-5 text-sm">
                       {result.predictions.skillMatch.trainingRecommendations.map(
                         (r) => (
@@ -1011,10 +1026,10 @@ function Field({
       <Label htmlFor={id}>{label}</Label>
       <Input
         id={id}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
         type={type}
         value={value}
-        placeholder={placeholder}
-        onChange={(e) => onChange(e.target.value)}
       />
     </div>
   );

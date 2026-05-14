@@ -365,7 +365,10 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
         }
       );
 
-      const response = await POST(request, manifestParams("PurchaseRequisition", "create"));
+      const response = await POST(
+        request,
+        manifestParams("PurchaseRequisition", "create")
+      );
 
       expect(response.status).toBe(200);
       expect(mockRunCommand).toHaveBeenCalledWith(
@@ -392,7 +395,10 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
         }
       );
 
-      const response = await POST(request, manifestParams("PurchaseRequisition", "update"));
+      const response = await POST(
+        request,
+        manifestParams("PurchaseRequisition", "update")
+      );
 
       expect(response.status).toBe(200);
       expect(mockRunCommand).toHaveBeenCalledWith(
@@ -422,7 +428,10 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
         }
       );
 
-      const response = await POST(request, manifestParams("PurchaseRequisition", "submit"));
+      const response = await POST(
+        request,
+        manifestParams("PurchaseRequisition", "submit")
+      );
 
       expect(response.status).toBe(200);
       expect(mockRunCommand).toHaveBeenCalledWith(
@@ -452,7 +461,10 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
         }
       );
 
-      const response = await POST(request, manifestParams("PurchaseRequisition", "approveManager"));
+      const response = await POST(
+        request,
+        manifestParams("PurchaseRequisition", "approveManager")
+      );
 
       expect(response.status).toBe(200);
       expect(mockRunCommand).toHaveBeenCalledWith(
@@ -483,7 +495,10 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
         }
       );
 
-      const response = await POST(request, manifestParams("PurchaseRequisition", "reject"));
+      const response = await POST(
+        request,
+        manifestParams("PurchaseRequisition", "reject")
+      );
 
       expect(response.status).toBe(200);
       expect(mockRunCommand).toHaveBeenCalledWith(
@@ -511,7 +526,10 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
       const request = createMockRequest(
         "http://localhost:3000/api/procurement/requisitions/commands/create"
       );
-      const response = await POST(request, manifestParams("PurchaseRequisition", "create"));
+      const response = await POST(
+        request,
+        manifestParams("PurchaseRequisition", "create")
+      );
 
       expect(response.status).toBe(401);
     });
@@ -525,7 +543,10 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
       const request = createMockRequest(
         "http://localhost:3000/api/procurement/requisitions/commands/update"
       );
-      const response = await POST(request, manifestParams("PurchaseRequisition", "update"));
+      const response = await POST(
+        request,
+        manifestParams("PurchaseRequisition", "update")
+      );
 
       expect(response.status).toBe(401);
     });
@@ -539,7 +560,10 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
       const request = createMockRequest(
         "http://localhost:3000/api/procurement/requisitions/commands/submit"
       );
-      const response = await POST(request, manifestParams("PurchaseRequisition", "submit"));
+      const response = await POST(
+        request,
+        manifestParams("PurchaseRequisition", "submit")
+      );
 
       expect(response.status).toBe(401);
     });
@@ -581,7 +605,10 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
           body: JSON.stringify({}),
         }
       );
-      const response = await POST(request, manifestParams("PurchaseRequisition", "create"));
+      const response = await POST(
+        request,
+        manifestParams("PurchaseRequisition", "create")
+      );
 
       expect(response.status).toBe(422);
     });
@@ -602,7 +629,10 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
           body: JSON.stringify({}),
         }
       );
-      const response = await POST(request, manifestParams("PurchaseRequisition", "create"));
+      const response = await POST(
+        request,
+        manifestParams("PurchaseRequisition", "create")
+      );
 
       expect(response.status).toBe(403);
     });
@@ -623,7 +653,10 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
           body: JSON.stringify({}),
         }
       );
-      const response = await POST(request, manifestParams("PurchaseRequisition", "create"));
+      const response = await POST(
+        request,
+        manifestParams("PurchaseRequisition", "create")
+      );
 
       expect(response.status).toBe(400);
     });
@@ -641,7 +674,10 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
           body: JSON.stringify({}),
         }
       );
-      const response = await POST(request, manifestParams("PurchaseRequisition", "create"));
+      const response = await POST(
+        request,
+        manifestParams("PurchaseRequisition", "create")
+      );
 
       expect(response.status).toBe(500);
     });

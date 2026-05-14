@@ -1,8 +1,8 @@
-import type { MenuFormData, DishCost } from '../../types/menu';
-import StepHeader from '../ui/StepHeader';
-import MenuItemCard from '../menu/MenuItemCard';
-import { getAvailableItems } from '../../engine/menuConstraints';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle } from "lucide-react";
+import { getAvailableItems } from "../../engine/menuConstraints";
+import type { DishCost, MenuFormData } from "../../types/menu";
+import MenuItemCard from "../menu/MenuItemCard";
+import StepHeader from "../ui/StepHeader";
 
 interface Props {
   formData: MenuFormData;
@@ -12,16 +12,24 @@ interface Props {
   costCache?: Record<string, DishCost>;
 }
 
-export default function MenuSidesStep({ formData, toggleMenuItem, showPrice, showCost, costCache }: Props) {
+export default function MenuSidesStep({
+  formData,
+  toggleMenuItem,
+  showPrice,
+  showCost,
+  costCache,
+}: Props) {
   const available = getAvailableItems(formData.serviceStyle, formData.season);
-  const sides = available.filter(item => item.category === 'side');
-  const selectedSides = sides.filter(s => formData.selectedItems.includes(s.id));
+  const sides = available.filter((item) => item.category === "side");
+  const selectedSides = sides.filter((s) =>
+    formData.selectedItems.includes(s.id)
+  );
 
   return (
     <div className="space-y-8">
       <StepHeader
-        title="Sides & accompaniments"
         subtitle="Pair your mains with complementary sides. We recommend 2-3 options."
+        title="Sides & accompaniments"
       />
 
       {selectedSides.length === 0 && (
@@ -32,15 +40,15 @@ export default function MenuSidesStep({ formData, toggleMenuItem, showPrice, sho
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        {sides.map(item => (
+        {sides.map((item) => (
           <MenuItemCard
-            key={item.id}
-            item={item}
-            selected={formData.selectedItems.includes(item.id)}
-            onToggle={() => toggleMenuItem(item.id)}
-            showPrice={showPrice}
-            showCost={showCost}
             cost={costCache?.[item.id]}
+            item={item}
+            key={item.id}
+            onToggle={() => toggleMenuItem(item.id)}
+            selected={formData.selectedItems.includes(item.id)}
+            showCost={showCost}
+            showPrice={showPrice}
           />
         ))}
       </div>

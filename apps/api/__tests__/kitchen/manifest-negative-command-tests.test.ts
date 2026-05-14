@@ -116,7 +116,9 @@ describe("Negative Command Tests - PrepTask Commands", () => {
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "claim" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({ entity: "PrepTask", command: "claim" }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(400);
@@ -145,7 +147,9 @@ describe("Negative Command Tests - PrepTask Commands", () => {
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "claim" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({ entity: "PrepTask", command: "claim" }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(400);
@@ -204,7 +208,9 @@ describe("Negative Command Tests - PrepTask Commands", () => {
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "claim" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({ entity: "PrepTask", command: "claim" }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(422);
@@ -243,7 +249,9 @@ describe("Negative Command Tests - PrepTask Commands", () => {
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "claim" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({ entity: "PrepTask", command: "claim" }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(403);
@@ -273,7 +281,9 @@ describe("Negative Command Tests - PrepTask Commands", () => {
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "claim" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({ entity: "PrepTask", command: "claim" }),
+      });
       const data = await response.json();
 
       // Should only have success and message, no extra fields
@@ -303,7 +313,9 @@ describe("Negative Command Tests - PrepTask Commands", () => {
         }
       );
 
-      await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "claim" }) });
+      await POST(request, {
+        params: Promise.resolve({ entity: "PrepTask", command: "claim" }),
+      });
       expect(console.error).not.toHaveBeenCalled();
     });
 
@@ -328,7 +340,9 @@ describe("Negative Command Tests - PrepTask Commands", () => {
         }
       );
 
-      await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "claim" }) });
+      await POST(request, {
+        params: Promise.resolve({ entity: "PrepTask", command: "claim" }),
+      });
       expect(console.error).not.toHaveBeenCalled();
     });
 
@@ -350,7 +364,9 @@ describe("Negative Command Tests - PrepTask Commands", () => {
         }
       );
 
-      await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "claim" }) });
+      await POST(request, {
+        params: Promise.resolve({ entity: "PrepTask", command: "claim" }),
+      });
       expect(console.error).not.toHaveBeenCalled();
     });
   });

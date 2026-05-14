@@ -1,7 +1,7 @@
-import { CheckCircle, ArrowRight, Copy, Check } from 'lucide-react';
-import { useState } from 'react';
-import type { PriceEstimate } from '../../types/wizard';
-import { formatCurrency } from '../../utils/webhookPayload';
+import { ArrowRight, Check, CheckCircle, Copy } from "lucide-react";
+import { useState } from "react";
+import type { PriceEstimate } from "../../types/wizard";
+import { formatCurrency } from "../../utils/webhookPayload";
 
 interface Props {
   contactName: string;
@@ -36,13 +36,15 @@ export default function ConfirmationScreen({
         </div>
 
         <h1 className="text-3xl md:text-4xl font-light text-stone-800 tracking-tight mb-3">
-          Thank you, {contactName || 'there'}
+          Thank you, {contactName || "there"}
         </h1>
         <p className="text-stone-500 text-lg mb-2">
           Your inquiry has been submitted successfully.
         </p>
         <p className="text-stone-400 text-sm mb-8">
-          We will follow up at <strong className="text-stone-600">{email}</strong> within 1 business day.
+          We will follow up at{" "}
+          <strong className="text-stone-600">{email}</strong> within 1 business
+          day.
         </p>
 
         <div className="bg-white rounded-2xl border border-stone-200 p-6 text-left mb-6 shadow-sm">
@@ -50,7 +52,8 @@ export default function ConfirmationScreen({
             Your Estimated Range
           </div>
           <div className="text-2xl font-light text-stone-800 mb-2">
-            {formatCurrency(estimate.low)} &ndash; {formatCurrency(estimate.high)}
+            {formatCurrency(estimate.low)} &ndash;{" "}
+            {formatCurrency(estimate.high)}
           </div>
           <p className="text-xs text-stone-400">
             Non-binding estimate. Final pricing confirmed after consultation.
@@ -64,11 +67,15 @@ export default function ConfirmationScreen({
                 Lead Summary
               </span>
               <button
-                onClick={() => handleCopy(aiSummary, 'summary')}
                 className="text-xs text-stone-400 hover:text-stone-600 flex items-center gap-1 transition-colors"
+                onClick={() => handleCopy(aiSummary, "summary")}
               >
-                {copiedField === 'summary' ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
-                {copiedField === 'summary' ? 'Copied' : 'Copy'}
+                {copiedField === "summary" ? (
+                  <Check className="w-3 h-3" />
+                ) : (
+                  <Copy className="w-3 h-3" />
+                )}
+                {copiedField === "summary" ? "Copied" : "Copy"}
               </button>
             </div>
             <p className="text-sm text-stone-600 leading-relaxed whitespace-pre-line">
@@ -84,11 +91,15 @@ export default function ConfirmationScreen({
                 Follow-Up Email Draft
               </span>
               <button
-                onClick={() => handleCopy(emailDraft, 'email')}
                 className="text-xs text-stone-400 hover:text-stone-600 flex items-center gap-1 transition-colors"
+                onClick={() => handleCopy(emailDraft, "email")}
               >
-                {copiedField === 'email' ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
-                {copiedField === 'email' ? 'Copied' : 'Copy'}
+                {copiedField === "email" ? (
+                  <Check className="w-3 h-3" />
+                ) : (
+                  <Copy className="w-3 h-3" />
+                )}
+                {copiedField === "email" ? "Copied" : "Copy"}
               </button>
             </div>
             <p className="text-sm text-stone-600 leading-relaxed whitespace-pre-line">
@@ -98,9 +109,9 @@ export default function ConfirmationScreen({
         )}
 
         <button
-          onClick={onReset}
           className="inline-flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-medium
             bg-stone-800 text-white hover:bg-stone-700 transition-all shadow-lg hover:shadow-xl"
+          onClick={onReset}
         >
           Submit Another Inquiry
           <ArrowRight className="w-4 h-4" />

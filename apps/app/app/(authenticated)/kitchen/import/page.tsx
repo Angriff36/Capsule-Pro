@@ -13,12 +13,7 @@ const KitchenImportPage = async () => {
 
   return (
     <>
-      <Header
-        page="Import"
-        pages={[
-          { label: "Kitchen", href: "/kitchen" },
-        ]}
-      />
+      <Header page="Import" pages={[{ label: "Kitchen", href: "/kitchen" }]} />
       <KitchenNavigation />
       <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
         <KitchenImportClient />

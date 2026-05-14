@@ -6,9 +6,8 @@ import {
   TableHeader,
   TableRow,
 } from "@repo/design-system/components/ui/table";
-import type { PeriodSummary } from "../lib/sales-analytics";
-
 import { formatCurrencyWhole as formatCurrency } from "@repo/design-system/lib/format-currency";
+import type { PeriodSummary } from "../lib/sales-analytics";
 
 const formatPercent = (value: number) =>
   new Intl.NumberFormat("en-US", {

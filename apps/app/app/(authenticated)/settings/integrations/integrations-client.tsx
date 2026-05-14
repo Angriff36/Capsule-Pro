@@ -10,6 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
+import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import {
   Dialog,
   DialogContent,
@@ -28,7 +29,6 @@ import {
   SelectValue,
 } from "@repo/design-system/components/ui/select";
 import { Separator } from "@repo/design-system/components/ui/separator";
-import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import {
   Tabs,
   TabsContent,
@@ -1808,7 +1808,6 @@ function QuickBooksIntegration() {
               <DatePicker
                 id="qb-bills-start"
                 onChange={(e) => setBillsStartDate(e.target.value)}
- 
                 value={billsStartDate}
               />
             </div>
@@ -1817,7 +1816,6 @@ function QuickBooksIntegration() {
               <DatePicker
                 id="qb-bills-end"
                 onChange={(e) => setBillsEndDate(e.target.value)}
- 
                 value={billsEndDate}
               />
             </div>
@@ -1860,7 +1858,6 @@ function QuickBooksIntegration() {
               <DatePicker
                 id="qb-inv-start"
                 onChange={(e) => setInvoicesStartDate(e.target.value)}
- 
                 value={invoicesStartDate}
               />
             </div>
@@ -1869,7 +1866,6 @@ function QuickBooksIntegration() {
               <DatePicker
                 id="qb-inv-end"
                 onChange={(e) => setInvoicesEndDate(e.target.value)}
- 
                 value={invoicesEndDate}
               />
             </div>
@@ -2014,13 +2010,19 @@ function QuickBooksIntegration() {
                 title: (
                   <div>
                     <div>{entry.type}</div>
-                    <div className="text-xs text-muted-foreground">{entry.recordCount} records</div>
+                    <div className="text-xs text-muted-foreground">
+                      {entry.recordCount} records
+                    </div>
                   </div>
                 ),
                 pills: (
                   <>
-                    <Badge variant="secondary">{formatLabel(entry.format)}</Badge>
-                    <span className="font-medium">${entry.totalAmount.toLocaleString()}</span>
+                    <Badge variant="secondary">
+                      {formatLabel(entry.format)}
+                    </Badge>
+                    <span className="font-medium">
+                      ${entry.totalAmount.toLocaleString()}
+                    </span>
                   </>
                 ),
                 meta: (

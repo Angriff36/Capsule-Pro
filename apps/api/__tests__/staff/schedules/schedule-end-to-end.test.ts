@@ -300,7 +300,9 @@ describe("Schedule Persistence (write → read alignment)", () => {
           }
         );
 
-        await mod.POST(request, { params: Promise.resolve({ entity: "Schedule", command: "create" }) });
+        await mod.POST(request, {
+          params: Promise.resolve({ entity: "Schedule", command: "create" }),
+        });
 
         expect(mockRunCommand).toHaveBeenCalledWith(
           verb,
@@ -328,7 +330,9 @@ describe("Schedule Persistence (write → read alignment)", () => {
         }
       );
 
-      await mod.POST(request, { params: Promise.resolve({ entity: "Schedule", command: "create" }) });
+      await mod.POST(request, {
+        params: Promise.resolve({ entity: "Schedule", command: "create" }),
+      });
 
       expect(mockRunCommand).toHaveBeenCalledWith(
         "create",

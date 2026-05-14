@@ -325,7 +325,8 @@ export async function POST(request: NextRequest) {
             path: "kitchen/prep-tasks/commands/create",
             methods: ["POST"],
             owner: "bill",
-            reason: "Legacy concrete route — to be deleted after manifest migration.",
+            reason:
+              "Legacy concrete route — to be deleted after manifest migration.",
             expiresOn: "2026-06-01",
             category: "legacy-route",
           },

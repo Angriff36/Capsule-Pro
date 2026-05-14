@@ -1,9 +1,9 @@
 "use client";
 
 import { Button } from "@repo/design-system/components/ui/button";
+import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
-import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import {
   Select,
   SelectContent,
@@ -202,7 +202,6 @@ export function AvailabilityForm({
             id="effectiveFrom"
             onChange={(e) => handleInputChange("effectiveFrom", e.target.value)}
             required
- 
             value={formData.effectiveFrom}
           />
         </div>
@@ -214,7 +213,6 @@ export function AvailabilityForm({
             onChange={(e) =>
               handleInputChange("effectiveUntil", e.target.value)
             }
- 
             value={formData.effectiveUntil}
           />
         </div>

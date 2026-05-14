@@ -1,12 +1,8 @@
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import {
-  generateWorkforceAnalytics,
-  type WorkforceAnalyticsResult,
-} from "@/lib/staff/workforce-ai-optimizer";
+import { generateWorkforceAnalytics } from "@/lib/staff/workforce-ai-optimizer";
 
 export async function GET(request: Request) {
   const { orgId } = await auth();
@@ -51,7 +47,7 @@ export async function GET(request: Request) {
     log.error("Failed to generate workforce analytics", { error });
     return NextResponse.json(
       { message: "Failed to generate analytics" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

@@ -83,7 +83,9 @@ const userParams = (command: string) => ({
 });
 
 async function getManifestHandler(command: string) {
-  const mod = await import("@/app/api/manifest/[entity]/commands/[command]/route");
+  const mod = await import(
+    "@/app/api/manifest/[entity]/commands/[command]/route"
+  );
   return (req: NextRequest) => mod.POST(req, userParams(command));
 }
 

@@ -8,6 +8,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
+import { DatePicker } from "@repo/design-system/components/ui/date-picker";
+import { DateTimePicker } from "@repo/design-system/components/ui/date-time-picker";
 import {
   Dialog,
   DialogContent,
@@ -27,8 +29,6 @@ import {
   SelectValue,
 } from "@repo/design-system/components/ui/select";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
-import { DatePicker } from "@repo/design-system/components/ui/date-picker";
-import { DateTimePicker } from "@repo/design-system/components/ui/date-time-picker";
 import {
   AlertTriangle,
   CheckCircle2,
@@ -218,10 +218,7 @@ export function CreateCheckDialog({ onSuccess }: { onSuccess: () => void }) {
         if (filtered.length > 0) {
           body.checklistItems = filtered;
         }
-        await submitCommand(
-          "/api/manifest/QACheck/commands/create",
-          body
-        );
+        await submitCommand("/api/manifest/QACheck/commands/create", body);
         toast.success("Quality check created");
         setOpen(false);
         resetForm();
@@ -311,7 +308,6 @@ export function CreateCheckDialog({ onSuccess }: { onSuccess: () => void }) {
             <DateTimePicker
               id="qc-scheduled"
               onChange={(e) => setScheduledAt(e.target.value)}
- 
               value={scheduledAt}
             />
           </div>
@@ -463,10 +459,7 @@ export function CompleteCheckDialog({
         if (results.length > 0) {
           body.itemResults = results;
         }
-        await submitCommand(
-          "/api/manifest/QACheck/commands/complete",
-          body
-        );
+        await submitCommand("/api/manifest/QACheck/commands/complete", body);
         toast.success("Check completed");
         setOpen(false);
         onSuccess();
@@ -1039,7 +1032,6 @@ export function CreateCorrectiveActionDialog({
               <DatePicker
                 id="ca-due"
                 onChange={(e) => setDueDate(e.target.value)}
- 
                 value={dueDate}
               />
             </div>

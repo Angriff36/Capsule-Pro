@@ -226,7 +226,9 @@ describe("Equipment API", () => {
         name: "Oven A",
         locationId: LOCATION_ID,
       });
-      const res = await createPOST(req, { params: Promise.resolve({ entity: "Equipment", command: "create" }) });
+      const res = await createPOST(req, {
+        params: Promise.resolve({ entity: "Equipment", command: "create" }),
+      });
       expect(res.status).toBe(200);
 
       const json = (await res.json()) as {
@@ -264,7 +266,12 @@ describe("Equipment API", () => {
         id: EQUIPMENT_ID,
         status: "maintenance",
       });
-      const res = await updateStatusPOST(req, { params: Promise.resolve({ entity: "Equipment", command: "updateStatus" }) });
+      const res = await updateStatusPOST(req, {
+        params: Promise.resolve({
+          entity: "Equipment",
+          command: "updateStatus",
+        }),
+      });
       expect(res.status).toBe(200);
 
       expect(mocks.executeManifestCommand).toHaveBeenCalledWith(
@@ -299,7 +306,12 @@ describe("Equipment API", () => {
         priority: "high",
         scheduledDate: "2026-06-01",
       });
-      const res = await scheduleMaintenancePOST(req, { params: Promise.resolve({ entity: "Equipment", command: "scheduleMaintenance" }) });
+      const res = await scheduleMaintenancePOST(req, {
+        params: Promise.resolve({
+          entity: "Equipment",
+          command: "scheduleMaintenance",
+        }),
+      });
       expect(res.status).toBe(200);
 
       expect(mocks.executeManifestCommand).toHaveBeenCalledWith(
@@ -334,7 +346,12 @@ describe("Equipment API", () => {
         id: EQUIPMENT_ID,
         hours: 50,
       });
-      const res = await recordUsagePOST(req, { params: Promise.resolve({ entity: "Equipment", command: "recordUsage" }) });
+      const res = await recordUsagePOST(req, {
+        params: Promise.resolve({
+          entity: "Equipment",
+          command: "recordUsage",
+        }),
+      });
       expect(res.status).toBe(200);
 
       const json = (await res.json()) as {

@@ -130,9 +130,9 @@ export function EventStaffClient({
       try {
         const [assignRes, _availRes] = await Promise.all([
           fetch(`/api/events/staff/list?eventId=${eventId}`),
-          fetch("/api/manifest/EventStaff/commands/assign", { method: "GET" }).catch(
-            () => null
-          ),
+          fetch("/api/manifest/EventStaff/commands/assign", {
+            method: "GET",
+          }).catch(() => null),
         ]);
 
         const assignJson = await assignRes.json();

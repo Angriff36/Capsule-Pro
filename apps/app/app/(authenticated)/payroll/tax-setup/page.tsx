@@ -1,5 +1,15 @@
 "use client";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@repo/design-system/components/ui/alert-dialog";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -34,16 +44,6 @@ import {
   TabsList,
   TabsTrigger,
 } from "@repo/design-system/components/ui/tabs";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@repo/design-system/components/ui/alert-dialog";
 import {
   Calculator,
   CheckCircle2,
@@ -894,20 +894,20 @@ export default function TaxSetupPage() {
 
       {/* Deactivate Confirmation Dialog */}
       <AlertDialog
-        open={deleteDialogOpen}
         onOpenChange={(open) => {
           setDeleteDialogOpen(open);
           if (!open) setTaxConfigToDelete(null);
         }}
+        open={deleteDialogOpen}
       >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Deactivate Tax Configuration</AlertDialogTitle>
             <AlertDialogDescription>
               Are you sure you want to deactivate the{" "}
-              <strong>{taxConfigToDelete?.name}</strong> state tax configuration?
-              This will set it to inactive and remove it from your active
-              withholdings.
+              <strong>{taxConfigToDelete?.name}</strong> state tax
+              configuration? This will set it to inactive and remove it from
+              your active withholdings.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

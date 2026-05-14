@@ -6,9 +6,8 @@ import {
   TableHeader,
   TableRow,
 } from "@repo/design-system/components/ui/table";
-import type { QuarterlyMetrics } from "../lib/sales-analytics";
-
 import { formatCurrencyWhole as formatCurrency } from "@repo/design-system/lib/format-currency";
+import type { QuarterlyMetrics } from "../lib/sales-analytics";
 
 const formatNumber = (value: number) =>
   new Intl.NumberFormat("en-US").format(value);

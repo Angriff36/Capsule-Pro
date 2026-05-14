@@ -143,7 +143,10 @@ export async function GET(request: NextRequest) {
                 tenantId,
                 OR: [
                   { shift_start: { gte: rawStart, lte: rawEnd } },
-                  { shift_start: { lt: rawStart }, shift_end: { gt: rawStart } },
+                  {
+                    shift_start: { lt: rawStart },
+                    shift_end: { gt: rawStart },
+                  },
                 ],
                 deletedAt: null,
               },

@@ -16,7 +16,6 @@ vi.mock("@/app/lib/tenant", () => ({
   requireCurrentUser: vi.fn(),
 }));
 
-import { requireCurrentUser } from "@/app/lib/tenant";
 import {
   ADMIN_ROLES,
   MANAGER_ROLES,
@@ -24,6 +23,7 @@ import {
   requireApiManager,
   requireApiRole,
 } from "@/app/lib/auth-roles";
+import { requireCurrentUser } from "@/app/lib/tenant";
 
 const TENANT = "tenant-1";
 const USER = {

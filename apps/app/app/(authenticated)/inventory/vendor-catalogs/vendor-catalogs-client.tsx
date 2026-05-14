@@ -20,6 +20,7 @@ import {
 } from "@repo/design-system/components/ui/alert-dialog";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
+import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import {
   Dialog,
   DialogContent,
@@ -52,7 +53,6 @@ import {
   TableRow,
 } from "@repo/design-system/components/ui/table";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
-import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import { formatCurrency } from "@repo/design-system/lib/format-currency";
 import {
   Loader2Icon,
@@ -196,7 +196,7 @@ export function VendorCatalogsClient() {
   // Modals
   const [formOpen, setFormOpen] = useState(false);
   const [editingCatalog, setEditingCatalog] = useState<VendorCatalog | null>(
-    null,
+    null
   );
   const [formData, setFormData] = useState<CatalogFormData>({ ...EMPTY_FORM });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -231,7 +231,7 @@ export function VendorCatalogsClient() {
       toast.error(
         error instanceof Error
           ? error.message
-          : "Failed to load vendor catalogs",
+          : "Failed to load vendor catalogs"
       );
     } finally {
       setIsLoading(false);
@@ -246,7 +246,7 @@ export function VendorCatalogsClient() {
       setSuppliers(data.inventorySuppliers ?? []);
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to load suppliers",
+        error instanceof Error ? error.message : "Failed to load suppliers"
       );
     }
   }, []);
@@ -279,7 +279,7 @@ export function VendorCatalogsClient() {
   const safePage = Math.min(page, totalPages);
   const pagedCatalogs = filteredCatalogs.slice(
     (safePage - 1) * pageSize,
-    safePage * pageSize,
+    safePage * pageSize
   );
 
   // Reset to page 1 when filters change
@@ -298,7 +298,7 @@ export function VendorCatalogsClient() {
         catalogs.length
       : 0;
   const withPricingTiers = catalogs.filter((c) =>
-    c.tags?.includes("pricing-tier"),
+    c.tags?.includes("pricing-tier")
   ).length;
 
   // ---------------------------------------------------------------------------
@@ -348,7 +348,7 @@ export function VendorCatalogsClient() {
   };
 
   const handleSubmit = async () => {
-    if (!formData.supplierId || !formData.itemNumber || !formData.itemName) {
+    if (!(formData.supplierId && formData.itemNumber && formData.itemName)) {
       toast.error("Supplier, item number, and item name are required");
       return;
     }
@@ -379,7 +379,9 @@ export function VendorCatalogsClient() {
         ? "/api/manifest/VendorCatalog/commands/update"
         : "/api/manifest/VendorCatalog/commands/create";
 
-      const body = editingCatalog ? { id: editingCatalog.id, ...payload } : payload;
+      const body = editingCatalog
+        ? { id: editingCatalog.id, ...payload }
+        : payload;
 
       const res = await apiFetch(endpoint, {
         method: "POST",
@@ -395,13 +397,13 @@ export function VendorCatalogsClient() {
       toast.success(
         editingCatalog
           ? "Catalog entry updated successfully"
-          : "Catalog entry created successfully",
+          : "Catalog entry created successfully"
       );
       closeForm();
       loadCatalogs();
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to save catalog entry",
+        error instanceof Error ? error.message : "Failed to save catalog entry"
       );
     } finally {
       setIsSubmitting(false);
@@ -422,7 +424,7 @@ export function VendorCatalogsClient() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ id: deleteTarget.id }),
-        },
+        }
       );
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
@@ -433,7 +435,9 @@ export function VendorCatalogsClient() {
       loadCatalogs();
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to delete catalog entry",
+        error instanceof Error
+          ? error.message
+          : "Failed to delete catalog entry"
       );
     } finally {
       setIsDeleting(false);
@@ -454,7 +458,7 @@ export function VendorCatalogsClient() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ id: deactivateTarget.id }),
-        },
+        }
       );
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
@@ -463,13 +467,13 @@ export function VendorCatalogsClient() {
       toast.success(
         deactivateTarget.isActive
           ? "Catalog entry deactivated"
-          : "Catalog entry activated",
+          : "Catalog entry activated"
       );
       setDeactivateTarget(null);
       loadCatalogs();
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to update status",
+        error instanceof Error ? error.message : "Failed to update status"
       );
     } finally {
       setIsDeactivating(false);
@@ -487,7 +491,7 @@ export function VendorCatalogsClient() {
   };
 
   const handleCostUpdate = async () => {
-    if (!costTarget || !newCost || !costReason) {
+    if (!(costTarget && newCost && costReason)) {
       toast.error("New cost and reason are required");
       return;
     }
@@ -511,13 +515,13 @@ export function VendorCatalogsClient() {
             oldCost: Number(costTarget.baseUnitCost),
             reason: costReason,
           }),
-        },
+        }
       );
 
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
         throw new Error(
-          errorData.error ?? `Cost update failed (${res.status})`,
+          errorData.error ?? `Cost update failed (${res.status})`
         );
       }
 
@@ -525,7 +529,7 @@ export function VendorCatalogsClient() {
       const propagation = data?.result?.costPropagation;
       if (propagation) {
         toast.success(
-          `Cost updated. ${propagation.itemsUpdated ?? 0} inventory items affected.`,
+          `Cost updated. ${propagation.itemsUpdated ?? 0} inventory items affected.`
         );
       } else {
         toast.success("Cost updated successfully");
@@ -534,7 +538,7 @@ export function VendorCatalogsClient() {
       loadCatalogs();
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to update cost",
+        error instanceof Error ? error.message : "Failed to update cost"
       );
     } finally {
       setIsUpdatingCost(false);
@@ -744,10 +748,9 @@ export function VendorCatalogsClient() {
                           )}
                         </TableCell>
                         <TableCell className="text-right font-medium">
-                          {formatCurrency(
-                            Number(catalog.baseUnitCost),
-                            { currency: catalog.currency },
-                          )}
+                          {formatCurrency(Number(catalog.baseUnitCost), {
+                            currency: catalog.currency,
+                          })}
                         </TableCell>
                         <TableCell>{catalog.unitOfMeasure}</TableCell>
                         <TableCell className="text-right">
@@ -816,13 +819,10 @@ export function VendorCatalogsClient() {
                       Showing{" "}
                       {Math.min(
                         (safePage - 1) * pageSize + 1,
-                        filteredCatalogs.length,
+                        filteredCatalogs.length
                       )}{" "}
                       to{" "}
-                      {Math.min(
-                        safePage * pageSize,
-                        filteredCatalogs.length,
-                      )}{" "}
+                      {Math.min(safePage * pageSize, filteredCatalogs.length)}{" "}
                       of {filteredCatalogs.length} entries
                     </div>
                     <div className="flex gap-2">
@@ -938,9 +938,7 @@ export function VendorCatalogsClient() {
                 <Label htmlFor="itemName">Item Name *</Label>
                 <Input
                   id="itemName"
-                  onChange={(e) =>
-                    handleFormChange("itemName", e.target.value)
-                  }
+                  onChange={(e) => handleFormChange("itemName", e.target.value)}
                   placeholder="e.g. Organic Flour"
                   value={formData.itemName}
                 />
@@ -1002,9 +1000,7 @@ export function VendorCatalogsClient() {
               <div className="space-y-2">
                 <Label htmlFor="unitOfMeasure">Unit</Label>
                 <Select
-                  onValueChange={(v) =>
-                    handleFormChange("unitOfMeasure", v)
-                  }
+                  onValueChange={(v) => handleFormChange("unitOfMeasure", v)}
                   value={formData.unitOfMeasure}
                 >
                   <SelectTrigger id="unitOfMeasure">
@@ -1063,7 +1059,6 @@ export function VendorCatalogsClient() {
                   onChange={(e) =>
                     handleFormChange("effectiveFrom", e.target.value)
                   }
- 
                   value={formData.effectiveFrom}
                 />
               </div>
@@ -1076,7 +1071,6 @@ export function VendorCatalogsClient() {
                   onChange={(e) =>
                     handleFormChange("effectiveTo", e.target.value)
                   }
- 
                   value={formData.effectiveTo}
                 />
               </div>
@@ -1194,9 +1188,9 @@ export function VendorCatalogsClient() {
           <DialogHeader>
             <DialogTitle>Update Cost</DialogTitle>
             <DialogDescription>
-              Update the unit cost for{" "}
-              <strong>{costTarget?.itemName}</strong>. Cost changes will
-              propagate to related inventory items and recipes.
+              Update the unit cost for <strong>{costTarget?.itemName}</strong>.
+              Cost changes will propagate to related inventory items and
+              recipes.
             </DialogDescription>
           </DialogHeader>
 
@@ -1206,10 +1200,9 @@ export function VendorCatalogsClient() {
                 <Label>Current Cost</Label>
                 <span className="text-sm text-muted-foreground">
                   {costTarget
-                    ? formatCurrency(
-                        Number(costTarget.baseUnitCost),
-                        { currency: costTarget.currency },
-                      )
+                    ? formatCurrency(Number(costTarget.baseUnitCost), {
+                        currency: costTarget.currency,
+                      })
                     : "--"}
                 </span>
               </div>

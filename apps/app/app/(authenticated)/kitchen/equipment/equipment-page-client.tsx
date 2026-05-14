@@ -9,6 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
+import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import {
   Dialog,
   DialogContent,
@@ -19,7 +20,6 @@ import {
 } from "@repo/design-system/components/ui/dialog";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
-import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import {
   Tabs,
   TabsContent,
@@ -121,9 +121,15 @@ export function EquipmentPageClient() {
   const [submitting, setSubmitting] = useState(false);
 
   // Dialog state for equipment actions
-  const [selectedEquipment, setSelectedEquipment] = useState<Equipment | null>(null);
-  const [selectedWorkOrder, setSelectedWorkOrder] = useState<WorkOrder | null>(null);
-  const [selectedAlert, setSelectedAlert] = useState<EquipmentAlert | null>(null);
+  const [selectedEquipment, setSelectedEquipment] = useState<Equipment | null>(
+    null
+  );
+  const [selectedWorkOrder, setSelectedWorkOrder] = useState<WorkOrder | null>(
+    null
+  );
+  const [selectedAlert, setSelectedAlert] = useState<EquipmentAlert | null>(
+    null
+  );
   const [isScheduleDialogOpen, setIsScheduleDialogOpen] = useState(false);
   const [isEquipmentDetailsOpen, setIsEquipmentDetailsOpen] = useState(false);
   const [isNewWorkOrderOpen, setIsNewWorkOrderOpen] = useState(false);
@@ -541,7 +547,6 @@ export function EquipmentPageClient() {
                 onChange={(e) =>
                   setFormData({ ...formData, purchaseDate: e.target.value })
                 }
- 
                 value={formData.purchaseDate}
               />
             </div>
@@ -555,7 +560,6 @@ export function EquipmentPageClient() {
                 onChange={(e) =>
                   setFormData({ ...formData, warrantyExpiry: e.target.value })
                 }
- 
                 value={formData.warrantyExpiry}
               />
             </div>
@@ -1022,7 +1026,10 @@ export function EquipmentPageClient() {
       </Tabs>
 
       {/* Schedule Maintenance Dialog */}
-      <Dialog open={isScheduleDialogOpen} onOpenChange={setIsScheduleDialogOpen}>
+      <Dialog
+        onOpenChange={setIsScheduleDialogOpen}
+        open={isScheduleDialogOpen}
+      >
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
             <DialogTitle>Schedule Maintenance</DialogTitle>
@@ -1038,7 +1045,10 @@ export function EquipmentPageClient() {
               <Input
                 className="col-span-3"
                 onChange={(e) =>
-                  setMaintenanceForm({ ...maintenanceForm, title: e.target.value })
+                  setMaintenanceForm({
+                    ...maintenanceForm,
+                    title: e.target.value,
+                  })
                 }
                 placeholder="Maintenance task title"
                 value={maintenanceForm.title}
@@ -1086,7 +1096,6 @@ export function EquipmentPageClient() {
                     scheduledDate: e.target.value,
                   })
                 }
- 
                 value={maintenanceForm.scheduledDate}
               />
             </div>
@@ -1123,15 +1132,13 @@ export function EquipmentPageClient() {
 
       {/* Equipment Details Dialog */}
       <Dialog
-        open={isEquipmentDetailsOpen}
         onOpenChange={setIsEquipmentDetailsOpen}
+        open={isEquipmentDetailsOpen}
       >
         <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
             <DialogTitle>Equipment Details</DialogTitle>
-            <DialogDescription>
-              {selectedEquipment?.name}
-            </DialogDescription>
+            <DialogDescription>{selectedEquipment?.name}</DialogDescription>
           </DialogHeader>
           {selectedEquipment && (
             <div className="space-y-4 py-4">
@@ -1261,12 +1268,12 @@ export function EquipmentPageClient() {
                       .filter((wo) => wo.equipmentId === selectedEquipment.id)
                       .map((wo) => (
                         <div
-                          key={wo.id}
                           className="flex items-center justify-between p-2 border rounded text-sm"
+                          key={wo.id}
                         >
                           <div>
                             <span className="font-medium">{wo.title}</span>
-                            <Badge variant="secondary" className="ml-2 text-xs">
+                            <Badge className="ml-2 text-xs" variant="secondary">
                               {wo.status.replace(/_/g, " ")}
                             </Badge>
                           </div>
@@ -1292,7 +1299,7 @@ export function EquipmentPageClient() {
       </Dialog>
 
       {/* New Work Order Dialog */}
-      <Dialog open={isNewWorkOrderOpen} onOpenChange={setIsNewWorkOrderOpen}>
+      <Dialog onOpenChange={setIsNewWorkOrderOpen} open={isNewWorkOrderOpen}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
             <DialogTitle>New Work Order</DialogTitle>
@@ -1377,7 +1384,6 @@ export function EquipmentPageClient() {
                     scheduledDate: e.target.value,
                   })
                 }
- 
                 value={workOrderForm.scheduledDate}
               />
             </div>
@@ -1398,13 +1404,11 @@ export function EquipmentPageClient() {
       </Dialog>
 
       {/* Update Status Dialog */}
-      <Dialog open={isUpdateStatusOpen} onOpenChange={setIsUpdateStatusOpen}>
+      <Dialog onOpenChange={setIsUpdateStatusOpen} open={isUpdateStatusOpen}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
             <DialogTitle>Update Work Order Status</DialogTitle>
-            <DialogDescription>
-              {selectedWorkOrder?.title}
-            </DialogDescription>
+            <DialogDescription>{selectedWorkOrder?.title}</DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
@@ -1453,15 +1457,13 @@ export function EquipmentPageClient() {
 
       {/* Work Order Details Dialog */}
       <Dialog
-        open={isWorkOrderDetailsOpen}
         onOpenChange={setIsWorkOrderDetailsOpen}
+        open={isWorkOrderDetailsOpen}
       >
         <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
             <DialogTitle>Work Order Details</DialogTitle>
-            <DialogDescription>
-              {selectedWorkOrder?.title}
-            </DialogDescription>
+            <DialogDescription>{selectedWorkOrder?.title}</DialogDescription>
           </DialogHeader>
           {selectedWorkOrder && (
             <div className="space-y-4 py-4">
@@ -1516,9 +1518,7 @@ export function EquipmentPageClient() {
                   </div>
                   {selectedWorkOrder.scheduledDate && (
                     <div>
-                      <span className="text-muted-foreground">
-                        Scheduled:{" "}
-                      </span>
+                      <span className="text-muted-foreground">Scheduled: </span>
                       {formatDate(selectedWorkOrder.scheduledDate)}
                     </div>
                   )}
@@ -1538,7 +1538,7 @@ export function EquipmentPageClient() {
       </Dialog>
 
       {/* Take Action Dialog */}
-      <Dialog open={isTakeActionOpen} onOpenChange={setIsTakeActionOpen}>
+      <Dialog onOpenChange={setIsTakeActionOpen} open={isTakeActionOpen}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
             <DialogTitle>Take Action</DialogTitle>

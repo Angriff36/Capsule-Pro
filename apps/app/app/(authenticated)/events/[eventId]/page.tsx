@@ -1,7 +1,7 @@
 import { auth } from "@repo/auth/server";
 import { Button } from "@repo/design-system/components/ui/button";
-import { notFound } from "next/navigation";
 import Link from "next/link";
+import { notFound } from "next/navigation";
 
 import { getTenantIdForOrg } from "../../../lib/tenant";
 import { Header } from "../../components/header";
@@ -130,8 +130,8 @@ const EventDetailsPage = async ({ params }: EventDetailsPageProps) => {
         </div>
       </Header>
       <EventDetailsClient
-        budget={null}
         allEventData={data}
+        budget={null}
         event={{
           ...event,
           budget: event.budget === null ? null : Number(event.budget),
@@ -139,8 +139,8 @@ const EventDetailsPage = async ({ params }: EventDetailsPageProps) => {
             event.ticketPrice === null ? null : Number(event.ticketPrice),
         }}
         eventDishes={eventDishes}
-        hasContract={hasContract}
         hasBudget={hasBudget}
+        hasContract={hasContract}
         inventoryCoverage={inventoryCoverage}
         prepLists={prepLists}
         prepTasks={prepTasksForClient}

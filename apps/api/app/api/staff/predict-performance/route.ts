@@ -17,10 +17,13 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { employeeId, scheduleId, predictionHorizon, metrics } = body;
 
-    if (!employeeId || !predictionHorizon || !metrics?.length) {
+    if (!(employeeId && predictionHorizon && metrics?.length)) {
       return NextResponse.json(
-        { message: "Missing required fields: employeeId, predictionHorizon, metrics" },
-        { status: 400 },
+        {
+          message:
+            "Missing required fields: employeeId, predictionHorizon, metrics",
+        },
+        { status: 400 }
       );
     }
 
@@ -36,7 +39,7 @@ export async function POST(request: NextRequest) {
     log.error("Failed to predict performance", { error });
     return NextResponse.json(
       { message: "Failed to predict performance" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

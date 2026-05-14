@@ -11,7 +11,7 @@ export async function GET(
 ) {
   try {
     const { userId, orgId } = await auth();
-    if (!userId || !orgId) {
+    if (!(userId && orgId)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -51,9 +51,9 @@ export async function GET(
     }
 
     const clientName = event.client
-      ? (event.client.company_name ||
-          `${event.client.first_name ?? ""} ${event.client.last_name ?? ""}`.trim() ||
-          null)
+      ? event.client.company_name ||
+        `${event.client.first_name ?? ""} ${event.client.last_name ?? ""}`.trim() ||
+        null
       : null;
 
     // Check for finalized battle board
@@ -70,40 +70,45 @@ export async function GET(
 
     // Fetch dish details
     const dishIds = eventDishLinks.map((ed) => ed.dish_id);
-    const dishes = dishIds.length > 0
-      ? await database.dish.findMany({
-          where: { id: { in: dishIds }, tenantId, deletedAt: null },
-          select: {
-            id: true,
-            name: true,
-            description: true,
-            allergens: true,
-            dietaryTags: true,
-            recipeId: true,
-          },
-        })
-      : [];
+    const dishes =
+      dishIds.length > 0
+        ? await database.dish.findMany({
+            where: { id: { in: dishIds }, tenantId, deletedAt: null },
+            select: {
+              id: true,
+              name: true,
+              description: true,
+              allergens: true,
+              dietaryTags: true,
+              recipeId: true,
+            },
+          })
+        : [];
     const dishById = new Map(dishes.map((d) => [d.id, d]));
 
     // Fetch latest recipe version for each recipe (for ingredient aggregation)
     const recipeIds = dishes.map((d) => d.recipeId).filter(Boolean);
-    const recipeVersions = recipeIds.length > 0
-      ? await database.recipeVersion.findMany({
-          where: { recipeId: { in: recipeIds }, tenantId, deletedAt: null },
-          select: {
-            id: true,
-            recipeId: true,
-            yieldQuantity: true,
-            prepTimeMinutes: true,
-            cookTimeMinutes: true,
-            instructions: true,
-          },
-          orderBy: { versionNumber: "desc" },
-        })
-      : [];
+    const recipeVersions =
+      recipeIds.length > 0
+        ? await database.recipeVersion.findMany({
+            where: { recipeId: { in: recipeIds }, tenantId, deletedAt: null },
+            select: {
+              id: true,
+              recipeId: true,
+              yieldQuantity: true,
+              prepTimeMinutes: true,
+              cookTimeMinutes: true,
+              instructions: true,
+            },
+            orderBy: { versionNumber: "desc" },
+          })
+        : [];
 
     // Get latest version per recipe
-    const latestVersionByRecipe = new Map<string, typeof recipeVersions[number]>();
+    const latestVersionByRecipe = new Map<
+      string,
+      (typeof recipeVersions)[number]
+    >();
     for (const rv of recipeVersions) {
       if (!latestVersionByRecipe.has(rv.recipeId)) {
         latestVersionByRecipe.set(rv.recipeId, rv);
@@ -111,20 +116,27 @@ export async function GET(
     }
 
     // Fetch recipe ingredients for the latest versions
-    const versionIds = Array.from(latestVersionByRecipe.values()).map((rv) => rv.id);
-    const recipeIngredients = versionIds.length > 0
-      ? await database.recipeIngredient.findMany({
-          where: { recipeVersionId: { in: versionIds }, tenantId, deletedAt: null },
-          select: {
-            recipeVersionId: true,
-            ingredientId: true,
-            quantity: true,
-            unitId: true,
-            preparationNotes: true,
-            isOptional: true,
-          },
-        })
-      : [];
+    const versionIds = Array.from(latestVersionByRecipe.values()).map(
+      (rv) => rv.id
+    );
+    const recipeIngredients =
+      versionIds.length > 0
+        ? await database.recipeIngredient.findMany({
+            where: {
+              recipeVersionId: { in: versionIds },
+              tenantId,
+              deletedAt: null,
+            },
+            select: {
+              recipeVersionId: true,
+              ingredientId: true,
+              quantity: true,
+              unitId: true,
+              preparationNotes: true,
+              isOptional: true,
+            },
+          })
+        : [];
 
     // Group ingredients by version
     const ingredientsByVersion = new Map<string, typeof recipeIngredients>();
@@ -136,19 +148,26 @@ export async function GET(
 
     // Fetch ingredient names
     const ingredientIds = recipeIngredients.map((ri) => ri.ingredientId);
-    const ingredientRecords = ingredientIds.length > 0
-      ? await database.ingredient.findMany({
-          where: { id: { in: ingredientIds }, tenantId, deletedAt: null },
-          select: { id: true, name: true },
-        })
-      : [];
-    const ingredientNameById = new Map(ingredientRecords.map((i) => [i.id, i.name]));
+    const ingredientRecords =
+      ingredientIds.length > 0
+        ? await database.ingredient.findMany({
+            where: { id: { in: ingredientIds }, tenantId, deletedAt: null },
+            select: { id: true, name: true },
+          })
+        : [];
+    const ingredientNameById = new Map(
+      ingredientRecords.map((i) => [i.id, i.name])
+    );
 
     // Build dish entries
     const runSheetDishes = eventDishLinks.map((link) => {
       const dish = dishById.get(link.dish_id);
-      const recipeVersion = dish?.recipeId ? latestVersionByRecipe.get(dish.recipeId) : null;
-      const ingredients = recipeVersion ? ingredientsByVersion.get(recipeVersion.id) ?? [] : [];
+      const recipeVersion = dish?.recipeId
+        ? latestVersionByRecipe.get(dish.recipeId)
+        : null;
+      const ingredients = recipeVersion
+        ? (ingredientsByVersion.get(recipeVersion.id) ?? [])
+        : [];
       return {
         id: dish?.id ?? link.dish_id,
         name: dish?.name ?? "Unknown",
@@ -157,7 +176,9 @@ export async function GET(
         dietaryTags: (dish?.dietaryTags as string[]) ?? [],
         course: link.course,
         servings: link.quantity_servings,
-        source: battleBoard ? ("battle-board" as const) : ("event-menu" as const),
+        source: battleBoard
+          ? ("battle-board" as const)
+          : ("event-menu" as const),
         recipe: recipeVersion
           ? {
               yieldQuantity: recipeVersion.yieldQuantity,
@@ -189,13 +210,23 @@ export async function GET(
 
     // Fetch employee details (User model = employees table)
     const employeeIds = staffAssignments.map((sa) => sa.employeeId);
-    const employees = employeeIds.length > 0
-      ? await database.user.findMany({
-          where: { id: { in: employeeIds }, tenantId, deletedAt: null },
-          select: { id: true, firstName: true, lastName: true, role: true },
-        })
-      : [];
-    const employeeById = new Map(employees.map((e: { id: string; firstName: string; lastName: string; role: string }) => [e.id, e]));
+    const employees =
+      employeeIds.length > 0
+        ? await database.user.findMany({
+            where: { id: { in: employeeIds }, tenantId, deletedAt: null },
+            select: { id: true, firstName: true, lastName: true, role: true },
+          })
+        : [];
+    const employeeById = new Map(
+      employees.map(
+        (e: {
+          id: string;
+          firstName: string;
+          lastName: string;
+          role: string;
+        }) => [e.id, e]
+      )
+    );
 
     const staff = staffAssignments.map((sa) => {
       const emp = employeeById.get(sa.employeeId);
@@ -231,14 +262,20 @@ export async function GET(
     }));
 
     // Aggregate ingredients for shopping list
-    const ingredientMap = new Map<string, { name: string; quantity: number; dishes: string[] }>();
+    const ingredientMap = new Map<
+      string,
+      { name: string; quantity: number; dishes: string[] }
+    >();
     for (const link of eventDishLinks) {
       const dish = dishById.get(link.dish_id);
-      const recipeVersion = dish?.recipeId ? latestVersionByRecipe.get(dish.recipeId) : undefined;
-      if (!dish || !recipeVersion) continue;
-      const scaleFactor = link.quantity_servings && recipeVersion.yieldQuantity
-        ? link.quantity_servings / Number(recipeVersion.yieldQuantity)
-        : 1;
+      const recipeVersion = dish?.recipeId
+        ? latestVersionByRecipe.get(dish.recipeId)
+        : undefined;
+      if (!(dish && recipeVersion)) continue;
+      const scaleFactor =
+        link.quantity_servings && recipeVersion.yieldQuantity
+          ? link.quantity_servings / Number(recipeVersion.yieldQuantity)
+          : 1;
       const ings = ingredientsByVersion.get(recipeVersion.id) ?? [];
       for (const ing of ings) {
         const ingName = ingredientNameById.get(ing.ingredientId) ?? "Unknown";

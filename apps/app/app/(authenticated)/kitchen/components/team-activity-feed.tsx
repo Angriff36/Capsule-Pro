@@ -1,6 +1,10 @@
 "use client";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@repo/design-system/components/ui/avatar";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@repo/design-system/components/ui/avatar";
 import {
   Card,
   CardContent,
@@ -8,7 +12,13 @@ import {
   CardTitle,
 } from "@repo/design-system/components/ui/card";
 import { formatDistanceToNow } from "date-fns";
-import { AlertCircle, ArrowRight, CheckCircle2, Clock, Grab, User } from "lucide-react";
+import {
+  AlertCircle,
+  ArrowRight,
+  CheckCircle2,
+  Clock,
+  Grab,
+} from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
 interface TeamActivityItem {
@@ -89,12 +99,15 @@ export function TeamActivityFeed() {
         ) : (
           items.map((item) => (
             <div
-              key={item.id}
               className="flex items-start gap-2 rounded-md px-2 py-1.5 hover:bg-soft-stone/50 transition-colors"
+              key={item.id}
             >
               <Avatar className="h-6 w-6 mt-0.5">
                 {item.employeeAvatarUrl && (
-                  <AvatarImage src={item.employeeAvatarUrl} alt={item.employeeName ?? ""} />
+                  <AvatarImage
+                    alt={item.employeeName ?? ""}
+                    src={item.employeeAvatarUrl}
+                  />
                 )}
                 <AvatarFallback className="text-[10px]">
                   {initials(item.employeeName)}
@@ -113,14 +126,20 @@ export function TeamActivityFeed() {
                 </p>
                 {item.oldStatus && item.newStatus && (
                   <div className="flex items-center gap-1 mt-0.5">
-                    <span className="text-[10px] text-muted-foreground">{item.oldStatus}</span>
+                    <span className="text-[10px] text-muted-foreground">
+                      {item.oldStatus}
+                    </span>
                     <ArrowRight className="h-2.5 w-2.5 text-muted-foreground" />
-                    <span className="text-[10px] font-medium">{item.newStatus}</span>
+                    <span className="text-[10px] font-medium">
+                      {item.newStatus}
+                    </span>
                   </div>
                 )}
               </div>
               <span className="text-[10px] text-muted-foreground whitespace-nowrap mt-1">
-                {formatDistanceToNow(new Date(item.createdAt), { addSuffix: true })}
+                {formatDistanceToNow(new Date(item.createdAt), {
+                  addSuffix: true,
+                })}
               </span>
             </div>
           ))

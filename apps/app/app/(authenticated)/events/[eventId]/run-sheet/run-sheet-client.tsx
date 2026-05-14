@@ -1,6 +1,13 @@
 "use client";
 
-import { ArrowLeft, Clock, Download, MapPin, Printer, Users } from "lucide-react";
+import {
+  ArrowLeft,
+  Clock,
+  Download,
+  MapPin,
+  Printer,
+  Users,
+} from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -20,7 +27,12 @@ interface RunSheetDish {
     yieldQuantity: number;
     prepTimeMinutes: number | null;
     cookTimeMinutes: number | null;
-    ingredients: Array<{ ingredientId: string; ingredientName: string; quantity: number; unitCode: string | null }>;
+    ingredients: Array<{
+      ingredientId: string;
+      ingredientName: string;
+      quantity: number;
+      unitCode: string | null;
+    }>;
     instructions: string | null;
   } | null;
 }
@@ -75,7 +87,9 @@ interface RunSheetClientProps {
 export function RunSheetClient({ eventId }: RunSheetClientProps) {
   const [data, setData] = useState<RunSheetData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeSection, setActiveSection] = useState<"menu" | "staff" | "timeline" | "shopping">("menu");
+  const [activeSection, setActiveSection] = useState<
+    "menu" | "staff" | "timeline" | "shopping"
+  >("menu");
 
   const fetchRunSheet = useCallback(async () => {
     setIsLoading(true);
@@ -107,19 +121,43 @@ export function RunSheetClient({ eventId }: RunSheetClientProps) {
 
     const rows: string[][] = [["Section", "Item", "Details", "Notes"]];
     for (const dish of data.dishes) {
-      rows.push(["Menu", dish.name, `${dish.servings ?? "N/A"} servings`, dish.allergens.join(", ") || "None"]);
+      rows.push([
+        "Menu",
+        dish.name,
+        `${dish.servings ?? "N/A"} servings`,
+        dish.allergens.join(", ") || "None",
+      ]);
     }
     for (const staff of data.staff) {
-      rows.push(["Staff", staff.name, staff.role ?? "N/A", staff.assignmentRole ?? ""]);
+      rows.push([
+        "Staff",
+        staff.name,
+        staff.role ?? "N/A",
+        staff.assignmentRole ?? "",
+      ]);
     }
     for (const item of data.timeline) {
-      rows.push(["Timeline", item.title, `${item.startTime ?? "TBD"} - ${item.endTime ?? "TBD"}`, item.isCompleted ? "Done" : "Pending"]);
+      rows.push([
+        "Timeline",
+        item.title,
+        `${item.startTime ?? "TBD"} - ${item.endTime ?? "TBD"}`,
+        item.isCompleted ? "Done" : "Pending",
+      ]);
     }
     for (const item of data.shoppingList) {
-      rows.push(["Shopping", item.name, `${item.quantity.toFixed(1)} ${item.unit ?? "units"}`, item.dishes.join(", ")]);
+      rows.push([
+        "Shopping",
+        item.name,
+        `${item.quantity.toFixed(1)} ${item.unit ?? "units"}`,
+        item.dishes.join(", "),
+      ]);
     }
 
-    const csv = rows.map((row) => row.map((cell) => `"${(cell ?? "").replace(/"/g, '""')}"`).join(",")).join("\n");
+    const csv = rows
+      .map((row) =>
+        row.map((cell) => `"${(cell ?? "").replace(/"/g, '""')}"`).join(",")
+      )
+      .join("\n");
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement("a");
@@ -167,8 +205,16 @@ export function RunSheetClient({ eventId }: RunSheetClientProps) {
   const sections = [
     { key: "menu" as const, label: "Menu", count: data.dishes.length },
     { key: "staff" as const, label: "Staff", count: data.staff.length },
-    { key: "timeline" as const, label: "Timeline", count: data.timeline.length },
-    { key: "shopping" as const, label: "Shopping List", count: data.shoppingList.length },
+    {
+      key: "timeline" as const,
+      label: "Timeline",
+      count: data.timeline.length,
+    },
+    {
+      key: "shopping" as const,
+      label: "Shopping List",
+      count: data.shoppingList.length,
+    },
   ];
 
   return (
@@ -205,8 +251,11 @@ export function RunSheetClient({ eventId }: RunSheetClientProps) {
             </p>
           )}
           <p className="mt-1 text-xs text-muted-foreground">
-            Source: {data.source === "battle-board" ? "Finalized Battle Board" : "Event Menu"} —
-            Generated {new Date(data.generatedAt).toLocaleString()}
+            Source:{" "}
+            {data.source === "battle-board"
+              ? "Finalized Battle Board"
+              : "Event Menu"}{" "}
+            — Generated {new Date(data.generatedAt).toLocaleString()}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -230,8 +279,13 @@ export function RunSheetClient({ eventId }: RunSheetClientProps) {
       {/* Print-only header */}
       <div className="hidden print:block mb-4">
         <h1 className="text-xl font-bold">{data.event.title} — Run Sheet</h1>
-        <p className="text-sm">{eventDate} | {data.event.venueName ?? "TBD"} | {data.event.guestCount ?? 0} guests</p>
-        {data.event.client && <p className="text-sm">Client: {data.event.client.name}</p>}
+        <p className="text-sm">
+          {eventDate} | {data.event.venueName ?? "TBD"} |{" "}
+          {data.event.guestCount ?? 0} guests
+        </p>
+        {data.event.client && (
+          <p className="text-sm">Client: {data.event.client.name}</p>
+        )}
       </div>
 
       {/* Section tabs */}
@@ -248,7 +302,9 @@ export function RunSheetClient({ eventId }: RunSheetClientProps) {
             type="button"
           >
             {s.label}
-            <span className="rounded-full bg-muted px-1.5 py-0.5 text-xs">{s.count}</span>
+            <span className="rounded-full bg-muted px-1.5 py-0.5 text-xs">
+              {s.count}
+            </span>
           </button>
         ))}
       </div>
@@ -257,31 +313,48 @@ export function RunSheetClient({ eventId }: RunSheetClientProps) {
       {activeSection === "menu" && (
         <div className="space-y-3 print:space-y-2">
           {data.dishes.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-8 text-center">No dishes assigned to this event.</p>
+            <p className="text-sm text-muted-foreground py-8 text-center">
+              No dishes assigned to this event.
+            </p>
           ) : (
             data.dishes.map((dish) => (
-              <div className="rounded-lg border border-border bg-card p-4 print:border-black" key={dish.id}>
+              <div
+                className="rounded-lg border border-border bg-card p-4 print:border-black"
+                key={dish.id}
+              >
                 <div className="flex items-start justify-between">
                   <div>
                     <h3 className="font-medium">{dish.name}</h3>
                     {dish.description && (
-                      <p className="mt-0.5 text-sm text-muted-foreground">{dish.description}</p>
+                      <p className="mt-0.5 text-sm text-muted-foreground">
+                        {dish.description}
+                      </p>
                     )}
                     {dish.course && (
-                      <p className="mt-1 text-xs text-muted-foreground">Course: {dish.course}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        Course: {dish.course}
+                      </p>
                     )}
                     {dish.servings && (
-                      <p className="text-xs text-muted-foreground">Servings: {dish.servings}</p>
+                      <p className="text-xs text-muted-foreground">
+                        Servings: {dish.servings}
+                      </p>
                     )}
                   </div>
                   <div className="flex flex-wrap gap-1">
                     {dish.allergens.map((a) => (
-                      <span className="rounded-full bg-destructive/10 px-1.5 py-0.5 text-xs text-destructive" key={a}>
+                      <span
+                        className="rounded-full bg-destructive/10 px-1.5 py-0.5 text-xs text-destructive"
+                        key={a}
+                      >
                         {a}
                       </span>
                     ))}
                     {dish.dietaryTags.map((t) => (
-                      <span className="rounded-full bg-muted px-1.5 py-0.5 text-xs" key={t}>
+                      <span
+                        className="rounded-full bg-muted px-1.5 py-0.5 text-xs"
+                        key={t}
+                      >
                         {t}
                       </span>
                     ))}
@@ -291,11 +364,15 @@ export function RunSheetClient({ eventId }: RunSheetClientProps) {
                   <div className="mt-3 border-t border-border pt-3">
                     <p className="text-xs font-medium text-muted-foreground mb-2">
                       Recipe: {dish.recipe.title}
-                      {dish.recipe.prepTimeMinutes && ` — Prep: ${dish.recipe.prepTimeMinutes}min`}
-                      {dish.recipe.cookTimeMinutes && ` — Cook: ${dish.recipe.cookTimeMinutes}min`}
+                      {dish.recipe.prepTimeMinutes &&
+                        ` — Prep: ${dish.recipe.prepTimeMinutes}min`}
+                      {dish.recipe.cookTimeMinutes &&
+                        ` — Cook: ${dish.recipe.cookTimeMinutes}min`}
                     </p>
                     {dish.recipe.instructions && (
-                      <p className="text-xs text-muted-foreground whitespace-pre-line">{dish.recipe.instructions}</p>
+                      <p className="text-xs text-muted-foreground whitespace-pre-line">
+                        {dish.recipe.instructions}
+                      </p>
                     )}
                   </div>
                 )}
@@ -309,22 +386,37 @@ export function RunSheetClient({ eventId }: RunSheetClientProps) {
       {activeSection === "staff" && (
         <div className="rounded-lg border border-border bg-card">
           {data.staff.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-8 text-center">No staff assigned to this event.</p>
+            <p className="text-sm text-muted-foreground py-8 text-center">
+              No staff assigned to this event.
+            </p>
           ) : (
             <table className="w-full">
               <thead>
                 <tr className="border-b border-border">
-                  <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground">Name</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground">Role</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground">Assignment</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground">
+                    Name
+                  </th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground">
+                    Role
+                  </th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground">
+                    Assignment
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {data.staff.map((s) => (
-                  <tr className="border-b border-border last:border-0" key={s.id}>
+                  <tr
+                    className="border-b border-border last:border-0"
+                    key={s.id}
+                  >
                     <td className="px-4 py-2 text-sm">{s.name}</td>
-                    <td className="px-4 py-2 text-sm text-muted-foreground">{s.role ?? "—"}</td>
-                    <td className="px-4 py-2 text-sm text-muted-foreground">{s.assignmentRole ?? "—"}</td>
+                    <td className="px-4 py-2 text-sm text-muted-foreground">
+                      {s.role ?? "—"}
+                    </td>
+                    <td className="px-4 py-2 text-sm text-muted-foreground">
+                      {s.assignmentRole ?? "—"}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -337,28 +429,48 @@ export function RunSheetClient({ eventId }: RunSheetClientProps) {
       {activeSection === "timeline" && (
         <div className="space-y-2">
           {data.timeline.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-8 text-center">No timeline items for this event.</p>
+            <p className="text-sm text-muted-foreground py-8 text-center">
+              No timeline items for this event.
+            </p>
           ) : (
             data.timeline.map((item) => (
               <div
                 className={`flex items-center gap-3 rounded-lg border p-3 ${
-                  item.isCompleted ? "border-success/30 bg-success/5" : "border-border bg-card"
+                  item.isCompleted
+                    ? "border-success/30 bg-success/5"
+                    : "border-border bg-card"
                 }`}
                 key={item.id}
               >
-                <div className={`h-2 w-2 rounded-full shrink-0 ${item.isCompleted ? "bg-success" : "bg-muted-foreground"}`} />
+                <div
+                  className={`h-2 w-2 rounded-full shrink-0 ${item.isCompleted ? "bg-success" : "bg-muted-foreground"}`}
+                />
                 <div className="flex-1 min-w-0">
-                  <p className={`text-sm font-medium ${item.isCompleted ? "line-through text-muted-foreground" : ""}`}>
+                  <p
+                    className={`text-sm font-medium ${item.isCompleted ? "line-through text-muted-foreground" : ""}`}
+                  >
                     {item.title}
                   </p>
                   {item.description && (
-                    <p className="text-xs text-muted-foreground">{item.description}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {item.description}
+                    </p>
                   )}
                 </div>
                 <div className="text-xs text-muted-foreground shrink-0">
-                  {item.startTime ? new Date(item.startTime).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }) : "TBD"}
+                  {item.startTime
+                    ? new Date(item.startTime).toLocaleTimeString("en-US", {
+                        hour: "numeric",
+                        minute: "2-digit",
+                      })
+                    : "TBD"}
                   {" — "}
-                  {item.endTime ? new Date(item.endTime).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }) : "TBD"}
+                  {item.endTime
+                    ? new Date(item.endTime).toLocaleTimeString("en-US", {
+                        hour: "numeric",
+                        minute: "2-digit",
+                      })
+                    : "TBD"}
                 </div>
               </div>
             ))
@@ -371,25 +483,45 @@ export function RunSheetClient({ eventId }: RunSheetClientProps) {
         <div className="rounded-lg border border-border bg-card">
           {data.shoppingList.length === 0 ? (
             <p className="text-sm text-muted-foreground py-8 text-center">
-              No ingredient data available. Add recipes to dishes to generate a shopping list.
+              No ingredient data available. Add recipes to dishes to generate a
+              shopping list.
             </p>
           ) : (
             <table className="w-full">
               <thead>
                 <tr className="border-b border-border">
-                  <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground">Ingredient</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground">Quantity</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground">Unit</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground">Used In</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground">
+                    Ingredient
+                  </th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground">
+                    Quantity
+                  </th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground">
+                    Unit
+                  </th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground">
+                    Used In
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {data.shoppingList.map((item, idx) => (
-                  <tr className="border-b border-border last:border-0" key={`${item.name}-${idx}`}>
-                    <td className="px-4 py-2 text-sm font-medium">{item.name}</td>
-                    <td className="px-4 py-2 text-sm text-muted-foreground">{item.quantity.toFixed(1)}</td>
-                    <td className="px-4 py-2 text-sm text-muted-foreground">{item.unit ?? "units"}</td>
-                    <td className="px-4 py-2 text-xs text-muted-foreground">{item.dishes.join(", ")}</td>
+                  <tr
+                    className="border-b border-border last:border-0"
+                    key={`${item.name}-${idx}`}
+                  >
+                    <td className="px-4 py-2 text-sm font-medium">
+                      {item.name}
+                    </td>
+                    <td className="px-4 py-2 text-sm text-muted-foreground">
+                      {item.quantity.toFixed(1)}
+                    </td>
+                    <td className="px-4 py-2 text-sm text-muted-foreground">
+                      {item.unit ?? "units"}
+                    </td>
+                    <td className="px-4 py-2 text-xs text-muted-foreground">
+                      {item.dishes.join(", ")}
+                    </td>
                   </tr>
                 ))}
               </tbody>

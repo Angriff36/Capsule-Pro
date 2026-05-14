@@ -58,8 +58,10 @@ async function deriveTemplates(tenantId: string): Promise<TemplateRow[]> {
       type: "event",
       description: `Standard ${group.documentType} event contract template`,
       usageCount: group._count.id,
-      lastModified: group._max.updatedAt?.toISOString() ?? new Date().toISOString(),
-      createdAt: group._min.createdAt?.toISOString() ?? new Date().toISOString(),
+      lastModified:
+        group._max.updatedAt?.toISOString() ?? new Date().toISOString(),
+      createdAt:
+        group._min.createdAt?.toISOString() ?? new Date().toISOString(),
     });
   }
 
@@ -85,8 +87,10 @@ async function deriveTemplates(tenantId: string): Promise<TemplateRow[]> {
       type: "vendor",
       description: `${group.contractType} vendor contract template`,
       usageCount: group._count.id,
-      lastModified: group._max.updatedAt?.toISOString() ?? new Date().toISOString(),
-      createdAt: group._min.createdAt?.toISOString() ?? new Date().toISOString(),
+      lastModified:
+        group._max.updatedAt?.toISOString() ?? new Date().toISOString(),
+      createdAt:
+        group._min.createdAt?.toISOString() ?? new Date().toISOString(),
     });
   }
 

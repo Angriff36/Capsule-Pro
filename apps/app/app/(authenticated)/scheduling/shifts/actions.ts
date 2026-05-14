@@ -1,12 +1,11 @@
 "use server";
 
+import type { RuntimeEngine } from "@angriff36/manifest";
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
 import { revalidatePath } from "next/cache";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { getTenantIdForOrg, requireCurrentUser } from "@/app/lib/tenant";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
-import type { RuntimeEngine } from "@angriff36/manifest";
-import { requireCurrentUser } from "@/app/lib/tenant";
 
 // ---------------------------------------------------------------------------
 // Shared helpers for manifest-wired mutations
@@ -582,11 +581,15 @@ export async function getEmployees(params?: {
       WHERE tenant_id = ${tenantId}
         AND deleted_at IS NULL
         ${params?.activeOnly !== false ? Prisma.sql`AND is_active = true` : Prisma.empty}
-        ${hasSearch ? Prisma.sql`AND (
+        ${
+          hasSearch
+            ? Prisma.sql`AND (
           first_name ILIKE ${"%" + params!.search! + "%"}
           OR last_name ILIKE ${"%" + params!.search! + "%"}
           OR email ILIKE ${"%" + params!.search! + "%"}
-        )` : Prisma.empty}
+        )`
+            : Prisma.empty
+        }
         ${hasRole ? Prisma.sql`AND role = ${params!.role!}` : Prisma.empty}
       ORDER BY last_name ASC, first_name ASC
       LIMIT 50
@@ -685,9 +688,13 @@ export async function getSchedules(params?: {
        AND ss.deleted_at IS NULL
       WHERE s.tenant_id = ${tenantId}
         AND s.deleted_at IS NULL
-        ${hasSearch ? Prisma.sql`AND (
+        ${
+          hasSearch
+            ? Prisma.sql`AND (
           l.name ILIKE ${"%" + params!.search! + "%"}
-        )` : Prisma.empty}
+        )`
+            : Prisma.empty
+        }
         ${hasStatus ? Prisma.sql`AND s.status = ${params!.status!}` : Prisma.empty}
         ${hasLocationId ? Prisma.sql`AND s.location_id = ${params!.locationId!}` : Prisma.empty}
       GROUP BY s.id, s.schedule_date, s.status, s.location_id, l.name
@@ -751,10 +758,14 @@ export async function getEvents(params?: {
        AND l.id = e.location_id
       WHERE e.tenant_id = ${tenantId}
         AND e.deleted_at IS NULL
-        ${hasSearch ? Prisma.sql`AND (
+        ${
+          hasSearch
+            ? Prisma.sql`AND (
           e.name ILIKE ${"%" + params!.search! + "%"}
           OR c.name ILIKE ${"%" + params!.search! + "%"}
-        )` : Prisma.empty}
+        )`
+            : Prisma.empty
+        }
         ${hasDateFrom ? Prisma.sql`AND e.event_date >= ${new Date(params!.dateFrom!)}` : Prisma.empty}
         ${hasDateTo ? Prisma.sql`AND e.event_date <= ${new Date(params!.dateTo!)}` : Prisma.empty}
       ORDER BY e.event_date DESC

@@ -42,7 +42,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       resolutionNotes?: string;
     };
 
-    if (!status || !["acknowledged", "resolved"].includes(status)) {
+    if (!(status && ["acknowledged", "resolved"].includes(status))) {
       return NextResponse.json(
         { error: "Status must be 'acknowledged' or 'resolved'" },
         { status: 400 }

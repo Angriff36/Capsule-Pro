@@ -77,9 +77,7 @@ export async function createLead(
   // the spec violation rather than silently coercing.
   const rawSource = input.source?.trim().toLowerCase();
   if (rawSource && !(LEAD_SOURCES as readonly string[]).includes(rawSource)) {
-    throw new Error(
-      `Lead source must be one of: ${LEAD_SOURCES.join(", ")}`
-    );
+    throw new Error(`Lead source must be one of: ${LEAD_SOURCES.join(", ")}`);
   }
   const source: LeadSource = (rawSource as LeadSource) || "manual";
 

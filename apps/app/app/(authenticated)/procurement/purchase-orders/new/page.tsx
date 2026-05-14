@@ -24,7 +24,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
 import { createPurchaseOrder } from "../../actions";
-import type { POFormData, Vendor, Location } from "../../components/po-form";
+import type { Location, POFormData, Vendor } from "../../components/po-form";
 import { POForm } from "../../components/po-form";
 import {
   type EditableLineItem,

@@ -14,6 +14,7 @@ import {
   CardTitle,
 } from "@repo/design-system/components/ui/card";
 import { Checkbox } from "@repo/design-system/components/ui/checkbox";
+import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
 import {
@@ -24,7 +25,6 @@ import {
   SelectValue,
 } from "@repo/design-system/components/ui/select";
 import { Separator } from "@repo/design-system/components/ui/separator";
-import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import {
   Tabs,
   TabsContent,
@@ -737,7 +737,6 @@ export function SalesDashboardClient() {
                   <Label>Week anchor</Label>
                   <DatePicker
                     onChange={(e) => setWeekAnchor(e.target.value)}
- 
                     value={weekAnchor}
                   />
                 </div>
@@ -745,7 +744,6 @@ export function SalesDashboardClient() {
                   <Label>Month anchor</Label>
                   <DatePicker
                     onChange={(e) => setMonthAnchor(e.target.value)}
- 
                     value={monthAnchor}
                   />
                 </div>
@@ -753,7 +751,6 @@ export function SalesDashboardClient() {
                   <Label>Quarter anchor</Label>
                   <DatePicker
                     onChange={(e) => setQuarterAnchor(e.target.value)}
- 
                     value={quarterAnchor}
                   />
                 </div>

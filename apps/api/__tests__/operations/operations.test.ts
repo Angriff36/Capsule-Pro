@@ -75,9 +75,6 @@ const { createManifestRuntime } = await import("@/lib/manifest-runtime");
 
 // --- Route imports ---
 
-// Documents
-import { POST as docVersionCreate } from "@/app/api/manifest/[entity]/commands/[command]/route";
-import { POST as docVersionRestore } from "@/app/api/manifest/[entity]/commands/[command]/route";
 import { GET as docVersionList } from "@/app/api/documents/versions/list/route";
 import { POST as ktAddTag } from "@/app/api/kitchentask/add-tag/route";
 import { POST as ktCancel } from "@/app/api/kitchentask/cancel/route";
@@ -91,6 +88,11 @@ import { POST as ktRemoveTag } from "@/app/api/kitchentask/remove-tag/route";
 import { POST as ktStart } from "@/app/api/kitchentask/start/route";
 import { POST as ktUpdateComplexity } from "@/app/api/kitchentask/update-complexity/route";
 import { POST as ktUpdatePriority } from "@/app/api/kitchentask/update-priority/route";
+// Documents
+import {
+  POST as docVersionCreate,
+  POST as docVersionRestore,
+} from "@/app/api/manifest/[entity]/commands/[command]/route";
 // Search
 import { GET as searchGet } from "@/app/api/search/route";
 import { POST as workflowActivate } from "@/app/api/workflow/activate/route";
@@ -590,7 +592,10 @@ describe("Document Versions - Restore", () => {
       }
     );
     const res = await docVersionRestore(req, {
-      params: Promise.resolve({ entity: "DocumentVersion", command: "restore" }),
+      params: Promise.resolve({
+        entity: "DocumentVersion",
+        command: "restore",
+      }),
     });
     expect(res.status).toBe(401);
   });
@@ -605,7 +610,10 @@ describe("Document Versions - Restore", () => {
       }
     );
     const res = await docVersionRestore(req, {
-      params: Promise.resolve({ entity: "DocumentVersion", command: "restore" }),
+      params: Promise.resolve({
+        entity: "DocumentVersion",
+        command: "restore",
+      }),
     });
     expect(res.status).toBe(400);
     const body = await parseJson(res);
@@ -624,7 +632,10 @@ describe("Document Versions - Restore", () => {
       }
     );
     const res = await docVersionRestore(req, {
-      params: Promise.resolve({ entity: "DocumentVersion", command: "restore" }),
+      params: Promise.resolve({
+        entity: "DocumentVersion",
+        command: "restore",
+      }),
     });
     expect(res.status).toBe(404);
     const body = await parseJson(res);
@@ -677,7 +688,10 @@ describe("Document Versions - Restore", () => {
       }
     );
     const res = await docVersionRestore(req, {
-      params: Promise.resolve({ entity: "DocumentVersion", command: "restore" }),
+      params: Promise.resolve({
+        entity: "DocumentVersion",
+        command: "restore",
+      }),
     });
     expect(res.status).toBe(200);
     const body = await parseJson(res);
@@ -705,7 +719,10 @@ describe("Document Versions - Restore", () => {
       }
     );
     const res = await docVersionRestore(req, {
-      params: Promise.resolve({ entity: "DocumentVersion", command: "restore" }),
+      params: Promise.resolve({
+        entity: "DocumentVersion",
+        command: "restore",
+      }),
     });
     expect(res.status).toBe(500);
   });
@@ -722,7 +739,10 @@ describe("Document Versions - Restore", () => {
       }
     );
     await docVersionRestore(req, {
-      params: Promise.resolve({ entity: "DocumentVersion", command: "restore" }),
+      params: Promise.resolve({
+        entity: "DocumentVersion",
+        command: "restore",
+      }),
     });
 
     const findFirstCall = vi.mocked(database.documentVersion.findFirst).mock

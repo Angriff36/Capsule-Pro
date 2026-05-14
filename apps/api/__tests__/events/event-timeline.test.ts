@@ -63,11 +63,13 @@ vi.mock("@repo/database", () => ({
   },
 }));
 
-import { POST as createPOST } from "@/app/api/manifest/[entity]/commands/[command]/route";
-import { POST as deletePOST } from "@/app/api/manifest/[entity]/commands/[command]/route";
-import { POST as togglePOST } from "@/app/api/manifest/[entity]/commands/[command]/route";
-import { POST as updatePOST } from "@/app/api/manifest/[entity]/commands/[command]/route";
 import { GET as listGET } from "@/app/api/events/[eventId]/timeline/route";
+import {
+  POST as createPOST,
+  POST as deletePOST,
+  POST as togglePOST,
+  POST as updatePOST,
+} from "@/app/api/manifest/[entity]/commands/[command]/route";
 
 function setAuthOk() {
   mocks.authMock.mockResolvedValue({

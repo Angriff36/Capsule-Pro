@@ -1028,7 +1028,12 @@ export function Timeline({
         staff={staff}
       />
 
-      <AlertDialog onOpenChange={(open) => { if (!open) cancelDeleteTask(); }} open={deleteDialogOpen}>
+      <AlertDialog
+        onOpenChange={(open) => {
+          if (!open) cancelDeleteTask();
+        }}
+        open={deleteDialogOpen}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Task</AlertDialogTitle>
@@ -1039,8 +1044,12 @@ export function Timeline({
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={cancelDeleteTask}>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDeleteTask}>Delete</AlertDialogAction>
+            <AlertDialogCancel onClick={cancelDeleteTask}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDeleteTask}>
+              Delete
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
@@ -1082,9 +1091,7 @@ export function Timeline({
                     emp.name
                       .toLowerCase()
                       .includes(staffSearch.toLowerCase()) ||
-                    emp.role
-                      .toLowerCase()
-                      .includes(staffSearch.toLowerCase())
+                    emp.role.toLowerCase().includes(staffSearch.toLowerCase())
                 )
                 .map((emp) => (
                   <button

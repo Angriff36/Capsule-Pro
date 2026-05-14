@@ -2,9 +2,9 @@
 
 import type { Event } from "@repo/database";
 import { Button } from "@repo/design-system/components/ui/button";
+import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
-import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import { useActionState } from "react";
 import type { CreateEventState } from "../actions";
 import { eventStatuses } from "../constants";
@@ -127,7 +127,12 @@ export const EventForm = ({
           <label className="font-medium text-sm" htmlFor="eventDate">
             Event date
           </label>
-          <DatePicker defaultValue={formatDateValue(event?.eventDate)} id="eventDate" name="eventDate" required />
+          <DatePicker
+            defaultValue={formatDateValue(event?.eventDate)}
+            id="eventDate"
+            name="eventDate"
+            required
+          />
         </div>
 
         <div className="flex flex-col gap-2">

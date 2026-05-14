@@ -16,7 +16,7 @@ import { getTenantIdForOrg } from "@/app/lib/tenant";
 export async function GET(request: Request) {
   try {
     const { userId, orgId } = await auth();
-    if (!userId || !orgId) {
+    if (!(userId && orgId)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -75,9 +75,7 @@ export async function GET(request: Request) {
           tenantId,
           transactionType: "purchase",
           transaction_date: {
-            gte: new Date(
-              new Date().setHours(0, 0, 0, 0)
-            ).toISOString(),
+            gte: new Date(new Date().setHours(0, 0, 0, 0)).toISOString(),
           },
         },
       }),
@@ -108,10 +106,16 @@ export async function GET(request: Request) {
       notes: string | null
     ): PutawayStatus => {
       const combined = `${reason ?? ""} ${notes ?? ""}`.toLowerCase();
-      if (combined.includes("putaway:completed") || combined.includes("putaway:complete")) {
+      if (
+        combined.includes("putaway:completed") ||
+        combined.includes("putaway:complete")
+      ) {
         return "completed";
       }
-      if (combined.includes("putaway:in_progress") || combined.includes("putaway:started")) {
+      if (
+        combined.includes("putaway:in_progress") ||
+        combined.includes("putaway:started")
+      ) {
         return "in_progress";
       }
       return "pending";
@@ -119,9 +123,7 @@ export async function GET(request: Request) {
 
     const enriched = transactions.map((t) => {
       const item = itemMap.get(t.itemId);
-      const location = locations.find(
-        (l) => l.id === t.storage_location_id
-      );
+      const location = locations.find((l) => l.id === t.storage_location_id);
       const putawayStatus = derivePutawayStatus(t.reason, t.notes);
 
       return {
@@ -145,14 +147,10 @@ export async function GET(request: Request) {
 
     // Filter by putaway status if requested
     const filtered =
-      status === "all"
-        ? enriched
-        : enriched.filter((e) => e.status === status);
+      status === "all" ? enriched : enriched.filter((e) => e.status === status);
 
     // Compute metrics
-    const pendingCount = enriched.filter(
-      (e) => e.status === "pending"
-    ).length;
+    const pendingCount = enriched.filter((e) => e.status === "pending").length;
     const locationsUsed = new Set(
       enriched
         .filter((e) => e.status === "completed")

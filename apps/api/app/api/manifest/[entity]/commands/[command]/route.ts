@@ -2,15 +2,17 @@
 // Singular dynamic command dispatcher.
 // All domain command POSTs route through here → guards, policies, constraints, actions, events.
 
-import type { NextRequest } from "next/server";
 import { captureException } from "@sentry/nextjs";
-import { requireCurrentUser } from "@/app/lib/tenant";
-import { manifestErrorResponse, manifestSuccessResponse } from "@/lib/manifest-response";
-import { createManifestRuntime } from "@/lib/manifest-runtime";
-
+import type { NextRequest } from "next/server";
 // Compiled command registry — source of truth for which entity.command pairs exist.
 // Generated from packages/manifest-ir/ir/kitchen/kitchen.commands.json
 import commandsJson from "@/../../packages/manifest-ir/ir/kitchen/kitchen.commands.json";
+import { requireCurrentUser } from "@/app/lib/tenant";
+import {
+  manifestErrorResponse,
+  manifestSuccessResponse,
+} from "@/lib/manifest-response";
+import { createManifestRuntime } from "@/lib/manifest-runtime";
 
 // Build a lookup set: "EntityName.commandName" → true
 const COMMAND_REGISTRY: Set<string> = new Set(
@@ -94,7 +96,7 @@ export async function POST(
       events: result.emittedEvents,
     });
   } catch (error) {
-    console.error(`[manifest/dispatcher] Error:`, error);
+    console.error("[manifest/dispatcher] Error:", error);
     captureException(error);
     return manifestErrorResponse("Internal server error", 500);
   }

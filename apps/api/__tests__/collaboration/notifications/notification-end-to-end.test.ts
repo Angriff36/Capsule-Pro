@@ -330,7 +330,12 @@ describe("Notification Persistence (write → read alignment)", () => {
           }
         );
 
-        await mod.POST(request, { params: Promise.resolve({ entity: "Notification", command: "create" }) });
+        await mod.POST(request, {
+          params: Promise.resolve({
+            entity: "Notification",
+            command: "create",
+          }),
+        });
 
         expect(mockRunCommand).toHaveBeenCalledWith(
           verb,
@@ -358,7 +363,9 @@ describe("Notification Persistence (write → read alignment)", () => {
         }
       );
 
-      await mod.POST(request, { params: Promise.resolve({ entity: "Notification", command: "create" }) });
+      await mod.POST(request, {
+        params: Promise.resolve({ entity: "Notification", command: "create" }),
+      });
 
       expect(mockRunCommand).toHaveBeenCalledWith(
         "create",

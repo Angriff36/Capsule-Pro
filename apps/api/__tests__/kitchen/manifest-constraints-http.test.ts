@@ -145,7 +145,9 @@ describe("Manifest HTTP Constraint Enforcement - Recipe Commands", () => {
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "update" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({ entity: "PrepTask", command: "update" }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(401);
@@ -172,7 +174,9 @@ describe("Manifest HTTP Constraint Enforcement - Recipe Commands", () => {
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "update" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({ entity: "PrepTask", command: "update" }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(400);
@@ -222,7 +226,9 @@ describe("Manifest HTTP Constraint Enforcement - Recipe Commands", () => {
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "update" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({ entity: "PrepTask", command: "update" }),
+      });
 
       // Response should be successful or have appropriate error
       expect(response.status).toBeGreaterThanOrEqual(200);
@@ -260,7 +266,12 @@ describe("Manifest HTTP Constraint Enforcement - Dish Commands", () => {
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "update-pricing" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({
+          entity: "PrepTask",
+          command: "update-pricing",
+        }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(401);
@@ -308,7 +319,12 @@ describe("Manifest HTTP Constraint Enforcement - Dish Commands", () => {
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "update-pricing" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({
+          entity: "PrepTask",
+          command: "update-pricing",
+        }),
+      });
 
       // Response should be successful or have appropriate error
       expect(response.status).toBeGreaterThanOrEqual(200);
@@ -340,7 +356,12 @@ describe("Manifest HTTP Constraint Enforcement - Dish Commands", () => {
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "update-pricing" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({
+          entity: "PrepTask",
+          command: "update-pricing",
+        }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(401);
@@ -378,7 +399,9 @@ describe("Manifest HTTP Constraint Enforcement - Menu Commands", () => {
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "update" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({ entity: "PrepTask", command: "update" }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(401);
@@ -426,7 +449,9 @@ describe("Manifest HTTP Constraint Enforcement - Menu Commands", () => {
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "update" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({ entity: "PrepTask", command: "update" }),
+      });
 
       // Response should be successful or have appropriate error
       expect(response.status).toBeGreaterThanOrEqual(200);
@@ -456,7 +481,9 @@ describe("Manifest HTTP Constraint Enforcement - Menu Commands", () => {
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "update" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({ entity: "PrepTask", command: "update" }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(401);
@@ -487,7 +514,9 @@ describe("Manifest HTTP Constraint Enforcement - Menu Commands", () => {
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "update" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({ entity: "PrepTask", command: "update" }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(401);
@@ -526,7 +555,9 @@ describe("Manifest HTTP Constraint Enforcement - PrepTask Commands", () => {
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "claim" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({ entity: "PrepTask", command: "claim" }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(401);
@@ -558,7 +589,9 @@ describe("Manifest HTTP Constraint Enforcement - PrepTask Commands", () => {
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "claim" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({ entity: "PrepTask", command: "claim" }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(401);
@@ -591,7 +624,9 @@ describe("Manifest HTTP Constraint Enforcement - PrepTask Commands", () => {
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "claim" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({ entity: "PrepTask", command: "claim" }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(401);
@@ -632,7 +667,12 @@ describe("Manifest HTTP Constraint Enforcement - PrepListItem Commands", () => {
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "update-quantity" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({
+          entity: "PrepTask",
+          command: "update-quantity",
+        }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(401);
@@ -693,7 +733,12 @@ describe("Manifest HTTP Constraint Enforcement - PrepListItem Commands", () => {
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "update-quantity" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({
+          entity: "PrepTask",
+          command: "update-quantity",
+        }),
+      });
       const data = await response.json();
 
       // WARN constraints should allow the operation to succeed (200)
@@ -761,7 +806,12 @@ describe("Manifest HTTP Constraint Enforcement - PrepListItem Commands", () => {
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "update-quantity" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({
+          entity: "PrepTask",
+          command: "update-quantity",
+        }),
+      });
       const data = await response.json();
 
       // Should succeed without warnings
@@ -801,7 +851,12 @@ describe("Manifest HTTP Constraint Enforcement - PrepListItem Commands", () => {
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "update-quantity" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({
+          entity: "PrepTask",
+          command: "update-quantity",
+        }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(401);
@@ -858,7 +913,12 @@ describe("Manifest HTTP Constraint Enforcement - PrepListItem Commands", () => {
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "update-quantity" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({
+          entity: "PrepTask",
+          command: "update-quantity",
+        }),
+      });
       const data = await response.json();
 
       // WARN constraints should allow the operation to succeed (200)
@@ -922,7 +982,12 @@ describe("Manifest HTTP Constraint Enforcement - PrepListItem Commands", () => {
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "update-quantity" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({
+          entity: "PrepTask",
+          command: "update-quantity",
+        }),
+      });
       const data = await response.json();
 
       // Should succeed without warnings
@@ -974,7 +1039,9 @@ describe("Manifest HTTP Constraint Enforcement - RecipeVersion Commands", () => 
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "create" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({ entity: "PrepTask", command: "create" }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(401);
@@ -1021,7 +1088,9 @@ describe("Manifest HTTP Constraint Enforcement - RecipeVersion Commands", () => 
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "create" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({ entity: "PrepTask", command: "create" }),
+      });
       const data = await response.json();
 
       // BLOCK constraint should return 422 with proper error message
@@ -1070,7 +1139,9 @@ describe("Manifest HTTP Constraint Enforcement - RecipeVersion Commands", () => 
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "create" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({ entity: "PrepTask", command: "create" }),
+      });
       const data = await response.json();
 
       // BLOCK constraint should return 422 with proper error message
@@ -1140,7 +1211,9 @@ describe("Manifest HTTP Constraint Enforcement - RecipeVersion Commands", () => 
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "create" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({ entity: "PrepTask", command: "create" }),
+      });
       const data = await response.json();
 
       // WARN constraints should allow the operation to succeed (200)
@@ -1217,7 +1290,9 @@ describe("Manifest HTTP Constraint Enforcement - RecipeVersion Commands", () => 
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "create" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({ entity: "PrepTask", command: "create" }),
+      });
       const data = await response.json();
 
       // WARN constraints should allow the operation to succeed (200)
@@ -1293,7 +1368,9 @@ describe("Manifest HTTP Constraint Enforcement - RecipeVersion Commands", () => 
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "create" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({ entity: "PrepTask", command: "create" }),
+      });
       const data = await response.json();
 
       // Should succeed without warnings

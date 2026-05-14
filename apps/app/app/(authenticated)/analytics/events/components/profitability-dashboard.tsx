@@ -14,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
+import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   Table,
   TableBody,
@@ -22,7 +23,6 @@ import {
   TableHeader,
   TableRow,
 } from "@repo/design-system/components/ui/table";
-import { Separator } from "@repo/design-system/components/ui/separator";
 import { useEffect, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
 import type {
@@ -531,12 +531,24 @@ export function ProfitabilityDashboard({
                     {historical.map((item, index) => (
                       <TableRow key={index}>
                         <TableCell>{item.period}</TableCell>
-                        <TableCell className="text-right">{item.totalEvents}</TableCell>
-                        <TableCell className="text-right">${item.totalRevenue.toFixed(2)}</TableCell>
-                        <TableCell className="text-right font-medium">{item.averageGrossMarginPct.toFixed(1)}%</TableCell>
-                        <TableCell className="text-right">{item.averageFoodCostPct.toFixed(1)}%</TableCell>
-                        <TableCell className="text-right">{item.averageLaborCostPct.toFixed(1)}%</TableCell>
-                        <TableCell className="text-right">{item.averageOverheadPct.toFixed(1)}%</TableCell>
+                        <TableCell className="text-right">
+                          {item.totalEvents}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          ${item.totalRevenue.toFixed(2)}
+                        </TableCell>
+                        <TableCell className="text-right font-medium">
+                          {item.averageGrossMarginPct.toFixed(1)}%
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {item.averageFoodCostPct.toFixed(1)}%
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {item.averageLaborCostPct.toFixed(1)}%
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {item.averageOverheadPct.toFixed(1)}%
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>

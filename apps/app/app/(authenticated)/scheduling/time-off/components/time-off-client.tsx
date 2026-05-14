@@ -10,9 +10,8 @@ import {
 } from "@repo/design-system/components/blocks/page-shell";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
-import { Input } from "@repo/design-system/components/ui/input";
-import { Label } from "@repo/design-system/components/ui/label";
 import { DatePicker } from "@repo/design-system/components/ui/date-picker";
+import { Label } from "@repo/design-system/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -359,7 +358,6 @@ export function TimeOffClient() {
                 onChange={(e) =>
                   handleFilterChange("startDate", e.target.value)
                 }
- 
                 value={filters.startDate}
               />
             </div>
@@ -371,7 +369,6 @@ export function TimeOffClient() {
                 className="bg-canvas"
                 id="to-end"
                 onChange={(e) => handleFilterChange("endDate", e.target.value)}
- 
                 value={filters.endDate}
               />
             </div>

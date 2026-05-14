@@ -12,8 +12,8 @@
  * 403 path so a refactor that drops the guard fails loudly.
  */
 
-import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@repo/database", () => ({
   database: {

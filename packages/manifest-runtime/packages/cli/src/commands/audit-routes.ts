@@ -492,12 +492,17 @@ export function auditRouteFileContent(
     // even if they are generated and even if they call runCommand().
     if (inCommandsNs) {
       // Extract the segment after "commands/" to identify the command name
-      const commandsMatch = normalizedFile.match(/\/commands\/([^/]+)\/route\.ts$/);
+      const commandsMatch = normalizedFile.match(
+        /\/commands\/([^/]+)\/route\.ts$/
+      );
       if (commandsMatch) {
         const commandSegment = commandsMatch[1];
         // [command] or [...command] = dynamic dispatcher catch-all (legal)
         // Everything else = concrete per-command route (illegal)
-        if (commandSegment !== "[command]" && commandSegment !== "[...command]") {
+        if (
+          commandSegment !== "[command]" &&
+          commandSegment !== "[...command]"
+        ) {
           const isConcreteExempted = methods.some((m) =>
             isExempted(normalizedFile, m, ownershipContext.exemptions)
           );

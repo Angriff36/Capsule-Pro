@@ -1,7 +1,10 @@
-import type { PricingRules } from '../types/pricing';
-import type { WizardFormData, PriceEstimate } from '../types/wizard';
+import type { PricingRules } from "../types/pricing";
+import type { PriceEstimate, WizardFormData } from "../types/wizard";
 
-function getBasePerPerson(rules: PricingRules, guestCount: number): { low: number; high: number } {
+function getBasePerPerson(
+  rules: PricingRules,
+  guestCount: number
+): { low: number; high: number } {
   if (guestCount >= 500) return rules.basePerPerson[4];
   if (guestCount >= 200) return rules.basePerPerson[3];
   if (guestCount >= 100) return rules.basePerPerson[2];
@@ -9,7 +12,10 @@ function getBasePerPerson(rules: PricingRules, guestCount: number): { low: numbe
   return rules.basePerPerson[0];
 }
 
-export function calculateEstimate(data: WizardFormData, rules: PricingRules): PriceEstimate {
+export function calculateEstimate(
+  data: WizardFormData,
+  rules: PricingRules
+): PriceEstimate {
   const guestCount = Math.max(data.guestCount || 20, 10);
   const base = getBasePerPerson(rules, guestCount);
 
@@ -22,10 +28,15 @@ export function calculateEstimate(data: WizardFormData, rules: PricingRules): Pr
     perPersonHigh *= styleModifier.multiplierHigh;
   }
 
-  const extraCourses = Math.max((data.courseCount || rules.courseCountModifier.baseCount) - rules.courseCountModifier.baseCount, 0);
+  const extraCourses = Math.max(
+    (data.courseCount || rules.courseCountModifier.baseCount) -
+      rules.courseCountModifier.baseCount,
+    0
+  );
   if (extraCourses > 0) {
     perPersonLow += extraCourses * rules.courseCountModifier.perExtraCourseLow;
-    perPersonHigh += extraCourses * rules.courseCountModifier.perExtraCourseHigh;
+    perPersonHigh +=
+      extraCourses * rules.courseCountModifier.perExtraCourseHigh;
   }
 
   const staffingMod = rules.staffingModifiers[data.staffingLevel];
