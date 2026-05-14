@@ -504,3 +504,51 @@ Concrete command route count: 72 total non-dispatcher (70 in apps/api + 2 in app
 - Prior BUG-2 (70 concrete command routes in apps/api) → renumbered BUG-2. UNRESOLVED (backlog).
 
 **Notes:** `pnpm --filter app typecheck` passed. Build fails on pre-existing missing `RESEND_FROM`/`RESEND_TOKEN` env vars (unrelated). Main report updated at `docs/audits/ai-integration-invariants-2026-05-13.md`.
+
+---
+
+### Run: 2026-05-14 (scheduled audit cron — read-only pass)
+
+**Git HEAD:** 2d60b7acae29000c33c38d94c4bf3f34f8059936 *(same commit as prior fix run — no new commits)*
+
+**Summary:** 2 confirmed bugs, 3 suspicious items, 6 false alarms.
+
+**Confirmed Bugs:**
+
+1. **BUG-1** — 70 concrete command `route.ts` files in `apps/api` outside the manifest single-dispatcher. None of these are tracked by the manifest IR or enforced by policy/guard middleware. UNRESOLVED (backlog).
+2. **BUG-2** — 3 of the 70 concrete routes completely bypass `executeManifestCommand`: `events/profitability/commands/recalculate/route.ts` (direct Prisma + hardcoded cost percentages), `procurement/purchase-orders/commands/update-status/route.ts` (raw SQL), and `procurement/purchase-orders/commands/receive/route.ts` (raw SQL). UNRESOLVED.
+
+**Suspicious items:**
+
+- SUSP-1: `apps/mobile/App.tsx:84` — fallback to `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` in Expo context.
+- SUSP-2: `apps/app/proxy.ts` public route allowlist has no `/_next` static asset entries.
+- SUSP-3: `apps/api/proxy.ts` uses `@repo/auth/server` re-export; version drift risk.
+
+**Previously reported bugs:**
+- Prior BUG-1 (duplicate Toaster) → confirmed **still fixed**. Not present in layout.tsx.
+- Prior BUG-1 (shifts routes in apps/app) → confirmed **still fixed**. Files deleted.
+- BUG-1/BUG-2 this run are new confirmed findings (manifest route invariant violations in apps/api).
+
+**Notes:** No files modified this pass (read-only audit). Main report overwritten at `docs/audits/ai-integration-invariants-2026-05-13.md`.
+
+---
+
+### Run: 2026-05-14T15:15Z (scheduled cron — read-only audit)
+
+**Git HEAD:** 2d60b7acae29000c33c38d94c4bf3f34f8059936 *(same as prior audit run — no new commits)*
+
+**Summary:** 2 confirmed bugs, 3 suspicious items, 8 false alarms. No change from prior run.
+
+Concrete command route count: 70 non-dispatcher in `apps/api` (the 2 in `apps/app` were deleted in the 2026-05-14T20:15Z fix run and remain gone). Unchanged.
+
+**Confirmed Bugs:**
+
+1. **BUG-1** — 70 concrete command `route.ts` files in `apps/api` outside manifest single-dispatcher. None enforced by manifest policy/guard middleware. UNRESOLVED (backlog).
+2. **BUG-2** — 3 of those 70 routes bypass manifest runtime entirely: `events/profitability/commands/recalculate/route.ts` (direct Prisma + hardcoded cost percentages), `procurement/purchase-orders/commands/update-status/route.ts` (raw SQL), `procurement/purchase-orders/commands/receive/route.ts` (raw SQL). UNRESOLVED.
+
+**Previously reported bugs status:**
+- Prior duplicate Toaster → **still fixed**. Not present in layout.tsx.
+- Prior shift routes in apps/app → **still fixed**. Files remain deleted.
+- BUG-1 / BUG-2 from prior audit run → **still unresolved**. Git HEAD unchanged — no fixes landed.
+
+**Notes:** No files modified this pass (read-only audit). Main report overwritten at `docs/audits/ai-integration-invariants-2026-05-13.md`.

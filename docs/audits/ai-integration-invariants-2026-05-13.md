@@ -1,7 +1,7 @@
 # AI Integration Invariants Audit
-**Last updated:** 2026-05-14T20:15Z  
-**Git HEAD:** (pending commit)  
-**Auditor:** Hermes scheduled cron
+**Last updated:** 2026-05-14T15:15Z  
+**Git HEAD:** 2d60b7acae29000c33c38d94c4bf3f34f8059936  
+**Audit scope:** Provider graph · Clerk · Auth routes · Manifest routes · Stale-code smell
 
 ---
 
@@ -9,120 +9,111 @@
 
 | # | Risk | Severity | Status |
 |---|------|----------|--------|
-| 1 | 70 concrete command `route.ts` files exist outside the single manifest dispatcher (was 72; 2 in apps/app removed) | High | UNRESOLVED |
-| 2 | 2 concrete command routes lived in `apps/app` (frontend), bypassing API-layer auth/rate-limiting | High | FIXED |
-| 3 | `apps/app` public-route matcher uses prefix substring matching — new routes with matching path segments could silently bypass auth | Medium | Suspicious |
-| 4 | `notifications-provider.tsx` calls `useTheme()` inside `(authenticated)` subtree — valid because layout wraps ThemeProvider, but mount guard pattern adds complexity | Low | False alarm |
-| 5 | `ClerkProvider` theming relying on `resolvedTheme` — previously flagged as broken ordering; confirmed correct after provider reordering commit `bbccf85a` | Resolved | — |
+| 1 | 70 concrete command routes in `apps/api` bypass the manifest single-dispatcher | High | UNRESOLVED |
+| 2 | 3 of those routes also bypass manifest runtime entirely (direct Prisma/raw SQL) | High | UNRESOLVED |
+| 3 | Mobile app falls back to `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` in Expo context | Medium | **FIXED** |
+| 4 | App public-route allowlist has no `/_next` static asset entries (potential middleware overhead) | Low | Suspicious |
+| 5 | `apps/api/proxy.ts` re-exports Clerk from `@repo/auth/server`; version drift risk | Low | Suspicious |
+
+Previously confirmed bugs now **fixed**: Duplicate `<Toaster />` (commit `2dbdaa48`), two concrete shift command routes in `apps/app` (fix run 2026-05-14T20:15Z).
 
 ---
 
 ## Confirmed Bugs
 
-### BUG-1 — Concrete command routes in `apps/app` frontend (FIXED)
+### BUG-1 — 70 concrete command routes outside manifest single-dispatcher
 
-**Fixed:** 2026-05-14T20:15Z — automated fix cron
+**File pattern:** `apps/api/app/api/**/commands/*/route.ts` (excluding `manifest/[entity]/commands/[command]/route.ts`)  
+**Count:** 70 files across 13 entity groups  
+**Proof:** `find apps/api -path '*/commands/*/route.ts' -print | grep -v 'manifest/\[entity\]'` returns 70 results.
 
-**Files (deleted):**
-- `apps/app/app/api/staff/shifts/commands/create-validated/route.ts`
-- `apps/app/app/api/staff/shifts/commands/update-validated/route.ts`
+**AGENTS.md invariant (Manifest route invariants):**
+> Concrete generated command route files are illegal unless they are the single dispatcher:
+> `apps/api/app/api/manifest/[entity]/commands/[command]/route.ts`
 
-**Root cause:** The `next.config.ts` already has an `afterFiles` rewrite proxying `/api/staff/:path*` to the API app. The local filesystem routes took priority over the rewrite (filesystem > afterFiles), so they handled requests locally, bypassing the API's rate limiter, auth scope enforcement, and Sentry. Deleting the local files lets the rewrite take effect — requests now flow through `apps/api/app/api/staff/shifts/commands/create-validated/route.ts` (which uses the full manifest runtime with proper policy/guard enforcement).
+**Entity groups affected:**
+- `communications/email-templates` (1)
+- `crm/leads` (6), `crm/proposals` (5)
+- `events/catering-orders` (6), `events/import-workflows` (16), `events/profitability` (1)
+- `inventory/bulk-order-rules` (2), `inventory/variance-reports` (2)
+- `kitchen/alerts-config` (3), `kitchen/prep-task-plan-workflows` (13)
+- `procurement/purchase-orders` (2), `procurement/requisitions` (8), `staff/shifts` (5)
 
-**Verification:** `pnpm --filter app typecheck` passed. Build fails on pre-existing missing env vars (`RESEND_FROM`/`RESEND_TOKEN`), unrelated to this change.
+**Product impact:** These routes are not tracked by the manifest IR. Any policy, guard, or constraint defined in a `.manifest` file does not run for requests hitting these routes directly. Audit trail and command replay are also bypassed.
 
----
-
-### BUG-2 — 70 concrete command `route.ts` files in `apps/api` outside the manifest single-dispatcher (UNRESOLVED / backlog)
-
-**Scope:** All paths matching `apps/api/app/api/*/commands/*/route.ts` except `apps/api/app/api/manifest/[entity]/commands/[command]/route.ts`. Current count: **70** (72 total minus 2 in apps/app).
-
-**Examples:**
-- `apps/api/app/api/events/catering-orders/commands/create/route.ts`
-- `apps/api/app/api/procurement/requisitions/commands/submit/route.ts`
-- `apps/api/app/api/kitchen/prep-task-plan-workflows/commands/start-generating/route.ts`
-- *(plus ~67 others)*
-
-**Product impact:** Per `AGENTS.md` manifest route invariant, concrete generated command route files are illegal — only the single dispatcher at `apps/api/app/api/manifest/[entity]/commands/[command]/route.ts` should exist. These files bypass manifest IR governance, meaning command definitions, guards, and policies in the manifest are not enforced for these routes. They also create duplicate route surfaces that can diverge from the IR.
-
-**Proof:** `find apps/api -path '*/commands/*/route.ts' -not -path '*/manifest/*'` returns 70 files.
-
-**Smallest safe fix:** Per existing AGENTS.md guidance — migrate each entity's command routes to use the manifest dispatcher, or explicitly allowlist them as bypass routes in `IMPLEMENTATION_PLAN.md` with justification. Do not mass-delete without verifying each is covered by the dispatcher.
+**Smallest safe fix:** Move logic into the manifest dispatcher or route each entity through `executeManifestCommand` with the entity's PrismaStore wired. Do not delete; do this entity by entity. See AGENTS.md "Manifest Persistence Repair Rules."
 
 ---
 
-## Resolved Since Last Run
-
-### FIXED — BUG-1 (prior numbering): Duplicate `<Toaster />` rendered
-
-**Commit:** `2dbdaa48` — "fix: BUG-1 remove duplicate Toaster from root layout"
-
-`apps/app/app/layout.tsx` no longer renders `<Toaster />`. The only remaining `<Toaster />` is inside `packages/design-system/index.tsx:23` via `DesignSystemProvider`. Double-toast bug is resolved.
-
----
-
-### FIXED — Prior BUG-1 (earlier numbering): `useTheme()` called above `ThemeProvider` in `ClerkProviderClient`
-
-**Commit:** `bbccf85a` — reordered providers so `DesignSystemProvider` (which wraps `ThemeProvider`) is the outermost wrapper. `ClerkProviderClient` is now a child of `DesignSystemProvider`, so `useTheme()` at `apps/app/app/clerk-provider.client.tsx:13` is correctly below `ThemeProvider`.
-
----
-
-## Suspicious But Unproven
-
-### S-1 — App middleware public-route negation regex may be too broad
-
-**File:** `apps/app/middleware.ts:10` (re-exports from `proxy.ts`)  
-**File:** `apps/app/proxy.ts` — `createRouteMatcher(["/sign-in(.*)", "/sign-up(.*)", "/plasmic(.*)", "/view/proposal(.*)", "/sign/contract(.*)"])`
-
-The matcher config in `middleware.ts` uses a negation regex with hardcoded prefix strings (`sign-in`, `sign-up`, `plasmic`, `view/proposal`, `sign/contract`). New public routes (e.g., `/accept/invite`, `/verify/email`) would need to be added to both the `createRouteMatcher` allowlist in `proxy.ts` AND the negation regex in `middleware.ts`. If only one is updated, auth may be inconsistent. Not currently broken, but the dual-maintenance pattern is fragile.
-
-### S-2 — `useAuth()` called in unauthenticated sign-in/sign-up pages
+### BUG-2 — 3 routes bypass manifest runtime entirely (direct Prisma / raw SQL)
 
 **Files:**
-- `apps/app/app/(unauthenticated)/sign-in/[[...sign-in]]/sign-in-with-analytics.tsx:14`
-- `apps/app/app/(unauthenticated)/sign-up/[[...sign-up]]/sign-up-with-analytics.tsx:14`
+1. `apps/api/app/api/events/profitability/commands/recalculate/route.ts` — direct Prisma calls + hardcoded cost percentages; no manifest runtime invocation.
+2. `apps/api/app/api/procurement/purchase-orders/commands/update-status/route.ts` — raw SQL via `$queryRaw`; no `executeManifestCommand` / `runCommand` / `createManifestRuntime`.
+3. `apps/api/app/api/procurement/purchase-orders/commands/receive/route.ts` — same pattern.
 
-These call `useAuth()` in the `(unauthenticated)` route group. `ClerkProvider` is at root layout, so the hook is available. However, calling `useAuth()` here to check `isSignedIn` for analytics firing is technically sound but relies on Clerk being initialized for unauthenticated routes — which is true here because `ClerkProvider` is root-level. Not broken, but worth noting.
+**Proof:** `grep -L "executeManifestCommand|runCommand|createManifestRuntime"` on those files returns their paths (no match = no runtime invocation).
 
-### S-3 — `notifications-provider.tsx` and `useTheme()` in authenticated layout
+**Product impact:** Business rules (cost validation, receiving constraints, status-transition guards) defined in the manifest are silently skipped. Reads from the profitability route will see raw recalculated values that may diverge from the event model's computed fields.
 
-**File:** `apps/app/app/(authenticated)/components/notifications-provider.tsx:16`
+**Smallest safe fix:** Wrap each with `createManifestRuntime` + `executeManifestCommand`. For profitability's hardcoded percentages, extract them to a config field in the manifest or a DB-backed table before the wrap. Do not delete the files.
 
-`useTheme()` is used here with a `mounted` guard to avoid SSR hydration mismatch. This is a valid pattern. However, if this component were ever rendered outside the `(authenticated)` route tree (which nests under the root layout containing `DesignSystemProvider`/`ThemeProvider`), it would silently return `undefined` for `resolvedTheme` without error. Currently safe.
+---
+
+## Suspicious but Unproven
+
+### SUSP-1 — Mobile fallback to `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`
+
+**File:** `apps/mobile/App.tsx:84`
+```ts
+const publishableKey =
+  process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY ??
+  process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+```
+**Risk:** `NEXT_PUBLIC_*` env vars are Next.js build-time inlined. In a React Native / Expo bundle they will be `undefined` unless the bundler is explicitly configured to expose them. If `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY` is not set, the fallback silently resolves to `undefined`, and `MissingConfig` renders. The fallback looks like it works but actually doesn't — it just surfaces a slightly friendlier error. Not a runtime crash but a misleading false safety net.  
+**Action needed:** Remove the fallback or document why it is intentional.
+**Fixed:** 2026-05-14T23:45Z — automated fix cron. Removed `?? process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` dead-code fallback from `apps/mobile/App.tsx:84`.
+
+### SUSP-2 — App middleware public route allowlist excludes `/_next` assets
+
+**File:** `apps/app/proxy.ts:5-11`  
+Public routes: `/sign-in(.*)`, `/sign-up(.*)`, `/plasmic(.*)`, `/view/proposal(.*)`, `/sign/contract(.*)`. No `/_next/(.*)` or `/favicon(.*)`.  
+**Risk:** Next.js middleware runs on all matched paths. Clerk middleware should not slow down static asset delivery, but if the matcher config (`config.matcher`) in the compiled middleware catches `/_next/static` paths, auth overhead applies. Check the `config.matcher` export — if it's missing or broad, static assets incur unnecessary Clerk roundtrips. Not confirmed without seeing the compiled matcher.
+
+### SUSP-3 — API middleware imports Clerk via `@repo/auth/server` re-export
+
+**File:** `apps/api/proxy.ts:1`
+```ts
+import { clerkMiddleware, createRouteMatcher } from "@repo/auth/server";
+```
+The app-side middleware imports directly from `@clerk/nextjs/server`. If `@repo/auth/server` pins a different `@clerk/nextjs` version than the one installed in `apps/api`, you get a version split. No confirmed breakage — only risk if the packages diverge during an upgrade.
 
 ---
 
 ## False Alarms / Intentionally Valid
 
-| Item | Reason |
-|------|--------|
-| `ClerkProviderClient` using `useTheme()` | Now correctly below `ThemeProvider` via `DesignSystemProvider` wrapping (fixed `bbccf85a`) |
-| `query-provider.tsx` — single `QueryClientProvider` | Clean singleton, all hooks below it |
-| `tracked-user-button.tsx` — `useAuth()` in authenticated zone | Correctly below `ClerkProvider` root |
-| `auth-header.tsx` — `SignedIn`/`SignedOut` at root layout | Root layout has `ClerkProvider` above it; valid |
-| API middleware JSON 401/403 | `apps/api/proxy.ts` correctly returns JSON for API routes, redirects only for page routes |
-| No deprecated `afterSignInUrl`/`afterSignUpUrl` props found | Zero results from `git grep` — clean |
-| Single `ClerkProvider` path in `apps/app` | Only `apps/app/app/clerk-provider.client.tsx` — no nested duplicates |
-| `AnalyticsProvider` placement | Inside `QueryProvider`/`ClerkProvider` tree in root layout — correct |
+1. **`ClerkProviderClient` calling `useTheme()` above ThemeProvider** — Previously flagged. **FALSE ALARM.** Render order in `layout.tsx`: `DesignSystemProvider` (which wraps `ThemeProvider`) → `ClerkProviderClient`. `useTheme()` is called inside `ClerkProviderClient` which is a *child* of `ThemeProvider`. The nesting is correct. Reclassified 2026-05-14T13:32Z run.
+
+2. **`NotificationsProvider` using `mounted` guard for `useTheme()`** — `apps/app/app/(authenticated)/components/notifications-provider.tsx:16-24`. The `mounted` pattern is a standard next-themes SSR hydration workaround, not a bug. Intentional.
+
+3. **`packages/auth/provider.tsx` `AuthProvider` intentionally skips ClerkProvider** — Line 13 comment: "Intentionally does NOT render `<ClerkProvider>`. ClerkProvider must exist exactly once in the app root." This is by design.
+
+4. **Single `ClerkProvider` root** — `apps/app/app/layout.tsx:46` → `ClerkProviderClient` → renders one `<ClerkProvider>`. No nested layouts add another. Clean.
+
+5. **`QueryClientProvider` placement** — `query-provider.tsx` renders at root layout level (line 47 in `layout.tsx`), above all authenticated routes and their query hooks. No hooks called outside the provider tree.
+
+6. **App middleware returns JSON 401/403 for API routes** — `apps/app/proxy.ts:58-60` returns `jsonResponse("Unauthorized", 401)`. Clean. HTML redirect only for non-API unauthenticated page requests.
+
+7. **API middleware returns JSON 401** — `apps/api/proxy.ts` returns `new Response(JSON.stringify({message:"Unauthorized"}), {status:401})`. Clean.
+
+8. **Mobile `QueryClientProvider` wraps `ClerkLoaded`/`SignedIn`** — `apps/mobile/App.tsx:94-107`. `useAuth()` (called in `AuthTokenBridge`) is inside `SignedIn` which is inside `ClerkLoaded` which is inside `QueryClientProvider`. Provider order is valid: `ClerkProvider` → `QueryClientProvider` → `ClerkLoaded` → `useAuth()`. No broken dependency order.
 
 ---
 
-## Manifest Route Invariant Detail
+## Closed / Fixed in Prior Passes
 
-**Total `commands/*/route.ts` files:** 71  
-**Dispatcher (legal):** 1 — `apps/api/app/api/manifest/[entity]/commands/[command]/route.ts`  
-**Concrete routes in `apps/api` (illegal per AGENTS.md):** 70  
-**Concrete routes in `apps/app` (was 2, now 0 — FIXED):** 0  
-
-Categories of concrete routes by domain:
-- `events/` — catering-orders (6), import-workflows (17), profitability (1)
-- `kitchen/` — alerts-config (3), prep-task-plan-workflows (15)
-- `procurement/` — purchase-orders (2), requisitions (7)
-- `crm/` — proposals (5), leads (1)
-- `communications/` — email-templates (1)
-- `staff/` — shifts (2 in apps/api)
-- `inventory/` — bulk-order-rules (2), variance-reports (2)
-
----
-
-*Audit scope: provider graph invariants, Clerk invariants, auth route invariants, manifest route invariants, stale/generated-code smell. No files were modified during this audit.*
+| Bug | Description | Fixed |
+|-----|-------------|-------|
+| Duplicate `<Toaster />` | `layout.tsx` rendered an extra `<Toaster />` outside `DesignSystemProvider` | commit `2dbdaa48` |
+| Shift command routes in `apps/app` | `create-validated` and `update-validated` route.ts in frontend app bypassed API middleware | fix run 2026-05-14T20:15Z |
+| `useTheme()` above `ThemeProvider` (false alarm) | Was misread as inverted nesting; actually correct | Reclassified 2026-05-14T13:32Z |
