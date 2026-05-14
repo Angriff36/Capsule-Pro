@@ -1013,6 +1013,11 @@
       "comment": "Bypass route - event intake lead submission (pending manifest migration)"
     },
     {
+      "prefix": "/api/menu-story",
+      "methods": ["POST"],
+      "comment": "Infrastructure: AI-powered menu narrative generation (no persistence)"
+    },
+    {
       "prefix": "/api/menu/",
       "methods": ["POST"],
       "comment": "Bypass route (pending manifest migration)"
