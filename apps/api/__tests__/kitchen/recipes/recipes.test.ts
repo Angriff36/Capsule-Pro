@@ -551,7 +551,7 @@ describe("Recipes API", () => {
     });
 
     it("returns 200 with recipe when found", async () => {
-      vi.mocked(database.recipe.findFirst).mockResolvedValue(
+      vi.mocked(database.recipe.findUnique).mockResolvedValue(
         sampleRecipe() as never
       );
 
@@ -568,18 +568,17 @@ describe("Recipes API", () => {
 
       // Pin the soft-delete + tenant filter — both must be present in
       // the where clause every single time.
-      const arg = vi.mocked(database.recipe.findFirst).mock.calls[0][0] as {
+      const arg = vi.mocked(database.recipe.findUnique).mock.calls[0][0] as {
         where: Record<string, unknown>;
       };
       expect(arg.where).toEqual({
-        id: TEST_RECIPE_ID,
-        tenantId: TEST_TENANT_ID,
+        tenantId_id: { tenantId: TEST_TENANT_ID, id: TEST_RECIPE_ID },
         deletedAt: null,
       });
     });
 
     it("returns 404 when recipe not found (or soft-deleted)", async () => {
-      vi.mocked(database.recipe.findFirst).mockResolvedValue(null as never);
+      vi.mocked(database.recipe.findUnique).mockResolvedValue(null as never);
 
       const { GET } = await import("@/app/api/kitchen/recipes/[id]/route");
       const res = await GET(
@@ -593,7 +592,7 @@ describe("Recipes API", () => {
     });
 
     it("returns 500 on unexpected DB error", async () => {
-      vi.mocked(database.recipe.findFirst).mockRejectedValue(
+      vi.mocked(database.recipe.findUnique).mockRejectedValue(
         new Error("DB explosion") as never
       );
 

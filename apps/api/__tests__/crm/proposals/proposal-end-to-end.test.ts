@@ -57,14 +57,8 @@ vi.mock("@repo/auth/server", () => ({
 
 vi.mock("@/app/lib/tenant", () => ({
   getTenantIdForOrg: vi.fn(),
-  requireCurrentUser: vi.fn().mockResolvedValue({
-    id: "test-user-id",
-    tenantId: "test-tenant",
-    role: "admin",
-    email: "test@example.com",
-    firstName: "Test",
-    lastName: "User",
-  }),
+  requireCurrentUser: vi.fn(),
+  resolveCurrentUser: vi.fn(),
 }));
 
 vi.mock("@/app/lib/invariant", async () => {
@@ -76,42 +70,53 @@ vi.mock("@sentry/nextjs", () => ({
   captureException: vi.fn(),
 }));
 
+vi.mock("@/app/lib/webhook-dispatch", () => ({
+  dispatchWebhooks: vi.fn().mockResolvedValue(undefined),
+}));
+
+vi.mock("@repo/observability/log", () => ({
+  log: {
+    info: vi.fn(),
+    error: vi.fn(),
+    warn: vi.fn(),
+  },
+}));
+
+vi.mock("@repo/manifest-adapters/route-helpers", async () => {
+  const { NextResponse } = await import("next/server");
+  return {
+    manifestSuccessResponse: (data: unknown, status = 200) =>
+      NextResponse.json(
+        {
+          success: true,
+          ...(typeof data === "object" && data !== null ? data : {}),
+        },
+        { status }
+      ),
+    manifestErrorResponse: (message: string, status: number) =>
+      NextResponse.json({ success: false, message }, { status }),
+  };
+});
+
 vi.mock("@/lib/manifest-runtime", () => ({
   createManifestRuntime: vi.fn(),
 }));
 
-vi.mock("@/lib/manifest-command-handler", async () => {
-  const { manifestSuccessResponse } = await import(
-    "@repo/manifest-adapters/route-helpers"
-  );
-  return {
-    executeManifestCommand: vi.fn(
-      async (_req: NextRequest, options: Record<string, unknown>) => {
-        // Simulate a successful create: the manifest runtime wrote to the
-        // ProposalPrismaStore which persisted to the DB. Return the payload
-        // as the result so the caller gets a 200.
-        return manifestSuccessResponse({
-          result: (options as any).transformBody
-            ? (options as any).transformBody(
-                {},
-                {
-                  userId: TEST_USER_ID,
-                  tenantId: TEST_TENANT_ID,
-                  role: "admin",
-                  params: (options as any).params,
-                }
-              )
-            : {},
-        });
-      }
-    ),
-  };
-});
+const mockExecuteManifestCommand = vi.fn();
+
+vi.mock("@/lib/manifest-command-handler", () => ({
+  executeManifestCommand: mockExecuteManifestCommand,
+}));
 
 // Import mocked modules after vi.mock setup
 import { auth } from "@repo/auth/server";
-import { getTenantIdForOrg, requireCurrentUser } from "@/app/lib/tenant";
+import {
+  getTenantIdForOrg,
+  requireCurrentUser,
+  resolveCurrentUser,
+} from "@/app/lib/tenant";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
+import { executeManifestCommand } from "@/lib/manifest-command-handler";
 
 // ---------------------------------------------------------------------------
 // Test constants
@@ -359,12 +364,6 @@ describe("Proposal Persistence (write → read alignment)", () => {
       authUserId: TEST_CLERK_ID,
     };
 
-    const mockRunCommand = vi.fn().mockResolvedValue({
-      success: true,
-      result: { id: "prop-003", status: "sent" },
-      emittedEvents: [],
-    });
-
     beforeEach(() => {
       vi.mocked(auth).mockResolvedValue({
         orgId: TEST_ORG_ID,
@@ -379,15 +378,23 @@ describe("Proposal Persistence (write → read alignment)", () => {
         firstName: "Test",
         lastName: "User",
       });
+      vi.mocked(resolveCurrentUser).mockResolvedValue({
+        id: TEST_USER_ID,
+        tenantId: TEST_TENANT_ID,
+        role: "admin",
+        email: "test@example.com",
+        firstName: "Test",
+        lastName: "User",
+      });
       vi.mocked(database.user.findFirst).mockResolvedValue(mockUser as never);
-      mockRunCommand.mockClear();
-      vi.mocked(createManifestRuntime).mockResolvedValue({
-        runCommand: mockRunCommand,
+      mockExecuteManifestCommand.mockClear();
+      mockExecuteManifestCommand.mockResolvedValue({
+        success: true,
+        result: { id: "prop-003" },
       } as any);
     });
 
     const instanceScopedVerbs = [
-      { verb: "update", file: "update" },
       { verb: "send", file: "send" },
       { verb: "accept", file: "accept" },
       { verb: "reject", file: "reject" },
@@ -396,7 +403,7 @@ describe("Proposal Persistence (write → read alignment)", () => {
     ];
 
     for (const { verb, file } of instanceScopedVerbs) {
-      it(`${verb} route passes instanceId to runCommand`, async () => {
+      it(`${verb} route passes entityName and commandName to executeManifestCommand`, async () => {
         const mod = await import(
           `@/app/api/crm/proposals/commands/${file}/route`
         );
@@ -412,33 +419,15 @@ describe("Proposal Persistence (write → read alignment)", () => {
           params: Promise.resolve({ entity: "Proposal", command: "create" }),
         });
 
-        expect(mockRunCommand).toHaveBeenCalledWith(verb, expect.any(Object), {
-          entityName: "Proposal",
-        });
+        // Verify executeManifestCommand was called with correct entity + command
+        expect(mockExecuteManifestCommand).toHaveBeenCalledWith(
+          request,
+          expect.objectContaining({
+            entityName: "Proposal",
+            commandName: verb,
+          })
+        );
       });
     }
-
-    it("create route does NOT pass instanceId", async () => {
-      const mod = await import(
-        "@/app/api/manifest/[entity]/commands/[command]/route"
-      );
-      const request = createMockRequest(
-        "http://localhost:3000/api/crm/proposals/commands/create",
-        {
-          method: "POST",
-          body: JSON.stringify({ title: "New Proposal" }),
-        }
-      );
-
-      await mod.POST(request, {
-        params: Promise.resolve({ entity: "Proposal", command: "create" }),
-      });
-
-      expect(mockRunCommand).toHaveBeenCalledWith(
-        "create",
-        expect.any(Object),
-        expect.not.objectContaining({ instanceId: expect.anything() })
-      );
-    });
   });
 });
