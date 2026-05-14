@@ -51,17 +51,29 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // --- Mocks ---
 
+import { InvariantError } from "@/app/lib/invariant";
 vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
+vi.mock("@repo/database", () => ({
+  database: {
+    user: { findFirst: vi.fn(), findUnique: vi.fn() },
+    prepTask: {
+      findMany: vi.fn(),
+      count: vi.fn(),
+      findFirst: vi.fn(),
+      findUnique: vi.fn(),
+    },
+    station: {
+      findMany: vi.fn(),
+      count: vi.fn(),
+      findUnique: vi.fn(),
+      findFirst: vi.fn(),
+    },
+    prepListItem: { count: vi.fn() },
+  },
+}));
 vi.mock("@/app/lib/tenant", () => ({
   getTenantIdForOrg: vi.fn(),
-  requireCurrentUser: vi.fn().mockResolvedValue({
-    id: "test-user-id",
-    tenantId: "test-tenant",
-    role: "admin",
-    email: "test@example.com",
-    firstName: "Test",
-    lastName: "User",
-  }),
+  requireCurrentUser: vi.fn(),
 }));
 vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn() }));
 
@@ -118,17 +130,18 @@ function authed() {
     userId: TEST_USER_ID,
   } as never);
   vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID as never);
+  vi.mocked(requireCurrentUser).mockResolvedValue({
+    id: TEST_USER_ID,
+    tenantId: TEST_TENANT_ID,
+    role: "admin",
+    email: "test@example.com",
+    firstName: "Test",
+    lastName: "User",
+  } as never);
 }
 
 function unauthed() {
   vi.mocked(auth).mockResolvedValue({ orgId: null, userId: null } as never);
-  // Throwing InvariantError specifically so the route catches it and returns 401
-  class InvariantError extends Error {
-    constructor(message: string) {
-      super(message);
-      this.name = "InvariantError";
-    }
-  }
   vi.mocked(requireCurrentUser).mockRejectedValue(
     new InvariantError("Unauthorized") as never
   );
@@ -625,7 +638,7 @@ describe("Prep Tasks API", () => {
     });
 
     it("returns 404 when prep task not found in tenant", async () => {
-      vi.mocked(database.prepTask.findFirst).mockResolvedValue(null as never);
+      vi.mocked(database.prepTask.findUnique).mockResolvedValue(null as never);
 
       const { GET } = await import("@/app/api/kitchen/prep-tasks/[id]/route");
       const res = await GET(
@@ -639,7 +652,7 @@ describe("Prep Tasks API", () => {
     });
 
     it("returns 200 with prepTask payload scoped by id + tenantId + deletedAt:null", async () => {
-      vi.mocked(database.prepTask.findFirst).mockResolvedValue(
+      vi.mocked(database.prepTask.findUnique).mockResolvedValue(
         samplePrepTask() as never
       );
 
@@ -653,17 +666,16 @@ describe("Prep Tasks API", () => {
       const body = await res.json();
       expect(body.success).toBe(true);
       expect(body.prepTask.id).toBe(TEST_PREP_TASK_ID);
-      expect(database.prepTask.findFirst).toHaveBeenCalledWith({
+      expect(database.prepTask.findUnique).toHaveBeenCalledWith({
         where: {
-          id: TEST_PREP_TASK_ID,
-          tenantId: TEST_TENANT_ID,
+          tenantId_id: { tenantId: TEST_TENANT_ID, id: TEST_PREP_TASK_ID },
           deletedAt: null,
         },
       });
     });
 
     it("returns 500 on Prisma error", async () => {
-      vi.mocked(database.prepTask.findFirst).mockRejectedValue(
+      vi.mocked(database.prepTask.findUnique).mockRejectedValue(
         new Error("Boom") as never
       );
 
@@ -818,17 +830,20 @@ describe("Prep Tasks API", () => {
       expect(body.message).toBe("Unauthorized");
     });
 
-    it(`returns 400 when tenant cannot be resolved [${name}]`, async () => {
+    it(`returns 401 when tenant cannot be resolved [${name}]`, async () => {
       vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
+      vi.mocked(requireCurrentUser).mockRejectedValue(
+        new InvariantError("Tenant not found") as never
+      );
 
       const mod = await import(routePath);
       const res = await mod.POST(postRequest(path, sampleBody), {
         params: Promise.resolve({ entity: "PrepTask", command: name }),
       });
 
-      expect(res.status).toBe(400);
+      expect(res.status).toBe(401);
       const body = await res.json();
-      expect(body.message).toBe("Tenant not found");
+      expect(body.message).toBe("Unauthorized");
     });
 
     it(`returns 200 with result and events on success [${name}]`, async () => {
@@ -849,7 +864,8 @@ describe("Prep Tasks API", () => {
       // tenantId would silently break command authorization at runtime.
       const runtimeCall = vi.mocked(createManifestRuntime).mock.calls[0][0];
       expect(runtimeCall).toEqual({
-        user: { id: TEST_USER_ID, tenantId: TEST_TENANT_ID },
+        entityName: "PrepTask",
+        user: { id: TEST_USER_ID, tenantId: TEST_TENANT_ID, role: "admin" },
       });
     });
 

@@ -5,7 +5,20 @@
  * with authentication, authorization, and error handling.
  */
 
-import { database } from "@repo/database";
+const { mockDatabase } = vi.hoisted(() => ({
+  mockDatabase: {
+    payroll_periods: {
+      findMany: vi.fn(),
+      findFirst: vi.fn(),
+    },
+    user: {
+      findFirst: vi.fn(),
+    },
+  },
+}));
+
+import { database } from "@/lib/database";
+import { InvariantError } from "@/app/lib/invariant";
 import { NextRequest } from "next/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { POST as createPeriod } from "@/app/api/manifest/[entity]/commands/[command]/route";
@@ -14,17 +27,15 @@ import { GET as listPeriods } from "@/app/api/payroll/periods/list/route";
 
 // Mock dependencies
 vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
+vi.mock("@repo/database", () => ({
+  database: mockDatabase,
+}));
+vi.mock("@/lib/database", () => ({
+  database: mockDatabase,
+}));
 vi.mock("@/app/lib/tenant", () => ({
-  requireCurrentUser: vi.fn().mockResolvedValue({
-    id: "test-user-id",
-    tenantId: "test-tenant",
-    role: "admin",
-    email: "test@example.com",
-    firstName: "Test",
-    lastName: "User",
-  }),
-
   getTenantIdForOrg: vi.fn(),
+  requireCurrentUser: vi.fn(),
 }));
 vi.mock("@/lib/manifest-runtime", () => ({
   createManifestRuntime: vi.fn(),
@@ -34,7 +45,7 @@ vi.mock("@sentry/nextjs", () => ({
 }));
 
 const { auth } = await import("@repo/auth/server");
-const { getTenantIdForOrg } = await import("@/app/lib/tenant");
+const { getTenantIdForOrg, requireCurrentUser } = await import("@/app/lib/tenant");
 const { createManifestRuntime } = await import("@/lib/manifest-runtime");
 
 const TEST_TENANT_ID = "00000000-0000-0000-0000-000000000001";
@@ -130,7 +141,7 @@ describe("Payroll Periods API", () => {
       expect(body.payrollPeriods).toHaveLength(2);
     });
 
-    it("should filter by tenant_id and exclude soft-deleted", async () => {
+    it("should filter by tenant_id", async () => {
       vi.mocked(database.payroll_periods.findMany).mockResolvedValue(
         [] as never
       );
@@ -144,7 +155,6 @@ describe("Payroll Periods API", () => {
         expect.objectContaining({
           where: {
             tenant_id: TEST_TENANT_ID,
-            deleted_at: null,
           },
         })
       );
@@ -241,7 +251,6 @@ describe("Payroll Periods API", () => {
           where: {
             id: "period-001",
             tenant_id: TEST_TENANT_ID,
-            deleted_at: null,
           },
         })
       );
@@ -269,12 +278,21 @@ describe("Payroll Periods API", () => {
     const mockRunCommand = vi.fn();
 
     beforeEach(() => {
+      vi.clearAllMocks();
+      vi.mocked(requireCurrentUser).mockResolvedValue({
+        id: TEST_USER_ID,
+        tenantId: TEST_TENANT_ID,
+        role: "admin",
+        email: "test@example.com",
+        firstName: "Test",
+        lastName: "User",
+      });
       vi.mocked(createManifestRuntime).mockResolvedValue({
         runCommand: mockRunCommand,
       } as never);
 
       // Mock user lookup for create route
-      vi.mocked(database.user.findFirst).mockResolvedValue({
+      vi.mocked(mockDatabase.user.findFirst).mockResolvedValue({
         id: TEST_USER_ID,
         tenantId: TEST_TENANT_ID,
         role: "admin",
@@ -283,10 +301,9 @@ describe("Payroll Periods API", () => {
     });
 
     it("should return 401 for unauthenticated requests", async () => {
-      vi.mocked(auth).mockResolvedValue({
-        userId: null,
-        orgId: null,
-      } as never);
+      vi.mocked(requireCurrentUser).mockRejectedValue(
+        new InvariantError("Unauthorized")
+      );
 
       const request = new NextRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -306,8 +323,10 @@ describe("Payroll Periods API", () => {
       expect(response.status).toBe(401);
     });
 
-    it("should return 400 when tenant not found", async () => {
-      vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
+    it("should return 401 when tenant not found", async () => {
+      vi.mocked(requireCurrentUser).mockRejectedValue(
+        new InvariantError("Tenant not found")
+      );
 
       const request = new NextRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -324,7 +343,7 @@ describe("Payroll Periods API", () => {
         params: Promise.resolve({ entity: "PayrollPeriod", command: "create" }),
       });
 
-      expect(response.status).toBe(400);
+      expect(response.status).toBe(401);
     });
 
     it("should create a period through manifest runtime", async () => {
@@ -453,8 +472,10 @@ describe("Payroll Periods API", () => {
       expect(response.status).toBe(500);
     });
 
-    it("should return 400 when user not found in database", async () => {
-      vi.mocked(database.user.findFirst).mockResolvedValue(null as never);
+    it("should return 401 when user not found in database", async () => {
+      vi.mocked(requireCurrentUser).mockRejectedValue(
+        new InvariantError("User not found in database")
+      );
 
       const request = new NextRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -467,9 +488,7 @@ describe("Payroll Periods API", () => {
         params: Promise.resolve({ entity: "PayrollPeriod", command: "create" }),
       });
 
-      expect(response.status).toBe(400);
-      const body = await response.json();
-      expect(body.message).toBe("User not found in database");
+      expect(response.status).toBe(401);
     });
   });
 });

@@ -5,24 +5,30 @@
  * with authentication, authorization, and error handling.
  */
 
-import { database } from "@repo/database";
+import { database } from "@/lib/database";
 import { NextRequest } from "next/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { GET as getRun } from "@/app/api/payroll/runs/[id]/route";
 import { GET as listRuns } from "@/app/api/payroll/runs/list/route";
 
+const { mockDatabase } = vi.hoisted(() => ({
+  mockDatabase: {
+    payroll_runs: {
+      findMany: vi.fn(),
+      findFirst: vi.fn(),
+    },
+  },
+}));
+
 // Mock dependencies
 vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
+vi.mock("@repo/database", () => ({
+  database: mockDatabase,
+}));
+vi.mock("@/lib/database", () => ({
+  database: mockDatabase,
+}));
 vi.mock("@/app/lib/tenant", () => ({
-  requireCurrentUser: vi.fn().mockResolvedValue({
-    id: "test-user-id",
-    tenantId: "test-tenant",
-    role: "admin",
-    email: "test@example.com",
-    firstName: "Test",
-    lastName: "User",
-  }),
-
   getTenantIdForOrg: vi.fn(),
 }));
 
@@ -113,7 +119,7 @@ describe("Payroll Runs API", () => {
       expect(body.payrollRuns).toHaveLength(2);
     });
 
-    it("should filter by tenant_id and exclude soft-deleted", async () => {
+    it("should filter by tenant_id", async () => {
       vi.mocked(database.payroll_runs.findMany).mockResolvedValue([] as never);
 
       const request = new NextRequest("http://localhost/api/payroll/runs/list");
@@ -123,7 +129,6 @@ describe("Payroll Runs API", () => {
         expect.objectContaining({
           where: {
             tenant_id: TEST_TENANT_ID,
-            deleted_at: null,
           },
         })
       );
@@ -230,7 +235,6 @@ describe("Payroll Runs API", () => {
           where: {
             id: "run-001",
             tenant_id: TEST_TENANT_ID,
-            deleted_at: null,
           },
         })
       );

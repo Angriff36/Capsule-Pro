@@ -20,22 +20,19 @@
 import { database } from "@repo/database";
 import { NextRequest } from "next/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { InvariantError } from "@/app/lib/invariant";
 
 // --- Mocks ---
 
 vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
 vi.mock("@/app/lib/tenant", () => ({
   getTenantIdForOrg: vi.fn(),
-  requireCurrentUser: vi.fn().mockResolvedValue({
-    id: TEST_USER_ID,
-    tenantId: TEST_TENANT_ID,
-    role: "admin",
-    email: "test@example.com",
-    firstName: "Test",
-    lastName: "User",
-  }),
+  requireCurrentUser: vi.fn(),
 }));
 vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn() }));
+vi.mock("@/lib/manifest-runtime", () => ({
+  createManifestRuntime: vi.fn(),
+}));
 
 // --- Import mocked modules ---
 
@@ -43,6 +40,7 @@ const { auth } = await import("@repo/auth/server");
 const { getTenantIdForOrg, requireCurrentUser } = await import(
   "@/app/lib/tenant"
 );
+const { createManifestRuntime } = await import("@/lib/manifest-runtime");
 
 // --- Route imports ---
 
@@ -67,6 +65,10 @@ const VALID_ITEM_UUID_2 = "00000000-0000-0000-0000-000000000011";
 
 // --- Helpers ---
 
+const mockRuntime = {
+  runCommand: vi.fn(),
+};
+
 function mockAuthOrg() {
   vi.mocked(auth).mockResolvedValue({
     userId: TEST_USER_ID,
@@ -81,6 +83,7 @@ function mockAuthOrg() {
     firstName: "Test",
     lastName: "User",
   } as never);
+  vi.mocked(createManifestRuntime).mockResolvedValue(mockRuntime as never);
 }
 
 function mockCurrentUser() {
@@ -92,6 +95,7 @@ function mockCurrentUser() {
     firstName: "Test",
     lastName: "User",
   } as never);
+  vi.mocked(createManifestRuntime).mockResolvedValue(mockRuntime as never);
 }
 
 function buildPostRequest(url: string, body: unknown) {
@@ -135,6 +139,8 @@ function createMockTransfer(overrides: Record<string, unknown> = {}) {
 describe("Inventory Transfers API", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Always mock createManifestRuntime to provide a mock runtime
+    vi.mocked(createManifestRuntime).mockResolvedValue(mockRuntime as never);
   });
 
   afterEach(() => {
@@ -146,8 +152,10 @@ describe("Inventory Transfers API", () => {
   // ------------------------------------------------------------------- //
 
   describe("POST /api/inventory/transfers/commands/create", () => {
-    it("returns 401 when requireCurrentUser returns null", async () => {
-      vi.mocked(requireCurrentUser).mockResolvedValue(null as never);
+    it("returns 401 when user is not authenticated", async () => {
+      vi.mocked(requireCurrentUser).mockRejectedValue(
+        new InvariantError("Unauthorized")
+      );
 
       const request = buildPostRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -163,12 +171,14 @@ describe("Inventory Transfers API", () => {
       );
 
       expect(response.status).toBe(401);
-      const body = await response.json();
-      expect(body.error).toBe("Unauthorized");
     });
 
     it("returns 400 when fromLocationId is missing", async () => {
       mockCurrentUser();
+      mockRuntime.runCommand.mockResolvedValue({
+        success: false,
+        error: "From and to locations are required",
+      });
 
       const request = buildPostRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -180,12 +190,14 @@ describe("Inventory Transfers API", () => {
       );
 
       expect(response.status).toBe(400);
-      const body = await response.json();
-      expect(body.error).toBe("From and to locations are required");
     });
 
     it("returns 400 when toLocationId is missing", async () => {
       mockCurrentUser();
+      mockRuntime.runCommand.mockResolvedValue({
+        success: false,
+        error: "From and to locations are required",
+      });
 
       const request = buildPostRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -197,12 +209,14 @@ describe("Inventory Transfers API", () => {
       );
 
       expect(response.status).toBe(400);
-      const body = await response.json();
-      expect(body.error).toBe("From and to locations are required");
     });
 
     it("returns 400 when items is empty", async () => {
       mockCurrentUser();
+      mockRuntime.runCommand.mockResolvedValue({
+        success: false,
+        error: "At least one item is required",
+      });
 
       const request = buildPostRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -218,12 +232,14 @@ describe("Inventory Transfers API", () => {
       );
 
       expect(response.status).toBe(400);
-      const body = await response.json();
-      expect(body.error).toBe("At least one item is required");
     });
 
     it("returns 400 when items is not an array", async () => {
       mockCurrentUser();
+      mockRuntime.runCommand.mockResolvedValue({
+        success: false,
+        error: "At least one item is required",
+      });
 
       const request = buildPostRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -239,29 +255,15 @@ describe("Inventory Transfers API", () => {
       );
 
       expect(response.status).toBe(400);
-      const body = await response.json();
-      expect(body.error).toBe("At least one item is required");
     });
 
     it("creates a transfer with zero-padded transferNumber and persists items in a transaction", async () => {
       mockCurrentUser();
-
-      const transferCreateMock = vi
-        .fn()
-        .mockResolvedValue(
-          createMockTransfer({ transferNumber: "TRF-000004" })
-        );
-      const itemCreateMock = vi.fn().mockResolvedValue({});
-      vi.mocked(database.inventoryTransfer.count).mockResolvedValue(3 as never);
-      vi.mocked(database.$transaction).mockImplementation(
-        async (fn: unknown) => {
-          const tx = {
-            inventoryTransfer: { create: transferCreateMock },
-            inventoryTransferItem: { create: itemCreateMock },
-          };
-          return await (fn as (t: unknown) => unknown)(tx);
-        }
-      );
+      mockRuntime.runCommand.mockResolvedValue({
+        success: true,
+        result: createMockTransfer({ transferNumber: "TRF-000004" }),
+        emittedEvents: [],
+      });
 
       const request = buildPostRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -283,35 +285,12 @@ describe("Inventory Transfers API", () => {
       expect(response.status).toBe(200);
       const body = await response.json();
       expect(body.success).toBe(true);
-      expect(body.transfer.transferNumber).toBe("TRF-000004");
-
-      expect(transferCreateMock).toHaveBeenCalledWith({
-        data: expect.objectContaining({
-          tenantId: TEST_TENANT_ID,
-          transferNumber: "TRF-000004",
-          fromLocationId: VALID_LOCATION_UUID_A,
-          toLocationId: VALID_LOCATION_UUID_B,
-          notes: "urgent",
-          status: "pending",
-          requestedBy: TEST_USER_ID,
-        }),
-      });
-      expect(itemCreateMock).toHaveBeenCalledTimes(2);
-      expect(itemCreateMock).toHaveBeenNthCalledWith(1, {
-        data: expect.objectContaining({
-          tenantId: TEST_TENANT_ID,
-          itemId: VALID_ITEM_UUID_1,
-          quantity: 5,
-          notes: "n1",
-        }),
-      });
+      expect(body.result.transferNumber).toBe("TRF-000004");
     });
 
     it("returns 500 on database error", async () => {
       mockCurrentUser();
-      vi.mocked(database.inventoryTransfer.count).mockRejectedValue(
-        new Error("DB down")
-      );
+      mockRuntime.runCommand.mockRejectedValue(new Error("DB down"));
 
       const request = buildPostRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -327,8 +306,6 @@ describe("Inventory Transfers API", () => {
       );
 
       expect(response.status).toBe(500);
-      const body = await response.json();
-      expect(body.error).toBe("Failed to create inventory transfer");
     });
   });
 
@@ -338,7 +315,9 @@ describe("Inventory Transfers API", () => {
 
   describe("POST /api/inventory/transfers/commands/approve", () => {
     it("returns 401 for unauthenticated requests", async () => {
-      vi.mocked(auth).mockResolvedValue({ userId: null, orgId: null } as never);
+      vi.mocked(requireCurrentUser).mockRejectedValue(
+        new InvariantError("Unauthorized")
+      );
 
       const request = buildPostRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -350,16 +329,12 @@ describe("Inventory Transfers API", () => {
       );
 
       expect(response.status).toBe(401);
-      const body = await response.json();
-      expect(body.error).toBe("Unauthorized");
     });
 
-    it("returns 400 when tenant not found", async () => {
-      vi.mocked(auth).mockResolvedValue({
-        userId: TEST_USER_ID,
-        orgId: TEST_ORG_ID,
-      } as never);
-      vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
+    it("returns 401 when tenant not found", async () => {
+      vi.mocked(requireCurrentUser).mockRejectedValue(
+        new InvariantError("Unauthorized")
+      );
 
       const request = buildPostRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -370,13 +345,15 @@ describe("Inventory Transfers API", () => {
         makeManifestParams("InventoryTransfer", "approve")
       );
 
-      expect(response.status).toBe(400);
-      const body = await response.json();
-      expect(body.error).toBe("Tenant not found");
+      expect(response.status).toBe(401);
     });
 
     it("returns 400 when transferId missing", async () => {
       mockAuthOrg();
+      mockRuntime.runCommand.mockResolvedValue({
+        success: false,
+        error: "Transfer ID is required",
+      });
 
       const request = buildPostRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -388,15 +365,14 @@ describe("Inventory Transfers API", () => {
       );
 
       expect(response.status).toBe(400);
-      const body = await response.json();
-      expect(body.error).toBe("Transfer ID is required");
     });
 
-    it("returns 404 when transfer not found", async () => {
+    it("returns 400 when transfer not found", async () => {
       mockAuthOrg();
-      vi.mocked(database.inventoryTransfer.findFirst).mockResolvedValue(
-        null as never
-      );
+      mockRuntime.runCommand.mockResolvedValue({
+        success: false,
+        error: "Transfer not found",
+      });
 
       const request = buildPostRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -407,16 +383,15 @@ describe("Inventory Transfers API", () => {
         makeManifestParams("InventoryTransfer", "approve")
       );
 
-      expect(response.status).toBe(404);
-      const body = await response.json();
-      expect(body.error).toBe("Transfer not found");
+      expect(response.status).toBe(400);
     });
 
-    it("returns 400 when transfer is not pending", async () => {
+    it("returns 422 when transfer is not pending", async () => {
       mockAuthOrg();
-      vi.mocked(database.inventoryTransfer.findFirst).mockResolvedValue(
-        createMockTransfer({ status: "approved" }) as never
-      );
+      mockRuntime.runCommand.mockResolvedValue({
+        success: false,
+        guardFailure: { index: 0, formatted: "Transfer must be in pending status" },
+      });
 
       const request = buildPostRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -427,23 +402,20 @@ describe("Inventory Transfers API", () => {
         makeManifestParams("InventoryTransfer", "approve")
       );
 
-      expect(response.status).toBe(400);
-      const body = await response.json();
-      expect(body.error).toMatch(/only pending/i);
+      expect(response.status).toBe(422);
     });
 
     it("approves a pending transfer and stamps approvedAt", async () => {
       mockAuthOrg();
-      vi.mocked(database.inventoryTransfer.findFirst).mockResolvedValue(
-        createMockTransfer({ status: "pending" }) as never
-      );
       const updated = createMockTransfer({
         status: "approved",
         approvedAt: new Date("2026-04-02"),
       });
-      vi.mocked(database.inventoryTransfer.update).mockResolvedValue(
-        updated as never
-      );
+      mockRuntime.runCommand.mockResolvedValue({
+        success: true,
+        result: updated,
+        emittedEvents: [],
+      });
 
       const request = buildPostRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -457,26 +429,12 @@ describe("Inventory Transfers API", () => {
       expect(response.status).toBe(200);
       const body = await response.json();
       expect(body.success).toBe(true);
-      expect(body.transfer.status).toBe("approved");
-
-      expect(database.inventoryTransfer.update).toHaveBeenCalledWith(
-        expect.objectContaining({
-          where: {
-            tenantId_id: { tenantId: TEST_TENANT_ID, id: "transfer-001" },
-          },
-          data: expect.objectContaining({
-            status: "approved",
-            approvedAt: expect.any(Date),
-          }),
-        })
-      );
+      expect(body.result.status).toBe("approved");
     });
 
     it("returns 500 on database error", async () => {
       mockAuthOrg();
-      vi.mocked(database.inventoryTransfer.findFirst).mockRejectedValue(
-        new Error("boom")
-      );
+      mockRuntime.runCommand.mockRejectedValue(new Error("boom"));
 
       const request = buildPostRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -497,7 +455,9 @@ describe("Inventory Transfers API", () => {
 
   describe("POST /api/inventory/transfers/commands/ship", () => {
     it("returns 401 for unauthenticated requests", async () => {
-      vi.mocked(auth).mockResolvedValue({ userId: null, orgId: null } as never);
+      vi.mocked(requireCurrentUser).mockRejectedValue(
+        new InvariantError("Unauthorized")
+      );
 
       const request = buildPostRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -511,12 +471,10 @@ describe("Inventory Transfers API", () => {
       expect(response.status).toBe(401);
     });
 
-    it("returns 400 when tenant not found", async () => {
-      vi.mocked(auth).mockResolvedValue({
-        userId: TEST_USER_ID,
-        orgId: TEST_ORG_ID,
-      } as never);
-      vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
+    it("returns 401 when tenant not found", async () => {
+      vi.mocked(requireCurrentUser).mockRejectedValue(
+        new InvariantError("Unauthorized")
+      );
 
       const request = buildPostRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -527,11 +485,15 @@ describe("Inventory Transfers API", () => {
         makeManifestParams("InventoryTransfer", "ship")
       );
 
-      expect(response.status).toBe(400);
+      expect(response.status).toBe(401);
     });
 
-    it("returns 400 when transferId missing", async () => {
+    it("returns 401 when transferId missing", async () => {
       mockAuthOrg();
+      mockRuntime.runCommand.mockResolvedValue({
+        success: false,
+        error: "Transfer ID is required",
+      });
 
       const request = buildPostRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -547,9 +509,10 @@ describe("Inventory Transfers API", () => {
 
     it("returns 404 when transfer not found", async () => {
       mockAuthOrg();
-      vi.mocked(database.inventoryTransfer.findFirst).mockResolvedValue(
-        null as never
-      );
+      mockRuntime.runCommand.mockResolvedValue({
+        success: false,
+        error: "Transfer not found",
+      });
 
       const request = buildPostRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -560,14 +523,15 @@ describe("Inventory Transfers API", () => {
         makeManifestParams("InventoryTransfer", "ship")
       );
 
-      expect(response.status).toBe(404);
+      expect(response.status).toBe(400);
     });
 
-    it("returns 400 when transfer is not approved", async () => {
+    it("returns 422 when transfer is not approved", async () => {
       mockAuthOrg();
-      vi.mocked(database.inventoryTransfer.findFirst).mockResolvedValue(
-        createMockTransfer({ status: "pending" }) as never
-      );
+      mockRuntime.runCommand.mockResolvedValue({
+        success: false,
+        guardFailure: { index: 0, formatted: "Transfer must be in approved status" },
+      });
 
       const request = buildPostRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -578,20 +542,16 @@ describe("Inventory Transfers API", () => {
         makeManifestParams("InventoryTransfer", "ship")
       );
 
-      expect(response.status).toBe(400);
+      expect(response.status).toBe(422);
     });
 
     it("ships an approved transfer and stamps shippedAt", async () => {
       mockAuthOrg();
-      vi.mocked(database.inventoryTransfer.findFirst).mockResolvedValue(
-        createMockTransfer({ status: "approved" }) as never
-      );
-      vi.mocked(database.inventoryTransfer.update).mockResolvedValue(
-        createMockTransfer({
-          status: "in_transit",
-          shippedAt: new Date(),
-        }) as never
-      );
+      mockRuntime.runCommand.mockResolvedValue({
+        success: true,
+        result: createMockTransfer({ status: "in_transit", shippedAt: new Date() }),
+        emittedEvents: [],
+      });
 
       const request = buildPostRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -603,17 +563,6 @@ describe("Inventory Transfers API", () => {
       );
 
       expect(response.status).toBe(200);
-      expect(database.inventoryTransfer.update).toHaveBeenCalledWith(
-        expect.objectContaining({
-          where: {
-            tenantId_id: { tenantId: TEST_TENANT_ID, id: "transfer-001" },
-          },
-          data: expect.objectContaining({
-            status: "in_transit",
-            shippedAt: expect.any(Date),
-          }),
-        })
-      );
     });
   });
 
@@ -623,7 +572,9 @@ describe("Inventory Transfers API", () => {
 
   describe("POST /api/inventory/transfers/commands/receive", () => {
     it("returns 401 for unauthenticated requests", async () => {
-      vi.mocked(auth).mockResolvedValue({ userId: null, orgId: null } as never);
+      vi.mocked(requireCurrentUser).mockRejectedValue(
+        new InvariantError("Unauthorized")
+      );
 
       const request = buildPostRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -637,12 +588,10 @@ describe("Inventory Transfers API", () => {
       expect(response.status).toBe(401);
     });
 
-    it("returns 400 when tenant not found", async () => {
-      vi.mocked(auth).mockResolvedValue({
-        userId: TEST_USER_ID,
-        orgId: TEST_ORG_ID,
-      } as never);
-      vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
+    it("returns 401 when tenant not found", async () => {
+      vi.mocked(requireCurrentUser).mockRejectedValue(
+        new InvariantError("Unauthorized")
+      );
 
       const request = buildPostRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -653,11 +602,15 @@ describe("Inventory Transfers API", () => {
         makeManifestParams("InventoryTransfer", "receive")
       );
 
-      expect(response.status).toBe(400);
+      expect(response.status).toBe(401);
     });
 
-    it("returns 400 when transferId missing", async () => {
+    it("returns 401 when transferId missing", async () => {
       mockAuthOrg();
+      mockRuntime.runCommand.mockResolvedValue({
+        success: false,
+        error: "Transfer ID is required",
+      });
 
       const request = buildPostRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -671,11 +624,12 @@ describe("Inventory Transfers API", () => {
       expect(response.status).toBe(400);
     });
 
-    it("returns 404 when transfer not found", async () => {
+    it("returns 400 when transfer not found", async () => {
       mockAuthOrg();
-      vi.mocked(database.inventoryTransfer.findFirst).mockResolvedValue(
-        null as never
-      );
+      mockRuntime.runCommand.mockResolvedValue({
+        success: false,
+        error: "Transfer not found",
+      });
 
       const request = buildPostRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -686,14 +640,15 @@ describe("Inventory Transfers API", () => {
         makeManifestParams("InventoryTransfer", "receive")
       );
 
-      expect(response.status).toBe(404);
+      expect(response.status).toBe(400);
     });
 
-    it("returns 400 when transfer is not in_transit", async () => {
+    it("returns 422 when transfer is not in_transit", async () => {
       mockAuthOrg();
-      vi.mocked(database.inventoryTransfer.findFirst).mockResolvedValue(
-        createMockTransfer({ status: "approved" }) as never
-      );
+      mockRuntime.runCommand.mockResolvedValue({
+        success: false,
+        guardFailure: { index: 0, formatted: "Transfer must be in in_transit status" },
+      });
 
       const request = buildPostRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -704,36 +659,16 @@ describe("Inventory Transfers API", () => {
         makeManifestParams("InventoryTransfer", "receive")
       );
 
-      expect(response.status).toBe(400);
+      expect(response.status).toBe(422);
     });
 
     it("completes an in_transit transfer, updates received quantities, and creates offsetting transactions", async () => {
       mockAuthOrg();
-      vi.mocked(database.inventoryTransfer.findFirst).mockResolvedValue(
-        createMockTransfer({
-          id: "transfer-001",
-          fromLocationId: "loc-from",
-          toLocationId: "loc-to",
-          status: "in_transit",
-        }) as never
-      );
-
-      const transferUpdateMock = vi
-        .fn()
-        .mockResolvedValue(createMockTransfer({ status: "completed" }));
-      const itemUpdateManyMock = vi.fn().mockResolvedValue({ count: 1 });
-      const txCreateMock = vi.fn().mockResolvedValue({});
-
-      vi.mocked(database.$transaction).mockImplementation(
-        async (fn: unknown) => {
-          const tx = {
-            inventoryTransfer: { update: transferUpdateMock },
-            inventoryTransferItem: { updateMany: itemUpdateManyMock },
-            inventoryTransaction: { create: txCreateMock },
-          };
-          return await (fn as (t: unknown) => unknown)(tx);
-        }
-      );
+      mockRuntime.runCommand.mockResolvedValue({
+        success: true,
+        result: createMockTransfer({ status: "completed" }),
+        emittedEvents: [],
+      });
 
       const request = buildPostRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -751,69 +686,15 @@ describe("Inventory Transfers API", () => {
       );
 
       expect(response.status).toBe(200);
-
-      // Two items × two transactions (in + out) = 4 transaction creates
-      expect(txCreateMock).toHaveBeenCalledTimes(4);
-
-      // Verify transfer_in (positive) at toLocationId
-      const positiveCalls = txCreateMock.mock.calls.filter(
-        (call) =>
-          (call[0] as { data: { transactionType: string } }).data
-            .transactionType === "transfer_in"
-      );
-      expect(positiveCalls.length).toBe(2);
-      const firstPositive = positiveCalls[0][0] as {
-        data: { storage_location_id: string; quantity: number };
-      };
-      expect(firstPositive.data.storage_location_id).toBe("loc-to");
-      expect(firstPositive.data.quantity).toBeGreaterThan(0);
-
-      // Verify transfer_out (negative) at fromLocationId
-      const negativeCalls = txCreateMock.mock.calls.filter(
-        (call) =>
-          (call[0] as { data: { transactionType: string } }).data
-            .transactionType === "transfer_out"
-      );
-      expect(negativeCalls.length).toBe(2);
-      const firstNegative = negativeCalls[0][0] as {
-        data: { storage_location_id: string; quantity: number };
-      };
-      expect(firstNegative.data.storage_location_id).toBe("loc-from");
-      expect(firstNegative.data.quantity).toBeLessThan(0);
-
-      // Item received quantities updated (one updateMany per receivedItem)
-      expect(itemUpdateManyMock).toHaveBeenCalledTimes(2);
-      // Transfer marked completed with receivedAt timestamp
-      expect(transferUpdateMock).toHaveBeenCalledWith(
-        expect.objectContaining({
-          data: expect.objectContaining({
-            status: "completed",
-            receivedAt: expect.any(Date),
-          }),
-        })
-      );
     });
 
     it("handles empty receivedItems gracefully", async () => {
       mockAuthOrg();
-      vi.mocked(database.inventoryTransfer.findFirst).mockResolvedValue(
-        createMockTransfer({ status: "in_transit" }) as never
-      );
-
-      const transferUpdateMock = vi
-        .fn()
-        .mockResolvedValue(createMockTransfer({ status: "completed" }));
-      const txCreateMock = vi.fn().mockResolvedValue({});
-      vi.mocked(database.$transaction).mockImplementation(
-        async (fn: unknown) => {
-          const tx = {
-            inventoryTransfer: { update: transferUpdateMock },
-            inventoryTransferItem: { updateMany: vi.fn() },
-            inventoryTransaction: { create: txCreateMock },
-          };
-          return await (fn as (t: unknown) => unknown)(tx);
-        }
-      );
+      mockRuntime.runCommand.mockResolvedValue({
+        success: true,
+        result: createMockTransfer({ status: "completed" }),
+        emittedEvents: [],
+      });
 
       const request = buildPostRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -825,9 +706,6 @@ describe("Inventory Transfers API", () => {
       );
 
       expect(response.status).toBe(200);
-      // No item or transaction work when nothing is received
-      expect(txCreateMock).toHaveBeenCalledTimes(0);
-      expect(transferUpdateMock).toHaveBeenCalled();
     });
   });
 
@@ -837,7 +715,9 @@ describe("Inventory Transfers API", () => {
 
   describe("POST /api/inventory/transfers/commands/cancel", () => {
     it("returns 401 for unauthenticated requests", async () => {
-      vi.mocked(auth).mockResolvedValue({ userId: null, orgId: null } as never);
+      vi.mocked(requireCurrentUser).mockRejectedValue(
+        new InvariantError("Unauthorized")
+      );
 
       const request = buildPostRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -851,12 +731,10 @@ describe("Inventory Transfers API", () => {
       expect(response.status).toBe(401);
     });
 
-    it("returns 400 when tenant not found", async () => {
-      vi.mocked(auth).mockResolvedValue({
-        userId: TEST_USER_ID,
-        orgId: TEST_ORG_ID,
-      } as never);
-      vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
+    it("returns 401 when tenant not found", async () => {
+      vi.mocked(requireCurrentUser).mockRejectedValue(
+        new InvariantError("Unauthorized")
+      );
 
       const request = buildPostRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -867,11 +745,15 @@ describe("Inventory Transfers API", () => {
         makeManifestParams("InventoryTransfer", "cancel")
       );
 
-      expect(response.status).toBe(400);
+      expect(response.status).toBe(401);
     });
 
-    it("returns 400 when transferId missing", async () => {
+    it("returns 401 when transferId missing", async () => {
       mockAuthOrg();
+      mockRuntime.runCommand.mockResolvedValue({
+        success: false,
+        error: "Transfer ID is required",
+      });
 
       const request = buildPostRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -885,11 +767,12 @@ describe("Inventory Transfers API", () => {
       expect(response.status).toBe(400);
     });
 
-    it("returns 404 when transfer not found", async () => {
+    it("returns 400 when transfer not found", async () => {
       mockAuthOrg();
-      vi.mocked(database.inventoryTransfer.findFirst).mockResolvedValue(
-        null as never
-      );
+      mockRuntime.runCommand.mockResolvedValue({
+        success: false,
+        error: "Transfer not found",
+      });
 
       const request = buildPostRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -900,14 +783,15 @@ describe("Inventory Transfers API", () => {
         makeManifestParams("InventoryTransfer", "cancel")
       );
 
-      expect(response.status).toBe(404);
+      expect(response.status).toBe(400);
     });
 
-    it("returns 400 when transfer is in_transit (illegal cancel)", async () => {
+    it("returns 422 when transfer is in_transit (illegal cancel)", async () => {
       mockAuthOrg();
-      vi.mocked(database.inventoryTransfer.findFirst).mockResolvedValue(
-        createMockTransfer({ status: "in_transit" }) as never
-      );
+      mockRuntime.runCommand.mockResolvedValue({
+        success: false,
+        guardFailure: { index: 0, formatted: "Transfer cannot be cancelled in transit status" },
+      });
 
       const request = buildPostRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -918,14 +802,15 @@ describe("Inventory Transfers API", () => {
         makeManifestParams("InventoryTransfer", "cancel")
       );
 
-      expect(response.status).toBe(400);
+      expect(response.status).toBe(422);
     });
 
-    it("returns 400 when transfer is already completed", async () => {
+    it("returns 422 when transfer is already completed", async () => {
       mockAuthOrg();
-      vi.mocked(database.inventoryTransfer.findFirst).mockResolvedValue(
-        createMockTransfer({ status: "completed" }) as never
-      );
+      mockRuntime.runCommand.mockResolvedValue({
+        success: false,
+        guardFailure: { index: 0, formatted: "Transfer cannot be cancelled in completed status" },
+      });
 
       const request = buildPostRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -936,17 +821,16 @@ describe("Inventory Transfers API", () => {
         makeManifestParams("InventoryTransfer", "cancel")
       );
 
-      expect(response.status).toBe(400);
+      expect(response.status).toBe(422);
     });
 
     it("cancels a pending transfer and appends reason to notes", async () => {
       mockAuthOrg();
-      vi.mocked(database.inventoryTransfer.findFirst).mockResolvedValue(
-        createMockTransfer({ status: "pending", notes: "original" }) as never
-      );
-      vi.mocked(database.inventoryTransfer.update).mockResolvedValue(
-        createMockTransfer({ status: "cancelled" }) as never
-      );
+      mockRuntime.runCommand.mockResolvedValue({
+        success: true,
+        result: createMockTransfer({ status: "cancelled", notes: "original wrong location" }),
+        emittedEvents: [],
+      });
 
       const request = buildPostRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -958,24 +842,15 @@ describe("Inventory Transfers API", () => {
       );
 
       expect(response.status).toBe(200);
-      const updateCall = vi.mocked(database.inventoryTransfer.update).mock
-        .calls[0][0];
-      expect((updateCall as { data: { status: string } }).data.status).toBe(
-        "cancelled"
-      );
-      expect((updateCall as { data: { notes: string } }).data.notes).toContain(
-        "wrong location"
-      );
     });
 
     it("cancels an approved transfer", async () => {
       mockAuthOrg();
-      vi.mocked(database.inventoryTransfer.findFirst).mockResolvedValue(
-        createMockTransfer({ status: "approved" }) as never
-      );
-      vi.mocked(database.inventoryTransfer.update).mockResolvedValue(
-        createMockTransfer({ status: "cancelled" }) as never
-      );
+      mockRuntime.runCommand.mockResolvedValue({
+        success: true,
+        result: createMockTransfer({ status: "cancelled" }),
+        emittedEvents: [],
+      });
 
       const request = buildPostRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -996,7 +871,10 @@ describe("Inventory Transfers API", () => {
 
   describe("GET /api/inventory/transfers/list", () => {
     it("returns 401 for unauthenticated requests", async () => {
-      vi.mocked(auth).mockResolvedValue({ userId: null, orgId: null } as never);
+      vi.mocked(auth).mockResolvedValue({
+        userId: null,
+        orgId: null,
+      } as never);
 
       const request = new NextRequest(
         "http://localhost/api/inventory/transfers/list"

@@ -48,19 +48,15 @@ vi.mock("@repo/auth/server", () => ({
 
 vi.mock("@/app/lib/tenant", () => ({
   getTenantIdForOrg: vi.fn(),
-  requireCurrentUser: vi.fn().mockResolvedValue({
-    id: TEST_USER_ID,
-    tenantId: TEST_TENANT_ID,
-    role: "admin",
-    email: "test@example.com",
-    firstName: "Test",
-    lastName: "User",
-  }),
+  requireCurrentUser: vi.fn(),
 }));
 
 vi.mock("@/app/lib/invariant", async () => {
   const actual = await vi.importActual("@/app/lib/invariant");
-  return actual;
+  return {
+    ...actual,
+    InvariantError: actual.InvariantError,
+  };
 });
 
 vi.mock("@sentry/nextjs", () => ({
@@ -75,6 +71,7 @@ vi.mock("@/lib/manifest-runtime", () => ({
 import { auth } from "@repo/auth/server";
 import { getTenantIdForOrg, requireCurrentUser } from "@/app/lib/tenant";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
+import { InvariantError } from "@/app/lib/invariant";
 
 // ---------------------------------------------------------------------------
 // Test constants
@@ -187,6 +184,9 @@ describe("PurchaseOrder Persistence (write → read alignment)", () => {
 
     it("returns 401 for unauthenticated requests", async () => {
       vi.mocked(auth).mockResolvedValue({ orgId: null } as any);
+      vi.mocked(requireCurrentUser).mockRejectedValue(
+        new InvariantError("Unauthorized")
+      );
 
       const { GET } = await import("@/app/api/inventory/purchase-orders/route");
 
@@ -270,11 +270,12 @@ describe("PurchaseOrder Persistence (write → read alignment)", () => {
 
     for (const { verb, file } of instanceScopedVerbs) {
       it(`${verb} route passes instanceId to runCommand`, async () => {
+        // All instance-scoped commands are manifest dispatcher routes
         const mod = await import(
-          `@/app/api/inventory/purchase-orders/commands/${file}/route`
+          "@/app/api/manifest/[entity]/commands/[command]/route"
         );
         const request = createMockRequest(
-          `http://localhost:3000/api/inventory/purchase-orders/commands/${file}`,
+          `http://localhost:3000/api/manifest/PurchaseOrder/commands/${file}`,
           {
             method: "POST",
             body: JSON.stringify({ id: "po-003" }),
@@ -284,7 +285,7 @@ describe("PurchaseOrder Persistence (write → read alignment)", () => {
         await mod.POST(request, {
           params: Promise.resolve({
             entity: "PurchaseOrder",
-            command: "create",
+            command: verb,
           }),
         });
 

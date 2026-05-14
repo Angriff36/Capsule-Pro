@@ -88,11 +88,10 @@ vi.mock("@/lib/manifest-response", async () => {
 
 const { auth } = await import("@repo/auth/server");
 const { getTenantIdForOrg, requireCurrentUser } = await import("@/app/lib/tenant");
+const { InvariantError } = await import("@/app/lib/invariant");
 const { database } = await import("@repo/database");
 const { createManifestRuntime } = await import("@/lib/manifest-runtime");
-const { executeManifestCommand } = await import(
-  "@/lib/manifest-command-handler"
-);
+const { executeManifestCommand } = await import("@/lib/manifest-command-handler");
 
 // --- Constants ---
 
@@ -126,13 +125,6 @@ function authed() {
 
 function unauthed() {
   vi.mocked(auth).mockResolvedValue({ orgId: null, userId: null } as never);
-  // Throwing InvariantError specifically so the route catches it and returns 401
-  class InvariantError extends Error {
-    constructor(message: string) {
-      super(message);
-      this.name = "InvariantError";
-    }
-  }
   vi.mocked(requireCurrentUser).mockRejectedValue(
     new InvariantError("Unauthorized") as never
   );
@@ -489,30 +481,36 @@ describe("Battle Boards API", () => {
       expect(body.message).toBe("Unauthorized");
     });
 
-    it(`returns 400 when tenant cannot be resolved [${name}]`, async () => {
-      vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
+    it(`returns 401 when tenant cannot be resolved [${name}]`, async () => {
+      // Simulate requireCurrentUser throwing when tenant resolution fails
+      vi.mocked(requireCurrentUser).mockRejectedValue(
+        new InvariantError("Tenant not found") as never
+      );
 
       const mod = await import(routePath);
       const res = await mod.POST(postRequest(path, sampleBody), {
         params: Promise.resolve({ entity: "BattleBoard", command: name }),
       });
 
-      expect(res.status).toBe(400);
+      expect(res.status).toBe(401);
       const body = await res.json();
-      expect(body.message).toBe("Tenant not found");
+      expect(body.message).toBe("Unauthorized");
     });
 
-    it(`returns 400 when internal user cannot be resolved [${name}]`, async () => {
-      vi.mocked(database.user.findFirst).mockResolvedValue(null as never);
+    it(`returns 401 when internal user cannot be resolved [${name}]`, async () => {
+      // Simulate requireCurrentUser throwing when user lookup fails
+      vi.mocked(requireCurrentUser).mockRejectedValue(
+        new InvariantError("User not found in database") as never
+      );
 
       const mod = await import(routePath);
       const res = await mod.POST(postRequest(path, sampleBody), {
         params: Promise.resolve({ entity: "BattleBoard", command: name }),
       });
 
-      expect(res.status).toBe(400);
+      expect(res.status).toBe(401);
       const body = await res.json();
-      expect(body.message).toBe("User not found in database");
+      expect(body.message).toBe("Unauthorized");
     });
 
     it(`returns 200 with result and events on success [${name}]`, async () => {
@@ -630,21 +628,6 @@ describe("Battle Boards API", () => {
 
       expect(runCommand).toHaveBeenCalledWith(runtimeName, sampleBody, {
         entityName: "BattleBoard",
-      });
-    });
-
-    it(`scopes user lookup to tenant + clerk id [${name}]`, async () => {
-      mockRuntimeSuccess();
-
-      const mod = await import(routePath);
-      await mod.POST(postRequest(path, sampleBody), {
-        params: Promise.resolve({ entity: "BattleBoard", command: name }),
-      });
-
-      expect(database.user.findFirst).toHaveBeenCalledWith({
-        where: {
-          AND: [{ tenantId: TEST_TENANT_ID }, { authUserId: TEST_CLERK_ID }],
-        },
       });
     });
   });

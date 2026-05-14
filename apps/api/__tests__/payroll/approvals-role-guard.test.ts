@@ -28,14 +28,7 @@ vi.mock("@repo/database", () => ({
   Prisma: { sql: (s: TemplateStringsArray, ..._args: unknown[]) => s.join("") },
 }));
 vi.mock("@/app/lib/tenant", () => ({
-  requireCurrentUser: vi.fn().mockResolvedValue({
-    id: "user-1",
-    tenantId: TENANT,
-    role: "admin",
-    email: "u@e.com",
-    firstName: "U",
-    lastName: "E",
-  }),
+  requireCurrentUser: vi.fn(),
 }));
 vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn() }));
 vi.mock("@repo/observability/log", () => ({
@@ -43,6 +36,7 @@ vi.mock("@repo/observability/log", () => ({
 }));
 
 import { requireCurrentUser } from "@/app/lib/tenant";
+import { InvariantError } from "@/app/lib/invariant";
 
 const APPROVAL_ID = "a1111111-1111-4111-a111-111111111111";
 const TENANT = "tenant-1";
@@ -89,7 +83,9 @@ describe("PUT /api/payroll/approvals/[approvalId] — role guard", () => {
   });
 
   it("returns 401 when no session can be resolved", async () => {
-    vi.mocked(requireCurrentUser).mockRejectedValue(new Error("no session"));
+    vi.mocked(requireCurrentUser).mockRejectedValue(
+      new InvariantError("Unauthorized")
+    );
 
     const { PUT } = await import(
       "@/app/api/payroll/approvals/[approvalId]/route"

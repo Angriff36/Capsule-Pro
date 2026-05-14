@@ -1,10 +1,11 @@
 /**
- * Integration Test: Manifest-Generated PrepTask.claim Handler
+ * Integration Test: Manifest-Generated PrepTask Command Handler
  *
- * Tests that the generated Manifest command handler:
- * 1. Properly enforces guards (status transitions)
- * 2. Handles errors correctly
- * 3. Returns expected response format
+ * Tests that the manifest dispatcher correctly handles PrepTask commands
+ * via the dynamic route: /api/manifest/[entity]/commands/[command]
+ *
+ * All PrepTask commands (claim, start, complete, release, reassign, update-quantity, cancel)
+ * are handled by the same dispatcher route.
  */
 
 import { dirname, join } from "node:path";
@@ -15,20 +16,19 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const apiRoot = join(__dirname, "../..");
 
-describe("Manifest-Generated PrepTask.claim Handler", () => {
-  it("should exist and be properly structured", async () => {
-    // Verify the generated route file exists
+describe("Manifest-Generated PrepTask Commands", () => {
+  it("should have a dynamic command dispatcher route", async () => {
+    // All PrepTask commands go through the dynamic dispatcher
     const routePath = join(
       apiRoot,
-      "app/api/kitchen/prep-tasks/commands/claim/route.ts"
+      "app/api/manifest/[entity]/commands/[command]/route.ts"
     );
 
-    // Import dynamically to avoid build issues if file doesn't exist
     const { existsSync, readFileSync } = await import("node:fs");
 
     expect(existsSync(routePath)).toBe(true);
 
-    // Read and verify the file structure
+    // Read and verify the dispatcher structure
     const content = readFileSync(routePath, "utf-8");
 
     // Verify it has the expected imports
@@ -36,20 +36,19 @@ describe("Manifest-Generated PrepTask.claim Handler", () => {
     expect(content).toContain("manifestSuccessResponse");
     expect(content).toContain("manifestErrorResponse");
 
-    // Verify it has the auth guard (checks both userId and orgId)
-    expect(content).toMatch(/userId.*orgId/);
-    expect(content).toContain('"Unauthorized"');
-    expect(content).toContain("401");
+    // Verify it has the auth guard (checks requireCurrentUser)
+    expect(content).toContain("requireCurrentUser");
+    expect(content).toContain("InvariantError");
 
     // Verify it uses the runtime
     expect(content).toContain("runtime.runCommand");
-    expect(content).toContain('"claim"');
+    expect(content).toContain("createManifestRuntime");
 
     // Verify error handling
     expect(content).toContain("policyDenial");
     expect(content).toContain("guardFailure");
 
-    console.info("✓ Generated claim handler structure verified");
+    console.info("✓ Dynamic command dispatcher structure verified");
   });
 
   it("should have correct response helpers", async () => {
@@ -80,49 +79,36 @@ describe("Manifest-Generated PrepTask.claim Handler", () => {
 
     const content = readFileSync(runtimePath, "utf-8");
 
-    // Verify it imports from Manifest
-    expect(content).toContain("@angriff36/manifest");
-    expect(content).toContain("RuntimeEngine");
-
-    // Verify it delegates to the shared factory in @repo/manifest-adapters
+    // Verify it imports from @repo/manifest-adapters
     expect(content).toContain("createManifestRuntime");
-    expect(content).toContain(
-      "@repo/manifest-adapters/manifest-runtime-factory"
-    );
+    expect(content).toContain("@repo/manifest-adapters/manifest-runtime-factory");
 
     console.info("✓ Runtime factory verified");
   });
 
-  it("should generate all 7 PrepTask commands", async () => {
-    const commands = [
-      "claim",
-      "start",
-      "complete",
-      "release",
-      "reassign",
-      "update-quantity",
-      "cancel",
-    ];
+  it("should have commands defined in commands.json", async () => {
+    const commandsFile = join(
+      __dirname,
+      "../../../../packages/manifest-ir/ir/kitchen/kitchen.commands.json"
+    );
 
-    const baseDir = join(apiRoot, "app/api/kitchen/prep-tasks/commands");
+    const { existsSync, readFileSync } = await import("node:fs");
 
-    const { existsSync } = await import("node:fs");
+    expect(existsSync(commandsFile)).toBe(true);
 
-    const missing: string[] = [];
+    const content = readFileSync(commandsFile, "utf-8");
+    const commands = JSON.parse(content);
 
-    for (const cmd of commands) {
-      const routePath = `${baseDir}/${cmd}/route.ts`;
-      if (!existsSync(routePath)) {
-        missing.push(cmd);
-      }
-    }
+    const prepTaskCommands = (commands as Array<{ entity: string; command: string }>)
+      .filter((cmd) => cmd.entity === "PrepTask")
+      .map((cmd) => cmd.command);
 
-    if (missing.length > 0) {
-      throw new Error(`Missing command handlers: ${missing.join(", ")}`);
-    }
+    // Verify we have commands
+    expect(prepTaskCommands.length).toBeGreaterThan(0);
+    expect(prepTaskCommands).toContain("claim");
 
     console.info(
-      `✓ All ${commands.length} PrepTask command handlers generated`
+      `✓ Found ${prepTaskCommands.length} PrepTask commands in commands.json`
     );
   });
 });

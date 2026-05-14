@@ -15,6 +15,7 @@
 import { database } from "@repo/database";
 import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { InvariantError } from "@/app/lib/invariant";
 
 vi.mock("@repo/auth/server", () => ({
   auth: vi.fn(),
@@ -22,14 +23,7 @@ vi.mock("@repo/auth/server", () => ({
 
 vi.mock("@/app/lib/tenant", () => ({
   getTenantIdForOrg: vi.fn(),
-  requireCurrentUser: vi.fn().mockResolvedValue({
-    id: TEST_USER_ID,
-    tenantId: TEST_TENANT_ID,
-    role: "admin",
-    email: "test@example.com",
-    firstName: "Test",
-    lastName: "User",
-  }),
+  requireCurrentUser: vi.fn(),
 }));
 
 vi.mock("@/app/lib/invariant", async () => {
@@ -153,6 +147,9 @@ describe("Shipment Persistence (write → read alignment)", () => {
         orgId: null,
         userId: null,
       } as any);
+      vi.mocked(requireCurrentUser).mockRejectedValue(
+        new InvariantError("Unauthenticated")
+      );
 
       const { GET } = await import("@/app/api/shipments/shipment/list/route");
 
@@ -292,29 +289,29 @@ describe("Shipment Persistence (write → read alignment)", () => {
     });
 
     const instanceScopedVerbs = [
-      { verb: "update", file: "update" },
-      { verb: "cancel", file: "cancel" },
-      { verb: "schedule", file: "schedule" },
-      { verb: "ship", file: "ship" },
-      { verb: "startPreparing", file: "start-preparing" },
-      { verb: "markDelivered", file: "mark-delivered" },
+      { verb: "update", command: "update" },
+      { verb: "cancel", command: "cancel" },
+      { verb: "schedule", command: "schedule" },
+      { verb: "ship", command: "ship" },
+      { verb: "startPreparing", command: "start-preparing" },
+      { verb: "markDelivered", command: "mark-delivered" },
     ];
 
-    for (const { verb, file } of instanceScopedVerbs) {
+    for (const { verb, command } of instanceScopedVerbs) {
       it(`${verb} route passes instanceId to runCommand`, async () => {
-        const mod = await import(
-          `@/app/api/shipments/shipment/commands/${file}/route`
+        const { POST } = await import(
+          "@/app/api/manifest/[entity]/commands/[command]/route"
         );
         const request = createMockRequest(
-          `http://localhost:3000/api/shipments/shipment/commands/${file}`,
+          `http://localhost:3000/api/manifest/Shipment/commands/${command}`,
           {
             method: "POST",
             body: JSON.stringify({ id: "ship-003" }),
           }
         );
 
-        await mod.POST(request, {
-          params: Promise.resolve({ entity: "Shipment", command: "create" }),
+        await POST(request, {
+          params: Promise.resolve({ entity: "Shipment", command }),
         });
 
         expect(mockRunCommand).toHaveBeenCalledWith(verb, expect.any(Object), {
@@ -324,11 +321,11 @@ describe("Shipment Persistence (write → read alignment)", () => {
     }
 
     it("create route does NOT pass instanceId", async () => {
-      const mod = await import(
+      const { POST } = await import(
         "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       const request = createMockRequest(
-        "http://localhost:3000/api/shipments/shipment/commands/create",
+        "http://localhost:3000/api/manifest/Shipment/commands/create",
         {
           method: "POST",
           body: JSON.stringify({
@@ -338,7 +335,7 @@ describe("Shipment Persistence (write → read alignment)", () => {
         }
       );
 
-      await mod.POST(request, {
+      await POST(request, {
         params: Promise.resolve({ entity: "Shipment", command: "create" }),
       });
 

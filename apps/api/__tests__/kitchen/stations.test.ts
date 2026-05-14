@@ -15,16 +15,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // --- Mocks ---
 
+import { InvariantError } from "@/app/lib/invariant";
 vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
 vi.mock("@/app/lib/tenant", () => ({
-  requireCurrentUser: vi.fn().mockResolvedValue({
-    id: "test-user-id",
-    tenantId: "test-tenant",
-    role: "admin",
-    email: "test@example.com",
-    firstName: "Test",
-    lastName: "User",
-  }),
+  requireCurrentUser: vi.fn(),
   getTenantIdForOrg: vi.fn(),
 }));
 vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn() }));
@@ -66,7 +60,7 @@ vi.mock("@/lib/database", async () => {
 // --- Import mocked modules ---
 
 const { auth } = await import("@repo/auth/server");
-const { getTenantIdForOrg } = await import("@/app/lib/tenant");
+const { getTenantIdForOrg, requireCurrentUser } = await import("@/app/lib/tenant");
 const { createManifestRuntime } = await import("@/lib/manifest-runtime");
 
 // --- Route imports (GET routes that exist) ---
@@ -203,6 +197,14 @@ function mockAuth() {
     orgId: TEST_ORG_ID,
   } as Awaited<ReturnType<typeof auth>>);
   vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
+  vi.mocked(requireCurrentUser).mockResolvedValue({
+    id: TEST_USER_ID,
+    tenantId: TEST_TENANT_ID,
+    role: "admin",
+    email: "test@example.com",
+    firstName: "Test",
+    lastName: "User",
+  } as never);
 }
 
 function mockSuccessfulRunCommand(
@@ -802,7 +804,7 @@ describe("Kitchen Stations API", () => {
     it("returns a station by ID", async () => {
       mockAuth();
       const mockStation = createMockStation();
-      vi.mocked(database.station.findFirst).mockResolvedValue(
+      vi.mocked(database.station.findUnique).mockResolvedValue(
         mockStation as never
       );
 
@@ -821,7 +823,7 @@ describe("Kitchen Stations API", () => {
 
     it("returns 404 when station does not exist", async () => {
       mockAuth();
-      vi.mocked(database.station.findFirst).mockResolvedValue(null);
+      vi.mocked(database.station.findUnique).mockResolvedValue(null);
 
       const req = createMockRequest(
         "http://localhost:3000/api/kitchen/stations/nonexistent-id"
@@ -837,7 +839,7 @@ describe("Kitchen Stations API", () => {
 
     it("enforces tenant isolation on detail queries", async () => {
       mockAuth();
-      vi.mocked(database.station.findFirst).mockResolvedValue(null);
+      vi.mocked(database.station.findUnique).mockResolvedValue(null);
 
       const otherTenantStationId = "x0000000-0000-4000-a000-000000000099";
       const req = createMockRequest(
@@ -847,11 +849,10 @@ describe("Kitchen Stations API", () => {
         params: Promise.resolve({ id: otherTenantStationId }),
       });
 
-      expect(database.station.findFirst).toHaveBeenCalledWith(
+      expect(database.station.findUnique).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({
-            id: otherTenantStationId,
-            tenantId: TEST_TENANT_ID,
+            tenantId_id: { tenantId: TEST_TENANT_ID, id: otherTenantStationId },
           }),
         })
       );
@@ -872,7 +873,7 @@ describe("Kitchen Stations API", () => {
 
     it("returns 500 on database error", async () => {
       mockAuth();
-      vi.mocked(database.station.findFirst).mockRejectedValue(
+      vi.mocked(database.station.findUnique).mockRejectedValue(
         new Error("Connection refused")
       );
 

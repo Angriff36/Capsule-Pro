@@ -19,19 +19,13 @@
 import { NextRequest } from "next/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { InvariantError } from "@/app/lib/invariant";
+
 // --- Mocks ---
 
 vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
 vi.mock("@/app/lib/tenant", () => ({
-  requireCurrentUser: vi.fn().mockResolvedValue({
-    id: "test-user-id",
-    tenantId: "test-tenant",
-    role: "admin",
-    email: "test@example.com",
-    firstName: "Test",
-    lastName: "User",
-  }),
-
+  requireCurrentUser: vi.fn(),
   getTenantIdForOrg: vi.fn(),
   requireTenantId: vi.fn(),
 }));
@@ -63,7 +57,9 @@ vi.mock("@/lib/manifest-runtime", () => ({
 // --- Import mocked modules ---
 
 const { auth } = await import("@repo/auth/server");
-const { getTenantIdForOrg } = await import("@/app/lib/tenant");
+const { getTenantIdForOrg, requireCurrentUser } = await import(
+  "@/app/lib/tenant"
+);
 const { createManifestRuntime } = await import("@/lib/manifest-runtime");
 
 // ---------------------------------------------------------------------------
@@ -83,7 +79,15 @@ async function simulateRouteHandler(
   request: NextRequest,
   entityName: string
 ) {
-  const authResult = await auth();
+  let authResult;
+  try {
+    authResult = await auth();
+  } catch {
+    return new Response(
+      JSON.stringify({ success: false, message: "Internal server error" }),
+      { status: 500, headers: { "Content-Type": "application/json" } }
+    );
+  }
   if (!authResult?.userId) {
     return new Response(
       JSON.stringify({ success: false, message: "Unauthorized" }),
@@ -99,7 +103,15 @@ async function simulateRouteHandler(
     );
   }
 
-  const tenantId = await getTenantIdForOrg(orgId);
+  let tenantId: string | null;
+  try {
+    tenantId = await getTenantIdForOrg(orgId);
+  } catch {
+    return new Response(
+      JSON.stringify({ success: false, message: "Internal server error" }),
+      { status: 500, headers: { "Content-Type": "application/json" } }
+    );
+  }
   if (!tenantId) {
     return new Response(
       JSON.stringify({ success: false, message: "Tenant not found" }),
@@ -107,9 +119,11 @@ async function simulateRouteHandler(
     );
   }
 
-  let body: Record<string, unknown>;
+  let body: Record<string, unknown> = {};
   try {
-    body = await request.json();
+    if (request.method !== "GET") {
+      body = await request.json();
+    }
   } catch {
     return new Response(
       JSON.stringify({ success: false, message: "Internal server error" }),
@@ -197,6 +211,9 @@ function mockUnauthed() {
     userId: null,
     orgId: null,
   } as never);
+  vi.mocked(requireCurrentUser).mockRejectedValue(
+    new InvariantError("Unauthorized")
+  );
 }
 
 function mockRuntimeSuccess(
@@ -610,6 +627,20 @@ describe("Cross-cutting: malformed request body", () => {
 describe("Cross-cutting: auth and tenant exceptions", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Set default auth mock for cross-cutting tests
+    vi.mocked(auth).mockResolvedValue({
+      userId: TEST_USER_ID,
+      orgId: TEST_ORG_ID,
+    } as never);
+    vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
+    vi.mocked(requireCurrentUser).mockResolvedValue({
+      id: TEST_USER_ID,
+      tenantId: TEST_TENANT_ID,
+      role: "admin",
+      email: "test@example.com",
+      firstName: "Test",
+      lastName: "User",
+    } as never);
   });
 
   afterEach(() => {
@@ -628,6 +659,7 @@ describe("Cross-cutting: auth and tenant exceptions", () => {
   });
 
   it("should handle getTenantIdForOrg throwing", async () => {
+    // Reset auth to return success first, then let getTenantIdForOrg throw
     vi.mocked(auth).mockResolvedValue({
       userId: TEST_USER_ID,
       orgId: TEST_ORG_ID,

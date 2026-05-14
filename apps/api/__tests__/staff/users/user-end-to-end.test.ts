@@ -49,14 +49,7 @@ vi.mock("@repo/auth/server", () => ({
 
 vi.mock("@/app/lib/tenant", () => ({
   getTenantIdForOrg: vi.fn(),
-  requireCurrentUser: vi.fn().mockResolvedValue({
-    id: TEST_USER_ID,
-    tenantId: TEST_TENANT_ID,
-    role: "admin",
-    email: "test@example.com",
-    firstName: "Test",
-    lastName: "User",
-  }),
+  requireCurrentUser: vi.fn(),
 }));
 
 vi.mock("@sentry/nextjs", () => ({
@@ -67,27 +60,11 @@ vi.mock("@/lib/manifest-runtime", () => ({
   createManifestRuntime: vi.fn(),
 }));
 
-// Mock InvariantError class for auth failure testing
-const { MockInvariantError } = vi.hoisted(() => {
-  class MockInvariantError extends Error {
-    name = "InvariantError";
-  }
-  return { MockInvariantError };
-});
-
-vi.mock("@/app/lib/invariant", () => ({
-  InvariantError: MockInvariantError,
-  invariant: (condition: unknown, message: string) => {
-    if (!condition) {
-      throw new MockInvariantError(message);
-    }
-  },
-}));
-
 // Import mocked modules after vi.mock setup
 import { auth } from "@repo/auth/server";
 import { getTenantIdForOrg, requireCurrentUser } from "@/app/lib/tenant";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
+import { InvariantError } from "@/app/lib/invariant";
 
 // ---------------------------------------------------------------------------
 // Test constants
@@ -237,7 +214,7 @@ describe("User Command Routes", () => {
   describe("command route authentication", () => {
     it("create route returns 401 for unauthenticated requests", async () => {
       vi.mocked(requireCurrentUser).mockRejectedValueOnce(
-        new MockInvariantError("auth.orgId must exist")
+        new InvariantError("auth.orgId must exist")
       );
 
       const handler = await getManifestHandler("create");
@@ -251,7 +228,7 @@ describe("User Command Routes", () => {
 
     it("update route returns 401 for unauthenticated requests", async () => {
       vi.mocked(requireCurrentUser).mockRejectedValueOnce(
-        new MockInvariantError("auth.orgId must exist")
+        new InvariantError("auth.orgId must exist")
       );
 
       const handler = await getManifestHandler("update");
@@ -265,7 +242,7 @@ describe("User Command Routes", () => {
 
     it("deactivate route returns 401 for unauthenticated requests", async () => {
       vi.mocked(requireCurrentUser).mockRejectedValueOnce(
-        new MockInvariantError("auth.orgId must exist")
+        new InvariantError("auth.orgId must exist")
       );
 
       const handler = await getManifestHandler("deactivate");
@@ -279,7 +256,7 @@ describe("User Command Routes", () => {
 
     it("terminate route returns 401 for unauthenticated requests", async () => {
       vi.mocked(requireCurrentUser).mockRejectedValueOnce(
-        new MockInvariantError("auth.orgId must exist")
+        new InvariantError("auth.orgId must exist")
       );
 
       const handler = await getManifestHandler("terminate");
@@ -293,7 +270,7 @@ describe("User Command Routes", () => {
 
     it("update-role route returns 401 for unauthenticated requests", async () => {
       vi.mocked(requireCurrentUser).mockRejectedValueOnce(
-        new MockInvariantError("auth.orgId must exist")
+        new InvariantError("auth.orgId must exist")
       );
 
       const handler = await getManifestHandler("updateRole");
@@ -408,7 +385,7 @@ describe("User Command Routes", () => {
 
     it("returns 400 when tenant not found", async () => {
       vi.mocked(requireCurrentUser).mockRejectedValueOnce(
-        new MockInvariantError("Tenant not found")
+        new InvariantError("Tenant not found")
       );
 
       const handler = await getManifestHandler("create");

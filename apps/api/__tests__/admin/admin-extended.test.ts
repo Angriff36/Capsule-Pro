@@ -36,6 +36,9 @@ vi.mock("@repo/database", () => ({
       update: vi.fn(),
       delete: vi.fn(),
     },
+    user: {
+      findFirst: vi.fn(),
+    },
     $queryRaw: vi.fn(),
     $transaction: vi.fn(),
   },
@@ -44,14 +47,7 @@ vi.mock("@repo/database", () => ({
 vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
 
 vi.mock("@/app/lib/tenant", () => ({
-  requireCurrentUser: vi.fn().mockResolvedValue({
-    id: "test-user-id",
-    tenantId: "test-tenant",
-    role: "admin",
-    email: "test@example.com",
-    firstName: "Test",
-    lastName: "User",
-  }),
+  requireCurrentUser: vi.fn(),
 
   getTenantIdForOrg: vi.fn().mockResolvedValue("test-tenant"),
   requireTenantId: vi.fn(),
@@ -220,7 +216,16 @@ function makeAuthedUser() {
     email: "test@example.com",
     firstName: "Test",
     lastName: "User",
-  });
+  } as never);
+}
+
+function setupUserLookup() {
+  vi.mocked(database.user.findFirst).mockResolvedValue({
+    id: TEST_USER_ID,
+    tenantId: TEST_TENANT_ID,
+    role: "admin",
+    authUserId: TEST_USER_ID,
+  } as never);
 }
 
 function makeRequest(url: string, options: RequestInit = {}): NextRequest {
@@ -606,6 +611,8 @@ describe("Admin Extended API", () => {
     const mockRunCommand = vi.fn();
 
     beforeEach(() => {
+      makeAuthedUser();
+      setupUserLookup();
       makeRuntime(mockRunCommand);
     });
 
@@ -1049,6 +1056,8 @@ describe("Admin Extended API", () => {
     const mockRunCommand = vi.fn();
 
     beforeEach(() => {
+      makeAuthedUser();
+      setupUserLookup();
       makeRuntime(mockRunCommand);
     });
 
@@ -1064,6 +1073,9 @@ describe("Admin Extended API", () => {
             orgId: null,
             userId: null,
           } as never);
+          vi.mocked(requireCurrentUser).mockRejectedValue(
+            new InvariantError("Unauthorized") as never
+          );
 
           const response = await handler(
             makeRequest("/api/test", {
@@ -1074,8 +1086,11 @@ describe("Admin Extended API", () => {
           expect(response.status).toBe(401);
         });
 
-        it("should return 400 when tenant not found", async () => {
+        it("should return 401 when tenant not found", async () => {
           vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
+          vi.mocked(requireCurrentUser).mockRejectedValue(
+            new InvariantError("Tenant not found") as never
+          );
 
           const response = await handler(
             makeRequest("/api/test", {
@@ -1083,7 +1098,7 @@ describe("Admin Extended API", () => {
               body: JSON.stringify(body),
             })
           );
-          expect(response.status).toBe(400);
+          expect(response.status).toBe(401);
         });
 
         it("should return 200 on success", async () => {
@@ -1139,7 +1154,8 @@ describe("Admin Extended API", () => {
           );
 
           expect(createManifestRuntime).toHaveBeenCalledWith({
-            user: { id: TEST_USER_ID, tenantId: TEST_TENANT_ID },
+            entityName: "AiEventSetupSession",
+            user: { id: TEST_USER_ID, tenantId: TEST_TENANT_ID, role: "admin" },
           });
         });
 
@@ -1266,6 +1282,8 @@ describe("Admin Extended API", () => {
     const mockRunCommand = vi.fn();
 
     beforeEach(() => {
+      makeAuthedUser();
+      setupUserLookup();
       makeRuntime(mockRunCommand);
     });
 
@@ -1281,6 +1299,9 @@ describe("Admin Extended API", () => {
             orgId: null,
             userId: null,
           } as never);
+          vi.mocked(requireCurrentUser).mockRejectedValue(
+            new InvariantError("Unauthorized") as never
+          );
 
           const response = await handler(
             makeRequest("/api/test", {
@@ -1291,8 +1312,11 @@ describe("Admin Extended API", () => {
           expect(response.status).toBe(401);
         });
 
-        it("should return 400 when tenant not found", async () => {
+        it("should return 401 when tenant not found", async () => {
           vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
+          vi.mocked(requireCurrentUser).mockRejectedValue(
+            new InvariantError("Tenant not found") as never
+          );
 
           const response = await handler(
             makeRequest("/api/test", {
@@ -1300,7 +1324,7 @@ describe("Admin Extended API", () => {
               body: JSON.stringify(body),
             })
           );
-          expect(response.status).toBe(400);
+          expect(response.status).toBe(401);
         });
 
         it("should return 200 on success", async () => {
@@ -1357,7 +1381,8 @@ describe("Admin Extended API", () => {
           );
 
           expect(createManifestRuntime).toHaveBeenCalledWith({
-            user: { id: TEST_USER_ID, tenantId: TEST_TENANT_ID },
+            entityName: "AlertsConfig",
+            user: { id: TEST_USER_ID, tenantId: TEST_TENANT_ID, role: "admin" },
           });
         });
 
@@ -1475,6 +1500,8 @@ describe("Admin Extended API", () => {
     const mockRunCommand = vi.fn();
 
     beforeEach(() => {
+      makeAuthedUser();
+      setupUserLookup();
       makeRuntime(mockRunCommand);
     });
 
@@ -1490,6 +1517,9 @@ describe("Admin Extended API", () => {
             orgId: null,
             userId: null,
           } as never);
+          vi.mocked(requireCurrentUser).mockRejectedValue(
+            new InvariantError("Unauthorized") as never
+          );
 
           const response = await handler(
             makeRequest("/api/test", {
@@ -1500,8 +1530,11 @@ describe("Admin Extended API", () => {
           expect(response.status).toBe(401);
         });
 
-        it("should return 400 when tenant not found", async () => {
+        it("should return 401 when tenant not found", async () => {
           vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
+          vi.mocked(requireCurrentUser).mockRejectedValue(
+            new InvariantError("Tenant not found") as never
+          );
 
           const response = await handler(
             makeRequest("/api/test", {
@@ -1509,7 +1542,7 @@ describe("Admin Extended API", () => {
               body: JSON.stringify(body),
             })
           );
-          expect(response.status).toBe(400);
+          expect(response.status).toBe(401);
         });
 
         it("should return 200 on success", async () => {
@@ -1566,7 +1599,8 @@ describe("Admin Extended API", () => {
           );
 
           expect(createManifestRuntime).toHaveBeenCalledWith({
-            user: { id: TEST_USER_ID, tenantId: TEST_TENANT_ID },
+            entityName: "AllergenWarning",
+            user: { id: TEST_USER_ID, tenantId: TEST_TENANT_ID, role: "admin" },
           });
         });
 

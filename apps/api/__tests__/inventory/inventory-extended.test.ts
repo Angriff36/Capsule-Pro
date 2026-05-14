@@ -89,16 +89,17 @@ async function simulateRouteHandler(
     );
   }
 
-  const tenantId = await getTenantIdForOrg(orgId);
-  if (!tenantId) {
-    return new Response(
-      JSON.stringify({ success: false, message: "Tenant not found" }),
-      { status: 400, headers: { "Content-Type": "application/json" } }
-    );
-  }
-
   let body: Record<string, unknown>;
+  let tenantId: string;
   try {
+    tenantId = await getTenantIdForOrg(orgId);
+    if (!tenantId) {
+      return new Response(
+        JSON.stringify({ success: false, message: "Tenant not found" }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
     body = await request.json();
   } catch {
     return new Response(

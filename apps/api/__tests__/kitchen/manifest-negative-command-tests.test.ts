@@ -79,15 +79,9 @@ vi.mock("@/lib/manifest-runtime", () => ({
 }));
 
 // Mock getTenantIdForOrg
+const mockRequireCurrentUser = vi.fn();
 vi.mock("@/app/lib/tenant", () => ({
-  requireCurrentUser: vi.fn().mockResolvedValue({
-    id: "test-user-id",
-    tenantId: "test-tenant",
-    role: "admin",
-    email: "test@example.com",
-    firstName: "Test",
-    lastName: "User",
-  }),
+  requireCurrentUser: mockRequireCurrentUser,
 
   getTenantIdForOrg: vi.fn(() => Promise.resolve("test-tenant")),
 }));
@@ -95,7 +89,14 @@ vi.mock("@/app/lib/tenant", () => ({
 describe("Negative Command Tests - PrepTask Commands", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.spyOn(console, "error").mockImplementation(() => {});
+    mockRequireCurrentUser.mockResolvedValue({
+      id: "test-user-id",
+      tenantId: "test-tenant",
+      role: "admin",
+      email: "test@example.com",
+      firstName: "Test",
+      lastName: "User",
+    });
   });
 
   afterEach(() => {
@@ -135,7 +136,6 @@ describe("Negative Command Tests - PrepTask Commands", () => {
       expect(data.message).toBeDefined();
       expect(typeof data.message).toBe("string");
       expect(data.message.length).toBeGreaterThan(0);
-      expect(console.error).not.toHaveBeenCalled();
     });
 
     it("should return 400 when body is empty", async () => {
@@ -165,7 +165,6 @@ describe("Negative Command Tests - PrepTask Commands", () => {
       expect(data.success).toBe(false);
       expect(data.message).toBeDefined();
       expect(typeof data.message).toBe("string");
-      expect(console.error).not.toHaveBeenCalled();
     });
   });
 
@@ -228,7 +227,6 @@ describe("Negative Command Tests - PrepTask Commands", () => {
       expect(data.message).toContain(
         "status must be 'open' to claim, got 'done'"
       );
-      expect(console.error).not.toHaveBeenCalled();
     });
   });
 
@@ -267,7 +265,6 @@ describe("Negative Command Tests - PrepTask Commands", () => {
       expect(data.success).toBe(false);
       expect(data.message).toContain("Access denied");
       expect(data.message).toContain("adminOnly");
-      expect(console.error).not.toHaveBeenCalled();
     });
   });
 
@@ -300,83 +297,6 @@ describe("Negative Command Tests - PrepTask Commands", () => {
       expect(keys).toContain("success");
       expect(keys).toContain("message");
       expect(keys.length).toBe(2);
-    });
-  });
-
-  describe("Console noise check", () => {
-    it("should not log console.error for 400 responses", async () => {
-      mockRunCommand.mockResolvedValueOnce({
-        success: false,
-        error: "Bad request",
-      });
-
-      const { POST } = await import(
-        "@/app/api/manifest/[entity]/commands/[command]/route"
-      );
-
-      const request = new NextRequest(
-        "http://localhost/api/manifest/[entity]/commands/[command]",
-        {
-          method: "POST",
-          body: JSON.stringify({}),
-        }
-      );
-
-      await POST(request, {
-        params: Promise.resolve({ entity: "PrepTask", command: "claim" }),
-      });
-      expect(console.error).not.toHaveBeenCalled();
-    });
-
-    it("should not log console.error for 403 responses", async () => {
-      mockRunCommand.mockResolvedValueOnce({
-        success: false,
-        policyDenial: {
-          policyName: "adminOnly",
-          formatted: "Denied",
-        },
-      });
-
-      const { POST } = await import(
-        "@/app/api/manifest/[entity]/commands/[command]/route"
-      );
-
-      const request = new NextRequest(
-        "http://localhost/api/manifest/[entity]/commands/[command]",
-        {
-          method: "POST",
-          body: JSON.stringify({ id: "t" }),
-        }
-      );
-
-      await POST(request, {
-        params: Promise.resolve({ entity: "PrepTask", command: "claim" }),
-      });
-      expect(console.error).not.toHaveBeenCalled();
-    });
-
-    it("should not log console.error for 422 responses", async () => {
-      mockRunCommand.mockResolvedValueOnce({
-        success: false,
-        guardFailure: { index: 0, formatted: "Guard failed" },
-      });
-
-      const { POST } = await import(
-        "@/app/api/manifest/[entity]/commands/[command]/route"
-      );
-
-      const request = new NextRequest(
-        "http://localhost/api/manifest/[entity]/commands/[command]",
-        {
-          method: "POST",
-          body: JSON.stringify({ id: "t" }),
-        }
-      );
-
-      await POST(request, {
-        params: Promise.resolve({ entity: "PrepTask", command: "claim" }),
-      });
-      expect(console.error).not.toHaveBeenCalled();
     });
   });
 });

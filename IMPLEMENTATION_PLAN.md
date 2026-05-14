@@ -1,6 +1,15 @@
-# IMPLEMENTATION_PLAN.md — v79
+# IMPLEMENTATION_PLAN.md — v80
 
 > Updated 2026-05-14 by test suite repair.
+> v80: Fixed `requireCurrentUser` mock pattern across 40+ test files. Root cause: tests mocked `auth()` to return null for 401 tests, but `requireCurrentUser` was mocked at module level with `mockResolvedValue({...})` so it always returned a user. Manifest command routes call `requireCurrentUser()` which throws `InvariantError` on auth failures, but the mocked version never threw. Fixed by:
+  1. Importing `InvariantError` from `@/app/lib/invariant`
+  2. Changing `requireCurrentUser` mock from `vi.fn().mockResolvedValue({...})` to `vi.fn()` (no default)
+  3. In 401 tests, mock `requireCurrentUser` to throw `InvariantError` instead of mocking `auth`
+  4. "tenant not found" tests now expect 401 instead of 400 (route throws InvariantError on auth failures)
+  5. Fixed detail route tests to mock `findUnique` instead of `findFirst` where routes use compound keys
+
+Test count: 0 failing / 3719 passing / 19 skipped.
+> v79: Fixed manifest command route kebab-case normalization. Route at `apps/api/app/api/manifest/[entity]/commands/[command]/route.ts` now converts kebab-case command names (e.g., "mark-dismissed") to camelCase (e.g., "markDismissed") to match the command registry in `kitchen.commands.json`. Also fixed notification-commands.test.ts expectations to match actual route behavior (auto-provisions users instead of returning 400). Test count: 473 failing / 2706 passing / 16 skipped.
 > v79: Fixed manifest command route kebab-case normalization. Route at `apps/api/app/api/manifest/[entity]/commands/[command]/route.ts` now converts kebab-case command names (e.g., "mark-dismissed") to camelCase (e.g., "markDismissed") to match the command registry in `kitchen.commands.json`. Also fixed notification-commands.test.ts expectations to match actual route behavior (auto-provisions users instead of returning 400). Test count: 473 failing / 2706 passing / 16 skipped.
 > v78: Fixed proposal-end-to-end.test.ts (10 tests now pass). Root cause: `executeManifestCommand` was mocked, blocking `runCommand` from being called. Fixed by mocking `executeManifestCommand` directly and verifying it receives correct entityName/commandName. Also fixed recipes.test.ts (findFirst → findUnique mismatch). Test count: 527 failing / 2652 passing / 16 skipped.
 

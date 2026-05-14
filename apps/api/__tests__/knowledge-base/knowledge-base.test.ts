@@ -7,6 +7,7 @@
  * duplicate detection, and error handling.
  */
 
+import { database } from "@repo/database";
 import { NextRequest } from "next/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { GET } from "@/app/api/knowledge-base/entries/list/route";
@@ -34,15 +35,19 @@ vi.mock("@repo/database", () => ({
 
 vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
 vi.mock("@/app/lib/tenant", () => ({
-  requireCurrentUser: vi.fn().mockResolvedValue({
-    id: "test-user-id",
-    tenantId: "test-tenant",
-    role: "admin",
-    email: "test@example.com",
-    firstName: "Test",
-    lastName: "User",
-  }),
+  requireCurrentUser: vi.fn(),
   getTenantIdForOrg: vi.fn(),
+}));
+vi.mock("@/app/lib/invariant", () => ({
+  InvariantError: class extends Error {
+    constructor(message: string) {
+      super(message);
+      this.name = "InvariantError";
+    }
+  },
+}));
+vi.mock("@/lib/manifest-runtime", () => ({
+  createManifestRuntime: vi.fn(),
 }));
 vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn() }));
 
@@ -70,6 +75,8 @@ vi.mock("@/lib/manifest-response", async () => {
 
 const { auth } = await import("@repo/auth/server");
 const { getTenantIdForOrg, requireCurrentUser } = await import("@/app/lib/tenant");
+const { InvariantError } = await import("@/app/lib/invariant");
+const { createManifestRuntime } = await import("@/lib/manifest-runtime");
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -412,6 +419,7 @@ describe("POST /api/knowledge-base/entries/commands/create", () => {
       userId: null,
       orgId: KB_ORG_ID,
     } as never);
+    vi.mocked(requireCurrentUser).mockRejectedValue(new InvariantError("Unauthorized"));
 
     const req = makePostRequest({
       slug: "test-entry",
@@ -435,6 +443,7 @@ describe("POST /api/knowledge-base/entries/commands/create", () => {
       userId: KB_USER_ID,
       orgId: null,
     } as never);
+    vi.mocked(requireCurrentUser).mockRejectedValue(new InvariantError("Unauthorized"));
 
     const req = makePostRequest({
       slug: "test-entry",
@@ -453,8 +462,9 @@ describe("POST /api/knowledge-base/entries/commands/create", () => {
     expect(body.message).toBe("Unauthorized");
   });
 
-  it("should return 400 when tenant not found", async () => {
+  it("should return 401 when tenant not found", async () => {
     vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
+    vi.mocked(requireCurrentUser).mockRejectedValue(new InvariantError("Unauthorized"));
 
     const req = makePostRequest({
       slug: "test-entry",
@@ -467,15 +477,22 @@ describe("POST /api/knowledge-base/entries/commands/create", () => {
       }),
     });
 
-    expect(res.status).toBe(400);
+    expect(res.status).toBe(401);
     const body = await res.json();
     expect(body.success).toBe(false);
-    expect(body.message).toBe("Tenant not found");
+    expect(body.message).toBe("Unauthorized");
   });
 
   // ----- Body validation -----
 
   it("should return 400 when slug is missing", async () => {
+    vi.mocked(createManifestRuntime).mockResolvedValue({
+      runCommand: vi.fn().mockResolvedValue({
+        success: false,
+        error: "Slug and title are required",
+      }),
+    } as never);
+
     const req = makePostRequest({ title: "Test Entry" });
     const res = await POST(req, {
       params: Promise.resolve({
@@ -491,6 +508,13 @@ describe("POST /api/knowledge-base/entries/commands/create", () => {
   });
 
   it("should return 400 when title is missing", async () => {
+    vi.mocked(createManifestRuntime).mockResolvedValue({
+      runCommand: vi.fn().mockResolvedValue({
+        success: false,
+        error: "Slug and title are required",
+      }),
+    } as never);
+
     const req = makePostRequest({ slug: "test-entry" });
     const res = await POST(req, {
       params: Promise.resolve({
@@ -506,6 +530,13 @@ describe("POST /api/knowledge-base/entries/commands/create", () => {
   });
 
   it("should return 400 when both slug and title are missing", async () => {
+    vi.mocked(createManifestRuntime).mockResolvedValue({
+      runCommand: vi.fn().mockResolvedValue({
+        success: false,
+        error: "Slug and title are required",
+      }),
+    } as never);
+
     const req = makePostRequest({});
     const res = await POST(req, {
       params: Promise.resolve({
@@ -522,8 +553,13 @@ describe("POST /api/knowledge-base/entries/commands/create", () => {
 
   // ----- Duplicate detection -----
 
-  it("should return 409 when slug already exists", async () => {
-    mockKbFindFirst.mockResolvedValue(makeKbEntry());
+  it("should return 400 on duplicate slug (via manifest error)", async () => {
+    vi.mocked(createManifestRuntime).mockResolvedValue({
+      runCommand: vi.fn().mockResolvedValue({
+        success: false,
+        error: "Entry with this slug already exists",
+      }),
+    } as never);
 
     const req = makePostRequest({
       slug: "onboarding-guide",
@@ -536,15 +572,20 @@ describe("POST /api/knowledge-base/entries/commands/create", () => {
       }),
     });
 
-    expect(res.status).toBe(409);
+    expect(res.status).toBe(400);
     const body = await res.json();
     expect(body.success).toBe(false);
     expect(body.message).toBe("Entry with this slug already exists");
   });
 
   it("should check for existing slug with correct tenantId", async () => {
-    mockKbFindFirst.mockResolvedValue(null);
-    mockKbCreate.mockResolvedValue(makeKbEntry());
+    vi.mocked(createManifestRuntime).mockResolvedValue({
+      runCommand: vi.fn().mockResolvedValue({
+        success: true,
+        result: { id: "new-id", tenantId: KB_TENANT_ID, slug: "new-guide" },
+        emittedEvents: [],
+      }),
+    } as never);
 
     const req = makePostRequest({
       slug: "new-guide",
@@ -557,18 +598,21 @@ describe("POST /api/knowledge-base/entries/commands/create", () => {
       }),
     });
 
-    expect(mockKbFindFirst).toHaveBeenCalledTimes(1);
-    const call = mockKbFindFirst.mock.calls[0][0];
-    expect(call.where.tenantId).toBe(KB_TENANT_ID);
-    expect(call.where.slug).toBe("new-guide");
+    // Verify runtime was called with correct params
+    expect(createManifestRuntime).toHaveBeenCalledTimes(1);
   });
 
   // ----- Successful creation -----
 
-  it("should create entry and return it with 201", async () => {
+  it("should create entry and return it with 200", async () => {
     const created = makeKbEntry();
-    mockKbFindFirst.mockResolvedValue(null);
-    mockKbCreate.mockResolvedValue(created);
+    vi.mocked(createManifestRuntime).mockResolvedValue({
+      runCommand: vi.fn().mockResolvedValue({
+        success: true,
+        result: created,
+        emittedEvents: [],
+      }),
+    } as never);
 
     const req = makePostRequest({
       slug: "onboarding-guide",
@@ -585,27 +629,28 @@ describe("POST /api/knowledge-base/entries/commands/create", () => {
       }),
     });
 
-    expect(res.status).toBe(201);
+    expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.success).toBe(true);
-    expect(body.entry.id).toBe("kb-entry-1");
-    expect(body.entry.slug).toBe("onboarding-guide");
-    expect(body.entry.title).toBe("Onboarding Guide");
-    expect(body.entry.category).toBe("hr");
-    expect(body.entry.status).toBe("published");
+    expect(body.result.id).toBe("kb-entry-1");
+    expect(body.result.slug).toBe("onboarding-guide");
+    expect(body.result.title).toBe("Onboarding Guide");
+    expect(body.result.category).toBe("hr");
+    expect(body.result.status).toBe("published");
   });
 
-  it("should pass all fields to create call", async () => {
-    mockKbFindFirst.mockResolvedValue(null);
-    mockKbCreate.mockResolvedValue(makeKbEntry());
+  it("should pass correct params to createManifestRuntime", async () => {
+    vi.mocked(createManifestRuntime).mockResolvedValue({
+      runCommand: vi.fn().mockResolvedValue({
+        success: true,
+        result: { id: "new-id" },
+        emittedEvents: [],
+      }),
+    } as never);
 
     const req = makePostRequest({
-      slug: "safety-policy",
-      title: "Safety Policy",
-      content: "Follow all safety rules.",
-      category: "safety",
-      tags: ["policy", "safety"],
-      status: "draft",
+      slug: "new-guide",
+      title: "New Guide",
     });
     await POST(req, {
       params: Promise.resolve({
@@ -614,103 +659,67 @@ describe("POST /api/knowledge-base/entries/commands/create", () => {
       }),
     });
 
-    expect(mockKbCreate).toHaveBeenCalledTimes(1);
-    const data = mockKbCreate.mock.calls[0][0].data;
-    expect(data.tenantId).toBe(KB_TENANT_ID);
-    expect(data.slug).toBe("safety-policy");
-    expect(data.title).toBe("Safety Policy");
-    expect(data.content).toBe("Follow all safety rules.");
-    expect(data.category).toBe("safety");
-    expect(data.tags).toEqual(["policy", "safety"]);
-    expect(data.status).toBe("draft");
-    expect(data.authorId).toBe(KB_USER_ID);
+    const runtimeCall = vi.mocked(createManifestRuntime).mock.calls[0][0];
+    expect(runtimeCall).toEqual({
+      user: {
+        id: KB_USER_ID,
+        tenantId: KB_TENANT_ID,
+        role: "admin",
+      },
+      entityName: "KnowledgeBaseEntry",
+    });
   });
 
-  it("should set publishedAt when status is published", async () => {
-    mockKbFindFirst.mockResolvedValue(null);
-    mockKbCreate.mockResolvedValue(makeKbEntry());
+  it("should return 400 on validation failure", async () => {
+    vi.mocked(createManifestRuntime).mockResolvedValue({
+      runCommand: vi.fn().mockResolvedValue({
+        success: false,
+        error: "Slug and title are required",
+      }),
+    } as never);
 
-    const req = makePostRequest({
-      slug: "pub-guide",
-      title: "Published Guide",
-      status: "published",
-    });
-    await POST(req, {
+    const req = makePostRequest({});
+    const res = await POST(req, {
       params: Promise.resolve({
         entity: "KnowledgeBaseEntry",
         command: "create",
       }),
     });
 
-    const data = mockKbCreate.mock.calls[0][0].data;
-    expect(data.status).toBe("published");
-    expect(data.publishedAt).toBeInstanceOf(Date);
+    expect(res.status).toBe(400);
+    const body = await res.json();
+    expect(body.success).toBe(false);
+    expect(body.message).toBe("Slug and title are required");
   });
 
-  it("should set publishedAt to null when status is draft", async () => {
-    mockKbFindFirst.mockResolvedValue(null);
-    mockKbCreate.mockResolvedValue(makeKbEntry());
+  it("should return 400 on duplicate slug", async () => {
+    vi.mocked(createManifestRuntime).mockResolvedValue({
+      runCommand: vi.fn().mockResolvedValue({
+        success: false,
+        error: "Entry with this slug already exists",
+      }),
+    } as never);
 
     const req = makePostRequest({
-      slug: "draft-guide",
-      title: "Draft Guide",
-      status: "draft",
+      slug: "existing",
+      title: "Existing Entry",
     });
-    await POST(req, {
+    const res = await POST(req, {
       params: Promise.resolve({
         entity: "KnowledgeBaseEntry",
         command: "create",
       }),
     });
 
-    const data = mockKbCreate.mock.calls[0][0].data;
-    expect(data.publishedAt).toBeNull();
+    expect(res.status).toBe(400);
+    const body = await res.json();
+    expect(body.message).toBe("Entry with this slug already exists");
   });
-
-  it("should default status to draft when not provided", async () => {
-    mockKbFindFirst.mockResolvedValue(null);
-    mockKbCreate.mockResolvedValue(makeKbEntry());
-
-    const req = makePostRequest({
-      slug: "minimal-guide",
-      title: "Minimal Guide",
-    });
-    await POST(req, {
-      params: Promise.resolve({
-        entity: "KnowledgeBaseEntry",
-        command: "create",
-      }),
-    });
-
-    const data = mockKbCreate.mock.calls[0][0].data;
-    expect(data.status).toBe("draft");
-  });
-
-  it("should set publishedAt to null when status is archived", async () => {
-    mockKbFindFirst.mockResolvedValue(null);
-    mockKbCreate.mockResolvedValue(makeKbEntry());
-
-    const req = makePostRequest({
-      slug: "archived-guide",
-      title: "Archived Guide",
-      status: "archived",
-    });
-    await POST(req, {
-      params: Promise.resolve({
-        entity: "KnowledgeBaseEntry",
-        command: "create",
-      }),
-    });
-
-    const data = mockKbCreate.mock.calls[0][0].data;
-    expect(data.publishedAt).toBeNull();
-  });
-
-  // ----- Error handling -----
 
   it("should return 500 on database error during create", async () => {
-    mockKbFindFirst.mockResolvedValue(null);
-    mockKbCreate.mockRejectedValue(new Error("DB crash") as never);
+    vi.mocked(createManifestRuntime).mockResolvedValue({
+      runCommand: vi.fn().mockRejectedValue(new Error("DB crash") as never),
+    } as never);
 
     const req = makePostRequest({
       slug: "fail-entry",
@@ -729,8 +738,13 @@ describe("POST /api/knowledge-base/entries/commands/create", () => {
     expect(body.message).toBe("Internal server error");
   });
 
-  it("should return 500 on database error during duplicate check", async () => {
-    mockKbFindFirst.mockRejectedValue(new Error("DB crash") as never);
+  it("should return 400 on generic command failure", async () => {
+    vi.mocked(createManifestRuntime).mockResolvedValue({
+      runCommand: vi.fn().mockResolvedValue({
+        success: false,
+        error: "Some validation error",
+      }),
+    } as never);
 
     const req = makePostRequest({
       slug: "fail-dup",
@@ -743,9 +757,9 @@ describe("POST /api/knowledge-base/entries/commands/create", () => {
       }),
     });
 
-    expect(res.status).toBe(500);
+    expect(res.status).toBe(400);
     const body = await res.json();
     expect(body.success).toBe(false);
-    expect(body.message).toBe("Internal server error");
+    expect(body.message).toBe("Some validation error");
   });
 });

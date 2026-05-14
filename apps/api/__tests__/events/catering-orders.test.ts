@@ -7,6 +7,7 @@
 
 import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { InvariantError } from "@/app/lib/invariant";
 
 // ---------------------------------------------------------------------------
 // Mocks — single shared database mock for both import paths
@@ -27,14 +28,7 @@ vi.mock("@repo/auth/server", () => ({
 }));
 
 vi.mock("@/app/lib/tenant", () => ({
-  requireCurrentUser: vi.fn().mockResolvedValue({
-    id: "test-user-id",
-    tenantId: "test-tenant",
-    role: "admin",
-    email: "test@example.com",
-    firstName: "Test",
-    lastName: "User",
-  }),
+  requireCurrentUser: vi.fn(),
 
   getTenantIdForOrg: vi.fn(),
 }));
@@ -61,9 +55,9 @@ vi.mock("@repo/database", () => ({
 // Import mocked modules AFTER vi.mock declarations
 // ---------------------------------------------------------------------------
 
-const { auth } = await import("@repo/auth/server");
-const { getTenantIdForOrg } = await import("@/app/lib/tenant");
-const { createManifestRuntime } = await import("@/lib/manifest-runtime");
+import { auth } from "@repo/auth/server";
+import { requireCurrentUser, getTenantIdForOrg } from "@/app/lib/tenant";
+import { createManifestRuntime } from "@/lib/manifest-runtime";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -131,6 +125,12 @@ function setupAuthMocks(userOverrides = {}) {
   } as any);
   vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
   mockDb.user.findFirst.mockResolvedValue(createMockUser(userOverrides) as any);
+  vi.mocked(requireCurrentUser).mockResolvedValue({
+    id: "test-user-id",
+    tenantId: TEST_TENANT_ID,
+    role: "admin",
+    ...userOverrides,
+  } as any);
 }
 
 /** Setup manifest runtime mock for a successful command result */
@@ -472,7 +472,6 @@ describe("Catering Orders API", () => {
     });
 
     it("should resolve internal user and pass to runtime", async () => {
-      const mockUser = createMockUser({ role: "manager" });
       setupAuthMocks({ role: "manager" });
       const runCommand = setupRuntimeSuccess();
 
@@ -487,16 +486,10 @@ describe("Catering Orders API", () => {
         params: Promise.resolve({ entity: "CateringOrder", command: "create" }),
       });
 
-      expect(mockDb.user.findFirst).toHaveBeenCalledWith({
-        where: {
-          AND: [{ tenantId: TEST_TENANT_ID }, { authUserId: TEST_CLERK_ID }],
-        },
-      });
-
       expect(createManifestRuntime).toHaveBeenCalledWith(
         expect.objectContaining({
           user: expect.objectContaining({
-            id: mockUser.id,
+            id: "test-user-id",
             tenantId: TEST_TENANT_ID,
             role: "manager",
           }),
@@ -511,6 +504,9 @@ describe("Catering Orders API", () => {
 
     it("should return 401 for unauthenticated requests", async () => {
       vi.mocked(auth).mockResolvedValue({ orgId: null, userId: null } as any);
+      vi.mocked(requireCurrentUser).mockImplementation(() => {
+        throw new InvariantError("Unauthorized");
+      });
 
       const request = createMockRequest(
         "http://localhost:3000/api/events/catering-orders/commands/create",
@@ -529,9 +525,11 @@ describe("Catering Orders API", () => {
       expect(data.message).toBe("Unauthorized");
     });
 
-    it("should return 400 when user is not found in database", async () => {
+    it("should return 401 when user is not found in database", async () => {
       setupAuthMocks();
-      mockDb.user.findFirst.mockResolvedValue(null as never);
+      vi.mocked(requireCurrentUser).mockImplementation(() => {
+        throw new InvariantError("Unauthorized");
+      });
 
       const request = createMockRequest(
         "http://localhost:3000/api/events/catering-orders/commands/create",
@@ -545,9 +543,9 @@ describe("Catering Orders API", () => {
       });
       const data = await response.json();
 
-      expect(response.status).toBe(400);
+      expect(response.status).toBe(401);
       expect(data.success).toBe(false);
-      expect(data.message).toBe("User not found in database");
+      expect(data.message).toBe("Unauthorized");
     });
 
     it("should return 403 on policy denial", async () => {
@@ -616,7 +614,8 @@ describe("Catering Orders API", () => {
 
     it("should return 500 on unexpected error", async () => {
       setupAuthMocks();
-      mockDb.user.findFirst.mockRejectedValue(new Error("DB down"));
+      // Mock runtime creation to throw
+      vi.mocked(createManifestRuntime).mockRejectedValue(new Error("Runtime failure"));
 
       const request = createMockRequest(
         "http://localhost:3000/api/events/catering-orders/commands/create",
@@ -664,7 +663,7 @@ describe("Catering Orders API", () => {
         { method: "POST", body: JSON.stringify(body) }
       );
       const response = await POST_update(request, {
-        params: Promise.resolve({ entity: "CateringOrder", command: "create" }),
+        params: Promise.resolve({ entity: "CateringOrder", command: "update" }),
       });
       const data = await response.json();
 
@@ -684,7 +683,7 @@ describe("Catering Orders API", () => {
         { method: "POST", body: JSON.stringify(body) }
       );
       await POST_update(request, {
-        params: Promise.resolve({ entity: "CateringOrder", command: "create" }),
+        params: Promise.resolve({ entity: "CateringOrder", command: "update" }),
       });
 
       expect(runCommand).toHaveBeenCalledWith(
@@ -696,6 +695,9 @@ describe("Catering Orders API", () => {
 
     it("should return 401 for unauthenticated requests", async () => {
       vi.mocked(auth).mockResolvedValue({ orgId: null, userId: null } as any);
+      vi.mocked(requireCurrentUser).mockImplementation(() => {
+        throw new InvariantError("Unauthorized");
+      });
 
       const request = createMockRequest(
         "http://localhost:3000/api/events/catering-orders/commands/update",
@@ -705,7 +707,7 @@ describe("Catering Orders API", () => {
         }
       );
       const response = await POST_update(request, {
-        params: Promise.resolve({ entity: "CateringOrder", command: "create" }),
+        params: Promise.resolve({ entity: "CateringOrder", command: "update" }),
       });
 
       expect(response.status).toBe(401);
@@ -736,7 +738,7 @@ describe("Catering Orders API", () => {
         { method: "POST", body: JSON.stringify(body) }
       );
       const response = await POST_confirm(request, {
-        params: Promise.resolve({ entity: "CateringOrder", command: "create" }),
+        params: Promise.resolve({ entity: "CateringOrder", command: "confirm" }),
       });
       const data = await response.json();
 
@@ -757,7 +759,7 @@ describe("Catering Orders API", () => {
         }
       );
       const response = await POST_confirm(request, {
-        params: Promise.resolve({ entity: "CateringOrder", command: "create" }),
+        params: Promise.resolve({ entity: "CateringOrder", command: "confirm" }),
       });
       const data = await response.json();
 
@@ -767,6 +769,9 @@ describe("Catering Orders API", () => {
 
     it("should return 401 for unauthenticated requests", async () => {
       vi.mocked(auth).mockResolvedValue({ orgId: null, userId: null } as any);
+      vi.mocked(requireCurrentUser).mockImplementation(() => {
+        throw new InvariantError("Unauthorized");
+      });
 
       const request = createMockRequest(
         "http://localhost:3000/api/events/catering-orders/commands/confirm",
@@ -776,7 +781,7 @@ describe("Catering Orders API", () => {
         }
       );
       const response = await POST_confirm(request, {
-        params: Promise.resolve({ entity: "CateringOrder", command: "create" }),
+        params: Promise.resolve({ entity: "CateringOrder", command: "confirm" }),
       });
 
       expect(response.status).toBe(401);
@@ -810,7 +815,7 @@ describe("Catering Orders API", () => {
         { method: "POST", body: JSON.stringify(body) }
       );
       const response = await POST_cancel(request, {
-        params: Promise.resolve({ entity: "CateringOrder", command: "create" }),
+        params: Promise.resolve({ entity: "CateringOrder", command: "cancel" }),
       });
       const data = await response.json();
 
@@ -831,7 +836,7 @@ describe("Catering Orders API", () => {
         }
       );
       const response = await POST_cancel(request, {
-        params: Promise.resolve({ entity: "CateringOrder", command: "create" }),
+        params: Promise.resolve({ entity: "CateringOrder", command: "cancel" }),
       });
 
       expect(response.status).toBe(422);
@@ -839,6 +844,9 @@ describe("Catering Orders API", () => {
 
     it("should return 401 for unauthenticated requests", async () => {
       vi.mocked(auth).mockResolvedValue({ orgId: null, userId: null } as any);
+      vi.mocked(requireCurrentUser).mockImplementation(() => {
+        throw new InvariantError("Unauthorized");
+      });
 
       const request = createMockRequest(
         "http://localhost:3000/api/events/catering-orders/commands/cancel",
@@ -848,7 +856,7 @@ describe("Catering Orders API", () => {
         }
       );
       const response = await POST_cancel(request, {
-        params: Promise.resolve({ entity: "CateringOrder", command: "create" }),
+        params: Promise.resolve({ entity: "CateringOrder", command: "cancel" }),
       });
 
       expect(response.status).toBe(401);
@@ -879,7 +887,7 @@ describe("Catering Orders API", () => {
         { method: "POST", body: JSON.stringify(body) }
       );
       const response = await POST_startPrep(request, {
-        params: Promise.resolve({ entity: "CateringOrder", command: "create" }),
+        params: Promise.resolve({ entity: "CateringOrder", command: "start-prep" }),
       });
       const data = await response.json();
 
@@ -899,7 +907,7 @@ describe("Catering Orders API", () => {
         { method: "POST", body: JSON.stringify(body) }
       );
       await POST_startPrep(request, {
-        params: Promise.resolve({ entity: "CateringOrder", command: "create" }),
+        params: Promise.resolve({ entity: "CateringOrder", command: "start-prep" }),
       });
 
       expect(runCommand).toHaveBeenCalledWith(
@@ -911,6 +919,9 @@ describe("Catering Orders API", () => {
 
     it("should return 401 for unauthenticated requests", async () => {
       vi.mocked(auth).mockResolvedValue({ orgId: null, userId: null } as any);
+      vi.mocked(requireCurrentUser).mockImplementation(() => {
+        throw new InvariantError("Unauthorized");
+      });
 
       const request = createMockRequest(
         "http://localhost:3000/api/events/catering-orders/commands/start-prep",
@@ -920,7 +931,7 @@ describe("Catering Orders API", () => {
         }
       );
       const response = await POST_startPrep(request, {
-        params: Promise.resolve({ entity: "CateringOrder", command: "create" }),
+        params: Promise.resolve({ entity: "CateringOrder", command: "start-prep" }),
       });
 
       expect(response.status).toBe(401);
@@ -951,7 +962,7 @@ describe("Catering Orders API", () => {
         { method: "POST", body: JSON.stringify(body) }
       );
       const response = await POST_markComplete(request, {
-        params: Promise.resolve({ entity: "CateringOrder", command: "create" }),
+        params: Promise.resolve({ entity: "CateringOrder", command: "mark-complete" }),
       });
       const data = await response.json();
 
@@ -971,7 +982,7 @@ describe("Catering Orders API", () => {
         { method: "POST", body: JSON.stringify(body) }
       );
       await POST_markComplete(request, {
-        params: Promise.resolve({ entity: "CateringOrder", command: "create" }),
+        params: Promise.resolve({ entity: "CateringOrder", command: "mark-complete" }),
       });
 
       expect(runCommand).toHaveBeenCalledWith(
@@ -993,7 +1004,7 @@ describe("Catering Orders API", () => {
         }
       );
       const response = await POST_markComplete(request, {
-        params: Promise.resolve({ entity: "CateringOrder", command: "create" }),
+        params: Promise.resolve({ entity: "CateringOrder", command: "mark-complete" }),
       });
       const data = await response.json();
 
@@ -1003,6 +1014,9 @@ describe("Catering Orders API", () => {
 
     it("should return 401 for unauthenticated requests", async () => {
       vi.mocked(auth).mockResolvedValue({ orgId: null, userId: null } as any);
+      vi.mocked(requireCurrentUser).mockImplementation(() => {
+        throw new InvariantError("Unauthorized");
+      });
 
       const request = createMockRequest(
         "http://localhost:3000/api/events/catering-orders/commands/mark-complete",
@@ -1012,7 +1026,7 @@ describe("Catering Orders API", () => {
         }
       );
       const response = await POST_markComplete(request, {
-        params: Promise.resolve({ entity: "CateringOrder", command: "create" }),
+        params: Promise.resolve({ entity: "CateringOrder", command: "mark-complete" }),
       });
 
       expect(response.status).toBe(401);

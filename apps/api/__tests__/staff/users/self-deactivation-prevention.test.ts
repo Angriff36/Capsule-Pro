@@ -28,40 +28,17 @@ vi.mock("@/lib/database", () => ({ database: mockDatabase }));
 vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
 vi.mock("@/app/lib/tenant", () => ({
   getTenantIdForOrg: vi.fn(),
-  requireCurrentUser: vi.fn().mockResolvedValue({
-    id: SELF_INTERNAL,
-    tenantId: TENANT,
-    role: "admin",
-    email: "test@example.com",
-    firstName: "Test",
-    lastName: "User",
-  }),
+  requireCurrentUser: vi.fn(),
 }));
 vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn() }));
 vi.mock("@/lib/manifest-runtime", () => ({
   createManifestRuntime: vi.fn(),
 }));
 
-// Mock InvariantError for auth failure tests
-const { MockInvariantError } = vi.hoisted(() => {
-  class MockInvariantError extends Error {
-    name = "InvariantError";
-  }
-  return { MockInvariantError };
-});
-
-vi.mock("@/app/lib/invariant", () => ({
-  InvariantError: MockInvariantError,
-  invariant: (condition: unknown, message: string) => {
-    if (!condition) {
-      throw new MockInvariantError(message);
-    }
-  },
-}));
-
 import { auth } from "@repo/auth/server";
 import { getTenantIdForOrg, requireCurrentUser } from "@/app/lib/tenant";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
+import { InvariantError } from "@/app/lib/invariant";
 
 const TENANT = "a0000000-0000-4000-a000-000000000001";
 const ORG = "org-test-1";
@@ -174,7 +151,7 @@ describe("POST /api/user/deactivate — self-deactivation prevention", () => {
 
   it("returns 401 when unauthenticated", async () => {
     vi.mocked(requireCurrentUser).mockRejectedValueOnce(
-      new MockInvariantError("auth.orgId must exist")
+      new InvariantError("auth.orgId must exist")
     );
     const deactivate = await getDeactivateHandler();
     const res = await deactivate(makeRequest({ userId: SELF_INTERNAL }));
