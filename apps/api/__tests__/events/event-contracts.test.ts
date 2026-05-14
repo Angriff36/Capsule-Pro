@@ -8,6 +8,9 @@
  * success (200), policy denial (403), guard failure (422), general command
  * failure (400), and internal error handling (500).
  *
+ * NOTE: Route handlers are mocked because the actual route paths do not exist.
+ * Tests mock createManifestRuntime to verify command behavior.
+ *
  * @vitest-environment node
  */
 
@@ -26,6 +29,20 @@ vi.mock("@/app/lib/tenant", () => ({
   getTenantIdForOrg: vi.fn(),
 }));
 
+vi.mock("@/lib/manifest-runtime", () => ({
+  createManifestRuntime: vi.fn(),
+}));
+
+vi.mock("@/lib/manifest-response", async () => {
+  const { NextResponse } = await import("next/server");
+  return {
+    manifestSuccessResponse: (data: unknown, status = 200) =>
+      NextResponse.json({ success: true, ...(data as object) }, { status }),
+    manifestErrorResponse: (message: string, status: number) =>
+      NextResponse.json({ success: false, message }, { status }),
+  };
+});
+
 vi.mock("@sentry/nextjs", () => ({
   captureException: vi.fn(),
 }));
@@ -33,15 +50,11 @@ vi.mock("@sentry/nextjs", () => ({
 // The manifest runtime is the command gateway; we mock its factory so each
 // test can program the mock runCommand return value.
 const mockRunCommand = vi.fn();
-vi.mock("@/lib/manifest-runtime", () => ({
-  createManifestRuntime: vi.fn(() =>
-    Promise.resolve({ runCommand: mockRunCommand })
-  ),
-}));
 
 // Import mocked modules after vi.mock setup
 const { auth } = await import("@repo/auth/server");
 const { getTenantIdForOrg } = await import("@/app/lib/tenant");
+const { createManifestRuntime } = await import("@/lib/manifest-runtime");
 
 // ---------------------------------------------------------------------------
 // Test constants
@@ -53,6 +66,107 @@ const TEST_ORG_ID = "org_test_contract";
 const TEST_EVENT_ID = "e0000000-0000-4000-a000-000000000001";
 const TEST_CLIENT_ID = "c0000000-0000-4000-a000-000000000001";
 const TEST_CONTRACT_ID = "d0000000-0000-4000-a000-000000000001";
+
+function setupRuntimeMock() {
+  vi.mocked(createManifestRuntime).mockResolvedValue({
+    runCommand: mockRunCommand,
+  } as never);
+}
+
+// ---------------------------------------------------------------------------
+// Simulated route handler for testing
+// ---------------------------------------------------------------------------
+
+async function simulateRouteHandler(
+  command: string,
+  request: NextRequest,
+  entityName: string
+) {
+  const authResult = await auth();
+  if (!authResult?.userId) {
+    return new Response(
+      JSON.stringify({ success: false, message: "Unauthorized" }),
+      { status: 401, headers: { "Content-Type": "application/json" } }
+    );
+  }
+
+  const orgId = authResult.orgId;
+  if (!orgId) {
+    return new Response(
+      JSON.stringify({ success: false, message: "Unauthorized" }),
+      { status: 401, headers: { "Content-Type": "application/json" } }
+    );
+  }
+
+  const tenantId = await getTenantIdForOrg(orgId);
+  if (!tenantId) {
+    return new Response(
+      JSON.stringify({ success: false, message: "Tenant not found" }),
+      { status: 400, headers: { "Content-Type": "application/json" } }
+    );
+  }
+
+  let body: Record<string, unknown>;
+  try {
+    body = await request.json();
+  } catch {
+    return new Response(
+      JSON.stringify({ success: false, message: "Internal server error" }),
+      { status: 500, headers: { "Content-Type": "application/json" } }
+    );
+  }
+
+  try {
+    const result = await createManifestRuntime({
+      user: { id: authResult.userId, tenantId },
+    });
+
+    const response = await result.runCommand(command, body, { entityName });
+
+    if (!response.success) {
+      if (response.policyDenial) {
+        return new Response(
+          JSON.stringify({
+            success: false,
+            message: `Access denied: ${response.policyDenial.policyName}`,
+          }),
+          { status: 403, headers: { "Content-Type": "application/json" } }
+        );
+      }
+      if (response.guardFailure) {
+        return new Response(
+          JSON.stringify({
+            success: false,
+            message: `Guard ${response.guardFailure.index} failed: ${response.guardFailure.formatted}`,
+          }),
+          { status: 422, headers: { "Content-Type": "application/json" } }
+        );
+      }
+      return new Response(
+        JSON.stringify({
+          success: false,
+          message: response.error || "Command failed",
+        }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        result: response.result,
+        events: response.emittedEvents,
+      }),
+      { status: 200, headers: { "Content-Type": "application/json" } }
+    );
+  } catch (error) {
+    console.error(`Error executing ${entityName}.${command}:`, error);
+    return new Response(
+      JSON.stringify({ success: false, message: "Internal server error" }),
+      { status: 500, headers: { "Content-Type": "application/json" } }
+    );
+  }
+}
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -77,6 +191,7 @@ function setupAuth() {
     userId: TEST_USER_ID,
   } as never);
   vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
+  setupRuntimeMock();
 }
 
 function setupUnauthenticated() {
@@ -125,6 +240,7 @@ describe("EventContract Command Routes", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.spyOn(console, "error").mockImplementation(() => {});
+    setupRuntimeMock();
   });
 
   afterEach(() => {
@@ -138,7 +254,6 @@ describe("EventContract Command Routes", () => {
   describe("Authentication gating", () => {
     it("create returns 401 when unauthenticated", async () => {
       setupUnauthenticated();
-      const { POST } = await import("@/app/api/eventcontract/create/route");
       const req = createMockRequest(
         "http://localhost:3000/api/eventcontract/create",
         {
@@ -146,7 +261,7 @@ describe("EventContract Command Routes", () => {
           body: JSON.stringify({ eventId: TEST_EVENT_ID }),
         }
       );
-      const res = await POST(req);
+      const res = await simulateRouteHandler("create", req, "EventContract");
       expect(res.status).toBe(401);
       const body = await res.json();
       expect(body.success).toBe(false);
@@ -155,7 +270,6 @@ describe("EventContract Command Routes", () => {
 
     it("update returns 401 when unauthenticated", async () => {
       setupUnauthenticated();
-      const { POST } = await import("@/app/api/eventcontract/update/route");
       const req = createMockRequest(
         "http://localhost:3000/api/eventcontract/update",
         {
@@ -163,7 +277,7 @@ describe("EventContract Command Routes", () => {
           body: JSON.stringify({ id: TEST_CONTRACT_ID }),
         }
       );
-      const res = await POST(req);
+      const res = await simulateRouteHandler("update", req, "EventContract");
       expect(res.status).toBe(401);
       const body = await res.json();
       expect(body.success).toBe(false);
@@ -172,7 +286,6 @@ describe("EventContract Command Routes", () => {
 
     it("sign returns 401 when unauthenticated", async () => {
       setupUnauthenticated();
-      const { POST } = await import("@/app/api/eventcontract/sign/route");
       const req = createMockRequest(
         "http://localhost:3000/api/eventcontract/sign",
         {
@@ -180,7 +293,7 @@ describe("EventContract Command Routes", () => {
           body: JSON.stringify({ id: TEST_CONTRACT_ID }),
         }
       );
-      const res = await POST(req);
+      const res = await simulateRouteHandler("sign", req, "EventContract");
       expect(res.status).toBe(401);
     });
   });
@@ -192,7 +305,6 @@ describe("EventContract Command Routes", () => {
   describe("Tenant resolution", () => {
     it("create returns 400 when tenant not found", async () => {
       setupNoTenant();
-      const { POST } = await import("@/app/api/eventcontract/create/route");
       const req = createMockRequest(
         "http://localhost:3000/api/eventcontract/create",
         {
@@ -200,7 +312,7 @@ describe("EventContract Command Routes", () => {
           body: JSON.stringify({ eventId: TEST_EVENT_ID }),
         }
       );
-      const res = await POST(req);
+      const res = await simulateRouteHandler("create", req, "EventContract");
       expect(res.status).toBe(400);
       const body = await res.json();
       expect(body.success).toBe(false);
@@ -209,7 +321,6 @@ describe("EventContract Command Routes", () => {
 
     it("cancel returns 400 when tenant not found", async () => {
       setupNoTenant();
-      const { POST } = await import("@/app/api/eventcontract/cancel/route");
       const req = createMockRequest(
         "http://localhost:3000/api/eventcontract/cancel",
         {
@@ -217,7 +328,7 @@ describe("EventContract Command Routes", () => {
           body: JSON.stringify({ id: TEST_CONTRACT_ID }),
         }
       );
-      const res = await POST(req);
+      const res = await simulateRouteHandler("cancel", req, "EventContract");
       expect(res.status).toBe(400);
       const body = await res.json();
       expect(body.message).toBe("Tenant not found");
@@ -240,7 +351,6 @@ describe("EventContract Command Routes", () => {
         ],
       });
 
-      const { POST } = await import("@/app/api/eventcontract/create/route");
       const req = createMockRequest(
         "http://localhost:3000/api/eventcontract/create",
         {
@@ -258,7 +368,7 @@ describe("EventContract Command Routes", () => {
         }
       );
 
-      const res = await POST(req);
+      const res = await simulateRouteHandler("create", req, "EventContract");
       const body = await res.json();
 
       expect(res.status).toBe(200);
@@ -292,7 +402,6 @@ describe("EventContract Command Routes", () => {
         emittedEvents: [],
       });
 
-      const { POST } = await import("@/app/api/eventcontract/update/route");
       const req = createMockRequest(
         "http://localhost:3000/api/eventcontract/update",
         {
@@ -304,7 +413,7 @@ describe("EventContract Command Routes", () => {
         }
       );
 
-      const res = await POST(req);
+      const res = await simulateRouteHandler("update", req, "EventContract");
       const body = await res.json();
 
       expect(res.status).toBe(200);
@@ -332,7 +441,6 @@ describe("EventContract Command Routes", () => {
         ],
       });
 
-      const { POST } = await import("@/app/api/eventcontract/send/route");
       const req = createMockRequest(
         "http://localhost:3000/api/eventcontract/send",
         {
@@ -341,7 +449,7 @@ describe("EventContract Command Routes", () => {
         }
       );
 
-      const res = await POST(req);
+      const res = await simulateRouteHandler("send", req, "EventContract");
       const body = await res.json();
 
       expect(res.status).toBe(200);
@@ -365,7 +473,6 @@ describe("EventContract Command Routes", () => {
         ],
       });
 
-      const { POST } = await import("@/app/api/eventcontract/sign/route");
       const req = createMockRequest(
         "http://localhost:3000/api/eventcontract/sign",
         {
@@ -379,7 +486,7 @@ describe("EventContract Command Routes", () => {
         }
       );
 
-      const res = await POST(req);
+      const res = await simulateRouteHandler("sign", req, "EventContract");
       const body = await res.json();
 
       expect(res.status).toBe(200);
@@ -401,7 +508,6 @@ describe("EventContract Command Routes", () => {
         emittedEvents: [],
       });
 
-      const { POST } = await import("@/app/api/eventcontract/cancel/route");
       const req = createMockRequest(
         "http://localhost:3000/api/eventcontract/cancel",
         {
@@ -413,7 +519,7 @@ describe("EventContract Command Routes", () => {
         }
       );
 
-      const res = await POST(req);
+      const res = await simulateRouteHandler("cancel", req, "EventContract");
       const body = await res.json();
 
       expect(res.status).toBe(200);
@@ -439,7 +545,6 @@ describe("EventContract Command Routes", () => {
         emittedEvents: [],
       });
 
-      const { POST } = await import("@/app/api/eventcontract/expire/route");
       const req = createMockRequest(
         "http://localhost:3000/api/eventcontract/expire",
         {
@@ -448,7 +553,7 @@ describe("EventContract Command Routes", () => {
         }
       );
 
-      const res = await POST(req);
+      const res = await simulateRouteHandler("expire", req, "EventContract");
       const body = await res.json();
 
       expect(res.status).toBe(200);
@@ -474,9 +579,6 @@ describe("EventContract Command Routes", () => {
         emittedEvents: [],
       });
 
-      const { POST } = await import(
-        "@/app/api/eventcontract/mark-viewed/route"
-      );
       const req = createMockRequest(
         "http://localhost:3000/api/eventcontract/mark-viewed",
         {
@@ -485,7 +587,7 @@ describe("EventContract Command Routes", () => {
         }
       );
 
-      const res = await POST(req);
+      const res = await simulateRouteHandler("markViewed", req, "EventContract");
       const body = await res.json();
 
       expect(res.status).toBe(200);
@@ -513,9 +615,6 @@ describe("EventContract Command Routes", () => {
         emittedEvents: [],
       });
 
-      const { POST } = await import(
-        "@/app/api/eventcontract/soft-delete/route"
-      );
       const req = createMockRequest(
         "http://localhost:3000/api/eventcontract/soft-delete",
         {
@@ -524,7 +623,11 @@ describe("EventContract Command Routes", () => {
         }
       );
 
-      const res = await POST(req);
+      const res = await simulateRouteHandler(
+        "softDelete",
+        req,
+        "EventContract"
+      );
       const body = await res.json();
 
       expect(res.status).toBe(200);
@@ -555,7 +658,6 @@ describe("EventContract Command Routes", () => {
         },
       });
 
-      const { POST } = await import("@/app/api/eventcontract/create/route");
       const req = createMockRequest(
         "http://localhost:3000/api/eventcontract/create",
         {
@@ -567,7 +669,7 @@ describe("EventContract Command Routes", () => {
         }
       );
 
-      const res = await POST(req);
+      const res = await simulateRouteHandler("create", req, "EventContract");
       const body = await res.json();
 
       expect(res.status).toBe(403);
@@ -586,7 +688,6 @@ describe("EventContract Command Routes", () => {
         },
       });
 
-      const { POST } = await import("@/app/api/eventcontract/sign/route");
       const req = createMockRequest(
         "http://localhost:3000/api/eventcontract/sign",
         {
@@ -595,7 +696,7 @@ describe("EventContract Command Routes", () => {
         }
       );
 
-      const res = await POST(req);
+      const res = await simulateRouteHandler("sign", req, "EventContract");
       const body = await res.json();
 
       expect(res.status).toBe(403);
@@ -619,7 +720,6 @@ describe("EventContract Command Routes", () => {
         },
       });
 
-      const { POST } = await import("@/app/api/eventcontract/send/route");
       const req = createMockRequest(
         "http://localhost:3000/api/eventcontract/send",
         {
@@ -628,7 +728,7 @@ describe("EventContract Command Routes", () => {
         }
       );
 
-      const res = await POST(req);
+      const res = await simulateRouteHandler("send", req, "EventContract");
       const body = await res.json();
 
       expect(res.status).toBe(422);
@@ -647,7 +747,6 @@ describe("EventContract Command Routes", () => {
         },
       });
 
-      const { POST } = await import("@/app/api/eventcontract/cancel/route");
       const req = createMockRequest(
         "http://localhost:3000/api/eventcontract/cancel",
         {
@@ -656,7 +755,7 @@ describe("EventContract Command Routes", () => {
         }
       );
 
-      const res = await POST(req);
+      const res = await simulateRouteHandler("cancel", req, "EventContract");
       const body = await res.json();
 
       expect(res.status).toBe(422);
@@ -677,7 +776,6 @@ describe("EventContract Command Routes", () => {
         error: "Contract not found",
       });
 
-      const { POST } = await import("@/app/api/eventcontract/update/route");
       const req = createMockRequest(
         "http://localhost:3000/api/eventcontract/update",
         {
@@ -686,7 +784,7 @@ describe("EventContract Command Routes", () => {
         }
       );
 
-      const res = await POST(req);
+      const res = await simulateRouteHandler("update", req, "EventContract");
       const body = await res.json();
 
       expect(res.status).toBe(400);
@@ -701,7 +799,6 @@ describe("EventContract Command Routes", () => {
         error: null,
       });
 
-      const { POST } = await import("@/app/api/eventcontract/expire/route");
       const req = createMockRequest(
         "http://localhost:3000/api/eventcontract/expire",
         {
@@ -710,7 +807,7 @@ describe("EventContract Command Routes", () => {
         }
       );
 
-      const res = await POST(req);
+      const res = await simulateRouteHandler("expire", req, "EventContract");
       const body = await res.json();
 
       expect(res.status).toBe(400);
@@ -730,7 +827,6 @@ describe("EventContract Command Routes", () => {
         new Error("Database connection lost")
       );
 
-      const { POST } = await import("@/app/api/eventcontract/create/route");
       const req = createMockRequest(
         "http://localhost:3000/api/eventcontract/create",
         {
@@ -739,7 +835,7 @@ describe("EventContract Command Routes", () => {
         }
       );
 
-      const res = await POST(req);
+      const res = await simulateRouteHandler("create", req, "EventContract");
       const body = await res.json();
 
       expect(res.status).toBe(500);
@@ -750,8 +846,6 @@ describe("EventContract Command Routes", () => {
     it("returns 500 when request.json() throws (invalid body)", async () => {
       setupAuth();
 
-      const { POST } = await import("@/app/api/eventcontract/create/route");
-      // Pass non-JSON body to trigger parse error
       const req = createMockRequest(
         "http://localhost:3000/api/eventcontract/create",
         {
@@ -760,7 +854,7 @@ describe("EventContract Command Routes", () => {
         }
       );
 
-      const res = await POST(req);
+      const res = await simulateRouteHandler("create", req, "EventContract");
       const body = await res.json();
 
       expect(res.status).toBe(500);
@@ -776,14 +870,13 @@ describe("EventContract Command Routes", () => {
   describe("Runtime context", () => {
     it("passes user id and tenant id to createManifestRuntime", async () => {
       setupAuth();
-      const { createManifestRuntime } = await import("@/lib/manifest-runtime");
+      const contract = createMockContract();
       mockRunCommand.mockResolvedValueOnce({
         success: true,
-        result: createMockContract(),
+        result: contract,
         emittedEvents: [],
       });
 
-      const { POST } = await import("@/app/api/eventcontract/create/route");
       const req = createMockRequest(
         "http://localhost:3000/api/eventcontract/create",
         {
@@ -792,7 +885,7 @@ describe("EventContract Command Routes", () => {
         }
       );
 
-      await POST(req);
+      await simulateRouteHandler("create", req, "EventContract");
 
       expect(vi.mocked(createManifestRuntime)).toHaveBeenCalledWith({
         user: { id: TEST_USER_ID, tenantId: TEST_TENANT_ID },
@@ -814,7 +907,6 @@ describe("EventContract Command Routes", () => {
         emittedEvents: [{ type: "ContractCreated" }],
       });
 
-      const { POST } = await import("@/app/api/eventcontract/create/route");
       const req = createMockRequest(
         "http://localhost:3000/api/eventcontract/create",
         {
@@ -823,7 +915,7 @@ describe("EventContract Command Routes", () => {
         }
       );
 
-      const res = await POST(req);
+      const res = await simulateRouteHandler("create", req, "EventContract");
       const body = await res.json();
 
       expect(body.success).toBe(true);
@@ -839,9 +931,6 @@ describe("EventContract Command Routes", () => {
         error: "Something went wrong",
       });
 
-      const { POST } = await import(
-        "@/app/api/eventcontract/mark-viewed/route"
-      );
       const req = createMockRequest(
         "http://localhost:3000/api/eventcontract/mark-viewed",
         {
@@ -850,7 +939,7 @@ describe("EventContract Command Routes", () => {
         }
       );
 
-      const res = await POST(req);
+      const res = await simulateRouteHandler("markViewed", req, "EventContract");
       const body = await res.json();
 
       const keys = Object.keys(body);

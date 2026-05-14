@@ -27,9 +27,10 @@ export async function GET(
 
     const proposalLineItem = await database.proposalLineItem.findUnique({
       where: {
-        id,
-        tenantId,
-        deletedAt: null
+        tenantId_id: {
+          tenantId,
+          id,
+        }
       },
     });
 

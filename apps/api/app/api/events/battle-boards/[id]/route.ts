@@ -27,9 +27,7 @@ export async function GET(
 
     const battleBoard = await database.battleBoard.findUnique({
       where: {
-        id,
-        tenantId,
-        deletedAt: null
+        tenantId_id: { tenantId, id },
       },
     });
 

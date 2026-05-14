@@ -27,9 +27,7 @@ export async function GET(
 
     const schedule = await database.schedule.findUnique({
       where: {
-        id,
-        tenantId,
-        deletedAt: null
+        tenantId_id: { tenantId, id },
       },
     });
 

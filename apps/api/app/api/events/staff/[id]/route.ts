@@ -25,11 +25,12 @@ export async function GET(
 
     const { id } = await params;
 
-    const eventStaff = await database.eventStaff.findUnique({
+    const eventStaff = await database.eventStaffAssignment.findUnique({
       where: {
-        id,
-        tenantId,
-        deletedAt: null
+        tenantId_id: {
+          tenantId,
+          id,
+        },
       },
     });
 

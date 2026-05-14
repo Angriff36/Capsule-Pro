@@ -22,11 +22,10 @@ export async function GET(request: NextRequest) {
 
 const payrollApprovalHistorys = await database.payrollApprovalHistory.findMany({
     where: {
-        tenantId,
-        deletedAt: null
+        tenant_id: tenantId,
       },
     orderBy: {
-      createdAt: "desc",
+      performed_at: "desc",
     },
   });
 

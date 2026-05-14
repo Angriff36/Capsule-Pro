@@ -27,9 +27,7 @@ export async function GET(
 
     const varianceReport = await database.varianceReport.findUnique({
       where: {
-        id,
-        tenantId,
-        deletedAt: null
+        tenantId_id: { tenantId, id },
       },
     });
 

@@ -27,9 +27,7 @@ export async function GET(
 
     const timecardEditRequest = await database.timecardEditRequest.findUnique({
       where: {
-        id,
-        tenantId,
-        deletedAt: null
+        tenantId_id: { tenantId, id },
       },
     });
 

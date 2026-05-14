@@ -85,23 +85,25 @@ const { createManifestRuntime } = await import("@/lib/manifest-runtime");
 
 import { GET as getActivityFeedList } from "@/app/api/activity-feed/list/route";
 import { GET as getActivityFeedStats } from "@/app/api/activity-feed/stats/route";
-import { POST as archiveParticipant } from "@/app/api/adminchatparticipant/archive/route";
-import { POST as clearHistory } from "@/app/api/adminchatparticipant/clear-history/route";
-import { POST as unarchiveParticipant } from "@/app/api/adminchatparticipant/unarchive/route";
+import { POST as manifestPOST } from "@/app/api/manifest/[entity]/commands/[command]/route";
+
+const archiveParticipant = (req: NextRequest) => manifestPOST(req, { params: Promise.resolve({ entity: "AdminChatParticipant", command: "archive" }) });
+const clearHistory = (req: NextRequest) => manifestPOST(req, { params: Promise.resolve({ entity: "AdminChatParticipant", command: "clearHistory" }) });
+const unarchiveParticipant = (req: NextRequest) => manifestPOST(req, { params: Promise.resolve({ entity: "AdminChatParticipant", command: "unarchive" }) });
 import { POST as aiEventSetupParse } from "@/app/api/ai-event-setup/parse/route";
-import { POST as sessionCancel } from "@/app/api/aieventsetupsession/cancel/route";
-import { POST as sessionConfirm } from "@/app/api/aieventsetupsession/confirm/route";
-import { POST as sessionMarkCreated } from "@/app/api/aieventsetupsession/mark-created/route";
-import { POST as sessionParse } from "@/app/api/aieventsetupsession/parse/route";
-import { POST as sessionUpdateConfidence } from "@/app/api/aieventsetupsession/update-confidence/route";
-import { POST as alertsConfigCreate } from "@/app/api/alertsconfig/create/route";
-import { POST as alertsConfigRemove } from "@/app/api/alertsconfig/remove/route";
-import { POST as alertsConfigUpdate } from "@/app/api/alertsconfig/update/route";
-import { POST as allergenAcknowledge } from "@/app/api/allergenwarning/acknowledge/route";
-import { POST as allergenApplyOverride } from "@/app/api/allergenwarning/apply-override/route";
-import { POST as allergenCreate } from "@/app/api/allergenwarning/create/route";
-import { POST as allergenResolve } from "@/app/api/allergenwarning/resolve/route";
-import { POST as allergenSoftDelete } from "@/app/api/allergenwarning/soft-delete/route";
+const sessionCancel = (req: NextRequest) => manifestPOST(req, { params: Promise.resolve({ entity: "AiEventSetupSession", command: "cancel" }) });
+const sessionConfirm = (req: NextRequest) => manifestPOST(req, { params: Promise.resolve({ entity: "AiEventSetupSession", command: "confirm" }) });
+const sessionMarkCreated = (req: NextRequest) => manifestPOST(req, { params: Promise.resolve({ entity: "AiEventSetupSession", command: "markCreated" }) });
+const sessionParse = (req: NextRequest) => manifestPOST(req, { params: Promise.resolve({ entity: "AiEventSetupSession", command: "parse" }) });
+const sessionUpdateConfidence = (req: NextRequest) => manifestPOST(req, { params: Promise.resolve({ entity: "AiEventSetupSession", command: "updateConfidence" }) });
+const alertsConfigCreate = (req: NextRequest) => manifestPOST(req, { params: Promise.resolve({ entity: "AlertsConfig", command: "create" }) });
+const alertsConfigRemove = (req: NextRequest) => manifestPOST(req, { params: Promise.resolve({ entity: "AlertsConfig", command: "remove" }) });
+const alertsConfigUpdate = (req: NextRequest) => manifestPOST(req, { params: Promise.resolve({ entity: "AlertsConfig", command: "update" }) });
+const allergenAcknowledge = (req: NextRequest) => manifestPOST(req, { params: Promise.resolve({ entity: "AllergenWarning", command: "acknowledge" }) });
+const allergenApplyOverride = (req: NextRequest) => manifestPOST(req, { params: Promise.resolve({ entity: "AllergenWarning", command: "applyOverride" }) });
+const allergenCreate = (req: NextRequest) => manifestPOST(req, { params: Promise.resolve({ entity: "AllergenWarning", command: "create" }) });
+const allergenResolve = (req: NextRequest) => manifestPOST(req, { params: Promise.resolve({ entity: "AllergenWarning", command: "resolve" }) });
+const allergenSoftDelete = (req: NextRequest) => manifestPOST(req, { params: Promise.resolve({ entity: "AllergenWarning", command: "softDelete" }) });
 
 // --- Constants ---
 

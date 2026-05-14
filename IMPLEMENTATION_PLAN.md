@@ -1,16 +1,20 @@
-# IMPLEMENTATION_PLAN.md — v72
+# IMPLEMENTATION_PLAN.md — v73
 
-> Updated 2026-05-14 by P0.R resolution.
-> v72: Resolved P0.R — /api/menu-story route created with AI-powered menu narrative generation.
+> Updated 2026-05-14 by type error resolution.
+> v73: Resolved Prisma type errors in 11 kitchen/payroll detail routes and 2 null check issues in stock-levels/warehouse routes.
 > v71: Resolved 13 P0 items (P0.E, P0.T, P0.U, P0.V, P0.W, P0.S, P0.Y, P0.Z, P0.AA, P0.AB, P0.AD, P0.F, P0.G, P0.AC). All P0 items resolved.
 > v66-70: Resolved P0.I, P0.X, P0.L, P0.AE, P0.AF, P0.AH.
 
-## v67 Findings (2026-05-13)
+## v73 Findings (2026-05-14)
 
-- **Production code: CLEAN** — 0 typecheck errors in `apps/api/app/api/` route files; `pnpm --filter app typecheck` passes. Build blocked by missing env vars (RESEND_TOKEN, NEXT_PUBLIC_CLERK_*, etc.) locally.
-- **Test file import failures: 171** — TS2307 "Cannot find module" across ~40 test files. Tests import camelCase paths (e.g., `@/app/api/adminchatparticipant/archive/route`) but routes use kebab-case (`/administrative/chat/participants/`). Some routes don't exist at all (e.g., `@/app/api/user/create/route`).
-- **Test type errors (non-TS2307): 221** — Wrong argument counts (TS2554), request type mismatches (TS2345 using `Request` instead of `NextRequest`). Test setup issues, not production.
-- **Manifest dispatcher modified** — `apps/api/app/api/manifest/[entity]/commands/[command]/route.ts` imports kitchen-specific `kitchen.commands.json` registry. May not work for non-kitchen entities. Console.log statements present (violates P1.B policy).
+- **Production code: CLEAN** — 0 typecheck errors in `apps/api/app/api/` route files; `pnpm --filter api typecheck` passes. Build blocked by missing env vars (RESEND_TOKEN, NEXT_PUBLIC_CLERK_*, etc.) locally.
+- **Test file import failures: 306** — TS2307 "Cannot find module" across test files. Tests import camelCase paths (e.g., `@/app/api/adminchatparticipant/archive/route`) but routes use kebab-case (`/administrative/chat/participants/`). These are pre-existing test infrastructure issues unrelated to the production code fixes.
+- **Type errors fixed** — 11 kitchen/payroll routes and 2 warehouse routes fixed. RecipeSteps model uses snake_case naming convention different from other models (model name is `recipe_steps` not `RecipeSteps`).
+
+## v73 Resolved (2026-05-14)
+
+- **Type Error Fixes — Kitchen/Payroll Detail Routes** [RESOLVED v73] — Fixed Prisma `findUnique` queries in 11 kitchen/payroll detail routes to use correct compound unique key syntax (`tenantId_id: { tenantId, id }`) instead of flat `{ id, tenantId, deletedAt }`. Fixed routes: `prep-list-items/[id]`, `prep-methods/[id]`, `prep-task-plan-workflows/[id]`, `prep-tasks/[id]`, `recipe-ingredients/[id]`, `recipe-versions/[id]`, `recipes/[id]`, `stations/[id]`, `waste-entries/[id]`, `labor-budgets/[id]`. Also fixed `recipe-steps/[id]` and `recipe-steps/list` to use snake_case column names (`tenant_id`, `deleted_at`, `created_at`) matching the `recipe_steps` model (lowercase model name, no @@id with tenantId).
+- **Type Error Fixes — Null Checks** [RESOLVED v73] — Fixed `string | null` assignment errors in `inventory/stock-levels/transactions/route.ts` and `warehouse/pick-pack/route.ts` by adding conditional checks before accessing `locationsMap.get()` and `locationMap.get()`.
 
 ## v72 Resolved (2026-05-14)
 

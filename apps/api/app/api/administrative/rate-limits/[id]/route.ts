@@ -27,9 +27,7 @@ export async function GET(
 
     const rateLimitConfig = await database.rateLimitConfig.findUnique({
       where: {
-        id,
-        tenantId,
-        deletedAt: null
+        tenantId_id: { tenantId, id }
       },
     });
 

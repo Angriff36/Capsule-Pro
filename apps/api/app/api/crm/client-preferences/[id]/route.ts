@@ -27,9 +27,10 @@ export async function GET(
 
     const clientPreference = await database.clientPreference.findUnique({
       where: {
-        id,
-        tenantId,
-        deletedAt: null
+        tenantId_id: {
+          tenantId,
+          id,
+        }
       },
     });
 

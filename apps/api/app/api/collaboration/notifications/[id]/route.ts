@@ -27,9 +27,7 @@ export async function GET(
 
     const notification = await database.notification.findUnique({
       where: {
-        id,
-        tenantId,
-        deletedAt: null
+        tenantId_id: { tenantId, id },
       },
     });
 

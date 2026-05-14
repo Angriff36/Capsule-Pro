@@ -27,9 +27,7 @@ export async function GET(
 
     const menuDish = await database.menuDish.findUnique({
       where: {
-        id,
-        tenantId,
-        deletedAt: null
+        tenantId_id: { tenantId, id },
       },
     });
 

@@ -27,9 +27,7 @@ export async function GET(
 
     const prepComment = await database.prepComment.findUnique({
       where: {
-        id,
-        tenantId,
-        deletedAt: null
+        tenantId_id: { tenantId, id },
       },
     });
 

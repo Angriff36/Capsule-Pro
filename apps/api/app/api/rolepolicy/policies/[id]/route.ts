@@ -27,9 +27,7 @@ export async function GET(
 
     const rolePolicy = await database.rolePolicy.findUnique({
       where: {
-        id,
-        tenantId,
-        deletedAt: null
+        tenantId_id: { tenantId, id },
       },
     });
 

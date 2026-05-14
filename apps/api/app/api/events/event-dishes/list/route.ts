@@ -20,13 +20,13 @@ export async function GET(request: NextRequest) {
     return manifestErrorResponse("Tenant not found", 400);
   }
 
-const eventDishs = await database.eventDish.findMany({
+const eventDishs = await database.event_dishes.findMany({
     where: {
-        tenantId,
-        deletedAt: null
+        tenant_id: tenantId,
+        deleted_at: null
       },
     orderBy: {
-      createdAt: "desc",
+      created_at: "desc",
     },
   });
 

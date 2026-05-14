@@ -27,9 +27,7 @@ export async function GET(
 
     const bulkOrderRule = await database.bulkOrderRule.findUnique({
       where: {
-        id,
-        tenantId,
-        deletedAt: null
+        tenantId_id: { tenantId, id },
       },
     });
 

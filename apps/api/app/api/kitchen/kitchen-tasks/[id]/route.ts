@@ -27,9 +27,7 @@ export async function GET(
 
     const kitchenTask = await database.kitchenTask.findUnique({
       where: {
-        id,
-        tenantId,
-        deletedAt: null
+        tenantId_id: { tenantId, id },
       },
     });
 

@@ -25,11 +25,12 @@ export async function GET(
 
     const { id } = await params;
 
-    const eventDish = await database.eventDish.findUnique({
+    const eventDish = await database.event_dishes.findUnique({
       where: {
-        id,
-        tenantId,
-        deletedAt: null
+        tenant_id_id: {
+          tenant_id: tenantId,
+          id,
+        },
       },
     });
 

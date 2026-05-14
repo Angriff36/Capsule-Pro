@@ -27,9 +27,10 @@ export async function GET(
 
     const clientContact = await database.clientContact.findUnique({
       where: {
-        id,
-        tenantId,
-        deletedAt: null
+        tenantId_id: {
+          tenantId,
+          id,
+        }
       },
     });
 

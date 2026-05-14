@@ -27,9 +27,7 @@ export async function GET(
 
     const purchaseOrderItem = await database.purchaseOrderItem.findUnique({
       where: {
-        id,
-        tenantId,
-        deletedAt: null
+        tenantId_id: { tenantId, id },
       },
     });
 

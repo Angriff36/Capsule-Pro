@@ -27,9 +27,7 @@ export async function GET(
 
     const contractSignature = await database.contractSignature.findUnique({
       where: {
-        id,
-        tenantId,
-        deletedAt: null
+        tenantId_id: { tenantId, id },
       },
     });
 

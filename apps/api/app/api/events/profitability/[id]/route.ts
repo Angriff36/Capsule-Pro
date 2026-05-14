@@ -27,9 +27,7 @@ export async function GET(
 
     const eventProfitability = await database.eventProfitability.findUnique({
       where: {
-        id,
-        tenantId,
-        deletedAt: null
+        tenantId_id: { tenantId, id },
       },
     });
 

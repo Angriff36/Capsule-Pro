@@ -27,9 +27,7 @@ export async function GET(
 
     const emailWorkflow = await database.emailWorkflow.findUnique({
       where: {
-        id,
-        tenantId,
-        deletedAt: null
+        tenantId_id: { tenantId, id }
       },
     });
 

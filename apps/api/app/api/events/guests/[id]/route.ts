@@ -27,9 +27,7 @@ export async function GET(
 
     const eventGuest = await database.eventGuest.findUnique({
       where: {
-        id,
-        tenantId,
-        deletedAt: null
+        tenantId_id: { tenantId, id },
       },
     });
 

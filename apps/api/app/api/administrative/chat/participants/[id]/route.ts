@@ -27,9 +27,7 @@ export async function GET(
 
     const adminChatParticipant = await database.adminChatParticipant.findUnique({
       where: {
-        id,
-        tenantId,
-        deletedAt: null
+        tenantId_id: { tenantId, id }
       },
     });
 
