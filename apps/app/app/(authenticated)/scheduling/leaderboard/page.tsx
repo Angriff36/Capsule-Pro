@@ -2,17 +2,14 @@ import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
 import {
   CommandBand,
-  CommandBandBody,
   CommandBandHeader,
   CommandBandLede,
   DisplayHeading,
   MonoLabel,
   OperationalColumn,
   OperationalRow,
-  PageBody,
   PageCanvas,
   SectionHeader,
-  StatusPill,
 } from "@repo/design-system/components/blocks/page-shell";
 import {
   Avatar,
@@ -20,9 +17,7 @@ import {
   AvatarImage,
 } from "@repo/design-system/components/ui/avatar";
 import { Badge } from "@repo/design-system/components/ui/badge";
-import { Button } from "@repo/design-system/components/ui/button";
 import { SparklesIcon } from "lucide-react";
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
@@ -63,7 +58,7 @@ export default async function LeaderboardPage() {
       AND s.shift_start < date_trunc('week', CURRENT_DATE) + interval '1 week'
     GROUP BY s.employee_id, e.first_name, e.last_name, e.role
     ORDER BY shift_count DESC, e.last_name ASC
-    `,
+    `
   );
 
   return (
@@ -110,7 +105,7 @@ export default async function LeaderboardPage() {
               {leaderboard.map((person, index) => {
                 const fullName = formatName(
                   person.first_name,
-                  person.last_name,
+                  person.last_name
                 );
                 return (
                   <OperationalRow
@@ -123,9 +118,7 @@ export default async function LeaderboardPage() {
                       </span>
                       <Avatar className="size-12">
                         <AvatarImage alt={fullName} src="" />
-                        <AvatarFallback>
-                          {fullName.slice(0, 2)}
-                        </AvatarFallback>
+                        <AvatarFallback>{fullName.slice(0, 2)}</AvatarFallback>
                       </Avatar>
                       <div className="min-w-0 flex-1">
                         <div className="truncate font-medium text-ink">

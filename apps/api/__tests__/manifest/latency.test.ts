@@ -2,12 +2,13 @@
  * Latency measurement — exercises the full dispatcher path via vitest integration.
  * Measures: JSON import, Set build, Set.has(), IR load, createRuntime, runCommand.
  */
-import { describe, it } from "vitest";
+
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { performance } from "node:perf_hooks";
+import { describe, it } from "vitest";
 
-const ROOT = resolve(__dirname, "../../../..");
+const ROOT = resolve(import.meta.dirname, "../../../..");
 
 describe("manifest command dispatch latency", () => {
   it("measures kitchen.commands.json load + Set build + lookup", () => {
@@ -85,8 +86,7 @@ describe("manifest command dispatch latency", () => {
     const tScan = performance.now();
     for (let i = 0; i < 1000; i++) {
       ir.commands?.find(
-        (cmd: any) =>
-          cmd.entity === "PrepTask" && cmd.command === "claim"
+        (cmd: any) => cmd.entity === "PrepTask" && cmd.command === "claim"
       );
     }
     console.log(

@@ -9,9 +9,8 @@ import {
   KitchenOperationalSectionLead,
 } from "@repo/design-system/components/blocks/page-shell";
 import { Button } from "@repo/design-system/components/ui/button";
-import { Input } from "@repo/design-system/components/ui/input";
-import { Label } from "@repo/design-system/components/ui/label";
 import { DatePicker } from "@repo/design-system/components/ui/date-picker";
+import { Label } from "@repo/design-system/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -435,7 +434,6 @@ export function AvailabilityClient() {
                 onChange={(e) =>
                   handleFilterChange("effectiveDate", e.target.value)
                 }
- 
                 value={filters.effectiveDate}
               />
             </div>

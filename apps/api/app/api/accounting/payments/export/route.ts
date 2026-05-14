@@ -22,8 +22,7 @@ export async function GET(request: NextRequest) {
     const dateTo = searchParams.get("dateTo");
     if (dateFrom || dateTo) {
       where.createdAt = {};
-      if (dateFrom)
-        (where.createdAt as Record<string, string>).gte = dateFrom;
+      if (dateFrom) (where.createdAt as Record<string, string>).gte = dateFrom;
       if (dateTo) (where.createdAt as Record<string, string>).lte = dateTo;
     }
 
@@ -83,7 +82,7 @@ export async function GET(request: NextRequest) {
     log.error("Error exporting payments:", error);
     return NextResponse.json(
       { error: "Failed to export payments" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

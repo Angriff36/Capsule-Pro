@@ -20,7 +20,17 @@ import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
-vi.mock("@/app/lib/tenant", () => ({ getTenantIdForOrg: vi.fn() }));
+vi.mock("@/app/lib/tenant", () => ({
+  requireCurrentUser: vi.fn().mockResolvedValue({
+    id: "test-user-id",
+    tenantId: "test-tenant",
+    role: "admin",
+    email: "test@example.com",
+    firstName: "Test",
+    lastName: "User",
+  }),
+  getTenantIdForOrg: vi.fn(),
+}));
 vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn() }));
 vi.mock("@/lib/manifest-runtime", () => ({
   createManifestRuntime: vi.fn(),
@@ -278,11 +288,7 @@ describe("Menu API Routes", () => {
       mockAuthenticated();
       mockRuntimeGuardFailure(0, "name is required");
 
-      const res = await simulateRouteHandler(
-        "create",
-        makeRequest({}),
-        "Menu"
-      );
+      const res = await simulateRouteHandler("create", makeRequest({}), "Menu");
       const data = await res.json();
 
       expect(res.status).toBe(422);

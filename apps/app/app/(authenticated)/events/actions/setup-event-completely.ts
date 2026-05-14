@@ -234,7 +234,10 @@ export async function setupEventCompletely(
         result.steps.dishesAdded = {
           completed: true,
           skipped: false,
-          detail: `Added ${added} dish(es): ${dishes.slice(0, added).map((d) => d.name).join(", ")}`,
+          detail: `Added ${added} dish(es): ${dishes
+            .slice(0, added)
+            .map((d) => d.name)
+            .join(", ")}`,
         };
       } else {
         result.steps.dishesAdded = {
@@ -377,7 +380,7 @@ export async function setupEventCompletely(
       );
 
       const serviceDate =
-        eventDate[0]?.event_date ?? new Date(Date.now() + 7 * 86400000);
+        eventDate[0]?.event_date ?? new Date(Date.now() + 7 * 86_400_000);
 
       await database.$executeRawUnsafe(
         `INSERT INTO tenant_kitchen.prep_lists (
@@ -499,7 +502,8 @@ export async function setupEventCompletely(
       result.steps.budgetCreated = {
         completed: true,
         skipped: false,
-        detail: "Draft budget created (empty — add line items on the Budget page)",
+        detail:
+          "Draft budget created (empty — add line items on the Budget page)",
       };
     }
   } catch (err) {

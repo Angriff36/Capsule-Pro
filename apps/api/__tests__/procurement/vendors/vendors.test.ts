@@ -80,12 +80,14 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Helper to create params for manifest dispatcher
 const vendorParams = (command: string) => ({
-  params: Promise.resolve({ entity: "InventorySupplier", command }),
+  params: Promise.resolve({ entity: "Vendor", command }),
 });
 
 // Helper functions to get manifest handler for specific commands
 async function getVendorHandler(command: string) {
-  const mod = await import("@/app/api/manifest/[entity]/commands/[command]/route");
+  const mod = await import(
+    "@/app/api/manifest/[entity]/commands/[command]/route"
+  );
   return (req: NextRequest) => mod.POST(req, vendorParams(command));
 }
 
@@ -106,7 +108,14 @@ async function getAddContactHandler() {
 vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
 vi.mock("@/app/lib/tenant", () => ({
   getTenantIdForOrg: vi.fn(),
-  requireCurrentUser: vi.fn(),
+  requireCurrentUser: vi.fn().mockResolvedValue({
+    id: TEST_USER_ID,
+    tenantId: TEST_TENANT_ID,
+    role: "admin",
+    email: "test@example.com",
+    firstName: "Test",
+    lastName: "User",
+  }),
 }));
 vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn() }));
 vi.mock("@/lib/database", async () => {
@@ -116,7 +125,7 @@ vi.mock("@/lib/database", async () => {
 });
 
 import { auth } from "@repo/auth/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { getTenantIdForOrg, requireCurrentUser } from "@/app/lib/tenant";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -137,6 +146,14 @@ function authOk() {
     orgId: TEST_ORG_ID,
   } as never);
   vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
+  vi.mocked(requireCurrentUser).mockResolvedValue({
+    id: TEST_USER_ID,
+    tenantId: TEST_TENANT_ID,
+    role: "admin",
+    email: "test@example.com",
+    firstName: "Test",
+    lastName: "User",
+  } as never);
 }
 
 function authMissing() {
@@ -906,9 +923,12 @@ describe("Procurement Vendors API", () => {
       authMissing();
       const rate = await getVendorHandler("rate");
       const res = await rate(
-        makeRequest("http://localhost/api/manifest/[entity]/commands/[command]", {
-          body: { vendorId: VENDOR_ID, category: "overall", rating: 4 },
-        })
+        makeRequest(
+          "http://localhost/api/manifest/[entity]/commands/[command]",
+          {
+            body: { vendorId: VENDOR_ID, category: "overall", rating: 4 },
+          }
+        )
       );
       expect(res.status).toBe(401);
     });
@@ -917,9 +937,12 @@ describe("Procurement Vendors API", () => {
       authOk();
       const rate = await getVendorHandler("rate");
       const res = await rate(
-        makeRequest("http://localhost/api/manifest/[entity]/commands/[command]", {
-          body: { category: "overall", rating: 4 },
-        })
+        makeRequest(
+          "http://localhost/api/manifest/[entity]/commands/[command]",
+          {
+            body: { category: "overall", rating: 4 },
+          }
+        )
       );
       expect(res.status).toBe(400);
     });
@@ -928,9 +951,12 @@ describe("Procurement Vendors API", () => {
       authOk();
       const rate = await getVendorHandler("rate");
       const res = await rate(
-        makeRequest("http://localhost/api/manifest/[entity]/commands/[command]", {
-          body: { vendorId: VENDOR_ID, category: "vibes", rating: 4 },
-        })
+        makeRequest(
+          "http://localhost/api/manifest/[entity]/commands/[command]",
+          {
+            body: { vendorId: VENDOR_ID, category: "vibes", rating: 4 },
+          }
+        )
       );
       expect(res.status).toBe(400);
       const body = await res.json();
@@ -941,9 +967,12 @@ describe("Procurement Vendors API", () => {
       authOk();
       const rate = await getVendorHandler("rate");
       const res = await rate(
-        makeRequest("http://localhost/api/manifest/[entity]/commands/[command]", {
-          body: { vendorId: VENDOR_ID, category: "overall", rating: 9 },
-        })
+        makeRequest(
+          "http://localhost/api/manifest/[entity]/commands/[command]",
+          {
+            body: { vendorId: VENDOR_ID, category: "overall", rating: 9 },
+          }
+        )
       );
       expect(res.status).toBe(400);
     });
@@ -956,9 +985,12 @@ describe("Procurement Vendors API", () => {
 
       const rate = await getVendorHandler("rate");
       const res = await rate(
-        makeRequest("http://localhost/api/manifest/[entity]/commands/[command]", {
-          body: { vendorId: VENDOR_ID, category: "overall", rating: 4 },
-        })
+        makeRequest(
+          "http://localhost/api/manifest/[entity]/commands/[command]",
+          {
+            body: { vendorId: VENDOR_ID, category: "overall", rating: 4 },
+          }
+        )
       );
       expect(res.status).toBe(404);
     });
@@ -978,9 +1010,12 @@ describe("Procurement Vendors API", () => {
 
       const rate = await getVendorHandler("rate");
       const res = await rate(
-        makeRequest("http://localhost/api/manifest/[entity]/commands/[command]", {
-          body: { vendorId: VENDOR_ID, category: "delivery", rating: 4 },
-        })
+        makeRequest(
+          "http://localhost/api/manifest/[entity]/commands/[command]",
+          {
+            body: { vendorId: VENDOR_ID, category: "delivery", rating: 4 },
+          }
+        )
       );
       expect(res.status).toBe(200);
       expect(database.vendorRating.create).toHaveBeenCalledTimes(1);
@@ -1010,14 +1045,17 @@ describe("Procurement Vendors API", () => {
 
       const rate = await getVendorHandler("rate");
       const res = await rate(
-        makeRequest("http://localhost/api/manifest/[entity]/commands/[command]", {
-          body: {
-            vendorId: VENDOR_ID,
-            category: "overall",
-            rating: 5,
-            comment: "great",
-          },
-        })
+        makeRequest(
+          "http://localhost/api/manifest/[entity]/commands/[command]",
+          {
+            body: {
+              vendorId: VENDOR_ID,
+              category: "overall",
+              rating: 5,
+              comment: "great",
+            },
+          }
+        )
       );
       const body = await res.json();
 
@@ -1058,9 +1096,12 @@ describe("Procurement Vendors API", () => {
 
       const rate = await getVendorHandler("rate");
       const res = await rate(
-        makeRequest("http://localhost/api/manifest/[entity]/commands/[command]", {
-          body: { vendorId: VENDOR_ID, category: "overall", rating: 5 },
-        })
+        makeRequest(
+          "http://localhost/api/manifest/[entity]/commands/[command]",
+          {
+            body: { vendorId: VENDOR_ID, category: "overall", rating: 5 },
+          }
+        )
       );
       expect(res.status).toBe(200);
       expect(database.inventorySupplier.update).not.toHaveBeenCalled();
@@ -1074,9 +1115,12 @@ describe("Procurement Vendors API", () => {
 
       const rate = await getVendorHandler("rate");
       const res = await rate(
-        makeRequest("http://localhost/api/manifest/[entity]/commands/[command]", {
-          body: { vendorId: VENDOR_ID, category: "overall", rating: 4 },
-        })
+        makeRequest(
+          "http://localhost/api/manifest/[entity]/commands/[command]",
+          {
+            body: { vendorId: VENDOR_ID, category: "overall", rating: 4 },
+          }
+        )
       );
       expect(res.status).toBe(500);
       expect(captureException).toHaveBeenCalled();

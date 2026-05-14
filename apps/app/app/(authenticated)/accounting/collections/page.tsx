@@ -17,12 +17,11 @@ import {
   SectionHeader,
 } from "@repo/design-system/components/blocks/page-shell";
 import { Button } from "@repo/design-system/components/ui/button";
+import { formatCurrencyWhole as formatCurrency } from "@repo/design-system/lib/format-currency";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { CollectionsClient } from "./collections-client";
-
-import { formatCurrencyWhole as formatCurrency } from "@repo/design-system/lib/format-currency";
 
 export default async function CollectionsPage() {
   const { userId, orgId } = await auth();
@@ -71,7 +70,9 @@ export default async function CollectionsPage() {
     }),
   ]);
 
-  const outstandingTotal = Number(outstandingTotals._sum.outstandingAmount ?? 0);
+  const outstandingTotal = Number(
+    outstandingTotals._sum.outstandingAmount ?? 0
+  );
   const collectedTotal = Number(collectedTotals._sum.collectedAmount ?? 0);
   const urgentCount =
     casesByPriority.find((p) => p.priority === "URGENT")?._count.id ?? 0;

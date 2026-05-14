@@ -13,10 +13,12 @@ export function SchedulingSearchInput() {
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
       if (e.key === "Enter" && query.trim()) {
-        router.push(`/scheduling/shifts?search=${encodeURIComponent(query.trim())}`);
+        router.push(
+          `/scheduling/shifts?search=${encodeURIComponent(query.trim())}`
+        );
       }
     },
-    [query, router],
+    [query, router]
   );
 
   useEffect(() => {

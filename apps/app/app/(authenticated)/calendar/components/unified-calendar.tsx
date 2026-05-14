@@ -16,6 +16,7 @@ import { BlogFilterChip } from "@repo/design-system/components/blocks/blog-filte
 import { ResearchTable } from "@repo/design-system/components/blocks/research-table";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
+import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import {
   Dialog,
   DialogContent,
@@ -25,7 +26,7 @@ import {
   DialogTitle,
 } from "@repo/design-system/components/ui/dialog";
 import { Input } from "@repo/design-system/components/ui/input";
-import { DatePicker } from "@repo/design-system/components/ui/date-picker";
+import { log } from "@repo/observability/log";
 import {
   addMonths,
   eachDayOfInterval,
@@ -65,7 +66,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
-import { log } from "@repo/observability/log";
 
 interface CalendarEvent {
   id: string;
@@ -93,7 +93,8 @@ interface UnifiedCalendarProps {
 const EVENT_COLORS: Record<string, string> = {
   event: "bg-[var(--ds-calendar-event)] border-[var(--ds-calendar-event)]",
   shift: "bg-[var(--ds-calendar-shift)] border-[var(--ds-calendar-shift)]",
-  timeoff: "bg-[var(--ds-calendar-timeoff)] border-[var(--ds-calendar-timeoff)]",
+  timeoff:
+    "bg-[var(--ds-calendar-timeoff)] border-[var(--ds-calendar-timeoff)]",
 };
 
 const EVENT_TYPE_LABELS: Record<string, string> = {
@@ -223,7 +224,9 @@ export function UnifiedCalendar({
   const [currentDate, setCurrentDate] = useState<Date>(() => {
     if (urlDate) {
       const parsed = new Date(urlDate);
-      return Number.isNaN(parsed.getTime()) ? (initialDate ?? new Date()) : parsed;
+      return Number.isNaN(parsed.getTime())
+        ? (initialDate ?? new Date())
+        : parsed;
     }
     return initialDate ?? new Date();
   });
@@ -243,7 +246,9 @@ export function UnifiedCalendar({
   }>({ open: false, date: null, events: [] });
   const [filters, setFilters] = useState<string[]>(() => {
     if (urlTypes) {
-      const parsed = urlTypes.split(",").filter((t) => ["event", "shift", "timeoff"].includes(t));
+      const parsed = urlTypes
+        .split(",")
+        .filter((t) => ["event", "shift", "timeoff"].includes(t));
       return parsed.length > 0 ? parsed : ["event", "shift", "timeoff"];
     }
     return ["event", "shift", "timeoff"];
@@ -289,7 +294,10 @@ export function UnifiedCalendar({
         params.set("date", format(newDate, "yyyy-MM-dd"));
       }
       const defaultTypes = ["event", "shift", "timeoff"];
-      if (newFilters.length < 3 || newFilters.some((f) => !defaultTypes.includes(f))) {
+      if (
+        newFilters.length < 3 ||
+        newFilters.some((f) => !defaultTypes.includes(f))
+      ) {
         params.set("types", newFilters.join(","));
       }
       const qs = params.toString();
@@ -679,7 +687,6 @@ export function UnifiedCalendar({
             className="w-48"
             onChange={(e) => checkAvailability(e.target.value)}
             placeholder="Select date..."
- 
             value={availabilityDate}
           />
           {availabilityStatus && (
@@ -839,7 +846,8 @@ export function UnifiedCalendar({
                           onClick={handleEventClick}
                         />
                       ))}
-                    {dayEvents.length > (view === "day" ? 50 : view === "week" ? 8 : 4) && (
+                    {dayEvents.length >
+                      (view === "day" ? 50 : view === "week" ? 8 : 4) && (
                       <button
                         className="text-xs text-ink/60 pl-1 underline-offset-2 hover:underline hover:text-ink"
                         onClick={() =>
@@ -851,7 +859,10 @@ export function UnifiedCalendar({
                         }
                         type="button"
                       >
-                        +{dayEvents.length - (view === "day" ? 50 : view === "week" ? 8 : 4)} more
+                        +
+                        {dayEvents.length -
+                          (view === "day" ? 50 : view === "week" ? 8 : 4)}{" "}
+                        more
                       </button>
                     )}
                   </div>

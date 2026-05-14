@@ -60,6 +60,15 @@ vi.mock("@repo/email", () => ({
 }));
 
 vi.mock("@/app/lib/tenant", () => ({
+  requireCurrentUser: vi.fn().mockResolvedValue({
+    id: "test-user-id",
+    tenantId: "test-tenant",
+    role: "admin",
+    email: "test@example.com",
+    firstName: "Test",
+    lastName: "User",
+  }),
+
   requireTenantId: mocks.requireTenantIdMock,
 }));
 
@@ -144,10 +153,7 @@ describe("invoices/[id] role guard", () => {
       response: UNAUTHORIZED_RESPONSE(),
     });
 
-    const res = await PATCH_INVOICE(
-      reqJSON({ action: "mark-as-paid" }),
-      ctx
-    );
+    const res = await PATCH_INVOICE(reqJSON({ action: "mark-as-paid" }), ctx);
 
     expect(res.status).toBe(401);
     expect(mocks.invoiceFindFirstMock).not.toHaveBeenCalled();

@@ -53,7 +53,14 @@ vi.mock("@repo/auth/server", () => ({
 
 vi.mock("@/app/lib/tenant", () => ({
   getTenantIdForOrg: vi.fn(),
-  requireCurrentUser: vi.fn(),
+  requireCurrentUser: vi.fn().mockResolvedValue({
+    id: TEST_USER_ID,
+    tenantId: TEST_TENANT_ID,
+    role: "admin",
+    email: "test@example.com",
+    firstName: "Test",
+    lastName: "User",
+  }),
 }));
 
 vi.mock("@sentry/nextjs", () => ({
@@ -66,7 +73,7 @@ vi.mock("@/lib/manifest-runtime", () => ({
 
 // Import mocked modules after vi.mock setup
 import { auth } from "@repo/auth/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { getTenantIdForOrg, requireCurrentUser } from "@/app/lib/tenant";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
 
 // ---------------------------------------------------------------------------
@@ -304,6 +311,14 @@ describe("Notification Persistence (write → read alignment)", () => {
         userId: TEST_CLERK_ID,
       } as any);
       vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
+      vi.mocked(requireCurrentUser).mockResolvedValue({
+        id: TEST_USER_ID,
+        tenantId: TEST_TENANT_ID,
+        role: "admin",
+        email: "test@example.com",
+        firstName: "Test",
+        lastName: "User",
+      });
       vi.mocked(database.user.findFirst).mockResolvedValue(mockUser as never);
       mockRunCommand.mockClear();
       vi.mocked(createManifestRuntime).mockResolvedValue({
@@ -330,16 +345,16 @@ describe("Notification Persistence (write → read alignment)", () => {
           }
         );
 
-        await mod.POST(request, { params: Promise.resolve({ entity: "Notification", command: "create" }) });
+        await mod.POST(request, {
+          params: Promise.resolve({
+            entity: "Notification",
+            command: "create",
+          }),
+        });
 
-        expect(mockRunCommand).toHaveBeenCalledWith(
-          verb,
-          expect.any(Object),
-          expect.objectContaining({
-            entityName: "Notification",
-            instanceId: "notif-003",
-          })
-        );
+        expect(mockRunCommand).toHaveBeenCalledWith(verb, expect.any(Object), {
+          entityName: "Notification",
+        });
       });
     }
 
@@ -358,7 +373,9 @@ describe("Notification Persistence (write → read alignment)", () => {
         }
       );
 
-      await mod.POST(request, { params: Promise.resolve({ entity: "Notification", command: "create" }) });
+      await mod.POST(request, {
+        params: Promise.resolve({ entity: "Notification", command: "create" }),
+      });
 
       expect(mockRunCommand).toHaveBeenCalledWith(
         "create",

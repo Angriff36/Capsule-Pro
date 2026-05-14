@@ -80,21 +80,28 @@ export async function GET(request: Request) {
     const reconciliationRecords = bankAccounts.map((account, index) => {
       // Distribute payments across accounts as a simplified model
       // In production, each payment would be linked to a specific bank account
-      const accountPayments = payments.filter((_p, i) => i % bankAccounts.length === index);
+      const accountPayments = payments.filter(
+        (_p, i) => i % bankAccounts.length === index
+      );
       const totalCredits = accountPayments.reduce(
         (sum, p) => sum + Number(p.amount),
         0
       );
 
       // Simulated statement balance (book balance + estimated variance)
-      const variance = index % 3 === 0 ? 0 : index % 3 === 1 ? totalCredits * 0.02 : -totalCredits * 0.01;
+      const variance =
+        index % 3 === 0
+          ? 0
+          : index % 3 === 1
+            ? totalCredits * 0.02
+            : -totalCredits * 0.01;
       const statementBalance = totalCredits + variance;
       const difference = Math.abs(statementBalance - totalCredits);
       const isReconciled = difference < 0.01;
 
       const lastPayment = accountPayments[0];
       const lastReconciledDate = isReconciled
-        ? lastPayment?.completedAt ?? null
+        ? (lastPayment?.completedAt ?? null)
         : null;
 
       return {

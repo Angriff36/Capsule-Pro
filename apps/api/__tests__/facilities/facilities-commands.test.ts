@@ -10,21 +10,32 @@
 import { database } from "@repo/database";
 import { NextRequest } from "next/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { POST as createArea } from "@/app/api/manifest/[entity]/commands/[command]/route";
-import { POST as deleteArea } from "@/app/api/manifest/[entity]/commands/[command]/route";
-import { POST as editArea } from "@/app/api/manifest/[entity]/commands/[command]/route";
 import { GET as listAreas } from "@/app/api/facilities/areas/list/route";
-// Route imports
-import { POST as createFacility } from "@/app/api/manifest/[entity]/commands/[command]/route";
-import { POST as deleteFacility } from "@/app/api/manifest/[entity]/commands/[command]/route";
-import { POST as editFacility } from "@/app/api/manifest/[entity]/commands/[command]/route";
-import { POST as createWorkOrder } from "@/app/api/manifest/[entity]/commands/[command]/route";
-import { POST as updateWorkOrderStatus } from "@/app/api/manifest/[entity]/commands/[command]/route";
 import { GET as listWorkOrders } from "@/app/api/facilities/work-orders/list/route";
+// Route imports
+import {
+  POST as createArea,
+  POST as createFacility,
+  POST as createWorkOrder,
+  POST as deleteArea,
+  POST as deleteFacility,
+  POST as editArea,
+  POST as editFacility,
+  POST as updateWorkOrderStatus,
+} from "@/app/api/manifest/[entity]/commands/[command]/route";
 
 // Mock dependencies
 vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
 vi.mock("@/app/lib/tenant", () => ({
+  requireCurrentUser: vi.fn().mockResolvedValue({
+    id: "test-user-id",
+    tenantId: "test-tenant",
+    role: "admin",
+    email: "test@example.com",
+    firstName: "Test",
+    lastName: "User",
+  }),
+
   getTenantIdForOrg: vi.fn(),
 }));
 vi.mock("@sentry/nextjs", () => ({
@@ -32,7 +43,7 @@ vi.mock("@sentry/nextjs", () => ({
 }));
 
 const { auth } = await import("@repo/auth/server");
-const { getTenantIdForOrg } = await import("@/app/lib/tenant");
+const { getTenantIdForOrg, requireCurrentUser } = await import("@/app/lib/tenant");
 
 const TEST_TENANT_ID = "00000000-0000-0000-0000-000000000005";
 const TEST_USER_ID = "user_facilities_cmd_test";
@@ -134,6 +145,14 @@ function setupHappyPathMocks() {
     orgId: TEST_ORG_ID,
   } as never);
   vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
+  vi.mocked(requireCurrentUser).mockResolvedValue({
+    id: TEST_USER_ID,
+    tenantId: TEST_TENANT_ID,
+    role: "admin",
+    email: "test@example.com",
+    firstName: "Test",
+    lastName: "User",
+  } as never);
 }
 
 // ===========================================================================
@@ -164,7 +183,9 @@ describe("Facilities Command Routes", () => {
           name: "Test Facility",
         }
       );
-      const res = await createFacility(req, { params: Promise.resolve({ entity: "Facility", command: "create" }) });
+      const res = await createFacility(req, {
+        params: Promise.resolve({ entity: "Facility", command: "create" }),
+      });
 
       expect(res.status).toBe(401);
       const body = await res.json();
@@ -181,7 +202,9 @@ describe("Facilities Command Routes", () => {
           name: "Test Facility",
         }
       );
-      const res = await createFacility(req, { params: Promise.resolve({ entity: "Facility", command: "create" }) });
+      const res = await createFacility(req, {
+        params: Promise.resolve({ entity: "Facility", command: "create" }),
+      });
 
       expect(res.status).toBe(400);
       const body = await res.json();
@@ -196,7 +219,9 @@ describe("Facilities Command Routes", () => {
           code: "FAC-001",
         }
       );
-      const res = await createFacility(req, { params: Promise.resolve({ entity: "Facility", command: "create" }) });
+      const res = await createFacility(req, {
+        params: Promise.resolve({ entity: "Facility", command: "create" }),
+      });
 
       expect(res.status).toBe(400);
       const body = await res.json();
@@ -211,7 +236,9 @@ describe("Facilities Command Routes", () => {
           name: "   ",
         }
       );
-      const res = await createFacility(req, { params: Promise.resolve({ entity: "Facility", command: "create" }) });
+      const res = await createFacility(req, {
+        params: Promise.resolve({ entity: "Facility", command: "create" }),
+      });
 
       expect(res.status).toBe(400);
       const body = await res.json();
@@ -238,7 +265,9 @@ describe("Facilities Command Routes", () => {
           notes: "Primary commissary",
         }
       );
-      const res = await createFacility(req, { params: Promise.resolve({ entity: "Facility", command: "create" }) });
+      const res = await createFacility(req, {
+        params: Promise.resolve({ entity: "Facility", command: "create" }),
+      });
 
       expect(res.status).toBe(200);
       const body = await res.json();
@@ -258,7 +287,9 @@ describe("Facilities Command Routes", () => {
           facilityType: "invalid_type",
         }
       );
-      const res = await createFacility(req, { params: Promise.resolve({ entity: "Facility", command: "create" }) });
+      const res = await createFacility(req, {
+        params: Promise.resolve({ entity: "Facility", command: "create" }),
+      });
 
       expect(res.status).toBe(200);
       expect(database.$queryRaw).toHaveBeenCalled();
@@ -284,7 +315,9 @@ describe("Facilities Command Routes", () => {
             facilityType: fType,
           }
         );
-        const res = await createFacility(req, { params: Promise.resolve({ entity: "Facility", command: "create" }) });
+        const res = await createFacility(req, {
+          params: Promise.resolve({ entity: "Facility", command: "create" }),
+        });
 
         expect(res.status).toBe(200);
       }
@@ -301,7 +334,9 @@ describe("Facilities Command Routes", () => {
           name: "Main Kitchen",
         }
       );
-      const res = await createFacility(req, { params: Promise.resolve({ entity: "Facility", command: "create" }) });
+      const res = await createFacility(req, {
+        params: Promise.resolve({ entity: "Facility", command: "create" }),
+      });
 
       expect(res.status).toBe(500);
       const body = await res.json();
@@ -325,7 +360,9 @@ describe("Facilities Command Routes", () => {
           name: "Updated",
         }
       );
-      const res = await editFacility(req, { params: Promise.resolve({ entity: "Facility", command: "edit" }) });
+      const res = await editFacility(req, {
+        params: Promise.resolve({ entity: "Facility", command: "edit" }),
+      });
 
       expect(res.status).toBe(401);
     });
@@ -340,7 +377,9 @@ describe("Facilities Command Routes", () => {
           name: "Updated",
         }
       );
-      const res = await editFacility(req, { params: Promise.resolve({ entity: "Facility", command: "edit" }) });
+      const res = await editFacility(req, {
+        params: Promise.resolve({ entity: "Facility", command: "edit" }),
+      });
 
       expect(res.status).toBe(400);
     });
@@ -352,7 +391,9 @@ describe("Facilities Command Routes", () => {
           name: "Updated Name",
         }
       );
-      const res = await editFacility(req, { params: Promise.resolve({ entity: "Facility", command: "edit" }) });
+      const res = await editFacility(req, {
+        params: Promise.resolve({ entity: "Facility", command: "edit" }),
+      });
 
       expect(res.status).toBe(400);
       const body = await res.json();
@@ -371,7 +412,9 @@ describe("Facilities Command Routes", () => {
           name: "Updated Kitchen",
         }
       );
-      const res = await editFacility(req, { params: Promise.resolve({ entity: "Facility", command: "edit" }) });
+      const res = await editFacility(req, {
+        params: Promise.resolve({ entity: "Facility", command: "edit" }),
+      });
 
       expect(res.status).toBe(200);
       const body = await res.json();
@@ -389,7 +432,9 @@ describe("Facilities Command Routes", () => {
           name: "Ghost",
         }
       );
-      const res = await editFacility(req, { params: Promise.resolve({ entity: "Facility", command: "edit" }) });
+      const res = await editFacility(req, {
+        params: Promise.resolve({ entity: "Facility", command: "edit" }),
+      });
 
       expect(res.status).toBe(404);
       const body = await res.json();
@@ -407,7 +452,9 @@ describe("Facilities Command Routes", () => {
           name: "Updated",
         }
       );
-      const res = await editFacility(req, { params: Promise.resolve({ entity: "Facility", command: "edit" }) });
+      const res = await editFacility(req, {
+        params: Promise.resolve({ entity: "Facility", command: "edit" }),
+      });
 
       expect(res.status).toBe(500);
       const body = await res.json();
@@ -429,7 +476,9 @@ describe("Facilities Command Routes", () => {
           facilityId: "fac-001",
         }
       );
-      const res = await deleteFacility(req, { params: Promise.resolve({ entity: "Facility", command: "remove" }) });
+      const res = await deleteFacility(req, {
+        params: Promise.resolve({ entity: "Facility", command: "remove" }),
+      });
 
       expect(res.status).toBe(401);
     });
@@ -443,7 +492,9 @@ describe("Facilities Command Routes", () => {
           facilityId: "fac-001",
         }
       );
-      const res = await deleteFacility(req, { params: Promise.resolve({ entity: "Facility", command: "remove" }) });
+      const res = await deleteFacility(req, {
+        params: Promise.resolve({ entity: "Facility", command: "remove" }),
+      });
 
       expect(res.status).toBe(400);
     });
@@ -453,7 +504,9 @@ describe("Facilities Command Routes", () => {
         "http://localhost/api/manifest/[entity]/commands/[command]",
         {}
       );
-      const res = await deleteFacility(req, { params: Promise.resolve({ entity: "Facility", command: "remove" }) });
+      const res = await deleteFacility(req, {
+        params: Promise.resolve({ entity: "Facility", command: "remove" }),
+      });
 
       expect(res.status).toBe(400);
       const body = await res.json();
@@ -470,7 +523,9 @@ describe("Facilities Command Routes", () => {
           facilityId: "fac-001",
         }
       );
-      const res = await deleteFacility(req, { params: Promise.resolve({ entity: "Facility", command: "remove" }) });
+      const res = await deleteFacility(req, {
+        params: Promise.resolve({ entity: "Facility", command: "remove" }),
+      });
 
       expect(res.status).toBe(200);
       const body = await res.json();
@@ -487,7 +542,9 @@ describe("Facilities Command Routes", () => {
           facilityId: "fac-001",
         }
       );
-      await deleteFacility(req, { params: Promise.resolve({ entity: "Facility", command: "remove" }) });
+      await deleteFacility(req, {
+        params: Promise.resolve({ entity: "Facility", command: "remove" }),
+      });
 
       expect(database.$queryRaw).toHaveBeenCalledTimes(1);
     });
@@ -501,7 +558,9 @@ describe("Facilities Command Routes", () => {
           facilityId: "fac-001",
         }
       );
-      const res = await deleteFacility(req, { params: Promise.resolve({ entity: "Facility", command: "remove" }) });
+      const res = await deleteFacility(req, {
+        params: Promise.resolve({ entity: "Facility", command: "remove" }),
+      });
 
       expect(res.status).toBe(500);
       const body = await res.json();
@@ -538,7 +597,9 @@ describe("Facility Areas Command Routes", () => {
           name: "Prep Area",
         }
       );
-      const res = await createArea(req, { params: Promise.resolve({ entity: "FacilityArea", command: "create" }) });
+      const res = await createArea(req, {
+        params: Promise.resolve({ entity: "FacilityArea", command: "create" }),
+      });
 
       expect(res.status).toBe(401);
       const body = await res.json();
@@ -555,7 +616,9 @@ describe("Facility Areas Command Routes", () => {
           name: "Prep Area",
         }
       );
-      const res = await createArea(req, { params: Promise.resolve({ entity: "FacilityArea", command: "create" }) });
+      const res = await createArea(req, {
+        params: Promise.resolve({ entity: "FacilityArea", command: "create" }),
+      });
 
       expect(res.status).toBe(400);
     });
@@ -567,7 +630,9 @@ describe("Facility Areas Command Routes", () => {
           code: "PA-001",
         }
       );
-      const res = await createArea(req, { params: Promise.resolve({ entity: "FacilityArea", command: "create" }) });
+      const res = await createArea(req, {
+        params: Promise.resolve({ entity: "FacilityArea", command: "create" }),
+      });
 
       expect(res.status).toBe(400);
       const body = await res.json();
@@ -595,7 +660,9 @@ describe("Facility Areas Command Routes", () => {
           squareFeet: 1200,
         }
       );
-      const res = await createArea(req, { params: Promise.resolve({ entity: "FacilityArea", command: "create" }) });
+      const res = await createArea(req, {
+        params: Promise.resolve({ entity: "FacilityArea", command: "create" }),
+      });
 
       expect(res.status).toBe(200);
       const body = await res.json();
@@ -619,7 +686,9 @@ describe("Facility Areas Command Routes", () => {
           code: "PA-001",
         }
       );
-      const res = await createArea(req, { params: Promise.resolve({ entity: "FacilityArea", command: "create" }) });
+      const res = await createArea(req, {
+        params: Promise.resolve({ entity: "FacilityArea", command: "create" }),
+      });
 
       expect(res.status).toBe(400);
       const body = await res.json();
@@ -640,7 +709,9 @@ describe("Facility Areas Command Routes", () => {
           areaType: "nonexistent_type",
         }
       );
-      const res = await createArea(req, { params: Promise.resolve({ entity: "FacilityArea", command: "create" }) });
+      const res = await createArea(req, {
+        params: Promise.resolve({ entity: "FacilityArea", command: "create" }),
+      });
 
       expect(res.status).toBe(200);
       expect(database.$queryRaw).toHaveBeenCalledTimes(1);
@@ -671,7 +742,12 @@ describe("Facility Areas Command Routes", () => {
             areaType: aType,
           }
         );
-        const res = await createArea(req, { params: Promise.resolve({ entity: "FacilityArea", command: "create" }) });
+        const res = await createArea(req, {
+          params: Promise.resolve({
+            entity: "FacilityArea",
+            command: "create",
+          }),
+        });
 
         expect(res.status).toBe(200);
       }
@@ -688,7 +764,9 @@ describe("Facility Areas Command Routes", () => {
           name: "No Code Area",
         }
       );
-      const res = await createArea(req, { params: Promise.resolve({ entity: "FacilityArea", command: "create" }) });
+      const res = await createArea(req, {
+        params: Promise.resolve({ entity: "FacilityArea", command: "create" }),
+      });
 
       expect(res.status).toBe(200);
       // Only one $queryRaw call (the INSERT), no duplicate check
@@ -705,7 +783,9 @@ describe("Facility Areas Command Routes", () => {
           name: "Prep Area",
         }
       );
-      const res = await createArea(req, { params: Promise.resolve({ entity: "FacilityArea", command: "create" }) });
+      const res = await createArea(req, {
+        params: Promise.resolve({ entity: "FacilityArea", command: "create" }),
+      });
 
       expect(res.status).toBe(500);
       const body = await res.json();
@@ -728,7 +808,9 @@ describe("Facility Areas Command Routes", () => {
           name: "Updated",
         }
       );
-      const res = await editArea(req, { params: Promise.resolve({ entity: "FacilityArea", command: "edit" }) });
+      const res = await editArea(req, {
+        params: Promise.resolve({ entity: "FacilityArea", command: "edit" }),
+      });
 
       expect(res.status).toBe(401);
     });
@@ -743,7 +825,9 @@ describe("Facility Areas Command Routes", () => {
           name: "Updated",
         }
       );
-      const res = await editArea(req, { params: Promise.resolve({ entity: "FacilityArea", command: "edit" }) });
+      const res = await editArea(req, {
+        params: Promise.resolve({ entity: "FacilityArea", command: "edit" }),
+      });
 
       expect(res.status).toBe(400);
     });
@@ -755,7 +839,9 @@ describe("Facility Areas Command Routes", () => {
           name: "Updated",
         }
       );
-      const res = await editArea(req, { params: Promise.resolve({ entity: "FacilityArea", command: "edit" }) });
+      const res = await editArea(req, {
+        params: Promise.resolve({ entity: "FacilityArea", command: "edit" }),
+      });
 
       expect(res.status).toBe(400);
       const body = await res.json();
@@ -774,7 +860,9 @@ describe("Facility Areas Command Routes", () => {
           name: "Updated Prep Area",
         }
       );
-      const res = await editArea(req, { params: Promise.resolve({ entity: "FacilityArea", command: "edit" }) });
+      const res = await editArea(req, {
+        params: Promise.resolve({ entity: "FacilityArea", command: "edit" }),
+      });
 
       expect(res.status).toBe(200);
       const body = await res.json();
@@ -792,7 +880,9 @@ describe("Facility Areas Command Routes", () => {
           name: "Ghost",
         }
       );
-      const res = await editArea(req, { params: Promise.resolve({ entity: "FacilityArea", command: "edit" }) });
+      const res = await editArea(req, {
+        params: Promise.resolve({ entity: "FacilityArea", command: "edit" }),
+      });
 
       expect(res.status).toBe(404);
       const body = await res.json();
@@ -812,7 +902,9 @@ describe("Facility Areas Command Routes", () => {
           name: "Updated",
         }
       );
-      const res = await editArea(req, { params: Promise.resolve({ entity: "FacilityArea", command: "edit" }) });
+      const res = await editArea(req, {
+        params: Promise.resolve({ entity: "FacilityArea", command: "edit" }),
+      });
 
       expect(res.status).toBe(500);
     });
@@ -832,7 +924,9 @@ describe("Facility Areas Command Routes", () => {
           areaId: "area-001",
         }
       );
-      const res = await deleteArea(req, { params: Promise.resolve({ entity: "FacilityArea", command: "remove" }) });
+      const res = await deleteArea(req, {
+        params: Promise.resolve({ entity: "FacilityArea", command: "remove" }),
+      });
 
       expect(res.status).toBe(401);
     });
@@ -846,7 +940,9 @@ describe("Facility Areas Command Routes", () => {
           areaId: "area-001",
         }
       );
-      const res = await deleteArea(req, { params: Promise.resolve({ entity: "FacilityArea", command: "remove" }) });
+      const res = await deleteArea(req, {
+        params: Promise.resolve({ entity: "FacilityArea", command: "remove" }),
+      });
 
       expect(res.status).toBe(400);
     });
@@ -856,7 +952,9 @@ describe("Facility Areas Command Routes", () => {
         "http://localhost/api/manifest/[entity]/commands/[command]",
         {}
       );
-      const res = await deleteArea(req, { params: Promise.resolve({ entity: "FacilityArea", command: "remove" }) });
+      const res = await deleteArea(req, {
+        params: Promise.resolve({ entity: "FacilityArea", command: "remove" }),
+      });
 
       expect(res.status).toBe(400);
       const body = await res.json();
@@ -873,7 +971,9 @@ describe("Facility Areas Command Routes", () => {
           areaId: "area-001",
         }
       );
-      const res = await deleteArea(req, { params: Promise.resolve({ entity: "FacilityArea", command: "remove" }) });
+      const res = await deleteArea(req, {
+        params: Promise.resolve({ entity: "FacilityArea", command: "remove" }),
+      });
 
       expect(res.status).toBe(200);
       const body = await res.json();
@@ -889,7 +989,9 @@ describe("Facility Areas Command Routes", () => {
           areaId: "area-001",
         }
       );
-      const res = await deleteArea(req, { params: Promise.resolve({ entity: "FacilityArea", command: "remove" }) });
+      const res = await deleteArea(req, {
+        params: Promise.resolve({ entity: "FacilityArea", command: "remove" }),
+      });
 
       expect(res.status).toBe(500);
       const body = await res.json();
@@ -1194,7 +1296,9 @@ describe("Work Orders Command Routes", () => {
           title: "Fix oven",
         }
       );
-      const res = await createWorkOrder(req, { params: Promise.resolve({ entity: "WorkOrder", command: "create" }) });
+      const res = await createWorkOrder(req, {
+        params: Promise.resolve({ entity: "WorkOrder", command: "create" }),
+      });
 
       expect(res.status).toBe(401);
       const body = await res.json();
@@ -1211,7 +1315,9 @@ describe("Work Orders Command Routes", () => {
           title: "Fix oven",
         }
       );
-      const res = await createWorkOrder(req, { params: Promise.resolve({ entity: "WorkOrder", command: "create" }) });
+      const res = await createWorkOrder(req, {
+        params: Promise.resolve({ entity: "WorkOrder", command: "create" }),
+      });
 
       expect(res.status).toBe(400);
     });
@@ -1224,7 +1330,9 @@ describe("Work Orders Command Routes", () => {
           priority: "medium",
         }
       );
-      const res = await createWorkOrder(req, { params: Promise.resolve({ entity: "WorkOrder", command: "create" }) });
+      const res = await createWorkOrder(req, {
+        params: Promise.resolve({ entity: "WorkOrder", command: "create" }),
+      });
 
       expect(res.status).toBe(400);
       const body = await res.json();
@@ -1240,7 +1348,9 @@ describe("Work Orders Command Routes", () => {
           workOrderType: "invalid_type",
         }
       );
-      const res = await createWorkOrder(req, { params: Promise.resolve({ entity: "WorkOrder", command: "create" }) });
+      const res = await createWorkOrder(req, {
+        params: Promise.resolve({ entity: "WorkOrder", command: "create" }),
+      });
 
       expect(res.status).toBe(400);
       const body = await res.json();
@@ -1261,7 +1371,9 @@ describe("Work Orders Command Routes", () => {
           priority: "super_urgent",
         }
       );
-      const res = await createWorkOrder(req, { params: Promise.resolve({ entity: "WorkOrder", command: "create" }) });
+      const res = await createWorkOrder(req, {
+        params: Promise.resolve({ entity: "WorkOrder", command: "create" }),
+      });
 
       expect(res.status).toBe(400);
       const body = await res.json();
@@ -1290,7 +1402,9 @@ describe("Work Orders Command Routes", () => {
           description: "Hinge is broken",
         }
       );
-      const res = await createWorkOrder(req, { params: Promise.resolve({ entity: "WorkOrder", command: "create" }) });
+      const res = await createWorkOrder(req, {
+        params: Promise.resolve({ entity: "WorkOrder", command: "create" }),
+      });
 
       expect(res.status).toBe(200);
       const body = await res.json();
@@ -1316,7 +1430,9 @@ describe("Work Orders Command Routes", () => {
           priority: "medium",
         }
       );
-      const res = await createWorkOrder(req, { params: Promise.resolve({ entity: "WorkOrder", command: "create" }) });
+      const res = await createWorkOrder(req, {
+        params: Promise.resolve({ entity: "WorkOrder", command: "create" }),
+      });
 
       expect(res.status).toBe(200);
       // Verify the count query was called first to generate the number
@@ -1345,7 +1461,9 @@ describe("Work Orders Command Routes", () => {
             priority: "medium",
           }
         );
-        const res = await createWorkOrder(req, { params: Promise.resolve({ entity: "WorkOrder", command: "create" }) });
+        const res = await createWorkOrder(req, {
+          params: Promise.resolve({ entity: "WorkOrder", command: "create" }),
+        });
 
         expect(res.status).toBe(200);
       }
@@ -1366,7 +1484,9 @@ describe("Work Orders Command Routes", () => {
             priority: prio,
           }
         );
-        const res = await createWorkOrder(req, { params: Promise.resolve({ entity: "WorkOrder", command: "create" }) });
+        const res = await createWorkOrder(req, {
+          params: Promise.resolve({ entity: "WorkOrder", command: "create" }),
+        });
 
         expect(res.status).toBe(200);
       }
@@ -1388,7 +1508,9 @@ describe("Work Orders Command Routes", () => {
           title: "Default WO",
         }
       );
-      const res = await createWorkOrder(req, { params: Promise.resolve({ entity: "WorkOrder", command: "create" }) });
+      const res = await createWorkOrder(req, {
+        params: Promise.resolve({ entity: "WorkOrder", command: "create" }),
+      });
 
       expect(res.status).toBe(200);
       expect(database.$queryRaw).toHaveBeenCalledTimes(2);
@@ -1405,7 +1527,9 @@ describe("Work Orders Command Routes", () => {
           priority: "medium",
         }
       );
-      const res = await createWorkOrder(req, { params: Promise.resolve({ entity: "WorkOrder", command: "create" }) });
+      const res = await createWorkOrder(req, {
+        params: Promise.resolve({ entity: "WorkOrder", command: "create" }),
+      });
 
       expect(res.status).toBe(500);
       const body = await res.json();
@@ -1428,7 +1552,12 @@ describe("Work Orders Command Routes", () => {
           status: "in_progress",
         }
       );
-      const res = await updateWorkOrderStatus(req, { params: Promise.resolve({ entity: "WorkOrder", command: "updateStatus" }) });
+      const res = await updateWorkOrderStatus(req, {
+        params: Promise.resolve({
+          entity: "WorkOrder",
+          command: "updateStatus",
+        }),
+      });
 
       expect(res.status).toBe(401);
       const body = await res.json();
@@ -1446,7 +1575,12 @@ describe("Work Orders Command Routes", () => {
           status: "in_progress",
         }
       );
-      const res = await updateWorkOrderStatus(req, { params: Promise.resolve({ entity: "WorkOrder", command: "updateStatus" }) });
+      const res = await updateWorkOrderStatus(req, {
+        params: Promise.resolve({
+          entity: "WorkOrder",
+          command: "updateStatus",
+        }),
+      });
 
       expect(res.status).toBe(400);
     });
@@ -1458,7 +1592,12 @@ describe("Work Orders Command Routes", () => {
           status: "in_progress",
         }
       );
-      const res = await updateWorkOrderStatus(req, { params: Promise.resolve({ entity: "WorkOrder", command: "updateStatus" }) });
+      const res = await updateWorkOrderStatus(req, {
+        params: Promise.resolve({
+          entity: "WorkOrder",
+          command: "updateStatus",
+        }),
+      });
 
       expect(res.status).toBe(400);
       const body = await res.json();
@@ -1474,7 +1613,12 @@ describe("Work Orders Command Routes", () => {
           status: "bogus_status",
         }
       );
-      const res = await updateWorkOrderStatus(req, { params: Promise.resolve({ entity: "WorkOrder", command: "updateStatus" }) });
+      const res = await updateWorkOrderStatus(req, {
+        params: Promise.resolve({
+          entity: "WorkOrder",
+          command: "updateStatus",
+        }),
+      });
 
       expect(res.status).toBe(400);
       const body = await res.json();
@@ -1499,7 +1643,12 @@ describe("Work Orders Command Routes", () => {
           status: "in_progress",
         }
       );
-      const res = await updateWorkOrderStatus(req, { params: Promise.resolve({ entity: "WorkOrder", command: "updateStatus" }) });
+      const res = await updateWorkOrderStatus(req, {
+        params: Promise.resolve({
+          entity: "WorkOrder",
+          command: "updateStatus",
+        }),
+      });
 
       expect(res.status).toBe(404);
       const body = await res.json();
@@ -1522,7 +1671,12 @@ describe("Work Orders Command Routes", () => {
           status: "in_progress",
         }
       );
-      const res = await updateWorkOrderStatus(req, { params: Promise.resolve({ entity: "WorkOrder", command: "updateStatus" }) });
+      const res = await updateWorkOrderStatus(req, {
+        params: Promise.resolve({
+          entity: "WorkOrder",
+          command: "updateStatus",
+        }),
+      });
 
       expect(res.status).toBe(200);
       const body = await res.json();
@@ -1555,7 +1709,12 @@ describe("Work Orders Command Routes", () => {
             status,
           }
         );
-        const res = await updateWorkOrderStatus(req, { params: Promise.resolve({ entity: "WorkOrder", command: "updateStatus" }) });
+        const res = await updateWorkOrderStatus(req, {
+          params: Promise.resolve({
+            entity: "WorkOrder",
+            command: "updateStatus",
+          }),
+        });
 
         expect(res.status).toBe(200);
         const body = await res.json();
@@ -1588,7 +1747,12 @@ describe("Work Orders Command Routes", () => {
           notes: "All fixed",
         }
       );
-      const res = await updateWorkOrderStatus(req, { params: Promise.resolve({ entity: "WorkOrder", command: "updateStatus" }) });
+      const res = await updateWorkOrderStatus(req, {
+        params: Promise.resolve({
+          entity: "WorkOrder",
+          command: "updateStatus",
+        }),
+      });
 
       expect(res.status).toBe(200);
       const body = await res.json();
@@ -1605,7 +1769,12 @@ describe("Work Orders Command Routes", () => {
           status: "completed",
         }
       );
-      const res = await updateWorkOrderStatus(req, { params: Promise.resolve({ entity: "WorkOrder", command: "updateStatus" }) });
+      const res = await updateWorkOrderStatus(req, {
+        params: Promise.resolve({
+          entity: "WorkOrder",
+          command: "updateStatus",
+        }),
+      });
 
       expect(res.status).toBe(500);
       const body = await res.json();

@@ -945,7 +945,10 @@ export const BoardCanvas = ({
       {renderGroupDialog()}
 
       {/* Delete group confirmation */}
-      <AlertDialog onOpenChange={setDeleteGroupDialogOpen} open={deleteGroupDialogOpen}>
+      <AlertDialog
+        onOpenChange={setDeleteGroupDialogOpen}
+        open={deleteGroupDialogOpen}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete group</AlertDialogTitle>
@@ -956,7 +959,10 @@ export const BoardCanvas = ({
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction className="bg-destructive text-white hover:bg-destructive/90" onClick={handleDeleteGroup}>
+            <AlertDialogAction
+              className="bg-destructive text-white hover:bg-destructive/90"
+              onClick={handleDeleteGroup}
+            >
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>

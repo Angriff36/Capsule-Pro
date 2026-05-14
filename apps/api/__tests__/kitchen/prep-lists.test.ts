@@ -28,9 +28,26 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
 vi.mock("@/app/lib/tenant", () => ({
   getTenantIdForOrg: vi.fn(),
-  requireCurrentUser: vi.fn(),
+  requireCurrentUser: vi.fn().mockResolvedValue({
+    id: TEST_USER_ID,
+    tenantId: TEST_TENANT_ID,
+    role: "admin",
+    email: "test@example.com",
+    firstName: "Test",
+    lastName: "User",
+  }),
 }));
 vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn() }));
+
+vi.mock("@/app/lib/invariant", () => ({
+  InvariantError: class extends Error {
+    constructor(message: string) {
+      super(message);
+      this.name = "InvariantError";
+    }
+  },
+  invariant: vi.fn(),
+}));
 vi.mock("@repo/notifications", () => ({
   triggerPrepListPublishedSms: vi.fn().mockResolvedValue(undefined),
 }));
@@ -65,7 +82,7 @@ vi.mock("@/lib/manifest-response", async () => {
 // --- Module imports (after mocks) ---
 
 const { auth } = await import("@repo/auth/server");
-const { getTenantIdForOrg } = await import("@/app/lib/tenant");
+const { getTenantIdForOrg, requireCurrentUser } = await import("@/app/lib/tenant");
 const { createManifestRuntime } = await import("@/lib/manifest-runtime");
 const { executeManifestCommand } = await import(
   "@/lib/manifest-command-handler"
@@ -91,6 +108,19 @@ function authed() {
 
 function unauthed() {
   vi.mocked(auth).mockResolvedValue({ orgId: null, userId: null } as never);
+  // Throwing InvariantError specifically so the route catches it and returns 401
+  class InvariantError extends Error {
+    constructor(message: string) {
+      super(message);
+      this.name = "InvariantError";
+    }
+  }
+  vi.mocked(requireCurrentUser).mockRejectedValue(
+    new InvariantError("Unauthorized") as never
+  );
+  vi.mocked(createManifestRuntime).mockResolvedValue({
+    runCommand: vi.fn().mockResolvedValue({ success: false }),
+  } as never);
 }
 
 function makeRequest(url: string, init?: RequestInit): NextRequest {
@@ -722,8 +752,7 @@ describe("Prep Lists API", () => {
       name: "update-batch-multiplier",
       runtimeName: "updateBatchMultiplier",
       path: "/api/kitchen/prep-lists/commands/update-batch-multiplier",
-      routePath:
-        "@/app/api/manifest/[entity]/commands/[command]/route",
+      routePath: "@/app/api/manifest/[entity]/commands/[command]/route",
       sampleBody: { id: TEST_PREP_LIST_ID, batchMultiplier: 2.5 },
     },
   ];
@@ -738,7 +767,9 @@ describe("Prep Lists API", () => {
     it(`returns 401 when unauthenticated [${name}]`, async () => {
       unauthed();
       const mod = await import(routePath);
-      const res = await mod.POST(postRequest(path, sampleBody));
+      const res = await mod.POST(postRequest(path, sampleBody), {
+        params: Promise.resolve({ entity: "PrepList", command: name }),
+      });
 
       expect(res.status).toBe(401);
       const body = await res.json();
@@ -747,9 +778,20 @@ describe("Prep Lists API", () => {
 
     it(`returns 400 when tenant cannot be resolved [${name}]`, async () => {
       vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
+      vi.mocked(requireCurrentUser).mockResolvedValue({
+        id: TEST_USER_ID,
+        tenantId: TEST_TENANT_ID,
+        role: "admin",
+        email: "test@example.com",
+        firstName: "Test",
+        lastName: "User",
+      } as never);
+      mockRuntimeSuccess({ id: TEST_PREP_LIST_ID });
 
       const mod = await import(routePath);
-      const res = await mod.POST(postRequest(path, sampleBody));
+      const res = await mod.POST(postRequest(path, sampleBody), {
+        params: Promise.resolve({ entity: "PrepList", command: name }),
+      });
 
       expect(res.status).toBe(400);
       const body = await res.json();
@@ -763,7 +805,9 @@ describe("Prep Lists API", () => {
       });
 
       const mod = await import(routePath);
-      const res = await mod.POST(postRequest(path, sampleBody));
+      const res = await mod.POST(postRequest(path, sampleBody), {
+        params: Promise.resolve({ entity: "PrepList", command: name }),
+      });
 
       expect(res.status).toBe(200);
       const body = await res.json();
@@ -782,7 +826,9 @@ describe("Prep Lists API", () => {
       mockRuntimePolicyDenial("adminOnly");
 
       const mod = await import(routePath);
-      const res = await mod.POST(postRequest(path, sampleBody));
+      const res = await mod.POST(postRequest(path, sampleBody), {
+        params: Promise.resolve({ entity: "PrepList", command: name }),
+      });
 
       expect(res.status).toBe(403);
       const body = await res.json();
@@ -794,7 +840,9 @@ describe("Prep Lists API", () => {
       mockRuntimeGuardFailure(0, "id is required");
 
       const mod = await import(routePath);
-      const res = await mod.POST(postRequest(path, sampleBody));
+      const res = await mod.POST(postRequest(path, sampleBody), {
+        params: Promise.resolve({ entity: "PrepList", command: name }),
+      });
 
       expect(res.status).toBe(422);
       const body = await res.json();
@@ -806,7 +854,9 @@ describe("Prep Lists API", () => {
       mockRuntimeFailure("State transition not allowed");
 
       const mod = await import(routePath);
-      const res = await mod.POST(postRequest(path, sampleBody));
+      const res = await mod.POST(postRequest(path, sampleBody), {
+        params: Promise.resolve({ entity: "PrepList", command: name }),
+      });
 
       expect(res.status).toBe(400);
       const body = await res.json();
@@ -819,7 +869,9 @@ describe("Prep Lists API", () => {
       );
 
       const mod = await import(routePath);
-      const res = await mod.POST(postRequest(path, sampleBody));
+      const res = await mod.POST(postRequest(path, sampleBody), {
+        params: Promise.resolve({ entity: "PrepList", command: name }),
+      });
 
       expect(res.status).toBe(500);
       const body = await res.json();
@@ -837,7 +889,9 @@ describe("Prep Lists API", () => {
       } as never);
 
       const mod = await import(routePath);
-      await mod.POST(postRequest(path, sampleBody));
+      await mod.POST(postRequest(path, sampleBody), {
+        params: Promise.resolve({ entity: "PrepList", command: name }),
+      });
 
       expect(runCommand).toHaveBeenCalledWith(runtimeName, sampleBody, {
         entityName: "PrepList",

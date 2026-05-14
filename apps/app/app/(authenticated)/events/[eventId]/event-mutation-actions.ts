@@ -138,9 +138,7 @@ export async function updateEventForMutation(
   }
 
   const tagSet = new Set(
-    getTags(formData).filter(
-      (tag) => !tag.startsWith(MISSING_FIELD_TAG_PREFIX)
-    )
+    getTags(formData).filter((tag) => !tag.startsWith(MISSING_FIELD_TAG_PREFIX))
   );
   for (const tag of buildMissingFieldTags(missing)) {
     tagSet.add(tag);

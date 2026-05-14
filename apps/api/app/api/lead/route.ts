@@ -98,7 +98,9 @@ function buildNotesField(data: WizardFormData): string {
     parts.push(`Cuisine: ${data.cuisinePreferences.join(", ")}`);
   }
   if (data.dietaryNeeds?.length) {
-    parts.push(`Dietary: ${data.dietaryNeeds.join(", ")} (${data.dietaryPercentage || "unknown"}%)`);
+    parts.push(
+      `Dietary: ${data.dietaryNeeds.join(", ")} (${data.dietaryPercentage || "unknown"}%)`
+    );
   }
   if (data.menuNotes) {
     parts.push(`Menu notes: ${data.menuNotes}`);

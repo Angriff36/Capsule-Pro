@@ -1,6 +1,5 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
-import { ResearchTable } from "@repo/design-system/components/blocks/research-table";
 import {
   CommandBand,
   CommandBandActions,
@@ -16,15 +15,18 @@ import {
   OperationalColumn,
   PageCanvas,
 } from "@repo/design-system/components/blocks/page-shell";
+import { ResearchTable } from "@repo/design-system/components/blocks/research-table";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
+import { formatCurrency as _formatCurrency } from "@repo/design-system/lib/format-currency";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { formatCurrency as _formatCurrency } from "@repo/design-system/lib/format-currency";
 
 const formatCurrency = (v: unknown) =>
-  _formatCurrency(typeof v === "number" ? v : Number(v ?? 0), { fractionDigits: 0 });
+  _formatCurrency(typeof v === "number" ? v : Number(v ?? 0), {
+    fractionDigits: 0,
+  });
 
 const dateFormatter = new Intl.DateTimeFormat("en-US", {
   month: "short",
@@ -85,7 +87,6 @@ function getClientName(deal: {
 
   return "Unassigned client";
 }
-
 
 function formatDate(value: Date | null) {
   if (!value) return "—";
@@ -270,14 +271,18 @@ export default async function PipelinePage() {
             <ResearchTable
               caption={`${deals.length} deals`}
               linkComponent={({ href, className, children }) => (
-                <Link className={className} href={href}>{children}</Link>
+                <Link className={className} href={href}>
+                  {children}
+                </Link>
               )}
               rows={deals.map((deal) => ({
                 id: deal.id,
                 title: (
                   <div>
                     <div>{deal.title}</div>
-                    <div className="text-xs text-muted-foreground">{deal.proposalNumber} · {deal.clientName}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {deal.proposalNumber} · {deal.clientName}
+                    </div>
                   </div>
                 ),
                 href: `/crm/proposals/${deal.id}`,
@@ -288,9 +293,13 @@ export default async function PipelinePage() {
                 ),
                 meta: (
                   <div>
-                    <div className="font-medium">{formatCurrency(deal.total)}</div>
+                    <div className="font-medium">
+                      {formatCurrency(deal.total)}
+                    </div>
                     <div>{formatDate(deal.eventDate)}</div>
-                    {deal.guestCount != null && <div>{deal.guestCount.toLocaleString()} guests</div>}
+                    {deal.guestCount != null && (
+                      <div>{deal.guestCount.toLocaleString()} guests</div>
+                    )}
                   </div>
                 ),
               }))}

@@ -1,6 +1,5 @@
 "use client";
 
-import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
@@ -10,7 +9,12 @@ import {
   CardTitle,
 } from "@repo/design-system/components/ui/card";
 import { Label } from "@repo/design-system/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@repo/design-system/components/ui/tabs";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@repo/design-system/components/ui/tabs";
 import {
   AlertCircleIcon,
   CheckCircle2Icon,
@@ -50,21 +54,24 @@ const TABS: TabConfig[] = [
     label: "Recipes",
     description: "Import recipe catalog with versions and metadata",
     icon: ChefHatIcon,
-    csvColumns: "name, category, cuisine_type, description, tags, yield_quantity, prep_time_minutes, cook_time_minutes, instructions, notes",
+    csvColumns:
+      "name, category, cuisine_type, description, tags, yield_quantity, prep_time_minutes, cook_time_minutes, instructions, notes",
   },
   {
     id: "dishes",
     label: "Dishes",
     description: "Import dishes linked to existing recipes",
     icon: UtensilsCrossedIcon,
-    csvColumns: "name, recipe_name, description, category, service_style, portion_size_description, dietary_tags, allergens, price_per_person, cost_per_person",
+    csvColumns:
+      "name, recipe_name, description, category, service_style, portion_size_description, dietary_tags, allergens, price_per_person, cost_per_person",
   },
   {
     id: "prep-lists",
     label: "Prep Lists",
     description: "Import prep lists with items grouped by list name",
     icon: FileTextIcon,
-    csvColumns: "prep_list_name, item_name, station_name, base_quantity, base_unit, preparation_notes, dish_name, event_number, batch_multiplier, dietary_restrictions",
+    csvColumns:
+      "prep_list_name, item_name, station_name, base_quantity, base_unit, preparation_notes, dish_name, event_number, batch_multiplier, dietary_restrictions",
   },
 ];
 
@@ -106,7 +113,7 @@ export function KitchenImportClient() {
       setDragActive(false);
       handleFiles(e.dataTransfer.files);
     },
-    [handleFiles],
+    [handleFiles]
   );
 
   const handleDragOver = useCallback((e: React.DragEvent<HTMLDivElement>) => {
@@ -145,13 +152,10 @@ export function KitchenImportClient() {
         formData.append("files", file);
       }
 
-      const response = await apiFetch(
-        `/api/kitchen/import?type=${activeTab}`,
-        {
-          method: "POST",
-          body: formData,
-        },
-      );
+      const response = await apiFetch(`/api/kitchen/import?type=${activeTab}`, {
+        method: "POST",
+        body: formData,
+      });
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
@@ -188,13 +192,13 @@ export function KitchenImportClient() {
   return (
     <div className="flex flex-col gap-6">
       <Tabs
-        value={activeTab}
         onValueChange={(v) => {
           setActiveTab(v as ImportType);
           setFiles([]);
           setResult(null);
           setError(null);
         }}
+        value={activeTab}
       >
         <TabsList>
           {TABS.map((tab) => {
@@ -209,7 +213,7 @@ export function KitchenImportClient() {
         </TabsList>
 
         {TABS.map((tab) => (
-          <TabsContent key={tab.id} value={tab.id} className="mt-4">
+          <TabsContent className="mt-4" key={tab.id} value={tab.id}>
             {/* Upload Card */}
             <Card tone="canvas">
               <CardHeader>
@@ -261,7 +265,9 @@ export function KitchenImportClient() {
                             <div className="flex items-center gap-3">
                               <FileIcon className="h-5 w-5 text-muted-foreground" />
                               <div>
-                                <p className="text-sm font-medium">{file.name}</p>
+                                <p className="text-sm font-medium">
+                                  {file.name}
+                                </p>
                                 <p className="text-xs text-muted-foreground">
                                   {formatBytes(file.size)} • CSV
                                 </p>
@@ -312,7 +318,8 @@ export function KitchenImportClient() {
                     ) : (
                       <>
                         <UploadIcon className="mr-2 h-4 w-4" />
-                        Import {files.length > 0 ? `${files.length} File(s)` : "Files"}
+                        Import{" "}
+                        {files.length > 0 ? `${files.length} File(s)` : "Files"}
                       </>
                     )}
                   </Button>
@@ -366,8 +373,8 @@ export function KitchenImportClient() {
                 <div className="max-h-60 overflow-auto rounded-lg border">
                   {result.created.map((item, i) => (
                     <div
-                      key={i}
                       className="flex items-center gap-2 border-b p-2 px-3 text-sm last:border-b-0"
+                      key={i}
                     >
                       <CheckCircle2Icon className="h-4 w-4 flex-shrink-0 text-green-600" />
                       {item}
@@ -386,8 +393,8 @@ export function KitchenImportClient() {
                 <div className="max-h-60 overflow-auto rounded-lg border border-destructive/30">
                   {result.errors.map((err, i) => (
                     <div
-                      key={i}
                       className="flex items-start gap-2 border-b border-destructive/10 p-2 px-3 text-sm last:border-b-0"
+                      key={i}
                     >
                       <AlertCircleIcon className="mt-0.5 h-4 w-4 flex-shrink-0 text-destructive" />
                       <span className="text-destructive">{err}</span>

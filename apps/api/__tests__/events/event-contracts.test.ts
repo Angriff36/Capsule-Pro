@@ -26,6 +26,15 @@ vi.mock("@repo/auth/server", () => ({
 }));
 
 vi.mock("@/app/lib/tenant", () => ({
+  requireCurrentUser: vi.fn().mockResolvedValue({
+    id: "test-user-id",
+    tenantId: "test-tenant",
+    role: "admin",
+    email: "test@example.com",
+    firstName: "Test",
+    lastName: "User",
+  }),
+
   getTenantIdForOrg: vi.fn(),
 }));
 
@@ -587,7 +596,11 @@ describe("EventContract Command Routes", () => {
         }
       );
 
-      const res = await simulateRouteHandler("markViewed", req, "EventContract");
+      const res = await simulateRouteHandler(
+        "markViewed",
+        req,
+        "EventContract"
+      );
       const body = await res.json();
 
       expect(res.status).toBe(200);
@@ -939,7 +952,11 @@ describe("EventContract Command Routes", () => {
         }
       );
 
-      const res = await simulateRouteHandler("markViewed", req, "EventContract");
+      const res = await simulateRouteHandler(
+        "markViewed",
+        req,
+        "EventContract"
+      );
       const body = await res.json();
 
       const keys = Object.keys(body);

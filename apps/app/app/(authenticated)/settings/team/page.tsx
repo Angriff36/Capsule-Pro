@@ -24,8 +24,8 @@ import {
   PageCanvas,
 } from "@repo/design-system/components/blocks/page-shell";
 import { notFound } from "next/navigation";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { requireAdminUser } from "@/app/lib/auth-guards";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { TeamClient, type TeamMemberRow } from "./team-client";
 
 const SettingsTeamPage = async () => {

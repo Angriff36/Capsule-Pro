@@ -18,12 +18,11 @@ import {
   StatusPill,
 } from "@repo/design-system/components/blocks/page-shell";
 import { Button } from "@repo/design-system/components/ui/button";
+import { formatCurrencyWhole as formatCurrency } from "@repo/design-system/lib/format-currency";
 import { Download } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-
-import { formatCurrencyWhole as formatCurrency } from "@repo/design-system/lib/format-currency";
 
 const dateFormatter = new Intl.DateTimeFormat("en-US", {
   month: "short",

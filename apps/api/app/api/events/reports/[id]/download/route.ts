@@ -42,20 +42,19 @@ export async function GET(
       );
     }
 
-    const payload =
-      report.parsedEventData ?? {
-        id: report.id,
-        name: report.name,
-        status: report.status,
-        completion: report.completion,
-        checklistData: report.checklistData,
-        reportConfig: report.reportConfig,
-        reviewNotes: report.reviewNotes,
-        autoFillScore: report.autoFillScore,
-        createdAt: report.createdAt,
-        updatedAt: report.updatedAt,
-        completedAt: report.completedAt,
-      };
+    const payload = report.parsedEventData ?? {
+      id: report.id,
+      name: report.name,
+      status: report.status,
+      completion: report.completion,
+      checklistData: report.checklistData,
+      reportConfig: report.reportConfig,
+      reviewNotes: report.reviewNotes,
+      autoFillScore: report.autoFillScore,
+      createdAt: report.createdAt,
+      updatedAt: report.updatedAt,
+      completedAt: report.completedAt,
+    };
 
     const sanitizedTitle = report.event?.title
       ? report.event.title.replaceAll(/\s+/g, "-").toLowerCase().slice(0, 60)

@@ -9,15 +9,9 @@ import { database } from "@repo/database";
 import { NextRequest } from "next/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { GET as getEmailTemplate } from "@/app/api/communications/email-templates/[id]/route";
-import { POST as createEmailTemplate } from "@/app/api/manifest/[entity]/commands/[command]/route";
-import { POST as softDeleteEmailTemplate } from "@/app/api/manifest/[entity]/commands/[command]/route";
-import { POST as updateEmailTemplate } from "@/app/api/manifest/[entity]/commands/[command]/route";
 // Email template routes
 import { GET as listEmailTemplates } from "@/app/api/communications/email-templates/list/route";
 import { GET as getEmailWorkflow } from "@/app/api/communications/email-workflows/[id]/route";
-import { POST as createEmailWorkflow } from "@/app/api/manifest/[entity]/commands/[command]/route";
-import { POST as softDeleteEmailWorkflow } from "@/app/api/manifest/[entity]/commands/[command]/route";
-import { POST as updateEmailWorkflow } from "@/app/api/manifest/[entity]/commands/[command]/route";
 // Email workflow routes
 import { GET as listEmailWorkflows } from "@/app/api/communications/email-workflows/list/route";
 import {
@@ -30,10 +24,27 @@ import {
   POST as createSmsRule,
   GET as listSmsRules,
 } from "@/app/api/communications/sms/automation-rules/route";
+import {
+  POST as createEmailTemplate,
+  POST as createEmailWorkflow,
+  POST as softDeleteEmailTemplate,
+  POST as softDeleteEmailWorkflow,
+  POST as updateEmailTemplate,
+  POST as updateEmailWorkflow,
+} from "@/app/api/manifest/[entity]/commands/[command]/route";
 
 // Mock dependencies
 vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
 vi.mock("@/app/lib/tenant", () => ({
+  requireCurrentUser: vi.fn().mockResolvedValue({
+    id: "test-user-id",
+    tenantId: "test-tenant",
+    role: "admin",
+    email: "test@example.com",
+    firstName: "Test",
+    lastName: "User",
+  }),
+
   getTenantIdForOrg: vi.fn(),
 }));
 vi.mock("@/lib/manifest-runtime", () => ({
@@ -44,7 +55,7 @@ vi.mock("@sentry/nextjs", () => ({
 }));
 
 const { auth } = await import("@repo/auth/server");
-const { getTenantIdForOrg } = await import("@/app/lib/tenant");
+const { getTenantIdForOrg, requireCurrentUser } = await import("@/app/lib/tenant");
 const { createManifestRuntime } = await import("@/lib/manifest-runtime");
 
 const TEST_TENANT_ID = "00000000-0000-0000-0000-000000000001";
@@ -127,6 +138,14 @@ describe("Communications - Email Templates", () => {
       orgId: TEST_ORG_ID,
     } as never);
     vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
+    vi.mocked(requireCurrentUser).mockResolvedValue({
+      id: TEST_USER_ID,
+      tenantId: TEST_TENANT_ID,
+      role: "admin",
+      email: "test@example.com",
+      firstName: "Test",
+      lastName: "User",
+    } as never);
   });
 
   afterEach(() => {
@@ -350,7 +369,9 @@ describe("Communications - Email Templates", () => {
           body: JSON.stringify({ name: "Test Template" }),
         }
       );
-      const response = await createEmailTemplate(request, { params: Promise.resolve({ entity: "EmailTemplate", command: "create" }) });
+      const response = await createEmailTemplate(request, {
+        params: Promise.resolve({ entity: "EmailTemplate", command: "create" }),
+      });
 
       expect(response.status).toBe(401);
     });
@@ -365,7 +386,9 @@ describe("Communications - Email Templates", () => {
           body: JSON.stringify({ name: "Test Template" }),
         }
       );
-      const response = await createEmailTemplate(request, { params: Promise.resolve({ entity: "EmailTemplate", command: "create" }) });
+      const response = await createEmailTemplate(request, {
+        params: Promise.resolve({ entity: "EmailTemplate", command: "create" }),
+      });
 
       expect(response.status).toBe(400);
     });
@@ -392,7 +415,9 @@ describe("Communications - Email Templates", () => {
           }),
         }
       );
-      const response = await createEmailTemplate(request, { params: Promise.resolve({ entity: "EmailTemplate", command: "create" }) });
+      const response = await createEmailTemplate(request, {
+        params: Promise.resolve({ entity: "EmailTemplate", command: "create" }),
+      });
 
       expect(response.status).toBe(200);
       const body = await response.json();
@@ -423,7 +448,9 @@ describe("Communications - Email Templates", () => {
           body: JSON.stringify({ name: "Unauthorized Template" }),
         }
       );
-      const response = await createEmailTemplate(request, { params: Promise.resolve({ entity: "EmailTemplate", command: "create" }) });
+      const response = await createEmailTemplate(request, {
+        params: Promise.resolve({ entity: "EmailTemplate", command: "create" }),
+      });
 
       expect(response.status).toBe(403);
       const body = await response.json();
@@ -447,7 +474,9 @@ describe("Communications - Email Templates", () => {
           body: JSON.stringify({ name: "" }),
         }
       );
-      const response = await createEmailTemplate(request, { params: Promise.resolve({ entity: "EmailTemplate", command: "create" }) });
+      const response = await createEmailTemplate(request, {
+        params: Promise.resolve({ entity: "EmailTemplate", command: "create" }),
+      });
 
       expect(response.status).toBe(422);
       const body = await response.json();
@@ -469,7 +498,9 @@ describe("Communications - Email Templates", () => {
           body: JSON.stringify({ name: "Template" }),
         }
       );
-      const response = await createEmailTemplate(request, { params: Promise.resolve({ entity: "EmailTemplate", command: "create" }) });
+      const response = await createEmailTemplate(request, {
+        params: Promise.resolve({ entity: "EmailTemplate", command: "create" }),
+      });
 
       expect(response.status).toBe(422);
       const body = await response.json();
@@ -486,7 +517,9 @@ describe("Communications - Email Templates", () => {
           body: JSON.stringify({ name: "Crash Template" }),
         }
       );
-      const response = await createEmailTemplate(request, { params: Promise.resolve({ entity: "EmailTemplate", command: "create" }) });
+      const response = await createEmailTemplate(request, {
+        params: Promise.resolve({ entity: "EmailTemplate", command: "create" }),
+      });
 
       expect(response.status).toBe(500);
     });
@@ -501,7 +534,9 @@ describe("Communications - Email Templates", () => {
           body: JSON.stringify({ name: "Orphan User Template" }),
         }
       );
-      const response = await createEmailTemplate(request, { params: Promise.resolve({ entity: "EmailTemplate", command: "create" }) });
+      const response = await createEmailTemplate(request, {
+        params: Promise.resolve({ entity: "EmailTemplate", command: "create" }),
+      });
 
       expect(response.status).toBe(400);
       const body = await response.json();
@@ -537,7 +572,9 @@ describe("Communications - Email Templates", () => {
           body: JSON.stringify({ id: "tmpl-001", name: "Updated" }),
         }
       );
-      const response = await updateEmailTemplate(request, { params: Promise.resolve({ entity: "EmailTemplate", command: "update" }) });
+      const response = await updateEmailTemplate(request, {
+        params: Promise.resolve({ entity: "EmailTemplate", command: "update" }),
+      });
 
       expect(response.status).toBe(200);
       const body = await response.json();
@@ -558,7 +595,9 @@ describe("Communications - Email Templates", () => {
           body: JSON.stringify({ id: "tmpl-001" }),
         }
       );
-      const response = await updateEmailTemplate(request, { params: Promise.resolve({ entity: "EmailTemplate", command: "update" }) });
+      const response = await updateEmailTemplate(request, {
+        params: Promise.resolve({ entity: "EmailTemplate", command: "update" }),
+      });
 
       expect(response.status).toBe(403);
     });
@@ -576,7 +615,9 @@ describe("Communications - Email Templates", () => {
           body: JSON.stringify({ id: "tmpl-001", subject: "" }),
         }
       );
-      const response = await updateEmailTemplate(request, { params: Promise.resolve({ entity: "EmailTemplate", command: "update" }) });
+      const response = await updateEmailTemplate(request, {
+        params: Promise.resolve({ entity: "EmailTemplate", command: "update" }),
+      });
 
       expect(response.status).toBe(422);
     });
@@ -594,7 +635,9 @@ describe("Communications - Email Templates", () => {
           body: JSON.stringify({ id: "tmpl-001" }),
         }
       );
-      const response = await updateEmailTemplate(request, { params: Promise.resolve({ entity: "EmailTemplate", command: "update" }) });
+      const response = await updateEmailTemplate(request, {
+        params: Promise.resolve({ entity: "EmailTemplate", command: "update" }),
+      });
 
       expect(response.status).toBe(400);
       const body = await response.json();
@@ -611,7 +654,9 @@ describe("Communications - Email Templates", () => {
           body: JSON.stringify({ id: "tmpl-001" }),
         }
       );
-      const response = await updateEmailTemplate(request, { params: Promise.resolve({ entity: "EmailTemplate", command: "update" }) });
+      const response = await updateEmailTemplate(request, {
+        params: Promise.resolve({ entity: "EmailTemplate", command: "update" }),
+      });
 
       expect(response.status).toBe(500);
     });
@@ -629,7 +674,9 @@ describe("Communications - Email Templates", () => {
           body: JSON.stringify({ id: "tmpl-001" }),
         }
       );
-      const response = await updateEmailTemplate(request, { params: Promise.resolve({ entity: "EmailTemplate", command: "update" }) });
+      const response = await updateEmailTemplate(request, {
+        params: Promise.resolve({ entity: "EmailTemplate", command: "update" }),
+      });
 
       expect(response.status).toBe(401);
     });
@@ -663,7 +710,12 @@ describe("Communications - Email Templates", () => {
           body: JSON.stringify({ id: "tmpl-001" }),
         }
       );
-      const response = await softDeleteEmailTemplate(request, { params: Promise.resolve({ entity: "EmailTemplate", command: "softDelete" }) });
+      const response = await softDeleteEmailTemplate(request, {
+        params: Promise.resolve({
+          entity: "EmailTemplate",
+          command: "softDelete",
+        }),
+      });
 
       expect(response.status).toBe(200);
       const body = await response.json();
@@ -689,7 +741,12 @@ describe("Communications - Email Templates", () => {
           body: JSON.stringify({ id: "tmpl-001" }),
         }
       );
-      const response = await softDeleteEmailTemplate(request, { params: Promise.resolve({ entity: "EmailTemplate", command: "softDelete" }) });
+      const response = await softDeleteEmailTemplate(request, {
+        params: Promise.resolve({
+          entity: "EmailTemplate",
+          command: "softDelete",
+        }),
+      });
 
       expect(response.status).toBe(403);
     });
@@ -707,7 +764,12 @@ describe("Communications - Email Templates", () => {
           body: JSON.stringify({ id: "tmpl-001" }),
         }
       );
-      const response = await softDeleteEmailTemplate(request, { params: Promise.resolve({ entity: "EmailTemplate", command: "softDelete" }) });
+      const response = await softDeleteEmailTemplate(request, {
+        params: Promise.resolve({
+          entity: "EmailTemplate",
+          command: "softDelete",
+        }),
+      });
 
       expect(response.status).toBe(401);
     });
@@ -947,7 +1009,9 @@ describe("Communications - Email Workflows", () => {
           }),
         }
       );
-      const response = await createEmailWorkflow(request, { params: Promise.resolve({ entity: "EmailWorkflow", command: "create" }) });
+      const response = await createEmailWorkflow(request, {
+        params: Promise.resolve({ entity: "EmailWorkflow", command: "create" }),
+      });
 
       expect(response.status).toBe(200);
       const body = await response.json();
@@ -974,7 +1038,9 @@ describe("Communications - Email Workflows", () => {
           body: JSON.stringify({ name: "Unauthorized Workflow" }),
         }
       );
-      const response = await createEmailWorkflow(request, { params: Promise.resolve({ entity: "EmailWorkflow", command: "create" }) });
+      const response = await createEmailWorkflow(request, {
+        params: Promise.resolve({ entity: "EmailWorkflow", command: "create" }),
+      });
 
       expect(response.status).toBe(403);
       const body = await response.json();
@@ -997,7 +1063,9 @@ describe("Communications - Email Workflows", () => {
           body: JSON.stringify({ name: "" }),
         }
       );
-      const response = await createEmailWorkflow(request, { params: Promise.resolve({ entity: "EmailWorkflow", command: "create" }) });
+      const response = await createEmailWorkflow(request, {
+        params: Promise.resolve({ entity: "EmailWorkflow", command: "create" }),
+      });
 
       expect(response.status).toBe(422);
       const body = await response.json();
@@ -1017,7 +1085,9 @@ describe("Communications - Email Workflows", () => {
           body: JSON.stringify({}),
         }
       );
-      const response = await createEmailWorkflow(request, { params: Promise.resolve({ entity: "EmailWorkflow", command: "create" }) });
+      const response = await createEmailWorkflow(request, {
+        params: Promise.resolve({ entity: "EmailWorkflow", command: "create" }),
+      });
 
       expect(response.status).toBe(400);
       const body = await response.json();
@@ -1034,7 +1104,9 @@ describe("Communications - Email Workflows", () => {
           body: JSON.stringify({ name: "Crash Workflow" }),
         }
       );
-      const response = await createEmailWorkflow(request, { params: Promise.resolve({ entity: "EmailWorkflow", command: "create" }) });
+      const response = await createEmailWorkflow(request, {
+        params: Promise.resolve({ entity: "EmailWorkflow", command: "create" }),
+      });
 
       expect(response.status).toBe(500);
     });
@@ -1049,7 +1121,9 @@ describe("Communications - Email Workflows", () => {
           body: JSON.stringify({ name: "Orphan Workflow" }),
         }
       );
-      const response = await createEmailWorkflow(request, { params: Promise.resolve({ entity: "EmailWorkflow", command: "create" }) });
+      const response = await createEmailWorkflow(request, {
+        params: Promise.resolve({ entity: "EmailWorkflow", command: "create" }),
+      });
 
       expect(response.status).toBe(400);
       const body = await response.json();
@@ -1069,7 +1143,9 @@ describe("Communications - Email Workflows", () => {
           body: JSON.stringify({ name: "Test" }),
         }
       );
-      const response = await createEmailWorkflow(request, { params: Promise.resolve({ entity: "EmailWorkflow", command: "create" }) });
+      const response = await createEmailWorkflow(request, {
+        params: Promise.resolve({ entity: "EmailWorkflow", command: "create" }),
+      });
 
       expect(response.status).toBe(401);
     });
@@ -1103,7 +1179,9 @@ describe("Communications - Email Workflows", () => {
           body: JSON.stringify({ id: "wf-001", name: "Updated Workflow" }),
         }
       );
-      const response = await updateEmailWorkflow(request, { params: Promise.resolve({ entity: "EmailWorkflow", command: "update" }) });
+      const response = await updateEmailWorkflow(request, {
+        params: Promise.resolve({ entity: "EmailWorkflow", command: "update" }),
+      });
 
       expect(response.status).toBe(200);
       const body = await response.json();
@@ -1124,7 +1202,9 @@ describe("Communications - Email Workflows", () => {
           body: JSON.stringify({ id: "wf-001" }),
         }
       );
-      const response = await updateEmailWorkflow(request, { params: Promise.resolve({ entity: "EmailWorkflow", command: "update" }) });
+      const response = await updateEmailWorkflow(request, {
+        params: Promise.resolve({ entity: "EmailWorkflow", command: "update" }),
+      });
 
       expect(response.status).toBe(403);
     });
@@ -1139,7 +1219,9 @@ describe("Communications - Email Workflows", () => {
           body: JSON.stringify({ id: "wf-001" }),
         }
       );
-      const response = await updateEmailWorkflow(request, { params: Promise.resolve({ entity: "EmailWorkflow", command: "update" }) });
+      const response = await updateEmailWorkflow(request, {
+        params: Promise.resolve({ entity: "EmailWorkflow", command: "update" }),
+      });
 
       expect(response.status).toBe(500);
     });
@@ -1157,7 +1239,9 @@ describe("Communications - Email Workflows", () => {
           body: JSON.stringify({ id: "wf-001" }),
         }
       );
-      const response = await updateEmailWorkflow(request, { params: Promise.resolve({ entity: "EmailWorkflow", command: "update" }) });
+      const response = await updateEmailWorkflow(request, {
+        params: Promise.resolve({ entity: "EmailWorkflow", command: "update" }),
+      });
 
       expect(response.status).toBe(401);
     });
@@ -1191,7 +1275,12 @@ describe("Communications - Email Workflows", () => {
           body: JSON.stringify({ id: "wf-001" }),
         }
       );
-      const response = await softDeleteEmailWorkflow(request, { params: Promise.resolve({ entity: "EmailWorkflow", command: "softDelete" }) });
+      const response = await softDeleteEmailWorkflow(request, {
+        params: Promise.resolve({
+          entity: "EmailWorkflow",
+          command: "softDelete",
+        }),
+      });
 
       expect(response.status).toBe(200);
       const body = await response.json();
@@ -1217,7 +1306,12 @@ describe("Communications - Email Workflows", () => {
           body: JSON.stringify({ id: "wf-001" }),
         }
       );
-      const response = await softDeleteEmailWorkflow(request, { params: Promise.resolve({ entity: "EmailWorkflow", command: "softDelete" }) });
+      const response = await softDeleteEmailWorkflow(request, {
+        params: Promise.resolve({
+          entity: "EmailWorkflow",
+          command: "softDelete",
+        }),
+      });
 
       expect(response.status).toBe(403);
     });
@@ -1235,7 +1329,12 @@ describe("Communications - Email Workflows", () => {
           body: JSON.stringify({ id: "wf-001" }),
         }
       );
-      const response = await softDeleteEmailWorkflow(request, { params: Promise.resolve({ entity: "EmailWorkflow", command: "softDelete" }) });
+      const response = await softDeleteEmailWorkflow(request, {
+        params: Promise.resolve({
+          entity: "EmailWorkflow",
+          command: "softDelete",
+        }),
+      });
 
       expect(response.status).toBe(422);
       const body = await response.json();
@@ -1255,7 +1354,12 @@ describe("Communications - Email Workflows", () => {
           body: JSON.stringify({ id: "wf-001" }),
         }
       );
-      const response = await softDeleteEmailWorkflow(request, { params: Promise.resolve({ entity: "EmailWorkflow", command: "softDelete" }) });
+      const response = await softDeleteEmailWorkflow(request, {
+        params: Promise.resolve({
+          entity: "EmailWorkflow",
+          command: "softDelete",
+        }),
+      });
 
       expect(response.status).toBe(401);
     });
@@ -1928,7 +2032,7 @@ describe("Communications - SMS Automation Rules", () => {
       expect(mockRunCommand).toHaveBeenCalledWith(
         "update",
         expect.objectContaining({ id: "rule-001", name: "Updated Rule" }),
-        { entityName: "SmsAutomationRule", instanceId: "rule-001" }
+        { entityName: "SmsAutomationRule" }
       );
     });
 
@@ -2081,7 +2185,7 @@ describe("Communications - SMS Automation Rules", () => {
       expect(mockRunCommand).toHaveBeenCalledWith(
         "softDelete",
         { id: "rule-001" },
-        { entityName: "SmsAutomationRule", instanceId: "rule-001" }
+        { entityName: "SmsAutomationRule" }
       );
 
       expect(database.sms_automation_rules.update).toHaveBeenCalledWith(

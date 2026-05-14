@@ -904,7 +904,9 @@ export const ForecastsPageClient = () => {
                                       size="sm"
                                       variant="destructive"
                                     >
-                                      <Link href={`/procurement/purchase-orders/new?item=${encodeURIComponent(alert.sku)}`}>
+                                      <Link
+                                        href={`/procurement/purchase-orders/new?item=${encodeURIComponent(alert.sku)}`}
+                                      >
                                         <ArrowDown className="mr-1 size-3" />
                                         Request Reorder
                                       </Link>
@@ -960,12 +962,10 @@ export const ForecastsPageClient = () => {
                                     Depletion: {formatDate(alert.depletionDate)}
                                   </div>
                                   <div className="mt-2 flex items-center gap-2">
-                                    <Button
-                                      asChild
-                                      size="sm"
-                                      variant="outline"
-                                    >
-                                      <Link href={`/procurement/purchase-orders/new?item=${encodeURIComponent(alert.sku)}`}>
+                                    <Button asChild size="sm" variant="outline">
+                                      <Link
+                                        href={`/procurement/purchase-orders/new?item=${encodeURIComponent(alert.sku)}`}
+                                      >
                                         <ArrowRight className="mr-1 size-3" />
                                         Request Reorder
                                       </Link>
@@ -1049,7 +1049,9 @@ export const ForecastsPageClient = () => {
                           </div>
                         </div>
                         <Button asChild size="sm" variant="outline">
-                          <Link href={`/procurement/purchase-orders/new?item=${encodeURIComponent(suggestion.sku)}&qty=${suggestion.recommendedOrderQty}`}>
+                          <Link
+                            href={`/procurement/purchase-orders/new?item=${encodeURIComponent(suggestion.sku)}&qty=${suggestion.recommendedOrderQty}`}
+                          >
                             Create PO
                           </Link>
                         </Button>

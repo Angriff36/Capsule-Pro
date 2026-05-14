@@ -70,6 +70,15 @@ vi.mock("@/lib/manifest-runtime", () => ({
 
 // Mock tenant resolution
 vi.mock("@/app/lib/tenant", () => ({
+  requireCurrentUser: vi.fn().mockResolvedValue({
+    id: "test-user-id",
+    tenantId: "test-tenant",
+    role: "admin",
+    email: "test@example.com",
+    firstName: "Test",
+    lastName: "User",
+  }),
+
   getTenantIdForOrg: vi.fn(() => Promise.resolve("test-tenant")),
 }));
 
@@ -112,7 +121,12 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "PrepListItem", command: "mark-completed" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({
+          entity: "PrepListItem",
+          command: "mark-completed",
+        }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(401);
@@ -139,7 +153,12 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "PrepListItem", command: "mark-completed" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({
+          entity: "PrepListItem",
+          command: "mark-completed",
+        }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(400);
@@ -197,7 +216,12 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "PrepListItem", command: "mark-completed" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({
+          entity: "PrepListItem",
+          command: "mark-completed",
+        }),
+      });
       const data = await response.json();
 
       expect(response.status).toBeGreaterThanOrEqual(200);
@@ -245,7 +269,12 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "PrepListItem", command: "mark-completed" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({
+          entity: "PrepListItem",
+          command: "mark-completed",
+        }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(401);
@@ -271,7 +300,12 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "PrepListItem", command: "mark-completed" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({
+          entity: "PrepListItem",
+          command: "mark-completed",
+        }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(400);
@@ -328,7 +362,12 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "PrepListItem", command: "mark-completed" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({
+          entity: "PrepListItem",
+          command: "mark-completed",
+        }),
+      });
       const data = await response.json();
 
       // Log error details for debugging 500 errors
@@ -383,7 +422,12 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "PrepListItem", command: "mark-completed" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({
+          entity: "PrepListItem",
+          command: "mark-completed",
+        }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(401);
@@ -411,7 +455,12 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "PrepListItem", command: "mark-completed" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({
+          entity: "PrepListItem",
+          command: "mark-completed",
+        }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(400);
@@ -469,7 +518,12 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "PrepListItem", command: "mark-completed" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({
+          entity: "PrepListItem",
+          command: "mark-completed",
+        }),
+      });
       const data = await response.json();
 
       expect(response.status).toBeGreaterThanOrEqual(200);
@@ -521,7 +575,12 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "PrepListItem", command: "mark-completed" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({
+          entity: "PrepListItem",
+          command: "mark-completed",
+        }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(401);
@@ -551,7 +610,12 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "PrepListItem", command: "mark-completed" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({
+          entity: "PrepListItem",
+          command: "mark-completed",
+        }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(400);
@@ -613,7 +677,12 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "PrepListItem", command: "mark-completed" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({
+          entity: "PrepListItem",
+          command: "mark-completed",
+        }),
+      });
       const data = await response.json();
 
       expect(response.status).toBeGreaterThanOrEqual(200);
@@ -663,7 +732,12 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "PrepListItem", command: "mark-completed" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({
+          entity: "PrepListItem",
+          command: "mark-completed",
+        }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(401);
@@ -691,7 +765,12 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "PrepListItem", command: "mark-completed" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({
+          entity: "PrepListItem",
+          command: "mark-completed",
+        }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(400);
@@ -748,7 +827,12 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "PrepListItem", command: "mark-completed" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({
+          entity: "PrepListItem",
+          command: "mark-completed",
+        }),
+      });
       const data = await response.json();
 
       expect(response.status).toBeGreaterThanOrEqual(200);

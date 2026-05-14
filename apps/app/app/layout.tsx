@@ -8,9 +8,9 @@ import { Analytics as VercelAnalytics } from "@vercel/analytics/react";
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { fonts } from "@/lib/fonts";
-import { QueryProvider } from "./query-provider";
 import ClerkProviderClient from "./clerk-provider.client";
 import { AuthHeader } from "./components/auth-header";
+import { QueryProvider } from "./query-provider";
 
 interface RootLayoutProperties {
   readonly children: ReactNode;

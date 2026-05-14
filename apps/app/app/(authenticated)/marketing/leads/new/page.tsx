@@ -8,6 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
+import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
 import {
@@ -18,7 +19,6 @@ import {
   SelectValue,
 } from "@repo/design-system/components/ui/select";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
-import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import { ArrowLeftIcon, Loader2Icon } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -232,7 +232,6 @@ export default function NewLeadPage() {
                     onChange={(e) =>
                       setFormData({ ...formData, eventDate: e.target.value })
                     }
- 
                     value={formData.eventDate}
                   />
                 </div>

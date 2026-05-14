@@ -1,7 +1,23 @@
-export type Season = 'spring' | 'summer' | 'fall' | 'winter';
-export type DietaryFlag = 'vegetarian' | 'vegan' | 'gluten-free' | 'dairy-free' | 'nut-free';
-export type MenuCategory = 'appetizer' | 'main' | 'side' | 'dessert' | 'late-night';
-export type ServiceStyle = 'plated' | 'buffet' | 'stations' | 'family-style' | 'drop-off' | 'cocktail-reception';
+export type Season = "spring" | "summer" | "fall" | "winter";
+export type DietaryFlag =
+  | "vegetarian"
+  | "vegan"
+  | "gluten-free"
+  | "dairy-free"
+  | "nut-free";
+export type MenuCategory =
+  | "appetizer"
+  | "main"
+  | "side"
+  | "dessert"
+  | "late-night";
+export type ServiceStyle =
+  | "plated"
+  | "buffet"
+  | "stations"
+  | "family-style"
+  | "drop-off"
+  | "cocktail-reception";
 
 export interface MenuCatalogItem {
   id: string;
@@ -18,7 +34,7 @@ export interface MenuFormData {
   occasionType: string;
   season: Season;
   guestCount: number;
-  serviceStyle: ServiceStyle | '';
+  serviceStyle: ServiceStyle | "";
   menuDirection: string;
   selectedItems: string[];
   dietaryCoverageNeeds: DietaryFlag[];

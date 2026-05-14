@@ -1,651 +1,647 @@
 "use client";
 
-import { apiFetch } from "@/app/lib/api";
+import { StatusPill } from "@repo/design-system/components/blocks/page-shell";
 import { Button } from "@repo/design-system/components/ui/button";
+import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from "@repo/design-system/components/ui/dialog";
 import { Input } from "@repo/design-system/components/ui/input";
 import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@repo/design-system/components/ui/select";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
-import { DatePicker } from "@repo/design-system/components/ui/date-picker";
-import { StatusPill } from "@repo/design-system/components/blocks/page-shell";
 import { formatCurrency } from "@repo/design-system/lib/format-currency";
 import {
-	CheckCircle,
-	ChevronRight,
-	Clock,
-	Plus,
-	RefreshCw,
-	Search,
-	XCircle,
+  CheckCircle,
+  ChevronRight,
+  Clock,
+  Plus,
+  RefreshCw,
+  Search,
+  XCircle,
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { apiFetch } from "@/app/lib/api";
 
 interface CateringOrder {
-	id: string;
-	orderNumber: string;
-	customerId: string;
-	eventId: string | null;
-	status: string;
-	orderDate: string;
-	deliveryDate: string;
-	deliveryTime: string;
-	subtotal: string;
-	tax: string;
-	discount: string;
-	serviceCharge: string;
-	total: string;
-	depositRequired: boolean;
-	depositAmount: string | null;
-	depositPaid: boolean;
-	venueName: string | null;
-	venueCity: string | null;
-	venueState: string | null;
-	guestCount: number;
-	dietaryRestrictions: string | null;
-	staffRequired: number | null;
-	staffAssigned: number | null;
-	createdAt: string;
-	updatedAt: string;
+  id: string;
+  orderNumber: string;
+  customerId: string;
+  eventId: string | null;
+  status: string;
+  orderDate: string;
+  deliveryDate: string;
+  deliveryTime: string;
+  subtotal: string;
+  tax: string;
+  discount: string;
+  serviceCharge: string;
+  total: string;
+  depositRequired: boolean;
+  depositAmount: string | null;
+  depositPaid: boolean;
+  venueName: string | null;
+  venueCity: string | null;
+  venueState: string | null;
+  guestCount: number;
+  dietaryRestrictions: string | null;
+  staffRequired: number | null;
+  staffAssigned: number | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface InitialMetrics {
-	total: number;
-	draft: number;
-	confirmed: number;
-	inProgress: number;
-	completed: number;
-	cancelled: number;
+  total: number;
+  draft: number;
+  confirmed: number;
+  inProgress: number;
+  completed: number;
+  cancelled: number;
 }
 
 const STATUS_CONFIG: Record<
-	string,
-	{ label: string; icon: React.ReactNode; variant: string }
+  string,
+  { label: string; icon: React.ReactNode; variant: string }
 > = {
-	draft: {
-		label: "Draft",
-		icon: <Clock className="mr-1 size-3" />,
-		variant: "neutral",
-	},
-	confirmed: {
-		label: "Confirmed",
-		icon: <CheckCircle className="mr-1 size-3" />,
-		variant: "success",
-	},
-	in_progress: {
-		label: "In Progress",
-		icon: <RefreshCw className="mr-1 size-3" />,
-		variant: "info",
-	},
-	completed: {
-		label: "Completed",
-		icon: <CheckCircle className="mr-1 size-3" />,
-		variant: "success",
-	},
-	cancelled: {
-		label: "Cancelled",
-		icon: <XCircle className="mr-1 size-3" />,
-		variant: "error",
-	},
+  draft: {
+    label: "Draft",
+    icon: <Clock className="mr-1 size-3" />,
+    variant: "neutral",
+  },
+  confirmed: {
+    label: "Confirmed",
+    icon: <CheckCircle className="mr-1 size-3" />,
+    variant: "success",
+  },
+  in_progress: {
+    label: "In Progress",
+    icon: <RefreshCw className="mr-1 size-3" />,
+    variant: "info",
+  },
+  completed: {
+    label: "Completed",
+    icon: <CheckCircle className="mr-1 size-3" />,
+    variant: "success",
+  },
+  cancelled: {
+    label: "Cancelled",
+    icon: <XCircle className="mr-1 size-3" />,
+    variant: "error",
+  },
 };
 
 const NEXT_ACTION: Record<string, { label: string; command: string }> = {
-	draft: { label: "Confirm", command: "confirm" },
-	confirmed: { label: "Start Prep", command: "start-prep" },
-	in_progress: { label: "Mark Complete", command: "mark-complete" },
+  draft: { label: "Confirm", command: "confirm" },
+  confirmed: { label: "Start Prep", command: "start-prep" },
+  in_progress: { label: "Mark Complete", command: "mark-complete" },
 };
 
 function formatDate(iso: string): string {
-	return new Date(iso).toLocaleDateString("en-US", {
-		month: "short",
-		day: "numeric",
-		year: "numeric",
-	});
+  return new Date(iso).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
 }
 
 interface CateringClientProps {
-	initialMetrics: InitialMetrics;
+  initialMetrics: InitialMetrics;
 }
 
 export function CateringClient({ initialMetrics }: CateringClientProps) {
-	const [orders, setOrders] = useState<CateringOrder[]>([]);
-	const [isLoading, setIsLoading] = useState(true);
-	const [page, setPage] = useState(1);
-	const [totalCount, setTotalCount] = useState(initialMetrics.total);
-	const [totalPages, setTotalPages] = useState(1);
-	const [statusFilter, setStatusFilter] = useState("all");
-	const [searchQuery, setSearchQuery] = useState("");
-	const [searchInput, setSearchInput] = useState("");
-	const [createOpen, setCreateOpen] = useState(false);
-	const [cancelTarget, setCancelTarget] = useState<CateringOrder | null>(null);
-	const [actioning, setActioning] = useState<string | null>(null);
+  const [orders, setOrders] = useState<CateringOrder[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(initialMetrics.total);
+  const [totalPages, setTotalPages] = useState(1);
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchInput, setSearchInput] = useState("");
+  const [createOpen, setCreateOpen] = useState(false);
+  const [cancelTarget, setCancelTarget] = useState<CateringOrder | null>(null);
+  const [actioning, setActioning] = useState<string | null>(null);
 
-	const [form, setForm] = useState({
-		customerId: "",
-		deliveryDate: "",
-		deliveryTime: "12:00",
-		venueName: "",
-		venueAddress: "",
-		venueCity: "",
-		venueState: "",
-		venueZip: "",
-		venueContactName: "",
-		venueContactPhone: "",
-		guestCount: "50",
-		specialInstructions: "",
-		dietaryRestrictions: "",
-		subtotal: "0.00",
-		tax: "0.00",
-		serviceCharge: "0.00",
-	});
+  const [form, setForm] = useState({
+    customerId: "",
+    deliveryDate: "",
+    deliveryTime: "12:00",
+    venueName: "",
+    venueAddress: "",
+    venueCity: "",
+    venueState: "",
+    venueZip: "",
+    venueContactName: "",
+    venueContactPhone: "",
+    guestCount: "50",
+    specialInstructions: "",
+    dietaryRestrictions: "",
+    subtotal: "0.00",
+    tax: "0.00",
+    serviceCharge: "0.00",
+  });
 
-	const loadOrders = useCallback(async () => {
-		setIsLoading(true);
-		try {
-			const params = new URLSearchParams({
-				page: String(page),
-				limit: "25",
-			});
-			if (statusFilter !== "all") params.set("status", statusFilter);
-			if (searchQuery) params.set("search", searchQuery);
+  const loadOrders = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const params = new URLSearchParams({
+        page: String(page),
+        limit: "25",
+      });
+      if (statusFilter !== "all") params.set("status", statusFilter);
+      if (searchQuery) params.set("search", searchQuery);
 
-			const res = await apiFetch(`/api/cateringorder/list?${params}`);
-			if (!res.ok) throw new Error("Failed to load catering orders");
-			const data = await res.json();
-			setOrders(data.data ?? []);
-			setTotalCount(data.pagination?.total ?? 0);
-			setTotalPages(data.pagination?.totalPages ?? 1);
-		} catch (err) {
-			toast.error(
-				err instanceof Error ? err.message : "Failed to load catering orders",
-			);
-		} finally {
-			setIsLoading(false);
-		}
-	}, [page, statusFilter, searchQuery]);
+      const res = await apiFetch(`/api/cateringorder/list?${params}`);
+      if (!res.ok) throw new Error("Failed to load catering orders");
+      const data = await res.json();
+      setOrders(data.data ?? []);
+      setTotalCount(data.pagination?.total ?? 0);
+      setTotalPages(data.pagination?.totalPages ?? 1);
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Failed to load catering orders"
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  }, [page, statusFilter, searchQuery]);
 
-	useEffect(() => {
-		loadOrders();
-	}, [loadOrders]);
+  useEffect(() => {
+    loadOrders();
+  }, [loadOrders]);
 
-	const handleSearch = () => {
-		setSearchQuery(searchInput);
-		setPage(1);
-	};
+  const handleSearch = () => {
+    setSearchQuery(searchInput);
+    setPage(1);
+  };
 
-	const handleStatusAction = async (order: CateringOrder) => {
-		const action = NEXT_ACTION[order.status];
-		if (!action) return;
-		setActioning(order.id);
-		try {
-			const res = await apiFetch(`/api/cateringorder/${action.command}`, {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ id: order.id }),
-			});
-			if (!res.ok) {
-				const err = await res.json();
-				throw new Error(err.error ?? "Action failed");
-			}
-			toast.success(`Order ${action.label.toLowerCase()}ed successfully`);
-			await loadOrders();
-		} catch (err) {
-			toast.error(
-				err instanceof Error ? err.message : "Action failed",
-			);
-		} finally {
-			setActioning(null);
-		}
-	};
+  const handleStatusAction = async (order: CateringOrder) => {
+    const action = NEXT_ACTION[order.status];
+    if (!action) return;
+    setActioning(order.id);
+    try {
+      const res = await apiFetch(`/api/cateringorder/${action.command}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: order.id }),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error ?? "Action failed");
+      }
+      toast.success(`Order ${action.label.toLowerCase()}ed successfully`);
+      await loadOrders();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Action failed");
+    } finally {
+      setActioning(null);
+    }
+  };
 
-	const handleCancel = async () => {
-		if (!cancelTarget) return;
-		setActioning(cancelTarget.id);
-		try {
-			const res = await apiFetch("/api/cateringorder/cancel", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ id: cancelTarget.id, reason: "Cancelled by user" }),
-			});
-			if (!res.ok) {
-				const err = await res.json();
-				throw new Error(err.error ?? "Cancel failed");
-			}
-			toast.success("Order cancelled");
-			setCancelTarget(null);
-			await loadOrders();
-		} catch (err) {
-			toast.error(
-				err instanceof Error ? err.message : "Cancel failed",
-			);
-		} finally {
-			setActioning(null);
-		}
-	};
+  const handleCancel = async () => {
+    if (!cancelTarget) return;
+    setActioning(cancelTarget.id);
+    try {
+      const res = await apiFetch("/api/cateringorder/cancel", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: cancelTarget.id,
+          reason: "Cancelled by user",
+        }),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error ?? "Cancel failed");
+      }
+      toast.success("Order cancelled");
+      setCancelTarget(null);
+      await loadOrders();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Cancel failed");
+    } finally {
+      setActioning(null);
+    }
+  };
 
-	const handleCreate = async () => {
-		try {
-			const res = await apiFetch("/api/cateringorder/create", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({
-					customerId: form.customerId,
-					deliveryDate: form.deliveryDate,
-					deliveryTime: form.deliveryTime,
-					venueName: form.venueName,
-					venueAddress: form.venueAddress,
-					venueCity: form.venueCity,
-					venueState: form.venueState,
-					venueZip: form.venueZip,
-					venueContactName: form.venueContactName,
-					venueContactPhone: form.venueContactPhone,
-					guestCount: Number(form.guestCount),
-					specialInstructions: form.specialInstructions,
-					dietaryRestrictions: form.dietaryRestrictions,
-					subtotal: form.subtotal,
-					tax: form.tax,
-					serviceCharge: form.serviceCharge,
-				}),
-			});
-			if (!res.ok) {
-				const err = await res.json();
-				throw new Error(err.error ?? "Create failed");
-			}
-			toast.success("Catering order created");
-			setCreateOpen(false);
-			setForm({
-				customerId: "",
-				deliveryDate: "",
-				deliveryTime: "12:00",
-				venueName: "",
-				venueAddress: "",
-				venueCity: "",
-				venueState: "",
-				venueZip: "",
-				venueContactName: "",
-				venueContactPhone: "",
-				guestCount: "50",
-				specialInstructions: "",
-				dietaryRestrictions: "",
-				subtotal: "0.00",
-				tax: "0.00",
-				serviceCharge: "0.00",
-			});
-			await loadOrders();
-		} catch (err) {
-			toast.error(
-				err instanceof Error ? err.message : "Failed to create order",
-			);
-		}
-	};
+  const handleCreate = async () => {
+    try {
+      const res = await apiFetch("/api/cateringorder/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          customerId: form.customerId,
+          deliveryDate: form.deliveryDate,
+          deliveryTime: form.deliveryTime,
+          venueName: form.venueName,
+          venueAddress: form.venueAddress,
+          venueCity: form.venueCity,
+          venueState: form.venueState,
+          venueZip: form.venueZip,
+          venueContactName: form.venueContactName,
+          venueContactPhone: form.venueContactPhone,
+          guestCount: Number(form.guestCount),
+          specialInstructions: form.specialInstructions,
+          dietaryRestrictions: form.dietaryRestrictions,
+          subtotal: form.subtotal,
+          tax: form.tax,
+          serviceCharge: form.serviceCharge,
+        }),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error ?? "Create failed");
+      }
+      toast.success("Catering order created");
+      setCreateOpen(false);
+      setForm({
+        customerId: "",
+        deliveryDate: "",
+        deliveryTime: "12:00",
+        venueName: "",
+        venueAddress: "",
+        venueCity: "",
+        venueState: "",
+        venueZip: "",
+        venueContactName: "",
+        venueContactPhone: "",
+        guestCount: "50",
+        specialInstructions: "",
+        dietaryRestrictions: "",
+        subtotal: "0.00",
+        tax: "0.00",
+        serviceCharge: "0.00",
+      });
+      await loadOrders();
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Failed to create order"
+      );
+    }
+  };
 
-	const canCancel = (status: string) =>
-		["draft", "confirmed"].includes(status);
+  const canCancel = (status: string) => ["draft", "confirmed"].includes(status);
 
-	return (
-		<>
-			<div className="flex flex-wrap items-center justify-between gap-4">
-				<div className="flex flex-wrap items-center gap-3">
-					<div className="relative">
-						<Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-						<Input
-							className="w-64 pl-10"
-							onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-							onChange={(e) => setSearchInput(e.target.value)}
-							placeholder="Search orders..."
-							value={searchInput}
-						/>
-					</div>
-					<Select
-						onValueChange={(v) => {
-							setStatusFilter(v);
-							setPage(1);
-						}}
-						value={statusFilter}
-					>
-						<SelectTrigger className="w-40">
-							<SelectValue placeholder="Status" />
-						</SelectTrigger>
-						<SelectContent>
-							<SelectItem value="all">All Statuses</SelectItem>
-							<SelectItem value="draft">Draft</SelectItem>
-							<SelectItem value="confirmed">Confirmed</SelectItem>
-							<SelectItem value="in_progress">In Progress</SelectItem>
-							<SelectItem value="completed">Completed</SelectItem>
-							<SelectItem value="cancelled">Cancelled</SelectItem>
-						</SelectContent>
-					</Select>
-				</div>
-				<div className="flex items-center gap-2">
-					<Button onClick={loadOrders} size="sm" variant="outline">
-						<RefreshCw className="mr-2 size-4" />
-						Refresh
-					</Button>
-					<Button onClick={() => setCreateOpen(true)} size="sm">
-						<Plus className="mr-2 size-4" />
-						New Order
-					</Button>
-				</div>
-			</div>
+  return (
+    <>
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              className="w-64 pl-10"
+              onChange={(e) => setSearchInput(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+              placeholder="Search orders..."
+              value={searchInput}
+            />
+          </div>
+          <Select
+            onValueChange={(v) => {
+              setStatusFilter(v);
+              setPage(1);
+            }}
+            value={statusFilter}
+          >
+            <SelectTrigger className="w-40">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Statuses</SelectItem>
+              <SelectItem value="draft">Draft</SelectItem>
+              <SelectItem value="confirmed">Confirmed</SelectItem>
+              <SelectItem value="in_progress">In Progress</SelectItem>
+              <SelectItem value="completed">Completed</SelectItem>
+              <SelectItem value="cancelled">Cancelled</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button onClick={loadOrders} size="sm" variant="outline">
+            <RefreshCw className="mr-2 size-4" />
+            Refresh
+          </Button>
+          <Button onClick={() => setCreateOpen(true)} size="sm">
+            <Plus className="mr-2 size-4" />
+            New Order
+          </Button>
+        </div>
+      </div>
 
-			{isLoading && (
-				<div className="flex items-center justify-center py-12">
-					<div className="size-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-				</div>
-			)}
+      {isLoading && (
+        <div className="flex items-center justify-center py-12">
+          <div className="size-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+        </div>
+      )}
 
-			{!isLoading && orders.length === 0 && (
-				<div className="rounded-[22px] border border-dashed border-hairline bg-canvas p-8 text-sm text-muted-foreground">
-					No catering orders found. Create your first order to get started.
-				</div>
-			)}
+      {!isLoading && orders.length === 0 && (
+        <div className="rounded-[22px] border border-dashed border-hairline bg-canvas p-8 text-sm text-muted-foreground">
+          No catering orders found. Create your first order to get started.
+        </div>
+      )}
 
-			{!isLoading && orders.length > 0 && (
-				<div className="overflow-hidden rounded-[22px] border border-hairline bg-canvas">
-					<div className="grid grid-cols-[1fr_120px_120px_100px_110px_140px] gap-3 border-b border-hairline px-5 py-3 font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-						<span>Order</span>
-						<span>Delivery</span>
-						<span className="text-right">Total</span>
-						<span>Guests</span>
-						<span>Status</span>
-						<span className="text-right">Actions</span>
-					</div>
-					{orders.map((order) => {
-						const statusCfg = STATUS_CONFIG[order.status] ?? {
-							label: order.status,
-							icon: null,
-							variant: "neutral",
-						};
-						const nextAction = NEXT_ACTION[order.status];
-						return (
-							<div
-								className="grid grid-cols-[1fr_120px_120px_100px_110px_140px] gap-3 border-b border-hairline px-5 py-4 text-sm last:border-b-0"
-								key={order.id}
-							>
-								<div className="min-w-0">
-									<p className="font-medium truncate">
-										{order.orderNumber}
-									</p>
-									<p className="text-xs text-muted-foreground truncate">
-										{order.venueName ?? "No venue"}{order.venueCity ? `, ${order.venueCity}` : ""}
-									</p>
-								</div>
-								<span className="text-muted-foreground">
-									{formatDate(order.deliveryDate)}
-								</span>
-								<span className="text-right font-mono">
-									{formatCurrency(order.total)}
-								</span>
-								<span className="text-muted-foreground">
-									{order.guestCount}
-								</span>
-								<StatusPill>
-									{statusCfg.icon}
-									{statusCfg.label}
-								</StatusPill>
-								<div className="flex items-center justify-end gap-1">
-									{nextAction && (
-										<Button
-											disabled={actioning === order.id}
-											onClick={() => handleStatusAction(order)}
-											size="sm"
-											variant="outline"
-										>
-											<ChevronRight className="mr-1 size-3" />
-											{nextAction.label}
-										</Button>
-									)}
-									{canCancel(order.status) && !nextAction && (
-										<Button
-											disabled={actioning === order.id}
-											onClick={() => setCancelTarget(order)}
-											size="sm"
-											variant="ghost"
-										>
-											Cancel
-										</Button>
-									)}
-								</div>
-							</div>
-						);
-					})}
-				</div>
-			)}
+      {!isLoading && orders.length > 0 && (
+        <div className="overflow-hidden rounded-[22px] border border-hairline bg-canvas">
+          <div className="grid grid-cols-[1fr_120px_120px_100px_110px_140px] gap-3 border-b border-hairline px-5 py-3 font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+            <span>Order</span>
+            <span>Delivery</span>
+            <span className="text-right">Total</span>
+            <span>Guests</span>
+            <span>Status</span>
+            <span className="text-right">Actions</span>
+          </div>
+          {orders.map((order) => {
+            const statusCfg = STATUS_CONFIG[order.status] ?? {
+              label: order.status,
+              icon: null,
+              variant: "neutral",
+            };
+            const nextAction = NEXT_ACTION[order.status];
+            return (
+              <div
+                className="grid grid-cols-[1fr_120px_120px_100px_110px_140px] gap-3 border-b border-hairline px-5 py-4 text-sm last:border-b-0"
+                key={order.id}
+              >
+                <div className="min-w-0">
+                  <p className="font-medium truncate">{order.orderNumber}</p>
+                  <p className="text-xs text-muted-foreground truncate">
+                    {order.venueName ?? "No venue"}
+                    {order.venueCity ? `, ${order.venueCity}` : ""}
+                  </p>
+                </div>
+                <span className="text-muted-foreground">
+                  {formatDate(order.deliveryDate)}
+                </span>
+                <span className="text-right font-mono">
+                  {formatCurrency(order.total)}
+                </span>
+                <span className="text-muted-foreground">
+                  {order.guestCount}
+                </span>
+                <StatusPill>
+                  {statusCfg.icon}
+                  {statusCfg.label}
+                </StatusPill>
+                <div className="flex items-center justify-end gap-1">
+                  {nextAction && (
+                    <Button
+                      disabled={actioning === order.id}
+                      onClick={() => handleStatusAction(order)}
+                      size="sm"
+                      variant="outline"
+                    >
+                      <ChevronRight className="mr-1 size-3" />
+                      {nextAction.label}
+                    </Button>
+                  )}
+                  {canCancel(order.status) && !nextAction && (
+                    <Button
+                      disabled={actioning === order.id}
+                      onClick={() => setCancelTarget(order)}
+                      size="sm"
+                      variant="ghost"
+                    >
+                      Cancel
+                    </Button>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
 
-			{!isLoading && totalPages > 1 && (
-				<div className="flex items-center justify-between px-1 pt-2 text-sm">
-					<span className="text-muted-foreground">
-						Showing {(page - 1) * 25 + 1}-
-						{Math.min(page * 25, totalCount)} of {totalCount}
-					</span>
-					<div className="flex gap-2">
-						<Button
-							disabled={page === 1}
-							onClick={() => setPage(page - 1)}
-							size="sm"
-							variant="outline"
-						>
-							Previous
-						</Button>
-						<span className="flex items-center px-2 text-muted-foreground">
-							{page} / {totalPages}
-						</span>
-						<Button
-							disabled={page === totalPages}
-							onClick={() => setPage(page + 1)}
-							size="sm"
-							variant="outline"
-						>
-							Next
-						</Button>
-					</div>
-				</div>
-			)}
+      {!isLoading && totalPages > 1 && (
+        <div className="flex items-center justify-between px-1 pt-2 text-sm">
+          <span className="text-muted-foreground">
+            Showing {(page - 1) * 25 + 1}-{Math.min(page * 25, totalCount)} of{" "}
+            {totalCount}
+          </span>
+          <div className="flex gap-2">
+            <Button
+              disabled={page === 1}
+              onClick={() => setPage(page - 1)}
+              size="sm"
+              variant="outline"
+            >
+              Previous
+            </Button>
+            <span className="flex items-center px-2 text-muted-foreground">
+              {page} / {totalPages}
+            </span>
+            <Button
+              disabled={page === totalPages}
+              onClick={() => setPage(page + 1)}
+              size="sm"
+              variant="outline"
+            >
+              Next
+            </Button>
+          </div>
+        </div>
+      )}
 
-			<Dialog onOpenChange={setCreateOpen} open={createOpen}>
-				<DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
-					<DialogHeader>
-						<DialogTitle>New Catering Order</DialogTitle>
-						<DialogDescription>
-							Create a new catering order. It will start in draft status.
-						</DialogDescription>
-					</DialogHeader>
-					<div className="grid gap-4 py-4">
-						<div className="grid grid-cols-2 gap-4">
-							<div className="space-y-2">
-								<label className="text-sm font-medium">Customer ID</label>
-								<Input
-									onChange={(e) =>
-										setForm((f) => ({ ...f, customerId: e.target.value }))
-									}
-									placeholder="Customer UUID"
-									value={form.customerId}
-								/>
-							</div>
-							<div className="space-y-2">
-								<label className="text-sm font-medium">Guest Count</label>
-								<Input
-									onChange={(e) =>
-										setForm((f) => ({ ...f, guestCount: e.target.value }))
-									}
-									placeholder="50"
-									type="number"
-									value={form.guestCount}
-								/>
-							</div>
-						</div>
-						<div className="grid grid-cols-2 gap-4">
-							<div className="space-y-2">
-								<label className="text-sm font-medium">Delivery Date</label>
-								<DatePicker
-									onChange={(e) =>
-										setForm((f) => ({ ...f, deliveryDate: e.target.value }))
-									}
- 
-									value={form.deliveryDate}
-								/>
-							</div>
-							<div className="space-y-2">
-								<label className="text-sm font-medium">Delivery Time</label>
-								<Input
-									onChange={(e) =>
-										setForm((f) => ({ ...f, deliveryTime: e.target.value }))
-									}
-									type="time"
-									value={form.deliveryTime}
-								/>
-							</div>
-						</div>
-						<div className="grid grid-cols-2 gap-4">
-							<div className="space-y-2">
-								<label className="text-sm font-medium">Venue Name</label>
-								<Input
-									onChange={(e) =>
-										setForm((f) => ({ ...f, venueName: e.target.value }))
-									}
-									placeholder="Grand Ballroom"
-									value={form.venueName}
-								/>
-							</div>
-							<div className="space-y-2">
-								<label className="text-sm font-medium">Venue City</label>
-								<Input
-									onChange={(e) =>
-										setForm((f) => ({ ...f, venueCity: e.target.value }))
-									}
-									placeholder="New York"
-									value={form.venueCity}
-								/>
-							</div>
-						</div>
-						<div className="space-y-2">
-							<label className="text-sm font-medium">Special Instructions</label>
-							<Textarea
-								onChange={(e) =>
-									setForm((f) => ({
-										...f,
-										specialInstructions: e.target.value,
-									}))
-								}
-								placeholder="Setup by 3pm, use back entrance..."
-								rows={3}
-								value={form.specialInstructions}
-							/>
-						</div>
-						<div className="space-y-2">
-							<label className="text-sm font-medium">Dietary Restrictions</label>
-							<Input
-								onChange={(e) =>
-									setForm((f) => ({
-										...f,
-										dietaryRestrictions: e.target.value,
-									}))
-								}
-								placeholder="Vegan options, nut-free, gluten-free"
-								value={form.dietaryRestrictions}
-							/>
-						</div>
-						<div className="grid grid-cols-3 gap-4">
-							<div className="space-y-2">
-								<label className="text-sm font-medium">Subtotal ($)</label>
-								<Input
-									onChange={(e) =>
-										setForm((f) => ({ ...f, subtotal: e.target.value }))
-									}
-									placeholder="0.00"
-									type="number"
-									step="0.01"
-									value={form.subtotal}
-								/>
-							</div>
-							<div className="space-y-2">
-								<label className="text-sm font-medium">Tax ($)</label>
-								<Input
-									onChange={(e) =>
-										setForm((f) => ({ ...f, tax: e.target.value }))
-									}
-									placeholder="0.00"
-									type="number"
-									step="0.01"
-									value={form.tax}
-								/>
-							</div>
-							<div className="space-y-2">
-								<label className="text-sm font-medium">Service Charge ($)</label>
-								<Input
-									onChange={(e) =>
-										setForm((f) => ({
-											...f,
-											serviceCharge: e.target.value,
-										}))
-									}
-									placeholder="0.00"
-									type="number"
-									step="0.01"
-									value={form.serviceCharge}
-								/>
-							</div>
-						</div>
-					</div>
-					<DialogFooter>
-						<Button
-							onClick={() => setCreateOpen(false)}
-							variant="outline"
-						>
-							Cancel
-						</Button>
-						<Button
-							disabled={!form.customerId || !form.deliveryDate}
-							onClick={handleCreate}
-						>
-							Create Order
-						</Button>
-					</DialogFooter>
-				</DialogContent>
-			</Dialog>
+      <Dialog onOpenChange={setCreateOpen} open={createOpen}>
+        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>New Catering Order</DialogTitle>
+            <DialogDescription>
+              Create a new catering order. It will start in draft status.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Customer ID</label>
+                <Input
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, customerId: e.target.value }))
+                  }
+                  placeholder="Customer UUID"
+                  value={form.customerId}
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Guest Count</label>
+                <Input
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, guestCount: e.target.value }))
+                  }
+                  placeholder="50"
+                  type="number"
+                  value={form.guestCount}
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Delivery Date</label>
+                <DatePicker
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, deliveryDate: e.target.value }))
+                  }
+                  value={form.deliveryDate}
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Delivery Time</label>
+                <Input
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, deliveryTime: e.target.value }))
+                  }
+                  type="time"
+                  value={form.deliveryTime}
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Venue Name</label>
+                <Input
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, venueName: e.target.value }))
+                  }
+                  placeholder="Grand Ballroom"
+                  value={form.venueName}
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Venue City</label>
+                <Input
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, venueCity: e.target.value }))
+                  }
+                  placeholder="New York"
+                  value={form.venueCity}
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">
+                Special Instructions
+              </label>
+              <Textarea
+                onChange={(e) =>
+                  setForm((f) => ({
+                    ...f,
+                    specialInstructions: e.target.value,
+                  }))
+                }
+                placeholder="Setup by 3pm, use back entrance..."
+                rows={3}
+                value={form.specialInstructions}
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">
+                Dietary Restrictions
+              </label>
+              <Input
+                onChange={(e) =>
+                  setForm((f) => ({
+                    ...f,
+                    dietaryRestrictions: e.target.value,
+                  }))
+                }
+                placeholder="Vegan options, nut-free, gluten-free"
+                value={form.dietaryRestrictions}
+              />
+            </div>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Subtotal ($)</label>
+                <Input
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, subtotal: e.target.value }))
+                  }
+                  placeholder="0.00"
+                  step="0.01"
+                  type="number"
+                  value={form.subtotal}
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Tax ($)</label>
+                <Input
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, tax: e.target.value }))
+                  }
+                  placeholder="0.00"
+                  step="0.01"
+                  type="number"
+                  value={form.tax}
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">
+                  Service Charge ($)
+                </label>
+                <Input
+                  onChange={(e) =>
+                    setForm((f) => ({
+                      ...f,
+                      serviceCharge: e.target.value,
+                    }))
+                  }
+                  placeholder="0.00"
+                  step="0.01"
+                  type="number"
+                  value={form.serviceCharge}
+                />
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button onClick={() => setCreateOpen(false)} variant="outline">
+              Cancel
+            </Button>
+            <Button
+              disabled={!(form.customerId && form.deliveryDate)}
+              onClick={handleCreate}
+            >
+              Create Order
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
-			<Dialog
-				onOpenChange={(open) => !open && setCancelTarget(null)}
-				open={!!cancelTarget}
-			>
-				<DialogContent className="max-w-md">
-					<DialogHeader>
-						<DialogTitle>Cancel Order</DialogTitle>
-						<DialogDescription>
-							Are you sure you want to cancel order{" "}
-							{cancelTarget?.orderNumber}? This action cannot be undone.
-						</DialogDescription>
-					</DialogHeader>
-					<DialogFooter>
-						<Button
-							onClick={() => setCancelTarget(null)}
-							variant="outline"
-						>
-							Keep Order
-						</Button>
-						<Button
-							disabled={actioning === cancelTarget?.id}
-							onClick={handleCancel}
-							variant="destructive"
-						>
-							Cancel Order
-						</Button>
-					</DialogFooter>
-				</DialogContent>
-			</Dialog>
-		</>
-	);
+      <Dialog
+        onOpenChange={(open) => !open && setCancelTarget(null)}
+        open={!!cancelTarget}
+      >
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Cancel Order</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to cancel order {cancelTarget?.orderNumber}?
+              This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button onClick={() => setCancelTarget(null)} variant="outline">
+              Keep Order
+            </Button>
+            <Button
+              disabled={actioning === cancelTarget?.id}
+              onClick={handleCancel}
+              variant="destructive"
+            >
+              Cancel Order
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
 }

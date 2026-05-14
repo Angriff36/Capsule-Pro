@@ -31,7 +31,14 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
 vi.mock("@/app/lib/tenant", () => ({
   getTenantIdForOrg: vi.fn(),
-  requireCurrentUser: vi.fn(),
+  requireCurrentUser: vi.fn().mockResolvedValue({
+    id: TEST_USER_ID,
+    tenantId: TEST_TENANT_ID,
+    role: "admin",
+    email: "test@example.com",
+    firstName: "Test",
+    lastName: "User",
+  }),
 }));
 vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn() }));
 vi.mock("@/lib/database", async () => {

@@ -1,4 +1,8 @@
-import type { WizardFormData, PriceEstimate, WebhookPayload } from '../types/wizard';
+import type {
+  PriceEstimate,
+  WebhookPayload,
+  WizardFormData,
+} from "../types/wizard";
 
 export function buildWebhookPayload(
   data: WizardFormData,
@@ -50,7 +54,8 @@ export function buildWebhookPayload(
       client_range: data.budgetRange,
       estimated_low: estimate.low,
       estimated_high: estimate.high,
-      estimate_disclaimer: 'This is a non-binding estimate based on the information provided. Final pricing will be determined after a consultation with our team.',
+      estimate_disclaimer:
+        "This is a non-binding estimate based on the information provided. Final pricing will be determined after a consultation with our team.",
     },
     notes: data.additionalNotes,
     referral_source: data.referralSource,
@@ -60,9 +65,9 @@ export function buildWebhookPayload(
 }
 
 export function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
     maximumFractionDigits: 0,
   }).format(amount);
 }

@@ -54,26 +54,35 @@ async function simulateRouteHandler(
 ) {
   const authResult = await auth();
   if (!authResult?.userId) {
-    return new Response(JSON.stringify({ success: false, message: "Unauthorized" }), {
-      status: 401,
-      headers: { "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({ success: false, message: "Unauthorized" }),
+      {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
   }
 
   const orgId = authResult.orgId;
   if (!orgId) {
-    return new Response(JSON.stringify({ success: false, message: "Unauthorized" }), {
-      status: 401,
-      headers: { "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({ success: false, message: "Unauthorized" }),
+      {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
   }
 
   const tenantId = await getTenantIdForOrg(orgId);
   if (!tenantId) {
-    return new Response(JSON.stringify({ success: false, message: "Tenant not found" }), {
-      status: 400,
-      headers: { "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({ success: false, message: "Tenant not found" }),
+      {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
   }
 
   const body = await request.json();
@@ -86,24 +95,37 @@ async function simulateRouteHandler(
   if (!response.success) {
     if (response.policyDenial) {
       return new Response(
-        JSON.stringify({ success: false, message: `Access denied: ${response.policyDenial.policyName}` }),
+        JSON.stringify({
+          success: false,
+          message: `Access denied: ${response.policyDenial.policyName}`,
+        }),
         { status: 403, headers: { "Content-Type": "application/json" } }
       );
     }
     if (response.guardFailure) {
       return new Response(
-        JSON.stringify({ success: false, message: `Guard ${response.guardFailure.index} failed: ${response.guardFailure.formatted}` }),
+        JSON.stringify({
+          success: false,
+          message: `Guard ${response.guardFailure.index} failed: ${response.guardFailure.formatted}`,
+        }),
         { status: 422, headers: { "Content-Type": "application/json" } }
       );
     }
     return new Response(
-      JSON.stringify({ success: false, message: response.error || "Command failed" }),
+      JSON.stringify({
+        success: false,
+        message: response.error || "Command failed",
+      }),
       { status: 400, headers: { "Content-Type": "application/json" } }
     );
   }
 
   return new Response(
-    JSON.stringify({ success: true, result: response.result, events: response.emittedEvents }),
+    JSON.stringify({
+      success: true,
+      result: response.result,
+      events: response.emittedEvents,
+    }),
     { status: 200, headers: { "Content-Type": "application/json" } }
   );
 }
@@ -405,7 +427,11 @@ describe("Client CRUD API", () => {
           body: JSON.stringify({ id: "client-001" }),
         }
       );
-      const response = await simulateRouteHandler("reactivate", request, "Client");
+      const response = await simulateRouteHandler(
+        "reactivate",
+        request,
+        "Client"
+      );
 
       expect(response.status).toBe(200);
       const body = await response.json();
@@ -431,7 +457,11 @@ describe("Client CRUD API", () => {
           body: JSON.stringify({ id: "client-001" }),
         }
       );
-      const response = await simulateRouteHandler("reactivate", request, "Client");
+      const response = await simulateRouteHandler(
+        "reactivate",
+        request,
+        "Client"
+      );
 
       expect(response.status).toBe(401);
     });
@@ -452,7 +482,11 @@ describe("Client CRUD API", () => {
           body: JSON.stringify({ id: "client-001" }),
         }
       );
-      const response = await simulateRouteHandler("reactivate", request, "Client");
+      const response = await simulateRouteHandler(
+        "reactivate",
+        request,
+        "Client"
+      );
 
       expect(response.status).toBe(422);
       const body = await response.json();

@@ -1,5 +1,6 @@
 "use client";
 
+import { StatusPill } from "@repo/design-system/components/blocks/page-shell";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
   Dialog,
@@ -24,7 +25,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
-import { StatusPill } from "@repo/design-system/components/blocks/page-shell";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
 import { formatCurrency } from "@repo/design-system/lib/format-currency";
 import {
@@ -187,9 +187,7 @@ export function CollectionsClient({ initialMetrics }: CollectionsClientProps) {
   const [priorityDialogOpen, setPriorityDialogOpen] = useState(false);
 
   // Selected case for actions
-  const [selectedCase, setSelectedCase] = useState<CollectionCase | null>(
-    null
-  );
+  const [selectedCase, setSelectedCase] = useState<CollectionCase | null>(null);
 
   // Form state
   const [paymentAmount, setPaymentAmount] = useState("");
@@ -292,9 +290,7 @@ export function CollectionsClient({ initialMetrics }: CollectionsClientProps) {
         loadCases();
         return true;
       } catch (err) {
-        toast.error(
-          err instanceof Error ? err.message : "Action failed"
-        );
+        toast.error(err instanceof Error ? err.message : "Action failed");
         return false;
       }
     },
@@ -302,13 +298,15 @@ export function CollectionsClient({ initialMetrics }: CollectionsClientProps) {
   );
 
   const handleRecordPayment = async () => {
-    if (!selectedCase || !paymentAmount) return;
+    if (!(selectedCase && paymentAmount)) return;
     const amount = Number.parseFloat(paymentAmount);
     if (Number.isNaN(amount) || amount <= 0) {
       toast.error("Enter a valid payment amount");
       return;
     }
-    const ok = await executeAction(selectedCase.id, "recordPayment", { amount });
+    const ok = await executeAction(selectedCase.id, "recordPayment", {
+      amount,
+    });
     if (ok) {
       setPaymentDialogOpen(false);
       setPaymentAmount("");
@@ -317,7 +315,7 @@ export function CollectionsClient({ initialMetrics }: CollectionsClientProps) {
   };
 
   const handleEscalateDunning = async () => {
-    if (!selectedCase || !dunningStage) return;
+    if (!(selectedCase && dunningStage)) return;
     const ok = await executeAction(selectedCase.id, "escalateDunning", {
       stage: dunningStage,
     });
@@ -367,7 +365,7 @@ export function CollectionsClient({ initialMetrics }: CollectionsClientProps) {
   };
 
   const handleWriteOff = async () => {
-    if (!selectedCase || !writeOffReason) return;
+    if (!(selectedCase && writeOffReason)) return;
     const amount = Number(selectedCase.outstandingAmount);
     const ok = await executeAction(selectedCase.id, "writeOff", {
       amount,
@@ -382,7 +380,7 @@ export function CollectionsClient({ initialMetrics }: CollectionsClientProps) {
   };
 
   const handleSetPriority = async () => {
-    if (!selectedCase || !newPriority) return;
+    if (!(selectedCase && newPriority)) return;
     const ok = await executeAction(selectedCase.id, "setPriority", {
       priority: newPriority,
       reason: priorityReason,
@@ -396,11 +394,20 @@ export function CollectionsClient({ initialMetrics }: CollectionsClientProps) {
   };
 
   const handleReopen = async (c: CollectionCase) => {
-    await executeAction(c.id, "reopen", { reason: "Reopened from collections UI" });
+    await executeAction(c.id, "reopen", {
+      reason: "Reopened from collections UI",
+    });
   };
 
   const handleCreateCase = async () => {
-    if (!createInvoiceId || !createInvoiceNumber || !createClientId || !createClientName) {
+    if (
+      !(
+        createInvoiceId &&
+        createInvoiceNumber &&
+        createClientId &&
+        createClientName
+      )
+    ) {
       toast.error("Fill in all required fields");
       return;
     }
@@ -431,9 +438,7 @@ export function CollectionsClient({ initialMetrics }: CollectionsClientProps) {
       resetCreateForm();
       loadCases();
     } catch (err) {
-      toast.error(
-        err instanceof Error ? err.message : "Failed to create case"
-      );
+      toast.error(err instanceof Error ? err.message : "Failed to create case");
     }
   };
 
@@ -532,18 +537,11 @@ export function CollectionsClient({ initialMetrics }: CollectionsClientProps) {
           </Select>
         </div>
         <div className="flex items-center gap-2">
-          <Button
-            onClick={loadCases}
-            size="sm"
-            variant="outline"
-          >
+          <Button onClick={loadCases} size="sm" variant="outline">
             <RefreshCw className="mr-2 h-4 w-4" />
             Refresh
           </Button>
-          <Button
-            onClick={() => setCreateDialogOpen(true)}
-            size="sm"
-          >
+          <Button onClick={() => setCreateDialogOpen(true)} size="sm">
             <Plus className="mr-2 h-4 w-4" />
             New case
           </Button>
@@ -624,7 +622,9 @@ export function CollectionsClient({ initialMetrics }: CollectionsClientProps) {
 
               {/* Priority */}
               <div className="flex items-center">
-                <span className={`font-medium ${PRIORITY_CONFIG[c.priority]?.color ?? ""}`}>
+                <span
+                  className={`font-medium ${PRIORITY_CONFIG[c.priority]?.color ?? ""}`}
+                >
                   {PRIORITY_CONFIG[c.priority]?.label ?? c.priority}
                 </span>
               </div>
@@ -651,26 +651,26 @@ export function CollectionsClient({ initialMetrics }: CollectionsClientProps) {
               <div className="flex items-center justify-end gap-1">
                 {canRecordPayment(c) && (
                   <Button
+                    className="h-7 px-2 text-xs"
                     onClick={() => {
                       setSelectedCase(c);
                       setPaymentDialogOpen(true);
                     }}
                     size="sm"
                     variant="ghost"
-                    className="h-7 px-2 text-xs"
                   >
                     Payment
                   </Button>
                 )}
                 {canEscalateDunning(c) && (
                   <Button
+                    className="h-7 px-2 text-xs"
                     onClick={() => {
                       setSelectedCase(c);
                       setDunningDialogOpen(true);
                     }}
                     size="sm"
                     variant="ghost"
-                    className="h-7 px-2 text-xs"
                   >
                     <ArrowUpRight className="mr-1 h-3 w-3" />
                     Escalate
@@ -678,21 +678,17 @@ export function CollectionsClient({ initialMetrics }: CollectionsClientProps) {
                 )}
                 {canReopen(c) && (
                   <Button
+                    className="h-7 px-2 text-xs"
                     onClick={() => handleReopen(c)}
                     size="sm"
                     variant="ghost"
-                    className="h-7 px-2 text-xs"
                   >
                     Reopen
                   </Button>
                 )}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="h-7 px-2"
-                    >
+                    <Button className="h-7 px-2" size="sm" variant="ghost">
                       <MoreHorizontal className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
@@ -759,7 +755,6 @@ export function CollectionsClient({ initialMetrics }: CollectionsClientProps) {
               </div>
             </div>
           ))}
-
         </div>
       )}
 
@@ -767,8 +762,8 @@ export function CollectionsClient({ initialMetrics }: CollectionsClientProps) {
       {!isLoading && totalPages > 1 && (
         <div className="flex items-center justify-between px-1 pt-2 text-sm">
           <span className="text-muted-foreground">
-            Showing {(page - 1) * 25 + 1}&ndash;{Math.min(page * 25, totalCount)} of{" "}
-            {totalCount}
+            Showing {(page - 1) * 25 + 1}&ndash;
+            {Math.min(page * 25, totalCount)} of {totalCount}
           </span>
           <div className="flex gap-2">
             <Button
@@ -863,7 +858,9 @@ export function CollectionsClient({ initialMetrics }: CollectionsClientProps) {
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">Outstanding amount</label>
+                <label className="text-sm font-medium">
+                  Outstanding amount
+                </label>
                 <Input
                   onChange={(e) => setCreateOutstandingAmount(e.target.value)}
                   placeholder="0.00"
@@ -921,9 +918,8 @@ export function CollectionsClient({ initialMetrics }: CollectionsClientProps) {
           <DialogHeader>
             <DialogTitle>Record payment</DialogTitle>
             <DialogDescription>
-              Record a payment for{" "}
-              <strong>{selectedCase?.clientName}</strong> (invoice{" "}
-              {selectedCase?.invoiceNumber}). Outstanding:{" "}
+              Record a payment for <strong>{selectedCase?.clientName}</strong>{" "}
+              (invoice {selectedCase?.invoiceNumber}). Outstanding:{" "}
               {selectedCase
                 ? formatCurrency(selectedCase.outstandingAmount)
                 : "\u2014"}
@@ -984,7 +980,9 @@ export function CollectionsClient({ initialMetrics }: CollectionsClientProps) {
                   <SelectItem value="REMINDER_2">Reminder 2</SelectItem>
                   <SelectItem value="REMINDER_3">Reminder 3</SelectItem>
                   <SelectItem value="FINAL_NOTICE">Final Notice</SelectItem>
-                  <SelectItem value="COLLECTIONS">External Collections</SelectItem>
+                  <SelectItem value="COLLECTIONS">
+                    External Collections
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -1053,9 +1051,8 @@ export function CollectionsClient({ initialMetrics }: CollectionsClientProps) {
               Mark as disputed
             </DialogTitle>
             <DialogDescription>
-              Flag the case for{" "}
-              <strong>{selectedCase?.clientName}</strong> as disputed. This will
-              pause automated dunning.
+              Flag the case for <strong>{selectedCase?.clientName}</strong> as
+              disputed. This will pause automated dunning.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
@@ -1093,9 +1090,8 @@ export function CollectionsClient({ initialMetrics }: CollectionsClientProps) {
               Escalate to legal
             </DialogTitle>
             <DialogDescription>
-              Escalate the case for{" "}
-              <strong>{selectedCase?.clientName}</strong> to legal proceedings.
-              This will set the case to URGENT priority.
+              Escalate the case for <strong>{selectedCase?.clientName}</strong>{" "}
+              to legal proceedings. This will set the case to URGENT priority.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
@@ -1148,8 +1144,8 @@ export function CollectionsClient({ initialMetrics }: CollectionsClientProps) {
               {selectedCase
                 ? formatCurrency(selectedCase.outstandingAmount)
                 : "\u2014"}{" "}
-              for <strong>{selectedCase?.clientName}</strong>. This action cannot
-              be undone.
+              for <strong>{selectedCase?.clientName}</strong>. This action
+              cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">

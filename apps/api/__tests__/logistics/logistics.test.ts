@@ -18,6 +18,15 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
 vi.mock("@/app/lib/tenant", () => ({
+  requireCurrentUser: vi.fn().mockResolvedValue({
+    id: "test-user-id",
+    tenantId: "test-tenant",
+    role: "admin",
+    email: "test@example.com",
+    firstName: "Test",
+    lastName: "User",
+  }),
+
   getTenantIdForOrg: vi.fn(),
   requireTenantId: vi.fn(),
 }));
@@ -48,18 +57,20 @@ vi.mock("@/lib/database", async () => {
 // --- Import mocked modules ---
 
 const { auth } = await import("@repo/auth/server");
-const { getTenantIdForOrg, requireTenantId } = await import("@/app/lib/tenant");
+const { getTenantIdForOrg, requireCurrentUser, requireTenantId } = await import("@/app/lib/tenant");
 
 // --- Route imports ---
 
-import { POST as createDriver } from "@/app/api/manifest/[entity]/commands/[command]/route";
-import { POST as deleteDriver } from "@/app/api/manifest/[entity]/commands/[command]/route";
 import { GET as listDrivers } from "@/app/api/logistics/drivers/list/route";
-import { POST as createRoute } from "@/app/api/manifest/[entity]/commands/[command]/route";
 import { GET as listRoutes } from "@/app/api/logistics/routes/list/route";
-import { POST as createVehicle } from "@/app/api/manifest/[entity]/commands/[command]/route";
-import { POST as deleteVehicle } from "@/app/api/manifest/[entity]/commands/[command]/route";
 import { GET as listVehicles } from "@/app/api/logistics/vehicles/list/route";
+import {
+  POST as createDriver,
+  POST as createRoute,
+  POST as createVehicle,
+  POST as deleteDriver,
+  POST as deleteVehicle,
+} from "@/app/api/manifest/[entity]/commands/[command]/route";
 
 // --- Constants ---
 
@@ -75,6 +86,14 @@ function mockAuth() {
     orgId: TEST_ORG_ID,
   } as never);
   vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
+  vi.mocked(requireCurrentUser).mockResolvedValue({
+    id: TEST_USER_ID,
+    tenantId: TEST_TENANT_ID,
+    role: "admin",
+    email: "test@example.com",
+    firstName: "Test",
+    lastName: "User",
+  } as never);
 }
 
 function createMockDriver(overrides: Record<string, unknown> = {}) {
@@ -1019,7 +1038,10 @@ describe("Logistics API", () => {
         }
       );
       const response = await createRoute(request, {
-        params: Promise.resolve({ entity: "LogisticsRoute", command: "create" }),
+        params: Promise.resolve({
+          entity: "LogisticsRoute",
+          command: "create",
+        }),
       });
 
       expect(response.status).toBe(200);
@@ -1060,7 +1082,10 @@ describe("Logistics API", () => {
         }
       );
       const response = await createRoute(request, {
-        params: Promise.resolve({ entity: "LogisticsRoute", command: "create" }),
+        params: Promise.resolve({
+          entity: "LogisticsRoute",
+          command: "create",
+        }),
       });
 
       expect(response.status).toBe(200);
@@ -1109,7 +1134,10 @@ describe("Logistics API", () => {
         }
       );
       const response = await createRoute(request, {
-        params: Promise.resolve({ entity: "LogisticsRoute", command: "create" }),
+        params: Promise.resolve({
+          entity: "LogisticsRoute",
+          command: "create",
+        }),
       });
 
       expect(response.status).toBe(200);
@@ -1159,7 +1187,10 @@ describe("Logistics API", () => {
         }
       );
       await createRoute(request, {
-        params: Promise.resolve({ entity: "LogisticsRoute", command: "create" }),
+        params: Promise.resolve({
+          entity: "LogisticsRoute",
+          command: "create",
+        }),
       });
 
       expect(database.deliveryRoute.create).toHaveBeenCalledWith(
@@ -1186,7 +1217,10 @@ describe("Logistics API", () => {
         }
       );
       const response = await createRoute(request, {
-        params: Promise.resolve({ entity: "LogisticsRoute", command: "create" }),
+        params: Promise.resolve({
+          entity: "LogisticsRoute",
+          command: "create",
+        }),
       });
 
       expect(response.status).toBe(500);

@@ -1,6 +1,12 @@
 "use client";
 
-import { AlertTriangle, CheckCircle2, ChevronDown, ChevronUp, ShieldAlert, X } from "lucide-react";
+import {
+  AlertTriangle,
+  CheckCircle2,
+  ChevronDown,
+  ChevronUp,
+  ShieldAlert,
+} from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
@@ -36,7 +42,11 @@ interface AllergenSectionProps {
 
 export function AllergenSection({ eventId }: AllergenSectionProps) {
   const [conflicts, setConflicts] = useState<AllergenConflict[]>([]);
-  const [conflictSummary, setConflictSummary] = useState({ total: 0, critical: 0, warning: 0 });
+  const [conflictSummary, setConflictSummary] = useState({
+    total: 0,
+    critical: 0,
+    warning: 0,
+  });
   const [warnings, setWarnings] = useState<AllergenWarning[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isChecking, setIsChecking] = useState(false);
@@ -48,7 +58,7 @@ export function AllergenSection({ eventId }: AllergenSectionProps) {
       const res = await apiFetch(`/api/events/${eventId}/warnings`);
       if (res.ok) {
         const data = await res.json();
-        setWarnings(Array.isArray(data) ? data : data.warnings ?? []);
+        setWarnings(Array.isArray(data) ? data : (data.warnings ?? []));
       }
     } catch {
       // Warnings fetch is best-effort
@@ -66,7 +76,9 @@ export function AllergenSection({ eventId }: AllergenSectionProps) {
       if (res.ok) {
         const data = await res.json();
         setConflicts(data.conflicts ?? []);
-        setConflictSummary(data.summary ?? { total: 0, critical: 0, warning: 0 });
+        setConflictSummary(
+          data.summary ?? { total: 0, critical: 0, warning: 0 }
+        );
       }
     } catch {
       toast.error("Failed to run allergen check");
@@ -81,7 +93,9 @@ export function AllergenSection({ eventId }: AllergenSectionProps) {
     Promise.all([runAllergenCheck(), fetchWarnings()]).finally(() => {
       if (!cancelled) setIsLoading(false);
     });
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [runAllergenCheck, fetchWarnings]);
 
   const acknowledgeWarning = async (warningId: string) => {
@@ -105,7 +119,9 @@ export function AllergenSection({ eventId }: AllergenSectionProps) {
   if (isLoading) {
     return (
       <div className="rounded-xl border border-border bg-card p-4">
-        <h3 className="text-sm font-medium text-muted-foreground">Loading allergen data...</h3>
+        <h3 className="text-sm font-medium text-muted-foreground">
+          Loading allergen data...
+        </h3>
       </div>
     );
   }
@@ -135,16 +151,22 @@ export function AllergenSection({ eventId }: AllergenSectionProps) {
         {conflictSummary.total === 0 ? (
           <div className="flex items-center gap-2 rounded-lg bg-success/10 p-3">
             <CheckCircle2 className="h-4 w-4 text-success" />
-            <span className="text-sm text-success">No allergen or dietary conflicts detected</span>
+            <span className="text-sm text-success">
+              No allergen or dietary conflicts detected
+            </span>
           </div>
         ) : (
           <div className="grid grid-cols-3 gap-2">
             <div className="rounded-lg bg-destructive/10 p-2 text-center">
-              <p className="text-lg font-bold text-destructive">{conflictSummary.critical}</p>
+              <p className="text-lg font-bold text-destructive">
+                {conflictSummary.critical}
+              </p>
               <p className="text-xs text-muted-foreground">Critical</p>
             </div>
             <div className="rounded-lg bg-warning/10 p-2 text-center">
-              <p className="text-lg font-bold text-warning">{conflictSummary.warning}</p>
+              <p className="text-lg font-bold text-warning">
+                {conflictSummary.warning}
+              </p>
               <p className="text-xs text-muted-foreground">Dietary</p>
             </div>
             <div className="rounded-lg bg-muted p-2 text-center">
@@ -162,7 +184,11 @@ export function AllergenSection({ eventId }: AllergenSectionProps) {
               type="button"
             >
               <span>Conflicts ({conflicts.length})</span>
-              {expandedConflicts ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+              {expandedConflicts ? (
+                <ChevronUp className="h-3 w-3" />
+              ) : (
+                <ChevronDown className="h-3 w-3" />
+              )}
             </button>
             {expandedConflicts && (
               <div className="mt-2 space-y-2">
@@ -204,7 +230,9 @@ export function AllergenSection({ eventId }: AllergenSectionProps) {
                             : "bg-warning/15 text-warning"
                         }`}
                       >
-                        {conflict.type === "allergen_conflict" ? "Allergen" : "Dietary"}
+                        {conflict.type === "allergen_conflict"
+                          ? "Allergen"
+                          : "Dietary"}
                       </span>
                     </div>
                   </div>
@@ -226,10 +254,15 @@ export function AllergenSection({ eventId }: AllergenSectionProps) {
             <div className="flex items-center gap-2">
               <AlertTriangle className="h-4 w-4 text-warning" />
               <h3 className="text-sm font-semibold">
-                Warnings ({unacknowledgedWarnings.length} active, {acknowledgedWarnings.length} acknowledged)
+                Warnings ({unacknowledgedWarnings.length} active,{" "}
+                {acknowledgedWarnings.length} acknowledged)
               </h3>
             </div>
-            {expandedWarnings ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+            {expandedWarnings ? (
+              <ChevronUp className="h-3 w-3" />
+            ) : (
+              <ChevronDown className="h-3 w-3" />
+            )}
           </button>
 
           {expandedWarnings && (
@@ -243,7 +276,8 @@ export function AllergenSection({ eventId }: AllergenSectionProps) {
                     <div className="text-sm">
                       <p className="font-medium">{w.warningType}</p>
                       <p className="mt-0.5 text-muted-foreground">
-                        {w.allergens?.join(", ")} — {w.affectedGuests?.length ?? 0} guest(s) affected
+                        {w.allergens?.join(", ")} —{" "}
+                        {w.affectedGuests?.length ?? 0} guest(s) affected
                       </p>
                     </div>
                     <button
@@ -265,7 +299,10 @@ export function AllergenSection({ eventId }: AllergenSectionProps) {
                     <div>
                       <p className="font-medium">{w.warningType}</p>
                       <p className="mt-0.5 text-muted-foreground">
-                        Acknowledged {w.acknowledgedAt ? new Date(w.acknowledgedAt).toLocaleDateString() : ""}
+                        Acknowledged{" "}
+                        {w.acknowledgedAt
+                          ? new Date(w.acknowledgedAt).toLocaleDateString()
+                          : ""}
                       </p>
                     </div>
                     <CheckCircle2 className="h-4 w-4 text-success" />

@@ -10,7 +10,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@repo/design-system/components/ui/dialog";
-import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
 import {
   Select,
@@ -26,6 +25,7 @@ import {
   TableRow,
 } from "@repo/design-system/components/ui/table";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
+import { formatCurrency as _formatCurrency } from "@repo/design-system/lib/format-currency";
 import {
   AlertTriangleIcon,
   CalendarIcon,
@@ -34,10 +34,10 @@ import {
   DollarSignIcon,
   MapPinIcon,
 } from "lucide-react";
-import { formatCurrency as _formatCurrency } from "@repo/design-system/lib/format-currency";
 
 const formatCurrency = (v: number | null) =>
   _formatCurrency(v, { nullDisplay: "N/A" });
+
 import { useState } from "react";
 
 interface TimeEntry {
@@ -86,7 +86,6 @@ interface TimecardDetailModalProps {
   onFlagException: (type: string, notes: string) => void;
   onClockOut: () => void;
 }
-
 
 function formatHours(value: number | null) {
   if (value === null) {
@@ -177,7 +176,9 @@ export default function TimecardDetailModal({
                     </TableRow>
                     {timeEntry.employee_number && (
                       <TableRow>
-                        <TableCell className="font-medium">Employee #</TableCell>
+                        <TableCell className="font-medium">
+                          Employee #
+                        </TableCell>
                         <TableCell>{timeEntry.employee_number}</TableCell>
                       </TableRow>
                     )}
@@ -232,8 +233,12 @@ export default function TimecardDetailModal({
                       </TableRow>
                     )}
                     <TableRow>
-                      <TableCell className="font-medium">Actual Hours</TableCell>
-                      <TableCell>{formatHours(timeEntry.actual_hours)}</TableCell>
+                      <TableCell className="font-medium">
+                        Actual Hours
+                      </TableCell>
+                      <TableCell>
+                        {formatHours(timeEntry.actual_hours)}
+                      </TableCell>
                     </TableRow>
                     {timeEntry.scheduled_hours && (
                       <TableRow>
@@ -268,11 +273,15 @@ export default function TimecardDetailModal({
                       <DollarSignIcon className="mr-2 h-4 w-4" />
                       Hourly Rate
                     </TableCell>
-                    <TableCell>{formatCurrency(timeEntry.hourly_rate)}</TableCell>
+                    <TableCell>
+                      {formatCurrency(timeEntry.hourly_rate)}
+                    </TableCell>
                   </TableRow>
                   <TableRow>
                     <TableCell className="font-medium">Total Cost</TableCell>
-                    <TableCell>{formatCurrency(timeEntry.total_cost)}</TableCell>
+                    <TableCell>
+                      {formatCurrency(timeEntry.total_cost)}
+                    </TableCell>
                   </TableRow>
                   <TableRow>
                     <TableCell className="font-medium">Status</TableCell>
@@ -415,9 +424,13 @@ export default function TimecardDetailModal({
                   <SelectValue placeholder="Select exception type" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="missing_clock_out">Missing Clock Out</SelectItem>
+                  <SelectItem value="missing_clock_out">
+                    Missing Clock Out
+                  </SelectItem>
                   <SelectItem value="late_arrival">Late Arrival</SelectItem>
-                  <SelectItem value="excessive_break">Excessive Break</SelectItem>
+                  <SelectItem value="excessive_break">
+                    Excessive Break
+                  </SelectItem>
                   <SelectItem value="other">Other</SelectItem>
                 </SelectContent>
               </Select>
@@ -440,7 +453,7 @@ export default function TimecardDetailModal({
               Cancel
             </Button>
             <Button
-              disabled={!exceptionType || !exceptionNotes.trim()}
+              disabled={!(exceptionType && exceptionNotes.trim())}
               onClick={() => {
                 onFlagException(exceptionType, exceptionNotes);
                 setExceptionDialogOpen(false);

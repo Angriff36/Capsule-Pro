@@ -1,6 +1,6 @@
 import type { NextRequest } from "next/server";
-import { runManifestCommand } from "@/lib/manifest/execute-command";
 import { requireCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 /**
  * User update-role command handler.

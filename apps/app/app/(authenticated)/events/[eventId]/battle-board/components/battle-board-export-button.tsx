@@ -94,38 +94,38 @@ export function BattleBoardExportButton({
 
   return (
     <>
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button disabled={isExporting} size="sm" variant="outline">
-          {isExporting ? (
-            <LoaderIcon className="mr-2 h-4 w-4 animate-spin" />
-          ) : (
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button disabled={isExporting} size="sm" variant="outline">
+            {isExporting ? (
+              <LoaderIcon className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <DownloadIcon className="mr-2 h-4 w-4" />
+            )}
+            Export
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem onClick={handleDownload}>
+            <FileTextIcon className="mr-2 h-4 w-4" />
+            Download PDF
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={handleGetLink}>
             <DownloadIcon className="mr-2 h-4 w-4" />
-          )}
-          Export
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={handleDownload}>
-          <FileTextIcon className="mr-2 h-4 w-4" />
-          Download PDF
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={handleGetLink}>
-          <DownloadIcon className="mr-2 h-4 w-4" />
-          Copy PDF Link
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setEmailDialogOpen(true)}>
-          <MailIcon className="mr-2 h-4 w-4" />
-          Email PDF
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
-    <BattleBoardEmailDialog
-      eventId={eventId}
-      eventName={eventName}
-      open={emailDialogOpen}
-      onOpenChange={setEmailDialogOpen}
-    />
+            Copy PDF Link
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => setEmailDialogOpen(true)}>
+            <MailIcon className="mr-2 h-4 w-4" />
+            Email PDF
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+      <BattleBoardEmailDialog
+        eventId={eventId}
+        eventName={eventName}
+        onOpenChange={setEmailDialogOpen}
+        open={emailDialogOpen}
+      />
     </>
   );
 }

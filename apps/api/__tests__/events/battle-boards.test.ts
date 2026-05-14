@@ -40,6 +40,16 @@ vi.mock("@/app/lib/tenant", () => ({
 
 vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn() }));
 
+vi.mock("@/app/lib/invariant", () => ({
+  InvariantError: class extends Error {
+    constructor(message: string) {
+      super(message);
+      this.name = "InvariantError";
+    }
+  },
+  invariant: vi.fn(),
+}));
+
 vi.mock("@repo/database", () => ({
   database: {
     user: { findFirst: vi.fn() },
@@ -77,7 +87,7 @@ vi.mock("@/lib/manifest-response", async () => {
 // --- Imports (after mocks) ---
 
 const { auth } = await import("@repo/auth/server");
-const { getTenantIdForOrg } = await import("@/app/lib/tenant");
+const { getTenantIdForOrg, requireCurrentUser } = await import("@/app/lib/tenant");
 const { database } = await import("@repo/database");
 const { createManifestRuntime } = await import("@/lib/manifest-runtime");
 const { executeManifestCommand } = await import(
@@ -103,16 +113,32 @@ function authed() {
     userId: TEST_CLERK_ID,
   } as never);
   vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID as never);
-  vi.mocked(database.user.findFirst).mockResolvedValue({
+  vi.mocked(requireCurrentUser).mockResolvedValue({
     id: TEST_USER_ID,
     tenantId: TEST_TENANT_ID,
     role: TEST_USER_ROLE,
     authUserId: TEST_CLERK_ID,
+    email: "test@example.com",
+    firstName: "Test",
+    lastName: "User",
   } as never);
 }
 
 function unauthed() {
   vi.mocked(auth).mockResolvedValue({ orgId: null, userId: null } as never);
+  // Throwing InvariantError specifically so the route catches it and returns 401
+  class InvariantError extends Error {
+    constructor(message: string) {
+      super(message);
+      this.name = "InvariantError";
+    }
+  }
+  vi.mocked(requireCurrentUser).mockRejectedValue(
+    new InvariantError("Unauthorized") as never
+  );
+  vi.mocked(createManifestRuntime).mockResolvedValue({
+    runCommand: vi.fn().mockResolvedValue({ success: false }),
+  } as never);
 }
 
 function makeRequest(url: string, init?: RequestInit): NextRequest {
@@ -454,7 +480,9 @@ describe("Battle Boards API", () => {
     it(`returns 401 when unauthenticated [${name}]`, async () => {
       unauthed();
       const mod = await import(routePath);
-      const res = await mod.POST(postRequest(path, sampleBody));
+      const res = await mod.POST(postRequest(path, sampleBody), {
+        params: Promise.resolve({ entity: "BattleBoard", command: name }),
+      });
 
       expect(res.status).toBe(401);
       const body = await res.json();
@@ -465,7 +493,9 @@ describe("Battle Boards API", () => {
       vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
 
       const mod = await import(routePath);
-      const res = await mod.POST(postRequest(path, sampleBody));
+      const res = await mod.POST(postRequest(path, sampleBody), {
+        params: Promise.resolve({ entity: "BattleBoard", command: name }),
+      });
 
       expect(res.status).toBe(400);
       const body = await res.json();
@@ -476,7 +506,9 @@ describe("Battle Boards API", () => {
       vi.mocked(database.user.findFirst).mockResolvedValue(null as never);
 
       const mod = await import(routePath);
-      const res = await mod.POST(postRequest(path, sampleBody));
+      const res = await mod.POST(postRequest(path, sampleBody), {
+        params: Promise.resolve({ entity: "BattleBoard", command: name }),
+      });
 
       expect(res.status).toBe(400);
       const body = await res.json();
@@ -487,7 +519,9 @@ describe("Battle Boards API", () => {
       mockRuntimeSuccess({ id: TEST_BATTLE_BOARD_ID });
 
       const mod = await import(routePath);
-      const res = await mod.POST(postRequest(path, sampleBody));
+      const res = await mod.POST(postRequest(path, sampleBody), {
+        params: Promise.resolve({ entity: "BattleBoard", command: name }),
+      });
 
       expect(res.status).toBe(200);
       const body = await res.json();
@@ -511,7 +545,9 @@ describe("Battle Boards API", () => {
       mockRuntimePolicyDenial("adminOnly");
 
       const mod = await import(routePath);
-      const res = await mod.POST(postRequest(path, sampleBody));
+      const res = await mod.POST(postRequest(path, sampleBody), {
+        params: Promise.resolve({ entity: "BattleBoard", command: name }),
+      });
 
       expect(res.status).toBe(403);
       const body = await res.json();
@@ -524,7 +560,9 @@ describe("Battle Boards API", () => {
       mockRuntimeGuardFailure(0, "id is required");
 
       const mod = await import(routePath);
-      const res = await mod.POST(postRequest(path, sampleBody));
+      const res = await mod.POST(postRequest(path, sampleBody), {
+        params: Promise.resolve({ entity: "BattleBoard", command: name }),
+      });
 
       expect(res.status).toBe(422);
       const body = await res.json();
@@ -536,7 +574,9 @@ describe("Battle Boards API", () => {
       mockRuntimeFailure("State transition not allowed");
 
       const mod = await import(routePath);
-      const res = await mod.POST(postRequest(path, sampleBody));
+      const res = await mod.POST(postRequest(path, sampleBody), {
+        params: Promise.resolve({ entity: "BattleBoard", command: name }),
+      });
 
       expect(res.status).toBe(400);
       const body = await res.json();
@@ -549,7 +589,9 @@ describe("Battle Boards API", () => {
       } as never);
 
       const mod = await import(routePath);
-      const res = await mod.POST(postRequest(path, sampleBody));
+      const res = await mod.POST(postRequest(path, sampleBody), {
+        params: Promise.resolve({ entity: "BattleBoard", command: name }),
+      });
 
       expect(res.status).toBe(400);
       const body = await res.json();
@@ -562,7 +604,9 @@ describe("Battle Boards API", () => {
       );
 
       const mod = await import(routePath);
-      const res = await mod.POST(postRequest(path, sampleBody));
+      const res = await mod.POST(postRequest(path, sampleBody), {
+        params: Promise.resolve({ entity: "BattleBoard", command: name }),
+      });
 
       expect(res.status).toBe(500);
       const body = await res.json();
@@ -580,7 +624,9 @@ describe("Battle Boards API", () => {
       } as never);
 
       const mod = await import(routePath);
-      await mod.POST(postRequest(path, sampleBody));
+      await mod.POST(postRequest(path, sampleBody), {
+        params: Promise.resolve({ entity: "BattleBoard", command: name }),
+      });
 
       expect(runCommand).toHaveBeenCalledWith(runtimeName, sampleBody, {
         entityName: "BattleBoard",
@@ -591,7 +637,9 @@ describe("Battle Boards API", () => {
       mockRuntimeSuccess();
 
       const mod = await import(routePath);
-      await mod.POST(postRequest(path, sampleBody));
+      await mod.POST(postRequest(path, sampleBody), {
+        params: Promise.resolve({ entity: "BattleBoard", command: name }),
+      });
 
       expect(database.user.findFirst).toHaveBeenCalledWith({
         where: {

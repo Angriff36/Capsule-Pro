@@ -207,8 +207,8 @@ export default function NewEmailTemplatePage() {
                     <FormItem>
                       <FormLabel>Template Type</FormLabel>
                       <Select
-                        value={field.value}
                         onValueChange={field.onChange}
+                        value={field.value}
                       >
                         <FormControl>
                           <SelectTrigger>

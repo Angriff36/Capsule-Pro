@@ -9,14 +9,6 @@ import {
   CardTitle,
 } from "@repo/design-system/components/ui/card";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@repo/design-system/components/ui/table";
-import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -27,6 +19,15 @@ import {
 import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
 import { Separator } from "@repo/design-system/components/ui/separator";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@repo/design-system/components/ui/table";
+import { formatCurrency as _formatCurrency } from "@repo/design-system/lib/format-currency";
 import {
   AlertCircle,
   AlertTriangle,
@@ -44,7 +45,6 @@ import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
-import { formatCurrency as _formatCurrency } from "@repo/design-system/lib/format-currency";
 
 const formatCurrency = (v: string | number | null) =>
   _formatCurrency(v, { nullDisplay: "\u2014" });
@@ -124,7 +124,6 @@ const typeLabels: Record<string, string> = {
   CREDIT_NOTE: "Credit Note",
   DEBIT_NOTE: "Debit Note",
 };
-
 
 const formatDate = (dateStr: string | null | undefined) => {
   if (!dateStr) return "—";
@@ -577,10 +576,18 @@ export default function InvoiceDetailPage() {
                 {invoice.lineItems.map((item) => (
                   <TableRow key={item.id}>
                     <TableCell>{item.description}</TableCell>
-                    <TableCell className="text-right">{item.quantity}</TableCell>
-                    <TableCell className="text-right">{formatCurrency(item.unitPrice)}</TableCell>
-                    <TableCell className="text-right">{item.taxRate}%</TableCell>
-                    <TableCell className="text-right font-medium">{formatCurrency(item.amount)}</TableCell>
+                    <TableCell className="text-right">
+                      {item.quantity}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {formatCurrency(item.unitPrice)}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {item.taxRate}%
+                    </TableCell>
+                    <TableCell className="text-right font-medium">
+                      {formatCurrency(item.amount)}
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>

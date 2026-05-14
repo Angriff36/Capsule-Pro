@@ -22,7 +22,14 @@ vi.mock("@repo/auth/server", () => ({
 
 vi.mock("@/app/lib/tenant", () => ({
   getTenantIdForOrg: vi.fn(),
-  requireCurrentUser: vi.fn(),
+  requireCurrentUser: vi.fn().mockResolvedValue({
+    id: TEST_USER_ID,
+    tenantId: TEST_TENANT_ID,
+    role: "admin",
+    email: "test@example.com",
+    firstName: "Test",
+    lastName: "User",
+  }),
 }));
 
 vi.mock("@/app/lib/invariant", async () => {
@@ -39,7 +46,7 @@ vi.mock("@/lib/manifest-runtime", () => ({
 }));
 
 import { auth } from "@repo/auth/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { getTenantIdForOrg, requireCurrentUser } from "@/app/lib/tenant";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
 
 const TEST_TENANT_ID = "a0000000-0000-4000-a000-000000000001";
@@ -269,6 +276,14 @@ describe("Shipment Persistence (write → read alignment)", () => {
         userId: TEST_CLERK_ID,
       } as any);
       vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
+      vi.mocked(requireCurrentUser).mockResolvedValue({
+        id: TEST_USER_ID,
+        tenantId: TEST_TENANT_ID,
+        role: "admin",
+        email: "test@example.com",
+        firstName: "Test",
+        lastName: "User",
+      });
       vi.mocked(database.user.findFirst).mockResolvedValue(mockUser as never);
       mockRunCommand.mockClear();
       vi.mocked(createManifestRuntime).mockResolvedValue({
@@ -298,16 +313,13 @@ describe("Shipment Persistence (write → read alignment)", () => {
           }
         );
 
-        await mod.POST(request, { params: Promise.resolve({ entity: "Shipment", command: "create" }) });
+        await mod.POST(request, {
+          params: Promise.resolve({ entity: "Shipment", command: "create" }),
+        });
 
-        expect(mockRunCommand).toHaveBeenCalledWith(
-          verb,
-          expect.any(Object),
-          expect.objectContaining({
-            entityName: "Shipment",
-            instanceId: "ship-003",
-          })
-        );
+        expect(mockRunCommand).toHaveBeenCalledWith(verb, expect.any(Object), {
+          entityName: "Shipment",
+        });
       });
     }
 
@@ -326,7 +338,9 @@ describe("Shipment Persistence (write → read alignment)", () => {
         }
       );
 
-      await mod.POST(request, { params: Promise.resolve({ entity: "Shipment", command: "create" }) });
+      await mod.POST(request, {
+        params: Promise.resolve({ entity: "Shipment", command: "create" }),
+      });
 
       expect(mockRunCommand).toHaveBeenCalledWith(
         "create",

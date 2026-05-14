@@ -255,18 +255,25 @@ export function ShiftDetailModal({
           </div>
         </div>
 
-        <AlertDialog onOpenChange={(open) => { if (!open) setDeleteDialogOpen(false); }} open={deleteDialogOpen}>
+        <AlertDialog
+          onOpenChange={(open) => {
+            if (!open) setDeleteDialogOpen(false);
+          }}
+          open={deleteDialogOpen}
+        >
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>Delete Shift</AlertDialogTitle>
               <AlertDialogDescription>
-                Are you sure you want to delete this shift? This action cannot be
-                undone.
+                Are you sure you want to delete this shift? This action cannot
+                be undone.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={confirmDelete}>Delete</AlertDialogAction>
+              <AlertDialogAction onClick={confirmDelete}>
+                Delete
+              </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>

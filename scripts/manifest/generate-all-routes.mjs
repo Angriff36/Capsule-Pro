@@ -184,9 +184,7 @@ if (missingCommands.length > 0) {
   console.error(
     `\n${missingCommands.length} command(s) declared in .manifest files but not in kitchen.commands.json.`
   );
-  console.error(
-    "Run:  pnpm manifest:compile"
-  );
+  console.error("Run:  pnpm manifest:compile");
   process.exit(1);
 }
 

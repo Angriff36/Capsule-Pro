@@ -152,14 +152,17 @@ export default function DispatchPage() {
 
     setAssigning(true);
     try {
-      const res = await apiFetch("/api/manifest/LogisticsDispatch/commands/assign", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          routeId: selectedRoute.id,
-          driverId: selectedDriverId || null,
-        }),
-      });
+      const res = await apiFetch(
+        "/api/manifest/LogisticsDispatch/commands/assign",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            routeId: selectedRoute.id,
+            driverId: selectedDriverId || null,
+          }),
+        }
+      );
 
       if (res.ok) {
         await loadData();

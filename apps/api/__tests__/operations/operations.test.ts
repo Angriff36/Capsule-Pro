@@ -26,6 +26,15 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
 vi.mock("@/app/lib/tenant", () => ({
+  requireCurrentUser: vi.fn().mockResolvedValue({
+    id: "test-user-id",
+    tenantId: "test-tenant",
+    role: "admin",
+    email: "test@example.com",
+    firstName: "Test",
+    lastName: "User",
+  }),
+
   getTenantIdForOrg: vi.fn(),
   requireTenantId: vi.fn(),
 }));
@@ -73,7 +82,9 @@ vi.mock("@/lib/database", async () => {
 // --- Import mocked modules ---
 
 const { auth } = await import("@repo/auth/server");
-const { getTenantIdForOrg } = await import("@/app/lib/tenant");
+const { getTenantIdForOrg, requireCurrentUser } = await import(
+  "@/app/lib/tenant"
+);
 const { createManifestRuntime } = await import("@/lib/manifest-runtime");
 
 // ---------------------------------------------------------------------------
@@ -201,6 +212,14 @@ function mockAuth() {
     orgId: TEST_ORG_ID,
   } as never);
   vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
+  vi.mocked(requireCurrentUser).mockResolvedValue({
+    id: TEST_USER_ID,
+    tenantId: TEST_TENANT_ID,
+    role: "admin",
+    email: "test@example.com",
+    firstName: "Test",
+    lastName: "User",
+  } as never);
 }
 
 function mockUnauthed() {

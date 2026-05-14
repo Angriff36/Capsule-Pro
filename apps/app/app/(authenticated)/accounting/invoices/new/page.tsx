@@ -7,6 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
+import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
 import {
@@ -18,7 +19,6 @@ import {
 } from "@repo/design-system/components/ui/select";
 import { Separator } from "@repo/design-system/components/ui/separator";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
-import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import { ArrowLeft, Loader2, Plus, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -226,7 +226,6 @@ export default function NewInvoicePage() {
                   <DatePicker
                     id="dueDate"
                     onChange={(e) => setDueDate(e.target.value)}
- 
                     value={dueDate}
                   />
                 </div>

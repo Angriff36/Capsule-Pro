@@ -8,6 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
+import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import {
   Dialog,
   DialogContent,
@@ -16,7 +17,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@repo/design-system/components/ui/dialog";
-import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
 import {
   Select,
@@ -32,7 +32,6 @@ import {
   TabsTrigger,
 } from "@repo/design-system/components/ui/tabs";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
-import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import {
   AlertTriangle,
   Calendar,
@@ -212,11 +211,14 @@ export default function PerformancePageClient() {
     if (!(createForm.employeeId && createForm.scheduledDate)) return;
     setCreating(true);
     try {
-      const res = await apiFetch("/api/manifest/StaffPerformance/commands/create", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(createForm),
-      });
+      const res = await apiFetch(
+        "/api/manifest/StaffPerformance/commands/create",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(createForm),
+        }
+      );
       const data = await res.json();
       if (data.success) {
         await loadData();
@@ -239,18 +241,21 @@ export default function PerformancePageClient() {
     if (!selectedReview || completeForm.rating === 0) return;
     setCompleting(true);
     try {
-      const res = await apiFetch("/api/manifest/StaffPerformance/commands/complete", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          reviewId: selectedReview.id,
-          rating: completeForm.rating,
-          strengths: completeForm.strengths || null,
-          areasForImprovement: completeForm.areasForImprovement || null,
-          goalsNextPeriod: completeForm.goalsNextPeriod || null,
-          managerComments: completeForm.managerComments || null,
-        }),
-      });
+      const res = await apiFetch(
+        "/api/manifest/StaffPerformance/commands/complete",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            reviewId: selectedReview.id,
+            rating: completeForm.rating,
+            strengths: completeForm.strengths || null,
+            areasForImprovement: completeForm.areasForImprovement || null,
+            goalsNextPeriod: completeForm.goalsNextPeriod || null,
+            managerComments: completeForm.managerComments || null,
+          }),
+        }
+      );
       const data = await res.json();
       if (data.success) {
         await loadData();
@@ -651,7 +656,6 @@ export default function PerformancePageClient() {
                     }))
                   }
                   required
- 
                   value={createForm.scheduledDate}
                 />
               </div>

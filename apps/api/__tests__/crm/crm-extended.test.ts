@@ -25,6 +25,15 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 // Mock dependencies
 vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
 vi.mock("@/app/lib/tenant", () => ({
+  requireCurrentUser: vi.fn().mockResolvedValue({
+    id: "test-user-id",
+    tenantId: "test-tenant",
+    role: "admin",
+    email: "test@example.com",
+    firstName: "Test",
+    lastName: "User",
+  }),
+
   getTenantIdForOrg: vi.fn(),
 }));
 vi.mock("@/lib/manifest-runtime", () => ({
@@ -75,26 +84,35 @@ async function simulateRouteHandler(
 ): Promise<Response> {
   const authResult = await auth();
   if (!authResult?.userId) {
-    return new Response(JSON.stringify({ success: false, message: "Unauthorized" }), {
-      status: 401,
-      headers: { "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({ success: false, message: "Unauthorized" }),
+      {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
   }
 
   const orgId = authResult.orgId;
   if (!orgId) {
-    return new Response(JSON.stringify({ success: false, message: "Unauthorized" }), {
-      status: 401,
-      headers: { "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({ success: false, message: "Unauthorized" }),
+      {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
   }
 
   const tenantId = await getTenantIdForOrg(orgId);
   if (!tenantId) {
-    return new Response(JSON.stringify({ success: false, message: "Tenant not found" }), {
-      status: 400,
-      headers: { "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({ success: false, message: "Tenant not found" }),
+      {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
   }
 
   const body = await request.json().catch(() => ({}));
@@ -107,24 +125,37 @@ async function simulateRouteHandler(
   if (!response.success) {
     if (response.policyDenial) {
       return new Response(
-        JSON.stringify({ success: false, message: `Access denied: ${response.policyDenial.policyName}` }),
+        JSON.stringify({
+          success: false,
+          message: `Access denied: ${response.policyDenial.policyName}`,
+        }),
         { status: 403, headers: { "Content-Type": "application/json" } }
       );
     }
     if (response.guardFailure) {
       return new Response(
-        JSON.stringify({ success: false, message: `Guard ${response.guardFailure.index} failed: ${response.guardFailure.formatted}` }),
+        JSON.stringify({
+          success: false,
+          message: `Guard ${response.guardFailure.index} failed: ${response.guardFailure.formatted}`,
+        }),
         { status: 422, headers: { "Content-Type": "application/json" } }
       );
     }
     return new Response(
-      JSON.stringify({ success: false, message: response.error || "Command failed" }),
+      JSON.stringify({
+        success: false,
+        message: response.error || "Command failed",
+      }),
       { status: 400, headers: { "Content-Type": "application/json" } }
     );
   }
 
   return new Response(
-    JSON.stringify({ success: true, result: response.result, events: response.emittedEvents }),
+    JSON.stringify({
+      success: true,
+      result: response.result,
+      events: response.emittedEvents,
+    }),
     { status: 200, headers: { "Content-Type": "application/json" } }
   );
 }
@@ -432,7 +463,11 @@ describe("CRM Extended API", () => {
         } as never);
 
         const request = makeRequest("/api/lead/disqualify", { id: "lead-003" });
-        const response = await simulateRouteHandler("disqualify", request, "Lead");
+        const response = await simulateRouteHandler(
+          "disqualify",
+          request,
+          "Lead"
+        );
 
         expect(response.status).toBe(401);
       });
@@ -441,7 +476,11 @@ describe("CRM Extended API", () => {
         vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
 
         const request = makeRequest("/api/lead/disqualify", { id: "lead-003" });
-        const response = await simulateRouteHandler("disqualify", request, "Lead");
+        const response = await simulateRouteHandler(
+          "disqualify",
+          request,
+          "Lead"
+        );
 
         expect(response.status).toBe(400);
       });
@@ -457,7 +496,11 @@ describe("CRM Extended API", () => {
           id: "lead-003",
           reason: "No budget",
         });
-        const response = await simulateRouteHandler("disqualify", request, "Lead");
+        const response = await simulateRouteHandler(
+          "disqualify",
+          request,
+          "Lead"
+        );
 
         expect(response.status).toBe(200);
         const body = await response.json();
@@ -481,7 +524,11 @@ describe("CRM Extended API", () => {
         });
 
         const request = makeRequest("/api/lead/disqualify", { id: "lead-003" });
-        const response = await simulateRouteHandler("disqualify", request, "Lead");
+        const response = await simulateRouteHandler(
+          "disqualify",
+          request,
+          "Lead"
+        );
 
         expect(response.status).toBe(422);
       });
@@ -509,7 +556,11 @@ describe("CRM Extended API", () => {
         const request = makeRequest("/api/lead/convert-to-client", {
           id: "lead-004",
         });
-        const response = await simulateRouteHandler("convertToClient", request, "Lead");
+        const response = await simulateRouteHandler(
+          "convertToClient",
+          request,
+          "Lead"
+        );
 
         expect(response.status).toBe(401);
       });
@@ -520,7 +571,11 @@ describe("CRM Extended API", () => {
         const request = makeRequest("/api/lead/convert-to-client", {
           id: "lead-004",
         });
-        const response = await simulateRouteHandler("convertToClient", request, "Lead");
+        const response = await simulateRouteHandler(
+          "convertToClient",
+          request,
+          "Lead"
+        );
 
         expect(response.status).toBe(400);
       });
@@ -542,7 +597,11 @@ describe("CRM Extended API", () => {
         const request = makeRequest("/api/lead/convert-to-client", {
           id: "lead-004",
         });
-        const response = await simulateRouteHandler("convertToClient", request, "Lead");
+        const response = await simulateRouteHandler(
+          "convertToClient",
+          request,
+          "Lead"
+        );
 
         expect(response.status).toBe(200);
         const body = await response.json();
@@ -583,7 +642,11 @@ describe("CRM Extended API", () => {
         const request = makeRequest("/api/lead/convert-to-client", {
           id: "lead-004",
         });
-        const response = await simulateRouteHandler("convertToClient", request, "Lead");
+        const response = await simulateRouteHandler(
+          "convertToClient",
+          request,
+          "Lead"
+        );
 
         expect(response.status).toBe(403);
         const body = await response.json();
@@ -599,7 +662,11 @@ describe("CRM Extended API", () => {
         const request = makeRequest("/api/lead/convert-to-client", {
           id: "lead-004",
         });
-        const response = await simulateRouteHandler("convertToClient", request, "Lead");
+        const response = await simulateRouteHandler(
+          "convertToClient",
+          request,
+          "Lead"
+        );
 
         expect(response.status).toBe(400);
         const body = await response.json();
@@ -638,7 +705,11 @@ describe("CRM Extended API", () => {
           name: "John Doe",
           email: "john@test.com",
         });
-        const response = await simulateRouteHandler("create", request, "ClientContact");
+        const response = await simulateRouteHandler(
+          "create",
+          request,
+          "ClientContact"
+        );
 
         expect(response.status).toBe(401);
         const body = await response.json();
@@ -653,7 +724,11 @@ describe("CRM Extended API", () => {
           clientId: "client-001",
           name: "John Doe",
         });
-        const response = await simulateRouteHandler("create", request, "ClientContact");
+        const response = await simulateRouteHandler(
+          "create",
+          request,
+          "ClientContact"
+        );
 
         expect(response.status).toBe(400);
         const body = await response.json();
@@ -680,7 +755,11 @@ describe("CRM Extended API", () => {
           phone: "+1-555-0301",
           role: "Procurement Manager",
         });
-        const response = await simulateRouteHandler("create", request, "ClientContact");
+        const response = await simulateRouteHandler(
+          "create",
+          request,
+          "ClientContact"
+        );
 
         expect(response.status).toBe(200);
         const body = await response.json();
@@ -726,7 +805,11 @@ describe("CRM Extended API", () => {
           clientId: "client-001",
           name: "Excess Contact",
         });
-        const response = await simulateRouteHandler("create", request, "ClientContact");
+        const response = await simulateRouteHandler(
+          "create",
+          request,
+          "ClientContact"
+        );
 
         expect(response.status).toBe(403);
         const body = await response.json();
@@ -747,7 +830,11 @@ describe("CRM Extended API", () => {
           clientId: "nonexistent",
           name: "Ghost Contact",
         });
-        const response = await simulateRouteHandler("create", request, "ClientContact");
+        const response = await simulateRouteHandler(
+          "create",
+          request,
+          "ClientContact"
+        );
 
         expect(response.status).toBe(422);
         const body = await response.json();
@@ -763,7 +850,11 @@ describe("CRM Extended API", () => {
         const request = makeRequest("/api/clientcontact/create", {
           name: "No Client",
         });
-        const response = await simulateRouteHandler("create", request, "ClientContact");
+        const response = await simulateRouteHandler(
+          "create",
+          request,
+          "ClientContact"
+        );
 
         expect(response.status).toBe(400);
       });
@@ -794,7 +885,11 @@ describe("CRM Extended API", () => {
         const request = makeRequest("/api/clientcontact/update", {
           id: "contact-001",
         });
-        const response = await simulateRouteHandler("update", request, "ClientContact");
+        const response = await simulateRouteHandler(
+          "update",
+          request,
+          "ClientContact"
+        );
 
         expect(response.status).toBe(401);
       });
@@ -805,7 +900,11 @@ describe("CRM Extended API", () => {
         const request = makeRequest("/api/clientcontact/update", {
           id: "contact-001",
         });
-        const response = await simulateRouteHandler("update", request, "ClientContact");
+        const response = await simulateRouteHandler(
+          "update",
+          request,
+          "ClientContact"
+        );
 
         expect(response.status).toBe(400);
       });
@@ -826,7 +925,11 @@ describe("CRM Extended API", () => {
           name: "Updated Name",
           email: "new@test.com",
         });
-        const response = await simulateRouteHandler("update", request, "ClientContact");
+        const response = await simulateRouteHandler(
+          "update",
+          request,
+          "ClientContact"
+        );
 
         expect(response.status).toBe(200);
         const body = await response.json();
@@ -864,7 +967,11 @@ describe("CRM Extended API", () => {
         const request = makeRequest("/api/clientcontact/set-primary", {
           id: "contact-001",
         });
-        const response = await simulateRouteHandler("setPrimary", request, "ClientContact");
+        const response = await simulateRouteHandler(
+          "setPrimary",
+          request,
+          "ClientContact"
+        );
 
         expect(response.status).toBe(401);
       });
@@ -875,7 +982,11 @@ describe("CRM Extended API", () => {
         const request = makeRequest("/api/clientcontact/set-primary", {
           id: "contact-001",
         });
-        const response = await simulateRouteHandler("setPrimary", request, "ClientContact");
+        const response = await simulateRouteHandler(
+          "setPrimary",
+          request,
+          "ClientContact"
+        );
 
         expect(response.status).toBe(400);
       });
@@ -890,7 +1001,11 @@ describe("CRM Extended API", () => {
         const request = makeRequest("/api/clientcontact/set-primary", {
           id: "contact-001",
         });
-        const response = await simulateRouteHandler("setPrimary", request, "ClientContact");
+        const response = await simulateRouteHandler(
+          "setPrimary",
+          request,
+          "ClientContact"
+        );
 
         expect(response.status).toBe(200);
         const body = await response.json();
@@ -913,7 +1028,11 @@ describe("CRM Extended API", () => {
         const request = makeRequest("/api/clientcontact/set-primary", {
           id: "contact-001",
         });
-        const response = await simulateRouteHandler("setPrimary", request, "ClientContact");
+        const response = await simulateRouteHandler(
+          "setPrimary",
+          request,
+          "ClientContact"
+        );
 
         expect(response.status).toBe(403);
       });
@@ -943,7 +1062,11 @@ describe("CRM Extended API", () => {
         const request = makeRequest("/api/clientcontact/remove", {
           id: "contact-001",
         });
-        const response = await simulateRouteHandler("remove", request, "ClientContact");
+        const response = await simulateRouteHandler(
+          "remove",
+          request,
+          "ClientContact"
+        );
 
         expect(response.status).toBe(401);
       });
@@ -954,7 +1077,11 @@ describe("CRM Extended API", () => {
         const request = makeRequest("/api/clientcontact/remove", {
           id: "contact-001",
         });
-        const response = await simulateRouteHandler("remove", request, "ClientContact");
+        const response = await simulateRouteHandler(
+          "remove",
+          request,
+          "ClientContact"
+        );
 
         expect(response.status).toBe(400);
       });
@@ -969,7 +1096,11 @@ describe("CRM Extended API", () => {
         const request = makeRequest("/api/clientcontact/remove", {
           id: "contact-001",
         });
-        const response = await simulateRouteHandler("remove", request, "ClientContact");
+        const response = await simulateRouteHandler(
+          "remove",
+          request,
+          "ClientContact"
+        );
 
         expect(response.status).toBe(200);
         const body = await response.json();
@@ -994,7 +1125,11 @@ describe("CRM Extended API", () => {
         const request = makeRequest("/api/clientcontact/remove", {
           id: "contact-001",
         });
-        const response = await simulateRouteHandler("remove", request, "ClientContact");
+        const response = await simulateRouteHandler(
+          "remove",
+          request,
+          "ClientContact"
+        );
 
         expect(response.status).toBe(422);
         const body = await response.json();
@@ -1033,7 +1168,11 @@ describe("CRM Extended API", () => {
           type: "call",
           notes: "Discussed pricing",
         });
-        const response = await simulateRouteHandler("create", request, "ClientInteraction");
+        const response = await simulateRouteHandler(
+          "create",
+          request,
+          "ClientInteraction"
+        );
 
         expect(response.status).toBe(401);
         const body = await response.json();
@@ -1048,7 +1187,11 @@ describe("CRM Extended API", () => {
           clientId: "client-001",
           type: "call",
         });
-        const response = await simulateRouteHandler("create", request, "ClientInteraction");
+        const response = await simulateRouteHandler(
+          "create",
+          request,
+          "ClientInteraction"
+        );
 
         expect(response.status).toBe(400);
         const body = await response.json();
@@ -1074,7 +1217,11 @@ describe("CRM Extended API", () => {
           notes: "Follow-up on proposal",
           scheduledAt: "2026-05-01T10:00:00Z",
         });
-        const response = await simulateRouteHandler("create", request, "ClientInteraction");
+        const response = await simulateRouteHandler(
+          "create",
+          request,
+          "ClientInteraction"
+        );
 
         expect(response.status).toBe(200);
         const body = await response.json();
@@ -1120,7 +1267,11 @@ describe("CRM Extended API", () => {
           clientId: "client-001",
           type: "call",
         });
-        const response = await simulateRouteHandler("create", request, "ClientInteraction");
+        const response = await simulateRouteHandler(
+          "create",
+          request,
+          "ClientInteraction"
+        );
 
         expect(response.status).toBe(403);
         const body = await response.json();
@@ -1140,7 +1291,11 @@ describe("CRM Extended API", () => {
           clientId: "client-001",
           type: "invalid_type",
         });
-        const response = await simulateRouteHandler("create", request, "ClientInteraction");
+        const response = await simulateRouteHandler(
+          "create",
+          request,
+          "ClientInteraction"
+        );
 
         expect(response.status).toBe(422);
         const body = await response.json();
@@ -1156,7 +1311,11 @@ describe("CRM Extended API", () => {
         const request = makeRequest("/api/clientinteraction/create", {
           type: "call",
         });
-        const response = await simulateRouteHandler("create", request, "ClientInteraction");
+        const response = await simulateRouteHandler(
+          "create",
+          request,
+          "ClientInteraction"
+        );
 
         expect(response.status).toBe(400);
       });
@@ -1187,7 +1346,11 @@ describe("CRM Extended API", () => {
         const request = makeRequest("/api/clientinteraction/update", {
           id: "interaction-001",
         });
-        const response = await simulateRouteHandler("update", request, "ClientInteraction");
+        const response = await simulateRouteHandler(
+          "update",
+          request,
+          "ClientInteraction"
+        );
 
         expect(response.status).toBe(401);
       });
@@ -1198,7 +1361,11 @@ describe("CRM Extended API", () => {
         const request = makeRequest("/api/clientinteraction/update", {
           id: "interaction-001",
         });
-        const response = await simulateRouteHandler("update", request, "ClientInteraction");
+        const response = await simulateRouteHandler(
+          "update",
+          request,
+          "ClientInteraction"
+        );
 
         expect(response.status).toBe(400);
       });
@@ -1217,7 +1384,11 @@ describe("CRM Extended API", () => {
           id: "interaction-001",
           notes: "Updated notes",
         });
-        const response = await simulateRouteHandler("update", request, "ClientInteraction");
+        const response = await simulateRouteHandler(
+          "update",
+          request,
+          "ClientInteraction"
+        );
 
         expect(response.status).toBe(200);
         const body = await response.json();
@@ -1258,7 +1429,11 @@ describe("CRM Extended API", () => {
         const request = makeRequest("/api/clientinteraction/complete", {
           id: "interaction-001",
         });
-        const response = await simulateRouteHandler("complete", request, "ClientInteraction");
+        const response = await simulateRouteHandler(
+          "complete",
+          request,
+          "ClientInteraction"
+        );
 
         expect(response.status).toBe(401);
       });
@@ -1269,7 +1444,11 @@ describe("CRM Extended API", () => {
         const request = makeRequest("/api/clientinteraction/complete", {
           id: "interaction-001",
         });
-        const response = await simulateRouteHandler("complete", request, "ClientInteraction");
+        const response = await simulateRouteHandler(
+          "complete",
+          request,
+          "ClientInteraction"
+        );
 
         expect(response.status).toBe(400);
       });
@@ -1290,7 +1469,11 @@ describe("CRM Extended API", () => {
           outcome: "positive",
           notes: "Client agreed to terms",
         });
-        const response = await simulateRouteHandler("complete", request, "ClientInteraction");
+        const response = await simulateRouteHandler(
+          "complete",
+          request,
+          "ClientInteraction"
+        );
 
         expect(response.status).toBe(200);
         const body = await response.json();
@@ -1316,7 +1499,11 @@ describe("CRM Extended API", () => {
         const request = makeRequest("/api/clientinteraction/complete", {
           id: "interaction-001",
         });
-        const response = await simulateRouteHandler("complete", request, "ClientInteraction");
+        const response = await simulateRouteHandler(
+          "complete",
+          request,
+          "ClientInteraction"
+        );
 
         expect(response.status).toBe(403);
       });
@@ -1333,7 +1520,11 @@ describe("CRM Extended API", () => {
         const request = makeRequest("/api/clientinteraction/complete", {
           id: "interaction-001",
         });
-        const response = await simulateRouteHandler("complete", request, "ClientInteraction");
+        const response = await simulateRouteHandler(
+          "complete",
+          request,
+          "ClientInteraction"
+        );
 
         expect(response.status).toBe(422);
         const body = await response.json();
@@ -1349,7 +1540,11 @@ describe("CRM Extended API", () => {
         const request = makeRequest("/api/clientinteraction/complete", {
           id: "nonexistent",
         });
-        const response = await simulateRouteHandler("complete", request, "ClientInteraction");
+        const response = await simulateRouteHandler(
+          "complete",
+          request,
+          "ClientInteraction"
+        );
 
         expect(response.status).toBe(400);
       });
@@ -1386,7 +1581,11 @@ describe("CRM Extended API", () => {
           category: "dietary",
           value: "vegetarian",
         });
-        const response = await simulateRouteHandler("create", request, "ClientPreference");
+        const response = await simulateRouteHandler(
+          "create",
+          request,
+          "ClientPreference"
+        );
 
         expect(response.status).toBe(401);
         const body = await response.json();
@@ -1402,7 +1601,11 @@ describe("CRM Extended API", () => {
           category: "dietary",
           value: "vegetarian",
         });
-        const response = await simulateRouteHandler("create", request, "ClientPreference");
+        const response = await simulateRouteHandler(
+          "create",
+          request,
+          "ClientPreference"
+        );
 
         expect(response.status).toBe(400);
         const body = await response.json();
@@ -1426,7 +1629,11 @@ describe("CRM Extended API", () => {
           category: "dietary",
           value: "vegetarian",
         });
-        const response = await simulateRouteHandler("create", request, "ClientPreference");
+        const response = await simulateRouteHandler(
+          "create",
+          request,
+          "ClientPreference"
+        );
 
         expect(response.status).toBe(200);
         const body = await response.json();
@@ -1475,7 +1682,11 @@ describe("CRM Extended API", () => {
           category: "dietary",
           value: "vegan",
         });
-        const response = await simulateRouteHandler("create", request, "ClientPreference");
+        const response = await simulateRouteHandler(
+          "create",
+          request,
+          "ClientPreference"
+        );
 
         expect(response.status).toBe(403);
         const body = await response.json();
@@ -1496,7 +1707,11 @@ describe("CRM Extended API", () => {
           category: "dietary",
           value: "duplicate",
         });
-        const response = await simulateRouteHandler("create", request, "ClientPreference");
+        const response = await simulateRouteHandler(
+          "create",
+          request,
+          "ClientPreference"
+        );
 
         expect(response.status).toBe(422);
         const body = await response.json();
@@ -1512,7 +1727,11 @@ describe("CRM Extended API", () => {
         const request = makeRequest("/api/clientpreference/create", {
           category: "dietary",
         });
-        const response = await simulateRouteHandler("create", request, "ClientPreference");
+        const response = await simulateRouteHandler(
+          "create",
+          request,
+          "ClientPreference"
+        );
 
         expect(response.status).toBe(400);
       });
@@ -1543,7 +1762,11 @@ describe("CRM Extended API", () => {
         const request = makeRequest("/api/clientpreference/update", {
           id: "pref-001",
         });
-        const response = await simulateRouteHandler("update", request, "ClientPreference");
+        const response = await simulateRouteHandler(
+          "update",
+          request,
+          "ClientPreference"
+        );
 
         expect(response.status).toBe(401);
       });
@@ -1554,7 +1777,11 @@ describe("CRM Extended API", () => {
         const request = makeRequest("/api/clientpreference/update", {
           id: "pref-001",
         });
-        const response = await simulateRouteHandler("update", request, "ClientPreference");
+        const response = await simulateRouteHandler(
+          "update",
+          request,
+          "ClientPreference"
+        );
 
         expect(response.status).toBe(400);
       });
@@ -1570,7 +1797,11 @@ describe("CRM Extended API", () => {
           id: "pref-001",
           value: "vegan",
         });
-        const response = await simulateRouteHandler("update", request, "ClientPreference");
+        const response = await simulateRouteHandler(
+          "update",
+          request,
+          "ClientPreference"
+        );
 
         expect(response.status).toBe(200);
         const body = await response.json();
@@ -1593,7 +1824,11 @@ describe("CRM Extended API", () => {
         const request = makeRequest("/api/clientpreference/update", {
           id: "pref-001",
         });
-        const response = await simulateRouteHandler("update", request, "ClientPreference");
+        const response = await simulateRouteHandler(
+          "update",
+          request,
+          "ClientPreference"
+        );
 
         expect(response.status).toBe(403);
       });
@@ -1623,7 +1858,11 @@ describe("CRM Extended API", () => {
         const request = makeRequest("/api/clientpreference/remove", {
           id: "pref-001",
         });
-        const response = await simulateRouteHandler("remove", request, "ClientPreference");
+        const response = await simulateRouteHandler(
+          "remove",
+          request,
+          "ClientPreference"
+        );
 
         expect(response.status).toBe(401);
       });
@@ -1634,7 +1873,11 @@ describe("CRM Extended API", () => {
         const request = makeRequest("/api/clientpreference/remove", {
           id: "pref-001",
         });
-        const response = await simulateRouteHandler("remove", request, "ClientPreference");
+        const response = await simulateRouteHandler(
+          "remove",
+          request,
+          "ClientPreference"
+        );
 
         expect(response.status).toBe(400);
       });
@@ -1649,7 +1892,11 @@ describe("CRM Extended API", () => {
         const request = makeRequest("/api/clientpreference/remove", {
           id: "pref-001",
         });
-        const response = await simulateRouteHandler("remove", request, "ClientPreference");
+        const response = await simulateRouteHandler(
+          "remove",
+          request,
+          "ClientPreference"
+        );
 
         expect(response.status).toBe(200);
         const body = await response.json();
@@ -1671,7 +1918,11 @@ describe("CRM Extended API", () => {
         const request = makeRequest("/api/clientpreference/remove", {
           id: "nonexistent",
         });
-        const response = await simulateRouteHandler("remove", request, "ClientPreference");
+        const response = await simulateRouteHandler(
+          "remove",
+          request,
+          "ClientPreference"
+        );
 
         expect(response.status).toBe(400);
         const body = await response.json();

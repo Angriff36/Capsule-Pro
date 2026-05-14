@@ -27,6 +27,15 @@ vi.mock("@repo/auth/server", () => ({
 }));
 
 vi.mock("@/app/lib/tenant", () => ({
+  requireCurrentUser: vi.fn().mockResolvedValue({
+    id: "test-user-id",
+    tenantId: "test-tenant",
+    role: "admin",
+    email: "test@example.com",
+    firstName: "Test",
+    lastName: "User",
+  }),
+
   getTenantIdForOrg: vi.fn(),
 }));
 
@@ -451,7 +460,9 @@ describe("Catering Orders API", () => {
         "http://localhost:3000/api/events/catering-orders/commands/create",
         { method: "POST", body: JSON.stringify(body) }
       );
-      const response = await POST_create(request, { params: Promise.resolve({ entity: "CateringOrder", command: "create" }) });
+      const response = await POST_create(request, {
+        params: Promise.resolve({ entity: "CateringOrder", command: "create" }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(200);
@@ -472,7 +483,9 @@ describe("Catering Orders API", () => {
           body: JSON.stringify({ eventId: TEST_EVENT_ID }),
         }
       );
-      await POST_create(request, { params: Promise.resolve({ entity: "CateringOrder", command: "create" }) });
+      await POST_create(request, {
+        params: Promise.resolve({ entity: "CateringOrder", command: "create" }),
+      });
 
       expect(mockDb.user.findFirst).toHaveBeenCalledWith({
         where: {
@@ -506,7 +519,9 @@ describe("Catering Orders API", () => {
           body: JSON.stringify({ eventId: TEST_EVENT_ID }),
         }
       );
-      const response = await POST_create(request, { params: Promise.resolve({ entity: "CateringOrder", command: "create" }) });
+      const response = await POST_create(request, {
+        params: Promise.resolve({ entity: "CateringOrder", command: "create" }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(401);
@@ -525,7 +540,9 @@ describe("Catering Orders API", () => {
           body: JSON.stringify({ eventId: TEST_EVENT_ID }),
         }
       );
-      const response = await POST_create(request, { params: Promise.resolve({ entity: "CateringOrder", command: "create" }) });
+      const response = await POST_create(request, {
+        params: Promise.resolve({ entity: "CateringOrder", command: "create" }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(400);
@@ -544,7 +561,9 @@ describe("Catering Orders API", () => {
           body: JSON.stringify({ eventId: TEST_EVENT_ID }),
         }
       );
-      const response = await POST_create(request, { params: Promise.resolve({ entity: "CateringOrder", command: "create" }) });
+      const response = await POST_create(request, {
+        params: Promise.resolve({ entity: "CateringOrder", command: "create" }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(403);
@@ -564,7 +583,9 @@ describe("Catering Orders API", () => {
           body: JSON.stringify({ eventId: TEST_EVENT_ID }),
         }
       );
-      const response = await POST_create(request, { params: Promise.resolve({ entity: "CateringOrder", command: "create" }) });
+      const response = await POST_create(request, {
+        params: Promise.resolve({ entity: "CateringOrder", command: "create" }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(422);
@@ -583,7 +604,9 @@ describe("Catering Orders API", () => {
           body: JSON.stringify({ eventId: TEST_EVENT_ID }),
         }
       );
-      const response = await POST_create(request, { params: Promise.resolve({ entity: "CateringOrder", command: "create" }) });
+      const response = await POST_create(request, {
+        params: Promise.resolve({ entity: "CateringOrder", command: "create" }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(400);
@@ -602,7 +625,9 @@ describe("Catering Orders API", () => {
           body: JSON.stringify({ eventId: TEST_EVENT_ID }),
         }
       );
-      const response = await POST_create(request, { params: Promise.resolve({ entity: "CateringOrder", command: "create" }) });
+      const response = await POST_create(request, {
+        params: Promise.resolve({ entity: "CateringOrder", command: "create" }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(500);
@@ -638,7 +663,9 @@ describe("Catering Orders API", () => {
         "http://localhost:3000/api/events/catering-orders/commands/update",
         { method: "POST", body: JSON.stringify(body) }
       );
-      const response = await POST_update(request, { params: Promise.resolve({ entity: "CateringOrder", command: "create" }) });
+      const response = await POST_update(request, {
+        params: Promise.resolve({ entity: "CateringOrder", command: "create" }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(200);
@@ -656,7 +683,9 @@ describe("Catering Orders API", () => {
         "http://localhost:3000/api/events/catering-orders/commands/update",
         { method: "POST", body: JSON.stringify(body) }
       );
-      await POST_update(request, { params: Promise.resolve({ entity: "CateringOrder", command: "create" }) });
+      await POST_update(request, {
+        params: Promise.resolve({ entity: "CateringOrder", command: "create" }),
+      });
 
       expect(runCommand).toHaveBeenCalledWith(
         "update",
@@ -675,7 +704,9 @@ describe("Catering Orders API", () => {
           body: JSON.stringify({ instanceId: TEST_ORDER_ID }),
         }
       );
-      const response = await POST_update(request, { params: Promise.resolve({ entity: "CateringOrder", command: "create" }) });
+      const response = await POST_update(request, {
+        params: Promise.resolve({ entity: "CateringOrder", command: "create" }),
+      });
 
       expect(response.status).toBe(401);
     });
@@ -704,7 +735,9 @@ describe("Catering Orders API", () => {
         "http://localhost:3000/api/events/catering-orders/commands/confirm",
         { method: "POST", body: JSON.stringify(body) }
       );
-      const response = await POST_confirm(request, { params: Promise.resolve({ entity: "CateringOrder", command: "create" }) });
+      const response = await POST_confirm(request, {
+        params: Promise.resolve({ entity: "CateringOrder", command: "create" }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(200);
@@ -723,7 +756,9 @@ describe("Catering Orders API", () => {
           body: JSON.stringify({ instanceId: TEST_ORDER_ID }),
         }
       );
-      const response = await POST_confirm(request, { params: Promise.resolve({ entity: "CateringOrder", command: "create" }) });
+      const response = await POST_confirm(request, {
+        params: Promise.resolve({ entity: "CateringOrder", command: "create" }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(403);
@@ -740,7 +775,9 @@ describe("Catering Orders API", () => {
           body: JSON.stringify({ instanceId: TEST_ORDER_ID }),
         }
       );
-      const response = await POST_confirm(request, { params: Promise.resolve({ entity: "CateringOrder", command: "create" }) });
+      const response = await POST_confirm(request, {
+        params: Promise.resolve({ entity: "CateringOrder", command: "create" }),
+      });
 
       expect(response.status).toBe(401);
     });
@@ -772,7 +809,9 @@ describe("Catering Orders API", () => {
         "http://localhost:3000/api/events/catering-orders/commands/cancel",
         { method: "POST", body: JSON.stringify(body) }
       );
-      const response = await POST_cancel(request, { params: Promise.resolve({ entity: "CateringOrder", command: "create" }) });
+      const response = await POST_cancel(request, {
+        params: Promise.resolve({ entity: "CateringOrder", command: "create" }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(200);
@@ -791,7 +830,9 @@ describe("Catering Orders API", () => {
           body: JSON.stringify({ instanceId: TEST_ORDER_ID }),
         }
       );
-      const response = await POST_cancel(request, { params: Promise.resolve({ entity: "CateringOrder", command: "create" }) });
+      const response = await POST_cancel(request, {
+        params: Promise.resolve({ entity: "CateringOrder", command: "create" }),
+      });
 
       expect(response.status).toBe(422);
     });
@@ -806,7 +847,9 @@ describe("Catering Orders API", () => {
           body: JSON.stringify({ instanceId: TEST_ORDER_ID }),
         }
       );
-      const response = await POST_cancel(request, { params: Promise.resolve({ entity: "CateringOrder", command: "create" }) });
+      const response = await POST_cancel(request, {
+        params: Promise.resolve({ entity: "CateringOrder", command: "create" }),
+      });
 
       expect(response.status).toBe(401);
     });
@@ -835,7 +878,9 @@ describe("Catering Orders API", () => {
         "http://localhost:3000/api/events/catering-orders/commands/start-prep",
         { method: "POST", body: JSON.stringify(body) }
       );
-      const response = await POST_startPrep(request, { params: Promise.resolve({ entity: "CateringOrder", command: "create" }) });
+      const response = await POST_startPrep(request, {
+        params: Promise.resolve({ entity: "CateringOrder", command: "create" }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(200);
@@ -853,7 +898,9 @@ describe("Catering Orders API", () => {
         "http://localhost:3000/api/events/catering-orders/commands/start-prep",
         { method: "POST", body: JSON.stringify(body) }
       );
-      await POST_startPrep(request, { params: Promise.resolve({ entity: "CateringOrder", command: "create" }) });
+      await POST_startPrep(request, {
+        params: Promise.resolve({ entity: "CateringOrder", command: "create" }),
+      });
 
       expect(runCommand).toHaveBeenCalledWith(
         "startPrep",
@@ -872,7 +919,9 @@ describe("Catering Orders API", () => {
           body: JSON.stringify({ instanceId: TEST_ORDER_ID }),
         }
       );
-      const response = await POST_startPrep(request, { params: Promise.resolve({ entity: "CateringOrder", command: "create" }) });
+      const response = await POST_startPrep(request, {
+        params: Promise.resolve({ entity: "CateringOrder", command: "create" }),
+      });
 
       expect(response.status).toBe(401);
     });
@@ -901,7 +950,9 @@ describe("Catering Orders API", () => {
         "http://localhost:3000/api/events/catering-orders/commands/mark-complete",
         { method: "POST", body: JSON.stringify(body) }
       );
-      const response = await POST_markComplete(request, { params: Promise.resolve({ entity: "CateringOrder", command: "create" }) });
+      const response = await POST_markComplete(request, {
+        params: Promise.resolve({ entity: "CateringOrder", command: "create" }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(200);
@@ -919,7 +970,9 @@ describe("Catering Orders API", () => {
         "http://localhost:3000/api/events/catering-orders/commands/mark-complete",
         { method: "POST", body: JSON.stringify(body) }
       );
-      await POST_markComplete(request, { params: Promise.resolve({ entity: "CateringOrder", command: "create" }) });
+      await POST_markComplete(request, {
+        params: Promise.resolve({ entity: "CateringOrder", command: "create" }),
+      });
 
       expect(runCommand).toHaveBeenCalledWith(
         "markComplete",
@@ -939,7 +992,9 @@ describe("Catering Orders API", () => {
           body: JSON.stringify({ instanceId: TEST_ORDER_ID }),
         }
       );
-      const response = await POST_markComplete(request, { params: Promise.resolve({ entity: "CateringOrder", command: "create" }) });
+      const response = await POST_markComplete(request, {
+        params: Promise.resolve({ entity: "CateringOrder", command: "create" }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(400);
@@ -956,7 +1011,9 @@ describe("Catering Orders API", () => {
           body: JSON.stringify({ instanceId: TEST_ORDER_ID }),
         }
       );
-      const response = await POST_markComplete(request, { params: Promise.resolve({ entity: "CateringOrder", command: "create" }) });
+      const response = await POST_markComplete(request, {
+        params: Promise.resolve({ entity: "CateringOrder", command: "create" }),
+      });
 
       expect(response.status).toBe(401);
     });

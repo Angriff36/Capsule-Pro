@@ -10,6 +10,7 @@ import {
   CardTitle,
 } from "@repo/design-system/components/ui/card";
 import { Separator } from "@repo/design-system/components/ui/separator";
+import { log } from "@repo/observability/log";
 import {
   ArrowLeft,
   Calendar,
@@ -25,7 +26,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
-import { log } from "@repo/observability/log";
 
 interface SyncStatus {
   id: string;
@@ -207,7 +207,10 @@ export default function CalendarSyncPage() {
 
       {/* Success/Error Messages */}
       {connectedProvider && (
-        <Card className="border-[var(--ds-calendar-shift)] bg-[var(--ds-calendar-shift-light)]" tone="canvas">
+        <Card
+          className="border-[var(--ds-calendar-shift)] bg-[var(--ds-calendar-shift-light)]"
+          tone="canvas"
+        >
           <CardContent className="flex items-center gap-2 pt-6">
             <Check className="h-4 w-4 text-green-600" />
             <span className="text-green-700">

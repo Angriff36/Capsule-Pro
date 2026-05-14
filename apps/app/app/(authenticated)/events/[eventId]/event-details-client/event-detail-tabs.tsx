@@ -10,7 +10,13 @@ import {
 } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { ReactNode } from "react";
-import { startTransition, useCallback, useEffect, useMemo, useState } from "react";
+import {
+  startTransition,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 
 type EventMode = "planning" | "execution" | "reports";
 
@@ -33,12 +39,7 @@ const EXECUTION_TABS = [
   "operations",
 ] as const;
 
-const REPORTS_TABS = [
-  "overview",
-  "reports",
-  "followups",
-  "explore",
-] as const;
+const REPORTS_TABS = ["overview", "reports", "followups", "explore"] as const;
 
 type PlanningTab = (typeof PLANNING_TABS)[number];
 type ExecutionTab = (typeof EXECUTION_TABS)[number];
@@ -86,13 +87,17 @@ const TAB_LABELS: Record<string, string> = {
 
 function inferMode(
   eventDate: string | Date | null | undefined,
-  eventStatus: string | null,
+  eventStatus: string | null
 ): EventMode {
-  if (eventStatus === "completed" || eventStatus === "cancelled") return "reports";
+  if (eventStatus === "completed" || eventStatus === "cancelled")
+    return "reports";
   if (!eventDate) return "planning";
   const date = typeof eventDate === "string" ? new Date(eventDate) : eventDate;
   const hoursUntil = (date.getTime() - Date.now()) / (1000 * 60 * 60);
-  if (hoursUntil <= 24 && (eventStatus === "in-progress" || eventStatus === "confirmed")) {
+  if (
+    hoursUntil <= 24 &&
+    (eventStatus === "in-progress" || eventStatus === "confirmed")
+  ) {
     return "execution";
   }
   return "planning";
@@ -132,13 +137,17 @@ export function EventDetailTabs({
 
   const inferred = useMemo(
     () => inferMode(eventDate, eventStatus),
-    [eventDate, eventStatus],
+    [eventDate, eventStatus]
   );
 
   const [mode, setMode] = useState<EventMode>(() => {
     if (typeof window === "undefined") return inferred;
     const stored = localStorage.getItem(`event-mode:${eventId}`);
-    if (stored === "planning" || stored === "execution" || stored === "reports") {
+    if (
+      stored === "planning" ||
+      stored === "execution" ||
+      stored === "reports"
+    ) {
       return stored;
     }
     return inferred;
@@ -159,14 +168,19 @@ export function EventDetailTabs({
       }
       // Reset tab to first tab of new mode
       const newTabs = getTabsForMode(newMode);
-      const nextSearchParams = new URLSearchParams(searchParams?.toString() ?? "");
+      const nextSearchParams = new URLSearchParams(
+        searchParams?.toString() ?? ""
+      );
       nextSearchParams.delete("tab");
       const query = nextSearchParams.toString();
       startTransition(() => {
-        router.replace(query ? `${pathname ?? ""}?${query}` : (pathname ?? ""), { scroll: false });
+        router.replace(
+          query ? `${pathname ?? ""}?${query}` : (pathname ?? ""),
+          { scroll: false }
+        );
       });
     },
-    [eventId, pathname, router, searchParams],
+    [eventId, pathname, router, searchParams]
   );
 
   const tabsForMode = useMemo(() => getTabsForMode(mode), [mode]);
@@ -179,7 +193,9 @@ export function EventDetailTabs({
 
   const handleTabChange = (tab: string) => {
     if (!pathname || tab === activeTab) return;
-    const nextSearchParams = new URLSearchParams(searchParams?.toString() ?? "");
+    const nextSearchParams = new URLSearchParams(
+      searchParams?.toString() ?? ""
+    );
     if (tab === tabsForMode[0]) {
       nextSearchParams.delete("tab");
     } else {
@@ -187,7 +203,9 @@ export function EventDetailTabs({
     }
     const query = nextSearchParams.toString();
     startTransition(() => {
-      router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
+      router.replace(query ? `${pathname}?${query}` : pathname, {
+        scroll: false,
+      });
     });
   };
 
@@ -202,7 +220,9 @@ export function EventDetailTabs({
     battleboard: battleboard ?? (
       <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
         <ClipboardList className="h-12 w-12 mb-3 opacity-40" />
-        <p className="text-sm">Open the battle board to coordinate menu finalization.</p>
+        <p className="text-sm">
+          Open the battle board to coordinate menu finalization.
+        </p>
         <a
           className="mt-3 inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
           href={`/events/${eventId}/battle-board`}
@@ -214,7 +234,9 @@ export function EventDetailTabs({
     "run-sheet": runSheet ?? (
       <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
         <FileText className="h-12 w-12 mb-3 opacity-40" />
-        <p className="text-sm">Generate a run sheet with menu, staff, timeline, and shopping list.</p>
+        <p className="text-sm">
+          Generate a run sheet with menu, staff, timeline, and shopping list.
+        </p>
         <a
           className="mt-3 inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
           href={`/events/${eventId}/run-sheet`}
@@ -228,7 +250,9 @@ export function EventDetailTabs({
     reports: reports ?? (
       <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
         <CalendarCheck className="h-12 w-12 mb-3 opacity-40" />
-        <p className="text-sm">Generate post-event reports and review performance.</p>
+        <p className="text-sm">
+          Generate post-event reports and review performance.
+        </p>
         <a
           className="mt-3 inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
           href={`/events/${eventId}/reports`}
@@ -239,7 +263,11 @@ export function EventDetailTabs({
     ),
   };
 
-  const modeConfig: { value: EventMode; label: string; icon: React.ElementType }[] = [
+  const modeConfig: {
+    value: EventMode;
+    label: string;
+    icon: React.ElementType;
+  }[] = [
     { value: "planning", label: "Planning", icon: LayoutDashboard },
     { value: "execution", label: "Execution", icon: Play },
     { value: "reports", label: "Reports", icon: CalendarCheck },
@@ -257,7 +285,7 @@ export function EventDetailTabs({
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
                 mode === value
                   ? "bg-ink text-ink-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground",
+                  : "text-muted-foreground hover:text-foreground"
               )}
               key={value}
               onClick={() => handleModeChange(value)}
@@ -277,18 +305,18 @@ export function EventDetailTabs({
           >
             {tabsForMode.map((tab) => (
               <button
+                aria-selected={activeTab === tab}
                 className={cn(
                   "inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-medium ring-offset-background transition-all",
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
                   "disabled:pointer-events-none disabled:opacity-50",
                   activeTab === tab
                     ? "bg-background text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground",
+                    : "text-muted-foreground hover:text-foreground"
                 )}
                 key={tab}
                 onClick={() => handleTabChange(tab)}
                 role="tab"
-                aria-selected={activeTab === tab}
                 type="button"
               >
                 {TAB_LABELS[tab] ?? tab}

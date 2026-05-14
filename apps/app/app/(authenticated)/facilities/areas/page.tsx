@@ -1,8 +1,5 @@
 "use client";
 
-import { Badge } from "@repo/design-system/components/ui/badge";
-import { Button } from "@repo/design-system/components/ui/button";
-import { Card, CardContent } from "@repo/design-system/components/ui/card";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -13,6 +10,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@repo/design-system/components/ui/alert-dialog";
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
+import { Card, CardContent } from "@repo/design-system/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -291,7 +291,9 @@ export default function AreasPage() {
         <Dialog onOpenChange={setShowDialog} open={showDialog}>
           <DialogContent className="max-w-lg">
             <DialogHeader>
-              <DialogTitle>{editing ? "Edit Area" : "Add Facility Area"}</DialogTitle>
+              <DialogTitle>
+                {editing ? "Edit Area" : "Add Facility Area"}
+              </DialogTitle>
               <DialogDescription>
                 {editing
                   ? "Update area information."
@@ -394,13 +396,8 @@ export default function AreasPage() {
                 >
                   Cancel
                 </Button>
-                <Button
-                  disabled={!form.name.trim() || saving}
-                  type="submit"
-                >
-                  {saving && (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  )}
+                <Button disabled={!form.name.trim() || saving} type="submit">
+                  {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   {editing ? "Update" : "Add"} Area
                 </Button>
               </DialogFooter>

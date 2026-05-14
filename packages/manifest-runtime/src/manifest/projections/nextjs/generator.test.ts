@@ -660,7 +660,7 @@ describe("NextJsProjection", () => {
       const code = firstCode(commandResult);
 
       // Contract: Must import database for user lookup
-      expect(code).toContain('import { database }');
+      expect(code).toContain("import { database }");
 
       // Contract: Must resolve internal user by authUserId for role
       expect(code).toContain("database.user.findFirst");

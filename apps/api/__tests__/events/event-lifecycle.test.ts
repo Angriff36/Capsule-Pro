@@ -48,7 +48,14 @@ vi.mock("@repo/auth/server", () => ({
 
 vi.mock("@/app/lib/tenant", () => ({
   getTenantIdForOrg: vi.fn(),
-  requireCurrentUser: vi.fn(),
+  requireCurrentUser: vi.fn().mockResolvedValue({
+    id: "test-user-id",
+    tenantId: TEST_TENANT_ID,
+    role: "admin",
+    email: "test@example.com",
+    firstName: "Test",
+    lastName: "User",
+  }),
 }));
 
 vi.mock("@/app/lib/invariant", async () => {
@@ -62,7 +69,7 @@ vi.mock("@sentry/nextjs", () => ({
 
 // Import mocked modules
 import { auth } from "@repo/auth/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { getTenantIdForOrg, requireCurrentUser } from "@/app/lib/tenant";
 
 // Test constants
 const TEST_TENANT_ID = "a0000000-0000-4000-a000-000000000001";

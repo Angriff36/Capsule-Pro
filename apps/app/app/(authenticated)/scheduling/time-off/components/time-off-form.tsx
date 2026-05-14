@@ -2,6 +2,7 @@
 
 import { Button } from "@repo/design-system/components/ui/button";
 import { Checkbox } from "@repo/design-system/components/ui/checkbox";
+import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
 import {
@@ -12,7 +13,6 @@ import {
   SelectValue,
 } from "@repo/design-system/components/ui/select";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
-import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import { AlertTriangle, Info, Loader2Icon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -397,7 +397,6 @@ export function TimeOffForm({
                 checkConflicts();
               }
             }}
- 
             value={formData.startDate}
           />
           {errors.startDate && (
@@ -425,7 +424,6 @@ export function TimeOffForm({
                 checkConflicts();
               }
             }}
- 
             value={formData.endDate}
           />
           {errors.endDate && (

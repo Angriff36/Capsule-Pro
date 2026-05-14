@@ -1,5 +1,5 @@
-import { Check } from 'lucide-react';
-import type { WizardStep } from '../../types/wizard';
+import { Check } from "lucide-react";
+import type { WizardStep } from "../../types/wizard";
 
 interface ProgressBarProps {
   steps: WizardStep[];
@@ -7,7 +7,11 @@ interface ProgressBarProps {
   onStepClick: (step: number) => void;
 }
 
-export default function ProgressBar({ steps, currentStep, onStepClick }: ProgressBarProps) {
+export default function ProgressBar({
+  steps,
+  currentStep,
+  onStepClick,
+}: ProgressBarProps) {
   return (
     <div className="w-full">
       <div className="hidden md:flex items-center justify-between relative">
@@ -21,22 +25,23 @@ export default function ProgressBar({ steps, currentStep, onStepClick }: Progres
           const isCurrent = index === currentStep;
           return (
             <button
-              key={step.id}
-              onClick={() => index <= currentStep && onStepClick(index)}
               className={`
                 relative flex flex-col items-center gap-2 z-10
-                ${index <= currentStep ? 'cursor-pointer' : 'cursor-default'}
+                ${index <= currentStep ? "cursor-pointer" : "cursor-default"}
               `}
+              key={step.id}
+              onClick={() => index <= currentStep && onStepClick(index)}
             >
               <div
                 className={`
                   w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium
                   transition-all duration-300
-                  ${isCompleted
-                    ? 'bg-stone-800 text-white'
-                    : isCurrent
-                      ? 'bg-stone-800 text-white ring-4 ring-stone-200'
-                      : 'bg-stone-100 text-stone-400 border border-stone-200'
+                  ${
+                    isCompleted
+                      ? "bg-stone-800 text-white"
+                      : isCurrent
+                        ? "bg-stone-800 text-white ring-4 ring-stone-200"
+                        : "bg-stone-100 text-stone-400 border border-stone-200"
                   }
                 `}
               >
@@ -45,7 +50,7 @@ export default function ProgressBar({ steps, currentStep, onStepClick }: Progres
               <span
                 className={`
                   text-[10px] tracking-wide uppercase whitespace-nowrap
-                  ${isCurrent ? 'text-stone-800 font-semibold' : isCompleted ? 'text-stone-500' : 'text-stone-300'}
+                  ${isCurrent ? "text-stone-800 font-semibold" : isCompleted ? "text-stone-500" : "text-stone-300"}
                 `}
               >
                 {step.title}

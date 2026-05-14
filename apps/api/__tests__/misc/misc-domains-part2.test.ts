@@ -16,7 +16,6 @@
  * Tests mock createManifestRuntime to verify command behavior.
  */
 
-import { database } from "@repo/database";
 import { NextRequest } from "next/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -24,6 +23,15 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
 vi.mock("@/app/lib/tenant", () => ({
+  requireCurrentUser: vi.fn().mockResolvedValue({
+    id: "test-user-id",
+    tenantId: "test-tenant",
+    role: "admin",
+    email: "test@example.com",
+    firstName: "Test",
+    lastName: "User",
+  }),
+
   getTenantIdForOrg: vi.fn(),
   requireTenantId: vi.fn(),
 }));
@@ -433,11 +441,9 @@ describe("SampleData API", () => {
         "SampleData"
       );
       expect(res.status).toBe(200);
-      expect(mockRunCommand).toHaveBeenCalledWith(
-        "seed",
-        expect.any(Object),
-        { entityName: "SampleData" }
-      );
+      expect(mockRunCommand).toHaveBeenCalledWith("seed", expect.any(Object), {
+        entityName: "SampleData",
+      });
     });
   });
 

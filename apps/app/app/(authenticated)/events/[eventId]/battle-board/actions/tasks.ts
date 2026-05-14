@@ -447,7 +447,7 @@ export async function getAvailableEmployees(eventId: string) {
 export async function addEventStaff(
   eventId: string,
   employeeId: string,
-  role: string = "staff"
+  role = "staff"
 ) {
   const { orgId } = await auth();
 
@@ -485,9 +485,7 @@ export async function addEventStaff(
   }
 
   // Check for existing assignment (avoid duplicates)
-  const existing = await database.$queryRawUnsafe<
-    Array<{ id: string }>
-  >(
+  const existing = await database.$queryRawUnsafe<Array<{ id: string }>>(
     `SELECT id
      FROM tenant_events.event_staff_assignments
      WHERE tenant_id = $1

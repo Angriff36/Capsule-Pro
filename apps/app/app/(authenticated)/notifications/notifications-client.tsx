@@ -230,14 +230,11 @@ export function NotificationsClient({
     }
     setActioningId(removeId);
     try {
-      const res = await apiFetch(
-        "/api/manifest/Notification/commands/remove",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id: removeId }),
-        }
-      );
+      const res = await apiFetch("/api/manifest/Notification/commands/remove", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: removeId }),
+      });
       const data = await res.json();
       if (!res.ok) {
         toast.error("Failed to remove", {

@@ -77,7 +77,7 @@ export function EventTimelineClient({
 
     try {
       const response = await fetch(
-        `/api/manifest/EventTimelineItem/commands/createItem`,
+        "/api/manifest/EventTimelineItem/commands/createItem",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -125,7 +125,7 @@ export function EventTimelineClient({
 
     try {
       const response = await fetch(
-        `/api/manifest/EventTimelineItem/commands/completeItem`,
+        "/api/manifest/EventTimelineItem/commands/completeItem",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -174,7 +174,7 @@ export function EventTimelineClient({
 
     try {
       const response = await fetch(
-        `/api/manifest/EventTimelineItem/commands/deleteItem`,
+        "/api/manifest/EventTimelineItem/commands/deleteItem",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -355,9 +355,7 @@ export function EventTimelineClient({
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete}>
-              Remove
-            </AlertDialogAction>
+            <AlertDialogAction onClick={handleDelete}>Remove</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

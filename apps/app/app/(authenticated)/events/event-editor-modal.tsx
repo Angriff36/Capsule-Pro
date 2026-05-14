@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@repo/design-system/components/ui/button";
+import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import {
   Dialog,
   DialogContent,
@@ -18,7 +19,6 @@ import {
   SelectValue,
 } from "@repo/design-system/components/ui/select";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
-import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import { MapPinIcon, UsersIcon } from "lucide-react";
 import { useTransition } from "react";
 
@@ -118,7 +118,12 @@ export const EventEditorModal = ({
               <Label htmlFor="eventDate">
                 Event Date <span className="text-destructive">*</span>
               </Label>
-              <DatePicker defaultValue={event?.date ?? ""} id="eventDate" name="eventDate" required />
+              <DatePicker
+                defaultValue={event?.date ?? ""}
+                id="eventDate"
+                name="eventDate"
+                required
+              />
             </div>
 
             <div className="space-y-2">

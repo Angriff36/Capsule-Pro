@@ -404,11 +404,14 @@ export function EventGuestsClient({
   const handleDeleteGuest = (guestId: string) => {
     startTransition(async () => {
       try {
-        const res = await fetch("/api/manifest/EventGuest/commands/softDelete", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id: guestId }),
-        });
+        const res = await fetch(
+          "/api/manifest/EventGuest/commands/softDelete",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id: guestId }),
+          }
+        );
         const json = await res.json();
         if (!res.ok) {
           throw new Error(

@@ -1,4 +1,5 @@
 import { auth } from "@repo/auth/server";
+import { database } from "@repo/database";
 import {
   CommandBand,
   CommandBandActions,
@@ -15,7 +16,6 @@ import {
   PageCanvas,
   SectionHeader,
 } from "@repo/design-system/components/blocks/page-shell";
-import { database } from "@repo/database";
 import { redirect } from "next/navigation";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { PutawayClient } from "./putaway-client";
@@ -90,16 +90,12 @@ export default async function PutawayPage() {
             <MetricCell>
               <MetricLabel>Avg time</MetricLabel>
               <MetricValue>--</MetricValue>
-              <p className="text-sm text-white/70">
-                Average putaway duration
-              </p>
+              <p className="text-sm text-white/70">Average putaway duration</p>
             </MetricCell>
             <MetricCell>
               <MetricLabel>Locations used</MetricLabel>
               <MetricValue>{activeLocations}</MetricValue>
-              <p className="text-sm text-white/70">
-                Active storage locations
-              </p>
+              <p className="text-sm text-white/70">Active storage locations</p>
             </MetricCell>
           </MetricBand>
         </CommandBandBody>

@@ -1,5 +1,6 @@
 "use client";
 
+import { StatusPill } from "@repo/design-system/components/blocks/page-shell";
 import {
   Select,
   SelectContent,
@@ -7,12 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
-import { StatusPill } from "@repo/design-system/components/blocks/page-shell";
-import {
-  ArrowRight,
-  MapPin,
-  Package,
-} from "lucide-react";
+import { MapPin, Package } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
 
@@ -121,7 +117,7 @@ export function PutawayClient({ initialMetrics }: PutawayClientProps) {
     <div className="space-y-4">
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-3">
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
+        <Select onValueChange={setStatusFilter} value={statusFilter}>
           <SelectTrigger className="w-[160px]">
             <SelectValue placeholder="Status" />
           </SelectTrigger>
@@ -133,7 +129,7 @@ export function PutawayClient({ initialMetrics }: PutawayClientProps) {
           </SelectContent>
         </Select>
 
-        <Select value={locationFilter} onValueChange={setLocationFilter}>
+        <Select onValueChange={setLocationFilter} value={locationFilter}>
           <SelectTrigger className="w-[200px]">
             <SelectValue placeholder="Location" />
           </SelectTrigger>

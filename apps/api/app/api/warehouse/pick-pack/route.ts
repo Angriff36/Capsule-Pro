@@ -32,7 +32,7 @@ interface PickQueueItem {
 export async function GET(request: Request) {
   try {
     const { userId, orgId } = await auth();
-    if (!userId || !orgId) {
+    if (!(userId && orgId)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -125,16 +125,28 @@ export async function GET(request: Request) {
       notes: string | null
     ): PickStatus => {
       const combined = `${reason ?? ""} ${notes ?? ""}`.toLowerCase();
-      if (combined.includes("pick:shipped") || combined.includes("pack:shipped")) {
+      if (
+        combined.includes("pick:shipped") ||
+        combined.includes("pack:shipped")
+      ) {
         return "shipped";
       }
-      if (combined.includes("pack:complete") || combined.includes("pack:packed")) {
+      if (
+        combined.includes("pack:complete") ||
+        combined.includes("pack:packed")
+      ) {
         return "packed";
       }
-      if (combined.includes("pick:complete") || combined.includes("pick:picked")) {
+      if (
+        combined.includes("pick:complete") ||
+        combined.includes("pick:picked")
+      ) {
         return "picked";
       }
-      if (combined.includes("pick:started") || combined.includes("pick:in_progress")) {
+      if (
+        combined.includes("pick:started") ||
+        combined.includes("pick:in_progress")
+      ) {
         return "in_progress";
       }
       return "pending";
@@ -164,7 +176,9 @@ export async function GET(request: Request) {
     // Build pick queue from transactions
     const pickQueue: PickQueueItem[] = transactions.map((t) => {
       const item = itemMap.get(t.itemId);
-      const location = t.storage_location_id ? locationMap.get(t.storage_location_id) : null;
+      const location = t.storage_location_id
+        ? locationMap.get(t.storage_location_id)
+        : null;
 
       return {
         id: t.id,
@@ -221,10 +235,8 @@ export async function GET(request: Request) {
     });
 
     return NextResponse.json({
-      pickQueue:
-        section === "pack" ? [] : filteredQueue,
-      packingItems:
-        section === "pick" ? [] : packingItems,
+      pickQueue: section === "pack" ? [] : filteredQueue,
+      packingItems: section === "pick" ? [] : packingItems,
       stockSummary,
       locations: locations.map((l) => ({
         id: l.id,

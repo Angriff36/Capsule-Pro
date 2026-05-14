@@ -4,8 +4,8 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import {
-  optimizeSchedule,
   type OptimizationConstraints,
+  optimizeSchedule,
 } from "@/lib/staff/workforce-ai-optimizer";
 
 export async function POST(request: NextRequest) {
@@ -20,10 +20,13 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { scheduleId, locationId, startDate, endDate, constraints } = body;
 
-    if (!scheduleId || !locationId || !startDate || !endDate) {
+    if (!(scheduleId && locationId && startDate && endDate)) {
       return NextResponse.json(
-        { message: "Missing required fields: scheduleId, locationId, startDate, endDate" },
-        { status: 400 },
+        {
+          message:
+            "Missing required fields: scheduleId, locationId, startDate, endDate",
+        },
+        { status: 400 }
       );
     }
 
@@ -49,7 +52,7 @@ export async function POST(request: NextRequest) {
     log.error("Failed to optimize schedule", { error });
     return NextResponse.json(
       { message: "Failed to optimize schedule" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

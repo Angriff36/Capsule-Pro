@@ -1,5 +1,6 @@
 "use client";
 
+import { StatusPill } from "@repo/design-system/components/blocks/page-shell";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
   Select,
@@ -8,14 +9,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
-import { StatusPill } from "@repo/design-system/components/blocks/page-shell";
 import { formatCurrency } from "@repo/design-system/lib/format-currency";
-import {
-  Landmark,
-  Plus,
-  RefreshCw,
-  Search,
-} from "lucide-react";
+import { Landmark, Plus, RefreshCw, Search } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
@@ -298,8 +293,8 @@ export function BankReconciliationClient({
       {!isLoading && totalPages > 1 && (
         <div className="flex items-center justify-between px-1 pt-2 text-sm">
           <span className="text-muted-foreground">
-            Showing {(page - 1) * 25 + 1}&ndash;{Math.min(page * 25, totalCount)}{" "}
-            of {totalCount}
+            Showing {(page - 1) * 25 + 1}&ndash;
+            {Math.min(page * 25, totalCount)} of {totalCount}
           </span>
           <div className="flex gap-2">
             <Button

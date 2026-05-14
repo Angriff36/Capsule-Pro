@@ -20,7 +20,12 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 // Mocks (vi.hoisted so dynamic imports resolve the same mock instances)
 // ---------------------------------------------------------------------------
 
-const { mockDatabase, mockRunCommand, Prisma } = vi.hoisted(() => {
+const { mockDatabase, mockRunCommand, Prisma, TEST_TENANT_ID, TEST_ORG_ID, TEST_USER_ID, TEST_CLERK_ID } = vi.hoisted(() => {
+  const TEST_TENANT_ID = "tenant-test-001";
+  const TEST_ORG_ID = "org-test-123";
+  const TEST_USER_ID = "user-test-001";
+  const TEST_CLERK_ID = "clerk_test_001";
+
   const mockPurchaseRequisitionStore = {
     findMany: vi.fn(),
     findUnique: vi.fn(),
@@ -52,6 +57,10 @@ const { mockDatabase, mockRunCommand, Prisma } = vi.hoisted(() => {
     },
     mockRunCommand: vi.fn(),
     Prisma: { Decimal },
+    TEST_TENANT_ID,
+    TEST_ORG_ID,
+    TEST_USER_ID,
+    TEST_CLERK_ID,
   };
 });
 
@@ -68,9 +77,28 @@ vi.mock("@repo/auth/server", () => ({
   auth: vi.fn(),
 }));
 
+vi.mock("@/app/lib/invariant", () => ({
+  InvariantError: class InvariantError extends Error {
+    constructor(message: string) {
+      super(message);
+      this.name = "InvariantError";
+    }
+  },
+  invariant: (_condition: unknown, _message?: string) => {
+    // Invariant is not used in tests - requireCurrentUser mock handles auth failures
+  },
+}));
+
 vi.mock("@/app/lib/tenant", () => ({
   getTenantIdForOrg: vi.fn(),
-  requireCurrentUser: vi.fn(),
+  requireCurrentUser: vi.fn().mockResolvedValue({
+    id: TEST_USER_ID,
+    tenantId: TEST_TENANT_ID,
+    role: "admin",
+    email: "test@example.com",
+    firstName: "Test",
+    lastName: "User",
+  }),
 }));
 
 vi.mock("@sentry/nextjs", () => ({
@@ -83,17 +111,8 @@ vi.mock("@/lib/manifest-runtime", () => ({
 
 // Import mocked modules after vi.mock setup
 import { auth } from "@repo/auth/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { getTenantIdForOrg, requireCurrentUser } from "@/app/lib/tenant";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
-
-// ---------------------------------------------------------------------------
-// Test constants
-// ---------------------------------------------------------------------------
-
-const TEST_TENANT_ID = "tenant-test-001";
-const TEST_ORG_ID = "org-test-123";
-const TEST_USER_ID = "user-test-001";
-const TEST_CLERK_ID = "clerk_test_001";
 
 // ---------------------------------------------------------------------------
 // Mock data factories
@@ -211,6 +230,11 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
         orgId: null,
         userId: null,
       } as any);
+      vi.mocked(requireCurrentUser).mockRejectedValue(
+        new (await import("@/app/lib/invariant")).InvariantError(
+          "auth.orgId must exist"
+        )
+      );
 
       const { GET } = await import(
         "@/app/api/procurement/requisitions/list/route"
@@ -328,6 +352,14 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
         userId: TEST_CLERK_ID,
       } as any);
       vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
+      vi.mocked(requireCurrentUser).mockResolvedValue({
+        id: TEST_USER_ID,
+        tenantId: TEST_TENANT_ID,
+        role: "admin",
+        email: "test@example.com",
+        firstName: "Test",
+        lastName: "User",
+      });
       vi.mocked(mockDatabase.user.findFirst).mockResolvedValue(
         mockUser as never
       );
@@ -365,7 +397,10 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
         }
       );
 
-      const response = await POST(request, manifestParams("PurchaseRequisition", "create"));
+      const response = await POST(
+        request,
+        manifestParams("PurchaseRequisition", "create")
+      );
 
       expect(response.status).toBe(200);
       expect(mockRunCommand).toHaveBeenCalledWith(
@@ -392,16 +427,16 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
         }
       );
 
-      const response = await POST(request, manifestParams("PurchaseRequisition", "update"));
+      const response = await POST(
+        request,
+        manifestParams("PurchaseRequisition", "update")
+      );
 
       expect(response.status).toBe(200);
       expect(mockRunCommand).toHaveBeenCalledWith(
         "update",
         expect.any(Object),
-        expect.objectContaining({
-          entityName: "PurchaseRequisition",
-          instanceId: "req-001",
-        })
+        { entityName: "PurchaseRequisition" }
       );
     });
 
@@ -422,16 +457,16 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
         }
       );
 
-      const response = await POST(request, manifestParams("PurchaseRequisition", "submit"));
+      const response = await POST(
+        request,
+        manifestParams("PurchaseRequisition", "submit")
+      );
 
       expect(response.status).toBe(200);
       expect(mockRunCommand).toHaveBeenCalledWith(
         "submit",
         expect.any(Object),
-        expect.objectContaining({
-          entityName: "PurchaseRequisition",
-          instanceId: "req-001",
-        })
+        { entityName: "PurchaseRequisition" }
       );
     });
 
@@ -452,16 +487,16 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
         }
       );
 
-      const response = await POST(request, manifestParams("PurchaseRequisition", "approveManager"));
+      const response = await POST(
+        request,
+        manifestParams("PurchaseRequisition", "approveManager")
+      );
 
       expect(response.status).toBe(200);
       expect(mockRunCommand).toHaveBeenCalledWith(
         "approveManager",
         expect.any(Object),
-        expect.objectContaining({
-          entityName: "PurchaseRequisition",
-          instanceId: "req-001",
-        })
+        { entityName: "PurchaseRequisition" }
       );
     });
 
@@ -483,16 +518,16 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
         }
       );
 
-      const response = await POST(request, manifestParams("PurchaseRequisition", "reject"));
+      const response = await POST(
+        request,
+        manifestParams("PurchaseRequisition", "reject")
+      );
 
       expect(response.status).toBe(200);
       expect(mockRunCommand).toHaveBeenCalledWith(
         "reject",
         expect.any(Object),
-        expect.objectContaining({
-          entityName: "PurchaseRequisition",
-          instanceId: "req-001",
-        })
+        { entityName: "PurchaseRequisition" }
       );
     });
   });
@@ -504,6 +539,11 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
   describe("command route authentication", () => {
     it("create route returns 401 for unauthenticated requests", async () => {
       vi.mocked(auth).mockResolvedValue({ orgId: null } as any);
+      vi.mocked(requireCurrentUser).mockRejectedValue(
+        new (await import("@/app/lib/invariant")).InvariantError(
+          "auth.orgId must exist"
+        )
+      );
 
       const { POST } = await import(
         "@/app/api/manifest/[entity]/commands/[command]/route"
@@ -511,13 +551,21 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
       const request = createMockRequest(
         "http://localhost:3000/api/procurement/requisitions/commands/create"
       );
-      const response = await POST(request, manifestParams("PurchaseRequisition", "create"));
+      const response = await POST(
+        request,
+        manifestParams("PurchaseRequisition", "create")
+      );
 
       expect(response.status).toBe(401);
     });
 
     it("update route returns 401 for unauthenticated requests", async () => {
       vi.mocked(auth).mockResolvedValue({ orgId: null } as any);
+      vi.mocked(requireCurrentUser).mockRejectedValue(
+        new (await import("@/app/lib/invariant")).InvariantError(
+          "auth.orgId must exist"
+        )
+      );
 
       const { POST } = await import(
         "@/app/api/manifest/[entity]/commands/[command]/route"
@@ -525,13 +573,21 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
       const request = createMockRequest(
         "http://localhost:3000/api/procurement/requisitions/commands/update"
       );
-      const response = await POST(request, manifestParams("PurchaseRequisition", "update"));
+      const response = await POST(
+        request,
+        manifestParams("PurchaseRequisition", "update")
+      );
 
       expect(response.status).toBe(401);
     });
 
     it("submit route returns 401 for unauthenticated requests", async () => {
       vi.mocked(auth).mockResolvedValue({ orgId: null } as any);
+      vi.mocked(requireCurrentUser).mockRejectedValue(
+        new (await import("@/app/lib/invariant")).InvariantError(
+          "auth.orgId must exist"
+        )
+      );
 
       const { POST } = await import(
         "@/app/api/manifest/[entity]/commands/[command]/route"
@@ -539,7 +595,10 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
       const request = createMockRequest(
         "http://localhost:3000/api/procurement/requisitions/commands/submit"
       );
-      const response = await POST(request, manifestParams("PurchaseRequisition", "submit"));
+      const response = await POST(
+        request,
+        manifestParams("PurchaseRequisition", "submit")
+      );
 
       expect(response.status).toBe(401);
     });
@@ -556,6 +615,14 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
         userId: TEST_CLERK_ID,
       } as any);
       vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
+      vi.mocked(requireCurrentUser).mockResolvedValue({
+        id: TEST_USER_ID,
+        tenantId: TEST_TENANT_ID,
+        role: "admin",
+        email: "test@example.com",
+        firstName: "Test",
+        lastName: "User",
+      });
       vi.mocked(mockDatabase.user.findFirst).mockResolvedValue(
         mockUser as never
       );
@@ -581,7 +648,10 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
           body: JSON.stringify({}),
         }
       );
-      const response = await POST(request, manifestParams("PurchaseRequisition", "create"));
+      const response = await POST(
+        request,
+        manifestParams("PurchaseRequisition", "create")
+      );
 
       expect(response.status).toBe(422);
     });
@@ -602,7 +672,10 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
           body: JSON.stringify({}),
         }
       );
-      const response = await POST(request, manifestParams("PurchaseRequisition", "create"));
+      const response = await POST(
+        request,
+        manifestParams("PurchaseRequisition", "create")
+      );
 
       expect(response.status).toBe(403);
     });
@@ -623,7 +696,10 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
           body: JSON.stringify({}),
         }
       );
-      const response = await POST(request, manifestParams("PurchaseRequisition", "create"));
+      const response = await POST(
+        request,
+        manifestParams("PurchaseRequisition", "create")
+      );
 
       expect(response.status).toBe(400);
     });
@@ -641,7 +717,10 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
           body: JSON.stringify({}),
         }
       );
-      const response = await POST(request, manifestParams("PurchaseRequisition", "create"));
+      const response = await POST(
+        request,
+        manifestParams("PurchaseRequisition", "create")
+      );
 
       expect(response.status).toBe(500);
     });

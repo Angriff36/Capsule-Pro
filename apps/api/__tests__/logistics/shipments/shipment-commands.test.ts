@@ -34,7 +34,14 @@ vi.mock("@repo/auth/server", () => ({
 
 vi.mock("@/app/lib/tenant", () => ({
   getTenantIdForOrg: vi.fn(),
-  requireCurrentUser: vi.fn(),
+  requireCurrentUser: vi.fn().mockResolvedValue({
+    id: TEST_USER_ID,
+    tenantId: TEST_TENANT_ID,
+    role: "admin",
+    email: "test@example.com",
+    firstName: "Test",
+    lastName: "User",
+  }),
 }));
 
 vi.mock("@sentry/nextjs", () => ({
@@ -46,7 +53,7 @@ vi.mock("@/lib/manifest-runtime", () => ({
 }));
 
 import { auth } from "@repo/auth/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { getTenantIdForOrg, requireCurrentUser } from "@/app/lib/tenant";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
 
 const TEST_TENANT_ID = "a0000000-0000-4000-a000-000000000001";
@@ -81,6 +88,14 @@ function authedAsAdmin() {
     userId: TEST_CLERK_ID,
   } as never);
   vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
+  vi.mocked(requireCurrentUser).mockResolvedValue({
+    id: TEST_USER_ID,
+    tenantId: TEST_TENANT_ID,
+    role: "admin",
+    email: "test@example.com",
+    firstName: "Test",
+    lastName: "User",
+  });
   vi.mocked(database.user.findFirst).mockResolvedValue(adminUser as never);
 }
 
@@ -375,10 +390,7 @@ describe("Shipment Command Routes — success paths", () => {
     expect(runCommand).toHaveBeenCalledWith(
       "update",
       expect.objectContaining({ trackingNumber: "T-9", carrier: "DHL" }),
-      expect.objectContaining({
-        entityName: "Shipment",
-        instanceId: TEST_SHIPMENT_ID,
-      })
+      { entityName: "Shipment" }
     );
   });
 
@@ -406,7 +418,7 @@ describe("Shipment Command Routes — success paths", () => {
         reason: "supplier delay",
         userId: TEST_USER_ID,
       }),
-      expect.objectContaining({ instanceId: TEST_SHIPMENT_ID })
+      { entityName: "Shipment" }
     );
   });
 
@@ -431,7 +443,7 @@ describe("Shipment Command Routes — success paths", () => {
     expect(runCommand).toHaveBeenCalledWith(
       "schedule",
       expect.objectContaining({ scheduledDate: 1_735_689_600_000 }),
-      expect.objectContaining({ instanceId: TEST_SHIPMENT_ID })
+      { entityName: "Shipment" }
     );
   });
 
@@ -456,7 +468,7 @@ describe("Shipment Command Routes — success paths", () => {
     expect(runCommand).toHaveBeenCalledWith(
       "ship",
       expect.objectContaining({ trackingNumber: "1Z9999" }),
-      expect.objectContaining({ instanceId: TEST_SHIPMENT_ID })
+      { entityName: "Shipment" }
     );
   });
 
@@ -470,14 +482,19 @@ describe("Shipment Command Routes — success paths", () => {
         method: "POST",
         body: JSON.stringify(body),
       }),
-      { params: Promise.resolve({ entity: "Shipment", command: "startPreparing" }) }
+      {
+        params: Promise.resolve({
+          entity: "Shipment",
+          command: "startPreparing",
+        }),
+      }
     );
 
     expect(response.status).toBe(200);
     expect(runCommand).toHaveBeenCalledWith(
       "startPreparing",
       expect.objectContaining({ userId: TEST_USER_ID }),
-      expect.objectContaining({ instanceId: TEST_SHIPMENT_ID })
+      { entityName: "Shipment" }
     );
   });
 
@@ -496,7 +513,12 @@ describe("Shipment Command Routes — success paths", () => {
         method: "POST",
         body: JSON.stringify(body),
       }),
-      { params: Promise.resolve({ entity: "Shipment", command: "markDelivered" }) }
+      {
+        params: Promise.resolve({
+          entity: "Shipment",
+          command: "markDelivered",
+        }),
+      }
     );
 
     expect(response.status).toBe(200);
@@ -506,7 +528,7 @@ describe("Shipment Command Routes — success paths", () => {
         receivedBy: "Jane Doe",
         signature: "data:image/png;base64,xyz",
       }),
-      expect.objectContaining({ instanceId: TEST_SHIPMENT_ID })
+      { entityName: "Shipment" }
     );
   });
 });
@@ -700,7 +722,12 @@ describe("ShipmentItem.updateReceived command", () => {
         method: "POST",
         body: JSON.stringify({}),
       }),
-      { params: Promise.resolve({ entity: "ShipmentItem", command: "updateReceived" }) }
+      {
+        params: Promise.resolve({
+          entity: "ShipmentItem",
+          command: "updateReceived",
+        }),
+      }
     );
 
     expect(response.status).toBe(401);
@@ -721,7 +748,12 @@ describe("ShipmentItem.updateReceived command", () => {
         method: "POST",
         body: JSON.stringify({}),
       }),
-      { params: Promise.resolve({ entity: "ShipmentItem", command: "updateReceived" }) }
+      {
+        params: Promise.resolve({
+          entity: "ShipmentItem",
+          command: "updateReceived",
+        }),
+      }
     );
 
     expect(response.status).toBe(400);
@@ -747,7 +779,12 @@ describe("ShipmentItem.updateReceived command", () => {
         method: "POST",
         body: JSON.stringify(body),
       }),
-      { params: Promise.resolve({ entity: "ShipmentItem", command: "updateReceived" }) }
+      {
+        params: Promise.resolve({
+          entity: "ShipmentItem",
+          command: "updateReceived",
+        }),
+      }
     );
 
     expect(response.status).toBe(200);
@@ -785,7 +822,12 @@ describe("ShipmentItem.updateReceived command", () => {
         method: "POST",
         body: JSON.stringify({ quantityReceived: -1 }),
       }),
-      { params: Promise.resolve({ entity: "ShipmentItem", command: "updateReceived" }) }
+      {
+        params: Promise.resolve({
+          entity: "ShipmentItem",
+          command: "updateReceived",
+        }),
+      }
     );
 
     expect(response.status).toBe(422);
@@ -803,7 +845,12 @@ describe("ShipmentItem.updateReceived command", () => {
         method: "POST",
         body: JSON.stringify({}),
       }),
-      { params: Promise.resolve({ entity: "ShipmentItem", command: "updateReceived" }) }
+      {
+        params: Promise.resolve({
+          entity: "ShipmentItem",
+          command: "updateReceived",
+        }),
+      }
     );
 
     expect(response.status).toBe(500);

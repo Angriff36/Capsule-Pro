@@ -55,6 +55,16 @@ vi.mock("@/app/lib/tenant", () => ({
 
 vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn() }));
 
+vi.mock("@/app/lib/invariant", () => ({
+  InvariantError: class extends Error {
+    constructor(message: string) {
+      super(message);
+      this.name = "InvariantError";
+    }
+  },
+  invariant: vi.fn(),
+}));
+
 vi.mock("@/lib/manifest-runtime", () => ({
   createManifestRuntime: vi.fn(),
 }));
@@ -78,7 +88,9 @@ vi.mock("@/lib/manifest-response", async () => {
 // --- Imports (after mocks) ---
 
 const { auth } = await import("@repo/auth/server");
-const { getTenantIdForOrg } = await import("@/app/lib/tenant");
+const { getTenantIdForOrg, requireCurrentUser } = await import(
+  "@/app/lib/tenant"
+);
 const { createManifestRuntime } = await import("@/lib/manifest-runtime");
 
 // --- Constants ---
@@ -96,6 +108,14 @@ function authed() {
     userId: TEST_CLERK_ID,
   } as never);
   vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID as never);
+  vi.mocked(requireCurrentUser).mockResolvedValue({
+    id: TEST_CLERK_ID,
+    tenantId: TEST_TENANT_ID,
+    role: "admin",
+    email: "test@example.com",
+    firstName: "Test",
+    lastName: "User",
+  } as never);
 }
 
 function unauthed() {
@@ -228,7 +248,12 @@ describe("WorkforceOptimization Commands API", () => {
     it(`returns 401 when unauthenticated [${name}]`, async () => {
       unauthed();
       const mod = await import(routePath);
-      const res = await mod.POST(postRequest(path, sampleBody));
+      const res = await mod.POST(postRequest(path, sampleBody), {
+        params: Promise.resolve({
+          entity: "WorkforceOptimization",
+          command: name,
+        }),
+      });
 
       expect(res.status).toBe(401);
       const body = await res.json();
@@ -239,7 +264,12 @@ describe("WorkforceOptimization Commands API", () => {
       vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
 
       const mod = await import(routePath);
-      const res = await mod.POST(postRequest(path, sampleBody));
+      const res = await mod.POST(postRequest(path, sampleBody), {
+        params: Promise.resolve({
+          entity: "WorkforceOptimization",
+          command: name,
+        }),
+      });
 
       expect(res.status).toBe(400);
       const body = await res.json();
@@ -250,7 +280,12 @@ describe("WorkforceOptimization Commands API", () => {
       mockRuntimeSuccess({ id: TEST_OPTIMIZATION_ID, status: "pending" });
 
       const mod = await import(routePath);
-      const res = await mod.POST(postRequest(path, sampleBody));
+      const res = await mod.POST(postRequest(path, sampleBody), {
+        params: Promise.resolve({
+          entity: "WorkforceOptimization",
+          command: name,
+        }),
+      });
 
       expect(res.status).toBe(200);
       const body = await res.json();
@@ -274,7 +309,12 @@ describe("WorkforceOptimization Commands API", () => {
       mockRuntimePolicyDenial("ManagersCanRunOptimization");
 
       const mod = await import(routePath);
-      const res = await mod.POST(postRequest(path, sampleBody));
+      const res = await mod.POST(postRequest(path, sampleBody), {
+        params: Promise.resolve({
+          entity: "WorkforceOptimization",
+          command: name,
+        }),
+      });
 
       expect(res.status).toBe(403);
       const body = await res.json();
@@ -290,7 +330,12 @@ describe("WorkforceOptimization Commands API", () => {
       );
 
       const mod = await import(routePath);
-      const res = await mod.POST(postRequest(path, sampleBody));
+      const res = await mod.POST(postRequest(path, sampleBody), {
+        params: Promise.resolve({
+          entity: "WorkforceOptimization",
+          command: name,
+        }),
+      });
 
       expect(res.status).toBe(422);
       const body = await res.json();
@@ -302,7 +347,12 @@ describe("WorkforceOptimization Commands API", () => {
       mockRuntimeFailure("State transition not allowed");
 
       const mod = await import(routePath);
-      const res = await mod.POST(postRequest(path, sampleBody));
+      const res = await mod.POST(postRequest(path, sampleBody), {
+        params: Promise.resolve({
+          entity: "WorkforceOptimization",
+          command: name,
+        }),
+      });
 
       expect(res.status).toBe(400);
       const body = await res.json();
@@ -315,7 +365,12 @@ describe("WorkforceOptimization Commands API", () => {
       } as never);
 
       const mod = await import(routePath);
-      const res = await mod.POST(postRequest(path, sampleBody));
+      const res = await mod.POST(postRequest(path, sampleBody), {
+        params: Promise.resolve({
+          entity: "WorkforceOptimization",
+          command: name,
+        }),
+      });
 
       expect(res.status).toBe(400);
       const body = await res.json();
@@ -328,7 +383,12 @@ describe("WorkforceOptimization Commands API", () => {
       );
 
       const mod = await import(routePath);
-      const res = await mod.POST(postRequest(path, sampleBody));
+      const res = await mod.POST(postRequest(path, sampleBody), {
+        params: Promise.resolve({
+          entity: "WorkforceOptimization",
+          command: name,
+        }),
+      });
 
       expect(res.status).toBe(500);
       const body = await res.json();
@@ -346,7 +406,12 @@ describe("WorkforceOptimization Commands API", () => {
       } as never);
 
       const mod = await import(routePath);
-      await mod.POST(postRequest(path, sampleBody));
+      await mod.POST(postRequest(path, sampleBody), {
+        params: Promise.resolve({
+          entity: "WorkforceOptimization",
+          command: name,
+        }),
+      });
 
       // Pin the exact 3-arg shape: all 4 commands are entity-scoped,
       // so no `instanceId` is passed even for state-transitioning verbs

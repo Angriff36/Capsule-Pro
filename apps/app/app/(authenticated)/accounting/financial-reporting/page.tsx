@@ -117,7 +117,9 @@ export default async function FinancialReportingPage() {
             <MetricCell>
               <MetricLabel>Total Expenses</MetricLabel>
               <MetricValue>{formatCurrency(totalExpenses)}</MetricValue>
-              <p className="text-sm text-white/70">Write-offs and adjustments</p>
+              <p className="text-sm text-white/70">
+                Write-offs and adjustments
+              </p>
             </MetricCell>
             <MetricCell>
               <MetricLabel>Net Income</MetricLabel>

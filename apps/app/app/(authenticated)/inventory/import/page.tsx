@@ -1,5 +1,6 @@
 "use client";
 
+import { ResearchTable } from "@repo/design-system/components/blocks/research-table";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
@@ -15,7 +16,6 @@ import {
   Download,
   FileUp,
 } from "lucide-react";
-import { ResearchTable } from "@repo/design-system/components/blocks/research-table";
 import Link from "next/link";
 import { useCallback, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
@@ -338,8 +338,12 @@ export default function InventoryImportPage() {
                     caption={`${result.errors.length} import errors`}
                     rows={result.errors.map((err, i) => ({
                       id: `error-${i}`,
-                      title: <span className="text-red-600">{err.message}</span>,
-                      meta: <span className="font-mono text-xs">Row {err.row}</span>,
+                      title: (
+                        <span className="text-red-600">{err.message}</span>
+                      ),
+                      meta: (
+                        <span className="font-mono text-xs">Row {err.row}</span>
+                      ),
                     }))}
                   />
                 </div>

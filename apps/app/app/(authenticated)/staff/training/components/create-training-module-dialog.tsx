@@ -171,10 +171,7 @@ export function CreateTrainingModuleDialog({}: CreateTrainingModuleDialogProps) 
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Content Type</FormLabel>
-                    <Select
-                      value={field.value}
-                      onValueChange={field.onChange}
-                    >
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select type" />

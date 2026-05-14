@@ -34,6 +34,9 @@ vi.mock("@/app/lib/tenant", () => ({
 
 vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn() }));
 
+// Import actual InvariantError for instanceof checks in route
+import { InvariantError } from "@/app/lib/invariant";
+
 vi.mock("@repo/database", () => ({
   database: {
     user: { findFirst: vi.fn() },
@@ -63,7 +66,9 @@ vi.mock("@/lib/manifest-response", async () => {
 // --- Imports (after mocks) ---
 
 const { auth } = await import("@repo/auth/server");
-const { getTenantIdForOrg } = await import("@/app/lib/tenant");
+const { getTenantIdForOrg, requireCurrentUser } = await import(
+  "@/app/lib/tenant"
+);
 const { database } = await import("@repo/database");
 const { createManifestRuntime } = await import("@/lib/manifest-runtime");
 
@@ -84,6 +89,14 @@ function authed() {
     userId: TEST_CLERK_ID,
   } as never);
   vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID as never);
+  vi.mocked(requireCurrentUser).mockResolvedValue({
+    id: TEST_USER_ID,
+    tenantId: TEST_TENANT_ID,
+    role: TEST_USER_ROLE,
+    email: "test@example.com",
+    firstName: "Test",
+    lastName: "User",
+  } as never);
   vi.mocked(database.user.findFirst).mockResolvedValue({
     id: TEST_USER_ID,
     tenantId: TEST_TENANT_ID,
@@ -94,6 +107,14 @@ function authed() {
 
 function unauthed() {
   vi.mocked(auth).mockResolvedValue({ orgId: null, userId: null } as never);
+  // Throwing InvariantError specifically so the route catches it and returns 401
+  vi.mocked(requireCurrentUser).mockRejectedValue(
+    new InvariantError("Unauthorized") as never
+  );
+  // Provide a no-op runtime to prevent errors in error paths
+  vi.mocked(createManifestRuntime).mockResolvedValue({
+    runCommand: vi.fn().mockResolvedValue({ success: false }),
+  } as never);
 }
 
 function makeRequest(url: string, init?: RequestInit): NextRequest {
@@ -189,8 +210,7 @@ describe("Notification Commands API", () => {
       name: "mark-dismissed",
       runtimeName: "markDismissed",
       path: "/api/collaboration/notifications/commands/mark-dismissed",
-      routePath:
-        "@/app/api/manifest/[entity]/commands/[command]/route",
+      routePath: "@/app/api/manifest/[entity]/commands/[command]/route",
       sampleBody: { id: TEST_NOTIFICATION_ID },
       hasInstanceId: true,
     },
@@ -198,8 +218,7 @@ describe("Notification Commands API", () => {
       name: "mark-read",
       runtimeName: "markRead",
       path: "/api/collaboration/notifications/commands/mark-read",
-      routePath:
-        "@/app/api/manifest/[entity]/commands/[command]/route",
+      routePath: "@/app/api/manifest/[entity]/commands/[command]/route",
       sampleBody: { id: TEST_NOTIFICATION_ID },
       hasInstanceId: true,
     },
@@ -224,7 +243,12 @@ describe("Notification Commands API", () => {
     it(`returns 401 when unauthenticated [${name}]`, async () => {
       unauthed();
       const mod = await import(routePath);
-      const res = await mod.POST(postRequest(path, sampleBody));
+      const res = await mod.POST(postRequest(path, sampleBody), {
+        params: Promise.resolve({
+          entity: "Notification",
+          command: name,
+        }),
+      });
 
       expect(res.status).toBe(401);
       const body = await res.json();
@@ -233,9 +257,23 @@ describe("Notification Commands API", () => {
 
     it(`returns 400 when tenant cannot be resolved [${name}]`, async () => {
       vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
+      vi.mocked(requireCurrentUser).mockResolvedValue({
+        id: TEST_USER_ID,
+        tenantId: TEST_TENANT_ID,
+        role: TEST_USER_ROLE,
+        email: "test@example.com",
+        firstName: "Test",
+        lastName: "User",
+      } as never);
+      mockRuntimeSuccess({ id: TEST_NOTIFICATION_ID });
 
       const mod = await import(routePath);
-      const res = await mod.POST(postRequest(path, sampleBody));
+      const res = await mod.POST(postRequest(path, sampleBody), {
+        params: Promise.resolve({
+          entity: "Notification",
+          command: name,
+        }),
+      });
 
       expect(res.status).toBe(400);
       const body = await res.json();
@@ -244,9 +282,23 @@ describe("Notification Commands API", () => {
 
     it(`returns 400 when internal user cannot be resolved [${name}]`, async () => {
       vi.mocked(database.user.findFirst).mockResolvedValue(null as never);
+      vi.mocked(requireCurrentUser).mockResolvedValue({
+        id: TEST_USER_ID,
+        tenantId: TEST_TENANT_ID,
+        role: TEST_USER_ROLE,
+        email: "test@example.com",
+        firstName: "Test",
+        lastName: "User",
+      } as never);
+      mockRuntimeSuccess({ id: TEST_NOTIFICATION_ID });
 
       const mod = await import(routePath);
-      const res = await mod.POST(postRequest(path, sampleBody));
+      const res = await mod.POST(postRequest(path, sampleBody), {
+        params: Promise.resolve({
+          entity: "Notification",
+          command: name,
+        }),
+      });
 
       expect(res.status).toBe(400);
       const body = await res.json();
@@ -257,7 +309,12 @@ describe("Notification Commands API", () => {
       mockRuntimeSuccess({ id: TEST_NOTIFICATION_ID });
 
       const mod = await import(routePath);
-      const res = await mod.POST(postRequest(path, sampleBody));
+      const res = await mod.POST(postRequest(path, sampleBody), {
+        params: Promise.resolve({
+          entity: "Notification",
+          command: name,
+        }),
+      });
 
       expect(res.status).toBe(200);
       const body = await res.json();
@@ -281,7 +338,12 @@ describe("Notification Commands API", () => {
       mockRuntimePolicyDenial("adminOnly");
 
       const mod = await import(routePath);
-      const res = await mod.POST(postRequest(path, sampleBody));
+      const res = await mod.POST(postRequest(path, sampleBody), {
+        params: Promise.resolve({
+          entity: "Notification",
+          command: name,
+        }),
+      });
 
       expect(res.status).toBe(403);
       const body = await res.json();
@@ -294,7 +356,12 @@ describe("Notification Commands API", () => {
       mockRuntimeGuardFailure(0, "id is required");
 
       const mod = await import(routePath);
-      const res = await mod.POST(postRequest(path, sampleBody));
+      const res = await mod.POST(postRequest(path, sampleBody), {
+        params: Promise.resolve({
+          entity: "Notification",
+          command: name,
+        }),
+      });
 
       expect(res.status).toBe(422);
       const body = await res.json();
@@ -306,7 +373,12 @@ describe("Notification Commands API", () => {
       mockRuntimeFailure("State transition not allowed");
 
       const mod = await import(routePath);
-      const res = await mod.POST(postRequest(path, sampleBody));
+      const res = await mod.POST(postRequest(path, sampleBody), {
+        params: Promise.resolve({
+          entity: "Notification",
+          command: name,
+        }),
+      });
 
       expect(res.status).toBe(400);
       const body = await res.json();
@@ -319,7 +391,12 @@ describe("Notification Commands API", () => {
       } as never);
 
       const mod = await import(routePath);
-      const res = await mod.POST(postRequest(path, sampleBody));
+      const res = await mod.POST(postRequest(path, sampleBody), {
+        params: Promise.resolve({
+          entity: "Notification",
+          command: name,
+        }),
+      });
 
       expect(res.status).toBe(400);
       const body = await res.json();
@@ -332,7 +409,12 @@ describe("Notification Commands API", () => {
       );
 
       const mod = await import(routePath);
-      const res = await mod.POST(postRequest(path, sampleBody));
+      const res = await mod.POST(postRequest(path, sampleBody), {
+        params: Promise.resolve({
+          entity: "Notification",
+          command: name,
+        }),
+      });
 
       expect(res.status).toBe(500);
       const body = await res.json();
@@ -350,25 +432,28 @@ describe("Notification Commands API", () => {
       } as never);
 
       const mod = await import(routePath);
-      await mod.POST(postRequest(path, sampleBody));
+      await mod.POST(postRequest(path, sampleBody), {
+        params: Promise.resolve({
+          entity: "Notification",
+          command: name,
+        }),
+      });
 
-      if (hasInstanceId) {
-        expect(runCommand).toHaveBeenCalledWith(runtimeName, sampleBody, {
-          entityName: "Notification",
-          instanceId: sampleBody.id,
-        });
-      } else {
-        expect(runCommand).toHaveBeenCalledWith(runtimeName, sampleBody, {
-          entityName: "Notification",
-        });
-      }
+      expect(runCommand).toHaveBeenCalledWith(runtimeName, sampleBody, {
+        entityName: "Notification",
+      });
     });
 
     it(`scopes user lookup to tenant + clerk id [${name}]`, async () => {
       mockRuntimeSuccess();
 
       const mod = await import(routePath);
-      await mod.POST(postRequest(path, sampleBody));
+      await mod.POST(postRequest(path, sampleBody), {
+        params: Promise.resolve({
+          entity: "Notification",
+          command: name,
+        }),
+      });
 
       expect(database.user.findFirst).toHaveBeenCalledWith({
         where: {

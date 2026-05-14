@@ -10,6 +10,7 @@
 "use client";
 
 import { Button } from "@repo/design-system/components/ui/button";
+import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import {
   Dialog,
   DialogContent,
@@ -28,7 +29,6 @@ import {
   SelectValue,
 } from "@repo/design-system/components/ui/select";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
-import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import { Loader2Icon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
@@ -97,20 +97,23 @@ export function CreateContractModal({
 
     setLoading(true);
     try {
-      const response = await apiFetch("/api/manifest/EventContract/commands/create", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          eventId,
-          clientId,
-          title: title.trim(),
-          contractNumber: contractNumber.trim() || undefined,
-          documentUrl: "",
-          documentType: "",
-          notes: notes.trim() || undefined,
-          expiresAt: expiresAt ? new Date(expiresAt).getTime() : 0,
-        }),
-      });
+      const response = await apiFetch(
+        "/api/manifest/EventContract/commands/create",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            eventId,
+            clientId,
+            title: title.trim(),
+            contractNumber: contractNumber.trim() || undefined,
+            documentUrl: "",
+            documentType: "",
+            notes: notes.trim() || undefined,
+            expiresAt: expiresAt ? new Date(expiresAt).getTime() : 0,
+          }),
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
@@ -244,7 +247,6 @@ export function CreateContractModal({
             <DatePicker
               id="contract-expires"
               onChange={(e) => setExpiresAt(e.target.value)}
- 
               value={expiresAt}
             />
           </div>

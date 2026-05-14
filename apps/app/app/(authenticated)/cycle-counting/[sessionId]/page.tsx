@@ -1,10 +1,3 @@
-import { redirect } from "next/navigation";
-import {
-  createCycleCountRecord,
-  listCycleCountRecords,
-} from "../actions/records";
-import { getCycleCountSession } from "../actions/sessions";
-import type { CycleCountRecord } from "../types";
 import {
   Table,
   TableBody,
@@ -13,6 +6,13 @@ import {
   TableHeader,
   TableRow,
 } from "@repo/design-system/components/ui/table";
+import { redirect } from "next/navigation";
+import {
+  createCycleCountRecord,
+  listCycleCountRecords,
+} from "../actions/records";
+import { getCycleCountSession } from "../actions/sessions";
+import type { CycleCountRecord } from "../types";
 
 export default async function SessionPage({
   params,
@@ -209,13 +209,21 @@ export default async function SessionPage({
                   <TableRow key={record.id}>
                     <TableCell>{record.itemNumber}</TableCell>
                     <TableCell>{record.itemName}</TableCell>
-                    <TableCell className="text-right">{record.expectedQuantity.toFixed(3)}</TableCell>
-                    <TableCell className="text-right font-medium">{record.countedQuantity.toFixed(3)}</TableCell>
+                    <TableCell className="text-right">
+                      {record.expectedQuantity.toFixed(3)}
+                    </TableCell>
+                    <TableCell className="text-right font-medium">
+                      {record.countedQuantity.toFixed(3)}
+                    </TableCell>
                     <TableCell className="text-right">
                       {record.variance < 0 ? (
-                        <span className="text-red-600">{Math.abs(record.variance).toFixed(3)}</span>
+                        <span className="text-red-600">
+                          {Math.abs(record.variance).toFixed(3)}
+                        </span>
                       ) : (
-                        <span className="text-green-600">{Math.abs(record.variance).toFixed(3)}</span>
+                        <span className="text-green-600">
+                          {Math.abs(record.variance).toFixed(3)}
+                        </span>
                       )}
                     </TableCell>
                   </TableRow>

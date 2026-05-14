@@ -1,20 +1,20 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import {
-	CommandBand,
-	CommandBandActions,
-	CommandBandBody,
-	CommandBandHeader,
-	CommandBandLede,
-	DisplayHeading,
-	MetricBand,
-	MetricCell,
-	MetricLabel,
-	MetricValue,
-	MonoLabel,
-	OperationalColumn,
-	PageCanvas,
-	SectionHeader,
+  CommandBand,
+  CommandBandActions,
+  CommandBandBody,
+  CommandBandHeader,
+  CommandBandLede,
+  DisplayHeading,
+  MetricBand,
+  MetricCell,
+  MetricLabel,
+  MetricValue,
+  MonoLabel,
+  OperationalColumn,
+  PageCanvas,
+  SectionHeader,
 } from "@repo/design-system/components/blocks/page-shell";
 import { Button } from "@repo/design-system/components/ui/button";
 import Link from "next/link";
@@ -23,117 +23,117 @@ import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { ContainersClient } from "./containers-client";
 
 export default async function ContainersPage() {
-	const { userId, orgId } = await auth();
-	if (!(userId && orgId)) redirect("/sign-in");
+  const { userId, orgId } = await auth();
+  if (!(userId && orgId)) redirect("/sign-in");
 
-	const tenantId = await getTenantIdForOrg(orgId);
-	if (!tenantId) redirect("/");
+  const tenantId = await getTenantIdForOrg(orgId);
+  if (!tenantId) redirect("/");
 
-	const [total, active, inactive, reusable, disposable] = await Promise.all([
-		database.container.count({
-			where: { tenantId, deletedAt: null },
-		}),
-		database.container.count({
-			where: { tenantId, deletedAt: null, isActive: true },
-		}),
-		database.container.count({
-			where: { tenantId, deletedAt: null, isActive: false },
-		}),
-		database.container.count({
-			where: { tenantId, deletedAt: null, isReusable: true },
-		}),
-		database.container.count({
-			where: { tenantId, deletedAt: null, isReusable: false },
-		}),
-	]);
+  const [total, active, inactive, reusable, disposable] = await Promise.all([
+    database.container.count({
+      where: { tenantId, deletedAt: null },
+    }),
+    database.container.count({
+      where: { tenantId, deletedAt: null, isActive: true },
+    }),
+    database.container.count({
+      where: { tenantId, deletedAt: null, isActive: false },
+    }),
+    database.container.count({
+      where: { tenantId, deletedAt: null, isReusable: true },
+    }),
+    database.container.count({
+      where: { tenantId, deletedAt: null, isReusable: false },
+    }),
+  ]);
 
-	const byType = await database.container.groupBy({
-		by: ["containerType"],
-		where: { tenantId, deletedAt: null },
-		_count: { containerType: true },
-	});
+  const byType = await database.container.groupBy({
+    by: ["containerType"],
+    where: { tenantId, deletedAt: null },
+    _count: { containerType: true },
+  });
 
-	return (
-		<PageCanvas>
-			<CommandBand>
-				<CommandBandHeader>
-					<div className="space-y-4">
-						<MonoLabel tone="dark">Kitchen / Containers</MonoLabel>
-						<DisplayHeading>Containers</DisplayHeading>
-						<CommandBandLede>
-							Manage kitchen containers — pans, trays, bowls, and more. Track
-							capacity, reusability, and status across your operation.
-						</CommandBandLede>
-					</div>
-					<CommandBandActions>
-						<Button
-							asChild
-							className="bg-white text-deep-green hover:bg-white/90"
-							size="sm"
-						>
-							<Link href="/kitchen">Back to Kitchen</Link>
-						</Button>
-					</CommandBandActions>
-				</CommandBandHeader>
+  return (
+    <PageCanvas>
+      <CommandBand>
+        <CommandBandHeader>
+          <div className="space-y-4">
+            <MonoLabel tone="dark">Kitchen / Containers</MonoLabel>
+            <DisplayHeading>Containers</DisplayHeading>
+            <CommandBandLede>
+              Manage kitchen containers — pans, trays, bowls, and more. Track
+              capacity, reusability, and status across your operation.
+            </CommandBandLede>
+          </div>
+          <CommandBandActions>
+            <Button
+              asChild
+              className="bg-white text-deep-green hover:bg-white/90"
+              size="sm"
+            >
+              <Link href="/kitchen">Back to Kitchen</Link>
+            </Button>
+          </CommandBandActions>
+        </CommandBandHeader>
 
-				<CommandBandBody>
-					<MetricBand cols={4}>
-						<MetricCell>
-							<MetricLabel>Total</MetricLabel>
-							<MetricValue>{total}</MetricValue>
-							<p className="text-sm text-white/70">
-								{active} active, {inactive} inactive
-							</p>
-						</MetricCell>
-						<MetricCell>
-							<MetricLabel>Reusable</MetricLabel>
-							<MetricValue>{reusable}</MetricValue>
-							<p className="text-sm text-white/70">
-								{total > 0
-									? `${((reusable / total) * 100).toFixed(0)}%`
-									: "0%"}{" "}
-								reusable
-							</p>
-						</MetricCell>
-						<MetricCell>
-							<MetricLabel>Disposable</MetricLabel>
-							<MetricValue>{disposable}</MetricValue>
-							<p className="text-sm text-white/70">Single-use containers</p>
-						</MetricCell>
-						<MetricCell>
-							<MetricLabel>Types</MetricLabel>
-							<MetricValue>{byType.length}</MetricValue>
-							<p className="text-sm text-white/70">
-								{byType.map((t) => `${t.containerType} (${t._count.containerType})`).join(", ")}
-							</p>
-						</MetricCell>
-					</MetricBand>
-				</CommandBandBody>
-			</CommandBand>
+        <CommandBandBody>
+          <MetricBand cols={4}>
+            <MetricCell>
+              <MetricLabel>Total</MetricLabel>
+              <MetricValue>{total}</MetricValue>
+              <p className="text-sm text-white/70">
+                {active} active, {inactive} inactive
+              </p>
+            </MetricCell>
+            <MetricCell>
+              <MetricLabel>Reusable</MetricLabel>
+              <MetricValue>{reusable}</MetricValue>
+              <p className="text-sm text-white/70">
+                {total > 0 ? `${((reusable / total) * 100).toFixed(0)}%` : "0%"}{" "}
+                reusable
+              </p>
+            </MetricCell>
+            <MetricCell>
+              <MetricLabel>Disposable</MetricLabel>
+              <MetricValue>{disposable}</MetricValue>
+              <p className="text-sm text-white/70">Single-use containers</p>
+            </MetricCell>
+            <MetricCell>
+              <MetricLabel>Types</MetricLabel>
+              <MetricValue>{byType.length}</MetricValue>
+              <p className="text-sm text-white/70">
+                {byType
+                  .map((t) => `${t.containerType} (${t._count.containerType})`)
+                  .join(", ")}
+              </p>
+            </MetricCell>
+          </MetricBand>
+        </CommandBandBody>
+      </CommandBand>
 
-			<OperationalColumn>
-				<section className="space-y-4">
-					<SectionHeader
-						count={`${total} container${total !== 1 ? "s" : ""}`}
-						description="Create and manage kitchen containers with type, capacity, and reusability tracking."
-						eyebrow="Containers"
-						title="All Containers"
-					/>
-					<ContainersClient
-						initialMetrics={{
-							total,
-							active,
-							inactive,
-							reusable,
-							disposable,
-							byType: byType.map((t) => ({
-								containerType: t.containerType,
-								count: t._count.containerType,
-							})),
-						}}
-					/>
-				</section>
-			</OperationalColumn>
-		</PageCanvas>
-	);
+      <OperationalColumn>
+        <section className="space-y-4">
+          <SectionHeader
+            count={`${total} container${total !== 1 ? "s" : ""}`}
+            description="Create and manage kitchen containers with type, capacity, and reusability tracking."
+            eyebrow="Containers"
+            title="All Containers"
+          />
+          <ContainersClient
+            initialMetrics={{
+              total,
+              active,
+              inactive,
+              reusable,
+              disposable,
+              byType: byType.map((t) => ({
+                containerType: t.containerType,
+                count: t._count.containerType,
+              })),
+            }}
+          />
+        </section>
+      </OperationalColumn>
+    </PageCanvas>
+  );
 }

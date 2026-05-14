@@ -179,14 +179,11 @@ export default function VendorDetailPage() {
   const handleAddContact = async () => {
     if (!contactForm.contactName.trim()) return;
     try {
-      const res = await apiFetch(
-        "/api/manifest/Vendor/commands/addContact",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ vendorId, ...contactForm }),
-        }
-      );
+      const res = await apiFetch("/api/manifest/Vendor/commands/addContact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ vendorId, ...contactForm }),
+      });
       const data = await res.json();
       if (data.success) {
         setContactDialogOpen(false);

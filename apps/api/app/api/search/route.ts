@@ -291,7 +291,12 @@ export async function GET(request: NextRequest) {
     if (shouldSearch("dishes")) {
       const [items, total] = await Promise.all([
         database.dish.findMany({
-          where: baseFilter(["name", "description", "category", "serviceStyle"]),
+          where: baseFilter([
+            "name",
+            "description",
+            "category",
+            "serviceStyle",
+          ]),
           orderBy: { updatedAt: "desc" },
           take: limit,
           skip,
@@ -304,7 +309,12 @@ export async function GET(request: NextRequest) {
           },
         }),
         database.dish.count({
-          where: baseFilter(["name", "description", "category", "serviceStyle"]),
+          where: baseFilter([
+            "name",
+            "description",
+            "category",
+            "serviceStyle",
+          ]),
         }),
       ]);
       groups.dishes = { items, total };
@@ -426,7 +436,12 @@ export async function GET(request: NextRequest) {
     if (shouldSearch("proposals")) {
       const [items, total] = await Promise.all([
         database.proposal.findMany({
-          where: baseFilter(["title", "proposalNumber", "eventType", "venueName"]),
+          where: baseFilter([
+            "title",
+            "proposalNumber",
+            "eventType",
+            "venueName",
+          ]),
           orderBy: { createdAt: "desc" },
           take: limit,
           skip,
@@ -440,7 +455,12 @@ export async function GET(request: NextRequest) {
           },
         }),
         database.proposal.count({
-          where: baseFilter(["title", "proposalNumber", "eventType", "venueName"]),
+          where: baseFilter([
+            "title",
+            "proposalNumber",
+            "eventType",
+            "venueName",
+          ]),
         }),
       ]);
       groups.proposals = { items, total };

@@ -55,67 +55,73 @@ async function getCalendarData(tenantId: string, start: Date, end: Date) {
 
   // Fetch all three data sources in parallel
   const [dbEvents, shiftsResult, timeOffResult] = await Promise.all([
-    database.event.findMany({
-      where: {
-        tenantId,
-        eventDate: {
-          gte: startUtc,
-          lte: endUtc,
+    database.event
+      .findMany({
+        where: {
+          tenantId,
+          eventDate: {
+            gte: startUtc,
+            lte: endUtc,
+          },
+          deletedAt: null,
+          status: { not: "cancelled" },
         },
-        deletedAt: null,
-        status: { not: "cancelled" },
-      },
-      select: {
-        id: true,
-        title: true,
-        eventDate: true,
-        eventType: true,
-        status: true,
-        venueName: true,
-        guestCount: true,
-      },
-      orderBy: { eventDate: "asc" },
-    }).catch(() => []),
-    database.scheduleShift.findMany({
-      where: {
-        tenantId,
-        OR: [
-          { shift_start: { gte: start, lte: end } },
-          { shift_start: { lt: start }, shift_end: { gt: start } },
-        ],
-        deletedAt: null,
-      },
-      select: {
-        id: true,
-        shift_start: true,
-        shift_end: true,
-        role_during_shift: true,
-        employeeId: true,
-      },
-      orderBy: { shift_start: "asc" },
-      take: 100,
-    }).catch(() => []),
-    database.employeeTimeOffRequest.findMany({
-      where: {
-        tenant_id: tenantId,
-        start_date: {
-          gte: startUtc,
-          lte: endUtc,
+        select: {
+          id: true,
+          title: true,
+          eventDate: true,
+          eventType: true,
+          status: true,
+          venueName: true,
+          guestCount: true,
         },
-        deleted_at: null,
-        status: "approved",
-      },
-      select: {
-        id: true,
-        start_date: true,
-        end_date: true,
-        reason: true,
-        status: true,
-        request_type: true,
-      },
-      orderBy: { start_date: "asc" },
-      take: 50,
-    }).catch(() => []),
+        orderBy: { eventDate: "asc" },
+      })
+      .catch(() => []),
+    database.scheduleShift
+      .findMany({
+        where: {
+          tenantId,
+          OR: [
+            { shift_start: { gte: start, lte: end } },
+            { shift_start: { lt: start }, shift_end: { gt: start } },
+          ],
+          deletedAt: null,
+        },
+        select: {
+          id: true,
+          shift_start: true,
+          shift_end: true,
+          role_during_shift: true,
+          employeeId: true,
+        },
+        orderBy: { shift_start: "asc" },
+        take: 100,
+      })
+      .catch(() => []),
+    database.employeeTimeOffRequest
+      .findMany({
+        where: {
+          tenant_id: tenantId,
+          start_date: {
+            gte: startUtc,
+            lte: endUtc,
+          },
+          deleted_at: null,
+          status: "approved",
+        },
+        select: {
+          id: true,
+          start_date: true,
+          end_date: true,
+          reason: true,
+          status: true,
+          request_type: true,
+        },
+        orderBy: { start_date: "asc" },
+        take: 50,
+      })
+      .catch(() => []),
   ]);
 
   const events: CalendarEvent[] = [];

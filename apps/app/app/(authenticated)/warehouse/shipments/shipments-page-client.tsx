@@ -9,6 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
+import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import {
   Dialog,
   DialogContent,
@@ -36,7 +37,6 @@ import {
   TableRow,
 } from "@repo/design-system/components/ui/table";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
-import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import {
   BoxIcon,
   DollarSignIcon,
@@ -816,7 +816,6 @@ export const ShipmentsPageClient = () => {
                     scheduled_date: e.target.value,
                   })
                 }
- 
                 value={createForm.scheduled_date || ""}
               />
             </div>
@@ -832,7 +831,6 @@ export const ShipmentsPageClient = () => {
                     estimated_delivery_date: e.target.value,
                   })
                 }
- 
                 value={createForm.estimated_delivery_date || ""}
               />
             </div>
@@ -988,7 +986,6 @@ export const ShipmentsPageClient = () => {
                           actual_delivery_date: e.target.value,
                         })
                       }
- 
                       value={statusForm.actual_delivery_date || ""}
                     />
                   </div>

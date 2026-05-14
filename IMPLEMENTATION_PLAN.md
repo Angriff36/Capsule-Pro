@@ -1,13 +1,37 @@
-# IMPLEMENTATION_PLAN.md — v75
+# IMPLEMENTATION_PLAN.md — v76
 
 > Updated 2026-05-14 by test suite repair.
+> v76: Resolved additional requireCurrentUser mock issues. Fixed manifest route params argument. Added InvariantError handling to auth tests. Test count: 678 failing / 2503 passing / 16 skipped.
 > v75: Resolved test failures by fixing requireCurrentUser mock setup in 91 test files. Added InvariantError handling to manifest dispatcher to return 401 for auth failures.
-> v74: Resolved P1.J - 306 TS2307 import errors + 15 TS2345 type errors fixed across 16 test files.
-> v73: Resolved Prisma type errors in 11 kitchen/payroll detail routes and 2 null check issues in stock-levels/warehouse routes.
-> v71: Resolved 13 P0 items (P0.E, P0.T, P0.U, P0.V, P0.W, P0.S, P0.Y, P0.Z, P0.AA, P0.AB, P0.AD, P0.F, P0.G, P0.AC). All P0 items resolved.
-> v66-70: Resolved P0.I, P0.X, P0.L, P0.AE, P0.AF, P0.AH.
 
-## v75 Findings (2026-05-14)
+## v76 Findings (2026-05-14)
+
+- **Progress made**: Reduced failing tests from 976 to 678 while increasing passing from 2274 to 2503.
+- **requireCurrentUser mock fix (continued)**: Fixed additional 8+ test files that were missing the mock setup in beforeEach/setup functions:
+  - `admin/admin-extended.test.ts` - added to `makeAuthedUser()`
+  - `events/battle-boards.test.ts` - added to `authed()` helper
+  - `kitchen/recipes/recipes.test.ts` - added to `authed()` helper
+  - `events/event-lifecycle.test.ts`, `logistics/logistics.test.ts`, `knowledge-base/knowledge-base.test.ts`, `timecards/timecards.test.ts`, `facilities/facilities-commands.test.ts`, `communications/communications.test.ts`
+- **params argument missing**: Fixed tests calling manifest route POST without required `{ params }` argument (Next.js 15 async params pattern)
+- **Auth test handling**: Updated `unauthed()` functions to throw `InvariantError` from `requireCurrentUser` mock for proper 401 responses
+- **E2E auth tests**: Fixed `requisition-end-to-end.test.ts` and `vendor-contract-end-to-end.test.ts` by adding InvariantError mock for unauthenticated test cases
+
+## v76 Resolved (2026-05-14)
+
+- **Additional requireCurrentUser Mock Fixes** [RESOLVED v76] — Fixed 8+ files with partial auth mocks. Tests now properly set up `requireCurrentUser.mockResolvedValue()` with user object.
+- **Manifest Route params Fix** [RESOLVED v76] — Added missing `{ params: Promise.resolve({ entity, command }) }` argument to manifest route POST calls.
+- **E2E Test Auth Fixes** [RESOLVED v76] — Fixed procurement E2E tests by properly mocking auth rejection paths.
+
+## v76 Remaining Failures (~678 tests)
+
+Many failures are pre-existing test infrastructure issues:
+- **Policy denial message format**: Tests expect `'Access denied: policyName'` but route returns `'Access denied: policyName (role=role)'`
+- **Database mock issues**: Some tests mock `@repo/database` partially, leaving `database.activityFeed.findMany` undefined
+- **Policy loading failures**: `TypeError: Cannot read properties of undefined (reading 'map')` in permission-checker.ts for some entities
+- **Tests for unimplemented functionality**: Some tests reference routes/features that don't exist
+- **Error message shape mismatches**: Expected 400 but getting 500 or vice versa
+
+## v75 Resolved (2026-05-14)
 
 - **Root cause identified**: Tests mocking `requireCurrentUser` but not setting its resolved value caused `TypeError: Cannot read properties of undefined (reading 'id')` at route.ts line 48.
 - **Fix applied**: Added `requireCurrentUser.mockResolvedValue({ id, tenantId, role, email, firstName, lastName })` in test `beforeEach` blocks.

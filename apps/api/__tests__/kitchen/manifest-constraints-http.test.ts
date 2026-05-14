@@ -114,6 +114,15 @@ vi.mock("@/lib/manifest-runtime", () => ({
 
 // Mock getTenantIdForOrg
 vi.mock("@/app/lib/tenant", () => ({
+  requireCurrentUser: vi.fn().mockResolvedValue({
+    id: "test-user-id",
+    tenantId: "test-tenant",
+    role: "admin",
+    email: "test@example.com",
+    firstName: "Test",
+    lastName: "User",
+  }),
+
   getTenantIdForOrg: vi.fn(() => Promise.resolve("test-tenant")),
 }));
 

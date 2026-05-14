@@ -83,20 +83,30 @@ Your role is to craft compelling, evocative menu narratives that help clients un
     "cocktail-reception": "sophisticated cocktail reception",
   };
 
-  const formDataOccasion = occasionDescriptions[formData.occasionType] || formData.occasionType;
-  const formDataServiceStyle = serviceStyleDescriptions[formData.serviceStyle] || formData.serviceStyle;
+  const formDataOccasion =
+    occasionDescriptions[formData.occasionType] || formData.occasionType;
+  const formDataServiceStyle =
+    serviceStyleDescriptions[formData.serviceStyle] || formData.serviceStyle;
 
-  const formattedItems = menuItems.map((item) => {
-    const dietary = item.dietaryFlags.length > 0 ? ` (${item.dietaryFlags.join(", ")})` : "";
-    return `- ${item.name} [${item.category}]${dietary}`;
-  }).join("\n");
+  const formattedItems = menuItems
+    .map((item) => {
+      const dietary =
+        item.dietaryFlags.length > 0
+          ? ` (${item.dietaryFlags.join(", ")})`
+          : "";
+      return `- ${item.name} [${item.category}]${dietary}`;
+    })
+    .join("\n");
 
-  const dietaryCoverage = formData.dietaryCoverageNeeds.length > 0
-    ? formData.dietaryCoverageNeeds.join(", ")
-    : "standard";
+  const dietaryCoverage =
+    formData.dietaryCoverageNeeds.length > 0
+      ? formData.dietaryCoverageNeeds.join(", ")
+      : "standard";
 
   const seasonalContext = seasonalEmojis[formData.season] || formData.season;
-  const notesSection = formData.notes ? `\n\n**Special Requests:** ${formData.notes}` : "";
+  const notesSection = formData.notes
+    ? `\n\n**Special Requests:** ${formData.notes}`
+    : "";
 
   const userPrompt = `Craft an inspiring menu narrative for this catering event:
 
@@ -132,7 +142,10 @@ Write a compelling menu story (${TARGET_WORD_COUNT} words) that celebrates this 
   }
 }
 
-function generateFallbackStory(formData: MenuFormData, menuItems: MenuItemInfo[]): string {
+function generateFallbackStory(
+  formData: MenuFormData,
+  menuItems: MenuItemInfo[]
+): string {
   const seasonalContext: Record<string, string> = {
     spring: "Springtime",
     summer: "Summertime",
@@ -148,17 +161,21 @@ function generateFallbackStory(formData: MenuFormData, menuItems: MenuItemInfo[]
   };
 
   const season = seasonalContext[formData.season] || "This";
-  const occasion = occasionDescriptions[formData.occasionType] || formData.occasionType;
-  const itemList = menuItems.length > 0
-    ? menuItems.map((i) => i.name).join(", ")
-    : "selected menu items";
+  const occasion =
+    occasionDescriptions[formData.occasionType] || formData.occasionType;
+  const itemList =
+    menuItems.length > 0
+      ? menuItems.map((i) => i.name).join(", ")
+      : "selected menu items";
 
-  return `${season} brings a delightful culinary experience to this ${occasion}. ` +
+  return (
+    `${season} brings a delightful culinary experience to this ${occasion}. ` +
     `Designed to serve ${formData.guestCount} guests with ${formData.serviceStyle || "elegant"} service, ` +
     `this menu celebrates ${formData.menuDirection || "exceptional cuisine"} with carefully curated selections. ` +
     `Highlights include ${itemList}. ` +
-    `${formData.dietaryCoverageNeeds.length > 0 ? `Special dietary accommodations have been thoughtfully considered. ` : ""}` +
-    `${formData.barService ? `Complete beverage service will complement the dining experience.` : ""}`;
+    `${formData.dietaryCoverageNeeds.length > 0 ? "Special dietary accommodations have been thoughtfully considered. " : ""}` +
+    `${formData.barService ? "Complete beverage service will complement the dining experience." : ""}`
+  );
 }
 
 export const POST = withRateLimit<Record<string, never>>(
@@ -191,11 +208,13 @@ export const POST = withRateLimit<Record<string, never>>(
 
       // Extract menu item info from selected items (simplified - real implementation
       // would fetch full dish details from database)
-      const menuItems: MenuItemInfo[] = formData.selectedItems.map((itemId) => ({
-        name: itemId,
-        category: "menu item",
-        dietaryFlags: [],
-      }));
+      const menuItems: MenuItemInfo[] = formData.selectedItems.map(
+        (itemId) => ({
+          name: itemId,
+          category: "menu item",
+          dietaryFlags: [],
+        })
+      );
 
       const story = await generateMenuStory(formData, menuItems);
 

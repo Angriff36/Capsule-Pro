@@ -99,7 +99,9 @@ describe("SET1: Settings pages load without crashes", () => {
   describe("Integrations page", () => {
     it("delegates to IntegrationsClient with GoodShuffle, Nowsta, and QuickBooks tabs", () => {
       const pageSource = readSettingFile("integrations/page.tsx");
-      const clientSource = readSettingFile("integrations/integrations-client.tsx");
+      const clientSource = readSettingFile(
+        "integrations/integrations-client.tsx"
+      );
       expect(pageSource).toContain("IntegrationsClient");
       expect(pageSource).toContain("GoodShuffle");
       expect(pageSource).toContain("QuickBooks");

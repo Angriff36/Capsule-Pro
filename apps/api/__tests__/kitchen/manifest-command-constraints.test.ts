@@ -109,9 +109,17 @@ vi.mock("@/lib/manifest-runtime", () => ({
   ),
 }));
 
-// Mock getTenantIdForOrg
+// Mock getTenantIdForOrg and requireCurrentUser
 vi.mock("@/app/lib/tenant", () => ({
   getTenantIdForOrg: vi.fn(() => Promise.resolve("test-tenant")),
+  requireCurrentUser: vi.fn().mockResolvedValue({
+    id: "test-user-id",
+    tenantId: "test-tenant",
+    role: "admin",
+    email: "test@example.com",
+    firstName: "Test",
+    lastName: "User",
+  }),
 }));
 
 describe("Manifest Command Constraints - PrepTask Commands", () => {
@@ -171,7 +179,9 @@ describe("Manifest Command Constraints - PrepTask Commands", () => {
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "claim" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({ entity: "PrepTask", command: "claim" }),
+      });
       const data = await response.json();
 
       // WARN constraint should still return success (200)
@@ -239,7 +249,9 @@ describe("Manifest Command Constraints - PrepTask Commands", () => {
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "claim" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({ entity: "PrepTask", command: "claim" }),
+      });
       const data = await response.json();
 
       expect(response.status).toBeGreaterThanOrEqual(200);
@@ -304,7 +316,9 @@ describe("Manifest Command Constraints - PrepTask Commands", () => {
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "claim" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({ entity: "PrepTask", command: "claim" }),
+      });
       const data = await response.json();
 
       // WARN constraint should still return success (200)
@@ -368,7 +382,9 @@ describe("Manifest Command Constraints - PrepTask Commands", () => {
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "claim" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({ entity: "PrepTask", command: "claim" }),
+      });
       const data = await response.json();
 
       expect(response.status).toBeGreaterThanOrEqual(200);
@@ -432,7 +448,9 @@ describe("Manifest Command Constraints - PrepTask Commands", () => {
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "claim" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({ entity: "PrepTask", command: "claim" }),
+      });
       const data = await response.json();
 
       // WARN constraint should still return success (200)
@@ -495,7 +513,9 @@ describe("Manifest Command Constraints - PrepTask Commands", () => {
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "claim" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({ entity: "PrepTask", command: "claim" }),
+      });
       const data = await response.json();
 
       expect(response.status).toBeGreaterThanOrEqual(200);
@@ -559,7 +579,9 @@ describe("Manifest Command Constraints - PrepTask Commands", () => {
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "claim" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({ entity: "PrepTask", command: "claim" }),
+      });
       const data = await response.json();
 
       // WARN constraint should still return success (200)
@@ -621,7 +643,9 @@ describe("Manifest Command Constraints - PrepTask Commands", () => {
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "claim" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({ entity: "PrepTask", command: "claim" }),
+      });
       const data = await response.json();
 
       expect(response.status).toBeGreaterThanOrEqual(200);
@@ -684,7 +708,9 @@ describe("Manifest Command Constraints - PrepTask Commands", () => {
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "claim" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({ entity: "PrepTask", command: "claim" }),
+      });
       const data = await response.json();
 
       // WARN constraint should still return success (200)
@@ -746,7 +772,9 @@ describe("Manifest Command Constraints - PrepTask Commands", () => {
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "claim" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({ entity: "PrepTask", command: "claim" }),
+      });
       const data = await response.json();
 
       expect(response.status).toBeGreaterThanOrEqual(200);
@@ -813,7 +841,9 @@ describe("Manifest Command Constraints - Recipe Commands", () => {
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "update" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({ entity: "PrepTask", command: "update" }),
+      });
       const data = await response.json();
 
       // WARN constraint should still return success (200)
@@ -872,7 +902,9 @@ describe("Manifest Command Constraints - Recipe Commands", () => {
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "update" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({ entity: "PrepTask", command: "update" }),
+      });
       const data = await response.json();
 
       expect(response.status).toBeGreaterThanOrEqual(200);
@@ -943,7 +975,12 @@ describe("Manifest Command Constraints - Dish Commands (Recipe domain)", () => {
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "update-pricing" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({
+          entity: "PrepTask",
+          command: "update-pricing",
+        }),
+      });
       const data = await response.json();
 
       // WARN constraint should still return success (200)
@@ -1008,7 +1045,12 @@ describe("Manifest Command Constraints - Dish Commands (Recipe domain)", () => {
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "update-pricing" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({
+          entity: "PrepTask",
+          command: "update-pricing",
+        }),
+      });
       const data = await response.json();
 
       // WARN constraint should still return success (200)
@@ -1071,7 +1113,12 @@ describe("Manifest Command Constraints - Dish Commands (Recipe domain)", () => {
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "update-pricing" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({
+          entity: "PrepTask",
+          command: "update-pricing",
+        }),
+      });
       const data = await response.json();
 
       expect(response.status).toBeGreaterThanOrEqual(200);
@@ -1141,7 +1188,9 @@ describe("Manifest Command Constraints - Menu Commands", () => {
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "update" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({ entity: "PrepTask", command: "update" }),
+      });
       const data = await response.json();
 
       // WARN constraint should still return success (200)
@@ -1205,7 +1254,9 @@ describe("Manifest Command Constraints - Menu Commands", () => {
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "update" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({ entity: "PrepTask", command: "update" }),
+      });
       const data = await response.json();
 
       // WARN constraint should still return success (200)
@@ -1267,7 +1318,9 @@ describe("Manifest Command Constraints - Menu Commands", () => {
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "update" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({ entity: "PrepTask", command: "update" }),
+      });
       const data = await response.json();
 
       expect(response.status).toBeGreaterThanOrEqual(200);
@@ -1337,7 +1390,9 @@ describe("Manifest Command Constraints - PrepList Commands", () => {
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "update" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({ entity: "PrepTask", command: "update" }),
+      });
       const data = await response.json();
 
       // WARN constraint should still return success (200)
@@ -1400,7 +1455,9 @@ describe("Manifest Command Constraints - PrepList Commands", () => {
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "update" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({ entity: "PrepTask", command: "update" }),
+      });
       const data = await response.json();
 
       // WARN constraint should still return success (200)
@@ -1460,7 +1517,9 @@ describe("Manifest Command Constraints - PrepList Commands", () => {
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "update" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({ entity: "PrepTask", command: "update" }),
+      });
       const data = await response.json();
 
       expect(response.status).toBeGreaterThanOrEqual(200);
@@ -1540,7 +1599,12 @@ describe("Manifest Command Constraints - PrepListItem Commands (PrepList domain)
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "update-station" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({
+          entity: "PrepTask",
+          command: "update-station",
+        }),
+      });
       const data = await response.json();
 
       // WARN constraint should still return success (200)
@@ -1612,7 +1676,12 @@ describe("Manifest Command Constraints - PrepListItem Commands (PrepList domain)
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "update-station" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({
+          entity: "PrepTask",
+          command: "update-station",
+        }),
+      });
       const data = await response.json();
 
       expect(response.status).toBeGreaterThanOrEqual(200);

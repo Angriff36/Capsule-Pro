@@ -1,13 +1,5 @@
 "use client";
 
-import { Badge } from "@repo/design-system/components/ui/badge";
-import { Button } from "@repo/design-system/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@repo/design-system/components/ui/card";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,6 +10,15 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@repo/design-system/components/ui/alert-dialog";
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@repo/design-system/components/ui/card";
+import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import {
   Dialog,
   DialogContent,
@@ -35,7 +36,6 @@ import {
   TabsTrigger,
 } from "@repo/design-system/components/ui/tabs";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
-import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import {
   CheckCircle2,
   Clock,
@@ -140,15 +140,18 @@ export function RoutesView() {
 
     setCreating(true);
     try {
-      const res = await apiFetch("/api/manifest/LogisticsRoute/commands/create", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: createForm.name,
-          description: createForm.description || null,
-          scheduledDate: createForm.scheduledDate || null,
-        }),
-      });
+      const res = await apiFetch(
+        "/api/manifest/LogisticsRoute/commands/create",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: createForm.name,
+            description: createForm.description || null,
+            scheduledDate: createForm.scheduledDate || null,
+          }),
+        }
+      );
       const data = await res.json();
       if (data.route) {
         setRoutes((prev) => [data.route, ...prev]);
@@ -165,11 +168,14 @@ export function RoutesView() {
   const handleOptimize = async (routeId: string) => {
     setOptimizing(routeId);
     try {
-      const res = await apiFetch("/api/manifest/LogisticsRoute/commands/optimize", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ routeId }),
-      });
+      const res = await apiFetch(
+        "/api/manifest/LogisticsRoute/commands/optimize",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ routeId }),
+        }
+      );
 
       if (!res.ok) {
         if (res.status === 501) {
@@ -260,7 +266,7 @@ export function RoutesView() {
 
   const handleSaveEdit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editingRoute || !editForm.name.trim()) return;
+    if (!(editingRoute && editForm.name.trim())) return;
 
     setSaving(true);
     try {
@@ -275,12 +281,12 @@ export function RoutesView() {
             description: editForm.description || null,
             scheduledDate: editForm.scheduledDate || null,
           }),
-        },
+        }
       );
       const data = await res.json();
       if (data.route) {
         setRoutes((prev) =>
-          prev.map((r) => (r.id === editingRoute.id ? data.route : r)),
+          prev.map((r) => (r.id === editingRoute.id ? data.route : r))
         );
         setShowEditDialog(false);
         toast.success("Route updated");
@@ -303,7 +309,7 @@ export function RoutesView() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ routeId: deleteRouteId }),
-        },
+        }
       );
       if (res.ok) {
         setRoutes((prev) => prev.filter((r) => r.id !== deleteRouteId));
@@ -492,10 +498,10 @@ export function RoutesView() {
                       )}
                     {route.status !== "in_progress" && (
                       <Button
+                        className="text-destructive hover:text-destructive"
                         onClick={() => setDeleteRouteId(route.id)}
                         size="sm"
                         variant="outline"
-                        className="text-destructive hover:text-destructive"
                       >
                         <Trash2 className="mr-2 h-4 w-4" />
                         Delete
@@ -541,7 +547,6 @@ export function RoutesView() {
                     scheduledDate: e.target.value,
                   }))
                 }
- 
                 value={createForm.scheduledDate}
               />
             </div>
@@ -616,7 +621,6 @@ export function RoutesView() {
                     scheduledDate: e.target.value,
                   }))
                 }
- 
                 value={editForm.scheduledDate}
               />
             </div>
@@ -641,10 +645,7 @@ export function RoutesView() {
               >
                 Cancel
               </Button>
-              <Button
-                disabled={!editForm.name.trim() || saving}
-                type="submit"
-              >
+              <Button disabled={!editForm.name.trim() || saving} type="submit">
                 {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Save Changes
               </Button>
@@ -670,10 +671,7 @@ export function RoutesView() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              disabled={deleting}
-              onClick={handleDeleteRoute}
-            >
+            <AlertDialogAction disabled={deleting} onClick={handleDeleteRoute}>
               {deleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Delete
             </AlertDialogAction>

@@ -113,7 +113,8 @@ export const getFinanceOverview = cache(
       budgetCount: budgetSummary._count,
       revenueAccountCount,
       expenseAccountCount,
-      collectionRate: invoicedTotal > 0 ? (collectedTotal / invoicedTotal) * 100 : 0,
+      collectionRate:
+        invoicedTotal > 0 ? (collectedTotal / invoicedTotal) * 100 : 0,
     };
   }
 );
@@ -122,67 +123,63 @@ export const getFinanceOverview = cache(
 // Recent invoices — kept separate (list data for tables)
 // ============================================================================
 
-export const getRecentInvoices = cache(
-  async (tenantId: string) => {
-    return db.invoice.findMany({
-      where: { tenantId, deletedAt: null },
-      orderBy: [{ dueDate: "asc" }, { createdAt: "desc" }],
-      take: 8,
-      select: {
-        id: true,
-        invoiceNumber: true,
-        invoiceType: true,
-        status: true,
-        total: true,
-        amountPaid: true,
-        amountDue: true,
-        dueDate: true,
-        client: {
-          select: {
-            company_name: true,
-            first_name: true,
-            last_name: true,
-          },
-        },
-        event: {
-          select: { title: true },
+export const getRecentInvoices = cache(async (tenantId: string) => {
+  return db.invoice.findMany({
+    where: { tenantId, deletedAt: null },
+    orderBy: [{ dueDate: "asc" }, { createdAt: "desc" }],
+    take: 8,
+    select: {
+      id: true,
+      invoiceNumber: true,
+      invoiceType: true,
+      status: true,
+      total: true,
+      amountPaid: true,
+      amountDue: true,
+      dueDate: true,
+      client: {
+        select: {
+          company_name: true,
+          first_name: true,
+          last_name: true,
         },
       },
-    });
-  }
-);
+      event: {
+        select: { title: true },
+      },
+    },
+  });
+});
 
 // ============================================================================
 // Recent payments — kept separate (list data for tables)
 // ============================================================================
 
-export const getRecentPayments = cache(
-  async (tenantId: string) => {
-    return db.payment.findMany({
-      where: { tenantId, deletedAt: null },
-      orderBy: [{ completedAt: "desc" }, { createdAt: "desc" }],
-      take: 8,
-      select: {
-        id: true,
-        amount: true,
-        status: true,
-        methodType: true,
-        completedAt: true,
-        createdAt: true,
-        client: {
-          select: {
-            company_name: true,
-            first_name: true,
-            last_name: true,
-          },
-        },
-        invoice: {
-          select: { invoiceNumber: true },
-        },
-        event: {
-          select: { title: true },
+export const getRecentPayments = cache(async (tenantId: string) => {
+  return db.payment.findMany({
+    where: { tenantId, deletedAt: null },
+    orderBy: [{ completedAt: "desc" }, { createdAt: "desc" }],
+    take: 8,
+    select: {
+      id: true,
+      amount: true,
+      status: true,
+      methodType: true,
+      completedAt: true,
+      createdAt: true,
+      client: {
+        select: {
+          company_name: true,
+          first_name: true,
+          last_name: true,
         },
       },
-    });
-  }
-);
+      invoice: {
+        select: { invoiceNumber: true },
+      },
+      event: {
+        select: { title: true },
+      },
+    },
+  });
+});

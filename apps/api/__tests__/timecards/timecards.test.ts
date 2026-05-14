@@ -64,6 +64,15 @@ vi.mock("@/lib/database", () => ({
 // Mock other external dependencies
 vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
 vi.mock("@/app/lib/tenant", () => ({
+  requireCurrentUser: vi.fn().mockResolvedValue({
+    id: "test-user-id",
+    tenantId: "test-tenant",
+    role: "admin",
+    email: "test@example.com",
+    firstName: "Test",
+    lastName: "User",
+  }),
+
   getTenantIdForOrg: vi.fn(),
 }));
 vi.mock("@/lib/manifest-runtime", () => ({
@@ -77,22 +86,24 @@ vi.mock("@/lib/manifest-command-handler", () => ({
 }));
 
 const { auth } = await import("@repo/auth/server");
-const { getTenantIdForOrg } = await import("@/app/lib/tenant");
+const { getTenantIdForOrg, requireCurrentUser } = await import("@/app/lib/tenant");
 const { createManifestRuntime } = await import("@/lib/manifest-runtime");
 
+import {
+  POST as addEntry,
+  POST as approveEditRequest,
+  POST as approveTimeOff,
+  POST as clockIn,
+  POST as clockOut,
+  POST as rejectEditRequest,
+  POST as rejectTimeOff,
+} from "@/app/api/manifest/[entity]/commands/[command]/route";
 import { GET as getEditRequest } from "@/app/api/timecards/edit-requests/[id]/route";
-import { POST as approveEditRequest } from "@/app/api/manifest/[entity]/commands/[command]/route";
-import { POST as rejectEditRequest } from "@/app/api/manifest/[entity]/commands/[command]/route";
 import { GET as listEditRequests } from "@/app/api/timecards/edit-requests/list/route";
 import { GET as getTimeEntry } from "@/app/api/timecards/entries/[id]/route";
-import { POST as addEntry } from "@/app/api/manifest/[entity]/commands/[command]/route";
-import { POST as clockIn } from "@/app/api/manifest/[entity]/commands/[command]/route";
-import { POST as clockOut } from "@/app/api/manifest/[entity]/commands/[command]/route";
 // Route imports (after mocks are set up)
 import { GET as listTimeEntries } from "@/app/api/timecards/entries/list/route";
 import { GET as getTimeOffRequest } from "@/app/api/timecards/time-off-requests/[id]/route";
-import { POST as approveTimeOff } from "@/app/api/manifest/[entity]/commands/[command]/route";
-import { POST as rejectTimeOff } from "@/app/api/manifest/[entity]/commands/[command]/route";
 import { GET as listTimeOffRequests } from "@/app/api/timecards/time-off-requests/list/route";
 
 // Convenience accessors through the Proxy (auto-creates stubs on first access)
@@ -189,6 +200,14 @@ describe("Timecards API", () => {
       orgId: TEST_ORG_ID,
     } as never);
     vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
+    vi.mocked(requireCurrentUser).mockResolvedValue({
+      id: TEST_USER_ID,
+      tenantId: TEST_TENANT_ID,
+      role: "admin",
+      email: "test@example.com",
+      firstName: "Test",
+      lastName: "User",
+    } as never);
   });
 
   afterEach(() => {
@@ -414,7 +433,9 @@ describe("Timecards API", () => {
           body: JSON.stringify({ employeeId: "emp-001" }),
         }
       );
-      const response = await clockIn(request, { params: Promise.resolve({ entity: "TimeEntry", command: "clockIn" }) });
+      const response = await clockIn(request, {
+        params: Promise.resolve({ entity: "TimeEntry", command: "clockIn" }),
+      });
 
       expect(response.status).toBe(401);
     });
@@ -429,7 +450,9 @@ describe("Timecards API", () => {
           body: JSON.stringify({ employeeId: "emp-001" }),
         }
       );
-      const response = await clockIn(request, { params: Promise.resolve({ entity: "TimeEntry", command: "clockIn" }) });
+      const response = await clockIn(request, {
+        params: Promise.resolve({ entity: "TimeEntry", command: "clockIn" }),
+      });
 
       expect(response.status).toBe(400);
     });
@@ -444,7 +467,9 @@ describe("Timecards API", () => {
           body: JSON.stringify({ employeeId: "emp-001" }),
         }
       );
-      const response = await clockIn(request, { params: Promise.resolve({ entity: "TimeEntry", command: "clockIn" }) });
+      const response = await clockIn(request, {
+        params: Promise.resolve({ entity: "TimeEntry", command: "clockIn" }),
+      });
 
       expect(response.status).toBe(400);
       const body = await response.json();
@@ -465,7 +490,9 @@ describe("Timecards API", () => {
           body: JSON.stringify({ employeeId: "emp-001" }),
         }
       );
-      const response = await clockIn(request, { params: Promise.resolve({ entity: "TimeEntry", command: "clockIn" }) });
+      const response = await clockIn(request, {
+        params: Promise.resolve({ entity: "TimeEntry", command: "clockIn" }),
+      });
 
       expect(response.status).toBe(200);
       const body = await response.json();
@@ -492,7 +519,9 @@ describe("Timecards API", () => {
           body: JSON.stringify({ employeeId: "emp-001" }),
         }
       );
-      const response = await clockIn(request, { params: Promise.resolve({ entity: "TimeEntry", command: "clockIn" }) });
+      const response = await clockIn(request, {
+        params: Promise.resolve({ entity: "TimeEntry", command: "clockIn" }),
+      });
 
       expect(response.status).toBe(403);
       const body = await response.json();
@@ -516,7 +545,9 @@ describe("Timecards API", () => {
           body: JSON.stringify({ employeeId: "emp-001" }),
         }
       );
-      const response = await clockIn(request, { params: Promise.resolve({ entity: "TimeEntry", command: "clockIn" }) });
+      const response = await clockIn(request, {
+        params: Promise.resolve({ entity: "TimeEntry", command: "clockIn" }),
+      });
 
       expect(response.status).toBe(422);
       const body = await response.json();
@@ -539,7 +570,9 @@ describe("Timecards API", () => {
           body: JSON.stringify({ employeeId: "invalid" }),
         }
       );
-      const response = await clockIn(request, { params: Promise.resolve({ entity: "TimeEntry", command: "clockIn" }) });
+      const response = await clockIn(request, {
+        params: Promise.resolve({ entity: "TimeEntry", command: "clockIn" }),
+      });
 
       expect(response.status).toBe(400);
       const body = await response.json();
@@ -556,7 +589,9 @@ describe("Timecards API", () => {
           body: JSON.stringify({ employeeId: "emp-001" }),
         }
       );
-      const response = await clockIn(request, { params: Promise.resolve({ entity: "TimeEntry", command: "clockIn" }) });
+      const response = await clockIn(request, {
+        params: Promise.resolve({ entity: "TimeEntry", command: "clockIn" }),
+      });
 
       expect(response.status).toBe(500);
     });
@@ -587,7 +622,9 @@ describe("Timecards API", () => {
           body: JSON.stringify({ id: "entry-001" }),
         }
       );
-      const response = await clockOut(request, { params: Promise.resolve({ entity: "TimeEntry", command: "clockOut" }) });
+      const response = await clockOut(request, {
+        params: Promise.resolve({ entity: "TimeEntry", command: "clockOut" }),
+      });
 
       expect(response.status).toBe(401);
     });
@@ -602,7 +639,9 @@ describe("Timecards API", () => {
           body: JSON.stringify({ id: "entry-001" }),
         }
       );
-      const response = await clockOut(request, { params: Promise.resolve({ entity: "TimeEntry", command: "clockOut" }) });
+      const response = await clockOut(request, {
+        params: Promise.resolve({ entity: "TimeEntry", command: "clockOut" }),
+      });
 
       expect(response.status).toBe(400);
     });
@@ -621,7 +660,9 @@ describe("Timecards API", () => {
           body: JSON.stringify({ id: "entry-001" }),
         }
       );
-      const response = await clockOut(request, { params: Promise.resolve({ entity: "TimeEntry", command: "clockOut" }) });
+      const response = await clockOut(request, {
+        params: Promise.resolve({ entity: "TimeEntry", command: "clockOut" }),
+      });
 
       expect(response.status).toBe(200);
       const body = await response.json();
@@ -651,7 +692,9 @@ describe("Timecards API", () => {
           body: JSON.stringify({ id: "entry-001" }),
         }
       );
-      const response = await clockOut(request, { params: Promise.resolve({ entity: "TimeEntry", command: "clockOut" }) });
+      const response = await clockOut(request, {
+        params: Promise.resolve({ entity: "TimeEntry", command: "clockOut" }),
+      });
 
       expect(response.status).toBe(422);
       const body = await response.json();
@@ -672,7 +715,9 @@ describe("Timecards API", () => {
           body: JSON.stringify({ id: "entry-001" }),
         }
       );
-      const response = await clockOut(request, { params: Promise.resolve({ entity: "TimeEntry", command: "clockOut" }) });
+      const response = await clockOut(request, {
+        params: Promise.resolve({ entity: "TimeEntry", command: "clockOut" }),
+      });
 
       expect(response.status).toBe(403);
       const body = await response.json();
@@ -690,7 +735,9 @@ describe("Timecards API", () => {
           body: JSON.stringify({ id: "entry-001" }),
         }
       );
-      const response = await clockOut(request, { params: Promise.resolve({ entity: "TimeEntry", command: "clockOut" }) });
+      const response = await clockOut(request, {
+        params: Promise.resolve({ entity: "TimeEntry", command: "clockOut" }),
+      });
 
       expect(response.status).toBe(500);
     });
@@ -725,7 +772,9 @@ describe("Timecards API", () => {
           }),
         }
       );
-      const response = await addEntry(request, { params: Promise.resolve({ entity: "TimeEntry", command: "addEntry" }) });
+      const response = await addEntry(request, {
+        params: Promise.resolve({ entity: "TimeEntry", command: "addEntry" }),
+      });
 
       expect(response.status).toBe(401);
     });
@@ -749,7 +798,9 @@ describe("Timecards API", () => {
           }),
         }
       );
-      const response = await addEntry(request, { params: Promise.resolve({ entity: "TimeEntry", command: "addEntry" }) });
+      const response = await addEntry(request, {
+        params: Promise.resolve({ entity: "TimeEntry", command: "addEntry" }),
+      });
 
       expect(response.status).toBe(200);
       const body = await response.json();
@@ -783,7 +834,9 @@ describe("Timecards API", () => {
           }),
         }
       );
-      const response = await addEntry(request, { params: Promise.resolve({ entity: "TimeEntry", command: "addEntry" }) });
+      const response = await addEntry(request, {
+        params: Promise.resolve({ entity: "TimeEntry", command: "addEntry" }),
+      });
 
       expect(response.status).toBe(422);
       const body = await response.json();
@@ -990,7 +1043,12 @@ describe("Timecards API", () => {
           body: JSON.stringify({ id: "edit-001" }),
         }
       );
-      const response = await approveEditRequest(request, { params: Promise.resolve({ entity: "TimecardEditRequest", command: "approve" }) });
+      const response = await approveEditRequest(request, {
+        params: Promise.resolve({
+          entity: "TimecardEditRequest",
+          command: "approve",
+        }),
+      });
 
       expect(response.status).toBe(401);
     });
@@ -1009,7 +1067,12 @@ describe("Timecards API", () => {
           body: JSON.stringify({ id: "edit-001" }),
         }
       );
-      const response = await approveEditRequest(request, { params: Promise.resolve({ entity: "TimecardEditRequest", command: "approve" }) });
+      const response = await approveEditRequest(request, {
+        params: Promise.resolve({
+          entity: "TimecardEditRequest",
+          command: "approve",
+        }),
+      });
 
       expect(response.status).toBe(200);
       const body = await response.json();
@@ -1036,7 +1099,12 @@ describe("Timecards API", () => {
           body: JSON.stringify({ id: "edit-001" }),
         }
       );
-      const response = await approveEditRequest(request, { params: Promise.resolve({ entity: "TimecardEditRequest", command: "approve" }) });
+      const response = await approveEditRequest(request, {
+        params: Promise.resolve({
+          entity: "TimecardEditRequest",
+          command: "approve",
+        }),
+      });
 
       expect(response.status).toBe(403);
       const body = await response.json();
@@ -1060,7 +1128,12 @@ describe("Timecards API", () => {
           body: JSON.stringify({ id: "edit-001" }),
         }
       );
-      const response = await approveEditRequest(request, { params: Promise.resolve({ entity: "TimecardEditRequest", command: "approve" }) });
+      const response = await approveEditRequest(request, {
+        params: Promise.resolve({
+          entity: "TimecardEditRequest",
+          command: "approve",
+        }),
+      });
 
       expect(response.status).toBe(422);
       const body = await response.json();
@@ -1081,7 +1154,12 @@ describe("Timecards API", () => {
           body: JSON.stringify({ id: "nonexistent" }),
         }
       );
-      const response = await approveEditRequest(request, { params: Promise.resolve({ entity: "TimecardEditRequest", command: "approve" }) });
+      const response = await approveEditRequest(request, {
+        params: Promise.resolve({
+          entity: "TimecardEditRequest",
+          command: "approve",
+        }),
+      });
 
       expect(response.status).toBe(400);
       const body = await response.json();
@@ -1098,7 +1176,12 @@ describe("Timecards API", () => {
           body: JSON.stringify({ id: "edit-001" }),
         }
       );
-      const response = await approveEditRequest(request, { params: Promise.resolve({ entity: "TimecardEditRequest", command: "approve" }) });
+      const response = await approveEditRequest(request, {
+        params: Promise.resolve({
+          entity: "TimecardEditRequest",
+          command: "approve",
+        }),
+      });
 
       expect(response.status).toBe(500);
     });
@@ -1129,7 +1212,12 @@ describe("Timecards API", () => {
           body: JSON.stringify({ id: "edit-001" }),
         }
       );
-      const response = await rejectEditRequest(request, { params: Promise.resolve({ entity: "TimecardEditRequest", command: "reject" }) });
+      const response = await rejectEditRequest(request, {
+        params: Promise.resolve({
+          entity: "TimecardEditRequest",
+          command: "reject",
+        }),
+      });
 
       expect(response.status).toBe(401);
     });
@@ -1148,7 +1236,12 @@ describe("Timecards API", () => {
           body: JSON.stringify({ id: "edit-001", reason: "Not justified" }),
         }
       );
-      const response = await rejectEditRequest(request, { params: Promise.resolve({ entity: "TimecardEditRequest", command: "reject" }) });
+      const response = await rejectEditRequest(request, {
+        params: Promise.resolve({
+          entity: "TimecardEditRequest",
+          command: "reject",
+        }),
+      });
 
       expect(response.status).toBe(200);
       const body = await response.json();
@@ -1175,7 +1268,12 @@ describe("Timecards API", () => {
           body: JSON.stringify({ id: "edit-001" }),
         }
       );
-      const response = await rejectEditRequest(request, { params: Promise.resolve({ entity: "TimecardEditRequest", command: "reject" }) });
+      const response = await rejectEditRequest(request, {
+        params: Promise.resolve({
+          entity: "TimecardEditRequest",
+          command: "reject",
+        }),
+      });
 
       expect(response.status).toBe(403);
       const body = await response.json();
@@ -1192,7 +1290,12 @@ describe("Timecards API", () => {
           body: JSON.stringify({ id: "edit-001" }),
         }
       );
-      const response = await rejectEditRequest(request, { params: Promise.resolve({ entity: "TimecardEditRequest", command: "reject" }) });
+      const response = await rejectEditRequest(request, {
+        params: Promise.resolve({
+          entity: "TimecardEditRequest",
+          command: "reject",
+        }),
+      });
 
       expect(response.status).toBe(500);
     });
@@ -1408,7 +1511,12 @@ describe("Timecards API", () => {
           body: JSON.stringify({ id: "tor-001" }),
         }
       );
-      const response = await approveTimeOff(request, { params: Promise.resolve({ entity: "TimeOffRequest", command: "approve" }) });
+      const response = await approveTimeOff(request, {
+        params: Promise.resolve({
+          entity: "TimeOffRequest",
+          command: "approve",
+        }),
+      });
 
       expect(response.status).toBe(401);
     });
@@ -1427,7 +1535,12 @@ describe("Timecards API", () => {
           body: JSON.stringify({ id: "tor-001" }),
         }
       );
-      const response = await approveTimeOff(request, { params: Promise.resolve({ entity: "TimeOffRequest", command: "approve" }) });
+      const response = await approveTimeOff(request, {
+        params: Promise.resolve({
+          entity: "TimeOffRequest",
+          command: "approve",
+        }),
+      });
 
       expect(response.status).toBe(200);
       const body = await response.json();
@@ -1454,7 +1567,12 @@ describe("Timecards API", () => {
           body: JSON.stringify({ id: "tor-001" }),
         }
       );
-      const response = await approveTimeOff(request, { params: Promise.resolve({ entity: "TimeOffRequest", command: "approve" }) });
+      const response = await approveTimeOff(request, {
+        params: Promise.resolve({
+          entity: "TimeOffRequest",
+          command: "approve",
+        }),
+      });
 
       expect(response.status).toBe(403);
       const body = await response.json();
@@ -1478,7 +1596,12 @@ describe("Timecards API", () => {
           body: JSON.stringify({ id: "tor-001" }),
         }
       );
-      const response = await approveTimeOff(request, { params: Promise.resolve({ entity: "TimeOffRequest", command: "approve" }) });
+      const response = await approveTimeOff(request, {
+        params: Promise.resolve({
+          entity: "TimeOffRequest",
+          command: "approve",
+        }),
+      });
 
       expect(response.status).toBe(422);
       const body = await response.json();
@@ -1495,7 +1618,12 @@ describe("Timecards API", () => {
           body: JSON.stringify({ id: "tor-001" }),
         }
       );
-      const response = await approveTimeOff(request, { params: Promise.resolve({ entity: "TimeOffRequest", command: "approve" }) });
+      const response = await approveTimeOff(request, {
+        params: Promise.resolve({
+          entity: "TimeOffRequest",
+          command: "approve",
+        }),
+      });
 
       expect(response.status).toBe(500);
     });
@@ -1526,7 +1654,12 @@ describe("Timecards API", () => {
           body: JSON.stringify({ id: "tor-001" }),
         }
       );
-      const response = await rejectTimeOff(request, { params: Promise.resolve({ entity: "TimeOffRequest", command: "reject" }) });
+      const response = await rejectTimeOff(request, {
+        params: Promise.resolve({
+          entity: "TimeOffRequest",
+          command: "reject",
+        }),
+      });
 
       expect(response.status).toBe(401);
     });
@@ -1548,7 +1681,12 @@ describe("Timecards API", () => {
           }),
         }
       );
-      const response = await rejectTimeOff(request, { params: Promise.resolve({ entity: "TimeOffRequest", command: "reject" }) });
+      const response = await rejectTimeOff(request, {
+        params: Promise.resolve({
+          entity: "TimeOffRequest",
+          command: "reject",
+        }),
+      });
 
       expect(response.status).toBe(200);
       const body = await response.json();
@@ -1578,7 +1716,12 @@ describe("Timecards API", () => {
           body: JSON.stringify({ id: "tor-001" }),
         }
       );
-      const response = await rejectTimeOff(request, { params: Promise.resolve({ entity: "TimeOffRequest", command: "reject" }) });
+      const response = await rejectTimeOff(request, {
+        params: Promise.resolve({
+          entity: "TimeOffRequest",
+          command: "reject",
+        }),
+      });
 
       expect(response.status).toBe(403);
       const body = await response.json();
@@ -1598,7 +1741,12 @@ describe("Timecards API", () => {
           body: JSON.stringify({ id: "nonexistent" }),
         }
       );
-      const response = await rejectTimeOff(request, { params: Promise.resolve({ entity: "TimeOffRequest", command: "reject" }) });
+      const response = await rejectTimeOff(request, {
+        params: Promise.resolve({
+          entity: "TimeOffRequest",
+          command: "reject",
+        }),
+      });
 
       expect(response.status).toBe(400);
       const body = await response.json();
@@ -1615,7 +1763,12 @@ describe("Timecards API", () => {
           body: JSON.stringify({ id: "tor-001" }),
         }
       );
-      const response = await rejectTimeOff(request, { params: Promise.resolve({ entity: "TimeOffRequest", command: "reject" }) });
+      const response = await rejectTimeOff(request, {
+        params: Promise.resolve({
+          entity: "TimeOffRequest",
+          command: "reject",
+        }),
+      });
 
       expect(response.status).toBe(500);
     });

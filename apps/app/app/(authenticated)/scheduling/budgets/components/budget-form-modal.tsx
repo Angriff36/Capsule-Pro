@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@repo/design-system/components/ui/button";
+import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import {
   Dialog,
   DialogContent,
@@ -20,7 +21,6 @@ import {
 } from "@repo/design-system/components/ui/select";
 import { Switch } from "@repo/design-system/components/ui/switch";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
-import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import { Loader2Icon } from "lucide-react";
 import { useState } from "react";
 import type {
@@ -320,7 +320,6 @@ export function BudgetFormModal({
                   onChange={(e) =>
                     setFormData({ ...formData, periodStart: e.target.value })
                   }
- 
                   value={formData.periodStart}
                 />
               </div>
@@ -335,7 +334,6 @@ export function BudgetFormModal({
                   onChange={(e) =>
                     setFormData({ ...formData, periodEnd: e.target.value })
                   }
- 
                   value={formData.periodEnd}
                 />
               </div>

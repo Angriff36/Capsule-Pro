@@ -14,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
+import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   Table,
   TableBody,
@@ -22,7 +23,6 @@ import {
   TableHeader,
   TableRow,
 } from "@repo/design-system/components/ui/table";
-import { Separator } from "@repo/design-system/components/ui/separator";
 import { useEffect, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
 import type {
@@ -595,7 +595,9 @@ export function EmployeePerformanceDashboard({
                       <TableRow>
                         <TableHead>Role</TableHead>
                         <TableHead className="text-right">Employees</TableHead>
-                        <TableHead className="text-right">Completion %</TableHead>
+                        <TableHead className="text-right">
+                          Completion %
+                        </TableHead>
                         <TableHead className="text-right">Quality</TableHead>
                         <TableHead className="text-right">Efficiency</TableHead>
                       </TableRow>
@@ -604,8 +606,12 @@ export function EmployeePerformanceDashboard({
                       {summary.metricsByRole.map((roleMetrics) => (
                         <TableRow key={roleMetrics.role}>
                           <TableCell>{roleMetrics.role}</TableCell>
-                          <TableCell className="text-right">{roleMetrics.employeeCount}</TableCell>
-                          <TableCell className="text-right">{roleMetrics.avgTaskCompletionRate.toFixed(1)}%</TableCell>
+                          <TableCell className="text-right">
+                            {roleMetrics.employeeCount}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            {roleMetrics.avgTaskCompletionRate.toFixed(1)}%
+                          </TableCell>
                           <TableCell
                             className={`text-right font-medium ${
                               roleMetrics.avgQualityScore >= 80

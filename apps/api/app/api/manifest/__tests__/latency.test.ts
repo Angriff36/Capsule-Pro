@@ -3,7 +3,7 @@
  * No HTTP proxy involved.
  */
 import { performance } from "node:perf_hooks";
-import { describe, it, expect } from "vitest";
+import { describe, it } from "vitest";
 
 describe("manifest command dispatch latency", () => {
   it("measures cold + warm dispatcher path", async () => {
@@ -14,7 +14,9 @@ describe("manifest command dispatch latency", () => {
     const { runManifestCommand } = await import(
       "@/lib/manifest/execute-command"
     );
-    console.log(`[measure] execute-command module import: ${(performance.now() - tCold).toFixed(0)}ms`);
+    console.log(
+      `[measure] execute-command module import: ${(performance.now() - tCold).toFixed(0)}ms`
+    );
 
     // First call — builds registry, creates runtime, loads IR from disk
     const tFirst = performance.now();
@@ -29,9 +31,13 @@ describe("manifest command dispatch latency", () => {
           role: "admin",
         },
       });
-      console.log(`[measure] FIRST call: ${(performance.now() - tFirst).toFixed(0)}ms (success=${result?.status !== 500})`);
+      console.log(
+        `[measure] FIRST call: ${(performance.now() - tFirst).toFixed(0)}ms (success=${result?.status !== 500})`
+      );
     } catch (e: any) {
-      console.log(`[measure] FIRST call: ${(performance.now() - tFirst).toFixed(0)}ms (error: ${e.message?.slice(0, 80)})`);
+      console.log(
+        `[measure] FIRST call: ${(performance.now() - tFirst).toFixed(0)}ms (error: ${e.message?.slice(0, 80)})`
+      );
     }
 
     // Second call — registry cached, IR cached
@@ -47,9 +53,13 @@ describe("manifest command dispatch latency", () => {
           role: "admin",
         },
       });
-      console.log(`[measure] SECOND call: ${(performance.now() - tSecond).toFixed(0)}ms`);
+      console.log(
+        `[measure] SECOND call: ${(performance.now() - tSecond).toFixed(0)}ms`
+      );
     } catch (e: any) {
-      console.log(`[measure] SECOND call: ${(performance.now() - tSecond).toFixed(0)}ms (error: ${e.message?.slice(0, 80)})`);
+      console.log(
+        `[measure] SECOND call: ${(performance.now() - tSecond).toFixed(0)}ms (error: ${e.message?.slice(0, 80)})`
+      );
     }
 
     // Third call — fully warm
@@ -65,11 +75,17 @@ describe("manifest command dispatch latency", () => {
           role: "admin",
         },
       });
-      console.log(`[measure] THIRD call: ${(performance.now() - tThird).toFixed(0)}ms`);
+      console.log(
+        `[measure] THIRD call: ${(performance.now() - tThird).toFixed(0)}ms`
+      );
     } catch (e: any) {
-      console.log(`[measure] THIRD call: ${(performance.now() - tThird).toFixed(0)}ms (error: ${e.message?.slice(0, 80)})`);
+      console.log(
+        `[measure] THIRD call: ${(performance.now() - tThird).toFixed(0)}ms (error: ${e.message?.slice(0, 80)})`
+      );
     }
 
-    console.log(`[measure] TOTAL test: ${(performance.now() - tCold).toFixed(0)}ms`);
+    console.log(
+      `[measure] TOTAL test: ${(performance.now() - tCold).toFixed(0)}ms`
+    );
   });
 });

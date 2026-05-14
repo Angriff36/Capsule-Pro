@@ -20,6 +20,7 @@ import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
 import { Separator } from "@repo/design-system/components/ui/separator";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
+import { formatCurrency as _formatCurrency } from "@repo/design-system/lib/format-currency";
 import {
   AlertCircle,
   ArrowLeft,
@@ -34,7 +35,6 @@ import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
-import { formatCurrency as _formatCurrency } from "@repo/design-system/lib/format-currency";
 
 const formatCurrency = (v: string | number | null) =>
   _formatCurrency(v, { nullDisplay: "\u2014" });
@@ -95,7 +95,6 @@ const methodLabels: Record<string, string> = {
   check: "Check",
   other: "Other",
 };
-
 
 const formatDateTime = (dateStr: string | null | undefined) => {
   if (!dateStr) return "—";

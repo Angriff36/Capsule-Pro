@@ -9,8 +9,8 @@ import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { InvariantError, invariant } from "@/app/lib/invariant";
 import { requireApiManager } from "@/app/lib/auth-roles";
+import { InvariantError, invariant } from "@/app/lib/invariant";
 
 const UUID_REGEX =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;

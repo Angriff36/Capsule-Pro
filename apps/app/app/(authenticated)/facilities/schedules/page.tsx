@@ -1,13 +1,5 @@
 "use client";
 
-import { Badge } from "@repo/design-system/components/ui/badge";
-import { Button } from "@repo/design-system/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@repo/design-system/components/ui/card";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,6 +10,15 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@repo/design-system/components/ui/alert-dialog";
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@repo/design-system/components/ui/card";
+import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import {
   Dialog,
   DialogContent,
@@ -41,7 +42,6 @@ import {
   TabsTrigger,
 } from "@repo/design-system/components/ui/tabs";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
-import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import {
   addMonths,
   eachDayOfInterval,
@@ -200,24 +200,27 @@ export default function SchedulesPage() {
     setSaving(true);
     try {
       if (editing) {
-        const res = await apiFetch("/api/manifest/FacilitySchedule/commands/edit", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            scheduleId: editing.id,
-            title: form.title,
-            description: form.description || null,
-            frequency: form.frequency,
-            nextDueDate:
-              form.nextDueDate || new Date().toISOString().split("T")[0],
-            estimatedHours: form.estimatedHours
-              ? Number.parseFloat(form.estimatedHours)
-              : null,
-            estimatedCost: form.estimatedCost
-              ? Number.parseFloat(form.estimatedCost)
-              : null,
-          }),
-        });
+        const res = await apiFetch(
+          "/api/manifest/FacilitySchedule/commands/edit",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              scheduleId: editing.id,
+              title: form.title,
+              description: form.description || null,
+              frequency: form.frequency,
+              nextDueDate:
+                form.nextDueDate || new Date().toISOString().split("T")[0],
+              estimatedHours: form.estimatedHours
+                ? Number.parseFloat(form.estimatedHours)
+                : null,
+              estimatedCost: form.estimatedCost
+                ? Number.parseFloat(form.estimatedCost)
+                : null,
+            }),
+          }
+        );
         if (res.ok) {
           await loadData();
           setShowDialog(false);
@@ -227,8 +230,7 @@ export default function SchedulesPage() {
           title: form.title,
           description: form.description || undefined,
           frequency: form.frequency,
-          nextDueAt:
-            form.nextDueDate || new Date().toISOString().split("T")[0],
+          nextDueAt: form.nextDueDate || new Date().toISOString().split("T")[0],
           estimatedHours: form.estimatedHours
             ? Number.parseFloat(form.estimatedHours)
             : undefined,
@@ -721,7 +723,6 @@ export default function SchedulesPage() {
                         nextDueDate: e.target.value,
                       }))
                     }
- 
                     value={form.nextDueDate}
                   />
                 </div>
@@ -789,13 +790,8 @@ export default function SchedulesPage() {
                 >
                   Cancel
                 </Button>
-                <Button
-                  disabled={!form.title.trim() || saving}
-                  type="submit"
-                >
-                  {saving && (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  )}
+                <Button disabled={!form.title.trim() || saving} type="submit">
+                  {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   {editing ? "Update" : "Create"} Schedule
                 </Button>
               </DialogFooter>

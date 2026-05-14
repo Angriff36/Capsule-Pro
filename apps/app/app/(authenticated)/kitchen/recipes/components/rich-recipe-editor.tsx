@@ -32,6 +32,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@repo/design-system/components/ui/tooltip";
+import { formatCurrency } from "@repo/design-system/lib/format-currency";
 import {
   ChevronDown,
   ChevronUp,
@@ -47,7 +48,6 @@ import {
 // Auth handled at page level via server components
 import Link from "next/link";
 import { useEffect, useMemo, useState, useTransition } from "react";
-import { formatCurrency } from "@repo/design-system/lib/format-currency";
 import { apiFetch } from "@/app/lib/api";
 import { kitchenRecipesSearch } from "@/app/lib/routes";
 

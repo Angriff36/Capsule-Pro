@@ -50,6 +50,15 @@ vi.mock("@repo/database", () => ({
 }));
 vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
 vi.mock("@/app/lib/tenant", () => ({
+  requireCurrentUser: vi.fn().mockResolvedValue({
+    id: "test-user-id",
+    tenantId: "test-tenant",
+    role: "admin",
+    email: "test@example.com",
+    firstName: "Test",
+    lastName: "User",
+  }),
+
   getTenantIdForOrg: vi.fn(),
   requireTenantId: vi.fn(),
 }));
@@ -83,7 +92,9 @@ vi.mock("@/lib/database", async () => {
 // ---------------------------------------------------------------------------
 
 const { auth } = await import("@repo/auth/server");
-const { getTenantIdForOrg } = await import("@/app/lib/tenant");
+const { getTenantIdForOrg, requireCurrentUser } = await import(
+  "@/app/lib/tenant"
+);
 const { createManifestRuntime } = await import("@/lib/manifest-runtime");
 const { database } = await import("@repo/database");
 
@@ -215,6 +226,14 @@ function makeAuthedUser(tenantId = TEST_TENANT_ID) {
     orgId: TEST_ORG_ID,
   } as never);
   vi.mocked(getTenantIdForOrg).mockResolvedValue(tenantId);
+  vi.mocked(requireCurrentUser).mockResolvedValue({
+    id: TEST_USER_ID,
+    tenantId: TEST_TENANT_ID,
+    role: "admin",
+    email: "test@example.com",
+    firstName: "Test",
+    lastName: "User",
+  } as never);
 }
 
 function makeUnauthedUser() {
@@ -361,7 +380,9 @@ describe("Misc Domains Part 1", () => {
           "Container"
         );
         expect(res.status).toBe(400);
-        expect((await res.json()).message).toBe("Command failed: invalid payload");
+        expect((await res.json()).message).toBe(
+          "Command failed: invalid payload"
+        );
       });
 
       it("returns 500 on runtime error", async () => {
@@ -441,7 +462,11 @@ describe("Misc Domains Part 1", () => {
         makeUnauthedUser();
         const res = await simulateRouteHandler(
           "create",
-          makeRequest({ sessionId: "session-001", itemId: "item-001", countedQty: 50 }),
+          makeRequest({
+            sessionId: "session-001",
+            itemId: "item-001",
+            countedQty: 50,
+          }),
           "CycleCountRecord"
         );
         expect(res.status).toBe(401);
@@ -452,7 +477,11 @@ describe("Misc Domains Part 1", () => {
         mockRuntimeSuccess({ id: "record-001" });
         const res = await simulateRouteHandler(
           "create",
-          makeRequest({ sessionId: "session-001", itemId: "item-001", countedQty: 50 }),
+          makeRequest({
+            sessionId: "session-001",
+            itemId: "item-001",
+            countedQty: 50,
+          }),
           "CycleCountRecord"
         );
         expect(res.status).toBe(200);
@@ -631,7 +660,10 @@ describe("Misc Domains Part 1", () => {
         makeUnauthedUser();
         const res = await simulateRouteHandler(
           "cancel",
-          makeRequest({ id: "session-001", reason: "Inventory recount needed" }),
+          makeRequest({
+            id: "session-001",
+            reason: "Inventory recount needed",
+          }),
           "CycleCountSession"
         );
         expect(res.status).toBe(401);
@@ -642,7 +674,10 @@ describe("Misc Domains Part 1", () => {
         mockRuntimeSuccess({ id: "session-001", status: "cancelled" });
         const res = await simulateRouteHandler(
           "cancel",
-          makeRequest({ id: "session-001", reason: "Inventory recount needed" }),
+          makeRequest({
+            id: "session-001",
+            reason: "Inventory recount needed",
+          }),
           "CycleCountSession"
         );
         expect(res.status).toBe(200);

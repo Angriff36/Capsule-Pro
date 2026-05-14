@@ -21,13 +21,13 @@ export default function TextArea({
         {label}
       </label>
       <textarea
-        value={value}
-        onChange={e => onChange(e.target.value)}
-        placeholder={placeholder}
-        rows={rows}
         className="w-full rounded-lg border border-stone-200 bg-white px-4 py-3 text-sm text-stone-800
           placeholder:text-stone-300 focus:border-stone-400 focus:outline-none focus:ring-2
           focus:ring-stone-100 transition-all resize-none"
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        rows={rows}
+        value={value}
       />
       {helpText && <p className="text-xs text-stone-400 mt-1">{helpText}</p>}
     </div>

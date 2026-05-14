@@ -12,8 +12,8 @@
  * 403 path so a refactor that drops the guard fails loudly.
  */
 
-import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@repo/database", () => ({
   database: {
@@ -21,7 +21,14 @@ vi.mock("@repo/database", () => ({
   },
 }));
 vi.mock("@/app/lib/tenant", () => ({
-  requireCurrentUser: vi.fn(),
+  requireCurrentUser: vi.fn().mockResolvedValue({
+    id: "user-1",
+    tenantId: "tenant-1",
+    role: "admin",
+    email: "u@e.com",
+    firstName: "U",
+    lastName: "E",
+  }),
 }));
 vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn() }));
 vi.mock("@repo/observability/log", () => ({

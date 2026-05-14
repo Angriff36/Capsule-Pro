@@ -44,6 +44,15 @@ vi.mock("@repo/database", () => ({
 vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
 
 vi.mock("@/app/lib/tenant", () => ({
+  requireCurrentUser: vi.fn().mockResolvedValue({
+    id: "test-user-id",
+    tenantId: "test-tenant",
+    role: "admin",
+    email: "test@example.com",
+    firstName: "Test",
+    lastName: "User",
+  }),
+
   getTenantIdForOrg: vi.fn(),
   requireTenantId: vi.fn(),
 }));
@@ -78,7 +87,7 @@ vi.mock("@/lib/manifest-runtime", () => ({
 // --- Import mocked modules ---
 
 const { auth } = await import("@repo/auth/server");
-const { getTenantIdForOrg } = await import("@/app/lib/tenant");
+const { getTenantIdForOrg, requireCurrentUser } = await import("@/app/lib/tenant");
 const { createManifestRuntime } = await import("@/lib/manifest-runtime");
 
 // --- Route imports ---
@@ -87,23 +96,106 @@ import { GET as getActivityFeedList } from "@/app/api/activity-feed/list/route";
 import { GET as getActivityFeedStats } from "@/app/api/activity-feed/stats/route";
 import { POST as manifestPOST } from "@/app/api/manifest/[entity]/commands/[command]/route";
 
-const archiveParticipant = (req: NextRequest) => manifestPOST(req, { params: Promise.resolve({ entity: "AdminChatParticipant", command: "archive" }) });
-const clearHistory = (req: NextRequest) => manifestPOST(req, { params: Promise.resolve({ entity: "AdminChatParticipant", command: "clearHistory" }) });
-const unarchiveParticipant = (req: NextRequest) => manifestPOST(req, { params: Promise.resolve({ entity: "AdminChatParticipant", command: "unarchive" }) });
+const archiveParticipant = (req: NextRequest) =>
+  manifestPOST(req, {
+    params: Promise.resolve({
+      entity: "AdminChatParticipant",
+      command: "archive",
+    }),
+  });
+const clearHistory = (req: NextRequest) =>
+  manifestPOST(req, {
+    params: Promise.resolve({
+      entity: "AdminChatParticipant",
+      command: "clearHistory",
+    }),
+  });
+const unarchiveParticipant = (req: NextRequest) =>
+  manifestPOST(req, {
+    params: Promise.resolve({
+      entity: "AdminChatParticipant",
+      command: "unarchive",
+    }),
+  });
+
 import { POST as aiEventSetupParse } from "@/app/api/ai-event-setup/parse/route";
-const sessionCancel = (req: NextRequest) => manifestPOST(req, { params: Promise.resolve({ entity: "AiEventSetupSession", command: "cancel" }) });
-const sessionConfirm = (req: NextRequest) => manifestPOST(req, { params: Promise.resolve({ entity: "AiEventSetupSession", command: "confirm" }) });
-const sessionMarkCreated = (req: NextRequest) => manifestPOST(req, { params: Promise.resolve({ entity: "AiEventSetupSession", command: "markCreated" }) });
-const sessionParse = (req: NextRequest) => manifestPOST(req, { params: Promise.resolve({ entity: "AiEventSetupSession", command: "parse" }) });
-const sessionUpdateConfidence = (req: NextRequest) => manifestPOST(req, { params: Promise.resolve({ entity: "AiEventSetupSession", command: "updateConfidence" }) });
-const alertsConfigCreate = (req: NextRequest) => manifestPOST(req, { params: Promise.resolve({ entity: "AlertsConfig", command: "create" }) });
-const alertsConfigRemove = (req: NextRequest) => manifestPOST(req, { params: Promise.resolve({ entity: "AlertsConfig", command: "remove" }) });
-const alertsConfigUpdate = (req: NextRequest) => manifestPOST(req, { params: Promise.resolve({ entity: "AlertsConfig", command: "update" }) });
-const allergenAcknowledge = (req: NextRequest) => manifestPOST(req, { params: Promise.resolve({ entity: "AllergenWarning", command: "acknowledge" }) });
-const allergenApplyOverride = (req: NextRequest) => manifestPOST(req, { params: Promise.resolve({ entity: "AllergenWarning", command: "applyOverride" }) });
-const allergenCreate = (req: NextRequest) => manifestPOST(req, { params: Promise.resolve({ entity: "AllergenWarning", command: "create" }) });
-const allergenResolve = (req: NextRequest) => manifestPOST(req, { params: Promise.resolve({ entity: "AllergenWarning", command: "resolve" }) });
-const allergenSoftDelete = (req: NextRequest) => manifestPOST(req, { params: Promise.resolve({ entity: "AllergenWarning", command: "softDelete" }) });
+
+const sessionCancel = (req: NextRequest) =>
+  manifestPOST(req, {
+    params: Promise.resolve({
+      entity: "AiEventSetupSession",
+      command: "cancel",
+    }),
+  });
+const sessionConfirm = (req: NextRequest) =>
+  manifestPOST(req, {
+    params: Promise.resolve({
+      entity: "AiEventSetupSession",
+      command: "confirm",
+    }),
+  });
+const sessionMarkCreated = (req: NextRequest) =>
+  manifestPOST(req, {
+    params: Promise.resolve({
+      entity: "AiEventSetupSession",
+      command: "markCreated",
+    }),
+  });
+const sessionParse = (req: NextRequest) =>
+  manifestPOST(req, {
+    params: Promise.resolve({
+      entity: "AiEventSetupSession",
+      command: "parse",
+    }),
+  });
+const sessionUpdateConfidence = (req: NextRequest) =>
+  manifestPOST(req, {
+    params: Promise.resolve({
+      entity: "AiEventSetupSession",
+      command: "updateConfidence",
+    }),
+  });
+const alertsConfigCreate = (req: NextRequest) =>
+  manifestPOST(req, {
+    params: Promise.resolve({ entity: "AlertsConfig", command: "create" }),
+  });
+const alertsConfigRemove = (req: NextRequest) =>
+  manifestPOST(req, {
+    params: Promise.resolve({ entity: "AlertsConfig", command: "remove" }),
+  });
+const alertsConfigUpdate = (req: NextRequest) =>
+  manifestPOST(req, {
+    params: Promise.resolve({ entity: "AlertsConfig", command: "update" }),
+  });
+const allergenAcknowledge = (req: NextRequest) =>
+  manifestPOST(req, {
+    params: Promise.resolve({
+      entity: "AllergenWarning",
+      command: "acknowledge",
+    }),
+  });
+const allergenApplyOverride = (req: NextRequest) =>
+  manifestPOST(req, {
+    params: Promise.resolve({
+      entity: "AllergenWarning",
+      command: "applyOverride",
+    }),
+  });
+const allergenCreate = (req: NextRequest) =>
+  manifestPOST(req, {
+    params: Promise.resolve({ entity: "AllergenWarning", command: "create" }),
+  });
+const allergenResolve = (req: NextRequest) =>
+  manifestPOST(req, {
+    params: Promise.resolve({ entity: "AllergenWarning", command: "resolve" }),
+  });
+const allergenSoftDelete = (req: NextRequest) =>
+  manifestPOST(req, {
+    params: Promise.resolve({
+      entity: "AllergenWarning",
+      command: "softDelete",
+    }),
+  });
 
 // --- Constants ---
 
@@ -119,6 +211,14 @@ function makeAuthedUser() {
     userId: TEST_USER_ID,
   } as never);
   vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
+  vi.mocked(requireCurrentUser).mockResolvedValue({
+    id: TEST_USER_ID,
+    tenantId: TEST_TENANT_ID,
+    role: "admin",
+    email: "test@example.com",
+    firstName: "Test",
+    lastName: "User",
+  });
 }
 
 function makeRequest(url: string, options: RequestInit = {}): NextRequest {

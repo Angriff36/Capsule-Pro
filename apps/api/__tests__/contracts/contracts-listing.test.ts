@@ -34,7 +34,17 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock("@repo/auth/server", () => ({ auth: mocks.auth }));
-vi.mock("@/app/lib/tenant", () => ({ getTenantIdForOrg: mocks.tenant }));
+vi.mock("@/app/lib/tenant", () => ({
+  requireCurrentUser: vi.fn().mockResolvedValue({
+    id: "test-user-id",
+    tenantId: "test-tenant",
+    role: "admin",
+    email: "test@example.com",
+    firstName: "Test",
+    lastName: "User",
+  }),
+  getTenantIdForOrg: mocks.tenant,
+}));
 vi.mock("@/lib/database", () => ({
   database: {
     eventContract: { findMany: mocks.ecFindMany, findFirst: mocks.ecFindFirst },

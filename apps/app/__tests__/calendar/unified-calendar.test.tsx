@@ -54,10 +54,10 @@ vi.mock("@repo/design-system/components/blocks/blog-filter-chip", () => ({
     selected?: boolean;
   }) => (
     <button
-      type="button"
-      onClick={onSelect}
       aria-pressed={selected}
       data-testid={`chip-${String(children).toLowerCase()}`}
+      onClick={onSelect}
+      type="button"
     >
       {children}
     </button>

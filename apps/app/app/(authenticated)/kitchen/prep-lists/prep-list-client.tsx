@@ -181,12 +181,24 @@ function StationCard({
                         )}
                       </div>
                       <Button
-                        aria-label={reviewedIngredients.has(ingredient.ingredientId) ? "Mark as unreviewed" : "Mark ingredient reviewed"}
+                        aria-label={
+                          reviewedIngredients.has(ingredient.ingredientId)
+                            ? "Mark as unreviewed"
+                            : "Mark ingredient reviewed"
+                        }
                         className={`h-8 w-8 shrink-0 ${reviewedIngredients.has(ingredient.ingredientId) ? "bg-primary/10 text-primary" : ""}`}
                         disabled={!savedPrepListId}
-                        onClick={() => onReviewIngredient(ingredient.ingredientId)}
+                        onClick={() =>
+                          onReviewIngredient(ingredient.ingredientId)
+                        }
                         size="icon"
-                        title={!savedPrepListId ? "Save prep list first" : reviewedIngredients.has(ingredient.ingredientId) ? "Reviewed" : "Mark reviewed"}
+                        title={
+                          savedPrepListId
+                            ? reviewedIngredients.has(ingredient.ingredientId)
+                              ? "Reviewed"
+                              : "Mark reviewed"
+                            : "Save prep list first"
+                        }
                         type="button"
                         variant="ghost"
                       >

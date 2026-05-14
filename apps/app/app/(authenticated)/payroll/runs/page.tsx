@@ -27,6 +27,7 @@ import {
   TableHeader,
   TableRow,
 } from "@repo/design-system/components/ui/table";
+import { formatCurrency } from "@repo/design-system/lib/format-currency";
 import {
   AlertTriangleIcon,
   CheckCircleIcon,
@@ -39,7 +40,6 @@ import {
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { formatCurrency } from "@repo/design-system/lib/format-currency";
 import { apiFetch } from "@/app/lib/api";
 
 interface PayrollRun {

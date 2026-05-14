@@ -152,7 +152,7 @@ export default function WaitlistPage() {
     setAdding(true);
     try {
       const res = await fetch(
-        `/api/manifest/EventWaitlistEntry/commands/addGuest`,
+        "/api/manifest/EventWaitlistEntry/commands/addGuest",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -202,7 +202,7 @@ export default function WaitlistPage() {
     setUpdating(guestId);
     try {
       const res = await fetch(
-        `/api/manifest/EventWaitlistEntry/commands/updateRsvp`,
+        "/api/manifest/EventWaitlistEntry/commands/updateRsvp",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -229,7 +229,7 @@ export default function WaitlistPage() {
     setUpdating(guestId);
     try {
       const res = await fetch(
-        `/api/manifest/EventWaitlistEntry/commands/promote`,
+        "/api/manifest/EventWaitlistEntry/commands/promote",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

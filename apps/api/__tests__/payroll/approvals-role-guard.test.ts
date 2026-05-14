@@ -28,7 +28,14 @@ vi.mock("@repo/database", () => ({
   Prisma: { sql: (s: TemplateStringsArray, ..._args: unknown[]) => s.join("") },
 }));
 vi.mock("@/app/lib/tenant", () => ({
-  requireCurrentUser: vi.fn(),
+  requireCurrentUser: vi.fn().mockResolvedValue({
+    id: "user-1",
+    tenantId: TENANT,
+    role: "admin",
+    email: "u@e.com",
+    firstName: "U",
+    lastName: "E",
+  }),
 }));
 vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn() }));
 vi.mock("@repo/observability/log", () => ({
@@ -49,14 +56,11 @@ const baseUser = {
 };
 
 function makeRequest(body: unknown): Request {
-  return new Request(
-    `http://localhost/api/payroll/approvals/${APPROVAL_ID}`,
-    {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    }
-  );
+  return new Request(`http://localhost/api/payroll/approvals/${APPROVAL_ID}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
 }
 
 const routeContext = {

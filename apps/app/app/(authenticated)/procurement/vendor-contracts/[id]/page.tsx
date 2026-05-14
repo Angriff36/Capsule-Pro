@@ -132,7 +132,7 @@ export default function VendorContractDetailPage() {
   };
 
   const confirmReasonAction = async () => {
-    if (!contract || !pendingCommand || !reasonText.trim()) return;
+    if (!(contract && pendingCommand && reasonText.trim())) return;
     const command = pendingCommand;
     setUpdating(command);
     setReasonDialogOpen(false);

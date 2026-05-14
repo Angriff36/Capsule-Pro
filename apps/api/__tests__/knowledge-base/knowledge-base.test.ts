@@ -9,8 +9,8 @@
 
 import { NextRequest } from "next/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { POST } from "@/app/api/manifest/[entity]/commands/[command]/route";
 import { GET } from "@/app/api/knowledge-base/entries/list/route";
+import { POST } from "@/app/api/manifest/[entity]/commands/[command]/route";
 
 // ---------------------------------------------------------------------------
 // Mocks
@@ -33,7 +33,17 @@ vi.mock("@repo/database", () => ({
 }));
 
 vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
-vi.mock("@/app/lib/tenant", () => ({ getTenantIdForOrg: vi.fn() }));
+vi.mock("@/app/lib/tenant", () => ({
+  requireCurrentUser: vi.fn().mockResolvedValue({
+    id: "test-user-id",
+    tenantId: "test-tenant",
+    role: "admin",
+    email: "test@example.com",
+    firstName: "Test",
+    lastName: "User",
+  }),
+  getTenantIdForOrg: vi.fn(),
+}));
 vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn() }));
 
 // manifest-response needs to be mocked because it uses NextResponse under the
@@ -59,7 +69,7 @@ vi.mock("@/lib/manifest-response", async () => {
 // ---------------------------------------------------------------------------
 
 const { auth } = await import("@repo/auth/server");
-const { getTenantIdForOrg } = await import("@/app/lib/tenant");
+const { getTenantIdForOrg, requireCurrentUser } = await import("@/app/lib/tenant");
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -79,6 +89,14 @@ function makeAuthedUser() {
     orgId: KB_ORG_ID,
   } as never);
   vi.mocked(getTenantIdForOrg).mockResolvedValue(KB_TENANT_ID);
+  vi.mocked(requireCurrentUser).mockResolvedValue({
+    id: KB_USER_ID,
+    tenantId: KB_TENANT_ID,
+    role: "admin",
+    email: "test@example.com",
+    firstName: "Test",
+    lastName: "User",
+  } as never);
 }
 
 function makeGetRequest(params: Record<string, string> = {}) {
@@ -400,7 +418,10 @@ describe("POST /api/knowledge-base/entries/commands/create", () => {
       title: "Test Entry",
     });
     const res = await POST(req, {
-      params: Promise.resolve({ entity: "KnowledgeBaseEntry", command: "create" }),
+      params: Promise.resolve({
+        entity: "KnowledgeBaseEntry",
+        command: "create",
+      }),
     });
 
     expect(res.status).toBe(401);
@@ -420,7 +441,10 @@ describe("POST /api/knowledge-base/entries/commands/create", () => {
       title: "Test Entry",
     });
     const res = await POST(req, {
-      params: Promise.resolve({ entity: "KnowledgeBaseEntry", command: "create" }),
+      params: Promise.resolve({
+        entity: "KnowledgeBaseEntry",
+        command: "create",
+      }),
     });
 
     expect(res.status).toBe(401);
@@ -437,7 +461,10 @@ describe("POST /api/knowledge-base/entries/commands/create", () => {
       title: "Test Entry",
     });
     const res = await POST(req, {
-      params: Promise.resolve({ entity: "KnowledgeBaseEntry", command: "create" }),
+      params: Promise.resolve({
+        entity: "KnowledgeBaseEntry",
+        command: "create",
+      }),
     });
 
     expect(res.status).toBe(400);
@@ -451,7 +478,10 @@ describe("POST /api/knowledge-base/entries/commands/create", () => {
   it("should return 400 when slug is missing", async () => {
     const req = makePostRequest({ title: "Test Entry" });
     const res = await POST(req, {
-      params: Promise.resolve({ entity: "KnowledgeBaseEntry", command: "create" }),
+      params: Promise.resolve({
+        entity: "KnowledgeBaseEntry",
+        command: "create",
+      }),
     });
 
     expect(res.status).toBe(400);
@@ -463,7 +493,10 @@ describe("POST /api/knowledge-base/entries/commands/create", () => {
   it("should return 400 when title is missing", async () => {
     const req = makePostRequest({ slug: "test-entry" });
     const res = await POST(req, {
-      params: Promise.resolve({ entity: "KnowledgeBaseEntry", command: "create" }),
+      params: Promise.resolve({
+        entity: "KnowledgeBaseEntry",
+        command: "create",
+      }),
     });
 
     expect(res.status).toBe(400);
@@ -475,7 +508,10 @@ describe("POST /api/knowledge-base/entries/commands/create", () => {
   it("should return 400 when both slug and title are missing", async () => {
     const req = makePostRequest({});
     const res = await POST(req, {
-      params: Promise.resolve({ entity: "KnowledgeBaseEntry", command: "create" }),
+      params: Promise.resolve({
+        entity: "KnowledgeBaseEntry",
+        command: "create",
+      }),
     });
 
     expect(res.status).toBe(400);
@@ -494,7 +530,10 @@ describe("POST /api/knowledge-base/entries/commands/create", () => {
       title: "Duplicate",
     });
     const res = await POST(req, {
-      params: Promise.resolve({ entity: "KnowledgeBaseEntry", command: "create" }),
+      params: Promise.resolve({
+        entity: "KnowledgeBaseEntry",
+        command: "create",
+      }),
     });
 
     expect(res.status).toBe(409);
@@ -512,7 +551,10 @@ describe("POST /api/knowledge-base/entries/commands/create", () => {
       title: "New Guide",
     });
     await POST(req, {
-      params: Promise.resolve({ entity: "KnowledgeBaseEntry", command: "create" }),
+      params: Promise.resolve({
+        entity: "KnowledgeBaseEntry",
+        command: "create",
+      }),
     });
 
     expect(mockKbFindFirst).toHaveBeenCalledTimes(1);
@@ -537,7 +579,10 @@ describe("POST /api/knowledge-base/entries/commands/create", () => {
       status: "published",
     });
     const res = await POST(req, {
-      params: Promise.resolve({ entity: "KnowledgeBaseEntry", command: "create" }),
+      params: Promise.resolve({
+        entity: "KnowledgeBaseEntry",
+        command: "create",
+      }),
     });
 
     expect(res.status).toBe(201);
@@ -563,7 +608,10 @@ describe("POST /api/knowledge-base/entries/commands/create", () => {
       status: "draft",
     });
     await POST(req, {
-      params: Promise.resolve({ entity: "KnowledgeBaseEntry", command: "create" }),
+      params: Promise.resolve({
+        entity: "KnowledgeBaseEntry",
+        command: "create",
+      }),
     });
 
     expect(mockKbCreate).toHaveBeenCalledTimes(1);
@@ -588,7 +636,10 @@ describe("POST /api/knowledge-base/entries/commands/create", () => {
       status: "published",
     });
     await POST(req, {
-      params: Promise.resolve({ entity: "KnowledgeBaseEntry", command: "create" }),
+      params: Promise.resolve({
+        entity: "KnowledgeBaseEntry",
+        command: "create",
+      }),
     });
 
     const data = mockKbCreate.mock.calls[0][0].data;
@@ -606,7 +657,10 @@ describe("POST /api/knowledge-base/entries/commands/create", () => {
       status: "draft",
     });
     await POST(req, {
-      params: Promise.resolve({ entity: "KnowledgeBaseEntry", command: "create" }),
+      params: Promise.resolve({
+        entity: "KnowledgeBaseEntry",
+        command: "create",
+      }),
     });
 
     const data = mockKbCreate.mock.calls[0][0].data;
@@ -622,7 +676,10 @@ describe("POST /api/knowledge-base/entries/commands/create", () => {
       title: "Minimal Guide",
     });
     await POST(req, {
-      params: Promise.resolve({ entity: "KnowledgeBaseEntry", command: "create" }),
+      params: Promise.resolve({
+        entity: "KnowledgeBaseEntry",
+        command: "create",
+      }),
     });
 
     const data = mockKbCreate.mock.calls[0][0].data;
@@ -639,7 +696,10 @@ describe("POST /api/knowledge-base/entries/commands/create", () => {
       status: "archived",
     });
     await POST(req, {
-      params: Promise.resolve({ entity: "KnowledgeBaseEntry", command: "create" }),
+      params: Promise.resolve({
+        entity: "KnowledgeBaseEntry",
+        command: "create",
+      }),
     });
 
     const data = mockKbCreate.mock.calls[0][0].data;
@@ -657,7 +717,10 @@ describe("POST /api/knowledge-base/entries/commands/create", () => {
       title: "Fail Entry",
     });
     const res = await POST(req, {
-      params: Promise.resolve({ entity: "KnowledgeBaseEntry", command: "create" }),
+      params: Promise.resolve({
+        entity: "KnowledgeBaseEntry",
+        command: "create",
+      }),
     });
 
     expect(res.status).toBe(500);
@@ -674,7 +737,10 @@ describe("POST /api/knowledge-base/entries/commands/create", () => {
       title: "Fail Dup",
     });
     const res = await POST(req, {
-      params: Promise.resolve({ entity: "KnowledgeBaseEntry", command: "create" }),
+      params: Promise.resolve({
+        entity: "KnowledgeBaseEntry",
+        command: "create",
+      }),
     });
 
     expect(res.status).toBe(500);

@@ -24,7 +24,10 @@ import { clampLimit, clampOffset } from "@/lib/pagination";
  * - accepted   → negotiation
  * - rejected   → lost
  */
-export function proposalStatusToStage(status: string, eventId: string | null): string {
+export function proposalStatusToStage(
+  status: string,
+  eventId: string | null
+): string {
   switch (status) {
     case "draft":
       return "lead";
@@ -116,10 +119,7 @@ export async function GET(request: NextRequest) {
   try {
     const { orgId } = await auth();
     if (!orgId) {
-      return NextResponse.json(
-        { message: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
     const tenantId = await getTenantIdForOrg(orgId);

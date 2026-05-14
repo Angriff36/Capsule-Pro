@@ -13,11 +13,11 @@ interface GenerateProposalResult {
 }
 
 export async function generateProposalFromEvent(
-  eventId: string,
+  eventId: string
 ): Promise<GenerateProposalResult> {
   try {
     const { userId, orgId } = await auth();
-    if (!userId || !orgId) {
+    if (!(userId && orgId)) {
       return { success: false, error: "Unauthorized" };
     }
 
@@ -55,12 +55,13 @@ export async function generateProposalFromEvent(
 
     // Fetch dish details for line items
     const dishIds = eventDishLinks.map((ed) => ed.dish_id);
-    const dishes = dishIds.length > 0
-      ? await database.dish.findMany({
-          where: { id: { in: dishIds }, tenantId, deletedAt: null },
-          select: { id: true, name: true, description: true },
-        })
-      : [];
+    const dishes =
+      dishIds.length > 0
+        ? await database.dish.findMany({
+            where: { id: { in: dishIds }, tenantId, deletedAt: null },
+            select: { id: true, name: true, description: true },
+          })
+        : [];
     const dishById = new Map(dishes.map((d) => [d.id, d]));
 
     // Generate proposal number
@@ -126,7 +127,10 @@ export async function generateProposalFromEvent(
       });
     }
 
-    log.info("Proposal generated from event", { eventId, proposalId: proposal.id });
+    log.info("Proposal generated from event", {
+      eventId,
+      proposalId: proposal.id,
+    });
 
     return {
       success: true,
@@ -137,7 +141,8 @@ export async function generateProposalFromEvent(
     log.error("Failed to generate proposal from event", { error, eventId });
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to generate proposal",
+      error:
+        error instanceof Error ? error.message : "Failed to generate proposal",
     };
   }
 }

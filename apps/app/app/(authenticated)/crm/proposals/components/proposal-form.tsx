@@ -16,6 +16,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
+import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
 import {
@@ -35,7 +36,6 @@ import {
   TableRow,
 } from "@repo/design-system/components/ui/table";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
-import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import { format } from "date-fns";
 import { Plus, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -422,7 +422,11 @@ export function ProposalForm({
 
                 <div className="space-y-2">
                   <Label htmlFor="eventDate">Event Date</Label>
-                  <DatePicker defaultValue={formatDateValue(proposal?.eventDate)} id="eventDate" name="eventDate" />
+                  <DatePicker
+                    defaultValue={formatDateValue(proposal?.eventDate)}
+                    id="eventDate"
+                    name="eventDate"
+                  />
                 </div>
 
                 <div className="space-y-2">
@@ -753,7 +757,11 @@ export function ProposalForm({
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="validUntil">Valid Until</Label>
-                <DatePicker defaultValue={formatDateValue(proposal?.validUntil)} id="validUntil" name="validUntil" />
+                <DatePicker
+                  defaultValue={formatDateValue(proposal?.validUntil)}
+                  id="validUntil"
+                  name="validUntil"
+                />
                 <p className="text-xs text-muted-foreground">
                   Leave empty for no expiration
                 </p>

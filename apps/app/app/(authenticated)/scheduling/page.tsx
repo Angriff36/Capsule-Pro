@@ -1,5 +1,4 @@
 import { auth } from "@repo/auth/server";
-import { database, Prisma } from "@repo/database";
 import {
   CommandBand,
   CommandBandActions,
@@ -41,19 +40,16 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getTenantIdForOrg } from "../../lib/tenant";
-import { formatDelta } from "./format-delta";
-import SchedulingRealtime from "./scheduling-realtime";
-import { SchedulingSearchInput } from "./components/scheduling-search-input";
 import {
   getHappeningToday,
   getLeaderboard,
   getScheduleCadence,
   getSchedulingMetrics,
-  type HappeningShiftRow,
-  type LeaderboardRow,
-  type ScheduleSummaryRow,
 } from "../../lib/data/scheduling";
+import { getTenantIdForOrg } from "../../lib/tenant";
+import { SchedulingSearchInput } from "./components/scheduling-search-input";
+import { formatDelta } from "./format-delta";
+import SchedulingRealtime from "./scheduling-realtime";
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
   style: "currency",
@@ -118,17 +114,13 @@ const SchedulingPage = async () => {
   startOfToday.setHours(0, 0, 0, 0);
   const endOfToday = addDays(startOfToday, 1);
 
-  const [
-    metrics,
-    { shiftSummary, shiftTotals },
-    happeningToday,
-    leaderboard,
-  ] = await Promise.all([
-    getSchedulingMetrics(tenantId, weekStart, weekEnd, previousWeekStart),
-    getScheduleCadence(tenantId, weekStart, weekEnd),
-    getHappeningToday(tenantId, startOfToday, endOfToday),
-    getLeaderboard(tenantId, weekStart, weekEnd),
-  ]);
+  const [metrics, { shiftSummary, shiftTotals }, happeningToday, leaderboard] =
+    await Promise.all([
+      getSchedulingMetrics(tenantId, weekStart, weekEnd, previousWeekStart),
+      getScheduleCadence(tenantId, weekStart, weekEnd),
+      getHappeningToday(tenantId, startOfToday, endOfToday),
+      getLeaderboard(tenantId, weekStart, weekEnd),
+    ]);
 
   const {
     currentStaff,

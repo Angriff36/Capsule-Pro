@@ -18,12 +18,17 @@ import {
   StatusPill,
 } from "@repo/design-system/components/blocks/page-shell";
 import { Button } from "@repo/design-system/components/ui/button";
-import { ArrowRight, BookOpen, CreditCard, FileText, Scale } from "lucide-react";
+import { formatCurrencyWhole as formatCurrency } from "@repo/design-system/lib/format-currency";
+import {
+  ArrowRight,
+  BookOpen,
+  CreditCard,
+  FileText,
+  Scale,
+} from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-
-import { formatCurrencyWhole as formatCurrency } from "@repo/design-system/lib/format-currency";
 
 function formatDate(value: Date | null) {
   if (!value) return "—";

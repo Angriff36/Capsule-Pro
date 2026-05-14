@@ -36,6 +36,15 @@ vi.mock("@repo/auth/server", () => ({
 }));
 
 vi.mock("@/app/lib/tenant", () => ({
+  requireCurrentUser: vi.fn().mockResolvedValue({
+    id: "test-user-id",
+    tenantId: "test-tenant",
+    role: "admin",
+    email: "test@example.com",
+    firstName: "Test",
+    lastName: "User",
+  }),
+
   getTenantIdForOrg: vi.fn(),
 }));
 
@@ -1168,7 +1177,11 @@ describe("Event Sub-Entities API Integration Tests", () => {
           method: "POST",
           body: JSON.stringify({ eventId: TEST_EVENT_ID }),
         });
-        const res = await simulateRouteHandler("create", req, "EventProfitability");
+        const res = await simulateRouteHandler(
+          "create",
+          req,
+          "EventProfitability"
+        );
         expect(res.status).toBe(401);
       });
 
@@ -1178,7 +1191,11 @@ describe("Event Sub-Entities API Integration Tests", () => {
           method: "POST",
           body: JSON.stringify({ id: TEST_PROFITABILITY_ID }),
         });
-        const res = await simulateRouteHandler("update", req, "EventProfitability");
+        const res = await simulateRouteHandler(
+          "update",
+          req,
+          "EventProfitability"
+        );
         expect(res.status).toBe(401);
       });
 
@@ -1188,7 +1205,11 @@ describe("Event Sub-Entities API Integration Tests", () => {
           method: "POST",
           body: JSON.stringify({ id: TEST_PROFITABILITY_ID }),
         });
-        const res = await simulateRouteHandler("recalculate", req, "EventProfitability");
+        const res = await simulateRouteHandler(
+          "recalculate",
+          req,
+          "EventProfitability"
+        );
         expect(res.status).toBe(401);
       });
     });
@@ -1200,7 +1221,11 @@ describe("Event Sub-Entities API Integration Tests", () => {
           method: "POST",
           body: JSON.stringify({ eventId: TEST_EVENT_ID }),
         });
-        const res = await simulateRouteHandler("create", req, "EventProfitability");
+        const res = await simulateRouteHandler(
+          "create",
+          req,
+          "EventProfitability"
+        );
         expect(res.status).toBe(400);
       });
 
@@ -1210,7 +1235,11 @@ describe("Event Sub-Entities API Integration Tests", () => {
           method: "POST",
           body: JSON.stringify({ id: TEST_PROFITABILITY_ID }),
         });
-        const res = await simulateRouteHandler("recalculate", req, "EventProfitability");
+        const res = await simulateRouteHandler(
+          "recalculate",
+          req,
+          "EventProfitability"
+        );
         expect(res.status).toBe(400);
       });
     });
@@ -1227,7 +1256,11 @@ describe("Event Sub-Entities API Integration Tests", () => {
           body: JSON.stringify({ eventId: TEST_EVENT_ID }),
         });
 
-        const res = await simulateRouteHandler("create", req, "EventProfitability");
+        const res = await simulateRouteHandler(
+          "create",
+          req,
+          "EventProfitability"
+        );
         const body = await res.json();
 
         expect(res.status).toBe(200);
@@ -1260,7 +1293,11 @@ describe("Event Sub-Entities API Integration Tests", () => {
           }),
         });
 
-        const res = await simulateRouteHandler("update", req, "EventProfitability");
+        const res = await simulateRouteHandler(
+          "update",
+          req,
+          "EventProfitability"
+        );
         const body = await res.json();
 
         expect(res.status).toBe(200);
@@ -1292,7 +1329,11 @@ describe("Event Sub-Entities API Integration Tests", () => {
           body: JSON.stringify({ id: TEST_PROFITABILITY_ID }),
         });
 
-        const res = await simulateRouteHandler("recalculate", req, "EventProfitability");
+        const res = await simulateRouteHandler(
+          "recalculate",
+          req,
+          "EventProfitability"
+        );
         const body = await res.json();
 
         expect(res.status).toBe(200);
@@ -1316,7 +1357,11 @@ describe("Event Sub-Entities API Integration Tests", () => {
           body: JSON.stringify({ eventId: TEST_EVENT_ID }),
         });
 
-        const res = await simulateRouteHandler("create", req, "EventProfitability");
+        const res = await simulateRouteHandler(
+          "create",
+          req,
+          "EventProfitability"
+        );
         expect(res.status).toBe(500);
       });
 
@@ -1335,7 +1380,11 @@ describe("Event Sub-Entities API Integration Tests", () => {
           body: JSON.stringify({ id: TEST_PROFITABILITY_ID }),
         });
 
-        const res = await simulateRouteHandler("update", req, "EventProfitability");
+        const res = await simulateRouteHandler(
+          "update",
+          req,
+          "EventProfitability"
+        );
         expect(res.status).toBe(403);
       });
     });
@@ -1564,7 +1613,11 @@ describe("Event Sub-Entities API Integration Tests", () => {
             source: "csv_upload",
           }),
         });
-        const res = await simulateRouteHandler("create", req, "EventImportWorkflow");
+        const res = await simulateRouteHandler(
+          "create",
+          req,
+          "EventImportWorkflow"
+        );
         expect(res.status).toBe(401);
       });
 
@@ -1574,7 +1627,11 @@ describe("Event Sub-Entities API Integration Tests", () => {
           method: "POST",
           body: JSON.stringify({ id: TEST_WORKFLOW_ID }),
         });
-        const res = await simulateRouteHandler("cancel", req, "EventImportWorkflow");
+        const res = await simulateRouteHandler(
+          "cancel",
+          req,
+          "EventImportWorkflow"
+        );
         expect(res.status).toBe(401);
       });
 
@@ -1584,7 +1641,11 @@ describe("Event Sub-Entities API Integration Tests", () => {
           method: "POST",
           body: JSON.stringify({ id: TEST_WORKFLOW_ID }),
         });
-        const res = await simulateRouteHandler("startExtracting", req, "EventImportWorkflow");
+        const res = await simulateRouteHandler(
+          "startExtracting",
+          req,
+          "EventImportWorkflow"
+        );
         expect(res.status).toBe(401);
       });
 
@@ -1594,7 +1655,11 @@ describe("Event Sub-Entities API Integration Tests", () => {
           method: "POST",
           body: JSON.stringify({ id: TEST_WORKFLOW_ID }),
         });
-        const res = await simulateRouteHandler("completeActivating", req, "EventImportWorkflow");
+        const res = await simulateRouteHandler(
+          "completeActivating",
+          req,
+          "EventImportWorkflow"
+        );
         expect(res.status).toBe(401);
       });
     });
@@ -1607,7 +1672,11 @@ describe("Event Sub-Entities API Integration Tests", () => {
           method: "POST",
           body: JSON.stringify({ eventId: TEST_EVENT_ID }),
         });
-        const res = await simulateRouteHandler("create", req, "EventImportWorkflow");
+        const res = await simulateRouteHandler(
+          "create",
+          req,
+          "EventImportWorkflow"
+        );
         expect(res.status).toBe(400);
       });
 
@@ -1617,7 +1686,11 @@ describe("Event Sub-Entities API Integration Tests", () => {
           method: "POST",
           body: JSON.stringify({ id: TEST_WORKFLOW_ID }),
         });
-        const res = await simulateRouteHandler("pause", req, "EventImportWorkflow");
+        const res = await simulateRouteHandler(
+          "pause",
+          req,
+          "EventImportWorkflow"
+        );
         expect(res.status).toBe(400);
       });
     });
@@ -1637,7 +1710,11 @@ describe("Event Sub-Entities API Integration Tests", () => {
           }),
         });
 
-        const res = await simulateRouteHandler("create", req, "EventImportWorkflow");
+        const res = await simulateRouteHandler(
+          "create",
+          req,
+          "EventImportWorkflow"
+        );
         const body = await res.json();
 
         expect(res.status).toBe(200);
@@ -1666,7 +1743,11 @@ describe("Event Sub-Entities API Integration Tests", () => {
           }),
         });
 
-        const res = await simulateRouteHandler("cancel", req, "EventImportWorkflow");
+        const res = await simulateRouteHandler(
+          "cancel",
+          req,
+          "EventImportWorkflow"
+        );
         const body = await res.json();
 
         expect(res.status).toBe(200);
@@ -1698,7 +1779,11 @@ describe("Event Sub-Entities API Integration Tests", () => {
           }),
         });
 
-        const res = await simulateRouteHandler("fail", req, "EventImportWorkflow");
+        const res = await simulateRouteHandler(
+          "fail",
+          req,
+          "EventImportWorkflow"
+        );
         const body = await res.json();
 
         expect(res.status).toBe(200);
@@ -1723,7 +1808,11 @@ describe("Event Sub-Entities API Integration Tests", () => {
           body: JSON.stringify({ id: TEST_WORKFLOW_ID }),
         });
 
-        const res = await simulateRouteHandler("pause", req, "EventImportWorkflow");
+        const res = await simulateRouteHandler(
+          "pause",
+          req,
+          "EventImportWorkflow"
+        );
         const body = await res.json();
 
         expect(res.status).toBe(200);
@@ -1748,7 +1837,11 @@ describe("Event Sub-Entities API Integration Tests", () => {
           body: JSON.stringify({ id: TEST_WORKFLOW_ID }),
         });
 
-        const res = await simulateRouteHandler("resume", req, "EventImportWorkflow");
+        const res = await simulateRouteHandler(
+          "resume",
+          req,
+          "EventImportWorkflow"
+        );
         const body = await res.json();
 
         expect(res.status).toBe(200);
@@ -1776,7 +1869,11 @@ describe("Event Sub-Entities API Integration Tests", () => {
           body: JSON.stringify({ id: TEST_WORKFLOW_ID }),
         });
 
-        const res = await simulateRouteHandler("retry", req, "EventImportWorkflow");
+        const res = await simulateRouteHandler(
+          "retry",
+          req,
+          "EventImportWorkflow"
+        );
         const body = await res.json();
 
         expect(res.status).toBe(200);
@@ -1925,7 +2022,11 @@ describe("Event Sub-Entities API Integration Tests", () => {
           body: JSON.stringify({ eventId: TEST_EVENT_ID }),
         });
 
-        const res = await simulateRouteHandler("create", req, "EventImportWorkflow");
+        const res = await simulateRouteHandler(
+          "create",
+          req,
+          "EventImportWorkflow"
+        );
         expect(res.status).toBe(500);
       });
 
@@ -1944,7 +2045,11 @@ describe("Event Sub-Entities API Integration Tests", () => {
           body: JSON.stringify({ id: TEST_WORKFLOW_ID }),
         });
 
-        const res = await simulateRouteHandler("startExtracting", req, "EventImportWorkflow");
+        const res = await simulateRouteHandler(
+          "startExtracting",
+          req,
+          "EventImportWorkflow"
+        );
         expect(res.status).toBe(403);
       });
 
@@ -1960,7 +2065,11 @@ describe("Event Sub-Entities API Integration Tests", () => {
           body: JSON.stringify({ id: TEST_WORKFLOW_ID }),
         });
 
-        const res = await simulateRouteHandler("completeParsing", req, "EventImportWorkflow");
+        const res = await simulateRouteHandler(
+          "completeParsing",
+          req,
+          "EventImportWorkflow"
+        );
         expect(res.status).toBe(422);
       });
 
@@ -1976,7 +2085,11 @@ describe("Event Sub-Entities API Integration Tests", () => {
           body: JSON.stringify({ id: TEST_WORKFLOW_ID }),
         });
 
-        const res = await simulateRouteHandler("cancel", req, "EventImportWorkflow");
+        const res = await simulateRouteHandler(
+          "cancel",
+          req,
+          "EventImportWorkflow"
+        );
         expect(res.status).toBe(400);
       });
     });
@@ -2032,7 +2145,11 @@ describe("Event Sub-Entities API Integration Tests", () => {
             signerName: "John",
           }),
         });
-        const res = await simulateRouteHandler("create", req, "ContractSignature");
+        const res = await simulateRouteHandler(
+          "create",
+          req,
+          "ContractSignature"
+        );
         expect(res.status).toBe(401);
         const body = await res.json();
         expect(body.success).toBe(false);
@@ -2045,7 +2162,11 @@ describe("Event Sub-Entities API Integration Tests", () => {
           method: "POST",
           body: JSON.stringify({ id: TEST_SIGNATURE_ID }),
         });
-        const res = await simulateRouteHandler("softDelete", req, "ContractSignature");
+        const res = await simulateRouteHandler(
+          "softDelete",
+          req,
+          "ContractSignature"
+        );
         expect(res.status).toBe(401);
       });
     });
@@ -2057,7 +2178,11 @@ describe("Event Sub-Entities API Integration Tests", () => {
           method: "POST",
           body: JSON.stringify({ contractId: TEST_CONTRACT_ID }),
         });
-        const res = await simulateRouteHandler("create", req, "ContractSignature");
+        const res = await simulateRouteHandler(
+          "create",
+          req,
+          "ContractSignature"
+        );
         expect(res.status).toBe(400);
         const body = await res.json();
         expect(body.success).toBe(false);
@@ -2070,7 +2195,11 @@ describe("Event Sub-Entities API Integration Tests", () => {
           method: "POST",
           body: JSON.stringify({ id: TEST_SIGNATURE_ID }),
         });
-        const res = await simulateRouteHandler("softDelete", req, "ContractSignature");
+        const res = await simulateRouteHandler(
+          "softDelete",
+          req,
+          "ContractSignature"
+        );
         expect(res.status).toBe(400);
       });
     });
@@ -2092,7 +2221,11 @@ describe("Event Sub-Entities API Integration Tests", () => {
           }),
         });
 
-        const res = await simulateRouteHandler("create", req, "ContractSignature");
+        const res = await simulateRouteHandler(
+          "create",
+          req,
+          "ContractSignature"
+        );
         const body = await res.json();
 
         expect(res.status).toBe(200);
@@ -2119,7 +2252,11 @@ describe("Event Sub-Entities API Integration Tests", () => {
           body: JSON.stringify({ id: TEST_SIGNATURE_ID }),
         });
 
-        const res = await simulateRouteHandler("softDelete", req, "ContractSignature");
+        const res = await simulateRouteHandler(
+          "softDelete",
+          req,
+          "ContractSignature"
+        );
         const body = await res.json();
 
         expect(res.status).toBe(200);
@@ -2143,7 +2280,11 @@ describe("Event Sub-Entities API Integration Tests", () => {
           body: JSON.stringify({ contractId: TEST_CONTRACT_ID }),
         });
 
-        const res = await simulateRouteHandler("create", req, "ContractSignature");
+        const res = await simulateRouteHandler(
+          "create",
+          req,
+          "ContractSignature"
+        );
         expect(res.status).toBe(500);
         const body = await res.json();
         expect(body.success).toBe(false);
@@ -2165,7 +2306,11 @@ describe("Event Sub-Entities API Integration Tests", () => {
           body: JSON.stringify({ contractId: TEST_CONTRACT_ID }),
         });
 
-        const res = await simulateRouteHandler("create", req, "ContractSignature");
+        const res = await simulateRouteHandler(
+          "create",
+          req,
+          "ContractSignature"
+        );
         expect(res.status).toBe(403);
         const body = await res.json();
         expect(body.message).toContain("Access denied");
@@ -2186,7 +2331,11 @@ describe("Event Sub-Entities API Integration Tests", () => {
           body: JSON.stringify({ id: TEST_SIGNATURE_ID }),
         });
 
-        const res = await simulateRouteHandler("softDelete", req, "ContractSignature");
+        const res = await simulateRouteHandler(
+          "softDelete",
+          req,
+          "ContractSignature"
+        );
         expect(res.status).toBe(422);
         const body = await res.json();
         expect(body.message).toContain("Guard 0 failed");
@@ -2204,7 +2353,11 @@ describe("Event Sub-Entities API Integration Tests", () => {
           body: JSON.stringify({ contractId: TEST_CONTRACT_ID }),
         });
 
-        const res = await simulateRouteHandler("create", req, "ContractSignature");
+        const res = await simulateRouteHandler(
+          "create",
+          req,
+          "ContractSignature"
+        );
         expect(res.status).toBe(400);
         const body = await res.json();
         expect(body.message).toBe("Contract not found");
@@ -2222,7 +2375,11 @@ describe("Event Sub-Entities API Integration Tests", () => {
           body: JSON.stringify({ contractId: TEST_CONTRACT_ID }),
         });
 
-        const res = await simulateRouteHandler("create", req, "ContractSignature");
+        const res = await simulateRouteHandler(
+          "create",
+          req,
+          "ContractSignature"
+        );
         expect(res.status).toBe(400);
         const body = await res.json();
         expect(body.message).toBe("Command failed");
@@ -2236,7 +2393,11 @@ describe("Event Sub-Entities API Integration Tests", () => {
           body: "not-valid-json{{{",
         });
 
-        const res = await simulateRouteHandler("create", req, "ContractSignature");
+        const res = await simulateRouteHandler(
+          "create",
+          req,
+          "ContractSignature"
+        );
         expect(res.status).toBe(500);
         const body = await res.json();
         expect(body.success).toBe(false);
@@ -2274,7 +2435,11 @@ describe("Event Sub-Entities API Integration Tests", () => {
           body: JSON.stringify({ contractId: TEST_CONTRACT_ID }),
         });
 
-        const res = await simulateRouteHandler("create", req, "ContractSignature");
+        const res = await simulateRouteHandler(
+          "create",
+          req,
+          "ContractSignature"
+        );
         const body = await res.json();
 
         expect(body.success).toBe(true);
@@ -2295,7 +2460,11 @@ describe("Event Sub-Entities API Integration Tests", () => {
           body: JSON.stringify({ id: TEST_SIGNATURE_ID }),
         });
 
-        const res = await simulateRouteHandler("softDelete", req, "ContractSignature");
+        const res = await simulateRouteHandler(
+          "softDelete",
+          req,
+          "ContractSignature"
+        );
         const body = await res.json();
 
         const keys = Object.keys(body);

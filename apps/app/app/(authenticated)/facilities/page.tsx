@@ -20,6 +20,16 @@ import {
   PageCanvas,
   SectionHeader,
 } from "@repo/design-system/components/blocks/page-shell";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@repo/design-system/components/ui/alert-dialog";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -40,16 +50,6 @@ import {
   SelectValue,
 } from "@repo/design-system/components/ui/select";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@repo/design-system/components/ui/alert-dialog";
 import {
   Building2,
   Calendar,
@@ -190,7 +190,7 @@ export default function FacilitiesPage() {
 
   const handleEdit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.name.trim() || !editing) return;
+    if (!(form.name.trim() && editing)) return;
     setSaving(true);
     try {
       const res = await apiFetch("/api/manifest/Facility/commands/edit", {
@@ -414,14 +414,19 @@ export default function FacilitiesPage() {
       <Dialog onOpenChange={setShowDialog} open={showDialog}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>{editing ? "Edit Facility" : "Add Facility"}</DialogTitle>
+            <DialogTitle>
+              {editing ? "Edit Facility" : "Add Facility"}
+            </DialogTitle>
             <DialogDescription>
               {editing
                 ? "Update facility information."
                 : "Register a new building or site (kitchen, warehouse, office, …)."}
             </DialogDescription>
           </DialogHeader>
-          <form onSubmit={editing ? handleEdit : handleSave} className="space-y-4">
+          <form
+            className="space-y-4"
+            onSubmit={editing ? handleEdit : handleSave}
+          >
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Name *</Label>

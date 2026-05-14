@@ -1,9 +1,13 @@
-import IntakeWizardShell from './IntakeWizardShell';
-import MenuWizardShell from './MenuWizardShell';
-import type { PricingRules } from '../../types/pricing';
-import type { CostDataProvider, MenuPricingConfig, OwnerViewConfig } from '../../types/menu';
+import type {
+  CostDataProvider,
+  MenuPricingConfig,
+  OwnerViewConfig,
+} from "../../types/menu";
+import type { PricingRules } from "../../types/pricing";
+import IntakeWizardShell from "./IntakeWizardShell";
+import MenuWizardShell from "./MenuWizardShell";
 
-export type WizardMode = 'intake' | 'menu';
+export type WizardMode = "intake" | "menu";
 
 interface WizardShellProps {
   mode?: WizardMode;
@@ -14,18 +18,18 @@ interface WizardShellProps {
 }
 
 export default function WizardShell({
-  mode = 'intake',
+  mode = "intake",
   pricingRules,
   costProvider,
   menuPricingConfig,
   ownerViewConfig,
 }: WizardShellProps) {
-  if (mode === 'menu') {
+  if (mode === "menu") {
     return (
       <MenuWizardShell
         costProvider={costProvider}
-        pricingConfig={menuPricingConfig}
         ownerViewConfig={ownerViewConfig}
+        pricingConfig={menuPricingConfig}
       />
     );
   }

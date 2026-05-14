@@ -18,6 +18,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
+import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import {
   Dialog,
   DialogContent,
@@ -35,7 +36,7 @@ import {
   SelectValue,
 } from "@repo/design-system/components/ui/select";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
-import { DatePicker } from "@repo/design-system/components/ui/date-picker";
+import { formatCurrency } from "@repo/design-system/lib/format-currency";
 import {
   AlertTriangle,
   DollarSign,
@@ -48,7 +49,6 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { formatCurrency } from "@repo/design-system/lib/format-currency";
 import { apiFetch } from "@/app/lib/api";
 import {
   type Budget,
@@ -389,7 +389,6 @@ export default function BudgetPage() {
                       onChange={(e) =>
                         setForm({ ...form, periodStart: e.target.value })
                       }
- 
                       value={form.periodStart}
                     />
                   </div>
@@ -399,7 +398,6 @@ export default function BudgetPage() {
                       onChange={(e) =>
                         setForm({ ...form, periodEnd: e.target.value })
                       }
- 
                       value={form.periodEnd}
                     />
                   </div>

@@ -1,5 +1,4 @@
 import { auth } from "@repo/auth/server";
-import { database, Prisma } from "@repo/database";
 import {
   CommandBand,
   CommandBandActions,
@@ -29,7 +28,6 @@ import {
 } from "@repo/design-system/components/ui/table";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getTenantIdForOrg } from "../../lib/tenant";
 import {
   getEventCompletion,
   getFollowUpMetrics,
@@ -39,6 +37,7 @@ import {
   getTopEvents,
   getWasteMetrics,
 } from "../../lib/data/analytics";
+import { getTenantIdForOrg } from "../../lib/tenant";
 
 export const dynamic = "force-dynamic";
 
@@ -104,8 +103,14 @@ const AnalyticsPage = async () => {
 
   let currentRevenue: number;
   let previousRevenue: number;
-  let currentLabor: { budgeted_labor: string | null; actual_labor: string | null };
-  let previousLabor: { budgeted_labor: string | null; actual_labor: string | null };
+  let currentLabor: {
+    budgeted_labor: string | null;
+    actual_labor: string | null;
+  };
+  let previousLabor: {
+    budgeted_labor: string | null;
+    actual_labor: string | null;
+  };
   let currentWasteCost: number;
   let previousWasteCost: number;
   let avgMarginPct: number;
@@ -133,13 +138,7 @@ const AnalyticsPage = async () => {
       followUps,
       topEventsResult,
     ] = await Promise.all([
-      getRevenueMetrics(
-        tenantId,
-        weekStart,
-        now,
-        previousWeekStart,
-        weekStart
-      ),
+      getRevenueMetrics(tenantId, weekStart, now, previousWeekStart, weekStart),
       getLaborMetrics(
         tenantId,
         thirtyDaysAgo,

@@ -1,13 +1,5 @@
 "use client";
 
-import { Badge } from "@repo/design-system/components/ui/badge";
-import { Button } from "@repo/design-system/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@repo/design-system/components/ui/card";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,6 +10,15 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@repo/design-system/components/ui/alert-dialog";
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@repo/design-system/components/ui/card";
+import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import {
   Dialog,
   DialogContent,
@@ -36,7 +37,7 @@ import {
   SelectValue,
 } from "@repo/design-system/components/ui/select";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
-import { DatePicker } from "@repo/design-system/components/ui/date-picker";
+import { formatCurrency } from "@repo/design-system/lib/format-currency";
 import {
   AlertTriangle,
   Archive,
@@ -51,7 +52,6 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
-import { formatCurrency } from "@repo/design-system/lib/format-currency";
 import { createFacilityAsset } from "../actions";
 import { FacilitiesNavigation } from "../components/facilities-navigation";
 
@@ -127,7 +127,6 @@ const NO_AREA_ID = "__none__";
 
 const formatCurrencyWithDash = (n: number | null) =>
   formatCurrency(n, { nullDisplay: "\u2014" });
-
 
 export default function AssetsPage() {
   const [assets, setAssets] = useState<Asset[]>([]);
@@ -454,7 +453,9 @@ export default function AssetsPage() {
                           )}
                           {asset.area_name && <span>📍 {asset.area_name}</span>}
                           {asset.purchase_cost != null && (
-                            <span>{formatCurrencyWithDash(asset.purchase_cost)}</span>
+                            <span>
+                              {formatCurrencyWithDash(asset.purchase_cost)}
+                            </span>
                           )}
                         </div>
                       </div>
@@ -596,7 +597,6 @@ export default function AssetsPage() {
                   onChange={(e) =>
                     setForm((p) => ({ ...p, purchaseDate: e.target.value }))
                   }
- 
                   value={form.purchaseDate}
                 />
               </div>
@@ -621,7 +621,6 @@ export default function AssetsPage() {
                   onChange={(e) =>
                     setForm((p) => ({ ...p, warrantyExpiry: e.target.value }))
                   }
- 
                   value={form.warrantyExpiry}
                 />
               </div>

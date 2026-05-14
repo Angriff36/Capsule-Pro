@@ -120,9 +120,14 @@ const parseListOpt = (val: string | undefined, separator = ";"): string[] => {
 async function importRecipes(
   rows: CsvRow[],
   tenantId: string,
-  userId: string,
+  userId: string
 ): Promise<ImportSummary> {
-  const summary: ImportSummary = { imported: 0, skipped: 0, errors: [], created: [] };
+  const summary: ImportSummary = {
+    imported: 0,
+    skipped: 0,
+    errors: [],
+    created: [],
+  };
 
   for (const row of rows) {
     const name = trimOpt(row.name);
@@ -193,9 +198,14 @@ async function importRecipes(
 async function importDishes(
   rows: CsvRow[],
   tenantId: string,
-  _userId: string,
+  _userId: string
 ): Promise<ImportSummary> {
-  const summary: ImportSummary = { imported: 0, skipped: 0, errors: [], created: [] };
+  const summary: ImportSummary = {
+    imported: 0,
+    skipped: 0,
+    errors: [],
+    created: [],
+  };
 
   for (const row of rows) {
     const name = trimOpt(row.name);
@@ -216,7 +226,7 @@ async function importDishes(
         });
         if (!recipe) {
           summary.errors.push(
-            `"${name}": Recipe "${recipeName}" not found, dish skipped`,
+            `"${name}": Recipe "${recipeName}" not found, dish skipped`
           );
           summary.skipped++;
           continue;
@@ -225,7 +235,9 @@ async function importDishes(
       }
 
       if (!recipeId) {
-        summary.errors.push(`"${name}": No recipe linked (set recipe_name column), dish skipped`);
+        summary.errors.push(
+          `"${name}": No recipe linked (set recipe_name column), dish skipped`
+        );
         summary.skipped++;
         continue;
       }
@@ -241,11 +253,18 @@ async function importDishes(
           description: trimOpt(row.description) ?? undefined,
           category: trimOpt(row.category) ?? undefined,
           serviceStyle: trimOpt(row.service_style) ?? undefined,
-          portionSizeDescription: trimOpt(row.portion_size_description) ?? undefined,
+          portionSizeDescription:
+            trimOpt(row.portion_size_description) ?? undefined,
           dietaryTags: parseListOpt(row.dietary_tags),
           allergens: parseListOpt(row.allergens),
-          pricePerPerson: pricePerPerson != null ? new Prisma.Decimal(pricePerPerson) : undefined,
-          costPerPerson: costPerPerson != null ? new Prisma.Decimal(costPerPerson) : undefined,
+          pricePerPerson:
+            pricePerPerson != null
+              ? new Prisma.Decimal(pricePerPerson)
+              : undefined,
+          costPerPerson:
+            costPerPerson != null
+              ? new Prisma.Decimal(costPerPerson)
+              : undefined,
           minPrepLeadDays: parseIntOpt(row.min_prep_lead_days) ?? 0,
           maxPrepLeadDays: parseIntOpt(row.max_prep_lead_days) ?? undefined,
         },
@@ -270,9 +289,14 @@ async function importDishes(
 async function importPrepLists(
   rows: CsvRow[],
   tenantId: string,
-  _userId: string,
+  _userId: string
 ): Promise<ImportSummary> {
-  const summary: ImportSummary = { imported: 0, skipped: 0, errors: [], created: [] };
+  const summary: ImportSummary = {
+    imported: 0,
+    skipped: 0,
+    errors: [],
+    created: [],
+  };
 
   // Group rows by prep_list_name to create one PrepList per group
   const groups = new Map<string, CsvRow[]>();
@@ -295,15 +319,18 @@ async function importPrepLists(
         if (event) eventId = event.id;
         else {
           summary.errors.push(
-            `"${listName}": Event #${eventNumber} not found, prep list skipped`,
+            `"${listName}": Event #${eventNumber} not found, prep list skipped`
           );
           summary.skipped += listRows.length;
           continue;
         }
       }
 
-      const batchMultiplier = parseDecimalOpt(listRows[0]?.batch_multiplier) ?? 1;
-      const dietaryRestrictions = parseListOpt(listRows[0]?.dietary_restrictions);
+      const batchMultiplier =
+        parseDecimalOpt(listRows[0]?.batch_multiplier) ?? 1;
+      const dietaryRestrictions = parseListOpt(
+        listRows[0]?.dietary_restrictions
+      );
 
       const prepList = await database.prepList.create({
         data: {
@@ -367,7 +394,7 @@ async function processFormData(request: Request) {
 
 function validateFileExtensions(
   files: File[],
-  allowedExtensions: string[],
+  allowedExtensions: string[]
 ): { valid: true; files: File[] } | { valid: false; error: string } {
   const invalidFiles = files.filter((file) => {
     const ext = `.${file.name.split(".").pop()?.toLowerCase()}`;
@@ -411,10 +438,15 @@ export async function POST(request: Request) {
     const { searchParams } = new URL(request.url);
     const importType = searchParams.get("type") as ImportType | null;
 
-    if (!importType || !["recipes", "dishes", "prep-lists"].includes(importType)) {
+    if (
+      !(importType && ["recipes", "dishes", "prep-lists"].includes(importType))
+    ) {
       return NextResponse.json(
-        { message: 'Missing or invalid "type" query parameter. Must be: recipes, dishes, or prep-lists' },
-        { status: 400 },
+        {
+          message:
+            'Missing or invalid "type" query parameter. Must be: recipes, dishes, or prep-lists',
+        },
+        { status: 400 }
       );
     }
 
@@ -428,7 +460,7 @@ export async function POST(request: Request) {
     if (files.length === 0) {
       return NextResponse.json(
         { message: "No files uploaded" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -445,13 +477,15 @@ export async function POST(request: Request) {
       const content = await file.text();
       const rows = parseCsv(content);
       allRows.push(...rows);
-      log.debug(`[POST /api/kitchen/import] Parsed ${rows.length} rows from ${file.name}`);
+      log.debug(
+        `[POST /api/kitchen/import] Parsed ${rows.length} rows from ${file.name}`
+      );
     }
 
     if (allRows.length === 0) {
       return NextResponse.json(
         { message: "No data rows found in uploaded files" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -482,7 +516,7 @@ export async function POST(request: Request) {
           stack: error instanceof Error ? error.stack : undefined,
         }),
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

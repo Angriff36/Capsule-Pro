@@ -18,13 +18,12 @@ import {
 } from "@repo/design-system/components/ui/table";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-
-import { getTenantIdForOrg } from "../../../lib/tenant";
 import {
   getFinanceOverview,
   getRecentInvoices,
   getRecentPayments,
 } from "../../../lib/data/finance";
+import { getTenantIdForOrg } from "../../../lib/tenant";
 
 export const dynamic = "force-dynamic";
 
@@ -112,11 +111,7 @@ const AnalyticsFinancePage = async () => {
   const tenantId = await getTenantIdForOrg(orgId);
   const now = new Date();
 
-  const [
-    overview,
-    recentInvoices,
-    recentPayments,
-  ] = await Promise.all([
+  const [overview, recentInvoices, recentPayments] = await Promise.all([
     getFinanceOverview(tenantId, now),
     getRecentInvoices(tenantId),
     getRecentPayments(tenantId),
@@ -188,8 +183,7 @@ const AnalyticsFinancePage = async () => {
           </CardHeader>
           <CardContent className="text-muted-foreground text-sm">
             {overdueCount} overdue invoices totaling{" "}
-            {currencyFormatter.format(overdueTotal)}
-            .
+            {currencyFormatter.format(overdueTotal)}.
           </CardContent>
         </Card>
 
@@ -201,8 +195,8 @@ const AnalyticsFinancePage = async () => {
             </CardTitle>
           </CardHeader>
           <CardContent className="text-muted-foreground text-sm">
-            {budgetCount} budgets tracked · {revenueAccountCount}{" "}
-            revenue and {expenseAccountCount} expense accounts active.
+            {budgetCount} budgets tracked · {revenueAccountCount} revenue and{" "}
+            {expenseAccountCount} expense accounts active.
           </CardContent>
         </Card>
       </section>

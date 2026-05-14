@@ -70,6 +70,15 @@ vi.mock("@/lib/manifest-runtime", () => ({
 
 // Mock getTenantIdForOrg
 vi.mock("@/app/lib/tenant", () => ({
+  requireCurrentUser: vi.fn().mockResolvedValue({
+    id: "test-user-id",
+    tenantId: "test-tenant",
+    role: "admin",
+    email: "test@example.com",
+    firstName: "Test",
+    lastName: "User",
+  }),
+
   getTenantIdForOrg: vi.fn(() => Promise.resolve("test-tenant")),
 }));
 
@@ -118,7 +127,9 @@ describe("Manifest HTTP Integration - PrepTask Commands", () => {
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "claim" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({ entity: "PrepTask", command: "claim" }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(401);
@@ -175,7 +186,9 @@ describe("Manifest HTTP Integration - PrepTask Commands", () => {
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "claim" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({ entity: "PrepTask", command: "claim" }),
+      });
       const data = await response.json();
 
       // The response should be successful or have appropriate error
@@ -225,7 +238,9 @@ describe("Manifest HTTP Integration - PrepTask Commands", () => {
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "claim" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({ entity: "PrepTask", command: "claim" }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(401);
@@ -266,7 +281,9 @@ describe("Manifest HTTP Integration - PrepTask Commands", () => {
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "claim" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({ entity: "PrepTask", command: "claim" }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(401);
@@ -352,7 +369,9 @@ describe("Manifest HTTP Integration - Menu Commands", () => {
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "update" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({ entity: "PrepTask", command: "update" }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(401);
@@ -418,7 +437,9 @@ describe("Manifest HTTP Integration - Station Commands", () => {
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "assign-task" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({ entity: "PrepTask", command: "assign-task" }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(401);
@@ -514,7 +535,9 @@ describe("Manifest HTTP Integration - Inventory Commands", () => {
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "reserve" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({ entity: "PrepTask", command: "reserve" }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(401);
@@ -610,7 +633,9 @@ describe("Manifest HTTP Integration - Recipe Commands", () => {
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "update" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({ entity: "PrepTask", command: "update" }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(401);
@@ -677,7 +702,12 @@ describe("Manifest HTTP Integration - Dish Commands", () => {
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "update-pricing" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({
+          entity: "PrepTask",
+          command: "update-pricing",
+        }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(401);
@@ -733,7 +763,12 @@ describe("Manifest HTTP Integration - Ingredient Commands", () => {
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "update-allergens" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({
+          entity: "PrepTask",
+          command: "update-allergens",
+        }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(401);
@@ -779,7 +814,12 @@ describe("Manifest HTTP Integration - RecipeIngredient Commands", () => {
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "update-quantity" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({
+          entity: "PrepTask",
+          command: "update-quantity",
+        }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(401);
@@ -824,7 +864,9 @@ describe("Manifest HTTP Integration - PrepList Commands", () => {
         }
       );
 
-      const response = await POST(request, { params: Promise.resolve({ entity: "PrepTask", command: "finalize" }) });
+      const response = await POST(request, {
+        params: Promise.resolve({ entity: "PrepTask", command: "finalize" }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(401);

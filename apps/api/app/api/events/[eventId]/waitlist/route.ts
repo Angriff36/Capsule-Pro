@@ -43,10 +43,7 @@ export async function GET(
       rsvpRespondedAt: true,
       createdAt: true,
     },
-    orderBy: [
-      { waitlistPosition: "asc" },
-      { createdAt: "desc" },
-    ],
+    orderBy: [{ waitlistPosition: "asc" }, { createdAt: "desc" }],
   });
 
   // Convert to legacy field names for compatibility

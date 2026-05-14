@@ -21,7 +21,17 @@ import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
-vi.mock("@/app/lib/tenant", () => ({ getTenantIdForOrg: vi.fn() }));
+vi.mock("@/app/lib/tenant", () => ({
+  requireCurrentUser: vi.fn().mockResolvedValue({
+    id: "test-user-id",
+    tenantId: "test-tenant",
+    role: "admin",
+    email: "test@example.com",
+    firstName: "Test",
+    lastName: "User",
+  }),
+  getTenantIdForOrg: vi.fn(),
+}));
 vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn() }));
 vi.mock("@/lib/manifest-runtime", () => ({
   createManifestRuntime: vi.fn(),
@@ -478,7 +488,11 @@ describe("Ingredient API Routes", () => {
       });
 
       const body = { id: "ingredient-001", allergens: ["gluten"] };
-      await simulateRouteHandler("updateAllergens", makeRequest(body), "Ingredient");
+      await simulateRouteHandler(
+        "updateAllergens",
+        makeRequest(body),
+        "Ingredient"
+      );
 
       expect(mockRunCommand).toHaveBeenCalledWith("updateAllergens", body, {
         entityName: "Ingredient",
@@ -558,7 +572,11 @@ describe("Ingredient API Routes", () => {
       });
 
       const body = { id: "ingredient-001", shelfLifeDays: 7 };
-      await simulateRouteHandler("updateShelfLife", makeRequest(body), "Ingredient");
+      await simulateRouteHandler(
+        "updateShelfLife",
+        makeRequest(body),
+        "Ingredient"
+      );
 
       expect(mockRunCommand).toHaveBeenCalledWith("updateShelfLife", body, {
         entityName: "Ingredient",

@@ -54,9 +54,26 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
 vi.mock("@/app/lib/tenant", () => ({
   getTenantIdForOrg: vi.fn(),
-  requireCurrentUser: vi.fn(),
+  requireCurrentUser: vi.fn().mockResolvedValue({
+    id: "test-user-id",
+    tenantId: "test-tenant",
+    role: "admin",
+    email: "test@example.com",
+    firstName: "Test",
+    lastName: "User",
+  }),
 }));
 vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn() }));
+
+vi.mock("@/app/lib/invariant", () => ({
+  InvariantError: class extends Error {
+    constructor(message: string) {
+      super(message);
+      this.name = "InvariantError";
+    }
+  },
+  invariant: vi.fn(),
+}));
 
 vi.mock("@/lib/manifest-runtime", () => ({
   createManifestRuntime: vi.fn(),
@@ -81,7 +98,7 @@ vi.mock("@/lib/manifest-response", async () => {
 // --- Module imports (after mocks) ---
 
 const { auth } = await import("@repo/auth/server");
-const { getTenantIdForOrg } = await import("@/app/lib/tenant");
+const { getTenantIdForOrg, requireCurrentUser } = await import("@/app/lib/tenant");
 const { createManifestRuntime } = await import("@/lib/manifest-runtime");
 
 // --- Constants ---
@@ -105,6 +122,19 @@ function authed() {
 
 function unauthed() {
   vi.mocked(auth).mockResolvedValue({ orgId: null, userId: null } as never);
+  // Throwing InvariantError specifically so the route catches it and returns 401
+  class InvariantError extends Error {
+    constructor(message: string) {
+      super(message);
+      this.name = "InvariantError";
+    }
+  }
+  vi.mocked(requireCurrentUser).mockRejectedValue(
+    new InvariantError("Unauthorized") as never
+  );
+  vi.mocked(createManifestRuntime).mockResolvedValue({
+    runCommand: vi.fn().mockResolvedValue({ success: false }),
+  } as never);
 }
 
 function makeRequest(url: string, init?: RequestInit): NextRequest {
@@ -730,8 +760,7 @@ describe("Prep Tasks API", () => {
       name: "update-assignment",
       runtimeName: "updateAssignment",
       path: "/api/kitchen/prep-tasks/commands/update-assignment",
-      routePath:
-        "@/app/api/manifest/[entity]/commands/[command]/route",
+      routePath: "@/app/api/manifest/[entity]/commands/[command]/route",
       sampleBody: {
         id: TEST_PREP_TASK_ID,
         assigneeId: "user-2",
@@ -780,7 +809,9 @@ describe("Prep Tasks API", () => {
     it(`returns 401 when unauthenticated [${name}]`, async () => {
       unauthed();
       const mod = await import(routePath);
-      const res = await mod.POST(postRequest(path, sampleBody));
+      const res = await mod.POST(postRequest(path, sampleBody), {
+        params: Promise.resolve({ entity: "PrepTask", command: name }),
+      });
 
       expect(res.status).toBe(401);
       const body = await res.json();
@@ -791,7 +822,9 @@ describe("Prep Tasks API", () => {
       vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
 
       const mod = await import(routePath);
-      const res = await mod.POST(postRequest(path, sampleBody));
+      const res = await mod.POST(postRequest(path, sampleBody), {
+        params: Promise.resolve({ entity: "PrepTask", command: name }),
+      });
 
       expect(res.status).toBe(400);
       const body = await res.json();
@@ -802,7 +835,9 @@ describe("Prep Tasks API", () => {
       mockRuntimeSuccess({ id: TEST_PREP_TASK_ID, status: "pending" });
 
       const mod = await import(routePath);
-      const res = await mod.POST(postRequest(path, sampleBody));
+      const res = await mod.POST(postRequest(path, sampleBody), {
+        params: Promise.resolve({ entity: "PrepTask", command: name }),
+      });
 
       expect(res.status).toBe(200);
       const body = await res.json();
@@ -822,7 +857,9 @@ describe("Prep Tasks API", () => {
       mockRuntimePolicyDenial("kitchenStaffOnly");
 
       const mod = await import(routePath);
-      const res = await mod.POST(postRequest(path, sampleBody));
+      const res = await mod.POST(postRequest(path, sampleBody), {
+        params: Promise.resolve({ entity: "PrepTask", command: name }),
+      });
 
       expect(res.status).toBe(403);
       const body = await res.json();
@@ -834,7 +871,9 @@ describe("Prep Tasks API", () => {
       mockRuntimeGuardFailure(0, "id is required");
 
       const mod = await import(routePath);
-      const res = await mod.POST(postRequest(path, sampleBody));
+      const res = await mod.POST(postRequest(path, sampleBody), {
+        params: Promise.resolve({ entity: "PrepTask", command: name }),
+      });
 
       expect(res.status).toBe(422);
       const body = await res.json();
@@ -846,7 +885,9 @@ describe("Prep Tasks API", () => {
       mockRuntimeFailure("Illegal state transition");
 
       const mod = await import(routePath);
-      const res = await mod.POST(postRequest(path, sampleBody));
+      const res = await mod.POST(postRequest(path, sampleBody), {
+        params: Promise.resolve({ entity: "PrepTask", command: name }),
+      });
 
       expect(res.status).toBe(400);
       const body = await res.json();
@@ -859,7 +900,9 @@ describe("Prep Tasks API", () => {
       );
 
       const mod = await import(routePath);
-      const res = await mod.POST(postRequest(path, sampleBody));
+      const res = await mod.POST(postRequest(path, sampleBody), {
+        params: Promise.resolve({ entity: "PrepTask", command: name }),
+      });
 
       expect(res.status).toBe(500);
       const body = await res.json();
@@ -877,7 +920,9 @@ describe("Prep Tasks API", () => {
       } as never);
 
       const mod = await import(routePath);
-      await mod.POST(postRequest(path, sampleBody));
+      await mod.POST(postRequest(path, sampleBody), {
+        params: Promise.resolve({ entity: "PrepTask", command: name }),
+      });
 
       // Pinned: kebab-case URL slug -> camelCase runtime name.
       expect(runCommand).toHaveBeenCalledWith(runtimeName, sampleBody, {

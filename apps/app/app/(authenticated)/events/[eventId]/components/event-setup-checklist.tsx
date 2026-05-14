@@ -76,7 +76,7 @@ export function EventSetupChecklist({
         description:
           "Link a client to this event for billing and communication",
         completed: hasClient,
-        href: `#`,
+        href: "#",
         icon: <Users className="h-4 w-4" />,
         required: true,
         priority: "high",
@@ -87,7 +87,7 @@ export function EventSetupChecklist({
         label: "Venue Selected",
         description: "Choose the event location and setup details",
         completed: hasVenue,
-        href: `#`,
+        href: "#",
         icon: <MapPin className="h-4 w-4" />,
         required: true,
         priority: "high",

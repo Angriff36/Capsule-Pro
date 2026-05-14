@@ -8,6 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
+import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import {
   Dialog,
   DialogContent,
@@ -32,7 +33,7 @@ import {
   TabsTrigger,
 } from "@repo/design-system/components/ui/tabs";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
-import { DatePicker } from "@repo/design-system/components/ui/date-picker";
+import { formatCurrency } from "@repo/design-system/lib/format-currency";
 import {
   AlertCircle,
   Calendar,
@@ -50,9 +51,9 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
-import { formatCurrency } from "@repo/design-system/lib/format-currency";
 
-const fmtCurrency = (v: number | null) => formatCurrency(v, { nullDisplay: "\u2014" });
+const fmtCurrency = (v: number | null) =>
+  formatCurrency(v, { nullDisplay: "\u2014" });
 
 // Types matching the API
 interface Shipment {
@@ -406,7 +407,6 @@ export function ShipmentsClient() {
     });
   };
 
-
   if (loading) {
     return (
       <div className="flex items-center justify-center p-8">
@@ -601,8 +601,8 @@ export function ShipmentsClient() {
                             <Button
                               onClick={() => openEditDialog(shipment)}
                               size="icon"
-                              variant="ghost"
                               title="Edit shipment details"
+                              variant="ghost"
                             >
                               <Pencil className="h-4 w-4" />
                             </Button>
@@ -731,7 +731,6 @@ export function ShipmentsClient() {
                       scheduledDate: e.target.value,
                     }))
                   }
- 
                   value={createForm.scheduledDate}
                 />
               </div>
@@ -745,7 +744,6 @@ export function ShipmentsClient() {
                       estimatedDeliveryDate: e.target.value,
                     }))
                   }
- 
                   value={createForm.estimatedDeliveryDate}
                 />
               </div>
@@ -958,7 +956,6 @@ export function ShipmentsClient() {
                     estimatedDeliveryDate: e.target.value,
                   }))
                 }
- 
                 value={editForm.estimatedDeliveryDate}
               />
             </div>
@@ -982,9 +979,7 @@ export function ShipmentsClient() {
                 Cancel
               </Button>
               <Button disabled={updating} type="submit">
-                {updating && (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                )}
+                {updating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Save Changes
               </Button>
             </DialogFooter>
