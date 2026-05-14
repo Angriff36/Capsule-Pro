@@ -1,53 +1,54 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { captureException } from "@sentry/nextjs";
-import { type NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
 const isPublicRoute = createRouteMatcher([
   "/sign-in(.*)",
   "/sign-up(.*)",
   "/plasmic(.*)",
+  "/view/proposal(.*)",
+  "/sign/contract(.*)",
 ]);
+
+const isPublicApiRoute = createRouteMatcher([
+  "/api/health(.*)",
+  "/api/healthz(.*)",
+  "/api/live(.*)",
+  "/api/ready(.*)",
+]);
+
 const isApiRoute = createRouteMatcher(["/api(.*)", "/trpc(.*)"]);
 
-/** Cookie-based auth redirect loop detection */
-const LOOP_COOKIE = "x-auth-loop";
-const LOOP_THRESHOLD = 5;
-const LOOP_WINDOW_MS = 60_000;
+function jsonResponse(message: string, status: number) {
+  return new Response(JSON.stringify({ message }), {
+    status,
+    headers: { "Content-Type": "application/json" },
+  });
+}
 
-function detectAuthLoop(req: NextRequest): {
-  isLoop: boolean;
-  response?: NextResponse;
-} {
-  const raw = req.cookies.get(LOOP_COOKIE)?.value;
-  const now = Date.now();
-  let count = 0;
-  let windowStart = now;
+function requestOrigin(req: Request) {
+  const forwardedHost = req.headers.get("x-forwarded-host");
+  const forwardedProto = req.headers.get("x-forwarded-proto");
 
-  if (raw) {
-    const [c, t] = raw.split("|").map(Number);
-    if (now - t < LOOP_WINDOW_MS) {
-      count = c;
-      windowStart = t;
-    }
+  if (forwardedHost) {
+    return `${forwardedProto || "https"}://${forwardedHost}`;
   }
 
-  count++;
+  return new URL(req.url).origin;
+}
 
-  if (count >= LOOP_THRESHOLD) {
-    captureException(new Error("Clerk auth redirect loop detected"), {
-      tags: { route: "app-middleware", errorType: "auth_loop" },
-      extra: { url: req.url, count, windowMs: now - windowStart },
-    });
-    const res = NextResponse.redirect(new URL("/sign-in", req.url));
-    res.cookies.delete(LOOP_COOKIE);
-    return { isLoop: true, response: res };
-  }
-
-  return { isLoop: false };
+function redirectToSignIn(req: Request) {
+  const currentUrl = new URL(req.url);
+  const signInUrl = new URL("/sign-in", requestOrigin(req));
+  signInUrl.searchParams.set(
+    "redirect_url",
+    `${requestOrigin(req)}${currentUrl.pathname}${currentUrl.search}`
+  );
+  return NextResponse.redirect(signInUrl, 307);
 }
 
 export default clerkMiddleware(async (auth, req) => {
-  if (isPublicRoute(req)) {
+  if (isPublicRoute(req) || isPublicApiRoute(req)) {
     return;
   }
 
@@ -55,41 +56,33 @@ export default clerkMiddleware(async (auth, req) => {
     try {
       const { userId } = await auth();
       if (!userId) {
-        return new Response(JSON.stringify({ message: "Unauthorized" }), {
-          status: 401,
-          headers: { "Content-Type": "application/json" },
-        });
+        return jsonResponse("Unauthorized", 401);
       }
     } catch (error) {
       captureException(error, {
         tags: { route: "app-middleware", errorType: "api_auth_failure" },
         extra: { url: req.url },
       });
-      return new Response(JSON.stringify({ message: "Auth error" }), {
-        status: 500,
-        headers: { "Content-Type": "application/json" },
-      });
+      return jsonResponse("Forbidden", 403);
     }
     return;
   }
 
   try {
-    const loop = detectAuthLoop(req as NextRequest);
-    if (loop.isLoop && loop.response) {
-      return loop.response;
+    const { userId } = await auth();
+    if (!userId) {
+      return redirectToSignIn(req);
     }
-
-    await auth.protect();
   } catch (error) {
     const isNextHttpError =
       error instanceof Error &&
       error.message?.startsWith("NEXT_HTTP_ERROR_FALLBACK;");
     if (!isNextHttpError) {
       captureException(error, {
-        tags: { route: "app-middleware", errorType: "protect_failure" },
+        tags: { route: "app-middleware", errorType: "page_auth_failure" },
         extra: { url: req.url },
       });
     }
-    throw error;
+    return redirectToSignIn(req);
   }
 });

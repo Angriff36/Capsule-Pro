@@ -221,17 +221,12 @@ let nextConfig: NextConfig = withToolbar(
       // App port — covers browser → Next dev server cross-origin warnings
       "localhost:2221",
       "127.0.0.1:2221",
-      // LAN/WiFi IP that appears in `next dev` output on multi-interface machines
-      "10.2.231.104:2221",
       // API server — server actions call it directly in dev
       "localhost:2223",
       "127.0.0.1:2223",
       // Vercel Toolbar companion
       "localhost:25002",
       "127.0.0.1:25002",
-      // Tailscale — HMR WebSocket over VPN
-      "pop-os.tail78dd9e.ts.net",
-      "pop-os.tail78dd9e.ts.net:2221",
     ],
     experimental: {
       optimizePackageImports: [

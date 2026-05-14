@@ -2578,5 +2578,25 @@
     "category": "webhook",
     "owner": "platform-team",
     "allowPermanent": true
+  },
+  {
+    "path": "app/api/user/update-role/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "reason": "User role update \u2014 uses runManifestCommand but outside commands/ namespace",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/user/deactivate/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "reason": "User deactivation \u2014 uses runManifestCommand but outside commands/ namespace",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
   }
 ]

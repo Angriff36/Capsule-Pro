@@ -11,10 +11,10 @@ export default function ClerkProviderClient({
   children: ReactNode;
 }) {
   const { resolvedTheme } = useTheme();
-  const baseTheme = resolvedTheme === "dark" ? dark : undefined;
+  const theme = resolvedTheme === "dark" ? dark : undefined;
 
   return (
-    <ClerkProvider appearance={{ baseTheme, cssLayerName: "clerk" }}>
+    <ClerkProvider appearance={{ theme, cssLayerName: "clerk" }}>
       {children}
     </ClerkProvider>
   );

@@ -653,6 +653,11 @@
       "comment": "Infrastructure: Shipment status transition with inventory reservation/cancellation/delivery side-effects"
     },
     {
+      "prefix": "/api/smsautomationrule/",
+      "methods": ["POST"],
+      "comment": "Bypass route - SMS automation rule activate/deactivate (pending manifest migration)"
+    },
+    {
       "prefix": "/api/user/",
       "methods": ["POST"],
       "comment": "Uses createManifestRuntime — User.create/update/deactivate/terminate/updateRole (instanceId fix)"
@@ -1003,9 +1008,9 @@
       "comment": "Bypass route (pending manifest migration)"
     },
     {
-      "prefix": "/api/lead/",
+      "prefix": "/api/lead",
       "methods": ["POST"],
-      "comment": "Bypass route (pending manifest migration)"
+      "comment": "Bypass route - event intake lead submission (pending manifest migration)"
     },
     {
       "prefix": "/api/menu/",
