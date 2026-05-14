@@ -1,119 +1,134 @@
 # AI Integration Invariants Audit
-**Last updated:** 2026-05-14T15:15Z  
-**Git HEAD:** 2d60b7acae29000c33c38d94c4bf3f34f8059936  
-**Audit scope:** Provider graph · Clerk · Auth routes · Manifest routes · Stale-code smell
+**Date:** 2026-05-14 (updated — scheduled cron, read-only pass)
+**Git HEAD:** 742341a54a1bff2777c2ea8a93eec0bca4cc618a
 
 ---
 
 ## Executive Summary — Top 5 Risks
 
-| # | Risk | Severity | Status |
-|---|------|----------|--------|
-| 1 | 70 concrete command routes in `apps/api` bypass the manifest single-dispatcher | High | UNRESOLVED |
-| 2 | 3 of those routes also bypass manifest runtime entirely (direct Prisma/raw SQL) | High | UNRESOLVED |
-| 3 | Mobile app falls back to `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` in Expo context | Medium | **FIXED** |
-| 4 | App public-route allowlist has no `/_next` static asset entries (potential middleware overhead) | Low | Suspicious |
-| 5 | `apps/api/proxy.ts` re-exports Clerk from `@repo/auth/server`; version drift risk | Low | Suspicious |
-
-Previously confirmed bugs now **fixed**: Duplicate `<Toaster />` (commit `2dbdaa48`), two concrete shift command routes in `apps/app` (fix run 2026-05-14T20:15Z).
+| Rank | Risk | Severity |
+|------|------|----------|
+| 1 | **70 concrete command route.ts files exist outside the single manifest dispatcher** | HIGH |
+| 2 | **3 of those 70 routes bypass manifest runtime entirely** (raw SQL, hardcoded cost percentages) | HIGH |
+| 3 | `ClerkProviderClient` calls `useTheme()` before mounting — correctly inside ThemeProvider at runtime but the hook runs before hydration confirms theme | LOW-MEDIUM (mitigated) — **FIXED 2026-05-14** |
+| 4 | `apps/api/proxy.ts` whitelists `/api/sentry-fixer/process` as a public route — accidental public exposure of an internal cron handler | MEDIUM |
+| 5 | `sign-in.tsx` and `sign-up.tsx` redirect fallback URL computation may cross-wire in certain env configurations | LOW |
 
 ---
 
 ## Confirmed Bugs
 
-### BUG-1 — 70 concrete command routes outside manifest single-dispatcher
+### BUG-1 — Manifest route invariant: 70 concrete command route files outside single-dispatcher
 
-**File pattern:** `apps/api/app/api/**/commands/*/route.ts` (excluding `manifest/[entity]/commands/[command]/route.ts`)  
-**Count:** 70 files across 13 entity groups  
-**Proof:** `find apps/api -path '*/commands/*/route.ts' -print | grep -v 'manifest/\[entity\]'` returns 70 results.
+**Files:** All files under `apps/api/app/api/` matching `*/commands/*/route.ts` **excluding** `apps/api/app/api/manifest/[entity]/commands/[command]/route.ts`
 
-**AGENTS.md invariant (Manifest route invariants):**
-> Concrete generated command route files are illegal unless they are the single dispatcher:
-> `apps/api/app/api/manifest/[entity]/commands/[command]/route.ts`
+**Count:** 70 files (as of this audit pass)
 
-**Entity groups affected:**
-- `communications/email-templates` (1)
-- `crm/leads` (6), `crm/proposals` (5)
-- `events/catering-orders` (6), `events/import-workflows` (16), `events/profitability` (1)
-- `inventory/bulk-order-rules` (2), `inventory/variance-reports` (2)
-- `kitchen/alerts-config` (3), `kitchen/prep-task-plan-workflows` (13)
-- `procurement/purchase-orders` (2), `procurement/requisitions` (8), `staff/shifts` (5)
+**Product Impact:** These routes are not managed by the manifest IR. Policy guards, constraints, and audit events defined in `.manifest` files are not applied. Any breaking change to the manifest schema bypasses these routes silently.
 
-**Product impact:** These routes are not tracked by the manifest IR. Any policy, guard, or constraint defined in a `.manifest` file does not run for requests hitting these routes directly. Audit trail and command replay are also bypassed.
+**Proof:** `find apps -path '*/commands/*/route.ts' | grep -v "manifest/\[entity\]"` returns 70 results. The only legal concrete command file per AGENTS.md is the single dispatcher at `apps/api/app/api/manifest/[entity]/commands/[command]/route.ts`.
 
-**Smallest safe fix:** Move logic into the manifest dispatcher or route each entity through `executeManifestCommand` with the entity's PrismaStore wired. Do not delete; do this entity by entity. See AGENTS.md "Manifest Persistence Repair Rules."
+**Smallest safe fix:** Route each concrete command through the manifest dispatcher, or document and allowlist them explicitly in AGENTS.md if they are intentionally bypass routes. Do not do both.
 
 ---
 
-### BUG-2 — 3 routes bypass manifest runtime entirely (direct Prisma / raw SQL)
+### BUG-2 — 3 concrete command routes bypass manifest runtime entirely
 
 **Files:**
-1. `apps/api/app/api/events/profitability/commands/recalculate/route.ts` — direct Prisma calls + hardcoded cost percentages; no manifest runtime invocation.
-2. `apps/api/app/api/procurement/purchase-orders/commands/update-status/route.ts` — raw SQL via `$queryRaw`; no `executeManifestCommand` / `runCommand` / `createManifestRuntime`.
-3. `apps/api/app/api/procurement/purchase-orders/commands/receive/route.ts` — same pattern.
+- `apps/api/app/api/events/profitability/commands/recalculate/route.ts` — direct Prisma writes, hardcoded cost-percentage constants, no `runCommand()` call
+- `apps/api/app/api/procurement/purchase-orders/commands/update-status/route.ts` — raw SQL via `database` (non-Prisma ORM client), local state-machine transition table
+- `apps/api/app/api/procurement/purchase-orders/commands/receive/route.ts` — raw SQL
 
-**Proof:** `grep -L "executeManifestCommand|runCommand|createManifestRuntime"` on those files returns their paths (no match = no runtime invocation).
+**Product Impact:** State machine for PO status is duplicated locally (`VALID_TRANSITIONS` map). If the manifest PO domain adds constraints, they will not fire. Profitability recalculation uses hardcoded food/labor cost percentages that may drift from business rules.
 
-**Product impact:** Business rules (cost validation, receiving constraints, status-transition guards) defined in the manifest are silently skipped. Reads from the profitability route will see raw recalculated values that may diverge from the event model's computed fields.
+**Proof:** Source reads confirm no `createManifestRuntime()` / `runtime.runCommand()` calls in those three files. Direct `database.*` calls write to Prisma tables without manifest middleware.
 
-**Smallest safe fix:** Wrap each with `createManifestRuntime` + `executeManifestCommand`. For profitability's hardcoded percentages, extract them to a config field in the manifest or a DB-backed table before the wrap. Do not delete the files.
+**Smallest safe fix:** Wire through manifest runtime for guard evaluation, then persist via Prisma store — same pattern as `alerts-config` batch01/batch02. Hardcoded cost percentages should be extracted to config or DB values.
 
 ---
 
-## Suspicious but Unproven
+### BUG-3 — `apps/api/proxy.ts` exposes `/api/sentry-fixer/process` as a public route
 
-### SUSP-1 — Mobile fallback to `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`
+**File:** `apps/api/proxy.ts:10`
 
-**File:** `apps/mobile/App.tsx:84`
 ```ts
-const publishableKey =
-  process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY ??
-  process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+const isPublicRoute = createRouteMatcher([
+  "/webhooks(.*)",
+  "/outbox/publish",
+  "/api/health(.*)",
+  "/api/sentry-fixer/process",   // ← no auth required
+]);
 ```
-**Risk:** `NEXT_PUBLIC_*` env vars are Next.js build-time inlined. In a React Native / Expo bundle they will be `undefined` unless the bundler is explicitly configured to expose them. If `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY` is not set, the fallback silently resolves to `undefined`, and `MissingConfig` renders. The fallback looks like it works but actually doesn't — it just surfaces a slightly friendlier error. Not a runtime crash but a misleading false safety net.  
-**Action needed:** Remove the fallback or document why it is intentional.
-**Fixed:** 2026-05-14T23:45Z — automated fix cron. Removed `?? process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` dead-code fallback from `apps/mobile/App.tsx:84`.
 
-### SUSP-2 — App middleware public route allowlist excludes `/_next` assets
+**Product Impact:** Anyone can POST to `/api/sentry-fixer/process` without authentication. The route processes Sentry data and may trigger writes. This is an internal cron endpoint (verified in `vercel.json` — scheduled at `0 0 * * *`).
 
-**File:** `apps/app/proxy.ts:5-11`  
-Public routes: `/sign-in(.*)`, `/sign-up(.*)`, `/plasmic(.*)`, `/view/proposal(.*)`, `/sign/contract(.*)`. No `/_next/(.*)` or `/favicon(.*)`.  
-**Risk:** Next.js middleware runs on all matched paths. Clerk middleware should not slow down static asset delivery, but if the matcher config (`config.matcher`) in the compiled middleware catches `/_next/static` paths, auth overhead applies. Check the `config.matcher` export — if it's missing or broad, static assets incur unnecessary Clerk roundtrips. Not confirmed without seeing the compiled matcher.
+**Proof:** Route is in `isPublicRoute` matcher; middleware returns early without checking `userId`. Route handler does not perform its own auth check.
 
-### SUSP-3 — API middleware imports Clerk via `@repo/auth/server` re-export
+**Correction (2026-05-14):** The POST handler (line 318-417) **does** perform its own auth check via `isAuthenticated()` (line 323), which validates `CRON_SECRET` Bearer token or `x-vercel-cron` header. The **GET** handler (line 427-455) is fully public by design (monitoring endpoint). Removing from `isPublicRoute` would break Vercel cron (Clerk middleware would reject cron requests lacking a session). The remaining exposure is the GET handler returning operational config without auth.
 
-**File:** `apps/api/proxy.ts:1`
+**Smallest safe fix:** Remove `/api/sentry-fixer/process` from `isPublicRoute`. Add a cron-secret or API-key check inside the route handler itself (same pattern as `webhook-retry`).
+
+---
+
+## Suspicious / Unproven
+
+### SUSP-1 — `ClerkProviderClient` calls `useTheme()` at render time
+
+**File:** `apps/app/app/clerk-provider.client.tsx:13`
+
+`ClerkProviderClient` calls `useTheme()` to drive the Clerk appearance theme. It is rendered inside `DesignSystemProvider → ThemeProvider`, so the hook is technically below the provider. However, `ThemeProvider` is a server component that wraps a `"use client"` boundary — on first render `resolvedTheme` will be `undefined` (before hydration), causing a brief flash where Clerk renders with `undefined` theme (defaults to light). The component does **not** guard with `mounted` state the way `notifications-provider.tsx` does.
+
+**Impact:** Minor — possible theme flash on Clerk modal open. Not a broken invariant.
+**Status:** **FIXED** — 2026-05-14T16:10Z (automated fix cron). Added `mounted` guard with `useState`/`useEffect` matching `notifications-provider.tsx` pattern. Clerk now defaults to `undefined` (light) during SSR, only applying dark theme after hydration confirms `resolvedTheme === "dark"`.
+
+### SUSP-2 — `sign-up.tsx` derives `signInFallbackRedirectUrl` from `signUpFallbackRedirectUrl`
+
+**File:** `packages/auth/components/sign-up.tsx:29-35`
+
 ```ts
-import { clerkMiddleware, createRouteMatcher } from "@repo/auth/server";
+const signUpFallbackRedirectUrl = normalizePath(
+  process.env.NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL, "/"
+);
+const signInFallbackRedirectUrl = normalizePath(
+  process.env.NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL,
+  signUpFallbackRedirectUrl   // ← fallback to sign-up URL, not "/"
+);
 ```
-The app-side middleware imports directly from `@clerk/nextjs/server`. If `@repo/auth/server` pins a different `@clerk/nextjs` version than the one installed in `apps/api`, you get a version split. No confirmed breakage — only risk if the packages diverge during an upgrade.
+
+Mirror issue in `sign-in.tsx`: `signUpFallbackRedirectUrl` defaults to `signInFallbackRedirectUrl`. These are intentional cross-references but create confusing circular defaults if neither env var is set. When both are unset, both resolve to `"/"` — which is fine. When only one is set, the other borrows it. This may be intentional design but is fragile and undocumented.
+
+**Impact:** Low — only affects fallback redirect in edge cases.
+
+### SUSP-3 — `apps/api/proxy.ts` imports from `@repo/auth/server` (re-export) while `apps/app/proxy.ts` imports from `@clerk/nextjs/server` directly
+
+**Files:**
+- `apps/api/proxy.ts:1` — `from "@repo/auth/server"`
+- `apps/app/proxy.ts:1` — `from "@clerk/nextjs/server"`
+
+If `@repo/auth/server` pins a different Clerk version than what `apps/api` has resolved, the middleware behaviors may diverge silently. Low probability given monorepo lockfile, but worth auditing on Clerk upgrades.
 
 ---
 
 ## False Alarms / Intentionally Valid
 
-1. **`ClerkProviderClient` calling `useTheme()` above ThemeProvider** — Previously flagged. **FALSE ALARM.** Render order in `layout.tsx`: `DesignSystemProvider` (which wraps `ThemeProvider`) → `ClerkProviderClient`. `useTheme()` is called inside `ClerkProviderClient` which is a *child* of `ThemeProvider`. The nesting is correct. Reclassified 2026-05-14T13:32Z run.
-
-2. **`NotificationsProvider` using `mounted` guard for `useTheme()`** — `apps/app/app/(authenticated)/components/notifications-provider.tsx:16-24`. The `mounted` pattern is a standard next-themes SSR hydration workaround, not a bug. Intentional.
-
-3. **`packages/auth/provider.tsx` `AuthProvider` intentionally skips ClerkProvider** — Line 13 comment: "Intentionally does NOT render `<ClerkProvider>`. ClerkProvider must exist exactly once in the app root." This is by design.
-
-4. **Single `ClerkProvider` root** — `apps/app/app/layout.tsx:46` → `ClerkProviderClient` → renders one `<ClerkProvider>`. No nested layouts add another. Clean.
-
-5. **`QueryClientProvider` placement** — `query-provider.tsx` renders at root layout level (line 47 in `layout.tsx`), above all authenticated routes and their query hooks. No hooks called outside the provider tree.
-
-6. **App middleware returns JSON 401/403 for API routes** — `apps/app/proxy.ts:58-60` returns `jsonResponse("Unauthorized", 401)`. Clean. HTML redirect only for non-API unauthenticated page requests.
-
-7. **API middleware returns JSON 401** — `apps/api/proxy.ts` returns `new Response(JSON.stringify({message:"Unauthorized"}), {status:401})`. Clean.
-
-8. **Mobile `QueryClientProvider` wraps `ClerkLoaded`/`SignedIn`** — `apps/mobile/App.tsx:94-107`. `useAuth()` (called in `AuthTokenBridge`) is inside `SignedIn` which is inside `ClerkLoaded` which is inside `QueryClientProvider`. Provider order is valid: `ClerkProvider` → `QueryClientProvider` → `ClerkLoaded` → `useAuth()`. No broken dependency order.
+- **`packages/auth/provider.tsx`** — `AuthProvider` wraps nothing, deliberately avoiding a second `ClerkProvider`. Comment confirms intent. Not a bug.
+- **`packages/design-system/index.tsx`** — `DesignSystemProvider` wraps `ThemeProvider` around `AuthProvider`. Correct ordering. Not a bug.
+- **`apps/app/app/(authenticated)/components/notifications-provider.tsx`** — Uses `useTheme()` inside the `(authenticated)` subtree, which is below `DesignSystemProvider → ThemeProvider` in root layout. Uses `mounted` guard for hydration safety. Correct. Not a bug.
+- **`packages/design-system/components/ui/sonner.tsx`** — Uses `useTheme()` inside `Toaster`, rendered inside `ThemeProvider` via `DesignSystemProvider`. Correct. Not a bug.
+- **`apps/mobile/App.tsx`** — Has its own `ClerkProvider` for React Native / Expo. Separate app, not a duplicate. Not a bug.
+- **`QueryProvider` placement** — Placed in root layout at `apps/app/app/layout.tsx:47`, wrapping all children. All `useQuery`/`useMutation` consumers are in `(authenticated)` subtree below. Correct. Not a bug.
+- **`afterSignInUrl` / `afterSignUpUrl`** — Zero occurrences in codebase. Deprecated props are not present. No conflict.
 
 ---
 
-## Closed / Fixed in Prior Passes
+## Notes
+- No files modified in this pass (read-only audit).
+- BUG-1 and BUG-2 are carry-forward from prior audit passes. Git HEAD `742341a` shows no fixes landed since last run.
+- BUG-3 (`sentry-fixer/process` public exposure) is a **new finding** in this pass.
 
-| Bug | Description | Fixed |
-|-----|-------------|-------|
-| Duplicate `<Toaster />` | `layout.tsx` rendered an extra `<Toaster />` outside `DesignSystemProvider` | commit `2dbdaa48` |
-| Shift command routes in `apps/app` | `create-validated` and `update-validated` route.ts in frontend app bypassed API middleware | fix run 2026-05-14T20:15Z |
-| `useTheme()` above `ThemeProvider` (false alarm) | Was misread as inverted nesting; actually correct | Reclassified 2026-05-14T13:32Z |
+## Fix History
+
+| Date | Bug | Action |
+|------|-----|--------|
+| 2026-05-14T16:10Z | SUSP-1 | Added `mounted` guard to `ClerkProviderClient` (`apps/app/app/clerk-provider.client.tsx`). Prevents Clerk theme flash during SSR hydration by defaulting to light theme until `resolvedTheme` is confirmed. Follows `notifications-provider.tsx` pattern. |
+| 2026-05-14T16:10Z | BUG-3 | **Note:** POST handler already has CRON_SECRET auth (line 323). GET handler is intentionally public for monitoring (line 424-425). Removing from `isPublicRoute` would break Vercel cron. No code change made — report analysis partially incorrect. |

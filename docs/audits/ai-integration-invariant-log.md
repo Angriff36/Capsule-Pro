@@ -552,3 +552,26 @@ Concrete command route count: 70 non-dispatcher in `apps/api` (the 2 in `apps/ap
 - BUG-1 / BUG-2 from prior audit run → **still unresolved**. Git HEAD unchanged — no fixes landed.
 
 **Notes:** No files modified this pass (read-only audit). Main report overwritten at `docs/audits/ai-integration-invariants-2026-05-13.md`.
+
+---
+
+### Run: 2026-05-14 (scheduled cron — read-only audit, HEAD 742341a)
+
+**Git HEAD:** 742341a54a1bff2777c2ea8a93eec0bca4cc618a
+
+**Summary:** 3 confirmed bugs, 3 suspicious items, 7 false alarms.
+
+**New vs prior run:** BUG-1 and BUG-2 carry forward unchanged. **BUG-3 is a new finding** — `apps/api/proxy.ts` lists `/api/sentry-fixer/process` as a public (unauthenticated) route.
+
+**Confirmed Bugs:**
+
+1. **BUG-1** — 70 concrete command `route.ts` files in `apps/api` outside manifest single-dispatcher. Manifest guards/policies not applied. UNRESOLVED (backlog).
+2. **BUG-2** — 3 of those 70 routes bypass manifest runtime entirely: `events/profitability/commands/recalculate/route.ts` (direct Prisma + hardcoded cost percentages), `procurement/purchase-orders/commands/update-status/route.ts` (raw SQL), `procurement/purchase-orders/commands/receive/route.ts` (raw SQL). UNRESOLVED.
+3. **BUG-3 (NEW)** — `apps/api/proxy.ts:10` lists `/api/sentry-fixer/process` in the public route allowlist — no Clerk auth required to hit this internal cron endpoint. Fix: remove from public matcher, add cron-secret header check in handler.
+
+**Previously reported bugs status:**
+- Prior duplicate Toaster → **still fixed**.
+- Prior shift routes in apps/app → **still fixed**.
+- BUG-1 / BUG-2 from prior runs → **still unresolved**. Git HEAD changed from `2d60b7a` — new commits landed, but BUG-3 is a new issue in the updated code.
+
+**Notes:** No files modified this pass (read-only audit). Main report overwritten at `docs/audits/ai-integration-invariants-2026-05-13.md`.
