@@ -390,7 +390,9 @@ describe("Document Versions - Create", () => {
         }),
       }
     );
-    const res = await docVersionCreate(req);
+    const res = await docVersionCreate(req, {
+      params: Promise.resolve({ entity: "DocumentVersion", command: "create" }),
+    });
     expect(res.status).toBe(401);
   });
 
@@ -407,7 +409,9 @@ describe("Document Versions - Create", () => {
         }),
       }
     );
-    const res = await docVersionCreate(req);
+    const res = await docVersionCreate(req, {
+      params: Promise.resolve({ entity: "DocumentVersion", command: "create" }),
+    });
     expect(res.status).toBe(400);
     const body = await parseJson(res);
     expect(body.error).toBe("Tenant not found");
@@ -422,7 +426,9 @@ describe("Document Versions - Create", () => {
         body: JSON.stringify({ documentType: "contract" }),
       }
     );
-    const res = await docVersionCreate(req);
+    const res = await docVersionCreate(req, {
+      params: Promise.resolve({ entity: "DocumentVersion", command: "create" }),
+    });
     expect(res.status).toBe(400);
     const body = await parseJson(res);
     expect(body.error).toContain("required");
@@ -464,7 +470,9 @@ describe("Document Versions - Create", () => {
         }),
       }
     );
-    const res = await docVersionCreate(req);
+    const res = await docVersionCreate(req, {
+      params: Promise.resolve({ entity: "DocumentVersion", command: "create" }),
+    });
     expect(res.status).toBe(200);
     const body = await parseJson(res);
     expect(body.version.versionNumber).toBe(1);
@@ -500,7 +508,9 @@ describe("Document Versions - Create", () => {
         }),
       }
     );
-    await docVersionCreate(req);
+    await docVersionCreate(req, {
+      params: Promise.resolve({ entity: "DocumentVersion", command: "create" }),
+    });
 
     const createCall = vi.mocked(database.documentVersion.create).mock
       .calls[0][0] as { data: { versionNumber: number } };
@@ -524,7 +534,9 @@ describe("Document Versions - Create", () => {
         }),
       }
     );
-    const res = await docVersionCreate(req);
+    const res = await docVersionCreate(req, {
+      params: Promise.resolve({ entity: "DocumentVersion", command: "create" }),
+    });
     expect(res.status).toBe(500);
     const body = await parseJson(res);
     expect(body.error).toContain("Failed");
@@ -547,7 +559,9 @@ describe("Document Versions - Create", () => {
         }),
       }
     );
-    await docVersionCreate(req);
+    await docVersionCreate(req, {
+      params: Promise.resolve({ entity: "DocumentVersion", command: "create" }),
+    });
 
     // findFirst should filter by tenantId
     const findFirstCall = vi.mocked(database.documentVersion.findFirst).mock
@@ -575,7 +589,9 @@ describe("Document Versions - Restore", () => {
         body: JSON.stringify({ versionId: "ver-1" }),
       }
     );
-    const res = await docVersionRestore(req);
+    const res = await docVersionRestore(req, {
+      params: Promise.resolve({ entity: "DocumentVersion", command: "restore" }),
+    });
     expect(res.status).toBe(401);
   });
 
@@ -588,7 +604,9 @@ describe("Document Versions - Restore", () => {
         body: JSON.stringify({}),
       }
     );
-    const res = await docVersionRestore(req);
+    const res = await docVersionRestore(req, {
+      params: Promise.resolve({ entity: "DocumentVersion", command: "restore" }),
+    });
     expect(res.status).toBe(400);
     const body = await parseJson(res);
     expect(body.error).toContain("versionId");
@@ -605,7 +623,9 @@ describe("Document Versions - Restore", () => {
         body: JSON.stringify({ versionId: "nonexistent" }),
       }
     );
-    const res = await docVersionRestore(req);
+    const res = await docVersionRestore(req, {
+      params: Promise.resolve({ entity: "DocumentVersion", command: "restore" }),
+    });
     expect(res.status).toBe(404);
     const body = await parseJson(res);
     expect(body.error).toContain("not found");
@@ -656,7 +676,9 @@ describe("Document Versions - Restore", () => {
         body: JSON.stringify({ versionId: "ver-2" }),
       }
     );
-    const res = await docVersionRestore(req);
+    const res = await docVersionRestore(req, {
+      params: Promise.resolve({ entity: "DocumentVersion", command: "restore" }),
+    });
     expect(res.status).toBe(200);
     const body = await parseJson(res);
     expect(body.version.versionNumber).toBe(4);
@@ -682,7 +704,9 @@ describe("Document Versions - Restore", () => {
         body: JSON.stringify({ versionId: "ver-1" }),
       }
     );
-    const res = await docVersionRestore(req);
+    const res = await docVersionRestore(req, {
+      params: Promise.resolve({ entity: "DocumentVersion", command: "restore" }),
+    });
     expect(res.status).toBe(500);
   });
 
@@ -697,7 +721,9 @@ describe("Document Versions - Restore", () => {
         body: JSON.stringify({ versionId: "ver-1" }),
       }
     );
-    await docVersionRestore(req);
+    await docVersionRestore(req, {
+      params: Promise.resolve({ entity: "DocumentVersion", command: "restore" }),
+    });
 
     const findFirstCall = vi.mocked(database.documentVersion.findFirst).mock
       .calls[0][0] as { where: { id: string; tenantId: string } };
@@ -1330,7 +1356,9 @@ describe("Tenant Isolation Across Operations", () => {
         }),
       }
     );
-    await docVersionCreate(req);
+    await docVersionCreate(req, {
+      params: Promise.resolve({ entity: "DocumentVersion", command: "create" }),
+    });
 
     const createCall = vi.mocked(database.documentVersion.create).mock
       .calls[0][0] as { data: { tenantId: string } };

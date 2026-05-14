@@ -97,6 +97,11 @@ function makeRequest(
   } as ConstructorParameters<typeof NextRequest>[1]);
 }
 
+// Helper to create manifest dispatcher params
+function manifestParams(entity: string, command: string) {
+  return { params: Promise.resolve({ entity, command }) };
+}
+
 function makePO(overrides: Record<string, unknown> = {}) {
   return {
     id: PO_ID,
@@ -436,7 +441,8 @@ describe("Procurement Purchase Orders API", () => {
         makeRequest(
           "http://localhost/api/manifest/[entity]/commands/[command]",
           { body: { vendorId: VENDOR_ID, items: [{}] } }
-        )
+        ),
+        manifestParams("PurchaseOrder", "create")
       );
       expect(res.status).toBe(401);
     });
@@ -456,7 +462,8 @@ describe("Procurement Purchase Orders API", () => {
               ],
             },
           }
-        )
+        ),
+        manifestParams("PurchaseOrder", "create")
       );
       expect(res.status).toBe(400);
       const body = await res.json();
@@ -472,7 +479,8 @@ describe("Procurement Purchase Orders API", () => {
         makeRequest(
           "http://localhost/api/manifest/[entity]/commands/[command]",
           { body: { vendorId: VENDOR_ID, items: [] } }
-        )
+        ),
+        manifestParams("PurchaseOrder", "create")
       );
       expect(res.status).toBe(400);
     });
@@ -516,7 +524,8 @@ describe("Procurement Purchase Orders API", () => {
               ],
             },
           }
-        )
+        ),
+        manifestParams("PurchaseOrder", "create")
       );
 
       expect(res.status).toBe(200);
@@ -548,7 +557,8 @@ describe("Procurement Purchase Orders API", () => {
               ],
             },
           }
-        )
+        ),
+        manifestParams("PurchaseOrder", "create")
       );
       expect(res.status).toBe(500);
     });
@@ -567,7 +577,8 @@ describe("Procurement Purchase Orders API", () => {
         makeRequest(
           "http://localhost/api/manifest/[entity]/commands/[command]",
           { body: { orderId: PO_ID, status: "approved" } }
-        )
+        ),
+        manifestParams("PurchaseOrder", "updateStatus")
       );
       expect(res.status).toBe(401);
     });
@@ -581,7 +592,8 @@ describe("Procurement Purchase Orders API", () => {
         makeRequest(
           "http://localhost/api/manifest/[entity]/commands/[command]",
           { body: { orderId: PO_ID } }
-        )
+        ),
+        manifestParams("PurchaseOrder", "updateStatus")
       );
       expect(res.status).toBe(400);
     });
@@ -599,7 +611,8 @@ describe("Procurement Purchase Orders API", () => {
         makeRequest(
           "http://localhost/api/manifest/[entity]/commands/[command]",
           { body: { orderId: PO_ID, status: "approved" } }
-        )
+        ),
+        manifestParams("PurchaseOrder", "updateStatus")
       );
       expect(res.status).toBe(404);
     });
@@ -617,7 +630,8 @@ describe("Procurement Purchase Orders API", () => {
         makeRequest(
           "http://localhost/api/manifest/[entity]/commands/[command]",
           { body: { orderId: PO_ID, status: "ordered" } }
-        )
+        ),
+        manifestParams("PurchaseOrder", "updateStatus")
       );
       expect(res.status).toBe(400);
       const body = await res.json();
@@ -639,7 +653,8 @@ describe("Procurement Purchase Orders API", () => {
         makeRequest(
           "http://localhost/api/manifest/[entity]/commands/[command]",
           { body: { orderId: PO_ID, status: "received" } }
-        )
+        ),
+        manifestParams("PurchaseOrder", "updateStatus")
       );
       expect(res.status).toBe(400);
     });
@@ -661,7 +676,8 @@ describe("Procurement Purchase Orders API", () => {
         makeRequest(
           "http://localhost/api/manifest/[entity]/commands/[command]",
           { body: { orderId: PO_ID, status: "submitted" } }
-        )
+        ),
+        manifestParams("PurchaseOrder", "updateStatus")
       );
       expect(res.status).toBe(200);
       const body = await res.json();
@@ -685,7 +701,8 @@ describe("Procurement Purchase Orders API", () => {
         makeRequest(
           "http://localhost/api/manifest/[entity]/commands/[command]",
           { body: { orderId: PO_ID, status: "approved" } }
-        )
+        ),
+        manifestParams("PurchaseOrder", "updateStatus")
       );
       expect(res.status).toBe(200);
     });
@@ -707,7 +724,8 @@ describe("Procurement Purchase Orders API", () => {
         makeRequest(
           "http://localhost/api/manifest/[entity]/commands/[command]",
           { body: { orderId: PO_ID, status: "rejected" } }
-        )
+        ),
+        manifestParams("PurchaseOrder", "updateStatus")
       );
       expect(res.status).toBe(200);
     });
@@ -729,7 +747,8 @@ describe("Procurement Purchase Orders API", () => {
         makeRequest(
           "http://localhost/api/manifest/[entity]/commands/[command]",
           { body: { orderId: PO_ID, status: "ordered" } }
-        )
+        ),
+        manifestParams("PurchaseOrder", "updateStatus")
       );
       expect(res.status).toBe(200);
     });
@@ -747,7 +766,8 @@ describe("Procurement Purchase Orders API", () => {
         makeRequest(
           "http://localhost/api/manifest/[entity]/commands/[command]",
           { body: { orderId: PO_ID, status: "approved" } }
-        )
+        ),
+        manifestParams("PurchaseOrder", "updateStatus")
       );
       expect(res.status).toBe(400);
     });
@@ -767,7 +787,8 @@ describe("Procurement Purchase Orders API", () => {
         makeRequest(
           "http://localhost/api/manifest/[entity]/commands/[command]",
           { body: { orderId: PO_ID, status: "submitted" } }
-        )
+        ),
+        manifestParams("PurchaseOrder", "updateStatus")
       );
       expect(res.status).toBe(500);
     });
@@ -786,7 +807,8 @@ describe("Procurement Purchase Orders API", () => {
         makeRequest(
           "http://localhost/api/manifest/[entity]/commands/[command]",
           { body: { orderId: PO_ID, items: [{ itemId: POI_ID }] } }
-        )
+        ),
+        manifestParams("PurchaseOrder", "receive")
       );
       expect(res.status).toBe(401);
     });
@@ -800,7 +822,8 @@ describe("Procurement Purchase Orders API", () => {
         makeRequest(
           "http://localhost/api/manifest/[entity]/commands/[command]",
           { body: { orderId: PO_ID } }
-        )
+        ),
+        manifestParams("PurchaseOrder", "receive")
       );
       expect(res.status).toBe(400);
     });
@@ -828,7 +851,8 @@ describe("Procurement Purchase Orders API", () => {
               ],
             },
           }
-        )
+        ),
+        manifestParams("PurchaseOrder", "receive")
       );
       expect(res.status).toBe(200);
       const body = await res.json();
@@ -859,7 +883,8 @@ describe("Procurement Purchase Orders API", () => {
               ],
             },
           }
-        )
+        ),
+        manifestParams("PurchaseOrder", "receive")
       );
       expect(res.status).toBe(200);
       const body = await res.json();
@@ -889,7 +914,8 @@ describe("Procurement Purchase Orders API", () => {
               ],
             },
           }
-        )
+        ),
+        manifestParams("PurchaseOrder", "receive")
       );
       expect(res.status).toBe(200);
       // Only 2 calls: poi update + remaining count (no inventory update for qty=0)
@@ -920,7 +946,8 @@ describe("Procurement Purchase Orders API", () => {
               ],
             },
           }
-        )
+        ),
+        manifestParams("PurchaseOrder", "receive")
       );
       expect(res.status).toBe(200);
     });
@@ -945,7 +972,8 @@ describe("Procurement Purchase Orders API", () => {
               ],
             },
           }
-        )
+        ),
+        manifestParams("PurchaseOrder", "receive")
       );
       expect(res.status).toBe(500);
     });

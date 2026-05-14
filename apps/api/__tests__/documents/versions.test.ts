@@ -99,6 +99,10 @@ function makeGetRequest(params: Record<string, string>): NextRequest {
   );
 }
 
+function makeManifestParams(entity: string, command: string) {
+  return { params: Promise.resolve({ entity, command }) };
+}
+
 function mockAuthenticated() {
   vi.mocked(auth).mockResolvedValue({
     orgId: TEST_ORG_ID,
@@ -161,7 +165,8 @@ describe("Document Versioning API Routes", () => {
           documentType: "recipe",
           documentId: TEST_DOC_ID,
           content: { title: "Test" },
-        })
+        }),
+        makeManifestParams("Document", "create")
       );
       const data = await res.json();
 
@@ -184,7 +189,8 @@ describe("Document Versioning API Routes", () => {
           documentType: "recipe",
           documentId: TEST_DOC_ID,
           content: { title: "Test" },
-        })
+        }),
+        makeManifestParams("Document", "create")
       );
       const data = await res.json();
 
@@ -202,7 +208,8 @@ describe("Document Versioning API Routes", () => {
         makePostRequest({
           documentId: TEST_DOC_ID,
           content: { title: "Test" },
-        })
+        }),
+        makeManifestParams("Document", "create")
       );
       const data = await res.json();
 
@@ -220,7 +227,8 @@ describe("Document Versioning API Routes", () => {
         makePostRequest({
           documentType: "recipe",
           content: { title: "Test" },
-        })
+        }),
+        makeManifestParams("Document", "create")
       );
       const data = await res.json();
 
@@ -238,7 +246,8 @@ describe("Document Versioning API Routes", () => {
         makePostRequest({
           documentType: "recipe",
           documentId: TEST_DOC_ID,
-        })
+        }),
+        makeManifestParams("Document", "create")
       );
       const data = await res.json();
 
@@ -263,7 +272,8 @@ describe("Document Versioning API Routes", () => {
           documentType: "recipe",
           documentId: TEST_DOC_ID,
           content: { title: "Test" },
-        })
+        }),
+        makeManifestParams("Document", "create")
       );
       const data = await res.json();
 
@@ -309,7 +319,8 @@ describe("Document Versioning API Routes", () => {
           documentId: TEST_DOC_ID,
           content: { title: "Updated" },
           changeSummary: "Major revision",
-        })
+        }),
+        makeManifestParams("Document", "create")
       );
       const data = await res.json();
 
@@ -342,7 +353,8 @@ describe("Document Versioning API Routes", () => {
           documentType: "recipe",
           documentId: TEST_DOC_ID,
           content: { title: "Updated" },
-        })
+        }),
+        makeManifestParams("Document", "create")
       );
 
       expect(res.status).toBe(200);
@@ -369,7 +381,8 @@ describe("Document Versioning API Routes", () => {
           documentType: "recipe",
           documentId: TEST_DOC_ID,
           content: { title: "Test" },
-        })
+        }),
+        makeManifestParams("Document", "create")
       );
       const data = await res.json();
 
@@ -406,7 +419,8 @@ describe("Document Versioning API Routes", () => {
           documentType: "recipe",
           documentId: TEST_DOC_ID,
           content: { title: "Test" },
-        })
+        }),
+        makeManifestParams("Document", "create")
       );
       const data = await res.json();
 
@@ -429,7 +443,7 @@ describe("Document Versioning API Routes", () => {
       const { POST } = await import(
         "@/app/api/manifest/[entity]/commands/[command]/route"
       );
-      const res = await POST(makePostRequest({ versionId: TEST_VERSION_ID }));
+      const res = await POST(makePostRequest({ versionId: TEST_VERSION_ID }), makeManifestParams("Document", "restore"));
       const data = await res.json();
 
       expect(res.status).toBe(401);
@@ -442,7 +456,7 @@ describe("Document Versioning API Routes", () => {
       const { POST } = await import(
         "@/app/api/manifest/[entity]/commands/[command]/route"
       );
-      const res = await POST(makePostRequest({}));
+      const res = await POST(makePostRequest({}), makeManifestParams("Document", "restore"));
       const data = await res.json();
 
       expect(res.status).toBe(400);
@@ -457,7 +471,7 @@ describe("Document Versioning API Routes", () => {
       const { POST } = await import(
         "@/app/api/manifest/[entity]/commands/[command]/route"
       );
-      const res = await POST(makePostRequest({ versionId: "nonexistent-id" }));
+      const res = await POST(makePostRequest({ versionId: "nonexistent-id" }), makeManifestParams("Document", "restore"));
       const data = await res.json();
 
       expect(res.status).toBe(404);
@@ -491,7 +505,7 @@ describe("Document Versioning API Routes", () => {
       const { POST } = await import(
         "@/app/api/manifest/[entity]/commands/[command]/route"
       );
-      const res = await POST(makePostRequest({ versionId: "ver-old" }));
+      const res = await POST(makePostRequest({ versionId: "ver-old" }), makeManifestParams("Document", "restore"));
       const data = await res.json();
 
       expect(res.status).toBe(200);
@@ -545,7 +559,7 @@ describe("Document Versioning API Routes", () => {
       const { POST } = await import(
         "@/app/api/manifest/[entity]/commands/[command]/route"
       );
-      const res = await POST(makePostRequest({ versionId: "ver-old" }));
+      const res = await POST(makePostRequest({ versionId: "ver-old" }), makeManifestParams("Document", "restore"));
 
       expect(res.status).toBe(200);
       expect(mockDocumentVersion.create).toHaveBeenCalledWith(
@@ -567,7 +581,7 @@ describe("Document Versioning API Routes", () => {
       const { POST } = await import(
         "@/app/api/manifest/[entity]/commands/[command]/route"
       );
-      const res = await POST(makePostRequest({ versionId: TEST_VERSION_ID }));
+      const res = await POST(makePostRequest({ versionId: TEST_VERSION_ID }), makeManifestParams("Document", "restore"));
       const data = await res.json();
 
       expect(res.status).toBe(500);

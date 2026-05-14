@@ -11,10 +11,32 @@
 
 import { NextRequest } from "next/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { POST as closeSchedule } from "@/app/api/schedule/close/route";
-import { POST as createSchedule } from "@/app/api/schedule/create/route";
-import { POST as releaseSchedule } from "@/app/api/schedule/release/route";
-import { POST as updateSchedule } from "@/app/api/schedule/update/route";
+
+// Schedule command params for manifest dispatcher
+const scheduleParams = (command: string) => ({
+  params: Promise.resolve({ entity: "Schedule", command }),
+});
+
+// Helper functions to get POST handlers with params bound
+async function getCreateSchedule() {
+  const mod = await import("@/app/api/manifest/[entity]/commands/[command]/route");
+  return (req: NextRequest) => mod.POST(req, scheduleParams("create"));
+}
+
+async function getUpdateSchedule() {
+  const mod = await import("@/app/api/manifest/[entity]/commands/[command]/route");
+  return (req: NextRequest) => mod.POST(req, scheduleParams("update"));
+}
+
+async function getCloseSchedule() {
+  const mod = await import("@/app/api/manifest/[entity]/commands/[command]/route");
+  return (req: NextRequest) => mod.POST(req, scheduleParams("close"));
+}
+
+async function getReleaseSchedule() {
+  const mod = await import("@/app/api/manifest/[entity]/commands/[command]/route");
+  return (req: NextRequest) => mod.POST(req, scheduleParams("release"));
+}
 
 // Mock dependencies
 vi.mock("@repo/database", () => ({
@@ -97,6 +119,7 @@ describe("Schedule Command API", () => {
         name: "Monday Dinner",
         date: "2026-05-04",
       });
+      const createSchedule = await getCreateSchedule();
       const response = await createSchedule(request);
 
       expect(response.status).toBe(401);
@@ -112,6 +135,7 @@ describe("Schedule Command API", () => {
         name: "Monday Dinner",
         date: "2026-05-04",
       });
+      const createSchedule = await getCreateSchedule();
       const response = await createSchedule(request);
 
       expect(response.status).toBe(400);
@@ -132,6 +156,7 @@ describe("Schedule Command API", () => {
         date: "2026-05-04",
         stationIds: ["station-1", "station-2"],
       });
+      const createSchedule = await getCreateSchedule();
       const response = await createSchedule(request);
 
       expect(response.status).toBe(200);
@@ -159,6 +184,7 @@ describe("Schedule Command API", () => {
       });
 
       const request = makeCommandRequest("create", { name: "Test" });
+      const createSchedule = await getCreateSchedule();
       await createSchedule(request);
 
       expect(createManifestRuntime).toHaveBeenCalledWith({
@@ -173,6 +199,7 @@ describe("Schedule Command API", () => {
       });
 
       const request = makeCommandRequest("create", { name: "Unauthorized" });
+      const createSchedule = await getCreateSchedule();
       const response = await createSchedule(request);
 
       expect(response.status).toBe(403);
@@ -195,6 +222,7 @@ describe("Schedule Command API", () => {
         name: "Past Schedule",
         date: "2020-01-01",
       });
+      const createSchedule = await getCreateSchedule();
       const response = await createSchedule(request);
 
       expect(response.status).toBe(422);
@@ -211,6 +239,7 @@ describe("Schedule Command API", () => {
       });
 
       const request = makeCommandRequest("create", {});
+      const createSchedule = await getCreateSchedule();
       const response = await createSchedule(request);
 
       expect(response.status).toBe(400);
@@ -226,6 +255,7 @@ describe("Schedule Command API", () => {
       });
 
       const request = makeCommandRequest("create", {});
+      const createSchedule = await getCreateSchedule();
       const response = await createSchedule(request);
 
       expect(response.status).toBe(400);
@@ -237,6 +267,7 @@ describe("Schedule Command API", () => {
       mockRunCommand.mockRejectedValue(new Error("Runtime crash"));
 
       const request = makeCommandRequest("create", { name: "Crash" });
+      const createSchedule = await getCreateSchedule();
       const response = await createSchedule(request);
 
       expect(response.status).toBe(500);
@@ -261,6 +292,7 @@ describe("Schedule Command API", () => {
       } as never);
 
       const request = makeCommandRequest("update", { id: "schedule-001" });
+      const updateSchedule = await getUpdateSchedule();
       const response = await updateSchedule(request);
 
       expect(response.status).toBe(401);
@@ -273,6 +305,7 @@ describe("Schedule Command API", () => {
       vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
 
       const request = makeCommandRequest("update", { id: "schedule-001" });
+      const updateSchedule = await getUpdateSchedule();
       const response = await updateSchedule(request);
 
       expect(response.status).toBe(400);
@@ -293,6 +326,7 @@ describe("Schedule Command API", () => {
         name: "Updated Dinner",
         notes: "Changed menu items",
       });
+      const updateSchedule = await getUpdateSchedule();
       const response = await updateSchedule(request);
 
       expect(response.status).toBe(200);
@@ -321,6 +355,7 @@ describe("Schedule Command API", () => {
       });
 
       const request = makeCommandRequest("update", { id: "schedule-001" });
+      const updateSchedule = await getUpdateSchedule();
       const response = await updateSchedule(request);
 
       expect(response.status).toBe(403);
@@ -340,6 +375,7 @@ describe("Schedule Command API", () => {
       });
 
       const request = makeCommandRequest("update", { id: "schedule-001" });
+      const updateSchedule = await getUpdateSchedule();
       const response = await updateSchedule(request);
 
       expect(response.status).toBe(422);
@@ -356,6 +392,7 @@ describe("Schedule Command API", () => {
       });
 
       const request = makeCommandRequest("update", { id: "nonexistent" });
+      const updateSchedule = await getUpdateSchedule();
       const response = await updateSchedule(request);
 
       expect(response.status).toBe(400);
@@ -368,6 +405,7 @@ describe("Schedule Command API", () => {
       mockRunCommand.mockRejectedValue(new Error("Unexpected failure"));
 
       const request = makeCommandRequest("update", { id: "schedule-001" });
+      const updateSchedule = await getUpdateSchedule();
       const response = await updateSchedule(request);
 
       expect(response.status).toBe(500);
@@ -392,6 +430,7 @@ describe("Schedule Command API", () => {
       } as never);
 
       const request = makeCommandRequest("close", { id: "schedule-001" });
+      const closeSchedule = await getCloseSchedule();
       const response = await closeSchedule(request);
 
       expect(response.status).toBe(401);
@@ -404,6 +443,7 @@ describe("Schedule Command API", () => {
       vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
 
       const request = makeCommandRequest("close", { id: "schedule-001" });
+      const closeSchedule = await getCloseSchedule();
       const response = await closeSchedule(request);
 
       expect(response.status).toBe(400);
@@ -420,6 +460,7 @@ describe("Schedule Command API", () => {
       });
 
       const request = makeCommandRequest("close", { id: "schedule-001" });
+      const closeSchedule = await getCloseSchedule();
       const response = await closeSchedule(request);
 
       expect(response.status).toBe(200);
@@ -442,6 +483,7 @@ describe("Schedule Command API", () => {
       });
 
       const request = makeCommandRequest("close", { id: "schedule-001" });
+      const closeSchedule = await getCloseSchedule();
       const response = await closeSchedule(request);
 
       expect(response.status).toBe(403);
@@ -461,6 +503,7 @@ describe("Schedule Command API", () => {
       });
 
       const request = makeCommandRequest("close", { id: "schedule-001" });
+      const closeSchedule = await getCloseSchedule();
       const response = await closeSchedule(request);
 
       expect(response.status).toBe(422);
@@ -477,6 +520,7 @@ describe("Schedule Command API", () => {
       });
 
       const request = makeCommandRequest("close", { id: "schedule-001" });
+      const closeSchedule = await getCloseSchedule();
       const response = await closeSchedule(request);
 
       expect(response.status).toBe(400);
@@ -489,6 +533,7 @@ describe("Schedule Command API", () => {
       mockRunCommand.mockRejectedValue(new Error("Database timeout"));
 
       const request = makeCommandRequest("close", { id: "schedule-001" });
+      const closeSchedule = await getCloseSchedule();
       const response = await closeSchedule(request);
 
       expect(response.status).toBe(500);
@@ -513,6 +558,7 @@ describe("Schedule Command API", () => {
       } as never);
 
       const request = makeCommandRequest("release", { id: "schedule-001" });
+      const releaseSchedule = await getReleaseSchedule();
       const response = await releaseSchedule(request);
 
       expect(response.status).toBe(401);
@@ -525,6 +571,7 @@ describe("Schedule Command API", () => {
       vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
 
       const request = makeCommandRequest("release", { id: "schedule-001" });
+      const releaseSchedule = await getReleaseSchedule();
       const response = await releaseSchedule(request);
 
       expect(response.status).toBe(400);
@@ -541,6 +588,7 @@ describe("Schedule Command API", () => {
       });
 
       const request = makeCommandRequest("release", { id: "schedule-001" });
+      const releaseSchedule = await getReleaseSchedule();
       const response = await releaseSchedule(request);
 
       expect(response.status).toBe(200);
@@ -563,6 +611,7 @@ describe("Schedule Command API", () => {
       });
 
       const request = makeCommandRequest("release", { id: "schedule-001" });
+      const releaseSchedule = await getReleaseSchedule();
       const response = await releaseSchedule(request);
 
       expect(response.status).toBe(403);
@@ -582,6 +631,7 @@ describe("Schedule Command API", () => {
       });
 
       const request = makeCommandRequest("release", { id: "schedule-001" });
+      const releaseSchedule = await getReleaseSchedule();
       const response = await releaseSchedule(request);
 
       expect(response.status).toBe(422);
@@ -598,6 +648,7 @@ describe("Schedule Command API", () => {
       });
 
       const request = makeCommandRequest("release", { id: "schedule-001" });
+      const releaseSchedule = await getReleaseSchedule();
       const response = await releaseSchedule(request);
 
       expect(response.status).toBe(400);
@@ -610,6 +661,7 @@ describe("Schedule Command API", () => {
       mockRunCommand.mockRejectedValue(new Error("Network failure"));
 
       const request = makeCommandRequest("release", { id: "schedule-001" });
+      const releaseSchedule = await getReleaseSchedule();
       const response = await releaseSchedule(request);
 
       expect(response.status).toBe(500);
@@ -631,6 +683,7 @@ describe("Schedule Command API", () => {
         effectiveDate: "2026-05-04",
       };
       const request = makeCommandRequest("release", payload);
+      const releaseSchedule = await getReleaseSchedule();
       await releaseSchedule(request);
 
       expect(mockRunCommand).toHaveBeenCalledWith(
@@ -656,6 +709,7 @@ describe("Schedule Command API", () => {
       } as never);
 
       const request = makeCommandRequest("create", { name: "Test" });
+      const createSchedule = await getCreateSchedule();
       await createSchedule(request);
 
       expect(createManifestRuntime).not.toHaveBeenCalled();
@@ -666,6 +720,7 @@ describe("Schedule Command API", () => {
       vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
 
       const request = makeCommandRequest("create", { name: "Test" });
+      const createSchedule = await getCreateSchedule();
       await createSchedule(request);
 
       expect(createManifestRuntime).not.toHaveBeenCalled();
@@ -676,6 +731,7 @@ describe("Schedule Command API", () => {
       vi.mocked(auth).mockRejectedValue(new Error("Auth service down"));
 
       const request = makeCommandRequest("create", { name: "Test" });
+      const createSchedule = await getCreateSchedule();
       const response = await createSchedule(request);
 
       expect(response.status).toBe(500);
@@ -690,6 +746,7 @@ describe("Schedule Command API", () => {
       );
 
       const request = makeCommandRequest("create", { name: "Test" });
+      const createSchedule = await getCreateSchedule();
       const response = await createSchedule(request);
 
       expect(response.status).toBe(500);
@@ -704,6 +761,7 @@ describe("Schedule Command API", () => {
         body: "not valid json {{{",
         headers: { "Content-Type": "application/json" },
       });
+      const createSchedule = await getCreateSchedule();
       const response = await createSchedule(request);
 
       expect(response.status).toBe(500);
@@ -718,6 +776,11 @@ describe("Schedule Command API", () => {
         result: {},
         emittedEvents: [],
       });
+
+      const createSchedule = await getCreateSchedule();
+      const updateSchedule = await getUpdateSchedule();
+      const closeSchedule = await getCloseSchedule();
+      const releaseSchedule = await getReleaseSchedule();
 
       const commands = [
         { fn: createSchedule, action: "create", path: "create" },

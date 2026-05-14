@@ -161,7 +161,7 @@ export async function finalizeCycleCountSession(input: {
               reference: session.sessionId,
               referenceType: "cycle_count",
               referenceId: session.id,
-              storage_location_id: null,
+              storage_location_id: undefined,
             },
           });
 

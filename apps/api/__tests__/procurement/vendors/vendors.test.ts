@@ -78,6 +78,31 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 // Mocks
 // ---------------------------------------------------------------------------
 
+// Helper to create params for manifest dispatcher
+const vendorParams = (command: string) => ({
+  params: Promise.resolve({ entity: "InventorySupplier", command }),
+});
+
+// Helper functions to get manifest handler for specific commands
+async function getVendorHandler(command: string) {
+  const mod = await import("@/app/api/manifest/[entity]/commands/[command]/route");
+  return (req: NextRequest) => mod.POST(req, vendorParams(command));
+}
+
+// Convenience handlers for common commands
+async function getCreateHandler() {
+  return getVendorHandler("create");
+}
+async function getUpdateHandler() {
+  return getVendorHandler("update");
+}
+async function getDeleteHandler() {
+  return getVendorHandler("delete");
+}
+async function getAddContactHandler() {
+  return getVendorHandler("addContact");
+}
+
 vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
 vi.mock("@/app/lib/tenant", () => ({
   getTenantIdForOrg: vi.fn(),
@@ -455,10 +480,8 @@ describe("Procurement Vendors API", () => {
   describe("POST /commands/create", () => {
     it("returns 401 when unauthenticated", async () => {
       authMissing();
-      const { POST } = await import(
-        "@/app/api/manifest/[entity]/commands/[command]/route"
-      );
-      const res = await POST(
+      const create = await getCreateHandler();
+      const res = await create(
         makeRequest(
           "http://localhost/api/manifest/[entity]/commands/[command]",
           { body: { name: "X" } }
@@ -469,10 +492,8 @@ describe("Procurement Vendors API", () => {
 
     it("returns 400 when tenant cannot be resolved", async () => {
       noTenant();
-      const { POST } = await import(
-        "@/app/api/manifest/[entity]/commands/[command]/route"
-      );
-      const res = await POST(
+      const create = await getCreateHandler();
+      const res = await create(
         makeRequest(
           "http://localhost/api/manifest/[entity]/commands/[command]",
           { body: { name: "X" } }
@@ -483,10 +504,8 @@ describe("Procurement Vendors API", () => {
 
     it("returns 400 when name is missing", async () => {
       authOk();
-      const { POST } = await import(
-        "@/app/api/manifest/[entity]/commands/[command]/route"
-      );
-      const res = await POST(
+      const create = await getCreateHandler();
+      const res = await create(
         makeRequest(
           "http://localhost/api/manifest/[entity]/commands/[command]",
           { body: {} }
@@ -510,10 +529,8 @@ describe("Procurement Vendors API", () => {
           },
         ] as never);
 
-      const { POST } = await import(
-        "@/app/api/manifest/[entity]/commands/[command]/route"
-      );
-      const res = await POST(
+      const create = await getCreateHandler();
+      const res = await create(
         makeRequest(
           "http://localhost/api/manifest/[entity]/commands/[command]",
           { body: { name: "New Vendor" } }
@@ -540,10 +557,8 @@ describe("Procurement Vendors API", () => {
         ] as never)
         .mockResolvedValueOnce([] as never); // INSERT vendor_contacts
 
-      const { POST } = await import(
-        "@/app/api/manifest/[entity]/commands/[command]/route"
-      );
-      const res = await POST(
+      const create = await getCreateHandler();
+      const res = await create(
         makeRequest(
           "http://localhost/api/manifest/[entity]/commands/[command]",
           {
@@ -568,10 +583,8 @@ describe("Procurement Vendors API", () => {
           { id: VENDOR_ID, supplier_number: "VND-0001", name: "Vendor" },
         ] as never);
 
-      const { POST } = await import(
-        "@/app/api/manifest/[entity]/commands/[command]/route"
-      );
-      const res = await POST(
+      const create = await getCreateHandler();
+      const res = await create(
         makeRequest(
           "http://localhost/api/manifest/[entity]/commands/[command]",
           { body: { name: "Vendor", contactPerson: "Jane Doe" } } // no email or phone
@@ -587,10 +600,8 @@ describe("Procurement Vendors API", () => {
         .mockResolvedValueOnce([{ count: 0 }] as never)
         .mockResolvedValueOnce([] as never); // no row returned
 
-      const { POST } = await import(
-        "@/app/api/manifest/[entity]/commands/[command]/route"
-      );
-      const res = await POST(
+      const create = await getCreateHandler();
+      const res = await create(
         makeRequest(
           "http://localhost/api/manifest/[entity]/commands/[command]",
           { body: { name: "X" } }
@@ -606,10 +617,8 @@ describe("Procurement Vendors API", () => {
   describe("POST /commands/update", () => {
     it("returns 401 when unauthenticated", async () => {
       authMissing();
-      const { POST } = await import(
-        "@/app/api/manifest/[entity]/commands/[command]/route"
-      );
-      const res = await POST(
+      const update = await getUpdateHandler();
+      const res = await update(
         makeRequest(
           "http://localhost/api/manifest/[entity]/commands/[command]",
           { body: { vendorId: VENDOR_ID, name: "Renamed" } }
@@ -620,10 +629,8 @@ describe("Procurement Vendors API", () => {
 
     it("returns 400 when vendorId is missing", async () => {
       authOk();
-      const { POST } = await import(
-        "@/app/api/manifest/[entity]/commands/[command]/route"
-      );
-      const res = await POST(
+      const update = await getUpdateHandler();
+      const res = await update(
         makeRequest(
           "http://localhost/api/manifest/[entity]/commands/[command]",
           { body: { name: "Renamed" } }
@@ -638,10 +645,8 @@ describe("Procurement Vendors API", () => {
       authOk();
       vi.mocked(database.$queryRaw).mockResolvedValueOnce([] as never); // existence check returns no rows
 
-      const { POST } = await import(
-        "@/app/api/manifest/[entity]/commands/[command]/route"
-      );
-      const res = await POST(
+      const update = await getUpdateHandler();
+      const res = await update(
         makeRequest(
           "http://localhost/api/manifest/[entity]/commands/[command]",
           { body: { vendorId: VENDOR_ID, name: "Renamed" } }
@@ -663,10 +668,8 @@ describe("Procurement Vendors API", () => {
           },
         ] as never);
 
-      const { POST } = await import(
-        "@/app/api/manifest/[entity]/commands/[command]/route"
-      );
-      const res = await POST(
+      const update = await getUpdateHandler();
+      const res = await update(
         makeRequest(
           "http://localhost/api/manifest/[entity]/commands/[command]",
           { body: { vendorId: VENDOR_ID, name: "Renamed" } }
@@ -683,10 +686,8 @@ describe("Procurement Vendors API", () => {
       authOk();
       vi.mocked(database.$queryRaw).mockRejectedValueOnce(new Error("db down"));
 
-      const { POST } = await import(
-        "@/app/api/manifest/[entity]/commands/[command]/route"
-      );
-      const res = await POST(
+      const update = await getUpdateHandler();
+      const res = await update(
         makeRequest(
           "http://localhost/api/manifest/[entity]/commands/[command]",
           { body: { vendorId: VENDOR_ID, name: "Renamed" } }
@@ -703,10 +704,8 @@ describe("Procurement Vendors API", () => {
   describe("POST /commands/delete", () => {
     it("returns 401 when unauthenticated", async () => {
       authMissing();
-      const { POST } = await import(
-        "@/app/api/manifest/[entity]/commands/[command]/route"
-      );
-      const res = await POST(
+      const remove = await getDeleteHandler();
+      const res = await remove(
         makeRequest(
           "http://localhost/api/manifest/[entity]/commands/[command]",
           { body: { vendorId: VENDOR_ID } }
@@ -717,10 +716,8 @@ describe("Procurement Vendors API", () => {
 
     it("returns 400 when vendorId is missing", async () => {
       authOk();
-      const { POST } = await import(
-        "@/app/api/manifest/[entity]/commands/[command]/route"
-      );
-      const res = await POST(
+      const remove = await getDeleteHandler();
+      const res = await remove(
         makeRequest(
           "http://localhost/api/manifest/[entity]/commands/[command]",
           { body: {} }
@@ -735,10 +732,8 @@ describe("Procurement Vendors API", () => {
         { count: 3 },
       ] as never);
 
-      const { POST } = await import(
-        "@/app/api/manifest/[entity]/commands/[command]/route"
-      );
-      const res = await POST(
+      const remove = await getDeleteHandler();
+      const res = await remove(
         makeRequest(
           "http://localhost/api/manifest/[entity]/commands/[command]",
           { body: { vendorId: VENDOR_ID } }
@@ -760,10 +755,8 @@ describe("Procurement Vendors API", () => {
           { id: VENDOR_ID, supplier_number: "VND-0001", name: "Acme" },
         ] as never); // soft-delete RETURNING
 
-      const { POST } = await import(
-        "@/app/api/manifest/[entity]/commands/[command]/route"
-      );
-      const res = await POST(
+      const remove = await getDeleteHandler();
+      const res = await remove(
         makeRequest(
           "http://localhost/api/manifest/[entity]/commands/[command]",
           { body: { vendorId: VENDOR_ID } }
@@ -782,10 +775,8 @@ describe("Procurement Vendors API", () => {
         .mockResolvedValueOnce([{ count: 0 }] as never)
         .mockResolvedValueOnce([] as never); // RETURNING empty
 
-      const { POST } = await import(
-        "@/app/api/manifest/[entity]/commands/[command]/route"
-      );
-      const res = await POST(
+      const remove = await getDeleteHandler();
+      const res = await remove(
         makeRequest(
           "http://localhost/api/manifest/[entity]/commands/[command]",
           { body: { vendorId: VENDOR_ID } }
@@ -801,10 +792,8 @@ describe("Procurement Vendors API", () => {
   describe("POST /commands/add-contact", () => {
     it("returns 401 when unauthenticated", async () => {
       authMissing();
-      const { POST } = await import(
-        "@/app/api/manifest/[entity]/commands/[command]/route"
-      );
-      const res = await POST(
+      const addContact = await getAddContactHandler();
+      const res = await addContact(
         makeRequest(
           "http://localhost/api/manifest/[entity]/commands/[command]",
           { body: { vendorId: VENDOR_ID, contactName: "Jane" } }
@@ -815,10 +804,8 @@ describe("Procurement Vendors API", () => {
 
     it("returns 400 when vendorId or contactName is missing", async () => {
       authOk();
-      const { POST } = await import(
-        "@/app/api/manifest/[entity]/commands/[command]/route"
-      );
-      const res = await POST(
+      const addContact = await getAddContactHandler();
+      const res = await addContact(
         makeRequest(
           "http://localhost/api/manifest/[entity]/commands/[command]",
           { body: { vendorId: VENDOR_ID } }
@@ -831,10 +818,8 @@ describe("Procurement Vendors API", () => {
       authOk();
       vi.mocked(database.$queryRaw).mockResolvedValueOnce([] as never);
 
-      const { POST } = await import(
-        "@/app/api/manifest/[entity]/commands/[command]/route"
-      );
-      const res = await POST(
+      const addContact = await getAddContactHandler();
+      const res = await addContact(
         makeRequest(
           "http://localhost/api/manifest/[entity]/commands/[command]",
           { body: { vendorId: VENDOR_ID, contactName: "Jane" } }
@@ -851,10 +836,8 @@ describe("Procurement Vendors API", () => {
           { id: "c-new", contact_name: "Jane", is_primary: false },
         ] as never); // INSERT
 
-      const { POST } = await import(
-        "@/app/api/manifest/[entity]/commands/[command]/route"
-      );
-      const res = await POST(
+      const addContact = await getAddContactHandler();
+      const res = await addContact(
         makeRequest(
           "http://localhost/api/manifest/[entity]/commands/[command]",
           {
@@ -880,10 +863,8 @@ describe("Procurement Vendors API", () => {
           { id: "c-new", contact_name: "Jane", is_primary: true },
         ] as never); // INSERT
 
-      const { POST } = await import(
-        "@/app/api/manifest/[entity]/commands/[command]/route"
-      );
-      const res = await POST(
+      const addContact = await getAddContactHandler();
+      const res = await addContact(
         makeRequest(
           "http://localhost/api/manifest/[entity]/commands/[command]",
           {
@@ -906,10 +887,8 @@ describe("Procurement Vendors API", () => {
         .mockResolvedValueOnce([{ id: VENDOR_ID }] as never)
         .mockResolvedValueOnce([] as never);
 
-      const { POST } = await import(
-        "@/app/api/manifest/[entity]/commands/[command]/route"
-      );
-      const res = await POST(
+      const addContact = await getAddContactHandler();
+      const res = await addContact(
         makeRequest(
           "http://localhost/api/manifest/[entity]/commands/[command]",
           { body: { vendorId: VENDOR_ID, contactName: "Jane" } }
@@ -925,10 +904,8 @@ describe("Procurement Vendors API", () => {
   describe("POST /commands/rate", () => {
     it("returns 401 when unauthenticated", async () => {
       authMissing();
-      const { POST } = await import(
-        "@/app/api/manifest/[entity]/commands/[command]/route"
-      );
-      const res = await POST(
+      const rate = await getVendorHandler("rate");
+      const res = await rate(
         makeRequest("http://localhost/api/manifest/[entity]/commands/[command]", {
           body: { vendorId: VENDOR_ID, category: "overall", rating: 4 },
         })
@@ -938,10 +915,8 @@ describe("Procurement Vendors API", () => {
 
     it("returns 400 when vendorId is missing", async () => {
       authOk();
-      const { POST } = await import(
-        "@/app/api/manifest/[entity]/commands/[command]/route"
-      );
-      const res = await POST(
+      const rate = await getVendorHandler("rate");
+      const res = await rate(
         makeRequest("http://localhost/api/manifest/[entity]/commands/[command]", {
           body: { category: "overall", rating: 4 },
         })
@@ -951,10 +926,8 @@ describe("Procurement Vendors API", () => {
 
     it("returns 400 when category is not in the allow-list", async () => {
       authOk();
-      const { POST } = await import(
-        "@/app/api/manifest/[entity]/commands/[command]/route"
-      );
-      const res = await POST(
+      const rate = await getVendorHandler("rate");
+      const res = await rate(
         makeRequest("http://localhost/api/manifest/[entity]/commands/[command]", {
           body: { vendorId: VENDOR_ID, category: "vibes", rating: 4 },
         })
@@ -966,10 +939,8 @@ describe("Procurement Vendors API", () => {
 
     it("returns 400 when rating is out of [1,5]", async () => {
       authOk();
-      const { POST } = await import(
-        "@/app/api/manifest/[entity]/commands/[command]/route"
-      );
-      const res = await POST(
+      const rate = await getVendorHandler("rate");
+      const res = await rate(
         makeRequest("http://localhost/api/manifest/[entity]/commands/[command]", {
           body: { vendorId: VENDOR_ID, category: "overall", rating: 9 },
         })
@@ -983,10 +954,8 @@ describe("Procurement Vendors API", () => {
         null as never
       );
 
-      const { POST } = await import(
-        "@/app/api/manifest/[entity]/commands/[command]/route"
-      );
-      const res = await POST(
+      const rate = await getVendorHandler("rate");
+      const res = await rate(
         makeRequest("http://localhost/api/manifest/[entity]/commands/[command]", {
           body: { vendorId: VENDOR_ID, category: "overall", rating: 4 },
         })
@@ -1007,10 +976,8 @@ describe("Procurement Vendors API", () => {
         createdAt: new Date(),
       } as never);
 
-      const { POST } = await import(
-        "@/app/api/manifest/[entity]/commands/[command]/route"
-      );
-      const res = await POST(
+      const rate = await getVendorHandler("rate");
+      const res = await rate(
         makeRequest("http://localhost/api/manifest/[entity]/commands/[command]", {
           body: { vendorId: VENDOR_ID, category: "delivery", rating: 4 },
         })
@@ -1041,10 +1008,8 @@ describe("Procurement Vendors API", () => {
         {} as never
       );
 
-      const { POST } = await import(
-        "@/app/api/manifest/[entity]/commands/[command]/route"
-      );
-      const res = await POST(
+      const rate = await getVendorHandler("rate");
+      const res = await rate(
         makeRequest("http://localhost/api/manifest/[entity]/commands/[command]", {
           body: {
             vendorId: VENDOR_ID,
@@ -1091,10 +1056,8 @@ describe("Procurement Vendors API", () => {
         _avg: { rating: null },
       } as never);
 
-      const { POST } = await import(
-        "@/app/api/manifest/[entity]/commands/[command]/route"
-      );
-      const res = await POST(
+      const rate = await getVendorHandler("rate");
+      const res = await rate(
         makeRequest("http://localhost/api/manifest/[entity]/commands/[command]", {
           body: { vendorId: VENDOR_ID, category: "overall", rating: 5 },
         })
@@ -1109,10 +1072,8 @@ describe("Procurement Vendors API", () => {
         new Error("boom")
       );
 
-      const { POST } = await import(
-        "@/app/api/manifest/[entity]/commands/[command]/route"
-      );
-      const res = await POST(
+      const rate = await getVendorHandler("rate");
+      const res = await rate(
         makeRequest("http://localhost/api/manifest/[entity]/commands/[command]", {
           body: { vendorId: VENDOR_ID, category: "overall", rating: 4 },
         })

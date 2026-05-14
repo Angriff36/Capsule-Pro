@@ -45,9 +45,16 @@ const CLERK = "clerk_self_001";
 const SELF_INTERNAL = "user-self-001";
 const OTHER_INTERNAL = "user-other-002";
 
+// Helper function to get manifest dispatcher POST with params
+async function getDeactivateHandler() {
+  const mod = await import("@/app/api/manifest/[entity]/commands/[command]/route");
+  return (req: NextRequest) =>
+    mod.POST(req, { params: Promise.resolve({ entity: "User", command: "deactivate" }) });
+}
+
 function makeRequest(body: unknown): NextRequest {
   return new NextRequest(
-    new URL("http://localhost:3000/api/user/deactivate"),
+    new URL("http://localhost:3000/api/manifest/User/commands/deactivate"),
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -77,8 +84,8 @@ describe("POST /api/user/deactivate — self-deactivation prevention", () => {
   it("returns 403 and does NOT run command when caller targets own userId", async () => {
     mockDatabase.user.findFirst.mockResolvedValue({ id: SELF_INTERNAL });
 
-    const { POST } = await import("@/app/api/user/deactivate/route");
-    const res = await POST(makeRequest({ userId: SELF_INTERNAL, reason: "x" }));
+    const deactivate = await getDeactivateHandler();
+    const res = await deactivate(makeRequest({ userId: SELF_INTERNAL, reason: "x" }));
 
     expect(res.status).toBe(403);
     const json = await res.json();
@@ -91,8 +98,8 @@ describe("POST /api/user/deactivate — self-deactivation prevention", () => {
   it("allows deactivating another user (passes through to runtime)", async () => {
     mockDatabase.user.findFirst.mockResolvedValue({ id: SELF_INTERNAL });
 
-    const { POST } = await import("@/app/api/user/deactivate/route");
-    const res = await POST(
+    const deactivate = await getDeactivateHandler();
+    const res = await deactivate(
       makeRequest({ userId: OTHER_INTERNAL, reason: "leaving" })
     );
 
@@ -114,8 +121,8 @@ describe("POST /api/user/deactivate — self-deactivation prevention", () => {
     // deliberate decision, not an accident.
     mockDatabase.user.findFirst.mockResolvedValue(null);
 
-    const { POST } = await import("@/app/api/user/deactivate/route");
-    const res = await POST(makeRequest({ userId: SELF_INTERNAL, reason: "x" }));
+    const deactivate = await getDeactivateHandler();
+    const res = await deactivate(makeRequest({ userId: SELF_INTERNAL, reason: "x" }));
 
     expect(res.status).toBe(200);
     expect(runCommand).toHaveBeenCalled();
@@ -123,8 +130,8 @@ describe("POST /api/user/deactivate — self-deactivation prevention", () => {
 
   it("returns 401 when unauthenticated", async () => {
     vi.mocked(auth).mockResolvedValue({ orgId: null, userId: null } as any);
-    const { POST } = await import("@/app/api/user/deactivate/route");
-    const res = await POST(makeRequest({ userId: SELF_INTERNAL }));
+    const deactivate = await getDeactivateHandler();
+    const res = await deactivate(makeRequest({ userId: SELF_INTERNAL }));
     expect(res.status).toBe(401);
     expect(runCommand).not.toHaveBeenCalled();
   });

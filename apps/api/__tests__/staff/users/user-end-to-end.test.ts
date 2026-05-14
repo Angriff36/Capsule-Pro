@@ -75,6 +75,19 @@ const TEST_USER_ID = "u0000000-0000-4000-a000-000000000001";
 const TEST_CLERK_ID = "clerk_test_001";
 
 // ---------------------------------------------------------------------------
+// Helper functions for manifest dispatcher
+// ---------------------------------------------------------------------------
+
+const userParams = (command: string) => ({
+  params: Promise.resolve({ entity: "User", command }),
+});
+
+async function getManifestHandler(command: string) {
+  const mod = await import("@/app/api/manifest/[entity]/commands/[command]/route");
+  return (req: NextRequest) => mod.POST(req, userParams(command));
+}
+
+// ---------------------------------------------------------------------------
 // Mock data factories
 // ---------------------------------------------------------------------------
 
@@ -124,24 +137,24 @@ describe("User Command Routes", () => {
     });
 
     const instanceScopedVerbs = [
-      { verb: "update", file: "update", idField: "id" },
-      { verb: "deactivate", file: "deactivate", idField: "userId" },
-      { verb: "terminate", file: "terminate", idField: "userId" },
-      { verb: "updateRole", file: "update-role", idField: "userId" },
+      { verb: "update", idField: "id" },
+      { verb: "deactivate", idField: "userId" },
+      { verb: "terminate", idField: "userId" },
+      { verb: "updateRole", idField: "userId" },
     ];
 
-    for (const { verb, file, idField } of instanceScopedVerbs) {
+    for (const { verb, idField } of instanceScopedVerbs) {
       it(`${verb} route passes instanceId to runCommand`, async () => {
-        const mod = await import(`@/app/api/user/${file}/route`);
+        const handler = await getManifestHandler(verb);
         const request = createMockRequest(
-          `http://localhost:3000/api/user/${file}`,
+          `http://localhost:3000/api/manifest/User/commands/${verb}`,
           {
             method: "POST",
             body: JSON.stringify({ [idField]: "user-001" }),
           }
         );
 
-        await mod.POST(request);
+        await handler(request);
 
         expect(mockRunCommand).toHaveBeenCalledWith(
           verb,
@@ -155,9 +168,9 @@ describe("User Command Routes", () => {
     }
 
     it("create route does NOT pass instanceId", async () => {
-      const mod = await import("@/app/api/user/create/route");
+      const handler = await getManifestHandler("create");
       const request = createMockRequest(
-        "http://localhost:3000/api/user/create",
+        "http://localhost:3000/api/manifest/User/commands/create",
         {
           method: "POST",
           body: JSON.stringify({
@@ -169,7 +182,7 @@ describe("User Command Routes", () => {
         }
       );
 
-      await mod.POST(request);
+      await handler(request);
 
       expect(mockRunCommand).toHaveBeenCalledWith(
         "create",
@@ -187,11 +200,11 @@ describe("User Command Routes", () => {
     it("create route returns 401 for unauthenticated requests", async () => {
       vi.mocked(auth).mockResolvedValue({ orgId: null } as any);
 
-      const { POST } = await import("@/app/api/user/create/route");
+      const handler = await getManifestHandler("create");
       const request = createMockRequest(
-        "http://localhost:3000/api/user/create"
+        "http://localhost:3000/api/manifest/User/commands/create"
       );
-      const response = await POST(request);
+      const response = await handler(request);
 
       expect(response.status).toBe(401);
     });
@@ -199,11 +212,11 @@ describe("User Command Routes", () => {
     it("update route returns 401 for unauthenticated requests", async () => {
       vi.mocked(auth).mockResolvedValue({ orgId: null } as any);
 
-      const { POST } = await import("@/app/api/user/update/route");
+      const handler = await getManifestHandler("update");
       const request = createMockRequest(
-        "http://localhost:3000/api/user/update"
+        "http://localhost:3000/api/manifest/User/commands/update"
       );
-      const response = await POST(request);
+      const response = await handler(request);
 
       expect(response.status).toBe(401);
     });
@@ -211,11 +224,11 @@ describe("User Command Routes", () => {
     it("deactivate route returns 401 for unauthenticated requests", async () => {
       vi.mocked(auth).mockResolvedValue({ orgId: null } as any);
 
-      const { POST } = await import("@/app/api/user/deactivate/route");
+      const handler = await getManifestHandler("deactivate");
       const request = createMockRequest(
-        "http://localhost:3000/api/user/deactivate"
+        "http://localhost:3000/api/manifest/User/commands/deactivate"
       );
-      const response = await POST(request);
+      const response = await handler(request);
 
       expect(response.status).toBe(401);
     });
@@ -223,11 +236,11 @@ describe("User Command Routes", () => {
     it("terminate route returns 401 for unauthenticated requests", async () => {
       vi.mocked(auth).mockResolvedValue({ orgId: null } as any);
 
-      const { POST } = await import("@/app/api/user/terminate/route");
+      const handler = await getManifestHandler("terminate");
       const request = createMockRequest(
-        "http://localhost:3000/api/user/terminate"
+        "http://localhost:3000/api/manifest/User/commands/terminate"
       );
-      const response = await POST(request);
+      const response = await handler(request);
 
       expect(response.status).toBe(401);
     });
@@ -235,11 +248,11 @@ describe("User Command Routes", () => {
     it("update-role route returns 401 for unauthenticated requests", async () => {
       vi.mocked(auth).mockResolvedValue({ orgId: null } as any);
 
-      const { POST } = await import("@/app/api/user/update-role/route");
+      const handler = await getManifestHandler("updateRole");
       const request = createMockRequest(
-        "http://localhost:3000/api/user/update-role"
+        "http://localhost:3000/api/manifest/User/commands/updateRole"
       );
-      const response = await POST(request);
+      const response = await handler(request);
 
       expect(response.status).toBe(401);
     });
@@ -270,15 +283,15 @@ describe("User Command Routes", () => {
         guardFailure: { index: 0, formatted: "Email is required" },
       });
 
-      const { POST } = await import("@/app/api/user/create/route");
+      const handler = await getManifestHandler("create");
       const request = createMockRequest(
-        "http://localhost:3000/api/user/create",
+        "http://localhost:3000/api/manifest/User/commands/create",
         {
           method: "POST",
           body: JSON.stringify({}),
         }
       );
-      const response = await POST(request);
+      const response = await handler(request);
 
       expect(response.status).toBe(422);
     });
@@ -289,15 +302,15 @@ describe("User Command Routes", () => {
         policyDenial: { policyName: "AdminOnly" },
       });
 
-      const { POST } = await import("@/app/api/user/create/route");
+      const handler = await getManifestHandler("create");
       const request = createMockRequest(
-        "http://localhost:3000/api/user/create",
+        "http://localhost:3000/api/manifest/User/commands/create",
         {
           method: "POST",
           body: JSON.stringify({}),
         }
       );
-      const response = await POST(request);
+      const response = await handler(request);
 
       expect(response.status).toBe(403);
     });
@@ -308,15 +321,15 @@ describe("User Command Routes", () => {
         error: "Something went wrong",
       });
 
-      const { POST } = await import("@/app/api/user/create/route");
+      const handler = await getManifestHandler("create");
       const request = createMockRequest(
-        "http://localhost:3000/api/user/create",
+        "http://localhost:3000/api/manifest/User/commands/create",
         {
           method: "POST",
           body: JSON.stringify({}),
         }
       );
-      const response = await POST(request);
+      const response = await handler(request);
 
       expect(response.status).toBe(400);
     });
@@ -324,15 +337,15 @@ describe("User Command Routes", () => {
     it("returns 500 on unexpected exception", async () => {
       mockRunCommand.mockRejectedValueOnce(new Error("Unexpected error"));
 
-      const { POST } = await import("@/app/api/user/create/route");
+      const handler = await getManifestHandler("create");
       const request = createMockRequest(
-        "http://localhost:3000/api/user/create",
+        "http://localhost:3000/api/manifest/User/commands/create",
         {
           method: "POST",
           body: JSON.stringify({}),
         }
       );
-      const response = await POST(request);
+      const response = await handler(request);
 
       expect(response.status).toBe(500);
     });
@@ -340,15 +353,15 @@ describe("User Command Routes", () => {
     it("returns 400 when tenant not found", async () => {
       vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
 
-      const { POST } = await import("@/app/api/user/create/route");
+      const handler = await getManifestHandler("create");
       const request = createMockRequest(
-        "http://localhost:3000/api/user/create",
+        "http://localhost:3000/api/manifest/User/commands/create",
         {
           method: "POST",
           body: JSON.stringify({}),
         }
       );
-      const response = await POST(request);
+      const response = await handler(request);
 
       expect(response.status).toBe(400);
     });

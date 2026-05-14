@@ -154,6 +154,11 @@ function createMockRequest(
   );
 }
 
+// Helper to create manifest dispatcher params
+function manifestParams(entity: string, command: string) {
+  return { params: Promise.resolve({ entity, command }) };
+}
+
 // ---------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------
@@ -357,7 +362,7 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, manifestParams("VendorContract", "create"));
 
       expect(response.status).toBe(200);
       expect(mockRunCommand).toHaveBeenCalledWith(
@@ -387,7 +392,7 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, manifestParams("VendorContract", "update"));
 
       expect(response.status).toBe(200);
       expect(mockRunCommand).toHaveBeenCalledWith(
@@ -417,7 +422,7 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, manifestParams("VendorContract", "submit"));
 
       expect(response.status).toBe(200);
       expect(mockRunCommand).toHaveBeenCalledWith(
@@ -447,7 +452,7 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, manifestParams("VendorContract", "approve"));
 
       expect(response.status).toBe(200);
       expect(mockRunCommand).toHaveBeenCalledWith(
@@ -478,7 +483,7 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, manifestParams("VendorContract", "reject"));
 
       expect(response.status).toBe(200);
       expect(mockRunCommand).toHaveBeenCalledWith(
@@ -508,7 +513,7 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, manifestParams("VendorContract", "activate"));
 
       expect(response.status).toBe(200);
       expect(mockRunCommand).toHaveBeenCalledWith(
@@ -539,7 +544,7 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
         }
       );
 
-      const response = await POST(request);
+      const response = await POST(request, manifestParams("VendorContract", "terminate"));
 
       expect(response.status).toBe(200);
       expect(mockRunCommand).toHaveBeenCalledWith(
@@ -567,7 +572,7 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
       const request = createMockRequest(
         "http://localhost:3000/api/procurement/vendor-contracts/commands/create"
       );
-      const response = await POST(request);
+      const response = await POST(request, manifestParams("VendorContract", "create"));
 
       expect(response.status).toBe(401);
     });
@@ -581,7 +586,7 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
       const request = createMockRequest(
         "http://localhost:3000/api/procurement/vendor-contracts/commands/update"
       );
-      const response = await POST(request);
+      const response = await POST(request, manifestParams("VendorContract", "update"));
 
       expect(response.status).toBe(401);
     });
@@ -595,7 +600,7 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
       const request = createMockRequest(
         "http://localhost:3000/api/procurement/vendor-contracts/commands/submit"
       );
-      const response = await POST(request);
+      const response = await POST(request, manifestParams("VendorContract", "submit"));
 
       expect(response.status).toBe(401);
     });
@@ -640,7 +645,7 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
           body: JSON.stringify({}),
         }
       );
-      const response = await POST(request);
+      const response = await POST(request, manifestParams("VendorContract", "create"));
 
       expect(response.status).toBe(422);
     });
@@ -661,7 +666,7 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
           body: JSON.stringify({}),
         }
       );
-      const response = await POST(request);
+      const response = await POST(request, manifestParams("VendorContract", "create"));
 
       expect(response.status).toBe(403);
     });
@@ -682,7 +687,7 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
           body: JSON.stringify({}),
         }
       );
-      const response = await POST(request);
+      const response = await POST(request, manifestParams("VendorContract", "create"));
 
       expect(response.status).toBe(400);
     });
@@ -700,7 +705,7 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
           body: JSON.stringify({}),
         }
       );
-      const response = await POST(request);
+      const response = await POST(request, manifestParams("VendorContract", "create"));
 
       expect(response.status).toBe(500);
     });

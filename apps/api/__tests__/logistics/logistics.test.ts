@@ -312,7 +312,9 @@ describe("Logistics API", () => {
           headers: { "Content-Type": "application/json" },
         }
       );
-      const response = await createDriver(request);
+      const response = await createDriver(request, {
+        params: Promise.resolve({ entity: "Driver", command: "create" }),
+      });
 
       expect(response.status).toBe(401);
     });
@@ -329,7 +331,9 @@ describe("Logistics API", () => {
           headers: { "Content-Type": "application/json" },
         }
       );
-      const response = await createDriver(request);
+      const response = await createDriver(request, {
+        params: Promise.resolve({ entity: "Driver", command: "create" }),
+      });
 
       expect(response.status).toBe(400);
       const body = await response.json();
@@ -347,7 +351,9 @@ describe("Logistics API", () => {
           headers: { "Content-Type": "application/json" },
         }
       );
-      const response = await createDriver(request);
+      const response = await createDriver(request, {
+        params: Promise.resolve({ entity: "Driver", command: "create" }),
+      });
 
       expect(response.status).toBe(400);
       const body = await response.json();
@@ -380,7 +386,9 @@ describe("Logistics API", () => {
           headers: { "Content-Type": "application/json" },
         }
       );
-      const response = await createDriver(request);
+      const response = await createDriver(request, {
+        params: Promise.resolve({ entity: "Driver", command: "create" }),
+      });
 
       expect(response.status).toBe(200);
       const body = await response.json();
@@ -413,7 +421,9 @@ describe("Logistics API", () => {
           headers: { "Content-Type": "application/json" },
         }
       );
-      const response = await createDriver(request);
+      const response = await createDriver(request, {
+        params: Promise.resolve({ entity: "Driver", command: "create" }),
+      });
 
       expect(response.status).toBe(500);
       const body = await response.json();
@@ -441,7 +451,9 @@ describe("Logistics API", () => {
           headers: { "Content-Type": "application/json" },
         }
       );
-      const response = await deleteDriver(request);
+      const response = await deleteDriver(request, {
+        params: Promise.resolve({ entity: "Driver", command: "remove" }),
+      });
 
       expect(response.status).toBe(401);
     });
@@ -457,7 +469,9 @@ describe("Logistics API", () => {
           headers: { "Content-Type": "application/json" },
         }
       );
-      const response = await deleteDriver(request);
+      const response = await deleteDriver(request, {
+        params: Promise.resolve({ entity: "Driver", command: "remove" }),
+      });
 
       expect(response.status).toBe(400);
       const body = await response.json();
@@ -476,7 +490,9 @@ describe("Logistics API", () => {
           headers: { "Content-Type": "application/json" },
         }
       );
-      const response = await deleteDriver(request);
+      const response = await deleteDriver(request, {
+        params: Promise.resolve({ entity: "Driver", command: "remove" }),
+      });
 
       expect(response.status).toBe(200);
       const body = await response.json();
@@ -505,7 +521,9 @@ describe("Logistics API", () => {
           headers: { "Content-Type": "application/json" },
         }
       );
-      const response = await deleteDriver(request);
+      const response = await deleteDriver(request, {
+        params: Promise.resolve({ entity: "Driver", command: "remove" }),
+      });
 
       expect(response.status).toBe(500);
     });
@@ -650,7 +668,9 @@ describe("Logistics API", () => {
           headers: { "Content-Type": "application/json" },
         }
       );
-      const response = await createVehicle(request);
+      const response = await createVehicle(request, {
+        params: Promise.resolve({ entity: "Vehicle", command: "create" }),
+      });
 
       expect(response.status).toBe(401);
     });
@@ -666,7 +686,9 @@ describe("Logistics API", () => {
           headers: { "Content-Type": "application/json" },
         }
       );
-      const response = await createVehicle(request);
+      const response = await createVehicle(request, {
+        params: Promise.resolve({ entity: "Vehicle", command: "create" }),
+      });
 
       expect(response.status).toBe(400);
       const body = await response.json();
@@ -684,7 +706,9 @@ describe("Logistics API", () => {
           headers: { "Content-Type": "application/json" },
         }
       );
-      const response = await createVehicle(request);
+      const response = await createVehicle(request, {
+        params: Promise.resolve({ entity: "Vehicle", command: "create" }),
+      });
 
       expect(response.status).toBe(400);
     });
@@ -718,7 +742,9 @@ describe("Logistics API", () => {
           headers: { "Content-Type": "application/json" },
         }
       );
-      const response = await createVehicle(request);
+      const response = await createVehicle(request, {
+        params: Promise.resolve({ entity: "Vehicle", command: "create" }),
+      });
 
       expect(response.status).toBe(200);
       const body = await response.json();
@@ -744,7 +770,9 @@ describe("Logistics API", () => {
           headers: { "Content-Type": "application/json" },
         }
       );
-      const response = await createVehicle(request);
+      const response = await createVehicle(request, {
+        params: Promise.resolve({ entity: "Vehicle", command: "create" }),
+      });
 
       expect(response.status).toBe(500);
     });
@@ -769,7 +797,9 @@ describe("Logistics API", () => {
           headers: { "Content-Type": "application/json" },
         }
       );
-      const response = await deleteVehicle(request);
+      const response = await deleteVehicle(request, {
+        params: Promise.resolve({ entity: "Vehicle", command: "remove" }),
+      });
 
       expect(response.status).toBe(401);
     });
@@ -785,7 +815,9 @@ describe("Logistics API", () => {
           headers: { "Content-Type": "application/json" },
         }
       );
-      const response = await deleteVehicle(request);
+      const response = await deleteVehicle(request, {
+        params: Promise.resolve({ entity: "Vehicle", command: "remove" }),
+      });
 
       expect(response.status).toBe(400);
       const body = await response.json();
@@ -804,7 +836,9 @@ describe("Logistics API", () => {
           headers: { "Content-Type": "application/json" },
         }
       );
-      const response = await deleteVehicle(request);
+      const response = await deleteVehicle(request, {
+        params: Promise.resolve({ entity: "Vehicle", command: "remove" }),
+      });
 
       expect(response.status).toBe(200);
       const body = await response.json();
@@ -827,7 +861,9 @@ describe("Logistics API", () => {
           headers: { "Content-Type": "application/json" },
         }
       );
-      const response = await deleteVehicle(request);
+      const response = await deleteVehicle(request, {
+        params: Promise.resolve({ entity: "Vehicle", command: "remove" }),
+      });
 
       expect(response.status).toBe(500);
     });
@@ -982,7 +1018,9 @@ describe("Logistics API", () => {
           headers: { "Content-Type": "application/json" },
         }
       );
-      const response = await createRoute(request);
+      const response = await createRoute(request, {
+        params: Promise.resolve({ entity: "LogisticsRoute", command: "create" }),
+      });
 
       expect(response.status).toBe(200);
       const body = await response.json();
@@ -1021,7 +1059,9 @@ describe("Logistics API", () => {
           headers: { "Content-Type": "application/json" },
         }
       );
-      const response = await createRoute(request);
+      const response = await createRoute(request, {
+        params: Promise.resolve({ entity: "LogisticsRoute", command: "create" }),
+      });
 
       expect(response.status).toBe(200);
       const body = await response.json();
@@ -1068,7 +1108,9 @@ describe("Logistics API", () => {
           headers: { "Content-Type": "application/json" },
         }
       );
-      const response = await createRoute(request);
+      const response = await createRoute(request, {
+        params: Promise.resolve({ entity: "LogisticsRoute", command: "create" }),
+      });
 
       expect(response.status).toBe(200);
       const body = await response.json();
@@ -1116,7 +1158,9 @@ describe("Logistics API", () => {
           headers: { "Content-Type": "application/json" },
         }
       );
-      await createRoute(request);
+      await createRoute(request, {
+        params: Promise.resolve({ entity: "LogisticsRoute", command: "create" }),
+      });
 
       expect(database.deliveryRoute.create).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -1141,7 +1185,9 @@ describe("Logistics API", () => {
           headers: { "Content-Type": "application/json" },
         }
       );
-      const response = await createRoute(request);
+      const response = await createRoute(request, {
+        params: Promise.resolve({ entity: "LogisticsRoute", command: "create" }),
+      });
 
       expect(response.status).toBe(500);
       const body = await response.json();
