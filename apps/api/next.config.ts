@@ -97,9 +97,9 @@ let nextConfig: NextConfig = withLogging({
 
     return routes;
   },
-  // Disable type checking during build to avoid React type conflicts
+  // Type checking enforced at build time. tsconfig passes cleanly.
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
   },
   // Transpile workspace packages
   transpilePackages: [

@@ -82,14 +82,25 @@ export default defineConfig({
   // When not, start the app and wait for it.
   webServer: USE_PERSISTENT_BROWSER
     ? undefined
-    : {
-        command: process.env.CI
-          ? "pnpm --filter ./apps/app start"
-          : "pnpm --filter ./apps/app dev",
-        url: `${baseURL}/sign-in`,
-        reuseExistingServer: !process.env.CI,
-        timeout: 180_000,
-      },
+    : process.env.CI
+      ? {
+          // CI: start BOTH API (2223) and App (2221) for full E2E testing.
+          // Without the API server, product-flow tests loop back to the app
+          // and never exercise real API routes.
+          command: "pnpm --filter ./apps/api start & pnpm --filter ./apps/app start",
+          url: `${baseURL}/sign-in`,
+          reuseExistingServer: false,
+          timeout: 180_000,
+          env: {
+            NEXT_PUBLIC_API_URL: "http://127.0.0.1:2223",
+          },
+        }
+      : {
+          command: "pnpm --filter ./apps/app dev",
+          url: `${baseURL}/sign-in`,
+          reuseExistingServer: !process.env.CI,
+          timeout: 180_000,
+        },
 
   projects: USE_PERSISTENT_BROWSER
     ? [

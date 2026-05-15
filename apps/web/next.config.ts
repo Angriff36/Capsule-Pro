@@ -12,9 +12,9 @@ let nextConfig: NextConfig = {
   // Enable source maps for Sentry error tracking in production
   // Source maps are deleted after upload to Sentry (configured in sentryConfig.sourcemaps.deleteSourcemapsAfterUpload)
   productionBrowserSourceMaps: true,
-  // Disable type checking during build to avoid React type conflicts
+  // Type checking enforced at build time. tsconfig passes cleanly.
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
   },
   images: {
     ...baseConfig.images,

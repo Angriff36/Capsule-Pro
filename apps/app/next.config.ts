@@ -186,13 +186,9 @@ let nextConfig: NextConfig = withToolbar(
     deploymentId: process.env.VERCEL_DEPLOYMENT_ID,
     // Build-time linting is handled by Biome in this repo.
     eslint: {
+      // Linting is handled by Biome in CI and pre-commit.
+      // Next.js eslint runs during build — we gate on Biome instead.
       ignoreDuringBuilds: true,
-    },
-    // Type checking is handled by `pnpm tsc --noEmit` in CI.
-    // Next.js's built-in type checker crashes on Vercel when lstat-ing
-    // parenthesized route groups like (authenticated)/.
-    typescript: {
-      ignoreBuildErrors: true,
     },
     // Transpile workspace packages and heavy libraries for better performance
     transpilePackages: [
