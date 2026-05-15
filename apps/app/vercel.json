@@ -7,10 +7,5 @@
   "github": {
     "silent": true
   },
-  "outputDirectory": ".next",
-  "functions": {
-    "app/api/**/*.ts": {
-      "regions": ["iad1"]
-    }
-  }
+  "outputDirectory": ".next"
 }
