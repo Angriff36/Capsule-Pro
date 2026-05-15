@@ -28,7 +28,7 @@ const signUpForceRedirectUrl = normalizePath(
 );
 const signInFallbackRedirectUrl = normalizePath(
   process.env.NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL,
-  signUpFallbackRedirectUrl
+  "/"
 );
 const signInForceRedirectUrl = normalizePath(
   process.env.NEXT_PUBLIC_CLERK_SIGN_IN_FORCE_REDIRECT_URL,

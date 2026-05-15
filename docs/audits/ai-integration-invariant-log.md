@@ -677,3 +677,69 @@ Concrete command route count: 70 non-dispatcher in `apps/api`. Unchanged.
 - BUG-1 → **still unresolved**.
 
 **Notes:** Typecheck passes clean (`pnpm --filter api typecheck`). Main report updated at `docs/audits/ai-integration-invariants-2026-05-13.md`.
+
+---
+
+### Run: 2026-05-14T18:00Z (scheduled cron audit)
+
+**Git HEAD:** cbc329bd081de7418b043ca8f836b071d8c3b6a3
+
+**Summary:** 1 confirmed bug (BUG-1, backlog unchanged). 1 suspicious item (SUSP-1 redirect URL cross-contamination, new). 6 false alarms confirmed clean.
+
+**Confirmed bugs:**
+
+1. **BUG-1** — 70 concrete command `route.ts` files exist outside the single manifest dispatcher at `apps/api/app/api/manifest/[entity]/commands/[command]/route.ts`. All delegate to `executeManifestCommand()` (auth enforced), but the structural invariant is violated. UNRESOLVED (backlog).
+
+**Suspicious items:**
+
+1. **SUSP-2 (new)** — `packages/auth/components/sign-up.tsx:29–31` and `sign-in.tsx:29–31` cross-default fallback redirect URLs; `signInFallbackRedirectUrl` defaults to `signUpFallbackRedirectUrl` and vice versa. Benign when no env vars diverge (both fall back to `/`), but could misdirect users in split-URL config.
+
+**False alarms / clean:**
+
+- Provider graph: ThemeProvider → ClerkProviderClient ordering correct in `app/layout.tsx`. No broken dependency order.
+- No duplicate ClerkProvider in any nested layout.
+- No `afterSignInUrl`/`afterSignUpUrl` deprecated props anywhere.
+- API middleware (`apps/api/proxy.ts`) returns JSON 401 — no HTML redirect on API routes.
+- App middleware (`apps/app/proxy.ts`) returns JSON 401 for API, redirect only for page routes.
+- NotificationsProvider `useTheme()` usage: correctly inside ThemeProvider tree.
+
+**Previously reported bugs status:**
+
+- Duplicate Toaster → **still fixed**.
+- Shift routes in `apps/app` → **still fixed** (2d60b7ac).
+- ClerkProviderClient theme-flash (SUSP-1) → **still fixed** (e7234fa7).
+- BUG-3 (sentry-fixer in public routes) → **still fixed** (f6243963).
+- BUG-2 (hardcoded cost ratios / SQL status strings) → **still fixed** (cbc329bd — this HEAD).
+- BUG-1 (concrete manifest command routes) → **still unresolved**.
+
+**Notes:** Read-only audit pass. No files modified. Main report overwritten at `docs/audits/ai-integration-invariants-2026-05-13.md`.
+
+---
+
+### Run: 2026-05-14T20:45Z (automated fix cron)
+
+**Git HEAD:** cbc329bd081de7418b043ca8f836b071d8c3b6a7 *(pre-fix HEAD; fix commit pending)*
+
+**Summary:** 1 bug FIXED (SUSP-1 cross-contaminated redirect fallback URLs). 1 confirmed bug remains (backlog).
+
+**Fixed this run:**
+
+1. **SUSP-1** — Cross-contaminated fallback redirect URLs in `packages/auth` — **FIXED.**
+   - `packages/auth/components/sign-up.tsx:31` — `signInFallbackRedirectUrl` default changed from `signUpFallbackRedirectUrl` to `"/"`
+   - `packages/auth/components/sign-in.tsx:31` — `signUpFallbackRedirectUrl` default changed from `signInFallbackRedirectUrl` to `"/"`
+   - Both now independently default to `"/"` when their respective env vars are unset, instead of cross-wiring to each other's fallback.
+
+**Remaining bugs:**
+
+1. **BUG-1** — 70 concrete command `route.ts` files in `apps/api` outside manifest single-dispatcher. UNRESOLVED (backlog — requires entity-by-entity dispatcher wiring).
+
+**Previously reported bugs status:**
+- Duplicate Toaster → **still fixed** (2dbdaa48).
+- Shift routes in apps/app → **still fixed** (2d60b7ac).
+- ClerkProviderClient theme-flash → **still fixed** (e7234fa7).
+- BUG-3 (sentry-fixer in public routes) → **still fixed** (f6243963).
+- BUG-2 (hardcoded cost ratios) → **still fixed** (cbc329bd).
+- SUSP-1 (this run) → **FIXED** (commit pending).
+- BUG-1 → **still unresolved**.
+
+**Notes:** Typecheck passes clean (`pnpm --filter app typecheck`). Main report updated at `docs/audits/ai-integration-invariants-2026-05-13.md`.
