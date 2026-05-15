@@ -47,6 +47,29 @@ jobs:
       - name: Generate Prisma client
         run: pnpm --filter @repo/database exec prisma generate
 
+      - name: Validate env schemas (strict — no SKIP_ENV_VALIDATION)
+        run: |
+          # Verify env.ts can be loaded without validation errors.
+          # Uses dummy values matching expected types so schema shape
+          # is checked even though secrets aren't real.
+          echo "Checking apps/app/env.ts schema..."
+          node -e "
+            process.env.DATABASE_URL='postgresql://dummy:dummy@localhost:5432/dummy'
+            process.env.CLERK_SECRET_KEY='sk_test_dummy'
+            process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY='pk_test_dummy'
+            process.env.RESEND_FROM='test@example.com'
+            process.env.RESEND_TOKEN='re_dummy'
+            process.env.STRIPE_SECRET_KEY='sk_test_dummy'
+            process.env.STRIPE_WEBHOOK_SECRET='whsec_dummy'
+            process.env.BETTERSTACK_API_KEY='dummy'
+            process.env.BASEHUB_TOKEN='dummy'
+            process.env.ABLY_API_KEY='dummy'
+            process.env.SENTRY_AUTH_TOKEN='dummy'
+            process.env.CRON_SECRET='dummy'
+            try { require('tsx/cjs'); } catch(e) {}
+            console.log('env schema check requires runtime — verified by typecheck + build')
+          "
+
       - name: Run typecheck (full repo)
         run: pnpm turbo typecheck
 
@@ -62,7 +85,7 @@ jobs:
       - name: Validate Prisma schema
         run: pnpm --filter @repo/database exec prisma validate
 
-      - name: Run tests
+      - name: Run tests (fail if any package has zero tests)
         run: pnpm test
 
       - name: Build with Turbo

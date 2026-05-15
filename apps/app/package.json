@@ -92,7 +92,7 @@
     "clean": "git clean -xdf .cache .turbo dist node_modules",
     "dev": "dotenv -e ../../.env.local -e .env.local -e ../../packages/database/.env -- cross-env SKIP_ENV_VALIDATION=true NEXT_DIST_DIR=.next-dev next dev --turbopack -p 2221 -H 127.0.0.1",
     "start": "next start",
-    "test": "cross-env NODE_ENV=test vitest run --passWithNoTests",
+    "test": "cross-env NODE_ENV=test vitest run",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   }
 }

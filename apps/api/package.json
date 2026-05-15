@@ -59,7 +59,7 @@
     "next": "dotenv -e ../../.env.local -e .env.local -e ../../packages/database/.env -- cross-env NEXT_DIST_DIR=.next-dev next dev -p 2223",
     "start": "next start",
     "stripe": "node scripts/stripe-listen.mjs",
-    "test": "cross-env NODE_ENV=test vitest run --passWithNoTests",
+    "test": "cross-env NODE_ENV=test vitest run",
     "test:integration": "cross-env NODE_ENV=test vitest --config vitest.config.integration.mts run --passWithNoTests",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   }
