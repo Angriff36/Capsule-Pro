@@ -25,7 +25,7 @@
     "ai": "^6.0.70",
     "date-fns": "^4.1.0",
     "geist": "^1.5.1",
-    "import-in-the-middle": "^3.0.0",
+    "import-in-the-middle": "^2.0.0",
     "next": "15.4.11",
     "react": "19.2.4",
     "react-dom": "19.2.4",
@@ -44,6 +44,7 @@
     "concurrently": "^9.2.1",
     "cross-env": "^10.1.0",
     "dotenv": "^17.2.3",
+    "dotenv-cli": "^10.0.0",
     "typescript": "^5.9.3",
     "vitest": "^4.0.18"
   },
@@ -61,6 +62,8 @@
     "stripe": "node scripts/stripe-listen.mjs",
     "test": "cross-env NODE_ENV=test vitest run --passWithNoTests",
     "test:integration": "cross-env NODE_ENV=test vitest --config vitest.config.integration.mts run --passWithNoTests",
-    "typecheck": "tsc --noEmit --emitDeclarationOnly false"
+    "typecheck": "tsc --noEmit --emitDeclarationOnly false",
+    "next:infisical": "cross-env NEXT_DIST_DIR=.next-dev next dev -p 2223",
+    "dev:infisical": "concurrently \"pnpm:next:infisical\" \"pnpm:stripe\""
   }
 }

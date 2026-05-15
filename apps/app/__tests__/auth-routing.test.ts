@@ -48,7 +48,7 @@ function request(pathname: string) {
 }
 
 async function runMiddleware(pathname: string) {
-  const { default: middleware } = await import("../proxy");
+  const { default: middleware } = await import("../middleware");
   return (
     middleware as unknown as (req: { url: string }) => Promise<Response | void>
   )(request(pathname));
