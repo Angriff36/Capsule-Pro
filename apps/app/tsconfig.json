@@ -15,10 +15,11 @@
   "include": [
     "**/*.ts",
     "**/*.tsx",
+    ".next-dev/types/**/*.ts",
     ".next/types/**/*.ts",
     "next-env.d.ts",
     "next.config.ts",
-    ".next-dev/types/**/*.ts"
+    ".next-dev-webpack/types/**/*.ts"
   ],
   "exclude": [
     "prisma",

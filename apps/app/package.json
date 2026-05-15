@@ -95,6 +95,6 @@
     "start": "next start",
     "test": "cross-env NODE_ENV=test vitest run --passWithNoTests",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false",
-    "dev:infisical": "cross-env SKIP_ENV_VALIDATION=true NEXT_DIST_DIR=.next-dev next dev --turbopack -p 2221"
+    "dev:infisical": "infisical run --env=dev --path=/apps/capsule-pro/app --project-config-dir=../.. -- cross-env SKIP_ENV_VALIDATION=true NEXT_DIST_DIR=.next-dev next dev --turbopack -p 2221"
   }
 }
