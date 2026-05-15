@@ -94,29 +94,29 @@ export async function GET(
       : null;
 
     // Fetch recipe steps for the latest version
-    const steps = await database.recipe_steps.findMany({
+    const steps = await database.recipeStep.findMany({
       where: {
-        tenant_id: tenantId,
-        recipe_version_id: latestVersion.id,
-        deleted_at: null,
+        tenantId,
+        recipeVersionId: latestVersion.id,
+        deletedAt: null,
       },
-      orderBy: { step_number: "asc" },
+      orderBy: { stepNumber: "asc" },
       select: {
-        step_number: true,
+        stepNumber: true,
         instruction: true,
-        duration_minutes: true,
-        temperature_value: true,
-        temperature_unit: true,
-        equipment_needed: true,
+        durationMinutes: true,
+        temperatureValue: true,
+        temperatureUnit: true,
+        equipmentNeeded: true,
         tips: true,
-        video_url: true,
-        image_url: true,
+        videoUrl: true,
+        imageUrl: true,
       },
     });
 
     // Calculate total duration for all timed steps
     const totalDuration = steps.reduce(
-      (sum, step) => sum + (step.duration_minutes || 0),
+      (sum, step) => sum + (step.durationMinutes || 0),
       0
     );
 
@@ -133,17 +133,17 @@ export async function GET(
         : null,
       yieldUnit: unit?.code ?? null,
       steps: steps.map((step) => ({
-        stepNumber: step.step_number,
+        stepNumber: step.stepNumber,
         instruction: step.instruction,
-        durationMinutes: step.duration_minutes,
-        temperatureValue: step.temperature_value
-          ? Number(step.temperature_value)
+        durationMinutes: step.durationMinutes,
+        temperatureValue: step.temperatureValue
+          ? Number(step.temperatureValue)
           : null,
-        temperatureUnit: step.temperature_unit,
-        equipmentNeeded: step.equipment_needed,
+        temperatureUnit: step.temperatureUnit,
+        equipmentNeeded: step.equipmentNeeded,
         tips: step.tips,
-        videoUrl: step.video_url,
-        imageUrl: step.image_url,
+        videoUrl: step.videoUrl,
+        imageUrl: step.imageUrl,
       })),
       totalDuration,
     };

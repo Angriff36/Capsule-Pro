@@ -38,48 +38,48 @@ export async function getAvailability(params: AvailabilityFilters = {}) {
     database.$queryRaw<
       Array<{
         id: string;
-        employee_id: string;
-        employee_first_name: string | null;
-        employee_last_name: string | null;
-        employee_email: string;
-        employee_role: string;
-        day_of_week: number;
-        start_time: string;
-        end_time: string;
-        is_available: boolean;
-        effective_from: Date;
-        effective_until: Date | null;
-        created_at: Date;
-        updated_at: Date;
+        employeeId: string;
+        employeeFirstName: string | null;
+        employeeLastName: string | null;
+        employeeEmail: string;
+        employeeRole: string;
+        dayOfWeek: number;
+        startTime: string;
+        endTime: string;
+        isAvailable: boolean;
+        effectiveFrom: Date;
+        effectiveUntil: Date | null;
+        createdAt: Date;
+        updatedAt: Date;
       }>
     >(
       Prisma.sql`
         SELECT
           ea.id,
-          ea.employee_id,
+          ea.employeeId,
           e.first_name AS employee_first_name,
           e.last_name AS employee_last_name,
           e.email AS employee_email,
           e.role AS employee_role,
-          ea.day_of_week,
-          ea.start_time,
-          ea.end_time,
-          ea.is_available,
-          ea.effective_from,
-          ea.effective_until,
-          ea.created_at,
-          ea.updated_at
+          ea.dayOfWeek,
+          ea.startTime,
+          ea.endTime,
+          ea.isAvailable,
+          ea.effectiveFrom,
+          ea.effectiveUntil,
+          ea.createdAt,
+          ea.updatedAt
         FROM tenant_staff.employee_availability ea
         JOIN tenant_staff.employees e
-          ON e.tenant_id = ea.tenant_id
-         AND e.id = ea.employee_id
-        WHERE ea.tenant_id = ${tenantId}
-          AND ea.deleted_at IS NULL
-          ${hasEmployeeId ? Prisma.sql`AND ea.employee_id = ${params.employeeId!}` : Prisma.empty}
-          ${hasDayOfWeek ? Prisma.sql`AND ea.day_of_week = ${params.dayOfWeek!}` : Prisma.empty}
-          ${hasEffectiveDate ? Prisma.sql`AND ${new Date(params.effectiveDate!)} >= COALESCE(ea.effective_from, ${new Date(params.effectiveDate!)}) AND ${new Date(params.effectiveDate!)} <= COALESCE(ea.effective_until, ${new Date(params.effectiveDate!)})` : Prisma.empty}
-          ${hasIsActive ? Prisma.sql`AND ${new Date(params.effectiveDate!)} >= COALESCE(ea.effective_from, ${new Date(params.effectiveDate!)}) AND ${new Date(params.effectiveDate!)} <= COALESCE(ea.effective_until, ${new Date(params.effectiveDate!)})` : Prisma.empty}
-        ORDER BY e.last_name ASC, e.first_name ASC, ea.day_of_week ASC, ea.start_time ASC
+          ON e.tenantId = ea.tenantId
+         AND e.id = ea.employeeId
+        WHERE ea.tenantId = ${tenantId}
+          AND ea.deletedAt IS NULL
+          ${hasEmployeeId ? Prisma.sql`AND ea.employeeId = ${params.employeeId!}` : Prisma.empty}
+          ${hasDayOfWeek ? Prisma.sql`AND ea.dayOfWeek = ${params.dayOfWeek!}` : Prisma.empty}
+          ${hasEffectiveDate ? Prisma.sql`AND ${new Date(params.effectiveDate!)} >= COALESCE(ea.effectiveFrom, ${new Date(params.effectiveDate!)}) AND ${new Date(params.effectiveDate!)} <= COALESCE(ea.effectiveUntil, ${new Date(params.effectiveDate!)})` : Prisma.empty}
+          ${hasIsActive ? Prisma.sql`AND ${new Date(params.effectiveDate!)} >= COALESCE(ea.effectiveFrom, ${new Date(params.effectiveDate!)}) AND ${new Date(params.effectiveDate!)} <= COALESCE(ea.effectiveUntil, ${new Date(params.effectiveDate!)})` : Prisma.empty}
+        ORDER BY e.last_name ASC, e.first_name ASC, ea.dayOfWeek ASC, ea.startTime ASC
         LIMIT ${limit}
         OFFSET ${offset}
       `
@@ -88,12 +88,12 @@ export async function getAvailability(params: AvailabilityFilters = {}) {
       Prisma.sql`
         SELECT COUNT(*)::bigint
         FROM tenant_staff.employee_availability ea
-        WHERE ea.tenant_id = ${tenantId}
-          AND ea.deleted_at IS NULL
-          ${hasEmployeeId ? Prisma.sql`AND ea.employee_id = ${params.employeeId!}` : Prisma.empty}
-          ${hasDayOfWeek ? Prisma.sql`AND ea.day_of_week = ${params.dayOfWeek!}` : Prisma.empty}
-          ${hasEffectiveDate ? Prisma.sql`AND ${new Date(params.effectiveDate!)} >= COALESCE(ea.effective_from, ${new Date(params.effectiveDate!)}) AND ${new Date(params.effectiveDate!)} <= COALESCE(ea.effective_until, ${new Date(params.effectiveDate!)})` : Prisma.empty}
-          ${hasIsActive ? Prisma.sql`AND ${new Date(params.effectiveDate!)} >= COALESCE(ea.effective_from, ${new Date(params.effectiveDate!)}) AND ${new Date(params.effectiveDate!)} <= COALESCE(ea.effective_until, ${new Date(params.effectiveDate!)})` : Prisma.empty}
+        WHERE ea.tenantId = ${tenantId}
+          AND ea.deletedAt IS NULL
+          ${hasEmployeeId ? Prisma.sql`AND ea.employeeId = ${params.employeeId!}` : Prisma.empty}
+          ${hasDayOfWeek ? Prisma.sql`AND ea.dayOfWeek = ${params.dayOfWeek!}` : Prisma.empty}
+          ${hasEffectiveDate ? Prisma.sql`AND ${new Date(params.effectiveDate!)} >= COALESCE(ea.effectiveFrom, ${new Date(params.effectiveDate!)}) AND ${new Date(params.effectiveDate!)} <= COALESCE(ea.effectiveUntil, ${new Date(params.effectiveDate!)})` : Prisma.empty}
+          ${hasIsActive ? Prisma.sql`AND ${new Date(params.effectiveDate!)} >= COALESCE(ea.effectiveFrom, ${new Date(params.effectiveDate!)}) AND ${new Date(params.effectiveDate!)} <= COALESCE(ea.effectiveUntil, ${new Date(params.effectiveDate!)})` : Prisma.empty}
       `
     ),
   ]);
@@ -125,44 +125,44 @@ export async function getAvailabilityById(availabilityId: string) {
   const [availability] = await database.$queryRaw<
     Array<{
       id: string;
-      employee_id: string;
-      employee_first_name: string | null;
-      employee_last_name: string | null;
-      employee_email: string;
-      employee_role: string;
-      day_of_week: number;
-      start_time: string;
-      end_time: string;
-      is_available: boolean;
-      effective_from: Date;
-      effective_until: Date | null;
-      created_at: Date;
-      updated_at: Date;
+      employeeId: string;
+      employeeFirstName: string | null;
+      employeeLastName: string | null;
+      employeeEmail: string;
+      employeeRole: string;
+      dayOfWeek: number;
+      startTime: string;
+      endTime: string;
+      isAvailable: boolean;
+      effectiveFrom: Date;
+      effectiveUntil: Date | null;
+      createdAt: Date;
+      updatedAt: Date;
     }>
   >(
     Prisma.sql`
       SELECT
         ea.id,
-        ea.employee_id,
+        ea.employeeId,
         e.first_name AS employee_first_name,
         e.last_name AS employee_last_name,
         e.email AS employee_email,
         e.role AS employee_role,
-        ea.day_of_week,
-        ea.start_time,
-        ea.end_time,
-        ea.is_available,
-        ea.effective_from,
-        ea.effective_until,
-        ea.created_at,
-        ea.updated_at
+        ea.dayOfWeek,
+        ea.startTime,
+        ea.endTime,
+        ea.isAvailable,
+        ea.effectiveFrom,
+        ea.effectiveUntil,
+        ea.createdAt,
+        ea.updatedAt
       FROM tenant_staff.employee_availability ea
       JOIN tenant_staff.employees e
-        ON e.tenant_id = ea.tenant_id
-       AND e.id = ea.employee_id
-      WHERE ea.tenant_id = ${tenantId}
+        ON e.tenantId = ea.tenantId
+       AND e.id = ea.employeeId
+      WHERE ea.tenantId = ${tenantId}
         AND ea.id = ${availabilityId}
-        AND ea.deleted_at IS NULL
+        AND ea.deletedAt IS NULL
     `
   );
 
@@ -257,16 +257,16 @@ export async function createAvailability(formData: FormData) {
   }
 
   // Create the availability record
-  const availability = await database.employee_availability.create({
+  const availability = await database.employeeAvailability.create({
     data: {
-      tenant_id: tenantId,
-      employee_id: employeeId,
-      day_of_week: dayOfWeek,
-      start_time: startTimeDate,
-      end_time: endTimeDate,
-      is_available: isAvailable,
-      effective_from: createEffectiveFrom2,
-      effective_until: effectiveUntilDate,
+      tenantId: tenantId,
+      employeeId: employeeId,
+      dayOfWeek: dayOfWeek,
+      startTime: startTimeDate,
+      endTime: endTimeDate,
+      isAvailable: isAvailable,
+      effectiveFrom: createEffectiveFrom2,
+      effectiveUntil: effectiveUntilDate,
     },
   });
 
@@ -306,7 +306,7 @@ export async function updateAvailability(
 
   // Get existing availability
   const [existing] = await database.$queryRaw<
-    Array<{ employee_id: string; day_of_week: number }>
+    Array<{ employeeId: string; dayOfWeek: number }>
   >(
     Prisma.sql`
       SELECT employee_id, day_of_week
@@ -323,34 +323,34 @@ export async function updateAvailability(
 
   // Update only provided fields
   interface EmployeeAvailabilityUpdateData {
-    day_of_week?: number;
-    start_time?: string;
-    end_time?: string;
-    is_available?: boolean;
-    effective_from?: Date;
-    effective_until?: Date | null;
+    dayOfWeek?: number;
+    startTime?: string;
+    endTime?: string;
+    isAvailable?: boolean;
+    effectiveFrom?: Date;
+    effectiveUntil?: Date | null;
   }
 
   const updateData: EmployeeAvailabilityUpdateData = {};
 
   if (dayOfWeek !== undefined) {
-    updateData.day_of_week = dayOfWeek;
+    updateData.dayOfWeek = dayOfWeek;
   }
   if (startTime !== undefined) {
-    updateData.start_time = startTime;
+    updateData.startTime = startTime;
   }
   if (endTime !== undefined) {
-    updateData.end_time = endTime;
+    updateData.endTime = endTime;
   }
   if (isAvailable !== undefined) {
-    updateData.is_available = isAvailable;
+    updateData.isAvailable = isAvailable;
   }
   if (effectiveFrom !== undefined) {
     const updateEffectiveFrom = new Date(effectiveFrom);
-    updateData.effective_from = updateEffectiveFrom;
+    updateData.effectiveFrom = updateEffectiveFrom;
   }
   if (effectiveUntil !== undefined) {
-    updateData.effective_until = effectiveUntil
+    updateData.effectiveUntil = effectiveUntil
       ? new Date(effectiveUntil)
       : null;
   }
@@ -389,10 +389,10 @@ export async function updateAvailability(
   }
 
   // Update the availability record
-  const availability = await database.employee_availability.update({
+  const availability = await database.employeeAvailability.update({
     where: {
-      tenant_id_id: {
-        tenant_id: tenantId,
+      tenantId_id: {
+        tenantId: tenantId,
         id: availabilityId,
       },
     },
@@ -416,15 +416,15 @@ export async function deleteAvailability(availabilityId: string) {
     throw new Error("No tenant found");
   }
 
-  await database.employee_availability.update({
+  await database.employeeAvailability.update({
     where: {
-      tenant_id_id: {
-        tenant_id: tenantId,
+      tenantId_id: {
+        tenantId: tenantId,
         id: availabilityId,
       },
     },
     data: {
-      deleted_at: new Date(),
+      deletedAt: new Date(),
     },
   });
 
@@ -538,16 +538,16 @@ export async function createBatchAvailability(formData: FormData) {
   // Create all availability records
   const createdAvailability = await Promise.all(
     patterns.map(async (pattern) => {
-      return database.employee_availability.create({
+      return database.employeeAvailability.create({
         data: {
-          tenant_id: tenantId,
-          employee_id: employeeId,
-          day_of_week: pattern.dayOfWeek,
-          start_time: pattern.startTime,
-          end_time: pattern.endTime,
-          is_available: pattern.isAvailable ?? true,
-          effective_from: createEffectiveFrom2,
-          effective_until: effectiveUntilDate,
+          tenantId: tenantId,
+          employeeId: employeeId,
+          dayOfWeek: pattern.dayOfWeek,
+          startTime: pattern.startTime,
+          endTime: pattern.endTime,
+          isAvailable: pattern.isAvailable ?? true,
+          effectiveFrom: createEffectiveFrom2,
+          effectiveUntil: effectiveUntilDate,
         },
       });
     })
@@ -587,60 +587,60 @@ export async function getEmployeeAvailability(params: {
   // Get availability for the date range
   const availability = await database.$queryRaw<
     Array<{
-      employee_id: string;
-      employee_first_name: string | null;
-      employee_last_name: string | null;
-      employee_email: string;
-      employee_role: string;
-      is_available: boolean;
-      day_of_week: number;
-      start_time: string;
-      end_time: string;
+      employeeId: string;
+      employeeFirstName: string | null;
+      employeeLastName: string | null;
+      employeeEmail: string;
+      employeeRole: string;
+      isAvailable: boolean;
+      dayOfWeek: number;
+      startTime: string;
+      endTime: string;
     }>
   >(
     Prisma.sql`
       SELECT
-        ea.employee_id,
+        ea.employeeId,
         e.first_name AS employee_first_name,
         e.last_name AS employee_last_name,
         e.email AS employee_email,
         e.role AS employee_role,
-        ea.is_available,
-        ea.day_of_week,
-        ea.start_time,
-        ea.end_time
+        ea.isAvailable,
+        ea.dayOfWeek,
+        ea.startTime,
+        ea.endTime
       FROM tenant_staff.employee_availability ea
       JOIN tenant_staff.employees e
-        ON e.tenant_id = ea.tenant_id
-       AND e.id = ea.employee_id
-      WHERE ea.tenant_id = ${tenantId}
-        AND ea.deleted_at IS NULL
-        AND ${startDate} <= COALESCE(ea.effective_until, ${endDate})
-        AND ${endDate} >= COALESCE(ea.effective_from, ${startDate})
+        ON e.tenantId = ea.tenantId
+       AND e.id = ea.employeeId
+      WHERE ea.tenantId = ${tenantId}
+        AND ea.deletedAt IS NULL
+        AND ${startDate} <= COALESCE(ea.effectiveUntil, ${endDate})
+        AND ${endDate} >= COALESCE(ea.effectiveFrom, ${startDate})
         ${employeesQuery}
-      ORDER BY e.last_name ASC, e.first_name ASC, ea.day_of_week ASC, ea.start_time ASC
+      ORDER BY e.last_name ASC, e.first_name ASC, ea.dayOfWeek ASC, ea.startTime ASC
     `
   );
 
   // Group availability by employee
   const availabilityByEmployee = availability.reduce(
     (acc, avail) => {
-      const employeeId = avail.employee_id;
+      const employeeId = avail.employeeId;
       if (!acc[employeeId]) {
         acc[employeeId] = {
           employeeId,
-          employee_first_name: avail.employee_first_name,
-          employee_last_name: avail.employee_last_name,
-          employee_email: avail.employee_email,
-          employee_role: avail.employee_role,
+          employeeFirstName: avail.employeeFirstName,
+          employeeLastName: avail.employeeLastName,
+          employeeEmail: avail.employeeEmail,
+          employeeRole: avail.employeeRole,
           availability: [],
         };
       }
       acc[employeeId].availability.push({
-        is_available: avail.is_available,
-        day_of_week: avail.day_of_week,
-        start_time: avail.start_time,
-        end_time: avail.end_time,
+        isAvailable: avail.isAvailable,
+        dayOfWeek: avail.dayOfWeek,
+        startTime: avail.startTime,
+        endTime: avail.endTime,
       });
       return acc;
     },
@@ -648,15 +648,15 @@ export async function getEmployeeAvailability(params: {
       string,
       {
         employeeId: string;
-        employee_first_name: string | null;
-        employee_last_name: string | null;
-        employee_email: string;
-        employee_role: string;
+        employeeFirstName: string | null;
+        employeeLastName: string | null;
+        employeeEmail: string;
+        employeeRole: string;
         availability: Array<{
-          is_available: boolean;
-          day_of_week: number;
-          start_time: string;
-          end_time: string;
+          isAvailable: boolean;
+          dayOfWeek: number;
+          startTime: string;
+          endTime: string;
         }>;
       }
     >
@@ -665,35 +665,35 @@ export async function getEmployeeAvailability(params: {
   // Get time-off requests if requested
   let timeOffRequests: Array<{
     id: string;
-    employee_id: string;
-    start_date: Date;
-    end_date: Date;
+    employeeId: string;
+    startDate: Date;
+    endDate: Date;
     status: string;
   }> = [];
   if (params.includeTimeOff) {
     timeOffRequests = await database.$queryRaw<
       Array<{
         id: string;
-        employee_id: string;
-        start_date: Date;
-        end_date: Date;
+        employeeId: string;
+        startDate: Date;
+        endDate: Date;
         status: string;
       }>
     >(
       Prisma.sql`
         SELECT
           tor.id,
-          tor.employee_id,
-          tor.start_date,
-          tor.end_date,
+          tor.employeeId,
+          tor.startDate,
+          tor.endDate,
           tor.status
         FROM tenant_staff.time_off_requests tor
-        WHERE tor.tenant_id = ${tenantId}
-          AND tor.deleted_at IS NULL
+        WHERE tor.tenantId = ${tenantId}
+          AND tor.deletedAt IS NULL
           AND tor.status IN ('approved', 'pending')
-          AND (${startDate} <= tor.end_date AND ${endDate} >= tor.start_date)
+          AND (${startDate} <= tor.endDate AND ${endDate} >= tor.startDate)
           ${employeesQuery}
-        ORDER BY tor.start_date ASC
+        ORDER BY tor.startDate ASC
       `
     );
   }
@@ -702,15 +702,15 @@ export async function getEmployeeAvailability(params: {
   const employeesWithAvailability = Object.values(availabilityByEmployee).map(
     (employee) => {
       const employeeTimeOff = timeOffRequests.filter(
-        (to) => to.employee_id === employee.employeeId
+        (to) => to.employeeId === employee.employeeId
       );
 
       return {
         employeeId: employee.employeeId,
-        employee_first_name: employee.employee_first_name,
-        employee_last_name: employee.employee_last_name,
-        employee_email: employee.employee_email,
-        employee_role: employee.employee_role,
+        employeeFirstName: employee.employeeFirstName,
+        employeeLastName: employee.employeeLastName,
+        employeeEmail: employee.employeeEmail,
+        employeeRole: employee.employeeRole,
         availability: employee.availability,
         time_off_requests:
           employeeTimeOff.length > 0 ? employeeTimeOff : undefined,
@@ -741,7 +741,7 @@ export async function getEmployees() {
       first_name: string | null;
       last_name: string | null;
       role: string;
-      is_active: boolean;
+      isActive: boolean;
     }>
   >(
     Prisma.sql`

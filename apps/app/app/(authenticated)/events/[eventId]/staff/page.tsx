@@ -78,27 +78,27 @@ const EventStaffPage = async ({ params }: EventStaffPageProps) => {
   const assignments = await database.$queryRawUnsafe<
     Array<{
       id: string;
-      employee_id: string;
+      employeeId: string;
       first_name: string;
       last_name: string;
       role: string;
-      start_time: Date | null;
-      end_time: Date | null;
+      startTime: Date | null;
+      endTime: Date | null;
       notes: string | null;
     }>
   >(
     `SELECT
         esa.id,
-        esa.employee_id,
+        esa.employeeId,
         e.first_name,
         e.last_name,
         esa.role,
-        esa.start_time,
-        esa.end_time,
+        esa.startTime,
+        esa.endTime,
         esa.notes
       FROM tenant_events.event_staff_assignments esa
       LEFT JOIN tenant_staff.employees e
-        ON e.tenant_id = esa.tenant_id AND e.id = esa.employee_id
+        ON e.tenant_id = esa.tenant_id AND e.id = esa.employeeId
       WHERE esa.tenant_id = $1
         AND esa.event_id = $2
         AND esa.deleted_at IS NULL
@@ -128,7 +128,7 @@ const EventStaffPage = async ({ params }: EventStaffPageProps) => {
         AND NOT EXISTS (
           SELECT 1 FROM tenant_events.event_staff_assignments esa
           WHERE esa.tenant_id = e.tenant_id
-            AND esa.employee_id = e.id
+            AND esa.employeeId = e.id
             AND esa.event_id = $2
             AND esa.deleted_at IS NULL
         )
@@ -152,11 +152,11 @@ const EventStaffPage = async ({ params }: EventStaffPageProps) => {
 
   const serializedAssignments: StaffAssignment[] = assignments.map((a) => ({
     id: a.id,
-    employeeId: a.employee_id,
+    employeeId: a.employeeId,
     employeeName: `${a.first_name} ${a.last_name}`,
     role: a.role,
-    startTime: a.start_time ? a.start_time.toISOString() : null,
-    endTime: a.end_time ? a.end_time.toISOString() : null,
+    startTime: a.startTime ? a.startTime.toISOString() : null,
+    endTime: a.endTime ? a.endTime.toISOString() : null,
     notes: a.notes,
   }));
 

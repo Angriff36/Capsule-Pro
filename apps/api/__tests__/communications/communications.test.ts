@@ -174,7 +174,7 @@ describe("Communications - Email Templates", () => {
         createMockEmailTemplate({ id: "tmpl-2", name: "Follow-up" }),
       ];
 
-      vi.mocked(database.email_templates.findMany).mockResolvedValue(
+      vi.mocked(database.emailTemplate.findMany).mockResolvedValue(
         mockTemplates as never
       );
 
@@ -190,7 +190,7 @@ describe("Communications - Email Templates", () => {
     });
 
     it("should filter by tenant_id and exclude soft-deleted", async () => {
-      vi.mocked(database.email_templates.findMany).mockResolvedValue(
+      vi.mocked(database.emailTemplate.findMany).mockResolvedValue(
         [] as never
       );
 
@@ -199,7 +199,7 @@ describe("Communications - Email Templates", () => {
       );
       await listEmailTemplates(request);
 
-      expect(database.email_templates.findMany).toHaveBeenCalledWith(
+      expect(database.emailTemplate.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: {
             tenant_id: TEST_TENANT_ID,
@@ -210,7 +210,7 @@ describe("Communications - Email Templates", () => {
     });
 
     it("should order results by created_at descending", async () => {
-      vi.mocked(database.email_templates.findMany).mockResolvedValue(
+      vi.mocked(database.emailTemplate.findMany).mockResolvedValue(
         [] as never
       );
 
@@ -219,7 +219,7 @@ describe("Communications - Email Templates", () => {
       );
       await listEmailTemplates(request);
 
-      expect(database.email_templates.findMany).toHaveBeenCalledWith(
+      expect(database.emailTemplate.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           orderBy: { created_at: "desc" },
         })
@@ -227,7 +227,7 @@ describe("Communications - Email Templates", () => {
     });
 
     it("should return 500 on database error", async () => {
-      vi.mocked(database.email_templates.findMany).mockRejectedValue(
+      vi.mocked(database.emailTemplate.findMany).mockRejectedValue(
         new Error("Database connection failed")
       );
 
@@ -248,7 +248,7 @@ describe("Communications - Email Templates", () => {
     it("should return a single email template by ID", async () => {
       const mockTemplate = createMockEmailTemplate({ id: "tmpl-001" });
 
-      vi.mocked(database.email_templates.findFirst).mockResolvedValue(
+      vi.mocked(database.emailTemplate.findFirst).mockResolvedValue(
         mockTemplate as never
       );
 
@@ -266,7 +266,7 @@ describe("Communications - Email Templates", () => {
     });
 
     it("should return 404 when template not found", async () => {
-      vi.mocked(database.email_templates.findFirst).mockResolvedValue(
+      vi.mocked(database.emailTemplate.findFirst).mockResolvedValue(
         null as never
       );
 
@@ -284,7 +284,7 @@ describe("Communications - Email Templates", () => {
     });
 
     it("should enforce tenant isolation on detail queries", async () => {
-      vi.mocked(database.email_templates.findFirst).mockResolvedValue(
+      vi.mocked(database.emailTemplate.findFirst).mockResolvedValue(
         null as never
       );
 
@@ -295,7 +295,7 @@ describe("Communications - Email Templates", () => {
         params: Promise.resolve({ id: "tmpl-001" }),
       });
 
-      expect(database.email_templates.findFirst).toHaveBeenCalledWith(
+      expect(database.emailTemplate.findFirst).toHaveBeenCalledWith(
         expect.objectContaining({
           where: {
             id: "tmpl-001",

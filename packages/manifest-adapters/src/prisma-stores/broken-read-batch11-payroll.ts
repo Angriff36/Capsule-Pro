@@ -146,35 +146,35 @@ export class PayrollPeriodPrismaStore implements Store<EntityInstance> {
   ) {}
 
   async getAll(): Promise<EntityInstance[]> {
-    const rows = await this.prisma.payroll_periods.findMany({
-      where: { tenant_id: this.tenantId, deleted_at: null },
-      orderBy: { created_at: "desc" },
+    const rows = await this.prisma.payrollPeriod.findMany({
+      where: { tenantId: this.tenantId, deletedAt: null },
+      orderBy: { createdAt: "desc" },
     });
     return rows.map((r) => this.mapToManifestEntity(r));
   }
 
   async getById(id: string): Promise<EntityInstance | undefined> {
-    const row = await this.prisma.payroll_periods.findFirst({
-      where: { tenant_id: this.tenantId, id, deleted_at: null },
+    const row = await this.prisma.payrollPeriod.findFirst({
+      where: { tenantId: this.tenantId, id, deletedAt: null },
     });
     return row ? this.mapToManifestEntity(row) : undefined;
   }
 
   async create(data: Partial<EntityInstance>): Promise<EntityInstance> {
     const id = (data.id as string) || crypto.randomUUID();
-    const row = await this.prisma.payroll_periods.create({
+    const row = await this.prisma.payrollPeriod.create({
       data: {
-        tenant_id: this.tenantId,
+        tenantId: this.tenantId,
         id,
-        period_start:
-          (data.periodStart ?? data.period_start)
+        periodStart:
+          (data.periodStart ?? data.periodStart)
             ? new Date(
-                (data.periodStart ?? data.period_start) as number | string
+                (data.periodStart ?? data.periodStart) as number | string
               )
             : new Date(),
-        period_end:
-          (data.periodEnd ?? data.period_end)
-            ? new Date((data.periodEnd ?? data.period_end) as number | string)
+        periodEnd:
+          (data.periodEnd ?? data.periodEnd)
+            ? new Date((data.periodEnd ?? data.periodEnd) as number | string)
             : new Date(),
         status: ((data.status as string) ?? "open") || "open",
       },
@@ -189,18 +189,18 @@ export class PayrollPeriodPrismaStore implements Store<EntityInstance> {
     try {
       const patch: Record<string, unknown> = {};
       if (data.status !== undefined) patch.status = data.status;
-      if (data.periodStart !== undefined || data.period_start !== undefined)
-        patch.period_start = new Date(
-          (data.periodStart ?? data.period_start) as number | string
+      if (data.periodStart !== undefined || data.periodStart !== undefined)
+        patch.periodStart = new Date(
+          (data.periodStart ?? data.periodStart) as number | string
         );
-      if (data.periodEnd !== undefined || data.period_end !== undefined)
-        patch.period_end = new Date(
-          (data.periodEnd ?? data.period_end) as number | string
+      if (data.periodEnd !== undefined || data.periodEnd !== undefined)
+        patch.periodEnd = new Date(
+          (data.periodEnd ?? data.periodEnd) as number | string
         );
-      patch.updated_at = new Date();
+      patch.updatedAt = new Date();
 
-      const updated = await this.prisma.payroll_periods.update({
-        where: { tenant_id_id: { tenant_id: this.tenantId, id } },
+      const updated = await this.prisma.payrollPeriod.update({
+        where: { tenantId_id: { tenantId: this.tenantId, id } },
         data: patch,
       });
       return this.mapToManifestEntity(updated);
@@ -213,9 +213,9 @@ export class PayrollPeriodPrismaStore implements Store<EntityInstance> {
   async delete(id: string): Promise<boolean> {
     try {
       // Soft delete — sets deleted_at
-      await this.prisma.payroll_periods.update({
-        where: { tenant_id_id: { tenant_id: this.tenantId, id } },
-        data: { deleted_at: new Date() },
+      await this.prisma.payrollPeriod.update({
+        where: { tenantId_id: { tenantId: this.tenantId, id } },
+        data: { deletedAt: new Date() },
       });
       return true;
     } catch (error) {
@@ -225,30 +225,30 @@ export class PayrollPeriodPrismaStore implements Store<EntityInstance> {
   }
 
   async clear(): Promise<void> {
-    await this.prisma.payroll_periods.deleteMany({
-      where: { tenant_id: this.tenantId },
+    await this.prisma.payrollPeriod.deleteMany({
+      where: { tenantId: this.tenantId },
     });
   }
 
   private mapToManifestEntity(row: Record<string, unknown>): EntityInstance {
     return {
       id: row.id as string,
-      tenantId: row.tenant_id as string,
-      periodStart: row.period_start
-        ? new Date(row.period_start as string | Date).getTime()
+      tenantId: row.tenantId as string,
+      periodStart: row.periodStart
+        ? new Date(row.periodStart as string | Date).getTime()
         : 0,
-      periodEnd: row.period_end
-        ? new Date(row.period_end as string | Date).getTime()
+      periodEnd: row.periodEnd
+        ? new Date(row.periodEnd as string | Date).getTime()
         : 0,
       status: (row.status as string) ?? "open",
-      createdAt: row.created_at
-        ? new Date(row.created_at as string | Date).getTime()
+      createdAt: row.createdAt
+        ? new Date(row.createdAt as string | Date).getTime()
         : 0,
-      updatedAt: row.updated_at
-        ? new Date(row.updated_at as string | Date).getTime()
+      updatedAt: row.updatedAt
+        ? new Date(row.updatedAt as string | Date).getTime()
         : 0,
-      deletedAt: row.deleted_at
-        ? new Date(row.deleted_at as string | Date).getTime()
+      deletedAt: row.deletedAt
+        ? new Date(row.deletedAt as string | Date).getTime()
         : null,
     };
   }
@@ -265,45 +265,45 @@ export class PayrollRunPrismaStore implements Store<EntityInstance> {
   ) {}
 
   async getAll(): Promise<EntityInstance[]> {
-    const rows = await this.prisma.payroll_runs.findMany({
-      where: { tenant_id: this.tenantId, deleted_at: null },
-      orderBy: { created_at: "desc" },
+    const rows = await this.prisma.payrollRun.findMany({
+      where: { tenantId: this.tenantId, deletedAt: null },
+      orderBy: { createdAt: "desc" },
     });
     return rows.map((r) => this.mapToManifestEntity(r));
   }
 
   async getById(id: string): Promise<EntityInstance | undefined> {
-    const row = await this.prisma.payroll_runs.findFirst({
-      where: { tenant_id: this.tenantId, id, deleted_at: null },
+    const row = await this.prisma.payrollRun.findFirst({
+      where: { tenantId: this.tenantId, id, deletedAt: null },
     });
     return row ? this.mapToManifestEntity(row) : undefined;
   }
 
   async create(data: Partial<EntityInstance>): Promise<EntityInstance> {
     const id = (data.id as string) || crypto.randomUUID();
-    const row = await this.prisma.payroll_runs.create({
+    const row = await this.prisma.payrollRun.create({
       data: {
-        tenant_id: this.tenantId,
+        tenantId: this.tenantId,
         id,
-        payroll_period_id:
+        payrollPeriodId:
           ((data.payrollPeriodId ?? data.payroll_period_id) as string) ?? "",
-        run_date:
+        runDate:
           (data.runDate ?? data.run_date)
             ? new Date((data.runDate ?? data.run_date) as number | string)
             : new Date(),
         status: ((data.status as string) ?? "pending") || "pending",
-        total_gross: toDecimalRequired(data.totalGross ?? data.total_gross, 0),
-        total_deductions: toDecimalRequired(
+        totalGross: toDecimalRequired(data.totalGross ?? data.total_gross, 0),
+        totalDeductions: toDecimalRequired(
           data.totalDeductions ?? data.total_deductions,
           0
         ),
-        total_net: toDecimalRequired(data.totalNet ?? data.total_net, 0),
-        approved_by: asNullableString(data.approvedBy ?? data.approved_by),
-        approved_at:
+        totalNet: toDecimalRequired(data.totalNet ?? data.total_net, 0),
+        approvedBy: asNullableString(data.approvedBy ?? data.approved_by),
+        approvedAt:
           (data.approvedAt ?? data.approved_at)
             ? new Date((data.approvedAt ?? data.approved_at) as number | string)
             : null,
-        paid_at:
+        paidAt:
           (data.paidAt ?? data.paid_at)
             ? new Date((data.paidAt ?? data.paid_at) as number | string)
             : null,
@@ -346,10 +346,10 @@ export class PayrollRunPrismaStore implements Store<EntityInstance> {
           (data.paidAt ?? data.paid_at)
             ? new Date((data.paidAt ?? data.paid_at) as number | string)
             : null;
-      patch.updated_at = new Date();
+      patch.updatedAt = new Date();
 
-      const updated = await this.prisma.payroll_runs.update({
-        where: { tenant_id_id: { tenant_id: this.tenantId, id } },
+      const updated = await this.prisma.payrollRun.update({
+        where: { tenantId_id: { tenantId: this.tenantId, id } },
         data: patch,
       });
       return this.mapToManifestEntity(updated);
@@ -362,9 +362,9 @@ export class PayrollRunPrismaStore implements Store<EntityInstance> {
   async delete(id: string): Promise<boolean> {
     try {
       // Soft delete — sets deleted_at
-      await this.prisma.payroll_runs.update({
-        where: { tenant_id_id: { tenant_id: this.tenantId, id } },
-        data: { deleted_at: new Date() },
+      await this.prisma.payrollRun.update({
+        where: { tenantId_id: { tenantId: this.tenantId, id } },
+        data: { deletedAt: new Date() },
       });
       return true;
     } catch (error) {
@@ -374,15 +374,15 @@ export class PayrollRunPrismaStore implements Store<EntityInstance> {
   }
 
   async clear(): Promise<void> {
-    await this.prisma.payroll_runs.deleteMany({
-      where: { tenant_id: this.tenantId },
+    await this.prisma.payrollRun.deleteMany({
+      where: { tenantId: this.tenantId },
     });
   }
 
   private mapToManifestEntity(row: Record<string, unknown>): EntityInstance {
     return {
       id: row.id as string,
-      tenantId: row.tenant_id as string,
+      tenantId: row.tenantId as string,
       payrollPeriodId: (row.payroll_period_id as string) ?? "",
       runDate: row.run_date
         ? new Date(row.run_date as string | Date).getTime()
@@ -398,14 +398,14 @@ export class PayrollRunPrismaStore implements Store<EntityInstance> {
       paidAt: row.paid_at
         ? new Date(row.paid_at as string | Date).getTime()
         : null,
-      createdAt: row.created_at
-        ? new Date(row.created_at as string | Date).getTime()
+      createdAt: row.createdAt
+        ? new Date(row.createdAt as string | Date).getTime()
         : 0,
-      updatedAt: row.updated_at
-        ? new Date(row.updated_at as string | Date).getTime()
+      updatedAt: row.updatedAt
+        ? new Date(row.updatedAt as string | Date).getTime()
         : 0,
-      deletedAt: row.deleted_at
-        ? new Date(row.deleted_at as string | Date).getTime()
+      deletedAt: row.deletedAt
+        ? new Date(row.deletedAt as string | Date).getTime()
         : null,
     };
   }

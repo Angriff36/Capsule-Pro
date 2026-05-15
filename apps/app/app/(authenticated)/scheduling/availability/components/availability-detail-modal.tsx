@@ -38,19 +38,19 @@ interface AvailabilityDetailModalProps {
   onEdit: () => void;
   availability: {
     id: string;
-    employee_id: string;
-    employee_first_name: string | null;
-    employee_last_name: string | null;
-    employee_email: string;
-    employee_role: string;
-    day_of_week: number;
-    start_time: string;
-    end_time: string;
-    is_available: boolean;
-    effective_from: Date;
-    effective_until: Date | null;
-    created_at: Date;
-    updated_at: Date;
+    employeeId: string;
+    employeeFirstName: string | null;
+    employeeLastName: string | null;
+    employeeEmail: string;
+    employeeRole: string;
+    dayOfWeek: number;
+    startTime: string;
+    endTime: string;
+    isAvailable: boolean;
+    effectiveFrom: Date;
+    effectiveUntil: Date | null;
+    createdAt: Date;
+    updatedAt: Date;
   } | null;
 }
 
@@ -137,11 +137,11 @@ export function AvailabilityDetailModal({
                   Employee
                 </div>
                 <div className="font-medium">
-                  {availability.employee_first_name}{" "}
-                  {availability.employee_last_name}
+                  {availability.employeeFirstName}{" "}
+                  {availability.employeeLastName}
                 </div>
                 <div className="text-sm text-muted-foreground">
-                  {availability.employee_email} • {availability.employee_role}
+                  {availability.employeeEmail} • {availability.employeeRole}
                 </div>
               </div>
 
@@ -151,7 +151,7 @@ export function AvailabilityDetailModal({
                   Day of Week
                 </div>
                 <div className="font-medium">
-                  {days[availability.day_of_week]}
+                  {days[availability.dayOfWeek]}
                 </div>
               </div>
             </div>
@@ -164,7 +164,7 @@ export function AvailabilityDetailModal({
                   Start Time
                 </div>
                 <div className="font-medium">
-                  {formatTime(availability.start_time)}
+                  {formatTime(availability.startTime)}
                 </div>
               </div>
 
@@ -174,7 +174,7 @@ export function AvailabilityDetailModal({
                   End Time
                 </div>
                 <div className="font-medium">
-                  {formatTime(availability.end_time)}
+                  {formatTime(availability.endTime)}
                 </div>
               </div>
             </div>
@@ -187,7 +187,7 @@ export function AvailabilityDetailModal({
                   Status
                 </div>
                 <div className="font-medium">
-                  {availability.is_available ? "Available" : "Unavailable"}
+                  {availability.isAvailable ? "Available" : "Unavailable"}
                 </div>
               </div>
 
@@ -197,7 +197,7 @@ export function AvailabilityDetailModal({
                   Effective From
                 </div>
                 <div className="font-medium">
-                  {formatDate(availability.effective_from)}
+                  {formatDate(availability.effectiveFrom)}
                 </div>
               </div>
             </div>
@@ -209,8 +209,8 @@ export function AvailabilityDetailModal({
                 Effective Until
               </div>
               <div className="font-medium">
-                {availability.effective_until
-                  ? formatDate(availability.effective_until)
+                {availability.effectiveUntil
+                  ? formatDate(availability.effectiveUntil)
                   : "Ongoing"}
               </div>
             </div>
@@ -221,10 +221,10 @@ export function AvailabilityDetailModal({
                 Audit Information
               </div>
               <div className="text-xs text-muted-foreground">
-                Created: {formatDate(availability.created_at)}
+                Created: {formatDate(availability.createdAt)}
               </div>
               <div className="text-xs text-muted-foreground">
-                Last Updated: {formatDate(availability.updated_at)}
+                Last Updated: {formatDate(availability.updatedAt)}
               </div>
             </div>
           </div>

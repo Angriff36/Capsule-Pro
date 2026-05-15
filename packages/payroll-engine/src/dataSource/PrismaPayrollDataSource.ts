@@ -174,20 +174,20 @@ export class PrismaPayrollDataSource implements PayrollDataSource {
   async getDeductions(tenantId: string): Promise<Deduction[]> {
     const deductions = await this.#prisma.employeeDeduction.findMany({
       where: {
-        tenant_id: tenantId,
-        deleted_at: null,
+        tenantId,
+        deletedAt: null,
         // Only active deductions (effective date passed, not expired)
-        effective_date: {
+        effectiveDate: {
           lte: new Date(),
         },
-        OR: [{ end_date: null }, { end_date: { gte: new Date() } }],
+        OR: [{ endDate: null }, { endDate: { gte: new Date() } }],
       },
     });
 
     return deductions.map((deduction) => ({
       id: deduction.id,
-      tenantId: deduction.tenant_id,
-      employeeId: deduction.employee_id,
+      tenantId: deduction.tenantId,
+      employeeId: deduction.employeeId,
       type: deduction.type as
         | "benefits"
         | "health_insurance"
@@ -205,11 +205,11 @@ export class PrismaPayrollDataSource implements PayrollDataSource {
       percentage: deduction.percentage
         ? Number(deduction.percentage)
         : undefined,
-      isPreTax: deduction.is_pre_tax,
-      effectiveDate: deduction.effective_date,
-      endDate: deduction.end_date || undefined,
-      maxAnnualAmount: deduction.max_annual_amount
-        ? Number(deduction.max_annual_amount)
+      isPreTax: deduction.isPreTax,
+      effectiveDate: deduction.effectiveDate,
+      endDate: deduction.endDate || undefined,
+      maxAnnualAmount: deduction.maxAnnualAmount
+        ? Number(deduction.maxAnnualAmount)
         : undefined,
     }));
   }

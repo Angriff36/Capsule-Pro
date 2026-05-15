@@ -48,11 +48,11 @@ import { ShiftForm } from "./shift-form";
 interface Shift {
   id: string;
   schedule_id: string;
-  employee_id: string;
-  employee_first_name: string | null;
-  employee_last_name: string | null;
-  employee_email: string;
-  employee_role: string;
+  employeeId: string;
+  employeeFirstName: string | null;
+  employeeLastName: string | null;
+  employeeEmail: string;
+  employeeRole: string;
   location_id: string;
   location_name: string;
   shift_start: Date;
@@ -212,10 +212,10 @@ export function ShiftsClient() {
       cell: ({ row }) => (
         <div className="min-w-0">
           <div className="truncate font-medium text-ink">
-            {row.original.employee_first_name} {row.original.employee_last_name}
+            {row.original.employeeFirstName} {row.original.employeeLastName}
           </div>
           <div className="truncate text-muted-foreground text-xs">
-            {row.original.employee_email}
+            {row.original.employeeEmail}
           </div>
         </div>
       ),
@@ -261,7 +261,7 @@ export function ShiftsClient() {
         row.original.role_during_shift ? (
           <Badge variant="outline">{row.original.role_during_shift}</Badge>
         ) : (
-          <Badge variant="secondary">{row.original.employee_role}</Badge>
+          <Badge variant="secondary">{row.original.employeeRole}</Badge>
         ),
     },
     {
@@ -603,7 +603,7 @@ export function ShiftsClient() {
         shiftDetails={
           selectedShift
             ? {
-                title: `Shift for ${selectedShift.employee_first_name} ${selectedShift.employee_last_name}`,
+                title: `Shift for ${selectedShift.employeeFirstName} ${selectedShift.employeeLastName}`,
                 startTime: selectedShift.shift_start,
                 endTime: selectedShift.shift_end,
                 locationName: selectedShift.location_name,

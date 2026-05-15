@@ -28,32 +28,32 @@ export class EventDishPrismaStore implements Store<EntityInstance> {
   ) {}
 
   async getAll(): Promise<EntityInstance[]> {
-    const rows = await this.prisma.event_dishes.findMany({
-      where: { tenant_id: this.tenantId, deleted_at: null },
+    const rows = await this.prisma.eventDish.findMany({
+      where: { tenantId: this.tenantId, deletedAt: null },
       orderBy: { id: "desc" },
     });
     return rows.map((r) => this.mapToManifestEntity(r));
   }
 
   async getById(id: string): Promise<EntityInstance | undefined> {
-    const row = await this.prisma.event_dishes.findFirst({
-      where: { tenant_id: this.tenantId, id, deleted_at: null },
+    const row = await this.prisma.eventDish.findFirst({
+      where: { tenantId: this.tenantId, id, deletedAt: null },
     });
     return row ? this.mapToManifestEntity(row) : undefined;
   }
 
   async create(data: Partial<EntityInstance>): Promise<EntityInstance> {
     const id = (data.id as string | undefined) ?? crypto.randomUUID();
-    const row = await this.prisma.event_dishes.create({
+    const row = await this.prisma.eventDish.create({
       data: {
-        tenant_id: this.tenantId,
+        tenantId: this.tenantId,
         id,
-        event_id: data.eventId as string,
-        dish_id: data.dishId as string,
+        eventId: data.eventId as string,
+        dishId: data.dishId as string,
         course: asNullableString(data.course),
-        quantity_servings: asNullableNumber(data.quantityServings) ?? 1,
-        service_style: asNullableString(data.serviceStyle),
-        special_instructions: asNullableString(data.specialInstructions),
+        quantityServings: asNullableNumber(data.quantityServings) ?? 1,
+        serviceStyle: asNullableString(data.serviceStyle),
+        specialInstructions: asNullableString(data.specialInstructions),
       },
     });
     return this.mapToManifestEntity(row);
@@ -65,19 +65,19 @@ export class EventDishPrismaStore implements Store<EntityInstance> {
   ): Promise<EntityInstance | undefined> {
     try {
       const patch: Record<string, unknown> = {};
-      if (data.eventId !== undefined) patch.event_id = data.eventId;
-      if (data.dishId !== undefined) patch.dish_id = data.dishId;
+      if (data.eventId !== undefined) patch.eventId = data.eventId;
+      if (data.dishId !== undefined) patch.dishId = data.dishId;
       if (data.course !== undefined)
         patch.course = asNullableString(data.course);
       if (data.quantityServings !== undefined)
-        patch.quantity_servings = asNullableNumber(data.quantityServings) ?? 1;
+        patch.quantityServings = asNullableNumber(data.quantityServings) ?? 1;
       if (data.serviceStyle !== undefined)
-        patch.service_style = asNullableString(data.serviceStyle);
+        patch.serviceStyle = asNullableString(data.serviceStyle);
       if (data.specialInstructions !== undefined)
-        patch.special_instructions = asNullableString(data.specialInstructions);
+        patch.specialInstructions = asNullableString(data.specialInstructions);
 
-      const row = await this.prisma.event_dishes.update({
-        where: { tenant_id_id: { tenant_id: this.tenantId, id } },
+      const row = await this.prisma.eventDish.update({
+        where: { tenantId_id: { tenantId: this.tenantId, id } },
         data: patch,
       });
       return this.mapToManifestEntity(row);
@@ -89,9 +89,9 @@ export class EventDishPrismaStore implements Store<EntityInstance> {
 
   async delete(id: string): Promise<boolean> {
     try {
-      await this.prisma.event_dishes.update({
-        where: { tenant_id_id: { tenant_id: this.tenantId, id } },
-        data: { deleted_at: new Date() },
+      await this.prisma.eventDish.update({
+        where: { tenantId_id: { tenantId: this.tenantId, id } },
+        data: { deletedAt: new Date() },
       });
       return true;
     } catch (error) {
@@ -101,24 +101,24 @@ export class EventDishPrismaStore implements Store<EntityInstance> {
   }
 
   async clear(): Promise<void> {
-    await this.prisma.event_dishes.deleteMany({
-      where: { tenant_id: this.tenantId },
+    await this.prisma.eventDish.deleteMany({
+      where: { tenantId: this.tenantId },
     });
   }
 
   private mapToManifestEntity(r: Record<string, unknown>): EntityInstance {
     return {
       id: r.id as string,
-      tenantId: r.tenant_id as string,
-      eventId: r.event_id ?? null,
-      dishId: r.dish_id ?? null,
+      tenantId: r.tenantId as string,
+      eventId: r.eventId ?? null,
+      dishId: r.dishId ?? null,
       course: r.course ?? null,
-      quantityServings: r.quantity_servings ?? 1,
-      serviceStyle: r.service_style ?? null,
-      specialInstructions: r.special_instructions ?? null,
-      createdAt: r.created_at ?? null,
-      updatedAt: r.updated_at ?? null,
-      deletedAt: r.deleted_at ?? null,
+      quantityServings: r.quantityServings ?? 1,
+      serviceStyle: r.serviceStyle ?? null,
+      specialInstructions: r.specialInstructions ?? null,
+      createdAt: r.createdAt ?? null,
+      updatedAt: r.updatedAt ?? null,
+      deletedAt: r.deletedAt ?? null,
     };
   }
 }

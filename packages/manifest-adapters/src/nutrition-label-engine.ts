@@ -267,9 +267,9 @@ async function fetchRecipeIngredientNutrition(
         i.category as ingredient_category
       FROM tenant_kitchen.recipe_ingredients ri
       JOIN tenant_kitchen.ingredients i ON i.id = ri.ingredient_id
-      WHERE ri.tenant_id = ${tenantId}
-        AND ri.recipe_version_id = ${recipeVersionId}
-        AND ri.deleted_at IS NULL
+      WHERE ri.tenantId = ${tenantId}
+        AND ri.recipeVersionId = ${recipeVersionId}
+        AND ri.deletedAt IS NULL
         AND ri.is_optional = false
       ORDER BY ri.sort_order
     `

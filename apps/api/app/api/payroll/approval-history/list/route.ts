@@ -27,10 +27,9 @@ export async function GET(request: NextRequest) {
       await database.payrollApprovalHistory.findMany({
         where: {
           tenantId,
-          deletedAt: null,
         },
         orderBy: {
-          createdAt: "desc",
+          performedAt: "desc",
         },
       });
 

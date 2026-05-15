@@ -1237,17 +1237,17 @@ async function generatePrepListTool(
   }
 
   // Fetch event dishes to generate prep list from
-  const eventDishes = await database.event_dishes.findMany({
+  const eventDishes = await database.eventDish.findMany({
     where: {
-      tenant_id: context.tenantId,
-      event_id: eventId,
-      deleted_at: null,
+      tenantId: context.tenantId,
+      eventId: eventId,
+      deletedAt: null,
     },
     select: {
       id: true,
-      dish_id: true,
+      dishId: true,
       course: true,
-      quantity_servings: true,
+      quantityServings: true,
     },
   });
 
@@ -1313,7 +1313,7 @@ async function generatePrepListTool(
 
       prepListItems.push({
         category,
-        dishName: dish.dish_id,
+        dishName: dish.dishId,
         quantity,
         unit: "servings",
         prepNotes: `Prepare for ${guestCount} guests`,

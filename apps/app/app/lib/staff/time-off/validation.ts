@@ -143,7 +143,7 @@ export async function verifyTimeOffRequest(
 ): Promise<{
   request: {
     id: string;
-    employee_id: string;
+    employeeId: string;
     status: string;
     start_date: Date;
     end_date: Date;
@@ -153,7 +153,7 @@ export async function verifyTimeOffRequest(
   const request = await database.$queryRaw<
     Array<{
       id: string;
-      employee_id: string;
+      employeeId: string;
       status: string;
       start_date: Date;
       end_date: Date;

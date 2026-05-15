@@ -16,11 +16,11 @@ export type TimeOffType =
 export interface TimeOffRequest {
   id: string;
   tenant_id: string;
-  employee_id: string;
-  employee_first_name: string | null;
-  employee_last_name: string | null;
-  employee_email: string;
-  employee_role: string;
+  employeeId: string;
+  employeeFirstName: string | null;
+  employeeLastName: string | null;
+  employeeEmail: string;
+  employeeRole: string;
   start_date: Date;
   end_date: Date;
   reason: string | null;

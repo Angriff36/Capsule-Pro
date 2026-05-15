@@ -28,11 +28,10 @@ export async function GET(
 
     const { id } = await params;
 
-    const alertsConfig = await database.alertsConfig.findUnique({
+    const alertsConfig = await database.alertsConfig.findFirst({
       where: {
         id,
         tenantId,
-        deletedAt: null,
       },
     });
 

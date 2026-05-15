@@ -105,7 +105,7 @@ const db = {
   get timecardEditRequest() {
     return mockDatabase.timecardEditRequest;
   },
-  get employeeTimeOffRequest() {
+  get timeOffRequest() {
     return mockDatabase.timeOffRequest;
   },
   get user() {

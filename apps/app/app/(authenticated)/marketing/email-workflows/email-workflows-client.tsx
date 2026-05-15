@@ -42,7 +42,7 @@ function formatTriggerType(type: string): string {
 interface WorkflowTemplate {
   id: string;
   name: string;
-  deleted_at: string | null;
+  deletedAt: string | null;
 }
 
 interface Workflow {
@@ -301,7 +301,7 @@ export function EmailWorkflowsClient({ workflows }: EmailWorkflowsClientProps) {
                 </span>
                 <span className="text-xs">
                   {workflow.emailTemplate ? (
-                    workflow.emailTemplate.deleted_at ? (
+                    workflow.emailTemplate.deletedAt ? (
                       <span className="text-coral">Template missing</span>
                     ) : (
                       workflow.emailTemplate.name

@@ -28,7 +28,7 @@ export async function GET(
 
     const { id } = await params;
 
-    const eventImportWorkflow = await database.eventImportWorkflow.findUnique({
+    const eventImport = await database.eventImport.findFirst({
       where: {
         id,
         tenantId,
@@ -36,11 +36,11 @@ export async function GET(
       },
     });
 
-    if (!eventImportWorkflow) {
+    if (!eventImport) {
       return manifestErrorResponse("EventImportWorkflow not found", 404);
     }
 
-    return manifestSuccessResponse({ eventImportWorkflow });
+    return manifestSuccessResponse({ eventImport });
   } catch (error) {
     console.error("Error fetching eventImportWorkflow:", error);
     return manifestErrorResponse("Internal server error", 500);

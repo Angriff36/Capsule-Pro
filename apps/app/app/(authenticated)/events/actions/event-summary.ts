@@ -205,7 +205,7 @@ export async function generateEventSummary(
         esa.role,
         CONCAT(e.first_name, ' ', e.last_name) as employee_name
       FROM tenant_events.event_staff_assignments esa
-      LEFT JOIN tenant_staff.employees e ON esa.employee_id = e.id
+      LEFT JOIN tenant_staff.employees e ON esa.employeeId = e.id
       WHERE esa.tenant_id = ${tenantId}
         AND esa.event_id = ${eventId}
         AND esa.deleted_at IS NULL

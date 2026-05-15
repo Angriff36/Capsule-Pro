@@ -149,15 +149,15 @@ export class TimeOffRequestPrismaStore implements Store<EntityInstance> {
 
   async getAll(): Promise<EntityInstance[]> {
     const rows = await this.prisma.timeOffRequest.findMany({
-      where: { tenant_id: this.tenantId, deleted_at: null },
-      orderBy: { submitted_at: "desc" },
+      where: { tenantId: this.tenantId, deletedAt: null },
+      orderBy: { submittedAt: "desc" },
     });
     return rows.map((r) => this.mapToManifestEntity(r));
   }
 
   async getById(id: string): Promise<EntityInstance | undefined> {
     const row = await this.prisma.timeOffRequest.findFirst({
-      where: { tenant_id: this.tenantId, id, deleted_at: null },
+      where: { tenantId: this.tenantId, id, deletedAt: null },
     });
     return row ? this.mapToManifestEntity(row) : undefined;
   }
@@ -166,12 +166,12 @@ export class TimeOffRequestPrismaStore implements Store<EntityInstance> {
     const id = (data.id as string | undefined) ?? crypto.randomUUID();
     const row = await this.prisma.timeOffRequest.create({
       data: {
-        tenant_id: this.tenantId,
+        tenantId: this.tenantId,
         id,
-        employee_id: asString(data.employeeId),
-        request_type: asString(data.requestType) || "VACATION",
-        start_date: asNullableDate(data.startDate) ?? new Date(),
-        end_date: asNullableDate(data.endDate) ?? new Date(),
+        employeeId: asString(data.employeeId),
+        requestType: asString(data.requestType) || "VACATION",
+        startDate: asNullableDate(data.startDate) ?? new Date(),
+        endDate: asNullableDate(data.endDate) ?? new Date(),
         hours: toDecimalRequired(data.hours, 0),
         reason: asNullableString(data.reason),
         status: asString(data.status) || "PENDING",
@@ -188,27 +188,27 @@ export class TimeOffRequestPrismaStore implements Store<EntityInstance> {
       const patch: Record<string, unknown> = {};
 
       if (data.employeeId !== undefined)
-        patch.employee_id = asString(data.employeeId);
+        patch.employeeId = asString(data.employeeId);
       if (data.requestType !== undefined)
-        patch.request_type = asString(data.requestType);
+        patch.requestType = asString(data.requestType);
       if (data.startDate !== undefined)
-        patch.start_date = asNullableDate(data.startDate);
+        patch.startDate = asNullableDate(data.startDate);
       if (data.endDate !== undefined)
-        patch.end_date = asNullableDate(data.endDate);
+        patch.endDate = asNullableDate(data.endDate);
       if (data.hours !== undefined)
         patch.hours = toDecimalRequired(data.hours, 0);
       if (data.reason !== undefined)
         patch.reason = asNullableString(data.reason);
       if (data.status !== undefined) patch.status = asString(data.status);
       if (data.reviewedBy !== undefined)
-        patch.reviewed_by = asNullableString(data.reviewedBy);
+        patch.reviewedBy = asNullableString(data.reviewedBy);
       if (data.reviewedAt !== undefined)
-        patch.reviewed_at = asNullableDate(data.reviewedAt);
+        patch.reviewedAt = asNullableDate(data.reviewedAt);
       if (data.rejectionReason !== undefined)
-        patch.rejection_reason = asNullableString(data.rejectionReason);
+        patch.rejectionReason = asNullableString(data.rejectionReason);
 
       const row = await this.prisma.timeOffRequest.update({
-        where: { tenant_id_id: { tenant_id: this.tenantId, id } },
+        where: { tenantId_id: { tenantId: this.tenantId, id } },
         data: patch,
       });
       return this.mapToManifestEntity(row);
@@ -221,8 +221,8 @@ export class TimeOffRequestPrismaStore implements Store<EntityInstance> {
   async delete(id: string): Promise<boolean> {
     try {
       await this.prisma.timeOffRequest.update({
-        where: { tenant_id_id: { tenant_id: this.tenantId, id } },
-        data: { deleted_at: new Date() },
+        where: { tenantId_id: { tenantId: this.tenantId, id } },
+        data: { deletedAt: new Date() },
       });
       return true;
     } catch (error) {
@@ -233,28 +233,28 @@ export class TimeOffRequestPrismaStore implements Store<EntityInstance> {
 
   async clear(): Promise<void> {
     await this.prisma.timeOffRequest.deleteMany({
-      where: { tenant_id: this.tenantId },
+      where: { tenantId: this.tenantId },
     });
   }
 
   private mapToManifestEntity(r: Record<string, unknown>): EntityInstance {
     return {
       id: r.id as string,
-      tenantId: r.tenant_id as string,
-      employeeId: (r.employee_id as string) ?? "",
-      requestType: (r.request_type as string) ?? "",
-      startDate: r.start_date ?? null,
-      endDate: r.end_date ?? null,
+      tenantId: r.tenantId as string,
+      employeeId: (r.employeeId as string) ?? "",
+      requestType: (r.requestType as string) ?? "",
+      startDate: r.startDate ?? null,
+      endDate: r.endDate ?? null,
       hours: r.hours ?? 0,
       reason: (r.reason as string) ?? null,
       status: (r.status as string) ?? "PENDING",
-      submittedAt: r.submitted_at ?? null,
-      reviewedBy: (r.reviewed_by as string) ?? null,
-      reviewedAt: r.reviewed_at ?? null,
-      rejectionReason: (r.rejection_reason as string) ?? null,
-      createdAt: r.created_at ?? null,
-      updatedAt: r.updated_at ?? null,
-      deletedAt: r.deleted_at ?? null,
+      submittedAt: r.submittedAt ?? null,
+      reviewedBy: (r.reviewedBy as string) ?? null,
+      reviewedAt: r.reviewedAt ?? null,
+      rejectionReason: (r.rejectionReason as string) ?? null,
+      createdAt: r.createdAt ?? null,
+      updatedAt: r.updatedAt ?? null,
+      deletedAt: r.deletedAt ?? null,
     };
   }
 }

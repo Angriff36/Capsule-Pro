@@ -105,7 +105,7 @@ export async function calculateEventProfitability(
       END * COALESCE(u.hourly_rate, 0)
     ), 0) as total_labor_cost
     FROM tenant_staff.time_entries te
-    LEFT JOIN tenant_staff.employees u ON te.tenant_id = u.tenant_id AND te.employee_id = u.id
+    LEFT JOIN tenant_staff.employees u ON te.tenant_id = u.tenant_id AND te.employeeId = u.id
     WHERE te.tenant_id = $1
       AND te.location_id = $2
       AND te.clock_in >= $3

@@ -58,7 +58,7 @@ export default function EditEmailWorkflowPage({
   const [submitting, setSubmitting] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [templates, setTemplates] = useState<
-    { id: string; name: string; template_type: string }[]
+    { id: string; name: string; templateType: string }[]
   >([]);
 
   const [name, setName] = useState("");
@@ -273,7 +273,7 @@ export default function EditEmailWorkflowPage({
                   </SelectItem>
                   {templates.map((t) => (
                     <SelectItem key={t.id} value={t.id}>
-                      {t.name} ({t.template_type})
+                      {t.name} ({t.templateType})
                     </SelectItem>
                   ))}
                 </SelectContent>

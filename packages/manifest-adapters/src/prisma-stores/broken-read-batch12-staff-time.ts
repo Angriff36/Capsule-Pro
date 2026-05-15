@@ -39,7 +39,7 @@ export class TimeEntryPrismaStore implements Store<EntityInstance> {
 
   async getAll(): Promise<EntityInstance[]> {
     const rows = await this.prisma.timeEntry.findMany({
-      where: { tenantId: this.tenantId, deleted_at: null },
+      where: { tenantId: this.tenantId, deletedAt: null },
       orderBy: { createdAt: "desc" },
     });
     return rows.map((r) => this.mapToManifestEntity(r));
@@ -47,7 +47,7 @@ export class TimeEntryPrismaStore implements Store<EntityInstance> {
 
   async getById(id: string): Promise<EntityInstance | undefined> {
     const row = await this.prisma.timeEntry.findFirst({
-      where: { tenantId: this.tenantId, id, deleted_at: null },
+      where: { tenantId: this.tenantId, id, deletedAt: null },
     });
     return row ? this.mapToManifestEntity(row) : undefined;
   }
@@ -60,15 +60,15 @@ export class TimeEntryPrismaStore implements Store<EntityInstance> {
         id,
         employeeId: asString(data.employeeId),
         locationId: asNullableString(data.locationId),
-        shift_id: asNullableString(data.shiftId ?? data.shift_id),
+        shiftId: asNullableString(data.shiftId ?? data.shift_id),
         clockIn: data.clockIn
           ? new Date(data.clockIn as number | string)
           : new Date(),
         clockOut: asNullableDate(data.clockOut),
         breakMinutes: (data.breakMinutes as number) ?? 0,
         notes: asNullableString(data.notes),
-        approved_by: asNullableString(data.approvedBy ?? data.approved_by),
-        approved_at: asNullableDate(data.approvedAt ?? data.approved_at),
+        approvedBy: asNullableString(data.approvedBy ?? data.approved_by),
+        approvedAt: asNullableDate(data.approvedAt ?? data.approved_at),
       },
     });
     return this.mapToManifestEntity(row);
@@ -108,7 +108,7 @@ export class TimeEntryPrismaStore implements Store<EntityInstance> {
       // Soft delete — sets deleted_at (snake_case field)
       await this.prisma.timeEntry.update({
         where: { tenantId_id: { tenantId: this.tenantId, id } },
-        data: { deleted_at: new Date() },
+        data: { deletedAt: new Date() },
       });
       return true;
     } catch (error) {
@@ -148,8 +148,8 @@ export class TimeEntryPrismaStore implements Store<EntityInstance> {
       updatedAt: row.updatedAt
         ? new Date(row.updatedAt as string | Date).getTime()
         : 0,
-      deletedAt: row.deleted_at
-        ? new Date(row.deleted_at as string | Date).getTime()
+      deletedAt: row.deletedAt
+        ? new Date(row.deletedAt as string | Date).getTime()
         : null,
     };
   }
@@ -280,15 +280,15 @@ export class TrainingAssignmentPrismaStore implements Store<EntityInstance> {
 
   async getAll(): Promise<EntityInstance[]> {
     const rows = await this.prisma.trainingAssignment.findMany({
-      where: { tenant_id: this.tenantId, deleted_at: null },
-      orderBy: { created_at: "desc" },
+      where: { tenantId: this.tenantId, deletedAt: null },
+      orderBy: { createdAt: "desc" },
     });
     return rows.map((r) => this.mapToManifestEntity(r));
   }
 
   async getById(id: string): Promise<EntityInstance | undefined> {
     const row = await this.prisma.trainingAssignment.findFirst({
-      where: { tenant_id: this.tenantId, id, deleted_at: null },
+      where: { tenantId: this.tenantId, id, deletedAt: null },
     });
     return row ? this.mapToManifestEntity(row) : undefined;
   }
@@ -297,16 +297,16 @@ export class TrainingAssignmentPrismaStore implements Store<EntityInstance> {
     const id = (data.id as string) || crypto.randomUUID();
     const row = await this.prisma.trainingAssignment.create({
       data: {
-        tenant_id: this.tenantId,
+        tenantId: this.tenantId,
         id,
-        module_id: asString(data.moduleId ?? data.module_id),
-        employee_id: asNullableString(data.employeeId ?? data.employee_id),
-        assigned_to_all: asBool(
+        moduleId: asString(data.moduleId ?? data.module_id),
+        employeeId: asNullableString(data.employeeId ?? data.employeeId),
+        assignedToAll: asBool(
           data.assignedToAll ?? data.assigned_to_all,
           false
         ),
-        assigned_by: asString(data.assignedBy ?? data.assigned_by),
-        due_date: asNullableDate(data.dueDate ?? data.due_date),
+        assignedBy: asString(data.assignedBy ?? data.assigned_by),
+        dueDate: asNullableDate(data.dueDate ?? data.due_date),
         status: ((data.status as string) ?? "assigned") || "assigned",
       },
     });
@@ -327,10 +327,10 @@ export class TrainingAssignmentPrismaStore implements Store<EntityInstance> {
         data.assigned_to_all !== undefined
       )
         patch.assigned_to_all = data.assignedToAll ?? data.assigned_to_all;
-      patch.updated_at = new Date();
+      patch.updatedAt = new Date();
 
       const updated = await this.prisma.trainingAssignment.update({
-        where: { tenant_id_id: { tenant_id: this.tenantId, id } },
+        where: { tenantId_id: { tenantId: this.tenantId, id } },
         data: patch,
       });
       return this.mapToManifestEntity(updated);
@@ -344,8 +344,8 @@ export class TrainingAssignmentPrismaStore implements Store<EntityInstance> {
     try {
       // Soft delete — sets deleted_at (snake_case field)
       await this.prisma.trainingAssignment.update({
-        where: { tenant_id_id: { tenant_id: this.tenantId, id } },
-        data: { deleted_at: new Date() },
+        where: { tenantId_id: { tenantId: this.tenantId, id } },
+        data: { deletedAt: new Date() },
       });
       return true;
     } catch (error) {
@@ -356,16 +356,16 @@ export class TrainingAssignmentPrismaStore implements Store<EntityInstance> {
 
   async clear(): Promise<void> {
     await this.prisma.trainingAssignment.deleteMany({
-      where: { tenant_id: this.tenantId },
+      where: { tenantId: this.tenantId },
     });
   }
 
   private mapToManifestEntity(row: Record<string, unknown>): EntityInstance {
     return {
       id: row.id as string,
-      tenantId: row.tenant_id as string,
+      tenantId: row.tenantId as string,
       moduleId: (row.module_id as string) ?? "",
-      employeeId: (row.employee_id as string) ?? null,
+      employeeId: (row.employeeId as string) ?? null,
       assignedToAll: (row.assigned_to_all as boolean) ?? false,
       assignedBy: (row.assigned_by as string) ?? "",
       dueDate: row.due_date
@@ -375,14 +375,14 @@ export class TrainingAssignmentPrismaStore implements Store<EntityInstance> {
       assignedAt: row.assigned_at
         ? new Date(row.assigned_at as string | Date).getTime()
         : 0,
-      createdAt: row.created_at
-        ? new Date(row.created_at as string | Date).getTime()
+      createdAt: row.createdAt
+        ? new Date(row.createdAt as string | Date).getTime()
         : 0,
-      updatedAt: row.updated_at
-        ? new Date(row.updated_at as string | Date).getTime()
+      updatedAt: row.updatedAt
+        ? new Date(row.updatedAt as string | Date).getTime()
         : 0,
-      deletedAt: row.deleted_at
-        ? new Date(row.deleted_at as string | Date).getTime()
+      deletedAt: row.deletedAt
+        ? new Date(row.deletedAt as string | Date).getTime()
         : null,
     };
   }

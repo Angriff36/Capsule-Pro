@@ -12,10 +12,10 @@ export const metadata: Metadata = {
 
 interface TimeOffRequestRow {
   id: string;
-  employee_id: string;
-  employee_first_name: string | null;
-  employee_last_name: string | null;
-  employee_role: string;
+  employeeId: string;
+  employeeFirstName: string | null;
+  employeeLastName: string | null;
+  employeeRole: string;
   request_type: string;
   start_date: Date;
   end_date: Date;
@@ -26,10 +26,10 @@ interface TimeOffRequestRow {
 
 interface TimecardEditRow {
   id: string;
-  employee_id: string;
-  employee_first_name: string | null;
-  employee_last_name: string | null;
-  employee_role: string;
+  employeeId: string;
+  employeeFirstName: string | null;
+  employeeLastName: string | null;
+  employeeRole: string;
   reason: string;
   status: string;
   created_at: Date;
@@ -67,7 +67,7 @@ export default async function SchedulingRequestsPage() {
       Prisma.sql`
       SELECT
         tor.id,
-        tor.employee_id,
+        tor.employeeId,
         u.first_name AS employee_first_name,
         u.last_name AS employee_last_name,
         u.role AS employee_role,
@@ -79,7 +79,7 @@ export default async function SchedulingRequestsPage() {
         tor.submitted_at
       FROM tenant_staff.employee_time_off_requests tor
       LEFT JOIN public.users u
-        ON u.id = tor.employee_id::uuid
+        ON u.id = tor.employeeId::uuid
        AND u.tenant_id = tor.tenant_id
       WHERE tor.tenant_id = ${tenantId}
         AND tor.deleted_at IS NULL
@@ -97,7 +97,7 @@ export default async function SchedulingRequestsPage() {
       Prisma.sql`
       SELECT
         ter.id,
-        ter.employee_id,
+        ter.employeeId,
         u.first_name AS employee_first_name,
         u.last_name AS employee_last_name,
         u.role AS employee_role,
@@ -106,7 +106,7 @@ export default async function SchedulingRequestsPage() {
         ter.created_at
       FROM tenant_staff.timecard_edit_requests ter
       LEFT JOIN public.users u
-        ON u.id = ter.employee_id::uuid
+        ON u.id = ter.employeeId::uuid
        AND u.tenant_id = ter.tenant_id
       WHERE ter.tenant_id = ${tenantId}
       ORDER BY ter.created_at DESC
@@ -142,10 +142,10 @@ export default async function SchedulingRequestsPage() {
       id: r.id,
       type: "time_off" as const,
       employee:
-        [r.employee_first_name, r.employee_last_name]
+        [r.employeeFirstName, r.employeeLastName]
           .filter(Boolean)
           .join(" ") || "Unknown",
-      employeeRole: r.employee_role || "Staff",
+      employeeRole: r.employeeRole || "Staff",
       detail: `${formatRequestType(r.request_type)} · ${new Date(r.start_date).toLocaleDateString()}${r.start_date.toDateString() !== r.end_date.toDateString() ? ` – ${new Date(r.end_date).toLocaleDateString()}` : ""}`,
       submitted: timeAgo(r.submitted_at),
       status: r.status,
@@ -155,10 +155,10 @@ export default async function SchedulingRequestsPage() {
       id: r.id,
       type: "timecard_edit" as const,
       employee:
-        [r.employee_first_name, r.employee_last_name]
+        [r.employeeFirstName, r.employeeLastName]
           .filter(Boolean)
           .join(" ") || "Unknown",
-      employeeRole: r.employee_role || "Staff",
+      employeeRole: r.employeeRole || "Staff",
       detail: "Timecard edit request",
       submitted: timeAgo(r.created_at),
       status: r.status,

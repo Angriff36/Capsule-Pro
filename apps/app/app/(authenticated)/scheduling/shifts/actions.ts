@@ -77,11 +77,11 @@ export async function getShifts(params: {
       Array<{
         id: string;
         schedule_id: string;
-        employee_id: string;
-        employee_first_name: string | null;
-        employee_last_name: string | null;
-        employee_email: string;
-        employee_role: string;
+        employeeId: string;
+        employeeFirstName: string | null;
+        employeeLastName: string | null;
+        employeeEmail: string;
+        employeeRole: string;
         location_id: string;
         location_name: string;
         shift_start: Date;
@@ -96,7 +96,7 @@ export async function getShifts(params: {
         SELECT
           ss.id,
           ss.schedule_id,
-          ss.employee_id,
+          ss.employeeId,
           e.first_name AS employee_first_name,
           e.last_name AS employee_last_name,
           e.email AS employee_email,
@@ -112,7 +112,7 @@ export async function getShifts(params: {
         FROM tenant_staff.schedule_shifts ss
         JOIN tenant_staff.employees e
           ON e.tenant_id = ss.tenant_id
-         AND e.id = ss.employee_id
+         AND e.id = ss.employeeId
         JOIN tenant.locations l
           ON l.tenant_id = ss.tenant_id
          AND l.id = ss.location_id
@@ -120,7 +120,7 @@ export async function getShifts(params: {
           AND ss.deleted_at IS NULL
           ${hasStartDate ? Prisma.sql`AND ss.shift_start >= ${new Date(params.startDate!)}` : Prisma.empty}
           ${hasEndDate ? Prisma.sql`AND ss.shift_end <= ${new Date(params.endDate!)}` : Prisma.empty}
-          ${hasEmployeeId ? Prisma.sql`AND ss.employee_id = ${params.employeeId!}` : Prisma.empty}
+          ${hasEmployeeId ? Prisma.sql`AND ss.employeeId = ${params.employeeId!}` : Prisma.empty}
           ${hasLocationId ? Prisma.sql`AND ss.location_id = ${params.locationId!}` : Prisma.empty}
           ${hasRole ? Prisma.sql`AND ss.role_during_shift = ${params.role!}` : Prisma.empty}
         ORDER BY ss.shift_start ASC
@@ -136,7 +136,7 @@ export async function getShifts(params: {
           AND ss.deleted_at IS NULL
           ${hasStartDate ? Prisma.sql`AND ss.shift_start >= ${new Date(params.startDate!)}` : Prisma.empty}
           ${hasEndDate ? Prisma.sql`AND ss.shift_end <= ${new Date(params.endDate!)}` : Prisma.empty}
-          ${hasEmployeeId ? Prisma.sql`AND ss.employee_id = ${params.employeeId!}` : Prisma.empty}
+          ${hasEmployeeId ? Prisma.sql`AND ss.employeeId = ${params.employeeId!}` : Prisma.empty}
           ${hasLocationId ? Prisma.sql`AND ss.location_id = ${params.locationId!}` : Prisma.empty}
           ${hasRole ? Prisma.sql`AND ss.role_during_shift = ${params.role!}` : Prisma.empty}
       `
@@ -171,11 +171,11 @@ export async function getShift(shiftId: string) {
     Array<{
       id: string;
       schedule_id: string;
-      employee_id: string;
-      employee_first_name: string | null;
-      employee_last_name: string | null;
-      employee_email: string;
-      employee_role: string;
+      employeeId: string;
+      employeeFirstName: string | null;
+      employeeLastName: string | null;
+      employeeEmail: string;
+      employeeRole: string;
       location_id: string;
       location_name: string;
       shift_start: Date;
@@ -190,7 +190,7 @@ export async function getShift(shiftId: string) {
       SELECT
         ss.id,
         ss.schedule_id,
-        ss.employee_id,
+        ss.employeeId,
         e.first_name AS employee_first_name,
         e.last_name AS employee_last_name,
         e.email AS employee_email,
@@ -206,7 +206,7 @@ export async function getShift(shiftId: string) {
       FROM tenant_staff.schedule_shifts ss
       JOIN tenant_staff.employees e
         ON e.tenant_id = ss.tenant_id
-       AND e.id = ss.employee_id
+       AND e.id = ss.employeeId
       JOIN tenant.locations l
         ON l.tenant_id = ss.tenant_id
        AND l.id = ss.location_id
@@ -276,7 +276,7 @@ export async function getAvailableEmployees(params: {
             SELECT 1
             FROM tenant_staff.schedule_shifts ss
             WHERE ss.tenant_id = e.tenant_id
-              AND ss.employee_id = e.id
+              AND ss.employeeId = e.id
               AND ss.deleted_at IS NULL
               AND ss.shift_start < ${endDate}
               AND ss.shift_end > ${startDate}
@@ -321,7 +321,7 @@ export async function getAvailableEmployees(params: {
           FROM tenant_staff.schedule_shifts ss
           JOIN tenant.locations l ON l.id = ss.location_id
           WHERE ss.tenant_id = ${tenantId}
-            AND ss.employee_id = ${emp.id}
+            AND ss.employeeId = ${emp.id}
             AND ss.deleted_at IS NULL
             AND ss.shift_start < ${endDate}
             AND ss.shift_end > ${startDate}

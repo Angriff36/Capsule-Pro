@@ -166,9 +166,9 @@ export async function getAvailableTemplates() {
 
   const tenantId = await getTenantId();
 
-  return database.email_templates.findMany({
-    where: { tenant_id: tenantId, deleted_at: null, is_active: true },
-    select: { id: true, name: true, template_type: true, subject: true },
+  return database.emailTemplate.findMany({
+    where: { tenantId, deletedAt: null, isActive: true },
+    select: { id: true, name: true, templateType: true, subject: true },
     orderBy: { name: "asc" },
   });
 }

@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
       return manifestErrorResponse("Tenant not found", 400);
     }
 
-    const eventImportWorkflows = await database.eventImportWorkflow.findMany({
+    const eventImports = await database.eventImport.findMany({
       where: {
         tenantId,
         deletedAt: null,
@@ -33,9 +33,9 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    return manifestSuccessResponse({ eventImportWorkflows });
+    return manifestSuccessResponse({ eventImports });
   } catch (error) {
-    console.error("Error fetching eventImportWorkflows:", error);
+    console.error("Error fetching eventImports:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

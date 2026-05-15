@@ -169,23 +169,23 @@ export async function GET(request: NextRequest) {
         ? database.timeOffRequest
             .findMany({
               where: {
-                tenant_id: tenantId,
-                start_date: {
+                tenantId: tenantId,
+                startDate: {
                   gte: toDateStart(rawStart),
                   lte: toDateEnd(rawEnd),
                 },
-                deleted_at: null,
+                deletedAt: null,
                 status: "approved",
               },
               select: {
                 id: true,
-                start_date: true,
-                end_date: true,
+                startDate: true,
+                endDate: true,
                 reason: true,
                 status: true,
-                request_type: true,
+                requestType: true,
               },
-              orderBy: { start_date: "asc" },
+              orderBy: { startDate: "asc" },
               take: 50,
             })
             .catch((error) => {
@@ -229,9 +229,9 @@ export async function GET(request: NextRequest) {
       events.push(
         ...timeOffResult.map((t) => ({
           id: t.id,
-          title: `${t.request_type?.replace(/_/g, " ") || "Time Off"}`,
-          start: new Date(t.start_date).toISOString(),
-          end: t.end_date ? new Date(t.end_date).toISOString() : undefined,
+          title: `${t.requestType?.replace(/_/g, " ") || "Time Off"}`,
+          start: new Date(t.startDate).toISOString(),
+          end: t.endDate ? new Date(t.endDate).toISOString() : undefined,
           type: "timeoff" as const,
           status: t.status,
           details: t.reason || undefined,

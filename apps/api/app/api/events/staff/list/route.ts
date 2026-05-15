@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
       return manifestErrorResponse("Tenant not found", 400);
     }
 
-    const eventStaffs = await database.eventStaff.findMany({
+    const eventStaffAssignments = await database.eventStaffAssignment.findMany({
       where: {
         tenantId,
         deletedAt: null,
@@ -33,9 +33,9 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    return manifestSuccessResponse({ eventStaffs });
+    return manifestSuccessResponse({ eventStaffAssignments });
   } catch (error) {
-    console.error("Error fetching eventStaffs:", error);
+    console.error("Error fetching eventStaffAssignments:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

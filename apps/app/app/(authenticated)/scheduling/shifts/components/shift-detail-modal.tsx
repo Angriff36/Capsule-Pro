@@ -35,11 +35,11 @@ import { ShiftForm } from "./shift-form";
 interface Shift {
   id: string;
   schedule_id: string;
-  employee_id: string;
-  employee_first_name: string | null;
-  employee_last_name: string | null;
-  employee_email: string;
-  employee_role: string;
+  employeeId: string;
+  employeeFirstName: string | null;
+  employeeLastName: string | null;
+  employeeEmail: string;
+  employeeRole: string;
   location_id: string;
   location_name: string;
   shift_start: Date;
@@ -122,8 +122,8 @@ export function ShiftDetailModal({
           <DialogHeader>
             <DialogTitle>Edit Shift</DialogTitle>
             <DialogDescription>
-              Update shift details for {shift.employee_first_name}{" "}
-              {shift.employee_last_name}
+              Update shift details for {shift.employeeFirstName}{" "}
+              {shift.employeeLastName}
             </DialogDescription>
           </DialogHeader>
           <ShiftForm
@@ -136,7 +136,7 @@ export function ShiftDetailModal({
             shift={{
               id: shift.id,
               schedule_id: shift.schedule_id,
-              employee_id: shift.employee_id,
+              employeeId: shift.employeeId,
               location_id: shift.location_id,
               shift_start: shift.shift_start.toISOString(),
               shift_end: shift.shift_end.toISOString(),
@@ -155,7 +155,7 @@ export function ShiftDetailModal({
         <DialogHeader>
           <DialogTitle>Shift Details</DialogTitle>
           <DialogDescription>
-            {shift.employee_first_name} {shift.employee_last_name} -{" "}
+            {shift.employeeFirstName} {shift.employeeLastName} -{" "}
             {formatDate(shift.shift_start)}
           </DialogDescription>
         </DialogHeader>
@@ -168,13 +168,13 @@ export function ShiftDetailModal({
             </div>
             <div className="flex-1">
               <h3 className="font-semibold text-lg">
-                {shift.employee_first_name} {shift.employee_last_name}
+                {shift.employeeFirstName} {shift.employeeLastName}
               </h3>
               <p className="text-sm text-muted-foreground">
-                {shift.employee_email}
+                {shift.employeeEmail}
               </p>
               <div className="mt-2 flex gap-2">
-                <Badge variant="secondary">{shift.employee_role}</Badge>
+                <Badge variant="secondary">{shift.employeeRole}</Badge>
                 {shift.role_during_shift && (
                   <Badge variant="outline">
                     Role: {shift.role_during_shift}

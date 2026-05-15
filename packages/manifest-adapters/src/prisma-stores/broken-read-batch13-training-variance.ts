@@ -30,15 +30,15 @@ export class TrainingModulePrismaStore implements Store<EntityInstance> {
 
   async getAll(): Promise<EntityInstance[]> {
     const rows = await this.prisma.trainingModule.findMany({
-      where: { tenant_id: this.tenantId, deleted_at: null },
-      orderBy: { created_at: "desc" },
+      where: { tenantId: this.tenantId, deletedAt: null },
+      orderBy: { createdAt: "desc" },
     });
     return rows.map((r) => this.mapToManifestEntity(r));
   }
 
   async getById(id: string): Promise<EntityInstance | undefined> {
     const row = await this.prisma.trainingModule.findFirst({
-      where: { tenant_id: this.tenantId, id, deleted_at: null },
+      where: { tenantId: this.tenantId, id, deletedAt: null },
     });
     return row ? this.mapToManifestEntity(row) : undefined;
   }
@@ -47,20 +47,20 @@ export class TrainingModulePrismaStore implements Store<EntityInstance> {
     const id = (data.id as string) || crypto.randomUUID();
     const row = await this.prisma.trainingModule.create({
       data: {
-        tenant_id: this.tenantId,
+        tenantId: this.tenantId,
         id,
         title: asString(data.title),
         description: asNullableString(data.description),
-        content_url: asNullableString(data.content_url ?? data.contentUrl),
-        content_type:
+        contentUrl: asNullableString(data.content_url ?? data.contentUrl),
+        contentType:
           asString(data.content_type ?? data.contentType) || "document",
-        duration_minutes: asNullableNumber(
-          data.duration_minutes ?? data.durationMinutes
+        durationMinutes: asNullableNumber(
+          data.durationMinutes ?? data.durationMinutes
         ),
         category: asNullableString(data.category),
-        is_required: asBool(data.is_required ?? data.isRequired, false),
-        is_active: asBool(data.is_active ?? data.isActive, true),
-        created_by: asNullableString(data.created_by ?? data.createdBy),
+        isRequired: asBool(data.is_required ?? data.isRequired, false),
+        isActive: asBool(data.isActive ?? data.isActive, true),
+        createdBy: asNullableString(data.created_by ?? data.createdBy),
       },
     });
     return this.mapToManifestEntity(row);
@@ -83,22 +83,22 @@ export class TrainingModulePrismaStore implements Store<EntityInstance> {
         patch.content_type = asString(data.content_type);
       if (data.contentType !== undefined)
         patch.content_type = asString(data.contentType);
-      if (data.duration_minutes !== undefined)
-        patch.duration_minutes = asNullableNumber(data.duration_minutes);
       if (data.durationMinutes !== undefined)
-        patch.duration_minutes = asNullableNumber(data.durationMinutes);
+        patch.durationMinutes = asNullableNumber(data.durationMinutes);
+      if (data.durationMinutes !== undefined)
+        patch.durationMinutes = asNullableNumber(data.durationMinutes);
       if (data.category !== undefined)
         patch.category = asNullableString(data.category);
       if (data.is_required !== undefined)
         patch.is_required = asBool(data.is_required);
       if (data.isRequired !== undefined)
         patch.is_required = asBool(data.isRequired);
-      if (data.is_active !== undefined)
-        patch.is_active = asBool(data.is_active);
-      if (data.isActive !== undefined) patch.is_active = asBool(data.isActive);
+      if (data.isActive !== undefined)
+        patch.isActive = asBool(data.isActive);
+      if (data.isActive !== undefined) patch.isActive = asBool(data.isActive);
 
       const updated = await this.prisma.trainingModule.update({
-        where: { tenant_id_id: { tenant_id: this.tenantId, id } },
+        where: { tenantId_id: { tenantId: this.tenantId, id } },
         data: patch,
       });
       return this.mapToManifestEntity(updated);
@@ -111,8 +111,8 @@ export class TrainingModulePrismaStore implements Store<EntityInstance> {
   async delete(id: string): Promise<boolean> {
     try {
       await this.prisma.trainingModule.update({
-        where: { tenant_id_id: { tenant_id: this.tenantId, id } },
-        data: { deleted_at: new Date() },
+        where: { tenantId_id: { tenantId: this.tenantId, id } },
+        data: { deletedAt: new Date() },
       });
       return true;
     } catch (error) {
@@ -123,31 +123,31 @@ export class TrainingModulePrismaStore implements Store<EntityInstance> {
 
   async clear(): Promise<void> {
     await this.prisma.trainingModule.deleteMany({
-      where: { tenant_id: this.tenantId },
+      where: { tenantId: this.tenantId },
     });
   }
 
   private mapToManifestEntity(row: Record<string, unknown>): EntityInstance {
     return {
       id: row.id as string,
-      tenantId: row.tenant_id as string,
+      tenantId: row.tenantId as string,
       title: (row.title as string) ?? "",
       description: (row.description as string) ?? null,
       contentUrl: (row.content_url as string) ?? null,
       contentType: (row.content_type as string) ?? "document",
-      durationMinutes: (row.duration_minutes as number) ?? null,
+      durationMinutes: (row.durationMinutes as number) ?? null,
       category: (row.category as string) ?? null,
       isRequired: (row.is_required as boolean) ?? false,
-      isActive: (row.is_active as boolean) ?? true,
+      isActive: (row.isActive as boolean) ?? true,
       createdBy: (row.created_by as string) ?? null,
-      createdAt: row.created_at
-        ? new Date(row.created_at as string | Date).getTime()
+      createdAt: row.createdAt
+        ? new Date(row.createdAt as string | Date).getTime()
         : 0,
-      updatedAt: row.updated_at
-        ? new Date(row.updated_at as string | Date).getTime()
+      updatedAt: row.updatedAt
+        ? new Date(row.updatedAt as string | Date).getTime()
         : 0,
-      deletedAt: row.deleted_at
-        ? new Date(row.deleted_at as string | Date).getTime()
+      deletedAt: row.deletedAt
+        ? new Date(row.deletedAt as string | Date).getTime()
         : null,
     };
   }

@@ -26,7 +26,6 @@ export async function GET(request: NextRequest) {
     const notifications = await database.notification.findMany({
       where: {
         tenantId,
-        deletedAt: null,
       },
       orderBy: {
         createdAt: "desc",

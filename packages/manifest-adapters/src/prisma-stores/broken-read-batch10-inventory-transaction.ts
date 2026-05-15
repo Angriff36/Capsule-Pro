@@ -69,7 +69,7 @@ export class InventoryTransactionPrismaStore implements Store<EntityInstance> {
           data.referenceType ?? data.reference_type
         ),
         referenceId: asNullableString(data.referenceId ?? data.reference_id),
-        employee_id: asNullableString(data.employeeId ?? data.employee_id),
+        employee_id: asNullableString(data.employeeId ?? data.employeeId),
       },
     });
     return this.mapToManifestEntity(row);
@@ -115,8 +115,8 @@ export class InventoryTransactionPrismaStore implements Store<EntityInstance> {
         patch.referenceType = data.referenceType ?? data.reference_type;
       if (data.referenceId !== undefined || data.reference_id !== undefined)
         patch.referenceId = data.referenceId ?? data.reference_id;
-      if (data.employeeId !== undefined || data.employee_id !== undefined)
-        patch.employee_id = data.employeeId ?? data.employee_id;
+      if (data.employeeId !== undefined || data.employeeId !== undefined)
+        patch.employeeId = data.employeeId ?? data.employeeId;
       if (
         data.storageLocationId !== undefined ||
         data.storage_location_id !== undefined
@@ -175,7 +175,7 @@ export class InventoryTransactionPrismaStore implements Store<EntityInstance> {
       reason: (row.reason as string) ?? "",
       referenceType: (row.referenceType as string) ?? null,
       referenceId: (row.referenceId as string) ?? null,
-      employeeId: (row.employee_id as string) ?? null,
+      employee_id: (row.employeeId as string) ?? null,
     };
   }
 }

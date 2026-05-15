@@ -46,19 +46,19 @@ import { AvailabilityForm } from "./availability-form";
 
 interface Availability {
   id: string;
-  employee_id: string;
-  employee_first_name: string | null;
-  employee_last_name: string | null;
-  employee_email: string;
-  employee_role: string;
-  day_of_week: number;
-  start_time: string;
-  end_time: string;
-  is_available: boolean;
-  effective_from: Date;
-  effective_until: Date | null;
-  created_at: Date;
-  updated_at: Date;
+  employeeId: string;
+  employeeFirstName: string | null;
+  employeeLastName: string | null;
+  employeeEmail: string;
+  employeeRole: string;
+  dayOfWeek: number;
+  startTime: string;
+  endTime: string;
+  isAvailable: boolean;
+  effectiveFrom: Date;
+  effectiveUntil: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 interface Employee {
@@ -209,10 +209,10 @@ export function AvailabilityClient() {
       cell: ({ row }) => (
         <div className="min-w-0">
           <div className="truncate font-medium text-ink">
-            {row.original.employee_first_name} {row.original.employee_last_name}
+            {row.original.employeeFirstName} {row.original.employeeLastName}
           </div>
           <div className="truncate text-muted-foreground text-xs">
-            {row.original.employee_email}
+            {row.original.employeeEmail}
           </div>
         </div>
       ),
@@ -232,7 +232,7 @@ export function AvailabilityClient() {
         ];
         return (
           <span className="font-medium text-ink text-sm">
-            {days[row.original.day_of_week]}
+            {days[row.original.dayOfWeek]}
           </span>
         );
       },
@@ -243,11 +243,11 @@ export function AvailabilityClient() {
       cell: ({ row }) => (
         <div>
           <div className="font-medium text-ink text-sm tabular-nums">
-            {formatTime(new Date(`2000-01-01T${row.original.start_time}`))} –{" "}
-            {formatTime(new Date(`2000-01-01T${row.original.end_time}`))}
+            {formatTime(new Date(`2000-01-01T${row.original.startTime}`))} –{" "}
+            {formatTime(new Date(`2000-01-01T${row.original.endTime}`))}
           </div>
           <div className="text-muted-foreground text-xs">
-            {row.original.is_available ? "Available" : "Unavailable"}
+            {row.original.isAvailable ? "Available" : "Unavailable"}
           </div>
         </div>
       ),
@@ -257,7 +257,7 @@ export function AvailabilityClient() {
       header: "Effective From",
       cell: ({ row }) => (
         <span className="text-ink text-sm">
-          {formatDate(row.original.effective_from)}
+          {formatDate(row.original.effectiveFrom)}
         </span>
       ),
     },
@@ -266,8 +266,8 @@ export function AvailabilityClient() {
       header: "Effective Until",
       cell: ({ row }) => (
         <div className="text-sm text-muted-foreground">
-          {row.original.effective_until
-            ? formatDate(row.original.effective_until)
+          {row.original.effectiveUntil
+            ? formatDate(row.original.effectiveUntil)
             : "Ongoing"}
         </div>
       ),

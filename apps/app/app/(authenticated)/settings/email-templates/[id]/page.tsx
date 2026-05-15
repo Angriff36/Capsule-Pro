@@ -116,11 +116,11 @@ export default function EditEmailTemplatePage({
         const template = await getEmailTemplateById(templateId);
         form.reset({
           name: template.name,
-          templateType: template.template_type as EmailTemplateType,
+          templateType: template.templateType as EmailTemplateType,
           subject: template.subject,
           body: template.body,
-          isActive: template.is_active,
-          isDefault: template.is_default,
+          isActive: template.isActive,
+          isDefault: template.isDefault,
         });
       } catch (error) {
         toast.error("Failed to load template", {

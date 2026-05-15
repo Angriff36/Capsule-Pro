@@ -149,13 +149,13 @@ export async function POST(
       }
 
       // Copy steps from source version using Prisma (replaces raw SQL)
-      const sourceSteps = await database.recipe_steps.findMany({
+      const sourceSteps = await database.recipeStep.findMany({
         where: {
-          tenant_id: tenantId,
-          recipe_version_id: body.sourceVersionId,
-          deleted_at: null,
+          tenantId: tenantId,
+          recipeVersionId: body.sourceVersionId,
+          deletedAt: null,
         },
-        orderBy: { step_number: "asc" },
+        orderBy: { stepNumber: "asc" },
       });
 
       for (const step of sourceSteps) {
@@ -165,15 +165,15 @@ export async function POST(
           {
             id: stepId,
             recipeVersionId: newVersionId,
-            stepNumber: step.step_number,
+            stepNumber: step.stepNumber,
             instruction: step.instruction,
-            durationMinutes: step.duration_minutes || 0,
-            temperatureValue: step.temperature_value || 0,
-            temperatureUnit: step.temperature_unit || "",
-            equipmentNeeded: step.equipment_needed || "",
+            durationMinutes: step.durationMinutes || 0,
+            temperatureValue: step.temperatureValue || 0,
+            temperatureUnit: step.temperatureUnit || "",
+            equipmentNeeded: step.equipmentNeeded || "",
             tips: step.tips || "",
-            videoUrl: step.video_url || "",
-            imageUrl: step.image_url || "",
+            videoUrl: step.videoUrl || "",
+            imageUrl: step.imageUrl || "",
           },
           { entityName: "RecipeStep" }
         );

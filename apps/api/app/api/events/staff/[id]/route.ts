@@ -28,7 +28,7 @@ export async function GET(
 
     const { id } = await params;
 
-    const eventStaff = await database.eventStaff.findUnique({
+    const eventStaff = await database.eventStaffAssignment.findFirst({
       where: {
         id,
         tenantId,
@@ -42,7 +42,7 @@ export async function GET(
 
     return manifestSuccessResponse({ eventStaff });
   } catch (error) {
-    console.error("Error fetching eventStaff:", error);
+    console.error("Error fetching eventStaffAssignment:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

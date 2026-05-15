@@ -29,11 +29,10 @@ export async function GET(
     const { id } = await params;
 
     const payrollApprovalHistory =
-      await database.payrollApprovalHistory.findUnique({
+      await database.payrollApprovalHistory.findFirst({
         where: {
           id,
           tenantId,
-          deletedAt: null,
         },
       });
 

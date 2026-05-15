@@ -131,7 +131,7 @@ model Account {
   goodshuffleEventSyncs          GoodshuffleEventSync[]
   goodshuffleInventorySyncs      GoodshuffleInventorySync[]
   goodshuffleInvoiceSyncs        GoodshuffleInvoiceSync[]
-  emailTemplates                 email_templates[]
+  emailTemplates                 EmailTemplate[]
   emailWorkflows                 EmailWorkflow[]
   emailLogs                      EmailLog[]
   outboundWebhooks               OutboundWebhook[]
@@ -3236,27 +3236,27 @@ enum sms_recipient_type {
 }
 
 /// Email template for user-defined email content with merge fields
-model email_templates {
-  tenant_id     String              @db.Uuid
-  id            String              @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name          String
-  template_type email_template_type
-  subject       String
-  body          String              @db.Text
-  merge_fields  Json                @default("[]")
-  is_active     Boolean             @default(true) @map("is_active")
-  is_default    Boolean             @default(false) @map("is_default")
-  created_at    DateTime            @default(now()) @db.Timestamptz(6)
-  updated_at    DateTime            @default(now()) @updatedAt @db.Timestamptz(6)
-  deleted_at    DateTime?           @db.Timestamptz(6)
+model EmailTemplate {
+  tenantId     String              @map("tenant_id") @db.Uuid
+  id           String              @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name         String
+  templateType email_template_type @map("template_type")
+  subject      String
+  body         String              @db.Text
+  mergeFields  Json                @default("[]") @map("merge_fields")
+  isActive     Boolean             @default(true) @map("is_active")
+  isDefault    Boolean             @default(false) @map("is_default")
+  createdAt    DateTime            @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime            @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt    DateTime?           @map("deleted_at") @db.Timestamptz(6)
 
-  tenant         Account         @relation(fields: [tenant_id], references: [id], onDelete: Restrict)
+  tenant         Account         @relation(fields: [tenantId], references: [id], onDelete: Restrict)
   emailWorkflows EmailWorkflow[]
 
-  @@id([tenant_id, id])
-  @@index([tenant_id, template_type])
-  @@index([tenant_id, is_active])
-  @@index([tenant_id, is_default])
+  @@id([tenantId, id])
+  @@index([tenantId, templateType])
+  @@index([tenantId, isActive])
+  @@index([tenantId, isDefault])
   @@map("email_templates")
   @@schema("tenant_admin")
 }
@@ -3361,20 +3361,21 @@ model workflow_steps {
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
-model event_dishes {
-  tenant_id            String    @db.Uuid
+model EventDish {
+  tenantId             String    @map("tenant_id") @db.Uuid
   id                   String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  event_id             String    @db.Uuid
-  dish_id              String    @db.Uuid
+  eventId              String    @map("event_id") @db.Uuid
+  dishId               String    @map("dish_id") @db.Uuid
   course               String?
-  quantity_servings    Int       @default(1)
-  service_style        String?
-  special_instructions String?
-  created_at           DateTime  @default(now()) @db.Timestamptz(6)
-  updated_at           DateTime  @default(now()) @db.Timestamptz(6)
-  deleted_at           DateTime? @db.Timestamptz(6)
+  quantityServings     Int       @default(1) @map("quantity_servings")
+  serviceStyle         String?   @map("service_style")
+  specialInstructions  String?   @map("special_instructions")
+  createdAt            DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt            DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt            DateTime? @map("deleted_at") @db.Timestamptz(6)
 
-  @@id([tenant_id, id])
+  @@id([tenantId, id])
+  @@map("event_dishes")
   @@schema("tenant_events")
 }
 
@@ -3450,25 +3451,26 @@ model prep_list_imports {
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
-model recipe_steps {
-  tenant_id         String    @db.Uuid
-  id                String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  recipe_version_id String    @db.Uuid
-  step_number       Int       @db.SmallInt
-  instruction       String
-  duration_minutes  Int?
-  temperature_value Decimal?  @db.Decimal(5, 1)
-  temperature_unit  String?   @db.Char(1)
-  equipment_needed  String[]
-  tips              String?
-  video_url         String?
-  image_url         String?
-  created_at        DateTime  @default(now()) @db.Timestamptz(6)
-  updated_at        DateTime  @default(now()) @db.Timestamptz(6)
-  deleted_at        DateTime? @db.Timestamptz(6)
+model RecipeStep {
+  tenantId         String    @map("tenant_id") @db.Uuid
+  id               String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  recipeVersionId  String    @map("recipe_version_id") @db.Uuid
+  stepNumber       Int       @map("step_number") @db.SmallInt
+  instruction      String
+  durationMinutes  Int?      @map("duration_minutes")
+  temperatureValue Decimal?  @map("temperature_value") @db.Decimal(5, 1)
+  temperatureUnit  String?   @map("temperature_unit") @db.Char(1)
+  equipmentNeeded  String[]  @map("equipment_needed")
+  tips             String?
+  videoUrl         String?   @map("video_url")
+  imageUrl         String?   @map("image_url")
+  createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt        DateTime? @map("deleted_at") @db.Timestamptz(6)
 
-  @@id([tenant_id, id])
-  @@unique([tenant_id, recipe_version_id, step_number])
+  @@id([tenantId, id])
+  @@unique([tenantId, recipeVersionId, stepNumber])
+  @@map("recipe_steps")
   @@schema("tenant_kitchen")
 }
 
@@ -3507,42 +3509,44 @@ model task_bundles {
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
-model employee_availability {
-  tenant_id       String    @db.Uuid
-  id              String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  employee_id     String    @db.Uuid
-  day_of_week     Int       @db.SmallInt
-  start_time      DateTime  @db.Time(6)
-  end_time        DateTime  @db.Time(6)
-  is_available    Boolean   @default(true)
-  effective_from  DateTime  @default(dbgenerated("CURRENT_DATE")) @db.Date
-  effective_until DateTime? @db.Date
-  created_at      DateTime  @default(now()) @db.Timestamptz(6)
-  updated_at      DateTime  @default(now()) @db.Timestamptz(6)
-  deleted_at      DateTime? @db.Timestamptz(6)
+model EmployeeAvailability {
+  tenantId       String    @map("tenant_id") @db.Uuid
+  id             String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  employeeId     String    @map("employee_id") @db.Uuid
+  dayOfWeek      Int       @map("day_of_week") @db.SmallInt
+  startTime      DateTime  @map("start_time") @db.Time(6)
+  endTime        DateTime  @map("end_time") @db.Time(6)
+  isAvailable    Boolean   @default(true) @map("is_available")
+  effectiveFrom  DateTime  @default(dbgenerated("CURRENT_DATE")) @map("effective_from") @db.Date
+  effectiveUntil DateTime? @map("effective_until") @db.Date
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt      DateTime? @map("deleted_at") @db.Timestamptz(6)
 
-  @@id([tenant_id, id])
-  @@index([employee_id], map: "employee_availability_employee_idx")
+  @@id([tenantId, id])
+  @@index([employeeId], map: "employee_availability_employee_idx")
+  @@map("employee_availability")
   @@schema("tenant_staff")
 }
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
-model employee_certifications {
-  tenant_id          String    @db.Uuid
-  id                 String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  employee_id        String    @db.Uuid
-  certification_type String
-  certification_name String
-  issued_date        DateTime  @db.Date
-  expiry_date        DateTime? @db.Date
-  document_url       String?
-  created_at         DateTime  @default(now()) @db.Timestamptz(6)
-  updated_at         DateTime  @default(now()) @db.Timestamptz(6)
-  deleted_at         DateTime? @db.Timestamptz(6)
+model EmployeeCertification {
+  tenantId            String    @map("tenant_id") @db.Uuid
+  id                  String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  employeeId          String    @map("employee_id") @db.Uuid
+  certificationType   String    @map("certification_type")
+  certificationName   String    @map("certification_name")
+  issuedDate          DateTime  @map("issued_date") @db.Date
+  expiryDate          DateTime? @map("expiry_date") @db.Date
+  documentUrl         String?   @map("document_url")
+  createdAt           DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt           DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt           DateTime? @map("deleted_at") @db.Timestamptz(6)
 
-  @@id([tenant_id, id])
-  @@index([employee_id], map: "employee_certifications_employee_idx")
+  @@id([tenantId, id])
+  @@index([employeeId], map: "employee_certifications_employee_idx")
+  @@map("employee_certifications")
   @@schema("tenant_staff")
 }
 
@@ -3763,23 +3767,23 @@ model Role {
 
 /// This table contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model EmployeeDeduction {
-  tenant_id         String    @db.Uuid
-  id                String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  employee_id       String    @db.Uuid
-  type              String
-  name              String
-  amount            Decimal?  @db.Decimal(10, 2)
-  percentage        Decimal?  @db.Decimal(5, 2)
-  is_pre_tax        Boolean   @default(false)
-  effective_date    DateTime  @db.Date
-  end_date          DateTime? @db.Date
-  max_annual_amount Decimal?  @db.Decimal(10, 2)
-  created_at        DateTime  @default(now()) @db.Timestamptz(6)
-  updated_at        DateTime  @default(now()) @db.Timestamptz(6)
-  deleted_at        DateTime? @db.Timestamptz(6)
+  tenantId        String    @map("tenant_id") @db.Uuid
+  id              String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  employeeId      String    @map("employee_id") @db.Uuid
+  type            String
+  name            String
+  amount          Decimal?  @db.Decimal(10, 2)
+  percentage      Decimal?  @db.Decimal(5, 2)
+  isPreTax        Boolean   @default(false) @map("is_pre_tax")
+  effectiveDate   DateTime  @map("effective_date") @db.Date
+  endDate         DateTime? @map("end_date") @db.Date
+  maxAnnualAmount Decimal?  @map("max_annual_amount") @db.Decimal(10, 2)
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime  @default(now()) @map("updated_at") @db.Timestamptz(6)
+  deletedAt       DateTime? @map("deleted_at") @db.Timestamptz(6)
 
-  @@id([tenant_id, id])
-  @@index([employee_id], map: "employee_deductions_employee_idx")
+  @@id([tenantId, id])
+  @@index([employeeId], map: "employee_deductions_employee_idx")
   @@map("EmployeeDeduction")
   @@schema("tenant_staff")
 }
@@ -5139,7 +5143,7 @@ model EmailWorkflow {
   updatedAt             DateTime           @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
   deletedAt             DateTime?          @map("deleted_at") @db.Timestamptz(6)
   tenant                Account            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  emailTemplate         email_templates?   @relation(fields: [emailTemplateTenantId, emailTemplateId], references: [tenant_id, id], onDelete: SetNull)
+  emailTemplate         EmailTemplate?   @relation(fields: [emailTemplateTenantId, emailTemplateId], references: [tenantId, id], onDelete: SetNull)
 
   @@id([tenantId, id])
   @@index([tenantId, triggerType])
@@ -5509,19 +5513,19 @@ model RolePolicy {
 
 /// Audit trail for payroll approval actions
 model PayrollApprovalHistory {
-  tenant_id       String   @db.Uuid
-  id              String   @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  payroll_run_id  String   @db.Uuid
-  action          String // approved | rejected | finalized | approval_requested
-  previous_status String
-  new_status      String
-  performed_by    String   @db.Uuid
-  performed_at    DateTime @default(now()) @db.Timestamptz(6)
-  reason          String?
+  tenantId       String   @map("tenant_id") @db.Uuid
+  id             String   @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  payrollRunId   String   @map("payroll_run_id") @db.Uuid
+  action         String
+  previousStatus String   @map("previous_status")
+  newStatus      String   @map("new_status")
+  performedBy    String   @map("performed_by") @db.Uuid
+  performedAt    DateTime @default(now()) @map("performed_at") @db.Timestamptz(6)
+  reason         String?
 
-  @@id([tenant_id, id])
-  @@index([tenant_id, payroll_run_id])
-  @@index([tenant_id, performed_by])
+  @@id([tenantId, id])
+  @@index([tenantId, payrollRunId])
+  @@index([tenantId, performedBy])
   @@map("payroll_approval_history")
   @@schema("tenant_staff")
 }

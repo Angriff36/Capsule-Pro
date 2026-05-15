@@ -60,11 +60,11 @@ import TimecardDetailModal from "./timecard-detail-modal";
 
 interface TimeEntry {
   id: string;
-  employee_id: string;
-  employee_first_name: string | null;
-  employee_last_name: string | null;
-  employee_email: string;
-  employee_role: string;
+  employeeId: string;
+  employeeFirstName: string | null;
+  employeeLastName: string | null;
+  employeeEmail: string;
+  employeeRole: string;
   employee_number: string | null;
   location_id: string | null;
   location_name: string | null;
@@ -587,15 +587,15 @@ export default function TimecardsPage() {
                             <Avatar className="h-8 w-8">
                               <AvatarImage
                                 alt={getEmployeeName(
-                                  entry.employee_first_name,
-                                  entry.employee_last_name
+                                  entry.employeeFirstName,
+                                  entry.employeeLastName
                                 )}
-                                src={`${entry.employee_first_name?.[0]}${entry.employee_last_name?.[0]}`}
+                                src={`${entry.employeeFirstName?.[0]}${entry.employeeLastName?.[0]}`}
                               />
                               <AvatarFallback>
                                 {getEmployeeName(
-                                  entry.employee_first_name,
-                                  entry.employee_last_name
+                                  entry.employeeFirstName,
+                                  entry.employeeLastName
                                 )
                                   .split(" ")
                                   .map((n) => n[0])
@@ -606,12 +606,12 @@ export default function TimecardsPage() {
                             <div>
                               <div className="font-medium">
                                 {getEmployeeName(
-                                  entry.employee_first_name,
-                                  entry.employee_last_name
+                                  entry.employeeFirstName,
+                                  entry.employeeLastName
                                 )}
                               </div>
                               <div className="text-muted-foreground text-xs">
-                                {entry.employee_role}
+                                {entry.employeeRole}
                               </div>
                             </div>
                           </div>
