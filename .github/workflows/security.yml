@@ -6,8 +6,11 @@ on:
   pull_request:
     branches: [main, develop]
   schedule:
-    # Run weekly on Sundays
     - cron: "0 0 * * 0"
+
+concurrency:
+  group: security-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
@@ -15,7 +18,7 @@ permissions:
 
 env:
   NPM_TOKEN: ${{ secrets.PKG_AUTH_TOKEN }}
-  DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
+  DATABASE_URL: "postgresql://dummy:***@localhost:5432/dummy"
 
 jobs:
   security:
@@ -28,7 +31,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version-file: ".nvmrc"
+          node-version: "22.18.0"
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -43,26 +46,26 @@ jobs:
         continue-on-error: true
 
       - name: Run CodeQL Analysis
-        uses: github/codeql-action/init@v3
+        uses: github/codeql-action/init@v4
         with:
-          languages: javascript
+          languages: javascript-typescript
 
       - name: Autobuild
-        uses: github/codeql-action/autobuild@v3
+        uses: github/codeql-action/autobuild@v4
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v3
+        uses: github/codeql-action/analyze@v4
 
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@0.28.0
         with:
           scan-type: "fs"
           scan-ref: "."
           format: "sarif"
           output: "trivy-results.sarif"
 
-      - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v3
+      - name: Upload Trivy scan results
+        uses: github/codeql-action/upload-sarif@v4
         if: ${{ always() && hashFiles('trivy-results.sarif') != '' }}
         with:
           sarif_file: "trivy-results.sarif"

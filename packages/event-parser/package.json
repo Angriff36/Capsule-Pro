@@ -46,6 +46,6 @@
   },
   "scripts": {
     "build": "tsc",
-    "type-check": "tsc --noEmit"
+    "typecheck": "tsc --noEmit"
   }
 }

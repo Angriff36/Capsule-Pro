@@ -8,6 +8,7 @@ const isPublicRoute = createRouteMatcher([
   "/webhooks(.*)",
   "/outbox/publish",
   "/api/health(.*)",
+  "/api/public(.*)",
 ]);
 
 const API_KEY_BEARER_PREFIX = "Bearer cp_";
