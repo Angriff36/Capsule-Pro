@@ -102,7 +102,7 @@ async function getCalendarData(tenantId: string, start: Date, end: Date) {
     database.timeOffRequest
       .findMany({
         where: {
-          tenantId: tenantId,
+          tenantId,
           startDate: {
             gte: startUtc,
             lte: endUtc,

@@ -28,14 +28,12 @@ export async function GET(
 
     const { id } = await params;
 
-    const inventoryTransaction = await database.inventoryTransaction.findFirst(
-      {
-        where: {
-          id,
-          tenantId,
-        },
-      }
-    );
+    const inventoryTransaction = await database.inventoryTransaction.findFirst({
+      where: {
+        id,
+        tenantId,
+      },
+    });
 
     if (!inventoryTransaction) {
       return manifestErrorResponse("InventoryTransaction not found", 404);

@@ -142,9 +142,8 @@ export default async function SchedulingRequestsPage() {
       id: r.id,
       type: "time_off" as const,
       employee:
-        [r.employeeFirstName, r.employeeLastName]
-          .filter(Boolean)
-          .join(" ") || "Unknown",
+        [r.employeeFirstName, r.employeeLastName].filter(Boolean).join(" ") ||
+        "Unknown",
       employeeRole: r.employeeRole || "Staff",
       detail: `${formatRequestType(r.request_type)} · ${new Date(r.start_date).toLocaleDateString()}${r.start_date.toDateString() !== r.end_date.toDateString() ? ` – ${new Date(r.end_date).toLocaleDateString()}` : ""}`,
       submitted: timeAgo(r.submitted_at),
@@ -155,9 +154,8 @@ export default async function SchedulingRequestsPage() {
       id: r.id,
       type: "timecard_edit" as const,
       employee:
-        [r.employeeFirstName, r.employeeLastName]
-          .filter(Boolean)
-          .join(" ") || "Unknown",
+        [r.employeeFirstName, r.employeeLastName].filter(Boolean).join(" ") ||
+        "Unknown",
       employeeRole: r.employeeRole || "Staff",
       detail: "Timecard edit request",
       submitted: timeAgo(r.created_at),

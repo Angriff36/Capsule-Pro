@@ -434,9 +434,7 @@ export default function DirectDepositPage() {
       ) : (
         <div className="space-y-3">
           {displayAccounts.map((account) => {
-            const employee = employees.find(
-              (e) => e.id === account.employeeId
-            );
+            const employee = employees.find((e) => e.id === account.employeeId);
             return (
               <Card key={account.id} tone="canvas">
                 <CardContent className="p-4">

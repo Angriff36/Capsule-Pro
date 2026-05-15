@@ -122,9 +122,7 @@ describe("Payroll Periods API", () => {
     });
 
     it("should filter by tenant_id and exclude soft-deleted", async () => {
-      vi.mocked(database.payrollPeriod.findMany).mockResolvedValue(
-        [] as never
-      );
+      vi.mocked(database.payrollPeriod.findMany).mockResolvedValue([] as never);
 
       const request = new NextRequest(
         "http://localhost/api/payroll/periods/list"
@@ -142,9 +140,7 @@ describe("Payroll Periods API", () => {
     });
 
     it("should order results by created_at descending", async () => {
-      vi.mocked(database.payrollPeriod.findMany).mockResolvedValue(
-        [] as never
-      );
+      vi.mocked(database.payrollPeriod.findMany).mockResolvedValue([] as never);
 
       const request = new NextRequest(
         "http://localhost/api/payroll/periods/list"

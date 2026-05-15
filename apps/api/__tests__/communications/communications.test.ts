@@ -190,9 +190,7 @@ describe("Communications - Email Templates", () => {
     });
 
     it("should filter by tenant_id and exclude soft-deleted", async () => {
-      vi.mocked(database.emailTemplate.findMany).mockResolvedValue(
-        [] as never
-      );
+      vi.mocked(database.emailTemplate.findMany).mockResolvedValue([] as never);
 
       const request = new NextRequest(
         "http://localhost/api/communications/email-templates/list"
@@ -210,9 +208,7 @@ describe("Communications - Email Templates", () => {
     });
 
     it("should order results by created_at descending", async () => {
-      vi.mocked(database.emailTemplate.findMany).mockResolvedValue(
-        [] as never
-      );
+      vi.mocked(database.emailTemplate.findMany).mockResolvedValue([] as never);
 
       const request = new NextRequest(
         "http://localhost/api/communications/email-templates/list"

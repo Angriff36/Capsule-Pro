@@ -1240,7 +1240,7 @@ async function generatePrepListTool(
   const eventDishes = await database.eventDish.findMany({
     where: {
       tenantId: context.tenantId,
-      eventId: eventId,
+      eventId,
       deletedAt: null,
     },
     select: {

@@ -169,7 +169,7 @@ export async function GET(request: NextRequest) {
         ? database.timeOffRequest
             .findMany({
               where: {
-                tenantId: tenantId,
+                tenantId,
                 startDate: {
                   gte: toDateStart(rawStart),
                   lte: toDateEnd(rawEnd),

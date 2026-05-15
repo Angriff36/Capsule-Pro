@@ -1328,9 +1328,7 @@ describe("Timecards API", () => {
         }),
       ];
 
-      db.timeOffRequest.findMany.mockResolvedValue(
-        mockRequests as never
-      );
+      db.timeOffRequest.findMany.mockResolvedValue(mockRequests as never);
 
       const request = new NextRequest(
         "http://localhost/api/timecards/time-off-requests/list"
@@ -1398,9 +1396,7 @@ describe("Timecards API", () => {
     it("should return a single time-off request by ID", async () => {
       const mockRequest = createMockTimeOffRequest({ id: "tor-001" });
 
-      db.timeOffRequest.findFirst.mockResolvedValue(
-        mockRequest as never
-      );
+      db.timeOffRequest.findFirst.mockResolvedValue(mockRequest as never);
 
       const request = new NextRequest(
         "http://localhost/api/timecards/time-off-requests/tor-001"

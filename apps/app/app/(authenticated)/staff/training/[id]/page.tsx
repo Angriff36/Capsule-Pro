@@ -343,8 +343,7 @@ const TrainingModulePage = async ({ params }: TrainingModulePageProps) => {
                               {assignment.employeeFirstName &&
                               assignment.employeeLastName
                                 ? `${assignment.employeeFirstName} ${assignment.employeeLastName}`
-                                : (assignment.employeeEmail ??
-                                  "All Employees")}
+                                : (assignment.employeeEmail ?? "All Employees")}
                             </div>
                             {assignment.employeeEmail && (
                               <div className="text-xs text-muted-foreground">

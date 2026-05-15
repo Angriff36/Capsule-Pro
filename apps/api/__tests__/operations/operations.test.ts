@@ -81,8 +81,7 @@ import { GET as docVersionList } from "@/app/api/documents/versions/list/route";
 import { POST as manifestDispatch } from "@/app/api/manifest/[entity]/commands/[command]/route";
 
 const dispatch =
-  (entity: string, command: string) =>
-  (req: NextRequest, _ctx?: unknown) =>
+  (entity: string, command: string) => (req: NextRequest, _ctx?: unknown) =>
     manifestDispatch(req, { params: Promise.resolve({ entity, command }) });
 
 // Kitchen Tasks (manifest)
@@ -100,8 +99,10 @@ const ktUpdatePriority = dispatch("KitchenTask", "updatePriority");
 // Documents
 const docVersionCreate = dispatch("DocumentVersion", "create");
 const docVersionRestore = dispatch("DocumentVersion", "restore");
+
 // Search
 import { GET as searchGet } from "@/app/api/search/route";
+
 // Workflow (manifest)
 const workflowActivate = dispatch("Workflow", "activate");
 const workflowCreate = dispatch("Workflow", "create");

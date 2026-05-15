@@ -576,7 +576,7 @@ export async function copyStepsFromVersion(
   for (const step of steps) {
     await database.recipeStep.create({
       data: {
-        tenantId: tenantId,
+        tenantId,
         id: randomUUID(),
         recipeVersionId: targetVersionId,
         stepNumber: step.stepNumber,

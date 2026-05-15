@@ -7,7 +7,7 @@
  */
 
 import { auth } from "@repo/auth/server";
-import type { email_template_type, EmailTemplate } from "@repo/database";
+import type { EmailTemplate, email_template_type } from "@repo/database";
 import { database } from "@repo/database";
 import { revalidatePath } from "next/cache";
 import { invariant } from "@/app/lib/invariant";
@@ -55,7 +55,7 @@ export async function getEmailTemplates(
   const tenantId = await getTenantId();
 
   const whereClause: Record<string, unknown> = {
-    AND: [{ tenantId: tenantId }, { deletedAt: null }],
+    AND: [{ tenantId }, { deletedAt: null }],
   };
 
   // Add search filter
@@ -118,7 +118,7 @@ export async function getEmailTemplateCount() {
 
   const count = await database.emailTemplate.count({
     where: {
-      AND: [{ tenantId: tenantId }, { deletedAt: null }],
+      AND: [{ tenantId }, { deletedAt: null }],
     },
   });
 
@@ -137,7 +137,7 @@ export async function getEmailTemplateById(id: string) {
 
   const template = await database.emailTemplate.findFirst({
     where: {
-      AND: [{ tenantId: tenantId }, { id }, { deletedAt: null }],
+      AND: [{ tenantId }, { id }, { deletedAt: null }],
     },
   });
 
@@ -158,8 +158,8 @@ export async function getDefaultTemplate(templateType: EmailTemplateType) {
   const template = await database.emailTemplate.findFirst({
     where: {
       AND: [
-        { tenantId: tenantId },
-        { templateType: templateType },
+        { tenantId },
+        { templateType },
         { isDefault: true },
         { isActive: true },
         { deletedAt: null },
@@ -186,7 +186,7 @@ export async function createEmailTemplate(input: CreateEmailTemplateInput) {
   if (input.isDefault) {
     await database.emailTemplate.updateMany({
       where: {
-        tenantId: tenantId,
+        tenantId,
         templateType: input.templateType,
         isDefault: true,
         deletedAt: null,
@@ -197,7 +197,7 @@ export async function createEmailTemplate(input: CreateEmailTemplateInput) {
 
   const template = await database.emailTemplate.create({
     data: {
-      tenantId: tenantId,
+      tenantId,
       name: input.name,
       templateType: input.templateType,
       subject: input.subject,
@@ -229,7 +229,7 @@ export async function updateEmailTemplate(
   // Verify template exists and belongs to tenant
   const existing = await database.emailTemplate.findFirst({
     where: {
-      AND: [{ tenantId: tenantId }, { id }, { deletedAt: null }],
+      AND: [{ tenantId }, { id }, { deletedAt: null }],
     },
   });
 
@@ -239,7 +239,7 @@ export async function updateEmailTemplate(
   if (input.isDefault) {
     await database.emailTemplate.updateMany({
       where: {
-        tenantId: tenantId,
+        tenantId,
         templateType: input.templateType ?? existing.templateType,
         isDefault: true,
         id: { not: id },
@@ -251,7 +251,7 @@ export async function updateEmailTemplate(
 
   const template = await database.emailTemplate.update({
     where: {
-      tenantId_id: { tenantId: tenantId, id },
+      tenantId_id: { tenantId, id },
     },
     data: {
       ...(input.name !== undefined && { name: input.name }),
@@ -288,7 +288,7 @@ export async function deleteEmailTemplate(id: string) {
   // Verify template exists and belongs to tenant
   const existing = await database.emailTemplate.findFirst({
     where: {
-      AND: [{ tenantId: tenantId }, { id }, { deletedAt: null }],
+      AND: [{ tenantId }, { id }, { deletedAt: null }],
     },
   });
 
@@ -312,7 +312,7 @@ export async function deleteEmailTemplate(id: string) {
   // Soft delete
   await database.emailTemplate.update({
     where: {
-      tenantId_id: { tenantId: tenantId, id },
+      tenantId_id: { tenantId, id },
     },
     data: {
       deletedAt: new Date(),

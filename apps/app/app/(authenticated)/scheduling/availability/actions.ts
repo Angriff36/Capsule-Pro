@@ -259,12 +259,12 @@ export async function createAvailability(formData: FormData) {
   // Create the availability record
   const availability = await database.employeeAvailability.create({
     data: {
-      tenantId: tenantId,
-      employeeId: employeeId,
-      dayOfWeek: dayOfWeek,
+      tenantId,
+      employeeId,
+      dayOfWeek,
       startTime: startTimeDate,
       endTime: endTimeDate,
-      isAvailable: isAvailable,
+      isAvailable,
       effectiveFrom: createEffectiveFrom2,
       effectiveUntil: effectiveUntilDate,
     },
@@ -392,7 +392,7 @@ export async function updateAvailability(
   const availability = await database.employeeAvailability.update({
     where: {
       tenantId_id: {
-        tenantId: tenantId,
+        tenantId,
         id: availabilityId,
       },
     },
@@ -419,7 +419,7 @@ export async function deleteAvailability(availabilityId: string) {
   await database.employeeAvailability.update({
     where: {
       tenantId_id: {
-        tenantId: tenantId,
+        tenantId,
         id: availabilityId,
       },
     },
@@ -540,8 +540,8 @@ export async function createBatchAvailability(formData: FormData) {
     patterns.map(async (pattern) => {
       return database.employeeAvailability.create({
         data: {
-          tenantId: tenantId,
-          employeeId: employeeId,
+          tenantId,
+          employeeId,
           dayOfWeek: pattern.dayOfWeek,
           startTime: pattern.startTime,
           endTime: pattern.endTime,

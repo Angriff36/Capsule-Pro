@@ -84,6 +84,7 @@ const sampleDataSeed = dispatch("SampleData", "seed");
 const scheduleShiftCreate = dispatch("ScheduleShift", "create");
 const scheduleShiftRemove = dispatch("ScheduleShift", "remove");
 const scheduleShiftUpdate = dispatch("ScheduleShift", "update");
+
 // User Preferences
 import {
   GET as userPreferencesGet,

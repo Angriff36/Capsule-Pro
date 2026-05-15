@@ -115,7 +115,6 @@ function createRecipeVersionHandler(command: string) {
     });
 }
 
-
 describe("Manifest HTTP - RecipeVersion Commands", () => {
   beforeEach(() => {
     vi.clearAllMocks();

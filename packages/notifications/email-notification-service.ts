@@ -404,7 +404,7 @@ export async function sendEmailFromTemplate(
   // Fetch the template
   const template = await database.emailTemplate.findFirst({
     where: {
-      tenantId: tenantId,
+      tenantId,
       id: templateId,
       isActive: true,
       deletedAt: null,

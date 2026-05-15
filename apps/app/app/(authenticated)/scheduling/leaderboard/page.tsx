@@ -108,10 +108,7 @@ export default async function LeaderboardPage() {
                   person.last_name
                 );
                 return (
-                  <OperationalRow
-                    density="comfortable"
-                    key={person.employeeId}
-                  >
+                  <OperationalRow density="comfortable" key={person.employeeId}>
                     <div className="flex items-center gap-4">
                       <span className="w-10 text-right font-mono text-2xl tabular-nums text-muted-foreground">
                         #{index + 1}

@@ -101,7 +101,10 @@ const sessionCancel = dispatch("AiEventSetupSession", "cancel");
 const sessionConfirm = dispatch("AiEventSetupSession", "confirm");
 const sessionMarkCreated = dispatch("AiEventSetupSession", "markCreated");
 const sessionParse = dispatch("AiEventSetupSession", "parse");
-const sessionUpdateConfidence = dispatch("AiEventSetupSession", "updateConfidence");
+const sessionUpdateConfidence = dispatch(
+  "AiEventSetupSession",
+  "updateConfidence"
+);
 const alertsConfigCreate = dispatch("AlertsConfig", "create");
 const alertsConfigRemove = dispatch("AlertsConfig", "remove");
 const alertsConfigUpdate = dispatch("AlertsConfig", "update");

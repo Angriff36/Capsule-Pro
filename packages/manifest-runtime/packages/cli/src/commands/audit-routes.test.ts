@@ -311,6 +311,29 @@ export async function POST(request: NextRequest) {
       ).toBe(false);
     });
 
+    it("does not flag the dynamic dispatcher as COMMAND_ROUTE_ORPHAN", () => {
+      const content = `
+export async function POST(request: NextRequest) {
+  const runtime = createManifestRuntime({ user: { id: userId, tenantId } });
+  return runtime.runCommand("create", {});
+}
+`;
+      const ctx = makeOwnershipContext({
+        commandManifestPaths: new Set([
+          "kitchen/prep-tasks/commands/create/route.ts",
+        ]),
+      });
+      const result = auditRouteFileContent(
+        content,
+        "/repo/apps/api/app/api/manifest/[entity]/commands/[command]/route.ts",
+        OPTIONS,
+        ctx
+      );
+      expect(
+        result.findings.some((f) => f.code === "COMMAND_ROUTE_ORPHAN")
+      ).toBe(false);
+    });
+
     it("accepts an exempted concrete command route", () => {
       const content = `
 export async function POST(request: NextRequest) {

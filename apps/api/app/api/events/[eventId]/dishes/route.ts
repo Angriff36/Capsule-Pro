@@ -38,8 +38,8 @@ export async function GET(
 
     const dishes = await database.eventDish.findMany({
       where: {
-        tenantId: tenantId,
-        eventId: eventId,
+        tenantId,
+        eventId,
         deletedAt: null,
       },
       orderBy: { createdAt: "desc" },

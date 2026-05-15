@@ -64,7 +64,7 @@ export async function GET(
 
     // Fetch event-dish links
     const eventDishLinks = await database.eventDish.findMany({
-      where: { eventId: eventId, tenantId: tenantId, deletedAt: null },
+      where: { eventId, tenantId, deletedAt: null },
       orderBy: { course: "asc" },
     });
 

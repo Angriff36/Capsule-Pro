@@ -28,15 +28,13 @@ export async function GET(
 
     const { id } = await params;
 
-    const adminChatParticipant = await database.adminChatParticipant.findFirst(
-      {
-        where: {
-          id,
-          tenantId,
-          deletedAt: null,
-        },
-      }
-    );
+    const adminChatParticipant = await database.adminChatParticipant.findFirst({
+      where: {
+        id,
+        tenantId,
+        deletedAt: null,
+      },
+    });
 
     if (!adminChatParticipant) {
       return manifestErrorResponse("AdminChatParticipant not found", 404);

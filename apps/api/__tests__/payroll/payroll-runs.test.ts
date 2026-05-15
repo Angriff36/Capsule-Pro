@@ -187,9 +187,7 @@ describe("Payroll Runs API", () => {
     });
 
     it("should return 404 when run not found", async () => {
-      vi.mocked(database.payrollRun.findFirst).mockResolvedValue(
-        null as never
-      );
+      vi.mocked(database.payrollRun.findFirst).mockResolvedValue(null as never);
 
       const request = new NextRequest(
         "http://localhost/api/payroll/runs/nonexistent"
@@ -205,9 +203,7 @@ describe("Payroll Runs API", () => {
     });
 
     it("should enforce tenant isolation on detail queries", async () => {
-      vi.mocked(database.payrollRun.findFirst).mockResolvedValue(
-        null as never
-      );
+      vi.mocked(database.payrollRun.findFirst).mockResolvedValue(null as never);
 
       const request = new NextRequest(
         "http://localhost/api/payroll/runs/run-001"
@@ -228,9 +224,7 @@ describe("Payroll Runs API", () => {
     });
 
     it("should not return soft-deleted runs", async () => {
-      vi.mocked(database.payrollRun.findFirst).mockResolvedValue(
-        null as never
-      );
+      vi.mocked(database.payrollRun.findFirst).mockResolvedValue(null as never);
 
       const request = new NextRequest(
         "http://localhost/api/payroll/runs/deleted-run"

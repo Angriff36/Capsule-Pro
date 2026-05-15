@@ -151,7 +151,7 @@ export async function POST(
       // Copy steps from source version using Prisma (replaces raw SQL)
       const sourceSteps = await database.recipeStep.findMany({
         where: {
-          tenantId: tenantId,
+          tenantId,
           recipeVersionId: body.sourceVersionId,
           deletedAt: null,
         },

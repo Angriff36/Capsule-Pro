@@ -12,6 +12,7 @@
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
 import { z } from "zod";
+import { scanRouteConformance } from "../lib/route-conformance-scan.js";
 import type { McpPlugin, PluginContext } from "../types.js";
 
 const projectRoot = process.env.MCP_PROJECT_ROOT || process.cwd();
@@ -75,7 +76,6 @@ const DIRECT_DELETE_PATTERN = /\.delete\(\s*\{\s*where\s*:/i;
 const HARDCODED_TENANT_PATTERN = /tenantId\s*[:=]\s*["']test-tenant["']/i;
 const HARDCODED_USER_PATTERN = /userId\s*[:=]\s*["']test-user["']/i;
 const AUTH_DISABLED_PATTERN = /auth\s*[:=]\s*(false|0|null)/i;
-const ROUTE_FILE_PATTERN = /route\.ts$/;
 const MANIFEST_FILE_PATTERN = /\.manifest$/;
 const IR_FILE_PATTERN = /\.ir\.json$/;
 const DOC_FILE_PATTERN = /\.md$/;
@@ -239,89 +239,8 @@ function scanForBypass(scope: "api" | "app" | "all"): ScanResult {
 }
 
 // ---------------------------------------------------------------------------
-// Route conformance scanner
+// Route conformance scanner (implementation: ../lib/route-conformance-scan.ts)
 // ---------------------------------------------------------------------------
-
-function scanRouteConformance(): ScanResult {
-  const findings: Finding[] = [];
-  let scannedFiles = 0;
-
-  try {
-    const manifestPath = join(
-      projectRoot,
-      "packages/manifest-ir/dist/routes.manifest.json"
-    );
-    const manifest = JSON.parse(readFileSync(manifestPath, "utf-8"));
-    const manifestRoutes = new Set(
-      manifest.routes.map((r: { path: string }) => r.path)
-    );
-
-    const apiDir = join(projectRoot, "apps/api/app/api");
-    const routeFiles = scanDirectory(apiDir, ROUTE_FILE_PATTERN);
-    scannedFiles = routeFiles.length;
-
-    for (const file of routeFiles) {
-      const relativePath = relative(apiDir, file);
-
-      const routePath = `/api/${relativePath
-        .replace(/\\/g, "/")
-        .replace(/\/route\.ts$/, "")
-        .replace(/\[([^\]]+)\]/g, ":$1")}`;
-
-      if (!manifestRoutes.has(routePath)) {
-        findings.push({
-          code: "ROUTE_NOT_IN_MANIFEST",
-          severity: "warning",
-          message: "API route not found in routes.manifest.json",
-          file: relative(projectRoot, file),
-          evidence: routePath,
-          suggestion:
-            "Add route to manifest or remove if obsolete. Regenerate routes with manifest compile.",
-        });
-      }
-    }
-
-    for (const route of manifest.routes) {
-      const filePath = join(
-        apiDir,
-        route.path
-          .replace("/api/", "")
-          .replace(/:([^/]+)/g, "[$1]")
-          .replace(/\//g, "/"),
-        "route.ts"
-      );
-
-      try {
-        statSync(filePath);
-      } catch {
-        findings.push({
-          code: "ROUTE_NOT_IMPLEMENTED",
-          severity: "error",
-          message: "Route in manifest but no implementation found",
-          file: route.path,
-          evidence: `Expected: ${relative(projectRoot, filePath)}`,
-          suggestion: "Implement the route handler or remove from manifest",
-        });
-      }
-    }
-  } catch (error) {
-    findings.push({
-      code: "SCAN_ERROR",
-      severity: "error",
-      message: `Failed to scan routes: ${error instanceof Error ? error.message : String(error)}`,
-      file: "governance-scanners.ts",
-    });
-  }
-
-  const summary = {
-    errorCount: findings.filter((f) => f.severity === "error").length,
-    warningCount: findings.filter((f) => f.severity === "warning").length,
-    infoCount: findings.filter((f) => f.severity === "info").length,
-    scannedFiles,
-  };
-
-  return { findings, summary };
-}
 
 // ---------------------------------------------------------------------------
 // Documentation drift scanner
@@ -485,13 +404,13 @@ export const governanceScannersPlugin: McpPlugin = {
       {
         title: "Scan Route Conformance",
         description:
-          "Scan API routes to verify they exist in routes.manifest.json " +
-          "and check for routes in manifest without implementation.",
+          "Scan API route conformance: commands via manifest dispatcher + " +
+          "kitchen.commands.json; GET reads via domain paths; flags illegal per-command route files.",
         inputSchema: z.object({}),
       },
       async () => {
         try {
-          const result = scanRouteConformance();
+          const result = scanRouteConformance(projectRoot) as ScanResult;
           return {
             content: [
               {

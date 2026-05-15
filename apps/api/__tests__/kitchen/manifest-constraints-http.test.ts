@@ -127,7 +127,6 @@ function createRecipeVersionHandler(command: string) {
     });
 }
 
-
 describe("Manifest HTTP Constraint Enforcement - Recipe Commands", () => {
   beforeEach(() => {
     vi.clearAllMocks();

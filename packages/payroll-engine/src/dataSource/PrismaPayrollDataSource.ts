@@ -259,12 +259,12 @@ export class PrismaPayrollDataSource implements PayrollDataSource {
     const payrollRun = await this.#prisma.payrollRun.upsert({
       where: {
         tenantId_id: {
-          tenantId: tenantId,
+          tenantId,
           id: periodId,
         },
       },
       create: {
-        tenantId: tenantId,
+        tenantId,
         id: periodId,
         payrollPeriodId: periodId,
         runDate: new Date(),
@@ -355,7 +355,7 @@ export class PrismaPayrollDataSource implements PayrollDataSource {
     const period = await this.#prisma.payrollPeriod.findUnique({
       where: {
         tenantId_id: {
-          tenantId: tenantId,
+          tenantId,
           id: periodId,
         },
       },
@@ -389,7 +389,7 @@ export class PrismaPayrollDataSource implements PayrollDataSource {
   ): Promise<PayrollRecord[]> {
     const payrollRun = await this.#prisma.payrollRun.findFirst({
       where: {
-        tenantId: tenantId,
+        tenantId,
         payrollPeriodId: periodId,
       },
     });
@@ -400,7 +400,7 @@ export class PrismaPayrollDataSource implements PayrollDataSource {
 
     const lineItems = await this.#prisma.payrollLineItem.findMany({
       where: {
-        tenantId: tenantId,
+        tenantId,
         payrollRunId: payrollRun.id,
       },
     });

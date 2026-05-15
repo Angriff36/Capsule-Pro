@@ -93,8 +93,7 @@ export class TrainingModulePrismaStore implements Store<EntityInstance> {
         patch.is_required = asBool(data.is_required);
       if (data.isRequired !== undefined)
         patch.is_required = asBool(data.isRequired);
-      if (data.isActive !== undefined)
-        patch.isActive = asBool(data.isActive);
+      if (data.isActive !== undefined) patch.isActive = asBool(data.isActive);
       if (data.isActive !== undefined) patch.isActive = asBool(data.isActive);
 
       const updated = await this.prisma.trainingModule.update({

@@ -212,7 +212,7 @@ async function preparePdfData(
 
   // Fetch event dishes
   const eventDishes = await database.eventDish.findMany({
-    where: { eventId: eventId, tenantId: tenantId },
+    where: { eventId, tenantId },
   });
 
   // Build station lists from event dishes
