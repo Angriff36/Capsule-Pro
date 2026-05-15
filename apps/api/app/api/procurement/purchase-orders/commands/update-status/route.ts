@@ -9,16 +9,7 @@ import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
-
-const VALID_TRANSITIONS: Record<string, string[]> = {
-  draft: ["submitted", "cancelled"],
-  submitted: ["approved", "rejected", "cancelled"],
-  approved: ["ordered", "cancelled"],
-  ordered: ["received", "cancelled"],
-  received: [],
-  cancelled: [],
-  rejected: [],
-};
+import { VALID_TRANSITIONS } from "../../constants";
 
 export async function POST(request: NextRequest) {
   try {

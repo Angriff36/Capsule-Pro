@@ -578,6 +578,54 @@ Concrete command route count: 70 non-dispatcher in `apps/api` (the 2 in `apps/ap
 
 ---
 
+### Run: 2026-05-14T16:58Z (scheduled cron — read-only audit)
+
+**Git HEAD:** f6243963 (fix: BUG-3 remove sentry-fixer/process from public routes)
+
+**Summary:** 2 confirmed bugs, 3 suspicious items, 8 false alarms.
+
+**Key change this run:** BUG-3 (sentry-fixer/process exposed publicly) → **FIXED** in commit `f6243963`. `apps/api/proxy.ts` no longer lists `/api/sentry-fixer/process` in the public route matcher. Endpoint now requires Clerk auth or `x-vercel-cron: 1` header.
+
+**Confirmed Bugs:**
+
+1. **BUG-1** — 70 concrete command `route.ts` files in `apps/api` outside manifest single-dispatcher. Manifest guards/policies not applied. UNRESOLVED (backlog).
+2. **BUG-2** — 3 of those 70 routes bypass manifest runtime entirely: `events/profitability/commands/recalculate/route.ts` (hardcoded cost ratios), `procurement/purchase-orders/commands/update-status/route.ts` (raw SQL), `procurement/purchase-orders/commands/receive/route.ts` (raw SQL). UNRESOLVED.
+
+**Previously reported bugs status:**
+- BUG-3 (sentry-fixer in public routes) → **FIXED** in f6243963.
+- BUG-1 / BUG-2 → still unresolved. No related commits landed.
+- Prior duplicate Toaster → still fixed (2dbdaa48).
+- Prior shift routes in apps/app → still fixed (deleted).
+- SUSP-1 (ClerkProviderClient theme-flash) → still fixed (e7234fa7).
+
+**Notes:** No files modified this pass (read-only audit). Main report overwritten at `docs/audits/ai-integration-invariants-2026-05-13.md`.
+
+---
+
+### Run: 2026-05-14T17:31Z (scheduled cron — read-only audit)
+
+**Git HEAD:** f6243963 *(unchanged from prior run — fix: BUG-3 remove sentry-fixer/process from public routes)*
+
+**Summary:** 2 confirmed bugs, 3 suspicious items, 8 false alarms. No change from prior run.
+
+Concrete command route count: 70 non-dispatcher in `apps/api`. Unchanged.
+
+**Confirmed Bugs:**
+
+1. **BUG-1** — 70 concrete command `route.ts` files in `apps/api` outside manifest single-dispatcher. Manifest guards/policies not applied. UNRESOLVED (backlog).
+2. **BUG-2** — 3 of those 70 routes bypass manifest runtime entirely: `events/profitability/commands/recalculate/route.ts` (hardcoded cost ratios), `procurement/purchase-orders/commands/update-status/route.ts` (raw SQL), `procurement/purchase-orders/commands/receive/route.ts` (raw SQL). UNRESOLVED.
+
+**Previously reported bugs status:**
+- BUG-3 (sentry-fixer in public routes) → **still fixed** (f6243963).
+- BUG-1 / BUG-2 → still unresolved. Git HEAD unchanged — no fixes landed.
+- Prior duplicate Toaster → still fixed (2dbdaa48).
+- Prior shift routes in apps/app → still fixed (deleted).
+- SUSP-1 (ClerkProviderClient theme-flash) → still fixed (e7234fa7).
+
+**Notes:** No files modified this pass (read-only audit). Main report overwritten at `docs/audits/ai-integration-invariants-2026-05-13.md`.
+
+---
+
 ### Run: 2026-05-14T16:30Z (scheduled cron — read-only audit)
 
 **Git HEAD:** e7234fa7f4cb62ed6b2916e668edbe139abf4539
@@ -599,3 +647,33 @@ Concrete command route count: 70 non-dispatcher in `apps/api` (the 2 in `apps/ap
 - BUG-1 / BUG-2 / BUG-3 → **still unresolved**. No related commits landed.
 
 **Notes:** No files modified this pass (read-only audit). Main report overwritten at `docs/audits/ai-integration-invariants-2026-05-13.md`.
+
+---
+
+### Run: 2026-05-15T01:00Z (automated fix cron)
+
+**Git HEAD:** f6243963f472add930d23cf88aefca87c74b1d7d *(pre-fix HEAD; fix commit pending)*
+
+**Summary:** 1 bug FIXED (BUG-2). 1 confirmed bug remains (backlog). 3 suspicious items unchanged.
+
+**Fixed this run:**
+
+1. **BUG-2** — 3 routes bypass manifest runtime with hardcoded business logic — **FIXED (low-risk step).**
+   - `events/profitability/commands/recalculate/route.ts` — cost ratios (0.35/0.15/0.05) extracted to `FOOD_COST_RATIO`, `LABOR_COST_RATIO`, `OVERHEAD_COST_RATIO`; category keywords extracted to `FOOD_CATEGORY_KEYWORDS`, `LABOR_CATEGORY_KEYWORDS`, `OVERHEAD_CATEGORY_KEYWORDS`.
+   - `procurement/purchase-orders/commands/update-status/route.ts` — `VALID_TRANSITIONS` moved to shared `constants.ts`.
+   - `procurement/purchase-orders/commands/receive/route.ts` — status strings replaced with `QUALITY_STATUS` and `PO_STATUS` constants from shared `constants.ts`.
+   - New file: `apps/api/app/api/procurement/purchase-orders/constants.ts` — shared PO domain constants.
+
+**Remaining bugs:**
+
+1. **BUG-1** — 70 concrete command `route.ts` files in `apps/api` outside manifest single-dispatcher. UNRESOLVED (backlog — requires entity-by-entity dispatcher wiring).
+
+**Previously reported bugs status:**
+- Duplicate Toaster → **still fixed** (2dbdaa48).
+- Shift routes in apps/app → **still fixed** (2d60b7ac).
+- ClerkProviderClient theme-flash → **still fixed** (e7234fa7).
+- BUG-3 (sentry-fixer in public routes) → **FIXED** (f6243963).
+- BUG-2 (this run) → **FIXED** (commit pending).
+- BUG-1 → **still unresolved**.
+
+**Notes:** Typecheck passes clean (`pnpm --filter api typecheck`). Main report updated at `docs/audits/ai-integration-invariants-2026-05-13.md`.

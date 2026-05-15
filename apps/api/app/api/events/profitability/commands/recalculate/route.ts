@@ -18,6 +18,21 @@ interface RecalculateRequestBody {
   instanceId: string;
 }
 
+// ── Business-logic constants ──────────────────────────────────────────
+// Extracted from hardcoded values per BUG-2 audit.
+// These should eventually live in a manifest-driven config, but for now
+// they're at least named and centrally changeable.
+
+/** Cost estimation ratios applied to confirmed/completed catering orders */
+const FOOD_COST_RATIO = 0.35;
+const LABOR_COST_RATIO = 0.15;
+const OVERHEAD_COST_RATIO = 0.05;
+
+/** Budget line-item category classification keywords */
+const FOOD_CATEGORY_KEYWORDS = ["food", "catering", "menu"];
+const LABOR_CATEGORY_KEYWORDS = ["labor", "staff", "service"];
+const OVERHEAD_CATEGORY_KEYWORDS = ["overhead", "facility", "equipment"];
+
 /**
  * Calculate totals from budget line items
  */
@@ -78,23 +93,11 @@ async function calculateBudgetTotals(
     const amount = Number(item.budgetedAmount);
     const category = item.category.toLowerCase();
 
-    if (
-      category.includes("food") ||
-      category.includes("catering") ||
-      category.includes("menu")
-    ) {
+    if (FOOD_CATEGORY_KEYWORDS.some((kw) => category.includes(kw))) {
       budgetedFoodCost += amount;
-    } else if (
-      category.includes("labor") ||
-      category.includes("staff") ||
-      category.includes("service")
-    ) {
+    } else if (LABOR_CATEGORY_KEYWORDS.some((kw) => category.includes(kw))) {
       budgetedLaborCost += amount;
-    } else if (
-      category.includes("overhead") ||
-      category.includes("facility") ||
-      category.includes("equipment")
-    ) {
+    } else if (OVERHEAD_CATEGORY_KEYWORDS.some((kw) => category.includes(kw))) {
       budgetedOverhead += amount;
     } else {
       // Default: food costs
@@ -150,9 +153,9 @@ async function calculateActualTotals(
       order.order_status === "confirmed" ||
       order.order_status === "completed"
     ) {
-      actualFoodCost += Number(order.subtotal_amount) * 0.35; // Estimate food cost at 35% of revenue
-      actualLaborCost += Number(order.subtotal_amount) * 0.15; // Estimate labor cost at 15% of revenue
-      actualOverhead += Number(order.subtotal_amount) * 0.05; // Estimate overhead at 5% of revenue
+      actualFoodCost += Number(order.subtotal_amount) * FOOD_COST_RATIO;
+      actualLaborCost += Number(order.subtotal_amount) * LABOR_COST_RATIO;
+      actualOverhead += Number(order.subtotal_amount) * OVERHEAD_COST_RATIO;
     }
   }
 
