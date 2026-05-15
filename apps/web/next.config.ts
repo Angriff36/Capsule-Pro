@@ -9,9 +9,11 @@ const baseConfig = withToolbar(withLogging(config)) as NextConfig;
 
 let nextConfig: NextConfig = {
   ...baseConfig,
-  // Enable source maps for Sentry error tracking in production
-  // Source maps are deleted after upload to Sentry (configured in sentryConfig.sourcemaps.deleteSourcemapsAfterUpload)
-  productionBrowserSourceMaps: true,
+  // Enable source maps for Sentry error tracking in production.
+  // Source maps are deleted after upload to Sentry.
+  // Only emit when Sentry is configured — avoids exposing source in builds without Sentry.
+  productionBrowserSourceMaps:
+    process.env.VERCEL === "1" && Boolean(process.env.SENTRY_AUTH_TOKEN),
   // Type checking enforced at build time. tsconfig passes cleanly.
   typescript: {
     ignoreBuildErrors: false,

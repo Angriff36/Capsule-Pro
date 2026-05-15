@@ -78,7 +78,7 @@
   "remoteCache": {
     "enabled": true
   },
-  "envMode": "loose",
+  "envMode": "strict",
   "tasks": {
     "generate": {
       "cache": false

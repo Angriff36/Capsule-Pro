@@ -44,7 +44,7 @@
     },
     {
       "path": "/outbox/publish",
-      "schedule": "* * * * *"
+      "schedule": "*/5 * * * *"
     }
   ]
 }
