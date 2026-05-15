@@ -16,6 +16,17 @@ const API_KEY_BEARER_PREFIX = "Bearer cp_";
 const middleware: NextMiddleware = clerkMiddleware(async (auth, req) => {
   try {
     if (isPublicRoute(req)) {
+      // Public read paths (GET): skip auth and rate limiting.
+      // Token validation is performed by the route handler.
+      if (req.method === "GET" || req.method === "HEAD") {
+        return;
+      }
+      // Public mutation paths (POST/PUT/PATCH/DELETE /api/public/*):
+      // apply rate limiting. Route handler validates the token.
+      const rateLimitResponse = await applyGlobalRateLimit(req);
+      if (rateLimitResponse) {
+        return rateLimitResponse;
+      }
       return;
     }
 

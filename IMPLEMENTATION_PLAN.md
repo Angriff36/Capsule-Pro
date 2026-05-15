@@ -58,7 +58,15 @@
 - `/api/public/contracts/[token]/sign` — contract signing
 - `/api/public/contracts/[token]` — contract detail view
 
-**Rate limiting:** Public routes skip Clerk auth but the route handlers apply their own token validation. `sign` and `respond` mutations pass through the API key bearer path rate limit. GET routes are un-rate-limited (read-only). If rate-limiting GET is desired, add server-action or route-level throttling.
+**Rate limiting:** Public mutation routes (POST/PUT/PATCH/DELETE on /api/public/*) are rate-limited via `applyGlobalRateLimit()`. GET/HEAD requests pass through freely (token-validated reads). The middleware conditionally applies rate limiting: `if (req.method === "GET" || req.method === "HEAD")` skip rate limit, else apply.
+
+**Verification (curl against localhost:2223):**
+- `GET /api/public/proposals/test-token` → **405** (handler reached, not 401 middleware block)
+- `GET /api/public/contracts/test-token` → **405** (handler reached)
+- `POST /api/public/contracts/test-token/sign` → **405** (handler reached + rate limit path active)
+- `POST /api/public/proposals/test-token/respond` → **405** (handler reached + rate limit path active)
+
+✅ All 4 endpoints bypass Clerk auth and reach route handlers. No 401 responses.
 
 ---
 
@@ -103,7 +111,7 @@
 | `.github/workflows/security.yml` | CodeQL v3→v4, Trivy pinned @0.28.0, concurrency group, node 22.18.0 |
 | `.github/workflows/codeql.yml` | CodeQL v3→v4, python matrix removed, cleanup |
 | `packages/event-parser/package.json` | `type-check` → `typecheck` |
-| `apps/api/proxy.ts` | Added `/api/public(.*)` to public routes |
+| `apps/api/proxy.ts` | Added `/api/public(.*)` to public routes + conditional rate limiting for mutations |
 
 ---
 
@@ -117,6 +125,10 @@ pnpm --filter web typecheck     # ✓ 0 errors
 
 # Turbo typecheck --dry shows 36 packages in scope
 pnpm turbo typecheck --dry      # ✓ full repo scope
+
+# Public API auth gating verification
+curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:2223/api/public/proposals/test-token  # 405 (handler reached)
+curl -s -X POST -o /dev/null -w "%{http_code}" http://127.0.0.1:2223/api/public/contracts/test-token/sign  # 405 (handler + rate-limit)
 ```
 
 ---
