@@ -743,3 +743,352 @@ Concrete command route count: 70 non-dispatcher in `apps/api`. Unchanged.
 - BUG-1 → **still unresolved**.
 
 **Notes:** Typecheck passes clean (`pnpm --filter app typecheck`). Main report updated at `docs/audits/ai-integration-invariants-2026-05-13.md`.
+
+---
+
+### Run: 2026-05-14T18:42:00Z (scheduled cron)
+
+**Git HEAD:** b614e7995abdf94766d15b99304960f3d6e8d255
+
+**Summary:** 1 confirmed bug, 3 suspicious items, 6 false alarms.
+
+**Confirmed Bugs:**
+
+1. **BUG-1** — 70 concrete command `route.ts` files under `apps/api/app/api/**/commands/*/route.ts` outside the manifest single-dispatcher. Violates manifest route invariant. Domains: email-templates, staff/shifts, inventory, kitchen, events, crm, procurement.
+
+**Previously reported bugs — status:**
+
+- **Prior BUG-1** (`clerk-provider.client.tsx:13` — `useTheme()` above ThemeProvider): **RESOLVED / FALSE ALARM.** Tree order is correct — `ClerkProviderClient` is nested inside `DesignSystemProvider` which wraps `ThemeProvider`. The prior report was incorrect.
+- **Prior BUG-2** (duplicate `<Toaster />`): Not reproduced this run — only one `<Toaster />` found in `packages/design-system/index.tsx`. No duplicate in app layout. **Appears resolved or was a false alarm.**
+- **Prior BUG-3** (`NotificationsProvider` mounted guard): Confirmed as intentional hydration guard, not a crash. Reclassified as SUSP-3.
+- **Prior BUG-4** (command routes in frontend `apps/app`): Not reproduced — zero command route files found in `apps/app/app/api`. **Resolved or was a false alarm.**
+- **Prior BUG-5** (71 concrete command routes): Still present as BUG-1 this run, count now 70.
+
+
+---
+
+### Run: 2026-05-14T22:00Z (scheduled cron)
+
+**Git HEAD:** b614e7995abdf94766d15b99304960f3d6e8d255
+
+**Summary:** 1 confirmed bug, 2 suspicious items, 6 false alarms.
+
+**Confirmed Bugs:**
+
+1. **BUG-1** — 70 concrete command `route.ts` files under `apps/api/app/api/**/commands/*/route.ts` outside the manifest single-dispatcher. Violates manifest route invariant. Domains: email-templates, staff/shifts, inventory, kitchen, events, crm, procurement. **UNRESOLVED — same as previous runs.**
+
+**Suspicious Items:**
+
+1. **SUSP-1** — `apps/app/app/clerk-provider.client.tsx:13` — `useTheme()` with `mounted` guard causes dark-mode Clerk UI flash on first paint. Not a crash or provider order violation.
+2. **SUSP-3** — `apps/api/proxy.ts:7-11` — Prefix-based public route matchers (`/webhooks(.*)`, `/api/health(.*)`) silently make future endpoints public.
+
+**Previously reported bugs — status:**
+
+- Prior BUG-1 (`clerk-provider.client.tsx` provider order inversion): **Remains a FALSE ALARM.** Tree order correct.
+- Duplicate `<Toaster />`: **Still resolved.**
+- Shift command routes in `apps/app`: **Still resolved.**
+- `afterSignInUrl`/`afterSignUpUrl` deprecated props: **Still clean.**
+- SUSP-1 cross-contaminated fallback URLs: **Still fixed** (prior fix run).
+- **BUG-1** (concrete manifest command routes, count=70): **Still unresolved.** Same HEAD as last run — no change.
+
+**Notes:** Main report overwritten at `docs/audits/ai-integration-invariants-2026-05-13.md`. No files modified in this pass.
+
+---
+
+### Run: 2026-05-15T02:52Z (scheduled cron)
+
+**Git HEAD:** b614e7995abdf94766d15b99304960f3d6e8d255
+
+**Summary:** 1 confirmed bug, 1 suspicious item, 6 false alarms.
+
+**Confirmed Bugs:**
+
+1. **BUG-1** — 70 concrete command `route.ts` files under `apps/api/app/api/**/commands/*/route.ts` outside the manifest single-dispatcher. Domains: email-templates, staff/shifts, inventory (bulk-order-rules, variance-reports), kitchen (prep-task-plan-workflows, alerts-config), events (catering-orders, import-workflows, profitability), crm (leads, proposals). **UNRESOLVED — same HEAD as previous run.**
+
+**Suspicious Items:**
+
+1. **SUSP-1** — `apps/app/proxy.ts:5-11` — Prefix-based public route matchers (`/plasmic(.*)`, `/view/proposal(.*)`, `/sign/contract(.*)`) could silently expose future routes without explicit auth decision. Not broken today.
+
+**Previously reported bugs — status:**
+
+- **SUSP-1 (clerk mounted guard / theme flash):** Promoted to false alarm. `mounted` guard is correct; provider order correct.
+- **SUSP-3 (api proxy prefix matchers):** API proxy (`apps/api`) is clean — only exposes `/webhooks` and `/api/health`. App proxy (`apps/app`) has the broader prefix risk (now SUSP-1 this run).
+- **BUG-1 (70 concrete manifest command routes):** **Still unresolved.** Same HEAD as last run.
+- Deprecated Clerk redirect props: **Still clean.**
+- Multiple ClerkProviders: **Still clean.**
+
+**Notes:** No code changes since previous run (same HEAD b614e799). Main report overwritten at `docs/audits/ai-integration-invariants-2026-05-13.md`. No source files modified in this pass.
+
+---
+
+---
+
+### Run: 2026-05-15T03:24Z (scheduled cron)
+
+**Git HEAD:** b614e7995abdf94766d15b99304960f3d6e8d255
+
+**Summary:** 1 confirmed bug, 1 suspicious item, 6 false alarms.
+
+**Confirmed Bugs:**
+
+1. **BUG-1** — 70 concrete command `route.ts` files under `apps/api/app/api/**/commands/*/route.ts` outside the manifest single-dispatcher. Domains: email-templates, staff/shifts, inventory (bulk-order-rules, variance-reports), kitchen (prep-task-plan-workflows, alerts-config), events (catering-orders, import-workflows, profitability), crm (leads, proposals), procurement (purchase-orders, requisitions). **UNRESOLVED — same HEAD as all previous runs.**
+
+**Suspicious Items:**
+
+1. **SUSP-1** — `apps/app/proxy.ts:5-11` — Prefix-based public route matchers (`/plasmic(.*)`, `/view/proposal(.*)`, `/sign/contract(.*)`) could silently expose future routes without explicit auth decision. Not broken today.
+
+**Previously reported bugs — status:**
+
+- **BUG-1 (70 concrete manifest command routes):** **Still unresolved.** HEAD unchanged at b614e799 since fix commits landed.
+- Deprecated Clerk redirect props: **Still clean.**
+- Multiple ClerkProviders: **Still clean.**
+- Provider order (ClerkProviderClient / notifications-provider useTheme): **Still false alarms — order correct.**
+- API middleware JSON 401: **Still clean.**
+
+**Notes:** HEAD unchanged since last run. No new bugs introduced. Main report overwritten at `docs/audits/ai-integration-invariants-2026-05-13.md`. No source files modified in this pass.
+
+---
+
+---
+
+### Run: 2026-05-15T(cron) — scheduled audit pass
+
+**Git HEAD:** b614e7995abdf94766d15b99304960f3d6e8d255
+
+**Summary:** 1 confirmed bug, 1 suspicious item, 6 false alarms.
+
+**Confirmed Bugs:**
+
+1. **BUG-1** — 70 concrete command `route.ts` files exist under `apps/api/app/api/**/commands/*/route.ts` outside the manifest single-dispatcher. 62 delegate to `executeManifestCommand`; 8 are fully bespoke handlers bypassing manifest runtime entirely. Domains affected: email-templates, staff/shifts, inventory (bulk-order-rules, variance-reports), kitchen (prep-task-plan-workflows, alerts-config), events (catering-orders, import-workflows, profitability), crm (leads, proposals), procurement (purchase-orders). **UNRESOLVED — HEAD unchanged.**
+
+**Suspicious Items:**
+
+1. **SUSP-1** — `apps/app/proxy.ts:5–11` — Prefix-based public route matchers (`/plasmic(.*)`, `/view/proposal(.*)`, `/sign/contract(.*)`) could silently expose future routes without explicit auth. Not broken today.
+
+**False Alarms:** FA-1 through FA-6 — all previously reported (ClerkProviderClient/useTheme ordering, NotificationsProvider/useTheme, auth/provider.tsx intentional omission, deprecated Clerk props, multiple ClerkProviders, API HTML redirects). All confirmed clean.
+
+**Previously reported bugs — status:**
+
+- **BUG-1 (70 concrete manifest command routes):** **Still unresolved.** HEAD unchanged at b614e799.
+- All other previously confirmed false alarms remain clean.
+
+**Notes:** HEAD unchanged from all previous runs. No new bugs introduced. No source files modified in this audit pass. 8 bespoke route handlers (not using executeManifestCommand) newly called out as higher-severity subset of BUG-1.
+
+---
+
+---
+
+### Run: 2026-05-15T(cron-2) — scheduled audit pass
+
+**Git HEAD:** b614e7995abdf94766d15b99304960f3d6e8d255
+
+**Summary:** 1 confirmed bug, 1 suspicious item, 7 false alarms.
+
+**Confirmed Bugs:**
+
+1. **BUG-1** — 70 concrete command `route.ts` files exist under `apps/api/app/api/**/commands/*/route.ts` outside the single-dispatcher. 8 are fully bespoke handlers not invoking manifest runtime (staff/shifts create-validated + update-validated, inventory bulk-order-rules create + update, inventory variance-reports review + approve, events profitability recalculate). 62 delegate to executeManifestCommand but still violate placement invariant. **STILL UNRESOLVED — HEAD unchanged.**
+
+**Suspicious Items:**
+
+1. **SUSP-1** — `apps/app/proxy.ts:5-11` — Prefix-based public route matchers (/plasmic, /view/proposal, /sign/contract) silently expose future routes added under those prefixes.
+
+**False Alarms:** FA-1 through FA-7 confirmed clean — ClerkProviderClient/useTheme ordering (valid), NotificationsProvider/useTheme (valid), auth/provider.tsx intentional ClerkProvider omission (valid), no deprecated Clerk redirect props (clean), no duplicate ClerkProviders (clean), API routes return JSON 401/403 (clean), mobile AuthTokenBridge useAuth() correctly nested (clean).
+
+**Previously reported bugs:**
+
+- **BUG-1:** Still unresolved. HEAD b614e799 unchanged across all runs.
+
+**Notes:** No new bugs. Provider graph clean. Auth middleware clean. No source files modified.
+
+---
+
+---
+
+### Run: 2026-05-15T(cron-3) — scheduled audit pass
+
+**Git HEAD:** 98dc79423d0b98685c2d12619deb8f634fa2034e
+
+**Previous HEAD:** b614e7995abdf94766d15b99304960f3d6e8d255
+
+**Commits since last run:** 3 (fix(v104): rate limiting on public API mutations; fix(v104): CI truth gate repair; fix: SUSP-1 Clerk redirect URL cross-contamination)
+
+**Summary:** 1 confirmed bug (unchanged), 1 new suspicious item, 7 false alarms, 1 previous suspicious item resolved.
+
+**Confirmed Bugs:**
+
+1. **BUG-1** — 70 concrete command `route.ts` files exist under `apps/api/app/api/**/commands/*/route.ts` outside the single-dispatcher. 8 are fully bespoke handlers not invoking manifest runtime. 62 delegate to `executeManifestCommand` but still violate placement invariant. **STILL UNRESOLVED.**
+
+**Suspicious Items:**
+
+1. **SUSP-2 (NEW)** — `apps/api/proxy.ts:11` — New `/api/public(.*)` prefix matcher (added commit 98dc7942) skips all auth for GET/HEAD and only applies rate limiting for mutations. Any handler added under `/api/public/` that omits token validation creates an unauthenticated write endpoint. No compile-time enforcement.
+
+**Previously Reported — Now Resolved:**
+
+- **SUSP-1** — Clerk fallback redirect URL cross-contamination — **FIXED** in commit b614e799. No deprecated `afterSignInUrl`/`afterSignUpUrl` props detected anywhere.
+
+**False Alarms:** FA-1 through FA-8 confirmed clean — provider ordering valid, no duplicate ClerkProviders, no deprecated Clerk props, API routes return JSON 401/403, mobile ClerkProvider nesting correct.
+
+**Notes:** No source files modified in this audit pass. Provider graph and auth middleware remain clean.
+
+---
+
+### Run: 2026-05-15T(cron-4) — scheduled audit pass
+
+**Git HEAD:** 98dc79423d0b98685c2d12619deb8f634fa2034e *(unchanged from prior run — cron-3)*
+
+**Summary:** 1 confirmed bug, 1 suspicious item, 8 false alarms. No change from cron-3.
+
+**Confirmed Bugs:**
+
+1. **BUG-1** — 70 concrete command `route.ts` files exist under `apps/api/app/api/**/commands/*/route.ts` outside the single-dispatcher. 8 are fully bespoke handlers not invoking manifest runtime (staff/shifts create-validated + update-validated, inventory bulk-order-rules create + update, inventory variance-reports review + approve, events profitability recalculate, communications email-templates create). 62 delegate to `executeManifestCommand` but still violate placement invariant. **STILL UNRESOLVED — HEAD unchanged.**
+
+**Suspicious Items:**
+
+1. **SUSP-2** — `apps/api/proxy.ts:11` — `/api/public(.*)` prefix matcher skips auth for GET/HEAD and only rate-limits mutations. No compile-time enforcement that handlers under this prefix validate tokens. Any future route under `/api/public/` without token validation is silently unauthenticated.
+
+**Previously Reported — Status:**
+
+- **BUG-1 (70 concrete manifest command routes):** Still unresolved. HEAD unchanged at 98dc7942.
+- **SUSP-1 (Clerk fallback redirect cross-contamination):** Still fixed (b614e799). No deprecated props found.
+- All other false alarms (FA-1 through FA-8) remain confirmed clean.
+
+**Notes:** HEAD unchanged from cron-3. No new bugs introduced. No source files modified. Main report overwritten at `docs/audits/ai-integration-invariants-2026-05-13.md`.
+
+---
+
+---
+
+### Run: 2026-05-15T(cron-5) — scheduled audit pass
+
+**Git HEAD:** ec1aad0b (test: add event intake E2E workflow + pricing engine unit tests)
+
+**Previous HEAD:** 98dc79423d0b98685c2d12619deb8f634fa2034e
+
+**Commits since last run:** 1 (test-only: E2E workflow + pricing engine unit tests — no provider, route, or auth changes)
+
+**Summary:** 1 confirmed bug, 2 suspicious items, 8 false alarms. No change in bug categories or counts.
+
+**Confirmed Bugs:**
+
+1. **BUG-1** — 70 concrete command `route.ts` files under `apps/api/app/api/**/commands/*/route.ts` outside the manifest single-dispatcher. ~8 bespoke handlers bypass manifest runtime entirely (staff/shifts create-validated + update-validated, inventory bulk-order-rules create + update, inventory variance-reports review + approve, events profitability recalculate, communications email-templates create). 62 others call `executeManifestCommand` but still violate placement invariant. **STILL UNRESOLVED — backlog.**
+
+**Suspicious Items:**
+
+1. **SUSP-2** — `apps/api/proxy.ts:11` — `/api/public(.*)` prefix matcher skips all auth for GET/HEAD; no compile-time enforcement that handlers under this prefix validate tokens.
+2. **SUSP-1** — `apps/app/proxy.ts:5-11` — Prefix-based public route matchers (`/plasmic(.*)`, `/view/proposal(.*)`, `/sign/contract(.*)`) could silently expose future routes without explicit auth decision.
+
+**Previously reported bugs — status:**
+
+- **BUG-1 (70 concrete manifest command routes):** Still unresolved. HEAD advanced from 98dc7942 → ec1aad0b but new commit is test-only; no fix landed.
+- **SUSP-1 (Clerk fallback redirect cross-contamination):** Still fixed (b614e799).
+- Duplicate Toaster: Still fixed (2dbdaa48).
+- Shift routes in apps/app: Still fixed (deleted).
+- BUG-3 sentry-fixer in public routes: Still fixed (f6243963).
+- BUG-2 hardcoded cost ratios: Still fixed (cbc329bd).
+- All FA-1 through FA-8: Confirmed clean.
+
+**Notes:** No source files modified in this audit pass. Provider graph, Clerk ordering, auth middleware all clean. Main report overwritten at `docs/audits/ai-integration-invariants-2026-05-13.md`.
+
+---
+
+### Run: 2026-05-15T(cron-6) — scheduled audit pass
+
+**Git HEAD:** ec1aad0b (test: add event intake E2E workflow + pricing engine unit tests)
+
+**Previous HEAD:** ec1aad0b *(unchanged from cron-5)*
+
+**Summary:** 1 confirmed bug, 2 suspicious items, 8 false alarms. No change in any category or count.
+
+**Confirmed Bugs:**
+
+1. **BUG-1** — 70 concrete command `route.ts` files under `apps/api/app/api/**/commands/*/route.ts` outside the manifest single-dispatcher. ~8 bespoke handlers bypass manifest runtime entirely (staff/shifts create-validated + update-validated, inventory bulk-order-rules create + update, inventory variance-reports review + approve, events profitability recalculate, communications email-templates create). 62 others call `executeManifestCommand` but still violate placement invariant. **STILL UNRESOLVED — backlog.**
+
+**Suspicious Items:**
+
+1. **SUSP-2** — `apps/api/proxy.ts:11` — `/api/public(.*)` prefix matcher skips all auth for GET/HEAD; no compile-time enforcement that handlers under this prefix validate tokens.
+2. **SUSP-1** — `apps/app/proxy.ts:5-11` — Prefix-based public route matchers (`/plasmic(.*)`, `/view/proposal(.*)`, `/sign/contract(.*)`) could silently expose future routes without explicit auth decision.
+
+**Previously reported bugs — status:**
+
+- **BUG-1 (70 concrete manifest command routes):** Still unresolved. HEAD unchanged at ec1aad0b since cron-5.
+- **SUSP-1 (Clerk fallback redirect cross-contamination):** Still fixed (b614e799).
+- Duplicate Toaster: Still fixed (2dbdaa48).
+- Shift routes in apps/app: Still fixed (deleted, 2d60b7ac).
+- sentry-fixer in public routes: Still fixed (f6243963).
+- Hardcoded cost ratios: Still fixed (cbc329bd).
+- All FA-1 through FA-8: Confirmed clean.
+
+**Notes:** HEAD unchanged from cron-5. No new bugs introduced. No source files modified. Provider graph, Clerk ordering, auth middleware all clean. Main report overwritten at `docs/audits/ai-integration-invariants-2026-05-13.md`.
+
+---
+
+---
+
+### Run: 2026-05-15T(cron-7) — scheduled audit pass
+
+**Git HEAD:** ec1aad0b (test: add event intake E2E workflow + pricing engine unit tests)
+
+**Previous HEAD:** ec1aad0b *(unchanged from cron-6)*
+
+**Summary:** 2 confirmed bugs, 2 suspicious items, 8 false alarms.
+
+> Note: BUG count revised from 1 to 2 this run. BUG-1 is the same 70-route invariant violation (unchanged). BUG-2 is the `ClerkProviderClient` useTheme-before-hydration flash — previously classified as part of BUG-1 context; now broken out explicitly as a confirmed (mitigated) cosmetic bug. No new regressions.
+
+**Confirmed Bugs:**
+
+1. **BUG-1** — 70 concrete command `route.ts` files under `apps/api/app/api/**/commands/*/route.ts` outside the manifest single-dispatcher. 3 of these fully bypass manifest runtime (no `runCommand`/`executeManifestCommand`): `events/profitability/commands/recalculate/route.ts` (hardcoded cost ratios, pure DB write), `procurement/purchase-orders/commands/update-status/route.ts` (raw SQL), `procurement/purchase-orders/commands/receive/route.ts` (raw SQL). STILL UNRESOLVED — backlog.
+
+2. **BUG-2** — `apps/app/app/clerk-provider.client.tsx:13` — `useTheme()` resolves `undefined` during SSR/initial hydration causing a flash of light-mode Clerk UI on dark-mode pages. Mitigated by `mounted` guard but flash is still present. Cosmetic only.
+
+**Suspicious Items:**
+
+1. **SUSP-1** — `apps/app/proxy.ts:5-11` — Prefix-based public matchers (`/plasmic(.*)`, `/view/proposal(.*)`, `/sign/contract(.*)`) silently expose any future routes added under these paths.
+2. **SUSP-2** — `apps/api/proxy.ts:11` — `/api/public(.*)` blanket GET/HEAD bypass; per-handler token validation not statically enforced.
+
+**Previously reported bugs — status:**
+
+- **BUG-1 (70 concrete manifest command routes):** Still unresolved. HEAD unchanged at ec1aad0b.
+- **BUG-2 (ClerkProviderClient useTheme flash):** Mitigated but cosmetically broken. Not new — existing since initial implementation.
+- Deprecated `afterSignInUrl`/`afterSignUpUrl`: Confirmed ABSENT — not found anywhere in codebase.
+- Duplicate Toaster: Still fixed.
+- Shift routes in apps/app: Still fixed.
+- sentry-fixer in public routes: Still fixed.
+- FA-1 through FA-8: Confirmed clean.
+
+**Notes:** HEAD unchanged from cron-6. No new bugs introduced. No source files modified. Provider graph ordering valid. QueryClientProvider covers all hook callers. Single ClerkProvider at root — no duplicates. No stale Clerk redirect props found.
+
+---
+
+---
+
+### Run: 2026-05-15T(cron-8) — scheduled audit pass
+
+**Git HEAD:** ec1aad0bc4e045df5ea300e9667759b88b90ea03
+
+**Previous HEAD:** ec1aad0b *(unchanged from cron-7)*
+
+**Summary:** 2 confirmed bugs, 2 suspicious items, 8 false alarms.
+
+> Note: HEAD unchanged for the third consecutive run. No new bugs. All previously confirmed findings stable.
+
+**Confirmed Bugs:**
+
+1. **BUG-1** — 70 concrete command `route.ts` files under `apps/api/app/api/**/commands/*/route.ts` outside the manifest single-dispatcher. 8 routes fully bypass `executeManifestCommand` entirely; worst: `events/profitability/commands/recalculate/route.ts` (hardcoded cost ratios), `procurement/purchase-orders/commands/update-status/route.ts` (raw SQL), `procurement/purchase-orders/commands/receive/route.ts` (raw SQL). STILL UNRESOLVED — backlog.
+
+2. **BUG-2** — `apps/app/app/clerk-provider.client.tsx:13` — `useTheme()` resolves `undefined` during SSR/initial hydration causing a flash of light-mode Clerk UI on dark-mode pages. Mitigated by `mounted` guard; cosmetic only.
+
+**Suspicious Items:**
+
+1. **SUSP-1** — `apps/app/proxy.ts:5-11` — Prefix-based public matchers (`/plasmic(.*)`, `/view/proposal(.*)`, `/sign/contract(.*)`) silently expose any future routes added under these paths.
+2. **SUSP-2** — `apps/api/proxy.ts:11` — `/api/public(.*)` blanket GET/HEAD bypass; per-handler token validation not statically enforced.
+
+**Previously reported bugs — status:**
+
+- **BUG-1:** STILL UNRESOLVED. No code changes at HEAD.
+- **BUG-2:** Mitigated, cosmetically unfixed. No change.
+- **SUSP-1/SUSP-2:** Unchanged design risks.
+- All FA-1 through FA-8: Still clean.
+
+**Notes:** HEAD unchanged from cron-7. No source files modified in this pass. Provider graph, Clerk ordering, QueryClientProvider coverage, and auth middleware all confirmed clean. Main report overwritten at `docs/audits/ai-integration-invariants-2026-05-13.md`.
+
+---
