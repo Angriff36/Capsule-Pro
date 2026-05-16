@@ -56,6 +56,15 @@ Systemic cron authentication fix. ALL 8 scheduled crons were non-functional due 
 - fumadocs version skew: fumadocs-mdx should be ^15.x to match core/ui ^15.x.
 - Prisma generator uses modern `prisma-client` provider (confirmed correct).
 
+## Changes from config cleanup pass (2026-05-16)
+
+Quick-win CRITICAL fixes applied:
+- Root package.json: renamed from "next-forge" to "capsule-pro", added private:true, removed bin/files/version template leftovers
+- Dead vitest configs: deleted apps/api/vitest.config.ts and vitest.config.ts.bak2 (only .mts configs are active)
+- Hardcoded Windows paths: removed 4 absolute C:\Projects paths from vitest-database-mock plugin in vitest.config.mts
+- CSP double-definition: removed CSP from root vercel.json (apps/app/next.config.ts is sole authority)
+- Stale webhook-retry: deleted orphan app/cron/webhook-retry/route.ts (canonical path is app/api/cron/webhook-retry/)
+
 ## Changes from automation pass (2026-05-16)
 
 - Removed ghost apps/studio reference from root tsconfig.json (line 13 was `{ "path": "./apps/studio" }` - directory confirmed non-existent)
@@ -136,7 +145,7 @@ Passes 2-10 findings archived in `docs/audits/` and `docs/implementation-history
 - [ ] **[NEXT]** apps/api/next.config.ts line 102: ignoreBuildErrors:true hides ALL type errors. **CRITICAL** [CONFIRMED-P10]
 - [ ] **[NEXT]** apps/web/next.config.ts line 17: ignoreBuildErrors:true. **CRITICAL** [CONFIRMED-P10]
 - [ ] **[CI]** deploy.yml continue-on-error:true on tests step. **CRITICAL** [CONFIRMED-P10]
-- [ ] **[VERCEL-CROSS]** CSP double-definition: root vercel.json AND apps/app/next.config.ts have DIFFERENT CSP policies. **CRITICAL** [CONFIRMED-P10]
+- [x] **[VERCEL-CROSS]** CSP double-definition: root vercel.json AND apps/app/next.config.ts have DIFFERENT CSP policies. **CRITICAL** [CONFIRMED-P10] **RESOLVED: removed conflicting CSP from root vercel.json; apps/app/next.config.ts is sole CSP authority**
 - [ ] **[NEXT]** CSP unsafe-inline + unsafe-eval in apps/app next.config.ts AND root vercel.json. **CRITICAL** [CONFIRMED-P10]
 - [ ] **[NEXT]** apps/api outputFileTracingIncludes manifest-ir/ir/**/*.json -- verify completeness. **CRITICAL** [CONFIRMED-P10]
 - [ ] **[NEXT-NEW]** packages/next-config serverExternalPackages replacement bug: shared ["ably"] DROPPED when apps define own array. **CRITICAL** [NEW-P11] **NOTE: Both apps already include "ably" manually. Pattern is fragile but not a runtime bug. Downgraded from CRITICAL to HIGH (maintenance concern).**
@@ -154,8 +163,8 @@ Passes 2-10 findings archived in `docs/audits/` and `docs/implementation-history
 - [ ] **[CI]** .husky/pre-push exits 0 immediately. **CRITICAL** [CONFIRMED-P10]
 - [ ] **[CI]** security.yml uses aquasecurity/trivy-action@master unpinned. **CRITICAL** [CONFIRMED-P10]
 - [ ] **[CI]** security.yml continue-on-error:true on pnpm audit. **CRITICAL** [CONFIRMED-P10]
-- [ ] **[PKG]** Root package.json missing private:true, has template leftovers (bin, files, version). **CRITICAL** [CONFIRMED-P10]
-- [ ] **[PKG]** Root package.json name is "next-forge" not project name. **CRITICAL** [CONFIRMED-P10]
+- [x] **[PKG]** Root package.json missing private:true, has template leftovers (bin, files, version). **CRITICAL** [CONFIRMED-P10] **RESOLVED: name→capsule-pro, added private:true, removed bin/files/version template leftovers**
+- [x] **[PKG]** Root package.json name is "next-forge" not project name. **CRITICAL** [CONFIRMED-P10] **RESOLVED: renamed to "capsule-pro"**
 - [ ] **[CI-NEW]** deploy.yml uses unmaintained amondnet/vercel-action@v25 (supply chain risk). **HIGH** [NEW-P11]
 - [ ] **[CI-NEW]** logging-sync.yml runs pnpm install WITHOUT ensure-github-packages-npmrc.sh. **HIGH** [NEW-P11]
 - [ ] **[CI-NEW]** security.yml missing `security-events: write` permission for SARIF upload. **HIGH** [NEW-P12]
@@ -174,7 +183,7 @@ ALL scheduled crons non-functional. Clerk middleware blocks `/api/cron/*` (not i
 - [x] **[CRON]** sentry-fixer/process: spoofable header + runs AI agents, reads source, posts Slack. **CRITICAL** [ESCALATED-P11] **RESOLVED: Already in isPublicRoute, no change needed (already accepts x-vercel-cron)**
 - [x] **[CRON]** /outbox/publish: POST only + OUTBOX_PUBLISH_TOKEN. Vercel sends GET. **CRITICAL** [CONFIRMED-P10] **RESOLVED: Added GET handler + x-vercel-cron auth**
 - [ ] **[CRON]** keep-alive uses non-standard x-cron-secret AND never scheduled. **CRITICAL** [CONFIRMED-P10]
-- [ ] **[CRON-NEW]** Duplicate webhook-retry routes: app/cron/ AND app/api/cron/. **CRITICAL** [CONFIRMED-P10]
+- [x] **[CRON-NEW]** Duplicate webhook-retry routes: app/cron/ AND app/api/cron/. **CRITICAL** [CONFIRMED-P10] **RESOLVED: deleted stale app/cron/webhook-retry/route.ts (canonical is app/api/cron/webhook-retry/route.ts)**
 - [x] **[CRON-P11-NEW]** integration-auto-sync and outbox/publish MISSING from cron registry. **HIGH** [NEW-P11] **RESOLVED: integration-auto-sync was in vercel.json cron config; outbox/publish GET handler added**
 - [ ] **[SECURITY-NEW]** keep-alive non-standard header, no middleware auth. **HIGH** [NEW-P11]
 - [ ] **[SECURITY-NEW]** integration-auto-sync not in isPublicRoute -- crons may 401 via Clerk. **HIGH** [NEW-P11]
@@ -193,8 +202,8 @@ ALL scheduled crons non-functional. Clerk middleware blocks `/api/cron/*` (not i
 
 ### Batch D: Vitest Correctness
 
-- [ ] **[VITEST]** Hardcoded Windows paths in apps/api (7 locations). **CRITICAL** [CONFIRMED-P10]
-- [ ] **[VITEST]** apps/api has 4 conflicting vitest configs including .bak2 in git. **CRITICAL** [CONFIRMED-P10]
+- [x] **[VITEST]** Hardcoded Windows paths in apps/api (7 locations). **CRITICAL** [CONFIRMED-P10] **RESOLVED: removed 4 hardcoded C:\Projects\capsule-pro absolute paths from vitest.config.mts resolveId hooks**
+- [x] **[VITEST]** apps/api has 4 conflicting vitest configs including .bak2 in git. **CRITICAL** [CONFIRMED-P10] **RESOLVED: deleted dead vitest.config.ts and vitest.config.ts.bak2**
 - [ ] **[VITEST]** 3 different vitest major versions: sales-reporting ^2, notifications ^3, main ^4. **CRITICAL** [CONFIRMED-P10]
 - [ ] **[VITEST]** apps/app environmentMatchGlobs DEPRECATED in Vitest 4.0 (will break). **CRITICAL** [CONFIRMED-P10]
 - [ ] **[VITEST-NEW]** environmentMatchGlobs REMOVED in Vitest 4 (not just deprecated). **CRITICAL** [NEW-P11]

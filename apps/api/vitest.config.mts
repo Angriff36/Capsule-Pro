@@ -12,8 +12,6 @@ export default defineConfig({
         // Intercept imports to the database package (multiple patterns)
         if (
           id === "@repo/database" ||
-          id === "C:\\Projects\\capsule-pro\\packages\\database" ||
-          id === "C:/Projects/capsule-pro/packages/database" ||
           id.endsWith("\\packages\\database") ||
           id.endsWith("/packages/database") ||
           (importer?.includes("auto-assignment") && id.includes("database"))
@@ -33,9 +31,6 @@ export default defineConfig({
           normalizedId.includes("packages/database/generated") ||
           normalizedId.endsWith("/generated/client") ||
           normalizedId.endsWith("\\generated\\client") ||
-          id ===
-            "C:\\Projects\\capsule-pro\\packages\\database\\generated\\client" ||
-          id === "C:/Projects/capsule-pro/packages/database/generated/client" ||
           id.includes("packages\\database\\generated\\client") ||
           id.includes("packages/database/generated/client") ||
           (importer?.includes("database") && id.includes("generated/client"))
