@@ -22,7 +22,6 @@ export default defineConfig({
             (importer.includes("recipes") || importer.includes("menus")) &&
             id.includes("database"))
         ) {
-          console.log(`[vitest-database-mock] INTERCEPTED database: ${id}`);
           return path.resolve(
             import.meta.dirname,
             "./test/mocks/@repo/database.ts"
@@ -44,7 +43,6 @@ export default defineConfig({
           id.includes("packages/database/generated/client") ||
           (importer?.includes("database") && id.includes("generated/client"))
         ) {
-          console.log(`[vitest-database-mock] INTERCEPTED client: ${id}`);
           return path.resolve(
             import.meta.dirname,
             "./test/mocks/@repo/generated/client.ts"
@@ -57,7 +55,6 @@ export default defineConfig({
           id === "C:\\Projects\\capsule-pro\\packages\\storage" ||
           id.includes("packages/storage")
         ) {
-          console.log(`[vitest-database-mock] INTERCEPTED storage: ${id}`);
           return path.resolve(
             import.meta.dirname,
             "./test/mocks/@repo/storage.ts"
@@ -79,7 +76,6 @@ export default defineConfig({
           id.includes("/packages/database/index.ts") ||
           id.includes("packages/database/index.js")
         ) {
-          console.log(`[vitest-database-mock] LOAD intercepted: ${id}`);
           // Return the mock content directly instead of loading the actual file
           // This mocks all the imports and exports from the real database/index.ts
           return `
@@ -116,14 +112,8 @@ export default defineConfig({
     },
   ],
   test: {
-    // API route tests and server action tests need node environment (server-only), most specific first
-    environmentMatchGlobs: [
-      ["**/__tests__/api/**/*.test.{ts,js}", "node"],
-      ["**/__tests__/api/**/*.test.{tsx,jsx}", "node"],
-      ["**/__tests__/menus/**/*.test.{ts,tsx,js,jsx}", "node"],
-      ["**/__tests__/recipes/**/*.test.{ts,tsx,js,jsx}", "node"],
-    ],
-    // Default to jsdom for everything else
+    // environmentMatchGlobs was removed in Vitest 4.
+    // Node-environment test files use // @vitest-environment node pragma instead.
     environment: "jsdom",
     include: ["**/__tests__/**/*.test.{ts,tsx,js,jsx}"],
     exclude: ["**/e2e/**", "**/node_modules/**"],

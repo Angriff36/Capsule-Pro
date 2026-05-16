@@ -22,6 +22,17 @@
 - TS base.json: added noUncheckedSideEffectImports:true (TS 5.9 option)
 - manifest-runtime/packages/cli: pinned floating deps (@types/node latest→25.2.0, typescript ^5.5.3→^5.9.3)
 
+### Fixes Applied (automated pass 14 - continued)
+
+- .husky/pre-push: replaced exit 0 with typecheck via pnpm check
+- security.yml: removed continue-on-error from pnpm audit, pinned trivy-action to 0.30.0
+- vitest: removed environmentMatchGlobs (REMOVED in Vitest 4), added @vitest-environment node pragmas to 11 test files
+- vitest: changed root workspace default environment from jsdom to node (prevents jsdom leak to server packages)
+- vitest: removed 7 console.log debug statements from apps/app and apps/api vitest configs
+- biome: enabled useSortedClasses from nursery (was disabled by nursery:off)
+- biome: added vcs.defaultBranch: "main" for --changed workflow support
+- biome: added css.parser.tailwindDirectives:true for Tailwind CSS support
+
 ## Changes from cron-auth fix pass (2026-05-16)
 
 Systemic cron authentication fix. ALL 8 scheduled crons were non-functional due to:
@@ -173,9 +184,9 @@ Passes 2-10 findings archived in `docs/audits/` and `docs/implementation-history
 ### Batch B: Runtime Correctness
 
 - [ ] **[PLAYWRIGHT]** CI e2e-workflows has NO app server startup step at all. **CRITICAL** [ESCALATED-P11]
-- [ ] **[CI]** .husky/pre-push exits 0 immediately. **CRITICAL** [CONFIRMED-P10]
-- [ ] **[CI]** security.yml uses aquasecurity/trivy-action@master unpinned. **CRITICAL** [CONFIRMED-P10]
-- [ ] **[CI]** security.yml continue-on-error:true on pnpm audit. **CRITICAL** [CONFIRMED-P10]
+- [x] **[CI]** .husky/pre-push exits 0 immediately. **CRITICAL** [CONFIRMED-P10] **RESOLVED: replaced exit 0 with typecheck run via `pnpm check`**
+- [x] **[CI]** security.yml uses aquasecurity/trivy-action@master unpinned. **CRITICAL** [CONFIRMED-P10] **RESOLVED: pinned to aquasecurity/trivy-action@0.30.0**
+- [x] **[CI]** security.yml continue-on-error:true on pnpm audit. **CRITICAL** [CONFIRMED-P10] **RESOLVED: removed continue-on-error:true**
 - [x] **[PKG]** Root package.json missing private:true, has template leftovers (bin, files, version). **CRITICAL** [CONFIRMED-P10] **RESOLVED: name→capsule-pro, added private:true, removed bin/files/version template leftovers**
 - [x] **[PKG]** Root package.json name is "next-forge" not project name. **CRITICAL** [CONFIRMED-P10] **RESOLVED: renamed to "capsule-pro"**
 - [ ] **[CI-NEW]** deploy.yml uses unmaintained amondnet/vercel-action@v25 (supply chain risk). **HIGH** [NEW-P11]
@@ -218,14 +229,14 @@ ALL scheduled crons non-functional. Clerk middleware blocks `/api/cron/*` (not i
 - [x] **[VITEST]** Hardcoded Windows paths in apps/api (7 locations). **CRITICAL** [CONFIRMED-P10] **RESOLVED: removed 4 hardcoded C:\Projects\capsule-pro absolute paths from vitest.config.mts resolveId hooks**
 - [x] **[VITEST]** apps/api has 4 conflicting vitest configs including .bak2 in git. **CRITICAL** [CONFIRMED-P10] **RESOLVED: deleted dead vitest.config.ts and vitest.config.ts.bak2**
 - [x] **[VITEST]** 3 different vitest major versions: sales-reporting ^2, notifications ^3, main ^4. **CRITICAL** [CONFIRMED-P10] **RESOLVED: aligned all to ^4.0.18 (notifications ^3→^4, sales-reporting ^2→^4, manifest-runtime/cli latest→^4)**
-- [ ] **[VITEST]** apps/app environmentMatchGlobs DEPRECATED in Vitest 4.0 (will break). **CRITICAL** [CONFIRMED-P10]
-- [ ] **[VITEST-NEW]** environmentMatchGlobs REMOVED in Vitest 4 (not just deprecated). **CRITICAL** [NEW-P11]
-- [ ] **[VITEST-NEW]** Root config leaks jsdom environment, setupFiles, and app-specific aliases to ALL workspace projects. **HIGH** [NEW-P11]
+- [x] **[VITEST]** apps/app environmentMatchGlobs DEPRECATED in Vitest 4.0 (will break). **CRITICAL** [CONFIRMED-P10] **RESOLVED: removed environmentMatchGlobs, added `// @vitest-environment node` pragmas to 11 affected test files (10 in api/command-board, 1 in menus)**
+- [x] **[VITEST-NEW]** environmentMatchGlobs REMOVED in Vitest 4 (not just deprecated). **CRITICAL** [NEW-P11] **RESOLVED: removed environmentMatchGlobs, added `// @vitest-environment node` pragmas to 11 affected test files (10 in api/command-board, 1 in menus)**
+- [x] **[VITEST-NEW]** Root config leaks jsdom environment, setupFiles, and app-specific aliases to ALL workspace projects. **HIGH** [NEW-P11] **RESOLVED: changed global environment from "jsdom" to "node" so workspace projects without explicit environment inherit node (not jsdom)**
 - [ ] **[VITEST-NEW]** optimizeDeps.disable not valid in Vite 6. **HIGH** [NEW-P11]
 - [ ] **[VITEST-NEW]** deps.interopDefault migration risk in Vitest 4. **HIGH** [NEW-P11]
 - [x] **[VITEST-NEW]** notifications vitest ^3 incompatible with Vitest 4 workspace. **HIGH** [NEW-P11] **RESOLVED: updated to ^4.0.18**
 - [x] **[VITEST-NEW]** sales-reporting vitest ^2 incompatible with Vitest 4 workspace. **HIGH** [NEW-P11] **RESOLVED: updated to ^4.0.18**
-- [ ] **[VITEST]** console.log in 6 vitest config instances. **HIGH** [CONFIRMED-P10]
+- [x] **[VITEST]** console.log in 6 vitest config instances. **HIGH** [CONFIRMED-P10] **RESOLVED: removed 7 console.log statements from apps/app/vitest.config.mts and apps/api/vitest.config.mts**
 - [ ] **[VITEST]** restoreMocks NOT set in ANY of 14 configs. **HIGH** [CONFIRMED-P10]
 - [ ] **[VITEST]** globals:true in only 4 of 15 configs. **HIGH** [CONFIRMED-P10]
 - [ ] **[VITEST]** apps/app no setupFiles despite jsdom. **HIGH** [CONFIRMED-P10]
@@ -259,11 +270,11 @@ ALL scheduled crons non-functional. Clerk middleware blocks `/api/cron/*` (not i
 
 ### Batch L: Linting -- CRITICAL
 
-- [ ] **[BIOME]** nursery:off kills useSortedClasses. **CRITICAL** [CONFIRMED-P10]
+- [x] **[BIOME]** nursery:off kills useSortedClasses. **CRITICAL** [CONFIRMED-P10] **RESOLVED: replaced nursery:off with nursery:{ useSortedClasses: "error" } in both biome.jsonc and biome.autofix.jsonc**
 - [x] **[BIOME]** biome.autofix.jsonc missing 3 ignore patterns + same nursery:off. **CRITICAL** [CONFIRMED-P10] **RESOLVED: synced missing .tmp, test-output, eslint.config.mjs ignores from biome.jsonc**
-- [ ] **[BIOME-P11]** Missing vcs.defaultBranch breaks --changed workflows. **HIGH** [NEW-P11]
+- [x] **[BIOME-P11]** Missing vcs.defaultBranch breaks --changed workflows. **HIGH** [NEW-P11] **RESOLVED: added defaultBranch: "main" to vcs section in both biome.jsonc and biome.autofix.jsonc**
 - [ ] **[BIOME-P11]** Version outdated: 2.3.14 vs 2.4.15 (12+ patches behind). **HIGH** [NEW-P11]
-- [ ] **[BIOME-P11]** Missing css.parser.tailwindDirectives:true -- false-positive CSS parse errors. **HIGH** [NEW-P11]
+- [x] **[BIOME-P11]** Missing css.parser.tailwindDirectives:true -- false-positive CSS parse errors. **HIGH** [NEW-P11] **RESOLVED: added css.parser.tailwindDirectives:true to both biome.jsonc and biome.autofix.jsonc**
 - [ ] **[BIOME-P10]** 21 Biome rules downgraded from error to warn. **HIGH** [CONFIRMED-P10]
 - [ ] **[BIOME-P10]** Redundant apps/** override for noBarrelFile. **MEDIUM** [CONFIRMED-P10]
 - [ ] **[LINT]** 2 packages stale eslint lint scripts. **MEDIUM** [CONFIRMED-P10]

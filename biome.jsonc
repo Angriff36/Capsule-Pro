@@ -59,7 +59,9 @@
   ],
   "linter": {
     "rules": {
-      "nursery": "off",
+      "nursery": {
+        "useSortedClasses": "error"
+      },
       "complexity": {
         "noExcessiveCognitiveComplexity": "warn",
         "noForEach": "warn"
@@ -85,7 +87,7 @@
         "useSemanticElements": "warn"
       },
       "suspicious": {
-        "noExplicitAny": "warn",
+        "noExplicitAny": "error",
         "noArrayIndexKey": "warn",
         "useAwait": "warn",
         "noEmptyBlockStatements": "warn"
@@ -101,7 +103,13 @@
   "vcs": {
     "enabled": true,
     "clientKind": "git",
-    "useIgnoreFile": true
+    "useIgnoreFile": true,
+    "defaultBranch": "main"
+  },
+  "css": {
+    "parser": {
+      "tailwindDirectives": true
+    }
   },
   "overrides": [
     {
@@ -132,6 +140,9 @@
         "rules": {
           "performance": {
             "useTopLevelRegex": "off"
+          },
+          "suspicious": {
+            "noExplicitAny": "warn"
           }
         }
       }
@@ -142,6 +153,9 @@
         "rules": {
           "performance": {
             "noBarrelFile": "off"
+          },
+          "suspicious": {
+            "noExplicitAny": "warn"
           }
         }
       }

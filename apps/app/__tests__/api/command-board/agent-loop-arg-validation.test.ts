@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { describe, expect, it } from "vitest";
 import { isMissingRequiredArgValue } from "@/app/api/command-board/chat/agent-loop";
 

@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { describe, expect, it } from "vitest";
 import { formatStructuredAgentResponseForDisplay } from "@/app/api/command-board/chat/response-format";
 

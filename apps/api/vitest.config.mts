@@ -16,7 +16,6 @@ export default defineConfig({
           id.endsWith("/packages/database") ||
           (importer?.includes("auto-assignment") && id.includes("database"))
         ) {
-          console.log(`[vitest-database-mock] INTERCEPTED database: ${id}`);
           return path.resolve(
             import.meta.dirname,
             "./test/mocks/@repo/database.ts"
@@ -35,7 +34,6 @@ export default defineConfig({
           id.includes("packages/database/generated/client") ||
           (importer?.includes("database") && id.includes("generated/client"))
         ) {
-          console.log(`[vitest-database-mock] INTERCEPTED client: ${id}`);
           return path.resolve(
             import.meta.dirname,
             "./test/mocks/@repo/generated/client.ts"
@@ -50,7 +48,6 @@ export default defineConfig({
           id.includes("/packages/database/index.ts") ||
           id.includes("packages/database/index.js")
         ) {
-          console.log(`[vitest-database-mock] LOAD intercepted: ${id}`);
           // Return the mock content directly instead of loading the actual file
           return `
             export const Prisma = {
