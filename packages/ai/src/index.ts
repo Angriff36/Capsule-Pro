@@ -51,7 +51,7 @@ class AISDK {
 
   constructor(options: SDKOptions = {}) {
     this.config = {
-      apiKey: options.apiKey ?? process.env.API_KEY ?? "",
+      apiKey: options.apiKey ?? process.env.OPENAI_API_KEY ?? "",
       baseUrl: options.baseUrl ?? "https://api.example.com",
       defaultTimeout: options.defaultTimeout ?? 60_000,
       defaultMaxRetries: options.defaultMaxRetries ?? 3,

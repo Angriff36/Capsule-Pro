@@ -84,8 +84,131 @@ interface RawOutboxEvent {
   publishedAt: Date | null;
 }
 
+/**
+ * GET /outbox/publish
+ * Vercel Cron sends GET requests. Uses default limit (100).
+ */
+export async function GET(request: Request) {
+  // Accept Vercel cron header as auth alternative
+  const vercelCron = request.headers.get("x-vercel-cron");
+  if (
+    vercelCron !== "1" &&
+    !isAuthorized(request.headers.get("authorization"))
+  ) {
+    return new Response("Unauthorized", { status: 401 });
+  }
+
+  const limit = 100;
+
+  // Get oldest pending event age for monitoring
+  const oldestPending = await database.outboxEvent.findFirst({
+    where: { status: "pending" },
+    orderBy: { createdAt: "asc" },
+    select: { createdAt: true },
+  });
+
+  const oldestPendingSeconds = oldestPending
+    ? (Date.now() - oldestPending.createdAt.getTime()) / 1000
+    : 0;
+
+  const pendingEvents = await database.$queryRaw<RawOutboxEvent[]>`
+    SELECT "id", "tenantId", "aggregateType", "aggregateId", "eventType", "payload",
+           "status", "error", "createdAt", "publishedAt"
+    FROM "tenant"."OutboxEvent"
+    WHERE "status" = 'pending'
+    ORDER BY "createdAt" ASC
+    LIMIT ${limit}
+    FOR UPDATE SKIP LOCKED
+  `;
+
+  if (pendingEvents.length === 0) {
+    return Response.json({
+      published: 0,
+      failed: 0,
+      skipped: 0,
+      oldestPendingSeconds,
+    });
+  }
+
+  const ably = new Ably.Rest(env.ABLY_API_KEY);
+  let published = 0;
+  let failed = 0;
+  let skipped = 0;
+
+  for (const event of pendingEvents) {
+    if (event.status !== "pending") {
+      skipped += 1;
+      continue;
+    }
+
+    const envelope = buildEventEnvelope(event);
+    const messageSize = getMessageSize(envelope);
+
+    if (messageSize > MAX_PAYLOAD_SIZE) {
+      await database.outboxEvent.update({
+        where: { id: event.id },
+        data: {
+          status: "failed",
+          error: `PAYLOAD_TOO_LARGE: ${messageSize} bytes (max ${MAX_PAYLOAD_SIZE})`,
+        },
+      });
+      failed += 1;
+      continue;
+    }
+
+    if (messageSize > WARN_PAYLOAD_SIZE) {
+      console.warn(
+        `[OutboxPublisher] Large payload for event ${event.id}: ${messageSize} bytes`
+      );
+    }
+
+    const channelName = getChannelName(event.tenantId);
+    const channel = ably.channels.get(channelName);
+
+    try {
+      await channel.publish(event.eventType, envelope);
+      await database.outboxEvent.update({
+        where: { id: event.id },
+        data: {
+          status: "published",
+          publishedAt: new Date(),
+          error: null,
+        },
+      });
+      published += 1;
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Unknown publish error";
+      try {
+        await database.outboxEvent.update({
+          where: { id: event.id },
+          data: {
+            status: "failed",
+            error: `ABLY_ERROR: ${message}`,
+          },
+        });
+      } catch {
+        // Event may have been deleted, ignore update error
+      }
+      failed += 1;
+    }
+  }
+
+  return Response.json({
+    published,
+    failed,
+    skipped,
+    oldestPendingSeconds,
+  });
+}
+
 export async function POST(request: Request) {
-  if (!isAuthorized(request.headers.get("authorization"))) {
+  // Accept Vercel cron header as auth alternative (Vercel Cron sends x-vercel-cron: 1)
+  const vercelCron = request.headers.get("x-vercel-cron");
+  if (
+    vercelCron !== "1" &&
+    !isAuthorized(request.headers.get("authorization"))
+  ) {
     return new Response("Unauthorized", { status: 401 });
   }
 

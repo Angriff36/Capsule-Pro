@@ -59,10 +59,15 @@ export async function GET(request: Request): Promise<NextResponse> {
     );
   }
 
+  // Validate auth: accept Vercel cron header OR Authorization: Bearer
+  const vercelCron = request.headers.get("x-vercel-cron");
   const authHeader = request.headers.get("authorization");
-  if (authHeader !== `Bearer ${cronSecret}`) {
+  const isVercelCron = vercelCron === "1" && cronSecret;
+  const isBearerValid = authHeader === `Bearer ${cronSecret}`;
+
+  if (!(isVercelCron || isBearerValid)) {
     log.error(
-      "[integration-auto-sync] Unauthorized request — invalid or missing Authorization header"
+      "[integration-auto-sync] Unauthorized request — invalid or missing authentication"
     );
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

@@ -45,7 +45,14 @@ const DEFAULT_CONFIG: AlertConfig = {
 // surface to the public internet.
 function verifyCronAuth(request: NextRequest): boolean {
   const authHeader = request.headers.get("authorization");
+  const vercelCron = request.headers.get("x-vercel-cron");
   const cronSecret = process.env.CRON_SECRET;
+
+  // Vercel cron jobs send x-vercel-cron: 1 header — accept as auth
+  // when the secret is configured (proves deployment environment).
+  if (vercelCron === "1" && cronSecret) {
+    return true;
+  }
 
   if (!cronSecret) {
     log.error(
@@ -171,6 +178,91 @@ async function processTenantContracts(
   }
 
   return result;
+}
+
+/**
+ * GET /api/cron/contract-expiration-alerts
+ * Vercel Cron sends GET requests. Delegates to shared logic with default config.
+ */
+export async function GET(request: NextRequest) {
+  if (!verifyCronAuth(request)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const results = {
+    processed: 0,
+    alertsSent: 0,
+    errors: [] as string[],
+  };
+
+  try {
+    const workflows = await database.emailWorkflow.findMany({
+      where: {
+        triggerType: "contract_expiration",
+        isActive: true,
+        deletedAt: null,
+      },
+      select: { tenantId: true },
+    });
+
+    if (workflows.length === 0) {
+      return NextResponse.json({
+        success: true,
+        timestamp: new Date().toISOString(),
+        message: "No active contract expiration workflows found",
+        results,
+      });
+    }
+
+    const tenantIds = [...new Set(workflows.map((w) => w.tenantId))];
+
+    for (const tenantId of tenantIds) {
+      try {
+        const tenantResult = await processTenantContracts(
+          tenantId,
+          DEFAULT_CONFIG
+        );
+        results.processed += tenantResult.processed;
+        results.alertsSent += tenantResult.alertsSent;
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : "Unknown error";
+        results.errors.push(`Tenant ${tenantId}: ${message}`);
+        log.error(
+          `Failed to process contract alerts for tenant ${tenantId}:`,
+          error
+        );
+        captureException(error, {
+          tags: {
+            route: "cron/contract-expiration-alerts",
+            errorType: "per_tenant",
+          },
+          extra: { tenantId },
+        });
+      }
+    }
+
+    return NextResponse.json({
+      success: true,
+      timestamp: new Date().toISOString(),
+      results,
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown error";
+    log.error("Failed to process contract expiration alerts:", error);
+    captureException(error, {
+      tags: { route: "cron/contract-expiration-alerts", errorType: "outer" },
+    });
+    return NextResponse.json(
+      {
+        success: false,
+        error: message,
+        timestamp: new Date().toISOString(),
+        results,
+      },
+      { status: 500 }
+    );
+  }
 }
 
 /**

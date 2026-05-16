@@ -9,6 +9,7 @@ const isPublicRoute = createRouteMatcher([
   "/outbox/publish",
   "/api/health(.*)",
   "/api/sentry-fixer/process",
+  "/api/cron(.*)",
 ]);
 
 const API_KEY_BEARER_PREFIX = "Bearer cp_";

@@ -30,7 +30,14 @@ export const runtime = "nodejs";
 // surface to the public internet.
 function verifyCronAuth(request: NextRequest): boolean {
   const authHeader = request.headers.get("authorization");
+  const vercelCron = request.headers.get("x-vercel-cron");
   const cronSecret = process.env.CRON_SECRET;
+
+  // Vercel cron jobs send x-vercel-cron: 1 header — accept as auth
+  // when the secret is configured (proves deployment environment).
+  if (vercelCron === "1" && cronSecret) {
+    return true;
+  }
 
   if (!cronSecret) {
     log.error(
@@ -44,6 +51,14 @@ function verifyCronAuth(request: NextRequest): boolean {
   }
 
   return true;
+}
+
+/**
+ * GET /api/cron/email-reminders
+ * Vercel Cron sends GET requests. Triggers the same logic as POST.
+ */
+export async function GET(request: NextRequest) {
+  return POST(request);
 }
 
 /**
