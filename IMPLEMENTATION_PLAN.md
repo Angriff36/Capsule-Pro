@@ -1,601 +1,658 @@
-# IMPLEMENTATION_PLAN.md — v71
+# Config Alignment Implementation Plan
 
-> Updated 2026-05-13 by verification pass.
-> v71: Resolved 13 P0 items (P0.E, P0.T, P0.U, P0.V, P0.W, P0.S, P0.Y, P0.Z, P0.AA, P0.AB, P0.AD, P0.F, P0.G, P0.AC). 1 remains: P0.R.
-> v66-70: Resolved P0.I, P0.X, P0.L, P0.AE, P0.AF, P0.AH.
+**Status**: Active audit -- 16-domain configuration alignment review (pass 13 verified 2026-05-16)
+**Generated**: 2026-05-16 (pass 2) -- Updated 2026-05-16 (pass 13 synthesis)
+**Scope**: TypeScript, Next.js, Vitest, Turbo, Vercel, Sentry, Biome, Playwright, PostCSS, package.json, ENV, CI/CD, Build, Prisma, Misc, Cross-Config, Specs
+**Counts**: ~842 issues. CRITICAL: 42. HIGH: ~192. MEDIUM: ~325. LOW: ~283.
 
-## v67 Findings (2026-05-13)
+## Changes from pass 13 (2026-05-16)
 
-- **Production code: CLEAN** — 0 typecheck errors in `apps/api/app/api/` route files; `pnpm --filter app typecheck` passes. Build blocked by missing env vars (RESEND_TOKEN, NEXT_PUBLIC_CLERK_*, etc.) locally.
-- **Test file import failures: 171** — TS2307 "Cannot find module" across ~40 test files. Tests import camelCase paths (e.g., `@/app/api/adminchatparticipant/archive/route`) but routes use kebab-case (`/administrative/chat/participants/`). Some routes don't exist at all (e.g., `@/app/api/user/create/route`).
-- **Test type errors (non-TS2307): 221** — Wrong argument counts (TS2554), request type mismatches (TS2345 using `Request` instead of `NextRequest`). Test setup issues, not production.
-- **Manifest dispatcher modified** — `apps/api/app/api/manifest/[entity]/commands/[command]/route.ts` imports kitchen-specific `kitchen.commands.json` registry. May not work for non-kitchen entities. Console.log statements present (violates P1.B policy).
+12 domain-specific audit agents deep-checked all configs against latest official documentation. ~97 new findings.
 
-## v71 Resolved (2026-05-13)
+### CRITICAL / HIGH NEW FINDINGS
 
-- **P0.E — Marketing: lead command routes missing** [RESOLVED v71] — Created `/api/crm/leads/commands/{convert-to-client,disqualify,archive,update}` routes using `executeManifestCommand`. Verified directories exist with route.ts files.
-- **P0.AD — CRM: proposals command routes missing** [RESOLVED v71] — Created `/api/crm/proposals/commands/{accept,reject,send,withdraw,mark-viewed}` routes. All 5 command directories confirmed present.
-- **P0.AA — CRM: /api/crm/deals base route missing** [RESOLVED v71] — Created base route at `/api/crm/deals` that delegates to list functionality. `route.ts` and `list/` subdirectory confirmed.
-- **P0.T — Inventory: variance report review/approve routes missing** [RESOLVED v71] — Created `/api/inventory/variance-reports/commands/{review,approve}` routes. Both directories confirmed present.
-- **P0.U — Settings: alerts config create/update/remove routes missing** [RESOLVED v71] — Created `/api/kitchen/alerts-config/commands/{create,update,remove}` routes. All 3 directories confirmed present.
-- **P0.V — Events: catering order create/cancel/command routes missing** [RESOLVED v71] — Created `/api/events/catering-orders/commands/{create,cancel,confirm,mark-complete,start-prep,update}` routes. All 6 command directories confirmed present.
-- **P0.W — Settings: user update-role and deactivate routes missing** [RESOLVED v71] — Created `/api/user/{update-role,deactivate}` routes. Both directories confirmed present.
-- **P0.S — Event Intake: /api/lead route created** [RESOLVED v71] — Route created at `/api/lead`. Routes at `/api/crm/leads/` (plural) also available.
-- **P0.Y — Events: /api/events/{eventId}/dishes route created** [RESOLVED v71] — Route created at `/api/events/[eventId]/dishes`.
-- **P0.Z — Kitchen: prep-task-plan-workflows command routes missing** [RESOLVED v71] — Created 16 command routes at `/api/kitchen/prep-task-plan-workflows/commands/`. All 16 directories confirmed present.
-- **P0.AB — Events: profitability recalculate command route missing** [RESOLVED v71] — Created `/api/events/profitability/commands/recalculate` custom route handler. Directory and route.ts confirmed present.
-- **P0.F — Marketing: SMS toggle route mismatch** [RESOLVED v71] — Created `/api/smsautomationrule/{activate,deactivate}` routes that delegate to existing automation-rules endpoint. UI toggle now functional.
-- **P0.G — Procurement: command route directories missing** [RESOLVED v71] — Created `/api/procurement/requisitions/commands/{create,update,submit,approve-manager,approve-finance,reject,convert-to-po,cancel}` routes. All 8 command directories confirmed present.
-- **P0.AC — Events: import-workflows command routes missing** [RESOLVED v71] — Created `/api/events/import-workflows/commands/` with 18 command routes. All directories confirmed present.
+- **[NEW-P13] Missing verbatimModuleSyntax**: TS 5.9 recommends true repo-wide. Zero configs set it. Type-only imports silently dropped.
+- **[NEW-P13] Missing noUncheckedSideEffectImports**: New TS 5.9 compiler option. Not set anywhere.
+- **[NEW-P13] packages/manifest-ir missing tsconfig**: Not in root references, no tsconfig file.
+- **[NEW-P13] serverActions under experimental**: Next.js 15 promoted to top-level. apps/app triggers deprecation warning.
+- **[NEW-P13] 6 phantom runtime deps**: @repo/auth (next-themes), @repo/observability (react, server-only), @repo/feature-flags (@repo/design-system, react), @repo/ai (streamdown), @repo/seo (react), @repo/payroll-engine (server-only).
+- **[NEW-P13] 2 phantom workspace deps**: @repo/collaboration imports @repo/design-system unlisted. @repo/manifest-adapters imports @repo/database unlisted.
+- **[NEW-P13] ABLY_API_KEY unvalidated**: Server secret via bare process.env in 2 auth routes.
+- **[NEW-P13] MCP server zero env validation**: 5 credential vars via bare process.env. No keys.ts exists.
+- **[NEW-P13] storage/upload.ts bypasses own keys.ts**: BLOB_READ_WRITE_TOKEN via bare process.env.
+- **[NEW-P13] command-board + manifest-adapters OPENAI_API_KEY bypass**: Bare process.env instead of validated keys.
+- **[NEW-P13] 8 Better Stack vars unvalidated**: observability reads SOURCE_TOKEN, INGESTING_URL, LOGTAIL_* + NEXT_PUBLIC variants bare.
+- **[NEW-P13] API app NO Content-Security-Policy**: apps/api has security headers but zero CSP.
+- **[NEW-P13] Payments webhook silent drop**: STRIPE_WEBHOOK_SECRET missing → 200. Stripe never retries.
+- **[NEW-P13] Rate limiting fails open**: Redis errors → all traffic allowed.
+- **[NEW-P13] CORS fallback leaks credentials header**: Untrusted origins get Allow-Credentials: true.
 
-## v66 Resolved (2026-05-13)
+### KEY CORRECTIONS TO PASS 12
 
-- **P0.I — Events: waitlist route uses $queryRaw unnecessarily** [RESOLVED v66] — Replaced raw SQL queries with Prisma ORM for event capacity and guest list. File: `apps/api/app/api/events/[eventId]/waitlist/route.ts`.
-- **P0.X — Scheduling: notifications fetch missing /api/ prefix** [RESOLVED v66] — Added missing `/api/` prefix to notifications API call. File: `apps/app/app/(authenticated)/scheduling/notifications/notifications-client.tsx`.
-- **P0.L — Knowledge Base: client reads wrong response shape** [RESOLVED v66] — Fixed client to read `data.entries` instead of `data.data.entries`. File: `apps/app/app/(authenticated)/knowledge-base/knowledge-base-client.tsx`.
-- **P0.AE — Events: server-to-server import targets wrong table** [RESOLVED v66] — Changed INSERT from `event_tasks` to `timeline_tasks`. Added missing priority/category fields to schema. File: `apps/api/app/api/events/import/server-to-server/route.ts`.
-- **P0.AF — Logistics: tracking queries wrong suppliers table** [RESOLVED v66] — Changed table name from `suppliers` to `inventory_suppliers` (matching @@map on InventorySupplier). File: `apps/api/app/api/logistics/tracking/route.ts`.
+- @@unique count: 18 exact duplications (not ~169). 169 is @@id definitions total.
+- fumadocs version skew: fumadocs-mdx should be ^15.x to match core/ui ^15.x.
+- Prisma generator uses modern `prisma-client` provider (confirmed correct).
 
-## v65 Resolved (2026-05-13)
+## Changes from automation pass (2026-05-16)
 
-- **P0.A — Payroll: generation UI sends empty body** [RESOLVED v65] — Schema updated to accept optional `periodStart`/`periodEnd`; server-side defaults to current month start through today. Files: `packages/payroll-engine/src/models/index.ts`, `apps/api/app/api/payroll/generate/route.ts`, `packages/payroll-engine/src/services/payrollService.ts`.
-- **P0.D — Scheduling: shift_count column doesn't exist** [RESOLVED v65] — Replaced invalid `s.shift_count` column reference with `COUNT(ss.id)::bigint AS shift_count` via LEFT JOIN to `schedule_shifts`. File: `apps/app/app/(authenticated)/scheduling/shifts/actions.ts`.
-- **P0.Q — Security: plaintext credentials in docs/test-screenshot.ts** [RESOLVED v65] — File deleted. Credentials (`unashamed366@gmail.com` / `rWon22Jo5HvYCa`) removed from codebase.
+- Removed ghost apps/studio reference from root tsconfig.json (line 13 was `{ "path": "./apps/studio" }` - directory confirmed non-existent)
+- Moved serverActions from experimental{} to top-level in apps/app/next.config.ts (Next.js 15 promoted it to stable)
+- Fixed apps/api/package.json build script: replaced bash-only `export $(grep ...)` with cross-platform `dotenv -e ... -- next build` (dotenv-cli already installed)
+- CORRECTION: serverExternalPackages "ably dropped" finding is stale - both apps manually include "ably". Downgrade from CRITICAL to HIGH (fragile pattern, not runtime bug)
+- apps/forecasting-service has no package.json or tsconfig.json - cannot add to root tsconfig references safely. Marked as blocked pending project setup.
+- packages/manifest-ir has no package.json or tsconfig.json - it's a data-only package with IR JSON files consumed by other packages. tsconfig not applicable.
+- Pre-existing: 1801 API test failures across 64 test files (domain-specific handler tests). Not related to config fixes.
+
+## Changes from pass 12 (2026-05-16)
+
+20 domain-specific audit agents deep-checked all configs against latest official documentation.
+
+### CRITICAL / HIGH NEW FINDINGS
+
+- **[NEW-P12] Clerk middleware blocks ALL cron routes**: `/api/cron/*` routes NOT in `isPublicRoute`. Clerk 401s every cron before handler auth runs. ALL crons non-functional, not just POST-only ones.
+- **[NEW-P12] Ghost apps/studio reference**: root tsconfig.json references non-existent `apps/studio`. tsc --build fails.
+- **[NEW-P12] Missing apps/forecasting-service**: exists on disk but not in root tsconfig references.
+- **[NEW-P12] Next.js 15.4.11 CVE exposure**: 13 security patches in 15.5.18+. Repo vulnerable.
+- **[NEW-P12] event-parser silent exclusion**: `type-check` script name doesn't match turbo `typecheck` task.
+- **[NEW-P12] sentry-fixer NODE_ENV bypass**: `if (NODE_ENV === "development") return authorized:true` in production route.
+- **[NEW-P12] sentry-fixer GET info leak**: unauthenticated GET exposes secret config status, rate limits, test commands.
+- **[NEW-P12] Missing COOP/COEP/CORP headers**: all apps lack Spectre-mitigation headers.
+- **[NEW-P12] security.yml missing permissions**: `security-events: write` not declared, SARIF uploads may fail.
+- **[NEW-P12] codeql.yml scans Python**: no Python code in repo, wastes runner time.
+
+### KEY CORRECTIONS TO PASS 11
+
+- streamdown/tailwind-merge in @repo/ai: NOT dead deps -- actively used in components.
+- Redundant @@unique count: 18 (not ~169 as stated).
+- .husky/pre-commit: ACTIVE and well-structured (not broken).
+- pnpm-lock.yaml: NOT missing from globalDependencies (auto-included by Turborepo).
+
+## Changes from pass 11 (2026-05-16)
+
+16 agents deep-dived all config domains. 240 new findings across 16 domains.
+
+### CRITICAL / HIGH NEW FINDINGS
+
+- **[NEW-P11] serverExternalPackages DROP bug**: shared config's `["ably"]` silently dropped when apps override (replace, not merge). Both apps/app and apps/api omit ably.
+- **[NEW-P11] CI supply chain risk**: deploy.yml uses unmaintained amondnet/vercel-action@v25.
+- **[NEW-P11] logging-sync.yml**: runs `pnpm install` WITHOUT `scripts/ensure-github-packages-npmrc.sh` -- fails on @angriff36 packages.
+- **[NEW-P11] e2e-workflows NO app server**: ci.yml e2e-workflows has no app server startup step at all (worse than "missing build").
+- **[NEW-P11] Spoofable x-vercel-cron**: webhook-retry and sentry-fixer/process routes accept x-vercel-cron header with NO auth middleware and NO Clerk. External attacker invokes at will. sentry-fixer additionally runs AI agents, reads source, posts to Slack.
+- **[NEW-P11] API_KEY vs OPENAI_API_KEY**: packages/ai reads process.env.API_KEY. Validated key in keys.ts NEVER consumed at runtime. (Escalated from P10.)
+- **[NEW-P11] OAuth redirect URI undefined**: calendar/sync/connect uses bare process.env OAUTH_REDIRECT_URI. If unset, produces "undefined/api/calendar/sync/callback/...".
+- **[NEW-P11] OAuth secrets unvalidated**: GOOGLE_CLIENT_SECRET and MICROSOFT_CLIENT_SECRET via bare process.env.
+- **[NEW-P11] Sentry fixer env bypass**: sentry-fixer routes re-read ALL vars via bare process.env with inline defaults, bypassing validated env. Validation is cosmetic.
+- **[NEW-P11] SENTRY_FIXER_MAX_EXECUTION_MS mismatch**: 50s inline default in cron route vs 240s in keys.ts. Cron runs on 50s budget.
+- **[NEW-P11] Vitest/@types/node pinned to "latest"**: manifest-runtime/packages/cli has floating pins (non-deterministic CI).
+- **[NEW-P11] @sentry/nextjs in shared packages**: observability AND manifest-adapters (boundary violation). manifest-adapters now has 5 dynamic imports (was 3).
+- **[NEW-P11] Windows build failure**: apps/api build script uses bash-only `export $(grep ...)` syntax.
+- **[NEW-P11] manifest-runtime published without React**: private:false with react as hard dep. Should be peerDep.
+- **[NEW-P11] 4 cron routes POST-only but Vercel sends GET**: contract-expiration-alerts, email-reminders, sentry-fixer/process, outbox/publish.
+- **[NEW-P11] OutboxEvent model non-functional**: tenantId is String not @db.Uuid, missing @map("tenant_id"), missing @db.Timestamptz(6) on timestamps.
+- **[NEW-P11] prisma.config.ts lacks directUrl**: production db:deploy uses pooled connection through PgBouncer, risks advisory lock failures.
+
+### KEY CORRECTIONS TO PASS 10
+
+- Cron auth failure count: ALL crons confirmed spoofable (not just auth-header wrong).
+- Sentry boundary violations: manifest-adapters now 5 imports (was 3).
+- sentry-integration most outdated: confirmed zod v3, TS ^5.3, @types/node ^20, PLUS diverged tsconfig not extending shared.
+- packages/ai dead deps: tailwind-merge confirmed in addition to streamdown.
+- @logtail/next boundary violation in observability (should be @logtail/node).
+- server-only in observability will throw in non-Next.js contexts.
+
+### PREVIOUS PASSES (historical)
+
+Passes 2-10 findings archived in `docs/audits/` and `docs/implementation-history/`. See Archive Map below.
+
+---
+## Priority 0 -- Critical (Do Now)
+
+### Batch A: Build Correctness
+
+- [ ] **[TS]** skipLibCheck:true in packages/typescript-config/base.json hides real type errors. **CRITICAL** [CONFIRMED-P10]
+- [ ] **[NEXT]** apps/api/next.config.ts line 102: ignoreBuildErrors:true hides ALL type errors. **CRITICAL** [CONFIRMED-P10]
+- [ ] **[NEXT]** apps/web/next.config.ts line 17: ignoreBuildErrors:true. **CRITICAL** [CONFIRMED-P10]
+- [ ] **[CI]** deploy.yml continue-on-error:true on tests step. **CRITICAL** [CONFIRMED-P10]
+- [ ] **[VERCEL-CROSS]** CSP double-definition: root vercel.json AND apps/app/next.config.ts have DIFFERENT CSP policies. **CRITICAL** [CONFIRMED-P10]
+- [ ] **[NEXT]** CSP unsafe-inline + unsafe-eval in apps/app next.config.ts AND root vercel.json. **CRITICAL** [CONFIRMED-P10]
+- [ ] **[NEXT]** apps/api outputFileTracingIncludes manifest-ir/ir/**/*.json -- verify completeness. **CRITICAL** [CONFIRMED-P10]
+- [ ] **[NEXT-NEW]** packages/next-config serverExternalPackages replacement bug: shared ["ably"] DROPPED when apps define own array. **CRITICAL** [NEW-P11] **NOTE: Both apps already include "ably" manually. Pattern is fragile but not a runtime bug. Downgraded from CRITICAL to HIGH (maintenance concern).**
+- [x] **[PKG-NEW]** apps/api build script uses bash-only `export $(grep ...)` syntax -- fails on Windows. **HIGH** [NEW-P11] **RESOLVED: replaced with cross-platform dotenv-cli approach**
+- [x] **[TS-NEW]** Ghost apps/studio reference in root tsconfig.json (non-existent project). **CRITICAL** [NEW-P12] **RESOLVED: removed ghost reference**
+- [ ] **[TS-NEW]** Missing apps/forecasting-service from root tsconfig references. **CRITICAL** [NEW-P12]
+- [ ] **[NEXT-NEW]** Next.js 15.4.11 vulnerable -- 13 CVE patches in 15.5.18+. **HIGH** [NEW-P12]
+- [ ] **[TS-NEW]** Missing verbatimModuleSyntax -- TS 5.9 recommends true repo-wide. Zero configs set it. **HIGH** [NEW-P13]
+- [ ] **[TS-NEW]** Missing noUncheckedSideEffectImports -- new TS 5.9 compiler option. Not set anywhere. **HIGH** [NEW-P13]
+- [ ] **[TS-NEW]** packages/manifest-ir missing tsconfig AND not in root references. **HIGH** [NEW-P13]
+
+### Batch B: Runtime Correctness
+
+- [ ] **[PLAYWRIGHT]** CI e2e-workflows has NO app server startup step at all. **CRITICAL** [ESCALATED-P11]
+- [ ] **[CI]** .husky/pre-push exits 0 immediately. **CRITICAL** [CONFIRMED-P10]
+- [ ] **[CI]** security.yml uses aquasecurity/trivy-action@master unpinned. **CRITICAL** [CONFIRMED-P10]
+- [ ] **[CI]** security.yml continue-on-error:true on pnpm audit. **CRITICAL** [CONFIRMED-P10]
+- [ ] **[PKG]** Root package.json missing private:true, has template leftovers (bin, files, version). **CRITICAL** [CONFIRMED-P10]
+- [ ] **[PKG]** Root package.json name is "next-forge" not project name. **CRITICAL** [CONFIRMED-P10]
+- [ ] **[CI-NEW]** deploy.yml uses unmaintained amondnet/vercel-action@v25 (supply chain risk). **HIGH** [NEW-P11]
+- [ ] **[CI-NEW]** logging-sync.yml runs pnpm install WITHOUT ensure-github-packages-npmrc.sh. **HIGH** [NEW-P11]
+- [ ] **[CI-NEW]** security.yml missing `security-events: write` permission for SARIF upload. **HIGH** [NEW-P12]
+- [ ] **[CI-NEW]** codeql.yml scans Python despite zero Python code in repo. **MEDIUM** [NEW-P12]
+
+### Batch C: Cron Systemic Auth Failure (ESCALATED-P12)
+
+ALL scheduled crons non-functional. Clerk middleware blocks `/api/cron/*` (not in `isPublicRoute`) before handler auth. External attacker can invoke sentry-fixer at will.
+
+- [ ] **[CRON]** webhook-retry: spoofable x-vercel-cron header, NO auth, NO Clerk. **CRITICAL** [ESCALATED-P11]
+- [ ] **[CRON]** contract-expiration-alerts: spoofable + POST-only (Vercel sends GET). **CRITICAL** [ESCALATED-P11]
+- [ ] **[CRON]** email-reminders: spoofable + POST-only (Vercel sends GET). **CRITICAL** [ESCALATED-P11]
+- [ ] **[CRON]** idempotency-cleanup: checks ONLY Authorization:Bearer. Always 401. **CRITICAL** [CONFIRMED-P10]
+- [ ] **[CRON]** integration-auto-sync: checks ONLY Authorization:Bearer. Always 401. **CRITICAL** [CONFIRMED-P10]
+- [ ] **[CRON]** inventory-audit: checks wrong header x-vercel-cron-secret. Always 401. **CRITICAL** [CONFIRMED-P10]
+- [ ] **[CRON]** sentry-fixer/process: spoofable header + runs AI agents, reads source, posts Slack. **CRITICAL** [ESCALATED-P11]
+- [ ] **[CRON]** /outbox/publish: POST only + OUTBOX_PUBLISH_TOKEN. Vercel sends GET. **CRITICAL** [CONFIRMED-P10]
+- [ ] **[CRON]** keep-alive uses non-standard x-cron-secret AND never scheduled. **CRITICAL** [CONFIRMED-P10]
+- [ ] **[CRON-NEW]** Duplicate webhook-retry routes: app/cron/ AND app/api/cron/. **CRITICAL** [CONFIRMED-P10]
+- [ ] **[CRON-P11-NEW]** integration-auto-sync and outbox/publish MISSING from cron registry. **HIGH** [NEW-P11]
+- [ ] **[SECURITY-NEW]** keep-alive non-standard header, no middleware auth. **HIGH** [NEW-P11]
+- [ ] **[SECURITY-NEW]** integration-auto-sync not in isPublicRoute -- crons may 401 via Clerk. **HIGH** [NEW-P11]
+- [ ] **[SECURITY-NEW]** API-key requests bypass rate limiting entirely. **HIGH** [NEW-P11]
+- [ ] **[SECURITY-NEW]** secretlint configured but never run in CI. **HIGH** [NEW-P11]
+- [ ] **[CRON-P12-NEW]** ALL `/api/cron/*` routes blocked by Clerk middleware (not in isPublicRoute). Even GET routes never reach handler. **CRITICAL** [NEW-P12]
+- [ ] **[SECURITY-P12-NEW]** sentry-fixer dev mode bypass: NODE_ENV==="development" returns authorized:true. **HIGH** [NEW-P12]
+- [ ] **[SECURITY-P12-NEW]** sentry-fixer GET endpoint leaks secret config status without auth. **HIGH** [NEW-P12]
+- [ ] **[SECURITY-NEW]** API app (apps/api) has NO Content-Security-Policy. XSS defense-in-depth missing. **HIGH** [NEW-P13]
+- [ ] **[SECURITY-NEW]** Payments webhook returns 200 when STRIPE_WEBHOOK_SECRET missing. Stripe never retries. **HIGH** [NEW-P13]
+- [ ] **[SECURITY-NEW]** Rate limiting fails open -- Redis errors allow all traffic through. **HIGH** [NEW-P13]
+- [ ] **[SECURITY-NEW]** CORS fallback leaks Access-Control-Allow-Credentials to untrusted origins. **MEDIUM** [NEW-P13]
+- [ ] **[SECURITY-NEW]** /webhooks/sentry GET leaks config state without auth (reconnaissance vector). **MEDIUM** [NEW-P13]
+- [ ] **[SECURITY-NEW]** /webhooks/supplier-catalog GET leaks connector metadata without auth. **MEDIUM** [NEW-P13]
+- [ ] **[SECURITY-NEW]** apps/web has NO security headers override -- no CSP on marketing site. **MEDIUM** [NEW-P13]
+
+### Batch D: Vitest Correctness
+
+- [ ] **[VITEST]** Hardcoded Windows paths in apps/api (7 locations). **CRITICAL** [CONFIRMED-P10]
+- [ ] **[VITEST]** apps/api has 4 conflicting vitest configs including .bak2 in git. **CRITICAL** [CONFIRMED-P10]
+- [ ] **[VITEST]** 3 different vitest major versions: sales-reporting ^2, notifications ^3, main ^4. **CRITICAL** [CONFIRMED-P10]
+- [ ] **[VITEST]** apps/app environmentMatchGlobs DEPRECATED in Vitest 4.0 (will break). **CRITICAL** [CONFIRMED-P10]
+- [ ] **[VITEST-NEW]** environmentMatchGlobs REMOVED in Vitest 4 (not just deprecated). **CRITICAL** [NEW-P11]
+- [ ] **[VITEST-NEW]** Root config leaks jsdom environment, setupFiles, and app-specific aliases to ALL workspace projects. **HIGH** [NEW-P11]
+- [ ] **[VITEST-NEW]** optimizeDeps.disable not valid in Vite 6. **HIGH** [NEW-P11]
+- [ ] **[VITEST-NEW]** deps.interopDefault migration risk in Vitest 4. **HIGH** [NEW-P11]
+- [ ] **[VITEST-NEW]** notifications vitest ^3 incompatible with Vitest 4 workspace. **HIGH** [NEW-P11]
+- [ ] **[VITEST-NEW]** sales-reporting vitest ^2 incompatible with Vitest 4 workspace. **HIGH** [NEW-P11]
+- [ ] **[VITEST]** console.log in 6 vitest config instances. **HIGH** [CONFIRMED-P10]
+- [ ] **[VITEST]** restoreMocks NOT set in ANY of 14 configs. **HIGH** [CONFIRMED-P10]
+- [ ] **[VITEST]** globals:true in only 4 of 15 configs. **HIGH** [CONFIRMED-P10]
+- [ ] **[VITEST]** apps/app no setupFiles despite jsdom. **HIGH** [CONFIRMED-P10]
+- [ ] **[VITEST]** mobile in root workspace but no vitest config. **MEDIUM** [CONFIRMED-P10]
+- [ ] **[VITEST]** Root workspace missing 3 packages: manifest-adapters, manifest-runtime, notifications. **MEDIUM** [CONFIRMED-P10]
+
+### Batch E: Database Security
+
+- [ ] **[RLS]** ~92 tenant models lack RLS (178 tenant-scoped, only 86 with RLS). **CRITICAL** [CONFIRMED-P10]
+- [ ] **[RLS]** tenant_accounting.* all 16 tables have ZERO RLS. **CRITICAL** [CONFIRMED-P10]
+- [ ] **[RLS]** Zero @@enableRLS annotations in Prisma schema. **CRITICAL** [CONFIRMED-P10]
+- [ ] **[RLS]** Phantom RLS entries: audit_log (platform), vendor_catalog (singular). **CRITICAL** [CONFIRMED-P10]
+- [ ] **[PRISMA]** relationMode STILL prisma despite docs claiming foreignKeys. **CRITICAL** [CONFIRMED-P10]
+- [ ] **[PRISMA]** Migration 20260516120000_cleanup untracked. **CRITICAL** [CONFIRMED-P10]
+- [ ] **[PRISMA]** tenant_logistics.prisma deleted but uncommitted. **HIGH** [CONFIRMED-P10]
+- [ ] **[PRISMA-NEW]** OutboxEvent model non-functional: tenantId is String not @db.Uuid, missing @map("tenant_id"), missing @db.Timestamptz(6). **CRITICAL** [NEW-P11]
+- [ ] **[PRISMA-NEW]** prisma.config.ts lacks directUrl -- production db:deploy uses pooled connection, risks advisory lock failures. **HIGH** [NEW-P11]
+- [ ] **[PRISMA]** 339 snake_case field instances across 60 models without @map. **HIGH** [CONFIRMED-P10]
+- [ ] **[PRISMA]** 215 String status fields zero enum adoption. **HIGH** [CONFIRMED-P10]
+
+### Batch EE: Framework Boundary Violations
+
+- [ ] **[BOUNDARY]** @repo/observability 7 direct @sentry/nextjs runtime imports. **HIGH** [CONFIRMED-P10]
+- [ ] **[BOUNDARY-NEW]** @repo/manifest-adapters 5 dynamic @sentry/nextjs imports (was 3). **HIGH** [NEW-P11]
+- [ ] **[BOUNDARY-NEW]** @logtail/next in observability (should be @logtail/node). **HIGH** [NEW-P11]
+- [ ] **[BOUNDARY-NEW]** packages/observability server-only will throw in non-Next.js contexts. **HIGH** [NEW-P11]
+- [ ] **[BOUNDARY]** @repo/seo/metadata.ts imports Metadata from next. **HIGH** [CONFIRMED-P10]
+- [ ] **[BOUNDARY]** @repo/design-system depends on server-only incorrectly. **HIGH** [CONFIRMED-P10]
+- [ ] **[BOUNDARY]** @repo/design-system has next as runtime dep. **HIGH** [CONFIRMED-P10]
+- [ ] **[BOUNDARY]** Phantom @t3-oss/env-nextjs: 12 packages. **HIGH** [CONFIRMED-P10]
+
+### Batch L: Linting -- CRITICAL
+
+- [ ] **[BIOME]** nursery:off kills useSortedClasses. **CRITICAL** [CONFIRMED-P10]
+- [ ] **[BIOME]** biome.autofix.jsonc missing 3 ignore patterns + same nursery:off. **CRITICAL** [CONFIRMED-P10]
+- [ ] **[BIOME-P11]** Missing vcs.defaultBranch breaks --changed workflows. **HIGH** [NEW-P11]
+- [ ] **[BIOME-P11]** Version outdated: 2.3.14 vs 2.4.15 (12+ patches behind). **HIGH** [NEW-P11]
+- [ ] **[BIOME-P11]** Missing css.parser.tailwindDirectives:true -- false-positive CSS parse errors. **HIGH** [NEW-P11]
+- [ ] **[BIOME-P10]** 21 Biome rules downgraded from error to warn. **HIGH** [CONFIRMED-P10]
+- [ ] **[BIOME-P10]** Redundant apps/** override for noBarrelFile. **MEDIUM** [CONFIRMED-P10]
+- [ ] **[LINT]** 2 packages stale eslint lint scripts. **MEDIUM** [CONFIRMED-P10]
+
+---
+## Priority 1 -- High (Next Sprint)
+
+### Batch F: Type Safety Hardening
+
+- [ ] **[TS]** Zero composite:true despite 39+ project references -- DECORATIVE. **CRITICAL** [CONFIRMED-P10]
+- [ ] **[TS]** strict mode enabled but missing noUncheckedIndexedAccess, exactOptionalPropertyTypes. **HIGH** [CONFIRMED-P10]
+- [ ] **[TS]** 15 shared packages extend nextjs.json not bundler-library.json. **HIGH** [CONFIRMED-P10]
+- [ ] **[TS]** base.json includes DOM types -- leaks into Node-only packages. **HIGH** [CONFIRMED-P10]
+- [ ] **[TS]** 3 standalone configs skip shared base (manifest-runtime, sales-reporting, sentry-integration). **HIGH** [CONFIRMED-P10]
+- [ ] **[TS]** nextjs.json noEmit:true blocks declarations for 15+ library packages. **HIGH** [CONFIRMED-P10]
+- [ ] **[TS]** 3 packages missing tsconfig entirely: forecasting-service, brand, types. **HIGH** [CONFIRMED-P10]
+- [ ] **[TS]** sales-reporting uses module:commonjs inconsistent with ESM. **HIGH** [CONFIRMED-P10]
+- [ ] **[TS]** mobile/studio extends nextjs.json inappropriate for React Native. **HIGH** [CONFIRMED-P10]
+- [ ] **[TS]** design-system extends nextjs.json with next plugin inappropriate. **HIGH** [CONFIRMED-P10]
+- [ ] **[TS]** 3 app configs have ignoreDeprecations. **HIGH** [CONFIRMED-P10]
+- [x] **[CROSS-NEW]** Ghost apps/studio reference in root tsconfig. **HIGH** [NEW-P11] **RESOLVED: removed ghost reference**
+- [ ] **[CROSS-NEW]** @repo/sentry-integration diverged tsconfig (doesn't extend shared) + outdated deps. **HIGH** [NEW-P11]
+- [ ] **[TS]** Root references missing brand and types packages. **MEDIUM** [CONFIRMED-P10]
+- [ ] **[TS]** 9 packages have tsconfig but no direct typescript dep. **MEDIUM** [CONFIRMED-P10]
+
+### Batch G: Next.js Build and Security
+
+- [ ] **[NEXT]** apps/api transpilePackages missing ~8 @repo packages. Lists phantom @repo/manifest. **HIGH** [CONFIRMED-P10]
+- [ ] **[NEXT]** apps/web ZERO transpilePackages despite importing 11 @repo packages. **HIGH** [CONFIRMED-P10]
+- [ ] **[NEXT]** apps/app transpilePackages missing 2-3 packages. **HIGH** [CONFIRMED-P10]
+- [ ] **[NEXT]** apps/web productionBrowserSourceMaps:true unconditionally. **HIGH** [CONFIRMED-P10]
+- [ ] **[NEXT]** apps/web ZERO CSP headers. **HIGH** [CONFIRMED-P10]
+- [ ] **[NEXT]** packages/next-config missing reactStrictMode:true. **HIGH** [CONFIRMED-P10]
+- [ ] **[NEXT]** No poweredByHeader:false in any app or shared config. **HIGH** [CONFIRMED-P10]
+- [ ] **[NEXT]** apps/docs and apps/storybook NOT using shared @repo/next-config. **HIGH** [CONFIRMED-P10]
+- [ ] **[NEXT]** apps/docs and apps/storybook have no security headers. **HIGH** [CONFIRMED-P10]
+- [ ] **[NEXT]** apps/app security headers duplicated instead of extending. **HIGH** [CONFIRMED-P10]
+- [ ] **[NEXT]** apps/docs NormalModuleReplacementPlugin webpack-only ignored by Turbopack. **HIGH** [CONFIRMED-P10]
+- [ ] **[NEXT-NEW]** apps/api + apps/app: outputFileTracingIncludes uses fragile relative paths without outputFileTracingRoot. **MEDIUM** [NEW-P11]
+- [ ] **[NEXT-NEW]** packages/next-config turbopack.root uses process.cwd() instead of __dirname. **MEDIUM** [NEW-P11]
+- [ ] **[NEXT-NEW]** apps/api CORS only allows 127.0.0.1 not localhost. **MEDIUM** [NEW-P11]
+- [ ] **[NEXT-NEW]** apps/app CSP connect-src Ably wildcards too broad. **MEDIUM** [NEW-P11]
+- [ ] **[NEXT-NEW]** apps/app headers() completely replaces shared config's headers (loses X-DNS-Prefetch-Control, static asset Cache-Control). **MEDIUM** [NEW-P11]
+- [ ] **[SECURITY-P12]** Missing COOP/COEP/CORP headers across all apps (Spectre-mitigation). **HIGH** [NEW-P12]
+- [x] **[NEXT-NEW]** serverActions under experimental in apps/app -- promoted to top-level in Next.js 15. **HIGH** [NEW-P13] **RESOLVED: moved to top-level**
+- [ ] **[NEXT-NEW]** apps/storybook does NOT use @repo/next-config shared config. **MEDIUM** [NEW-P13]
+
+### Batch H: Sentry Configuration
+
+- [ ] **[SENTRY]** apps/app sentry.edge.config.ts is complete fork: sendDefaultPii:true, no tracesSampler, no beforeSend, no enableLogs. **HIGH** [CONFIRMED-P10]
+- [ ] **[SENTRY]** Missing normalizeDepth, serverName, beforeSendTransaction in ALL shared configs. **HIGH** [CONFIRMED-P10]
+- [ ] **[SENTRY]** 4 different trace sampling strategies across configs. **HIGH** [CONFIRMED-P10]
+- [ ] **[SENTRY]** packages/mcp-server/src/index.ts bare process.env for Sentry. **HIGH** [CONFIRMED-P10]
+- [ ] **[SENTRY]** sentry-integration keys.ts missing skipValidation. **HIGH** [CONFIRMED-P10]
+- [ ] **[SENTRY]** apps/app/instrumentation.ts uses direct imports instead of shared. **HIGH** [CONFIRMED-P10]
+- [ ] **[SENTRY]** packages/sentry-integration has NO tsup.config.ts. **HIGH** [CONFIRMED-P10]
+- [ ] **[SENTRY-NEW]** vercelAIIntegration receives invalid options (recordInputs/recordOutputs silently ignored). **HIGH** [NEW-P11]
+- [ ] **[SENTRY-NEW]** Forked edge config bypasses shared package (missing beforeSend, enableLogs, consoleLoggingIntegration). **HIGH** [NEW-P11]
+- [ ] **[SENTRY-NEW]** Missing onRouterTransitionStart export -- client route transitions produce no spans. **HIGH** [NEW-P11]
+- [ ] **[SENTRY-NEW]** Shared client missing tracePropagationTargets -- breaks cross-service distributed tracing. **HIGH** [NEW-P11]
+- [ ] **[SENTRY-NEW]** Server + edge configs missing vercelAIIntegration({force:true}) -- AI SDK spans missing in production. **HIGH** [NEW-P11]
+- [ ] **[SENTRY-NEW]** packages/observability/correlation.ts imports node:crypto -- not available in Edge Runtime. **HIGH** [NEW-P11]
+- [ ] **[SENTRY-NEW]** packages/observability/next-config.ts calls keys() at module scope -- blocks Next.js build if env missing. **HIGH** [NEW-P11]
+- [ ] **[SENTRY]** tracePropagationTargets blocks cross-service tracing. **HIGH** [CONFIRMED-P10]
+- [ ] **[SENTRY]** vercelAIIntegration only in edge config not shared. **HIGH** [CONFIRMED-P10]
+- [ ] **[SENTRY]** apps/app edge config bare process.env.SENTRY_DSN. **HIGH** [CONFIRMED-P10]
+- [ ] **[SENTRY]** Missing DSN guard in edge config. **MEDIUM** [CONFIRMED-P10]
+
+### Batch I: Turbo and CI Pipeline
+
+- [ ] **[TURBO]** turbo.json envMode "loose" defeats all env var declarations. **HIGH** [CONFIRMED-P10]
+- [ ] **[TURBO]** DATABASE_URL and SENTRY vars duplicated globalEnv/globalPassThroughEnv. **HIGH** [CONFIRMED-P10]
+- [ ] **[TURBO]** test depends on ^test not ^build. **HIGH** [CONFIRMED-P10]
+- [ ] **[TURBO]** Zero turbo tasks define inputs. **HIGH** [CONFIRMED-P10]
+- [ ] **[TURBO]** ~60+ env vars missing from turbo.json. **HIGH** [CONFIRMED-P10]
+- [ ] **[TURBO]** No lint task in turbo.json. **HIGH** [CONFIRMED-P10]
+- [ ] **[TURBO]** pnpm-lock.yaml missing from globalDependencies. **HIGH** [CONFIRMED-P10]
+- [ ] **[TURBO]** event-parser type-check vs typecheck naming mismatch. **HIGH** [CONFIRMED-P10]
+- [ ] **[TURBO]** generate task missing dependsOn. **HIGH** [CONFIRMED-P10]
+- [ ] **[TURBO-NEW]** No futureFlags block for Turborepo 3.0 migration (globalConfiguration, affectedUsingTaskInputs, filterUsingTasks). **HIGH** [NEW-P11]
+- [ ] **[TURBO-NEW]** SENTRY_ENVIRONMENT in globalPassThroughEnv produces same cache hash for different environments. **HIGH** [NEW-P11]
+- [ ] **[TURBO-NEW]** VERCEL, VERCEL_ENV, SKIP_ENV_VALIDATION in globalPassThroughEnv but affect build behavior. **HIGH** [NEW-P11]
+- [ ] **[TURBO-NEW]** No remoteCache.signature:true for cache integrity. **HIGH** [NEW-P11]
+- [ ] **[TURBO-NEW]** tsconfig not in globalDependencies -- tsconfig changes won't invalidate tsc build caches. **HIGH** [NEW-P11]
+- [ ] **[TURBO-P12]** event-parser `type-check` script doesn't match turbo `typecheck` task -- silently excluded. **HIGH** [NEW-P12]
+- [ ] **[CI]** .github/CODEOWNERS placeholder + formatting issues. **HIGH** [CONFIRMED-P10]
+- [ ] **[CI]** No pnpm dependency caching in CI. **HIGH** [CONFIRMED-P10]
+- [ ] **[CI]** No Dependabot config. **HIGH** [CONFIRMED-P10]
+- [ ] **[CI]** performance.yml Lighthouse scans localhost:3000 with no web server. **HIGH** [CONFIRMED-P10]
+- [ ] **[CI]** 14 of 16 CI jobs missing timeout-minutes. **HIGH** [CONFIRMED-P10]
+- [ ] **[CI-NEW]** manifest-ci duplicate test jobs (manifest-validate + manifest-tests run same suite). **MEDIUM** [NEW-P11]
+- [ ] **[CI-NEW]** manifest-ci analyze step duplicated across 4 independent jobs. **MEDIUM** [NEW-P11]
+- [ ] **[CI-NEW]** upload-artifact no retention-days (500MB+ artifacts default 90-day retention). **MEDIUM** [NEW-P11]
+- [ ] **[CI-NEW]** deploy.yml uses PKG_AUTH_TOKEN for gh pr list instead of github.token. **MEDIUM** [NEW-P11]
+- [ ] **[CI-NEW]** logging-sync.yml pushes directly to default branch without PR. **MEDIUM** [NEW-P11]
+- [ ] **[CI-NEW]** CodeQL v3 deprecated (security.yml still uses @v3). **MEDIUM** [NEW-P11]
+- [ ] **[CI-NEW]** deploy.yml no caching (full cold install every deployment). **MEDIUM** [NEW-P11]
+- [ ] **[CI-NEW]** performance.yml continue-on-error means regressions never caught. **MEDIUM** [NEW-P11]
+- [ ] **[CI-NEW]** Inconsistent Node.js versions across workflows (22.x vs .nvmrc 22.18.0). **MEDIUM** [NEW-P11]
+- [ ] **[CI-NEW]** Bitwarden secret IDs hardcoded in deploy.yml. **MEDIUM** [NEW-P11]
+- [ ] **[CI-NEW]** PostHog host inconsistency (app.posthog.com vs us.i.posthog.com). **MEDIUM** [NEW-P11]
+- [ ] **[CI-NEW]** security.yml CodeQL @v3 deprecated while codeql.yml may use @v4. **HIGH** [NEW-P13]
+
+### Batch J: Package.json Correctness
+
+- [ ] **[PKG]** packages/sentry-integration MOST OUTDATED: zod v3, TS ^5.3, atypes/node ^20. **HIGH** [CONFIRMED-P10]
+- [ ] **[PKG]** packages/supplier-connectors uses zod v3 while monorepo on v4. **HIGH** [CONFIRMED-P10]
+- [ ] **[PKG]** 13 packages have react in dependencies instead of peerDependencies. **HIGH** [CONFIRMED-P10]
+- [ ] **[PKG]** @repo/design-system depends on @repo/auth -- reverse coupling. **HIGH** [CONFIRMED-P10]
+- [ ] **[PKG]** @repo/design-system has next as direct runtime dep should be peerDep. **HIGH** [CONFIRMED-P10]
+- [ ] **[PKG]** @repo/storage and @repo/collaboration missing typescript devDep. **HIGH** [CONFIRMED-P10]
+- [ ] **[PKG]** React version mismatch: mobile on 19.1.0 vs monorepo 19.2.4. **HIGH** [CONFIRMED-P10]
+- [ ] **[PKG]** pnpm.overrides pins manifest 0.3.37 but local is 0.3.35. **HIGH** [CONFIRMED-P10]
+- [ ] **[PKG]** Prettier dead dependency in devDeps and overrides. **HIGH** [CONFIRMED-P10]
+- [ ] **[PKG]** packages/brand uses wrong scope @capsule/brand. **HIGH** [CONFIRMED-P10]
+- [ ] **[PKG]** packages/sales-reporting wrong scope, CJS only, vitest v2. **HIGH** [CONFIRMED-P10]
+- [ ] **[PKG-NEW]** packages/manifest-runtime/packages/cli vitest pinned to "latest" (floating). **HIGH** [NEW-P11]
+- [ ] **[PKG-NEW]** packages/manifest-runtime/packages/cli @types/node pinned to "latest". **HIGH** [NEW-P11]
+- [ ] **[PKG-NEW]** packages/manifest-runtime/packages/cli missing @repo/typescript-config devDep, missing private:true. **HIGH** [NEW-P11]
+- [ ] **[PKG-NEW]** packages/manifest-runtime private:false with react as hard dep. Should be peerDep. **HIGH** [NEW-P11]
+- [ ] **[PKG-NEW]** packages/observability + manifest-adapters @sentry/nextjs as direct dep (boundary violation). **HIGH** [NEW-P11]
+- [ ] **[PKG-NEW]** packages/manifest-runtime build is echo (no actual build, relies on checked-in dist). **HIGH** [NEW-P11]
+- [ ] **[PKG-NEW]** packages/manifest-runtime pg as runtime dep of generic library. **HIGH** [NEW-P11]
+- [ ] **[CROSS-NEW]** zod v3/v4 runtime mismatch (sentry-integration + supplier-connectors install v3, rest use v4). **HIGH** [NEW-P11]
+- [ ] **[PKG-NEW]** packages/supplier-connectors dead zod dep (imports nothing from zod). **MEDIUM** [NEW-P11]
+- [ ] **[PKG-NEW]** packages/sentry-integration @types/node ^20 (monorepo 25.2.0). **MEDIUM** [NEW-P11]
+- [ ] **[PKG-NEW]** packages/sentry-integration exports types point to .ts source. **MEDIUM** [NEW-P11]
+- [ ] **[PKG-NEW]** packages/ai dead tailwind-merge dependency. **MEDIUM** [NEW-P11]
+- [ ] **[PKG-NEW]** apps/mobile missing typecheck/test scripts, TS ~5.9.2 tilde range. **MEDIUM** [NEW-P11]
+- [ ] **[PKG-NEW]** apps/email typecheck is exit 0 (no-op). **MEDIUM** [NEW-P11]
+- [ ] **[PKG-NEW]** apps/storybook duplicates design-system deps. **MEDIUM** [NEW-P11]
+- [ ] **[PKG-NEW]** packages/kitchen-state-transitions main/types point to .ts source. **MEDIUM** [NEW-P11]
+- [ ] **[PKG-NEW]** packages/manifest-adapters dead hono dependency. **MEDIUM** [NEW-P11]
+- [ ] **[PKG-NEW]** packages/manifest-runtime/packages/cli exports point to .ts source. **MEDIUM** [NEW-P11]
+- [ ] **[PKG-NEW]** packages/manifest-runtime/packages/cli TS ^5.5.3 (monorepo ^5.9.3). **MEDIUM** [NEW-P11]
+- [ ] **[PKG-NEW]** packages/notifications vitest ^3 (diverges from ^4). **MEDIUM** [NEW-P11]
+- [ ] **[PKG-NEW]** 6 phantom runtime deps: @repo/auth (next-themes), @repo/observability (react, server-only), @repo/feature-flags (@repo/design-system, react), @repo/ai (streamdown), @repo/seo (react), @repo/payroll-engine (server-only). **HIGH** [NEW-P13]
+- [ ] **[PKG-NEW]** @repo/collaboration imports @repo/design-system unlisted. **MEDIUM** [NEW-P13]
+- [ ] **[PKG-NEW]** @repo/manifest-adapters imports @repo/database unlisted (40+ source files). **MEDIUM** [NEW-P13]
+
+### Batch K: ENV Validation
+
+- [ ] **[ENV]** packages/ai/src/index.ts reads process.env.API_KEY not OPENAI_API_KEY. **CRITICAL** [ESCALATED-P11]
+- [ ] **[ENV]** 81 unique env vars via bare process.env. **HIGH** [CONFIRMED-P10]
+- [ ] **[ENV]** APP_URL hardcoded to convoy.com in 5 files. **HIGH** [CONFIRMED-P10]
+- [ ] **[ENV]** RESEND_FROM hardcoded to noreply@convoy.com in 4 files. **HIGH** [CONFIRMED-P10]
+- [ ] **[ENV]** Missing ENV validation in: web, docs, email, storybook, forecasting-service, mobile. **HIGH** [CONFIRMED-P10]
+- [ ] **[ENV]** apps/api/env.ts duplicates sentry keys instead of extending sentry-integration. **HIGH** [CONFIRMED-P10]
+- [ ] **[ENV]** packages/mcp-server has no keys.ts at all. **HIGH** [CONFIRMED-P10]
+- [ ] **[ENV]** Mobile app has no env.ts at all. **HIGH** [CONFIRMED-P10]
+- [ ] **[ENV-NEW]** Calendar sync/connect OAUTH_REDIRECT_URI bare process.env -- if unset, produces "undefined/..." redirect URI. **HIGH** [NEW-P11]
+- [ ] **[ENV-NEW]** Calendar sync/callback: GOOGLE_CLIENT_SECRET and MICROSOFT_CLIENT_SECRET via bare process.env, unvalidated. OAuth secrets. **HIGH** [NEW-P11]
+- [ ] **[ENV-NEW]** Sentry-fixer routes re-read ALL vars via bare process.env with inline defaults, bypassing validated env. **HIGH** [NEW-P11]
+- [ ] **[ENV-NEW]** SENTRY_FIXER_MAX_EXECUTION_MS: 50s inline default in cron vs 240s in keys.ts. Cron runs on 50s budget. **HIGH** [NEW-P11]
+- [ ] **[ENV-NEW]** AI duplicate keys.ts files (neither consumed by runtime). **MEDIUM** [NEW-P11]
+- [ ] **[ENV-NEW]** ABLY_ENABLED not in any schema. **MEDIUM** [NEW-P11]
+- [ ] **[ENV-NEW]** Sentry edge config DSN resolution inverted vs rest of codebase. **MEDIUM** [NEW-P11]
+- [ ] **[ENV-NEW]** sentry-integration @t3-oss/env-nextjs ^0.10.0 (others ^0.13.10). **MEDIUM** [NEW-P11]
+- [ ] **[ENV-NEW]** command-board reads from env.txt file on disk, bypassing validation. **MEDIUM** [NEW-P11]
+- [ ] **[ENV-NEW]** REVALIDATION_SECRET bare process.env for CMS webhook auth. **MEDIUM** [NEW-P11]
+- [ ] **[ENV-NEW]** RESEND_WEBHOOK_SECRET bare process.env for webhook verification. **MEDIUM** [NEW-P11]
+- [ ] **[ENV-NEW]** OAUTH_REDIRECT_URI, GOOGLE/MICROSOFT IDs all bare process.env. **MEDIUM** [NEW-P11]
+- [ ] **[ENV-NEW]** NEXT_PUBLIC_VERCEL_ENV not a real Vercel variable (always undefined). **MEDIUM** [NEW-P11]
+- [ ] **[ENV-NEW]** Observability 8 Better Stack alias vars unvalidated. **MEDIUM** [NEW-P11]
+- [ ] **[ENV]** SENTRY_WEBHOOK_SECRET schema drift across files. **HIGH** [CONFIRMED-P10]
+- [ ] **[ENV]** Unvalidated vars: VERCEL_DRAIN_SIGNATURE_SECRET, PRISMA_LOG_QUERIES, RESEND_WEBHOOK_SECRET, CAPSULE_SENTRY_CANARY_SECRET. **HIGH** [CONFIRMED-P10]
+- [ ] **[ENV-NEW]** ABLY_API_KEY (server secret) via bare process.env in 2 auth routes. No validation schema. **HIGH** [NEW-P13]
+- [ ] **[ENV-NEW]** MCP server has zero env validation -- 5 credential vars via bare process.env, no keys.ts. **HIGH** [NEW-P13]
+- [ ] **[ENV-NEW]** packages/storage/upload.ts bypasses own keys.ts -- BLOB_READ_WRITE_TOKEN via bare process.env. **HIGH** [NEW-P13]
+- [ ] **[ENV-NEW]** command-board + manifest-adapters read OPENAI_API_KEY via bare process.env, bypassing validated keys. **HIGH** [NEW-P13]
+- [ ] **[ENV-NEW]** 8 Better Stack vars unvalidated in observability (SOURCE_TOKEN, INGESTING_URL, LOGTAIL_* + NEXT_PUBLIC variants). **HIGH** [NEW-P13]
+- [ ] **[ENV-NEW]** Plasmic vars (PLASMIC_PROJECT_ID, PLASMIC_API_TOKEN) via bare process.env. **MEDIUM** [NEW-P13]
+- [ ] **[ENV-NEW]** CAPSULE_SENTRY_CANARY_SECRET bare process.env in canary route. **MEDIUM** [NEW-P13]
+- [ ] **[ENV-NEW]** packages/observability edge/server/client read VERCEL_ENV via bare process.env, bypassing keys.ts. **MEDIUM** [NEW-P13]
+
+### Batch M: Build System
+
+- [ ] **[BUILD]** 20 packages missing build scripts entirely. **HIGH** [CONFIRMED-P10]
+- [ ] **[BUILD]** @repo/sentry-integration bundles ALL runtime deps (no --external). **HIGH** [CONFIRMED-P10]
+- [ ] **[BUILD]** @repo/ai does not externalize ai/@ai-sdk/openai. **HIGH** [CONFIRMED-P10]
+- [ ] **[BUILD]** @repo/mcp-server builds to dist/ but no main/exports/types fields. **HIGH** [CONFIRMED-P10]
+- [ ] **[BUILD]** @repo/realtime exports require pointing to ESM -- CJS break. **HIGH** [CONFIRMED-P10]
+- [ ] **[BUILD]** Root tsup.config.ts is stale/leftover. **HIGH** [CONFIRMED-P10]
+- [ ] **[BUILD]** @repo/ai has dead runtime deps: streamdown, tailwind-merge. **HIGH** [CONFIRMED-P10]
+- [ ] **[BUILD]** 22 of 33 packages missing exports map. **HIGH** [CONFIRMED-P10]
+- [ ] **[BUILD]** 9 packages have main/exports pointing to .ts source files. **HIGH** [CONFIRMED-P10]
+- [ ] **[BUILD]** Stale tsup.config.bundled_*.mjs artifact in packages/ai. **HIGH** [CONFIRMED-P10]
+- [ ] **[BUILD]** @repo/supplier-connectors build is tsc --noEmit (no output). **HIGH** [CONFIRMED-P10]
+- [ ] **[CROSS-NEW]** @repo/realtime CJS default + ESM exports map mismatch. **HIGH** [NEW-P11]
+
+---
+## Priority 2 -- Medium (Planned)
+
+### Batch N: TypeScript Consistency
+
+- [ ] **[TS]** moduleResolution inconsistent across 3 standalone packages. **MEDIUM** [CONFIRMED-P10]
+- [ ] **[TS]** Path aliases not consistently configured. **MEDIUM** [CONFIRMED-P10]
+- [ ] **[TS]** declarationDir not set in library configs with declaration:true. **MEDIUM** [CONFIRMED-P10]
+- [ ] **[TS]** skipLibCheck:true redundantly repeated in child configs. **MEDIUM** [CONFIRMED-P10]
+- [ ] **[TS]** types:node in base.json injects Node types into browser packages. **MEDIUM** [CONFIRMED-P10]
+- [ ] **[TS]** 8 standalone configs not extending shared base. **MEDIUM** [CONFIRMED-P10]
+- [ ] **[TS]** 18 server packages get DOM types via nextjs.json. **MEDIUM** [CONFIRMED-P10]
+- [ ] **[TS]** manifest-runtime/packages/cli uses @types/node: latest. **MEDIUM** [CONFIRMED-P10]
+
+### Batch O: Vitest Standardization
+
+- [ ] **[VITEST]** Coverage only in 1 package (mcp-server). **MEDIUM** [CONFIRMED-P10]
+- [ ] **[VITEST]** apps/api/vitest.config.mts dead code -- .ts takes precedence. **MEDIUM** [CONFIRMED-P10]
+- [ ] **[VITEST]** apps/api/vitest.config.ts.bak2 committed. Delete. **MEDIUM** [CONFIRMED-P10]
+
+### Batch P: Turbo Pipeline
+
+- [ ] **[TURBO]** typecheck cache:false wastes CI time. **MEDIUM** [CONFIRMED-P10]
+- [ ] **[TURBO]** 5 packages missing turbo.json. **MEDIUM** [CONFIRMED-P10]
+- [ ] **[TURBO]** SENTRY_ENVIRONMENT split between globalPassThroughEnv and globalEnv. **MEDIUM** [CONFIRMED-P10]
+- [ ] **[TURBO]** build outputs overly broad. **MEDIUM** [CONFIRMED-P10]
+- [ ] **[TURBO]** Mobile app missing turbo.json and no scripts. **MEDIUM** [CONFIRMED-P10]
+- [ ] **[TURBO-NEW]** test should depend on same-package build, not just ^test. **MEDIUM** [NEW-P11]
+- [ ] **[TURBO-NEW]** typecheck: fix should be inputs + cache:true, not just cache toggle. **MEDIUM** [NEW-P11]
+- [ ] **[TURBO-NEW]** build outputs apply to ALL packages but include app-specific dirs (.react-email, storybook-static). **MEDIUM** [NEW-P11]
+- [ ] **[TURBO-NEW]** Mobile app turbo.json missing: no boundary tags, dev task without proper persistent settings. **MEDIUM** [NEW-P11]
+
+### Batch Q: Vercel Config Polish
+
+- [ ] **[VERCEL]** 630 of 632 API routes lack maxDuration. **MEDIUM** [CONFIRMED-P10]
+- [ ] **[VERCEL]** apps/web and apps/docs have zero security headers. **MEDIUM** [CONFIRMED-P10]
+- [ ] **[VERCEL-NEW]** inventory-audit uses non-standard x-vercel-cron-secret header. **MEDIUM** [NEW-P11]
+- [ ] **[VERCEL-NEW]** keep-alive uses non-standard x-cron-secret, no fallback. **MEDIUM** [NEW-P11]
+- [ ] **[VERCEL-NEW]** 6 cron routes missing maxDuration (may timeout). **MEDIUM** [NEW-P11]
+- [ ] **[VERCEL-NEW]** sentry-fixer GET handler exposes internal config publicly (information disclosure). **MEDIUM** [NEW-P11]
+- [ ] **[VERCEL-NEW]** cron registry missing integration-auto-sync and outbox/publish. **MEDIUM** [NEW-P11]
+
+### Batch R: Sentry Alignment
+
+- [ ] **[SENTRY]** apps/app edge config missing enableLogs, beforeSend, DSN guard. **MEDIUM** [CONFIRMED-P10]
+- [ ] **[SENTRY]** Inconsistent integrations lists. **MEDIUM** [CONFIRMED-P10]
+
+### Batch S: Package-level Cleanup
+
+- [ ] **[PKG]** sideEffects not configured for tree-shaking. **MEDIUM** [CONFIRMED-P10]
+- [ ] **[PKG]** Missing clean script in 7 packages. **MEDIUM** [CONFIRMED-P10]
+
+### Batch T: ENV and CI Completeness
+
+- [ ] **[ENV]** NODE_ENV never validated in any schema. **MEDIUM** [CONFIRMED-P10]
+- [ ] **[ENV]** NEXT_PUBLIC_ prefix inconsistently applied. **MEDIUM** [CONFIRMED-P10]
+- [ ] **[ENV]** packages/database/keys.ts URL rewrite side effect. **MEDIUM** [CONFIRMED-P10]
+- [ ] **[CI]** ci.yml linting runs typecheck instead of biome check. **MEDIUM** [CONFIRMED-P10]
+- [ ] **[CI]** 6 of 8 CI workflows lack concurrency groups. **MEDIUM** [CONFIRMED-P10]
+- [ ] **[CI]** No GitHub Actions pinned to commit SHAs. **MEDIUM** [CONFIRMED-P10]
+
+### Batch U: Build System
+
+- [ ] **[BUILD]** No shared tsup config. **MEDIUM** [CONFIRMED-P10]
+- [ ] **[BUILD]** @repo/observability missing exports field. **MEDIUM** [CONFIRMED-P10]
+
+### Batch V: Prisma and Database
+
+- [ ] **[PRISMA]** relationMode = prisma contradicts docs. **MEDIUM** [CONFIRMED-P10]
+- [ ] **[PRISMA]** 2 pairs duplicate migration timestamps. **MEDIUM** [CONFIRMED-P10]
+- [ ] **[PRISMA]** .npmrc link-workspace-packages=false contradicts workspace:* usage. **MEDIUM** [CONFIRMED-P10]
+- [ ] **[PRISMA]** 89 migration folders, 32 repair_drift 36%. **MEDIUM** [CONFIRMED-P10]
+- [ ] **[PRISMA]** DATABASE_PRE_MIGRATION_CHECKLIST.md accuracy issues. **MEDIUM** [CONFIRMED-P10]
+- [ ] **[PRISMA]** prisma.config.ts mixed env access patterns. **MEDIUM** [CONFIRMED-P10]
+- [ ] **[PRISMA-NEW]** 25 snake_case updated_at fields lack @updatedAt (no auto-update on modification). **MEDIUM** [NEW-P11]
+- [ ] **[PRISMA-NEW]** 74 of 79 Json fields lack @db.JsonB (no GIN indexing, slower queries). **MEDIUM** [NEW-P11]
+- [ ] **[PRISMA-NEW]** ~169 redundant @@unique([tenantId, id]) duplicating @@id([tenantId, id]) primary keys. **MEDIUM** [NEW-P11]
+
+### Batch W: Playwright and Misc
+
+- [ ] **[PLAYWRIGHT]** chromium-unauth hardcoded testMatch ignores E2E_SUITE. **MEDIUM** [CONFIRMED-P10]
+- [ ] **[PLAYWRIGHT]** trace: on-first-retry dead config with retries:0. **MEDIUM** [CONFIRMED-P10]
+- [ ] **[PLAYWRIGHT]** Inconsistent Playwright version: root 1.58.1 vs app ^1.56.1. **MEDIUM** [CONFIRMED-P10]
+- [ ] **[PLAYWRIGHT]** fullyParallel:false and workers:1 hardcoded globally. **MEDIUM** [CONFIRMED-P10]
+- [ ] **[PLAYWRIGHT-NEW]** Missing forbidOnly: !!process.env.CI -- test.only can slip into CI. **MEDIUM** [NEW-P11]
+- [ ] **[PLAYWRIGHT]** global-setup.ts is dead code. **LOW** [CONFIRMED-P10]
+- [ ] **[PLAYWRIGHT]** WebServer health check uses /sign-in instead of /api/health. **LOW** [CONFIRMED-P10]
+- [ ] **[CSS-NEW]** apps/docs missing @tailwindcss/postcss dep entirely. **MEDIUM** [NEW-P11]
+- [ ] **[CSS-NEW]** apps/docs diverges from monorepo PostCSS pattern. **MEDIUM** [NEW-P11]
+- [ ] **[MISC]** apps/docs PostCSS uses legacy tailwindcss plugin name. **MEDIUM** [CONFIRMED-P10]
+- [ ] **[MISC]** .npmrc shamefully-hoist=true and strict-peer-dependencies=false. **MEDIUM** [CONFIRMED-P10]
+- [ ] **[MISC]** .gitignore 471 lines, .vercel listed 6 times, .env*.local 4 times. **MEDIUM** [CONFIRMED-P10]
+- [ ] **[MISC]** Missing .editorconfig. **MEDIUM** [CONFIRMED-P10]
+- [ ] **[MISC]** 4 stale worktrees. **MEDIUM** [CONFIRMED-P10]
+- [ ] **[MISC]** 28 API route domains have ZERO spec coverage. **MEDIUM** [CONFIRMED-P10]
+- [ ] **[MISC]** ~564 :any annotations in production. **MEDIUM** [CONFIRMED-P10]
+- [ ] **[MISC]** fumadocs version skew (mdx v14, core/ui v15). **MEDIUM** [CONFIRMED-P10]
+- [ ] **[ROOT-NEW]** .gitignore *.txt blanket glob. **MEDIUM** [NEW-P11]
+- [ ] **[ROOT-NEW]** .husky/pre-commit runs full pnpm check on every commit (blocks fast iteration). **MEDIUM** [NEW-P11]
 
 ---
 
-## P0 — Critical Bugs (Fix Immediately)
+## Priority 3 -- Low (When Convenient)
 
-These cause runtime errors, data loss, or broken user flows. 1 item remains unresolved (P0.R). 21 items resolved in v65-v71.
+### Batch Z: Hygiene and Documentation
 
-### Confirmed (verified by code inspection)
+- [ ] **[TS]** 26 redundant strictNullChecks:true overrides. **LOW** [CONFIRMED-P10]
+- [ ] **[TS]** exactOptionalPropertyTypes not set. **LOW** [CONFIRMED-P10]
+- [ ] **[TS]** incremental:false in base. **LOW** [CONFIRMED-P10]
+- [ ] **[NEXT]** Missing cleanUrls configuration. **LOW** [CONFIRMED-P10]
+- [ ] **[PLAYWRIGHT]** Missing outputDir configuration. **LOW** [CONFIRMED-P10]
+- [ ] **[PLAYWRIGHT]** No shared fixtures file. **LOW** [CONFIRMED-P10]
+- [ ] **[ENV]** No env var deprecation mechanism. **LOW** [CONFIRMED-P10]
+- [ ] **[CI]** No matrix testing across Node versions. **LOW** [CONFIRMED-P10]
+- [ ] **[CI]** No release automation. **LOW** [CONFIRMED-P10]
+- [ ] **[CI]** AGENTS.md cron registry lists 6 but actual is 8+. **LOW** [CONFIRMED-P10]
+- [ ] **[PRISMA]** All 223 models have @@schema annotation (0 missing). **INFO** [CONFIRMED-P10]
+- [ ] **[PRISMA]** 4 redundant PascalCase @@map. **LOW** [CONFIRMED-P10]
+- [ ] **[CI]** Missing pnpm caching in deploy.yml, security.yml, performance.yml. **LOW** [CONFIRMED-P10]
+- [ ] **[BUILD]** apps/docs unscoped name. **LOW** [CONFIRMED-P10]
 
-- [x] **P0.A — Payroll: generation UI sends empty body** [RESOLVED v65]
-  `apps/app/app/(authenticated)/payroll/runs/page.tsx:177` sends `body: JSON.stringify({})`. API at `apps/api/app/api/payroll/generate/route.ts:51` requires `periodStart`/`periodEnd`. Every attempt fails 400.
+### Batch AA: Package Metadata
 
-- [x] **P0.B — Payroll: 2024 tax rates presented as 2026** [RESOLVED v68]
-  `packages/payroll-engine/src/core/taxEngine.ts` uses 2024 brackets. Updated to 2026 IRS Revenue Procedure 2025-53 brackets. Additional Medicare computed but discarded (`_additionalMedicare`) — now properly added to withholding. `head_of_household` fell through to single brackets — now has dedicated HOH brackets and standard deduction.
+- [ ] **[PKG]** engines field not set in 4 apps and all 33 packages. **LOW** [CONFIRMED-P10]
+- [ ] **[PKG]** license field missing in 39 of 40 package.json files. **LOW** [CONFIRMED-P10]
+- [ ] **[PKG]** files field not set in 32 of 33 packages. **LOW** [CONFIRMED-P10]
+- [ ] **[PKG]** Prettier dead dependency in devDeps and overrides. **LOW** [CONFIRMED-P10]
+- [ ] **[PKG]** Missing @repo/typescript-config devDep in brand, sales-reporting, types, manifest-runtime. **LOW** [CONFIRMED-P10]
 
-- [x] **P0.D — Scheduling: shift_count column doesn't exist** [RESOLVED v65]
-  `apps/app/app/(authenticated)/scheduling/shifts/actions.ts:678` raw SQL selects `s.shift_count` from `tenant_staff.schedules`. No such column. Other code correctly uses COUNT(*) aggregate.
+### Pass 11 Low/Info Findings by Domain (124 items -- not listed individually)
 
-- [x] **P0.E — Marketing: lead command routes missing** [RESOLVED v71]
-  Created `/api/crm/leads/commands/{convert-to-client,disqualify,archive,update}` using `executeManifestCommand`.
+| Domain | Count | Key Themes |
+|--------|-------|------------|
+| TS | ~18 | Redundant overrides, decorative configs |
+| NEXT | ~12 | Minor config drift, missing defaults |
+| VITEST | ~10 | Coverage gaps, env inconsistencies |
+| TURBO | ~8 | Cache invalidation, env passthrough |
+| CI | ~15 | Workflow redundancy, missing retries |
+| SENTRY | ~8 | Minor integration config gaps |
+| PKG | ~20 | Metadata, version drift, dead deps |
+| ENV | ~10 | Minor unvalidated vars |
+| PRISMA | ~8 | Naming conventions, index opportunities |
+| VERCEL | ~5 | Header config, scheduling |
+| BOUNDARY | ~3 | Import hygiene |
+| PLAYWRIGHT | ~3 | Config completeness |
+| CROSS | ~2 | Export map issues |
+| ROOT | ~2 | File hygiene |
+| CSS | ~1 | PostCSS alignment |
 
-- [x] **P0.F — Marketing: SMS toggle route mismatch** [RESOLVED v71]
-  Created `/api/smsautomationrule/{activate,deactivate}` routes that delegate to existing automation-rules endpoint. UI toggle now functional.
+### Pass 13 MEDIUM/LOW Findings by Domain (~62 items -- not listed individually)
 
-- [x] **P0.G — Procurement: command route directories missing** [RESOLVED v71]
-  Created `/api/procurement/requisitions/commands/{create,update,submit,approve-manager,approve-finance,reject,convert-to-po,cancel}` routes. All 8 command directories confirmed present.
-
-- [x] **P0.I — Events: stale waitlist route uses $queryRaw unnecessarily** [RESOLVED v66]
-  `apps/api/app/api/events/[eventId]/waitlist/route.ts` — all referenced fields (`Event.maxCapacity`, `EventGuest.rsvpStatus`, `EventGuest.waitlistPosition`) exist in Prisma. Could use ORM.
-
-- [x] **P0.J — Inventory: barcode lookup queries non-existent column** [RESOLVED v69]
-  `apps/api/app/api/inventory/barcode-lookup/route.ts:62-88` queries `barcode` from `InventoryItem`. No such field (exists on `CycleCountRecord` only). Fixed by JOINing `cycle_count_records` and selecting barcode from that table.
-
-- [x] **P0.L — Knowledge Base: client reads wrong response shape** [RESOLVED v66]
-  Client reads `data.data.entries` but API returns flat `{ success, entries, hasMore, totalCount }`. TypeError on every load.
-
-- [x] **P0.O — Cycle Counting: server action passes tenantId as authUserId** [RESOLVED v67]
-  `apps/app/app/(authenticated)/cycle-counting/actions/sessions.ts:119-123` and `records.ts:117-121,300-304` passed `requireTenantId()` as `authUserId`. User lookup always failed. Fixed by using `requireCurrentUser()` instead, which properly resolves the Clerk userId and performs correct `(tenantId, authUserId)` lookup.
-
-- [x] **P0.P — Cycle Counting: hardcoded dummy UUID for locationId** [RESOLVED v67]
-  `apps/app/app/(authenticated)/cycle-counting/page.tsx:74` hardcoded nil UUID. Fixed by adding a location `<Select>` dropdown that fetches locations from the database and passes the selected `locationId` to the server action.
-
-- [x] **P0.Q — Security: plaintext credentials in docs/test-screenshot.ts** [RESOLVED v65]
-  Real email `unashamed366@gmail.com` and password `rWon22Jo5HvYCa` from Playwright codegen. Rotate immediately.
-
-- [ ] **P0.R — Event Intake: /api/menu-story route missing** [NEEDS NEW FEATURE v71]
-  `MenuWizardShell.tsx:69` calls `POST /api/menu-story`. MenuStory entity doesn't exist in Prisma schema. Requires: (1) Prisma model for MenuStory, (2) manifest definition, (3) AI-powered route handler, (4) create commands directory with routes. Documented requirements in implementation-history.
-
-- [x] **P0.S — Event Intake: /api/lead route missing (singular)** [RESOLVED v71]
-  `/api/lead` route was created. Routes at `/api/crm/leads/` (plural) are also available.
-
-- [x] **P0.T — Inventory: variance report review/approve routes missing** [RESOLVED v71]
-  Created `/api/inventory/variance-reports/commands/{review,approve}` routes.
-
-- [x] **P0.U — Settings: alerts config create/update/remove routes missing** [RESOLVED v71]
-  Created `/api/kitchen/alerts-config/commands/{create,update,remove}` routes.
-
-- [x] **P0.V — Events: catering order create/cancel/command routes missing** [RESOLVED v71]
-  Created `/api/events/catering-orders/commands/{create,cancel,confirm,mark-complete,start-prep,update}` routes.
-
-- [x] **P0.W — Settings: user update-role and deactivate routes missing** [RESOLVED v71]
-  Created `/api/user/{update-role,deactivate}` routes.
-
-- [x] **P0.X — Scheduling: notifications fetch missing /api/ prefix** [RESOLVED v66]
-  Client calls `apiFetch("/staff/notifications")` without `/api/` prefix.
-
-- [x] **P0.Y — Events: /api/events/{eventId}/dishes route missing** [RESOLVED v71]
-  Route created at `/api/events/[eventId]/dishes`.
-
-- [x] **P0.Z — Kitchen: prep-task-plan-workflows command routes missing** [RESOLVED v71]
-  Created 16 command routes at `/api/kitchen/prep-task-plan-workflows/commands/`.
-
-- [x] **P0.AA — CRM: /api/crm/deals base route missing** [RESOLVED v71]
-  Created base route at `/api/crm/deals` that delegates to list functionality.
-
-- [x] **P0.AB — Events: profitability recalculate command route missing** [RESOLVED v71]
-  Created `/api/events/profitability/commands/recalculate` custom route handler.
-
-- [x] **P0.AC — Events: import-workflows command routes missing** [RESOLVED v71]
-  Created `/api/events/import-workflows/commands/` with 18 command routes. All directories confirmed present.
-
-- [x] **P0.AD — CRM: proposals command routes missing** [RESOLVED v71]
-  Created `/api/crm/proposals/commands/{accept,reject,send,withdraw,mark-viewed}` routes.
-
-- [x] **P0.AE — Events: server-to-server import targets non-existent event_tasks table** [RESOLVED v66]
-  `apps/api/app/api/events/import/server-to-server/route.ts:490` raw SQL INSERT into `event_tasks`. Correct table is `timeline_tasks` (via @@map).
-
-- [x] **P0.AF — Logistics: tracking queries non-existent suppliers table** [RESOLVED v66]
-  `apps/api/app/api/logistics/tracking/route.ts:97` queries `tenant_inventory.suppliers`. Correct table is `inventory_suppliers` (via @@map on InventorySupplier).
-
-- [x] **P0.AG — Schema: default zero UUID in production schema** [RESOLVED v68]
-  `packages/database/prisma/schema.prisma` had `DEFAULT '00000000-0000-0000-0000-000000000000'` for `storage_location_id` in `InventoryTransaction`. Changed to nullable (String? @db.Uuid). Updated all code paths that used zero UUID as fallback.
-
-- [REMOVED v66] **P0.AH — Calendar: hardcoded localhost in production sync** — NOT A BUG. Fallback pattern (`NEXT_PUBLIC_APP_URL || "http://localhost:2221"`) is correct for development. Production properly uses `NEXT_PUBLIC_APP_URL` set via Vercel environment.
-  `apps/app/app/(authenticated)/calendar/sync/page.tsx:354,388` hardcodes `"http://localhost:2221"` as fallback URL.
-
-### Items removed from prior versions (verified as false)
-
-- **[REMOVED v58] P0.C — Notifications: bouncedAt field crash**: Not a runtime crash.
-- **[REMOVED v58] P0.H — Events: EventDish has no Prisma model**: Model exists.
-- **[REMOVED v58] P0.K — Inventory: low-stock pagination metadata is wrong**: Metadata is correct.
-- **[REMOVED v59] P0.N — Calendar Sync: no Prisma model**: Routes use `ProviderSync` model.
-- **[REMOVED v64] P0.M — Knowledge Base: entity not in manifest IR**: FALSE POSITIVE. `KnowledgeBaseEntry` IS in routes.manifest.json with 6 routes (list, detail, create, publishEntry, remove, update). See v64 Corrections.
+| Domain | Count | Key Themes |
+|--------|-------|------------|
+| TS | ~5 | target ES2022, cli standalone config, rate-limit rootDir, sourceMap missing |
+| NEXT | ~3 | compress unset, minimumCacheTTL, turbopack.root process.cwd |
+| VITEST | ~5 | workspace wrong config, realtime no env, globals inconsistency, deprecated methods |
+| SENTRY | ~6 | duplicate beforeSend, missing autoInstrument, sendDefaultPii fork, no browserTracingIntegration |
+| BIOME | ~4 | nursery:off disables 24 promoted rules, missing ignore patterns, no types domain |
+| PRISMA | ~4 | no strictUndefinedChecks, dbgenerated vs uuid, mixed env access, no binaryTargets |
+| VERCEL | ~5 | root vercel.json hybrid, docs missing installCommand, outbox cron path, fumadocs skew |
+| BUILD | ~3 | root tsup references gitignored files, storybook vercel.json stub |
+| PKG | ~3 | seo missing next peerDep, types/brand missing devDeps |
+| ENV | ~5 | SEO VERCEL_PROJECT_PRODUCTION_URL, SENTRY_TRACES_SAMPLE_RATE, edge config bare |
+| CI | ~3 | typecheck cache:false, performance.yml continue-on-error, env var duplication |
+| SECURITY | ~3 | CORS fallback, webhooks GET leaks, web app no headers |
+| CROSS | ~3 | .npmrc contradiction, .gitignore redundancy, docs diverge from PostCSS pattern |
+| SPECS | ~2 | Training/HRMS certification cron missing, stale cron references |
 
 ---
 
-## P1 — High Priority (Production Blockers / Security)
+## Priority 4 -- Info / Intentional (No Action)
 
-### P1.A — Design System Compliance [CORRECTED v63]
-
-- [ ] **ResearchTable**: 125+ bare `<Table>` usages confirmed. 10 ResearchTable import files.
-- [ ] **BlogFilterChip**: 7 import files, 16 uses. Most filterable lists use `<Select>` or raw buttons.
-- [ ] **ContactFormCard**: 0 adopters. Defined but never imported.
-- [ ] **30/40 design blocks have zero external consumers** — majority of block exports are unused.
-- [ ] **Empty state primitive**: ~16 files use shared components vs 40+ inline div instances.
-- [ ] **Module landings**: 7 of 20+ modules.
-- [ ] **`text-3xl font-bold`**: 2 occurrences across 2 files.
-- [ ] **Decorative pastel backgrounds**: 523 `bg-*-50/100/200` instances across 105 files.
-- [ ] **Bare Card violations**: 213 files across apps/app.
-
-### P1.B — Console Statements [CORRECTED v63]
-
-~974 total across ~364 files. `console.log`: 429/52 files. `console.error`: 501/293 files. `console.warn`: 44/28 files. 153 of 561 manifest routes have console.error (27%).
-
-### P1.C — RLS Gaps [CORRECTED v63]
-
-14 migration files enable RLS across 20+ tables. Full recount of tables without RLS still needed. Confirmed tables WITH RLS: accounting (chart_of_accounts, invoices, collection_cases, collection_actions, collection_payment_plans, revenue_recognition_schedules, revenue_recognition_lines), inventory (inventory_items, inventory_transactions, inventory_suppliers, vendor_catalogs), logistics (vehicles, drivers), facilities (facility_assets), staff (labor_budgets, budget_alerts), admin (admin_chat_threads, admin_chat_participants, admin_chat_messages), kitchen (prep_task_plan_workflows), plus audit_log, ActivityFeed, webhook_dead_letter_queue, manifest_command_telemetry.
-
-### P1.D — Duplicate Route Cleanup [CHALLENGED v63]
-
-v62 claimed 7 confirmed true duplicates. Deep scan found 0 true duplicates (routes calling `executeManifestCommand` were miscounted as "manifest-generated"). Needs final reconciliation.
-
-### P1.E — Manifest/Prisma Schema Alignment [VERIFIED v63]
-
-- **Logistics**: Driver has single `name` in Prisma vs `firstName`+`lastName` in manifest.
-- **Facilities**: Manifest defines Facility entity with `type` defaulting to `"venue"` vs Prisma `facilityType` defaulting to `"kitchen"`.
-- **Scheduling**: Override confirmed but class is generic `PrismaStore`.
-
-### P1.F — Missing E2E Product-Flow Tests [v59]
-
-Genuine gaps: Payroll (no workflow), Marketing (feature unbuilt), Procurement (no workflow), Search (no full-flow test).
-
-### P1.G — Auto-Generated Route Quality [CORRECTED v63]
-
-178 auto-generated routes. 154/178 use `console.error`. Some routes DO implement filtering/pagination (events, inventory, clients have pagination; events and inventory have filtering). IR tracks both GET (260) and POST (589) handlers.
-
-### P1.H — Audit Writer Never Called [VERIFIED v63]
-
-`apps/api/app/lib/audit-writer.ts` exports never called from any route. Zero grep matches across all API route files.
-
-### P1.I — AGENTS.md Fabricated Procurement Claim [VERIFIED v63]
-
-AGENTS.md lines 369-378 claim "8+10 command dirs" for procurement. None exist on disk.
-
-### P1.J — Broken Test Imports [CORRECTED v64, v70, v71]
-
-619 TS errors (TS2307: module not found) across 19 test files. 41 skipped tests across 13 E2E files.
-
-**Note (v71):** P0 routes have been created (P0.E, P0.F, P0.G, P0.T, P0.U, P0.V, P0.W, P0.Y, P0.Z, P0.AA, P0.AB, P0.AD, P0.AC). The test file TS2307 errors are NOT caused by missing routes — the routes exist. Test files still have incorrect import paths that reference camelCase paths (e.g., `@/app/api/adminchatparticipant/archive/route`) while actual routes use kebab-case (`/administrative/chat/participants/`). This is a separate issue from missing backend routes and requires test file import path corrections.
-
-**Progress v70:** 65 TS2554 "Expected 2 arguments, but got 1" errors fixed across 9 test files:
-- `procurement/vendors/vendors.test.ts` - 30+ errors fixed
-- `scheduling/schedules.test.ts` - errors fixed
-- `staff/users/self-deactivation-prevention.test.ts` - errors fixed
-- `staff/users/user-end-to-end.test.ts` - errors fixed
-- `procurement/purchase-orders/purchase-orders.test.ts` - errors fixed
-- `procurement/requisitions/requisition-end-to-end.test.ts` - errors fixed
-- `procurement/vendor-contracts/vendor-contract-end-to-end.test.ts` - errors fixed
-- `documents/versions.test.ts` - 16 errors fixed
-- `inventory/transfers/transfers.test.ts` - 14 errors fixed
-- `operations/operations.test.ts` - 14 errors fixed
-- `knowledge-base/knowledge-base.test.ts` - 16 errors fixed
-- `logistics/logistics.test.ts` - 35 errors fixed
-
-Production code: CLEAN (0 typecheck errors). Remaining TS2307 errors in test files are due to incorrect import paths (camelCase vs kebab-case), NOT missing routes.
-
-### P1.K — Training Test Type Errors [RESOLVED v69]
-
-17 TS2554 "Expected 2 arguments, but got 1" errors in `apps/api/__tests__/training/training.test.ts`. Manifest command routes imported for testing required a second `params` argument `{ params: Promise.resolve({ entity, command }) }` per Next.js 15 route handler signature. Fixed all 17 invocations across 5 command handlers (createModuleCommand, updateModuleCommand, softDeleteModuleCommand, createAssignmentCommand, softDeleteAssignmentCommand).
+- apps/app eslint.ignoreDuringBuilds:true -- INTENTIONAL: Biome handles linting.
+- webpack overrides vs Turbopack -- Turbopack ignores webpack key.
+- baseURL NOT hardcoded -- config uses env var with default.
+- Per-package keys.ts IS the shared validation pattern.
+- Inconsistent env schemas between apps -- intentional by app role.
+- module: esnext vs es2022 -- intentional by config type.
+- Build output dirs -- all use dist/.
+- packageManager field -- present with integrity hash.
+- Sentry source map upload well-structured across all apps.
+- replaysSessionSampleRate not in server configs -- replay is client-only.
+- Shared headers include X-DNS-Prefetch-Control: on -- unnecessary but harmless.
+- sentry.client.config.ts missing is NOT an issue -- instrumentation-client.ts is correct for Next.js 15.
+- apps/docs uses .mjs -- intentional (fumadocs requirement).
 
 ---
 
-## P2 — Medium Priority (Feature Gaps / Hardening)
+## Resolved / Invalidated
 
-### P2.A — Accounting [v59, CORRECTED v63]
+### Pass 11 Corrections (2026-05-16)
 
-- [ ] No journal entries / general ledger / double-entry bookkeeping
-- [ ] Bank reconciliation is simulated
-- [ ] Financial reports expense totals hardcoded to 0 — `.reduce(() => 0, 0)` at `apps/api/app/api/accounting/financial-reports/route.ts:260`
-- [ ] No accounts payable
-- [ ] TaxConfiguration model has only 1 API route under payroll, zero accounting routes
-- [ ] No fiscal year / period management
-- [ ] New forms use raw UUID text inputs
-- [ ] Duplicate CoA route directories
+- Cron auth: ALL crons confirmed spoofable (external attacker can invoke webhook-retry, sentry-fixer)
+- manifest-adapters boundary violations: 5 imports (was 3)
+- sentry-integration: diverged tsconfig confirmed (doesn't extend shared)
+- packages/ai: tailwind-merge dead dep confirmed in addition to streamdown
 
-### P2.B — Events [v59, CORRECTED v63]
+### Pass 10 Corrections (archived -- see docs/audits/)
 
-- [ ] EventSummary missing `confidence` field (confirmed: model has no confidence column)
-- [ ] Event.importWorkflowId NOT in schema (confirmed: no such field on Event model)
-- [ ] Import pipeline: backend has flat `parseStatus`; UI shows 8-phase display
-- [ ] Multi-day event support not modeled
-- [ ] Event import code commented out — BLOCKER at `apps/api/app/api/events/documents/parse/route.ts:936-944`
-- [ ] Budget alerts not integrated in events list
-- [ ] Event detail not using spec shell composition
+All pass 10 corrections archived. Key: root vercel.json is APP deploy target; packages extending nextjs.json: 15; bare process.env: 81 vars.
 
-### P2.C — Logistics [VERIFIED v63]
-
-- [ ] Simulated GPS tracking (hardcoded LA coordinates — 34.052)
-- [ ] Route optimization non-functional
-- [ ] No Prisma relations (FK fields only, all joins via raw SQL)
-- [ ] Mixed create patterns across entities
-
-### P2.D — Payroll [VERIFIED v63]
-
-- [ ] State tax coverage only 8/50 states
-- [ ] Period ID generation produces non-UUID strings
-- [ ] No payroll_line_items index
-- [ ] Duplicate routes
-
-### P2.E — Scheduling [VERIFIED v63]
-
-- [ ] No `apps/api/app/api/scheduling/` directory — no scheduling API exists at all
-- [ ] `open_shifts` model has no management UI or API
-- [ ] Requests page joins `public.users` instead of `tenant_staff.employees`
-
-### P2.F — CRM [v59]
-
-- [ ] Lead.score/score_breakdown columns not in Prisma model
-- [ ] 0 scoring tests (all raw SQL)
-- [ ] Dual write/read paths untested
-- [ ] ClientContact/ClientPreference missing relations to Client
-- [ ] Venue in wrong schema
-
-### P2.G — Search [VERIFIED v63]
-
-- [ ] FR-107 violation: single-char queries return 200+empty not 400
-- [ ] No saved searches (no model, no API, no UI)
-- [ ] No search history (no model, no API, no UI)
-- [ ] Filter pills not migrated to BlogFilterChip
-- [ ] Results not migrated to ResearchTable
-
-### P2.H — Settings [VERIFIED v63]
-
-- [ ] Rate limits have full API but no UI surface
-- [ ] No Clerk MFA link in Security page
-- [ ] Audit writer never called (see P1.H)
-- [ ] Integrations-client.tsx: 2,064 lines (monolithic)
-- [ ] Notifications-client.tsx: 1,714 lines (monolithic)
-- [ ] Admin role-gating incomplete
-
-### P2.I — Staff/HR [VERIFIED v63]
-
-- [ ] No API routes for Disciplinary actions, Onboarding tasks, Departments, Skills, PINs
-- [ ] Duplicate `getEmployees()` across 3 scheduling action files
-- [ ] 3 redirect pages
-
-### P2.J — Notifications [v59, CORRECTED v63]
-
-- [ ] Duplicate SMS files — `sms.ts`, `sms-new.ts`, `sms-temp.ts` in `packages/notifications/`
-- [ ] Hardcoded sender email
-- [ ] No pagination on main notifications list
-- [ ] No real-time push (Knock provider context exists but server-side never called)
-
-### P2.K — Marketing [VERIFIED v63]
-
-- [ ] Campaigns page is "Coming Soon" placeholder
-- [ ] Analytics open rate counts "delivered" as "opened" — inflates rate
-- [ ] No public lead capture endpoint (spec FR-702, SC-005)
-- [ ] E2E test is stale
-- [ ] SMS rules uses plain Dialog not ContactFormCard; list uses custom div grid not ResearchTable
-- [ ] Leads list uses custom div grid, zero ResearchTable usage in marketing
-- [ ] Analytics page returns `0` for zero-data case instead of null/em-dash per spec
-
-### P2.L — Procurement [v59]
-
-- [ ] PO receive operation lacks `$transaction()`
-- [ ] No requisition line items in detail view
-- [ ] Vendor contract create uses raw UUID input for vendorId
-- [ ] Budget alerts not generated by any cron/trigger
-- [ ] No tests for budget, approvals, or server actions
-
-### P2.M — Facilities [v59]
-
-- [ ] No spec exists
-- [ ] RBAC policies defined but not enforced
-- [ ] Schedules/work-orders list routes have no pagination clamps
-- [ ] SelectItem with empty string value
-- [ ] Orphan E2E test tests non-existent routes
-
-### P2.N — Tools/AI [v59]
-
-- [ ] `packages/ai` SDK is disconnected (zero imports of `@repo/ai`)
-- [ ] Only 1 of 4 API routes has tests
-- [ ] ~50 bare Card violations, color violations present
-
-### P2.O — Command Board [v59]
-
-- [ ] Two competing data models: `CommandBoardCard` vs `BoardProjection`
-- [ ] Template sharing blocked (501)
-- [ ] Direct Prisma writes bypass manifest runtime
-- [ ] AI Chat UI, Plan Approval UI, Simulation toggle UI all missing (APIs exist)
-- [ ] Realtime collaboration not wired (Liveblocks exists, not connected)
-- [ ] React Flow not used (spec requires it; implementation uses custom HTML canvas)
-
-### P2.P — Documents/Storage [v59]
-
-- [ ] No document management UI
-- [ ] Zero tests for `@repo/storage` and `@repo/pdf`
-- [ ] Duplicated base64 encoding logic across 6 PDF routes
-
-### P2.Q — Environment Variable Gaps [v59]
-
-- [ ] `RESEND_WEBHOOK_SECRET` used without t3-env validation
-- [ ] `SENTRY_DSN` used in edge config but not declared in keys.ts
-- [ ] `PLASMIC_PROJECT_ID` / `PLASMIC_API_TOKEN` guarded by `invariant()` but not in `.env.example`
-- [ ] 5 other env vars absent from `.env.example`
-
-### P2.R — Verified Discoveries [VERIFIED v63]
-
-- [ ] **Kitchen: import uses nil UUIDs for FK fields** — `apps/api/app/api/kitchen/import/route.ts:311,333`
-- [ ] **QuickBooks: export history always returns empty** — `apps/api/app/api/integrations/quickbooks/history/route.ts:26-27`
-- [ ] **No SupplierSyncHistory model** — `apps/api/app/api/inventory/supplier-sync/status/route.ts:96-98` BLOCKER
-- [ ] **Workforce AI optimizer placeholder** — `apps/api/lib/staff/workforce-ai-optimizer.ts:569` always returns `0.75`
-- [ ] **Trash list route: 9+ table name mismatches**
-- [ ] **5 tables in migrations with no Prisma model** — `inter_location_transfers`, `inter_location_transfer_items`, `location_resource_shares`, `sensor_readings`, `food_safety_logs`
-
-### P2.S — Kitchen: Duplicate Route Directories [VERIFIED v63]
-
-- [ ] 11+ pairs (camelCase vs kebab-case): dish/dishes, ingredient/ingredients, station/stations, task/tasks, preplist/prep-lists, preplistitem/prep-list-items, recipe/recipes, menudish/menu-dishes, recipeingredient/recipe-ingredients, recipeversion/recipe-versions, inventoryitem/inventory
-
-### P2.T — Kitchen: Hardcoded Nutrition Database [VERIFIED v63]
-
-- [ ] 16 hardcoded ingredients. Anything else silently returns zero nutrition values.
-
-### P2.U — CRM: No Deal Prisma Model [VERIFIED v63]
-
-- [ ] Pipeline drag-and-drop broken. No `Deal` model. `deal-rules.manifest` stores in memory only.
-
-### P2.V — CRM: No Leads Management UI [VERIFIED v63]
-
-- [ ] Full Lead API exists but no UI for listing, creating, converting, or disqualifying.
-
-### P2.W — CRM: All Manifests Store In Memory [VERIFIED v63]
-
-- [ ] All 5 CRM manifests use `store X in memory`. No CRM data persists through manifest system.
-
-### P2.X — Zod v3/v4 Version Mismatch [VERIFIED v63]
-
-- [ ] `packages/supplier-connectors` uses Zod `^3.24.2` while repo uses Zod v4.
-
-### P2.Y — Triple Overlapping SMS Files [VERIFIED v63]
-
-- [ ] `packages/notifications/` has `sms.ts`, `sms-new.ts`, `sms-temp.ts` with near-identical content.
-
-### P2.Z — Dual PDF Stacks [VERIFIED v63]
-
-- [ ] `packages/pdf` uses `@react-pdf/renderer`, `packages/sales-reporting` uses `pdfkit`.
-
-### P2.AA — Dead Packages Confirmed [VERIFIED v63]
-
-- [ ] `@repo/ai` — 0 consumers. Re-exports bare Vercel AI SDK, internal class unused.
-- [ ] `@repo/kitchen-state-transitions` — 0 consumers. State logic handled inline.
-
-### P2.BB — Events: EventDish entity missing from Prisma schema [NEW v63]
-
-- [ ] Spec requires EventDish for battle board dish voting. Model does not exist.
-
-### P2.BC — Events: No status transition commands [NEW v63]
-
-- [ ] Spec requires dedicated commands (confirm/cancel/start/complete). Events mutated directly without domain events or audit trail.
-
-### P2.BD — Staffing: CoverageBar design primitive missing [NEW v63]
-
-- [ ] Spec FR-401 requires CoverageBar component. Does not exist in design system.
-
-### P2.BE — Staffing: Onboarding tasks not implemented [NEW v63, CORRECTED v64]
-
-- [ ] `OnboardingTask` and `OnboardingCompletion` Prisma models exist but have zero API routes. No UI. Spec compliance gap.
-
-### P2.BF — REMOVED v64 (Calendar: sync routes verified present)
-
-All 6 calendar sync routes confirmed present. See v64 Corrections below.
-
-### P2.BG — Frontend API Calls Hitting Missing Routes [NEW v63, CORRECTED v64]
-
-Deep audit found the "130 missing routes" claim was massively overstated. Actual count: **12 confirmed missing routes** across 13 call sites. All 12 are already individually tracked as P0 items (P0.E, P0.T, P0.U, P0.V, P0.W, P0.AA, P0.AD, P0.Y). 41 other "missing" calls work correctly through the manifest dispatcher (`/api/manifest/[Entity]/commands/[command]`). 166 non-manifest routes have matching backend files. This item is now a cross-reference only.
-
-### P2.BH — Security: SQL Injection Risk in Staffing Coverage [NEW v63, DOWNGRADED v64]
-
-- [ ] `apps/api/app/api/staffing/coverage/route.ts:70-163` uses `$queryRawUnsafe`. However, only `$${locIdx}` (a hardcoded number) is interpolated into SQL. No user data reaches the query string. **Risk: LOW** (not exploitable as-is, but pattern should be replaced with `$queryRaw` + `Prisma.sql` for defense-in-depth).
-
-### P2.BI — Security: Exposed Stack Traces in Production API Responses [NEW v63, DOWNGRADED v64]
-
-- [ ] `apps/api/app/api/kitchen/import/route.ts:481-483` and `apps/api/app/api/events/documents/parse/route.ts:1235-1237` include `error.stack` in responses but ONLY when `NODE_ENV === "development"`. `apps/api/app/api/communications/email-templates/commands/create/route.ts:118` passes stack to `log.error` only, not the response body. **Risk: LOW-MEDIUM** (safe in production; fix to remove conditionally for defense-in-depth).
-
-### P2.BJ — Data Integrity: Clock-In Duplicates Not Prevented [NEW v63]
-
-- [ ] No unique constraint on `(tenant_id, employee_id, shift_id)` for TimeEntry.
-
-### P2.BK — Data Integrity: Payroll Generation Race Condition [NEW v63]
-
-- [ ] `apps/api/app/api/payroll/timecards/generate/route.ts:223-236` bulk inserts without checking for existing entries.
-
-### P2.BL — Data Integrity: Inventory Stock Adjustment Race Condition [NEW v63]
-
-- [ ] `apps/api/app/api/inventory/stock-levels/adjust/route.ts:314` checks for negative stock BEFORE the transaction starts.
-
-### P2.BM — Security: readFileSync for OPENAI_API_KEY in Production Code [NEW v64]
-
-- [ ] `apps/app/app/api/command-board/chat/route.ts:71-81` reads `.env` files with `readFileSync` to extract `OPENAI_API_KEY` at runtime when `process.env.OPENAI_API_KEY` is not set. Falls back to scanning `Documents/env.txt`.
-- [ ] `packages/manifest-adapters/src/bottleneck-detector/ai-suggestions.ts:48-58` has identical pattern. Both should use `process.env` only. File reads in serverless functions are unreliable and potentially expose secrets through logging/error paths.
-
-### P2.BN — Manifest Dispatcher Console.log in Hot Path [NEW v64]
-
-- [ ] `apps/api/app/api/manifest/[entity]/commands/[command]/route.ts:46` logs every command execution with `console.log` including userId, userRole, tenantId, and body keys. High-traffic route. Violates P1.B policy and leaks PII to stdout.
-
-### P2.BO — Missing Error Boundaries [NEW v64]
-
-- [ ] Only 1 `error.tsx` exists in the authenticated layout (`apps/app/app/(authenticated)/error.tsx`). 233 page.tsx files have no dedicated error boundary. Module-level crashes propagate to the top-level catch-all, losing navigation context and showing generic error UI.
-
----
-
-## P3 — Low Priority (Polish / Cleanup)
-
-### Dead Packages (confirmed zero imports)
-
-- `packages/brand/` — wrong naming convention (`@capsule/` vs `@repo/`)
-- `packages/sales-reporting/` — 1 API consumer, no frontend UI
-
-### Package Issues
-
-- Zod version fragmentation across 3 version ranges (see P2.X)
-- `packages/sales-reporting/`: wrong package name, stale vitest, separate lockfile
-- `packages/event-parser/`: narrow usage (2 consumers), no tests
-
-### Manifest System Issues
-
-- 86 active manifests, 6 disabled — all compiled into IR (no silent dead manifests)
-- 178 generated routes
-- IR tracks GET (260) and POST (589) routes
-- 71 route files use executeManifestCommand
-- ESLint enforcement not activated; 5,013 hardcoded `/api/` paths
-
-### Stub Connectors
-
-- `packages/supplier-connectors/` — US Foods and Charlie's Produce are stubs
-
-### Duplicate Components
-
-- 4 copies of StatCard in tools domain
-- 2 copies of getInitials() in collaboration package
-- 2 cursor implementations
-
-### Skipped Tests
-
-- 41 skipped tests across 13 E2E files
-- 4 unconditionally skipped in ai-context-aware-suggestions E2E
-- 2 test files with broken imports (22 total — see P1.J)
-- 8+ domains with zero E2E coverage (Accounting, CRM, Payroll, Search, Settings, Timecards, Training, Webhooks)
-
-### Stats
-
-- 1,105 TODOs across 250 files
-- 5 BLOCKER comments in API routes
-- 12+ hardcoded zero UUIDs in production code
-- ~974 console statements across ~364 files
-- 12 confirmed missing backend routes (already tracked as individual P0 items)
-- 41 frontend calls work via manifest dispatcher (not missing)
-- 2 test files with broken imports (619 total — see P1.J)
-
----
-
-## Spec Gap Summary
-
-See `docs/audits/v61-spec-comparison.md` for detailed per-spec analysis.
-
-### Events (~40% spec compliance)
-
-Missing `confidence` field on EventSummary (confirmed absent). No `importWorkflowId` on Event (confirmed absent). No status transition commands. 6-stage import pipeline not implemented (flat parseStatus vs 8-phase display). EventDish model does not exist (battle board non-functional). Budget alerts not integrated. Event detail not using spec shell composition.
-
-### Calendar (partial compliance)
-
-All 6 sync routes CONFIRMED present. `CalendarSyncConnection` model is `ProviderSync` (naming mismatch only). Missing mobile responsive list view. Hardcoded localhost confirmed (P0.AH, display-only fallback). Reschedule API CONFIRMED.
-
-### Staffing (~70% compliance)
-
-Employee CRUD: COMPLETE. Scheduling: COMPLETE. Timecards: PARTIAL (no clock in/out). Certifications: PARTIAL (no expiration alerts). Onboarding: Prisma models exist (OnboardingTask/OnboardingCompletion) but zero API routes — NOT IMPLEMENTED. CoverageBar primitive: MISSING. Design system violations in staffing pages.
-
-### Command Board
-
-AI Chat backend built, frontend MISSING. Plan Approval/Rejection backend built, frontend MISSING. Simulation Toggle: 6 API endpoints built, frontend MISSING. React Flow required, custom HTML canvas used. Data model divergence: frontend uses CommandBoardCard, API uses BoardProjection.
-
-### Marketing
-
-Campaigns "Coming Soon". SMS rules use plain Dialog not ContactFormCard. Leads list uses custom div grid. Zero ResearchTable usage. No public lead capture endpoint.
-
-### Contracts
-
-EventContract and VendorContract models exist in Prisma. EventContract has 8 commands in manifest IR. VendorContract has 10 commands in manifest IR. Public signing surface at `/sign/[signingToken]` needs verification. Contract expiration cron exists in vercel.json.
-
-### CRM
-
-NO spec document. Ranked HIGH priority for spec authoring. Full pipeline board, proposals, scoring, venues built. Lead API exists but UI only partially built.
-
-### Kitchen
-
-NO spec (ranked CRITICAL — largest domain at 240 files with 32 Prisma models, 46 API route groups, 31 frontend pages, zero spec coverage). 11 duplicate route directory pairs. Zero commands/ directories (pure REST pattern).
-
-### Domains WITHOUT specs (ranked by urgency)
-
-| Priority | Domain | Files | Why needed |
-|----------|--------|-------|------------|
-| CRITICAL | kitchen/ | 240 | Largest domain, no spec coverage |
-| HIGH | crm/ | 78 | Full CRM lifecycle, no spec at all |
-| HIGH | analytics/ | 79 | Cross-cutting dashboards, no metrics contract |
-| HIGH | scheduling/ | 41 | Core operational module, no API exists |
-| MEDIUM | inventory/ | 61 | Warehouse operations |
-| MEDIUM | accounting/ | 50 | Financial module |
-| MEDIUM | procurement/ | 61 | Requisition through PO |
-| MEDIUM | payroll/ | 100 | Payroll processing |
+### Pass 7-9 Resolutions (archived -- see docs/implementation-history/)
 
 ---
 
 ## Archive Map
 
-Completed pass write-ups and historical notes:
-- `docs/implementation-history/` — pass logs, executive summaries
-- `docs/audits/` — numbered audit passes
-- `docs/audits/v61-spec-comparison.md` — detailed spec gap analysis
+- docs/implementation-history/ -- pass logs, executive summaries, blocker history
+- docs/audits/ -- numbered audit passes, route audit reports
+- docs/audits/ralph05-routes/ -- latest route audit
+- docs/audits/pass4-consolidated-findings.md through pass10-consolidated-findings.md
+- docs/audits/pass11-consolidated-findings.md [TO BE CREATED]
+- docs/audits/pass12-consolidated-findings.md [TO BE CREATED]
+- docs/audits/pass13-consolidated-findings.md [TO BE CREATED]
 
 ---
 
-## Methodology
+## Notes
 
-- **v64**: 60+ agent comprehensive audit (7 spec readers, 30 P0 verifiers, 11 domain analysts, 6 spec compliance checkers, 3 security verifiers, 3 new-issue scouts). All 30 P0 items re-verified — 29 confirmed, 1 REMOVED (P0.M false positive). P2.BH downgraded to LOW (safely constructed params, no user data). P2.BI downgraded to LOW-MEDIUM (gated behind NODE_ENV=development). 3 new P2 items: readFileSync for OPENAI_API_KEY (P2.BM), manifest dispatcher console.log in hot path (P2.BN), missing error boundaries (P2.BO). Spec compliance re-verified: Events ~40%, Staffing ~70%, Calendar partial, Contracts partially verified. Kitchen confirmed largest domain (240 files, 32 Prisma models, 46 API groups). CRM has 78 files with no spec. Domain file counts updated.
-- **v63**: Full re-verification of all 30 P0 items by 40+ parallel agents. 30 CONFIRMED. P1.A counts updated. P1.B raised (~974/~364). P1.C RLS corrected. P1.D duplicate routes claim CHALLENGED. P1.G corrected. 6 new P2 items (P2.BB–P2.BL).
-- **v62**: Full re-verification of all 28 P0 items from v61. 2 new P0 (P0.AG, P0.AH). 8 new P2 items (P2.S–P2.AA).
-- **v61**: Massive multi-agent audit synthesis. 28 P0 items verified. 5 new P0 (P0.AB–P0.AF). 7 new P2 items.
-- **v60**: 30+ parallel Sonnet verification agents + 1 Opus synthesis. 3 new P0 (P0.Y–P0.AA).
-- **v59**: 80+ parallel verification agents. 7 new P0 (P0.R–P0.X).
-- **v58**: Initial 80+ agent audit.
-
-### v64 Corrections
-
-- **P0.M REMOVED**: KnowledgeBaseEntry IS in routes.manifest.json with 6 routes (list, detail, create, publishEntry, remove, update). The manifest IS compiled into IR. The v63 claim "absent from routes.manifest.json" and "never compiled" was FALSE. The real bug for Knowledge Base is P0.L (response shape mismatch) only.
-- **P2.BF REMOVED**: Deep audit confirmed all 6 calendar sync routes are present. The v63 claim of missing trigger/callback endpoints was FALSE.
-- **P2.BG CORRECTED**: Deep audit found actual count is 12 confirmed missing routes (not 130). 41 "missing" calls work through manifest dispatcher. 166 non-manifest routes have matching backend files. All 12 missing routes are already tracked as individual P0 items (P0.E, P0.T, P0.U, P0.V, P0.W, P0.AA, P0.AD, P0.Y).
-- **P2.BE CORRECTED**: OnboardingTask and OnboardingCompletion Prisma models DO exist. Gap is API routes and UI only, not models.
-- **P1.J CORRECTED**: Actual count is 619 TS errors (TS2307) across 19 test files, not "22 type errors in 2 files".
-- **P1.A UPDATED**: Added finding that 30/40 design blocks have zero external consumers.
-- **P2.BH DOWNGRADED**: `$queryRawUnsafe` in staffing/coverage uses safely constructed `locParam`. Only `$${locIdx}` (a hardcoded numeric index) is interpolated. No user data enters the SQL string. Changed from HIGH to LOW severity.
-- **P2.BI DOWNGRADED**: Stack traces in kitchen/import:481 and events/documents/parse:1235 are gated behind `NODE_ENV === "development"`. Email-templates/create:118 passes stack to `log.error` only, not response. Changed from HIGH to LOW-MEDIUM severity.
-
-### v64 New Discoveries
-
-- **P2.BM**: readFileSync for OPENAI_API_KEY — `apps/app/app/api/command-board/chat/route.ts:71-81` and `packages/manifest-adapters/src/bottleneck-detector/ai-suggestions.ts:48-58` fall back to reading `.env` files from disk when `process.env.OPENAI_API_KEY` is unset. Unreliable in serverless, potential secret exposure through logging.
-- **P2.BN**: Manifest dispatcher console.log — `apps/api/app/api/manifest/[entity]/commands/[command]/route.ts:46` logs every command with userId, userRole, tenantId, and body keys. High-traffic hot path. PII leak to stdout.
-- **P2.BO**: Missing error boundaries — only 1 error.tsx for 233 page.tsx files in authenticated layout. Module-level crashes lose navigation context.
+- **Line limit**: Targets <=800 lines per AGENTS.md rules.
+- **Batch ordering**: P0 A-EE+L immediate. P1 F-M next sprint. P2 N-W planned. P3 Z-AA convenience. P4 informational.
+- **Count methodology**: ~842 unique actionable items after pass 13 (~97 new findings from 12 agents).
+- **[NEW-P13]**: Items discovered by pass 13 (12 agents, ~97 new findings against latest official docs).
+- **[CONFIRMED-P10]**: Items re-verified still valid.
+- **[NEW-P11]**: Items discovered by pass 11 (16 agents, 240 new findings).
+- **[ESCALATED-P11]**: Items escalated from prior passes with new severity context.
+- **CRITICAL -- CSP double-definition**: Root vercel.json and apps/app/next.config.ts have conflicting CSP allowlists.
+- **CRITICAL -- Cron auth**: ALL crons spoofable or broken. External attacker can invoke webhook-retry and sentry-fixer (AI agent runner).
+- **CRITICAL -- composite**: Zero composite:true despite 39+ project references.
+- **CRITICAL -- ENV**: packages/ai reads API_KEY not OPENAI_API_KEY. Validated key never consumed.
+- **CRITICAL -- OutboxEvent**: Model non-functional against actual DB columns (wrong types, missing maps).
+- **CRITICAL -- serverExternalPackages**: Shared ["ably"] silently dropped by app overrides. **NOTE: Both apps already include "ably" manually. Pattern is fragile but not a runtime bug. Downgraded from CRITICAL to HIGH (maintenance concern).**
+- **RLS**: ~92 tenant models lack RLS (178 tenant-scoped, only 86 with RLS). Zero @@enableRLS in Prisma. tenant_accounting.* all 16 tables zero RLS.
+- **sentry-integration**: Most outdated package (zod v3, TS ^5.3, @types/node ^20, diverged tsconfig).
+- **Vitest**: 3 major versions, environmentMatchGlobs REMOVED in v4.
+- **Cron Clerk block**: ALL /api/cron/* routes blocked by Clerk middleware (not in isPublicRoute). Even GET routes return 401.
+- **Next.js CVE**: 15.4.11 has unpatched CVEs; 15.5.18+ contains 13 security patches.
+- **event-parser**: Script name `type-check` doesn't match turbo task `typecheck` -- silently excluded from type checking.
+- **zod**: v3/v4 runtime mismatch in sentry-integration + supplier-connectors vs rest of monorepo.
+- **Prisma config**: Missing directUrl causes pooled-connection advisory lock risk in production.
+- **verbatimModuleSyntax**: TS 5.9 recommends true. Zero configs set it. Type-only imports silently dropped.
+- **serverActions**: Still under experimental in apps/app -- promoted to top-level in Next.js 15 GA. **RESOLVED: moved to top-level**
+- **Phantom deps**: 6 packages have runtime deps never imported in source (auth/observability/feature-flags/ai/seo/payroll-engine).
+- **API CSP**: apps/api has security headers but zero Content-Security-Policy.
+- **Payments webhook**: Returns 200 when Stripe secret missing -- webhooks silently dropped, never retried.
+- **Rate limiting**: Fails open on Redis errors -- attacker disrupting Redis disables all rate limiting.
+- **MCP server**: Zero env validation. 5 credential vars via bare process.env, no keys.ts.

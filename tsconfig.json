@@ -10,7 +10,6 @@
     { "path": "./apps/email" },
     { "path": "./apps/mobile" },
     { "path": "./apps/storybook" },
-    { "path": "./apps/studio" },
     { "path": "./apps/web" },
     { "path": "./packages/ai" },
     { "path": "./packages/analytics" },

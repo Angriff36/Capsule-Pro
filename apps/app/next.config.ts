@@ -175,7 +175,7 @@ const rewrites: NextConfig["rewrites"] = async () => {
   ];
 };
 
-let nextConfig: NextConfig = withToolbar(
+const baseConfig: NextConfig = withToolbar(
   withLogging({
     ...config,
     distDir,
@@ -192,7 +192,7 @@ let nextConfig: NextConfig = withToolbar(
     // Next.js's built-in type checker crashes on Vercel when lstat-ing
     // parenthesized route groups like (authenticated)/.
     typescript: {
-      ignoreBuildErrors: true,
+      ignoreBuildErrors: false,
     },
     // Transpile workspace packages and heavy libraries for better performance
     transpilePackages: [
@@ -235,10 +235,10 @@ let nextConfig: NextConfig = withToolbar(
         "recharts",
         "@repo/design-system",
       ],
-      // Reduce server action bundle size
-      serverActions: {
-        bodySizeLimit: "2mb",
-      },
+    },
+    // Reduce server action bundle size
+    serverActions: {
+      bodySizeLimit: "2mb",
     },
     // Enable source maps only when they can be uploaded to Sentry.
     // Local builds and non-Vercel deploys skip this to save build time.
@@ -382,12 +382,11 @@ let nextConfig: NextConfig = withToolbar(
   })
 );
 
-if (env.VERCEL) {
-  nextConfig = withSentry(nextConfig);
-}
+const withVercel = (config: NextConfig): NextConfig =>
+  env.VERCEL ? withSentry(config) : config;
+const withAnalyze = (config: NextConfig): NextConfig =>
+  env.ANALYZE === "true" ? withAnalyzer(config) : config;
 
-if (env.ANALYZE === "true") {
-  nextConfig = withAnalyzer(nextConfig);
-}
+const nextConfig: NextConfig = withAnalyze(withVercel(baseConfig));
 
 export default nextConfig;
