@@ -20,6 +20,7 @@ env:
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     steps:
       - name: Checkout code
@@ -42,8 +43,11 @@ jobs:
           DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
           NPM_TOKEN: ${{ secrets.PKG_AUTH_TOKEN }}
 
-      - name: Run linting
-        run: pnpm turbo typecheck --filter=./apps/app --filter=./apps/api --filter=./apps/web
+      - name: Typecheck (app, api, web)
+        run: pnpm check
+
+      - name: Lint explicit any (app, api, web production code)
+        run: pnpm lint:any
 
       - name: Check canonical routes (no hardcoded /api/ in client code)
         run: node scripts/check-hardcoded-routes.mjs

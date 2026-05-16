@@ -16,6 +16,7 @@ permissions:
 jobs:
   check-dependabot:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     outputs:
       has-failing-dependabot: ${{ steps.check.outputs.has-failing }}
 
@@ -33,10 +34,11 @@ jobs:
             echo "has-failing=false" >> $GITHUB_OUTPUT
           fi
         env:
-          GITHUB_TOKEN: ${{ secrets.PKG_AUTH_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   deploy-app-api-web:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     needs: check-dependabot
     if: needs.check-dependabot.outputs.has-failing-dependabot == 'false'
     env:
@@ -94,8 +96,11 @@ jobs:
       - name: Generate Prisma client
         run: pnpm prisma:check
 
-      - name: Run linting
-        run: pnpm turbo typecheck --filter=./apps/app --filter=./apps/api --filter=./apps/web
+      - name: Typecheck (app, api, web)
+        run: pnpm check
+
+      - name: Lint explicit any (app, api, web production code)
+        run: pnpm lint:any
 
       - name: Generate code for deployment
         run: |
@@ -108,7 +113,6 @@ jobs:
 
       - name: Run tests
         run: pnpm test
-        continue-on-error: true
 
       - name: Build all apps
         run: pnpm turbo run build --filter=./apps/app --filter=./apps/api --filter=./apps/web
@@ -153,6 +157,7 @@ jobs:
 
   deploy-docs:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     needs: check-dependabot
     if: needs.check-dependabot.outputs.has-failing-dependabot == 'false'
     env:
@@ -201,6 +206,7 @@ jobs:
 
   notify-failing-dependabot:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     needs: check-dependabot
     if: needs.check-dependabot.outputs.has-failing-dependabot == 'true'
 

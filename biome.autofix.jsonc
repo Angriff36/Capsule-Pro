@@ -18,6 +18,9 @@
       "!!**/coverage",
       "!!.turbo",
       "!!**/.turbo",
+      "!!.tmp",
+      "!!**/.tmp",
+      "!!**/test-output",
       "!!.vercel",
       "!!**/.vercel",
       "!!**/test-results",
@@ -45,7 +48,8 @@
       "!!**/.react-email",
       "!!**/.specify",
       "!!**/*.tsbuildinfo",
-      "!!**/*.snap"
+      "!!**/*.snap",
+      "!!eslint.config.mjs"
     ]
   },
   "extends": [
@@ -81,7 +85,7 @@
         "useSemanticElements": "warn"
       },
       "suspicious": {
-        "noExplicitAny": "warn",
+        "noExplicitAny": "error",
         "noArrayIndexKey": "warn",
         "useAwait": "warn",
         "noEmptyBlockStatements": "warn"
@@ -128,6 +132,9 @@
         "rules": {
           "performance": {
             "useTopLevelRegex": "off"
+          },
+          "suspicious": {
+            "noExplicitAny": "warn"
           }
         }
       }
@@ -138,6 +145,9 @@
         "rules": {
           "performance": {
             "noBarrelFile": "off"
+          },
+          "suspicious": {
+            "noExplicitAny": "warn"
           }
         }
       }

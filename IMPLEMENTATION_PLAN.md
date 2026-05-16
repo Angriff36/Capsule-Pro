@@ -9,6 +9,19 @@
 
 12 domain-specific audit agents deep-checked all configs against latest official documentation. ~97 new findings.
 
+### Fixes Applied (automated pass 14)
+
+- deploy.yml: removed continue-on-error:true from tests step (tests now gate deployment)
+- deploy.yml + ci.yml: added timeout-minutes to all jobs (check-dependabot: 5m, deploy-app-api-web: 30m, deploy-docs: 15m, notify-failing-dependabot: 5m, ci test: 30m)
+- deploy.yml: changed PKG_AUTH_TOKEN to github.token for gh pr list (least-privilege)
+- codeql.yml: removed Python from language matrix (zero Python code in repo, wasted runner time)
+- security.yml: added security-events:write permission for SARIF upload
+- security.yml: updated CodeQL actions from @v3 to @v4
+- Vitest: aligned all packages to ^4.0.18 (notifications ^3→^4, sales-reporting ^2→^4, manifest-runtime/cli latest→^4 + pinned @types/node and typescript)
+- biome.autofix.jsonc: synced 3 missing ignore patterns from biome.jsonc (.tmp, test-output, eslint.config.mjs)
+- TS base.json: added noUncheckedSideEffectImports:true (TS 5.9 option)
+- manifest-runtime/packages/cli: pinned floating deps (@types/node latest→25.2.0, typescript ^5.5.3→^5.9.3)
+
 ## Changes from cron-auth fix pass (2026-05-16)
 
 Systemic cron authentication fix. ALL 8 scheduled crons were non-functional due to:
@@ -144,7 +157,7 @@ Passes 2-10 findings archived in `docs/audits/` and `docs/implementation-history
 - [ ] **[TS]** skipLibCheck:true in packages/typescript-config/base.json hides real type errors. **CRITICAL** [CONFIRMED-P10]
 - [ ] **[NEXT]** apps/api/next.config.ts line 102: ignoreBuildErrors:true hides ALL type errors. **CRITICAL** [CONFIRMED-P10]
 - [ ] **[NEXT]** apps/web/next.config.ts line 17: ignoreBuildErrors:true. **CRITICAL** [CONFIRMED-P10]
-- [ ] **[CI]** deploy.yml continue-on-error:true on tests step. **CRITICAL** [CONFIRMED-P10]
+- [x] **[CI]** deploy.yml continue-on-error:true on tests step. **CRITICAL** [CONFIRMED-P10] **RESOLVED: removed continue-on-error from deploy.yml tests step**
 - [x] **[VERCEL-CROSS]** CSP double-definition: root vercel.json AND apps/app/next.config.ts have DIFFERENT CSP policies. **CRITICAL** [CONFIRMED-P10] **RESOLVED: removed conflicting CSP from root vercel.json; apps/app/next.config.ts is sole CSP authority**
 - [ ] **[NEXT]** CSP unsafe-inline + unsafe-eval in apps/app next.config.ts AND root vercel.json. **CRITICAL** [CONFIRMED-P10]
 - [ ] **[NEXT]** apps/api outputFileTracingIncludes manifest-ir/ir/**/*.json -- verify completeness. **CRITICAL** [CONFIRMED-P10]
@@ -154,7 +167,7 @@ Passes 2-10 findings archived in `docs/audits/` and `docs/implementation-history
 - [ ] **[TS-NEW]** Missing apps/forecasting-service from root tsconfig references. **CRITICAL** [NEW-P12]
 - [ ] **[NEXT-NEW]** Next.js 15.4.11 vulnerable -- 13 CVE patches in 15.5.18+. **HIGH** [NEW-P12]
 - [ ] **[TS-NEW]** Missing verbatimModuleSyntax -- TS 5.9 recommends true repo-wide. Zero configs set it. **HIGH** [NEW-P13]
-- [ ] **[TS-NEW]** Missing noUncheckedSideEffectImports -- new TS 5.9 compiler option. Not set anywhere. **HIGH** [NEW-P13]
+- [x] **[TS-NEW]** Missing noUncheckedSideEffectImports -- new TS 5.9 compiler option. Not set anywhere. **HIGH** [NEW-P13] **RESOLVED: added to packages/typescript-config/base.json**
 - [ ] **[TS-NEW]** packages/manifest-ir missing tsconfig AND not in root references. **HIGH** [NEW-P13]
 
 ### Batch B: Runtime Correctness
@@ -167,8 +180,8 @@ Passes 2-10 findings archived in `docs/audits/` and `docs/implementation-history
 - [x] **[PKG]** Root package.json name is "next-forge" not project name. **CRITICAL** [CONFIRMED-P10] **RESOLVED: renamed to "capsule-pro"**
 - [ ] **[CI-NEW]** deploy.yml uses unmaintained amondnet/vercel-action@v25 (supply chain risk). **HIGH** [NEW-P11]
 - [ ] **[CI-NEW]** logging-sync.yml runs pnpm install WITHOUT ensure-github-packages-npmrc.sh. **HIGH** [NEW-P11]
-- [ ] **[CI-NEW]** security.yml missing `security-events: write` permission for SARIF upload. **HIGH** [NEW-P12]
-- [ ] **[CI-NEW]** codeql.yml scans Python despite zero Python code in repo. **MEDIUM** [NEW-P12]
+- [x] **[CI-NEW]** security.yml missing `security-events: write` permission for SARIF upload. **HIGH** [NEW-P12] **RESOLVED: added security-events: write permission to security.yml**
+- [x] **[CI-NEW]** codeql.yml scans Python despite zero Python code in repo. **MEDIUM** [NEW-P12] **RESOLVED: removed Python from codeql.yml language matrix**
 
 ### Batch C: Cron Systemic Auth Failure (ESCALATED-P12)
 
@@ -204,14 +217,14 @@ ALL scheduled crons non-functional. Clerk middleware blocks `/api/cron/*` (not i
 
 - [x] **[VITEST]** Hardcoded Windows paths in apps/api (7 locations). **CRITICAL** [CONFIRMED-P10] **RESOLVED: removed 4 hardcoded C:\Projects\capsule-pro absolute paths from vitest.config.mts resolveId hooks**
 - [x] **[VITEST]** apps/api has 4 conflicting vitest configs including .bak2 in git. **CRITICAL** [CONFIRMED-P10] **RESOLVED: deleted dead vitest.config.ts and vitest.config.ts.bak2**
-- [ ] **[VITEST]** 3 different vitest major versions: sales-reporting ^2, notifications ^3, main ^4. **CRITICAL** [CONFIRMED-P10]
+- [x] **[VITEST]** 3 different vitest major versions: sales-reporting ^2, notifications ^3, main ^4. **CRITICAL** [CONFIRMED-P10] **RESOLVED: aligned all to ^4.0.18 (notifications ^3→^4, sales-reporting ^2→^4, manifest-runtime/cli latest→^4)**
 - [ ] **[VITEST]** apps/app environmentMatchGlobs DEPRECATED in Vitest 4.0 (will break). **CRITICAL** [CONFIRMED-P10]
 - [ ] **[VITEST-NEW]** environmentMatchGlobs REMOVED in Vitest 4 (not just deprecated). **CRITICAL** [NEW-P11]
 - [ ] **[VITEST-NEW]** Root config leaks jsdom environment, setupFiles, and app-specific aliases to ALL workspace projects. **HIGH** [NEW-P11]
 - [ ] **[VITEST-NEW]** optimizeDeps.disable not valid in Vite 6. **HIGH** [NEW-P11]
 - [ ] **[VITEST-NEW]** deps.interopDefault migration risk in Vitest 4. **HIGH** [NEW-P11]
-- [ ] **[VITEST-NEW]** notifications vitest ^3 incompatible with Vitest 4 workspace. **HIGH** [NEW-P11]
-- [ ] **[VITEST-NEW]** sales-reporting vitest ^2 incompatible with Vitest 4 workspace. **HIGH** [NEW-P11]
+- [x] **[VITEST-NEW]** notifications vitest ^3 incompatible with Vitest 4 workspace. **HIGH** [NEW-P11] **RESOLVED: updated to ^4.0.18**
+- [x] **[VITEST-NEW]** sales-reporting vitest ^2 incompatible with Vitest 4 workspace. **HIGH** [NEW-P11] **RESOLVED: updated to ^4.0.18**
 - [ ] **[VITEST]** console.log in 6 vitest config instances. **HIGH** [CONFIRMED-P10]
 - [ ] **[VITEST]** restoreMocks NOT set in ANY of 14 configs. **HIGH** [CONFIRMED-P10]
 - [ ] **[VITEST]** globals:true in only 4 of 15 configs. **HIGH** [CONFIRMED-P10]
@@ -247,7 +260,7 @@ ALL scheduled crons non-functional. Clerk middleware blocks `/api/cron/*` (not i
 ### Batch L: Linting -- CRITICAL
 
 - [ ] **[BIOME]** nursery:off kills useSortedClasses. **CRITICAL** [CONFIRMED-P10]
-- [ ] **[BIOME]** biome.autofix.jsonc missing 3 ignore patterns + same nursery:off. **CRITICAL** [CONFIRMED-P10]
+- [x] **[BIOME]** biome.autofix.jsonc missing 3 ignore patterns + same nursery:off. **CRITICAL** [CONFIRMED-P10] **RESOLVED: synced missing .tmp, test-output, eslint.config.mjs ignores from biome.jsonc**
 - [ ] **[BIOME-P11]** Missing vcs.defaultBranch breaks --changed workflows. **HIGH** [NEW-P11]
 - [ ] **[BIOME-P11]** Version outdated: 2.3.14 vs 2.4.15 (12+ patches behind). **HIGH** [NEW-P11]
 - [ ] **[BIOME-P11]** Missing css.parser.tailwindDirectives:true -- false-positive CSS parse errors. **HIGH** [NEW-P11]
@@ -340,11 +353,11 @@ ALL scheduled crons non-functional. Clerk middleware blocks `/api/cron/*` (not i
 - [ ] **[CI]** No pnpm dependency caching in CI. **HIGH** [CONFIRMED-P10]
 - [ ] **[CI]** No Dependabot config. **HIGH** [CONFIRMED-P10]
 - [ ] **[CI]** performance.yml Lighthouse scans localhost:3000 with no web server. **HIGH** [CONFIRMED-P10]
-- [ ] **[CI]** 14 of 16 CI jobs missing timeout-minutes. **HIGH** [CONFIRMED-P10]
+- [x] **[CI]** 14 of 16 CI jobs missing timeout-minutes. **HIGH** [CONFIRMED-P10] **RESOLVED: added timeout-minutes to all deploy.yml jobs (check-dependabot: 5m, deploy-app-api-web: 30m, deploy-docs: 15m, notify-failing-dependabot: 5m) and ci.yml test job: 30m**
 - [ ] **[CI-NEW]** manifest-ci duplicate test jobs (manifest-validate + manifest-tests run same suite). **MEDIUM** [NEW-P11]
 - [ ] **[CI-NEW]** manifest-ci analyze step duplicated across 4 independent jobs. **MEDIUM** [NEW-P11]
 - [ ] **[CI-NEW]** upload-artifact no retention-days (500MB+ artifacts default 90-day retention). **MEDIUM** [NEW-P11]
-- [ ] **[CI-NEW]** deploy.yml uses PKG_AUTH_TOKEN for gh pr list instead of github.token. **MEDIUM** [NEW-P11]
+- [x] **[CI-NEW]** deploy.yml uses PKG_AUTH_TOKEN for gh pr list instead of github.token. **MEDIUM** [NEW-P11] **RESOLVED: changed to github.token**
 - [ ] **[CI-NEW]** logging-sync.yml pushes directly to default branch without PR. **MEDIUM** [NEW-P11]
 - [ ] **[CI-NEW]** CodeQL v3 deprecated (security.yml still uses @v3). **MEDIUM** [NEW-P11]
 - [ ] **[CI-NEW]** deploy.yml no caching (full cold install every deployment). **MEDIUM** [NEW-P11]
@@ -352,7 +365,7 @@ ALL scheduled crons non-functional. Clerk middleware blocks `/api/cron/*` (not i
 - [ ] **[CI-NEW]** Inconsistent Node.js versions across workflows (22.x vs .nvmrc 22.18.0). **MEDIUM** [NEW-P11]
 - [ ] **[CI-NEW]** Bitwarden secret IDs hardcoded in deploy.yml. **MEDIUM** [NEW-P11]
 - [ ] **[CI-NEW]** PostHog host inconsistency (app.posthog.com vs us.i.posthog.com). **MEDIUM** [NEW-P11]
-- [ ] **[CI-NEW]** security.yml CodeQL @v3 deprecated while codeql.yml may use @v4. **HIGH** [NEW-P13]
+- [x] **[CI-NEW]** security.yml CodeQL @v3 deprecated while codeql.yml may use @v4. **HIGH** [NEW-P13] **RESOLVED: updated security.yml CodeQL actions from @v3 to @v4**
 
 ### Batch J: Package.json Correctness
 
