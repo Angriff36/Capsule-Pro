@@ -27,9 +27,6 @@ export async function GET(request: NextRequest) {
       where: {
         tenantId,
       },
-      orderBy: {
-        id: "desc",
-      },
     });
 
     return manifestSuccessResponse({ alertsConfigs });

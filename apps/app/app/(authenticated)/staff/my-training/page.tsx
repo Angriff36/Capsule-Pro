@@ -69,9 +69,9 @@ export default async function MyTrainingPage() {
     LEFT JOIN tenant_staff.training_completions tc
       ON tc.tenant_id = ta.tenant_id
       AND tc.assignment_id = ta.id
-      AND tc.employee_id = ${employeeId}
+      AND tc.employeeId = ${employeeId}
     WHERE ta.tenant_id = ${tenantId}
-      AND (ta.employee_id = ${employeeId} OR ta.assigned_to_all = true)
+      AND (ta.employeeId = ${employeeId} OR ta.assigned_to_all = true)
       AND ta.deleted_at IS NULL
     ORDER BY
       CASE ta.status

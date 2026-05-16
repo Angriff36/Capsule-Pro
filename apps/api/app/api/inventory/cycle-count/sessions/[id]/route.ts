@@ -28,9 +28,11 @@ export async function GET(
 
     const { id } = await params;
 
-    const cycleCountSession = await database.cycleCountSession.findUnique({
+    const cycleCountSession = await database.cycleCountSession.findFirst({
       where: {
-        tenantId_id: { tenantId, id },
+        id,
+        tenantId,
+        deletedAt: null,
       },
     });
 

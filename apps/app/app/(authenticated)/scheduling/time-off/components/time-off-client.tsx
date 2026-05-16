@@ -177,10 +177,10 @@ export function TimeOffClient() {
       cell: ({ row }) => (
         <div className="min-w-0">
           <div className="truncate font-medium text-ink">
-            {row.original.employee_first_name} {row.original.employee_last_name}
+            {row.original.employeeFirstName} {row.original.employeeLastName}
           </div>
           <div className="truncate text-muted-foreground text-xs">
-            {row.original.employee_email}
+            {row.original.employeeEmail}
           </div>
         </div>
       ),

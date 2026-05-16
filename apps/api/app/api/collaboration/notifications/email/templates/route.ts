@@ -40,12 +40,12 @@ export async function GET(request: NextRequest) {
     const offset = (page - 1) * limit;
 
     const whereClause: Record<string, unknown> = {
-      tenant_id: tenantId,
-      deleted_at: null,
+      tenantId,
+      deletedAt: null,
     };
 
     if (templateType) {
-      whereClause.template_type = templateType;
+      whereClause.templateType = templateType;
     }
 
     if (isActive !== null) {
@@ -57,13 +57,13 @@ export async function GET(request: NextRequest) {
     }
 
     const [templates, totalCount] = await Promise.all([
-      database.email_templates.findMany({
+      database.emailTemplate.findMany({
         where: whereClause,
-        orderBy: [{ template_type: "asc" }, { name: "asc" }],
+        orderBy: [{ templateType: "asc" }, { name: "asc" }],
         skip: offset,
         take: limit,
       }),
-      database.email_templates.count({ where: whereClause }),
+      database.emailTemplate.count({ where: whereClause }),
     ]);
 
     return NextResponse.json({

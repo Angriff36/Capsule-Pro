@@ -35,7 +35,7 @@ import {
 interface TemplateOption {
   id: string;
   name: string;
-  template_type: string;
+  templateType: string;
   subject: string;
 }
 
@@ -185,7 +185,7 @@ export default function NewEmailWorkflowPage() {
                   </SelectItem>
                   {templates.map((t) => (
                     <SelectItem key={t.id} value={t.id}>
-                      {t.name} ({t.template_type})
+                      {t.name} ({t.templateType})
                     </SelectItem>
                   ))}
                 </SelectContent>

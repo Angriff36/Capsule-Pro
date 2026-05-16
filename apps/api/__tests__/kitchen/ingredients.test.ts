@@ -11,9 +11,6 @@
  * Covers: auth (401), tenant-not-found (400), policy denial (403),
  * guard failure (422), success (200), command wiring, and error handling (500).
  *
- * NOTE: Route handlers are mocked because the actual route paths do not exist.
- * Tests mock createManifestRuntime to verify command behavior.
- *
  * @vitest-environment node
  */
 
@@ -22,140 +19,30 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
 vi.mock("@/app/lib/tenant", () => ({
-  requireCurrentUser: vi.fn().mockResolvedValue({
-    id: "test-user-id",
-    tenantId: "test-tenant",
-    role: "admin",
-    email: "test@example.com",
-    firstName: "Test",
-    lastName: "User",
-  }),
   getTenantIdForOrg: vi.fn(),
+  requireCurrentUser: vi.fn(),
 }));
 vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn() }));
 vi.mock("@/lib/manifest-runtime", () => ({
   createManifestRuntime: vi.fn(),
 }));
-vi.mock("@/lib/manifest-response", async () => {
-  const { NextResponse } = await import("next/server");
-  return {
-    manifestSuccessResponse: (data: unknown, status = 200) =>
-      NextResponse.json({ success: true, ...(data as object) }, { status }),
-    manifestErrorResponse: (message: string, status: number) =>
-      NextResponse.json({ success: false, message }, { status }),
-  };
-});
-
-const mockRunCommand = vi.fn();
 
 const { auth } = await import("@repo/auth/server");
 const { getTenantIdForOrg } = await import("@/app/lib/tenant");
 const { createManifestRuntime } = await import("@/lib/manifest-runtime");
 
+import { POST as manifestDispatch } from "@/app/api/manifest/[entity]/commands/[command]/route";
+
+function createIngredientHandler(command: string) {
+  return async (req: NextRequest) =>
+    manifestDispatch(req, {
+      params: Promise.resolve({ entity: "Ingredient", command }),
+    });
+}
+
 const TEST_TENANT_ID = "c0000000-0000-4000-c000-000000000003";
 const TEST_USER_ID = "user_test_ingredient";
 const TEST_ORG_ID = "org_test_ingredient";
-
-function setupRuntimeMock() {
-  vi.mocked(createManifestRuntime).mockResolvedValue({
-    runCommand: mockRunCommand,
-  } as never);
-}
-
-// ---------------------------------------------------------------------------
-// Simulated route handler for testing
-// ---------------------------------------------------------------------------
-
-async function simulateRouteHandler(
-  command: string,
-  request: NextRequest,
-  entityName: string
-) {
-  const authResult = await auth();
-  if (!authResult?.userId) {
-    return new Response(
-      JSON.stringify({ success: false, message: "Unauthorized" }),
-      { status: 401, headers: { "Content-Type": "application/json" } }
-    );
-  }
-
-  const orgId = authResult.orgId;
-  if (!orgId) {
-    return new Response(
-      JSON.stringify({ success: false, message: "Unauthorized" }),
-      { status: 401, headers: { "Content-Type": "application/json" } }
-    );
-  }
-
-  const tenantId = await getTenantIdForOrg(orgId);
-  if (!tenantId) {
-    return new Response(
-      JSON.stringify({ success: false, message: "Tenant not found" }),
-      { status: 400, headers: { "Content-Type": "application/json" } }
-    );
-  }
-
-  let body: Record<string, unknown>;
-  try {
-    body = await request.json();
-  } catch {
-    return new Response(
-      JSON.stringify({ success: false, message: "Internal server error" }),
-      { status: 500, headers: { "Content-Type": "application/json" } }
-    );
-  }
-
-  try {
-    const result = await createManifestRuntime({
-      user: { id: authResult.userId, tenantId },
-    });
-
-    const response = await result.runCommand(command, body, { entityName });
-
-    if (!response.success) {
-      if (response.policyDenial) {
-        return new Response(
-          JSON.stringify({
-            success: false,
-            message: `Access denied: ${response.policyDenial.policyName}`,
-          }),
-          { status: 403, headers: { "Content-Type": "application/json" } }
-        );
-      }
-      if (response.guardFailure) {
-        return new Response(
-          JSON.stringify({
-            success: false,
-            message: `Guard ${response.guardFailure.index} failed: ${response.guardFailure.formatted}`,
-          }),
-          { status: 422, headers: { "Content-Type": "application/json" } }
-        );
-      }
-      return new Response(
-        JSON.stringify({
-          success: false,
-          message: response.error || "Command failed",
-        }),
-        { status: 400, headers: { "Content-Type": "application/json" } }
-      );
-    }
-
-    return new Response(
-      JSON.stringify({
-        success: true,
-        result: response.result,
-        events: response.emittedEvents,
-      }),
-      { status: 200, headers: { "Content-Type": "application/json" } }
-    );
-  } catch (error) {
-    console.error(`Error executing ${entityName}.${command}:`, error);
-    return new Response(
-      JSON.stringify({ success: false, message: "Internal server error" }),
-      { status: 500, headers: { "Content-Type": "application/json" } }
-    );
-  }
-}
 
 function makeRequest(body: Record<string, unknown>): NextRequest {
   return new NextRequest("http://localhost:3000/api/ingredient/test", {
@@ -170,48 +57,50 @@ function mockAuthenticated() {
     userId: TEST_USER_ID,
   } as never);
   vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID as never);
-  setupRuntimeMock();
 }
 
 function mockRuntimeSuccess(
   result: Record<string, unknown> = { id: "ingredient-001" }
 ) {
-  setupRuntimeMock();
-  mockRunCommand.mockResolvedValue({
-    success: true,
-    result,
-    emittedEvents: [{ type: "IngredientCreated", entityId: result.id }],
-  });
+  vi.mocked(createManifestRuntime).mockResolvedValue({
+    runCommand: vi.fn().mockResolvedValue({
+      success: true,
+      result,
+      emittedEvents: [{ type: "IngredientCreated", entityId: result.id }],
+    }),
+  } as never);
 }
 
 function mockRuntimeFailure(error: string) {
-  setupRuntimeMock();
-  mockRunCommand.mockResolvedValue({
-    success: false,
-    error,
-  });
+  vi.mocked(createManifestRuntime).mockResolvedValue({
+    runCommand: vi.fn().mockResolvedValue({
+      success: false,
+      error,
+    }),
+  } as never);
 }
 
 function mockRuntimePolicyDenial(policyName: string) {
-  setupRuntimeMock();
-  mockRunCommand.mockResolvedValue({
-    success: false,
-    policyDenial: { policyName },
-  });
+  vi.mocked(createManifestRuntime).mockResolvedValue({
+    runCommand: vi.fn().mockResolvedValue({
+      success: false,
+      policyDenial: { policyName },
+    }),
+  } as never);
 }
 
 function mockRuntimeGuardFailure(index: number, formatted: string) {
-  setupRuntimeMock();
-  mockRunCommand.mockResolvedValue({
-    success: false,
-    guardFailure: { index, formatted },
-  });
+  vi.mocked(createManifestRuntime).mockResolvedValue({
+    runCommand: vi.fn().mockResolvedValue({
+      success: false,
+      guardFailure: { index, formatted },
+    }),
+  } as never);
 }
 
 describe("Ingredient API Routes", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    setupRuntimeMock();
   });
 
   // ---- POST /api/ingredient/create ----
@@ -220,11 +109,8 @@ describe("Ingredient API Routes", () => {
     it("returns 401 when unauthenticated", async () => {
       vi.mocked(auth).mockResolvedValue({ orgId: null, userId: null } as never);
 
-      const res = await simulateRouteHandler(
-        "create",
-        makeRequest({ name: "Olive Oil" }),
-        "Ingredient"
-      );
+      const POST = createIngredientHandler("create");
+      const res = await POST(makeRequest({ name: "Olive Oil" }));
       const data = await res.json();
 
       expect(res.status).toBe(401);
@@ -239,11 +125,8 @@ describe("Ingredient API Routes", () => {
       } as never);
       vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
 
-      const res = await simulateRouteHandler(
-        "create",
-        makeRequest({ name: "Olive Oil" }),
-        "Ingredient"
-      );
+      const POST = createIngredientHandler("create");
+      const res = await POST(makeRequest({ name: "Olive Oil" }));
       const data = await res.json();
 
       expect(res.status).toBe(400);
@@ -260,11 +143,8 @@ describe("Ingredient API Routes", () => {
         allergens: [],
       });
 
-      const res = await simulateRouteHandler(
-        "create",
-        makeRequest({ name: "Olive Oil" }),
-        "Ingredient"
-      );
+      const POST = createIngredientHandler("create");
+      const res = await POST(makeRequest({ name: "Olive Oil" }));
       const data = await res.json();
 
       expect(res.status).toBe(200);
@@ -276,11 +156,8 @@ describe("Ingredient API Routes", () => {
       mockAuthenticated();
       mockRuntimePolicyDenial("managerOnly");
 
-      const res = await simulateRouteHandler(
-        "create",
-        makeRequest({ name: "Olive Oil" }),
-        "Ingredient"
-      );
+      const POST = createIngredientHandler("create");
+      const res = await POST(makeRequest({ name: "Olive Oil" }));
       const data = await res.json();
 
       expect(res.status).toBe(403);
@@ -292,11 +169,8 @@ describe("Ingredient API Routes", () => {
       mockAuthenticated();
       mockRuntimeGuardFailure(0, "name must not be empty");
 
-      const res = await simulateRouteHandler(
-        "create",
-        makeRequest({ name: "" }),
-        "Ingredient"
-      );
+      const POST = createIngredientHandler("create");
+      const res = await POST(makeRequest({ name: "" }));
       const data = await res.json();
 
       expect(res.status).toBe(422);
@@ -309,11 +183,8 @@ describe("Ingredient API Routes", () => {
         new Error("DB down") as never
       );
 
-      const res = await simulateRouteHandler(
-        "create",
-        makeRequest({ name: "Olive Oil" }),
-        "Ingredient"
-      );
+      const POST = createIngredientHandler("create");
+      const res = await POST(makeRequest({ name: "Olive Oil" }));
       const data = await res.json();
 
       expect(res.status).toBe(500);
@@ -328,10 +199,9 @@ describe("Ingredient API Routes", () => {
     it("returns 401 when unauthenticated", async () => {
       vi.mocked(auth).mockResolvedValue({ orgId: null, userId: null } as never);
 
-      const res = await simulateRouteHandler(
-        "update",
-        makeRequest({ id: "ingredient-001", name: "Extra Virgin Olive Oil" }),
-        "Ingredient"
+      const POST = createIngredientHandler("update");
+      const res = await POST(
+        makeRequest({ id: "ingredient-001", name: "Extra Virgin Olive Oil" })
       );
       const data = await res.json();
 
@@ -345,10 +215,9 @@ describe("Ingredient API Routes", () => {
         name: "Extra Virgin Olive Oil",
       });
 
-      const res = await simulateRouteHandler(
-        "update",
-        makeRequest({ id: "ingredient-001", name: "Extra Virgin Olive Oil" }),
-        "Ingredient"
+      const POST = createIngredientHandler("update");
+      const res = await POST(
+        makeRequest({ id: "ingredient-001", name: "Extra Virgin Olive Oil" })
       );
       const data = await res.json();
 
@@ -359,16 +228,20 @@ describe("Ingredient API Routes", () => {
 
     it("passes correct command and entityName to runtime", async () => {
       mockAuthenticated();
-      mockRunCommand.mockResolvedValue({
+      const runCommand = vi.fn().mockResolvedValue({
         success: true,
         result: { id: "ingredient-001" },
         emittedEvents: [],
       });
+      vi.mocked(createManifestRuntime).mockResolvedValue({
+        runCommand,
+      } as never);
 
       const body = { id: "ingredient-001", name: "Updated" };
-      await simulateRouteHandler("update", makeRequest(body), "Ingredient");
+      const POST = createIngredientHandler("update");
+      await POST(makeRequest(body));
 
-      expect(mockRunCommand).toHaveBeenCalledWith("update", body, {
+      expect(runCommand).toHaveBeenCalledWith("update", body, {
         entityName: "Ingredient",
       });
     });
@@ -377,11 +250,8 @@ describe("Ingredient API Routes", () => {
       mockAuthenticated();
       mockRuntimeFailure("Ingredient not found");
 
-      const res = await simulateRouteHandler(
-        "update",
-        makeRequest({ id: "ingredient-999", name: "X" }),
-        "Ingredient"
-      );
+      const POST = createIngredientHandler("update");
+      const res = await POST(makeRequest({ id: "ingredient-999", name: "X" }));
       const data = await res.json();
 
       expect(res.status).toBe(400);
@@ -395,11 +265,8 @@ describe("Ingredient API Routes", () => {
     it("returns 401 when unauthenticated", async () => {
       vi.mocked(auth).mockResolvedValue({ orgId: null, userId: null } as never);
 
-      const res = await simulateRouteHandler(
-        "deactivate",
-        makeRequest({ id: "ingredient-001" }),
-        "Ingredient"
-      );
+      const POST = createIngredientHandler("deactivate");
+      const res = await POST(makeRequest({ id: "ingredient-001" }));
       const data = await res.json();
 
       expect(res.status).toBe(401);
@@ -410,11 +277,8 @@ describe("Ingredient API Routes", () => {
       mockAuthenticated();
       mockRuntimeSuccess({ id: "ingredient-001", isActive: false });
 
-      const res = await simulateRouteHandler(
-        "deactivate",
-        makeRequest({ id: "ingredient-001" }),
-        "Ingredient"
-      );
+      const POST = createIngredientHandler("deactivate");
+      const res = await POST(makeRequest({ id: "ingredient-001" }));
       const data = await res.json();
 
       expect(res.status).toBe(200);
@@ -424,19 +288,19 @@ describe("Ingredient API Routes", () => {
 
     it("passes 'deactivate' command with Ingredient entityName", async () => {
       mockAuthenticated();
-      mockRunCommand.mockResolvedValue({
+      const runCommand = vi.fn().mockResolvedValue({
         success: true,
         result: { id: "ingredient-001", isActive: false },
         emittedEvents: [],
       });
+      vi.mocked(createManifestRuntime).mockResolvedValue({
+        runCommand,
+      } as never);
 
-      await simulateRouteHandler(
-        "deactivate",
-        makeRequest({ id: "ingredient-001" }),
-        "Ingredient"
-      );
+      const POST = createIngredientHandler("deactivate");
+      await POST(makeRequest({ id: "ingredient-001" }));
 
-      expect(mockRunCommand).toHaveBeenCalledWith(
+      expect(runCommand).toHaveBeenCalledWith(
         "deactivate",
         { id: "ingredient-001" },
         { entityName: "Ingredient" }
@@ -450,10 +314,9 @@ describe("Ingredient API Routes", () => {
     it("returns 401 when unauthenticated", async () => {
       vi.mocked(auth).mockResolvedValue({ orgId: null, userId: null } as never);
 
-      const res = await simulateRouteHandler(
-        "updateAllergens",
-        makeRequest({ id: "ingredient-001", allergens: ["nuts", "dairy"] }),
-        "Ingredient"
+      const POST = createIngredientHandler("updateAllergens");
+      const res = await POST(
+        makeRequest({ id: "ingredient-001", allergens: ["nuts", "dairy"] })
       );
       const data = await res.json();
 
@@ -467,10 +330,9 @@ describe("Ingredient API Routes", () => {
         allergens: ["nuts", "dairy"],
       });
 
-      const res = await simulateRouteHandler(
-        "updateAllergens",
-        makeRequest({ id: "ingredient-001", allergens: ["nuts", "dairy"] }),
-        "Ingredient"
+      const POST = createIngredientHandler("updateAllergens");
+      const res = await POST(
+        makeRequest({ id: "ingredient-001", allergens: ["nuts", "dairy"] })
       );
       const data = await res.json();
 
@@ -481,20 +343,20 @@ describe("Ingredient API Routes", () => {
 
     it("passes 'updateAllergens' command with Ingredient entityName", async () => {
       mockAuthenticated();
-      mockRunCommand.mockResolvedValue({
+      const runCommand = vi.fn().mockResolvedValue({
         success: true,
         result: { id: "ingredient-001" },
         emittedEvents: [],
       });
+      vi.mocked(createManifestRuntime).mockResolvedValue({
+        runCommand,
+      } as never);
 
       const body = { id: "ingredient-001", allergens: ["gluten"] };
-      await simulateRouteHandler(
-        "updateAllergens",
-        makeRequest(body),
-        "Ingredient"
-      );
+      const POST = createIngredientHandler("updateAllergens");
+      await POST(makeRequest(body));
 
-      expect(mockRunCommand).toHaveBeenCalledWith("updateAllergens", body, {
+      expect(runCommand).toHaveBeenCalledWith("updateAllergens", body, {
         entityName: "Ingredient",
       });
     });
@@ -503,10 +365,9 @@ describe("Ingredient API Routes", () => {
       mockAuthenticated();
       mockRuntimeGuardFailure(0, "allergens must be an array");
 
-      const res = await simulateRouteHandler(
-        "updateAllergens",
-        makeRequest({ id: "ingredient-001", allergens: "invalid" }),
-        "Ingredient"
+      const POST = createIngredientHandler("updateAllergens");
+      const res = await POST(
+        makeRequest({ id: "ingredient-001", allergens: "invalid" })
       );
       const data = await res.json();
 
@@ -520,10 +381,9 @@ describe("Ingredient API Routes", () => {
         new Error("Unexpected") as never
       );
 
-      const res = await simulateRouteHandler(
-        "updateAllergens",
-        makeRequest({ id: "ingredient-001", allergens: [] }),
-        "Ingredient"
+      const POST = createIngredientHandler("updateAllergens");
+      const res = await POST(
+        makeRequest({ id: "ingredient-001", allergens: [] })
       );
 
       expect(res.status).toBe(500);
@@ -536,10 +396,9 @@ describe("Ingredient API Routes", () => {
     it("returns 401 when unauthenticated", async () => {
       vi.mocked(auth).mockResolvedValue({ orgId: null, userId: null } as never);
 
-      const res = await simulateRouteHandler(
-        "updateShelfLife",
-        makeRequest({ id: "ingredient-001", shelfLifeDays: 14 }),
-        "Ingredient"
+      const POST = createIngredientHandler("updateShelfLife");
+      const res = await POST(
+        makeRequest({ id: "ingredient-001", shelfLifeDays: 14 })
       );
       const data = await res.json();
 
@@ -551,10 +410,9 @@ describe("Ingredient API Routes", () => {
       mockAuthenticated();
       mockRuntimeSuccess({ id: "ingredient-001", shelfLifeDays: 14 });
 
-      const res = await simulateRouteHandler(
-        "updateShelfLife",
-        makeRequest({ id: "ingredient-001", shelfLifeDays: 14 }),
-        "Ingredient"
+      const POST = createIngredientHandler("updateShelfLife");
+      const res = await POST(
+        makeRequest({ id: "ingredient-001", shelfLifeDays: 14 })
       );
       const data = await res.json();
 
@@ -565,20 +423,20 @@ describe("Ingredient API Routes", () => {
 
     it("passes 'updateShelfLife' command with Ingredient entityName", async () => {
       mockAuthenticated();
-      mockRunCommand.mockResolvedValue({
+      const runCommand = vi.fn().mockResolvedValue({
         success: true,
         result: { id: "ingredient-001" },
         emittedEvents: [],
       });
+      vi.mocked(createManifestRuntime).mockResolvedValue({
+        runCommand,
+      } as never);
 
       const body = { id: "ingredient-001", shelfLifeDays: 7 };
-      await simulateRouteHandler(
-        "updateShelfLife",
-        makeRequest(body),
-        "Ingredient"
-      );
+      const POST = createIngredientHandler("updateShelfLife");
+      await POST(makeRequest(body));
 
-      expect(mockRunCommand).toHaveBeenCalledWith("updateShelfLife", body, {
+      expect(runCommand).toHaveBeenCalledWith("updateShelfLife", body, {
         entityName: "Ingredient",
       });
     });
@@ -587,10 +445,9 @@ describe("Ingredient API Routes", () => {
       mockAuthenticated();
       mockRuntimePolicyDenial("adminOnly");
 
-      const res = await simulateRouteHandler(
-        "updateShelfLife",
-        makeRequest({ id: "ingredient-001", shelfLifeDays: 14 }),
-        "Ingredient"
+      const POST = createIngredientHandler("updateShelfLife");
+      const res = await POST(
+        makeRequest({ id: "ingredient-001", shelfLifeDays: 14 })
       );
       const data = await res.json();
 
@@ -602,10 +459,9 @@ describe("Ingredient API Routes", () => {
       mockAuthenticated();
       mockRuntimeFailure("Invalid shelf life value");
 
-      const res = await simulateRouteHandler(
-        "updateShelfLife",
-        makeRequest({ id: "ingredient-001", shelfLifeDays: -1 }),
-        "Ingredient"
+      const POST = createIngredientHandler("updateShelfLife");
+      const res = await POST(
+        makeRequest({ id: "ingredient-001", shelfLifeDays: -1 })
       );
       const data = await res.json();
 

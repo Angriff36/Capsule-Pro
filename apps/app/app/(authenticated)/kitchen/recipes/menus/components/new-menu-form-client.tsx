@@ -16,7 +16,7 @@ export function NewMenuFormClient() {
               <div className="grid gap-2">
                 <Label htmlFor="name">Menu Name *</Label>
                 <input
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  className="flex h-10 w-full rounded-sm border border-input bg-background px-3 py-2 text-sm"
                   id="name"
                   name="name"
                   placeholder="Enter menu name"
@@ -27,7 +27,7 @@ export function NewMenuFormClient() {
               <div className="grid gap-2">
                 <Label htmlFor="description">Description</Label>
                 <input
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  className="flex h-10 w-full rounded-sm border border-input bg-background px-3 py-2 text-sm"
                   id="description"
                   name="description"
                   placeholder="Enter menu description"
@@ -37,7 +37,7 @@ export function NewMenuFormClient() {
               <div className="grid gap-2">
                 <Label htmlFor="category">Category</Label>
                 <input
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  className="flex h-10 w-full rounded-sm border border-input bg-background px-3 py-2 text-sm"
                   id="category"
                   name="category"
                   placeholder="e.g., Italian, Asian, Buffet"
@@ -53,7 +53,7 @@ export function NewMenuFormClient() {
                 <div className="grid gap-2">
                   <Label htmlFor="basePrice">Base Price ($)</Label>
                   <input
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    className="flex h-10 w-full rounded-sm border border-input bg-background px-3 py-2 text-sm"
                     id="basePrice"
                     name="basePrice"
                     placeholder="0.00"
@@ -65,7 +65,7 @@ export function NewMenuFormClient() {
                 <div className="grid gap-2">
                   <Label htmlFor="pricePerPerson">Price Per Person ($)</Label>
                   <input
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    className="flex h-10 w-full rounded-sm border border-input bg-background px-3 py-2 text-sm"
                     id="pricePerPerson"
                     name="pricePerPerson"
                     placeholder="0.00"
@@ -79,7 +79,7 @@ export function NewMenuFormClient() {
                 <div className="grid gap-2">
                   <Label htmlFor="minGuests">Min Guests</Label>
                   <input
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    className="flex h-10 w-full rounded-sm border border-input bg-background px-3 py-2 text-sm"
                     id="minGuests"
                     name="minGuests"
                     placeholder="0"
@@ -90,7 +90,7 @@ export function NewMenuFormClient() {
                 <div className="grid gap-2">
                   <Label htmlFor="maxGuests">Max Guests</Label>
                   <input
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    className="flex h-10 w-full rounded-sm border border-input bg-background px-3 py-2 text-sm"
                     id="maxGuests"
                     name="maxGuests"
                     placeholder="0"
@@ -106,14 +106,14 @@ export function NewMenuFormClient() {
             {/* Submit Button */}
             <div className="flex justify-end gap-4">
               <button
-                className="inline-flex items-center justify-center rounded-md text-sm font-medium h-10 px-4 py-2 border border-input bg-background hover:bg-accent hover:text-accent-foreground"
+                className="inline-flex items-center justify-center rounded-sm text-sm font-medium h-10 px-4 py-2 border border-input bg-background hover:bg-accent hover:text-accent-foreground"
                 onClick={() => window.history.back()}
                 type="button"
               >
                 Cancel
               </button>
               <button
-                className="inline-flex items-center justify-center rounded-md text-sm font-medium h-10 px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:pointer-events-none"
+                className="inline-flex items-center justify-center rounded-sm text-sm font-medium h-10 px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:pointer-events-none"
                 disabled={isSubmitting}
                 type="submit"
               >

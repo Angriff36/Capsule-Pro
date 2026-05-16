@@ -290,7 +290,7 @@ export async function getVendorRecipeCostBreakdown(recipeId: string): Promise<{
                 AND vc.deleted_at IS NULL
                 AND vc.is_active = true
                 AND (
-                  vc.effective_from IS NULL OR vc.effective_from <= NOW()
+                  vc.effectiveFrom IS NULL OR vc.effectiveFrom <= NOW()
                 )
                 AND (
                   vc.effective_to IS NULL OR vc.effective_to >= NOW()

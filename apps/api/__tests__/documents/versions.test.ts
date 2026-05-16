@@ -14,7 +14,6 @@
 
 import { NextRequest } from "next/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { InvariantError } from "@/app/lib/invariant";
 
 // ---------------------------------------------------------------------------
 // Mocks
@@ -35,8 +34,6 @@ vi.mock("@repo/auth/server", () => ({
 }));
 
 vi.mock("@/app/lib/tenant", () => ({
-  requireCurrentUser: vi.fn(),
-
   getTenantIdForOrg: vi.fn(),
   requireTenantId: vi.fn(),
 }));
@@ -66,17 +63,12 @@ vi.mock("@/lib/pagination", () => ({
   },
 }));
 
-vi.mock("@/lib/manifest-runtime", () => ({
-  createManifestRuntime: vi.fn(),
-}));
-
 // ---------------------------------------------------------------------------
 // Import mocked modules AFTER vi.mock declarations
 // ---------------------------------------------------------------------------
 
 const { auth } = await import("@repo/auth/server");
-const { getTenantIdForOrg, requireCurrentUser } = await import("@/app/lib/tenant");
-const { createManifestRuntime } = await import("@/lib/manifest-runtime");
+const { getTenantIdForOrg } = await import("@/app/lib/tenant");
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -111,30 +103,12 @@ function makeManifestParams(entity: string, command: string) {
   return { params: Promise.resolve({ entity, command }) };
 }
 
-// Map entity: command -> for manifest route
-// Tests use kebab-case commands since route normalizes them
-const DOC_VERSION = "DocumentVersion";
-
 function mockAuthenticated() {
   vi.mocked(auth).mockResolvedValue({
     orgId: TEST_ORG_ID,
     userId: TEST_USER_ID,
   } as never);
   vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID as never);
-  vi.mocked(requireCurrentUser).mockResolvedValue({
-    id: TEST_USER_ID,
-    tenantId: TEST_TENANT_ID,
-    role: "admin",
-    email: "test@example.com",
-    firstName: "Test",
-    lastName: "User",
-  } as never);
-}
-
-function makeRuntime(mockRunCommand: ReturnType<typeof vi.fn>) {
-  vi.mocked(createManifestRuntime).mockResolvedValue({
-    runCommand: mockRunCommand,
-  } as never);
 }
 
 function createMockVersion(overrides: Record<string, unknown> = {}) {
@@ -182,9 +156,6 @@ describe("Document Versioning API Routes", () => {
         orgId: null,
         userId: null,
       } as never);
-      vi.mocked(requireCurrentUser).mockRejectedValue(
-        new InvariantError("Unauthorized")
-      );
 
       const { POST } = await import(
         "@/app/api/manifest/[entity]/commands/[command]/route"
@@ -195,23 +166,20 @@ describe("Document Versioning API Routes", () => {
           documentId: TEST_DOC_ID,
           content: { title: "Test" },
         }),
-        makeManifestParams(DOC_VERSION, "create")
+        makeManifestParams("Document", "create")
       );
       const data = await res.json();
 
       expect(res.status).toBe(401);
-      expect(data.success).toBe(false);
-      expect(data.message).toBe("Unauthorized");
+      expect(data.error).toBe("Unauthorized");
     });
 
-    it("returns 401 when tenant is not found", async () => {
+    it("returns 400 when tenant is not found", async () => {
       vi.mocked(auth).mockResolvedValue({
         orgId: TEST_ORG_ID,
         userId: TEST_USER_ID,
       } as never);
-      vi.mocked(requireCurrentUser).mockRejectedValue(
-        new InvariantError("Tenant not found")
-      );
+      vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
 
       const { POST } = await import(
         "@/app/api/manifest/[entity]/commands/[command]/route"
@@ -222,23 +190,16 @@ describe("Document Versioning API Routes", () => {
           documentId: TEST_DOC_ID,
           content: { title: "Test" },
         }),
-        makeManifestParams(DOC_VERSION, "create")
+        makeManifestParams("Document", "create")
       );
       const data = await res.json();
 
-      expect(res.status).toBe(401);
-      expect(data.success).toBe(false);
-      expect(data.message).toBe("Unauthorized");
+      expect(res.status).toBe(400);
+      expect(data.error).toBe("Tenant not found");
     });
 
     it("returns 400 when documentType is missing", async () => {
-      const mockRunCommand = vi.fn();
       mockAuthenticated();
-      makeRuntime(mockRunCommand);
-      mockRunCommand.mockResolvedValue({
-        success: false,
-        error: "documentType is required",
-      });
 
       const { POST } = await import(
         "@/app/api/manifest/[entity]/commands/[command]/route"
@@ -248,22 +209,16 @@ describe("Document Versioning API Routes", () => {
           documentId: TEST_DOC_ID,
           content: { title: "Test" },
         }),
-        makeManifestParams(DOC_VERSION, "create")
+        makeManifestParams("Document", "create")
       );
       const data = await res.json();
 
       expect(res.status).toBe(400);
-      expect(data.success).toBe(false);
+      expect(data.error).toContain("documentType");
     });
 
     it("returns 400 when documentId is missing", async () => {
-      const mockRunCommand = vi.fn();
       mockAuthenticated();
-      makeRuntime(mockRunCommand);
-      mockRunCommand.mockResolvedValue({
-        success: false,
-        error: "documentId is required",
-      });
 
       const { POST } = await import(
         "@/app/api/manifest/[entity]/commands/[command]/route"
@@ -273,22 +228,16 @@ describe("Document Versioning API Routes", () => {
           documentType: "recipe",
           content: { title: "Test" },
         }),
-        makeManifestParams(DOC_VERSION, "create")
+        makeManifestParams("Document", "create")
       );
       const data = await res.json();
 
       expect(res.status).toBe(400);
-      expect(data.success).toBe(false);
+      expect(data.error).toContain("documentId");
     });
 
     it("returns 400 when content is missing", async () => {
-      const mockRunCommand = vi.fn();
       mockAuthenticated();
-      makeRuntime(mockRunCommand);
-      mockRunCommand.mockResolvedValue({
-        success: false,
-        error: "content is required",
-      });
 
       const { POST } = await import(
         "@/app/api/manifest/[entity]/commands/[command]/route"
@@ -298,23 +247,22 @@ describe("Document Versioning API Routes", () => {
           documentType: "recipe",
           documentId: TEST_DOC_ID,
         }),
-        makeManifestParams(DOC_VERSION, "create")
+        makeManifestParams("Document", "create")
       );
       const data = await res.json();
 
       expect(res.status).toBe(400);
-      expect(data.success).toBe(false);
+      expect(data.error).toContain("content");
     });
 
     it("creates version with auto-incremented version number (first version)", async () => {
       mockAuthenticated();
-      vi.mocked(createManifestRuntime).mockResolvedValue({
-        runCommand: vi.fn().mockResolvedValue({
-          success: true,
-          result: createMockVersion({ versionNumber: 1 }),
-          emittedEvents: [],
-        }),
-      } as never);
+
+      // No existing versions -> findFirst returns null
+      mockDocumentVersion.findFirst.mockResolvedValue(null);
+      mockDocumentVersion.create.mockResolvedValue(
+        createMockVersion({ versionNumber: 1 })
+      );
 
       const { POST } = await import(
         "@/app/api/manifest/[entity]/commands/[command]/route"
@@ -325,24 +273,42 @@ describe("Document Versioning API Routes", () => {
           documentId: TEST_DOC_ID,
           content: { title: "Test" },
         }),
-        makeManifestParams(DOC_VERSION, "create")
+        makeManifestParams("Document", "create")
       );
       const data = await res.json();
 
       expect(res.status).toBe(200);
-      expect(data.success).toBe(true);
-      expect(data.result.versionNumber).toBe(1);
+      expect(data.version.versionNumber).toBe(1);
+
+      // Verify findFirst was called to determine latest version
+      expect(mockDocumentVersion.findFirst).toHaveBeenCalledWith({
+        where: {
+          tenantId: TEST_TENANT_ID,
+          documentType: "recipe",
+          documentId: TEST_DOC_ID,
+        },
+        orderBy: { versionNumber: "desc" },
+        select: { versionNumber: true },
+      });
+
+      // Verify create was called with versionNumber = 1
+      expect(mockDocumentVersion.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ versionNumber: 1 }),
+        })
+      );
     });
 
     it("auto-increments version number when prior versions exist", async () => {
       mockAuthenticated();
-      vi.mocked(createManifestRuntime).mockResolvedValue({
-        runCommand: vi.fn().mockResolvedValue({
-          success: true,
-          result: createMockVersion({ versionNumber: 4 }),
-          emittedEvents: [],
-        }),
-      } as never);
+
+      // Existing version at number 3
+      mockDocumentVersion.findFirst.mockResolvedValue({
+        versionNumber: 3,
+      });
+      mockDocumentVersion.create.mockResolvedValue(
+        createMockVersion({ versionNumber: 4 })
+      );
 
       const { POST } = await import(
         "@/app/api/manifest/[entity]/commands/[command]/route"
@@ -354,23 +320,30 @@ describe("Document Versioning API Routes", () => {
           content: { title: "Updated" },
           changeSummary: "Major revision",
         }),
-        makeManifestParams(DOC_VERSION, "create")
+        makeManifestParams("Document", "create")
       );
       const data = await res.json();
 
       expect(res.status).toBe(200);
-      expect(data.success).toBe(true);
+      expect(mockDocumentVersion.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            versionNumber: 4,
+            changeSummary: "Major revision",
+          }),
+        })
+      );
     });
 
     it("uses default changeSummary when not provided", async () => {
       mockAuthenticated();
-      vi.mocked(createManifestRuntime).mockResolvedValue({
-        runCommand: vi.fn().mockResolvedValue({
-          success: true,
-          result: createMockVersion({ versionNumber: 3 }),
-          emittedEvents: [],
-        }),
-      } as never);
+
+      mockDocumentVersion.findFirst.mockResolvedValue({
+        versionNumber: 2,
+      });
+      mockDocumentVersion.create.mockResolvedValue(
+        createMockVersion({ versionNumber: 3 })
+      );
 
       const { POST } = await import(
         "@/app/api/manifest/[entity]/commands/[command]/route"
@@ -381,23 +354,24 @@ describe("Document Versioning API Routes", () => {
           documentId: TEST_DOC_ID,
           content: { title: "Updated" },
         }),
-        makeManifestParams(DOC_VERSION, "create")
+        makeManifestParams("Document", "create")
       );
-      const data = await res.json();
 
       expect(res.status).toBe(200);
-      expect(data.success).toBe(true);
+      expect(mockDocumentVersion.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            changeSummary: "Version 3",
+          }),
+        })
+      );
     });
 
     it("includes createdBy relation in response", async () => {
       mockAuthenticated();
-      vi.mocked(createManifestRuntime).mockResolvedValue({
-        runCommand: vi.fn().mockResolvedValue({
-          success: true,
-          result: createMockVersion(),
-          emittedEvents: [],
-        }),
-      } as never);
+
+      mockDocumentVersion.findFirst.mockResolvedValue(null);
+      mockDocumentVersion.create.mockResolvedValue(createMockVersion());
 
       const { POST } = await import(
         "@/app/api/manifest/[entity]/commands/[command]/route"
@@ -408,19 +382,34 @@ describe("Document Versioning API Routes", () => {
           documentId: TEST_DOC_ID,
           content: { title: "Test" },
         }),
-        makeManifestParams(DOC_VERSION, "create")
+        makeManifestParams("Document", "create")
       );
       const data = await res.json();
 
       expect(res.status).toBe(200);
-      expect(data.success).toBe(true);
+      expect(mockDocumentVersion.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          include: {
+            createdBy: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                email: true,
+              },
+            },
+          },
+        })
+      );
+      expect(data.version.createdBy).toBeDefined();
     });
 
     it("returns 500 on unexpected database error", async () => {
       mockAuthenticated();
-      vi.mocked(createManifestRuntime).mockResolvedValue({
-        runCommand: vi.fn().mockRejectedValue(new Error("Connection refused")),
-      } as never);
+
+      mockDocumentVersion.findFirst.mockRejectedValue(
+        new Error("Connection refused")
+      );
 
       const { POST } = await import(
         "@/app/api/manifest/[entity]/commands/[command]/route"
@@ -431,12 +420,12 @@ describe("Document Versioning API Routes", () => {
           documentId: TEST_DOC_ID,
           content: { title: "Test" },
         }),
-        makeManifestParams(DOC_VERSION, "create")
+        makeManifestParams("Document", "create")
       );
       const data = await res.json();
 
       expect(res.status).toBe(500);
-      expect(data.success).toBe(false);
+      expect(data.error).toBe("Failed to create document version");
     });
   });
 
@@ -450,140 +439,171 @@ describe("Document Versioning API Routes", () => {
         orgId: null,
         userId: null,
       } as never);
-      vi.mocked(requireCurrentUser).mockRejectedValue(
-        new InvariantError("Unauthorized")
-      );
 
       const { POST } = await import(
         "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       const res = await POST(
         makePostRequest({ versionId: TEST_VERSION_ID }),
-        makeManifestParams(DOC_VERSION, "restore")
+        makeManifestParams("Document", "restore")
       );
       const data = await res.json();
 
       expect(res.status).toBe(401);
-      expect(data.success).toBe(false);
-      expect(data.message).toBe("Unauthorized");
+      expect(data.error).toBe("Unauthorized");
     });
 
     it("returns 400 when versionId is missing", async () => {
-      const mockRunCommand = vi.fn();
       mockAuthenticated();
-      makeRuntime(mockRunCommand);
-      mockRunCommand.mockResolvedValue({
-        success: false,
-        error: "versionId is required",
-      });
 
       const { POST } = await import(
         "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       const res = await POST(
         makePostRequest({}),
-        makeManifestParams(DOC_VERSION, "restore")
+        makeManifestParams("Document", "restore")
       );
       const data = await res.json();
 
       expect(res.status).toBe(400);
-      expect(data.success).toBe(false);
+      expect(data.error).toContain("versionId");
     });
 
-    it("returns 400 when version does not exist", async () => {
-      const mockRunCommand = vi.fn();
+    it("returns 404 when version does not exist", async () => {
       mockAuthenticated();
-      makeRuntime(mockRunCommand);
-      mockRunCommand.mockResolvedValue({
-        success: false,
-        error: "Version not found",
-      });
+
+      mockDocumentVersion.findFirst.mockResolvedValue(null);
 
       const { POST } = await import(
         "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       const res = await POST(
         makePostRequest({ versionId: "nonexistent-id" }),
-        makeManifestParams(DOC_VERSION, "restore")
+        makeManifestParams("Document", "restore")
       );
       const data = await res.json();
 
-      expect(res.status).toBe(400);
-      expect(data.success).toBe(false);
+      expect(res.status).toBe(404);
+      expect(data.error).toBe("Version not found");
     });
 
     it("creates a new version with the old content on restore", async () => {
       mockAuthenticated();
-      vi.mocked(createManifestRuntime).mockResolvedValue({
-        runCommand: vi.fn().mockResolvedValue({
-          success: true,
-          result: createMockVersion({
-            id: "ver-new",
-            versionNumber: 6,
-            content: { title: "Old Title", body: "Old content" },
-            changeSummary: "Restored from version 2",
-          }),
-          emittedEvents: [],
-        }),
-      } as never);
+
+      const oldVersion = createMockVersion({
+        id: "ver-old",
+        versionNumber: 2,
+        content: { title: "Old Title", body: "Old content" },
+      });
+
+      // First findFirst: look up the version to restore
+      mockDocumentVersion.findFirst
+        .mockResolvedValueOnce(oldVersion)
+        // Second findFirst: get latest version number for this document
+        .mockResolvedValueOnce({ versionNumber: 5 });
+
+      mockDocumentVersion.create.mockResolvedValue(
+        createMockVersion({
+          id: "ver-new",
+          versionNumber: 6,
+          content: { title: "Old Title", body: "Old content" },
+          changeSummary: "Restored from version 2",
+        })
+      );
 
       const { POST } = await import(
         "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       const res = await POST(
         makePostRequest({ versionId: "ver-old" }),
-        makeManifestParams(DOC_VERSION, "restore")
+        makeManifestParams("Document", "restore")
       );
       const data = await res.json();
 
       expect(res.status).toBe(200);
-      expect(data.success).toBe(true);
+
+      // Verify the version was looked up with tenant scoping
+      expect(mockDocumentVersion.findFirst).toHaveBeenNthCalledWith(1, {
+        where: {
+          id: "ver-old",
+          tenantId: TEST_TENANT_ID,
+        },
+      });
+
+      // Verify the new version uses old content and incremented number
+      expect(mockDocumentVersion.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            versionNumber: 6,
+            content: { title: "Old Title", body: "Old content" },
+            changeSummary: "Restored from version 2",
+            documentType: "recipe",
+            documentId: TEST_DOC_ID,
+            createdById: TEST_USER_ID,
+          }),
+        })
+      );
+
+      expect(data.version.versionNumber).toBe(6);
     });
 
     it("handles restore when no prior versions exist for numbering", async () => {
       mockAuthenticated();
-      vi.mocked(createManifestRuntime).mockResolvedValue({
-        runCommand: vi.fn().mockResolvedValue({
-          success: true,
-          result: createMockVersion({
-            versionNumber: 1,
-            content: { title: "Original" },
-            changeSummary: "Restored from version 1",
-          }),
-          emittedEvents: [],
-        }),
-      } as never);
+
+      const oldVersion = createMockVersion({
+        id: "ver-old",
+        versionNumber: 1,
+        content: { title: "Original" },
+      });
+
+      mockDocumentVersion.findFirst
+        .mockResolvedValueOnce(oldVersion)
+        .mockResolvedValueOnce(null); // no latest version found
+
+      mockDocumentVersion.create.mockResolvedValue(
+        createMockVersion({
+          versionNumber: 1,
+          content: { title: "Original" },
+          changeSummary: "Restored from version 1",
+        })
+      );
 
       const { POST } = await import(
         "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       const res = await POST(
         makePostRequest({ versionId: "ver-old" }),
-        makeManifestParams(DOC_VERSION, "restore")
+        makeManifestParams("Document", "restore")
       );
-      const data = await res.json();
 
       expect(res.status).toBe(200);
-      expect(data.success).toBe(true);
+      expect(mockDocumentVersion.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            versionNumber: 1,
+          }),
+        })
+      );
     });
 
     it("returns 500 on unexpected database error during restore", async () => {
       mockAuthenticated();
-      vi.mocked(createManifestRuntime).mockResolvedValue({
-        runCommand: vi.fn().mockRejectedValue(new Error("Database timeout")),
-      } as never);
+
+      mockDocumentVersion.findFirst.mockRejectedValue(
+        new Error("Database timeout")
+      );
 
       const { POST } = await import(
         "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       const res = await POST(
         makePostRequest({ versionId: TEST_VERSION_ID }),
-        makeManifestParams(DOC_VERSION, "restore")
+        makeManifestParams("Document", "restore")
       );
       const data = await res.json();
 
       expect(res.status).toBe(500);
-      expect(data.success).toBe(false);
+      expect(data.error).toBe("Failed to restore document version");
     });
   });
 

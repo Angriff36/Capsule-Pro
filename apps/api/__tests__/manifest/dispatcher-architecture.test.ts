@@ -11,17 +11,15 @@
 
 import { execSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
-const __filename = fileURLToPath(import.meta.url);
-const PROJECT_ROOT = join(dirname(__filename), "../../../../");
-const COMMANDS_JSON = join(
+const PROJECT_ROOT = resolve(import.meta.dirname, "../../..");
+const COMMANDS_JSON = resolve(
   PROJECT_ROOT,
   "packages/manifest-ir/ir/kitchen/kitchen.commands.json"
 );
-const DISPATCHER = join(
+const DISPATCHER = resolve(
   PROJECT_ROOT,
   "apps/api/app/api/manifest/[entity]/commands/[command]/route.ts"
 );
@@ -152,16 +150,16 @@ describe("Dynamic Dispatcher Route", () => {
     expect(existsSync(DISPATCHER)).toBe(true);
   });
 
-  it("imports createManifestRuntime and runCommand", () => {
+  it("imports runManifestCommand from execute-command", () => {
     const content = readFileSync(DISPATCHER, "utf-8");
-    expect(content).toMatch(/createManifestRuntime/);
-    expect(content).toMatch(/runCommand/);
+    expect(content).toMatch(/runManifestCommand/);
+    expect(content).toMatch(/execute-command/);
   });
 
   it("extracts entity and command from route params", () => {
     const content = readFileSync(DISPATCHER, "utf-8");
-    expect(content).toMatch(/\bentity\b/);
-    expect(content).toMatch(/\bcommand\b/);
+    expect(content).toMatch(/\[entity\]/);
+    expect(content).toMatch(/\[command\]/);
   });
 
   it("exports only POST", () => {
@@ -174,7 +172,7 @@ describe("Dynamic Dispatcher Route", () => {
 
 describe("Concrete Command Route Prohibition", () => {
   function findConcreteRoutes(): string[] {
-    const apiDir = join(PROJECT_ROOT, "apps/api/app/api");
+    const apiDir = resolve(PROJECT_ROOT, "apps/api/app/api");
     try {
       const result = execSync(
         `find "${apiDir}" -path '*/commands/*/route.ts' ! -path '*[command]*' 2>/dev/null`,

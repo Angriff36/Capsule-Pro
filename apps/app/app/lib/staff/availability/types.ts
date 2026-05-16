@@ -7,17 +7,17 @@ export type DayOfWeek = 0 | 1 | 2 | 3 | 4 | 5 | 6;
 export interface EmployeeAvailability {
   id: string;
   tenant_id: string;
-  employee_id: string;
-  employee_first_name: string | null;
-  employee_last_name: string | null;
-  employee_email: string;
-  employee_role: string;
-  day_of_week: number;
-  start_time: string;
-  end_time: string;
-  is_available: boolean;
-  effective_from: Date;
-  effective_until: Date | null;
+  employeeId: string;
+  employeeFirstName: string | null;
+  employeeLastName: string | null;
+  employeeEmail: string;
+  employeeRole: string;
+  dayOfWeek: number;
+  startTime: string;
+  endTime: string;
+  isAvailable: boolean;
+  effectiveFrom: Date;
+  effectiveUntil: Date | null;
   created_at: Date;
   updated_at: Date;
 }
@@ -73,15 +73,15 @@ export interface AvailabilityListResponse {
 }
 
 export interface EmployeeAvailabilityForDate {
-  employee_id: string;
-  employee_first_name: string | null;
-  employee_last_name: string | null;
-  employee_email: string;
-  employee_role: string;
-  is_available: boolean;
-  day_of_week: number;
-  start_time: string;
-  end_time: string;
+  employeeId: string;
+  employeeFirstName: string | null;
+  employeeLastName: string | null;
+  employeeEmail: string;
+  employeeRole: string;
+  isAvailable: boolean;
+  dayOfWeek: number;
+  startTime: string;
+  endTime: string;
 }
 
 export interface EmployeesAvailabilityQuery {

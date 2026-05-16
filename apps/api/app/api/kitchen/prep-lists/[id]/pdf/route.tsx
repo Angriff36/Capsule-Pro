@@ -211,8 +211,8 @@ async function preparePdfData(
   }
 
   // Fetch event dishes
-  const eventDishes = await database.event_dishes.findMany({
-    where: { event_id: eventId, tenant_id: tenantId },
+  const eventDishes = await database.eventDish.findMany({
+    where: { eventId, tenantId },
   });
 
   // Build station lists from event dishes
@@ -265,7 +265,7 @@ async function preparePdfData(
   for (const eventDish of eventDishes) {
     // Get dish
     const dish = await database.dish.findFirst({
-      where: { id: eventDish.dish_id, tenantId },
+      where: { id: eventDish.dishId, tenantId },
     });
 
     if (!dish?.recipeId) continue;

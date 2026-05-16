@@ -5,20 +5,7 @@
  * with authentication, authorization, and error handling.
  */
 
-const { mockDatabase } = vi.hoisted(() => ({
-  mockDatabase: {
-    payroll_periods: {
-      findMany: vi.fn(),
-      findFirst: vi.fn(),
-    },
-    user: {
-      findFirst: vi.fn(),
-    },
-  },
-}));
-
-import { database } from "@/lib/database";
-import { InvariantError } from "@/app/lib/invariant";
+import { database } from "@repo/database";
 import { NextRequest } from "next/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { POST as createPeriod } from "@/app/api/manifest/[entity]/commands/[command]/route";
@@ -27,15 +14,8 @@ import { GET as listPeriods } from "@/app/api/payroll/periods/list/route";
 
 // Mock dependencies
 vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
-vi.mock("@repo/database", () => ({
-  database: mockDatabase,
-}));
-vi.mock("@/lib/database", () => ({
-  database: mockDatabase,
-}));
 vi.mock("@/app/lib/tenant", () => ({
   getTenantIdForOrg: vi.fn(),
-  requireCurrentUser: vi.fn(),
 }));
 vi.mock("@/lib/manifest-runtime", () => ({
   createManifestRuntime: vi.fn(),
@@ -45,7 +25,7 @@ vi.mock("@sentry/nextjs", () => ({
 }));
 
 const { auth } = await import("@repo/auth/server");
-const { getTenantIdForOrg, requireCurrentUser } = await import("@/app/lib/tenant");
+const { getTenantIdForOrg } = await import("@/app/lib/tenant");
 const { createManifestRuntime } = await import("@/lib/manifest-runtime");
 
 const TEST_TENANT_ID = "00000000-0000-0000-0000-000000000001";
@@ -126,7 +106,7 @@ describe("Payroll Periods API", () => {
         }),
       ];
 
-      vi.mocked(database.payroll_periods.findMany).mockResolvedValue(
+      vi.mocked(database.payrollPeriod.findMany).mockResolvedValue(
         mockPeriods as never
       );
 
@@ -141,36 +121,33 @@ describe("Payroll Periods API", () => {
       expect(body.payrollPeriods).toHaveLength(2);
     });
 
-    it("should filter by tenant_id", async () => {
-      vi.mocked(database.payroll_periods.findMany).mockResolvedValue(
-        [] as never
-      );
+    it("should filter by tenant_id and exclude soft-deleted", async () => {
+      vi.mocked(database.payrollPeriod.findMany).mockResolvedValue([] as never);
 
       const request = new NextRequest(
         "http://localhost/api/payroll/periods/list"
       );
       await listPeriods(request);
 
-      expect(database.payroll_periods.findMany).toHaveBeenCalledWith(
+      expect(database.payrollPeriod.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: {
             tenant_id: TEST_TENANT_ID,
+            deleted_at: null,
           },
         })
       );
     });
 
     it("should order results by created_at descending", async () => {
-      vi.mocked(database.payroll_periods.findMany).mockResolvedValue(
-        [] as never
-      );
+      vi.mocked(database.payrollPeriod.findMany).mockResolvedValue([] as never);
 
       const request = new NextRequest(
         "http://localhost/api/payroll/periods/list"
       );
       await listPeriods(request);
 
-      expect(database.payroll_periods.findMany).toHaveBeenCalledWith(
+      expect(database.payrollPeriod.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           orderBy: { created_at: "desc" },
         })
@@ -178,7 +155,7 @@ describe("Payroll Periods API", () => {
     });
 
     it("should return 500 on database error", async () => {
-      vi.mocked(database.payroll_periods.findMany).mockRejectedValue(
+      vi.mocked(database.payrollPeriod.findMany).mockRejectedValue(
         new Error("Database connection failed")
       );
 
@@ -199,7 +176,7 @@ describe("Payroll Periods API", () => {
     it("should return a single payroll period by ID", async () => {
       const mockPeriod = createMockPeriod({ id: "period-001" });
 
-      vi.mocked(database.payroll_periods.findFirst).mockResolvedValue(
+      vi.mocked(database.payrollPeriod.findFirst).mockResolvedValue(
         mockPeriod as never
       );
 
@@ -217,7 +194,7 @@ describe("Payroll Periods API", () => {
     });
 
     it("should return 404 when period not found", async () => {
-      vi.mocked(database.payroll_periods.findFirst).mockResolvedValue(
+      vi.mocked(database.payrollPeriod.findFirst).mockResolvedValue(
         null as never
       );
 
@@ -235,7 +212,7 @@ describe("Payroll Periods API", () => {
     });
 
     it("should enforce tenant isolation on detail queries", async () => {
-      vi.mocked(database.payroll_periods.findFirst).mockResolvedValue(
+      vi.mocked(database.payrollPeriod.findFirst).mockResolvedValue(
         null as never
       );
 
@@ -246,11 +223,12 @@ describe("Payroll Periods API", () => {
         params: Promise.resolve({ id: "period-001" }),
       });
 
-      expect(database.payroll_periods.findFirst).toHaveBeenCalledWith(
+      expect(database.payrollPeriod.findFirst).toHaveBeenCalledWith(
         expect.objectContaining({
           where: {
             id: "period-001",
             tenant_id: TEST_TENANT_ID,
+            deleted_at: null,
           },
         })
       );
@@ -278,21 +256,12 @@ describe("Payroll Periods API", () => {
     const mockRunCommand = vi.fn();
 
     beforeEach(() => {
-      vi.clearAllMocks();
-      vi.mocked(requireCurrentUser).mockResolvedValue({
-        id: TEST_USER_ID,
-        tenantId: TEST_TENANT_ID,
-        role: "admin",
-        email: "test@example.com",
-        firstName: "Test",
-        lastName: "User",
-      });
       vi.mocked(createManifestRuntime).mockResolvedValue({
         runCommand: mockRunCommand,
       } as never);
 
       // Mock user lookup for create route
-      vi.mocked(mockDatabase.user.findFirst).mockResolvedValue({
+      vi.mocked(database.user.findFirst).mockResolvedValue({
         id: TEST_USER_ID,
         tenantId: TEST_TENANT_ID,
         role: "admin",
@@ -301,9 +270,10 @@ describe("Payroll Periods API", () => {
     });
 
     it("should return 401 for unauthenticated requests", async () => {
-      vi.mocked(requireCurrentUser).mockRejectedValue(
-        new InvariantError("Unauthorized")
-      );
+      vi.mocked(auth).mockResolvedValue({
+        userId: null,
+        orgId: null,
+      } as never);
 
       const request = new NextRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -323,10 +293,8 @@ describe("Payroll Periods API", () => {
       expect(response.status).toBe(401);
     });
 
-    it("should return 401 when tenant not found", async () => {
-      vi.mocked(requireCurrentUser).mockRejectedValue(
-        new InvariantError("Tenant not found")
-      );
+    it("should return 400 when tenant not found", async () => {
+      vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
 
       const request = new NextRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -343,7 +311,7 @@ describe("Payroll Periods API", () => {
         params: Promise.resolve({ entity: "PayrollPeriod", command: "create" }),
       });
 
-      expect(response.status).toBe(401);
+      expect(response.status).toBe(400);
     });
 
     it("should create a period through manifest runtime", async () => {
@@ -472,10 +440,8 @@ describe("Payroll Periods API", () => {
       expect(response.status).toBe(500);
     });
 
-    it("should return 401 when user not found in database", async () => {
-      vi.mocked(requireCurrentUser).mockRejectedValue(
-        new InvariantError("User not found in database")
-      );
+    it("should return 400 when user not found in database", async () => {
+      vi.mocked(database.user.findFirst).mockResolvedValue(null as never);
 
       const request = new NextRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -488,7 +454,9 @@ describe("Payroll Periods API", () => {
         params: Promise.resolve({ entity: "PayrollPeriod", command: "create" }),
       });
 
-      expect(response.status).toBe(401);
+      expect(response.status).toBe(400);
+      const body = await response.json();
+      expect(body.message).toBe("User not found in database");
     });
   });
 });

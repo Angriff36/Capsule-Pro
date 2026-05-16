@@ -96,7 +96,7 @@ const AnalyticsStaffPage = async () => {
     database.timeEntry.findMany({
       where: {
         tenantId,
-        deleted_at: null,
+        deletedAt: null,
         clockIn: {
           gte: ninetyDaysAgo,
         },

@@ -28,9 +28,10 @@ export async function GET(
 
     const { id } = await params;
 
-    const wasteEntry = await database.wasteEntry.findUnique({
+    const wasteEntry = await database.wasteEntry.findFirst({
       where: {
-        tenantId_id: { tenantId, id },
+        id,
+        tenantId,
         deletedAt: null,
       },
     });

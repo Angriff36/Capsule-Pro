@@ -42,11 +42,11 @@ import { useState } from "react";
 
 interface TimeEntry {
   id: string;
-  employee_id: string;
-  employee_first_name: string | null;
-  employee_last_name: string | null;
-  employee_email: string;
-  employee_role: string;
+  employeeId: string;
+  employeeFirstName: string | null;
+  employeeLastName: string | null;
+  employeeEmail: string;
+  employeeRole: string;
   employee_number: string | null;
   location_id: string | null;
   location_name: string | null;
@@ -161,18 +161,18 @@ export default function TimecardDetailModal({
                       <TableCell className="font-medium">Name</TableCell>
                       <TableCell>
                         {getEmployeeName(
-                          timeEntry.employee_first_name,
-                          timeEntry.employee_last_name
+                          timeEntry.employeeFirstName,
+                          timeEntry.employeeLastName
                         )}
                       </TableCell>
                     </TableRow>
                     <TableRow>
                       <TableCell className="font-medium">Email</TableCell>
-                      <TableCell>{timeEntry.employee_email}</TableCell>
+                      <TableCell>{timeEntry.employeeEmail}</TableCell>
                     </TableRow>
                     <TableRow>
                       <TableCell className="font-medium">Role</TableCell>
-                      <TableCell>{timeEntry.employee_role}</TableCell>
+                      <TableCell>{timeEntry.employeeRole}</TableCell>
                     </TableRow>
                     {timeEntry.employee_number && (
                       <TableRow>

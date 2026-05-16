@@ -488,7 +488,7 @@ const SchedulingPage = async () => {
                   return (
                     <OperationalRow
                       density="comfortable"
-                      key={person.employee_id}
+                      key={person.employeeId}
                     >
                       <div className="flex items-center gap-4">
                         <span className="font-mono text-2xl tabular-nums text-muted-foreground">

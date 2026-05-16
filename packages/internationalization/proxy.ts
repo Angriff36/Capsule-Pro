@@ -5,7 +5,7 @@ import languine from "./languine.json" with { type: "json" };
 
 const locales = [languine.locale.source, ...languine.locale.targets];
 
-const I18nMiddleware = createI18nMiddleware({
+const I18nMiddleware: ReturnType<typeof createI18nMiddleware> = createI18nMiddleware({
   locales,
   defaultLocale: "en",
   urlMappingStrategy: "rewriteDefault",

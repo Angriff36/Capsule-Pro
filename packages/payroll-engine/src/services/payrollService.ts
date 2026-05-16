@@ -88,7 +88,7 @@ export class PayrollService {
       ? new Date(request.periodStart)
       : new Date(now.getFullYear(), now.getMonth(), 1);
     const periodEnd = request.periodEnd ? new Date(request.periodEnd) : now;
-    const periodId = this.generatePeriodId();
+    const periodId = this.generatePeriodId(tenantId, periodStart, periodEnd);
     const batchId = randomUUID();
 
     try {
@@ -266,10 +266,27 @@ export class PayrollService {
   }
 
   /**
-   * Generate period ID
+   * Generate deterministic period ID
    */
-  private generatePeriodId(): string {
-    return randomUUID();
+  private generatePeriodId(
+    tenantId: string,
+    startDate: Date,
+    endDate: Date
+  ): string {
+    const startStr = startDate.toISOString().split("T")[0];
+    const endStr = endDate.toISOString().split("T")[0];
+    const combined = `${tenantId}:${startStr}:${endStr}`;
+
+    // Simple hash for deterministic ID
+    let hash = 0;
+    for (let i = 0; i < combined.length; i++) {
+      const char = combined.charCodeAt(i);
+      hash = (hash << 5) - hash + char;
+      hash &= hash;
+    }
+
+    const hex = Math.abs(hash).toString(16).padStart(8, "0");
+    return `${hex}-${startStr.replace(/-/g, "")}-${endStr.replace(/-/g, "")}`;
   }
 }
 

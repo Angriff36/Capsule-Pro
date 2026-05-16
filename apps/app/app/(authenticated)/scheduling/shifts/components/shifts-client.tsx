@@ -34,11 +34,10 @@ import {
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { useQuery } from "@tanstack/react-query";
 import { Loader2Icon, PlusIcon, UserCheckIcon, UsersIcon } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import type { ReactNode } from "react";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { getEmployees, getLocations, getShifts } from "../actions";
 import { AutoAssignmentModal } from "./auto-assignment-modal";
@@ -49,11 +48,11 @@ import { ShiftForm } from "./shift-form";
 interface Shift {
   id: string;
   schedule_id: string;
-  employee_id: string;
-  employee_first_name: string | null;
-  employee_last_name: string | null;
-  employee_email: string;
-  employee_role: string;
+  employeeId: string;
+  employeeFirstName: string | null;
+  employeeLastName: string | null;
+  employeeEmail: string;
+  employeeRole: string;
   location_id: string;
   location_name: string;
   shift_start: Date;
@@ -81,7 +80,19 @@ export function ShiftsClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // Filters (UI state — not server state)
+  // State
+  const [shifts, setShifts] = useState<Shift[]>([]);
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [locations, setLocations] = useState<Location[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 50,
+    total: 0,
+    totalPages: 0,
+  });
+
+  // Filters
   const [filters, setFilters] = useState({
     startDate: searchParams?.get("startDate") || "",
     endDate: searchParams?.get("endDate") || "",
@@ -89,62 +100,55 @@ export function ShiftsClient() {
     locationId: searchParams?.get("locationId") || "",
   });
 
-  // Track initial mount to avoid URL push on first render
-  const isMounted = useRef(false);
-
-  // =========================================================================
-  // TanStack Query: shifts (replaces manual useState + useEffect + useCallback)
-  // =========================================================================
-  const {
-    data: shiftsData,
-    isLoading: shiftsLoading,
-  } = useQuery({
-    queryKey: ["scheduling", "shifts", filters],
-    queryFn: () =>
-      getShifts({
-        startDate: filters.startDate || undefined,
-        endDate: filters.endDate || undefined,
-        employeeId: filters.employeeId || undefined,
-        locationId: filters.locationId || undefined,
-        page: 1,
-        limit: 50,
-      }),
-    staleTime: 30_000,
-  });
-
-  const shifts = shiftsData?.shifts ?? [];
-  const pagination = shiftsData?.pagination ?? {
-    page: 1,
-    limit: 50,
-    total: 0,
-    totalPages: 0,
-  };
-
-  // =========================================================================
-  // TanStack Query: filter options (employees + locations)
-  // Shared across all scheduling views — cache automatically deduplicates
-  // =========================================================================
-  const { data: employeesData } = useQuery({
-    queryKey: ["scheduling", "employees"],
-    queryFn: async () => getEmployees(),
-    staleTime: 5 * 60_000,
-  });
-
-  const { data: locationsData } = useQuery({
-    queryKey: ["scheduling", "locations"],
-    queryFn: async () => getLocations(),
-    staleTime: 5 * 60_000,
-  });
-
-  const employees: Employee[] = employeesData?.employees ?? [];
-  const locations: Location[] = locationsData?.locations ?? [];
-
-  // Modal state (UI state)
+  // Modal state
   const [selectedShift, setSelectedShift] = useState<Shift | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [assignmentModalOpen, setAssignmentModalOpen] = useState(false);
   const [bulkAssignmentModalOpen, setBulkAssignmentModalOpen] = useState(false);
+
+  // Track initial mount to avoid URL push on first render
+  const isMounted = useRef(false);
+
+  // Fetch shifts
+  const fetchShifts = useCallback(async () => {
+    setLoading(true);
+    try {
+      const data = await getShifts({
+        ...filters,
+        page: pagination.page,
+        limit: pagination.limit,
+      });
+      setShifts(data.shifts || []);
+      setPagination(data.pagination || pagination);
+    } catch (error) {
+      toast.error("Failed to load shifts", {
+        description: error instanceof Error ? error.message : "Unknown error",
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [filters, pagination.page, pagination.limit]);
+
+  // Fetch filter options
+  const fetchFilterOptions = useCallback(async () => {
+    try {
+      const [employeesData, locationsData] = await Promise.all([
+        getEmployees(),
+        getLocations(),
+      ]);
+      setEmployees(employeesData.employees || []);
+      setLocations(locationsData.locations || []);
+    } catch (error) {
+      console.warn("Failed to load filter options:", error);
+    }
+  }, []);
+
+  // Initial load
+  useEffect(() => {
+    fetchShifts();
+    fetchFilterOptions();
+  }, [fetchShifts, fetchFilterOptions]);
 
   // Update URL when filters change (skip initial mount)
   useEffect(() => {
@@ -164,6 +168,7 @@ export function ShiftsClient() {
 
   const handleFilterChange = (key: string, value: string) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
+    setPagination((prev) => ({ ...prev, page: 1 }));
   };
 
   const handleRowClick = (shift: Shift) => {
@@ -207,10 +212,10 @@ export function ShiftsClient() {
       cell: ({ row }) => (
         <div className="min-w-0">
           <div className="truncate font-medium text-ink">
-            {row.original.employee_first_name} {row.original.employee_last_name}
+            {row.original.employeeFirstName} {row.original.employeeLastName}
           </div>
           <div className="truncate text-muted-foreground text-xs">
-            {row.original.employee_email}
+            {row.original.employeeEmail}
           </div>
         </div>
       ),
@@ -256,7 +261,7 @@ export function ShiftsClient() {
         row.original.role_during_shift ? (
           <Badge variant="outline">{row.original.role_during_shift}</Badge>
         ) : (
-          <Badge variant="secondary">{row.original.employee_role}</Badge>
+          <Badge variant="secondary">{row.original.employeeRole}</Badge>
         ),
     },
     {
@@ -283,7 +288,7 @@ export function ShiftsClient() {
   });
 
   let tableBody: ReactNode;
-  if (shiftsLoading) {
+  if (loading) {
     tableBody = (
       <TableRow className="hover:bg-transparent">
         <TableCell className="h-28 text-center" colSpan={columns.length}>
@@ -494,7 +499,10 @@ export function ShiftsClient() {
                     key={headerGroup.id}
                   >
                     {headerGroup.headers.map((header) => (
-                      <TableHead className="text-ink/60 text-sm" key={header.id}>
+                      <TableHead
+                        className="font-mono text-[11px] text-muted-foreground uppercase tracking-[0.2em]"
+                        key={header.id}
+                      >
                         {header.isPlaceholder
                           ? null
                           : flexRender(
@@ -509,43 +517,113 @@ export function ShiftsClient() {
               <TableBody>{tableBody}</TableBody>
             </Table>
           </div>
+
+          {pagination.totalPages > 1 ? (
+            <div className="flex flex-wrap items-center justify-between gap-4 border-hairline border-t pt-4">
+              <p className="text-muted-foreground text-sm">
+                Showing {(pagination.page - 1) * pagination.limit + 1}–
+                {Math.min(pagination.page * pagination.limit, pagination.total)}{" "}
+                of {pagination.total}
+              </p>
+              <div className="flex gap-2">
+                <Button
+                  disabled={pagination.page === 1}
+                  onClick={() =>
+                    setPagination((prev) => ({ ...prev, page: prev.page - 1 }))
+                  }
+                  size="sm"
+                  variant="outline"
+                >
+                  Previous
+                </Button>
+                <Button
+                  disabled={pagination.page === pagination.totalPages}
+                  onClick={() =>
+                    setPagination((prev) => ({ ...prev, page: prev.page + 1 }))
+                  }
+                  size="sm"
+                  variant="outline"
+                >
+                  Next
+                </Button>
+              </div>
+            </div>
+          ) : null}
         </div>
       </div>
 
-      {/* Modals */}
-      {selectedShift && (
-        <ShiftDetailModal
-          onClose={() => {
-            setModalOpen(false);
-            setSelectedShift(null);
-          }}
-          onDelete={() => {
-            setModalOpen(false);
-            setSelectedShift(null);
-          }}
-          open={modalOpen}
-          shift={selectedShift}
-        />
-      )}
+      {/* Detail Modal */}
+      <ShiftDetailModal
+        onClose={() => {
+          setModalOpen(false);
+          setSelectedShift(null);
+        }}
+        onDelete={() => {
+          fetchShifts();
+          setModalOpen(false);
+          setSelectedShift(null);
+        }}
+        open={modalOpen}
+        shift={selectedShift}
+      />
+
+      {/* Create Modal */}
       {createModalOpen && (
-        <ShiftForm
-          onCancel={() => setCreateModalOpen(false)}
-          onSuccess={() => setCreateModalOpen(false)}
-          scheduleId={undefined}
-        />
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-[22px] border border-hairline bg-canvas p-8">
+            <div className="mb-6 space-y-2">
+              <div className="font-mono text-[11px] text-muted-foreground uppercase tracking-[0.28em]">
+                Scheduling
+              </div>
+              <h2 className="font-normal text-2xl text-ink tracking-[-0.02em]">
+                Create shift
+              </h2>
+              <p className="text-muted-foreground text-sm">
+                Add a new shift to the schedule.
+              </p>
+            </div>
+            <ShiftForm
+              onCancel={() => setCreateModalOpen(false)}
+              onSuccess={() => {
+                setCreateModalOpen(false);
+                fetchShifts();
+              }}
+            />
+          </div>
+        </div>
       )}
-      {selectedShift && (
-        <AutoAssignmentModal
-          onClose={() => {
-            setAssignmentModalOpen(false);
-            setSelectedShift(null);
-          }}
-          open={assignmentModalOpen}
-          shiftId={selectedShift.id}
-        />
-      )}
+
+      {/* Auto-Assignment Modal */}
+      <AutoAssignmentModal
+        onClose={() => {
+          setAssignmentModalOpen(false);
+          setSelectedShift(null);
+        }}
+        open={assignmentModalOpen}
+        shiftDetails={
+          selectedShift
+            ? {
+                title: `Shift for ${selectedShift.employeeFirstName} ${selectedShift.employeeLastName}`,
+                startTime: selectedShift.shift_start,
+                endTime: selectedShift.shift_end,
+                locationName: selectedShift.location_name,
+                role: selectedShift.role_during_shift || undefined,
+              }
+            : undefined
+        }
+        shiftId={selectedShift?.id || ""}
+      />
+
+      {/* Bulk Assignment Modal */}
       <BulkAssignmentModal
-        onClose={() => setBulkAssignmentModalOpen(false)}
+        filters={{
+          startDate: filters.startDate || undefined,
+          endDate: filters.endDate || undefined,
+          locationId: filters.locationId || undefined,
+        }}
+        onClose={() => {
+          setBulkAssignmentModalOpen(false);
+        }}
         open={bulkAssignmentModalOpen}
       />
     </KitchenOperationalCanvas>

@@ -211,7 +211,7 @@ export async function GET(request: Request) {
       const item = itemsMap.get(transaction.itemId);
       const location = transaction.storage_location_id
         ? locationsMap.get(transaction.storage_location_id)
-        : null;
+        : undefined;
       const user = transaction.employee_id
         ? usersMap.get(transaction.employee_id)
         : null;

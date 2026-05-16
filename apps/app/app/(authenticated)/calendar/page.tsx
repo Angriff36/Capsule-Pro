@@ -99,26 +99,26 @@ async function getCalendarData(tenantId: string, start: Date, end: Date) {
         take: 100,
       })
       .catch(() => []),
-    database.employeeTimeOffRequest
+    database.timeOffRequest
       .findMany({
         where: {
-          tenant_id: tenantId,
-          start_date: {
+          tenantId,
+          startDate: {
             gte: startUtc,
             lte: endUtc,
           },
-          deleted_at: null,
+          deletedAt: null,
           status: "approved",
         },
         select: {
           id: true,
-          start_date: true,
-          end_date: true,
+          startDate: true,
+          endDate: true,
           reason: true,
           status: true,
-          request_type: true,
+          requestType: true,
         },
-        orderBy: { start_date: "asc" },
+        orderBy: { startDate: "asc" },
         take: 50,
       })
       .catch(() => []),
@@ -158,9 +158,9 @@ async function getCalendarData(tenantId: string, start: Date, end: Date) {
     events.push(
       ...timeOffResult.map((t) => ({
         id: t.id,
-        title: `${t.request_type?.replace(/_/g, " ") || "Time Off"}`,
-        start: new Date(t.start_date),
-        end: t.end_date ? new Date(t.end_date) : undefined,
+        title: `${t.requestType?.replace(/_/g, " ") || "Time Off"}`,
+        start: new Date(t.startDate),
+        end: t.endDate ? new Date(t.endDate) : undefined,
         type: "timeoff" as const,
         status: t.status,
         details: t.reason || undefined,

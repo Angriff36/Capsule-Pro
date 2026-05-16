@@ -36,9 +36,8 @@ vi.mock("@/lib/manifest-runtime", () => ({
 }));
 
 import { auth } from "@repo/auth/server";
-import { getTenantIdForOrg, requireCurrentUser } from "@/app/lib/tenant";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
-import { InvariantError } from "@/app/lib/invariant";
 
 const TENANT = "a0000000-0000-4000-a000-000000000001";
 const ORG = "org-test-1";
@@ -75,14 +74,6 @@ describe("POST /api/user/deactivate — self-deactivation prevention", () => {
     vi.clearAllMocks();
     vi.mocked(auth).mockResolvedValue({ orgId: ORG, userId: CLERK } as any);
     vi.mocked(getTenantIdForOrg).mockResolvedValue(TENANT);
-    vi.mocked(requireCurrentUser).mockResolvedValue({
-      id: SELF_INTERNAL,
-      tenantId: TENANT,
-      role: "admin",
-      email: "test@example.com",
-      firstName: "Test",
-      lastName: "User",
-    } as any);
     runCommand.mockReset();
     runCommand.mockResolvedValue({
       success: true,
@@ -94,12 +85,7 @@ describe("POST /api/user/deactivate — self-deactivation prevention", () => {
     } as any);
   });
 
-  it("allows deactivating own account (manifest route has no self-deactivation guard)", async () => {
-    // NOTE: Self-deactivation prevention is NOT implemented in the manifest route.
-    // The manifest runtime will handle role-based access, but there's no check
-    // to prevent a user from deactivating themselves. This test documents
-    // current behavior so any future change to add self-deactivation prevention
-    // can be verified.
+  it("returns 403 and does NOT run command when caller targets own userId", async () => {
     mockDatabase.user.findFirst.mockResolvedValue({ id: SELF_INTERNAL });
 
     const deactivate = await getDeactivateHandler();
@@ -107,13 +93,12 @@ describe("POST /api/user/deactivate — self-deactivation prevention", () => {
       makeRequest({ userId: SELF_INTERNAL, reason: "x" })
     );
 
-    // Current behavior: allows deactivation, runtime handles authorization
-    expect(res.status).toBe(200);
-    expect(runCommand).toHaveBeenCalledWith(
-      "deactivate",
-      { userId: SELF_INTERNAL, reason: "x" },
-      { entityName: "User" }
+    expect(res.status).toBe(403);
+    const json = await res.json();
+    expect(String(json.message ?? json.error ?? "")).toMatch(
+      /cannot deactivate your own account/i
     );
+    expect(runCommand).not.toHaveBeenCalled();
   });
 
   it("allows deactivating another user (passes through to runtime)", async () => {
@@ -125,11 +110,13 @@ describe("POST /api/user/deactivate — self-deactivation prevention", () => {
     );
 
     expect(res.status).toBe(200);
-    // Route passes { entityName: "User" } — instanceId is not yet wired
     expect(runCommand).toHaveBeenCalledWith(
       "deactivate",
-      { userId: OTHER_INTERNAL, reason: "leaving" },
-      { entityName: "User" }
+      expect.objectContaining({ userId: OTHER_INTERNAL }),
+      expect.objectContaining({
+        entityName: "User",
+        instanceId: OTHER_INTERNAL,
+      })
     );
   });
 
@@ -150,9 +137,7 @@ describe("POST /api/user/deactivate — self-deactivation prevention", () => {
   });
 
   it("returns 401 when unauthenticated", async () => {
-    vi.mocked(requireCurrentUser).mockRejectedValueOnce(
-      new InvariantError("auth.orgId must exist")
-    );
+    vi.mocked(auth).mockResolvedValue({ orgId: null, userId: null } as any);
     const deactivate = await getDeactivateHandler();
     const res = await deactivate(makeRequest({ userId: SELF_INTERNAL }));
     expect(res.status).toBe(401);

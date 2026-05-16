@@ -9,8 +9,6 @@
 import { NextRequest } from "next/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { InvariantError } from "@/app/lib/invariant";
-
 // ---------------------------------------------------------------------------
 // vi.mock factories are hoisted above imports, so we use vi.hoisted() to
 // create the mock database and model stubs at hoist time.
@@ -20,7 +18,6 @@ const { modelStubs, mockDatabase } = vi.hoisted(() => {
     return {
       findMany: vi.fn(() => Promise.resolve([])),
       findFirst: vi.fn(() => Promise.resolve(null)),
-      findUnique: vi.fn(() => Promise.resolve(null)),
       create: vi.fn(() => Promise.resolve({})),
       update: vi.fn(() => Promise.resolve({})),
       updateMany: vi.fn(() => Promise.resolve({ count: 0 })),
@@ -67,7 +64,6 @@ vi.mock("@/lib/database", () => ({
 // Mock other external dependencies
 vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
 vi.mock("@/app/lib/tenant", () => ({
-  requireCurrentUser: vi.fn(),
   getTenantIdForOrg: vi.fn(),
 }));
 vi.mock("@/lib/manifest-runtime", () => ({
@@ -81,7 +77,7 @@ vi.mock("@/lib/manifest-command-handler", () => ({
 }));
 
 const { auth } = await import("@repo/auth/server");
-const { getTenantIdForOrg, requireCurrentUser } = await import("@/app/lib/tenant");
+const { getTenantIdForOrg } = await import("@/app/lib/tenant");
 const { createManifestRuntime } = await import("@/lib/manifest-runtime");
 
 import {
@@ -109,8 +105,8 @@ const db = {
   get timecardEditRequest() {
     return mockDatabase.timecardEditRequest;
   },
-  get employeeTimeOffRequest() {
-    return mockDatabase.employeeTimeOffRequest;
+  get timeOffRequest() {
+    return mockDatabase.timeOffRequest;
   },
   get user() {
     return mockDatabase.user;
@@ -195,14 +191,6 @@ describe("Timecards API", () => {
       orgId: TEST_ORG_ID,
     } as never);
     vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-    vi.mocked(requireCurrentUser).mockResolvedValue({
-      id: TEST_USER_ID,
-      tenantId: TEST_TENANT_ID,
-      role: "admin",
-      email: "test@example.com",
-      firstName: "Test",
-      lastName: "User",
-    } as never);
   });
 
   afterEach(() => {
@@ -265,7 +253,7 @@ describe("Timecards API", () => {
       expect(body.timeEntrys).toHaveLength(2);
     });
 
-    it("should filter by tenantId", async () => {
+    it("should filter by tenantId and exclude soft-deleted", async () => {
       db.timeEntry.findMany.mockResolvedValue([]);
 
       const request = new NextRequest(
@@ -277,6 +265,7 @@ describe("Timecards API", () => {
         expect.objectContaining({
           where: {
             tenantId: TEST_TENANT_ID,
+            deleted_at: null,
           },
         })
       );
@@ -333,7 +322,7 @@ describe("Timecards API", () => {
     it("should return a single time entry by ID", async () => {
       const mockEntry = createMockTimeEntry({ id: "entry-001" });
 
-      db.timeEntry.findUnique.mockResolvedValue(mockEntry as never);
+      db.timeEntry.findFirst.mockResolvedValue(mockEntry as never);
 
       const request = new NextRequest(
         "http://localhost/api/timecards/entries/entry-001"
@@ -349,7 +338,7 @@ describe("Timecards API", () => {
     });
 
     it("should return 404 when time entry not found", async () => {
-      db.timeEntry.findUnique.mockResolvedValue(null);
+      db.timeEntry.findFirst.mockResolvedValue(null);
 
       const request = new NextRequest(
         "http://localhost/api/timecards/entries/nonexistent"
@@ -365,7 +354,7 @@ describe("Timecards API", () => {
     });
 
     it("should enforce tenant isolation on detail queries", async () => {
-      db.timeEntry.findUnique.mockResolvedValue(null);
+      db.timeEntry.findFirst.mockResolvedValue(null);
 
       const request = new NextRequest(
         "http://localhost/api/timecards/entries/entry-001"
@@ -374,10 +363,12 @@ describe("Timecards API", () => {
         params: Promise.resolve({ id: "entry-001" }),
       });
 
-      expect(db.timeEntry.findUnique).toHaveBeenCalledWith(
+      expect(db.timeEntry.findFirst).toHaveBeenCalledWith(
         expect.objectContaining({
           where: {
-            tenantId_id: { tenantId: TEST_TENANT_ID, id: "entry-001" },
+            id: "entry-001",
+            tenantId: TEST_TENANT_ID,
+            deleted_at: null,
           },
         })
       );
@@ -413,9 +404,10 @@ describe("Timecards API", () => {
     });
 
     it("should return 401 for unauthenticated requests", async () => {
-      vi.mocked(requireCurrentUser).mockRejectedValue(
-        new InvariantError("auth.userId must exist") as never
-      );
+      vi.mocked(auth).mockResolvedValue({
+        userId: null,
+        orgId: null,
+      } as never);
 
       const request = new NextRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -431,12 +423,8 @@ describe("Timecards API", () => {
       expect(response.status).toBe(401);
     });
 
-    it("should return 401 when tenant not found", async () => {
-      vi.mocked(getTenantIdForOrg).mockReset();
+    it("should return 400 when tenant not found", async () => {
       vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
-      vi.mocked(requireCurrentUser).mockRejectedValue(
-        new InvariantError("Tenant not found") as never
-      );
 
       const request = new NextRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -449,13 +437,11 @@ describe("Timecards API", () => {
         params: Promise.resolve({ entity: "TimeEntry", command: "clockIn" }),
       });
 
-      expect(response.status).toBe(401);
+      expect(response.status).toBe(400);
     });
 
-    it("should return 401 when user not found in database", async () => {
-      vi.mocked(requireCurrentUser).mockRejectedValue(
-        new InvariantError("User not found in database") as never
-      );
+    it("should return 400 when user not found in database", async () => {
+      db.user.findFirst.mockResolvedValue(null);
 
       const request = new NextRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -468,7 +454,9 @@ describe("Timecards API", () => {
         params: Promise.resolve({ entity: "TimeEntry", command: "clockIn" }),
       });
 
-      expect(response.status).toBe(401);
+      expect(response.status).toBe(400);
+      const body = await response.json();
+      expect(body.message).toBe("User not found in database");
     });
 
     it("should clock in successfully through manifest runtime", async () => {
@@ -605,9 +593,10 @@ describe("Timecards API", () => {
     });
 
     it("should return 401 for unauthenticated requests", async () => {
-      vi.mocked(requireCurrentUser).mockRejectedValue(
-        new InvariantError("auth.userId must exist") as never
-      );
+      vi.mocked(auth).mockResolvedValue({
+        userId: null,
+        orgId: null,
+      } as never);
 
       const request = new NextRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -623,12 +612,8 @@ describe("Timecards API", () => {
       expect(response.status).toBe(401);
     });
 
-    it("should return 401 when tenant not found", async () => {
-      vi.mocked(getTenantIdForOrg).mockReset();
+    it("should return 400 when tenant not found", async () => {
       vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
-      vi.mocked(requireCurrentUser).mockRejectedValue(
-        new InvariantError("Tenant not found") as never
-      );
 
       const request = new NextRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -641,7 +626,7 @@ describe("Timecards API", () => {
         params: Promise.resolve({ entity: "TimeEntry", command: "clockOut" }),
       });
 
-      expect(response.status).toBe(401);
+      expect(response.status).toBe(400);
     });
 
     it("should clock out successfully through manifest runtime", async () => {
@@ -754,9 +739,10 @@ describe("Timecards API", () => {
     });
 
     it("should return 401 for unauthenticated requests", async () => {
-      vi.mocked(requireCurrentUser).mockRejectedValue(
-        new InvariantError("auth.userId must exist") as never
-      );
+      vi.mocked(auth).mockResolvedValue({
+        userId: null,
+        orgId: null,
+      } as never);
 
       const request = new NextRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -947,7 +933,7 @@ describe("Timecards API", () => {
     it("should return a single edit request by ID", async () => {
       const mockRequest = createMockEditRequest({ id: "edit-001" });
 
-      db.timecardEditRequest.findUnique.mockResolvedValue(mockRequest as never);
+      db.timecardEditRequest.findFirst.mockResolvedValue(mockRequest as never);
 
       const request = new NextRequest(
         "http://localhost/api/timecards/edit-requests/edit-001"
@@ -963,7 +949,7 @@ describe("Timecards API", () => {
     });
 
     it("should return 404 when edit request not found", async () => {
-      db.timecardEditRequest.findUnique.mockResolvedValue(null);
+      db.timecardEditRequest.findFirst.mockResolvedValue(null);
 
       const request = new NextRequest(
         "http://localhost/api/timecards/edit-requests/nonexistent"
@@ -979,7 +965,7 @@ describe("Timecards API", () => {
     });
 
     it("should enforce tenant isolation on detail queries", async () => {
-      db.timecardEditRequest.findUnique.mockResolvedValue(null);
+      db.timecardEditRequest.findFirst.mockResolvedValue(null);
 
       const request = new NextRequest(
         "http://localhost/api/timecards/edit-requests/edit-001"
@@ -988,10 +974,11 @@ describe("Timecards API", () => {
         params: Promise.resolve({ id: "edit-001" }),
       });
 
-      expect(db.timecardEditRequest.findUnique).toHaveBeenCalledWith(
+      expect(db.timecardEditRequest.findFirst).toHaveBeenCalledWith(
         expect.objectContaining({
           where: {
-            tenantId_id: { tenantId: TEST_TENANT_ID, id: "edit-001" },
+            id: "edit-001",
+            tenantId: TEST_TENANT_ID,
           },
         })
       );
@@ -1027,9 +1014,10 @@ describe("Timecards API", () => {
     });
 
     it("should return 401 for unauthenticated requests", async () => {
-      vi.mocked(requireCurrentUser).mockRejectedValue(
-        new InvariantError("auth.userId must exist") as never
-      );
+      vi.mocked(auth).mockResolvedValue({
+        userId: null,
+        orgId: null,
+      } as never);
 
       const request = new NextRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -1195,9 +1183,10 @@ describe("Timecards API", () => {
     });
 
     it("should return 401 for unauthenticated requests", async () => {
-      vi.mocked(requireCurrentUser).mockRejectedValue(
-        new InvariantError("auth.userId must exist") as never
-      );
+      vi.mocked(auth).mockResolvedValue({
+        userId: null,
+        orgId: null,
+      } as never);
 
       const request = new NextRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -1339,9 +1328,7 @@ describe("Timecards API", () => {
         }),
       ];
 
-      db.employeeTimeOffRequest.findMany.mockResolvedValue(
-        mockRequests as never
-      );
+      db.timeOffRequest.findMany.mockResolvedValue(mockRequests as never);
 
       const request = new NextRequest(
         "http://localhost/api/timecards/time-off-requests/list"
@@ -1354,32 +1341,33 @@ describe("Timecards API", () => {
       expect(body.timeOffRequests).toHaveLength(2);
     });
 
-    it("should filter by tenant_id", async () => {
-      db.employeeTimeOffRequest.findMany.mockResolvedValue([]);
+    it("should filter by tenant_id and exclude soft-deleted", async () => {
+      db.timeOffRequest.findMany.mockResolvedValue([]);
 
       const request = new NextRequest(
         "http://localhost/api/timecards/time-off-requests/list"
       );
       await listTimeOffRequests(request);
 
-      expect(db.employeeTimeOffRequest.findMany).toHaveBeenCalledWith(
+      expect(db.timeOffRequest.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: {
             tenant_id: TEST_TENANT_ID,
+            deleted_at: null,
           },
         })
       );
     });
 
     it("should order results by created_at descending", async () => {
-      db.employeeTimeOffRequest.findMany.mockResolvedValue([]);
+      db.timeOffRequest.findMany.mockResolvedValue([]);
 
       const request = new NextRequest(
         "http://localhost/api/timecards/time-off-requests/list"
       );
       await listTimeOffRequests(request);
 
-      expect(db.employeeTimeOffRequest.findMany).toHaveBeenCalledWith(
+      expect(db.timeOffRequest.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           orderBy: { created_at: "desc" },
         })
@@ -1387,7 +1375,7 @@ describe("Timecards API", () => {
     });
 
     it("should return 500 on database error", async () => {
-      db.employeeTimeOffRequest.findMany.mockRejectedValue(
+      db.timeOffRequest.findMany.mockRejectedValue(
         new Error("Database connection failed")
       );
 
@@ -1408,9 +1396,7 @@ describe("Timecards API", () => {
     it("should return a single time-off request by ID", async () => {
       const mockRequest = createMockTimeOffRequest({ id: "tor-001" });
 
-      db.employeeTimeOffRequest.findUnique.mockResolvedValue(
-        mockRequest as never
-      );
+      db.timeOffRequest.findFirst.mockResolvedValue(mockRequest as never);
 
       const request = new NextRequest(
         "http://localhost/api/timecards/time-off-requests/tor-001"
@@ -1426,7 +1412,7 @@ describe("Timecards API", () => {
     });
 
     it("should return 404 when time-off request not found", async () => {
-      db.employeeTimeOffRequest.findUnique.mockResolvedValue(null);
+      db.timeOffRequest.findFirst.mockResolvedValue(null);
 
       const request = new NextRequest(
         "http://localhost/api/timecards/time-off-requests/nonexistent"
@@ -1442,7 +1428,7 @@ describe("Timecards API", () => {
     });
 
     it("should enforce tenant isolation on detail queries", async () => {
-      db.employeeTimeOffRequest.findUnique.mockResolvedValue(null);
+      db.timeOffRequest.findFirst.mockResolvedValue(null);
 
       const request = new NextRequest(
         "http://localhost/api/timecards/time-off-requests/tor-001"
@@ -1451,10 +1437,12 @@ describe("Timecards API", () => {
         params: Promise.resolve({ id: "tor-001" }),
       });
 
-      expect(db.employeeTimeOffRequest.findUnique).toHaveBeenCalledWith(
+      expect(db.timeOffRequest.findFirst).toHaveBeenCalledWith(
         expect.objectContaining({
           where: {
-            tenant_id_id: { tenant_id: TEST_TENANT_ID, id: "tor-001" },
+            id: "tor-001",
+            tenant_id: TEST_TENANT_ID,
+            deleted_at: null,
           },
         })
       );
@@ -1490,9 +1478,10 @@ describe("Timecards API", () => {
     });
 
     it("should return 401 for unauthenticated requests", async () => {
-      vi.mocked(requireCurrentUser).mockRejectedValue(
-        new InvariantError("auth.userId must exist") as never
-      );
+      vi.mocked(auth).mockResolvedValue({
+        userId: null,
+        orgId: null,
+      } as never);
 
       const request = new NextRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -1632,9 +1621,10 @@ describe("Timecards API", () => {
     });
 
     it("should return 401 for unauthenticated requests", async () => {
-      vi.mocked(requireCurrentUser).mockRejectedValue(
-        new InvariantError("auth.userId must exist") as never
-      );
+      vi.mocked(auth).mockResolvedValue({
+        userId: null,
+        orgId: null,
+      } as never);
 
       const request = new NextRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",

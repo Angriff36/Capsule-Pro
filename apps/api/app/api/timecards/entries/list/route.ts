@@ -26,6 +26,7 @@ export async function GET(request: NextRequest) {
     const timeEntrys = await database.timeEntry.findMany({
       where: {
         tenantId,
+        deletedAt: null,
       },
       orderBy: {
         createdAt: "desc",

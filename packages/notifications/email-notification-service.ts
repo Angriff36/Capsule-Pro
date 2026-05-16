@@ -402,12 +402,12 @@ export async function sendEmailFromTemplate(
   } = options;
 
   // Fetch the template
-  const template = await database.email_templates.findFirst({
+  const template = await database.emailTemplate.findFirst({
     where: {
-      tenant_id: tenantId,
+      tenantId,
       id: templateId,
-      is_active: true,
-      deleted_at: null,
+      isActive: true,
+      deletedAt: null,
     },
   });
 

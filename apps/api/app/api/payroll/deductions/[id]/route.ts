@@ -30,8 +30,9 @@ export async function GET(
 
     const employeeDeduction = await database.employeeDeduction.findFirst({
       where: {
-        tenant_id: tenantId,
         id,
+        tenantId,
+        deletedAt: null,
       },
     });
 

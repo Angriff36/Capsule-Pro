@@ -4,14 +4,14 @@
  * Client-side utilities for email template operations
  */
 
-import type { email_templates } from "@repo/database";
+import type { EmailTemplate } from "@repo/database";
 
 /**
  * Render a template with merge field values
  * Replaces {{field}} placeholders with actual values
  */
 export function renderTemplate(
-  template: Pick<email_templates, "subject" | "body">,
+  template: Pick<EmailTemplate, "subject" | "body">,
   values: Record<string, string>
 ): { subject: string; body: string } {
   let subject = template.subject;

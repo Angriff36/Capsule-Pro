@@ -59,8 +59,8 @@ export async function getTimelineTasks(eventId: string) {
       event_id: string;
       title: string;
       description: string | null;
-      start_time: string;
-      end_time: string;
+      startTime: string;
+      endTime: string;
       status: string;
       priority: string;
       category: string;
@@ -80,8 +80,8 @@ export async function getTimelineTasks(eventId: string) {
         t.event_id,
         t.title,
         t.description,
-        t.start_time,
-        t.end_time,
+        t.startTime,
+        t.endTime,
         t.status,
         t.priority,
         t.category,
@@ -99,7 +99,7 @@ export async function getTimelineTasks(eventId: string) {
       WHERE t.tenant_id = $1
         AND t.event_id = $2
         AND t.deleted_at IS NULL
-      ORDER BY t.start_time ASC`,
+      ORDER BY t.startTime ASC`,
     tenantId,
     eventId
   );
@@ -109,8 +109,8 @@ export async function getTimelineTasks(eventId: string) {
     eventId: task.event_id,
     title: task.title,
     description: task.description ?? undefined,
-    startTime: task.start_time,
-    endTime: task.end_time,
+    startTime: task.startTime,
+    endTime: task.endTime,
     status: task.status as
       | "not_started"
       | "in_progress"
@@ -351,7 +351,7 @@ export async function getEventStaff(eventId: string) {
 
   const assignments = await database.$queryRawUnsafe<
     Array<{
-      employee_id: string;
+      employeeId: string;
       task_count: bigint;
     }>
   >(
@@ -369,7 +369,7 @@ export async function getEventStaff(eventId: string) {
   );
 
   const assignmentMap = new Map(
-    assignments.map((a) => [a.employee_id, Number(a.task_count)])
+    assignments.map((a) => [a.employeeId, Number(a.task_count)])
   );
 
   return staff.map((s) => {
@@ -427,7 +427,7 @@ export async function getAvailableEmployees(eventId: string) {
         AND NOT EXISTS (
           SELECT 1 FROM tenant_events.event_staff_assignments esa
           WHERE esa.tenant_id = e.tenant_id
-            AND esa.employee_id = e.id
+            AND esa.employeeId = e.id
             AND esa.event_id = $2
             AND esa.deleted_at IS NULL
         )
@@ -544,8 +544,8 @@ export async function calculateCriticalPath(eventId: string) {
   const tasks = await database.$queryRawUnsafe<
     Array<{
       id: string;
-      start_time: string;
-      end_time: string;
+      startTime: string;
+      endTime: string;
       dependencies: string[];
     }>
   >(
@@ -573,8 +573,8 @@ export async function calculateCriticalPath(eventId: string) {
   // Transform tasks to the format expected by the CPM algorithm
   const tasksForCPM = tasks.map((task) => ({
     id: task.id,
-    startTime: new Date(task.start_time),
-    endTime: new Date(task.end_time),
+    startTime: new Date(task.startTime),
+    endTime: new Date(task.endTime),
     dependencies: task.dependencies,
   }));
 

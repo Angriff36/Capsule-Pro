@@ -118,7 +118,7 @@ export async function getEmployeePerformance(
       AND pt.created_at >= $2
       AND EXISTS (
         SELECT 1 FROM tenant_kitchen.task_progress tp
-        WHERE tp.tenant_id = pt.tenant_id AND tp.task_id = pt.id AND tp.employee_id = $3
+        WHERE tp.tenant_id = pt.tenant_id AND tp.task_id = pt.id AND tp.employeeId = $3
       )
     `,
     tenantId,
@@ -140,7 +140,7 @@ export async function getEmployeePerformance(
       COUNT(*) as total_shifts,
       COUNT(*) as attended_shifts,
       COUNT(DISTINCT CASE
-        WHEN te.clock_in::time <= ss.start_time::time + INTERVAL '15 minutes'
+        WHEN te.clock_in::time <= ss.startTime::time + INTERVAL '15 minutes'
         THEN te.id
       END) as punctual_shifts,
       COALESCE(SUM(
@@ -153,10 +153,10 @@ export async function getEmployeePerformance(
       COUNT(DISTINCT DATE(te.clock_in)) as unique_days
     FROM tenant_staff.time_entries te
     LEFT JOIN tenant_staff.schedule_shifts ss
-      ON te.tenant_id = ss.tenant_id AND te.employee_id = ss.employee_id
+      ON te.tenant_id = ss.tenant_id AND te.employeeId = ss.employeeId
       AND DATE(te.clock_in) = ss.shift_date
     WHERE te.tenant_id = $1
-      AND te.employee_id = $2
+      AND te.employeeId = $2
       AND te.clock_in >= $3
       AND te.deleted_at IS NULL
     `,
@@ -312,7 +312,7 @@ export async function getEmployeePerformanceSummary(): Promise<EmployeePerforman
 
   const employeePerformanceRaw = await database.$queryRawUnsafe<
     Array<{
-      employee_id: string;
+      employeeId: string;
       first_name: string;
       last_name: string;
       role: string;
@@ -351,7 +351,7 @@ export async function getEmployeePerformanceSummary(): Promise<EmployeePerforman
     FROM tenant_staff.employees u
     LEFT JOIN (
       SELECT 
-        tp.employee_id,
+        tp.employeeId,
         COUNT(DISTINCT pt.id) as total_tasks,
         COUNT(DISTINCT CASE WHEN pt.status = 'completed' THEN pt.id END) as completed_tasks,
         COALESCE(AVG(CASE WHEN pt.actual_minutes IS NOT NULL THEN pt.actual_minutes / 60.0 END), 0) as avg_duration_hours,
@@ -363,15 +363,15 @@ export async function getEmployeePerformanceSummary(): Promise<EmployeePerforman
       FROM tenant_kitchen.task_progress tp
       JOIN tenant_kitchen.prep_tasks pt ON tp.tenant_id = pt.tenant_id AND tp.task_id = pt.id
       WHERE tp.tenant_id = $1 AND pt.created_at >= $2
-      GROUP BY tp.employee_id
-    ) task_stats ON u.id = task_stats.employee_id
+      GROUP BY tp.employeeId
+    ) task_stats ON u.id = task_stats.employeeId
     LEFT JOIN (
       SELECT 
-        te.employee_id,
+        te.employeeId,
         COUNT(*) as total_shifts,
         COUNT(*) as attended_shifts,
         COUNT(DISTINCT CASE 
-          WHEN te.clock_in::time <= COALESCE(ss.start_time::time, '00:00'::time) + INTERVAL '15 minutes'
+          WHEN te.clock_in::time <= COALESCE(ss.startTime::time, '00:00'::time) + INTERVAL '15 minutes'
           THEN te.id 
         END) as punctual_shifts,
         COALESCE(SUM(
@@ -383,11 +383,11 @@ export async function getEmployeePerformanceSummary(): Promise<EmployeePerforman
         ), 0) as total_hours
       FROM tenant_staff.time_entries te
       LEFT JOIN tenant_staff.schedule_shifts ss
-        ON te.tenant_id = ss.tenant_id AND te.employee_id = ss.employee_id
+        ON te.tenant_id = ss.tenant_id AND te.employeeId = ss.employeeId
         AND DATE(te.clock_in) = ss.shift_date
       WHERE te.tenant_id = $1 AND te.clock_in >= $2 AND te.deleted_at IS NULL
-      GROUP BY te.employee_id
-    ) time_stats ON u.id = time_stats.employee_id
+      GROUP BY te.employeeId
+    ) time_stats ON u.id = time_stats.employeeId
     LEFT JOIN (
       SELECT 
         employee_id,
@@ -396,19 +396,19 @@ export async function getEmployeePerformanceSummary(): Promise<EmployeePerforman
       FROM tenant_kitchen.task_progress
       WHERE tenant_id = $1 AND created_at >= $2
       GROUP BY employee_id
-    ) progress_stats ON u.id = progress_stats.employee_id
+    ) progress_stats ON u.id = progress_stats.employeeId
     LEFT JOIN (
       SELECT employee_id, COUNT(*) as interaction_count
       FROM tenant_crm.client_interactions
       WHERE tenant_id = $1 AND interaction_date >= $2 AND deleted_at IS NULL
       GROUP BY employee_id
-    ) client_stats ON u.id = client_stats.employee_id
+    ) client_stats ON u.id = client_stats.employeeId
     LEFT JOIN (
       SELECT employee_id, COUNT(DISTINCT event_id) as event_count
       FROM tenant_events.event_staff_assignments
       WHERE tenant_id = $1 AND deleted_at IS NULL
       GROUP BY employee_id
-    ) event_stats ON u.id = event_stats.employee_id
+    ) event_stats ON u.id = event_stats.employeeId
     WHERE u.tenant_id = $1 AND u.deleted_at IS NULL
     `,
     tenantId,
@@ -446,7 +446,7 @@ export async function getEmployeePerformanceSummary(): Promise<EmployeePerforman
     );
 
     return {
-      employeeId: emp.employee_id,
+      employeeId: emp.employeeId,
       firstName: emp.first_name,
       lastName: emp.last_name,
       role: emp.role,
@@ -641,7 +641,7 @@ export async function getEmployeeList(
 
   const employeePerformanceRaw = await database.$queryRawUnsafe<
     Array<{
-      employee_id: string;
+      employeeId: string;
       first_name: string;
       last_name: string;
       email: string;
@@ -688,7 +688,7 @@ export async function getEmployeeList(
     FROM tenant_staff.employees u
     LEFT JOIN (
       SELECT 
-        tp.employee_id,
+        tp.employeeId,
         COUNT(DISTINCT pt.id) as total_tasks,
         COUNT(DISTINCT CASE WHEN pt.status = 'completed' THEN pt.id END) as completed_tasks,
         COALESCE(AVG(CASE WHEN pt.actual_minutes IS NOT NULL THEN pt.actual_minutes / 60.0 END), 0) as avg_duration_hours,
@@ -700,15 +700,15 @@ export async function getEmployeeList(
       FROM tenant_kitchen.task_progress tp
       JOIN tenant_kitchen.prep_tasks pt ON tp.tenant_id = pt.tenant_id AND tp.task_id = pt.id
       WHERE tp.tenant_id = $1 AND pt.created_at >= NOW() - INTERVAL '3 months'
-      GROUP BY tp.employee_id
-    ) task_stats ON u.id = task_stats.employee_id
+      GROUP BY tp.employeeId
+    ) task_stats ON u.id = task_stats.employeeId
     LEFT JOIN (
       SELECT 
-        te.employee_id,
+        te.employeeId,
         COUNT(*) as total_shifts,
         COUNT(*) as attended_shifts,
         COUNT(DISTINCT CASE 
-          WHEN te.clock_in::time <= COALESCE(ss.start_time::time, '00:00'::time) + INTERVAL '15 minutes'
+          WHEN te.clock_in::time <= COALESCE(ss.startTime::time, '00:00'::time) + INTERVAL '15 minutes'
           THEN te.id 
         END) as punctual_shifts,
         COALESCE(SUM(
@@ -721,11 +721,11 @@ export async function getEmployeeList(
         COUNT(DISTINCT DATE(te.clock_in)) as unique_days
       FROM tenant_staff.time_entries te
       LEFT JOIN tenant_staff.schedule_shifts ss
-        ON te.tenant_id = ss.tenant_id AND te.employee_id = ss.employee_id
+        ON te.tenant_id = ss.tenant_id AND te.employeeId = ss.employeeId
         AND DATE(te.clock_in) = ss.shift_date
       WHERE te.tenant_id = $1 AND te.clock_in >= NOW() - INTERVAL '3 months' AND te.deleted_at IS NULL
-      GROUP BY te.employee_id
-    ) time_stats ON u.id = time_stats.employee_id
+      GROUP BY te.employeeId
+    ) time_stats ON u.id = time_stats.employeeId
     LEFT JOIN (
       SELECT 
         employee_id,
@@ -734,19 +734,19 @@ export async function getEmployeeList(
       FROM tenant_kitchen.task_progress
       WHERE tenant_id = $1 AND created_at >= NOW() - INTERVAL '3 months'
       GROUP BY employee_id
-    ) progress_stats ON u.id = progress_stats.employee_id
+    ) progress_stats ON u.id = progress_stats.employeeId
     LEFT JOIN (
       SELECT employee_id, COUNT(*) as interaction_count
       FROM tenant_crm.client_interactions
       WHERE tenant_id = $1 AND interaction_date >= NOW() - INTERVAL '3 months' AND deleted_at IS NULL
       GROUP BY employee_id
-    ) client_stats ON u.id = client_stats.employee_id
+    ) client_stats ON u.id = client_stats.employeeId
     LEFT JOIN (
       SELECT employee_id, COUNT(DISTINCT event_id) as event_count
       FROM tenant_events.event_staff_assignments
       WHERE tenant_id = $1 AND deleted_at IS NULL
       GROUP BY employee_id
-    ) event_stats ON u.id = event_stats.employee_id
+    ) event_stats ON u.id = event_stats.employeeId
     WHERE u.tenant_id = $1 AND u.deleted_at IS NULL
     `,
     tenantId
@@ -787,7 +787,7 @@ export async function getEmployeeList(
     const averageTaskDuration = Number(emp.avg_duration_hours);
 
     return {
-      employeeId: emp.employee_id,
+      employeeId: emp.employeeId,
       firstName: emp.first_name,
       lastName: emp.last_name,
       email: emp.email,

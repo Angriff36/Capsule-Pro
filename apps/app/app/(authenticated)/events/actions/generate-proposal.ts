@@ -49,12 +49,12 @@ export async function generateProposalFromEvent(
     }
 
     // Fetch event-dish links
-    const eventDishLinks = await database.event_dishes.findMany({
-      where: { event_id: eventId, tenant_id: tenantId, deleted_at: null },
+    const eventDishLinks = await database.eventDish.findMany({
+      where: { eventId, tenantId, deletedAt: null },
     });
 
     // Fetch dish details for line items
-    const dishIds = eventDishLinks.map((ed) => ed.dish_id);
+    const dishIds = eventDishLinks.map((ed) => ed.dishId);
     const dishes =
       dishIds.length > 0
         ? await database.dish.findMany({
@@ -79,12 +79,12 @@ export async function generateProposalFromEvent(
 
     // Build line items from dishes
     const lineItems = eventDishLinks.map((link, index) => {
-      const dish = dishById.get(link.dish_id);
+      const dish = dishById.get(link.dishId);
       return {
         itemType: "dish",
         category: link.course ?? "main",
         description: dish?.name ?? "Unknown dish",
-        quantity: link.quantity_servings ?? 1,
+        quantity: link.quantityServings ?? 1,
         unitOfMeasure: "servings" as string | null,
         unitPrice: 0,
         total: 0,

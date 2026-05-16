@@ -20,8 +20,8 @@ import type {
   PrismaClient,
   Recipe,
   RecipeIngredient,
+  RecipeStep,
   RecipeVersion,
-  recipe_steps,
   Station,
 } from "@repo/database/standalone";
 import { Prisma } from "@repo/database/standalone";
@@ -699,7 +699,7 @@ export class RecipeVersionPrismaStore implements Store<EntityInstance> {
       instructions: version.instructions ?? "",
       notes: version.notes ?? "",
       ingredientCount: 0, // Would need to query recipe_ingredients table
-      stepCount: 0, // Would need to query recipe_steps table
+      stepCount: 0, // Would need to query RecipeStep table
       totalCost: Number(version.totalCost) || 0,
       costPerYield: Number(version.costPerYield) || 0,
       createdAt: version.createdAt.getTime(),
@@ -817,8 +817,8 @@ export class RecipeIngredientPrismaStore implements Store<EntityInstance> {
 /**
  * Prisma-backed store for RecipeStep entities
  *
- * Maps Manifest RecipeStep entities to the Prisma recipe_steps table.
- * Note: Prisma model uses snake_case (recipe_steps).
+ * Maps Manifest RecipeStep entities to the Prisma RecipeStep table.
+ * Note: Prisma model uses snake_case (RecipeStep).
  */
 export class RecipeStepPrismaStore implements Store<EntityInstance> {
   constructor(
@@ -827,38 +827,38 @@ export class RecipeStepPrismaStore implements Store<EntityInstance> {
   ) {}
 
   async getAll(): Promise<EntityInstance[]> {
-    const steps = await this.prisma.recipe_steps.findMany({
-      where: { tenant_id: this.tenantId, deleted_at: null },
+    const steps = await this.prisma.recipeStep.findMany({
+      where: { tenantId: this.tenantId, deletedAt: null },
     });
     return steps.map((step) => this.mapToManifestEntity(step));
   }
 
   async getById(id: string): Promise<EntityInstance | undefined> {
-    const step = await this.prisma.recipe_steps.findFirst({
-      where: { tenant_id: this.tenantId, id, deleted_at: null },
+    const step = await this.prisma.recipeStep.findFirst({
+      where: { tenantId: this.tenantId, id, deletedAt: null },
     });
     return step ? this.mapToManifestEntity(step) : undefined;
   }
 
   async create(data: Partial<EntityInstance>): Promise<EntityInstance> {
-    const step = await this.prisma.recipe_steps.create({
+    const step = await this.prisma.recipeStep.create({
       data: {
-        tenant_id: this.tenantId,
+        tenantId: this.tenantId,
         id: data.id as string,
-        recipe_version_id: data.recipeVersionId as string,
-        step_number: data.stepNumber as number,
+        recipeVersionId: data.recipeVersionId as string,
+        stepNumber: data.stepNumber as number,
         instruction: data.instruction as string,
-        duration_minutes: (data.durationMinutes as number) || null,
-        temperature_value: (data.temperatureValue as number) || null,
-        temperature_unit: (data.temperatureUnit as string) || null,
-        equipment_needed: (data.equipmentNeeded as string[])
+        durationMinutes: (data.durationMinutes as number) || null,
+        temperatureValue: (data.temperatureValue as number) || null,
+        temperatureUnit: (data.temperatureUnit as string) || null,
+        equipmentNeeded: (data.equipmentNeeded as string[])
           ? ((data.equipmentNeeded as string)
               .split(",")
               .filter(Boolean) as string[])
           : [],
         tips: (data.tips as string) || null,
-        video_url: (data.videoUrl as string) || null,
-        image_url: (data.imageUrl as string) || null,
+        videoUrl: (data.videoUrl as string) || null,
+        imageUrl: (data.imageUrl as string) || null,
       },
     });
     return this.mapToManifestEntity(step);
@@ -869,13 +869,13 @@ export class RecipeStepPrismaStore implements Store<EntityInstance> {
     data: Partial<EntityInstance>
   ): Promise<EntityInstance | undefined> {
     try {
-      const updated = await this.prisma.recipe_steps.update({
-        where: { tenant_id_id: { tenant_id: this.tenantId, id } },
+      const updated = await this.prisma.recipeStep.update({
+        where: { tenantId_id: { tenantId: this.tenantId, id } },
         data: {
           instruction: data.instruction as string | undefined,
-          duration_minutes: data.durationMinutes as number | null | undefined,
+          durationMinutes: data.durationMinutes as number | null | undefined,
           tips: data.tips as string | null | undefined,
-          updated_at: new Date(),
+          updatedAt: new Date(),
         },
       });
       return this.mapToManifestEntity(updated);
@@ -887,9 +887,9 @@ export class RecipeStepPrismaStore implements Store<EntityInstance> {
 
   async delete(id: string): Promise<boolean> {
     try {
-      await this.prisma.recipe_steps.update({
-        where: { tenant_id_id: { tenant_id: this.tenantId, id } },
-        data: { deleted_at: new Date() },
+      await this.prisma.recipeStep.update({
+        where: { tenantId_id: { tenantId: this.tenantId, id } },
+        data: { deletedAt: new Date() },
       });
       return true;
     } catch (error) {
@@ -899,30 +899,30 @@ export class RecipeStepPrismaStore implements Store<EntityInstance> {
   }
 
   async clear(): Promise<void> {
-    await this.prisma.recipe_steps.updateMany({
-      where: { tenant_id: this.tenantId },
-      data: { deleted_at: new Date() },
+    await this.prisma.recipeStep.updateMany({
+      where: { tenantId: this.tenantId },
+      data: { deletedAt: new Date() },
     });
   }
 
-  private mapToManifestEntity(step: recipe_steps): EntityInstance {
+  private mapToManifestEntity(step: RecipeStep): EntityInstance {
     return {
       id: step.id,
-      tenantId: step.tenant_id,
-      recipeVersionId: step.recipe_version_id,
-      stepNumber: step.step_number,
+      tenantId: step.tenantId,
+      recipeVersionId: step.recipeVersionId,
+      stepNumber: step.stepNumber,
       instruction: step.instruction,
-      durationMinutes: step.duration_minutes ?? 0,
-      temperatureValue: step.temperature_value
-        ? Number(step.temperature_value)
+      durationMinutes: step.durationMinutes ?? 0,
+      temperatureValue: step.temperatureValue
+        ? Number(step.temperatureValue)
         : 0,
-      temperatureUnit: step.temperature_unit ?? "",
-      equipmentNeeded: step.equipment_needed?.join(",") ?? "",
+      temperatureUnit: step.temperatureUnit ?? "",
+      equipmentNeeded: step.equipmentNeeded?.join(",") ?? "",
       tips: step.tips ?? "",
-      videoUrl: step.video_url ?? "",
-      imageUrl: step.image_url ?? "",
-      createdAt: step.created_at.getTime(),
-      updatedAt: step.updated_at.getTime(),
+      videoUrl: step.videoUrl ?? "",
+      imageUrl: step.imageUrl ?? "",
+      createdAt: step.createdAt.getTime(),
+      updatedAt: step.updatedAt.getTime(),
     };
   }
 }

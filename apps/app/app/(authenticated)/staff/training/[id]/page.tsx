@@ -45,10 +45,10 @@ interface ModuleDetail {
 
 interface AssignmentRow {
   id: string;
-  employee_id: string | null;
-  employee_first_name: string | null;
-  employee_last_name: string | null;
-  employee_email: string | null;
+  employeeId: string | null;
+  employeeFirstName: string | null;
+  employeeLastName: string | null;
+  employeeEmail: string | null;
   status: string;
   due_date: Date | null;
   assigned_at: Date;
@@ -123,7 +123,7 @@ const TrainingModulePage = async ({ params }: TrainingModulePageProps) => {
   const assignments = await database.$queryRaw<AssignmentRow[]>`
     SELECT
       ta.id,
-      ta.employee_id,
+      ta.employeeId,
       e.first_name AS employee_first_name,
       e.last_name AS employee_last_name,
       e.email AS employee_email,
@@ -136,7 +136,7 @@ const TrainingModulePage = async ({ params }: TrainingModulePageProps) => {
     FROM tenant_staff.training_assignments ta
     LEFT JOIN tenant_staff.employees e
       ON e.tenant_id = ta.tenant_id
-      AND e.id = ta.employee_id
+      AND e.id = ta.employeeId
     LEFT JOIN tenant_staff.training_completions tc
       ON tc.tenant_id = ta.tenant_id
       AND tc.assignment_id = ta.id
@@ -340,15 +340,14 @@ const TrainingModulePage = async ({ params }: TrainingModulePageProps) => {
                         <TableCell>
                           <div>
                             <div className="font-medium">
-                              {assignment.employee_first_name &&
-                              assignment.employee_last_name
-                                ? `${assignment.employee_first_name} ${assignment.employee_last_name}`
-                                : (assignment.employee_email ??
-                                  "All Employees")}
+                              {assignment.employeeFirstName &&
+                              assignment.employeeLastName
+                                ? `${assignment.employeeFirstName} ${assignment.employeeLastName}`
+                                : (assignment.employeeEmail ?? "All Employees")}
                             </div>
-                            {assignment.employee_email && (
+                            {assignment.employeeEmail && (
                               <div className="text-xs text-muted-foreground">
-                                {assignment.employee_email}
+                                {assignment.employeeEmail}
                               </div>
                             )}
                           </div>

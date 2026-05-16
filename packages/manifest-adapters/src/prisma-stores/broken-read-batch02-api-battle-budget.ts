@@ -249,7 +249,7 @@ export class BattleBoardPrismaStore implements Store<EntityInstance> {
       board_type: (r.board_type as string) ?? "event-specific",
       schema_version: (r.schema_version as string) ?? "mangia-battle-board@1",
       boardData: r.boardData ?? {},
-      document_url: (r.document_url as string) ?? null,
+      documentUrl: (r.document_url as string) ?? null,
       source_document_type: (r.source_document_type as string) ?? null,
       document_imported_at: r.document_imported_at ?? null,
       status: (r.status as string) ?? "draft",

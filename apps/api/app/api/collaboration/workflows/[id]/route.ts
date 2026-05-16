@@ -28,9 +28,11 @@ export async function GET(
 
     const { id } = await params;
 
-    const workflow = await database.workflow.findUnique({
+    const workflow = await database.workflow.findFirst({
       where: {
-        tenantId_id: { tenantId, id },
+        id,
+        tenantId,
+        deletedAt: null,
       },
     });
 

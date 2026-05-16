@@ -38,7 +38,7 @@ async function validateTimeEntries(
     where: {
       tenantId,
       id: { in: timeEntryIds },
-      deleted_at: null,
+      deletedAt: null,
     },
   });
 
@@ -59,12 +59,12 @@ function processApprovals(
     where: {
       tenantId,
       id: { in: timeEntryIds },
-      deleted_at: null,
+      deletedAt: null,
       clockOut: { not: null },
     },
     data: {
-      approved_by: userId,
-      approved_at: new Date(),
+      approvedBy: userId,
+      approvedAt: new Date(),
     },
   });
 }
@@ -79,7 +79,7 @@ function processRejections(
     where: {
       tenantId,
       id: { in: timeEntryIds },
-      deleted_at: null,
+      deletedAt: null,
     },
     data: {
       notes: rejectionReason,

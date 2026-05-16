@@ -26,10 +26,10 @@ export async function GET(request: NextRequest) {
     const payrollApprovalHistorys =
       await database.payrollApprovalHistory.findMany({
         where: {
-          tenant_id: tenantId,
+          tenantId,
         },
         orderBy: {
-          performed_at: "desc",
+          performedAt: "desc",
         },
       });
 

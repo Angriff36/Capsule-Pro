@@ -23,12 +23,13 @@ export async function GET(request: NextRequest) {
       return manifestErrorResponse("Tenant not found", 400);
     }
 
-    const payrollPeriods = await database.payroll_periods.findMany({
+    const payrollPeriods = await database.payrollPeriod.findMany({
       where: {
-        tenant_id: tenantId,
+        tenantId,
+        deletedAt: null,
       },
       orderBy: {
-        created_at: "desc",
+        createdAt: "desc",
       },
     });
 

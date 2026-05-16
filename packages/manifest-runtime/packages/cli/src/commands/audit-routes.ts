@@ -144,7 +144,8 @@ const DIRECT_QUERY_RE =
  * - `executeManifestCommand(` — reusable handler that wraps runCommand
  *   (see apps/api/lib/manifest-command-handler.ts)
  */
-const RUNTIME_COMMAND_RE = /\b(?:runCommand|executeManifestCommand)\s*\(/;
+const RUNTIME_COMMAND_RE =
+  /\b(?:runCommand|executeManifestCommand|runManifestCommand)\s*\(/;
 /**
  * Matches routes that use the executeManifestCommand helper specifically.
  * These routes get user context automatically (the helper calls requireCurrentUser),
@@ -286,24 +287,97 @@ function isInCommandsNamespace(normalizedPath: string): boolean {
 }
 
 /**
+ * Route path relative to apps/api/app/api (e.g. manifest/[entity]/commands/[command]/route.ts).
+ */
+function getApiRouteRelative(normalizedPath: string): string {
+  const patterns = ["/apps/api/app/api/", "/app/api/"];
+  for (const pattern of patterns) {
+    const idx = normalizedPath.indexOf(pattern);
+    if (idx >= 0) {
+      return normalizedPath.slice(idx + pattern.length);
+    }
+  }
+  return normalizedPath;
+}
+
+function isDispatcherRoutePath(routeRelative: string): boolean {
+  return (
+    routeRelative === "manifest/[entity]/commands/[command]/route.ts" ||
+    routeRelative === "manifest/[entity]/commands/[...command]/route.ts"
+  );
+}
+
+function isConcreteCommandRoutePath(routeRelative: string): boolean {
+  const match = routeRelative.match(/\/commands\/([^/]+)\/route\.ts$/);
+  if (!match) {
+    return false;
+  }
+  const segment = match[1];
+  return segment !== "[command]" && segment !== "[...command]";
+}
+
+/**
+ * Normalize exemption paths to domain-relative route files
+ * (e.g. kitchen/prep-tasks/commands/create → …/create/route.ts).
+ */
+function normalizeExemptionRoutePath(exemptionPath: string): string {
+  let normalized = exemptionPath.replace(/\\/g, "/");
+  if (normalized.startsWith("app/api/")) {
+    normalized = normalized.slice("app/api/".length);
+  }
+  if (!(normalized.endsWith("/route.ts") || normalized.endsWith("/route.js"))) {
+    normalized = normalized.replace(/\/$/, "");
+    normalized = `${normalized}/route.ts`;
+  }
+  return normalized;
+}
+
+/**
  * Check if a route file path matches an exemption entry.
- * Matches if the normalized path ends with the exemption path.
  */
 function isExempted(
   normalizedPath: string,
   method: string,
   exemptions: ExemptionEntry[]
 ): boolean {
+  const routeRelative = getApiRouteRelative(normalizedPath);
+  const routeRelativeWithPrefix = `app/api/${routeRelative}`;
+
   for (const exemption of exemptions) {
+    if (!exemption.methods.includes(method)) {
+      continue;
+    }
+
+    const exemptionRoute = normalizeExemptionRoutePath(exemption.path);
     const exemptionNormalized = exemption.path.replace(/\\/g, "/");
+
     if (
-      normalizedPath.endsWith(exemptionNormalized) &&
-      exemption.methods.includes(method)
+      routeRelative === exemptionRoute ||
+      routeRelativeWithPrefix === `app/api/${exemptionRoute}` ||
+      normalizedPath.endsWith(exemptionNormalized) ||
+      normalizedPath.endsWith(exemptionRoute) ||
+      routeRelative.endsWith(exemptionNormalized) ||
+      routeRelativeWithPrefix.endsWith(exemptionNormalized)
     ) {
       return true;
     }
   }
   return false;
+}
+
+function resolveRepoFilePath(
+  root: string,
+  explicit: string | undefined,
+  fallback: string
+): string {
+  if (explicit) {
+    return path.resolve(explicit);
+  }
+  const fromRoot = path.resolve(root, fallback);
+  if (existsSync(fromRoot)) {
+    return fromRoot;
+  }
+  return path.resolve(process.cwd(), fallback);
 }
 
 export interface OwnershipAuditContext {
@@ -337,8 +411,18 @@ export function auditRouteFileContent(
   // Normalize file path once for exemption checks
   const normalizedFile = normalizeRoutePath(file);
 
+  const routeRelativeForHygiene = getApiRouteRelative(normalizedFile);
+  const skipBypassForLegacyConcrete =
+    isInCommandsNamespace(normalizedFile) &&
+    isConcreteCommandRoutePath(routeRelativeForHygiene) &&
+    hasRunCommand;
+
   for (const method of methods) {
-    if (WRITE_METHODS.has(method) && !hasRunCommand) {
+    if (
+      WRITE_METHODS.has(method) &&
+      !hasRunCommand &&
+      !skipBypassForLegacyConcrete
+    ) {
       // WRITE_ROUTE_BYPASSES_RUNTIME is a quality/hygiene rule, NOT an ownership rule.
       // It fires regardless of exemption status (exemptions only suppress ownership rules).
       findings.push({
@@ -410,6 +494,9 @@ export function auditRouteFileContent(
   if (ownershipContext) {
     const inCommandsNs = isInCommandsNamespace(normalizedFile);
     const hasWriteMethod = methods.some((m) => WRITE_METHODS.has(m));
+    const routeRelative = getApiRouteRelative(normalizedFile);
+    const isDispatcher = isDispatcherRoutePath(routeRelative);
+    const isConcreteCommand = isConcreteCommandRoutePath(routeRelative);
 
     // Rule: WRITE_OUTSIDE_COMMANDS_NAMESPACE
     // Write routes outside /commands/ must be exempted or they fail.
@@ -432,8 +519,8 @@ export function auditRouteFileContent(
     }
 
     // Rule: COMMAND_ROUTE_MISSING_RUNTIME_CALL
-    // Routes inside /commands/ must call runCommand.
-    if (inCommandsNs && !hasRunCommand) {
+    // Routes inside /commands/ must call runCommand (dispatcher excluded — uses registry + runCommand inline).
+    if (inCommandsNs && !hasRunCommand && !isDispatcher) {
       findings.push({
         file,
         severity: "warning",
@@ -447,41 +534,26 @@ export function auditRouteFileContent(
 
     // Rule: COMMAND_ROUTE_ORPHAN
     // Routes inside /commands/ must have a backing entry in commands.json.
-    if (inCommandsNs && ownershipContext.commandManifestPaths.size > 0) {
-      // Extract the domain-relative path from the full file path.
-      // We need to match against paths like "kitchen/prep-tasks/commands/create/route.ts"
-      const apiDirPatterns = [
-        "/apps/api/app/api/",
-        "/app/api/",
-        "/src/app/api/",
-      ];
-      let routeRelative = "";
-      for (const pattern of apiDirPatterns) {
-        const idx = normalizedFile.indexOf(pattern);
-        if (idx >= 0) {
-          routeRelative = normalizedFile.slice(idx + pattern.length);
-          break;
-        }
-      }
-
-      if (
-        routeRelative &&
-        !ownershipContext.commandManifestPaths.has(routeRelative)
-      ) {
-        // Check if this orphan route is explicitly exempted
-        const isOrphanExempted = methods.some((m) =>
-          isExempted(normalizedFile, m, ownershipContext.exemptions)
-        );
-        if (!isOrphanExempted) {
-          findings.push({
-            file,
-            severity: "warning",
-            code: "COMMAND_ROUTE_ORPHAN",
-            message: `Command route "${routeRelative}" has no backing entry in kitchen.commands.json.`,
-            suggestion:
-              "This command route has no IR backing. Delete it or add the command to your manifest.",
-          });
-        }
+    if (
+      inCommandsNs &&
+      !isDispatcher &&
+      ownershipContext.commandManifestPaths.size > 0 &&
+      routeRelative &&
+      !ownershipContext.commandManifestPaths.has(routeRelative)
+    ) {
+      // Check if this orphan route is explicitly exempted
+      const isOrphanExempted = methods.some((m) =>
+        isExempted(normalizedFile, m, ownershipContext.exemptions)
+      );
+      if (!isOrphanExempted) {
+        findings.push({
+          file,
+          severity: "warning",
+          code: "COMMAND_ROUTE_ORPHAN",
+          message: `Command route "${routeRelative}" has no backing entry in kitchen.commands.json.`,
+          suggestion:
+            "This command route has no IR backing. Delete it or add the command to your manifest.",
+        });
       }
     }
 
@@ -595,6 +667,9 @@ const ENTITY_DOMAIN_MAP: Record<string, string> = {
   // ─── Purchasing & Inventory ───
   PurchaseOrder: "inventory/purchase-orders",
   PurchaseOrderItem: "inventory/purchase-order-items",
+  PurchaseRequisition: "procurement/requisitions",
+  PurchaseRequisitionItem: "procurement/requisition-items",
+  VendorContract: "procurement/vendor-contracts",
   Shipment: "shipments/shipment",
   ShipmentItem: "shipments/shipment-items",
   InventoryTransaction: "inventory/transactions",
@@ -705,19 +780,17 @@ export async function auditRoutesCommand(
     const deletedField = options.deletedField || "deletedAt";
     const locationField = options.locationField || "locationId";
 
-    // Load ownership context
-    const commandsManifestPath = options.commandsManifest
-      ? path.resolve(options.commandsManifest)
-      : path.resolve(
-          root,
-          "packages/manifest-ir/ir/kitchen/kitchen.commands.json"
-        );
-    const exemptionsPath = options.exemptions
-      ? path.resolve(options.exemptions)
-      : path.resolve(
-          root,
-          "packages/manifest-runtime/packages/cli/src/commands/audit-routes-exemptions.json"
-        );
+    // Load ownership context (repo-root paths when --root is apps/api)
+    const commandsManifestPath = resolveRepoFilePath(
+      root,
+      options.commandsManifest,
+      "packages/manifest-ir/ir/kitchen/kitchen.commands.json"
+    );
+    const exemptionsPath = resolveRepoFilePath(
+      root,
+      options.exemptions,
+      "packages/manifest-runtime/packages/cli/src/commands/audit-routes-exemptions.json"
+    );
 
     const commandManifestPaths =
       await loadCommandManifestPaths(commandsManifestPath);

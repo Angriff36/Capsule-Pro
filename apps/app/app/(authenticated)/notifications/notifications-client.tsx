@@ -18,10 +18,9 @@ import {
 import { Input } from "@repo/design-system/components/ui/input";
 import { Bell, BellOff, CheckCircle, Eye, Loader2, Trash2 } from "lucide-react";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -73,50 +72,6 @@ function typeLabel(t: string): string {
     .split(SEPARATOR_RE)
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
     .join(" ");
-}
-
-// ---------------------------------------------------------------------------
-// API Helpers
-// ---------------------------------------------------------------------------
-
-async function fetchNotifications(): Promise<Notification[]> {
-  const res = await apiFetch("/api/collaboration/notifications/list");
-  const data = await res.json();
-  if (!res.ok) throw new Error("Failed to load notifications");
-  return data.notifications ?? [];
-}
-
-async function markRead(id: string): Promise<void> {
-  const res = await apiFetch("/api/manifest/Notification/commands/markRead", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ id }),
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.message || "Failed to mark as read");
-}
-
-async function markDismissed(id: string): Promise<void> {
-  const res = await apiFetch(
-    "/api/manifest/Notification/commands/markDismissed",
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id }),
-    }
-  );
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.message || "Failed to dismiss");
-}
-
-async function removeNotification(id: string): Promise<void> {
-  const res = await apiFetch("/api/manifest/Notification/commands/remove", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ id }),
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.message || "Failed to remove");
 }
 
 // ---------------------------------------------------------------------------
@@ -183,123 +138,179 @@ interface NotificationsClientProperties {
 export function NotificationsClient({
   initialNotifications,
 }: NotificationsClientProperties) {
-  const queryClient = useQueryClient();
-
-  // Replace manual state + polling with useQuery
-  const { data: notifications = [] } = useQuery({
-    queryKey: ["notifications"],
-    queryFn: fetchNotifications,
-    initialData: initialNotifications,
-    refetchInterval: 30_000, // Poll every 30s instead of raw setInterval
-    staleTime: 15_000,
-  });
-
-  // Mutations
-  const markReadMutation = useMutation({
-    mutationFn: markRead,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["notifications"] });
-    },
-    onError: (error: Error) => {
-      toast.error(error.message);
-    },
-  });
-
-  const dismissMutation = useMutation({
-    mutationFn: markDismissed,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["notifications"] });
-      toast.success("Notification dismissed");
-    },
-    onError: (error: Error) => {
-      toast.error(error.message);
-    },
-  });
-
-  const removeMutation = useMutation({
-    mutationFn: removeNotification,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["notifications"] });
-      toast.success("Notification removed");
-    },
-    onError: (error: Error) => {
-      toast.error(error.message);
-    },
-  });
-
-  // UI state (not server state)
+  const [notifications, setNotifications] =
+    useState<Notification[]>(initialNotifications);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [search, setSearch] = useState("");
-  const [removeId, setRemoveId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
   const [actioningId, setActioningId] = useState<string | null>(null);
+  const [removeId, setRemoveId] = useState<string | null>(null);
+  const [markingAllRead, setMarkingAllRead] = useState(false);
 
-  // Derive which items are being actioned
-  const isActioning = (id: string) =>
-    actioningId === id ||
-    markReadMutation.variables === id ||
-    dismissMutation.variables === id ||
-    removeMutation.variables === id;
+  const _loadNotifications = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await apiFetch("/api/collaboration/notifications/list");
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error("Failed to load notifications");
+        return;
+      }
+      setNotifications(data.notifications ?? []);
+    } catch {
+      toast.error("Failed to load notifications");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-  const handleMarkRead = (id: string) => {
+  const handleMarkRead = useCallback(async (id: string) => {
     setActioningId(id);
-    markReadMutation.mutate(id, {
-      onSettled: () => setActioningId(null),
-    });
-  };
+    try {
+      const res = await apiFetch(
+        "/api/manifest/Notification/commands/markRead",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id }),
+        }
+      );
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error("Failed to mark as read", {
+          description: data.message || "Unknown error",
+        });
+        return;
+      }
+      setNotifications((prev) =>
+        prev.map((n) =>
+          n.id === id
+            ? { ...n, isRead: true, readAt: new Date().toISOString() }
+            : n
+        )
+      );
+      toast.success("Marked as read");
+    } catch {
+      toast.error("Failed to mark as read");
+    } finally {
+      setActioningId(null);
+    }
+  }, []);
 
-  const handleDismiss = (id: string) => {
+  const handleDismiss = useCallback(async (id: string) => {
     setActioningId(id);
-    dismissMutation.mutate(id, {
-      onSettled: () => setActioningId(null),
-    });
-  };
+    try {
+      const res = await apiFetch(
+        "/api/manifest/Notification/commands/markDismissed",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id }),
+        }
+      );
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error("Failed to dismiss", {
+          description: data.message || "Unknown error",
+        });
+        return;
+      }
+      setNotifications((prev) => prev.filter((n) => n.id !== id));
+      toast.success("Notification dismissed");
+    } catch {
+      toast.error("Failed to dismiss");
+    } finally {
+      setActioningId(null);
+    }
+  }, []);
 
-  const handleRemove = () => {
-    if (!removeId) return;
+  const handleRemove = useCallback(async () => {
+    if (!removeId) {
+      return;
+    }
     setActioningId(removeId);
-    removeMutation.mutate(removeId, {
-      onSettled: () => {
-        setActioningId(null);
-        setRemoveId(null);
-      },
-    });
-  };
+    try {
+      const res = await apiFetch("/api/manifest/Notification/commands/remove", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: removeId }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error("Failed to remove", {
+          description: data.message || "Unknown error",
+        });
+        return;
+      }
+      setNotifications((prev) => prev.filter((n) => n.id !== removeId));
+      setRemoveId(null);
+      toast.success("Notification removed");
+    } catch {
+      toast.error("Failed to remove");
+    } finally {
+      setActioningId(null);
+    }
+  }, [removeId]);
 
-  const handleMarkAllRead = async () => {
+  const handleMarkAllRead = useCallback(async () => {
     const unread = notifications.filter((n) => !n.isRead);
     if (unread.length === 0) {
       toast.info("No unread notifications");
       return;
     }
-
-    const results = await Promise.allSettled(
-      unread.map((n) => markRead(n.id))
-    );
-    const failed = results.filter((r) => r.status === "rejected").length;
-
-    if (failed > 0) {
-      toast.error(`Marked ${unread.length - failed} of ${unread.length} as read`);
-    } else {
-      toast.success(`Marked ${unread.length} as read`);
+    setMarkingAllRead(true);
+    try {
+      const results = await Promise.allSettled(
+        unread.map((n) =>
+          apiFetch("/api/manifest/Notification/commands/markRead", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id: n.id }),
+          })
+        )
+      );
+      const failed = results.filter((r) => r.status === "rejected").length;
+      if (failed > 0) {
+        toast.error(
+          `Marked ${unread.length - failed} of ${unread.length} as read`
+        );
+      } else {
+        toast.success(`Marked ${unread.length} as read`);
+      }
+      const now = new Date().toISOString();
+      setNotifications((prev) =>
+        prev.map((n) => (n.isRead ? n : { ...n, isRead: true, readAt: now }))
+      );
+    } catch {
+      toast.error("Failed to mark all as read");
+    } finally {
+      setMarkingAllRead(false);
     }
-
-    queryClient.invalidateQueries({ queryKey: ["notifications"] });
-  };
+  }, [notifications]);
 
   // Derived counts
   const total = notifications.length;
   const unreadCount = notifications.filter((n) => !n.isRead).length;
   const readCount = notifications.filter((n) => n.isRead).length;
-  const dismissedCount = 0;
+  const dismissedCount = 0; // dismissed are removed from list
 
   // Filtered list
   const filtered = useMemo(() => {
     const query = search.trim().toLowerCase();
     return notifications.filter((n) => {
-      if (statusFilter === "unread" && n.isRead) return false;
-      if (statusFilter === "read" && !n.isRead) return false;
-      if (statusFilter === "dismissed") return false;
-      if (!query) return true;
+      if (statusFilter === "unread" && n.isRead) {
+        return false;
+      }
+      if (statusFilter === "read" && !n.isRead) {
+        return false;
+      }
+      // "dismissed" filter shows nothing since dismissed are removed
+      if (statusFilter === "dismissed") {
+        return false;
+      }
+      if (!query) {
+        return true;
+      }
       const haystack = [n.title, n.body ?? "", n.notification_type]
         .join(" ")
         .toLowerCase();
@@ -354,7 +365,7 @@ export function NotificationsClient({
                 <Button
                   aria-label="Mark read"
                   className="h-7 w-7"
-                  disabled={isActioning(n.id)}
+                  disabled={actioningId === n.id}
                   onClick={(e: React.MouseEvent) => {
                     e.preventDefault();
                     e.stopPropagation();
@@ -363,7 +374,7 @@ export function NotificationsClient({
                   size="icon"
                   variant="ghost"
                 >
-                  {isActioning(n.id) ? (
+                  {actioningId === n.id ? (
                     <Loader2 className="h-3.5 w-3.5 animate-spin" />
                   ) : (
                     <Eye className="h-3.5 w-3.5" />
@@ -373,7 +384,7 @@ export function NotificationsClient({
               <Button
                 aria-label="Dismiss"
                 className="h-7 w-7"
-                disabled={isActioning(n.id)}
+                disabled={actioningId === n.id}
                 onClick={(e: React.MouseEvent) => {
                   e.preventDefault();
                   e.stopPropagation();
@@ -387,7 +398,7 @@ export function NotificationsClient({
               <Button
                 aria-label="Remove"
                 className="h-7 w-7 text-destructive"
-                disabled={isActioning(n.id)}
+                disabled={actioningId === n.id}
                 onClick={(e: React.MouseEvent) => {
                   e.preventDefault();
                   e.stopPropagation();
@@ -402,13 +413,8 @@ export function NotificationsClient({
           </div>
         ),
       })),
-    [filtered, actioningId, markReadMutation.variables, dismissMutation.variables, removeMutation.variables]
+    [filtered, actioningId, handleMarkRead, handleDismiss]
   );
-
-  const isLoading =
-    markReadMutation.isPending ||
-    dismissMutation.isPending ||
-    removeMutation.isPending;
 
   return (
     <section className="space-y-6">
@@ -422,12 +428,12 @@ export function NotificationsClient({
         />
         <div className="flex items-center gap-2">
           <Button
-            disabled={isLoading || unreadCount === 0}
+            disabled={markingAllRead || unreadCount === 0}
             onClick={handleMarkAllRead}
             size="sm"
             variant="outline"
           >
-            {isLoading && (
+            {markingAllRead && (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             )}
             <CheckCircle className="mr-2 h-4 w-4" />
@@ -462,7 +468,11 @@ export function NotificationsClient({
       </div>
 
       {/* Notifications List */}
-      {filtered.length === 0 ? (
+      {loading ? (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        </div>
+      ) : filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12 text-center">
           <Bell className="mb-4 h-12 w-12 text-muted-foreground" />
           <p className="text-lg font-medium text-ink">No notifications found</p>
@@ -488,16 +498,18 @@ export function NotificationsClient({
         />
       )}
 
-      {/* Remove Confirmation */}
+      {/* Remove Confirm Dialog */}
       <ConfirmDialog
         confirmLabel="Remove"
-        description="This notification will be permanently deleted."
-        loading={removeMutation.isPending}
+        description="This will permanently remove this notification. This action cannot be undone."
+        loading={actioningId === removeId}
         onConfirm={handleRemove}
         onOpenChange={(open) => {
-          if (!open) setRemoveId(null);
+          if (!open) {
+            setRemoveId(null);
+          }
         }}
-        open={!!removeId}
+        open={removeId !== null}
         title="Remove Notification"
       />
     </section>

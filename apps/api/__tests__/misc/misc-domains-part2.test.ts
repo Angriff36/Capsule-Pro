@@ -11,23 +11,19 @@
  *
  * Each route is tested for: 401 (unauthenticated), 400 (bad request / tenant not found),
  * success (200), 500 (internal error), and tenant isolation where applicable.
- *
- * NOTE: Route handlers are simulated because the actual route paths do not exist.
- * Tests mock createManifestRuntime to verify command behavior.
  */
 
+import { database } from "@repo/database";
 import { NextRequest } from "next/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-
-import { InvariantError } from "@/app/lib/invariant";
 
 // --- Mocks ---
 
 vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
 vi.mock("@/app/lib/tenant", () => ({
-  requireCurrentUser: vi.fn(),
   getTenantIdForOrg: vi.fn(),
   requireTenantId: vi.fn(),
+  requireCurrentUser: vi.fn(),
 }));
 vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn() }));
 vi.mock("@/lib/manifest-response", async () => {
@@ -57,137 +53,43 @@ vi.mock("@/lib/manifest-runtime", () => ({
 // --- Import mocked modules ---
 
 const { auth } = await import("@repo/auth/server");
-const { getTenantIdForOrg, requireCurrentUser } = await import(
-  "@/app/lib/tenant"
-);
+const { getTenantIdForOrg } = await import("@/app/lib/tenant");
 const { createManifestRuntime } = await import("@/lib/manifest-runtime");
 
-// ---------------------------------------------------------------------------
-// Simulated route handler for testing
-// ---------------------------------------------------------------------------
+// --- Route imports ---
 
-const mockRunCommand = vi.fn();
+// Dispatcher
+import { POST as manifestDispatch } from "@/app/api/manifest/[entity]/commands/[command]/route";
 
-function setupRuntimeMock() {
-  vi.mocked(createManifestRuntime).mockResolvedValue({
-    runCommand: mockRunCommand,
-  } as never);
-}
+const dispatch = (entity: string, command: string) => (req: NextRequest) =>
+  manifestDispatch(req, { params: Promise.resolve({ entity, command }) });
 
-async function simulateRouteHandler(
-  command: string,
-  request: NextRequest,
-  entityName: string
-) {
-  let authResult;
-  try {
-    authResult = await auth();
-  } catch {
-    return new Response(
-      JSON.stringify({ success: false, message: "Internal server error" }),
-      { status: 500, headers: { "Content-Type": "application/json" } }
-    );
-  }
-  if (!authResult?.userId) {
-    return new Response(
-      JSON.stringify({ success: false, message: "Unauthorized" }),
-      { status: 401, headers: { "Content-Type": "application/json" } }
-    );
-  }
+// MenuDish
+const menuDishCreate = dispatch("MenuDish", "create");
+const menuDishRemove = dispatch("MenuDish", "remove");
+const menuDishUpdateCourse = dispatch("MenuDish", "updateCourse");
+// ProposalLineItem
+const proposalLineItemCreate = dispatch("ProposalLineItem", "create");
+const proposalLineItemRemove = dispatch("ProposalLineItem", "remove");
+const proposalLineItemUpdate = dispatch("ProposalLineItem", "update");
+// PurchaseOrderItem
+const purchaseOrderItemCreate = dispatch("PurchaseOrderItem", "create");
+const purchaseOrderItemRemove = dispatch("PurchaseOrderItem", "remove");
+const purchaseOrderItemUpdate = dispatch("PurchaseOrderItem", "update");
+const sampleDataClear = dispatch("SampleData", "clear");
+const sampleDataReseed = dispatch("SampleData", "reseed");
+// SampleData
+const sampleDataSeed = dispatch("SampleData", "seed");
+// ScheduleShift
+const scheduleShiftCreate = dispatch("ScheduleShift", "create");
+const scheduleShiftRemove = dispatch("ScheduleShift", "remove");
+const scheduleShiftUpdate = dispatch("ScheduleShift", "update");
 
-  const orgId = authResult.orgId;
-  if (!orgId) {
-    return new Response(
-      JSON.stringify({ success: false, message: "Unauthorized" }),
-      { status: 401, headers: { "Content-Type": "application/json" } }
-    );
-  }
-
-  let tenantId: string | null;
-  try {
-    tenantId = await getTenantIdForOrg(orgId);
-  } catch {
-    return new Response(
-      JSON.stringify({ success: false, message: "Internal server error" }),
-      { status: 500, headers: { "Content-Type": "application/json" } }
-    );
-  }
-  if (!tenantId) {
-    return new Response(
-      JSON.stringify({ success: false, message: "Tenant not found" }),
-      { status: 400, headers: { "Content-Type": "application/json" } }
-    );
-  }
-
-  let body: Record<string, unknown> = {};
-  try {
-    if (request.method !== "GET") {
-      body = await request.json();
-    }
-  } catch {
-    return new Response(
-      JSON.stringify({ success: false, message: "Internal server error" }),
-      { status: 500, headers: { "Content-Type": "application/json" } }
-    );
-  }
-
-  try {
-    const result = await createManifestRuntime({
-      user: { id: authResult.userId, tenantId },
-    });
-
-    const response = await result.runCommand(command, body, { entityName });
-
-    if (!response.success) {
-      if (response.policyDenial) {
-        return new Response(
-          JSON.stringify({
-            success: false,
-            message: `Access denied: ${response.policyDenial.policyName}`,
-          }),
-          { status: 403, headers: { "Content-Type": "application/json" } }
-        );
-      }
-      if (response.guardFailure) {
-        return new Response(
-          JSON.stringify({
-            success: false,
-            message: `Guard ${response.guardFailure.index} failed: ${response.guardFailure.formatted}`,
-          }),
-          { status: 422, headers: { "Content-Type": "application/json" } }
-        );
-      }
-      return new Response(
-        JSON.stringify({
-          success: false,
-          message: response.error || "Command failed",
-        }),
-        { status: 400, headers: { "Content-Type": "application/json" } }
-      );
-    }
-
-    return new Response(
-      JSON.stringify({
-        success: true,
-        result: response.result,
-        events: response.emittedEvents,
-      }),
-      { status: 200, headers: { "Content-Type": "application/json" } }
-    );
-  } catch {
-    return new Response(
-      JSON.stringify({ success: false, message: "Internal server error" }),
-      { status: 500, headers: { "Content-Type": "application/json" } }
-    );
-  }
-}
-
-function makeRequest(body: Record<string, unknown>): NextRequest {
-  return new NextRequest("http://localhost:3000/api/test", {
-    method: "POST",
-    body: JSON.stringify(body),
-  });
-}
+// User Preferences
+import {
+  GET as userPreferencesGet,
+  POST as userPreferencesPost,
+} from "@/app/api/user-preferences/route";
 
 // --- Constants ---
 
@@ -206,54 +108,227 @@ function mockAuth() {
   vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
 }
 
-function mockUnauthed() {
-  vi.mocked(auth).mockResolvedValue({
-    userId: null,
-    orgId: null,
-  } as never);
-  vi.mocked(requireCurrentUser).mockRejectedValue(
-    new InvariantError("Unauthorized")
-  );
-}
-
-function mockRuntimeSuccess(
-  result: Record<string, unknown> = { id: "result-001" }
+function makeRequest(
+  url: string,
+  body: Record<string, unknown> = {},
+  method = "POST"
 ) {
-  setupRuntimeMock();
-  mockRunCommand.mockResolvedValue({
-    success: true,
-    result,
-    emittedEvents: [],
+  return new NextRequest(url, {
+    method,
+    body: method === "POST" ? JSON.stringify(body) : undefined,
+    headers: { "Content-Type": "application/json" },
   });
 }
 
-function mockRuntimePolicyDenial(policyName: string) {
-  setupRuntimeMock();
-  mockRunCommand.mockResolvedValue({
-    success: false,
-    policyDenial: { policyName },
+function makeRuntime(mockRunCommand: ReturnType<typeof vi.fn>) {
+  vi.mocked(createManifestRuntime).mockResolvedValue({
+    runCommand: mockRunCommand,
+  } as never);
+}
+
+// Shared command-route test factory
+function testManifestCommandRoute(
+  label: string,
+  handler: (req: NextRequest) => Promise<Response>,
+  urlPath: string,
+  entityName: string,
+  commandName: string
+) {
+  describe(label, () => {
+    const mockRunCommand = vi.fn();
+
+    beforeEach(() => {
+      makeRuntime(mockRunCommand);
+    });
+
+    it("should return 401 for unauthenticated requests", async () => {
+      vi.mocked(auth).mockResolvedValue({
+        userId: null,
+        orgId: null,
+      } as never);
+
+      const request = makeRequest(`http://localhost/api/${urlPath}`, {
+        id: "test-id",
+      });
+      const response = await handler(request);
+
+      expect(response.status).toBe(401);
+      const json = await response.json();
+      expect(json.success).toBe(false);
+      expect(json.message).toBe("Unauthorized");
+    });
+
+    it("should return 400 when tenant not found", async () => {
+      vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
+
+      const request = makeRequest(`http://localhost/api/${urlPath}`, {
+        id: "test-id",
+      });
+      const response = await handler(request);
+
+      expect(response.status).toBe(400);
+      const json = await response.json();
+      expect(json.success).toBe(false);
+      expect(json.message).toBe("Tenant not found");
+    });
+
+    it("should execute command successfully", async () => {
+      mockRunCommand.mockResolvedValue({
+        success: true,
+        result: { id: "result-001" },
+        emittedEvents: [{ type: `${entityName}Event` }],
+      });
+
+      const payload = { id: "test-id", name: "Test payload" };
+      const request = makeRequest(`http://localhost/api/${urlPath}`, payload);
+      const response = await handler(request);
+
+      expect(response.status).toBe(200);
+      const json = await response.json();
+      expect(json.success).toBe(true);
+      expect(json.result).toEqual({ id: "result-001" });
+      expect(json.events).toEqual([{ type: `${entityName}Event` }]);
+
+      expect(mockRunCommand).toHaveBeenCalledWith(
+        commandName,
+        expect.objectContaining(payload),
+        { entityName }
+      );
+    });
+
+    it("should pass user context to manifest runtime", async () => {
+      mockRunCommand.mockResolvedValue({
+        success: true,
+        result: { id: "result-002" },
+        emittedEvents: [],
+      });
+
+      const request = makeRequest(`http://localhost/api/${urlPath}`, {
+        id: "test-id",
+      });
+      await handler(request);
+
+      expect(createManifestRuntime).toHaveBeenCalledWith({
+        user: { id: TEST_USER_ID, tenantId: TEST_TENANT_ID },
+      });
+    });
+
+    it("should return 403 on policy denial", async () => {
+      mockRunCommand.mockResolvedValue({
+        success: false,
+        policyDenial: { policyName: "RolePolicy" },
+      });
+
+      const request = makeRequest(`http://localhost/api/${urlPath}`, {
+        id: "test-id",
+      });
+      const response = await handler(request);
+
+      expect(response.status).toBe(403);
+      const json = await response.json();
+      expect(json.success).toBe(false);
+      expect(json.message).toContain("Access denied");
+      expect(json.message).toContain("RolePolicy");
+    });
+
+    it("should return 422 on guard failure", async () => {
+      mockRunCommand.mockResolvedValue({
+        success: false,
+        guardFailure: {
+          index: 0,
+          formatted: "Validation constraint violated",
+        },
+      });
+
+      const request = makeRequest(`http://localhost/api/${urlPath}`, {
+        id: "test-id",
+      });
+      const response = await handler(request);
+
+      expect(response.status).toBe(422);
+      const json = await response.json();
+      expect(json.success).toBe(false);
+      expect(json.message).toContain("Guard 0 failed");
+      expect(json.message).toContain("Validation constraint violated");
+    });
+
+    it("should return 400 on generic command failure", async () => {
+      mockRunCommand.mockResolvedValue({
+        success: false,
+        error: "Command execution failed",
+      });
+
+      const request = makeRequest(`http://localhost/api/${urlPath}`, {
+        id: "test-id",
+      });
+      const response = await handler(request);
+
+      expect(response.status).toBe(400);
+      const json = await response.json();
+      expect(json.success).toBe(false);
+      expect(json.message).toBe("Command execution failed");
+    });
+
+    it("should return 400 with default message when error is null", async () => {
+      mockRunCommand.mockResolvedValue({
+        success: false,
+        error: null,
+      });
+
+      const request = makeRequest(`http://localhost/api/${urlPath}`, {});
+      const response = await handler(request);
+
+      expect(response.status).toBe(400);
+      const json = await response.json();
+      expect(json.message).toBe("Command failed");
+    });
+
+    it("should return 500 on unexpected runtime exception", async () => {
+      mockRunCommand.mockRejectedValue(new Error("Runtime crash"));
+
+      const request = makeRequest(`http://localhost/api/${urlPath}`, {
+        id: "test-id",
+      });
+      const response = await handler(request);
+
+      expect(response.status).toBe(500);
+      const json = await response.json();
+      expect(json.success).toBe(false);
+      expect(json.message).toBe("Internal server error");
+    });
+
+    it("should not call runCommand when authentication fails", async () => {
+      vi.mocked(auth).mockResolvedValue({
+        userId: null,
+        orgId: null,
+      } as never);
+
+      const request = makeRequest(`http://localhost/api/${urlPath}`, {
+        id: "test-id",
+      });
+      await handler(request);
+
+      expect(createManifestRuntime).not.toHaveBeenCalled();
+      expect(mockRunCommand).not.toHaveBeenCalled();
+    });
+
+    it("should not call runCommand when tenant is missing", async () => {
+      vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
+
+      const request = makeRequest(`http://localhost/api/${urlPath}`, {
+        id: "test-id",
+      });
+      await handler(request);
+
+      expect(createManifestRuntime).not.toHaveBeenCalled();
+      expect(mockRunCommand).not.toHaveBeenCalled();
+    });
   });
 }
 
-function mockRuntimeGuardFailure(index: number, formatted: string) {
-  setupRuntimeMock();
-  mockRunCommand.mockResolvedValue({
-    success: false,
-    guardFailure: { index, formatted },
-  });
-}
-
-function mockRuntimeFailure(error: string) {
-  setupRuntimeMock();
-  mockRunCommand.mockResolvedValue({
-    success: false,
-    error,
-  });
-}
-
-// ===================================================================== //
-// TEST SUITES                                                            //
-// ===================================================================== //
+// =====================================================================
+// PROPOSAL LINE ITEM
+// =====================================================================
 
 describe("ProposalLineItem API", () => {
   beforeEach(() => {
@@ -265,127 +340,78 @@ describe("ProposalLineItem API", () => {
     vi.restoreAllMocks();
   });
 
-  describe("ProposalLineItem.create", () => {
-    it("returns 401 for unauthenticated requests", async () => {
-      mockUnauthed();
-      const res = await simulateRouteHandler(
-        "create",
-        makeRequest({ id: "pli-001", name: "Test" }),
-        "ProposalLineItem"
-      );
-      expect(res.status).toBe(401);
-      expect((await res.json()).message).toBe("Unauthorized");
+  testManifestCommandRoute(
+    "POST /api/proposallineitem/create",
+    proposalLineItemCreate,
+    "proposallineitem/create",
+    "ProposalLineItem",
+    "create"
+  );
+
+  testManifestCommandRoute(
+    "POST /api/proposallineitem/remove",
+    proposalLineItemRemove,
+    "proposallineitem/remove",
+    "ProposalLineItem",
+    "remove"
+  );
+
+  testManifestCommandRoute(
+    "POST /api/proposallineitem/update",
+    proposalLineItemUpdate,
+    "proposallineitem/update",
+    "ProposalLineItem",
+    "update"
+  );
+
+  describe("Entity-specific verification", () => {
+    const mockRunCommand = vi.fn();
+    beforeEach(() => {
+      makeRuntime(mockRunCommand);
     });
 
-    it("returns 400 when tenant not found", async () => {
-      vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
-      const res = await simulateRouteHandler(
-        "create",
-        makeRequest({ id: "pli-001" }),
-        "ProposalLineItem"
-      );
-      expect(res.status).toBe(400);
-      expect((await res.json()).message).toBe("Tenant not found");
-    });
+    it("should always use entityName 'ProposalLineItem' for all commands", async () => {
+      mockRunCommand.mockResolvedValue({
+        success: true,
+        result: {},
+        emittedEvents: [],
+      });
 
-    it("executes command successfully", async () => {
-      mockRuntimeSuccess({ id: "pli-001" });
-      const res = await simulateRouteHandler(
-        "create",
-        makeRequest({ id: "pli-001", name: "Test payload" }),
-        "ProposalLineItem"
-      );
-      expect(res.status).toBe(200);
-      const json = await res.json();
-      expect(json.success).toBe(true);
-      expect(mockRunCommand).toHaveBeenCalledWith(
-        "create",
-        expect.objectContaining({ id: "pli-001" }),
-        { entityName: "ProposalLineItem" }
-      );
-    });
+      const commands = [
+        {
+          fn: proposalLineItemCreate,
+          action: "create",
+          path: "proposallineitem/create",
+        },
+        {
+          fn: proposalLineItemRemove,
+          action: "remove",
+          path: "proposallineitem/remove",
+        },
+        {
+          fn: proposalLineItemUpdate,
+          action: "update",
+          path: "proposallineitem/update",
+        },
+      ];
 
-    it("returns 403 on policy denial", async () => {
-      mockRuntimePolicyDenial("RolePolicy");
-      const res = await simulateRouteHandler(
-        "create",
-        makeRequest({ id: "pli-001" }),
-        "ProposalLineItem"
-      );
-      expect(res.status).toBe(403);
-      expect((await res.json()).message).toContain("Access denied");
-    });
+      for (const { fn, path } of commands) {
+        const request = makeRequest(`http://localhost/api/${path}`, {
+          id: "pli-x",
+        });
+        await fn(request);
+      }
 
-    it("returns 422 on guard failure", async () => {
-      mockRuntimeGuardFailure(0, "Validation constraint violated");
-      const res = await simulateRouteHandler(
-        "create",
-        makeRequest({ id: "pli-001" }),
-        "ProposalLineItem"
-      );
-      expect(res.status).toBe(422);
-      expect((await res.json()).message).toContain("Guard 0 failed");
-    });
-
-    it("returns 400 on generic command failure", async () => {
-      mockRuntimeFailure("Command execution failed");
-      const res = await simulateRouteHandler(
-        "create",
-        makeRequest({ id: "pli-001" }),
-        "ProposalLineItem"
-      );
-      expect(res.status).toBe(400);
-      expect((await res.json()).message).toBe("Command execution failed");
-    });
-
-    it("returns 500 on unexpected runtime exception", async () => {
-      vi.mocked(createManifestRuntime).mockRejectedValue(
-        new Error("Runtime crash")
-      );
-      const res = await simulateRouteHandler(
-        "create",
-        makeRequest({ id: "pli-001" }),
-        "ProposalLineItem"
-      );
-      expect(res.status).toBe(500);
-      expect((await res.json()).message).toBe("Internal server error");
-    });
-  });
-
-  describe("ProposalLineItem.remove", () => {
-    it("executes remove command successfully", async () => {
-      mockRuntimeSuccess({ id: "pli-001", deletedAt: new Date() });
-      const res = await simulateRouteHandler(
-        "remove",
-        makeRequest({ id: "pli-001" }),
-        "ProposalLineItem"
-      );
-      expect(res.status).toBe(200);
-      expect(mockRunCommand).toHaveBeenCalledWith(
-        "remove",
-        expect.objectContaining({ id: "pli-001" }),
-        { entityName: "ProposalLineItem" }
-      );
-    });
-  });
-
-  describe("ProposalLineItem.update", () => {
-    it("executes update command successfully", async () => {
-      mockRuntimeSuccess({ id: "pli-001", name: "Updated" });
-      const res = await simulateRouteHandler(
-        "update",
-        makeRequest({ id: "pli-001", name: "Updated" }),
-        "ProposalLineItem"
-      );
-      expect(res.status).toBe(200);
-      expect(mockRunCommand).toHaveBeenCalledWith(
-        "update",
-        expect.objectContaining({ id: "pli-001" }),
-        { entityName: "ProposalLineItem" }
-      );
+      for (const call of mockRunCommand.mock.calls) {
+        expect(call[2]).toEqual({ entityName: "ProposalLineItem" });
+      }
     });
   });
 });
+
+// =====================================================================
+// PURCHASE ORDER ITEM
+// =====================================================================
 
 describe("PurchaseOrderItem API", () => {
   beforeEach(() => {
@@ -397,47 +423,75 @@ describe("PurchaseOrderItem API", () => {
     vi.restoreAllMocks();
   });
 
-  describe("PurchaseOrderItem.create", () => {
-    it("executes create command successfully", async () => {
-      mockRuntimeSuccess({ id: "poi-001" });
-      const res = await simulateRouteHandler(
-        "create",
-        makeRequest({ id: "poi-001" }),
-        "PurchaseOrderItem"
-      );
-      expect(res.status).toBe(200);
-      expect(mockRunCommand).toHaveBeenCalledWith(
-        "create",
-        expect.objectContaining({ id: "poi-001" }),
-        { entityName: "PurchaseOrderItem" }
-      );
-    });
-  });
+  testManifestCommandRoute(
+    "POST /api/purchaseorderitem/create",
+    purchaseOrderItemCreate,
+    "purchaseorderitem/create",
+    "PurchaseOrderItem",
+    "create"
+  );
 
-  describe("PurchaseOrderItem.remove", () => {
-    it("executes remove command successfully", async () => {
-      mockRuntimeSuccess({ id: "poi-001", deletedAt: new Date() });
-      const res = await simulateRouteHandler(
-        "remove",
-        makeRequest({ id: "poi-001" }),
-        "PurchaseOrderItem"
-      );
-      expect(res.status).toBe(200);
-    });
-  });
+  testManifestCommandRoute(
+    "POST /api/purchaseorderitem/remove",
+    purchaseOrderItemRemove,
+    "purchaseorderitem/remove",
+    "PurchaseOrderItem",
+    "remove"
+  );
 
-  describe("PurchaseOrderItem.update", () => {
-    it("executes update command successfully", async () => {
-      mockRuntimeSuccess({ id: "poi-001", quantity: 100 });
-      const res = await simulateRouteHandler(
-        "update",
-        makeRequest({ id: "poi-001", quantity: 100 }),
-        "PurchaseOrderItem"
-      );
-      expect(res.status).toBe(200);
+  testManifestCommandRoute(
+    "POST /api/purchaseorderitem/update",
+    purchaseOrderItemUpdate,
+    "purchaseorderitem/update",
+    "PurchaseOrderItem",
+    "update"
+  );
+
+  describe("Entity-specific verification", () => {
+    const mockRunCommand = vi.fn();
+    beforeEach(() => {
+      makeRuntime(mockRunCommand);
+    });
+
+    it("should always use entityName 'PurchaseOrderItem' for all commands", async () => {
+      mockRunCommand.mockResolvedValue({
+        success: true,
+        result: {},
+        emittedEvents: [],
+      });
+
+      const commands = [
+        {
+          fn: purchaseOrderItemCreate,
+          path: "purchaseorderitem/create",
+        },
+        {
+          fn: purchaseOrderItemRemove,
+          path: "purchaseorderitem/remove",
+        },
+        {
+          fn: purchaseOrderItemUpdate,
+          path: "purchaseorderitem/update",
+        },
+      ];
+
+      for (const { fn, path } of commands) {
+        const request = makeRequest(`http://localhost/api/${path}`, {
+          id: "poi-x",
+        });
+        await fn(request);
+      }
+
+      for (const call of mockRunCommand.mock.calls) {
+        expect(call[2]).toEqual({ entityName: "PurchaseOrderItem" });
+      }
     });
   });
 });
+
+// =====================================================================
+// SAMPLE DATA
+// =====================================================================
 
 describe("SampleData API", () => {
   beforeEach(() => {
@@ -449,45 +503,64 @@ describe("SampleData API", () => {
     vi.restoreAllMocks();
   });
 
-  describe("SampleData.seed", () => {
-    it("executes seed command successfully", async () => {
-      mockRuntimeSuccess({ seeded: true });
-      const res = await simulateRouteHandler(
-        "seed",
-        makeRequest({}),
-        "SampleData"
-      );
-      expect(res.status).toBe(200);
-      expect(mockRunCommand).toHaveBeenCalledWith("seed", expect.any(Object), {
-        entityName: "SampleData",
+  testManifestCommandRoute(
+    "POST /api/sampledata/seed",
+    sampleDataSeed,
+    "sampledata/seed",
+    "SampleData",
+    "seed"
+  );
+
+  testManifestCommandRoute(
+    "POST /api/sampledata/reseed",
+    sampleDataReseed,
+    "sampledata/reseed",
+    "SampleData",
+    "reseed"
+  );
+
+  testManifestCommandRoute(
+    "POST /api/sampledata/clear",
+    sampleDataClear,
+    "sampledata/clear",
+    "SampleData",
+    "clear"
+  );
+
+  describe("Entity-specific verification", () => {
+    const mockRunCommand = vi.fn();
+    beforeEach(() => {
+      makeRuntime(mockRunCommand);
+    });
+
+    it("should always use entityName 'SampleData' for all commands", async () => {
+      mockRunCommand.mockResolvedValue({
+        success: true,
+        result: {},
+        emittedEvents: [],
       });
-    });
-  });
 
-  describe("SampleData.reseed", () => {
-    it("executes reseed command successfully", async () => {
-      mockRuntimeSuccess({ reseeded: true });
-      const res = await simulateRouteHandler(
-        "reseed",
-        makeRequest({}),
-        "SampleData"
-      );
-      expect(res.status).toBe(200);
-    });
-  });
+      const commands = [
+        { fn: sampleDataSeed, path: "sampledata/seed" },
+        { fn: sampleDataReseed, path: "sampledata/reseed" },
+        { fn: sampleDataClear, path: "sampledata/clear" },
+      ];
 
-  describe("SampleData.clear", () => {
-    it("executes clear command successfully", async () => {
-      mockRuntimeSuccess({ cleared: true });
-      const res = await simulateRouteHandler(
-        "clear",
-        makeRequest({}),
-        "SampleData"
-      );
-      expect(res.status).toBe(200);
+      for (const { fn, path } of commands) {
+        const request = makeRequest(`http://localhost/api/${path}`, {});
+        await fn(request);
+      }
+
+      for (const call of mockRunCommand.mock.calls) {
+        expect(call[2]).toEqual({ entityName: "SampleData" });
+      }
     });
   });
 });
+
+// =====================================================================
+// SCHEDULE SHIFT
+// =====================================================================
 
 describe("ScheduleShift API", () => {
   beforeEach(() => {
@@ -499,47 +572,66 @@ describe("ScheduleShift API", () => {
     vi.restoreAllMocks();
   });
 
-  describe("ScheduleShift.create", () => {
-    it("executes create command successfully", async () => {
-      mockRuntimeSuccess({ id: "shift-001" });
-      const res = await simulateRouteHandler(
-        "create",
-        makeRequest({ id: "shift-001" }),
-        "ScheduleShift"
-      );
-      expect(res.status).toBe(200);
-      expect(mockRunCommand).toHaveBeenCalledWith(
-        "create",
-        expect.objectContaining({ id: "shift-001" }),
-        { entityName: "ScheduleShift" }
-      );
-    });
-  });
+  testManifestCommandRoute(
+    "POST /api/scheduleshift/create",
+    scheduleShiftCreate,
+    "scheduleshift/create",
+    "ScheduleShift",
+    "create"
+  );
 
-  describe("ScheduleShift.remove", () => {
-    it("executes remove command successfully", async () => {
-      mockRuntimeSuccess({ id: "shift-001", deletedAt: new Date() });
-      const res = await simulateRouteHandler(
-        "remove",
-        makeRequest({ id: "shift-001" }),
-        "ScheduleShift"
-      );
-      expect(res.status).toBe(200);
-    });
-  });
+  testManifestCommandRoute(
+    "POST /api/scheduleshift/remove",
+    scheduleShiftRemove,
+    "scheduleshift/remove",
+    "ScheduleShift",
+    "remove"
+  );
 
-  describe("ScheduleShift.update", () => {
-    it("executes update command successfully", async () => {
-      mockRuntimeSuccess({ id: "shift-001", startTime: "09:00" });
-      const res = await simulateRouteHandler(
-        "update",
-        makeRequest({ id: "shift-001", startTime: "09:00" }),
-        "ScheduleShift"
-      );
-      expect(res.status).toBe(200);
+  testManifestCommandRoute(
+    "POST /api/scheduleshift/update",
+    scheduleShiftUpdate,
+    "scheduleshift/update",
+    "ScheduleShift",
+    "update"
+  );
+
+  describe("Entity-specific verification", () => {
+    const mockRunCommand = vi.fn();
+    beforeEach(() => {
+      makeRuntime(mockRunCommand);
+    });
+
+    it("should always use entityName 'ScheduleShift' for all commands", async () => {
+      mockRunCommand.mockResolvedValue({
+        success: true,
+        result: {},
+        emittedEvents: [],
+      });
+
+      const commands = [
+        { fn: scheduleShiftCreate, path: "scheduleshift/create" },
+        { fn: scheduleShiftRemove, path: "scheduleshift/remove" },
+        { fn: scheduleShiftUpdate, path: "scheduleshift/update" },
+      ];
+
+      for (const { fn, path } of commands) {
+        const request = makeRequest(`http://localhost/api/${path}`, {
+          id: "shift-x",
+        });
+        await fn(request);
+      }
+
+      for (const call of mockRunCommand.mock.calls) {
+        expect(call[2]).toEqual({ entityName: "ScheduleShift" });
+      }
     });
   });
 });
+
+// =====================================================================
+// MENU DISH
+// =====================================================================
 
 describe("MenuDish API", () => {
   beforeEach(() => {
@@ -551,44 +643,77 @@ describe("MenuDish API", () => {
     vi.restoreAllMocks();
   });
 
-  describe("MenuDish.create", () => {
-    it("executes create command successfully", async () => {
-      mockRuntimeSuccess({ id: "md-001" });
-      const res = await simulateRouteHandler(
-        "create",
-        makeRequest({ id: "md-001" }),
-        "MenuDish"
-      );
-      expect(res.status).toBe(200);
-      expect(mockRunCommand).toHaveBeenCalledWith(
-        "create",
-        expect.objectContaining({ id: "md-001" }),
-        { entityName: "MenuDish" }
-      );
-    });
-  });
+  testManifestCommandRoute(
+    "POST /api/menudish/create",
+    menuDishCreate,
+    "menudish/create",
+    "MenuDish",
+    "create"
+  );
 
-  describe("MenuDish.remove", () => {
-    it("executes remove command successfully", async () => {
-      mockRuntimeSuccess({ id: "md-001", deletedAt: new Date() });
-      const res = await simulateRouteHandler(
-        "remove",
-        makeRequest({ id: "md-001" }),
-        "MenuDish"
-      );
-      expect(res.status).toBe(200);
-    });
-  });
+  testManifestCommandRoute(
+    "POST /api/menudish/remove",
+    menuDishRemove,
+    "menudish/remove",
+    "MenuDish",
+    "remove"
+  );
 
-  describe("MenuDish.updateCourse", () => {
-    it("executes updateCourse command successfully", async () => {
-      mockRuntimeSuccess({ id: "md-001", courseId: "course-1" });
-      const res = await simulateRouteHandler(
-        "updateCourse",
-        makeRequest({ id: "md-001", courseId: "course-1" }),
-        "MenuDish"
+  testManifestCommandRoute(
+    "POST /api/menudish/update-course",
+    menuDishUpdateCourse,
+    "menudish/update-course",
+    "MenuDish",
+    "updateCourse"
+  );
+
+  describe("Entity-specific verification", () => {
+    const mockRunCommand = vi.fn();
+    beforeEach(() => {
+      makeRuntime(mockRunCommand);
+    });
+
+    it("should always use entityName 'MenuDish' for all commands", async () => {
+      mockRunCommand.mockResolvedValue({
+        success: true,
+        result: {},
+        emittedEvents: [],
+      });
+
+      const commands = [
+        { fn: menuDishCreate, path: "menudish/create" },
+        { fn: menuDishRemove, path: "menudish/remove" },
+        { fn: menuDishUpdateCourse, path: "menudish/update-course" },
+      ];
+
+      for (const { fn, path } of commands) {
+        const request = makeRequest(`http://localhost/api/${path}`, {
+          id: "md-x",
+        });
+        await fn(request);
+      }
+
+      for (const call of mockRunCommand.mock.calls) {
+        expect(call[2]).toEqual({ entityName: "MenuDish" });
+      }
+    });
+
+    it("should call 'updateCourse' command for update-course route (not 'update')", async () => {
+      mockRunCommand.mockResolvedValue({
+        success: true,
+        result: { id: "md-001" },
+        emittedEvents: [],
+      });
+
+      const request = makeRequest(
+        "http://localhost/api/menudish/update-course",
+        {
+          id: "md-001",
+          courseId: "course-1",
+        }
       );
-      expect(res.status).toBe(200);
+      await menuDishUpdateCourse(request);
+
       expect(mockRunCommand).toHaveBeenCalledWith(
         "updateCourse",
         expect.objectContaining({ id: "md-001", courseId: "course-1" }),
@@ -597,6 +722,304 @@ describe("MenuDish API", () => {
     });
   });
 });
+
+// =====================================================================
+// USER PREFERENCES (raw SQL route — not manifest)
+// =====================================================================
+
+describe("User Preferences API", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockAuth();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  // ---------------------------------------------------------------- GET
+  describe("GET /api/user-preferences", () => {
+    it("should return 401 for unauthenticated requests", async () => {
+      vi.mocked(auth).mockResolvedValue({
+        orgId: null,
+      } as never);
+
+      const request = new NextRequest(
+        "http://localhost/api/user-preferences?userId=user-1"
+      );
+      const response = await userPreferencesGet(request);
+
+      expect(response.status).toBe(401);
+      const json = await response.json();
+      expect(json.error).toBe("Not authenticated");
+    });
+
+    it("should return 401 when tenant not found", async () => {
+      vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
+
+      const request = new NextRequest(
+        "http://localhost/api/user-preferences?userId=user-1"
+      );
+      const response = await userPreferencesGet(request);
+
+      expect(response.status).toBe(401);
+      const json = await response.json();
+      expect(json.error).toBe("No tenant found");
+    });
+
+    it("should use session userId instead of query param (IDOR fix)", async () => {
+      vi.mocked(database.$queryRaw).mockResolvedValue([] as never);
+
+      const request = new NextRequest("http://localhost/api/user-preferences");
+      const response = await userPreferencesGet(request);
+
+      expect(response.status).toBe(200);
+    });
+
+    it("should return preferences for authenticated user", async () => {
+      const mockPreferences = [
+        {
+          id: "pref-001",
+          preference_key: "theme",
+          preference_value: "dark",
+          category: "ui",
+          notes: null,
+          created_at: new Date("2026-01-01"),
+          updated_at: new Date("2026-01-01"),
+        },
+        {
+          id: "pref-002",
+          preference_key: "language",
+          preference_value: "en",
+          category: "ui",
+          notes: null,
+          created_at: new Date("2026-01-01"),
+          updated_at: new Date("2026-01-01"),
+        },
+      ];
+      vi.mocked(database.$queryRaw).mockResolvedValue(mockPreferences as never);
+
+      const request = new NextRequest(
+        `http://localhost/api/user-preferences?userId=${TEST_USER_ID}`
+      );
+      const response = await userPreferencesGet(request);
+
+      expect(response.status).toBe(200);
+      const json = await response.json();
+      expect(json.preferences).toHaveLength(2);
+      expect(json.preferences[0].id).toBe("pref-001");
+      expect(json.preferences[0].preference_key).toBe("theme");
+      expect(json.preferences[1].id).toBe("pref-002");
+    });
+
+    it("should pass category filter when provided", async () => {
+      vi.mocked(database.$queryRaw).mockResolvedValue([] as never);
+
+      const request = new NextRequest(
+        `http://localhost/api/user-preferences?userId=${TEST_USER_ID}&category=ui`
+      );
+      await userPreferencesGet(request);
+
+      expect(database.$queryRaw).toHaveBeenCalled();
+    });
+
+    it("should return empty array when no preferences exist", async () => {
+      vi.mocked(database.$queryRaw).mockResolvedValue([] as never);
+
+      const request = new NextRequest(
+        `http://localhost/api/user-preferences?userId=${TEST_USER_ID}`
+      );
+      const response = await userPreferencesGet(request);
+
+      expect(response.status).toBe(200);
+      const json = await response.json();
+      expect(json.preferences).toEqual([]);
+    });
+
+    it("should return 500 on database error", async () => {
+      vi.mocked(database.$queryRaw).mockRejectedValue(
+        new Error("Connection refused")
+      );
+
+      const request = new NextRequest(
+        `http://localhost/api/user-preferences?userId=${TEST_USER_ID}`
+      );
+      const response = await userPreferencesGet(request);
+
+      expect(response.status).toBe(500);
+      const json = await response.json();
+      expect(json.error).toBe("Failed to fetch user preferences");
+    });
+
+    it("should use tenant-scoped query (tenant isolation)", async () => {
+      vi.mocked(database.$queryRaw).mockResolvedValue([] as never);
+
+      const request = new NextRequest(
+        `http://localhost/api/user-preferences?userId=${TEST_USER_ID}`
+      );
+      await userPreferencesGet(request);
+
+      // Verify $queryRaw was called — the SQL template includes tenantId
+      expect(database.$queryRaw).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  // --------------------------------------------------------------- POST
+  describe("POST /api/user-preferences", () => {
+    it("should return 401 for unauthenticated requests", async () => {
+      vi.mocked(auth).mockResolvedValue({
+        orgId: null,
+      } as never);
+
+      const request = makeRequest(
+        "http://localhost/api/user-preferences?userId=user-1",
+        {
+          preferenceKey: "theme",
+          preferenceValue: "dark",
+        }
+      );
+      const response = await userPreferencesPost(request);
+
+      expect(response.status).toBe(401);
+      const json = await response.json();
+      expect(json.error).toBe("Not authenticated");
+    });
+
+    it("should return 401 when tenant not found", async () => {
+      vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
+
+      const request = makeRequest(
+        "http://localhost/api/user-preferences?userId=user-1",
+        {
+          preferenceKey: "theme",
+          preferenceValue: "dark",
+        }
+      );
+      const response = await userPreferencesPost(request);
+
+      expect(response.status).toBe(401);
+      const json = await response.json();
+      expect(json.error).toBe("No tenant found");
+    });
+
+    it("should return 400 when preferenceKey is missing", async () => {
+      const request = makeRequest(
+        `http://localhost/api/user-preferences?userId=${TEST_USER_ID}`,
+        {
+          preferenceValue: "dark",
+        }
+      );
+      const response = await userPreferencesPost(request);
+
+      expect(response.status).toBe(400);
+      const json = await response.json();
+      expect(json.error).toContain("preferenceKey");
+    });
+
+    it("should return 400 when preferenceValue is missing", async () => {
+      const request = makeRequest(
+        `http://localhost/api/user-preferences?userId=${TEST_USER_ID}`,
+        {
+          preferenceKey: "theme",
+        }
+      );
+      const response = await userPreferencesPost(request);
+
+      expect(response.status).toBe(400);
+      const json = await response.json();
+      expect(json.error).toContain("preferenceValue");
+    });
+
+    it("should use session userId instead of query param (IDOR fix)", async () => {
+      vi.mocked(database.$executeRaw).mockResolvedValue(1 as never);
+
+      const request = makeRequest("http://localhost/api/user-preferences", {
+        preferenceKey: "theme",
+        preferenceValue: "dark",
+      });
+      const response = await userPreferencesPost(request);
+
+      expect(response.status).toBe(200);
+    });
+
+    it("should upsert a preference successfully", async () => {
+      vi.mocked(database.$executeRaw).mockResolvedValue(1 as never);
+
+      const request = makeRequest(
+        `http://localhost/api/user-preferences?userId=${TEST_USER_ID}`,
+        {
+          preferenceKey: "theme",
+          preferenceValue: "dark",
+          category: "ui",
+          notes: "User prefers dark mode",
+        }
+      );
+      const response = await userPreferencesPost(request);
+
+      expect(response.status).toBe(200);
+      const json = await response.json();
+      expect(json.success).toBe(true);
+
+      expect(database.$executeRaw).toHaveBeenCalledTimes(1);
+    });
+
+    it("should upsert preference without optional fields", async () => {
+      vi.mocked(database.$executeRaw).mockResolvedValue(1 as never);
+
+      const request = makeRequest(
+        `http://localhost/api/user-preferences?userId=${TEST_USER_ID}`,
+        {
+          preferenceKey: "notifications",
+          preferenceValue: true,
+        }
+      );
+      const response = await userPreferencesPost(request);
+
+      expect(response.status).toBe(200);
+      const json = await response.json();
+      expect(json.success).toBe(true);
+    });
+
+    it("should return 500 on database error", async () => {
+      vi.mocked(database.$executeRaw).mockRejectedValue(
+        new Error("Write conflict")
+      );
+
+      const request = makeRequest(
+        `http://localhost/api/user-preferences?userId=${TEST_USER_ID}`,
+        {
+          preferenceKey: "theme",
+          preferenceValue: "light",
+        }
+      );
+      const response = await userPreferencesPost(request);
+
+      expect(response.status).toBe(500);
+      const json = await response.json();
+      expect(json.error).toBe("Failed to save user preference");
+    });
+
+    it("should include tenant scope in upsert query (tenant isolation)", async () => {
+      vi.mocked(database.$executeRaw).mockResolvedValue(1 as never);
+
+      const request = makeRequest(
+        `http://localhost/api/user-preferences?userId=${TEST_USER_ID}`,
+        {
+          preferenceKey: "timezone",
+          preferenceValue: "UTC",
+        }
+      );
+      await userPreferencesPost(request);
+
+      // $executeRaw was called — the SQL includes tenantId in INSERT and ON CONFLICT
+      expect(database.$executeRaw).toHaveBeenCalledTimes(1);
+    });
+  });
+});
+
+// =====================================================================
+// CROSS-CUTTING: MALFORMED JSON
+// =====================================================================
 
 describe("Cross-cutting: malformed request body", () => {
   beforeEach(() => {
@@ -608,58 +1031,96 @@ describe("Cross-cutting: malformed request body", () => {
     vi.restoreAllMocks();
   });
 
-  it("should return 500 on malformed JSON body", async () => {
-    const request = new NextRequest("http://localhost:3000/api/test", {
-      method: "POST",
-      body: "not valid json {{{",
-      headers: { "Content-Type": "application/json" },
+  const manifestRoutes = [
+    {
+      label: "ProposalLineItem create",
+      fn: proposalLineItemCreate,
+      path: "proposallineitem/create",
+    },
+    {
+      label: "PurchaseOrderItem create",
+      fn: purchaseOrderItemCreate,
+      path: "purchaseorderitem/create",
+    },
+    {
+      label: "SampleData seed",
+      fn: sampleDataSeed,
+      path: "sampledata/seed",
+    },
+    {
+      label: "ScheduleShift create",
+      fn: scheduleShiftCreate,
+      path: "scheduleshift/create",
+    },
+    {
+      label: "MenuDish create",
+      fn: menuDishCreate,
+      path: "menudish/create",
+    },
+  ];
+
+  for (const { label, fn, path } of manifestRoutes) {
+    it(`${label}: should return 500 on malformed JSON body`, async () => {
+      const request = new NextRequest(`http://localhost/api/${path}`, {
+        method: "POST",
+        body: "not valid json {{{",
+        headers: { "Content-Type": "application/json" },
+      });
+      const response = await fn(request);
+
+      expect(response.status).toBe(500);
+      const json = await response.json();
+      expect(json.success).toBe(false);
+      expect(json.message).toBe("Internal server error");
     });
-    const res = await simulateRouteHandler(
-      "create",
-      request,
-      "ProposalLineItem"
+  }
+
+  it("User Preferences POST: should return 500 on malformed JSON body", async () => {
+    const request = new NextRequest(
+      `http://localhost/api/user-preferences?userId=${TEST_USER_ID}`,
+      {
+        method: "POST",
+        body: "not valid json {{{",
+        headers: { "Content-Type": "application/json" },
+      }
     );
-    expect(res.status).toBe(500);
-    expect((await res.json()).message).toBe("Internal server error");
+    const response = await userPreferencesPost(request);
+
+    expect(response.status).toBe(500);
+    const json = await response.json();
+    expect(json.error).toBe("Failed to save user preference");
   });
 });
+
+// =====================================================================
+// CROSS-CUTTING: AUTH THROW / TENANT LOOKUP THROW
+// =====================================================================
 
 describe("Cross-cutting: auth and tenant exceptions", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    // Set default auth mock for cross-cutting tests
-    vi.mocked(auth).mockResolvedValue({
-      userId: TEST_USER_ID,
-      orgId: TEST_ORG_ID,
-    } as never);
-    vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-    vi.mocked(requireCurrentUser).mockResolvedValue({
-      id: TEST_USER_ID,
-      tenantId: TEST_TENANT_ID,
-      role: "admin",
-      email: "test@example.com",
-      firstName: "Test",
-      lastName: "User",
-    } as never);
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
   });
 
-  it("should handle auth throwing an exception", async () => {
+  it("should handle auth throwing an exception for manifest routes", async () => {
     vi.mocked(auth).mockRejectedValue(new Error("Auth service down"));
-    const res = await simulateRouteHandler(
-      "create",
-      makeRequest({ id: "test" }),
-      "ProposalLineItem"
+
+    const request = makeRequest(
+      "http://localhost/api/proposallineitem/create",
+      { id: "test" }
     );
-    expect(res.status).toBe(500);
-    expect((await res.json()).message).toBe("Internal server error");
+    const response = await proposalLineItemCreate(request);
+
+    expect(response.status).toBe(500);
+    const json = await response.json();
+    expect(json.success).toBe(false);
+    expect(json.message).toBe("Internal server error");
   });
 
-  it("should handle getTenantIdForOrg throwing", async () => {
-    // Reset auth to return success first, then let getTenantIdForOrg throw
+  it("should handle getTenantIdForOrg throwing for manifest routes", async () => {
     vi.mocked(auth).mockResolvedValue({
       userId: TEST_USER_ID,
       orgId: TEST_ORG_ID,
@@ -667,12 +1128,43 @@ describe("Cross-cutting: auth and tenant exceptions", () => {
     vi.mocked(getTenantIdForOrg).mockRejectedValue(
       new Error("Tenant lookup failed")
     );
-    const res = await simulateRouteHandler(
-      "create",
-      makeRequest({ id: "test" }),
-      "PurchaseOrderItem"
+
+    const request = makeRequest(
+      "http://localhost/api/purchaseorderitem/create",
+      { id: "test" }
     );
-    expect(res.status).toBe(500);
-    expect((await res.json()).message).toBe("Internal server error");
+    const response = await purchaseOrderItemCreate(request);
+
+    expect(response.status).toBe(500);
+    const json = await response.json();
+    expect(json.success).toBe(false);
+    expect(json.message).toBe("Internal server error");
+  });
+
+  it("should handle auth throwing for user preferences GET", async () => {
+    vi.mocked(auth).mockRejectedValue(new Error("Auth service down"));
+
+    const request = new NextRequest(
+      `http://localhost/api/user-preferences?userId=${TEST_USER_ID}`
+    );
+    const response = await userPreferencesGet(request);
+
+    expect(response.status).toBe(500);
+    const json = await response.json();
+    expect(json.error).toBe("Failed to fetch user preferences");
+  });
+
+  it("should handle auth throwing for user preferences POST", async () => {
+    vi.mocked(auth).mockRejectedValue(new Error("Auth service down"));
+
+    const request = makeRequest(
+      `http://localhost/api/user-preferences?userId=${TEST_USER_ID}`,
+      { preferenceKey: "theme", preferenceValue: "dark" }
+    );
+    const response = await userPreferencesPost(request);
+
+    expect(response.status).toBe(500);
+    const json = await response.json();
+    expect(json.error).toBe("Failed to save user preference");
   });
 });

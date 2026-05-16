@@ -4,9 +4,6 @@
  * Tests all station endpoints: command routes (create, activate, deactivate,
  * assign-task, remove-task, update-capacity, update-equipment) and read routes
  * (GET list with filters/pagination, GET detail by ID).
- *
- * NOTE: Command route handlers are mocked because the actual route paths do not exist.
- * Tests mock createManifestRuntime to verify command behavior.
  */
 
 import { database } from "@repo/database";
@@ -15,16 +12,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // --- Mocks ---
 
-import { InvariantError } from "@/app/lib/invariant";
 vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
 vi.mock("@/app/lib/tenant", () => ({
-  requireCurrentUser: vi.fn(),
   getTenantIdForOrg: vi.fn(),
+  requireCurrentUser: vi.fn(),
 }));
 vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn() }));
 
 // Manifest runtime must be mocked so command routes can call runCommand.
-const mockRunCommand = vi.fn();
 vi.mock("@/lib/manifest-runtime", () => ({
   createManifestRuntime: vi.fn(),
 }));
@@ -60,13 +55,25 @@ vi.mock("@/lib/database", async () => {
 // --- Import mocked modules ---
 
 const { auth } = await import("@repo/auth/server");
-const { getTenantIdForOrg, requireCurrentUser } = await import("@/app/lib/tenant");
+const { getTenantIdForOrg } = await import("@/app/lib/tenant");
 const { createManifestRuntime } = await import("@/lib/manifest-runtime");
 
-// --- Route imports (GET routes that exist) ---
+// --- Route imports ---
 
 import { GET as getStationDetail } from "@/app/api/kitchen/stations/[id]/route";
 import { GET as getStationsList } from "@/app/api/kitchen/stations/route";
+import { POST as manifestDispatch } from "@/app/api/manifest/[entity]/commands/[command]/route";
+
+const dispatch = (entity: string, command: string) => (req: NextRequest) =>
+  manifestDispatch(req, { params: Promise.resolve({ entity, command }) });
+
+const activateStation = dispatch("Station", "activate");
+const assignTask = dispatch("Station", "assignTask");
+const createStation = dispatch("Station", "create");
+const deactivateStation = dispatch("Station", "deactivate");
+const removeTask = dispatch("Station", "removeTask");
+const updateCapacity = dispatch("Station", "updateCapacity");
+const updateEquipment = dispatch("Station", "updateEquipment");
 
 // --- Constants ---
 
@@ -74,107 +81,6 @@ const TEST_TENANT_ID = "a0000000-0000-4000-a000-000000000001";
 const TEST_USER_ID = "user_test_station";
 const TEST_ORG_ID = "org_test_station";
 const TEST_STATION_ID = "s0000000-0000-4000-a000-000000000001";
-
-function setupRuntimeMock() {
-  vi.mocked(createManifestRuntime).mockResolvedValue({
-    runCommand: mockRunCommand,
-  } as never);
-}
-
-// ---------------------------------------------------------------------------
-// Simulated route handler for testing command routes
-// ---------------------------------------------------------------------------
-
-async function simulateRouteHandler(
-  command: string,
-  request: NextRequest,
-  entityName: string
-) {
-  const authResult = await auth();
-  if (!authResult?.userId) {
-    return new Response(
-      JSON.stringify({ success: false, message: "Unauthorized" }),
-      { status: 401, headers: { "Content-Type": "application/json" } }
-    );
-  }
-
-  const orgId = authResult.orgId;
-  if (!orgId) {
-    return new Response(
-      JSON.stringify({ success: false, message: "Unauthorized" }),
-      { status: 401, headers: { "Content-Type": "application/json" } }
-    );
-  }
-
-  const tenantId = await getTenantIdForOrg(orgId);
-  if (!tenantId) {
-    return new Response(
-      JSON.stringify({ success: false, message: "Tenant not found" }),
-      { status: 400, headers: { "Content-Type": "application/json" } }
-    );
-  }
-
-  let body: Record<string, unknown>;
-  try {
-    body = await request.json();
-  } catch {
-    return new Response(
-      JSON.stringify({ success: false, message: "Internal server error" }),
-      { status: 500, headers: { "Content-Type": "application/json" } }
-    );
-  }
-
-  try {
-    const result = await createManifestRuntime({
-      user: { id: authResult.userId, tenantId },
-    });
-
-    const response = await result.runCommand(command, body, { entityName });
-
-    if (!response.success) {
-      if (response.policyDenial) {
-        return new Response(
-          JSON.stringify({
-            success: false,
-            message: `Access denied: ${response.policyDenial.policyName}`,
-          }),
-          { status: 403, headers: { "Content-Type": "application/json" } }
-        );
-      }
-      if (response.guardFailure) {
-        return new Response(
-          JSON.stringify({
-            success: false,
-            message: `Guard ${response.guardFailure.index} failed: ${response.guardFailure.formatted}`,
-          }),
-          { status: 422, headers: { "Content-Type": "application/json" } }
-        );
-      }
-      return new Response(
-        JSON.stringify({
-          success: false,
-          message: response.error || "Command failed",
-        }),
-        { status: 400, headers: { "Content-Type": "application/json" } }
-      );
-    }
-
-    return new Response(
-      JSON.stringify({
-        success: true,
-        result: response.result,
-        events: response.emittedEvents,
-      }),
-      { status: 200, headers: { "Content-Type": "application/json" } }
-    );
-  } catch (error) {
-    console.error(`Error executing ${entityName}.${command}:`, error);
-    return new Response(
-      JSON.stringify({ success: false, message: "Internal server error" }),
-      { status: 500, headers: { "Content-Type": "application/json" } }
-    );
-  }
-}
 
 // --- Helpers ---
 
@@ -197,50 +103,46 @@ function mockAuth() {
     orgId: TEST_ORG_ID,
   } as Awaited<ReturnType<typeof auth>>);
   vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-  vi.mocked(requireCurrentUser).mockResolvedValue({
-    id: TEST_USER_ID,
-    tenantId: TEST_TENANT_ID,
-    role: "admin",
-    email: "test@example.com",
-    firstName: "Test",
-    lastName: "User",
-  } as never);
 }
 
 function mockSuccessfulRunCommand(
   result: unknown = { id: TEST_STATION_ID },
   emittedEvents: unknown[] = []
 ) {
-  setupRuntimeMock();
-  mockRunCommand.mockResolvedValue({
-    success: true,
-    result,
-    emittedEvents,
-  });
+  vi.mocked(createManifestRuntime).mockResolvedValue({
+    runCommand: vi.fn().mockResolvedValue({
+      success: true,
+      result,
+      emittedEvents,
+    }),
+  } as never);
 }
 
 function mockFailedRunCommand(error: string) {
-  setupRuntimeMock();
-  mockRunCommand.mockResolvedValue({
-    success: false,
-    error,
-  });
+  vi.mocked(createManifestRuntime).mockResolvedValue({
+    runCommand: vi.fn().mockResolvedValue({
+      success: false,
+      error,
+    }),
+  } as never);
 }
 
 function mockPolicyDenialRunCommand(policyName: string) {
-  setupRuntimeMock();
-  mockRunCommand.mockResolvedValue({
-    success: false,
-    policyDenial: { policyName },
-  });
+  vi.mocked(createManifestRuntime).mockResolvedValue({
+    runCommand: vi.fn().mockResolvedValue({
+      success: false,
+      policyDenial: { policyName },
+    }),
+  } as never);
 }
 
 function mockGuardFailureRunCommand(index: number, formatted: string) {
-  setupRuntimeMock();
-  mockRunCommand.mockResolvedValue({
-    success: false,
-    guardFailure: { index, formatted },
-  });
+  vi.mocked(createManifestRuntime).mockResolvedValue({
+    runCommand: vi.fn().mockResolvedValue({
+      success: false,
+      guardFailure: { index, formatted },
+    }),
+  } as never);
 }
 
 function createMockStation(overrides: Record<string, unknown> = {}) {
@@ -266,7 +168,6 @@ function createMockStation(overrides: Record<string, unknown> = {}) {
 describe("Kitchen Stations API", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    setupRuntimeMock();
   });
 
   afterEach(() => {
@@ -293,7 +194,7 @@ describe("Kitchen Stations API", () => {
         }
       );
 
-      const res = await simulateRouteHandler("create", req, "Station");
+      const res = await createStation(req);
       expect(res.status).toBe(401);
       const body = await res.json();
       expect(body.success).toBe(false);
@@ -314,7 +215,7 @@ describe("Kitchen Stations API", () => {
         }
       );
 
-      const res = await simulateRouteHandler("activate", req, "Station");
+      const res = await activateStation(req);
       expect(res.status).toBe(401);
     });
 
@@ -333,7 +234,7 @@ describe("Kitchen Stations API", () => {
         }
       );
 
-      const res = await simulateRouteHandler("create", req, "Station");
+      const res = await createStation(req);
       expect(res.status).toBe(400);
       const body = await res.json();
       expect(body.message).toBe("Tenant not found");
@@ -367,7 +268,7 @@ describe("Kitchen Stations API", () => {
         }
       );
 
-      const res = await simulateRouteHandler("create", req, "Station");
+      const res = await createStation(req);
       expect(res.status).toBe(200);
 
       const body = await res.json();
@@ -391,7 +292,7 @@ describe("Kitchen Stations API", () => {
         }
       );
 
-      const res = await simulateRouteHandler("create", req, "Station");
+      const res = await createStation(req);
       expect(res.status).toBe(500);
       const body = await res.json();
       expect(body.message).toBe("Internal server error");
@@ -415,7 +316,7 @@ describe("Kitchen Stations API", () => {
         }
       );
 
-      const res = await simulateRouteHandler("activate", req, "Station");
+      const res = await activateStation(req);
       expect(res.status).toBe(200);
       const body = await res.json();
       expect(body.success).toBe(true);
@@ -435,7 +336,7 @@ describe("Kitchen Stations API", () => {
         }
       );
 
-      const res = await simulateRouteHandler("deactivate", req, "Station");
+      const res = await deactivateStation(req);
       expect(res.status).toBe(200);
       const body = await res.json();
       expect(body.success).toBe(true);
@@ -462,7 +363,7 @@ describe("Kitchen Stations API", () => {
         }
       );
 
-      const res = await simulateRouteHandler("assignTask", req, "Station");
+      const res = await assignTask(req);
       expect(res.status).toBe(200);
       const body = await res.json();
       expect(body.success).toBe(true);
@@ -489,7 +390,7 @@ describe("Kitchen Stations API", () => {
         }
       );
 
-      const res = await simulateRouteHandler("removeTask", req, "Station");
+      const res = await removeTask(req);
       expect(res.status).toBe(200);
       const body = await res.json();
       expect(body.success).toBe(true);
@@ -519,7 +420,7 @@ describe("Kitchen Stations API", () => {
         }
       );
 
-      const res = await simulateRouteHandler("updateCapacity", req, "Station");
+      const res = await updateCapacity(req);
       expect(res.status).toBe(200);
       const body = await res.json();
       expect(body.success).toBe(true);
@@ -545,7 +446,7 @@ describe("Kitchen Stations API", () => {
         }
       );
 
-      const res = await simulateRouteHandler("updateEquipment", req, "Station");
+      const res = await updateEquipment(req);
       expect(res.status).toBe(200);
       const body = await res.json();
       expect(body.success).toBe(true);
@@ -569,7 +470,7 @@ describe("Kitchen Stations API", () => {
         }
       );
 
-      const res = await simulateRouteHandler("create", req, "Station");
+      const res = await createStation(req);
       expect(res.status).toBe(403);
       const body = await res.json();
       expect(body.message).toContain("Access denied");
@@ -594,7 +495,7 @@ describe("Kitchen Stations API", () => {
         }
       );
 
-      const res = await simulateRouteHandler("updateCapacity", req, "Station");
+      const res = await updateCapacity(req);
       expect(res.status).toBe(422);
       const body = await res.json();
       expect(body.message).toContain("Guard 0 failed");
@@ -615,7 +516,7 @@ describe("Kitchen Stations API", () => {
         }
       );
 
-      const res = await simulateRouteHandler("create", req, "Station");
+      const res = await createStation(req);
       expect(res.status).toBe(400);
       const body = await res.json();
       expect(body.message).toBe("Station name is required");
@@ -804,7 +705,7 @@ describe("Kitchen Stations API", () => {
     it("returns a station by ID", async () => {
       mockAuth();
       const mockStation = createMockStation();
-      vi.mocked(database.station.findUnique).mockResolvedValue(
+      vi.mocked(database.station.findFirst).mockResolvedValue(
         mockStation as never
       );
 
@@ -823,7 +724,7 @@ describe("Kitchen Stations API", () => {
 
     it("returns 404 when station does not exist", async () => {
       mockAuth();
-      vi.mocked(database.station.findUnique).mockResolvedValue(null);
+      vi.mocked(database.station.findFirst).mockResolvedValue(null);
 
       const req = createMockRequest(
         "http://localhost:3000/api/kitchen/stations/nonexistent-id"
@@ -839,7 +740,7 @@ describe("Kitchen Stations API", () => {
 
     it("enforces tenant isolation on detail queries", async () => {
       mockAuth();
-      vi.mocked(database.station.findUnique).mockResolvedValue(null);
+      vi.mocked(database.station.findFirst).mockResolvedValue(null);
 
       const otherTenantStationId = "x0000000-0000-4000-a000-000000000099";
       const req = createMockRequest(
@@ -849,10 +750,11 @@ describe("Kitchen Stations API", () => {
         params: Promise.resolve({ id: otherTenantStationId }),
       });
 
-      expect(database.station.findUnique).toHaveBeenCalledWith(
+      expect(database.station.findFirst).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({
-            tenantId_id: { tenantId: TEST_TENANT_ID, id: otherTenantStationId },
+            id: otherTenantStationId,
+            tenantId: TEST_TENANT_ID,
           }),
         })
       );
@@ -873,7 +775,7 @@ describe("Kitchen Stations API", () => {
 
     it("returns 500 on database error", async () => {
       mockAuth();
-      vi.mocked(database.station.findUnique).mockRejectedValue(
+      vi.mocked(database.station.findFirst).mockRejectedValue(
         new Error("Connection refused")
       );
 

@@ -18,19 +18,19 @@ import { createAvailability, updateAvailability } from "../actions";
 interface AvailabilityFormProps {
   availability?: {
     id: string;
-    employee_id: string;
-    employee_first_name: string | null;
-    employee_last_name: string | null;
-    employee_email: string;
-    employee_role: string;
-    day_of_week: number;
-    start_time: string;
-    end_time: string;
-    is_available: boolean;
-    effective_from: Date;
-    effective_until: Date | null;
-    created_at: Date;
-    updated_at: Date;
+    employeeId: string;
+    employeeFirstName: string | null;
+    employeeLastName: string | null;
+    employeeEmail: string;
+    employeeRole: string;
+    dayOfWeek: number;
+    startTime: string;
+    endTime: string;
+    isAvailable: boolean;
+    effectiveFrom: Date;
+    effectiveUntil: Date | null;
+    createdAt: Date;
+    updatedAt: Date;
   };
   employeeOptions?: Array<{
     id: string;
@@ -55,16 +55,16 @@ export function AvailabilityForm({
   onSuccess,
 }: AvailabilityFormProps) {
   const [formData, setFormData] = useState({
-    employeeId: availability?.employee_id || "",
-    dayOfWeek: availability?.day_of_week?.toString() || "",
-    startTime: availability?.start_time || "",
-    endTime: availability?.end_time || "",
-    isAvailable: availability?.is_available?.toString() || "true",
-    effectiveFrom: availability?.effective_from
-      ? new Date(availability.effective_from).toISOString().slice(0, 16)
+    employeeId: availability?.employeeId || "",
+    dayOfWeek: availability?.dayOfWeek?.toString() || "",
+    startTime: availability?.startTime || "",
+    endTime: availability?.endTime || "",
+    isAvailable: availability?.isAvailable?.toString() || "true",
+    effectiveFrom: availability?.effectiveFrom
+      ? new Date(availability.effectiveFrom).toISOString().slice(0, 16)
       : "",
-    effectiveUntil: availability?.effective_until
-      ? new Date(availability.effective_until).toISOString().slice(0, 16)
+    effectiveUntil: availability?.effectiveUntil
+      ? new Date(availability.effectiveUntil).toISOString().slice(0, 16)
       : "",
   });
 

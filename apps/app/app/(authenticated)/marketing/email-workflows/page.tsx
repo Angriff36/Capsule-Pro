@@ -40,7 +40,7 @@ export default async function EmailWorkflowsPage() {
       where: { tenantId, deletedAt: null },
       include: {
         emailTemplate: {
-          select: { id: true, name: true, deleted_at: true },
+          select: { id: true, name: true, deletedAt: true },
         },
       },
       orderBy: { createdAt: "desc" },
@@ -62,7 +62,7 @@ export default async function EmailWorkflowsPage() {
       ? {
           id: w.emailTemplate.id,
           name: w.emailTemplate.name,
-          deleted_at: w.emailTemplate.deleted_at?.toISOString() ?? null,
+          deletedAt: w.emailTemplate.deletedAt?.toISOString() ?? null,
         }
       : null,
     createdAt: w.createdAt.toISOString(),

@@ -115,7 +115,7 @@ export function NewDishForm({ recipes }: NewDishFormProps) {
                   Dish name
                 </label>
                 <input
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  className="flex h-10 w-full rounded-sm border border-input bg-background px-3 py-2 text-sm"
                   id="name"
                   name="name"
                   placeholder="Herb Crusted Rack of Lamb"
@@ -127,7 +127,7 @@ export function NewDishForm({ recipes }: NewDishFormProps) {
                   Linked recipe
                 </label>
                 <select
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  className="flex h-10 w-full rounded-sm border border-input bg-background px-3 py-2 text-sm"
                   name="recipeId"
                   required
                 >
@@ -146,7 +146,7 @@ export function NewDishForm({ recipes }: NewDishFormProps) {
                   Category
                 </label>
                 <input
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  className="flex h-10 w-full rounded-sm border border-input bg-background px-3 py-2 text-sm"
                   id="category"
                   name="category"
                   placeholder="Main course"
@@ -157,7 +157,7 @@ export function NewDishForm({ recipes }: NewDishFormProps) {
                   Service style
                 </label>
                 <input
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  className="flex h-10 w-full rounded-sm border border-input bg-background px-3 py-2 text-sm"
                   id="serviceStyle"
                   name="serviceStyle"
                   placeholder="Plated, family style"
@@ -170,7 +170,7 @@ export function NewDishForm({ recipes }: NewDishFormProps) {
                   Dietary tags
                 </label>
                 <input
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  className="flex h-10 w-full rounded-sm border border-input bg-background px-3 py-2 text-sm"
                   id="dietaryTags"
                   name="dietaryTags"
                   placeholder="GF, dairy free"
@@ -181,7 +181,7 @@ export function NewDishForm({ recipes }: NewDishFormProps) {
                   Allergens
                 </label>
                 <input
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  className="flex h-10 w-full rounded-sm border border-input bg-background px-3 py-2 text-sm"
                   id="allergens"
                   name="allergens"
                   placeholder="nuts, dairy"
@@ -203,7 +203,7 @@ export function NewDishForm({ recipes }: NewDishFormProps) {
                   Menu price per person
                 </label>
                 <input
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  className="flex h-10 w-full rounded-sm border border-input bg-background px-3 py-2 text-sm"
                   id="pricePerPerson"
                   name="pricePerPerson"
                   placeholder="38"
@@ -215,7 +215,7 @@ export function NewDishForm({ recipes }: NewDishFormProps) {
                   Food cost per person
                 </label>
                 <input
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  className="flex h-10 w-full rounded-sm border border-input bg-background px-3 py-2 text-sm"
                   id="costPerPerson"
                   name="costPerPerson"
                   placeholder="12.5"
@@ -241,7 +241,7 @@ export function NewDishForm({ recipes }: NewDishFormProps) {
                   Min prep lead (days)
                 </label>
                 <input
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  className="flex h-10 w-full rounded-sm border border-input bg-background px-3 py-2 text-sm"
                   id="minPrepLeadDays"
                   min="0"
                   name="minPrepLeadDays"
@@ -256,7 +256,7 @@ export function NewDishForm({ recipes }: NewDishFormProps) {
                   Max prep lead (days)
                 </label>
                 <input
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  className="flex h-10 w-full rounded-sm border border-input bg-background px-3 py-2 text-sm"
                   id="maxPrepLeadDays"
                   min="0"
                   name="maxPrepLeadDays"
@@ -271,7 +271,7 @@ export function NewDishForm({ recipes }: NewDishFormProps) {
                   Portion size
                 </label>
                 <input
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  className="flex h-10 w-full rounded-sm border border-input bg-background px-3 py-2 text-sm"
                   id="portionSizeDescription"
                   name="portionSizeDescription"
                   placeholder="6 oz per guest"
@@ -293,7 +293,7 @@ export function NewDishForm({ recipes }: NewDishFormProps) {
               </label>
               <input
                 accept="image/*"
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                className="flex h-10 w-full rounded-sm border border-input bg-background px-3 py-2 text-sm"
                 id="imageFile"
                 name="imageFile"
                 type="file"
@@ -305,7 +305,7 @@ export function NewDishForm({ recipes }: NewDishFormProps) {
                 Service notes
               </label>
               <textarea
-                className="flex min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                className="flex min-h-[100px] w-full rounded-sm border border-input bg-background px-3 py-2 text-sm"
                 id="description"
                 name="description"
                 placeholder="Pair with roasted vegetables or seasonal garnish."
@@ -315,14 +315,14 @@ export function NewDishForm({ recipes }: NewDishFormProps) {
             <div className="h-px bg-border" />
             <div className="flex flex-col gap-2">
               <button
-                className="inline-flex items-center justify-center rounded-md text-sm font-medium h-10 px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:pointer-events-none"
+                className="inline-flex items-center justify-center rounded-sm text-sm font-medium h-10 px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:pointer-events-none"
                 disabled={isPending}
                 type="submit"
               >
                 {isPending ? "Creating..." : "Create dish"}
               </button>
               <a
-                className="inline-flex items-center justify-center rounded-md text-sm font-medium h-10 px-4 py-2 border border-input bg-background hover:bg-accent hover:text-accent-foreground"
+                className="inline-flex items-center justify-center rounded-sm text-sm font-medium h-10 px-4 py-2 border border-input bg-background hover:bg-accent hover:text-accent-foreground"
                 href="/kitchen/recipes?tab=dishes"
               >
                 Cancel

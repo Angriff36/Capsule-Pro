@@ -28,12 +28,11 @@ export async function GET(
 
     const { id } = await params;
 
-    const clientPreference = await database.clientPreference.findUnique({
+    const clientPreference = await database.clientPreference.findFirst({
       where: {
-        tenantId_id: {
-          tenantId,
-          id,
-        },
+        id,
+        tenantId,
+        deletedAt: null,
       },
     });
 

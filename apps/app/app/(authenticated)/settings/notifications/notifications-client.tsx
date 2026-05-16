@@ -90,7 +90,7 @@ interface AutomationRule {
 
 interface SmsLog {
   id: string;
-  employee_id: string | null;
+  employeeId: string | null;
   phone_number: string;
   message: string;
   notification_type: string;

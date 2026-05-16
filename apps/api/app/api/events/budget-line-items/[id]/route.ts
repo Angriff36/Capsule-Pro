@@ -28,9 +28,11 @@ export async function GET(
 
     const { id } = await params;
 
-    const budgetLineItem = await database.budgetLineItem.findUnique({
+    const budgetLineItem = await database.budgetLineItem.findFirst({
       where: {
-        tenantId_id: { tenantId, id },
+        id,
+        tenantId,
+        deletedAt: null,
       },
     });
 

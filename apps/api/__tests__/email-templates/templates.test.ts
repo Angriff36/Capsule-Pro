@@ -14,7 +14,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 // Mock modules
 vi.mock("@repo/database", () => ({
   database: {
-    email_templates: {
+    emailTemplate: {
       findMany: vi.fn(),
       findFirst: vi.fn(),
       count: vi.fn(),
@@ -135,10 +135,10 @@ describe("Email Templates API", () => {
           createMockTemplate({ id: "template-002", name: "Template B" }),
         ];
 
-        vi.mocked(database.email_templates.findMany).mockResolvedValue(
+        vi.mocked(database.emailTemplate.findMany).mockResolvedValue(
           mockTemplates as never
         );
-        vi.mocked(database.email_templates.count).mockResolvedValue(2);
+        vi.mocked(database.emailTemplate.count).mockResolvedValue(2);
 
         const request = createMockRequest(
           "/api/collaboration/notifications/email/templates?page=1&limit=50"
@@ -155,7 +155,7 @@ describe("Email Templates API", () => {
           totalPages: 1,
         });
 
-        expect(database.email_templates.findMany).toHaveBeenCalledWith(
+        expect(database.emailTemplate.findMany).toHaveBeenCalledWith(
           expect.objectContaining({
             where: expect.objectContaining({
               tenant_id: TEST_TENANT_ID,
@@ -171,17 +171,17 @@ describe("Email Templates API", () => {
       it("should handle page offset calculation correctly", async () => {
         vi.mocked(auth).mockResolvedValue({ orgId: TEST_ORG_ID } as never);
         vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-        vi.mocked(database.email_templates.findMany).mockResolvedValue(
+        vi.mocked(database.emailTemplate.findMany).mockResolvedValue(
           [] as never
         );
-        vi.mocked(database.email_templates.count).mockResolvedValue(100);
+        vi.mocked(database.emailTemplate.count).mockResolvedValue(100);
 
         const request = createMockRequest(
           "/api/collaboration/notifications/email/templates?page=3&limit=20"
         );
         await listGET(request);
 
-        expect(database.email_templates.findMany).toHaveBeenCalledWith(
+        expect(database.emailTemplate.findMany).toHaveBeenCalledWith(
           expect.objectContaining({
             skip: 40, // (3-1) * 20
             take: 20,
@@ -192,17 +192,17 @@ describe("Email Templates API", () => {
       it("should cap limit at 100", async () => {
         vi.mocked(auth).mockResolvedValue({ orgId: TEST_ORG_ID } as never);
         vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-        vi.mocked(database.email_templates.findMany).mockResolvedValue(
+        vi.mocked(database.emailTemplate.findMany).mockResolvedValue(
           [] as never
         );
-        vi.mocked(database.email_templates.count).mockResolvedValue(0);
+        vi.mocked(database.emailTemplate.count).mockResolvedValue(0);
 
         const request = createMockRequest(
           "/api/collaboration/notifications/email/templates?limit=200"
         );
         await listGET(request);
 
-        expect(database.email_templates.findMany).toHaveBeenCalledWith(
+        expect(database.emailTemplate.findMany).toHaveBeenCalledWith(
           expect.objectContaining({
             take: 100, // capped at 100
           })
@@ -214,17 +214,17 @@ describe("Email Templates API", () => {
       it("should filter templates by templateType", async () => {
         vi.mocked(auth).mockResolvedValue({ orgId: TEST_ORG_ID } as never);
         vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-        vi.mocked(database.email_templates.findMany).mockResolvedValue(
+        vi.mocked(database.emailTemplate.findMany).mockResolvedValue(
           [] as never
         );
-        vi.mocked(database.email_templates.count).mockResolvedValue(0);
+        vi.mocked(database.emailTemplate.count).mockResolvedValue(0);
 
         const request = createMockRequest(
           "/api/collaboration/notifications/email/templates?templateType=welcome"
         );
         await listGET(request);
 
-        expect(database.email_templates.findMany).toHaveBeenCalledWith(
+        expect(database.emailTemplate.findMany).toHaveBeenCalledWith(
           expect.objectContaining({
             where: expect.objectContaining({
               template_type: "welcome",
@@ -238,17 +238,17 @@ describe("Email Templates API", () => {
       it("should filter templates by isActive=true", async () => {
         vi.mocked(auth).mockResolvedValue({ orgId: TEST_ORG_ID } as never);
         vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-        vi.mocked(database.email_templates.findMany).mockResolvedValue(
+        vi.mocked(database.emailTemplate.findMany).mockResolvedValue(
           [] as never
         );
-        vi.mocked(database.email_templates.count).mockResolvedValue(0);
+        vi.mocked(database.emailTemplate.count).mockResolvedValue(0);
 
         const request = createMockRequest(
           "/api/collaboration/notifications/email/templates?isActive=true"
         );
         await listGET(request);
 
-        expect(database.email_templates.findMany).toHaveBeenCalledWith(
+        expect(database.emailTemplate.findMany).toHaveBeenCalledWith(
           expect.objectContaining({
             where: expect.objectContaining({
               is_active: true,
@@ -260,17 +260,17 @@ describe("Email Templates API", () => {
       it("should filter templates by isActive=false", async () => {
         vi.mocked(auth).mockResolvedValue({ orgId: TEST_ORG_ID } as never);
         vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-        vi.mocked(database.email_templates.findMany).mockResolvedValue(
+        vi.mocked(database.emailTemplate.findMany).mockResolvedValue(
           [] as never
         );
-        vi.mocked(database.email_templates.count).mockResolvedValue(0);
+        vi.mocked(database.emailTemplate.count).mockResolvedValue(0);
 
         const request = createMockRequest(
           "/api/collaboration/notifications/email/templates?isActive=false"
         );
         await listGET(request);
 
-        expect(database.email_templates.findMany).toHaveBeenCalledWith(
+        expect(database.emailTemplate.findMany).toHaveBeenCalledWith(
           expect.objectContaining({
             where: expect.objectContaining({
               is_active: false,
@@ -284,17 +284,17 @@ describe("Email Templates API", () => {
       it("should filter templates by isDefault=true", async () => {
         vi.mocked(auth).mockResolvedValue({ orgId: TEST_ORG_ID } as never);
         vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-        vi.mocked(database.email_templates.findMany).mockResolvedValue(
+        vi.mocked(database.emailTemplate.findMany).mockResolvedValue(
           [] as never
         );
-        vi.mocked(database.email_templates.count).mockResolvedValue(0);
+        vi.mocked(database.emailTemplate.count).mockResolvedValue(0);
 
         const request = createMockRequest(
           "/api/collaboration/notifications/email/templates?isDefault=true"
         );
         await listGET(request);
 
-        expect(database.email_templates.findMany).toHaveBeenCalledWith(
+        expect(database.emailTemplate.findMany).toHaveBeenCalledWith(
           expect.objectContaining({
             where: expect.objectContaining({
               is_default: true,
@@ -306,17 +306,17 @@ describe("Email Templates API", () => {
       it("should filter templates by isDefault=false", async () => {
         vi.mocked(auth).mockResolvedValue({ orgId: TEST_ORG_ID } as never);
         vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-        vi.mocked(database.email_templates.findMany).mockResolvedValue(
+        vi.mocked(database.emailTemplate.findMany).mockResolvedValue(
           [] as never
         );
-        vi.mocked(database.email_templates.count).mockResolvedValue(0);
+        vi.mocked(database.emailTemplate.count).mockResolvedValue(0);
 
         const request = createMockRequest(
           "/api/collaboration/notifications/email/templates?isDefault=false"
         );
         await listGET(request);
 
-        expect(database.email_templates.findMany).toHaveBeenCalledWith(
+        expect(database.emailTemplate.findMany).toHaveBeenCalledWith(
           expect.objectContaining({
             where: expect.objectContaining({
               is_default: false,
@@ -359,7 +359,7 @@ describe("Email Templates API", () => {
       it("should return 500 on database error", async () => {
         vi.mocked(auth).mockResolvedValue({ orgId: TEST_ORG_ID } as never);
         vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-        vi.mocked(database.email_templates.findMany).mockRejectedValue(
+        vi.mocked(database.emailTemplate.findMany).mockRejectedValue(
           new Error("DB error")
         );
 
@@ -570,7 +570,7 @@ describe("Email Templates API", () => {
         vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
 
         const mockTemplate = createMockTemplate();
-        vi.mocked(database.email_templates.findFirst).mockResolvedValue(
+        vi.mocked(database.emailTemplate.findFirst).mockResolvedValue(
           mockTemplate as never
         );
 
@@ -591,7 +591,7 @@ describe("Email Templates API", () => {
         expect(data.data.is_active).toBe(mockTemplate.is_active);
         expect(data.data.is_default).toBe(mockTemplate.is_default);
 
-        expect(database.email_templates.findFirst).toHaveBeenCalledWith({
+        expect(database.emailTemplate.findFirst).toHaveBeenCalledWith({
           where: {
             tenant_id: TEST_TENANT_ID,
             id: TEST_TEMPLATE_ID,
@@ -605,7 +605,7 @@ describe("Email Templates API", () => {
       it("should return 404 when template not found", async () => {
         vi.mocked(auth).mockResolvedValue({ orgId: TEST_ORG_ID } as never);
         vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-        vi.mocked(database.email_templates.findFirst).mockResolvedValue(null);
+        vi.mocked(database.emailTemplate.findFirst).mockResolvedValue(null);
 
         const request = createMockRequest(
           `/api/collaboration/notifications/email/templates/${TEST_TEMPLATE_ID}`
@@ -624,7 +624,7 @@ describe("Email Templates API", () => {
         vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
 
         // Deleted template won't be found due to deleted_at: null filter
-        vi.mocked(database.email_templates.findFirst).mockResolvedValue(null);
+        vi.mocked(database.emailTemplate.findFirst).mockResolvedValue(null);
 
         const request = createMockRequest(
           `/api/collaboration/notifications/email/templates/${TEST_TEMPLATE_ID}`
@@ -660,7 +660,7 @@ describe("Email Templates API", () => {
       it("should return 500 on database error", async () => {
         vi.mocked(auth).mockResolvedValue({ orgId: TEST_ORG_ID } as never);
         vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-        vi.mocked(database.email_templates.findFirst).mockRejectedValue(
+        vi.mocked(database.emailTemplate.findFirst).mockRejectedValue(
           new Error("DB error")
         );
 
@@ -1025,8 +1025,8 @@ describe("Email Templates Policy Tests", () => {
     // EmailTemplateRead policy: user.role in ["staff", "manager", "admin"]
     vi.mocked(auth).mockResolvedValue({ orgId: TEST_ORG_ID } as never);
     vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-    vi.mocked(database.email_templates.findMany).mockResolvedValue([] as never);
-    vi.mocked(database.email_templates.count).mockResolvedValue(0);
+    vi.mocked(database.emailTemplate.findMany).mockResolvedValue([] as never);
+    vi.mocked(database.emailTemplate.count).mockResolvedValue(0);
 
     const request = createMockRequest(
       "/api/collaboration/notifications/email/templates"

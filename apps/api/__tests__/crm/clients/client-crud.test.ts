@@ -4,31 +4,29 @@
  * Tests verify the client create, update, archive, and reactivate
  * command handlers with authentication, authorization, policy denial,
  * and guard failure scenarios.
- *
- * NOTE: Route handlers are mocked because the actual route paths do not exist.
- * Tests mock createManifestRuntime to verify command behavior.
  */
 
 import { NextRequest } from "next/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { POST as manifestDispatch } from "@/app/api/manifest/[entity]/commands/[command]/route";
+
+const dispatch = (entity: string, command: string) => (req: NextRequest) =>
+  manifestDispatch(req, { params: Promise.resolve({ entity, command }) });
+
+const archiveClient = dispatch("Client", "archive");
+const createClient = dispatch("Client", "create");
+const reactivateClient = dispatch("Client", "reactivate");
+const updateClient = dispatch("Client", "update");
 
 // Mock dependencies
 vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
 vi.mock("@/app/lib/tenant", () => ({
   getTenantIdForOrg: vi.fn(),
+  requireCurrentUser: vi.fn(),
 }));
 vi.mock("@/lib/manifest-runtime", () => ({
   createManifestRuntime: vi.fn(),
 }));
-vi.mock("@/lib/manifest-response", async () => {
-  const { NextResponse } = await import("next/server");
-  return {
-    manifestSuccessResponse: (data: unknown, status = 200) =>
-      NextResponse.json({ success: true, ...(data as object) }, { status }),
-    manifestErrorResponse: (message: string, status: number) =>
-      NextResponse.json({ success: false, message }, { status }),
-  };
-});
 
 const { auth } = await import("@repo/auth/server");
 const { getTenantIdForOrg } = await import("@/app/lib/tenant");
@@ -44,90 +42,6 @@ function setupRuntimeMock() {
   vi.mocked(createManifestRuntime).mockResolvedValue({
     runCommand: mockRunCommand,
   } as never);
-}
-
-// Simulated route handler logic for testing
-async function simulateRouteHandler(
-  command: string,
-  request: NextRequest,
-  entityName: string
-) {
-  const authResult = await auth();
-  if (!authResult?.userId) {
-    return new Response(
-      JSON.stringify({ success: false, message: "Unauthorized" }),
-      {
-        status: 401,
-        headers: { "Content-Type": "application/json" },
-      }
-    );
-  }
-
-  const orgId = authResult.orgId;
-  if (!orgId) {
-    return new Response(
-      JSON.stringify({ success: false, message: "Unauthorized" }),
-      {
-        status: 401,
-        headers: { "Content-Type": "application/json" },
-      }
-    );
-  }
-
-  const tenantId = await getTenantIdForOrg(orgId);
-  if (!tenantId) {
-    return new Response(
-      JSON.stringify({ success: false, message: "Tenant not found" }),
-      {
-        status: 400,
-        headers: { "Content-Type": "application/json" },
-      }
-    );
-  }
-
-  const body = await request.json();
-  const result = await createManifestRuntime({
-    user: { id: authResult.userId, tenantId },
-  });
-
-  const response = await result.runCommand(command, body, { entityName });
-
-  if (!response.success) {
-    if (response.policyDenial) {
-      return new Response(
-        JSON.stringify({
-          success: false,
-          message: `Access denied: ${response.policyDenial.policyName}`,
-        }),
-        { status: 403, headers: { "Content-Type": "application/json" } }
-      );
-    }
-    if (response.guardFailure) {
-      return new Response(
-        JSON.stringify({
-          success: false,
-          message: `Guard ${response.guardFailure.index} failed: ${response.guardFailure.formatted}`,
-        }),
-        { status: 422, headers: { "Content-Type": "application/json" } }
-      );
-    }
-    return new Response(
-      JSON.stringify({
-        success: false,
-        message: response.error || "Command failed",
-      }),
-      { status: 400, headers: { "Content-Type": "application/json" } }
-    );
-  }
-
-  return new Response(
-    JSON.stringify({
-      success: true,
-      result: response.result,
-      events: response.emittedEvents,
-    }),
-    { status: 200, headers: { "Content-Type": "application/json" } }
-  );
 }
 
 describe("Client CRUD API", () => {
@@ -157,7 +71,7 @@ describe("Client CRUD API", () => {
         method: "POST",
         body: JSON.stringify({ name: "Test Client" }),
       });
-      const response = await simulateRouteHandler("create", request, "Client");
+      const response = await createClient(request);
 
       expect(response.status).toBe(401);
       const body = await response.json();
@@ -172,7 +86,7 @@ describe("Client CRUD API", () => {
         method: "POST",
         body: JSON.stringify({ name: "Test Client" }),
       });
-      const response = await simulateRouteHandler("create", request, "Client");
+      const response = await createClient(request);
 
       expect(response.status).toBe(400);
       const body = await response.json();
@@ -195,7 +109,7 @@ describe("Client CRUD API", () => {
           type: "corporate",
         }),
       });
-      const response = await simulateRouteHandler("create", request, "Client");
+      const response = await createClient(request);
 
       expect(response.status).toBe(200);
       const body = await response.json();
@@ -220,7 +134,7 @@ describe("Client CRUD API", () => {
         method: "POST",
         body: JSON.stringify({ name: "Denied Client" }),
       });
-      const response = await simulateRouteHandler("create", request, "Client");
+      const response = await createClient(request);
 
       expect(response.status).toBe(403);
       const body = await response.json();
@@ -241,7 +155,7 @@ describe("Client CRUD API", () => {
         method: "POST",
         body: JSON.stringify({ name: "Duplicate" }),
       });
-      const response = await simulateRouteHandler("create", request, "Client");
+      const response = await createClient(request);
 
       expect(response.status).toBe(422);
       const body = await response.json();
@@ -258,7 +172,7 @@ describe("Client CRUD API", () => {
         method: "POST",
         body: JSON.stringify({}),
       });
-      const response = await simulateRouteHandler("create", request, "Client");
+      const response = await createClient(request);
 
       expect(response.status).toBe(400);
       const body = await response.json();
@@ -272,12 +186,9 @@ describe("Client CRUD API", () => {
         method: "POST",
         body: JSON.stringify({ name: "Crash Client" }),
       });
+      const response = await createClient(request);
 
-      try {
-        await simulateRouteHandler("create", request, "Client");
-      } catch {
-        expect(true).toBe(true); // Error case handled
-      }
+      expect(response.status).toBe(500);
     });
   });
 
@@ -298,7 +209,7 @@ describe("Client CRUD API", () => {
           email: "new@acme.com",
         }),
       });
-      const response = await simulateRouteHandler("update", request, "Client");
+      const response = await updateClient(request);
 
       expect(response.status).toBe(200);
       const body = await response.json();
@@ -321,7 +232,7 @@ describe("Client CRUD API", () => {
         method: "POST",
         body: JSON.stringify({ id: "client-001" }),
       });
-      const response = await simulateRouteHandler("update", request, "Client");
+      const response = await updateClient(request);
 
       expect(response.status).toBe(401);
     });
@@ -336,7 +247,7 @@ describe("Client CRUD API", () => {
         method: "POST",
         body: JSON.stringify({ id: "client-001" }),
       });
-      const response = await simulateRouteHandler("update", request, "Client");
+      const response = await updateClient(request);
 
       expect(response.status).toBe(403);
     });
@@ -355,7 +266,7 @@ describe("Client CRUD API", () => {
         method: "POST",
         body: JSON.stringify({ id: "client-001" }),
       });
-      const response = await simulateRouteHandler("archive", request, "Client");
+      const response = await archiveClient(request);
 
       expect(response.status).toBe(200);
       const body = await response.json();
@@ -378,7 +289,7 @@ describe("Client CRUD API", () => {
         method: "POST",
         body: JSON.stringify({ id: "client-001" }),
       });
-      const response = await simulateRouteHandler("archive", request, "Client");
+      const response = await archiveClient(request);
 
       expect(response.status).toBe(401);
     });
@@ -390,7 +301,7 @@ describe("Client CRUD API", () => {
         method: "POST",
         body: JSON.stringify({ id: "client-001" }),
       });
-      const response = await simulateRouteHandler("archive", request, "Client");
+      const response = await archiveClient(request);
 
       expect(response.status).toBe(400);
     });
@@ -402,12 +313,9 @@ describe("Client CRUD API", () => {
         method: "POST",
         body: JSON.stringify({ id: "client-001" }),
       });
+      const response = await archiveClient(request);
 
-      try {
-        await simulateRouteHandler("archive", request, "Client");
-      } catch {
-        expect(true).toBe(true); // Error case handled
-      }
+      expect(response.status).toBe(500);
     });
   });
 
@@ -427,11 +335,7 @@ describe("Client CRUD API", () => {
           body: JSON.stringify({ id: "client-001" }),
         }
       );
-      const response = await simulateRouteHandler(
-        "reactivate",
-        request,
-        "Client"
-      );
+      const response = await reactivateClient(request);
 
       expect(response.status).toBe(200);
       const body = await response.json();
@@ -457,11 +361,7 @@ describe("Client CRUD API", () => {
           body: JSON.stringify({ id: "client-001" }),
         }
       );
-      const response = await simulateRouteHandler(
-        "reactivate",
-        request,
-        "Client"
-      );
+      const response = await reactivateClient(request);
 
       expect(response.status).toBe(401);
     });
@@ -482,11 +382,7 @@ describe("Client CRUD API", () => {
           body: JSON.stringify({ id: "client-001" }),
         }
       );
-      const response = await simulateRouteHandler(
-        "reactivate",
-        request,
-        "Client"
-      );
+      const response = await reactivateClient(request);
 
       expect(response.status).toBe(422);
       const body = await response.json();

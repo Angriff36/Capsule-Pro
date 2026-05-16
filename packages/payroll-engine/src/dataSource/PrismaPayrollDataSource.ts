@@ -115,8 +115,8 @@ export class PrismaPayrollDataSource implements PayrollDataSource {
     const timeEntries = await this.#prisma.timeEntry.findMany({
       where: {
         tenantId,
-        deleted_at: null,
-        approved_at: { not: null }, // Only use approved time entries for payroll
+        deletedAt: null,
+        approvedAt: { not: null }, // Only use approved time entries for payroll
       },
     });
 
@@ -144,7 +144,7 @@ export class PrismaPayrollDataSource implements PayrollDataSource {
           hoursWorked,
           hoursRegular: Math.min(hoursWorked, 40), // Assume 40h threshold
           hoursOvertime: Math.max(0, hoursWorked - 40),
-          approved: entry.approved_at !== null,
+          approved: entry.approvedAt !== null,
         };
       });
   }
@@ -174,20 +174,20 @@ export class PrismaPayrollDataSource implements PayrollDataSource {
   async getDeductions(tenantId: string): Promise<Deduction[]> {
     const deductions = await this.#prisma.employeeDeduction.findMany({
       where: {
-        tenant_id: tenantId,
-        deleted_at: null,
+        tenantId,
+        deletedAt: null,
         // Only active deductions (effective date passed, not expired)
-        effective_date: {
+        effectiveDate: {
           lte: new Date(),
         },
-        OR: [{ end_date: null }, { end_date: { gte: new Date() } }],
+        OR: [{ endDate: null }, { endDate: { gte: new Date() } }],
       },
     });
 
     return deductions.map((deduction) => ({
       id: deduction.id,
-      tenantId: deduction.tenant_id,
-      employeeId: deduction.employee_id,
+      tenantId: deduction.tenantId,
+      employeeId: deduction.employeeId,
       type: deduction.type as
         | "benefits"
         | "health_insurance"
@@ -205,35 +205,35 @@ export class PrismaPayrollDataSource implements PayrollDataSource {
       percentage: deduction.percentage
         ? Number(deduction.percentage)
         : undefined,
-      isPreTax: deduction.is_pre_tax,
-      effectiveDate: deduction.effective_date,
-      endDate: deduction.end_date || undefined,
-      maxAnnualAmount: deduction.max_annual_amount
-        ? Number(deduction.max_annual_amount)
+      isPreTax: deduction.isPreTax,
+      effectiveDate: deduction.effectiveDate,
+      endDate: deduction.endDate || undefined,
+      maxAnnualAmount: deduction.maxAnnualAmount
+        ? Number(deduction.maxAnnualAmount)
         : undefined,
     }));
   }
 
   async savePayrollPeriod(period: PayrollPeriod): Promise<void> {
-    await this.#prisma.payroll_periods.upsert({
+    await this.#prisma.payrollPeriod.upsert({
       where: {
-        tenant_id_id: {
-          tenant_id: period.tenantId,
+        tenantId_id: {
+          tenantId: period.tenantId,
           id: period.id,
         },
       },
       create: {
-        tenant_id: period.tenantId,
+        tenantId: period.tenantId,
         id: period.id,
-        period_start: period.startDate,
-        period_end: period.endDate,
+        periodStart: period.startDate,
+        periodEnd: period.endDate,
         status: period.status,
-        created_at: period.createdAt || new Date(),
-        updated_at: period.updatedAt || new Date(),
+        createdAt: period.createdAt || new Date(),
+        updatedAt: period.updatedAt || new Date(),
       },
       update: {
         status: period.status,
-        updated_at: period.updatedAt || new Date(),
+        updatedAt: period.updatedAt || new Date(),
       },
     });
   }
@@ -256,73 +256,73 @@ export class PrismaPayrollDataSource implements PayrollDataSource {
       { totalGross: 0, totalDeductions: 0, totalNet: 0 }
     );
 
-    const payrollRun = await this.#prisma.payroll_runs.upsert({
+    const payrollRun = await this.#prisma.payrollRun.upsert({
       where: {
-        tenant_id_id: {
-          tenant_id: tenantId,
+        tenantId_id: {
+          tenantId,
           id: periodId,
         },
       },
       create: {
-        tenant_id: tenantId,
+        tenantId,
         id: periodId,
-        payroll_period_id: periodId,
-        run_date: new Date(),
+        payrollPeriodId: periodId,
+        runDate: new Date(),
         status: "completed",
-        total_gross: summary.totalGross,
-        total_deductions: summary.totalDeductions,
-        total_net: summary.totalNet,
-        created_at: new Date(),
-        updated_at: new Date(),
+        totalGross: summary.totalGross,
+        totalDeductions: summary.totalDeductions,
+        totalNet: summary.totalNet,
+        createdAt: new Date(),
+        updatedAt: new Date(),
       },
       update: {
-        total_gross: summary.totalGross,
-        total_deductions: summary.totalDeductions,
-        total_net: summary.totalNet,
+        totalGross: summary.totalGross,
+        totalDeductions: summary.totalDeductions,
+        totalNet: summary.totalNet,
         status: "completed",
-        updated_at: new Date(),
+        updatedAt: new Date(),
       },
     });
 
     // Save payroll line items
     for (const record of records) {
-      await this.#prisma.payroll_line_items.upsert({
+      await this.#prisma.payrollLineItem.upsert({
         where: {
-          tenant_id_id: {
-            tenant_id: record.tenantId,
+          tenantId_id: {
+            tenantId: record.tenantId,
             id: `${payrollRun.id}_${record.employeeId}`,
           },
         },
         create: {
-          tenant_id: record.tenantId,
+          tenantId: record.tenantId,
           id: `${payrollRun.id}_${record.employeeId}`,
-          payroll_run_id: payrollRun.id,
-          employee_id: record.employeeId,
-          hours_regular: record.hoursRegular,
-          hours_overtime: record.hoursOvertime,
-          rate_regular: record.regularPay / record.hoursRegular || 0,
-          rate_overtime: record.overtimePay / record.hoursOvertime || 0,
-          gross_pay: record.grossPay,
+          payrollRunId: payrollRun.id,
+          employeeId: record.employeeId,
+          hoursRegular: record.hoursRegular,
+          hoursOvertime: record.hoursOvertime,
+          rateRegular: record.regularPay / record.hoursRegular || 0,
+          rateOvertime: record.overtimePay / record.hoursOvertime || 0,
+          grossPay: record.grossPay,
           deductions: JSON.stringify({
             preTax: record.preTaxDeductions,
             postTax: record.postTaxDeductions,
           }),
-          net_pay: record.netPay,
-          created_at: record.createdAt || new Date(),
-          updated_at: new Date(),
+          netPay: record.netPay,
+          createdAt: record.createdAt || new Date(),
+          updatedAt: new Date(),
         },
         update: {
-          hours_regular: record.hoursRegular,
-          hours_overtime: record.hoursOvertime,
-          rate_regular: record.regularPay / record.hoursRegular || 0,
-          rate_overtime: record.overtimePay / record.hoursOvertime || 0,
-          gross_pay: record.grossPay,
+          hoursRegular: record.hoursRegular,
+          hoursOvertime: record.hoursOvertime,
+          rateRegular: record.regularPay / record.hoursRegular || 0,
+          rateOvertime: record.overtimePay / record.hoursOvertime || 0,
+          grossPay: record.grossPay,
           deductions: JSON.stringify({
             preTax: record.preTaxDeductions,
             postTax: record.postTaxDeductions,
           }),
-          net_pay: record.netPay,
-          updated_at: new Date(),
+          netPay: record.netPay,
+          updatedAt: new Date(),
         },
       });
     }
@@ -352,10 +352,10 @@ export class PrismaPayrollDataSource implements PayrollDataSource {
     tenantId: string,
     periodId: string
   ): Promise<PayrollPeriod | null> {
-    const period = await this.#prisma.payroll_periods.findUnique({
+    const period = await this.#prisma.payrollPeriod.findUnique({
       where: {
-        tenant_id_id: {
-          tenant_id: tenantId,
+        tenantId_id: {
+          tenantId,
           id: periodId,
         },
       },
@@ -367,9 +367,9 @@ export class PrismaPayrollDataSource implements PayrollDataSource {
 
     return {
       id: period.id,
-      tenantId: period.tenant_id,
-      startDate: period.period_start,
-      endDate: period.period_end,
+      tenantId: period.tenantId,
+      startDate: period.periodStart,
+      endDate: period.periodEnd,
       status: period.status as
         | "draft"
         | "processing"
@@ -378,8 +378,8 @@ export class PrismaPayrollDataSource implements PayrollDataSource {
         | "finalized"
         | "failed",
       currency: "USD",
-      createdAt: period.created_at,
-      updatedAt: period.updated_at,
+      createdAt: period.createdAt,
+      updatedAt: period.updatedAt,
     };
   }
 
@@ -387,10 +387,10 @@ export class PrismaPayrollDataSource implements PayrollDataSource {
     tenantId: string,
     periodId: string
   ): Promise<PayrollRecord[]> {
-    const payrollRun = await this.#prisma.payroll_runs.findFirst({
+    const payrollRun = await this.#prisma.payrollRun.findFirst({
       where: {
-        tenant_id: tenantId,
-        payroll_period_id: periodId,
+        tenantId,
+        payrollPeriodId: periodId,
       },
     });
 
@@ -398,16 +398,16 @@ export class PrismaPayrollDataSource implements PayrollDataSource {
       return [];
     }
 
-    const lineItems = await this.#prisma.payroll_line_items.findMany({
+    const lineItems = await this.#prisma.payrollLineItem.findMany({
       where: {
-        tenant_id: tenantId,
-        payroll_run_id: payrollRun.id,
+        tenantId,
+        payrollRunId: payrollRun.id,
       },
     });
 
     // Get employee names and departments
     const employeeIds = lineItems.map(
-      (item: { employee_id: string }) => item.employee_id
+      (item: { employeeId: string }) => item.employeeId
     );
     const employees = await this.#prisma.user.findMany({
       where: {
@@ -451,10 +451,10 @@ export class PrismaPayrollDataSource implements PayrollDataSource {
 
     return lineItems.map((item) => {
       const deductions = JSON.parse((item.deductions as string) || "{}");
-      const grossPay = Number(item.gross_pay);
-      const netPay = Number(item.net_pay);
+      const grossPay = Number(item.grossPay);
+      const netPay = Number(item.netPay);
 
-      const empData = employeeMap.get(item.employee_id);
+      const empData = employeeMap.get(item.employeeId);
       const preTaxTotal =
         (deductions.preTax as Array<{ amount: number }>)?.reduce(
           (sum: number, d: { amount: number }) => sum + d.amount,
@@ -462,12 +462,12 @@ export class PrismaPayrollDataSource implements PayrollDataSource {
         ) ?? 0;
 
       const employee: Employee = {
-        id: item.employee_id,
-        tenantId: item.tenant_id,
+        id: item.employeeId,
+        tenantId: item.tenantId,
         name: empData?.name ?? "Unknown",
         roleId: "",
         currency: "USD",
-        hourlyRate: Number(item.rate_regular),
+        hourlyRate: Number(item.rateRegular),
         taxInfo: undefined,
         payrollPrefs: undefined,
       };
@@ -480,17 +480,17 @@ export class PrismaPayrollDataSource implements PayrollDataSource {
 
       return {
         id: item.id,
-        tenantId: item.tenant_id,
+        tenantId: item.tenantId,
         periodId,
-        employeeId: item.employee_id,
+        employeeId: item.employeeId,
         employeeName: empData?.name ?? "Unknown",
         department: empData?.department,
         roleName: empData?.roleName ?? "Default",
-        hoursRegular: Number(item.hours_regular),
-        hoursOvertime: Number(item.hours_overtime),
-        regularPay: Number(item.rate_regular) * Number(item.hours_regular),
-        overtimePay: Number(item.rate_overtime) * Number(item.hours_overtime),
-        tips: tipsByEmployee.get(item.employee_id) ?? 0,
+        hoursRegular: Number(item.hoursRegular),
+        hoursOvertime: Number(item.hoursOvertime),
+        regularPay: Number(item.rateRegular) * Number(item.hoursRegular),
+        overtimePay: Number(item.rateOvertime) * Number(item.hoursOvertime),
+        tips: tipsByEmployee.get(item.employeeId) ?? 0,
         grossPay,
         preTaxDeductions: deductions.preTax || [],
         taxableIncome: taxResult.taxableIncome.toNumber(),
@@ -500,7 +500,7 @@ export class PrismaPayrollDataSource implements PayrollDataSource {
         totalDeductions: grossPay - netPay,
         netPay,
         currency: "USD",
-        createdAt: item.created_at,
+        createdAt: item.createdAt,
       };
     });
   }

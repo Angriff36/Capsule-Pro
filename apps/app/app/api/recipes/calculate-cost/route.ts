@@ -74,7 +74,7 @@ async function getIngredientCost(
       WHERE vc.tenant_id = ${tenantId}
         AND vc.item_name = ${ingredientName}
         AND vc.is_active = true
-        AND (vc.effective_from IS NULL OR vc.effective_from <= CURRENT_DATE)
+        AND (vc.effectiveFrom IS NULL OR vc.effectiveFrom <= CURRENT_DATE)
         AND (vc.effective_to IS NULL OR vc.effective_to >= CURRENT_DATE)
       ORDER BY vc.last_cost_update DESC NULLS LAST
       LIMIT 1

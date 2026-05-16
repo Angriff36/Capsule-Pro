@@ -1,6 +1,5 @@
 "use client";
 
-import type { email_templates } from "@repo/database";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Input } from "@repo/design-system/components/ui/input";
@@ -37,7 +36,7 @@ import {
   getEmailTemplates,
 } from "../actions";
 
-type EmailTemplate = email_templates;
+type EmailTemplate = import("@repo/database").EmailTemplate;
 
 const TEMPLATE_TYPES: { value: EmailTemplateType; label: string }[] = [
   { value: "proposal", label: "Proposal" },

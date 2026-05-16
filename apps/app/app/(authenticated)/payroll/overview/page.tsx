@@ -52,7 +52,7 @@ interface HeadcountRow {
 
 interface PendingApprovalRow {
   id: string;
-  employee_id: string;
+  employeeId: string;
   status: string;
   created_at: Date;
   first_name: string;
@@ -98,11 +98,11 @@ const fetchPayrollData = async (tenantId: string) => {
       ),
       database.$queryRaw<PendingApprovalRow[]>(
         Prisma.sql`
-          SELECT ta.id, ta.employee_id, ta.status, ta.created_at,
+          SELECT ta.id, ta.employeeId, ta.status, ta.created_at,
                  e.first_name, e.last_name
           FROM tenant_staff.timecard_approvals ta
           JOIN tenant_staff.employees e
-            ON ta.employee_id = e.id AND ta.tenant_id = e.tenant_id
+            ON ta.employeeId = e.id AND ta.tenant_id = e.tenant_id
           WHERE ta.tenant_id = ${tenantId}::uuid
             AND ta.deleted_at IS NULL
             AND ta.status = 'pending'

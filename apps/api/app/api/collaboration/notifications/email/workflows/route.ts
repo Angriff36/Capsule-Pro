@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
             id: true,
             name: true,
             subject: true,
-            template_type: true,
+            templateType: true,
           },
         },
       },

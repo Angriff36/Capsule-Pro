@@ -28,12 +28,11 @@ export async function GET(
 
     const { id } = await params;
 
-    const clientInteraction = await database.clientInteraction.findUnique({
+    const clientInteraction = await database.clientInteraction.findFirst({
       where: {
-        tenantId_id: {
-          tenantId,
-          id,
-        },
+        id,
+        tenantId,
+        deletedAt: null,
       },
     });
 

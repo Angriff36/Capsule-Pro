@@ -57,7 +57,7 @@ export async function getTimeOffRequests(params: {
         SELECT
           tor.id,
           tor.tenant_id,
-          tor.employee_id,
+          tor.employeeId,
           e.first_name AS employee_first_name,
           e.last_name AS employee_last_name,
           e.email AS employee_email,
@@ -77,13 +77,13 @@ export async function getTimeOffRequests(params: {
         FROM tenant_staff.employee_time_off_requests tor
         JOIN tenant_staff.employees e
           ON e.tenant_id = tor.tenant_id
-         AND e.id = tor.employee_id
+         AND e.id = tor.employeeId
         LEFT JOIN tenant_staff.employees processor
           ON processor.tenant_id = tor.tenant_id
          AND processor.id = tor.reviewed_by
         WHERE tor.tenant_id = ${tenantId}
           AND tor.deleted_at IS NULL
-          ${hasEmployeeId ? Prisma.sql`AND tor.employee_id = ${params.employeeId!}` : Prisma.empty}
+          ${hasEmployeeId ? Prisma.sql`AND tor.employeeId = ${params.employeeId!}` : Prisma.empty}
           ${hasStatus ? Prisma.sql`AND tor.status = ${params.status!}` : Prisma.empty}
           ${hasStartDate ? Prisma.sql`AND tor.end_date >= ${new Date(params.startDate!)}` : Prisma.empty}
           ${hasEndDate ? Prisma.sql`AND tor.start_date <= ${new Date(params.endDate!)}` : Prisma.empty}
@@ -99,7 +99,7 @@ export async function getTimeOffRequests(params: {
         FROM tenant_staff.employee_time_off_requests tor
         WHERE tor.tenant_id = ${tenantId}
           AND tor.deleted_at IS NULL
-          ${hasEmployeeId ? Prisma.sql`AND tor.employee_id = ${params.employeeId!}` : Prisma.empty}
+          ${hasEmployeeId ? Prisma.sql`AND tor.employeeId = ${params.employeeId!}` : Prisma.empty}
           ${hasStatus ? Prisma.sql`AND tor.status = ${params.status!}` : Prisma.empty}
           ${hasStartDate ? Prisma.sql`AND tor.end_date >= ${new Date(params.startDate!)}` : Prisma.empty}
           ${hasEndDate ? Prisma.sql`AND tor.start_date <= ${new Date(params.endDate!)}` : Prisma.empty}
@@ -139,7 +139,7 @@ export async function getTimeOffRequestById(
       SELECT
         tor.id,
         tor.tenant_id,
-        tor.employee_id,
+        tor.employeeId,
         e.first_name AS employee_first_name,
         e.last_name AS employee_last_name,
         e.email AS employee_email,
@@ -159,7 +159,7 @@ export async function getTimeOffRequestById(
       FROM tenant_staff.employee_time_off_requests tor
       JOIN tenant_staff.employees e
         ON e.tenant_id = tor.tenant_id
-       AND e.id = tor.employee_id
+       AND e.id = tor.employeeId
       LEFT JOIN tenant_staff.employees processor
         ON processor.tenant_id = tor.tenant_id
        AND processor.id = tor.reviewed_by
@@ -239,7 +239,7 @@ export async function createTimeOffRequest(
     Array<{
       id: string;
       tenant_id: string;
-      employee_id: string;
+      employeeId: string;
       status: string;
       start_date: Date;
       end_date: Date;
@@ -297,7 +297,7 @@ export async function updateTimeOffStatus(
     Array<{
       id: string;
       status: string;
-      employee_id: string;
+      employeeId: string;
       start_date: Date;
       end_date: Date;
     }>
@@ -333,11 +333,11 @@ export async function updateTimeOffStatus(
     Array<{
       id: string;
       tenant_id: string;
-      employee_id: string;
-      employee_first_name: string | null;
-      employee_last_name: string | null;
-      employee_email: string;
-      employee_role: string;
+      employeeId: string;
+      employeeFirstName: string | null;
+      employeeLastName: string | null;
+      employeeEmail: string;
+      employeeRole: string;
       start_date: Date;
       end_date: Date;
       reason: string | null;

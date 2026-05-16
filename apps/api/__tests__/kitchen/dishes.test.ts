@@ -11,9 +11,6 @@
  * Covers: auth (401), tenant-not-found (400), policy denial (403),
  * guard failure (422), success (200), command wiring, and error handling (500).
  *
- * NOTE: Route handlers are mocked because the actual route paths do not exist.
- * Tests mock createManifestRuntime to verify command behavior.
- *
  * @vitest-environment node
  */
 
@@ -22,140 +19,30 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
 vi.mock("@/app/lib/tenant", () => ({
-  requireCurrentUser: vi.fn().mockResolvedValue({
-    id: "test-user-id",
-    tenantId: "test-tenant",
-    role: "admin",
-    email: "test@example.com",
-    firstName: "Test",
-    lastName: "User",
-  }),
   getTenantIdForOrg: vi.fn(),
+  requireCurrentUser: vi.fn(),
 }));
 vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn() }));
 vi.mock("@/lib/manifest-runtime", () => ({
   createManifestRuntime: vi.fn(),
 }));
-vi.mock("@/lib/manifest-response", async () => {
-  const { NextResponse } = await import("next/server");
-  return {
-    manifestSuccessResponse: (data: unknown, status = 200) =>
-      NextResponse.json({ success: true, ...(data as object) }, { status }),
-    manifestErrorResponse: (message: string, status: number) =>
-      NextResponse.json({ success: false, message }, { status }),
-  };
-});
-
-const mockRunCommand = vi.fn();
 
 const { auth } = await import("@repo/auth/server");
 const { getTenantIdForOrg } = await import("@/app/lib/tenant");
 const { createManifestRuntime } = await import("@/lib/manifest-runtime");
 
+import { POST as manifestDispatch } from "@/app/api/manifest/[entity]/commands/[command]/route";
+
+function createDishHandler(command: string) {
+  return async (req: NextRequest) =>
+    manifestDispatch(req, {
+      params: Promise.resolve({ entity: "Dish", command }),
+    });
+}
+
 const TEST_TENANT_ID = "b0000000-0000-4000-b000-000000000002";
 const TEST_USER_ID = "user_test_dish";
 const TEST_ORG_ID = "org_test_dish";
-
-function setupRuntimeMock() {
-  vi.mocked(createManifestRuntime).mockResolvedValue({
-    runCommand: mockRunCommand,
-  } as never);
-}
-
-// ---------------------------------------------------------------------------
-// Simulated route handler for testing
-// ---------------------------------------------------------------------------
-
-async function simulateRouteHandler(
-  command: string,
-  request: NextRequest,
-  entityName: string
-) {
-  const authResult = await auth();
-  if (!authResult?.userId) {
-    return new Response(
-      JSON.stringify({ success: false, message: "Unauthorized" }),
-      { status: 401, headers: { "Content-Type": "application/json" } }
-    );
-  }
-
-  const orgId = authResult.orgId;
-  if (!orgId) {
-    return new Response(
-      JSON.stringify({ success: false, message: "Unauthorized" }),
-      { status: 401, headers: { "Content-Type": "application/json" } }
-    );
-  }
-
-  const tenantId = await getTenantIdForOrg(orgId);
-  if (!tenantId) {
-    return new Response(
-      JSON.stringify({ success: false, message: "Tenant not found" }),
-      { status: 400, headers: { "Content-Type": "application/json" } }
-    );
-  }
-
-  let body: Record<string, unknown>;
-  try {
-    body = await request.json();
-  } catch {
-    return new Response(
-      JSON.stringify({ success: false, message: "Internal server error" }),
-      { status: 500, headers: { "Content-Type": "application/json" } }
-    );
-  }
-
-  try {
-    const result = await createManifestRuntime({
-      user: { id: authResult.userId, tenantId },
-    });
-
-    const response = await result.runCommand(command, body, { entityName });
-
-    if (!response.success) {
-      if (response.policyDenial) {
-        return new Response(
-          JSON.stringify({
-            success: false,
-            message: `Access denied: ${response.policyDenial.policyName}`,
-          }),
-          { status: 403, headers: { "Content-Type": "application/json" } }
-        );
-      }
-      if (response.guardFailure) {
-        return new Response(
-          JSON.stringify({
-            success: false,
-            message: `Guard ${response.guardFailure.index} failed: ${response.guardFailure.formatted}`,
-          }),
-          { status: 422, headers: { "Content-Type": "application/json" } }
-        );
-      }
-      return new Response(
-        JSON.stringify({
-          success: false,
-          message: response.error || "Command failed",
-        }),
-        { status: 400, headers: { "Content-Type": "application/json" } }
-      );
-    }
-
-    return new Response(
-      JSON.stringify({
-        success: true,
-        result: response.result,
-        events: response.emittedEvents,
-      }),
-      { status: 200, headers: { "Content-Type": "application/json" } }
-    );
-  } catch (error) {
-    console.error(`Error executing ${entityName}.${command}:`, error);
-    return new Response(
-      JSON.stringify({ success: false, message: "Internal server error" }),
-      { status: 500, headers: { "Content-Type": "application/json" } }
-    );
-  }
-}
 
 function makeRequest(body: Record<string, unknown>): NextRequest {
   return new NextRequest("http://localhost:3000/api/dish/test", {
@@ -170,48 +57,50 @@ function mockAuthenticated() {
     userId: TEST_USER_ID,
   } as never);
   vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID as never);
-  setupRuntimeMock();
 }
 
 function mockRuntimeSuccess(
   result: Record<string, unknown> = { id: "dish-001" }
 ) {
-  setupRuntimeMock();
-  mockRunCommand.mockResolvedValue({
-    success: true,
-    result,
-    emittedEvents: [{ type: "DishCreated", entityId: result.id }],
-  });
+  vi.mocked(createManifestRuntime).mockResolvedValue({
+    runCommand: vi.fn().mockResolvedValue({
+      success: true,
+      result,
+      emittedEvents: [{ type: "DishCreated", entityId: result.id }],
+    }),
+  } as never);
 }
 
 function mockRuntimeFailure(error: string) {
-  setupRuntimeMock();
-  mockRunCommand.mockResolvedValue({
-    success: false,
-    error,
-  });
+  vi.mocked(createManifestRuntime).mockResolvedValue({
+    runCommand: vi.fn().mockResolvedValue({
+      success: false,
+      error,
+    }),
+  } as never);
 }
 
 function mockRuntimePolicyDenial(policyName: string) {
-  setupRuntimeMock();
-  mockRunCommand.mockResolvedValue({
-    success: false,
-    policyDenial: { policyName },
-  });
+  vi.mocked(createManifestRuntime).mockResolvedValue({
+    runCommand: vi.fn().mockResolvedValue({
+      success: false,
+      policyDenial: { policyName },
+    }),
+  } as never);
 }
 
 function mockRuntimeGuardFailure(index: number, formatted: string) {
-  setupRuntimeMock();
-  mockRunCommand.mockResolvedValue({
-    success: false,
-    guardFailure: { index, formatted },
-  });
+  vi.mocked(createManifestRuntime).mockResolvedValue({
+    runCommand: vi.fn().mockResolvedValue({
+      success: false,
+      guardFailure: { index, formatted },
+    }),
+  } as never);
 }
 
 describe("Dish API Routes", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    setupRuntimeMock();
   });
 
   // ---- POST /api/dish/create ----
@@ -220,11 +109,8 @@ describe("Dish API Routes", () => {
     it("returns 401 when unauthenticated", async () => {
       vi.mocked(auth).mockResolvedValue({ orgId: null, userId: null } as never);
 
-      const res = await simulateRouteHandler(
-        "create",
-        makeRequest({ name: "Caesar Salad" }),
-        "Dish"
-      );
+      const POST = createDishHandler("create");
+      const res = await POST(makeRequest({ name: "Caesar Salad" }));
       const data = await res.json();
 
       expect(res.status).toBe(401);
@@ -239,11 +125,8 @@ describe("Dish API Routes", () => {
       } as never);
       vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
 
-      const res = await simulateRouteHandler(
-        "create",
-        makeRequest({ name: "Caesar Salad" }),
-        "Dish"
-      );
+      const POST = createDishHandler("create");
+      const res = await POST(makeRequest({ name: "Caesar Salad" }));
       const data = await res.json();
 
       expect(res.status).toBe(400);
@@ -260,11 +143,8 @@ describe("Dish API Routes", () => {
         salesPriceCents: 1200,
       });
 
-      const res = await simulateRouteHandler(
-        "create",
-        makeRequest({ name: "Caesar Salad" }),
-        "Dish"
-      );
+      const POST = createDishHandler("create");
+      const res = await POST(makeRequest({ name: "Caesar Salad" }));
       const data = await res.json();
 
       expect(res.status).toBe(200);
@@ -276,11 +156,8 @@ describe("Dish API Routes", () => {
       mockAuthenticated();
       mockRuntimePolicyDenial("chefOnly");
 
-      const res = await simulateRouteHandler(
-        "create",
-        makeRequest({ name: "Caesar Salad" }),
-        "Dish"
-      );
+      const POST = createDishHandler("create");
+      const res = await POST(makeRequest({ name: "Caesar Salad" }));
       const data = await res.json();
 
       expect(res.status).toBe(403);
@@ -294,11 +171,8 @@ describe("Dish API Routes", () => {
         new Error("Connection refused") as never
       );
 
-      const res = await simulateRouteHandler(
-        "create",
-        makeRequest({ name: "Caesar Salad" }),
-        "Dish"
-      );
+      const POST = createDishHandler("create");
+      const res = await POST(makeRequest({ name: "Caesar Salad" }));
       const data = await res.json();
 
       expect(res.status).toBe(500);
@@ -313,11 +187,8 @@ describe("Dish API Routes", () => {
     it("returns 401 when unauthenticated", async () => {
       vi.mocked(auth).mockResolvedValue({ orgId: null, userId: null } as never);
 
-      const res = await simulateRouteHandler(
-        "update",
-        makeRequest({ id: "dish-001", name: "Updated" }),
-        "Dish"
-      );
+      const POST = createDishHandler("update");
+      const res = await POST(makeRequest({ id: "dish-001", name: "Updated" }));
       const data = await res.json();
 
       expect(res.status).toBe(401);
@@ -327,10 +198,9 @@ describe("Dish API Routes", () => {
       mockAuthenticated();
       mockRuntimeSuccess({ id: "dish-001", name: "Greek Salad" });
 
-      const res = await simulateRouteHandler(
-        "update",
-        makeRequest({ id: "dish-001", name: "Greek Salad" }),
-        "Dish"
+      const POST = createDishHandler("update");
+      const res = await POST(
+        makeRequest({ id: "dish-001", name: "Greek Salad" })
       );
       const data = await res.json();
 
@@ -341,19 +211,19 @@ describe("Dish API Routes", () => {
 
     it("passes correct command and entityName to runtime", async () => {
       mockAuthenticated();
-      mockRunCommand.mockResolvedValue({
+      const runCommand = vi.fn().mockResolvedValue({
         success: true,
         result: { id: "dish-001" },
         emittedEvents: [],
       });
+      vi.mocked(createManifestRuntime).mockResolvedValue({
+        runCommand,
+      } as never);
 
-      await simulateRouteHandler(
-        "update",
-        makeRequest({ id: "dish-001", name: "Updated" }),
-        "Dish"
-      );
+      const POST = createDishHandler("update");
+      await POST(makeRequest({ id: "dish-001", name: "Updated" }));
 
-      expect(mockRunCommand).toHaveBeenCalledWith(
+      expect(runCommand).toHaveBeenCalledWith(
         "update",
         { id: "dish-001", name: "Updated" },
         { entityName: "Dish" }
@@ -364,11 +234,8 @@ describe("Dish API Routes", () => {
       mockAuthenticated();
       mockRuntimeGuardFailure(1, "name must not be empty");
 
-      const res = await simulateRouteHandler(
-        "update",
-        makeRequest({ id: "dish-001", name: "" }),
-        "Dish"
-      );
+      const POST = createDishHandler("update");
+      const res = await POST(makeRequest({ id: "dish-001", name: "" }));
       const data = await res.json();
 
       expect(res.status).toBe(422);
@@ -382,11 +249,8 @@ describe("Dish API Routes", () => {
     it("returns 401 when unauthenticated", async () => {
       vi.mocked(auth).mockResolvedValue({ orgId: null, userId: null } as never);
 
-      const res = await simulateRouteHandler(
-        "deactivate",
-        makeRequest({ id: "dish-001" }),
-        "Dish"
-      );
+      const POST = createDishHandler("deactivate");
+      const res = await POST(makeRequest({ id: "dish-001" }));
 
       expect(res.status).toBe(401);
     });
@@ -395,11 +259,8 @@ describe("Dish API Routes", () => {
       mockAuthenticated();
       mockRuntimeSuccess({ id: "dish-001", isActive: false });
 
-      const res = await simulateRouteHandler(
-        "deactivate",
-        makeRequest({ id: "dish-001" }),
-        "Dish"
-      );
+      const POST = createDishHandler("deactivate");
+      const res = await POST(makeRequest({ id: "dish-001" }));
       const data = await res.json();
 
       expect(res.status).toBe(200);
@@ -411,11 +272,8 @@ describe("Dish API Routes", () => {
       mockAuthenticated();
       mockRuntimeFailure("Dish not found");
 
-      const res = await simulateRouteHandler(
-        "deactivate",
-        makeRequest({ id: "dish-999" }),
-        "Dish"
-      );
+      const POST = createDishHandler("deactivate");
+      const res = await POST(makeRequest({ id: "dish-999" }));
       const data = await res.json();
 
       expect(res.status).toBe(400);
@@ -429,14 +287,13 @@ describe("Dish API Routes", () => {
     it("returns 401 when unauthenticated", async () => {
       vi.mocked(auth).mockResolvedValue({ orgId: null, userId: null } as never);
 
-      const res = await simulateRouteHandler(
-        "updateLeadTime",
+      const POST = createDishHandler("updateLeadTime");
+      const res = await POST(
         makeRequest({
           id: "dish-001",
           prepTimeMinutes: 45,
           cookTimeMinutes: 30,
-        }),
-        "Dish"
+        })
       );
       const data = await res.json();
 
@@ -452,14 +309,13 @@ describe("Dish API Routes", () => {
         cookTimeMinutes: 30,
       });
 
-      const res = await simulateRouteHandler(
-        "updateLeadTime",
+      const POST = createDishHandler("updateLeadTime");
+      const res = await POST(
         makeRequest({
           id: "dish-001",
           prepTimeMinutes: 45,
           cookTimeMinutes: 30,
-        }),
-        "Dish"
+        })
       );
       const data = await res.json();
 
@@ -471,16 +327,20 @@ describe("Dish API Routes", () => {
 
     it("passes 'updateLeadTime' command with Dish entityName", async () => {
       mockAuthenticated();
-      mockRunCommand.mockResolvedValue({
+      const runCommand = vi.fn().mockResolvedValue({
         success: true,
         result: { id: "dish-001" },
         emittedEvents: [],
       });
+      vi.mocked(createManifestRuntime).mockResolvedValue({
+        runCommand,
+      } as never);
 
       const body = { id: "dish-001", prepTimeMinutes: 60 };
-      await simulateRouteHandler("updateLeadTime", makeRequest(body), "Dish");
+      const POST = createDishHandler("updateLeadTime");
+      await POST(makeRequest(body));
 
-      expect(mockRunCommand).toHaveBeenCalledWith("updateLeadTime", body, {
+      expect(runCommand).toHaveBeenCalledWith("updateLeadTime", body, {
         entityName: "Dish",
       });
     });
@@ -492,14 +352,13 @@ describe("Dish API Routes", () => {
     it("returns 401 when unauthenticated", async () => {
       vi.mocked(auth).mockResolvedValue({ orgId: null, userId: null } as never);
 
-      const res = await simulateRouteHandler(
-        "updatePricing",
+      const POST = createDishHandler("updatePricing");
+      const res = await POST(
         makeRequest({
           id: "dish-001",
           costPerPortionCents: 500,
           salesPriceCents: 1500,
-        }),
-        "Dish"
+        })
       );
       const data = await res.json();
 
@@ -514,14 +373,13 @@ describe("Dish API Routes", () => {
         salesPriceCents: 1500,
       });
 
-      const res = await simulateRouteHandler(
-        "updatePricing",
+      const POST = createDishHandler("updatePricing");
+      const res = await POST(
         makeRequest({
           id: "dish-001",
           costPerPortionCents: 500,
           salesPriceCents: 1500,
-        }),
-        "Dish"
+        })
       );
       const data = await res.json();
 
@@ -532,20 +390,24 @@ describe("Dish API Routes", () => {
 
     it("passes 'updatePricing' command with Dish entityName", async () => {
       mockAuthenticated();
-      mockRunCommand.mockResolvedValue({
+      const runCommand = vi.fn().mockResolvedValue({
         success: true,
         result: { id: "dish-001" },
         emittedEvents: [],
       });
+      vi.mocked(createManifestRuntime).mockResolvedValue({
+        runCommand,
+      } as never);
 
       const body = {
         id: "dish-001",
         costPerPortionCents: 600,
         salesPriceCents: 1800,
       };
-      await simulateRouteHandler("updatePricing", makeRequest(body), "Dish");
+      const POST = createDishHandler("updatePricing");
+      await POST(makeRequest(body));
 
-      expect(mockRunCommand).toHaveBeenCalledWith("updatePricing", body, {
+      expect(runCommand).toHaveBeenCalledWith("updatePricing", body, {
         entityName: "Dish",
       });
     });
@@ -554,14 +416,13 @@ describe("Dish API Routes", () => {
       mockAuthenticated();
       mockRuntimePolicyDenial("financeOnly");
 
-      const res = await simulateRouteHandler(
-        "updatePricing",
+      const POST = createDishHandler("updatePricing");
+      const res = await POST(
         makeRequest({
           id: "dish-001",
           costPerPortionCents: 500,
           salesPriceCents: 1500,
-        }),
-        "Dish"
+        })
       );
       const data = await res.json();
 
@@ -575,14 +436,13 @@ describe("Dish API Routes", () => {
         new Error("Unexpected") as never
       );
 
-      const res = await simulateRouteHandler(
-        "updatePricing",
+      const POST = createDishHandler("updatePricing");
+      const res = await POST(
         makeRequest({
           id: "dish-001",
           costPerPortionCents: 500,
           salesPriceCents: 1500,
-        }),
-        "Dish"
+        })
       );
 
       expect(res.status).toBe(500);

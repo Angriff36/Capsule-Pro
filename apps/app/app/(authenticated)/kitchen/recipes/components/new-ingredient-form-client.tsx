@@ -107,7 +107,7 @@ export function NewIngredientForm({ units }: NewIngredientFormProps) {
                   Ingredient name <span className="text-coral">*</span>
                 </label>
                 <input
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  className="flex h-10 w-full rounded-sm border border-input bg-background px-3 py-2 text-sm"
                   id="name"
                   name="name"
                   placeholder="All-purpose flour"
@@ -120,7 +120,7 @@ export function NewIngredientForm({ units }: NewIngredientFormProps) {
                   Category
                 </label>
                 <input
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  className="flex h-10 w-full rounded-sm border border-input bg-background px-3 py-2 text-sm"
                   id="category"
                   name="category"
                   placeholder="Dry goods, Produce, Dairy"
@@ -134,7 +134,7 @@ export function NewIngredientForm({ units }: NewIngredientFormProps) {
                   Default unit
                 </label>
                 <select
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  className="flex h-10 w-full rounded-sm border border-input bg-background px-3 py-2 text-sm"
                   id="defaultUnitId"
                   name="defaultUnitId"
                 >
@@ -151,7 +151,7 @@ export function NewIngredientForm({ units }: NewIngredientFormProps) {
                   Allergens
                 </label>
                 <input
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  className="flex h-10 w-full rounded-sm border border-input bg-background px-3 py-2 text-sm"
                   id="allergens"
                   name="allergens"
                   placeholder="nuts, dairy, gluten (comma-separated)"
@@ -177,7 +177,7 @@ export function NewIngredientForm({ units }: NewIngredientFormProps) {
                   Shelf life (days)
                 </label>
                 <input
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  className="flex h-10 w-full rounded-sm border border-input bg-background px-3 py-2 text-sm"
                   id="shelfLifeDays"
                   min="0"
                   name="shelfLifeDays"
@@ -194,7 +194,7 @@ export function NewIngredientForm({ units }: NewIngredientFormProps) {
                 Storage instructions
               </label>
               <textarea
-                className="flex min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                className="flex min-h-[100px] w-full rounded-sm border border-input bg-background px-3 py-2 text-sm"
                 id="storageInstructions"
                 name="storageInstructions"
                 placeholder="Refrigerate at 2-4C. Keep sealed when not in use."
@@ -209,14 +209,14 @@ export function NewIngredientForm({ units }: NewIngredientFormProps) {
           <div className="rounded-lg border bg-card p-6">
             <div className="flex flex-col gap-3 sm:flex-row">
               <button
-                className="inline-flex h-10 items-center justify-center rounded-md bg-ink px-6 py-2 text-sm font-medium text-white hover:bg-ink/90 disabled:pointer-events-none disabled:opacity-50"
+                className="inline-flex h-10 items-center justify-center rounded-sm bg-ink px-6 py-2 text-sm font-medium text-white hover:bg-ink/90 disabled:pointer-events-none disabled:opacity-50"
                 disabled={isPending}
                 type="submit"
               >
                 {isPending ? "Creating..." : "Create ingredient"}
               </button>
               <a
-                className="inline-flex h-10 items-center justify-center rounded-md border border-input bg-background px-6 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground"
+                className="inline-flex h-10 items-center justify-center rounded-sm border border-input bg-background px-6 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground"
                 href="/kitchen/recipes?tab=ingredients"
               >
                 Cancel

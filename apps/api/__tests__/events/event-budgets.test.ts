@@ -14,9 +14,6 @@
  *   - Internal server error when runtime throws
  *   - Tenant isolation: runtime receives correct tenantId
  *   - Response shape: { success: true/false, ... }
- *
- * NOTE: Route handlers are mocked because the actual route paths do not exist.
- * Tests mock createManifestRuntime to verify command behavior.
  */
 
 import { NextRequest } from "next/server";
@@ -29,16 +26,8 @@ vi.mock("@repo/auth/server", () => ({
 
 // Mock tenant
 vi.mock("@/app/lib/tenant", () => ({
-  requireCurrentUser: vi.fn().mockResolvedValue({
-    id: "test-user-id",
-    tenantId: "test-tenant",
-    role: "admin",
-    email: "test@example.com",
-    firstName: "Test",
-    lastName: "User",
-  }),
-
   getTenantIdForOrg: vi.fn(),
+  requireCurrentUser: vi.fn(),
 }));
 
 // Mock manifest runtime
@@ -49,17 +38,6 @@ vi.mock("@/lib/manifest-runtime", () => ({
   ),
 }));
 
-// Mock manifest response utilities
-vi.mock("@/lib/manifest-response", async () => {
-  const { NextResponse } = await import("next/server");
-  return {
-    manifestSuccessResponse: (data: unknown, status = 200) =>
-      NextResponse.json({ success: true, ...(data as object) }, { status }),
-    manifestErrorResponse: (message: string, status: number) =>
-      NextResponse.json({ success: false, message }, { status }),
-  };
-});
-
 // Mock Sentry
 vi.mock("@sentry/nextjs", () => ({
   captureException: vi.fn(),
@@ -67,8 +45,17 @@ vi.mock("@sentry/nextjs", () => ({
 
 // Import mocked modules
 import { auth } from "@repo/auth/server";
+import { POST as manifestDispatch } from "@/app/api/manifest/[entity]/commands/[command]/route";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
+
+const dispatch = (entity: string, command: string) => (req: NextRequest) =>
+  manifestDispatch(req, { params: Promise.resolve({ entity, command }) });
+
+const approvePOST = dispatch("EventBudget", "approve");
+const createPOST = dispatch("EventBudget", "create");
+const finalizePOST = dispatch("EventBudget", "finalize");
+const updatePOST = dispatch("EventBudget", "update");
 
 // Test constants
 const TEST_TENANT_ID = "a0000000-0000-4000-a000-000000000001";
@@ -76,98 +63,6 @@ const TEST_USER_ID = "user_test_budget";
 const TEST_ORG_ID = "org_test_budget";
 const TEST_EVENT_ID = "b0000000-0000-4000-b000-000000000010";
 const TEST_BUDGET_ID = "c0000000-0000-4000-c000-000000000001";
-
-// Simulated route handler for testing
-async function simulateRouteHandler(
-  command: string,
-  request: NextRequest,
-  entityName: string
-) {
-  const authResult = await auth();
-  if (!authResult?.userId) {
-    return new Response(
-      JSON.stringify({ success: false, message: "Unauthorized" }),
-      { status: 401, headers: { "Content-Type": "application/json" } }
-    );
-  }
-
-  const orgId = authResult.orgId;
-  if (!orgId) {
-    return new Response(
-      JSON.stringify({ success: false, message: "Unauthorized" }),
-      { status: 401, headers: { "Content-Type": "application/json" } }
-    );
-  }
-
-  const tenantId = await getTenantIdForOrg(orgId);
-  if (!tenantId) {
-    return new Response(
-      JSON.stringify({ success: false, message: "Tenant not found" }),
-      { status: 400, headers: { "Content-Type": "application/json" } }
-    );
-  }
-
-  let body: Record<string, unknown>;
-  try {
-    body = await request.json();
-  } catch {
-    return new Response(
-      JSON.stringify({ success: false, message: "Internal server error" }),
-      { status: 500, headers: { "Content-Type": "application/json" } }
-    );
-  }
-
-  try {
-    const result = await createManifestRuntime({
-      user: { id: authResult.userId, tenantId },
-    });
-
-    const response = await result.runCommand(command, body, { entityName });
-
-    if (!response.success) {
-      if (response.policyDenial) {
-        return new Response(
-          JSON.stringify({
-            success: false,
-            message: `Access denied: ${response.policyDenial.policyName}`,
-          }),
-          { status: 403, headers: { "Content-Type": "application/json" } }
-        );
-      }
-      if (response.guardFailure) {
-        return new Response(
-          JSON.stringify({
-            success: false,
-            message: `Guard ${response.guardFailure.index} failed: ${response.guardFailure.formatted}`,
-          }),
-          { status: 422, headers: { "Content-Type": "application/json" } }
-        );
-      }
-      return new Response(
-        JSON.stringify({
-          success: false,
-          message: response.error || "Command failed",
-        }),
-        { status: 400, headers: { "Content-Type": "application/json" } }
-      );
-    }
-
-    return new Response(
-      JSON.stringify({
-        success: true,
-        result: response.result,
-        events: response.emittedEvents,
-      }),
-      { status: 200, headers: { "Content-Type": "application/json" } }
-    );
-  } catch (error) {
-    console.error(`Error executing ${entityName}.${command}:`, error);
-    return new Response(
-      JSON.stringify({ success: false, message: "Internal server error" }),
-      { status: 500, headers: { "Content-Type": "application/json" } }
-    );
-  }
-}
 
 // Helper to create a NextRequest with JSON body
 function createMockRequest(
@@ -213,11 +108,7 @@ describe("EventBudget Command Routes", () => {
         }
       );
 
-      const response = await simulateRouteHandler(
-        "create",
-        request,
-        "EventBudget"
-      );
+      const response = await createPOST(request);
       const data = await response.json();
 
       expect(response.status).toBe(401);
@@ -241,11 +132,7 @@ describe("EventBudget Command Routes", () => {
         }
       );
 
-      const response = await simulateRouteHandler(
-        "create",
-        request,
-        "EventBudget"
-      );
+      const response = await createPOST(request);
       const data = await response.json();
 
       expect(response.status).toBe(400);
@@ -292,11 +179,7 @@ describe("EventBudget Command Routes", () => {
         }
       );
 
-      const response = await simulateRouteHandler(
-        "create",
-        request,
-        "EventBudget"
-      );
+      const response = await createPOST(request);
       const data = await response.json();
 
       expect(response.status).toBe(200);
@@ -338,11 +221,7 @@ describe("EventBudget Command Routes", () => {
         }
       );
 
-      const response = await simulateRouteHandler(
-        "create",
-        request,
-        "EventBudget"
-      );
+      const response = await createPOST(request);
       const data = await response.json();
 
       expect(response.status).toBe(403);
@@ -370,11 +249,7 @@ describe("EventBudget Command Routes", () => {
         }
       );
 
-      const response = await simulateRouteHandler(
-        "create",
-        request,
-        "EventBudget"
-      );
+      const response = await createPOST(request);
       const data = await response.json();
 
       expect(response.status).toBe(422);
@@ -399,11 +274,7 @@ describe("EventBudget Command Routes", () => {
         }
       );
 
-      const response = await simulateRouteHandler(
-        "create",
-        request,
-        "EventBudget"
-      );
+      const response = await createPOST(request);
       const data = await response.json();
 
       expect(response.status).toBe(400);
@@ -424,11 +295,7 @@ describe("EventBudget Command Routes", () => {
         }
       );
 
-      const response = await simulateRouteHandler(
-        "create",
-        request,
-        "EventBudget"
-      );
+      const response = await createPOST(request);
       const data = await response.json();
 
       expect(response.status).toBe(500);
@@ -456,11 +323,7 @@ describe("EventBudget Command Routes", () => {
         }
       );
 
-      const response = await simulateRouteHandler(
-        "update",
-        request,
-        "EventBudget"
-      );
+      const response = await updatePOST(request);
       const data = await response.json();
 
       expect(response.status).toBe(401);
@@ -500,11 +363,7 @@ describe("EventBudget Command Routes", () => {
         }
       );
 
-      const response = await simulateRouteHandler(
-        "update",
-        request,
-        "EventBudget"
-      );
+      const response = await updatePOST(request);
       const data = await response.json();
 
       expect(response.status).toBe(200);
@@ -539,7 +398,7 @@ describe("EventBudget Command Routes", () => {
         }
       );
 
-      await simulateRouteHandler("update", request, "EventBudget");
+      await updatePOST(request);
 
       expect(vi.mocked(createManifestRuntime)).toHaveBeenCalledWith({
         user: { id: TEST_USER_ID, tenantId: TEST_TENANT_ID },
@@ -565,11 +424,7 @@ describe("EventBudget Command Routes", () => {
         }
       );
 
-      const response = await simulateRouteHandler(
-        "update",
-        request,
-        "EventBudget"
-      );
+      const response = await updatePOST(request);
       const data = await response.json();
 
       expect(response.status).toBe(422);
@@ -591,11 +446,7 @@ describe("EventBudget Command Routes", () => {
         }
       );
 
-      const response = await simulateRouteHandler(
-        "update",
-        request,
-        "EventBudget"
-      );
+      const response = await updatePOST(request);
       const data = await response.json();
 
       expect(response.status).toBe(500);
@@ -623,11 +474,7 @@ describe("EventBudget Command Routes", () => {
         }
       );
 
-      const response = await simulateRouteHandler(
-        "approve",
-        request,
-        "EventBudget"
-      );
+      const response = await approvePOST(request);
       const data = await response.json();
 
       expect(response.status).toBe(401);
@@ -662,11 +509,7 @@ describe("EventBudget Command Routes", () => {
         }
       );
 
-      const response = await simulateRouteHandler(
-        "approve",
-        request,
-        "EventBudget"
-      );
+      const response = await approvePOST(request);
       const data = await response.json();
 
       expect(response.status).toBe(200);
@@ -700,11 +543,7 @@ describe("EventBudget Command Routes", () => {
         }
       );
 
-      const response = await simulateRouteHandler(
-        "approve",
-        request,
-        "EventBudget"
-      );
+      const response = await approvePOST(request);
       const data = await response.json();
 
       expect(response.status).toBe(403);
@@ -732,11 +571,7 @@ describe("EventBudget Command Routes", () => {
         }
       );
 
-      const response = await simulateRouteHandler(
-        "approve",
-        request,
-        "EventBudget"
-      );
+      const response = await approvePOST(request);
       const data = await response.json();
 
       expect(response.status).toBe(422);
@@ -761,11 +596,7 @@ describe("EventBudget Command Routes", () => {
         }
       );
 
-      const response = await simulateRouteHandler(
-        "approve",
-        request,
-        "EventBudget"
-      );
+      const response = await approvePOST(request);
       const data = await response.json();
 
       expect(response.status).toBe(400);
@@ -786,11 +617,7 @@ describe("EventBudget Command Routes", () => {
         }
       );
 
-      const response = await simulateRouteHandler(
-        "approve",
-        request,
-        "EventBudget"
-      );
+      const response = await approvePOST(request);
       const data = await response.json();
 
       expect(response.status).toBe(500);
@@ -818,11 +645,7 @@ describe("EventBudget Command Routes", () => {
         }
       );
 
-      const response = await simulateRouteHandler(
-        "finalize",
-        request,
-        "EventBudget"
-      );
+      const response = await finalizePOST(request);
       const data = await response.json();
 
       expect(response.status).toBe(401);
@@ -861,11 +684,7 @@ describe("EventBudget Command Routes", () => {
         }
       );
 
-      const response = await simulateRouteHandler(
-        "finalize",
-        request,
-        "EventBudget"
-      );
+      const response = await finalizePOST(request);
       const data = await response.json();
 
       expect(response.status).toBe(200);
@@ -897,7 +716,7 @@ describe("EventBudget Command Routes", () => {
         }
       );
 
-      await simulateRouteHandler("finalize", request, "EventBudget");
+      await finalizePOST(request);
 
       expect(vi.mocked(createManifestRuntime)).toHaveBeenCalledWith({
         user: { id: TEST_USER_ID, tenantId: TEST_TENANT_ID },
@@ -923,11 +742,7 @@ describe("EventBudget Command Routes", () => {
         }
       );
 
-      const response = await simulateRouteHandler(
-        "finalize",
-        request,
-        "EventBudget"
-      );
+      const response = await finalizePOST(request);
       const data = await response.json();
 
       expect(response.status).toBe(403);
@@ -955,11 +770,7 @@ describe("EventBudget Command Routes", () => {
         }
       );
 
-      const response = await simulateRouteHandler(
-        "finalize",
-        request,
-        "EventBudget"
-      );
+      const response = await finalizePOST(request);
       const data = await response.json();
 
       expect(response.status).toBe(422);
@@ -981,11 +792,7 @@ describe("EventBudget Command Routes", () => {
         }
       );
 
-      const response = await simulateRouteHandler(
-        "finalize",
-        request,
-        "EventBudget"
-      );
+      const response = await finalizePOST(request);
       const data = await response.json();
 
       expect(response.status).toBe(500);
@@ -1018,11 +825,7 @@ describe("EventBudget Command Routes", () => {
         }
       );
 
-      const response = await simulateRouteHandler(
-        "create",
-        request,
-        "EventBudget"
-      );
+      const response = await createPOST(request);
       const data = await response.json();
 
       const keys = Object.keys(data);
@@ -1048,11 +851,7 @@ describe("EventBudget Command Routes", () => {
         }
       );
 
-      const response = await simulateRouteHandler(
-        "create",
-        request,
-        "EventBudget"
-      );
+      const response = await createPOST(request);
       const data = await response.json();
 
       expect(data.success).toBe(true);
@@ -1080,7 +879,7 @@ describe("EventBudget Command Routes", () => {
         }
       );
 
-      await simulateRouteHandler("approve", request, "EventBudget");
+      await approvePOST(request);
       expect(console.error).not.toHaveBeenCalled();
     });
 
@@ -1095,11 +894,7 @@ describe("EventBudget Command Routes", () => {
         }
       );
 
-      const response = await simulateRouteHandler(
-        "create",
-        request,
-        "EventBudget"
-      );
+      const response = await createPOST(request);
       const data = await response.json();
 
       // JSON parse error is caught by try/catch, returns 500
@@ -1124,11 +919,7 @@ describe("EventBudget Command Routes", () => {
         }
       );
 
-      const response = await simulateRouteHandler(
-        "create",
-        request,
-        "EventBudget"
-      );
+      const response = await createPOST(request);
       const data = await response.json();
 
       expect(response.status).toBe(400);

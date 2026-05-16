@@ -32,7 +32,7 @@ import {
 interface Shift {
   id?: string;
   schedule_id?: string;
-  employee_id?: string;
+  employeeId?: string;
   location_id?: string;
   shift_start?: string;
   shift_end?: string;
@@ -111,7 +111,7 @@ export function ShiftForm({
   // Form state
   const [formData, setFormData] = useState({
     scheduleId: shift?.schedule_id || scheduleId || "",
-    employeeId: shift?.employee_id || "",
+    employeeId: shift?.employeeId || "",
     locationId: shift?.location_id || "",
     eventId: "",
     shiftStart: formatDateTimeLocal(shift?.shift_start),

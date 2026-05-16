@@ -545,15 +545,15 @@ export async function copyStepsFromVersion(
 ): Promise<void> {
   const steps = await database.$queryRaw<
     {
-      step_number: number;
+      stepNumber: number;
       instruction: string;
-      duration_minutes: number | null;
-      temperature_value: number | null;
-      temperature_unit: string | null;
-      equipment_needed: string[] | null;
+      durationMinutes: number | null;
+      temperatureValue: number | null;
+      temperatureUnit: string | null;
+      equipmentNeeded: string[] | null;
       tips: string | null;
-      video_url: string | null;
-      image_url: string | null;
+      videoUrl: string | null;
+      imageUrl: string | null;
     }[]
   >`
     SELECT
@@ -574,20 +574,20 @@ export async function copyStepsFromVersion(
   `;
 
   for (const step of steps) {
-    await database.recipe_steps.create({
+    await database.recipeStep.create({
       data: {
-        tenant_id: tenantId,
+        tenantId,
         id: randomUUID(),
-        recipe_version_id: targetVersionId,
-        step_number: step.step_number,
+        recipeVersionId: targetVersionId,
+        stepNumber: step.stepNumber,
         instruction: step.instruction,
-        duration_minutes: step.duration_minutes,
-        temperature_value: step.temperature_value,
-        temperature_unit: step.temperature_unit,
-        equipment_needed: step.equipment_needed ?? [],
+        durationMinutes: step.durationMinutes,
+        temperatureValue: step.temperatureValue,
+        temperatureUnit: step.temperatureUnit,
+        equipmentNeeded: step.equipmentNeeded ?? [],
         tips: step.tips,
-        video_url: step.video_url,
-        image_url: step.image_url,
+        videoUrl: step.videoUrl,
+        imageUrl: step.imageUrl,
       },
     });
   }

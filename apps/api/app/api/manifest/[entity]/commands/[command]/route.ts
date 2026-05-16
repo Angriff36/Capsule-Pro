@@ -7,18 +7,12 @@ import type { NextRequest } from "next/server";
 // Compiled command registry — source of truth for which entity.command pairs exist.
 // Generated from packages/manifest-ir/ir/kitchen/kitchen.commands.json
 import commandsJson from "@/../../packages/manifest-ir/ir/kitchen/kitchen.commands.json";
-import { InvariantError } from "@/app/lib/invariant";
 import { requireCurrentUser } from "@/app/lib/tenant";
 import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
-
-// Convert kebab-case to camelCase: "mark-dismissed" → "markDismissed"
-function kebabToCamelCase(str: string): string {
-  return str.replace(/-([a-z])/g, (_, char) => char.toUpperCase());
-}
 
 // Build a lookup set: "EntityName.commandName" → true
 const COMMAND_REGISTRY: Set<string> = new Set(
@@ -34,9 +28,7 @@ export async function POST(
   { params }: { params: Promise<{ entity: string; command: string }> }
 ): Promise<Response> {
   try {
-    const { entity, command: rawCommand } = await params;
-    // Normalize command name: kebab-case from URL → camelCase for registry
-    const command = kebabToCamelCase(rawCommand);
+    const { entity, command } = await params;
 
     // ── Validation: command must exist in compiled IR ──
     const commandKey = `${entity}.${command}`;
@@ -104,10 +96,6 @@ export async function POST(
       events: result.emittedEvents,
     });
   } catch (error) {
-    // ── Auth/tenant resolution failures → 401 ──
-    if (error instanceof InvariantError) {
-      return manifestErrorResponse("Unauthorized", 401);
-    }
     console.error("[manifest/dispatcher] Error:", error);
     captureException(error);
     return manifestErrorResponse("Internal server error", 500);

@@ -28,9 +28,11 @@ export async function GET(
 
     const { id } = await params;
 
-    const contractSignature = await database.contractSignature.findUnique({
+    const contractSignature = await database.contractSignature.findFirst({
       where: {
-        tenantId_id: { tenantId, id },
+        id,
+        tenantId,
+        deletedAt: null,
       },
     });
 

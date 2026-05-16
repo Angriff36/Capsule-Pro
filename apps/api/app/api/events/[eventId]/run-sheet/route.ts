@@ -63,13 +63,13 @@ export async function GET(
     });
 
     // Fetch event-dish links
-    const eventDishLinks = await database.event_dishes.findMany({
-      where: { event_id: eventId, tenant_id: tenantId, deleted_at: null },
+    const eventDishLinks = await database.eventDish.findMany({
+      where: { eventId, tenantId, deletedAt: null },
       orderBy: { course: "asc" },
     });
 
     // Fetch dish details
-    const dishIds = eventDishLinks.map((ed) => ed.dish_id);
+    const dishIds = eventDishLinks.map((ed) => ed.dishId);
     const dishes =
       dishIds.length > 0
         ? await database.dish.findMany({
@@ -161,7 +161,7 @@ export async function GET(
 
     // Build dish entries
     const runSheetDishes = eventDishLinks.map((link) => {
-      const dish = dishById.get(link.dish_id);
+      const dish = dishById.get(link.dishId);
       const recipeVersion = dish?.recipeId
         ? latestVersionByRecipe.get(dish.recipeId)
         : null;
@@ -169,13 +169,13 @@ export async function GET(
         ? (ingredientsByVersion.get(recipeVersion.id) ?? [])
         : [];
       return {
-        id: dish?.id ?? link.dish_id,
+        id: dish?.id ?? link.dishId,
         name: dish?.name ?? "Unknown",
         description: dish?.description ?? null,
         allergens: (dish?.allergens as string[]) ?? [],
         dietaryTags: (dish?.dietaryTags as string[]) ?? [],
         course: link.course,
-        servings: link.quantity_servings,
+        servings: link.quantityServings,
         source: battleBoard
           ? ("battle-board" as const)
           : ("event-menu" as const),
@@ -267,14 +267,14 @@ export async function GET(
       { name: string; quantity: number; dishes: string[] }
     >();
     for (const link of eventDishLinks) {
-      const dish = dishById.get(link.dish_id);
+      const dish = dishById.get(link.dishId);
       const recipeVersion = dish?.recipeId
         ? latestVersionByRecipe.get(dish.recipeId)
         : undefined;
       if (!(dish && recipeVersion)) continue;
       const scaleFactor =
-        link.quantity_servings && recipeVersion.yieldQuantity
-          ? link.quantity_servings / Number(recipeVersion.yieldQuantity)
+        link.quantityServings && recipeVersion.yieldQuantity
+          ? link.quantityServings / Number(recipeVersion.yieldQuantity)
           : 1;
       const ings = ingredientsByVersion.get(recipeVersion.id) ?? [];
       for (const ing of ings) {

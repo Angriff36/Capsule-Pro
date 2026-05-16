@@ -48,7 +48,7 @@ vi.mock("@/lib/manifest-runtime", () => ({
 
 // Import mocked modules after vi.mock setup
 import { auth } from "@repo/auth/server";
-import { getTenantIdForOrg, requireCurrentUser } from "@/app/lib/tenant";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
 
 // ---------------------------------------------------------------------------
@@ -199,7 +199,7 @@ describe("Schedule Persistence (write → read alignment)", () => {
         userId: TEST_CLERK_ID,
       } as any);
       vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-      vi.mocked(database.schedule.findUnique).mockResolvedValue(
+      vi.mocked(database.schedule.findFirst).mockResolvedValue(
         mockSchedule as never
       );
 
@@ -217,11 +217,13 @@ describe("Schedule Persistence (write → read alignment)", () => {
       expect(data.schedule.id).toBe("sched-002");
       expect(data.schedule.status).toBe("published");
 
-      // Verify the read uses Prisma findUnique with tenant + id scoping
-      expect(database.schedule.findUnique).toHaveBeenCalledWith(
+      // Verify the read uses Prisma findFirst with tenant + id scoping
+      expect(database.schedule.findFirst).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({
-            tenantId_id: { tenantId: TEST_TENANT_ID, id: "sched-002" },
+            id: "sched-002",
+            tenantId: TEST_TENANT_ID,
+            deletedAt: null,
           }),
         })
       );
@@ -233,7 +235,7 @@ describe("Schedule Persistence (write → read alignment)", () => {
         userId: TEST_CLERK_ID,
       } as any);
       vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-      vi.mocked(database.schedule.findUnique).mockResolvedValue(null);
+      vi.mocked(database.schedule.findFirst).mockResolvedValue(null);
 
       const { GET } = await import("@/app/api/staff/schedules/[id]/route");
 
@@ -249,10 +251,10 @@ describe("Schedule Persistence (write → read alignment)", () => {
   });
 
   // -------------------------------------------------------------------------
-  // 3. Command routes forward body and entityName to runCommand
+  // 3. Command routes pass instanceId for instance-scoped verbs
   // -------------------------------------------------------------------------
 
-  describe("command route parameters", () => {
+  describe("instanceId on command routes (Blocker #1 fix)", () => {
     const mockUser = {
       id: TEST_USER_ID,
       tenantId: TEST_TENANT_ID,
@@ -273,30 +275,58 @@ describe("Schedule Persistence (write → read alignment)", () => {
       } as any);
       vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
       vi.mocked(database.user.findFirst).mockResolvedValue(mockUser as never);
-      vi.mocked(requireCurrentUser).mockResolvedValue({
-        id: TEST_USER_ID,
-        tenantId: TEST_TENANT_ID,
-        role: "admin",
-        email: "test@example.com",
-        firstName: "Test",
-        lastName: "User",
-      } as any);
       mockRunCommand.mockClear();
       vi.mocked(createManifestRuntime).mockResolvedValue({
         runCommand: mockRunCommand,
       } as any);
     });
 
-    // Test that the manifest dispatcher passes entityName correctly
-    it("manifest dispatcher passes entityName to runCommand", async () => {
+    const instanceScopedVerbs = [
+      { verb: "update", file: "update" },
+      { verb: "release", file: "release" },
+      { verb: "close", file: "close" },
+    ];
+
+    for (const { verb, file } of instanceScopedVerbs) {
+      it(`${verb} route passes instanceId to runCommand`, async () => {
+        const mod = await import(
+          `@/app/api/staff/schedules/commands/${file}/route`
+        );
+        const request = createMockRequest(
+          `http://localhost:3000/api/staff/schedules/commands/${file}`,
+          {
+            method: "POST",
+            body: JSON.stringify({ id: "sched-003" }),
+          }
+        );
+
+        await mod.POST(request, {
+          params: Promise.resolve({ entity: "Schedule", command: "create" }),
+        });
+
+        expect(mockRunCommand).toHaveBeenCalledWith(
+          verb,
+          expect.any(Object),
+          expect.objectContaining({
+            entityName: "Schedule",
+            instanceId: "sched-003",
+          })
+        );
+      });
+    }
+
+    it("create route does NOT pass instanceId", async () => {
       const mod = await import(
         "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       const request = createMockRequest(
-        "http://localhost:3000/api/manifest/Schedule/commands/create",
+        "http://localhost:3000/api/staff/schedules/commands/create",
         {
           method: "POST",
-          body: JSON.stringify({ locationId: "loc-001" }),
+          body: JSON.stringify({
+            locationId: "loc-001",
+            scheduleDate: Date.now(),
+          }),
         }
       );
 
@@ -306,8 +336,8 @@ describe("Schedule Persistence (write → read alignment)", () => {
 
       expect(mockRunCommand).toHaveBeenCalledWith(
         "create",
-        { locationId: "loc-001" },
-        { entityName: "Schedule" }
+        expect.any(Object),
+        expect.not.objectContaining({ instanceId: expect.anything() })
       );
     });
   });

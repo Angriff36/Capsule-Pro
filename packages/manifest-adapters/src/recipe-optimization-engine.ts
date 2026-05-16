@@ -215,11 +215,11 @@ async function findSubstitutions(
       FROM tenant_kitchen.ingredients i
       LEFT JOIN tenant_inventory.inventory_items ii
         ON ii.name = i.name
-        AND ii.tenant_id = i.tenant_id
-        AND ii.deleted_at IS NULL
-      WHERE i.tenant_id = ${tenantId}
+        AND ii.tenantId = i.tenantId
+        AND ii.deletedAt IS NULL
+      WHERE i.tenantId = ${tenantId}
         AND i.id != ${ingredientId}
-        AND i.deleted_at IS NULL
+        AND i.deletedAt IS NULL
         AND i.category = ${category || original[0].category}
       ORDER BY unit_cost ASC
       LIMIT 5
@@ -335,9 +335,9 @@ export async function optimizeRecipe(
         COALESCE(i.allergens, '{}') as allergens
       FROM tenant_kitchen.recipe_ingredients ri
       JOIN tenant_kitchen.ingredients i ON i.id = ri.ingredient_id
-      WHERE ri.tenant_id = ${tenantId}
-        AND ri.recipe_version_id = ${recipeVersionId}
-        AND ri.deleted_at IS NULL
+      WHERE ri.tenantId = ${tenantId}
+        AND ri.recipeVersionId = ${recipeVersionId}
+        AND ri.deletedAt IS NULL
       ORDER BY ri.sort_order
     `
   );
@@ -642,9 +642,9 @@ async function calculateNutritionalAnalysis(
         i.cholesterol_per_100mg
       FROM tenant_kitchen.recipe_ingredients ri
       JOIN tenant_kitchen.ingredients i ON i.id = ri.ingredient_id
-      WHERE ri.tenant_id = ${tenantId}
-        AND ri.recipe_version_id = ${recipeVersionId}
-        AND ri.deleted_at IS NULL
+      WHERE ri.tenantId = ${tenantId}
+        AND ri.recipeVersionId = ${recipeVersionId}
+        AND ri.deletedAt IS NULL
         AND ri.is_optional = false
       ORDER BY ri.sort_order
     `

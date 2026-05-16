@@ -28,10 +28,11 @@ export async function GET(
 
     const { id } = await params;
 
-    const payrollRun = await database.payroll_runs.findFirst({
+    const payrollRun = await database.payrollRun.findFirst({
       where: {
-        tenant_id: tenantId,
         id,
+        tenantId,
+        deletedAt: null,
       },
     });
 

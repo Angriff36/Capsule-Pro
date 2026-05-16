@@ -36,9 +36,6 @@ vi.mock("@repo/database", () => ({
       update: vi.fn(),
       delete: vi.fn(),
     },
-    user: {
-      findFirst: vi.fn(),
-    },
     $queryRaw: vi.fn(),
     $transaction: vi.fn(),
   },
@@ -47,10 +44,9 @@ vi.mock("@repo/database", () => ({
 vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
 
 vi.mock("@/app/lib/tenant", () => ({
-  requireCurrentUser: vi.fn(),
-
-  getTenantIdForOrg: vi.fn().mockResolvedValue("test-tenant"),
+  getTenantIdForOrg: vi.fn(),
   requireTenantId: vi.fn(),
+  requireCurrentUser: vi.fn(),
 }));
 
 vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn() }));
@@ -82,118 +78,41 @@ vi.mock("@/lib/manifest-runtime", () => ({
 
 // --- Import mocked modules ---
 
-import { InvariantError } from "@/app/lib/invariant";
-
 const { auth } = await import("@repo/auth/server");
-const { getTenantIdForOrg, requireCurrentUser } = await import("@/app/lib/tenant");
+const { getTenantIdForOrg } = await import("@/app/lib/tenant");
 const { createManifestRuntime } = await import("@/lib/manifest-runtime");
 
 // --- Route imports ---
 
 import { GET as getActivityFeedList } from "@/app/api/activity-feed/list/route";
 import { GET as getActivityFeedStats } from "@/app/api/activity-feed/stats/route";
-import { POST as manifestPOST } from "@/app/api/manifest/[entity]/commands/[command]/route";
-
-const archiveParticipant = (req: NextRequest) =>
-  manifestPOST(req, {
-    params: Promise.resolve({
-      entity: "AdminChatParticipant",
-      command: "archive",
-    }),
-  });
-const clearHistory = (req: NextRequest) =>
-  manifestPOST(req, {
-    params: Promise.resolve({
-      entity: "AdminChatParticipant",
-      command: "clearHistory",
-    }),
-  });
-const unarchiveParticipant = (req: NextRequest) =>
-  manifestPOST(req, {
-    params: Promise.resolve({
-      entity: "AdminChatParticipant",
-      command: "unarchive",
-    }),
-  });
-
 import { POST as aiEventSetupParse } from "@/app/api/ai-event-setup/parse/route";
+import { POST as manifestDispatch } from "@/app/api/manifest/[entity]/commands/[command]/route";
 
-const sessionCancel = (req: NextRequest) =>
-  manifestPOST(req, {
-    params: Promise.resolve({
-      entity: "AiEventSetupSession",
-      command: "cancel",
-    }),
+const dispatch = (entity: string, command: string) => (req: NextRequest) =>
+  manifestDispatch(req, {
+    params: Promise.resolve({ entity, command }),
   });
-const sessionConfirm = (req: NextRequest) =>
-  manifestPOST(req, {
-    params: Promise.resolve({
-      entity: "AiEventSetupSession",
-      command: "confirm",
-    }),
-  });
-const sessionMarkCreated = (req: NextRequest) =>
-  manifestPOST(req, {
-    params: Promise.resolve({
-      entity: "AiEventSetupSession",
-      command: "markCreated",
-    }),
-  });
-const sessionParse = (req: NextRequest) =>
-  manifestPOST(req, {
-    params: Promise.resolve({
-      entity: "AiEventSetupSession",
-      command: "parse",
-    }),
-  });
-const sessionUpdateConfidence = (req: NextRequest) =>
-  manifestPOST(req, {
-    params: Promise.resolve({
-      entity: "AiEventSetupSession",
-      command: "updateConfidence",
-    }),
-  });
-const alertsConfigCreate = (req: NextRequest) =>
-  manifestPOST(req, {
-    params: Promise.resolve({ entity: "AlertsConfig", command: "create" }),
-  });
-const alertsConfigRemove = (req: NextRequest) =>
-  manifestPOST(req, {
-    params: Promise.resolve({ entity: "AlertsConfig", command: "remove" }),
-  });
-const alertsConfigUpdate = (req: NextRequest) =>
-  manifestPOST(req, {
-    params: Promise.resolve({ entity: "AlertsConfig", command: "update" }),
-  });
-const allergenAcknowledge = (req: NextRequest) =>
-  manifestPOST(req, {
-    params: Promise.resolve({
-      entity: "AllergenWarning",
-      command: "acknowledge",
-    }),
-  });
-const allergenApplyOverride = (req: NextRequest) =>
-  manifestPOST(req, {
-    params: Promise.resolve({
-      entity: "AllergenWarning",
-      command: "applyOverride",
-    }),
-  });
-const allergenCreate = (req: NextRequest) =>
-  manifestPOST(req, {
-    params: Promise.resolve({ entity: "AllergenWarning", command: "create" }),
-  });
-const allergenResolve = (req: NextRequest) =>
-  manifestPOST(req, {
-    params: Promise.resolve({ entity: "AllergenWarning", command: "resolve" }),
-  });
-const allergenSoftDelete = (req: NextRequest) =>
-  manifestPOST(req, {
-    params: Promise.resolve({
-      entity: "AllergenWarning",
-      command: "softDelete",
-    }),
-  });
+
+const archiveParticipant = dispatch("AdminChatParticipant", "archive");
+const clearHistory = dispatch("AdminChatParticipant", "clearHistory");
+const unarchiveParticipant = dispatch("AdminChatParticipant", "unarchive");
+const sessionCancel = dispatch("AiEventSetupSession", "cancel");
+const sessionConfirm = dispatch("AiEventSetupSession", "confirm");
+const sessionMarkCreated = dispatch("AiEventSetupSession", "markCreated");
+const sessionParse = dispatch("AiEventSetupSession", "parse");
+const sessionUpdateConfidence = dispatch(
+  "AiEventSetupSession",
+  "updateConfidence"
+);
+const alertsConfigCreate = dispatch("AlertsConfig", "create");
+const alertsConfigRemove = dispatch("AlertsConfig", "remove");
+const alertsConfigUpdate = dispatch("AlertsConfig", "update");
+const allergenAcknowledge = dispatch("AllergenWarning", "acknowledge");
+const allergenApplyOverride = dispatch("AllergenWarning", "applyOverride");
+const allergenCreate = dispatch("AllergenWarning", "create");
+const allergenResolve = dispatch("AllergenWarning", "resolve");
+const allergenSoftDelete = dispatch("AllergenWarning", "softDelete");
 
 // --- Constants ---
 
@@ -209,23 +128,6 @@ function makeAuthedUser() {
     userId: TEST_USER_ID,
   } as never);
   vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-  vi.mocked(requireCurrentUser).mockResolvedValue({
-    id: TEST_USER_ID,
-    tenantId: TEST_TENANT_ID,
-    role: "admin",
-    email: "test@example.com",
-    firstName: "Test",
-    lastName: "User",
-  } as never);
-}
-
-function setupUserLookup() {
-  vi.mocked(database.user.findFirst).mockResolvedValue({
-    id: TEST_USER_ID,
-    tenantId: TEST_TENANT_ID,
-    role: "admin",
-    authUserId: TEST_USER_ID,
-  } as never);
 }
 
 function makeRequest(url: string, options: RequestInit = {}): NextRequest {
@@ -611,8 +513,6 @@ describe("Admin Extended API", () => {
     const mockRunCommand = vi.fn();
 
     beforeEach(() => {
-      makeAuthedUser();
-      setupUserLookup();
       makeRuntime(mockRunCommand);
     });
 
@@ -628,10 +528,6 @@ describe("Admin Extended API", () => {
             orgId: null,
             userId: null,
           } as never);
-          // Throw InvariantError so route catches it and returns 401
-          vi.mocked(requireCurrentUser).mockRejectedValue(
-            new InvariantError("Unauthorized") as never
-          );
 
           const response = await handler(
             makeRequest("/api/test", {
@@ -646,24 +542,8 @@ describe("Admin Extended API", () => {
           expect(respBody.message).toBe("Unauthorized");
         });
 
-        // Note: requireCurrentUser auto-provisions tenants and users, so tenant
-        // not found scenarios succeed rather than return 400. Only auth failures
-        // (InvariantError) return 401.
-        it("should return 200 when tenant lookup is null (auto-provision)", async () => {
-          vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID as never);
-          vi.mocked(requireCurrentUser).mockResolvedValue({
-            id: TEST_USER_ID,
-            tenantId: TEST_TENANT_ID,
-            role: "admin",
-            email: "test@example.com",
-            firstName: "Test",
-            lastName: "User",
-          } as never);
-          mockRunCommand.mockResolvedValue({
-            success: true,
-            result: { id: "result-id" },
-            emittedEvents: [],
-          });
+        it("should return 400 when tenant not found", async () => {
+          vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
 
           const response = await handler(
             makeRequest("/api/test", {
@@ -671,8 +551,11 @@ describe("Admin Extended API", () => {
               body: JSON.stringify(body),
             })
           );
-          // Route auto-provisions, so it succeeds with 200
-          expect(response.status).toBe(200);
+          expect(response.status).toBe(400);
+
+          const respBody = await response.json();
+          expect(respBody.success).toBe(false);
+          expect(respBody.message).toBe("Tenant not found");
         });
 
         it("should return 200 on successful command", async () => {
@@ -715,7 +598,7 @@ describe("Admin Extended API", () => {
           });
         });
 
-        it("should create runtime with tenant-isolated context", async () => {
+        it("should create runtime with correct user context", async () => {
           mockRunCommand.mockResolvedValue({
             success: true,
             result: {},
@@ -730,8 +613,7 @@ describe("Admin Extended API", () => {
           );
 
           expect(createManifestRuntime).toHaveBeenCalledWith({
-            user: { id: TEST_USER_ID, tenantId: TEST_TENANT_ID, role: "admin" },
-            entityName: expect.any(String),
+            user: { id: TEST_USER_ID, tenantId: TEST_TENANT_ID },
           });
         });
 
@@ -1056,8 +938,6 @@ describe("Admin Extended API", () => {
     const mockRunCommand = vi.fn();
 
     beforeEach(() => {
-      makeAuthedUser();
-      setupUserLookup();
       makeRuntime(mockRunCommand);
     });
 
@@ -1073,9 +953,6 @@ describe("Admin Extended API", () => {
             orgId: null,
             userId: null,
           } as never);
-          vi.mocked(requireCurrentUser).mockRejectedValue(
-            new InvariantError("Unauthorized") as never
-          );
 
           const response = await handler(
             makeRequest("/api/test", {
@@ -1086,11 +963,8 @@ describe("Admin Extended API", () => {
           expect(response.status).toBe(401);
         });
 
-        it("should return 401 when tenant not found", async () => {
+        it("should return 400 when tenant not found", async () => {
           vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
-          vi.mocked(requireCurrentUser).mockRejectedValue(
-            new InvariantError("Tenant not found") as never
-          );
 
           const response = await handler(
             makeRequest("/api/test", {
@@ -1098,7 +972,7 @@ describe("Admin Extended API", () => {
               body: JSON.stringify(body),
             })
           );
-          expect(response.status).toBe(401);
+          expect(response.status).toBe(400);
         });
 
         it("should return 200 on success", async () => {
@@ -1154,8 +1028,7 @@ describe("Admin Extended API", () => {
           );
 
           expect(createManifestRuntime).toHaveBeenCalledWith({
-            entityName: "AiEventSetupSession",
-            user: { id: TEST_USER_ID, tenantId: TEST_TENANT_ID, role: "admin" },
+            user: { id: TEST_USER_ID, tenantId: TEST_TENANT_ID },
           });
         });
 
@@ -1282,8 +1155,6 @@ describe("Admin Extended API", () => {
     const mockRunCommand = vi.fn();
 
     beforeEach(() => {
-      makeAuthedUser();
-      setupUserLookup();
       makeRuntime(mockRunCommand);
     });
 
@@ -1299,9 +1170,6 @@ describe("Admin Extended API", () => {
             orgId: null,
             userId: null,
           } as never);
-          vi.mocked(requireCurrentUser).mockRejectedValue(
-            new InvariantError("Unauthorized") as never
-          );
 
           const response = await handler(
             makeRequest("/api/test", {
@@ -1312,11 +1180,8 @@ describe("Admin Extended API", () => {
           expect(response.status).toBe(401);
         });
 
-        it("should return 401 when tenant not found", async () => {
+        it("should return 400 when tenant not found", async () => {
           vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
-          vi.mocked(requireCurrentUser).mockRejectedValue(
-            new InvariantError("Tenant not found") as never
-          );
 
           const response = await handler(
             makeRequest("/api/test", {
@@ -1324,7 +1189,7 @@ describe("Admin Extended API", () => {
               body: JSON.stringify(body),
             })
           );
-          expect(response.status).toBe(401);
+          expect(response.status).toBe(400);
         });
 
         it("should return 200 on success", async () => {
@@ -1381,8 +1246,7 @@ describe("Admin Extended API", () => {
           );
 
           expect(createManifestRuntime).toHaveBeenCalledWith({
-            entityName: "AlertsConfig",
-            user: { id: TEST_USER_ID, tenantId: TEST_TENANT_ID, role: "admin" },
+            user: { id: TEST_USER_ID, tenantId: TEST_TENANT_ID },
           });
         });
 
@@ -1500,8 +1364,6 @@ describe("Admin Extended API", () => {
     const mockRunCommand = vi.fn();
 
     beforeEach(() => {
-      makeAuthedUser();
-      setupUserLookup();
       makeRuntime(mockRunCommand);
     });
 
@@ -1517,9 +1379,6 @@ describe("Admin Extended API", () => {
             orgId: null,
             userId: null,
           } as never);
-          vi.mocked(requireCurrentUser).mockRejectedValue(
-            new InvariantError("Unauthorized") as never
-          );
 
           const response = await handler(
             makeRequest("/api/test", {
@@ -1530,11 +1389,8 @@ describe("Admin Extended API", () => {
           expect(response.status).toBe(401);
         });
 
-        it("should return 401 when tenant not found", async () => {
+        it("should return 400 when tenant not found", async () => {
           vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
-          vi.mocked(requireCurrentUser).mockRejectedValue(
-            new InvariantError("Tenant not found") as never
-          );
 
           const response = await handler(
             makeRequest("/api/test", {
@@ -1542,7 +1398,7 @@ describe("Admin Extended API", () => {
               body: JSON.stringify(body),
             })
           );
-          expect(response.status).toBe(401);
+          expect(response.status).toBe(400);
         });
 
         it("should return 200 on success", async () => {
@@ -1599,8 +1455,7 @@ describe("Admin Extended API", () => {
           );
 
           expect(createManifestRuntime).toHaveBeenCalledWith({
-            entityName: "AllergenWarning",
-            user: { id: TEST_USER_ID, tenantId: TEST_TENANT_ID, role: "admin" },
+            user: { id: TEST_USER_ID, tenantId: TEST_TENANT_ID },
           });
         });
 

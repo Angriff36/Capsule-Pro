@@ -6,7 +6,6 @@
  */
 
 import { database } from "@repo/database";
-import { InvariantError } from "@/app/lib/invariant";
 import { NextRequest } from "next/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { GET as getEmailTemplate } from "@/app/api/communications/email-templates/[id]/route";
@@ -37,7 +36,6 @@ import {
 // Mock dependencies
 vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
 vi.mock("@/app/lib/tenant", () => ({
-  requireCurrentUser: vi.fn(),
   getTenantIdForOrg: vi.fn(),
 }));
 vi.mock("@/lib/manifest-runtime", () => ({
@@ -48,7 +46,7 @@ vi.mock("@sentry/nextjs", () => ({
 }));
 
 const { auth } = await import("@repo/auth/server");
-const { getTenantIdForOrg, requireCurrentUser } = await import("@/app/lib/tenant");
+const { getTenantIdForOrg } = await import("@/app/lib/tenant");
 const { createManifestRuntime } = await import("@/lib/manifest-runtime");
 
 const TEST_TENANT_ID = "00000000-0000-0000-0000-000000000001";
@@ -131,14 +129,6 @@ describe("Communications - Email Templates", () => {
       orgId: TEST_ORG_ID,
     } as never);
     vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-    vi.mocked(requireCurrentUser).mockResolvedValue({
-      id: TEST_USER_ID,
-      tenantId: TEST_TENANT_ID,
-      role: "admin",
-      email: "test@example.com",
-      firstName: "Test",
-      lastName: "User",
-    } as never);
   });
 
   afterEach(() => {
@@ -184,7 +174,7 @@ describe("Communications - Email Templates", () => {
         createMockEmailTemplate({ id: "tmpl-2", name: "Follow-up" }),
       ];
 
-      vi.mocked(database.email_templates.findMany).mockResolvedValue(
+      vi.mocked(database.emailTemplate.findMany).mockResolvedValue(
         mockTemplates as never
       );
 
@@ -200,16 +190,14 @@ describe("Communications - Email Templates", () => {
     });
 
     it("should filter by tenant_id and exclude soft-deleted", async () => {
-      vi.mocked(database.email_templates.findMany).mockResolvedValue(
-        [] as never
-      );
+      vi.mocked(database.emailTemplate.findMany).mockResolvedValue([] as never);
 
       const request = new NextRequest(
         "http://localhost/api/communications/email-templates/list"
       );
       await listEmailTemplates(request);
 
-      expect(database.email_templates.findMany).toHaveBeenCalledWith(
+      expect(database.emailTemplate.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: {
             tenant_id: TEST_TENANT_ID,
@@ -220,16 +208,14 @@ describe("Communications - Email Templates", () => {
     });
 
     it("should order results by created_at descending", async () => {
-      vi.mocked(database.email_templates.findMany).mockResolvedValue(
-        [] as never
-      );
+      vi.mocked(database.emailTemplate.findMany).mockResolvedValue([] as never);
 
       const request = new NextRequest(
         "http://localhost/api/communications/email-templates/list"
       );
       await listEmailTemplates(request);
 
-      expect(database.email_templates.findMany).toHaveBeenCalledWith(
+      expect(database.emailTemplate.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           orderBy: { created_at: "desc" },
         })
@@ -237,7 +223,7 @@ describe("Communications - Email Templates", () => {
     });
 
     it("should return 500 on database error", async () => {
-      vi.mocked(database.email_templates.findMany).mockRejectedValue(
+      vi.mocked(database.emailTemplate.findMany).mockRejectedValue(
         new Error("Database connection failed")
       );
 
@@ -258,7 +244,7 @@ describe("Communications - Email Templates", () => {
     it("should return a single email template by ID", async () => {
       const mockTemplate = createMockEmailTemplate({ id: "tmpl-001" });
 
-      vi.mocked(database.email_templates.findUnique).mockResolvedValue(
+      vi.mocked(database.emailTemplate.findFirst).mockResolvedValue(
         mockTemplate as never
       );
 
@@ -276,7 +262,7 @@ describe("Communications - Email Templates", () => {
     });
 
     it("should return 404 when template not found", async () => {
-      vi.mocked(database.email_templates.findUnique).mockResolvedValue(
+      vi.mocked(database.emailTemplate.findFirst).mockResolvedValue(
         null as never
       );
 
@@ -294,7 +280,7 @@ describe("Communications - Email Templates", () => {
     });
 
     it("should enforce tenant isolation on detail queries", async () => {
-      vi.mocked(database.email_templates.findUnique).mockResolvedValue(
+      vi.mocked(database.emailTemplate.findFirst).mockResolvedValue(
         null as never
       );
 
@@ -305,13 +291,12 @@ describe("Communications - Email Templates", () => {
         params: Promise.resolve({ id: "tmpl-001" }),
       });
 
-      expect(database.email_templates.findUnique).toHaveBeenCalledWith(
+      expect(database.emailTemplate.findFirst).toHaveBeenCalledWith(
         expect.objectContaining({
           where: {
-            tenant_id_id: {
-              tenant_id: TEST_TENANT_ID,
-              id: "tmpl-001",
-            },
+            id: "tmpl-001",
+            tenant_id: TEST_TENANT_ID,
+            deleted_at: null,
           },
         })
       );
@@ -322,9 +307,6 @@ describe("Communications - Email Templates", () => {
         userId: null,
         orgId: null,
       } as never);
-      vi.mocked(requireCurrentUser).mockRejectedValue(
-        new InvariantError("Unauthorized") as never
-      );
 
       const request = new NextRequest(
         "http://localhost/api/communications/email-templates/tmpl-001"
@@ -351,10 +333,6 @@ describe("Communications - Email Templates", () => {
       vi.mocked(database.user.findFirst).mockResolvedValue(
         createMockUser() as never
       );
-
-      vi.mocked(requireCurrentUser).mockResolvedValue(
-        createMockUser() as never
-      );
     });
 
     it("should return 401 for unauthenticated requests", async () => {
@@ -362,9 +340,6 @@ describe("Communications - Email Templates", () => {
         userId: null,
         orgId: null,
       } as never);
-      vi.mocked(requireCurrentUser).mockRejectedValue(
-        new InvariantError("Unauthorized") as never
-      );
 
       const request = new NextRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -380,11 +355,8 @@ describe("Communications - Email Templates", () => {
       expect(response.status).toBe(401);
     });
 
-    it("should return 401 when tenant not found", async () => {
+    it("should return 400 when tenant not found", async () => {
       vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
-      vi.mocked(requireCurrentUser).mockRejectedValue(
-        new InvariantError("Unauthorized") as never
-      );
 
       const request = new NextRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -397,7 +369,7 @@ describe("Communications - Email Templates", () => {
         params: Promise.resolve({ entity: "EmailTemplate", command: "create" }),
       });
 
-      expect(response.status).toBe(401);
+      expect(response.status).toBe(400);
     });
 
     it("should create a template through manifest runtime and persist", async () => {
@@ -435,6 +407,10 @@ describe("Communications - Email Templates", () => {
         "create",
         expect.objectContaining({ name: "New Template" }),
         { entityName: "EmailTemplate" }
+      );
+      expect(mockCreateInstance).toHaveBeenCalledWith(
+        "EmailTemplate",
+        expect.objectContaining({ tenantId: TEST_TENANT_ID })
       );
     });
 
@@ -486,6 +462,30 @@ describe("Communications - Email Templates", () => {
       expect(body.message).toContain("Guard 0 failed");
     });
 
+    it("should return 422 when createInstance returns undefined", async () => {
+      mockRunCommand.mockResolvedValue({
+        success: true,
+        result: { id: "tmpl-new" },
+        emittedEvents: [],
+      });
+      mockCreateInstance.mockResolvedValue(undefined);
+
+      const request = new NextRequest(
+        "http://localhost/api/manifest/[entity]/commands/[command]",
+        {
+          method: "POST",
+          body: JSON.stringify({ name: "Template" }),
+        }
+      );
+      const response = await createEmailTemplate(request, {
+        params: Promise.resolve({ entity: "EmailTemplate", command: "create" }),
+      });
+
+      expect(response.status).toBe(422);
+      const body = await response.json();
+      expect(body.message).toContain("Failed to create email template");
+    });
+
     it("should return 500 on unexpected error", async () => {
       mockRunCommand.mockRejectedValue(new Error("Runtime crash"));
 
@@ -503,25 +503,23 @@ describe("Communications - Email Templates", () => {
       expect(response.status).toBe(500);
     });
 
-    it("should handle requests without database validation", async () => {
-      mockRunCommand.mockResolvedValue({
-        success: true,
-        result: { id: "test" },
-        emittedEvents: [],
-      });
+    it("should return 400 when user not found in database", async () => {
+      vi.mocked(database.user.findFirst).mockResolvedValue(null as never);
 
       const request = new NextRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
-          body: JSON.stringify({ name: "Template" }),
+          body: JSON.stringify({ name: "Orphan User Template" }),
         }
       );
       const response = await createEmailTemplate(request, {
         params: Promise.resolve({ entity: "EmailTemplate", command: "create" }),
       });
 
-      expect(response.status).toBe(200);
+      expect(response.status).toBe(400);
+      const body = await response.json();
+      expect(body.message).toBe("User not found in database");
     });
   });
 
@@ -535,10 +533,6 @@ describe("Communications - Email Templates", () => {
       } as never);
 
       vi.mocked(database.user.findFirst).mockResolvedValue(
-        createMockUser() as never
-      );
-
-      vi.mocked(requireCurrentUser).mockResolvedValue(
         createMockUser() as never
       );
     });
@@ -651,9 +645,6 @@ describe("Communications - Email Templates", () => {
         userId: null,
         orgId: null,
       } as never);
-      vi.mocked(requireCurrentUser).mockRejectedValue(
-        new InvariantError("Unauthorized") as never
-      );
 
       const request = new NextRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -680,10 +671,6 @@ describe("Communications - Email Templates", () => {
       } as never);
 
       vi.mocked(database.user.findFirst).mockResolvedValue(
-        createMockUser() as never
-      );
-
-      vi.mocked(requireCurrentUser).mockResolvedValue(
         createMockUser() as never
       );
     });
@@ -748,9 +735,6 @@ describe("Communications - Email Templates", () => {
         userId: null,
         orgId: null,
       } as never);
-      vi.mocked(requireCurrentUser).mockRejectedValue(
-        new InvariantError("Unauthorized") as never
-      );
 
       const request = new NextRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -898,7 +882,7 @@ describe("Communications - Email Workflows", () => {
     it("should return a single email workflow by ID", async () => {
       const mockWorkflow = createMockEmailWorkflow({ id: "wf-001" });
 
-      vi.mocked(database.emailWorkflow.findUnique).mockResolvedValue(
+      vi.mocked(database.emailWorkflow.findFirst).mockResolvedValue(
         mockWorkflow as never
       );
 
@@ -916,7 +900,7 @@ describe("Communications - Email Workflows", () => {
     });
 
     it("should return 404 when workflow not found", async () => {
-      vi.mocked(database.emailWorkflow.findUnique).mockResolvedValue(
+      vi.mocked(database.emailWorkflow.findFirst).mockResolvedValue(
         null as never
       );
 
@@ -934,7 +918,7 @@ describe("Communications - Email Workflows", () => {
     });
 
     it("should enforce tenant isolation on detail queries", async () => {
-      vi.mocked(database.emailWorkflow.findUnique).mockResolvedValue(
+      vi.mocked(database.emailWorkflow.findFirst).mockResolvedValue(
         null as never
       );
 
@@ -945,10 +929,12 @@ describe("Communications - Email Workflows", () => {
         params: Promise.resolve({ id: "wf-001" }),
       });
 
-      expect(database.emailWorkflow.findUnique).toHaveBeenCalledWith(
+      expect(database.emailWorkflow.findFirst).toHaveBeenCalledWith(
         expect.objectContaining({
           where: {
-            tenantId_id: { tenantId: TEST_TENANT_ID, id: "wf-001" },
+            id: "wf-001",
+            tenantId: TEST_TENANT_ID,
+            deletedAt: null,
           },
         })
       );
@@ -959,9 +945,6 @@ describe("Communications - Email Workflows", () => {
         userId: null,
         orgId: null,
       } as never);
-      vi.mocked(requireCurrentUser).mockRejectedValue(
-        new InvariantError("Unauthorized") as never
-      );
 
       const request = new NextRequest(
         "http://localhost/api/communications/email-workflows/wf-001"
@@ -984,10 +967,6 @@ describe("Communications - Email Workflows", () => {
       } as never);
 
       vi.mocked(database.user.findFirst).mockResolvedValue(
-        createMockUser() as never
-      );
-
-      vi.mocked(requireCurrentUser).mockResolvedValue(
         createMockUser() as never
       );
     });
@@ -1111,25 +1090,23 @@ describe("Communications - Email Workflows", () => {
       expect(response.status).toBe(500);
     });
 
-    it("should handle requests without database validation", async () => {
-      mockRunCommand.mockResolvedValue({
-        success: true,
-        result: { id: "test" },
-        emittedEvents: [],
-      });
+    it("should return 400 when user not found in database", async () => {
+      vi.mocked(database.user.findFirst).mockResolvedValue(null as never);
 
       const request = new NextRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
         {
           method: "POST",
-          body: JSON.stringify({ name: "Workflow" }),
+          body: JSON.stringify({ name: "Orphan Workflow" }),
         }
       );
       const response = await createEmailWorkflow(request, {
         params: Promise.resolve({ entity: "EmailWorkflow", command: "create" }),
       });
 
-      expect(response.status).toBe(200);
+      expect(response.status).toBe(400);
+      const body = await response.json();
+      expect(body.message).toBe("User not found in database");
     });
 
     it("should return 401 for unauthenticated requests", async () => {
@@ -1137,9 +1114,6 @@ describe("Communications - Email Workflows", () => {
         userId: null,
         orgId: null,
       } as never);
-      vi.mocked(requireCurrentUser).mockRejectedValue(
-        new InvariantError("Unauthorized") as never
-      );
 
       const request = new NextRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -1166,10 +1140,6 @@ describe("Communications - Email Workflows", () => {
       } as never);
 
       vi.mocked(database.user.findFirst).mockResolvedValue(
-        createMockUser() as never
-      );
-
-      vi.mocked(requireCurrentUser).mockResolvedValue(
         createMockUser() as never
       );
     });
@@ -1240,9 +1210,6 @@ describe("Communications - Email Workflows", () => {
         userId: null,
         orgId: null,
       } as never);
-      vi.mocked(requireCurrentUser).mockRejectedValue(
-        new InvariantError("Unauthorized") as never
-      );
 
       const request = new NextRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -1269,10 +1236,6 @@ describe("Communications - Email Workflows", () => {
       } as never);
 
       vi.mocked(database.user.findFirst).mockResolvedValue(
-        createMockUser() as never
-      );
-
-      vi.mocked(requireCurrentUser).mockResolvedValue(
         createMockUser() as never
       );
     });
@@ -1362,9 +1325,6 @@ describe("Communications - Email Workflows", () => {
         userId: null,
         orgId: null,
       } as never);
-      vi.mocked(requireCurrentUser).mockRejectedValue(
-        new InvariantError("Unauthorized") as never
-      );
 
       const request = new NextRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -1677,9 +1637,6 @@ describe("Communications - SMS Automation Rules", () => {
         userId: null,
         orgId: null,
       } as never);
-      vi.mocked(requireCurrentUser).mockRejectedValue(
-        new InvariantError("Unauthorized") as never
-      );
 
       const request = new NextRequest(
         "http://localhost/api/communications/sms/automation-rules/rule-001"
@@ -1725,9 +1682,6 @@ describe("Communications - SMS Automation Rules", () => {
         userId: null,
         orgId: null,
       } as never);
-      vi.mocked(requireCurrentUser).mockRejectedValue(
-        new InvariantError("Unauthorized") as never
-      );
 
       const request = new NextRequest(
         "http://localhost/api/communications/sms/automation-rules",
@@ -2135,9 +2089,6 @@ describe("Communications - SMS Automation Rules", () => {
         userId: null,
         orgId: null,
       } as never);
-      vi.mocked(requireCurrentUser).mockRejectedValue(
-        new InvariantError("Unauthorized") as never
-      );
 
       const request = new NextRequest(
         "http://localhost/api/communications/sms/automation-rules/rule-001",
@@ -2296,9 +2247,6 @@ describe("Communications - SMS Automation Rules", () => {
         userId: null,
         orgId: null,
       } as never);
-      vi.mocked(requireCurrentUser).mockRejectedValue(
-        new InvariantError("Unauthorized") as never
-      );
 
       const request = new NextRequest(
         "http://localhost/api/communications/sms/automation-rules/rule-001",

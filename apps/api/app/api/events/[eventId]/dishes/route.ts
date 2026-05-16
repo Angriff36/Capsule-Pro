@@ -36,13 +36,13 @@ export async function GET(
       return NextResponse.json({ message: "Event not found" }, { status: 404 });
     }
 
-    const dishes = await database.event_dishes.findMany({
+    const dishes = await database.eventDish.findMany({
       where: {
-        tenant_id: tenantId,
-        event_id: eventId,
-        deleted_at: null,
+        tenantId,
+        eventId,
+        deletedAt: null,
       },
-      orderBy: { created_at: "desc" },
+      orderBy: { createdAt: "desc" },
     });
 
     return NextResponse.json({ dishes });

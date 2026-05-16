@@ -28,9 +28,11 @@ export async function GET(
 
     const { id } = await params;
 
-    const container = await database.container.findUnique({
+    const container = await database.container.findFirst({
       where: {
-        tenantId_id: { tenantId, id },
+        id,
+        tenantId,
+        deletedAt: null,
       },
     });
 

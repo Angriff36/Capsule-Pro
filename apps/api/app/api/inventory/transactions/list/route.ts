@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
         tenantId,
       },
       orderBy: {
-        id: "desc",
+        createdAt: "desc",
       },
     });
 

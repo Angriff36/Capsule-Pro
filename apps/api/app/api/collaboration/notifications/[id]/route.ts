@@ -28,9 +28,10 @@ export async function GET(
 
     const { id } = await params;
 
-    const notification = await database.notification.findUnique({
+    const notification = await database.notification.findFirst({
       where: {
-        tenantId_id: { tenantId, id },
+        id,
+        tenantId,
       },
     });
 

@@ -245,8 +245,8 @@ export function TimeOffDetailModal({
           <DialogHeader>
             <DialogTitle>Time-Off Request Details</DialogTitle>
             <DialogDescription>
-              {timeOffRequest.employee_first_name}{" "}
-              {timeOffRequest.employee_last_name} -{" "}
+              {timeOffRequest.employeeFirstName}{" "}
+              {timeOffRequest.employeeLastName} -{" "}
               {formatDate(timeOffRequest.start_date)}
             </DialogDescription>
           </DialogHeader>
@@ -259,15 +259,15 @@ export function TimeOffDetailModal({
               </div>
               <div className="flex-1">
                 <h3 className="font-semibold text-lg">
-                  {timeOffRequest.employee_first_name}{" "}
-                  {timeOffRequest.employee_last_name}
+                  {timeOffRequest.employeeFirstName}{" "}
+                  {timeOffRequest.employeeLastName}
                 </h3>
                 <p className="text-sm text-muted-foreground">
-                  {timeOffRequest.employee_email}
+                  {timeOffRequest.employeeEmail}
                 </p>
                 <div className="mt-2 flex gap-2">
                   <Badge variant="secondary">
-                    {timeOffRequest.employee_role}
+                    {timeOffRequest.employeeRole}
                   </Badge>
                 </div>
               </div>

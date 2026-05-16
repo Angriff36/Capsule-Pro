@@ -35,11 +35,11 @@ export async function GET(request: NextRequest, context: RouteContext) {
 
     const { id } = await context.params;
 
-    const template = await database.email_templates.findFirst({
+    const template = await database.emailTemplate.findFirst({
       where: {
-        tenant_id: tenantId,
+        tenantId,
         id,
-        deleted_at: null,
+        deletedAt: null,
       },
     });
 

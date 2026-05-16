@@ -178,7 +178,7 @@ export async function GET(request: Request) {
       const item = itemMap.get(t.itemId);
       const location = t.storage_location_id
         ? locationMap.get(t.storage_location_id)
-        : null;
+        : undefined;
 
       return {
         id: t.id,

@@ -13,15 +13,10 @@
  * Covers: 401 auth, 400 tenant-not-found, success (200), 403 policy denial,
  *         422 guard failure, 400 generic command failure, 500 internal error,
  *         and tenant isolation for each route.
- *
- * NOTE: Route handlers are simulated because the actual route paths do not exist.
- * Tests mock createManifestRuntime to verify command behavior.
  */
 
 import { NextRequest } from "next/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-
-import { InvariantError } from "@/app/lib/invariant";
 
 // ---------------------------------------------------------------------------
 // Mocks — shared across all suites
@@ -52,9 +47,9 @@ vi.mock("@repo/database", () => ({
 }));
 vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
 vi.mock("@/app/lib/tenant", () => ({
-  requireCurrentUser: vi.fn(),
   getTenantIdForOrg: vi.fn(),
   requireTenantId: vi.fn(),
+  requireCurrentUser: vi.fn(),
 }));
 vi.mock("@/lib/manifest-runtime", () => ({
   createManifestRuntime: vi.fn(),
@@ -86,122 +81,50 @@ vi.mock("@/lib/database", async () => {
 // ---------------------------------------------------------------------------
 
 const { auth } = await import("@repo/auth/server");
-const { getTenantIdForOrg, requireCurrentUser } = await import(
-  "@/app/lib/tenant"
-);
+const { getTenantIdForOrg } = await import("@/app/lib/tenant");
 const { createManifestRuntime } = await import("@/lib/manifest-runtime");
 const { database } = await import("@repo/database");
 
 // ---------------------------------------------------------------------------
-// Simulated route handler for testing
+// Route imports
 // ---------------------------------------------------------------------------
 
-const mockRunCommand = vi.fn();
+// Dispatcher
+import { POST as manifestDispatch } from "@/app/api/manifest/[entity]/commands/[command]/route";
 
-function setupRuntimeMock() {
-  vi.mocked(createManifestRuntime).mockResolvedValue({
-    runCommand: mockRunCommand,
-  } as never);
-}
+const dispatch = (entity: string, command: string) => (req: NextRequest) =>
+  manifestDispatch(req, { params: Promise.resolve({ entity, command }) });
 
-async function simulateRouteHandler(
-  command: string,
-  request: NextRequest,
-  entityName: string
-) {
-  const authResult = await auth();
-  if (!authResult?.userId) {
-    return new Response(
-      JSON.stringify({ success: false, message: "Unauthorized" }),
-      { status: 401, headers: { "Content-Type": "application/json" } }
-    );
-  }
+// Container
+const containerCreate = dispatch("Container", "create");
+const containerDeactivate = dispatch("Container", "deactivate");
+const containerUpdate = dispatch("Container", "update");
 
-  const orgId = authResult.orgId;
-  if (!orgId) {
-    return new Response(
-      JSON.stringify({ success: false, message: "Unauthorized" }),
-      { status: 401, headers: { "Content-Type": "application/json" } }
-    );
-  }
+// Cycle Count Records
+const ccrCreate = dispatch("CycleCountRecord", "create");
+const ccrRemove = dispatch("CycleCountRecord", "remove");
+const ccrUpdate = dispatch("CycleCountRecord", "update");
+const ccrVerify = dispatch("CycleCountRecord", "verify");
+const ccsCancel = dispatch("CycleCountSession", "cancel");
+const ccsComplete = dispatch("CycleCountSession", "complete");
+// Cycle Count Sessions
+const ccsCreate = dispatch("CycleCountSession", "create");
+const ccsFinalize = dispatch("CycleCountSession", "finalize");
+const ccsStart = dispatch("CycleCountSession", "start");
 
-  const tenantId = await getTenantIdForOrg(orgId);
-  if (!tenantId) {
-    return new Response(
-      JSON.stringify({ success: false, message: "Tenant not found" }),
-      { status: 400, headers: { "Content-Type": "application/json" } }
-    );
-  }
+// Locations
+import { GET as locationsList } from "@/app/api/locations/route";
 
-  let body: Record<string, unknown> = {};
-  try {
-    if (request.method !== "GET") {
-      body = await request.json();
-    }
-  } catch {
-    return new Response(
-      JSON.stringify({ success: false, message: "Internal server error" }),
-      { status: 500, headers: { "Content-Type": "application/json" } }
-    );
-  }
+const overrideAuditAuthorize = dispatch("OverrideAudit", "authorize");
+// Override Audit
+const overrideAuditCreate = dispatch("OverrideAudit", "create");
 
-  try {
-    const result = await createManifestRuntime({
-      user: { id: authResult.userId, tenantId },
-    });
-
-    const response = await result.runCommand(command, body, { entityName });
-
-    if (!response.success) {
-      if (response.policyDenial) {
-        return new Response(
-          JSON.stringify({
-            success: false,
-            message: `Access denied: ${response.policyDenial.policyName}`,
-          }),
-          { status: 403, headers: { "Content-Type": "application/json" } }
-        );
-      }
-      if (response.guardFailure) {
-        return new Response(
-          JSON.stringify({
-            success: false,
-            message: `Guard ${response.guardFailure.index} failed: ${response.guardFailure.formatted}`,
-          }),
-          { status: 422, headers: { "Content-Type": "application/json" } }
-        );
-      }
-      return new Response(
-        JSON.stringify({
-          success: false,
-          message: response.error || "Command failed",
-        }),
-        { status: 400, headers: { "Content-Type": "application/json" } }
-      );
-    }
-
-    return new Response(
-      JSON.stringify({
-        success: true,
-        result: response.result,
-        events: response.emittedEvents,
-      }),
-      { status: 200, headers: { "Content-Type": "application/json" } }
-    );
-  } catch {
-    return new Response(
-      JSON.stringify({ success: false, message: "Internal server error" }),
-      { status: 500, headers: { "Content-Type": "application/json" } }
-    );
-  }
-}
-
-function makeRequest(body: Record<string, unknown>): NextRequest {
-  return new NextRequest("http://localhost:3000/api/test", {
-    method: "POST",
-    body: JSON.stringify(body),
-  });
-}
+// Performance Prediction
+const perfPredictionCreate = dispatch("PerformancePrediction", "create");
+const varianceReportApprove = dispatch("VarianceReport", "approve");
+// Variance Reports
+const varianceReportCreate = dispatch("VarianceReport", "create");
+const varianceReportReview = dispatch("VarianceReport", "review");
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -222,14 +145,6 @@ function makeAuthedUser(tenantId = TEST_TENANT_ID) {
     orgId: TEST_ORG_ID,
   } as never);
   vi.mocked(getTenantIdForOrg).mockResolvedValue(tenantId);
-  vi.mocked(requireCurrentUser).mockResolvedValue({
-    id: TEST_USER_ID,
-    tenantId: TEST_TENANT_ID,
-    role: "admin",
-    email: "test@example.com",
-    firstName: "Test",
-    lastName: "User",
-  } as never);
 }
 
 function makeUnauthedUser() {
@@ -237,43 +152,174 @@ function makeUnauthedUser() {
     userId: null,
     orgId: null,
   } as never);
-  vi.mocked(requireCurrentUser).mockRejectedValue(
-    new InvariantError("Unauthorized")
-  );
 }
 
-function mockRuntimeSuccess(
-  result: Record<string, unknown> = { id: "test-001" }
+function makeRuntime(mockRunCommand: ReturnType<typeof vi.fn>) {
+  vi.mocked(createManifestRuntime).mockResolvedValue({
+    runCommand: mockRunCommand,
+  } as never);
+}
+
+function postRequest(path: string, body: Record<string, unknown> = {}) {
+  return new NextRequest(`http://localhost/api/${path}`, {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+}
+
+/** Asserts the standard auth + tenant isolation for a manifest POST handler. */
+async function assertManifestCommandRoute(
+  handler: (req: NextRequest) => Promise<Response>,
+  path: string,
+  command: string,
+  entityName: string,
+  body: Record<string, unknown>
 ) {
-  setupRuntimeMock();
+  const mockRunCommand = vi.fn();
+
+  // --- 401 unauthenticated ---
+  makeUnauthedUser();
+  const res401 = await handler(postRequest(path, body));
+  expect(res401.status).toBe(401);
+  expect(await res401.json()).toMatchObject({
+    success: false,
+    message: "Unauthorized",
+  });
+
+  vi.clearAllMocks();
+
+  // --- 400 tenant not found ---
+  makeAuthedUser(null as never);
+  const res400 = await handler(postRequest(path, body));
+  expect(res400.status).toBe(400);
+  expect(await res400.json()).toMatchObject({
+    success: false,
+    message: "Tenant not found",
+  });
+
+  vi.clearAllMocks();
+
+  // --- 200 success ---
+  makeAuthedUser();
   mockRunCommand.mockResolvedValue({
     success: true,
-    result,
-    emittedEvents: [{ type: "Created" }],
+    result: { id: `${entityName.toLowerCase()}-001` },
+    emittedEvents: [{ type: `${entityName}Created` }],
   });
-}
+  makeRuntime(mockRunCommand);
 
-function mockRuntimePolicyDenial(policyName: string) {
-  setupRuntimeMock();
+  const res200 = await handler(postRequest(path, body));
+  expect(res200.status).toBe(200);
+  const json200 = await res200.json();
+  expect(json200.success).toBe(true);
+  expect(json200.result).toEqual({
+    id: `${entityName.toLowerCase()}-001`,
+  });
+  expect(json200.events).toEqual([{ type: `${entityName}Created` }]);
+
+  expect(mockRunCommand).toHaveBeenCalledWith(
+    command,
+    expect.objectContaining(body),
+    { entityName }
+  );
+  expect(createManifestRuntime).toHaveBeenCalledWith({
+    user: { id: TEST_USER_ID, tenantId: TEST_TENANT_ID },
+  });
+
+  vi.clearAllMocks();
+
+  // --- 403 policy denial ---
+  makeAuthedUser();
   mockRunCommand.mockResolvedValue({
     success: false,
-    policyDenial: { policyName },
+    policyDenial: { policyName: "ManagerOnlyPolicy" },
   });
-}
+  makeRuntime(mockRunCommand);
 
-function mockRuntimeGuardFailure(index: number, formatted: string) {
-  setupRuntimeMock();
+  const res403 = await handler(postRequest(path, body));
+  expect(res403.status).toBe(403);
+  const json403 = await res403.json();
+  expect(json403.success).toBe(false);
+  expect(json403.message).toContain("Access denied");
+  expect(json403.message).toContain("ManagerOnlyPolicy");
+
+  vi.clearAllMocks();
+
+  // --- 422 guard failure ---
+  makeAuthedUser();
   mockRunCommand.mockResolvedValue({
     success: false,
-    guardFailure: { index, formatted },
+    guardFailure: {
+      index: 1,
+      formatted: "Validation check failed",
+    },
   });
-}
+  makeRuntime(mockRunCommand);
 
-function mockRuntimeFailure(error: string) {
-  setupRuntimeMock();
+  const res422 = await handler(postRequest(path, body));
+  expect(res422.status).toBe(422);
+  const json422 = await res422.json();
+  expect(json422.success).toBe(false);
+  expect(json422.message).toContain("Guard 1 failed");
+
+  vi.clearAllMocks();
+
+  // --- 400 generic command failure ---
+  makeAuthedUser();
   mockRunCommand.mockResolvedValue({
     success: false,
-    error,
+    error: "Command failed: invalid payload",
+  });
+  makeRuntime(mockRunCommand);
+
+  const res400f = await handler(postRequest(path, body));
+  expect(res400f.status).toBe(400);
+  const json400f = await res400f.json();
+  expect(json400f.success).toBe(false);
+  expect(json400f.message).toBe("Command failed: invalid payload");
+
+  vi.clearAllMocks();
+
+  // --- 400 with null error (default message) ---
+  makeAuthedUser();
+  mockRunCommand.mockResolvedValue({
+    success: false,
+    error: null,
+  });
+  makeRuntime(mockRunCommand);
+
+  const res400n = await handler(postRequest(path, body));
+  expect(res400n.status).toBe(400);
+  const json400n = await res400n.json();
+  expect(json400n.message).toBe("Command failed");
+
+  vi.clearAllMocks();
+
+  // --- 500 internal server error ---
+  makeAuthedUser();
+  mockRunCommand.mockRejectedValue(new Error("Runtime crash"));
+  makeRuntime(mockRunCommand);
+
+  const res500 = await handler(postRequest(path, body));
+  expect(res500.status).toBe(500);
+  const json500 = await res500.json();
+  expect(json500.success).toBe(false);
+  expect(json500.message).toBe("Internal server error");
+
+  vi.clearAllMocks();
+
+  // --- Tenant isolation: user context passes correct tenantId ---
+  makeAuthedUser(OTHER_TENANT_ID);
+  mockRunCommand.mockResolvedValue({
+    success: true,
+    result: { id: "isolated-001" },
+    emittedEvents: [],
+  });
+  makeRuntime(mockRunCommand);
+
+  await handler(postRequest(path, body));
+  expect(createManifestRuntime).toHaveBeenCalledWith({
+    user: { id: TEST_USER_ID, tenantId: OTHER_TENANT_ID },
   });
 }
 
@@ -295,158 +341,39 @@ describe("Misc Domains Part 1", () => {
   // ------------------------------------------------------------------- //
 
   describe("Container Commands", () => {
-    describe("Container.create", () => {
-      it("returns 401 when unauthenticated", async () => {
-        makeUnauthedUser();
-        const res = await simulateRouteHandler(
+    describe("POST /api/container/create", () => {
+      it("covers 401, 400, 200, 403, 422, 400-fail, 500, and tenant isolation", async () => {
+        await assertManifestCommandRoute(
+          containerCreate,
+          "container/create",
           "create",
-          makeRequest({ name: "Pallet Box A", capacity: 100 }),
-          "Container"
-        );
-        expect(res.status).toBe(401);
-        expect(await res.json()).toMatchObject({
-          success: false,
-          message: "Unauthorized",
-        });
-      });
-
-      it("returns 400 when tenant not found", async () => {
-        makeAuthedUser(null as never);
-        const res = await simulateRouteHandler(
-          "create",
-          makeRequest({ name: "Pallet Box A", capacity: 100 }),
-          "Container"
-        );
-        expect(res.status).toBe(400);
-        expect(await res.json()).toMatchObject({
-          success: false,
-          message: "Tenant not found",
-        });
-      });
-
-      it("returns 200 on success", async () => {
-        makeAuthedUser();
-        mockRuntimeSuccess({ id: "container-001" });
-        const res = await simulateRouteHandler(
-          "create",
-          makeRequest({ name: "Pallet Box A", capacity: 100 }),
-          "Container"
-        );
-        expect(res.status).toBe(200);
-        const json = await res.json();
-        expect(json.success).toBe(true);
-        expect(mockRunCommand).toHaveBeenCalledWith(
-          "create",
-          expect.objectContaining({ name: "Pallet Box A", capacity: 100 }),
-          { entityName: "Container" }
-        );
-      });
-
-      it("returns 403 on policy denial", async () => {
-        makeAuthedUser();
-        mockRuntimePolicyDenial("ManagerOnlyPolicy");
-        const res = await simulateRouteHandler(
-          "create",
-          makeRequest({ name: "Box" }),
-          "Container"
-        );
-        expect(res.status).toBe(403);
-        const json = await res.json();
-        expect(json.success).toBe(false);
-        expect(json.message).toContain("Access denied");
-      });
-
-      it("returns 422 on guard failure", async () => {
-        makeAuthedUser();
-        mockRuntimeGuardFailure(0, "Validation check failed");
-        const res = await simulateRouteHandler(
-          "create",
-          makeRequest({ name: "" }),
-          "Container"
-        );
-        expect(res.status).toBe(422);
-        const json = await res.json();
-        expect(json.success).toBe(false);
-        expect(json.message).toContain("Guard 0 failed");
-      });
-
-      it("returns 400 on command failure", async () => {
-        makeAuthedUser();
-        mockRuntimeFailure("Command failed: invalid payload");
-        const res = await simulateRouteHandler(
-          "create",
-          makeRequest({ name: "Box" }),
-          "Container"
-        );
-        expect(res.status).toBe(400);
-        expect((await res.json()).message).toBe(
-          "Command failed: invalid payload"
-        );
-      });
-
-      it("returns 500 on runtime error", async () => {
-        makeAuthedUser();
-        vi.mocked(createManifestRuntime).mockRejectedValue(
-          new Error("Runtime crash")
-        );
-        const res = await simulateRouteHandler(
-          "create",
-          makeRequest({ name: "Box" }),
-          "Container"
-        );
-        expect(res.status).toBe(500);
-        expect((await res.json()).message).toBe("Internal server error");
-      });
-    });
-
-    describe("Container.update", () => {
-      it("returns 401 when unauthenticated", async () => {
-        makeUnauthedUser();
-        const res = await simulateRouteHandler(
-          "update",
-          makeRequest({ id: "container-001", name: "Updated Box" }),
-          "Container"
-        );
-        expect(res.status).toBe(401);
-      });
-
-      it("returns 200 on success", async () => {
-        makeAuthedUser();
-        mockRuntimeSuccess({ id: "container-001", name: "Updated Box" });
-        const res = await simulateRouteHandler(
-          "update",
-          makeRequest({ id: "container-001", name: "Updated Box" }),
-          "Container"
-        );
-        expect(res.status).toBe(200);
-        expect(mockRunCommand).toHaveBeenCalledWith(
-          "update",
-          expect.objectContaining({ id: "container-001" }),
-          { entityName: "Container" }
+          "Container",
+          { name: "Pallet Box A", capacity: 100 }
         );
       });
     });
 
-    describe("Container.deactivate", () => {
-      it("returns 401 when unauthenticated", async () => {
-        makeUnauthedUser();
-        const res = await simulateRouteHandler(
-          "deactivate",
-          makeRequest({ id: "container-001" }),
-          "Container"
+    describe("POST /api/container/update", () => {
+      it("covers 401, 400, 200, 403, 422, 400-fail, 500, and tenant isolation", async () => {
+        await assertManifestCommandRoute(
+          containerUpdate,
+          "container/update",
+          "update",
+          "Container",
+          { id: "container-001", name: "Updated Box" }
         );
-        expect(res.status).toBe(401);
       });
+    });
 
-      it("returns 200 on success", async () => {
-        makeAuthedUser();
-        mockRuntimeSuccess({ id: "container-001", isActive: false });
-        const res = await simulateRouteHandler(
+    describe("POST /api/container/deactivate", () => {
+      it("covers 401, 400, 200, 403, 422, 400-fail, 500, and tenant isolation", async () => {
+        await assertManifestCommandRoute(
+          containerDeactivate,
+          "container/deactivate",
           "deactivate",
-          makeRequest({ id: "container-001" }),
-          "Container"
+          "Container",
+          { id: "container-001" }
         );
-        expect(res.status).toBe(200);
       });
     });
   });
@@ -455,104 +382,52 @@ describe("Misc Domains Part 1", () => {
   // CYCLE COUNT RECORDS                                                  //
   // ------------------------------------------------------------------- //
 
-  describe("CycleCountRecord Commands", () => {
-    describe("CycleCountRecord.create", () => {
-      it("returns 401 when unauthenticated", async () => {
-        makeUnauthedUser();
-        const res = await simulateRouteHandler(
+  describe("Cycle Count Record Commands", () => {
+    describe("POST /api/cyclecountrecord/create", () => {
+      it("covers 401, 400, 200, 403, 422, 400-fail, 500, and tenant isolation", async () => {
+        await assertManifestCommandRoute(
+          ccrCreate,
+          "cyclecountrecord/create",
           "create",
-          makeRequest({
-            sessionId: "session-001",
-            itemId: "item-001",
-            countedQty: 50,
-          }),
-          "CycleCountRecord"
+          "CycleCountRecord",
+          { sessionId: "session-001", itemId: "item-001", countedQty: 50 }
         );
-        expect(res.status).toBe(401);
-      });
-
-      it("returns 200 on success", async () => {
-        makeAuthedUser();
-        mockRuntimeSuccess({ id: "record-001" });
-        const res = await simulateRouteHandler(
-          "create",
-          makeRequest({
-            sessionId: "session-001",
-            itemId: "item-001",
-            countedQty: 50,
-          }),
-          "CycleCountRecord"
-        );
-        expect(res.status).toBe(200);
       });
     });
 
-    describe("CycleCountRecord.update", () => {
-      it("returns 401 when unauthenticated", async () => {
-        makeUnauthedUser();
-        const res = await simulateRouteHandler(
+    describe("POST /api/cyclecountrecord/update", () => {
+      it("covers 401, 400, 200, 403, 422, 400-fail, 500, and tenant isolation", async () => {
+        await assertManifestCommandRoute(
+          ccrUpdate,
+          "cyclecountrecord/update",
           "update",
-          makeRequest({ id: "record-001", countedQty: 75 }),
-          "CycleCountRecord"
+          "CycleCountRecord",
+          { id: "record-001", countedQty: 75 }
         );
-        expect(res.status).toBe(401);
-      });
-
-      it("returns 200 on success", async () => {
-        makeAuthedUser();
-        mockRuntimeSuccess({ id: "record-001", countedQty: 75 });
-        const res = await simulateRouteHandler(
-          "update",
-          makeRequest({ id: "record-001", countedQty: 75 }),
-          "CycleCountRecord"
-        );
-        expect(res.status).toBe(200);
       });
     });
 
-    describe("CycleCountRecord.remove", () => {
-      it("returns 401 when unauthenticated", async () => {
-        makeUnauthedUser();
-        const res = await simulateRouteHandler(
+    describe("POST /api/cyclecountrecord/remove", () => {
+      it("covers 401, 400, 200, 403, 422, 400-fail, 500, and tenant isolation", async () => {
+        await assertManifestCommandRoute(
+          ccrRemove,
+          "cyclecountrecord/remove",
           "remove",
-          makeRequest({ id: "record-001" }),
-          "CycleCountRecord"
+          "CycleCountRecord",
+          { id: "record-001" }
         );
-        expect(res.status).toBe(401);
-      });
-
-      it("returns 200 on success", async () => {
-        makeAuthedUser();
-        mockRuntimeSuccess({ id: "record-001", deletedAt: new Date() });
-        const res = await simulateRouteHandler(
-          "remove",
-          makeRequest({ id: "record-001" }),
-          "CycleCountRecord"
-        );
-        expect(res.status).toBe(200);
       });
     });
 
-    describe("CycleCountRecord.verify", () => {
-      it("returns 401 when unauthenticated", async () => {
-        makeUnauthedUser();
-        const res = await simulateRouteHandler(
+    describe("POST /api/cyclecountrecord/verify", () => {
+      it("covers 401, 400, 200, 403, 422, 400-fail, 500, and tenant isolation", async () => {
+        await assertManifestCommandRoute(
+          ccrVerify,
+          "cyclecountrecord/verify",
           "verify",
-          makeRequest({ id: "record-001", verifiedBy: "user-002" }),
-          "CycleCountRecord"
+          "CycleCountRecord",
+          { id: "record-001", verifiedBy: "user-002" }
         );
-        expect(res.status).toBe(401);
-      });
-
-      it("returns 200 on success", async () => {
-        makeAuthedUser();
-        mockRuntimeSuccess({ id: "record-001", verified: true });
-        const res = await simulateRouteHandler(
-          "verify",
-          makeRequest({ id: "record-001", verifiedBy: "user-002" }),
-          "CycleCountRecord"
-        );
-        expect(res.status).toBe(200);
       });
     });
   });
@@ -561,125 +436,64 @@ describe("Misc Domains Part 1", () => {
   // CYCLE COUNT SESSIONS                                                 //
   // ------------------------------------------------------------------- //
 
-  describe("CycleCountSession Commands", () => {
-    describe("CycleCountSession.create", () => {
-      it("returns 401 when unauthenticated", async () => {
-        makeUnauthedUser();
-        const res = await simulateRouteHandler(
+  describe("Cycle Count Session Commands", () => {
+    describe("POST /api/cyclecountsession/create", () => {
+      it("covers 401, 400, 200, 403, 422, 400-fail, 500, and tenant isolation", async () => {
+        await assertManifestCommandRoute(
+          ccsCreate,
+          "cyclecountsession/create",
           "create",
-          makeRequest({ locationId: "loc-001", scheduledDate: "2026-05-01" }),
-          "CycleCountSession"
+          "CycleCountSession",
+          { locationId: "loc-001", scheduledDate: "2026-05-01" }
         );
-        expect(res.status).toBe(401);
-      });
-
-      it("returns 200 on success", async () => {
-        makeAuthedUser();
-        mockRuntimeSuccess({ id: "session-001" });
-        const res = await simulateRouteHandler(
-          "create",
-          makeRequest({ locationId: "loc-001", scheduledDate: "2026-05-01" }),
-          "CycleCountSession"
-        );
-        expect(res.status).toBe(200);
       });
     });
 
-    describe("CycleCountSession.start", () => {
-      it("returns 401 when unauthenticated", async () => {
-        makeUnauthedUser();
-        const res = await simulateRouteHandler(
+    describe("POST /api/cyclecountsession/start", () => {
+      it("covers 401, 400, 200, 403, 422, 400-fail, 500, and tenant isolation", async () => {
+        await assertManifestCommandRoute(
+          ccsStart,
+          "cyclecountsession/start",
           "start",
-          makeRequest({ id: "session-001" }),
-          "CycleCountSession"
+          "CycleCountSession",
+          { id: "session-001" }
         );
-        expect(res.status).toBe(401);
-      });
-
-      it("returns 200 on success", async () => {
-        makeAuthedUser();
-        mockRuntimeSuccess({ id: "session-001", status: "in_progress" });
-        const res = await simulateRouteHandler(
-          "start",
-          makeRequest({ id: "session-001" }),
-          "CycleCountSession"
-        );
-        expect(res.status).toBe(200);
       });
     });
 
-    describe("CycleCountSession.complete", () => {
-      it("returns 401 when unauthenticated", async () => {
-        makeUnauthedUser();
-        const res = await simulateRouteHandler(
+    describe("POST /api/cyclecountsession/complete", () => {
+      it("covers 401, 400, 200, 403, 422, 400-fail, 500, and tenant isolation", async () => {
+        await assertManifestCommandRoute(
+          ccsComplete,
+          "cyclecountsession/complete",
           "complete",
-          makeRequest({ id: "session-001" }),
-          "CycleCountSession"
+          "CycleCountSession",
+          { id: "session-001" }
         );
-        expect(res.status).toBe(401);
-      });
-
-      it("returns 200 on success", async () => {
-        makeAuthedUser();
-        mockRuntimeSuccess({ id: "session-001", status: "completed" });
-        const res = await simulateRouteHandler(
-          "complete",
-          makeRequest({ id: "session-001" }),
-          "CycleCountSession"
-        );
-        expect(res.status).toBe(200);
       });
     });
 
-    describe("CycleCountSession.finalize", () => {
-      it("returns 401 when unauthenticated", async () => {
-        makeUnauthedUser();
-        const res = await simulateRouteHandler(
+    describe("POST /api/cyclecountsession/finalize", () => {
+      it("covers 401, 400, 200, 403, 422, 400-fail, 500, and tenant isolation", async () => {
+        await assertManifestCommandRoute(
+          ccsFinalize,
+          "cyclecountsession/finalize",
           "finalize",
-          makeRequest({ id: "session-001" }),
-          "CycleCountSession"
+          "CycleCountSession",
+          { id: "session-001" }
         );
-        expect(res.status).toBe(401);
-      });
-
-      it("returns 200 on success", async () => {
-        makeAuthedUser();
-        mockRuntimeSuccess({ id: "session-001", status: "finalized" });
-        const res = await simulateRouteHandler(
-          "finalize",
-          makeRequest({ id: "session-001" }),
-          "CycleCountSession"
-        );
-        expect(res.status).toBe(200);
       });
     });
 
-    describe("CycleCountSession.cancel", () => {
-      it("returns 401 when unauthenticated", async () => {
-        makeUnauthedUser();
-        const res = await simulateRouteHandler(
+    describe("POST /api/cyclecountsession/cancel", () => {
+      it("covers 401, 400, 200, 403, 422, 400-fail, 500, and tenant isolation", async () => {
+        await assertManifestCommandRoute(
+          ccsCancel,
+          "cyclecountsession/cancel",
           "cancel",
-          makeRequest({
-            id: "session-001",
-            reason: "Inventory recount needed",
-          }),
-          "CycleCountSession"
+          "CycleCountSession",
+          { id: "session-001", reason: "Inventory recount needed" }
         );
-        expect(res.status).toBe(401);
-      });
-
-      it("returns 200 on success", async () => {
-        makeAuthedUser();
-        mockRuntimeSuccess({ id: "session-001", status: "cancelled" });
-        const res = await simulateRouteHandler(
-          "cancel",
-          makeRequest({
-            id: "session-001",
-            reason: "Inventory recount needed",
-          }),
-          "CycleCountSession"
-        );
-        expect(res.status).toBe(200);
       });
     });
   });
@@ -689,7 +503,6 @@ describe("Misc Domains Part 1", () => {
   // ------------------------------------------------------------------- //
 
   describe("GET /api/locations", () => {
-    // Note: Locations uses actual database queries, not manifest runtime
     const mockLocations = [
       {
         id: "loc-001",
@@ -725,34 +538,117 @@ describe("Misc Domains Part 1", () => {
 
     it("returns 401 for unauthenticated requests", async () => {
       makeUnauthedUser();
+
       const req = new NextRequest("http://localhost/api/locations");
-      const res = await simulateRouteHandler("list", req, "Location");
+      const res = await locationsList(req);
+
       expect(res.status).toBe(401);
+      const body = await res.json();
+      expect(body.error).toBe("Not authenticated");
     });
 
     it("returns 401 when tenant not found", async () => {
-      makeAuthedUser(null as never);
+      vi.mocked(auth).mockResolvedValue({
+        userId: TEST_USER_ID,
+        orgId: TEST_ORG_ID,
+      } as never);
+      vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
+
       const req = new NextRequest("http://localhost/api/locations");
-      const res = await simulateRouteHandler("list", req, "Location");
-      expect(res.status).toBe(400);
+      const res = await locationsList(req);
+
+      expect(res.status).toBe(401);
+      const body = await res.json();
+      expect(body.error).toBe("No tenant found");
     });
 
-    it("returns locations for authenticated user", async () => {
+    it("returns locations list for authenticated user", async () => {
       makeAuthedUser();
       vi.mocked(database.$queryRaw).mockResolvedValue(mockLocations as never);
+
       const req = new NextRequest("http://localhost/api/locations");
-      const res = await simulateRouteHandler("list", req, "Location");
+      const res = await locationsList(req);
+
       expect(res.status).toBe(200);
+      const body = await res.json();
+      expect(body.locations).toHaveLength(2);
+      expect(body.locations[0].name).toBe("Main Warehouse");
+      expect(body.locations[0].is_primary).toBe(true);
+      expect(body.locations[1].name).toBe("Satellite Kitchen");
+      expect(body.locations[1].address_line_2).toBe("Suite 200");
     });
 
     it("calls $queryRaw with correct tenant ID", async () => {
       makeAuthedUser();
-      const mockFn = vi.fn().mockResolvedValue([] as never);
-      vi.mocked(database.$queryRaw).mockImplementation(mockFn);
+      vi.mocked(database.$queryRaw).mockResolvedValue([] as never);
+
       const req = new NextRequest("http://localhost/api/locations");
-      // Note: simulateRouteHandler uses manifest runtime, not raw SQL
-      // This test verifies the mock is set up correctly
-      expect(true).toBe(true);
+      await locationsList(req);
+
+      expect(database.$queryRaw).toHaveBeenCalled();
+    });
+
+    it("filters active locations when isActive=true", async () => {
+      makeAuthedUser();
+      vi.mocked(database.$queryRaw).mockResolvedValue([
+        mockLocations[0],
+      ] as never);
+
+      const req = new NextRequest(
+        "http://localhost/api/locations?isActive=true"
+      );
+      const res = await locationsList(req);
+
+      expect(res.status).toBe(200);
+      const body = await res.json();
+      expect(body.locations).toHaveLength(1);
+    });
+
+    it("returns empty array when no locations exist", async () => {
+      makeAuthedUser();
+      vi.mocked(database.$queryRaw).mockResolvedValue([] as never);
+
+      const req = new NextRequest("http://localhost/api/locations");
+      const res = await locationsList(req);
+
+      expect(res.status).toBe(200);
+      const body = await res.json();
+      expect(body.locations).toHaveLength(0);
+    });
+
+    it("returns 500 on database error", async () => {
+      makeAuthedUser();
+      vi.mocked(database.$queryRaw).mockRejectedValue(
+        new Error("DB connection lost")
+      );
+
+      const req = new NextRequest("http://localhost/api/locations");
+      const res = await locationsList(req);
+
+      expect(res.status).toBe(500);
+      const body = await res.json();
+      expect(body.error).toBe("Failed to fetch locations");
+    });
+
+    it("enforces tenant isolation — only returns locations for user's tenant", async () => {
+      // First call: tenant A
+      makeAuthedUser(TEST_TENANT_ID);
+      vi.mocked(database.$queryRaw).mockResolvedValue(mockLocations as never);
+
+      const reqA = new NextRequest("http://localhost/api/locations");
+      const resA = await locationsList(reqA);
+      const bodyA = await resA.json();
+      expect(bodyA.locations).toHaveLength(2);
+
+      // Second call: tenant B (different tenant)
+      vi.clearAllMocks();
+      makeAuthedUser(OTHER_TENANT_ID);
+      vi.mocked(database.$queryRaw).mockResolvedValue([] as never);
+
+      const reqB = new NextRequest("http://localhost/api/locations");
+      const resB = await locationsList(reqB);
+      const bodyB = await resB.json();
+      expect(bodyB.locations).toHaveLength(0);
     });
   });
 
@@ -760,50 +656,28 @@ describe("Misc Domains Part 1", () => {
   // OVERRIDE AUDIT                                                       //
   // ------------------------------------------------------------------- //
 
-  describe("OverrideAudit Commands", () => {
-    describe("OverrideAudit.create", () => {
-      it("returns 401 when unauthenticated", async () => {
-        makeUnauthedUser();
-        const res = await simulateRouteHandler(
+  describe("Override Audit Commands", () => {
+    describe("POST /api/overrideaudit/create", () => {
+      it("covers 401, 400, 200, 403, 422, 400-fail, 500, and tenant isolation", async () => {
+        await assertManifestCommandRoute(
+          overrideAuditCreate,
+          "overrideaudit/create",
           "create",
-          makeRequest({ reason: "Emergency override", entityType: "Schedule" }),
-          "OverrideAudit"
+          "OverrideAudit",
+          { reason: "Emergency override", entityType: "Schedule" }
         );
-        expect(res.status).toBe(401);
-      });
-
-      it("returns 200 on success", async () => {
-        makeAuthedUser();
-        mockRuntimeSuccess({ id: "audit-001" });
-        const res = await simulateRouteHandler(
-          "create",
-          makeRequest({ reason: "Emergency override", entityType: "Schedule" }),
-          "OverrideAudit"
-        );
-        expect(res.status).toBe(200);
       });
     });
 
-    describe("OverrideAudit.authorize", () => {
-      it("returns 401 when unauthenticated", async () => {
-        makeUnauthedUser();
-        const res = await simulateRouteHandler(
+    describe("POST /api/overrideaudit/authorize", () => {
+      it("covers 401, 400, 200, 403, 422, 400-fail, 500, and tenant isolation", async () => {
+        await assertManifestCommandRoute(
+          overrideAuditAuthorize,
+          "overrideaudit/authorize",
           "authorize",
-          makeRequest({ id: "audit-001", authorizedBy: "admin-001" }),
-          "OverrideAudit"
+          "OverrideAudit",
+          { id: "audit-001", authorizedBy: "admin-001" }
         );
-        expect(res.status).toBe(401);
-      });
-
-      it("returns 200 on success", async () => {
-        makeAuthedUser();
-        mockRuntimeSuccess({ id: "audit-001", authorized: true });
-        const res = await simulateRouteHandler(
-          "authorize",
-          makeRequest({ id: "audit-001", authorizedBy: "admin-001" }),
-          "OverrideAudit"
-        );
-        expect(res.status).toBe(200);
       });
     });
   });
@@ -812,35 +686,20 @@ describe("Misc Domains Part 1", () => {
   // PERFORMANCE PREDICTION                                               //
   // ------------------------------------------------------------------- //
 
-  describe("PerformancePrediction Commands", () => {
-    describe("PerformancePrediction.create", () => {
-      it("returns 401 when unauthenticated", async () => {
-        makeUnauthedUser();
-        const res = await simulateRouteHandler(
+  describe("Performance Prediction Commands", () => {
+    describe("POST /api/performanceprediction/create", () => {
+      it("covers 401, 400, 200, 403, 422, 400-fail, 500, and tenant isolation", async () => {
+        await assertManifestCommandRoute(
+          perfPredictionCreate,
+          "performanceprediction/create",
           "create",
-          makeRequest({
+          "PerformancePrediction",
+          {
             employeeId: "emp-001",
             predictionDate: "2026-05-15",
             metrics: { productivity: 0.85, quality: 0.92 },
-          }),
-          "PerformancePrediction"
+          }
         );
-        expect(res.status).toBe(401);
-      });
-
-      it("returns 200 on success", async () => {
-        makeAuthedUser();
-        mockRuntimeSuccess({ id: "pred-001" });
-        const res = await simulateRouteHandler(
-          "create",
-          makeRequest({
-            employeeId: "emp-001",
-            predictionDate: "2026-05-15",
-            metrics: { productivity: 0.85, quality: 0.92 },
-          }),
-          "PerformancePrediction"
-        );
-        expect(res.status).toBe(200);
       });
     });
   });
@@ -849,89 +708,48 @@ describe("Misc Domains Part 1", () => {
   // VARIANCE REPORTS                                                     //
   // ------------------------------------------------------------------- //
 
-  describe("VarianceReport Commands", () => {
-    describe("VarianceReport.create", () => {
-      it("returns 401 when unauthenticated", async () => {
-        makeUnauthedUser();
-        const res = await simulateRouteHandler(
+  describe("Variance Report Commands", () => {
+    describe("POST /api/variancereport/create", () => {
+      it("covers 401, 400, 200, 403, 422, 400-fail, 500, and tenant isolation", async () => {
+        await assertManifestCommandRoute(
+          varianceReportCreate,
+          "variancereport/create",
           "create",
-          makeRequest({
+          "VarianceReport",
+          {
             periodStart: "2026-04-01",
             periodEnd: "2026-04-30",
             category: "food_cost",
-          }),
-          "VarianceReport"
+          }
         );
-        expect(res.status).toBe(401);
-      });
-
-      it("returns 200 on success", async () => {
-        makeAuthedUser();
-        mockRuntimeSuccess({ id: "report-001" });
-        const res = await simulateRouteHandler(
-          "create",
-          makeRequest({
-            periodStart: "2026-04-01",
-            periodEnd: "2026-04-30",
-            category: "food_cost",
-          }),
-          "VarianceReport"
-        );
-        expect(res.status).toBe(200);
       });
     });
 
-    describe("VarianceReport.review", () => {
-      it("returns 401 when unauthenticated", async () => {
-        makeUnauthedUser();
-        const res = await simulateRouteHandler(
+    describe("POST /api/variancereport/review", () => {
+      it("covers 401, 400, 200, 403, 422, 400-fail, 500, and tenant isolation", async () => {
+        await assertManifestCommandRoute(
+          varianceReportReview,
+          "variancereport/review",
           "review",
-          makeRequest({
+          "VarianceReport",
+          {
             id: "report-001",
             reviewerId: "user-002",
-            notes: "Reviewed variance",
-          }),
-          "VarianceReport"
+            notes: "Reviewed variance — within tolerance",
+          }
         );
-        expect(res.status).toBe(401);
-      });
-
-      it("returns 200 on success", async () => {
-        makeAuthedUser();
-        mockRuntimeSuccess({ id: "report-001", reviewed: true });
-        const res = await simulateRouteHandler(
-          "review",
-          makeRequest({
-            id: "report-001",
-            reviewerId: "user-002",
-            notes: "Reviewed variance",
-          }),
-          "VarianceReport"
-        );
-        expect(res.status).toBe(200);
       });
     });
 
-    describe("VarianceReport.approve", () => {
-      it("returns 401 when unauthenticated", async () => {
-        makeUnauthedUser();
-        const res = await simulateRouteHandler(
+    describe("POST /api/variancereport/approve", () => {
+      it("covers 401, 400, 200, 403, 422, 400-fail, 500, and tenant isolation", async () => {
+        await assertManifestCommandRoute(
+          varianceReportApprove,
+          "variancereport/approve",
           "approve",
-          makeRequest({ id: "report-001", approverId: "admin-001" }),
-          "VarianceReport"
+          "VarianceReport",
+          { id: "report-001", approverId: "admin-001" }
         );
-        expect(res.status).toBe(401);
-      });
-
-      it("returns 200 on success", async () => {
-        makeAuthedUser();
-        mockRuntimeSuccess({ id: "report-001", approved: true });
-        const res = await simulateRouteHandler(
-          "approve",
-          makeRequest({ id: "report-001", approverId: "admin-001" }),
-          "VarianceReport"
-        );
-        expect(res.status).toBe(200);
       });
     });
   });

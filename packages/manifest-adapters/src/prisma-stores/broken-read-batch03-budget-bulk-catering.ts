@@ -338,7 +338,7 @@ export class CateringOrderPrismaStore implements Store<EntityInstance> {
         ),
         guest_count: asNullableNumber(data.guest_count ?? data.guestCount) ?? 0,
         special_instructions: asNullableString(
-          data.special_instructions ?? data.specialInstructions
+          data.specialInstructions ?? data.specialInstructions
         ),
         dietary_restrictions: asNullableString(
           data.dietary_restrictions ?? data.dietaryRestrictions
@@ -438,7 +438,7 @@ export class CateringOrderPrismaStore implements Store<EntityInstance> {
       venue_contact_name: (r.venue_contact_name as string) ?? null,
       venue_contact_phone: (r.venue_contact_phone as string) ?? null,
       guest_count: r.guest_count ?? 0,
-      special_instructions: (r.special_instructions as string) ?? null,
+      special_instructions: (r.specialInstructions as string) ?? null,
       dietary_restrictions: (r.dietary_restrictions as string) ?? null,
       staff_required: r.staff_required ?? null,
       staff_assigned: r.staff_assigned ?? null,

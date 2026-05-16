@@ -15,7 +15,6 @@
 import { database } from "@repo/database";
 import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { InvariantError } from "@/app/lib/invariant";
 
 vi.mock("@repo/auth/server", () => ({
   auth: vi.fn(),
@@ -40,7 +39,7 @@ vi.mock("@/lib/manifest-runtime", () => ({
 }));
 
 import { auth } from "@repo/auth/server";
-import { getTenantIdForOrg, requireCurrentUser } from "@/app/lib/tenant";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
 
 const TEST_TENANT_ID = "a0000000-0000-4000-a000-000000000001";
@@ -147,9 +146,6 @@ describe("Shipment Persistence (write → read alignment)", () => {
         orgId: null,
         userId: null,
       } as any);
-      vi.mocked(requireCurrentUser).mockRejectedValue(
-        new InvariantError("Unauthenticated")
-      );
 
       const { GET } = await import("@/app/api/shipments/shipment/list/route");
 
@@ -273,14 +269,6 @@ describe("Shipment Persistence (write → read alignment)", () => {
         userId: TEST_CLERK_ID,
       } as any);
       vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-      vi.mocked(requireCurrentUser).mockResolvedValue({
-        id: TEST_USER_ID,
-        tenantId: TEST_TENANT_ID,
-        role: "admin",
-        email: "test@example.com",
-        firstName: "Test",
-        lastName: "User",
-      });
       vi.mocked(database.user.findFirst).mockResolvedValue(mockUser as never);
       mockRunCommand.mockClear();
       vi.mocked(createManifestRuntime).mockResolvedValue({
@@ -289,43 +277,48 @@ describe("Shipment Persistence (write → read alignment)", () => {
     });
 
     const instanceScopedVerbs = [
-      { verb: "update", command: "update" },
-      { verb: "cancel", command: "cancel" },
-      { verb: "schedule", command: "schedule" },
-      { verb: "ship", command: "ship" },
-      { verb: "startPreparing", command: "start-preparing" },
-      { verb: "markDelivered", command: "mark-delivered" },
+      { verb: "update", file: "update" },
+      { verb: "cancel", file: "cancel" },
+      { verb: "schedule", file: "schedule" },
+      { verb: "ship", file: "ship" },
+      { verb: "startPreparing", file: "start-preparing" },
+      { verb: "markDelivered", file: "mark-delivered" },
     ];
 
-    for (const { verb, command } of instanceScopedVerbs) {
+    for (const { verb, file } of instanceScopedVerbs) {
       it(`${verb} route passes instanceId to runCommand`, async () => {
-        const { POST } = await import(
-          "@/app/api/manifest/[entity]/commands/[command]/route"
+        const mod = await import(
+          `@/app/api/shipments/shipment/commands/${file}/route`
         );
         const request = createMockRequest(
-          `http://localhost:3000/api/manifest/Shipment/commands/${command}`,
+          `http://localhost:3000/api/shipments/shipment/commands/${file}`,
           {
             method: "POST",
             body: JSON.stringify({ id: "ship-003" }),
           }
         );
 
-        await POST(request, {
-          params: Promise.resolve({ entity: "Shipment", command }),
+        await mod.POST(request, {
+          params: Promise.resolve({ entity: "Shipment", command: "create" }),
         });
 
-        expect(mockRunCommand).toHaveBeenCalledWith(verb, expect.any(Object), {
-          entityName: "Shipment",
-        });
+        expect(mockRunCommand).toHaveBeenCalledWith(
+          verb,
+          expect.any(Object),
+          expect.objectContaining({
+            entityName: "Shipment",
+            instanceId: "ship-003",
+          })
+        );
       });
     }
 
     it("create route does NOT pass instanceId", async () => {
-      const { POST } = await import(
+      const mod = await import(
         "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       const request = createMockRequest(
-        "http://localhost:3000/api/manifest/Shipment/commands/create",
+        "http://localhost:3000/api/shipments/shipment/commands/create",
         {
           method: "POST",
           body: JSON.stringify({
@@ -335,7 +328,7 @@ describe("Shipment Persistence (write → read alignment)", () => {
         }
       );
 
-      await POST(request, {
+      await mod.POST(request, {
         params: Promise.resolve({ entity: "Shipment", command: "create" }),
       });
 

@@ -28,9 +28,11 @@ export async function GET(
 
     const { id } = await params;
 
-    const budgetAlert = await database.budgetAlert.findUnique({
+    const budgetAlert = await database.budgetAlert.findFirst({
       where: {
-        tenantId_id: { tenantId, id },
+        id,
+        tenantId,
+        deletedAt: null,
       },
     });
 

@@ -22,7 +22,7 @@ import { redirect } from "next/navigation";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 interface LeaderboardRow {
-  employee_id: string;
+  employeeId: string;
   first_name: string | null;
   last_name: string | null;
   role: string | null;
@@ -43,7 +43,7 @@ export default async function LeaderboardPage() {
   const leaderboard = await database.$queryRaw<LeaderboardRow[]>(
     Prisma.sql`
     SELECT
-      s.employee_id,
+      s.employeeId,
       e.first_name,
       e.last_name,
       e.role,
@@ -51,12 +51,12 @@ export default async function LeaderboardPage() {
     FROM tenant_staff.schedule_shifts s
     JOIN tenant_staff.employees e
       ON e.tenant_id = s.tenant_id
-      AND e.id = s.employee_id
+      AND e.id = s.employeeId
     WHERE s.tenant_id = ${tenantId}
       AND s.deleted_at IS NULL
       AND s.shift_start >= date_trunc('week', CURRENT_DATE)
       AND s.shift_start < date_trunc('week', CURRENT_DATE) + interval '1 week'
-    GROUP BY s.employee_id, e.first_name, e.last_name, e.role
+    GROUP BY s.employeeId, e.first_name, e.last_name, e.role
     ORDER BY shift_count DESC, e.last_name ASC
     `
   );
@@ -108,10 +108,7 @@ export default async function LeaderboardPage() {
                   person.last_name
                 );
                 return (
-                  <OperationalRow
-                    density="comfortable"
-                    key={person.employee_id}
-                  >
+                  <OperationalRow density="comfortable" key={person.employeeId}>
                     <div className="flex items-center gap-4">
                       <span className="w-10 text-right font-mono text-2xl tabular-nums text-muted-foreground">
                         #{index + 1}

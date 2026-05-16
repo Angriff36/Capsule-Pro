@@ -2,15 +2,10 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "buildCommand": "cd ../.. && pnpm turbo build --filter=app",
   "installCommand": "corepack enable && corepack prepare pnpm@10.24.0 --activate && bash ../../scripts/ensure-github-packages-npmrc.sh && pnpm install",
-  "ignoreCommand": "bash -c 'echo \"Git-triggered builds disabled; use GitHub Actions Deploy workflow or vercel CLI\" >&2; exit 1'",
+  "ignoreCommand": "bash -c 'echo \"Git-triggered builds skipped (exit 0=ignore); use GitHub Actions Deploy workflow or vercel CLI\" >&2; exit 0'",
   "framework": "nextjs",
   "github": {
     "silent": true
   },
-  "outputDirectory": ".next",
-  "functions": {
-    "app/api/**/*.ts": {
-      "regions": ["iad1"]
-    }
-  }
+  "outputDirectory": ".next"
 }

@@ -50,7 +50,7 @@ interface Employee {
 
 interface BankAccount {
   id: string;
-  employee_id: string;
+  employeeId: string;
   bank_name: string;
   account_type: string;
   routing_number: string;
@@ -434,9 +434,7 @@ export default function DirectDepositPage() {
       ) : (
         <div className="space-y-3">
           {displayAccounts.map((account) => {
-            const employee = employees.find(
-              (e) => e.id === account.employee_id
-            );
+            const employee = employees.find((e) => e.id === account.employeeId);
             return (
               <Card key={account.id} tone="canvas">
                 <CardContent className="p-4">
