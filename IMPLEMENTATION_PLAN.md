@@ -125,6 +125,10 @@ Quick-win CRITICAL fixes applied:
 - packages/event-parser: renamed type-check script to typecheck (matches turbo task name)
 - turbo.json: added lint task with dependsOn: [^build]
 - turbo.json: added dependsOn: [^build] to generate task
+- apps/api: added 7 missing @repo packages to transpilePackages (design-system, email, notifications, payments, rate-limit, realtime, sentry-integration)
+- Shared next-config: added Cross-Origin-Opener-Policy and Cross-Origin-Resource-Policy headers (Spectre-mitigation)
+- apps/api: added COOP/CORP headers to local headers override
+- deploy.yml: added cache: 'pnpm' to setup-node steps (both deploy jobs)
 
 ## Changes from automation pass (2026-05-16)
 
@@ -339,23 +343,23 @@ ALL scheduled crons non-functional. Clerk middleware blocks `/api/cron/*` (not i
 
 ### Batch G: Next.js Build and Security
 
-- [ ] **[NEXT]** apps/api transpilePackages missing ~8 @repo packages. Lists phantom @repo/manifest. **HIGH** [CONFIRMED-P10]
+- [x] **[NEXT]** apps/api transpilePackages missing ~8 @repo packages. Lists phantom @repo/manifest. **HIGH** [CONFIRMED-P10] **RESOLVED: added @repo/design-system, @repo/email, @repo/notifications, @repo/payments, @repo/rate-limit, @repo/realtime, @repo/sentry-integration to transpilePackages**
 - [x] **[NEXT]** apps/web ZERO transpilePackages despite importing 11 @repo packages. **HIGH** [CONFIRMED-P10] **RESOLVED: STALE — apps/web has 14 transpilePackages configured. Monorepo workspace resolution via turbopack.root makes this work without explicit listing.**
 - [ ] **[NEXT]** apps/app transpilePackages missing 2-3 packages. **HIGH** [CONFIRMED-P10]
-- [ ] **[NEXT]** apps/web productionBrowserSourceMaps:true unconditionally. **HIGH** [CONFIRMED-P10]
+- [x] **[NEXT]** apps/web productionBrowserSourceMaps:true unconditionally. **HIGH** [CONFIRMED-P10] **RESOLVED: STALE — apps/web does NOT set productionBrowserSourceMaps. It is set in apps/app (intentionally, for Sentry source maps which are deleted after upload).**
 - [x] **[NEXT]** apps/web ZERO CSP headers. **HIGH** [CONFIRMED-P10] **RESOLVED: STALE — apps/web has full CSP headers configured including script-src, style-src, connect-src, etc.**
 - [x] **[NEXT]** packages/next-config missing reactStrictMode:true. **HIGH** [CONFIRMED-P10] **RESOLVED: added reactStrictMode:true to shared packages/next-config/index.ts (all apps inherit)**
 - [x] **[NEXT]** No poweredByHeader:false in any app or shared config. **HIGH** [CONFIRMED-P10] **RESOLVED: added poweredByHeader:false to shared packages/next-config/index.ts (all apps inherit)**
 - [x] **[NEXT]** apps/docs and apps/storybook NOT using shared @repo/next-config. **HIGH** [CONFIRMED-P10] **RESOLVED: apps/docs now has security headers + poweredByHeader:false added directly (fumadocs config structure incompatible with shared config). apps/storybook has poweredByHeader:false added. Neither uses shared config due to framework incompatibility.**
 - [ ] **[NEXT]** apps/docs and apps/storybook have no security headers. **HIGH** [CONFIRMED-P10]
-- [ ] **[NEXT]** apps/app security headers duplicated instead of extending. **HIGH** [CONFIRMED-P10]
+- [x] **[NEXT]** apps/app security headers duplicated instead of extending. **HIGH** [CONFIRMED-P10] **RESOLVED: STALE — apps/app does NOT override headers(). It inherits from shared @repo/next-config. Only apps/web and apps/api override headers().**
 - [ ] **[NEXT]** apps/docs NormalModuleReplacementPlugin webpack-only ignored by Turbopack. **HIGH** [CONFIRMED-P10]
 - [ ] **[NEXT-NEW]** apps/api + apps/app: outputFileTracingIncludes uses fragile relative paths without outputFileTracingRoot. **MEDIUM** [NEW-P11]
 - [ ] **[NEXT-NEW]** packages/next-config turbopack.root uses process.cwd() instead of __dirname. **MEDIUM** [NEW-P11]
 - [ ] **[NEXT-NEW]** apps/api CORS only allows 127.0.0.1 not localhost. **MEDIUM** [NEW-P11]
 - [ ] **[NEXT-NEW]** apps/app CSP connect-src Ably wildcards too broad. **MEDIUM** [NEW-P11]
 - [ ] **[NEXT-NEW]** apps/app headers() completely replaces shared config's headers (loses X-DNS-Prefetch-Control, static asset Cache-Control). **MEDIUM** [NEW-P11]
-- [ ] **[SECURITY-P12]** Missing COOP/COEP/CORP headers across all apps (Spectre-mitigation). **HIGH** [NEW-P12]
+- [x] **[SECURITY-P12]** Missing COOP/COEP/CORP headers across all apps (Spectre-mitigation). **HIGH** [NEW-P12] **RESOLVED: added Cross-Origin-Opener-Policy: same-origin and Cross-Origin-Resource-Policy: same-origin to shared next-config + apps/api override headers. COEP (require-corp) not added — would break third-party resources (Clerk, PostHog, GTM).**
 - [x] **[NEXT-NEW]** serverActions under experimental in apps/app -- promoted to top-level in Next.js 15. **HIGH** [NEW-P13] **RESOLVED: moved to top-level**
 - [ ] **[NEXT-NEW]** apps/storybook does NOT use @repo/next-config shared config. **MEDIUM** [NEW-P13]
 
@@ -408,7 +412,7 @@ ALL scheduled crons non-functional. Clerk middleware blocks `/api/cron/*` (not i
 - [x] **[CI-NEW]** deploy.yml uses PKG_AUTH_TOKEN for gh pr list instead of github.token. **MEDIUM** [NEW-P11] **RESOLVED: changed to github.token**
 - [ ] **[CI-NEW]** logging-sync.yml pushes directly to default branch without PR. **MEDIUM** [NEW-P11]
 - [ ] **[CI-NEW]** CodeQL v3 deprecated (security.yml still uses @v3). **MEDIUM** [NEW-P11]
-- [ ] **[CI-NEW]** deploy.yml no caching (full cold install every deployment). **MEDIUM** [NEW-P11]
+- [x] **[CI-NEW]** deploy.yml no caching (full cold install every deployment). **MEDIUM** [NEW-P11] **RESOLVED: added cache: 'pnpm' to setup-node steps in deploy.yml**
 - [ ] **[CI-NEW]** performance.yml continue-on-error means regressions never caught. **MEDIUM** [NEW-P11]
 - [ ] **[CI-NEW]** Inconsistent Node.js versions across workflows (22.x vs .nvmrc 22.18.0). **MEDIUM** [NEW-P11]
 - [ ] **[CI-NEW]** Bitwarden secret IDs hardcoded in deploy.yml. **MEDIUM** [NEW-P11]

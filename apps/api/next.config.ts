@@ -64,6 +64,14 @@ const baseConfig: NextConfig = withLogging({
           value: "max-age=63072000; includeSubDomains; preload",
         },
         {
+          key: "Cross-Origin-Opener-Policy",
+          value: "same-origin",
+        },
+        {
+          key: "Cross-Origin-Resource-Policy",
+          value: "same-origin",
+        },
+        {
           key: "Content-Security-Policy",
           value: "default-src 'none'; frame-ancestors 'none'; base-uri 'none'",
         },
@@ -87,6 +95,13 @@ const baseConfig: NextConfig = withLogging({
     "@repo/event-parser",
     "@repo/manifest-adapters",
     "@repo/supplier-connectors",
+    "@repo/design-system",
+    "@repo/email",
+    "@repo/notifications",
+    "@repo/payments",
+    "@repo/rate-limit",
+    "@repo/realtime",
+    "@repo/sentry-integration",
   ],
   experimental: {
     optimizePackageImports: ["date-fns"],
