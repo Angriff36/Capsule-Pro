@@ -448,7 +448,7 @@ ALL scheduled crons non-functional. Clerk middleware blocks `/api/cron/*` (not i
 - [x] **[CI-NEW]** upload-artifact no retention-days (500MB+ artifacts default 90-day retention). **MEDIUM** [NEW-P11] **RESOLVED: added retention-days:7 to manifest-ci.yml upload-artifact**
 - [x] **[CI-NEW]** deploy.yml uses PKG_AUTH_TOKEN for gh pr list instead of github.token. **MEDIUM** [NEW-P11] **RESOLVED: changed to github.token**
 - [ ] **[CI-NEW]** logging-sync.yml pushes directly to default branch without PR. **MEDIUM** [NEW-P11]
-- [ ] **[CI-NEW]** CodeQL v3 deprecated (security.yml still uses @v3). **MEDIUM** [NEW-P11]
+- [x] **[CI-NEW]** CodeQL v3 deprecated (security.yml still uses @v3). **MEDIUM** [NEW-P11] **RESOLVED: STALE — security.yml already uses CodeQL @v4 (confirmed). Previous fix was applied.**
 - [x] **[CI-NEW]** deploy.yml no caching (full cold install every deployment). **MEDIUM** [NEW-P11] **RESOLVED: added cache: 'pnpm' to setup-node steps in deploy.yml**
 - [ ] **[CI-NEW]** performance.yml continue-on-error means regressions never caught. **MEDIUM** [NEW-P11]
 - [x] **[CI-NEW]** Inconsistent Node.js versions across workflows (22.x vs .nvmrc 22.18.0). **MEDIUM** [NEW-P11] **RESOLVED: logging-sync.yml standardized to .nvmrc. ci.yml + vercel-compat.yml use 22.x intentionally (match Vercel).**
@@ -503,8 +503,8 @@ ALL scheduled crons non-functional. Clerk middleware blocks `/api/cron/*` (not i
 - [ ] **[ENV]** apps/api/env.ts duplicates sentry keys instead of extending sentry-integration. **HIGH** [CONFIRMED-P10]
 - [ ] **[ENV]** packages/mcp-server has no keys.ts at all. **HIGH** [CONFIRMED-P10]
 - [ ] **[ENV]** Mobile app has no env.ts at all. **HIGH** [CONFIRMED-P10]
-- [ ] **[ENV-NEW]** Calendar sync/connect OAUTH_REDIRECT_URI bare process.env -- if unset, produces "undefined/..." redirect URI. **HIGH** [NEW-P11]
-- [ ] **[ENV-NEW]** Calendar sync/callback: GOOGLE_CLIENT_SECRET and MICROSOFT_CLIENT_SECRET via bare process.env, unvalidated. OAuth secrets. **HIGH** [NEW-P11]
+- [x] **[ENV-NEW]** Calendar sync/connect OAUTH_REDIRECT_URI bare process.env -- if unset, produces "undefined/..." redirect URI. **HIGH** [NEW-P11] **RESOLVED: Added to apps/api/env.ts. Updated connect route to use validated env.**
+- [x] **[ENV-NEW]** Calendar sync/callback: GOOGLE_CLIENT_SECRET and MICROSOFT_CLIENT_SECRET via bare process.env, unvalidated. OAuth secrets. **HIGH** [NEW-P11] **RESOLVED: Added to apps/api/env.ts with z.string().optional(). Updated google/outlook callback routes.**
 - [ ] **[ENV-NEW]** Sentry-fixer routes re-read ALL vars via bare process.env with inline defaults, bypassing validated env. **HIGH** [NEW-P11]
 - [ ] **[ENV-NEW]** SENTRY_FIXER_MAX_EXECUTION_MS: 50s inline default in cron vs 240s in keys.ts. Cron runs on 50s budget. **HIGH** [NEW-P11]
 - [ ] **[ENV-NEW]** AI duplicate keys.ts files (neither consumed by runtime). **MEDIUM** [NEW-P11]
@@ -512,9 +512,9 @@ ALL scheduled crons non-functional. Clerk middleware blocks `/api/cron/*` (not i
 - [ ] **[ENV-NEW]** Sentry edge config DSN resolution inverted vs rest of codebase. **MEDIUM** [NEW-P11]
 - [ ] **[ENV-NEW]** sentry-integration @t3-oss/env-nextjs ^0.10.0 (others ^0.13.10). **MEDIUM** [NEW-P11]
 - [x] **[ENV-NEW]** command-board reads from env.txt file on disk, bypassing validation. **MEDIUM** [NEW-P11] **RESOLVED: Removed resolveOpenAiApiKey() and its readFileSync to Documents/env.txt. Now uses validated env object.**
-- [ ] **[ENV-NEW]** REVALIDATION_SECRET bare process.env for CMS webhook auth. **MEDIUM** [NEW-P11]
-- [ ] **[ENV-NEW]** RESEND_WEBHOOK_SECRET bare process.env for webhook verification. **MEDIUM** [NEW-P11]
-- [ ] **[ENV-NEW]** OAUTH_REDIRECT_URI, GOOGLE/MICROSOFT IDs all bare process.env. **MEDIUM** [NEW-P11]
+- [x] **[ENV-NEW]** REVALIDATION_SECRET bare process.env for CMS webhook auth. **MEDIUM** [NEW-P11] **RESOLVED: Added to apps/web/env.ts. Updated apps/web/app/api/revalidate/route.ts to use validated env.**
+- [x] **[ENV-NEW]** RESEND_WEBHOOK_SECRET bare process.env for webhook verification. **MEDIUM** [NEW-P11] **RESOLVED: Added to apps/api/env.ts. Updated apps/api/app/api/collaboration/notifications/email/webhook/route.ts to use validated env.**
+- [x] **[ENV-NEW]** OAUTH_REDIRECT_URI, GOOGLE/MICROSOFT IDs all bare process.env. **MEDIUM** [NEW-P11] **RESOLVED: Added GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, MICROSOFT_CLIENT_ID, MICROSOFT_CLIENT_SECRET, OAUTH_REDIRECT_URI, CALENDAR_SYNC_SECRET to apps/api/env.ts. Updated all 4 calendar sync routes to use validated env. Eliminates "undefined/..." redirect URI bug.**
 - [ ] **[ENV-NEW]** NEXT_PUBLIC_VERCEL_ENV not a real Vercel variable (always undefined). **MEDIUM** [NEW-P11]
 - [ ] **[ENV-NEW]** Observability 8 Better Stack alias vars unvalidated. **MEDIUM** [NEW-P11]
 - [ ] **[ENV]** SENTRY_WEBHOOK_SECRET schema drift across files. **HIGH** [CONFIRMED-P10]
@@ -524,9 +524,9 @@ ALL scheduled crons non-functional. Clerk middleware blocks `/api/cron/*` (not i
 - [x] **[ENV-NEW]** packages/storage/upload.ts bypasses own keys.ts -- BLOB_READ_WRITE_TOKEN via bare process.env. **HIGH** [NEW-P13] **RESOLVED: STALE — upload.ts already uses validated env via keys(). BLOB_READ_WRITE_TOKEN accessed through validated keys() object, not bare process.env.**
 - [x] **[ENV-NEW]** command-board + manifest-adapters read OPENAI_API_KEY via bare process.env, bypassing validated keys. **HIGH** [NEW-P13] **RESOLVED: command-board/chat/route.ts removed resolveOpenAiApiKey() readFileSync fallback, now uses validated env.OPENAI_API_KEY. Added OPENAI_API_KEY and COMMAND_BOARD_AI_MODEL to apps/app/env.ts schema. manifest-adapters ai-suggestions.ts removed readFileSync fallback, uses direct process.env access without file-on-disk reading.**
 - [x] **[ENV-NEW]** 8 Better Stack vars unvalidated in observability (SOURCE_TOKEN, INGESTING_URL, LOGTAIL_* + NEXT_PUBLIC variants). **HIGH** [NEW-P13] **RESOLVED: STALE — all 10 Better Stack/Logtail vars are properly validated through packages/observability/keys.ts using @t3-oss/env-nextjs + Zod schemas. Zero bare process.env accesses for these vars outside keys.ts itself.**
-- [ ] **[ENV-NEW]** Plasmic vars (PLASMIC_PROJECT_ID, PLASMIC_API_TOKEN) via bare process.env. **MEDIUM** [NEW-P13]
-- [ ] **[ENV-NEW]** CAPSULE_SENTRY_CANARY_SECRET bare process.env in canary route. **MEDIUM** [NEW-P13]
-- [ ] **[ENV-NEW]** packages/observability edge/server/client read VERCEL_ENV via bare process.env, bypassing keys.ts. **MEDIUM** [NEW-P13]
+- [x] **[ENV-NEW]** Plasmic vars (PLASMIC_PROJECT_ID, PLASMIC_API_TOKEN) via bare process.env. **MEDIUM** [NEW-P13] **RESOLVED: Added PLASMIC_PROJECT_ID and PLASMIC_API_TOKEN to apps/app/env.ts. Updated apps/app/plasmic/plasmic-init.ts to use validated env.**
+- [x] **[ENV-NEW]** CAPSULE_SENTRY_CANARY_SECRET bare process.env in canary route. **MEDIUM** [NEW-P13] **RESOLVED: Added to apps/api/env.ts. Updated apps/api/app/api/health/sentry-canary/route.ts to use validated env.**
+- [x] **[ENV-NEW]** packages/observability edge/server/client read VERCEL_ENV via bare process.env, bypassing keys.ts. **MEDIUM** [NEW-P13] **RESOLVED: Added VERCEL_ENV and NEXT_PUBLIC_VERCEL_ENV to packages/observability/keys.ts Zod schema (enum: development/preview/production, optional). Updated server.ts, edge.ts, client.ts to use keys().VERCEL_ENV / keys().NEXT_PUBLIC_VERCEL_ENV.**
 
 ### Batch M: Build System
 

@@ -138,6 +138,7 @@ Do not work on BYPASS routes during BROKEN_PRISMA_READ batches.
   with `read:packages`; same value as CI secret `PKG_AUTH_TOKEN`). Then use
   normal `pnpm install`. CI/Vercel inject auth via
   `scripts/ensure-github-packages-npmrc.sh`.
+- **GITHUB_PAT env var required for pnpm install:** The project `.npmrc` uses `${GITHUB_PAT}` for GitHub Packages auth. If `pnpm install` fails with `ERR_PNPM_FETCH_404` for `@angriff36/manifest`, set the env var: `export GITHUB_PAT=$(pnpm config get //npm.pkg.github.com/:_authToken 2>/dev/null | tr -d '[:space:]')`. The token is already in global pnpm config but the project `.npmrc` env var reference doesn't resolve without it.
 - IR is authority — filesystem is not source of truth for routes
 - `@angriff36/manifest` must be consumed as the published package version
   (currently pinned), not `workspace:*` in `apps/*` or `packages/*`

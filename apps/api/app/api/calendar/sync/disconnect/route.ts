@@ -2,6 +2,7 @@ import { auth } from "@repo/auth/server";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
+import { env } from "@/env";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 const SUPPORTED_PROVIDERS = ["google", "outlook"] as const;
@@ -47,8 +48,8 @@ async function revokeProviderToken(
       // the refresh token by posting a revocation request to the token endpoint with
       // grant_type=refresh_token + the refresh_token value, which marks it as revoked.
       // If that is unavailable, we best-effort call the logout endpoint to end the session.
-      const clientId = process.env.MICROSOFT_CLIENT_ID;
-      const clientSecret = process.env.MICROSOFT_CLIENT_SECRET;
+      const clientId = env.MICROSOFT_CLIENT_ID;
+      const clientSecret = env.MICROSOFT_CLIENT_SECRET;
 
       if (refreshToken && clientId && clientSecret) {
         // Revoke by exchanging the refresh token for nothing — Entra ID marks it consumed.

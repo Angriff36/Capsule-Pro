@@ -5,6 +5,7 @@ import {
 } from "@repo/sentry-integration/pipeline-correlation";
 import { captureException, flush } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
+import { env } from "@/env";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -14,7 +15,7 @@ export const runtime = "nodejs";
  * Requires CAPSULE_SENTRY_CANARY_SECRET; Authorization: Bearer <secret> or ?secret=
  */
 export const GET = async (request: Request): Promise<Response> => {
-  const configuredSecret = process.env.CAPSULE_SENTRY_CANARY_SECRET;
+  const configuredSecret = env.CAPSULE_SENTRY_CANARY_SECRET;
   if (!configuredSecret) {
     return NextResponse.json(
       { ok: false, error: "CAPSULE_SENTRY_CANARY_SECRET not set" },

@@ -15,6 +15,7 @@ import {
 import { captureException } from "@sentry/nextjs";
 
 import { type NextRequest, NextResponse } from "next/server";
+import { env } from "@/env";
 
 /**
  * Resend webhook event types
@@ -95,7 +96,7 @@ export async function POST(request: NextRequest) {
     const rawBody = await request.text();
     const signatureHeader = request.headers.get("resend-signature") ?? "";
 
-    const webhookSecret = process.env.RESEND_WEBHOOK_SECRET;
+    const webhookSecret = env.RESEND_WEBHOOK_SECRET;
     if (!webhookSecret) {
       return NextResponse.json(
         { error: "Webhook secret not configured" },

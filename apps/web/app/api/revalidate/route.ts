@@ -1,5 +1,6 @@
 import { revalidatePath, revalidateTag } from "next/cache";
 import { type NextRequest, NextResponse } from "next/server";
+import { env } from "@/env";
 
 /**
  * On-demand ISR revalidation webhook endpoint.
@@ -39,7 +40,7 @@ const ALLOWED_PATHS = ["/", "/contact", "/pricing", "/blog"];
 export async function POST(request: NextRequest): Promise<NextResponse> {
   // Authenticate via secret token
   const authHeader = request.headers.get("authorization");
-  const secret = process.env.REVALIDATION_SECRET;
+  const secret = env.REVALIDATION_SECRET;
 
   if (!secret) {
     return NextResponse.json(

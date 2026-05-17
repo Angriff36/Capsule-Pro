@@ -38,6 +38,11 @@ export const env = createEnv({
     SENTRY_FIXER_MAX_RETRIES: z.string().optional(),
     SENTRY_FIXER_RUN_TESTS: z.string().optional(),
     SENTRY_FIXER_TEST_COMMAND: z.string().optional(),
+    SENTRY_FIXER_AI_MODEL: z.string().optional(),
+    SENTRY_FIXER_MAX_EXECUTION_MS: z.string().optional(),
+
+    // OpenAI
+    OPENAI_API_KEY: z.string().min(1).optional(),
 
     // GitHub for PR creation
     GITHUB_TOKEN: z.string().min(1).optional(),
@@ -49,6 +54,20 @@ export const env = createEnv({
     SLACK_BOT_TOKEN: z.string().min(1).optional(),
     SLACK_WEBHOOK_URL: z.string().url().optional(),
     SLACK_CHANNEL_ID: z.string().min(1).optional(),
+
+    // OAuth / Calendar sync
+    GOOGLE_CLIENT_ID: z.string().optional(),
+    GOOGLE_CLIENT_SECRET: z.string().optional(),
+    MICROSOFT_CLIENT_ID: z.string().optional(),
+    MICROSOFT_CLIENT_SECRET: z.string().optional(),
+    OAUTH_REDIRECT_URI: z.string().optional(),
+    CALENDAR_SYNC_SECRET: z.string().optional(),
+
+    // Resend webhook
+    RESEND_WEBHOOK_SECRET: z.string().optional(),
+
+    // Sentry canary
+    CAPSULE_SENTRY_CANARY_SECRET: z.string().optional(),
   },
   client: {},
   // When skipValidation is true, t3-env returns runtimeEnv directly without
@@ -81,5 +100,19 @@ export const env = createEnv({
         SLACK_BOT_TOKEN: process.env.SLACK_BOT_TOKEN,
         SLACK_WEBHOOK_URL: process.env.SLACK_WEBHOOK_URL,
         SLACK_CHANNEL_ID: process.env.SLACK_CHANNEL_ID,
+
+        // OAuth / Calendar sync
+        GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
+        GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
+        MICROSOFT_CLIENT_ID: process.env.MICROSOFT_CLIENT_ID,
+        MICROSOFT_CLIENT_SECRET: process.env.MICROSOFT_CLIENT_SECRET,
+        OAUTH_REDIRECT_URI: process.env.OAUTH_REDIRECT_URI,
+        CALENDAR_SYNC_SECRET: process.env.CALENDAR_SYNC_SECRET,
+
+        // Resend webhook
+        RESEND_WEBHOOK_SECRET: process.env.RESEND_WEBHOOK_SECRET,
+
+        // Sentry canary
+        CAPSULE_SENTRY_CANARY_SECRET: process.env.CAPSULE_SENTRY_CANARY_SECRET,
       },
 });

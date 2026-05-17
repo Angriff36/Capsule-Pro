@@ -3,6 +3,7 @@ import { auth } from "@repo/auth/server";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
+import { env } from "@/env";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 const SUPPORTED_PROVIDERS = ["google", "outlook"] as const;
@@ -129,8 +130,8 @@ export async function POST(request: NextRequest) {
     if (action === "initiate") {
       const clientId =
         provider === "google"
-          ? process.env.GOOGLE_CLIENT_ID
-          : process.env.MICROSOFT_CLIENT_ID;
+          ? env.GOOGLE_CLIENT_ID
+          : env.MICROSOFT_CLIENT_ID;
 
       if (!clientId) {
         return NextResponse.json(
@@ -141,13 +142,13 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      const redirectUri = `${process.env.OAUTH_REDIRECT_URI}/api/calendar/sync/callback/${provider}`;
+      const redirectUri = `${env.OAUTH_REDIRECT_URI}/api/calendar/sync/callback/${provider}`;
       const config = OAUTH_CONFIG[provider];
 
       // Generate HMAC-signed state token with expiry
       const ts = Date.now();
       const secret =
-        process.env.CALENDAR_SYNC_SECRET ?? process.env.NEXTAUTH_SECRET ?? "";
+        env.CALENDAR_SYNC_SECRET ?? process.env.NEXTAUTH_SECRET ?? "";
       const sig = createHmac("sha256", secret)
         .update(JSON.stringify({ tenantId, provider, ts }))
         .digest("hex");

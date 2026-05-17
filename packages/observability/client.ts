@@ -23,7 +23,7 @@ const getSentryEnvironment = () => {
     return explicit;
   }
 
-  const vercelEnv = process.env.NEXT_PUBLIC_VERCEL_ENV?.trim();
+  const vercelEnv = keys().NEXT_PUBLIC_VERCEL_ENV;
   if (vercelEnv) {
     return vercelEnv;
   }

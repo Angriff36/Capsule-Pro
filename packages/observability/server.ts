@@ -27,7 +27,7 @@ const getSentryEnvironment = () => {
     return explicit;
   }
 
-  const vercelEnv = process.env.VERCEL_ENV?.trim();
+  const vercelEnv = keys().VERCEL_ENV;
   if (vercelEnv) {
     return vercelEnv;
   }
