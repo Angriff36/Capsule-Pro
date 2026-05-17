@@ -260,6 +260,6 @@ Last: [first session]
 
 ## Last Session Bridge
 [auto-bridge snapshot @ 10 changes]
-Files: apps/app/app/(authenticated)/warehouse/receiving/history/receiving-history-client.tsx (edit), apps/app/app/(authenticated)/components/module-nav.ts (edit), apps/app/app/(authenticated)/warehouse/receiving/history/receiving-history-client.tsx (create), apps/app/app/(authenticated)/warehouse/receiving/history/page.tsx (create), apps/api/app/api/warehouse/receiving/history/route.ts (create), IMPLEMENTATION_PLAN.md (edit)
+Files: apps/api/app/api/staff/shifts/validation.ts (edit), apps/app/app/(authenticated)/cycle-counting/actions/sessions.ts (edit)
 
 # === END COGNILAYER ===

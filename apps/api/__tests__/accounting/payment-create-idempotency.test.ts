@@ -266,7 +266,7 @@ describe("POST /api/accounting/payments — Idempotency-Key contract", () => {
   it("tenant isolation: same key under different tenant does NOT collide", async () => {
     // Simulate tenant A having cached a key.
     mocks.manifestIdempotencyFindUniqueMock.mockImplementationOnce(
-      async (args: {
+      (args: {
         where: { tenantId_key: { tenantId: string; key: string } };
       }) => {
         // Only returns a hit for tenant A's row.

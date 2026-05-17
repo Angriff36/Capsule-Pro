@@ -9,7 +9,7 @@
 
 import { createOpenAI } from "@ai-sdk/openai";
 import { log } from "@repo/observability/log";
-import { captureException } from "@sentry/nextjs";
+import { captureException } from "@sentry/node";
 import { generateObject } from "ai";
 import { z } from "zod";
 import type {

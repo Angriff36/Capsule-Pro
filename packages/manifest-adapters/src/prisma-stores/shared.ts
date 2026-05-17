@@ -24,7 +24,7 @@ export interface EntityInstance {
  * Uses dynamic import so this module doesn't hard-depend on @sentry/nextjs.
  */
 function reportStoreError(error: unknown, store: string, op: string): void {
-  import("@sentry/nextjs")
+  import("@sentry/node")
     .then(({ captureException }) => {
       captureException(error, {
         tags: { source: "prisma-store", store, op },

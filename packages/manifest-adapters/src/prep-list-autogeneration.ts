@@ -9,7 +9,7 @@
 
 import type { Prisma, PrismaClient } from "@repo/database/standalone";
 import { createOutboxEvent } from "@repo/realtime";
-import { captureException } from "@sentry/nextjs";
+import { captureException } from "@sentry/node";
 
 /**
  * Input for triggering prep list auto-generation

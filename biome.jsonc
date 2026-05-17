@@ -90,7 +90,7 @@
         "noExplicitAny": "error",
         "noArrayIndexKey": "warn",
         "useAwait": "warn",
-        "noEmptyBlockStatements": "warn"
+        "noEmptyBlockStatements": "error"
       },
       "performance": {
         "noBarrelFile": "warn"

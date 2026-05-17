@@ -9,7 +9,7 @@ import type { EmittedEvent, RuntimeEngine } from "@angriff36/manifest";
 import type { IR } from "@angriff36/manifest/ir";
 import { compileToIR } from "@angriff36/manifest/ir-compiler";
 // biome-ignore lint/performance/noBarrelFile: Sentry requires namespace import for logger
-import * as Sentry from "@sentry/nextjs";
+import * as Sentry from "@sentry/node";
 import { enforceCommandOwnership } from "./ir-contract.js";
 import { ManifestRuntimeEngine } from "./runtime-engine.js";
 
