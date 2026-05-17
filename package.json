@@ -2,7 +2,7 @@
   "name": "capsule-pro",
   "private": true,
   "dependencies": {
-    "@angriff36/manifest": "0.3.38",
+    "@angriff36/manifest": "0.3.39",
     "@prisma/adapter-neon": "7.3.0",
     "@prisma/client": "7.3.0",
     "ai": "^6.0.70",
@@ -55,7 +55,7 @@
     },
     "overrides": {
       "parse5": "^7.2.1",
-      "next": "15.4.11",
+      "next": "15.5.18",
       "react": "19.2.4",
       "react-dom": "19.2.4",
       "@types/react": "19.2.11",
@@ -109,7 +109,7 @@
     "manifest:duplicates": "pnpm exec manifest duplicates",
     "manifest:runtime-check": "pnpm exec manifest runtime-check",
     "manifest:cache-status": "pnpm exec manifest cache-status",
-    "manifest:route-audit": "pnpm exec manifest audit-routes --root apps/api --commands-manifest packages/manifest-ir/ir/kitchen/kitchen.commands.json --exemptions packages/manifest-ir/ir/kitchen/audit-routes-exemptions.json",
+    "manifest:route-audit": "pnpm exec manifest audit-routes --root apps/api --commands-manifest packages/manifest-ir/dist/commands.registry.json --exemptions packages/manifest-ir/ir/kitchen/audit-routes-exemptions.json",
     "manifest:routes:ir": "tsx scripts/manifest/generate-route-manifest.ts",
     "manifest:validate": "pnpm exec manifest validate packages/manifest-ir/ir/kitchen/kitchen.ir.json",
     "bump-deps": "pnpm dlx npm-check-updates --deep -u --reject recharts && pnpm install",

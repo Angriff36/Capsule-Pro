@@ -254,7 +254,7 @@ Passes 2-10 findings archived in `docs/audits/` and `docs/implementation-history
 - [x] **[PKG-NEW]** apps/api build script uses bash-only `export $(grep ...)` syntax -- fails on Windows. **HIGH** [NEW-P11] **RESOLVED: replaced with cross-platform dotenv-cli approach**
 - [x] **[TS-NEW]** Ghost apps/studio reference in root tsconfig.json (non-existent project). **CRITICAL** [NEW-P12] **RESOLVED: removed ghost reference**
 - [ ] **[TS-NEW]** Missing apps/forecasting-service from root tsconfig references. **CRITICAL** [NEW-P12] **NOTE: forecasting-service is a bare skeleton (only .env.example exists, no package.json or tsconfig.json). Cannot add to tsconfig references without proper project setup. Blocked pending project scaffolding.**
-- [ ] **[NEXT-NEW]** Next.js 15.4.11 vulnerable -- 13 CVE patches in 15.5.18+. **HIGH** [NEW-P12]
+- [x] **[NEXT-NEW]** Next.js 15.4.11 vulnerable -- 13 CVE patches in 15.5.18+. **HIGH** [NEW-P12] **RESOLVED: Upgraded from 15.4.11 to 15.5.18 via pnpm override. All 28 typecheck tasks pass.**
 - [ ] **[TS-NEW]** Missing verbatimModuleSyntax -- TS 5.9 recommends true repo-wide. Zero configs set it. **HIGH** [NEW-P13] **DEFERRED: would break 11K+ imports. Needs gradual migration via @typescript-eslint/consistent-type-imports first.**
 - [x] **[TS-NEW]** Missing noUncheckedSideEffectImports -- new TS 5.9 compiler option. Not set anywhere. **HIGH** [NEW-P13] **RESOLVED: added to packages/typescript-config/base.json**
 - [x] **[TS-NEW]** packages/manifest-ir missing tsconfig AND not in root references. **HIGH** [NEW-P13] **RESOLVED: STALE -- packages/manifest-ir has both tsconfig.json (extends bundler-library.json) AND is referenced in root tsconfig.json at line 27. Package is properly configured.**
@@ -351,7 +351,7 @@ ALL scheduled crons non-functional. Clerk middleware blocks `/api/cron/*` (not i
 - [x] **[BIOME]** nursery:off kills useSortedClasses. **CRITICAL** [CONFIRMED-P10] **RESOLVED: replaced nursery:off with nursery:{ useSortedClasses: "error" } in both biome.jsonc and biome.autofix.jsonc**
 - [x] **[BIOME]** biome.autofix.jsonc missing 3 ignore patterns + same nursery:off. **CRITICAL** [CONFIRMED-P10] **RESOLVED: synced missing .tmp, test-output, eslint.config.mjs ignores from biome.jsonc**
 - [x] **[BIOME-P11]** Missing vcs.defaultBranch breaks --changed workflows. **HIGH** [NEW-P11] **RESOLVED: added defaultBranch: "main" to vcs section in both biome.jsonc and biome.autofix.jsonc**
-- [ ] **[BIOME-P11]** Version outdated: 2.3.14 vs 2.4.15 (12+ patches behind). **HIGH** [NEW-P11]
+- [x] **[BIOME-P11]** Version outdated: 2.3.14 vs 2.4.15 (12+ patches behind). **HIGH** [NEW-P11] **RESOLVED: STALE — biome already at 2.4.15 (latest available on npm).**
 - [x] **[BIOME-P11]** Missing css.parser.tailwindDirectives:true -- false-positive CSS parse errors. **HIGH** [NEW-P11] **RESOLVED: added css.parser.tailwindDirectives:true to both biome.jsonc and biome.autofix.jsonc**
 - [ ] **[BIOME-P10]** 21 Biome rules downgraded from error to warn. **HIGH** [CONFIRMED-P10]
 - [ ] **[BIOME-P10]** Redundant apps/** override for noBarrelFile. **MEDIUM** [CONFIRMED-P10]
@@ -458,8 +458,8 @@ ALL scheduled crons non-functional. Clerk middleware blocks `/api/cron/*` (not i
 
 ### Batch J: Package.json Correctness
 
-- [ ] **[PKG]** packages/sentry-integration MOST OUTDATED: zod v3, TS ^5.3, atypes/node ^20. **HIGH** [CONFIRMED-P10]
-- [ ] **[PKG]** packages/supplier-connectors uses zod v3 while monorepo on v4. **HIGH** [CONFIRMED-P10]
+- [x] **[PKG]** packages/sentry-integration MOST OUTDATED: zod v3, TS ^5.3, atypes/node ^20. **HIGH** [CONFIRMED-P10] **RESOLVED: Upgraded zod ^3→^4.3.6, TS ^5.3→^5.9.3, @types/node ^20→25.2.0, @t3-oss/env-nextjs ^0.10→^0.13.10, added @repo/typescript-config devDep.**
+- [x] **[PKG]** packages/supplier-connectors uses zod v3 while monorepo on v4. **HIGH** [CONFIRMED-P10] **RESOLVED: STALE — supplier-connectors had dead zod dep removed entirely (package uses no zod). No v3/v4 mismatch exists.**
 - [ ] **[PKG]** 13 packages have react in dependencies instead of peerDependencies. **HIGH** [CONFIRMED-P10]
 - [ ] **[PKG]** @repo/design-system depends on @repo/auth -- reverse coupling. **HIGH** [CONFIRMED-P10]
 - [ ] **[PKG]** @repo/design-system has next as direct runtime dep should be peerDep. **HIGH** [CONFIRMED-P10]
@@ -476,9 +476,9 @@ ALL scheduled crons non-functional. Clerk middleware blocks `/api/cron/*` (not i
 - [ ] **[PKG-NEW]** packages/observability + manifest-adapters @sentry/nextjs as direct dep (boundary violation). **HIGH** [NEW-P11]
 - [ ] **[PKG-NEW]** packages/manifest-runtime build is echo (no actual build, relies on checked-in dist). **HIGH** [NEW-P11]
 - [ ] **[PKG-NEW]** packages/manifest-runtime pg as runtime dep of generic library. **HIGH** [NEW-P11]
-- [ ] **[CROSS-NEW]** zod v3/v4 runtime mismatch (sentry-integration + supplier-connectors install v3, rest use v4). **HIGH** [NEW-P11]
+- [x] **[CROSS-NEW]** zod v3/v4 runtime mismatch (sentry-integration + supplier-connectors install v3, rest use v4). **HIGH** [NEW-P11] **RESOLVED: sentry-integration upgraded to zod ^4.3.6. supplier-connectors dead zod dep removed. Monorepo now uniform on zod v4.**
 - [x] **[PKG-NEW]** packages/supplier-connectors dead zod dep (imports nothing from zod). **MEDIUM** [NEW-P11] **RESOLVED: removed unused zod dep from supplier-connectors.**
-- [ ] **[PKG-NEW]** packages/sentry-integration @types/node ^20 (monorepo 25.2.0). **MEDIUM** [NEW-P11]
+- [x] **[PKG-NEW]** packages/sentry-integration @types/node ^20 (monorepo 25.2.0). **MEDIUM** [NEW-P11] **RESOLVED: upgraded to 25.2.0**
 - [ ] **[PKG-NEW]** packages/sentry-integration exports types point to .ts source. **MEDIUM** [NEW-P11]
 - [ ] **[PKG-NEW]** packages/ai dead tailwind-merge dependency. **MEDIUM** [NEW-P11]
 - [ ] **[PKG-NEW]** apps/mobile missing typecheck/test scripts, TS ~5.9.2 tilde range. **MEDIUM** [NEW-P11]
@@ -491,7 +491,7 @@ ALL scheduled crons non-functional. Clerk middleware blocks `/api/cron/*` (not i
 - [ ] **[PKG-NEW]** packages/notifications vitest ^3 (diverges from ^4). **MEDIUM** [NEW-P11]
 - [x] **[PKG-NEW]** 6 phantom runtime deps: @repo/auth (next-themes), @repo/observability (react, server-only), @repo/feature-flags (@repo/design-system, react), @repo/ai (streamdown), @repo/seo (react), @repo/payroll-engine (server-only). **HIGH** [NEW-P13] **RESOLVED: Removed next-themes from @repo/auth, @repo/design-system from @repo/feature-flags, server-only from @repo/payroll-engine. Moved react from dependencies to peerDependencies in @repo/observability, @repo/feature-flags, @repo/seo. @repo/ai streamdown and @repo/observability server-only confirmed NOT phantom (legitimately imported).**
 - [x] **[PKG-NEW]** @repo/collaboration imports @repo/design-system unlisted. **MEDIUM** [NEW-P13] **RESOLVED: added @repo/design-system to dependencies. Also added missing typescript devDep.**
-- [ ] **[PKG-NEW]** @repo/manifest-adapters imports @repo/database unlisted (40+ source files). **MEDIUM** [NEW-P13]
+- [x] **[PKG-NEW]** @repo/manifest-adapters imports @repo/database unlisted (40+ source files). **MEDIUM** [NEW-P13] **RESOLVED: STALE — @repo/database IS listed in manifest-adapters dependencies (workspace:*). 57 source imports verified.**
 
 ### Batch K: ENV Validation
 
@@ -510,7 +510,7 @@ ALL scheduled crons non-functional. Clerk middleware blocks `/api/cron/*` (not i
 - [ ] **[ENV-NEW]** AI duplicate keys.ts files (neither consumed by runtime). **MEDIUM** [NEW-P11]
 - [ ] **[ENV-NEW]** ABLY_ENABLED not in any schema. **MEDIUM** [NEW-P11]
 - [ ] **[ENV-NEW]** Sentry edge config DSN resolution inverted vs rest of codebase. **MEDIUM** [NEW-P11]
-- [ ] **[ENV-NEW]** sentry-integration @t3-oss/env-nextjs ^0.10.0 (others ^0.13.10). **MEDIUM** [NEW-P11]
+- [x] **[ENV-NEW]** sentry-integration @t3-oss/env-nextjs ^0.10.0 (others ^0.13.10). **MEDIUM** [NEW-P11] **RESOLVED: upgraded to ^0.13.10**
 - [x] **[ENV-NEW]** command-board reads from env.txt file on disk, bypassing validation. **MEDIUM** [NEW-P11] **RESOLVED: Removed resolveOpenAiApiKey() and its readFileSync to Documents/env.txt. Now uses validated env object.**
 - [x] **[ENV-NEW]** REVALIDATION_SECRET bare process.env for CMS webhook auth. **MEDIUM** [NEW-P11] **RESOLVED: Added to apps/web/env.ts. Updated apps/web/app/api/revalidate/route.ts to use validated env.**
 - [x] **[ENV-NEW]** RESEND_WEBHOOK_SECRET bare process.env for webhook verification. **MEDIUM** [NEW-P11] **RESOLVED: Added to apps/api/env.ts. Updated apps/api/app/api/collaboration/notifications/email/webhook/route.ts to use validated env.**
