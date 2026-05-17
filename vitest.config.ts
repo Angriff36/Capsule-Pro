@@ -9,6 +9,7 @@ export default defineConfig({
   test: {
     environment: "node",
     globals: true,
+    restoreMocks: true,
     include: ["**/*.test.{ts,tsx}", "**/*.spec.{ts,tsx}"],
     exclude: ["**/e2e/**", "**/node_modules/**"],
   },

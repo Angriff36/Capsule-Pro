@@ -5,6 +5,8 @@ export default defineConfig({
   test: {
     include: ["src/**/*.test.ts", "packages/cli/**/*.test.ts"],
     environment: "node",
+    globals: true,
+    restoreMocks: true,
     setupFiles: ["./test-setup.ts"],
     deps: {
       interopDefault: true,

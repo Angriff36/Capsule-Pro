@@ -110,6 +110,13 @@ Quick-win CRITICAL fixes applied:
 - CSP double-definition: removed CSP from root vercel.json (apps/app/next.config.ts is sole authority)
 - Stale webhook-retry: deleted orphan app/cron/webhook-retry/route.ts (canonical path is app/api/cron/webhook-retry/)
 
+## Changes from vitest+next-config fix pass (2026-05-16)
+
+- packages/next-config: added poweredByHeader:false and reactStrictMode:true (all apps inherit)
+- Vitest: added restoreMocks:true to root config + all 13 individual project configs (test isolation fix)
+- Vitest: standardized globals:true across all configs (was in 4, now in all 14)
+- apps/app/vitest.config.mts: removed 6 hardcoded Windows absolute paths (C:\Projects\capsule-pro\...) from resolveId hook
+
 ## Changes from automation pass (2026-05-16)
 
 - Removed ghost apps/studio reference from root tsconfig.json (line 13 was `{ "path": "./apps/studio" }` - directory confirmed non-existent)
@@ -258,8 +265,8 @@ ALL scheduled crons non-functional. Clerk middleware blocks `/api/cron/*` (not i
 - [x] **[VITEST-NEW]** notifications vitest ^3 incompatible with Vitest 4 workspace. **HIGH** [NEW-P11] **RESOLVED: updated to ^4.0.18**
 - [x] **[VITEST-NEW]** sales-reporting vitest ^2 incompatible with Vitest 4 workspace. **HIGH** [NEW-P11] **RESOLVED: updated to ^4.0.18**
 - [x] **[VITEST]** console.log in 6 vitest config instances. **HIGH** [CONFIRMED-P10] **RESOLVED: removed 7 console.log statements from apps/app/vitest.config.mts and apps/api/vitest.config.mts**
-- [ ] **[VITEST]** restoreMocks NOT set in ANY of 14 configs. **HIGH** [CONFIRMED-P10]
-- [ ] **[VITEST]** globals:true in only 4 of 15 configs. **HIGH** [CONFIRMED-P10]
+- [x] **[VITEST]** restoreMocks NOT set in ANY of 14 configs. **HIGH** [CONFIRMED-P10] **RESOLVED: added restoreMocks:true to root vitest.config.ts and all 13 individual project vitest configs**
+- [x] **[VITEST]** globals:true in only 4 of 15 configs. **HIGH** [CONFIRMED-P10] **RESOLVED: standardized globals:true across all vitest configs (was in 4, now in all 14)**
 - [ ] **[VITEST]** apps/app no setupFiles despite jsdom. **HIGH** [CONFIRMED-P10]
 - [ ] **[VITEST]** mobile in root workspace but no vitest config. **MEDIUM** [CONFIRMED-P10]
 - [ ] **[VITEST]** Root workspace missing 3 packages: manifest-adapters, manifest-runtime, notifications. **MEDIUM** [CONFIRMED-P10]
@@ -328,8 +335,8 @@ ALL scheduled crons non-functional. Clerk middleware blocks `/api/cron/*` (not i
 - [ ] **[NEXT]** apps/app transpilePackages missing 2-3 packages. **HIGH** [CONFIRMED-P10]
 - [ ] **[NEXT]** apps/web productionBrowserSourceMaps:true unconditionally. **HIGH** [CONFIRMED-P10]
 - [ ] **[NEXT]** apps/web ZERO CSP headers. **HIGH** [CONFIRMED-P10]
-- [ ] **[NEXT]** packages/next-config missing reactStrictMode:true. **HIGH** [CONFIRMED-P10]
-- [ ] **[NEXT]** No poweredByHeader:false in any app or shared config. **HIGH** [CONFIRMED-P10]
+- [x] **[NEXT]** packages/next-config missing reactStrictMode:true. **HIGH** [CONFIRMED-P10] **RESOLVED: added reactStrictMode:true to shared packages/next-config/index.ts (all apps inherit)**
+- [x] **[NEXT]** No poweredByHeader:false in any app or shared config. **HIGH** [CONFIRMED-P10] **RESOLVED: added poweredByHeader:false to shared packages/next-config/index.ts (all apps inherit)**
 - [ ] **[NEXT]** apps/docs and apps/storybook NOT using shared @repo/next-config. **HIGH** [CONFIRMED-P10]
 - [ ] **[NEXT]** apps/docs and apps/storybook have no security headers. **HIGH** [CONFIRMED-P10]
 - [ ] **[NEXT]** apps/app security headers duplicated instead of extending. **HIGH** [CONFIRMED-P10]

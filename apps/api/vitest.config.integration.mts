@@ -41,6 +41,8 @@ export default defineConfig({
   ],
   test: {
     environment: "node", // Use node environment for database access
+    globals: true,
+    restoreMocks: true,
     setupFiles: ["./test/setup.integration.ts"],
     include: ["**/__tests__/**/*.integration.test.{ts,tsx,js}"],
     // Only run tests that end with .integration.test.ts

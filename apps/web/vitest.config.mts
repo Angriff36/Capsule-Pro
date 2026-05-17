@@ -29,6 +29,8 @@ export default defineConfig({
   ],
   test: {
     environment: "jsdom",
+    globals: true,
+    restoreMocks: true,
     include: ["**/__tests__/**/*.test.{ts,tsx,js,jsx}"],
     exclude: ["**/e2e/**", "**/node_modules/**"],
     setupFiles: ["../../vitest.setup.ts"],

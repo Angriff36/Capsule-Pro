@@ -3,6 +3,8 @@ import withBundleAnalyzer from "@next/bundle-analyzer";
 import type { NextConfig } from "next";
 
 export const config: NextConfig = {
+  poweredByHeader: false,
+  reactStrictMode: true,
   turbopack: {
     root: path.resolve(process.cwd(), "..", ".."),
   },

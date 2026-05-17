@@ -2,7 +2,8 @@ import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   test: {
+    globals: true,
+    restoreMocks: true,
     include: ["__tests__/**/*.test.ts"],
-    globals: false,
   },
 });
