@@ -24,7 +24,7 @@
     { "path": "./packages/internationalization" },
     { "path": "./packages/kitchen-state-transitions" },
     { "path": "./packages/manifest-adapters" },
-    { "path": "./packages/manifest-runtime/tsconfig.lib.json" },
+    { "path": "./packages/manifest-ir" },
     { "path": "./packages/mcp-server" },
     { "path": "./packages/next-config" },
     { "path": "./packages/notifications" },
