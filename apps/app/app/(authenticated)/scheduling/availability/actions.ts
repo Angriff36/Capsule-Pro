@@ -56,30 +56,30 @@ export async function getAvailability(params: AvailabilityFilters = {}) {
       Prisma.sql`
         SELECT
           ea.id,
-          ea.employeeId,
+          ea.employee_id,
           e.first_name AS employee_first_name,
           e.last_name AS employee_last_name,
           e.email AS employee_email,
           e.role AS employee_role,
-          ea.dayOfWeek,
-          ea.startTime,
-          ea.endTime,
-          ea.isAvailable,
-          ea.effectiveFrom,
-          ea.effectiveUntil,
-          ea.createdAt,
-          ea.updatedAt
+          ea.day_of_week,
+          ea.start_time,
+          ea.end_time,
+          ea.is_available,
+          ea.effective_from,
+          ea.effective_until,
+          ea.created_at,
+          ea.updated_at
         FROM tenant_staff.employee_availability ea
         JOIN tenant_staff.employees e
-          ON e.tenantId = ea.tenantId
-         AND e.id = ea.employeeId
-        WHERE ea.tenantId = ${tenantId}
-          AND ea.deletedAt IS NULL
-          ${hasEmployeeId ? Prisma.sql`AND ea.employeeId = ${params.employeeId!}` : Prisma.empty}
-          ${hasDayOfWeek ? Prisma.sql`AND ea.dayOfWeek = ${params.dayOfWeek!}` : Prisma.empty}
-          ${hasEffectiveDate ? Prisma.sql`AND ${new Date(params.effectiveDate!)} >= COALESCE(ea.effectiveFrom, ${new Date(params.effectiveDate!)}) AND ${new Date(params.effectiveDate!)} <= COALESCE(ea.effectiveUntil, ${new Date(params.effectiveDate!)})` : Prisma.empty}
-          ${hasIsActive ? Prisma.sql`AND ${new Date(params.effectiveDate!)} >= COALESCE(ea.effectiveFrom, ${new Date(params.effectiveDate!)}) AND ${new Date(params.effectiveDate!)} <= COALESCE(ea.effectiveUntil, ${new Date(params.effectiveDate!)})` : Prisma.empty}
-        ORDER BY e.last_name ASC, e.first_name ASC, ea.dayOfWeek ASC, ea.startTime ASC
+          ON e.tenant_id = ea.tenant_id
+         AND e.id = ea.employee_id
+        WHERE ea.tenant_id = ${tenantId}
+          AND ea.deleted_at IS NULL
+          ${hasEmployeeId ? Prisma.sql`AND ea.employee_id = ${params.employeeId!}` : Prisma.empty}
+          ${hasDayOfWeek ? Prisma.sql`AND ea.day_of_week = ${params.dayOfWeek!}` : Prisma.empty}
+          ${hasEffectiveDate ? Prisma.sql`AND ${new Date(params.effectiveDate!)} >= COALESCE(ea.effective_from, ${new Date(params.effectiveDate!)}) AND ${new Date(params.effectiveDate!)} <= COALESCE(ea.effective_until, ${new Date(params.effectiveDate!)})` : Prisma.empty}
+          ${hasIsActive ? Prisma.sql`AND ${new Date(params.effectiveDate!)} >= COALESCE(ea.effective_from, ${new Date(params.effectiveDate!)}) AND ${new Date(params.effectiveDate!)} <= COALESCE(ea.effective_until, ${new Date(params.effectiveDate!)})` : Prisma.empty}
+        ORDER BY e.last_name ASC, e.first_name ASC, ea.day_of_week ASC, ea.start_time ASC
         LIMIT ${limit}
         OFFSET ${offset}
       `
@@ -88,12 +88,12 @@ export async function getAvailability(params: AvailabilityFilters = {}) {
       Prisma.sql`
         SELECT COUNT(*)::bigint
         FROM tenant_staff.employee_availability ea
-        WHERE ea.tenantId = ${tenantId}
-          AND ea.deletedAt IS NULL
-          ${hasEmployeeId ? Prisma.sql`AND ea.employeeId = ${params.employeeId!}` : Prisma.empty}
-          ${hasDayOfWeek ? Prisma.sql`AND ea.dayOfWeek = ${params.dayOfWeek!}` : Prisma.empty}
-          ${hasEffectiveDate ? Prisma.sql`AND ${new Date(params.effectiveDate!)} >= COALESCE(ea.effectiveFrom, ${new Date(params.effectiveDate!)}) AND ${new Date(params.effectiveDate!)} <= COALESCE(ea.effectiveUntil, ${new Date(params.effectiveDate!)})` : Prisma.empty}
-          ${hasIsActive ? Prisma.sql`AND ${new Date(params.effectiveDate!)} >= COALESCE(ea.effectiveFrom, ${new Date(params.effectiveDate!)}) AND ${new Date(params.effectiveDate!)} <= COALESCE(ea.effectiveUntil, ${new Date(params.effectiveDate!)})` : Prisma.empty}
+        WHERE ea.tenant_id = ${tenantId}
+          AND ea.deleted_at IS NULL
+          ${hasEmployeeId ? Prisma.sql`AND ea.employee_id = ${params.employeeId!}` : Prisma.empty}
+          ${hasDayOfWeek ? Prisma.sql`AND ea.day_of_week = ${params.dayOfWeek!}` : Prisma.empty}
+          ${hasEffectiveDate ? Prisma.sql`AND ${new Date(params.effectiveDate!)} >= COALESCE(ea.effective_from, ${new Date(params.effectiveDate!)}) AND ${new Date(params.effectiveDate!)} <= COALESCE(ea.effective_until, ${new Date(params.effectiveDate!)})` : Prisma.empty}
+          ${hasIsActive ? Prisma.sql`AND ${new Date(params.effectiveDate!)} >= COALESCE(ea.effective_from, ${new Date(params.effectiveDate!)}) AND ${new Date(params.effectiveDate!)} <= COALESCE(ea.effective_until, ${new Date(params.effectiveDate!)})` : Prisma.empty}
       `
     ),
   ]);
@@ -143,26 +143,26 @@ export async function getAvailabilityById(availabilityId: string) {
     Prisma.sql`
       SELECT
         ea.id,
-        ea.employeeId,
+        ea.employee_id,
         e.first_name AS employee_first_name,
         e.last_name AS employee_last_name,
         e.email AS employee_email,
         e.role AS employee_role,
-        ea.dayOfWeek,
-        ea.startTime,
-        ea.endTime,
-        ea.isAvailable,
-        ea.effectiveFrom,
-        ea.effectiveUntil,
-        ea.createdAt,
-        ea.updatedAt
+        ea.day_of_week,
+        ea.start_time,
+        ea.end_time,
+        ea.is_available,
+        ea.effective_from,
+        ea.effective_until,
+        ea.created_at,
+        ea.updated_at
       FROM tenant_staff.employee_availability ea
       JOIN tenant_staff.employees e
-        ON e.tenantId = ea.tenantId
-       AND e.id = ea.employeeId
-      WHERE ea.tenantId = ${tenantId}
+        ON e.tenant_id = ea.tenant_id
+       AND e.id = ea.employee_id
+      WHERE ea.tenant_id = ${tenantId}
         AND ea.id = ${availabilityId}
-        AND ea.deletedAt IS NULL
+        AND ea.deleted_at IS NULL
     `
   );
 
@@ -600,25 +600,25 @@ export async function getEmployeeAvailability(params: {
   >(
     Prisma.sql`
       SELECT
-        ea.employeeId,
+        ea.employee_id,
         e.first_name AS employee_first_name,
         e.last_name AS employee_last_name,
         e.email AS employee_email,
         e.role AS employee_role,
-        ea.isAvailable,
-        ea.dayOfWeek,
-        ea.startTime,
-        ea.endTime
+        ea.is_available,
+        ea.day_of_week,
+        ea.start_time,
+        ea.end_time
       FROM tenant_staff.employee_availability ea
       JOIN tenant_staff.employees e
-        ON e.tenantId = ea.tenantId
-       AND e.id = ea.employeeId
-      WHERE ea.tenantId = ${tenantId}
-        AND ea.deletedAt IS NULL
-        AND ${startDate} <= COALESCE(ea.effectiveUntil, ${endDate})
-        AND ${endDate} >= COALESCE(ea.effectiveFrom, ${startDate})
+        ON e.tenant_id = ea.tenant_id
+       AND e.id = ea.employee_id
+      WHERE ea.tenant_id = ${tenantId}
+        AND ea.deleted_at IS NULL
+        AND ${startDate} <= COALESCE(ea.effective_until, ${endDate})
+        AND ${endDate} >= COALESCE(ea.effective_from, ${startDate})
         ${employeesQuery}
-      ORDER BY e.last_name ASC, e.first_name ASC, ea.dayOfWeek ASC, ea.startTime ASC
+      ORDER BY e.last_name ASC, e.first_name ASC, ea.day_of_week ASC, ea.start_time ASC
     `
   );
 
@@ -683,17 +683,17 @@ export async function getEmployeeAvailability(params: {
       Prisma.sql`
         SELECT
           tor.id,
-          tor.employeeId,
-          tor.startDate,
-          tor.endDate,
+          tor.employee_id,
+          tor.start_date,
+          tor.end_date,
           tor.status
         FROM tenant_staff.time_off_requests tor
-        WHERE tor.tenantId = ${tenantId}
-          AND tor.deletedAt IS NULL
+        WHERE tor.tenant_id = ${tenantId}
+          AND tor.deleted_at IS NULL
           AND tor.status IN ('approved', 'pending')
-          AND (${startDate} <= tor.endDate AND ${endDate} >= tor.startDate)
+          AND (${startDate} <= tor.end_date AND ${endDate} >= tor.start_date)
           ${employeesQuery}
-        ORDER BY tor.startDate ASC
+        ORDER BY tor.start_date ASC
       `
     );
   }
