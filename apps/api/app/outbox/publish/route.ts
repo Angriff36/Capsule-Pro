@@ -73,15 +73,15 @@ function getMessageSize(message: unknown): number {
  */
 interface RawOutboxEvent {
   id: string;
-  tenantId: string;
-  aggregateType: string;
-  aggregateId: string;
-  eventType: string;
+  tenant_id: string;
+  aggregate_type: string;
+  aggregate_id: string;
+  event_type: string;
   payload: unknown;
   status: string;
   error: string | null;
-  createdAt: Date;
-  publishedAt: Date | null;
+  created_at: Date;
+  published_at: Date | null;
 }
 
 /**
@@ -112,11 +112,11 @@ export async function GET(request: Request) {
     : 0;
 
   const pendingEvents = await database.$queryRaw<RawOutboxEvent[]>`
-    SELECT "id", "tenantId", "aggregateType", "aggregateId", "eventType", "payload",
-           "status", "error", "createdAt", "publishedAt"
+    SELECT "id", "tenant_id", "aggregate_type", "aggregate_id", "event_type", "payload",
+           "status", "error", "created_at", "published_at"
     FROM "tenant"."OutboxEvent"
     WHERE "status" = 'pending'
-    ORDER BY "createdAt" ASC
+    ORDER BY "created_at" ASC
     LIMIT ${limit}
     FOR UPDATE SKIP LOCKED
   `;
@@ -141,7 +141,15 @@ export async function GET(request: Request) {
       continue;
     }
 
-    const envelope = buildEventEnvelope(event);
+    const envelope = buildEventEnvelope({
+      id: event.id,
+      tenantId: event.tenant_id,
+      aggregateType: event.aggregate_type,
+      aggregateId: event.aggregate_id,
+      eventType: event.event_type,
+      payload: event.payload,
+      createdAt: event.created_at,
+    });
     const messageSize = getMessageSize(envelope);
 
     if (messageSize > MAX_PAYLOAD_SIZE) {
@@ -162,11 +170,11 @@ export async function GET(request: Request) {
       );
     }
 
-    const channelName = getChannelName(event.tenantId);
+    const channelName = getChannelName(event.tenant_id);
     const channel = ably.channels.get(channelName);
 
     try {
-      await channel.publish(event.eventType, envelope);
+      await channel.publish(event.event_type, envelope);
       await database.outboxEvent.update({
         where: { id: event.id },
         data: {
@@ -231,11 +239,11 @@ export async function POST(request: Request) {
   // Use SKIP LOCKED for concurrent publisher safety
   // Prisma doesn't expose SKIP LOCKED, so we use $queryRaw
   const pendingEvents = await database.$queryRaw<RawOutboxEvent[]>`
-    SELECT "id", "tenantId", "aggregateType", "aggregateId", "eventType", "payload",
-           "status", "error", "createdAt", "publishedAt"
+    SELECT "id", "tenant_id", "aggregate_type", "aggregate_id", "event_type", "payload",
+           "status", "error", "created_at", "published_at"
     FROM "tenant"."OutboxEvent"
     WHERE "status" = 'pending'
-    ORDER BY "createdAt" ASC
+    ORDER BY "created_at" ASC
     LIMIT ${limit}
     FOR UPDATE SKIP LOCKED
   `;
@@ -261,7 +269,15 @@ export async function POST(request: Request) {
       continue;
     }
 
-    const envelope = buildEventEnvelope(event);
+    const envelope = buildEventEnvelope({
+      id: event.id,
+      tenantId: event.tenant_id,
+      aggregateType: event.aggregate_type,
+      aggregateId: event.aggregate_id,
+      eventType: event.event_type,
+      payload: event.payload,
+      createdAt: event.created_at,
+    });
     const messageSize = getMessageSize(envelope);
 
     // Check payload size limits
@@ -284,11 +300,11 @@ export async function POST(request: Request) {
       );
     }
 
-    const channelName = getChannelName(event.tenantId);
+    const channelName = getChannelName(event.tenant_id);
     const channel = ably.channels.get(channelName);
 
     try {
-      await channel.publish(event.eventType, envelope);
+      await channel.publish(event.event_type, envelope);
       await database.outboxEvent.update({
         where: { id: event.id },
         data: {
