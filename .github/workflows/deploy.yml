@@ -130,7 +130,7 @@ jobs:
             5e141ec7-b40d-4b83-8efa-b43e0021c700 > VERCEL_WEB_PROJECT_ID
 
       - name: Deploy to Vercel (App)
-        uses: amondnet/vercel-action@v25
+        uses: amondnet/vercel-action@v42
         with:
           vercel-token: ${{ env.VERCEL_TOKEN }}
           vercel-org-id: ${{ env.VERCEL_ORG_ID }}
@@ -139,7 +139,7 @@ jobs:
           vercel-args: '--prod'
 
       - name: Deploy to Vercel (API)
-        uses: amondnet/vercel-action@v25
+        uses: amondnet/vercel-action@v42
         with:
           vercel-token: ${{ env.VERCEL_TOKEN }}
           vercel-org-id: ${{ env.VERCEL_ORG_ID }}
@@ -148,7 +148,7 @@ jobs:
           vercel-args: '--prod'
 
       - name: Deploy to Vercel (Web)
-        uses: amondnet/vercel-action@v25
+        uses: amondnet/vercel-action@v42
         with:
           vercel-token: ${{ env.VERCEL_TOKEN }}
           vercel-org-id: ${{ env.VERCEL_ORG_ID }}
@@ -198,7 +198,7 @@ jobs:
             e239cd88-7fb7-4c3b-ab42-b43e0021b4c8 > VERCEL_DOCS_PROJECT_ID
 
       - name: Deploy to Vercel (Docs)
-        uses: amondnet/vercel-action@v25
+        uses: amondnet/vercel-action@v42
         with:
           vercel-token: ${{ env.VERCEL_TOKEN }}
           vercel-org-id: ${{ env.VERCEL_ORG_ID }}
