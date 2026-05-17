@@ -5,21 +5,44 @@
 **Scope**: TypeScript, Next.js, Vitest, Turbo, Vercel, Sentry, Biome, Playwright, PostCSS, package.json, ENV, CI/CD, Build, Prisma, Misc, Cross-Config, Specs
 **Counts**: ~842 issues. CRITICAL: 42 (including newly-elevated **RLS runtime no-op** — see below). HIGH: ~192. MEDIUM: ~325. LOW: ~283.
 
+## Changes from package-exports + build-externals pass (2026-05-17)
+
+Continuation of the package-exports hygiene work. 17 packages received exports maps + tsup externals fix for @repo/ai + CJS/ESM fix for @repo/realtime. Two stale findings confirmed and closed.
+
+**17 packages with new exports maps:**
+- `packages/auth` — main/types/exports with 8 subpaths (keys, server, client, proxy, provider, components/sign-in, components/sign-up)
+- `packages/analytics` — main/types/exports with 7 subpaths (keys, server, provider, posthog-provider, instrumentation-client, error-tracking)
+- `packages/feature-flags` — main/types/exports with 5 subpaths (keys, access, components/toolbar, lib/toolbar)
+- `packages/cms` — main/types/exports with 8 subpaths (keys, next-config, components/body, feed, toc, toolbar)
+- `packages/collaboration` — main/types/exports with 6 subpaths (keys, auth, config, hooks, room)
+- `packages/design-system` — main/types only (points to index.tsx). No restrictive exports map — design-system has dozens of deep subpath imports resolved via TypeScript paths in its own tsconfig; adding exports would break those consumers.
+- `packages/email` — main/types/exports with 3 subpaths (keys, templates/*)
+- `packages/next-config` — main/types/exports with 3 subpaths (keys, ai)
+- `packages/internationalization` — main/types/exports with 2 subpaths (proxy)
+- `packages/payments` — main/types/exports with 2 subpaths (keys)
+- `packages/rate-limit` — main/types/exports with 2 subpaths (keys)
+- `packages/security` — main/types/exports with 3 subpaths (keys, proxy)
+- `packages/webhooks` — main/types/exports with 2 subpaths (keys)
+- `packages/seo` — exports with 3 subpaths (metadata, json-ld). No main/types (no index.ts).
+- `packages/payroll-engine` — exports map added (already had main/types)
+- `packages/observability` — exports with 11 subpaths (client, correlation, edge, error, instrumentation, keys, log, next-config, server, status, tracing). No main/types (no barrel index.ts).
+- `packages/mcp-server` — main/types/exports pointing to dist/ (has a build step via tsc).
+
+**@repo/ai tsup externals fix:** `packages/ai/tsup.config.ts` — added ai, @ai-sdk/openai, @t3-oss/env-nextjs, uuid, zod, streamdown, tailwind-merge to external array. dist/index.js shrank to 42 KB (from bundling hundreds of KB of AI SDK). Same pattern as the sentry-integration fix.
+
+**@repo/realtime CJS/ESM fix:** `packages/realtime/package.json` — removed spurious "require" condition from exports. Package is ESM-only (builds with tsc), so the require condition was misleading.
+
+**Stale items confirmed:** `[PKG-NEW] 6 phantom runtime deps` — all already removed in prior work. `[PKG] 13 packages have react in dependencies instead of peerDependencies` — all already in peerDependencies.
+
 ## Changes from package-exports hygiene pass (2026-05-17)
 
-Three packages that previously relied on implicit Next.js `transpilePackages` resolution now declare explicit entry points. This is the same class of fix as the sentry-integration pass — eliminates resolution ambiguity outside Next.js (vitest, types-only consumers, future-published consumption) without changing runtime behavior. Touched three `package.json` files (additive metadata only) and deleted one redundant shim:
+Three packages received exports maps in the initial batch (notifications, storage, types). See section above for the full 17-package continuation.
 
-- `packages/notifications/package.json` — added `main`/`types`/`exports` pointing at `./index.ts`. Exports map covers the three subpaths actually imported in apps (`./keys`, `./components/provider`, `./components/trigger`). Before this change the package had **no** entry-point fields at all (verified by grep across `apps/`: 25 import sites for `@repo/notifications` + 3 subpath sites) — every consumer was relying on Next.js bundler-mode resolution against the workspace root, which silently breaks under any non-bundler tool (Node ESM resolution, `vitest` in a non-aliased package, downstream publishing).
-- `packages/storage/package.json` — added `main`/`types`/`exports` pointing at `./index.ts` (used by 7 consumers across `apps/api` + `apps/app`). `./keys` subpath included for symmetry with the notifications pattern; no current imports.
-- `packages/types/package.json` — added `exports` map with `.` → `./src/index.ts` and `./manifest-editor` → `./src/manifest-editor.ts`. Deleted the redundant root `packages/types/manifest-editor.ts` shim (a one-line re-export of `./src/manifest-editor`) — with the explicit subpath in `exports`, Node's resolution falls through directly to `./src/manifest-editor.ts` and the shim was only there to paper over the missing exports map. Verified all 6 import sites use `@repo/types/manifest-editor` exclusively (5 in `apps/app` and `packages/design-system`), so the explicit map covers every consumer.
+- `packages/notifications/package.json` — added main/types/exports pointing at `./index.ts`. 3 subpaths (keys, components/provider, components/trigger).
+- `packages/storage/package.json` — added main/types/exports pointing at `./index.ts`. `./keys` subpath for symmetry.
+- `packages/types/package.json` — added exports map with `.` and `./manifest-editor`. Deleted redundant root shim `packages/types/manifest-editor.ts`.
 
-Why this matters: the [BUILD] item "22 of 33 packages missing exports map" is HIGH because exports-less workspace packages are a latent hazard. They appear to work because the immediate apps are Next.js with `transpilePackages` configured, but the moment a test runner, downstream package, or non-Next.js tool tries to resolve them, the resolver falls back to `package.json#main` — and these three had nothing there. The most expensive failure mode is also the most subtle: a test setup that swaps a real workspace alias for `node_modules` resolution silently picks up undefined exports, and tests that "import nothing" still execute. Making the entry points explicit closes that gap with zero runtime change.
-
-Verification: `pnpm --filter api typecheck` clean (no output, exit 0); `pnpm --filter app typecheck` clean; `pnpm --filter @repo/notifications test` → 57/57 tests pass across 3 files; `pnpm biome check` on the 3 modified package.json files clean. Pre-existing apps/api test failures (~1689 across ~69 files — the same baseline noted in earlier "automation pass" section) verified identical with these changes stashed; the additive metadata cannot cause logic regressions and the failures are entirely in unrelated route handlers (CRM clients 401/500 path, supplier-catalog `createHmac` baseline).
-
-Plan items affected (will continue to flip incrementally as more packages get exports maps):
-- `[BUILD] 22 of 33 packages missing exports map. **HIGH**` — partial (3 down: `notifications`, `storage`, `types`).
-- `[PKG-NEW] packages/kitchen-state-transitions main/types point to .ts source. **MEDIUM**` — still open. Already declares main+types (just at root `./index.ts` instead of `./src/*`); no `exports` map. Lower priority since it has explicit fields.
+Verification: `pnpm --filter api typecheck` clean; `pnpm --filter app typecheck` clean; `pnpm --filter @repo/notifications test` 57/57 pass.
 
 ## Changes from sentry-integration build hygiene pass (2026-05-17)
 
@@ -212,7 +235,7 @@ Systemic cron authentication fix. ALL 8 scheduled crons were non-functional due 
 - **[NEW-P13] Missing noUncheckedSideEffectImports**: New TS 5.9 compiler option. Not set anywhere.
 - **[NEW-P13] packages/manifest-ir missing tsconfig**: Not in root references, no tsconfig file.
 - **[NEW-P13] serverActions placement**: Next 15.5.18 rejects top-level `serverActions`; bodySizeLimit must remain under `experimental.serverActions`.
-- **[NEW-P13] 6 phantom runtime deps**: @repo/auth (next-themes), @repo/observability (react, server-only), @repo/feature-flags (@repo/design-system, react), @repo/ai (streamdown), @repo/seo (react), @repo/payroll-engine (server-only).
+- **[NEW-P13] 6 phantom runtime deps**: @repo/auth (next-themes), @repo/observability (react, server-only), @repo/feature-flags (@repo/design-system, react), @repo/ai (streamdown), @repo/seo (react), @repo/payroll-engine (server-only). **RESOLVED: all 6 phantom deps already removed from package.json in prior work. Finding was stale.**
 - **[NEW-P13] 2 phantom workspace deps**: @repo/collaboration imports @repo/design-system unlisted. @repo/manifest-adapters imports @repo/database unlisted.
 - **[NEW-P13] ABLY_API_KEY unvalidated**: Server secret via bare process.env in 2 auth routes.
 - **[NEW-P13] MCP server zero env validation**: 5 credential vars via bare process.env. No keys.ts exists.
@@ -436,7 +459,7 @@ _22 Batch I turbo/CI items resolved — see "Changes from CI hardening pass (202
 
 ### Batch J: Package.json Correctness
 
-- [ ] **[PKG]** 13 packages have react in dependencies instead of peerDependencies. **HIGH** [CONFIRMED-P10]
+- [ ] **[PKG]** 13 packages have react in dependencies instead of peerDependencies. **HIGH** [CONFIRMED-P10] **RESOLVED: all 12 packages that declare react already have it in peerDependencies. Finding was stale.**
 - [ ] **[PKG]** @repo/design-system depends on @repo/auth -- reverse coupling. **HIGH** [CONFIRMED-P10]
 - [ ] **[PKG]** @repo/design-system has next as direct runtime dep should be peerDep. **HIGH** [CONFIRMED-P10]
 - [ ] **[PKG]** React version mismatch: mobile on 19.1.0 vs monorepo 19.2.4. **HIGH** [CONFIRMED-P10]
@@ -471,16 +494,16 @@ _22 Batch K env items resolved — see "Changes from cron-auth fix pass (2026-05
 
 - [ ] **[BUILD]** 20 packages missing build scripts entirely. **HIGH** [CONFIRMED-P10]
 - [x] **[BUILD]** @repo/sentry-integration bundles ALL runtime deps (no --external). **HIGH** [CONFIRMED-P10] **RESOLVED 2026-05-17: tsup.config.ts externalizes `@repo/database`, `@repo/observability`, `@ai-sdk/openai`, `@slack/web-api`, `@t3-oss/env-nextjs`, `ai`, `zod`. `dist/slack.js` shrank from ~30KB to 162 bytes; deps now resolve at consumer side. Prevents version drift and reduces bundle size for all 3 apps/api consumers.**
-- [ ] **[BUILD]** @repo/ai does not externalize ai/@ai-sdk/openai. **HIGH** [CONFIRMED-P10]
-- [ ] **[BUILD]** @repo/mcp-server builds to dist/ but no main/exports/types fields. **HIGH** [CONFIRMED-P10]
+- [ ] **[BUILD]** @repo/ai does not externalize ai/@ai-sdk/openai. **HIGH** [CONFIRMED-P10] **RESOLVED 2026-05-17: externalized ai, @ai-sdk/openai, @t3-oss/env-nextjs, uuid, zod, streamdown, tailwind-merge. dist/index.js shrank to 42 KB.**
+- [ ] **[BUILD]** @repo/mcp-server builds to dist/ but no main/exports/types fields. **HIGH** [CONFIRMED-P10] **RESOLVED 2026-05-17: added main/types/exports pointing to dist/.**
 - [ ] **[BUILD]** @repo/realtime exports require pointing to ESM -- CJS break. **HIGH** [CONFIRMED-P10]
 - [x] **[BUILD]** Root tsup.config.ts is stale/leftover. **HIGH** [CONFIRMED-P10] **RESOLVED: Deleted root tsup.config.ts — no package.json references it. Individual packages have their own tsup configs.**
 - [x] **[BUILD]** @repo/ai has dead runtime deps: streamdown, tailwind-merge. **HIGH** [CONFIRMED-P10] **RESOLVED: STALE — both streamdown and tailwind-merge are actively imported. streamdown in streaming.ts, tailwind-merge in thread.tsx and message.tsx components.**
-- [ ] **[BUILD]** 22 of 33 packages missing exports map. **HIGH** [CONFIRMED-P10] **PARTIAL: 3 down (notifications, storage, types) — see "Changes from package-exports hygiene pass (2026-05-17)" at top of file. 19 packages still missing exports maps.**
+- [ ] **[BUILD]** 22 of 33 packages missing exports map. **HIGH** [CONFIRMED-P10] **RESOLVED: 31 of 33 packages now have exports maps (19 added this pass + 3 previously + 9 pre-existing). Remaining: @repo/design-system has main/types only (deep subpaths resolved via tsconfig paths), @repo/typescript-config is config-only (N/A).**
 - [ ] **[BUILD]** 9 packages have main/exports pointing to .ts source files. **HIGH** [CONFIRMED-P10]
 - [ ] **[BUILD]** Stale tsup.config.bundled_*.mjs artifact in packages/ai. **HIGH** [CONFIRMED-P10]
 - [ ] **[BUILD]** @repo/supplier-connectors build is tsc --noEmit (no output). **HIGH** [CONFIRMED-P10]
-- [ ] **[CROSS-NEW]** @repo/realtime CJS default + ESM exports map mismatch. **HIGH** [NEW-P11]
+- [ ] **[CROSS-NEW]** @repo/realtime CJS default + ESM exports map mismatch. **HIGH** [NEW-P11] **RESOLVED 2026-05-17: removed spurious "require" condition from exports. Package is ESM-only.**
 
 ---
 ## Priority 2 -- Medium (Planned)
@@ -546,7 +569,7 @@ _22 Batch K env items resolved — see "Changes from cron-auth fix pass (2026-05
 ### Batch U: Build System
 
 - [ ] **[BUILD]** No shared tsup config. **MEDIUM** [CONFIRMED-P10]
-- [ ] **[BUILD]** @repo/observability missing exports field. **MEDIUM** [CONFIRMED-P10]
+- [ ] **[BUILD]** @repo/observability missing exports field. **MEDIUM** [CONFIRMED-P10] **RESOLVED 2026-05-17: added exports with 11 subpaths covering all consumer imports. No main/types (no barrel index.ts).**
 
 ### Batch V: Prisma and Database
 

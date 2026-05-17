@@ -3,6 +3,14 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
   "scripts": {
     "start": "tsx --require ./src/preload.cts src/index.ts",
     "start:admin": "MCP_SERVER_MODE=admin tsx --require ./src/preload.cts src/index.ts",

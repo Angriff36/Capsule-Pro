@@ -5,7 +5,6 @@
     "@t3-oss/env-nextjs": "^0.13.10",
     "posthog-js": "^1.336.4",
     "posthog-node": "^5.24.10",
-    "react": "19.2.4",
     "server-only": "^0.0.1",
     "zod": "^4.3.6"
   },
@@ -14,10 +13,23 @@
     "@types/node": "25.2.0",
     "@types/react": "19.2.11",
     "@types/react-dom": "19.2.3",
-    "next": "15.4.11"
+    "next": "15.4.11",
+    "typescript": "^5.9.3"
   },
   "peerDependencies": {
-    "next": "15.4.11"
+    "next": "15.4.11",
+    "react": "19.2.4"
+  },
+  "main": "./index.ts",
+  "types": "./index.ts",
+  "exports": {
+    ".": "./index.ts",
+    "./keys": "./keys.ts",
+    "./server": "./server.ts",
+    "./provider": "./provider.tsx",
+    "./posthog-provider": "./posthog-provider.tsx",
+    "./instrumentation-client": "./instrumentation-client.ts",
+    "./error-tracking": "./error-tracking.ts"
   },
   "private": true,
   "scripts": {

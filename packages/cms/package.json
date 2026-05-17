@@ -4,7 +4,6 @@
   "dependencies": {
     "@t3-oss/env-nextjs": "^0.13.10",
     "basehub": "^9.5.3",
-    "react": "19.2.4",
     "zod": "^4.3.6"
   },
   "devDependencies": {
@@ -12,7 +11,24 @@
     "@types/node": "25.2.0",
     "@types/react": "19.2.11",
     "@types/react-dom": "19.2.3",
-    "next": "15.4.11"
+    "next": "15.4.11",
+    "typescript": "^5.9.3"
+  },
+  "peerDependencies": {
+    "next": "15.4.11",
+    "react": "19.2.4"
+  },
+  "main": "./index.ts",
+  "types": "./index.ts",
+  "exports": {
+    ".": "./index.ts",
+    "./keys": "./keys.ts",
+    "./next-config": "./next-config.ts",
+    "./components/body": "./components/body.tsx",
+    "./components/feed": "./components/feed.tsx",
+    "./components/toc": "./components/toc.tsx",
+    "./components/toolbar": "./components/toolbar.tsx",
+    "./typescript-config.json": "./typescript-config.json"
   },
   "private": true,
   "scripts": {

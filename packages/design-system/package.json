@@ -39,6 +39,8 @@
     "next": ">=15.5.0",
     "react": ">=19.0.0"
   },
+  "main": "./index.tsx",
+  "types": "./index.tsx",
   "private": true,
   "scripts": {
     "clean": "git clean -xdf .cache .turbo dist node_modules",

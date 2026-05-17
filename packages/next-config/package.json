@@ -9,7 +9,15 @@
   },
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",
-    "next": "15.4.11"
+    "next": "15.4.11",
+    "typescript": "^5.9.3"
+  },
+  "main": "./index.ts",
+  "types": "./index.ts",
+  "exports": {
+    ".": "./index.ts",
+    "./keys": "./keys.ts",
+    "./ai": "./ai.ts"
   },
   "private": true,
   "scripts": {

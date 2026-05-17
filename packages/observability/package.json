@@ -1,6 +1,19 @@
 {
   "name": "@repo/observability",
   "version": "0.0.0",
+  "exports": {
+    "./client": "./client.ts",
+    "./correlation": "./correlation.ts",
+    "./edge": "./edge.ts",
+    "./error": "./error.ts",
+    "./instrumentation": "./instrumentation.ts",
+    "./keys": "./keys.ts",
+    "./log": "./log.ts",
+    "./next-config": "./next-config.ts",
+    "./server": "./server.ts",
+    "./status": "./status/index.tsx",
+    "./tracing": "./tracing.ts"
+  },
   "dependencies": {
     "@logtail/next": "^0.3.1",
     "@sentry/nextjs": "^10.38.0",
