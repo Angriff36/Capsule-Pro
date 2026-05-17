@@ -5,6 +5,22 @@
 **Scope**: TypeScript, Next.js, Vitest, Turbo, Vercel, Sentry, Biome, Playwright, PostCSS, package.json, ENV, CI/CD, Build, Prisma, Misc, Cross-Config, Specs
 **Counts**: ~842 issues. CRITICAL: 42 (including newly-elevated **RLS runtime no-op** — see below). HIGH: ~192. MEDIUM: ~325. LOW: ~283.
 
+## Changes from sentry-integration build hygiene pass (2026-05-17)
+
+Five HIGH/MEDIUM items in `packages/sentry-integration/` resolved as one cohesive package-config fix (two were stale, three were real):
+
+- **Real fixes:**
+  - Created `packages/sentry-integration/tsup.config.ts` consolidating the 9-entry build (was 9 paths inlined twice across `build` and `dev` scripts). `package.json` `build`/`dev` simplified to `tsup` / `tsup --watch`.
+  - `package.json` `exports.*.types` changed from `./src/*.ts` → `./dist/*.d.ts` (was breaking type resolution for downstream consumers — TS would pick up uncompiled source instead of declarations). All 9 subpath exports updated.
+  - tsup config externalizes `@repo/database`, `@repo/observability`, `@ai-sdk/openai`, `@slack/web-api`, `@t3-oss/env-nextjs`, `ai`, `zod` (was bundling everything — `slack.js` shrank from ~30KB to 162 bytes; `runner.js` 219 bytes; the heavy deps now resolve at consumer side). Resolves the long-standing **[BUILD] @repo/sentry-integration bundles ALL runtime deps (no --external)** finding.
+- **Stale (no code change, just plan correction):**
+  - `tsconfig.json` now extends `@repo/typescript-config/bundler-library.json` and was already sitting modified-but-uncommitted in the working tree from a prior session (matching the zod/TS/@types/node upgrade pass) — bundled into this commit. The **[CROSS-NEW] diverged tsconfig** finding was correctly identified previously; just not landed.
+  - `keys.ts` adds `skipValidation: !!process.env.SKIP_ENV_VALIDATION` (line 9) — also sitting uncommitted from a prior session, matching the 16-other-packages pattern. Bundled into this commit. The **[SENTRY] keys.ts missing skipValidation** finding was correctly identified previously; just not landed.
+
+Why this matters: the **types-point-to-.ts** issue was the highest-risk of the three. When a consumer imports `@repo/sentry-integration/keys` from a downstream package that strips `node_modules` source files (e.g. published packages, certain Vercel build modes), the resolver would 404 on `./src/keys.ts` because it isn't shipped. Pointing at `./dist/keys.d.ts` is the spec-compliant pattern (matches `@repo/ai`, the only other tsup-built shared package). The externals fix removes ~30KB of bundled `@slack/web-api` from every consumer that imports `slack`, and prevents version drift (e.g. if `apps/api` updates `@slack/web-api` but sentry-integration's bundled copy doesn't get rebuilt).
+
+Verification: `pnpm --filter @repo/sentry-integration typecheck` clean; `pnpm --filter @repo/sentry-integration build` produces 9 entry .js + 9 .d.ts files in dist/; `pnpm --filter api typecheck` clean (3 consumers in apps/api still resolve correctly through new export paths).
+
 ## Changes from RLS runtime audit pass (2026-05-17)
 
 **CRITICAL DISCOVERY — existing RLS infrastructure is a runtime no-op.** A definitive audit of all 202 tenant-scoped Prisma models found that 83 have RLS policies in migrations and 119 do not. Counts in prior passes (`~92 unprotected`, `178 tenant-scoped`, `~86 with RLS`) were slightly under-counted. Per-schema gap below.
@@ -442,7 +458,7 @@ ALL scheduled crons non-functional. Clerk middleware blocks `/api/cron/*` (not i
 - [ ] **[TS]** design-system extends nextjs.json with next plugin inappropriate. **HIGH** [CONFIRMED-P10]
 - [ ] **[TS]** 3 app configs have ignoreDeprecations. **HIGH** [CONFIRMED-P10]
 - [x] **[CROSS-NEW]** Ghost apps/studio reference in root tsconfig. **HIGH** [NEW-P11] **RESOLVED: removed ghost reference**
-- [ ] **[CROSS-NEW]** @repo/sentry-integration diverged tsconfig (doesn't extend shared) + outdated deps. **HIGH** [NEW-P11]
+- [x] **[CROSS-NEW]** @repo/sentry-integration diverged tsconfig (doesn't extend shared) + outdated deps. **HIGH** [NEW-P11] **RESOLVED 2026-05-17: `packages/sentry-integration/tsconfig.json` now extends `@repo/typescript-config/bundler-library.json` (line 1, with `include`/`exclude` at root). Fix was uncommitted from a prior session; landed alongside the tsup config + exports cleanup.**
 - [ ] **[TS]** Root references missing brand and types packages. **MEDIUM** [CONFIRMED-P10]
 - [ ] **[TS]** 9 packages have tsconfig but no direct typescript dep. **MEDIUM** [CONFIRMED-P10]
 
@@ -474,9 +490,9 @@ ALL scheduled crons non-functional. Clerk middleware blocks `/api/cron/*` (not i
 - [x] **[SENTRY]** Missing normalizeDepth, serverName, beforeSendTransaction in ALL shared configs. **HIGH** [CONFIRMED-P10] **RESOLVED: server.ts and edge.ts already had normalizeDepth/serverName/beforeSendTransaction. Added normalizeDepth + beforeSendTransaction to client.ts (serverName is server-only).**
 - [ ] **[SENTRY]** 4 different trace sampling strategies across configs. **HIGH** [CONFIRMED-P10]
 - [ ] **[SENTRY]** packages/mcp-server/src/index.ts bare process.env for Sentry. **HIGH** [CONFIRMED-P10]
-- [ ] **[SENTRY]** sentry-integration keys.ts missing skipValidation. **HIGH** [CONFIRMED-P10]
+- [x] **[SENTRY]** sentry-integration keys.ts missing skipValidation. **HIGH** [CONFIRMED-P10] **RESOLVED 2026-05-17: `packages/sentry-integration/src/keys.ts:9` adds `skipValidation: !!process.env.SKIP_ENV_VALIDATION`, matching the 16-other-packages pattern. Fix was uncommitted from a prior session; landed alongside the tsup config + exports cleanup.**
 - [x] **[SENTRY]** apps/app/instrumentation.ts uses direct imports instead of shared. **HIGH** [CONFIRMED-P10] **RESOLVED: STALE — apps/app/instrumentation.ts imports from @repo/observability/instrumentation (lazy dynamic). Only `captureRequestError` comes directly from `@sentry/nextjs`, which is the correct Next.js pattern.**
-- [ ] **[SENTRY]** packages/sentry-integration has NO tsup.config.ts. **HIGH** [CONFIRMED-P10] **NOTE: still no tsup.config.ts file but build works via inline CLI args in package.json script. Maintainability concern only — not broken. Downgrade to MEDIUM.**
+- [x] **[SENTRY]** packages/sentry-integration has NO tsup.config.ts. **HIGH** [CONFIRMED-P10] **RESOLVED 2026-05-17: created `packages/sentry-integration/tsup.config.ts` consolidating 9 entry points + externals. `package.json` `build`/`dev` scripts simplified to `tsup` / `tsup --watch` (was 9 paths repeated across both scripts).**
 - [x] **[SENTRY-NEW]** vercelAIIntegration receives invalid options (recordInputs/recordOutputs silently ignored). **HIGH** [NEW-P11] **RESOLVED: STALE — misattributed. packages/observability/server.ts and edge.ts call vercelAIIntegration() with NO args. The recordInputs/recordOutputs options are at packages/mcp-server/src/server.ts:72-73 passed to wrapMcpServerWithSentry where they ARE valid.**
 - [x] **[SENTRY-NEW]** Forked edge config bypasses shared package (missing beforeSend, enableLogs, consoleLoggingIntegration). **HIGH** [NEW-P11] **RESOLVED: STALE — apps/app/sentry.edge.config.ts is a 9-line delegator to @repo/observability/edge which has all of these.**
 - [x] **[SENTRY-NEW]** Missing onRouterTransitionStart export -- client route transitions produce no spans. **HIGH** [NEW-P11] **RESOLVED: apps/app/instrumentation-client.ts already exported it. Added to apps/api/instrumentation-client.ts.**
@@ -547,7 +563,7 @@ ALL scheduled crons non-functional. Clerk middleware blocks `/api/cron/*` (not i
 - [x] **[CROSS-NEW]** zod v3/v4 runtime mismatch (sentry-integration + supplier-connectors install v3, rest use v4). **HIGH** [NEW-P11] **RESOLVED: sentry-integration upgraded to zod ^4.3.6. supplier-connectors dead zod dep removed. Monorepo now uniform on zod v4.**
 - [x] **[PKG-NEW]** packages/supplier-connectors dead zod dep (imports nothing from zod). **MEDIUM** [NEW-P11] **RESOLVED: removed unused zod dep from supplier-connectors.**
 - [x] **[PKG-NEW]** packages/sentry-integration @types/node ^20 (monorepo 25.2.0). **MEDIUM** [NEW-P11] **RESOLVED: upgraded to 25.2.0**
-- [ ] **[PKG-NEW]** packages/sentry-integration exports types point to .ts source. **MEDIUM** [NEW-P11]
+- [x] **[PKG-NEW]** packages/sentry-integration exports types point to .ts source. **MEDIUM** [NEW-P11] **RESOLVED 2026-05-17: all 9 subpath `exports.*.types` changed from `./src/*.ts` → `./dist/*.d.ts`. Build now produces matching `.d.ts` files via `tsup --dts`. Resolves type-resolution gap for downstream consumers that strip source files.**
 - [x] **[PKG-NEW]** packages/ai dead tailwind-merge dependency. **MEDIUM** [NEW-P11] **RESOLVED: STALE — tailwind-merge actively imported in thread.tsx and message.tsx components.**
 - [ ] **[PKG-NEW]** apps/mobile missing typecheck/test scripts, TS ~5.9.2 tilde range. **MEDIUM** [NEW-P11]
 - [x] **[PKG-NEW]** apps/email typecheck is exit 0 (no-op). **MEDIUM** [NEW-P11] **RESOLVED: STALE — apps/email has no user TypeScript files outside auto-generated .react-email/. exit 0 is correct — nothing to typecheck at app level.**
@@ -599,7 +615,7 @@ ALL scheduled crons non-functional. Clerk middleware blocks `/api/cron/*` (not i
 ### Batch M: Build System
 
 - [ ] **[BUILD]** 20 packages missing build scripts entirely. **HIGH** [CONFIRMED-P10]
-- [ ] **[BUILD]** @repo/sentry-integration bundles ALL runtime deps (no --external). **HIGH** [CONFIRMED-P10]
+- [x] **[BUILD]** @repo/sentry-integration bundles ALL runtime deps (no --external). **HIGH** [CONFIRMED-P10] **RESOLVED 2026-05-17: tsup.config.ts externalizes `@repo/database`, `@repo/observability`, `@ai-sdk/openai`, `@slack/web-api`, `@t3-oss/env-nextjs`, `ai`, `zod`. `dist/slack.js` shrank from ~30KB to 162 bytes; deps now resolve at consumer side. Prevents version drift and reduces bundle size for all 3 apps/api consumers.**
 - [ ] **[BUILD]** @repo/ai does not externalize ai/@ai-sdk/openai. **HIGH** [CONFIRMED-P10]
 - [ ] **[BUILD]** @repo/mcp-server builds to dist/ but no main/exports/types fields. **HIGH** [CONFIRMED-P10]
 - [ ] **[BUILD]** @repo/realtime exports require pointing to ESM -- CJS break. **HIGH** [CONFIRMED-P10]

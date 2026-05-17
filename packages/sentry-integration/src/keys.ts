@@ -6,6 +6,7 @@ import { z } from "zod";
  */
 export const keys = () =>
   createEnv({
+    skipValidation: !!process.env.SKIP_ENV_VALIDATION,
     server: {
       // Sentry Internal Integration credentials
       SENTRY_WEBHOOK_SECRET: z.string().min(1),
