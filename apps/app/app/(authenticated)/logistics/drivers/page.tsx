@@ -123,7 +123,7 @@ export default function DriversPage() {
     email: "",
     licenseNumber: "",
     licenseExpiry: "",
-    vehicleId: "",
+    vehicleId: "__none__",
     status: "available",
     notes: "",
   });
@@ -158,7 +158,7 @@ export default function DriversPage() {
       email: "",
       licenseNumber: "",
       licenseExpiry: "",
-      vehicleId: "",
+      vehicleId: "__none__",
       status: "available",
       notes: "",
     });
@@ -173,7 +173,7 @@ export default function DriversPage() {
       email: driver.email || "",
       licenseNumber: driver.license_number || "",
       licenseExpiry: driver.license_expiry?.slice(0, 10) || "",
-      vehicleId: driver.vehicle_id || "",
+      vehicleId: driver.vehicle_id || "__none__",
       status: driver.status,
       notes: driver.notes || "",
     });
@@ -192,7 +192,7 @@ export default function DriversPage() {
           body: JSON.stringify({
             driverId: editing.id,
             ...form,
-            vehicleId: form.vehicleId || null,
+            vehicleId: form.vehicleId === "__none__" ? null : form.vehicleId || null,
           }),
         });
         if (res.ok) {
@@ -475,7 +475,7 @@ export default function DriversPage() {
                   <SelectValue placeholder="No vehicle assigned" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">None</SelectItem>
+                  <SelectItem value="__none__">None</SelectItem>
                   {vehicles.map((v) => (
                     <SelectItem key={v.id} value={v.id}>
                       {v.make} {v.model}{" "}
