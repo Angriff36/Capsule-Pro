@@ -5,6 +5,15 @@
 **Scope**: TypeScript, Next.js, Vitest, Turbo, Vercel, Sentry, Biome, Playwright, PostCSS, package.json, ENV, CI/CD, Build, Prisma, Misc, Cross-Config, Specs
 **Counts**: ~842 issues. CRITICAL: 42. HIGH: ~192. MEDIUM: ~325. LOW: ~283.
 
+## Changes from security fix pass (2026-05-16)
+
+Batch C security hardening — 4 HIGH/MEDIUM findings resolved:
+
+- sentry-fixer GET handler now requires authentication (same as POST). Previously returned config status (enabled, secured, GitHub/OpenAI/Slack configured, rate limits) to anyone without auth.
+- Added Content-Security-Policy header to apps/api: `default-src 'none'; frame-ancestors 'none'; base-uri 'none'`. API had security headers (X-Frame-Options, HSTS, etc.) but zero CSP.
+- Fixed CORS credentials leak: `corsHeaders()` in `apps/api/app/lib/cors.ts` previously fell back to first allowed origin with `Access-Control-Allow-Credentials: true` for non-allowed origins. Now omits both headers when origin is not in the allowlist. Deduplicated Ably auth route's inline CORS to use the shared utility.
+- supplier-catalog GET handler now requires `Authorization: Bearer <CRON_SECRET>`. Previously returned connector registry metadata (IDs, names, stub flags) and supported event types without any auth.
+
 ## Changes from pass 13 (2026-05-16)
 
 12 domain-specific audit agents deep-checked all configs against latest official documentation. ~97 new findings.
@@ -227,13 +236,13 @@ ALL scheduled crons non-functional. Clerk middleware blocks `/api/cron/*` (not i
 - [ ] **[SECURITY-NEW]** secretlint configured but never run in CI. **HIGH** [NEW-P11]
 - [x] **[CRON-P12-NEW]** ALL `/api/cron/*` routes blocked by Clerk middleware (not in isPublicRoute). Even GET routes never reach handler. **CRITICAL** [NEW-P12] **RESOLVED: Added /api/cron(.*) to isPublicRoute in apps/api/proxy.ts**
 - [ ] **[SECURITY-P12-NEW]** sentry-fixer dev mode bypass: NODE_ENV==="development" returns authorized:true. **HIGH** [NEW-P12]
-- [ ] **[SECURITY-P12-NEW]** sentry-fixer GET endpoint leaks secret config status without auth. **HIGH** [NEW-P12]
-- [ ] **[SECURITY-NEW]** API app (apps/api) has NO Content-Security-Policy. XSS defense-in-depth missing. **HIGH** [NEW-P13]
+- [x] **[SECURITY-P12-NEW]** sentry-fixer GET endpoint leaks secret config status without auth. **HIGH** [NEW-P12] **RESOLVED: GET handler now requires same auth as POST (isAuthenticated check). Removed `secured` field's `|| process.env.NODE_ENV === "development"` fallback.**
+- [x] **[SECURITY-NEW]** API app (apps/api) has NO Content-Security-Policy. XSS defense-in-depth missing. **HIGH** [NEW-P13] **RESOLVED: Added CSP header `default-src 'none'; frame-ancestors 'none'; base-uri 'none'` to apps/api/next.config.ts security headers**
 - [x] **[SECURITY-NEW]** Payments webhook returns 200 when STRIPE_WEBHOOK_SECRET missing. Stripe never retries. **HIGH** [NEW-P13] **RESOLVED: Changed to return 503 + added log.warn**
 - [ ] **[SECURITY-NEW]** Rate limiting fails open -- Redis errors allow all traffic through. **HIGH** [NEW-P13]
-- [ ] **[SECURITY-NEW]** CORS fallback leaks Access-Control-Allow-Credentials to untrusted origins. **MEDIUM** [NEW-P13]
+- [x] **[SECURITY-NEW]** CORS fallback leaks Access-Control-Allow-Credentials to untrusted origins. **MEDIUM** [NEW-P13] **RESOLVED: Fixed corsHeaders() to omit Allow-Origin and Allow-Credentials headers for non-allowed origins. Also deduplicated Ably auth route's inline CORS to use shared cors.ts utility.**
 - [ ] **[SECURITY-NEW]** /webhooks/sentry GET leaks config state without auth (reconnaissance vector). **MEDIUM** [NEW-P13]
-- [ ] **[SECURITY-NEW]** /webhooks/supplier-catalog GET leaks connector metadata without auth. **MEDIUM** [NEW-P13]
+- [x] **[SECURITY-NEW]** /webhooks/supplier-catalog GET leaks connector metadata without auth. **MEDIUM** [NEW-P13] **RESOLVED: Added Bearer token auth check using CRON_SECRET to GET handler**
 - [ ] **[SECURITY-NEW]** apps/web has NO security headers override -- no CSP on marketing site. **MEDIUM** [NEW-P13]
 
 ### Batch D: Vitest Correctness

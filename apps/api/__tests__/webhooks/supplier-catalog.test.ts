@@ -33,6 +33,7 @@ vi.mock("@repo/supplier-connectors", () => {
   };
 });
 vi.mock("node:crypto", () => ({
+  default: {},
   createHmac: vi.fn(),
   timingSafeEqual: vi.fn(),
 }));
@@ -122,6 +123,7 @@ describe("Supplier Catalog Webhook", () => {
     vi.clearAllMocks();
     mockHmacSignature(true);
     mockEnvSecret("us-foods", WEBHOOK_SECRET);
+    process.env.CRON_SECRET = "test-cron-secret";
 
     vi.mocked(connectorRegistry.get).mockReturnValue({
       id: "us-foods",
@@ -134,6 +136,7 @@ describe("Supplier Catalog Webhook", () => {
     // Clean up env vars
     delete process.env.SUPPLIER_US_FOODS_WEBHOOK_SECRET;
     delete process.env.SUPPLIER_CHARLIES_PRODUCE_WEBHOOK_SECRET;
+    delete process.env.CRON_SECRET;
   });
 
   // -------------------------------------------------------- POST
@@ -422,16 +425,29 @@ describe("Supplier Catalog Webhook", () => {
   // -------------------------------------------------------- GET (Health Check)
 
   describe("GET /api/webhooks/supplier-catalog (health check)", () => {
-    it("should return 200 with status ok", async () => {
-      const response = await GET();
+    it("should return 401 without auth", async () => {
+      const request = new Request("http://localhost/api/webhooks/supplier-catalog");
+      const response = await GET(request);
+
+      expect(response.status).toBe(401);
+    });
+
+    it("should return 200 with valid CRON_SECRET", async () => {
+      const request = new Request("http://localhost/api/webhooks/supplier-catalog", {
+        headers: { authorization: "Bearer test-cron-secret" },
+      });
+      const response = await GET(request);
 
       expect(response.status).toBe(200);
       const body = await response.json();
       expect(body.status).toBe("ok");
     });
 
-    it("should list connector metadata", async () => {
-      const response = await GET();
+    it("should list connector metadata when authenticated", async () => {
+      const request = new Request("http://localhost/api/webhooks/supplier-catalog", {
+        headers: { authorization: "Bearer test-cron-secret" },
+      });
+      const response = await GET(request);
       const body = await response.json();
 
       expect(body.connectors).toEqual([
@@ -440,8 +456,11 @@ describe("Supplier Catalog Webhook", () => {
       ]);
     });
 
-    it("should list supported events", async () => {
-      const response = await GET();
+    it("should list supported events when authenticated", async () => {
+      const request = new Request("http://localhost/api/webhooks/supplier-catalog", {
+        headers: { authorization: "Bearer test-cron-secret" },
+      });
+      const response = await GET(request);
       const body = await response.json();
 
       expect(body.supportedEvents).toEqual([

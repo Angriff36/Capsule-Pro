@@ -3,37 +3,8 @@ import { withLogging, withSentry } from "@repo/observability/next-config";
 import type { NextConfig } from "next";
 import { env } from "@/env";
 
-/**
- * Webpack configuration type (subset of webpack's Configuration)
- * Defined inline to avoid requiring @types/webpack as a dependency
- */
-interface WebpackConfiguration {
-  externals?:
-    | string
-    | RegExp
-    | Record<string, unknown>
-    | Array<
-        | string
-        | RegExp
-        | Record<string, unknown>
-        | ((
-            data: { context: string; request: string },
-            callback: (err?: Error | null, result?: string | boolean) => void
-          ) => void)
-      >
-    | ((
-        data: { context: string; request: string },
-        callback: (err?: Error | null, result?: string | boolean) => void
-      ) => void);
-  ignoreWarnings?: Array<
-    string | RegExp | { module?: string | RegExp; message?: string | RegExp }
-  >;
-  resolve?: {
-    extensionAlias?: Record<string, string[]>;
-    extensions?: string[];
-    [key: string]: unknown;
-  };
-}
+type WebpackConfig = Parameters<NonNullable<NextConfig["webpack"]>>[0];
+type WebpackContext = Parameters<NonNullable<NextConfig["webpack"]>>[1];
 
 const OPENTELEMETRY_EXCLUDE = /@opentelemetry/;
 const SENTRY_EXCLUDE = /@sentry/;
@@ -41,7 +12,7 @@ const CRITICAL_DEPENDENCY_WARNING =
   /Critical dependency: the request of a dependency is an expression/;
 const distDir = process.env.NEXT_DIST_DIR?.trim() || ".next";
 
-let nextConfig: NextConfig = withLogging({
+const baseConfig: NextConfig = withLogging({
   ...config,
   distDir,
   async headers() {
@@ -92,24 +63,29 @@ let nextConfig: NextConfig = withLogging({
           key: "Strict-Transport-Security",
           value: "max-age=63072000; includeSubDomains; preload",
         },
+        {
+          key: "Content-Security-Policy",
+          value: "default-src 'none'; frame-ancestors 'none'; base-uri 'none'",
+        },
       ],
     });
 
     return routes;
   },
-  // Disable type checking during build to avoid React type conflicts
+  // Fail build on TS errors; pnpm check:all also gates pre-push and CI.
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
   },
-  // Transpile workspace packages
+  // Transpile workspace packages imported by API routes (not every @repo/* dep).
   transpilePackages: [
+    "@angriff36/manifest",
     "@repo/auth",
     "@repo/database",
     "@repo/analytics",
     "@repo/observability",
     "@repo/security",
     "@repo/event-parser",
-    "@repo/manifest",
+    "@repo/manifest-adapters",
     "@repo/supplier-connectors",
   ],
   experimental: {
@@ -121,61 +97,27 @@ let nextConfig: NextConfig = withLogging({
       "../../packages/manifest-ir/ir/**/*.json",
     ],
   },
-  // Externalize pdfjs-dist to avoid bundling issues in API routes
+  // pdfjs-dist / pdfkit: native assets and worker paths must stay in node_modules.
+  // ably: SSR bundling hits keyv/got dynamic-require issues if not externalized.
   serverExternalPackages: [
     "pdfjs-dist",
     "ably",
-    "got",
-    "keyv",
-    "cacheable-request",
     "pdfkit",
     "@capsule-pro/sales-reporting",
   ],
-  webpack: (
-    webpackConfig: WebpackConfiguration,
-    { isServer }: { isServer: boolean }
-  ) => {
+  webpack: (webpackConfig: WebpackConfig, { isServer }: WebpackContext) => {
     if (isServer) {
-      // Exclude pdfjs-dist worker from server-side bundling
-      const existingExternals = webpackConfig.externals;
       const pdfjsExternal = "pdfjs-dist/legacy/build/pdf.worker.mjs";
-
-      // Build the externals array based on what already exists
-      const baseExternals: Array<
-        | string
-        | RegExp
-        | Record<string, unknown>
-        | ((
-            data: { context: string; request: string },
-            callback: (err?: Error | null, result?: string | boolean) => void
-          ) => void)
-      > = [];
+      const existingExternals = webpackConfig.externals;
 
       if (Array.isArray(existingExternals)) {
-        baseExternals.push(...(existingExternals as typeof baseExternals));
+        webpackConfig.externals = [...existingExternals, pdfjsExternal];
       } else if (existingExternals) {
-        baseExternals.push(
-          existingExternals as
-            | string
-            | RegExp
-            | Record<string, unknown>
-            | ((
-                data: { context: string; request: string },
-                callback: (
-                  err?: Error | null,
-                  result?: string | boolean
-                ) => void
-              ) => void)
-        );
+        webpackConfig.externals = [existingExternals, pdfjsExternal];
+      } else {
+        webpackConfig.externals = [pdfjsExternal];
       }
 
-      // Type cast to satisfy TypeScript - webpack handles this at runtime
-      webpackConfig.externals = [
-        ...baseExternals,
-        pdfjsExternal,
-      ] as WebpackConfiguration["externals"];
-
-      // Suppress 'Critical dependency' and large string warnings
       webpackConfig.ignoreWarnings = [
         ...(webpackConfig.ignoreWarnings || []),
         { module: OPENTELEMETRY_EXCLUDE },
@@ -187,7 +129,6 @@ let nextConfig: NextConfig = withLogging({
     }
 
     // Resolve .js imports to .ts in workspace packages (ESM convention)
-    // Also ensure extensionless imports resolve to .ts files
     webpackConfig.resolve = {
       ...webpackConfig.resolve,
       extensionAlias: {
@@ -200,12 +141,11 @@ let nextConfig: NextConfig = withLogging({
   },
 });
 
-if (env.VERCEL) {
-  nextConfig = withSentry(nextConfig);
-}
+const withVercel = (config: NextConfig): NextConfig =>
+  env.VERCEL ? withSentry(config) : config;
+const withAnalyze = (config: NextConfig): NextConfig =>
+  env.ANALYZE === "true" ? withAnalyzer(config) : config;
 
-if (env.ANALYZE === "true") {
-  nextConfig = withAnalyzer(nextConfig);
-}
+const nextConfig: NextConfig = withAnalyze(withVercel(baseConfig));
 
 export default nextConfig;

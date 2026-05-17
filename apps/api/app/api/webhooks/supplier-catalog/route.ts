@@ -287,10 +287,17 @@ export async function POST(request: Request) {
 }
 
 // ============================================================================
-// GET Handler — Health check for webhook endpoint
+// GET Handler — Health check for webhook endpoint (authenticated)
 // ============================================================================
 
-export function GET() {
+export function GET(request: Request) {
+  const authHeader = request.headers.get("authorization");
+  const cronSecret = process.env.CRON_SECRET;
+
+  if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   return NextResponse.json({
     status: "ok",
     connectors: connectorRegistry.listMetadata(),

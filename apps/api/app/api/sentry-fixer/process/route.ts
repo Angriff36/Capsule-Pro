@@ -66,7 +66,8 @@ const isAuthenticated = (
   const vercelCronHeader = request.headers.get("x-vercel-cron");
   const cronSecret = process.env.CRON_SECRET;
 
-  // In development, allow without auth for local testing
+  // In development, allow without auth for local testing.
+  // This ONLY applies to local development — Vercel always sets NODE_ENV=production.
   if (process.env.NODE_ENV === "development") {
     return { authorized: true, reason: "development mode" };
   }
@@ -420,22 +421,27 @@ export const POST = async (request: Request): Promise<Response> => {
  * GET /api/sentry-fixer/process
  *
  * Health check endpoint. Returns configuration status without processing jobs.
- *
- * Note: This endpoint is intentionally public for monitoring purposes.
- * It does not expose secrets or perform any mutations.
+ * Requires the same authentication as the POST handler.
  */
-export const GET = (): Response => {
+export const GET = (request: Request): Response => {
+  const auth = isAuthenticated(request);
+  if (!auth.authorized) {
+    return NextResponse.json(
+      { ok: false, error: "Unauthorized" },
+      { status: 401 }
+    );
+  }
+
   const queueConfig = getQueueConfig();
   const runnerConfig = getRunnerConfig();
   const slackConfig = getSlackConfig();
 
-  // Check if CRON_SECRET is configured (without exposing it)
   const hasCronSecret = !!process.env.CRON_SECRET;
 
   return NextResponse.json({
     ok: true,
     enabled: queueConfig.enabled,
-    secured: hasCronSecret || process.env.NODE_ENV === "development",
+    secured: !!hasCronSecret,
     configured: {
       github: !!(
         runnerConfig.githubToken &&
@@ -451,5 +457,5 @@ export const GET = (): Response => {
       maxRetries: queueConfig.maxRetries,
       runTests: runnerConfig.runTests,
     },
-  }) as Response;
+  });
 };
