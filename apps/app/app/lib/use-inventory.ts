@@ -27,6 +27,30 @@ export const ITEM_CATEGORIES = [
 ] as const;
 export type ItemCategory = (typeof ITEM_CATEGORIES)[number];
 
+export const UNITS_OF_MEASURE = [
+  "each",
+  "lb",
+  "oz",
+  "kg",
+  "g",
+  "gal",
+  "qt",
+  "pt",
+  "cup",
+  "tbsp",
+  "tsp",
+  "ml",
+  "l",
+  "case",
+  "box",
+  "bag",
+  "can",
+  "bottle",
+  "jar",
+  "pack",
+] as const;
+export type UnitOfMeasure = (typeof UNITS_OF_MEASURE)[number];
+
 export type StockStatus = "in_stock" | "low_stock" | "out_of_stock";
 
 export interface InventoryItem {
@@ -34,11 +58,15 @@ export interface InventoryItem {
   tenant_id: string;
   item_number: string;
   name: string;
+  description: string | null;
   category: string;
+  unit_of_measure: string;
   barcode: string | null;
   unit_cost: number;
   quantity_on_hand: number;
+  par_level: number;
   reorder_level: number;
+  supplier_id: string | null;
   tags: string[];
   fsa_status: FSAStatus | null;
   fsa_temp_logged: boolean | null;
@@ -67,10 +95,14 @@ export interface InventoryItemListResponse {
 export interface CreateInventoryItemRequest {
   item_number: string;
   name: string;
+  description?: string;
   category: string;
+  unit_of_measure?: string;
   unit_cost?: number;
   quantity_on_hand?: number;
+  par_level?: number;
   reorder_level?: number;
+  supplier_id?: string;
   tags?: string[];
   fsa_status?: FSAStatus;
   fsa_temp_logged?: boolean;
@@ -81,10 +113,14 @@ export interface CreateInventoryItemRequest {
 export interface UpdateInventoryItemRequest {
   item_number?: string;
   name?: string;
+  description?: string;
   category?: string;
+  unit_of_measure?: string;
   unit_cost?: number;
   quantity_on_hand?: number;
+  par_level?: number;
   reorder_level?: number;
+  supplier_id?: string;
   tags?: string[];
   fsa_status?: FSAStatus;
   fsa_temp_logged?: boolean;
@@ -100,6 +136,7 @@ export interface UpdateInventoryItemRequest {
 export async function listInventoryItems(params: {
   search?: string;
   category?: string;
+  supplierId?: string;
   stockStatus?: StockStatus;
   fsaStatus?: FSAStatus;
   tags?: string[];
@@ -112,6 +149,9 @@ export async function listInventoryItems(params: {
   }
   if (params.category) {
     searchParams.set("category", params.category);
+  }
+  if (params.supplierId) {
+    searchParams.set("supplier_id", params.supplierId);
   }
   if (params.stockStatus) {
     searchParams.set("stock_status", params.stockStatus);
@@ -270,6 +310,54 @@ export function getCategoryLabel(category: ItemCategory): string {
     .split("_")
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(" ");
+}
+
+// Helper to get unit of measure label
+export function getUnitLabel(unit: UnitOfMeasure): string {
+  const labels: Record<UnitOfMeasure, string> = {
+    each: "Each",
+    lb: "Pound (lb)",
+    oz: "Ounce (oz)",
+    kg: "Kilogram (kg)",
+    g: "Gram (g)",
+    gal: "Gallon (gal)",
+    qt: "Quart (qt)",
+    pt: "Pint (pt)",
+    cup: "Cup",
+    tbsp: "Tablespoon (tbsp)",
+    tsp: "Teaspoon (tsp)",
+    ml: "Milliliter (ml)",
+    l: "Liter (l)",
+    case: "Case",
+    box: "Box",
+    bag: "Bag",
+    can: "Can",
+    bottle: "Bottle",
+    jar: "Jar",
+    pack: "Pack",
+  };
+  return labels[unit];
+}
+
+// Supplier type for dropdown
+export interface Supplier {
+  id: string;
+  name: string;
+  supplier_number: string;
+}
+
+export async function listSuppliers(): Promise<Supplier[]> {
+  const response = await apiFetch("/api/inventory/suppliers/list?limit=500");
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || "Failed to list suppliers");
+  }
+  const data = await response.json();
+  return (data.inventorySuppliers ?? []).map((s: { id: string; name: string; supplier_number: string }) => ({
+    id: s.id,
+    name: s.name,
+    supplier_number: s.supplier_number,
+  }));
 }
 
 export { formatCurrency };
