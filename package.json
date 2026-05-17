@@ -26,7 +26,6 @@
     "husky": "^9.1.7",
     "node-mocks-http": "^1.17.2",
     "pg": "^8.18.0",
-    "prettier": "3.8.1",
     "prisma": "7.3.0",
     "secretlint": "^11.3.1",
     "syncpack": "14.0.0-alpha.40",
@@ -65,8 +64,7 @@
       "prisma": "7.3.0",
       "@prisma/client": "7.3.0",
       "@prisma/adapter-neon": "7.3.0",
-      "baseline-browser-mapping": "^2.9.19",
-      "prettier": "3.8.1"
+      "baseline-browser-mapping": "^2.9.19"
     },
     "ignoredBuiltDependencies": [
       "@clerk/shared",

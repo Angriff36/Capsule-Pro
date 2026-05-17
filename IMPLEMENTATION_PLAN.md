@@ -339,7 +339,7 @@ ALL scheduled crons non-functional. Clerk middleware blocks `/api/cron/*` (not i
 
 - [ ] **[BOUNDARY]** @repo/observability 7 direct @sentry/nextjs runtime imports. **HIGH** [CONFIRMED-P10]
 - [ ] **[BOUNDARY-NEW]** @repo/manifest-adapters 5 dynamic @sentry/nextjs imports (was 3). **HIGH** [NEW-P11]
-- [ ] **[BOUNDARY-NEW]** @logtail/next in observability (should be @logtail/node). **HIGH** [NEW-P11]
+- [x] **[BOUNDARY-NEW]** @logtail/next in observability (should be @logtail/node). **HIGH** [NEW-P11] **RESOLVED: STALE — @logtail/next is correct. Package uses withLogtail (Next.js-specific wrapper) in next-config.ts and Logtail logger in log.ts. @logtail/next is the correct package for Next.js projects.**
 - [ ] **[BOUNDARY-NEW]** packages/observability server-only will throw in non-Next.js contexts. **HIGH** [NEW-P11]
 - [ ] **[BOUNDARY]** @repo/seo/metadata.ts imports Metadata from next. **HIGH** [CONFIRMED-P10]
 - [ ] **[BOUNDARY]** @repo/design-system depends on server-only incorrectly. **HIGH** [CONFIRMED-P10]
@@ -466,7 +466,7 @@ ALL scheduled crons non-functional. Clerk middleware blocks `/api/cron/*` (not i
 - [x] **[PKG]** @repo/storage and @repo/collaboration missing typescript devDep. **HIGH** [CONFIRMED-P10] **RESOLVED: added typescript ^5.9.3 and @types/node 25.2.0 to both packages' devDependencies.**
 - [ ] **[PKG]** React version mismatch: mobile on 19.1.0 vs monorepo 19.2.4. **HIGH** [CONFIRMED-P10]
 - [ ] **[PKG]** pnpm.overrides pins manifest 0.3.37 but local is 0.3.35. **HIGH** [CONFIRMED-P10]
-- [ ] **[PKG]** Prettier dead dependency in devDeps and overrides. **HIGH** [CONFIRMED-P10]
+- [x] **[PKG]** Prettier dead dependency in devDeps and overrides. **HIGH** [CONFIRMED-P10] **RESOLVED: Removed from root devDeps and pnpm.overrides. Biome is sole formatter. No .prettierrc or source imports exist.**
 - [ ] **[PKG]** packages/brand uses wrong scope @capsule/brand. **HIGH** [CONFIRMED-P10]
 - [ ] **[PKG]** packages/sales-reporting wrong scope, CJS only, vitest v2. **HIGH** [CONFIRMED-P10]
 - [ ] **[PKG-NEW]** packages/manifest-runtime/packages/cli vitest pinned to "latest" (floating). **HIGH** [NEW-P11]
@@ -482,8 +482,8 @@ ALL scheduled crons non-functional. Clerk middleware blocks `/api/cron/*` (not i
 - [ ] **[PKG-NEW]** packages/sentry-integration exports types point to .ts source. **MEDIUM** [NEW-P11]
 - [ ] **[PKG-NEW]** packages/ai dead tailwind-merge dependency. **MEDIUM** [NEW-P11]
 - [ ] **[PKG-NEW]** apps/mobile missing typecheck/test scripts, TS ~5.9.2 tilde range. **MEDIUM** [NEW-P11]
-- [ ] **[PKG-NEW]** apps/email typecheck is exit 0 (no-op). **MEDIUM** [NEW-P11]
-- [ ] **[PKG-NEW]** apps/storybook duplicates design-system deps. **MEDIUM** [NEW-P11]
+- [x] **[PKG-NEW]** apps/email typecheck is exit 0 (no-op). **MEDIUM** [NEW-P11] **RESOLVED: STALE — apps/email has no user TypeScript files outside auto-generated .react-email/. exit 0 is correct — nothing to typecheck at app level.**
+- [x] **[PKG-NEW]** apps/storybook duplicates design-system deps. **MEDIUM** [NEW-P11] **RESOLVED: STALE — @repo/design-system only listed once in apps/storybook/package.json dependencies. No duplicates found.**
 - [ ] **[PKG-NEW]** packages/kitchen-state-transitions main/types point to .ts source. **MEDIUM** [NEW-P11]
 - [x] **[PKG-NEW]** packages/manifest-adapters dead hono dependency. **MEDIUM** [NEW-P11] **NOT DEAD: hono is actively imported in generated/server.ts (Hono + cors). Verified via source grep.**
 - [ ] **[PKG-NEW]** packages/manifest-runtime/packages/cli exports point to .ts source. **MEDIUM** [NEW-P11]
@@ -536,7 +536,7 @@ ALL scheduled crons non-functional. Clerk middleware blocks `/api/cron/*` (not i
 - [ ] **[BUILD]** @repo/mcp-server builds to dist/ but no main/exports/types fields. **HIGH** [CONFIRMED-P10]
 - [ ] **[BUILD]** @repo/realtime exports require pointing to ESM -- CJS break. **HIGH** [CONFIRMED-P10]
 - [ ] **[BUILD]** Root tsup.config.ts is stale/leftover. **HIGH** [CONFIRMED-P10]
-- [ ] **[BUILD]** @repo/ai has dead runtime deps: streamdown, tailwind-merge. **HIGH** [CONFIRMED-P10]
+- [x] **[BUILD]** @repo/ai has dead runtime deps: streamdown, tailwind-merge. **HIGH** [CONFIRMED-P10] **RESOLVED: STALE — both streamdown and tailwind-merge are actively imported. streamdown in streaming.ts, tailwind-merge in thread.tsx and message.tsx components.**
 - [ ] **[BUILD]** 22 of 33 packages missing exports map. **HIGH** [CONFIRMED-P10]
 - [ ] **[BUILD]** 9 packages have main/exports pointing to .ts source files. **HIGH** [CONFIRMED-P10]
 - [ ] **[BUILD]** Stale tsup.config.bundled_*.mjs artifact in packages/ai. **HIGH** [CONFIRMED-P10]
@@ -669,7 +669,7 @@ ALL scheduled crons non-functional. Clerk middleware blocks `/api/cron/*` (not i
 - [ ] **[PKG]** engines field not set in 4 apps and all 33 packages. **LOW** [CONFIRMED-P10]
 - [ ] **[PKG]** license field missing in 39 of 40 package.json files. **LOW** [CONFIRMED-P10]
 - [ ] **[PKG]** files field not set in 32 of 33 packages. **LOW** [CONFIRMED-P10]
-- [ ] **[PKG]** Prettier dead dependency in devDeps and overrides. **LOW** [CONFIRMED-P10]
+- [x] **[PKG]** Prettier dead dependency in devDeps and overrides. **LOW** [CONFIRMED-P10] **RESOLVED: Removed from root devDeps and pnpm.overrides.**
 - [ ] **[PKG]** Missing @repo/typescript-config devDep in brand, sales-reporting, types, manifest-runtime. **LOW** [CONFIRMED-P10]
 
 ### Pass 11 Low/Info Findings by Domain (124 items -- not listed individually)

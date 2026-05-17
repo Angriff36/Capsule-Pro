@@ -17,7 +17,6 @@ overrides:
   '@prisma/client': 7.3.0
   '@prisma/adapter-neon': 7.3.0
   baseline-browser-mapping: ^2.9.19
-  prettier: 3.8.1
 
 patchedDependencies:
   ultracite:
@@ -95,9 +94,6 @@ importers:
       pg:
         specifier: ^8.18.0
         version: 8.18.0
-      prettier:
-        specifier: 3.8.1
-        version: 3.8.1
       prisma:
         specifier: 7.3.0
         version: 7.3.0(@types/react@19.2.11)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(typescript@5.9.3)
@@ -13839,7 +13835,7 @@ packages:
     resolution: {integrity: sha512-LFKSuZyF6EW2/Kkl5d7CvqgwhXXfuWv+aLBuoc616boLKJ3mxXuea+GxIgfk02NEyTKctJ0QsnSh5pAomf6Qkg==}
     hasBin: true
     peerDependencies:
-      prettier: 3.8.1
+      prettier: ^2 || ^3
     peerDependenciesMeta:
       prettier:
         optional: true
