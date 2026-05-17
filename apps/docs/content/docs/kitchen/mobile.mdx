@@ -1,0 +1,36 @@
+---
+title: Mobile Views
+description: Offline-capable mobile interfaces for kitchen operations.
+---
+
+Three kitchen features have dedicated mobile views with offline support:
+
+## Kitchen Tasks (`/kitchen/mobile`)
+
+A simplified task interface for kitchen staff on mobile devices:
+
+- **Available Tasks** tab — Tasks that can be claimed
+- **My Tasks** tab — Tasks claimed by the current user
+- Actions: Claim, Release, Mark Done
+- **Offline sync queue** — Actions are queued when offline and synced when connectivity returns
+
+## Prep Lists (`/kitchen/prep-lists/mobile`)
+
+Mobile prep list viewer:
+
+- Items grouped by station
+- Completion tracking per item
+- Offline-aware (reads from cache when disconnected)
+
+## Waste Logging (`/kitchen/waste/mobile`)
+
+Quick waste entry from the kitchen floor:
+
+- Select item from inventory
+- Enter quantity and reason
+- Add notes
+- Submit with offline queuing
+
+## Recipe Reference (`/kitchen/recipes/[recipeId]/mobile`)
+
+Read-only recipe viewer optimized for mobile — reference ingredients and steps while cooking.

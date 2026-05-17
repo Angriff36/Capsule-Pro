@@ -270,7 +270,9 @@ sketch
 storybook-static/
 docs/
 !**/packages/manifest-runtime/docs/
-# Allow root-level docs/ tree so Implementation history & audit archives can be tracked
+!apps/docs/
+!apps/docs/**/
+### Turbo ###
 !/docs/
 /docs/*
 !/docs/implementation-history/

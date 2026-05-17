@@ -1,0 +1,54 @@
+---
+title: Production Board
+description: Real-time kitchen task management with claim/release mechanics.
+---
+
+The Production Board is the main kitchen dashboard. It displays all active kitchen tasks with real-time updates — when a team member claims, releases, or completes a task, every connected client sees the change instantly.
+
+## How It Works
+
+Tasks on the production board follow a claim-based workflow:
+
+1. **Available** — Task is visible to all kitchen staff
+2. **Claimed** — A team member claims the task (locks it from others)
+3. **In Progress** — Work is underway
+4. **Completed** — Task is finished
+
+Claims are processed through the Manifest runtime with conflict detection — if two people try to claim the same task simultaneously, only one succeeds.
+
+## Real-Time Updates
+
+The board subscribes to an Ably channel scoped to the tenant. Three event types drive live updates:
+
+- `kitchen.task.claimed` — Updates the board to show who claimed a task
+- `kitchen.task.released` — Makes the task available again
+- `kitchen.task.progress` — Updates completion status
+
+## Task Properties
+
+Each kitchen task includes:
+
+| Field | Description |
+|-------|-------------|
+| Title | Task name |
+| Summary | Detailed description |
+| Priority | Urgent, High, Medium, Low, or Backlog |
+| Due Date | When the task should be completed |
+| Status | Current state in the workflow |
+| Claimed By | The team member working on it |
+| Tags | Station assignment (hot-line, cold-prep, bakery, prep-station, garnish) |
+
+## Manifest Commands
+
+All task mutations flow through IR commands:
+
+- `create` — Create a new kitchen task
+- `claim` — Claim a task (with conflict detection)
+- `start` — Begin working on a claimed task
+- `complete` — Mark a task as done
+- `cancel` — Cancel a task
+- `release` — Release a claim
+- `reassign` — Transfer to another team member
+- `update-priority` — Change priority level
+- `update-complexity` — Set complexity rating
+- `add-tag` / `remove-tag` — Manage station tags

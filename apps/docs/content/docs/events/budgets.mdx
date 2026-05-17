@@ -1,0 +1,32 @@
+---
+title: Budgets
+description: Event budgets with line items, approval workflows, and recipe cost integration.
+---
+
+Event budgets track the financial plan for each event with detailed line items.
+
+## Budget Structure
+
+Each budget contains:
+
+- **Header** — Budget name, event link, total amount, status
+- **Line Items** — Individual cost entries with type, description, quantity, and unit price
+
+## Manifest Commands
+
+Budget lifecycle:
+- `create` / `update` — Budget CRUD
+- `finalize` — Lock the budget
+- `approve` — Approve a finalized budget
+
+Line item management:
+- `create` / `update` / `remove` — Line item CRUD
+
+## Recipe Cost Integration
+
+When recipe costs change, event budgets can be updated automatically. The `/api/kitchen/recipes/[recipeId]/update-budgets` endpoint propagates cost changes across schemas from `tenant_kitchen` to `tenant_events`.
+
+## Budget Views
+
+- **List view** at `/events/budgets` — All budgets with search and filter
+- **Detail view** at `/events/budgets/[budgetId]` — Line items, spending tracking

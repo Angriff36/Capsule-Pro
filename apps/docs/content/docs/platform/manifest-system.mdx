@@ -1,0 +1,58 @@
+---
+title: Manifest System
+description: The custom DSL and IR-first architecture that governs all domain mutations.
+---
+
+The Manifest system is a custom domain-specific language (DSL) that compiles to an Intermediate Representation (IR). The IR is the single source of truth for all domain behavior — runtime execution, store operations, and code generation all derive from it.
+
+## Pipeline
+
+Every domain mutation flows through this pipeline:
+
+1. **Idempotency Check** — Duplicate commands are rejected using stored idempotency keys
+2. **Policies** — Tenant-level rules that can deny execution before any processing
+3. **Constraints** — Business rules that evaluate to `ok`, `warn`, or `block` with optional override support
+4. **Guards** — Pre-conditions that must be satisfied for the command to proceed
+5. **Actions** — The actual state mutations
+6. **Events** — Domain events emitted after successful execution
+
+<Warning>
+The execution order is strict: Policies, then Constraints, then Guards, then Actions, then Events. This order is enforced by the runtime and cannot be changed.
+</Warning>
+
+## Constraint Overrides
+
+When a constraint evaluates to `warn` or `block`, the system can accept an override request. Overrides are role-gated — only users with `manager`, `admin`, or `kitchen_manager` roles can authorize them. All overrides are logged for audit purposes.
+
+## Entities
+
+The Manifest system manages 30+ entity types across all domains:
+
+| Domain | Entities |
+|--------|----------|
+| Kitchen | Recipe, RecipeVersion, Ingredient, Dish, Menu, MenuDish, Station, PrepList, PrepListItem, PrepComment, KitchenTask, PrepTask, InventoryItem, Container |
+| Events | Event, EventBudget, BudgetLineItem, CateringOrder, BattleBoard, EventProfitability, EventReport, EventSummary |
+| CRM | Client, ClientContact, ClientInteraction, ClientPreference, Lead, Proposal, ProposalLineItem |
+| Staff | User, Schedule, ScheduleShift, TimeEntry |
+| Inventory | PurchaseOrder, PurchaseOrderItem, InventorySupplier, InventoryTransaction, CycleCountSession, CycleCountRecord, VarianceReport |
+| Command Board | CommandBoard, Card, Group, Connection, Layout |
+| Collaboration | Workflow, Notification |
+
+## Store Adapters
+
+The runtime is store-agnostic. Available store implementations:
+
+- **PrismaStore** — Entity-specific stores with tenant scoping and soft deletes (production)
+- **PrismaJsonStore** — Generic JSON-blob store for entities without dedicated database models
+- **MemoryStore** — In-memory store for testing
+- **LocalStorageStore** — Browser-based store for offline scenarios
+
+## Code Generation
+
+The Manifest compiler can generate:
+
+- **TypeScript client** — Typed command functions for each entity
+- **Hono server** — HTTP route handlers for each command
+- **Vitest tests** — Test scaffolding for command behavior
+
+Generated code is a projection of the IR and should never be edited directly.

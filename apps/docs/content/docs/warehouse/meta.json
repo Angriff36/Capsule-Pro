@@ -1,0 +1,4 @@
+{
+  "title": "Warehouse",
+  "pages": ["index", "receiving", "shipments", "audits"]
+}

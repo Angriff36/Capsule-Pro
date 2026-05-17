@@ -1,0 +1,39 @@
+---
+title: Time Off
+description: Time-off requests with 7 types and approval workflows.
+---
+
+Time-off requests track employee absences with a formal approval workflow.
+
+## Request Types
+
+| Type | Description |
+|------|-------------|
+| Vacation | Planned time off |
+| Sick | Illness-related absence |
+| Personal | Personal day |
+| Bereavement | Family loss |
+| Maternity | Maternity leave |
+| Paternity | Paternity leave |
+| Other | Uncategorized |
+
+## Workflow
+
+1. Employee submits a request with type, dates, and reason
+2. Request enters **Pending** status
+3. Manager reviews and **Approves** or **Denies**
+4. Approved requests block shift assignment for those dates
+
+## Overlap Detection
+
+The system checks for overlapping time-off requests when a new request is submitted.
+
+## State Machine
+
+Requests follow validated state transitions — only valid status changes are allowed (e.g., can't approve an already-denied request without first resetting it).
+
+## Filters
+
+- Status (pending, approved, denied)
+- Type
+- Date range

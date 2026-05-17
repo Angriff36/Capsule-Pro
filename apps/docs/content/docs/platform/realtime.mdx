@@ -1,0 +1,53 @@
+---
+title: Realtime System
+description: How live updates flow through the transactional outbox and Ably.
+---
+
+Capsule Pro uses a transactional outbox pattern for reliable real-time event delivery. Domain events are written atomically with their mutations, then published to Ably by a separate process.
+
+## How It Works
+
+1. A domain mutation occurs (e.g., a kitchen task is claimed)
+2. Within the same database transaction, an `OutboxEvent` record is created
+3. A separate publisher process (`/outbox/publish`) reads pending outbox events using `SELECT FOR UPDATE SKIP LOCKED`
+4. Events are published to the appropriate Ably channel
+5. The outbox record is marked as published
+
+This guarantees that events are never lost — if the publisher crashes, unpublished events will be picked up on the next run.
+
+## Channel Structure
+
+All events for a tenant flow through a single channel:
+
+```
+tenant:{tenantId}
+```
+
+Consumers filter by event type prefix to receive only relevant events.
+
+## Event Types
+
+18 typed events across 3 domains:
+
+### Kitchen Events
+- `kitchen.task.claimed` — A task was claimed by a team member
+- `kitchen.task.released` — A task claim was released
+- `kitchen.task.progress` — Task progress was updated
+
+### Command Board Events
+- `board.card.created` / `updated` / `removed` / `moved` / `resized`
+- `board.group.created` / `updated` / `removed`
+- `board.connection.created` / `removed`
+- `board.presence.joined` / `left`
+- `board.cursor.moved`
+
+### Inventory Events
+- `inventory.stock.adjusted` / `consumed` / `received` / `wasted`
+
+## Vector Clocks
+
+The Command Board uses vector clocks for conflict resolution in collaborative editing. Each card edit carries a vector clock that tracks causality — if two users edit the same card simultaneously, the system can detect and resolve the conflict.
+
+## Replay
+
+The `ReplayBuffer` supports fetching event history for a channel, with a default window of 1,000 events over 7 days. This allows clients that reconnect to catch up on missed events.

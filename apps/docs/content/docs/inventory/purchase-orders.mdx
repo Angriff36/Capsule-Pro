@@ -1,0 +1,39 @@
+---
+title: Purchase Orders
+description: PO lifecycle from creation through receiving and quality inspection.
+---
+
+Purchase orders track procurement from suppliers through receiving.
+
+## PO Lifecycle
+
+Managed through Manifest IR commands:
+
+1. `create` — Draft a new PO
+2. `submit` — Submit for approval
+3. `approve` / `reject` — Approval decision
+4. `mark-ordered` — PO has been sent to supplier
+5. `mark-received` — Goods have arrived
+6. `cancel` — Cancel the PO
+
+## PO Items
+
+Each PO contains line items:
+- `create` / `update` / `remove` — Item management
+- Each item tracks ordered quantity, received quantity, and unit price
+
+## Receiving Workflow
+
+When goods arrive:
+
+1. Look up the PO
+2. For each item, record:
+   - **Received quantity** — How much actually arrived
+   - **Quality status** — Approved, Needs Inspection, or Rejected
+   - **Discrepancy type** — If quantities don't match
+3. Complete receiving — creates inventory transactions and updates stock levels
+
+## Suppliers
+
+Suppliers are managed through Manifest commands:
+- `create` / `update` / `deactivate`

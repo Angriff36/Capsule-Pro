@@ -1,0 +1,50 @@
+---
+title: Recipes
+description: Versioned recipe management with ingredients, steps, and cost tracking.
+---
+
+Recipes are versioned entities — each edit creates a new immutable version. This preserves history and allows cost tracking over time.
+
+## Recipe Hub
+
+The recipe hub at `/kitchen/recipes` provides 5 tabs:
+
+1. **Recipes** — All recipes with search, category/dietary/status filters
+2. **Dishes** — Dish compositions linking recipes to servable items
+3. **Menus** — Menu collections organized by course
+4. **Ingredients** — Ingredient database with allergen tracking
+5. **Costing** — Recipe cost analysis and scaling
+
+## Versioning
+
+When a recipe is updated, a new `RecipeVersion` is created. The previous version remains immutable. This means:
+
+- Historical costs are preserved
+- Events linked to a specific version retain their original recipe data
+- You can restore a previous version at any time
+
+## Ingredients and Steps
+
+Each recipe version contains:
+
+- **Ingredients** — Items with quantities, units, and optional notes. Ingredients link to the inventory system for cost lookups.
+- **Steps** — Ordered instructions with optional timing information
+
+## Cost Tracking
+
+Recipe costs are calculated from ingredient prices in the inventory system:
+
+- **Per-ingredient cost** = quantity x unit price (with unit conversion)
+- **Waste factor** — Configurable per-ingredient waste percentage
+- **Total recipe cost** = sum of all ingredient costs including waste
+- **Per-serving cost** = total cost / yield
+
+Cost changes can propagate to event budgets — when a recipe's cost changes, linked event budgets can be updated automatically.
+
+## Recipe Scaling
+
+Recipes can be scaled for different serving sizes. The scaling system adjusts all ingredient quantities proportionally and recalculates costs.
+
+## Cleanup Tool
+
+The cleanup tool at `/kitchen/recipes/cleanup` identifies imported recipes with zero ingredients or steps. It auto-classifies items as supply, ingredient, or skip, and lets you batch-process them.

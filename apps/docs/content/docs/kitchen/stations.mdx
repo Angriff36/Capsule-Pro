@@ -1,0 +1,35 @@
+---
+title: Stations
+description: Kitchen station monitoring with task distribution and capacity tracking.
+---
+
+Stations represent physical work areas in the kitchen. The station monitoring view shows task distribution and completion rates across all stations.
+
+## Default Stations
+
+The system tracks 5 station types:
+
+| Station | Tag |
+|---------|-----|
+| Hot Line | `hot-line` |
+| Cold Prep | `cold-prep` |
+| Bakery | `bakery` |
+| Prep Station | `prep-station` |
+| Garnish | `garnish` |
+
+## Monitoring
+
+The station monitoring page at `/kitchen/stations` displays:
+
+- Per-station task count and completion percentage
+- Active team members at each station
+- Overall kitchen throughput
+
+This is a read-only monitoring view — task assignment happens through the production board and prep list systems.
+
+## Manifest Commands
+
+- `create` / `activate` / `deactivate` — Station lifecycle
+- `updateCapacity` — Set station capacity limits
+- `updateEquipment` — Track station equipment
+- `assignTask` / `removeTask` — Manage task assignments

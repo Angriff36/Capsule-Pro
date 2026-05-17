@@ -1,0 +1,30 @@
+---
+title: Shipments
+description: Shipment management with state machine transitions and packing lists.
+---
+
+Shipments track outbound goods movement with a formal state machine.
+
+## Shipment States
+
+Shipments follow a state machine with validated transitions:
+- **Draft** — Being prepared
+- **Packed** — Items are packed and ready
+- **Shipped** — In transit
+- **Delivered** — Arrived at destination
+- **Cancelled** — Shipment cancelled
+
+## Features
+
+- **Create shipments** with item lists
+- **Update status** through valid state transitions
+- **Download packing list** as PDF
+- **Search and filter** by status, date, destination
+- **Pagination** for large shipment volumes
+
+## Packing Lists
+
+Each shipment can generate a PDF packing list containing:
+- Shipment details (origin, destination, date)
+- Item list with quantities
+- Special handling notes

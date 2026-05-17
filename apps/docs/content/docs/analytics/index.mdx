@@ -1,0 +1,46 @@
+---
+title: Analytics
+description: Operational insights across kitchen, finance, events, clients, staff, and sales.
+---
+
+The Analytics module provides cross-cutting dashboards for operational intelligence.
+
+## Dashboards
+
+<CardGroup cols={2}>
+  <Card title="Operational Overview">
+    Main dashboard with 10 parallel SQL queries covering revenue, labor costs, waste, margins, completion rates, and top events.
+  </Card>
+  <Card title="Kitchen Analytics">
+    Station throughput, health metrics, completion rates, and performance trend charts.
+  </Card>
+  <Card title="Finance">
+    Cash position, margins, and alerts across configurable periods (7d, 30d, 90d, 12m).
+  </Card>
+  <Card title="Events">
+    Event profitability analysis and trends.
+  </Card>
+  <Card title="Clients">
+    Client lifetime value, profitability, retention, and predictive modeling.
+  </Card>
+  <Card title="Staff">
+    Employee performance metrics and comparisons.
+  </Card>
+  <Card title="Sales">
+    Sales pipeline analytics and conversion tracking.
+  </Card>
+</CardGroup>
+
+## API Endpoints
+
+| Endpoint | Description |
+|----------|-------------|
+| `/api/analytics/kitchen` | Kitchen performance data |
+| `/api/analytics/finance` | Financial metrics |
+| `/api/analytics/staff/summary` | Staff summary |
+| `/api/analytics/staff/employees/:id` | Individual employee analytics |
+| `/api/analytics/events/profitability` | Event profitability data |
+
+## Data Sources
+
+Analytics queries run directly against the database using raw SQL for performance. They join across multiple tenant schemas (`tenant_kitchen`, `tenant_events`, `tenant_staff`, `tenant_inventory`) to provide cross-domain insights.

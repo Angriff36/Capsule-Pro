@@ -1,0 +1,4 @@
+{
+  "title": "Platform",
+  "pages": ["index", "architecture", "manifest-system", "multi-tenancy", "realtime"]
+}

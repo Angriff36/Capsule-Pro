@@ -1,0 +1,31 @@
+---
+title: Reports
+description: Pre-event review checklists with completion tracking.
+---
+
+Event reports are structured checklists used for pre-event review. They ensure nothing is missed before an event goes live.
+
+## Report Lifecycle
+
+Reports follow a 4-stage Manifest IR workflow:
+
+1. `create` — Generate a new report for an event
+2. `submit` — Submit the report for review
+3. `complete` — Mark the review as complete
+4. `approve` — Final approval
+
+## Checklist Items
+
+Each report contains checklist items that can be:
+- Checked off as complete
+- Annotated with review notes
+- Tracked for overall completion percentage
+
+## Auto-Fill
+
+When reports are generated from document imports, the checklist builder can auto-fill answers based on parsed event data, with confidence scores and explanations for each auto-answer.
+
+## Views
+
+- **List view** at `/events/reports` — All reports with completion progress
+- **Detail view** at `/events/reports/[reportId]` — Editable checklist with status controls

@@ -1,0 +1,4 @@
+{
+  "title": "Inventory",
+  "pages": ["index", "items", "stock-levels", "purchase-orders", "forecasting", "cycle-counts", "recipe-costing"]
+}

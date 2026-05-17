@@ -1,0 +1,42 @@
+---
+title: Kitchen
+description: Kitchen production management with real-time updates, recipe management, and operational tools.
+---
+
+The Kitchen module is the operational heart of Capsule Pro. It covers everything from recipe management and menu planning to real-time production tracking, prep list generation, waste logging, and allergen monitoring.
+
+<CardGroup cols={2}>
+  <Card title="Production Board" href="/docs/kitchen/production-board">
+    Real-time task board with claim/release mechanics and live updates via Ably.
+  </Card>
+  <Card title="Recipes" href="/docs/kitchen/recipes">
+    Versioned recipe management with ingredients, steps, and cost tracking.
+  </Card>
+  <Card title="Dishes & Menus" href="/docs/kitchen/dishes-and-menus">
+    Dish composition, menu building, course organization, and dietary tracking.
+  </Card>
+  <Card title="Prep Lists" href="/docs/kitchen/prep-lists">
+    Event-driven prep list generation with station assignment and scaling.
+  </Card>
+  <Card title="Stations" href="/docs/kitchen/stations">
+    Kitchen station monitoring with task distribution and capacity tracking.
+  </Card>
+  <Card title="Waste Tracking" href="/docs/kitchen/waste-tracking">
+    Waste entry logging, trend analytics, and reduction recommendations.
+  </Card>
+  <Card title="Allergens" href="/docs/kitchen/allergens">
+    Allergen warnings, dish-level management, and guest conflict detection.
+  </Card>
+  <Card title="Mobile" href="/docs/kitchen/mobile">
+    Offline-capable mobile views for tasks, prep lists, and waste logging.
+  </Card>
+</CardGroup>
+
+## Key Capabilities
+
+- **70+ API endpoints** across recipes, dishes, menus, stations, prep lists, tasks, waste, allergens, and inventory
+- **Manifest IR commands** for all mutations — every create, update, and state change flows through the Manifest pipeline
+- **Real-time production board** with Ably WebSocket updates for task claims and progress
+- **Offline mobile support** with sync queues for kitchen tasks, prep lists, and waste entries
+- **AI-powered prep task generation** from event data
+- **Recipe versioning** with immutable versions and cost tracking

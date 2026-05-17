@@ -1,0 +1,56 @@
+---
+title: Deductions & Taxes
+description: Pre/post-tax deductions and federal/state tax calculations.
+---
+
+The payroll engine (`@repo/payroll-engine`) handles all deduction and tax calculations with high precision.
+
+## Tax Calculations
+
+### Federal Taxes
+- 2024 tax brackets for single and married filing statuses
+- Progressive bracket calculation
+
+### State Taxes
+Supported states:
+- California (CA)
+- New York (NY)
+- Texas (TX) — no state income tax
+- Florida (FL) — no state income tax
+- Washington (WA) — no state income tax
+- Pennsylvania (PA)
+- Illinois (IL)
+- Ohio (OH)
+
+### Payroll Taxes
+- **Social Security** — 6.2% with $168,600 annual cap
+- **Medicare** — 1.45% base + 0.9% additional Medicare tax on high earners
+
+## Deductions
+
+11 deduction types with pre-tax or post-tax classification:
+
+| Type | Tax Treatment |
+|------|--------------|
+| Health Insurance | Pre-tax |
+| Dental Insurance | Pre-tax |
+| Vision Insurance | Pre-tax |
+| 401(k) | Pre-tax |
+| HSA | Pre-tax |
+| FSA | Pre-tax |
+| Roth 401(k) | Post-tax |
+| Life Insurance | Post-tax |
+| Garnishment | Post-tax |
+| Union Dues | Post-tax |
+| Other | Configurable |
+
+## Tip Pool Allocation
+
+Tips can be pooled and distributed by:
+- **Hours worked** — Proportional to hours
+- **Headcount** — Equal split
+- **Fixed shares** — Custom allocation percentages
+
+## Precision
+
+All calculations use `Decimal.js` with 20-digit precision and ROUND_HALF_UP rounding to prevent floating-point errors.

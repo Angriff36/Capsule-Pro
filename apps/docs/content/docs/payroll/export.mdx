@@ -1,0 +1,27 @@
+---
+title: Export
+description: QuickBooks and CSV export formats for payroll data.
+---
+
+Payroll data can be exported in multiple formats for external accounting systems.
+
+## Export Formats
+
+| Format | Description |
+|--------|-------------|
+| CSV | Standard comma-separated values |
+| QBXML | QuickBooks Desktop XML format |
+| QuickBooks Online CSV | CSV formatted for QBO import |
+| JSON | Raw data for custom integrations |
+
+## QuickBooks Integration
+
+The `/api/payroll/export/quickbooks` endpoint generates payroll data in QuickBooks-compatible format, including:
+- Employee information
+- Hours and pay rates
+- Deduction breakdowns
+- Tax withholdings
+
+## Deterministic IDs
+
+Payroll runs generate deterministic IDs from their inputs, ensuring idempotent processing — running the same payroll twice produces the same result.

@@ -1,0 +1,49 @@
+---
+title: Shifts
+description: Shift creation, employee assignment, bulk operations, and conflict detection.
+---
+
+Shifts are the core scheduling unit — each shift defines a time window, location, and optionally an assigned employee.
+
+## Shift Properties
+
+| Field | Description |
+|-------|-------------|
+| Start/End Time | Shift time window |
+| Employee | Assigned staff member (optional) |
+| Location | Work location |
+| Role | Required role for the shift |
+| Status | Open, Assigned, Completed |
+
+## Manifest Commands
+
+- `create` / `update` / `remove` — Shift CRUD
+
+## Assignment
+
+### Manual Assignment
+Assign an employee directly to a shift from the shift detail view.
+
+### Auto-Assignment
+The system can suggest the best employee for a shift based on:
+- **Skill matching** — Employee skills vs. shift requirements
+- **Conflict detection** — No overlapping shifts
+- **Availability** — Employee's declared availability windows
+- **Fairness** — Distribution of hours across team
+
+### Bulk Assignment
+Assign employees to multiple shifts at once (up to 100 shifts per batch). The system runs the same matching algorithm across all provided shifts.
+
+## Available Employees
+
+The `/api/staff/shifts/available-employees` endpoint uses a CTE (Common Table Expression) query to find employees who:
+- Are active
+- Have availability during the shift window
+- Don't have conflicting shifts
+- Don't have approved time-off during the period
+
+## Filters
+
+- Date range
+- Employee
+- Location
