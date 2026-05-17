@@ -286,7 +286,7 @@ ALL scheduled crons non-functional. Clerk middleware blocks `/api/cron/*` (not i
 - [x] **[SECURITY-NEW]** Payments webhook returns 200 when STRIPE_WEBHOOK_SECRET missing. Stripe never retries. **HIGH** [NEW-P13] **RESOLVED: Changed to return 503 + added log.warn**
 - [x] **[SECURITY-NEW]** Rate limiting fails open -- Redis errors allow all traffic through. **HIGH** [NEW-P13] **RESOLVED: changed to fail-closed by default. Redis errors return 429. Health checks and webhooks remain fail-open via allowlist. Per-route opt-in via failOpen:true. Tests updated.**
 - [x] **[SECURITY-NEW]** CORS fallback leaks Access-Control-Allow-Credentials to untrusted origins. **MEDIUM** [NEW-P13] **RESOLVED: Fixed corsHeaders() to omit Allow-Origin and Allow-Credentials headers for non-allowed origins. Also deduplicated Ably auth route's inline CORS to use shared cors.ts utility.**
-- [ ] **[SECURITY-NEW]** /webhooks/sentry GET leaks config state without auth (reconnaissance vector). **MEDIUM** [NEW-P13]
+- [x] **[SECURITY-NEW]** /webhooks/sentry GET leaks config state without auth (reconnaissance vector). **MEDIUM** [NEW-P13] **RESOLVED: added Bearer token auth to GET handler (accepts CRON_SECRET or SENTRY_WEBHOOK_SECRET).**
 - [x] **[SECURITY-NEW]** /webhooks/supplier-catalog GET leaks connector metadata without auth. **MEDIUM** [NEW-P13] **RESOLVED: Added Bearer token auth check using CRON_SECRET to GET handler**
 - [ ] **[SECURITY-NEW]** apps/web has NO security headers override -- no CSP on marketing site. **MEDIUM** [NEW-P13]
 
@@ -441,7 +441,7 @@ ALL scheduled crons non-functional. Clerk middleware blocks `/api/cron/*` (not i
 - [ ] **[CI-NEW]** performance.yml continue-on-error means regressions never caught. **MEDIUM** [NEW-P11]
 - [x] **[CI-NEW]** Inconsistent Node.js versions across workflows (22.x vs .nvmrc 22.18.0). **MEDIUM** [NEW-P11] **RESOLVED: logging-sync.yml standardized to .nvmrc. ci.yml + vercel-compat.yml use 22.x intentionally (match Vercel).**
 - [ ] **[CI-NEW]** Bitwarden secret IDs hardcoded in deploy.yml. **MEDIUM** [NEW-P11]
-- [ ] **[CI-NEW]** PostHog host inconsistency (app.posthog.com vs us.i.posthog.com). **MEDIUM** [NEW-P11]
+- [x] **[CI-NEW]** PostHog host inconsistency (app.posthog.com vs us.i.posthog.com). **MEDIUM** [NEW-P11] **RESOLVED: standardized all CI workflows and .env.example to us.i.posthog.com.**
 - [x] **[CI-NEW]** security.yml CodeQL @v3 deprecated while codeql.yml may use @v4. **HIGH** [NEW-P13] **RESOLVED: updated security.yml CodeQL actions from @v3 to @v4**
 
 ### Batch J: Package.json Correctness
