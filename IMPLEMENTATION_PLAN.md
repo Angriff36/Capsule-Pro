@@ -252,7 +252,7 @@ Passes 2-10 findings archived in `docs/audits/` and `docs/implementation-history
 - [ ] **[NEXT-NEW]** Next.js 15.4.11 vulnerable -- 13 CVE patches in 15.5.18+. **HIGH** [NEW-P12]
 - [ ] **[TS-NEW]** Missing verbatimModuleSyntax -- TS 5.9 recommends true repo-wide. Zero configs set it. **HIGH** [NEW-P13] **DEFERRED: would break 11K+ imports. Needs gradual migration via @typescript-eslint/consistent-type-imports first.**
 - [x] **[TS-NEW]** Missing noUncheckedSideEffectImports -- new TS 5.9 compiler option. Not set anywhere. **HIGH** [NEW-P13] **RESOLVED: added to packages/typescript-config/base.json**
-- [ ] **[TS-NEW]** packages/manifest-ir missing tsconfig AND not in root references. **HIGH** [NEW-P13]
+- [x] **[TS-NEW]** packages/manifest-ir missing tsconfig AND not in root references. **HIGH** [NEW-P13] **RESOLVED: STALE -- packages/manifest-ir has both tsconfig.json (extends bundler-library.json) AND is referenced in root tsconfig.json at line 27. Package is properly configured.**
 
 ### Batch B: Runtime Correctness
 
@@ -295,7 +295,7 @@ ALL scheduled crons non-functional. Clerk middleware blocks `/api/cron/*` (not i
 - [x] **[SECURITY-NEW]** CORS fallback leaks Access-Control-Allow-Credentials to untrusted origins. **MEDIUM** [NEW-P13] **RESOLVED: Fixed corsHeaders() to omit Allow-Origin and Allow-Credentials headers for non-allowed origins. Also deduplicated Ably auth route's inline CORS to use shared cors.ts utility.**
 - [x] **[SECURITY-NEW]** /webhooks/sentry GET leaks config state without auth (reconnaissance vector). **MEDIUM** [NEW-P13] **RESOLVED: added Bearer token auth to GET handler (accepts CRON_SECRET or SENTRY_WEBHOOK_SECRET).**
 - [x] **[SECURITY-NEW]** /webhooks/supplier-catalog GET leaks connector metadata without auth. **MEDIUM** [NEW-P13] **RESOLVED: Added Bearer token auth check using CRON_SECRET to GET handler**
-- [ ] **[SECURITY-NEW]** apps/web has NO security headers override -- no CSP on marketing site. **MEDIUM** [NEW-P13]
+- [x] **[SECURITY-NEW]** apps/web has NO security headers override -- no CSP on marketing site. **MEDIUM** [NEW-P13] **RESOLVED: Added CSP header to apps/web/next.config.ts headers() override. Marketing site now has Content-Security-Policy with directives for Clerk, PostHog, Google Analytics, Sentry, BaseHub CMS, and Vercel Blob. Inherited shared security headers (X-Frame-Options, HSTS, etc.) confirmed working.**
 
 ### Batch D: Vitest Correctness
 
@@ -379,7 +379,7 @@ ALL scheduled crons non-functional. Clerk middleware blocks `/api/cron/*` (not i
 - [x] **[NEXT]** apps/web ZERO transpilePackages despite importing 11 @repo packages. **HIGH** [CONFIRMED-P10] **RESOLVED: STALE — apps/web has 14 transpilePackages configured. Monorepo workspace resolution via turbopack.root makes this work without explicit listing.**
 - [x] **[NEXT]** apps/app transpilePackages missing 2-3 packages. **HIGH** [CONFIRMED-P10] **RESOLVED: added @repo/email, @repo/storage, @repo/types, @repo/next-config to transpilePackages**
 - [x] **[NEXT]** apps/web productionBrowserSourceMaps:true unconditionally. **HIGH** [CONFIRMED-P10] **RESOLVED: STALE — apps/web does NOT set productionBrowserSourceMaps. It is set in apps/app (intentionally, for Sentry source maps which are deleted after upload).**
-- [ ] **[NEXT]** apps/web has NO CSP — inherits general security headers from shared config (X-Frame-Options, HSTS, etc.) but NO Content-Security-Policy. **MEDIUM** [CONFIRMED-P10] **NOTE: apps/app has full CSP (headers() override at line 303) but apps/web doesn't override headers() so only gets shared config headers (no CSP). Shared config provides 8 security headers but CSP must be app-specific.**
+- [x] **[NEXT]** apps/web has NO CSP — inherits general security headers from shared config (X-Frame-Options, HSTS, etc.) but NO Content-Security-Policy. **MEDIUM** [CONFIRMED-P10] **RESOLVED: Added CSP header to apps/web/next.config.ts headers() override. Marketing site now has Content-Security-Policy with directives for Clerk, PostHog, Google Analytics, Sentry, BaseHub CMS, and Vercel Blob. Inherited shared security headers (X-Frame-Options, HSTS, etc.) confirmed working.**
 - [x] **[NEXT]** packages/next-config missing reactStrictMode:true. **HIGH** [CONFIRMED-P10] **RESOLVED: added reactStrictMode:true to shared packages/next-config/index.ts (all apps inherit)**
 - [x] **[NEXT]** No poweredByHeader:false in any app or shared config. **HIGH** [CONFIRMED-P10] **RESOLVED: added poweredByHeader:false to shared packages/next-config/index.ts (all apps inherit)**
 - [x] **[NEXT]** apps/docs and apps/storybook NOT using shared @repo/next-config. **HIGH** [CONFIRMED-P10] **RESOLVED: apps/docs now has security headers + poweredByHeader:false added directly (fumadocs config structure incompatible with shared config). apps/storybook has poweredByHeader:false added. Neither uses shared config due to framework incompatibility.**
@@ -781,7 +781,7 @@ All pass 10 corrections archived. Key: root vercel.json is APP deploy target; pa
 - **verbatimModuleSyntax**: TS 5.9 recommends true. Zero configs set it. Type-only imports silently dropped.
 - **serverActions**: Still under experimental in apps/app -- promoted to top-level in Next.js 15 GA. **RESOLVED: moved to top-level**
 - **Phantom deps**: 6 packages have runtime deps never imported in source (auth/observability/feature-flags/ai/seo/payroll-engine).
-- **API CSP**: apps/api has security headers but zero Content-Security-Policy.
+- **API CSP**: apps/api has security headers but zero Content-Security-Policy. **Web CSP**: apps/web now has CSP (added 2026-05-16).
 - **Payments webhook**: Returns 200 when Stripe secret missing -- webhooks silently dropped, never retried.
 - **Rate limiting**: Fails open on Redis errors -- attacker disrupting Redis disables all rate limiting.
 - **MCP server**: Zero env validation. 5 credential vars via bare process.env, no keys.ts.
