@@ -5,6 +5,50 @@
 **Scope**: TypeScript, Next.js, Vitest, Turbo, Vercel, Sentry, Biome, Playwright, PostCSS, package.json, ENV, CI/CD, Build, Prisma, Misc, Cross-Config, Specs
 **Counts**: ~842 issues. CRITICAL: 42 (including newly-elevated **RLS runtime no-op** — see below). HIGH: ~192. MEDIUM: ~325. LOW: ~283.
 
+## Changes from spec audit pass (2026-05-17)
+
+Comprehensive audit of all 25+ `specs/*` directories. **11 specs marked `_TODO` are fully implemented** and were renamed to `_COMPLETE`:
+- `crm-client-detail-view` — all 6 acceptance criteria MET (FinancialTab now includes Total Revenue, Avg per Event, Est. Annual, Payment Terms, Tax Status, Lifetime Value)
+- `inventory-stock-levels` — full API + frontend + integrations (barcode scanner, kitchen waste, warehouse)
+- `inventory-recipe-costing` — full costing engine with unit conversions, waste factors, inventory cascade, event budget propagation
+- `scheduling-shift-crud` — all 6 acceptance criteria, validation layer enforces all invariants
+- `crm-venue-management` — full CRUD with tests
+- `event-proposal-generation` — all 6 criteria including templates, PDF export, public signing
+- `event-budget-tracking` — all 6 criteria including variance reporting
+- `scheduling-auto-assignment` — all 6 criteria with scoring engine, bulk assignment
+- `inventory-depletion-forecasting` — full forecasting library (998 lines), batch processing, accuracy tracking
+- `bulk-grouping-operations` — all 6 criteria with canvas UI
+- `event-import-export` — all export criteria implemented despite unchecked marks in spec
+
+**Bug fix:** `apps/app/app/(authenticated)/payroll/timecards/timecard-bulk-actions.tsx` was dead code (never imported by page.tsx). Rewrote to accept `selectedCount` and action callbacks as props; wired into `page.tsx` with bulk approve/reject/edit-request/flag-exceptions handlers.
+
+**Remaining _TODO specs with real gaps:**
+- `crm-client-communication-log` — 5/6, missing file attachments
+- `crm-client-segmentation` — read views done, missing dedicated tag CRUD UI
+- `scheduling-availability-tracking` — missing calendar view and warning/override UI
+- `payroll-timecard-system` — bulk actions now functional but edit-request/flag dialogs only apply to first selected entry
+- `warehouse-cycle-counting` — implementation complete but spec files empty
+- `warehouse-receiving-workflow` — missing dedicated history endpoint
+- `event-timeline-builder` — two systems exist, gaps in block categorization and task linking
+- `event-contract-management` — missing proactive expiration alert cron
+- `bulk-edit-operations` — core done, preview/undo guardrails missing
+
+## Changes from inventory-item-management spec completion pass (2026-05-17)
+
+Completed the inventory item management spec (`specs/inventory/inventory-item-management_TODO/`). Four missing UI fields added to align the frontend with the existing API contract:
+
+**Frontend changes:**
+- `apps/app/app/lib/use-inventory.ts`: Added `description`, `unit_of_measure`, `par_level`, `supplier_id` to `InventoryItem`, `CreateInventoryItemRequest`, and `UpdateInventoryItemRequest` interfaces. Added `UNITS_OF_MEASURE` constant (20 units), `getUnitLabel()` helper, `Supplier` type, and `listSuppliers()` API function. Added `supplierId` parameter to `listInventoryItems()`.
+- `apps/app/app/(authenticated)/inventory/items/components/create-inventory-item-modal.tsx`: Added form fields for description (text input), unit_of_measure (select with 20 units), par_level (number input), and supplier_id (select dropdown populated from `/api/inventory/suppliers/list`). Grid changed from 3-col to 4-col for cost/qty/par/reorder.
+- `apps/app/app/(authenticated)/inventory/items/inventory-items-page-client.tsx`: Added supplier filter dropdown, moved text search from client-side filtering to server-side API `search` parameter (searches across all items, not just the current page). Pagination resets to page 1 on filter changes.
+
+**Stale finding resolved:**
+- `[ENV] packages/mcp-server has no keys.ts at all.` marked RESOLVED-STALE — `packages/mcp-server/src/keys.ts` already exists with full zod envSchema validation for all 10 env vars.
+
+**Spec verification results:**
+- CRM Client Detail View: 5/6 acceptance criteria MET, 1 PARTIALLY MET (missing payment history details). Nearly complete.
+- Inventory Item Management: Previously 4 fields missing from UI + no supplier filter + client-side-only search. Now all addressed. Spec is substantially complete.
+
 ## Changes from package-exports + build-externals pass (2026-05-17)
 
 Continuation of the package-exports hygiene work. 17 packages received exports maps + tsup externals fix for @repo/ai + CJS/ESM fix for @repo/realtime. Two stale findings confirmed and closed.

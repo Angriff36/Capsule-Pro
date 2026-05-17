@@ -9,54 +9,87 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@repo/design-system/components/ui/dropdown-menu";
-import { CheckIcon, EditIcon, FlagIcon, XIcon } from "lucide-react";
-import { useState } from "react";
+import {
+  CheckIcon,
+  EditIcon,
+  FlagIcon,
+  Loader2Icon,
+  XIcon,
+} from "lucide-react";
 
 interface TimecardBulkActionsProps {
+  selectedCount: number;
   totalEntries: number;
+  loading: boolean;
+  onBulkApprove: () => void;
+  onBulkReject: () => void;
+  onBulkEditRequest: () => void;
+  onBulkFlagExceptions: () => void;
 }
 
 export default function TimecardBulkActions({
+  selectedCount,
   totalEntries,
+  loading,
+  onBulkApprove,
+  onBulkReject,
+  onBulkEditRequest,
+  onBulkFlagExceptions,
 }: TimecardBulkActionsProps) {
-  const [selectedCount, _setSelectedCount] = useState(0);
+  if (selectedCount === 0) return null;
 
   return (
-    <Card className="bg-card/60">
+    <Card className="bg-card/60 border-primary/20">
       <CardContent className="p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
               <Badge variant="secondary">{totalEntries} total</Badge>
-              {selectedCount > 0 && <Badge>{selectedCount} selected</Badge>}
+              <Badge>{selectedCount} selected</Badge>
             </div>
           </div>
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button disabled={selectedCount === 0} variant="default">
-                Bulk Actions
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem>
+          <div className="flex items-center gap-2">
+            <Button
+              disabled={loading}
+              onClick={onBulkApprove}
+              size="sm"
+              variant="outline"
+            >
+              {loading ? (
+                <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
                 <CheckIcon className="mr-2 h-4 w-4 text-green-600" />
-                Approve Selected
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <XIcon className="mr-2 h-4 w-4 text-red-600" />
-                Reject Selected
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <EditIcon className="mr-2 h-4 w-4 text-blue-600" />
-                Request Edits
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <FlagIcon className="mr-2 h-4 w-4 text-orange-600" />
-                Flag Exceptions
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+              )}
+              Approve
+            </Button>
+            <Button
+              disabled={loading}
+              onClick={onBulkReject}
+              size="sm"
+              variant="outline"
+            >
+              <XIcon className="mr-2 h-4 w-4 text-red-600" />
+              Reject
+            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button disabled={loading} size="sm" variant="default">
+                  More Actions
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={onBulkEditRequest}>
+                  <EditIcon className="mr-2 h-4 w-4 text-blue-600" />
+                  Request Edits
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={onBulkFlagExceptions}>
+                  <FlagIcon className="mr-2 h-4 w-4 text-orange-600" />
+                  Flag Exceptions
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
       </CardContent>
     </Card>
