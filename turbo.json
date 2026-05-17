@@ -13,10 +13,6 @@
     "SENTRY_ORG",
     "SENTRY_PROJECT",
     "SENTRY_AUTH_TOKEN",
-    "SENTRY_ENVIRONMENT",
-    "VERCEL",
-    "VERCEL_ENV",
-    "SKIP_ENV_VALIDATION",
     "ANALYZE",
     "NEXT_DIST_DIR"
   ],
@@ -24,9 +20,13 @@
     "DATABASE_URL",
     "SENTRY_ORG",
     "SENTRY_PROJECT",
-    "SENTRY_AUTH_TOKEN"
+    "SENTRY_AUTH_TOKEN",
+    "SENTRY_ENVIRONMENT",
+    "VERCEL",
+    "VERCEL_ENV",
+    "SKIP_ENV_VALIDATION"
   ],
-  "globalDependencies": ["**/.env.*local"],
+  "globalDependencies": ["**/.env.*local", "**/tsconfig*.json"],
   "boundaries": {
     "tags": {
       "layer:app": {
@@ -76,7 +76,8 @@
   },
   "ui": "tui",
   "remoteCache": {
-    "enabled": true
+    "enabled": true,
+    "signature": true
   },
   "envMode": "loose",
   "tasks": {

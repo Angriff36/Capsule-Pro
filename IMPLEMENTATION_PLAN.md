@@ -125,6 +125,9 @@ Quick-win CRITICAL fixes applied:
 - packages/event-parser: renamed type-check script to typecheck (matches turbo task name)
 - turbo.json: added lint task with dependsOn: [^build]
 - turbo.json: added dependsOn: [^build] to generate task
+- turbo.json: added remoteCache.signature:true for cache integrity
+- turbo.json: added **/tsconfig*.json to globalDependencies (tsconfig changes invalidate caches)
+- turbo.json: moved SENTRY_ENVIRONMENT, VERCEL, VERCEL_ENV, SKIP_ENV_VALIDATION from globalPassThroughEnv to globalEnv (correct cache invalidation)
 - apps/api: added 7 missing @repo packages to transpilePackages (design-system, email, notifications, payments, rate-limit, realtime, sentry-integration)
 - Shared next-config: added Cross-Origin-Opener-Policy and Cross-Origin-Resource-Policy headers (Spectre-mitigation)
 - apps/api: added COOP/CORP headers to local headers override
@@ -399,10 +402,10 @@ ALL scheduled crons non-functional. Clerk middleware blocks `/api/cron/*` (not i
 - [ ] **[TURBO]** event-parser type-check vs typecheck naming mismatch. **HIGH** [CONFIRMED-P10]
 - [x] **[TURBO]** generate task missing dependsOn. **HIGH** [CONFIRMED-P10] **RESOLVED: added dependsOn: [^build] to generate task in turbo.json**
 - [ ] **[TURBO-NEW]** No futureFlags block for Turborepo 3.0 migration (globalConfiguration, affectedUsingTaskInputs, filterUsingTasks). **HIGH** [NEW-P11]
-- [ ] **[TURBO-NEW]** SENTRY_ENVIRONMENT in globalPassThroughEnv produces same cache hash for different environments. **HIGH** [NEW-P11]
+- [x] **[TURBO-NEW]** SENTRY_ENVIRONMENT in globalPassThroughEnv produces same cache hash for different environments. **HIGH** [NEW-P11] **RESOLVED: moved SENTRY_ENVIRONMENT, VERCEL, VERCEL_ENV, SKIP_ENV_VALIDATION from globalPassThroughEnv to globalEnv**
 - [ ] **[TURBO-NEW]** VERCEL, VERCEL_ENV, SKIP_ENV_VALIDATION in globalPassThroughEnv but affect build behavior. **HIGH** [NEW-P11]
-- [ ] **[TURBO-NEW]** No remoteCache.signature:true for cache integrity. **HIGH** [NEW-P11]
-- [ ] **[TURBO-NEW]** tsconfig not in globalDependencies -- tsconfig changes won't invalidate tsc build caches. **HIGH** [NEW-P11]
+- [x] **[TURBO-NEW]** No remoteCache.signature:true for cache integrity. **HIGH** [NEW-P11] **RESOLVED: added signature: true to remoteCache in turbo.json**
+- [x] **[TURBO-NEW]** tsconfig not in globalDependencies -- tsconfig changes won't invalidate tsc build caches. **HIGH** [NEW-P11] **RESOLVED: added **/tsconfig*.json to globalDependencies in turbo.json**
 - [x] **[TURBO-P12]** event-parser `type-check` script doesn't match turbo `typecheck` task -- silently excluded. **HIGH** [NEW-P12] **RESOLVED: renamed script from type-check to typecheck in packages/event-parser/package.json**
 - [ ] **[CI]** .github/CODEOWNERS placeholder + formatting issues. **HIGH** [CONFIRMED-P10]
 - [ ] **[CI]** No pnpm dependency caching in CI. **HIGH** [CONFIRMED-P10]
