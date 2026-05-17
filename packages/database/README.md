@@ -2,7 +2,7 @@
 
 **Canonical reference for Capsule Pro database architecture, patterns, and workflows**
 
-Last updated: 2025-02-07
+Last updated: 2026-05-17
 
 ---
 
@@ -24,7 +24,7 @@ Last updated: 2025-02-07
 ### Technology Stack
 
 - **Database**: PostgreSQL (hosted on Neon)
-- **ORM**: Prisma with `relationMode = "foreignKeys"`
+- **ORM**: Prisma with `relationMode = "prisma"` (see [Foreign Keys](#2-foreign-keys) for why, and the gap vs `"foreignKeys"`)
 - **Migration Tool**: Prisma Migrate (NOT `db push`)
 - **Multi-tenancy**: Shared database with `tenant_id` column isolation
 - **Authentication**: Clerk (handles user auth and session management)
@@ -37,11 +37,15 @@ Last updated: 2025-02-07
 │                PostgreSQL Database (Neon)                │
 ├─────────────────────────────────────────────────────────┤
 │  • Shared database for ALL tenants                       │
-│  • Tenant isolation via tenant_id column                 │
+│  • Tenant isolation enforced at the APP layer            │
+│    (route handlers always filter by tenantId)            │
 │  • Composite primary keys: (tenant_id, id)               │
-│  • Foreign keys enforced at database level (108 total)   │
+│  • 137 physical foreign keys via migration               │
+│    20260129120000_add_foreign_keys (236 @relation        │
+│    directives → ~99 relations have no DB-level FK yet)   │
+│  • RLS policies EXIST in migrations on 83/202 tenant     │
+│    tables but are RUNTIME-BYPASSED (see RLS section)     │
 │  • NO per-tenant databases                               │
-│  • NO Row Level Security (RLS) - Clerk handles auth      │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -63,15 +67,21 @@ Last updated: 2025-02-07
 
 ### 2. Foreign Keys
 
-**Decision**: Foreign keys ARE enforced at database level
+**Decision**: Foreign keys are partially enforced at database level; Prisma still
+runs with `relationMode = "prisma"`.
 
-- ✅ 108 foreign key constraints added in migration `20260129120000_add_foreign_keys`
-- ✅ Referential integrity enforced by PostgreSQL
+- ✅ 137 foreign key constraints exist (migration `20260129120000_add_foreign_keys`)
 - ✅ Composite foreign keys: `(tenant_id, parent_id)` → `(tenant_id, id)`
-- ✅ Prisma uses `relationMode = "foreignKeys"` (native DB foreign key support)
-- ✅ Prisma auto-generates FK constraints in migrations
+- ⚠️ `schema.prisma` has **236 `@relation` directives** — ~99 relations have no
+  underlying physical FK yet
+- ⚠️ `relationMode = "prisma"` means Prisma does NOT auto-generate FK constraints
+  in new migrations; relations are emulated client-side
+- ❌ Switching to `relationMode = "foreignKeys"` is currently blocked: known
+  orphaned-row scenarios (see `docs/database/KNOWN_ISSUES.md` and the per-schema
+  docs under `docs/database/schemas/`) would fail the `ALTER TABLE ... ADD
+  CONSTRAINT FOREIGN KEY` Prisma would emit for the ~99 missing constraints
 
-**Example**:
+**Example of an existing FK**:
 
 ```sql
 ALTER TABLE tenant_crm.client_contacts
@@ -83,15 +93,39 @@ ON DELETE CASCADE;
 
 ### 3. Authentication & Authorization
 
-**Decision**: Clerk handles all auth, NO database-level RLS
+**Decision**: Clerk handles all auth. Tenant isolation is enforced in
+application code (route handlers filter every query by `tenantId`). Database
+RLS migrations EXIST but are not enforced at runtime.
 
-- ✅ Clerk middleware enforces tenant isolation
+**Current runtime behavior (as of 2026-05-17):**
+
+- ✅ Clerk middleware authenticates the request and resolves `tenantId`
+- ✅ Route handlers call `requireApiManager()` / `requireTenantId()` and pass
+  the resolved `tenantId` into every Prisma `where` clause — this is the actual
+  isolation mechanism today
 - ✅ Session management via Clerk
-- ✅ User authentication via Clerk
-- ❌ NO Supabase RLS policies (leftover docs are outdated)
-- ❌ NO database-level row security
 
-**Why**: Clerk provides robust auth out-of-the-box. Database complexity reduced.
+**RLS-in-migrations vs RLS-at-runtime:**
+
+- 83 of 202 tenant-scoped tables have `ENABLE ROW LEVEL SECURITY` + `CREATE
+  POLICY` statements in migrations (see `IMPLEMENTATION_PLAN.md` for per-schema
+  breakdown).
+- Those policies reference `auth.jwt() ->> 'tenant_id'`, but `auth.jwt()` is a
+  hardcoded stub defined in `packages/database/prisma/migrations/0_init/migration.sql:35-40`
+  that always returns the zero UUID (`00000000-0000-0000-0000-000000000000`).
+  No Supabase, no per-request `SET LOCAL request.jwt.claims` middleware.
+- The app connects to Postgres as the Neon database owner role
+  (`neondb_owner`), which has `BYPASSRLS`. Even if `auth.jwt()` returned a real
+  tenant, the owner role would bypass the policies entirely.
+- **Net effect**: the RLS policies provide ZERO runtime tenant isolation today.
+  They are dormant defense-in-depth that will activate only after BOTH (a) a
+  non-owner app role is configured and (b) per-query JWT context is wired into
+  the Prisma client.
+
+**Why we kept the policies in migrations anyway**: they are the
+specification-by-SQL of the intended isolation boundary, and they will start
+enforcing automatically once the runtime wiring lands. Removing them would be a
+regression.
 
 ### 4. Realtime Events
 
@@ -104,22 +138,31 @@ ON DELETE CASCADE;
 
 ### 5. Prisma Configuration
 
-**Decision**: `relationMode = "foreignKeys"`
+**Decision**: `relationMode = "prisma"` (currently — see [Foreign Keys](#2-foreign-keys) for the gap to `"foreignKeys"`)
 
 ```prisma
 datasource db {
   provider     = "postgresql"
-  relationMode = "foreignKeys"  // Native DB foreign key constraints
+  relationMode = "prisma"  // Relations emulated client-side; FKs added via raw SQL migrations
   schemas      = ["core", "platform", "tenant", ...]
 }
 ```
 
 **Implications**:
 
-- Prisma auto-generates foreign key constraints in migrations
-- Database enforces referential integrity via native FK constraints
-- Standard referential actions supported: Cascade, Restrict, SetNull, NoAction
+- Prisma does NOT auto-generate foreign key constraints in migrations — FKs are
+  authored by hand in raw SQL (see `20260129120000_add_foreign_keys/migration.sql`)
+- Database referential integrity is enforced ONLY where those raw-SQL FKs exist
+  (137 of the 236 relations in the schema)
+- Standard referential actions are supported only at the application/Prisma
+  layer for relations without a physical FK; at the database layer, only the
+  137 FK'd relations get on-delete enforcement
 - Prisma client handles relation queries
+
+**Why not `"foreignKeys"` yet**: switching would force Prisma to emit `ADD
+CONSTRAINT FOREIGN KEY` statements for all ~99 currently un-FK'd relations,
+which will fail against existing orphan rows. The unblock is a one-time orphan
+audit + cleanup, then the mode flip.
 
 ### 6. UUID Generation
 
@@ -460,7 +503,7 @@ pnpm db:check
 ### Important Notes
 
 - `pnpm db:check` blocks additive drift (missing columns/tables/indexes)
-- `pnpm db:check` ignores drop-only diffs (like DB foreign keys, because `relationMode = "prisma"`)
+- `pnpm db:check` ignores drop-only diffs (DB foreign keys are not Prisma-managed under `relationMode = "prisma"`)
 - `pnpm db:repair` generates safe, additive-only migrations
 - `pnpm db:repair` will drop/recreate indexes when fixing index drift (no data loss)
 
@@ -549,10 +592,11 @@ All 21 migrations are documented in `docs/database/migrations/`:
 
 **Key Takeaways**:
 
-1. ✅ PostgreSQL on Neon + Prisma ORM
-2. ✅ Multi-tenant via shared DB + `tenant_id` isolation
-3. ✅ Foreign keys enforced at database level (108 constraints)
-4. ✅ Clerk handles auth (NO RLS policies)
+1. ✅ PostgreSQL on Neon + Prisma ORM (`relationMode = "prisma"`)
+2. ✅ Multi-tenant via shared DB + `tenant_id` isolation, enforced in route handlers
+3. ⚠️ 137 physical foreign keys (of 236 `@relation` directives in the schema)
+4. ✅ Clerk handles auth; RLS policies exist in migrations but are runtime-bypassed
+   (stub `auth.jwt()` + `neondb_owner` BYPASSRLS — see [Authentication & Authorization](#3-authentication--authorization))
 5. ✅ Ably handles realtime (via outbox pattern)
 6. ✅ Prisma Migrate for all schema changes (NOT `db push`)
 7. ✅ Always update `schema-registry-v2.txt` before migrations
@@ -567,4 +611,4 @@ All 21 migrations are documented in `docs/database/migrations/`:
 
 ---
 
-Last updated: 2025-02-07
+Last updated: 2026-05-17

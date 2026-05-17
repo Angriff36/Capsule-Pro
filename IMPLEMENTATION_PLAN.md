@@ -1,9 +1,45 @@
 # Config Alignment Implementation Plan
 
-**Status**: Active audit -- 16-domain configuration alignment review (pass 13 verified 2026-05-16)
-**Generated**: 2026-05-16 (pass 2) -- Updated 2026-05-16 (pass 13 synthesis)
+**Status**: Active audit -- 16-domain configuration alignment review (RLS runtime audit added 2026-05-17)
+**Generated**: 2026-05-16 (pass 2) -- Updated 2026-05-17 (RLS runtime audit)
 **Scope**: TypeScript, Next.js, Vitest, Turbo, Vercel, Sentry, Biome, Playwright, PostCSS, package.json, ENV, CI/CD, Build, Prisma, Misc, Cross-Config, Specs
-**Counts**: ~842 issues. CRITICAL: 42. HIGH: ~192. MEDIUM: ~325. LOW: ~283.
+**Counts**: ~842 issues. CRITICAL: 42 (including newly-elevated **RLS runtime no-op** — see below). HIGH: ~192. MEDIUM: ~325. LOW: ~283.
+
+## Changes from RLS runtime audit pass (2026-05-17)
+
+**CRITICAL DISCOVERY — existing RLS infrastructure is a runtime no-op.** A definitive audit of all 202 tenant-scoped Prisma models found that 83 have RLS policies in migrations and 119 do not. Counts in prior passes (`~92 unprotected`, `178 tenant-scoped`, `~86 with RLS`) were slightly under-counted. Per-schema gap below.
+
+**Why it matters (the bigger problem):** the policies that DO exist are not enforced at runtime, so adding more policies in the same pattern is security theater. Two independent breakages stack:
+
+1. **`auth.jwt()` is a hardcoded zero-UUID stub.** `packages/database/prisma/migrations/0_init/migration.sql:35-40` defines `CREATE FUNCTION auth.jwt() RETURNS json AS $$ SELECT '{"tenant_id": "00000000-..."}'::json $$`. Every policy that references `auth.jwt() ->> 'tenant_id'` resolves to the zero UUID for every connection — there is no Supabase, and no Prisma middleware sets `request.jwt.claims` per request. If RLS were enforced, every policy-protected SELECT from the app would return zero rows.
+2. **App connects as `neondb_owner` which has `BYPASSRLS`.** All env files (`.env:12`, `apps/app/.env.local:10`, `packages/database/.env:1`) use the Neon database owner role. Neon's default owner has `BYPASSRLS`, so policies are not evaluated for the app's queries at all. Tests pass because RLS is bypassed, not because policies match.
+
+**Therefore the existing 83 RLS-protected tables provide ZERO runtime tenant isolation today.** All actual isolation comes from JS-side `tenantId` filters in route handlers (`requireApiManager()` / `requireTenantId()` → Prisma `where: { tenantId }`). The RLS policies are dormant defense-in-depth that will activate only if both runtime gaps are fixed.
+
+**Decision:** further RLS coverage work (the 119-table gap) is BLOCKED on runtime wiring. Adding more no-op policies wastes effort and falsifies the security posture. The runtime fix needs: (a) a real non-`BYPASSRLS` app role, OR (b) a redefinition of `auth.jwt()` that reads from a per-request session GUC the app sets via Prisma middleware, AND (c) a route-level mechanism (likely Prisma `$extends` or `$use`) that calls `SET LOCAL request.jwt.claims = ...` at the start of every query/transaction. None of these are config drift — they are feature work.
+
+**Documentation cleanup applied this pass:**
+- `packages/database/README.md`: corrected `relationMode = "foreignKeys"` claim (actual is `"prisma"`), updated FK count (108 → 137, per migration `20260129120000_add_foreign_keys`), and replaced the "NO RLS - Clerk handles auth" claim with the accurate dual-state ("policies exist in migrations but are bypassed at runtime by the owner role + stub auth.jwt()"). The README was leading agents to either redundantly re-state "we don't use RLS" or to confidently add RLS without realizing it's dormant.
+- IMPLEMENTATION_PLAN.md: corrected per-schema RLS counts, marked stale `tenant_accounting.* zero RLS` and `tenant_logistics.prisma uncommitted` items as RESOLVED-STALE, and documented the phantom RLS entries with file:line precision.
+
+**Per-schema RLS coverage (current as of 2026-05-17):**
+
+| Schema | Models | With RLS | Without RLS |
+|---|---:|---:|---:|
+| tenant_accounting | 10 | 10 | 0 |
+| tenant_admin | 37 | 7 | 30 |
+| tenant_crm | 9 | 6 | 3 |
+| tenant_events | 26 | 7 | 19 |
+| tenant_facilities | 5 | 5 | 0 |
+| tenant_inventory | 32 | 17 | 15 |
+| tenant_kitchen | 37 | 11 | 26 |
+| tenant_logistics | 4 | 4 | 0 |
+| tenant_staff | 42 | 16 | 26 |
+| **Total** | **202** | **83** | **119** |
+
+**Phantom RLS entries (RLS attached to tables with no Prisma model):**
+- `tenant_admin.audit_log` — orphan table (created by both `20260327030000_add_audit_log` and `20260327100000_add_audit_log` — duplicate creation migrations). RLS in `20260427000000_add_rls_post_expansion_tables/migration.sql:280`. Prisma's `audit_log` model is in schema `platform`, not `tenant_admin`. The actual `platform.audit_log` (Prisma model at `schema.prisma:2946`, created by `0_init/migration.sql:1409`) has nullable `tenant_id` and **no RLS at all** — a naive `tenant_id = jwt.tenant_id` policy would hide every platform-level NULL row, so it needs a two-arm `(tenant_id IS NULL OR tenant_id = jwt)` policy.
+- `tenant_inventory.vendor_catalog` (singular) — orphan table created by `20260308171626_repair_drift/migration.sql:136`, never dropped. RLS still applied as dead SQL at `20260429140000_add_rls_missing_tables/migration.sql:519-567`. The canonical plural `vendor_catalogs` (the table backing the `VendorCatalog` Prisma model) is correctly handled by `20260511000000_fix_vendor_catalogs_rls_table_name/migration.sql`. The orphan singular table should be dropped in a future cleanup migration after confirming row count is zero.
 
 ## Changes from biome+design-system+output-tracing+prisma7-routes pass (2026-05-17)
 
@@ -355,13 +391,13 @@ ALL scheduled crons non-functional. Clerk middleware blocks `/api/cron/*` (not i
 
 ### Batch E: Database Security
 
-- [ ] **[RLS]** ~92 tenant models lack RLS (178 tenant-scoped, only 86 with RLS). **CRITICAL** [CONFIRMED-P10]
-- [ ] **[RLS]** tenant_accounting.* all 16 tables have ZERO RLS. **CRITICAL** [CONFIRMED-P10]
-- [ ] **[RLS]** Zero @@enableRLS annotations in Prisma schema. **CRITICAL** [CONFIRMED-P10]
-- [ ] **[RLS]** Phantom RLS entries: audit_log (platform), vendor_catalog (singular). **CRITICAL** [CONFIRMED-P10]
-- [ ] **[PRISMA]** relationMode STILL prisma despite docs claiming foreignKeys. **CRITICAL** [CONFIRMED-P10]
+- [ ] **[RLS]** 119 of 202 tenant models lack RLS policies. **CRITICAL** [CORRECTED-2026-05-17] **BLOCKED on runtime wiring — see "Changes from RLS runtime audit pass (2026-05-17)" above. Adding more no-op policies is theater until `auth.jwt()` stub is replaced and app stops connecting as `BYPASSRLS` owner. Per-schema gap: tenant_admin (30), tenant_kitchen (26), tenant_staff (26), tenant_events (19), tenant_inventory (15), tenant_crm (3). tenant_accounting, tenant_facilities, tenant_logistics are 100% covered (policies-wise; not enforced).**
+- [x] **[RLS]** tenant_accounting.* all 16 tables have ZERO RLS. **CRITICAL** [CONFIRMED-P10] **RESOLVED-STALE: tenant_accounting has 10 models (not 16) and ALL 10 have RLS policies (chart_of_accounts, invoices, payment_methods, payments, payment_refund_attempts, collection_cases, collection_actions, collection_payment_plans, revenue_recognition_schedules, revenue_recognition_lines) — applied across migrations `20260427000000_add_rls_post_expansion_tables`, `20260427020000_add_payment_refund_attempts`, `20260429140000_add_rls_missing_tables`. Policies are runtime-bypassed (see RLS runtime audit pass) but the migration-level claim is fully resolved.**
+- [ ] **[RLS]** Zero @@enableRLS annotations in Prisma schema. **CRITICAL** [CONFIRMED-P10] **NOTE: Prisma's `@@enableRLS` requires the `multiSchema` + `views` preview features and only emits `ENABLE ROW LEVEL SECURITY` in `prisma migrate dev` output — it does not author policies. Repo's current migrations author both `ENABLE ROW LEVEL SECURITY` and full CREATE POLICY SQL by hand, so `@@enableRLS` would be redundant. Lower-priority cleanup; revisit only if migrating to the Prisma-generated RLS workflow.**
+- [ ] **[RLS]** Phantom RLS entries: audit_log (platform), vendor_catalog (singular). **CRITICAL** [CONFIRMED-P10] **PARTIAL: both phantom entries documented with precise file:line in the "Changes from RLS runtime audit pass" section above. Fix requires either dropping the orphan tables (`tenant_admin.audit_log`, `tenant_inventory.vendor_catalog`) after confirming zero rows, OR adding Prisma models that map to them. `platform.audit_log` itself needs a two-arm RLS policy that handles its nullable `tenant_id` (a naive tenant_isolation policy would silently hide every platform-level audit row). Treat as 3 distinct sub-items in a future migration.**
+- [ ] **[PRISMA]** relationMode STILL prisma despite docs claiming foreignKeys. **CRITICAL** [CONFIRMED-P10] **DOC-FIXED 2026-05-17 (deferred for runtime): `packages/database/README.md` updated to correctly state `relationMode = "prisma"` and FK count (137, not 108). The actual switch from `"prisma"` to `"foreignKeys"` remains blocked — repo has 236 `@relation` directives but only 137 physical FK constraints (migration `20260129120000_add_foreign_keys` added them), so ~99 relations have no underlying FK. Switching would force Prisma to emit those FKs in the next migration, which will fail if any orphan rows exist (see `docs/database/KNOWN_ISSUES.md` and `docs/database/schemas/05-tenant_events.md:264,305` for known orphan scenarios). Prerequisite: an orphan-row audit and cleanup script.**
 - [x] **[PRISMA]** Migration 20260516120000_cleanup untracked. **CRITICAL** [CONFIRMED-P10] **RESOLVED: STALE — `packages/database/prisma/migrations/20260516120000_cleanup_manifest_command_telemetry_schema_drift/migration.sql` is tracked in git (verified via `git ls-files`). The cleanup migration was committed previously.**
-- [ ] **[PRISMA]** tenant_logistics.prisma deleted but uncommitted. **HIGH** [CONFIRMED-P10]
+- [x] **[PRISMA]** tenant_logistics.prisma deleted but uncommitted. **HIGH** [CONFIRMED-P10] **RESOLVED-STALE: deletion was committed 2026-05-16 in `2ddc7a285` ("fix(deps+prisma): remove phantom deps, add prisma directUrl, fix outbox test mocks"). Models were folded into the consolidated `packages/database/prisma/schema.prisma`. Zero remaining `@@schema("tenant_logistics")` references point to the deleted file (`grep` returns 0 matches). Working tree clean for that path.**
 - [x] **[PRISMA-NEW]** OutboxEvent model non-functional: tenantId is String not @db.Uuid, missing @map("tenant_id"), missing @db.Timestamptz(6). **CRITICAL** [NEW-P11] **RESOLVED: Fixed tenantId (added @map("tenant_id") @db.Uuid), added @map() decorators for all columns (snake_case), added updatedAt field with @db.Timestamptz(6), upgraded createdAt/publishedAt to @db.Timestamptz(6), updated raw SQL in apps/api/app/outbox/publish/route.ts. Migration: 20260516130000_fix_outbox_event_columns.**
 - [x] **[PRISMA-NEW]** prisma.config.ts lacks directUrl -- production db:deploy uses pooled connection, risks advisory lock failures. **HIGH** [NEW-P11] **NOT FIXABLE IN PRISMA 7.x: Prisma 7.3.0 removed directUrl from schema.prisma ("no longer supported in schema files") AND defineConfig() datasource type doesn't include it. The feature is not available in the current Prisma version. Downgrade from HIGH to MEDIUM — only affects production deployments through PgBouncer where advisory locks may fail.**
 - [ ] **[PRISMA]** 339 snake_case field instances across 60 models without @map. **HIGH** [CONFIRMED-P10]
@@ -807,7 +843,8 @@ All pass 10 corrections archived. Key: root vercel.json is APP deploy target; pa
 - **CRITICAL -- ENV**: packages/ai reads API_KEY not OPENAI_API_KEY. Validated key never consumed.
 - **CRITICAL -- OutboxEvent**: Model non-functional against actual DB columns (wrong types, missing maps).
 - **CRITICAL -- serverExternalPackages**: Shared ["ably"] silently dropped by app overrides. **NOTE: Both apps already include "ably" manually. Pattern is fragile but not a runtime bug. Downgraded from CRITICAL to HIGH (maintenance concern).**
-- **RLS**: ~92 tenant models lack RLS (178 tenant-scoped, only 86 with RLS). Zero @@enableRLS in Prisma. tenant_accounting.* all 16 tables zero RLS.
+- **CRITICAL -- RLS runtime no-op**: existing 83 RLS-protected tables provide ZERO runtime tenant isolation. `auth.jwt()` is a stub returning the zero UUID (`packages/database/prisma/migrations/0_init/migration.sql:35-40`), app connects as `neondb_owner` which has `BYPASSRLS`, and there is no per-request middleware that sets `request.jwt.claims`. All actual isolation comes from JS-side `tenantId` filters in route handlers. Adding more policies in the same pattern is theater until the runtime is wired. See "Changes from RLS runtime audit pass (2026-05-17)" at the top of this file.
+- **RLS**: 119 of 202 tenant models lack RLS migration coverage (corrected count). Per-schema gap: tenant_admin (30), tenant_kitchen (26), tenant_staff (26), tenant_events (19), tenant_inventory (15), tenant_crm (3). tenant_accounting/facilities/logistics are 100% covered (policies-wise).
 - **sentry-integration**: Most outdated package (zod v3, TS ^5.3, @types/node ^20, diverged tsconfig).
 - **Vitest**: 3 major versions, environmentMatchGlobs REMOVED in v4.
 - **Cron Clerk block**: ALL /api/cron/* routes blocked by Clerk middleware (not in isPublicRoute). Even GET routes return 401.
