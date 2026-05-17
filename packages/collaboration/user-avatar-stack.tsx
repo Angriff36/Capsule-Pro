@@ -74,7 +74,7 @@ function UserAvatarStackComponent({
             "relative flex shrink-0 items-center justify-center overflow-hidden rounded-full",
             sizeStyle.container,
             sizeStyle.ring,
-            "ring-background transition-transform hover:scale-110 hover:z-10"
+            "ring-background transition-transform hover:z-10 hover:scale-110"
           )}
           key={user.connectionId}
           style={{

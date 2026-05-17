@@ -161,16 +161,6 @@
       }
     },
     {
-      "includes": ["apps/**"],
-      "linter": {
-        "rules": {
-          "performance": {
-            "noBarrelFile": "warn"
-          }
-        }
-      }
-    },
-    {
       "includes": ["**/postcss.config.*"],
       "linter": {
         "rules": {
