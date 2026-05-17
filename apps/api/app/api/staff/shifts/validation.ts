@@ -401,6 +401,99 @@ export async function checkCertificationRequirements(
 }
 
 /**
+ * Checks if a shift falls within the employee's declared availability window.
+ * Returns WARN if the shift is outside availability (not BLOCK — managers can override).
+ */
+export async function checkShiftAgainstAvailability(
+  tenantId: string,
+  employeeId: string,
+  shiftStart: Date,
+  shiftEnd: Date
+): Promise<{
+  withinAvailability: boolean;
+  availabilityWindows: { dayOfWeek: number; startTime: string; endTime: string; isAvailable: boolean }[];
+  severity: "OK" | "WARN";
+  message: string;
+}> {
+  // Get day of week for shift (0=Sunday, 1=Monday, etc.)
+  const dayOfWeek = shiftStart.getUTCDay();
+
+  // Query employee's availability for that day
+  const availability = await database.$queryRaw<
+    Array<{
+      day_of_week: number;
+      start_time: string | null;
+      end_time: string | null;
+      is_available: boolean;
+      availability_type: string;
+    }>
+  >(
+    Prisma.sql`
+      SELECT day_of_week, start_time, end_time, is_available, availability_type
+      FROM tenant_staff.employee_availability
+      WHERE tenant_id = ${tenantId}
+        AND employee_id = ${employeeId}
+        AND day_of_week = ${dayOfWeek}
+        AND deleted_at IS NULL
+    `
+  );
+
+  // If no availability records exist for this day, we can't warn
+  if (availability.length === 0) {
+    return {
+      withinAvailability: true,
+      availabilityWindows: [],
+      severity: "OK",
+      message: "",
+    };
+  }
+
+  // Check if any "available" window covers the shift
+  const shiftStartMinutes = shiftStart.getUTCHours() * 60 + shiftStart.getUTCMinutes();
+  const shiftEndMinutes = shiftEnd.getUTCHours() * 60 + shiftEnd.getUTCMinutes();
+
+  const availableWindows = availability.filter((a) => a.is_available && a.start_time && a.end_time);
+
+  const isCovered = availableWindows.some((window) => {
+    const [wStartH, wStartM] = window.start_time!.split(":").map(Number);
+    const [wEndH, wEndM] = window.end_time!.split(":").map(Number);
+    const windowStart = wStartH * 60 + wStartM;
+    const windowEnd = wEndH * 60 + wEndM;
+    return shiftStartMinutes >= windowStart && shiftEndMinutes <= windowEnd;
+  });
+
+  if (!isCovered) {
+    const formattedWindows = availableWindows.map((w) => {
+      const dayName = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][w.day_of_week];
+      return `${dayName} ${w.start_time}-${w.end_time}`;
+    });
+    return {
+      withinAvailability: false,
+      availabilityWindows: availability.map((a) => ({
+        dayOfWeek: a.day_of_week,
+        startTime: a.start_time ?? "",
+        endTime: a.end_time ?? "",
+        isAvailable: a.is_available,
+      })),
+      severity: "WARN",
+      message: `Shift falls outside employee's availability window. Available: ${formattedWindows.join(", ") || "no regular hours on this day"}`,
+    };
+  }
+
+  return {
+    withinAvailability: true,
+    availabilityWindows: availability.map((a) => ({
+      dayOfWeek: a.day_of_week,
+      startTime: a.start_time ?? "",
+      endTime: a.end_time ?? "",
+      isAvailable: a.is_available,
+    })),
+    severity: "OK",
+    message: "",
+  };
+}
+
+/**
  * Combined validation result for shift operations
  */
 export interface ShiftValidationResult {
@@ -420,6 +513,12 @@ export interface ShiftValidationResult {
     expiredCerts: { type: string; name: string; expiryDate: Date }[];
     message: string;
   };
+  availability: {
+    severity: "OK" | "WARN";
+    withinAvailability: boolean;
+    message: string;
+    availabilityWindows: { dayOfWeek: number; startTime: string; endTime: string; isAvailable: boolean }[];
+  };
   error: NextResponse | null;
 }
 
@@ -436,7 +535,8 @@ export async function validateShift(
     shiftEnd: number;
     roleDuringShift?: string;
   },
-  excludeShiftId?: string
+  excludeShiftId?: string,
+  options?: { allowOverlap?: boolean; ignoreAvailabilityWarning?: boolean }
 ): Promise<ShiftValidationResult> {
   // 1. Verify employee exists and is active
   const { employee, error: employeeError } = await verifyEmployee(
@@ -460,6 +560,12 @@ export async function validateShift(
         missingCerts: [],
         expiredCerts: [],
         message: "",
+      },
+      availability: {
+        severity: "OK",
+        withinAvailability: true,
+        message: "",
+        availabilityWindows: [],
       },
       error: employeeError,
     };
@@ -488,6 +594,12 @@ export async function validateShift(
         expiredCerts: [],
         message: "",
       },
+      availability: {
+        severity: "OK",
+        withinAvailability: true,
+        message: "",
+        availabilityWindows: [],
+      },
       error: scheduleError,
     };
   }
@@ -504,7 +616,7 @@ export async function validateShift(
     excludeShiftId
   );
 
-  if (overlaps.length > 0) {
+  if (overlaps.length > 0 && !options?.allowOverlap) {
     return {
       valid: false,
       employee,
@@ -521,6 +633,12 @@ export async function validateShift(
         missingCerts: [],
         expiredCerts: [],
         message: "",
+      },
+      availability: {
+        severity: "OK",
+        withinAvailability: true,
+        message: "",
+        availabilityWindows: [],
       },
       error: NextResponse.json(
         {
@@ -567,6 +685,12 @@ export async function validateShift(
         expiredCerts: [],
         message: "",
       },
+      availability: {
+        severity: "OK",
+        withinAvailability: true,
+        message: "",
+        availabilityWindows: [],
+      },
       error: overtimeResult.error,
     };
   }
@@ -610,10 +734,24 @@ export async function validateShift(
           message: overtimeResult.message,
         },
         certifications: certResult,
+        availability: {
+          severity: "OK",
+          withinAvailability: true,
+          message: "",
+          availabilityWindows: [],
+        },
         error: certCheck.error,
       };
     }
   }
+
+  // 6. Check shift against employee availability
+  const availabilityResult = await checkShiftAgainstAvailability(
+    tenantId,
+    body.employeeId,
+    shiftStart,
+    shiftEnd
+  );
 
   // All validations passed (may have warnings)
   return {
@@ -628,6 +766,12 @@ export async function validateShift(
       message: overtimeResult.message,
     },
     certifications: certResult,
+    availability: {
+      severity: availabilityResult.severity,
+      withinAvailability: availabilityResult.withinAvailability,
+      message: availabilityResult.message,
+      availabilityWindows: availabilityResult.availabilityWindows,
+    },
     error: null,
   };
 }

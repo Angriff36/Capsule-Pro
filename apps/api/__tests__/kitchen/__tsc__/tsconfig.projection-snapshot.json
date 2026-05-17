@@ -5,8 +5,12 @@
     "noEmit": true,
     "skipLibCheck": true,
     "paths": {
-      "@/*": ["./*"]
+      "@/*": [
+        "./*"
+      ]
     }
   },
-  "include": ["../__snapshots__/preptask-claim-command.snapshot.ts"]
+  "include": [
+    "../__snapshots__/preptask-claim-command.snapshot.ts"
+  ]
 }

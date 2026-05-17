@@ -257,6 +257,25 @@ export async function deleteCycleCountSession(
   try {
     const tenantId = await requireTenantId();
 
+    const session = await database.cycleCountSession.findUnique({
+      where: {
+        tenantId_id: { tenantId, id: sessionId },
+      },
+      select: { status: true, id: true },
+    });
+
+    if (!session) {
+      return { success: false, error: "Session not found" };
+    }
+
+    if (session.status === "finalized") {
+      return {
+        success: false,
+        error:
+          "Cannot delete a finalized cycle count session. Adjustments have already been applied to inventory.",
+      };
+    }
+
     await database.cycleCountSession.update({
       where: {
         tenantId_id: {
