@@ -3,8 +3,10 @@
   "version": "0.0.0",
   "dependencies": {
     "lodash.merge": "^4.6.2",
-    "react": "19.2.4",
     "schema-dts": "^1.1.5"
+  },
+  "peerDependencies": {
+    "react": "19.2.4"
   },
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",

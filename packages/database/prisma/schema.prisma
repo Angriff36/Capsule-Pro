@@ -8,6 +8,7 @@ generator client {
 
 datasource db {
   provider     = "postgresql"
+  directUrl    = env("DIRECT_URL")
   relationMode = "prisma"
   schemas      = ["core", "platform", "tenant", "tenant_accounting", "tenant_admin", "tenant_crm", "tenant_events", "tenant_facilities", "tenant_inventory", "tenant_kitchen", "tenant_logistics", "tenant_staff"]
 }

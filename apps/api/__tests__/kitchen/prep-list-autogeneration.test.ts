@@ -42,6 +42,7 @@ describe("Prep List Auto-Generation", () => {
         payload: {},
         status: "pending",
         createdAt: new Date(),
+        updatedAt: new Date(),
         publishedAt: null,
         error: null,
       });
@@ -111,6 +112,7 @@ describe("Prep List Auto-Generation", () => {
         payload: {},
         status: "pending",
         createdAt: new Date(),
+        updatedAt: new Date(),
         publishedAt: null,
         error: null,
       });
@@ -155,6 +157,7 @@ describe("Prep List Auto-Generation", () => {
           },
           status: "pending",
           createdAt: new Date(),
+        updatedAt: new Date(),
           publishedAt: null,
           error: null,
         },
@@ -169,6 +172,7 @@ describe("Prep List Auto-Generation", () => {
         payload: {},
         status: "published",
         createdAt: new Date(),
+        updatedAt: new Date(),
         publishedAt: new Date(),
         error: null,
       });
@@ -216,6 +220,7 @@ describe("Prep List Auto-Generation", () => {
           },
           status: "pending",
           createdAt: new Date(),
+        updatedAt: new Date(),
           publishedAt: null,
           error: null,
         },
@@ -230,6 +235,7 @@ describe("Prep List Auto-Generation", () => {
         payload: {},
         status: "failed",
         createdAt: new Date(),
+        updatedAt: new Date(),
         publishedAt: null,
         error: "Generation failed",
       });
@@ -269,6 +275,7 @@ describe("Prep List Auto-Generation", () => {
         payload: { eventId: `event-${i}` },
         status: "pending" as OutboxStatus,
         createdAt: new Date(),
+        updatedAt: new Date(),
         publishedAt: null,
         error: null,
       }));
@@ -283,6 +290,7 @@ describe("Prep List Auto-Generation", () => {
         payload: {},
         status: "published",
         createdAt: new Date(),
+        updatedAt: new Date(),
         publishedAt: new Date(),
         error: null,
       });

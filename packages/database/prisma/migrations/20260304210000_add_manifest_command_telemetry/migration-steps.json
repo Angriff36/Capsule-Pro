@@ -155,21 +155,14 @@
           }
         ],
         "primary_key": {
-          "columns": [
-            "tenant_id",
-            "id"
-          ]
+          "columns": ["tenant_id", "id"]
         },
         "foreign_keys": [
           {
             "table": "accounts",
             "schema": "platform",
-            "columns": [
-              "tenant_id"
-            ],
-            "referenced_columns": [
-              "id"
-            ],
+            "columns": ["tenant_id"],
+            "referenced_columns": ["id"],
             "on_delete": "Restrict"
           }
         ]

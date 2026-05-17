@@ -5,6 +5,11 @@
 **Scope**: TypeScript, Next.js, Vitest, Turbo, Vercel, Sentry, Biome, Playwright, PostCSS, package.json, ENV, CI/CD, Build, Prisma, Misc, Cross-Config, Specs
 **Counts**: ~842 issues. CRITICAL: 42. HIGH: ~192. MEDIUM: ~325. LOW: ~283.
 
+## Changes from OutboxEvent fix pass (2026-05-16)
+
+- OutboxEvent model: fixed non-functional Prisma model (tenantId String -> @db.Uuid + @map("tenant_id"), added @map() on all columns, added updatedAt, upgraded timestamp precision to @db.Timestamptz(6)). Updated raw SQL in apps/api/app/outbox/publish/route.ts. Migration: 20260516130000_fix_outbox_event_columns.
+- Restored missing scripts/require-shadow-database-url-for-migrate-dev.mjs.
+
 ## Changes from deploy hardening pass (2026-05-16)
 
 deploy.yml supply chain risk resolved + stale items cleaned:
@@ -248,7 +253,7 @@ Passes 2-10 findings archived in `docs/audits/` and `docs/implementation-history
 - [ ] **[NEXT-NEW]** packages/next-config serverExternalPackages replacement bug: shared ["ably"] DROPPED when apps define own array. **CRITICAL** [NEW-P11] **NOTE: Both apps already include "ably" manually. Pattern is fragile but not a runtime bug. Downgraded from CRITICAL to HIGH (maintenance concern).**
 - [x] **[PKG-NEW]** apps/api build script uses bash-only `export $(grep ...)` syntax -- fails on Windows. **HIGH** [NEW-P11] **RESOLVED: replaced with cross-platform dotenv-cli approach**
 - [x] **[TS-NEW]** Ghost apps/studio reference in root tsconfig.json (non-existent project). **CRITICAL** [NEW-P12] **RESOLVED: removed ghost reference**
-- [ ] **[TS-NEW]** Missing apps/forecasting-service from root tsconfig references. **CRITICAL** [NEW-P12]
+- [ ] **[TS-NEW]** Missing apps/forecasting-service from root tsconfig references. **CRITICAL** [NEW-P12] **NOTE: forecasting-service is a bare skeleton (only .env.example exists, no package.json or tsconfig.json). Cannot add to tsconfig references without proper project setup. Blocked pending project scaffolding.**
 - [ ] **[NEXT-NEW]** Next.js 15.4.11 vulnerable -- 13 CVE patches in 15.5.18+. **HIGH** [NEW-P12]
 - [ ] **[TS-NEW]** Missing verbatimModuleSyntax -- TS 5.9 recommends true repo-wide. Zero configs set it. **HIGH** [NEW-P13] **DEFERRED: would break 11K+ imports. Needs gradual migration via @typescript-eslint/consistent-type-imports first.**
 - [x] **[TS-NEW]** Missing noUncheckedSideEffectImports -- new TS 5.9 compiler option. Not set anywhere. **HIGH** [NEW-P13] **RESOLVED: added to packages/typescript-config/base.json**
@@ -325,8 +330,8 @@ ALL scheduled crons non-functional. Clerk middleware blocks `/api/cron/*` (not i
 - [ ] **[PRISMA]** relationMode STILL prisma despite docs claiming foreignKeys. **CRITICAL** [CONFIRMED-P10]
 - [ ] **[PRISMA]** Migration 20260516120000_cleanup untracked. **CRITICAL** [CONFIRMED-P10]
 - [ ] **[PRISMA]** tenant_logistics.prisma deleted but uncommitted. **HIGH** [CONFIRMED-P10]
-- [ ] **[PRISMA-NEW]** OutboxEvent model non-functional: tenantId is String not @db.Uuid, missing @map("tenant_id"), missing @db.Timestamptz(6). **CRITICAL** [NEW-P11]
-- [ ] **[PRISMA-NEW]** prisma.config.ts lacks directUrl -- production db:deploy uses pooled connection, risks advisory lock failures. **HIGH** [NEW-P11]
+- [x] **[PRISMA-NEW]** OutboxEvent model non-functional: tenantId is String not @db.Uuid, missing @map("tenant_id"), missing @db.Timestamptz(6). **CRITICAL** [NEW-P11] **RESOLVED: Fixed tenantId (added @map("tenant_id") @db.Uuid), added @map() decorators for all columns (snake_case), added updatedAt field with @db.Timestamptz(6), upgraded createdAt/publishedAt to @db.Timestamptz(6), updated raw SQL in apps/api/app/outbox/publish/route.ts. Migration: 20260516130000_fix_outbox_event_columns.**
+- [x] **[PRISMA-NEW]** prisma.config.ts lacks directUrl -- production db:deploy uses pooled connection, risks advisory lock failures. **HIGH** [NEW-P11] **RESOLVED: Added directUrl = env("DIRECT_URL") to schema.prisma datasource block. Prisma 7.x defineConfig API does not support directUrl in prisma.config.ts — must be in schema.prisma. Uses DIRECT_URL env var for direct (non-pooled) connection during migrations.**
 - [ ] **[PRISMA]** 339 snake_case field instances across 60 models without @map. **HIGH** [CONFIRMED-P10]
 - [ ] **[PRISMA]** 215 String status fields zero enum adoption. **HIGH** [CONFIRMED-P10]
 
@@ -484,7 +489,7 @@ ALL scheduled crons non-functional. Clerk middleware blocks `/api/cron/*` (not i
 - [ ] **[PKG-NEW]** packages/manifest-runtime/packages/cli exports point to .ts source. **MEDIUM** [NEW-P11]
 - [ ] **[PKG-NEW]** packages/manifest-runtime/packages/cli TS ^5.5.3 (monorepo ^5.9.3). **MEDIUM** [NEW-P11]
 - [ ] **[PKG-NEW]** packages/notifications vitest ^3 (diverges from ^4). **MEDIUM** [NEW-P11]
-- [ ] **[PKG-NEW]** 6 phantom runtime deps: @repo/auth (next-themes), @repo/observability (react, server-only), @repo/feature-flags (@repo/design-system, react), @repo/ai (streamdown), @repo/seo (react), @repo/payroll-engine (server-only). **HIGH** [NEW-P13]
+- [x] **[PKG-NEW]** 6 phantom runtime deps: @repo/auth (next-themes), @repo/observability (react, server-only), @repo/feature-flags (@repo/design-system, react), @repo/ai (streamdown), @repo/seo (react), @repo/payroll-engine (server-only). **HIGH** [NEW-P13] **RESOLVED: Removed next-themes from @repo/auth, @repo/design-system from @repo/feature-flags, server-only from @repo/payroll-engine. Moved react from dependencies to peerDependencies in @repo/observability, @repo/feature-flags, @repo/seo. @repo/ai streamdown and @repo/observability server-only confirmed NOT phantom (legitimately imported).**
 - [ ] **[PKG-NEW]** @repo/collaboration imports @repo/design-system unlisted. **MEDIUM** [NEW-P13]
 - [ ] **[PKG-NEW]** @repo/manifest-adapters imports @repo/database unlisted (40+ source files). **MEDIUM** [NEW-P13]
 
@@ -516,9 +521,9 @@ ALL scheduled crons non-functional. Clerk middleware blocks `/api/cron/*` (not i
 - [ ] **[ENV]** Unvalidated vars: VERCEL_DRAIN_SIGNATURE_SECRET, PRISMA_LOG_QUERIES, RESEND_WEBHOOK_SECRET, CAPSULE_SENTRY_CANARY_SECRET. **HIGH** [CONFIRMED-P10]
 - [x] **[ENV-NEW]** ABLY_API_KEY (server secret) via bare process.env in 2 auth routes. No validation schema. **HIGH** [NEW-P13] **RESOLVED: apps/app/app/ably/auth/route.ts and apps/app/app/ably/chat/auth/route.ts now use validated env.ABLY_API_KEY instead of bare process.env. apps/api ably routes already used validated env.**
 - [x] **[ENV-NEW]** MCP server has zero env validation -- 5 credential vars via bare process.env, no keys.ts. **HIGH** [NEW-P13] **RESOLVED: Wired existing keys.ts into src/index.ts, src/server.ts, src/lib/auth.ts, src/lib/database.ts. All schema vars now accessed via validated keys() object.**
-- [ ] **[ENV-NEW]** packages/storage/upload.ts bypasses own keys.ts -- BLOB_READ_WRITE_TOKEN via bare process.env. **HIGH** [NEW-P13]
+- [x] **[ENV-NEW]** packages/storage/upload.ts bypasses own keys.ts -- BLOB_READ_WRITE_TOKEN via bare process.env. **HIGH** [NEW-P13] **RESOLVED: STALE — upload.ts already uses validated env via keys(). BLOB_READ_WRITE_TOKEN accessed through validated keys() object, not bare process.env.**
 - [x] **[ENV-NEW]** command-board + manifest-adapters read OPENAI_API_KEY via bare process.env, bypassing validated keys. **HIGH** [NEW-P13] **RESOLVED: command-board/chat/route.ts removed resolveOpenAiApiKey() readFileSync fallback, now uses validated env.OPENAI_API_KEY. Added OPENAI_API_KEY and COMMAND_BOARD_AI_MODEL to apps/app/env.ts schema. manifest-adapters ai-suggestions.ts removed readFileSync fallback, uses direct process.env access without file-on-disk reading.**
-- [ ] **[ENV-NEW]** 8 Better Stack vars unvalidated in observability (SOURCE_TOKEN, INGESTING_URL, LOGTAIL_* + NEXT_PUBLIC variants). **HIGH** [NEW-P13]
+- [x] **[ENV-NEW]** 8 Better Stack vars unvalidated in observability (SOURCE_TOKEN, INGESTING_URL, LOGTAIL_* + NEXT_PUBLIC variants). **HIGH** [NEW-P13] **RESOLVED: STALE — all 10 Better Stack/Logtail vars are properly validated through packages/observability/keys.ts using @t3-oss/env-nextjs + Zod schemas. Zero bare process.env accesses for these vars outside keys.ts itself.**
 - [ ] **[ENV-NEW]** Plasmic vars (PLASMIC_PROJECT_ID, PLASMIC_API_TOKEN) via bare process.env. **MEDIUM** [NEW-P13]
 - [ ] **[ENV-NEW]** CAPSULE_SENTRY_CANARY_SECRET bare process.env in canary route. **MEDIUM** [NEW-P13]
 - [ ] **[ENV-NEW]** packages/observability edge/server/client read VERCEL_ENV via bare process.env, bypassing keys.ts. **MEDIUM** [NEW-P13]
