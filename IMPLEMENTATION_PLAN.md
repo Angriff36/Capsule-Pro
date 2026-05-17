@@ -344,7 +344,7 @@ ALL scheduled crons non-functional. Clerk middleware blocks `/api/cron/*` (not i
 - [ ] **[BOUNDARY]** @repo/seo/metadata.ts imports Metadata from next. **HIGH** [CONFIRMED-P10]
 - [ ] **[BOUNDARY]** @repo/design-system depends on server-only incorrectly. **HIGH** [CONFIRMED-P10]
 - [ ] **[BOUNDARY]** @repo/design-system has next as runtime dep. **HIGH** [CONFIRMED-P10]
-- [ ] **[BOUNDARY]** Phantom @t3-oss/env-nextjs: 12 packages. **HIGH** [CONFIRMED-P10]
+- [x] **[BOUNDARY]** Phantom @t3-oss/env-nextjs: 12 packages. **HIGH** [CONFIRMED-P10] **RESOLVED: Removed dead @t3-oss/env-nextjs and zod from packages/pdf (zero imports). Remaining 16 packages all actively use createEnv in their keys.ts — deliberate monorepo-wide pattern, not phantom deps.**
 
 ### Batch L: Linting -- CRITICAL
 
@@ -388,7 +388,7 @@ ALL scheduled crons non-functional. Clerk middleware blocks `/api/cron/*` (not i
 - [x] **[NEXT]** packages/next-config missing reactStrictMode:true. **HIGH** [CONFIRMED-P10] **RESOLVED: added reactStrictMode:true to shared packages/next-config/index.ts (all apps inherit)**
 - [x] **[NEXT]** No poweredByHeader:false in any app or shared config. **HIGH** [CONFIRMED-P10] **RESOLVED: added poweredByHeader:false to shared packages/next-config/index.ts (all apps inherit)**
 - [x] **[NEXT]** apps/docs and apps/storybook NOT using shared @repo/next-config. **HIGH** [CONFIRMED-P10] **RESOLVED: apps/docs now has security headers + poweredByHeader:false added directly (fumadocs config structure incompatible with shared config). apps/storybook has poweredByHeader:false added. Neither uses shared config due to framework incompatibility.**
-- [ ] **[NEXT]** apps/docs and apps/storybook have no security headers. **HIGH** [CONFIRMED-P10]
+- [x] **[NEXT]** apps/docs and apps/storybook have no security headers. **HIGH** [CONFIRMED-P10] **RESOLVED: STALE — apps/docs already has 5 security headers configured (X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy, HSTS) in next.config.mjs. apps/storybook has poweredByHeader:false.**
 - [x] **[NEXT]** apps/app security headers duplicated instead of extending shared config. **HIGH** [CONFIRMED-P10] **RESOLVED: apps/app headers() now includes COOP, CORP, X-DNS-Prefetch-Control, and static asset cache headers that were previously lost when overriding shared config.**
 - [ ] **[NEXT]** apps/docs NormalModuleReplacementPlugin webpack-only ignored by Turbopack. **HIGH** [CONFIRMED-P10]
 - [ ] **[NEXT-NEW]** apps/api + apps/app: outputFileTracingIncludes uses fragile relative paths without outputFileTracingRoot. **MEDIUM** [NEW-P11]
