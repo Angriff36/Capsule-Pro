@@ -25,8 +25,27 @@ Comprehensive audit of all 25+ `specs/*` directories. **14 specs marked `_TODO` 
 
 **Bug fix:** `apps/app/app/(authenticated)/payroll/timecards/timecard-bulk-actions.tsx` was dead code (never imported by page.tsx). Rewrote to accept `selectedCount` and action callbacks as props; wired into `page.tsx` with bulk approve/reject/edit-request/flag-exceptions handlers.
 
-**Remaining _TODO specs with real gaps (6):**
-- `crm-client-segmentation` — read views done, missing dedicated tag CRUD UI
+## Changes from CRM client segmentation pass (2026-05-17)
+
+Completed the CRM client segmentation spec (`specs/crm/crm-client-segmentation_TODO/`). All 6 acceptance criteria now MET:
+
+1. **Create tag** — tags can be created when assigning to clients via autocomplete chip input
+2. **Assign tag to client** — already existed, unchanged
+3. **Filter clients by tag** — already existed, unchanged
+4. **View segment sizes** — already existed, unchanged
+5. **Remove tag from client** — already existed, unchanged
+6. **Delete tag** — NEW: `deleteTagGlobally()` server action removes tag from all clients via `array_remove()` SQL
+
+**Changes made:**
+- `apps/app/app/(authenticated)/crm/clients/actions.ts`: Added `deleteTagGlobally(tag)` server action using `array_remove()` raw SQL for efficient bulk tag removal across all clients
+- `apps/app/app/(authenticated)/crm/clients/components/tag-input.tsx`: NEW — chip-based tag input with autocomplete suggestions, keyboard support (Enter/comma to add, Backspace to remove), and dropdown suggestions filtered by existing tags
+- `apps/app/app/(authenticated)/crm/segmentation/components/delete-tag-button.tsx`: NEW — delete button per tag row in segmentation page with inline confirm/cancel UI
+- `apps/app/app/(authenticated)/crm/segmentation/page.tsx`: Added `renderAction` prop to `SegmentTable` component, wired `DeleteTagButton` into tag segment rows
+- `apps/app/app/(authenticated)/crm/clients/[id]/components/tabs/contact-info-tab.tsx`: Replaced comma-separated text input with `TagInput` component with autocomplete from `getAvailableTags()`
+- `apps/app/app/(authenticated)/crm/clients/new/page.tsx`: Replaced comma-separated text input with `TagInput` component with autocomplete
+- `packages/database/prisma/schema.prisma`: Added `@@index([tags], type: Gin)` to Client model (migration pending shadow DB fix)
+
+**Remaining _TODO specs with real gaps (5):**
 - `scheduling-availability-tracking` — missing calendar view and warning/override UI
 - `warehouse-cycle-counting` — implementation complete but spec files empty
 - `warehouse-receiving-workflow` — missing dedicated history endpoint
@@ -46,6 +65,7 @@ Completed the inventory item management spec (`specs/inventory/inventory-item-ma
 - `[ENV] packages/mcp-server has no keys.ts at all.` marked RESOLVED-STALE — `packages/mcp-server/src/keys.ts` already exists with full zod envSchema validation for all 10 env vars.
 
 **Spec verification results:**
+- CRM Client Segmentation: 6/6 acceptance criteria MET (tag CRUD, assign/remove, filter, segment sizes, delete tag globally)
 - CRM Client Detail View: 5/6 acceptance criteria MET, 1 PARTIALLY MET (missing payment history details). Nearly complete.
 - Inventory Item Management: Previously 4 fields missing from UI + no supplier filter + client-side-only search. Now all addressed. Spec is substantially complete.
 

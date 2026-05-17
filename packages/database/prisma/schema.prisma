@@ -874,6 +874,7 @@ model Client {
 
   @@id([tenantId, id])
   @@unique([id])
+  @@index([tags], type: Gin)
   @@map("clients")
   @@schema("tenant_crm")
 }

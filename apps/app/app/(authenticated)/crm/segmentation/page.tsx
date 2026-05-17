@@ -182,9 +182,7 @@ const SegmentTable = ({
                     View clients
                   </Link>
                 </TableCell>
-                {renderAction && (
-                  <TableCell>{renderAction(row)}</TableCell>
-                )}
+                {renderAction && <TableCell>{renderAction(row)}</TableCell>}
               </TableRow>
             );
           })
@@ -284,10 +282,7 @@ const ClientSegmentationPage = async () => {
           <SegmentTable
             emptyMessage="No tags yet. Open a client and add tags from the contact info tab."
             renderAction={(row) => (
-              <DeleteTagButton
-                clientCount={row.count}
-                tag={row.label}
-              />
+              <DeleteTagButton clientCount={row.count} tag={row.label} />
             )}
             rows={tagSegments}
             total={totalClients}

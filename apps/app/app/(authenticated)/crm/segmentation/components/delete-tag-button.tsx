@@ -19,43 +19,62 @@ interface DeleteTagButtonProps {
 
 export function DeleteTagButton({ tag, clientCount }: DeleteTagButtonProps) {
   const [loading, setLoading] = useState(false);
+  const [confirming, setConfirming] = useState(false);
 
-  const handleDelete = async () => {
-    const confirmed = window.confirm(
-      `Remove "${tag}" from all ${clientCount} client${clientCount !== 1 ? "s" : ""}? This cannot be undone.`
-    );
-    if (!confirmed) {
-      return;
-    }
-
+  const handleConfirmDelete = async () => {
     setLoading(true);
     try {
       await deleteTagGlobally(tag);
       toast.success(`Tag "${tag}" removed from all clients`);
+      setConfirming(false);
     } catch (error) {
       toast.error("Failed to delete tag", {
-        description:
-          error instanceof Error ? error.message : "Unknown error",
+        description: error instanceof Error ? error.message : "Unknown error",
       });
     } finally {
       setLoading(false);
     }
   };
 
+  if (confirming) {
+    return (
+      <div className="flex items-center gap-1">
+        <Button
+          disabled={loading}
+          onClick={handleConfirmDelete}
+          size="sm"
+          variant="destructive"
+        >
+          Confirm
+        </Button>
+        <Button
+          disabled={loading}
+          onClick={() => setConfirming(false)}
+          size="sm"
+          variant="ghost"
+        >
+          Cancel
+        </Button>
+      </div>
+    );
+  }
+
   return (
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
           <Button
-            disabled={loading}
-            onClick={handleDelete}
+            onClick={() => setConfirming(true)}
             size="icon"
             variant="ghost"
           >
             <TrashIcon className="h-4 w-4 text-muted-foreground hover:text-destructive" />
           </Button>
         </TooltipTrigger>
-        <TooltipContent>Remove &quot;{tag}&quot; from all clients</TooltipContent>
+        <TooltipContent>
+          Remove &quot;{tag}&quot; from all {clientCount}{" "}
+          {clientCount === 1 ? "client" : "clients"}
+        </TooltipContent>
       </Tooltip>
     </TooltipProvider>
   );

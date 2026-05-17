@@ -1,7 +1,6 @@
 "use client";
 
 import { Badge } from "@repo/design-system/components/ui/badge";
-import { Input } from "@repo/design-system/components/ui/input";
 import { XIcon } from "lucide-react";
 import { useCallback, useRef, useState } from "react";
 
@@ -54,21 +53,18 @@ export function TagInput({
         addTag(input);
       }
     } else if (e.key === "Backspace" && !input && value.length > 0) {
-      removeTag(value[value.length - 1]);
+      const lastTag = value.at(-1);
+      if (lastTag) {
+        removeTag(lastTag);
+      }
     }
   };
 
   return (
     <div className="space-y-1">
-      <div
-        className="flex min-h-10 flex-wrap items-center gap-1.5 rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2"
-        onClick={() => inputRef.current?.focus()}
-        onKeyDown={() => inputRef.current?.focus()}
-        role="button"
-        tabIndex={0}
-      >
+      <div className="flex min-h-10 flex-wrap items-center gap-1.5 rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2">
         {value.map((tag) => (
-          <Badge key={tag} variant="secondary" className="gap-1 pr-1">
+          <Badge className="gap-1 pr-1" key={tag} variant="secondary">
             {tag}
             <button
               className="ml-0.5 rounded-full p-0.5 hover:bg-black/10 dark:hover:bg-white/10"
