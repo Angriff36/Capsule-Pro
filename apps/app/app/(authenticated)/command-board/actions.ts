@@ -77,6 +77,33 @@ export const bulkUpdateCardsAction = async (
   });
 };
 
+/** Restore cards to previous state (undo support). */
+export const bulkRestoreCardsAction = async (
+  cards: Array<{
+    id: string;
+    status: string;
+    color: string | null;
+    cardType: string;
+  }>
+) => {
+  if (cards.length === 0) return;
+
+  const tenantId = await requireTenantId();
+
+  await database.$transaction(
+    cards.map((card) =>
+      database.commandBoardCard.update({
+        where: { tenantId_id: { tenantId, id: card.id } },
+        data: {
+          status: card.status,
+          color: card.color,
+          cardType: card.cardType,
+        },
+      })
+    )
+  );
+};
+
 /** Create a group and optionally assign cards to it. */
 export const createGroupAction = async (
   boardId: string,

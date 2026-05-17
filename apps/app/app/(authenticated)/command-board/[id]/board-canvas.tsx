@@ -20,10 +20,19 @@ import {
 } from "@repo/design-system/components/ui/dialog";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
-import { LayoutDashboard, Maximize2, Minimize2, Search, X } from "lucide-react";
+import {
+  LayoutDashboard,
+  Maximize2,
+  Minimize2,
+  Search,
+  Undo2,
+  X,
+} from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import {
   assignToGroupAction,
+  bulkRestoreCardsAction,
   bulkUpdateCardsAction,
   createGroupAction,
   deleteGroupAction,
@@ -70,9 +79,31 @@ interface GroupData {
 
 interface BoardCanvasProps {
   readonly boardId: string;
-  readonly cards: ReadonlyArray<CardData>;
-  readonly connections: ReadonlyArray<ConnectionData>;
-  readonly groups: ReadonlyArray<GroupData>;
+  readonly cards: readonly CardData[];
+  readonly connections: readonly ConnectionData[];
+  readonly groups: readonly GroupData[];
+}
+
+interface PreviewData {
+  readonly updates: Record<string, string>;
+  readonly affectedCards: readonly CardData[];
+  readonly summary: ReadonlyArray<{
+    property: string;
+    from: string;
+    to: string;
+    count: number;
+  }>;
+  readonly warnings: readonly string[];
+}
+
+interface UndoEntry {
+  cards: Array<{
+    id: string;
+    status: string;
+    color: string | null;
+    cardType: string;
+  }>;
+  description: string;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -130,6 +161,43 @@ const statusStyle = (status: string): string => {
 };
 
 /* -------------------------------------------------------------------------- */
+/*  Helpers                                                                   */
+/* -------------------------------------------------------------------------- */
+
+const VALID_STATUSES = ["pending", "in_progress", "done", "cancelled"];
+
+function groupBy<T>(
+  items: readonly T[],
+  key: (item: T) => string
+): Map<string, T[]> {
+  const map = new Map<string, T[]>();
+  for (const item of items) {
+    const k = key(item);
+    const group = map.get(k) ?? [];
+    group.push(item);
+    map.set(k, group);
+  }
+  return map;
+}
+
+function validateStatusChange(
+  newStatus: string,
+  cards: readonly CardData[]
+): string[] {
+  const warnings: string[] = [];
+  if (!VALID_STATUSES.includes(newStatus)) {
+    warnings.push(`"${newStatus}" is not a valid status.`);
+  }
+  const doneCount = cards.filter((c) => c.status === "done").length;
+  if (doneCount > 0 && newStatus !== "done") {
+    warnings.push(
+      `${doneCount} card${doneCount === 1 ? "" : "s"} already marked "done". Changing status may affect reporting.`
+    );
+  }
+  return warnings;
+}
+
+/* -------------------------------------------------------------------------- */
 /*  Component                                                                 */
 /* -------------------------------------------------------------------------- */
 
@@ -159,6 +227,11 @@ export const BoardCanvas = ({
   const [bulkStatus, setBulkStatus] = useState("");
   const [bulkColor, setBulkColor] = useState("");
   const [applying, setApplying] = useState(false);
+
+  /* ---- bulk edit preview & undo ---- */
+  const [previewData, setPreviewData] = useState<PreviewData | null>(null);
+  const undoRef = useRef<UndoEntry[]>([]);
+  const [undoCount, setUndoCount] = useState(0);
 
   /* ---- group creation ---- */
   const [showGroupDialog, setShowGroupDialog] = useState(false);
@@ -192,11 +265,49 @@ export const BoardCanvas = ({
   }, [initialGroups]);
 
   /* ------------------------------------------------------------------ */
+  /*  Undo handler                                                       */
+  /* ------------------------------------------------------------------ */
+
+  const handleUndo = useCallback(async () => {
+    const previous = undoRef.current.pop();
+    if (!previous) {
+      return;
+    }
+    setUndoCount((c) => Math.max(0, c - 1));
+    setLocalCards((prev) =>
+      prev.map((c) => {
+        const prevCard = previous.cards.find((p) => p.id === c.id);
+        if (!prevCard) {
+          return c;
+        }
+        return {
+          ...c,
+          status: prevCard.status,
+          color: prevCard.color,
+          cardType: prevCard.cardType,
+        };
+      })
+    );
+    await bulkRestoreCardsAction(previous.cards);
+    toast.success(`Undone: ${previous.description}`);
+  }, []);
+
+  /* ------------------------------------------------------------------ */
   /*  Keyboard shortcuts                                                 */
   /* ------------------------------------------------------------------ */
 
   useEffect(() => {
     const handler = (event: KeyboardEvent) => {
+      // Ctrl/Cmd+Z: undo last bulk edit
+      if (
+        (event.ctrlKey || event.metaKey) &&
+        event.key.toLowerCase() === "z" &&
+        !event.shiftKey
+      ) {
+        event.preventDefault();
+        handleUndo();
+        return;
+      }
       // Ctrl/Cmd+E toggles entity browser
       if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "e") {
         event.preventDefault();
@@ -238,7 +349,7 @@ export const BoardCanvas = ({
 
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [browserOpen, localCards]);
+  }, [browserOpen, localCards, handleUndo]);
 
   /* ------------------------------------------------------------------ */
   /*  Drag handlers                                                      */
@@ -266,7 +377,9 @@ export const BoardCanvas = ({
 
       // Start drag
       const card = localCards.find((c) => c.id === cardId);
-      if (!card) return;
+      if (!card) {
+        return;
+      }
 
       setDrag({
         cardId,
@@ -279,7 +392,9 @@ export const BoardCanvas = ({
 
   const handleMouseMove = useCallback(
     (event: React.MouseEvent) => {
-      if (!drag) return;
+      if (!drag) {
+        return;
+      }
 
       const newX = event.clientX - drag.offsetX;
       const newY = event.clientY - drag.offsetY;
@@ -294,7 +409,9 @@ export const BoardCanvas = ({
   );
 
   const handleMouseUp = useCallback(() => {
-    if (!drag) return;
+    if (!drag) {
+      return;
+    }
 
     const card = localCards.find((c) => c.id === drag.cardId);
     if (card) {
@@ -313,8 +430,12 @@ export const BoardCanvas = ({
 
   const handleCanvasMouseDown = useCallback((event: React.MouseEvent) => {
     // Only if clicking the canvas background, not a card
-    if ((event.target as HTMLElement).closest("[data-card-id]")) return;
-    if ((event.target as HTMLElement).closest("[data-group-id]")) return;
+    if ((event.target as HTMLElement).closest("[data-card-id]")) {
+      return;
+    }
+    if ((event.target as HTMLElement).closest("[data-group-id]")) {
+      return;
+    }
 
     setSelectedIds(new Set());
   }, []);
@@ -323,35 +444,104 @@ export const BoardCanvas = ({
   /*  Bulk operations                                                    */
   /* ------------------------------------------------------------------ */
 
-  const handleBulkApply = async () => {
+  const computePreview = (
+    ids: string[],
+    updates: Record<string, string>
+  ): PreviewData => {
+    const affectedCards = localCards.filter((c) => ids.includes(c.id));
+    const summary: {
+      property: string;
+      from: string;
+      to: string;
+      count: number;
+    }[] = [];
+    const warnings: string[] = [];
+
+    if (updates.status) {
+      warnings.push(...validateStatusChange(updates.status, affectedCards));
+      const byOldStatus = groupBy(affectedCards, (c) => c.status);
+      for (const [from, cards] of byOldStatus) {
+        summary.push({
+          property: "Status",
+          from,
+          to: updates.status,
+          count: cards.length,
+        });
+      }
+    }
+
+    if (updates.color) {
+      summary.push({
+        property: "Color",
+        from: "various",
+        to: updates.color,
+        count: affectedCards.length,
+      });
+    }
+
+    return { updates, affectedCards, summary, warnings };
+  };
+
+  const handleBulkApply = () => {
     const ids = Array.from(selectedIds);
-    if (ids.length === 0) return;
+    if (ids.length === 0) {
+      return;
+    }
 
     const updates: Record<string, string> = {};
-    if (bulkStatus) updates.status = bulkStatus;
-    if (bulkColor) updates.color = bulkColor;
+    if (bulkStatus) {
+      updates.status = bulkStatus;
+    }
+    if (bulkColor) {
+      updates.color = bulkColor;
+    }
 
-    if (Object.keys(updates).length === 0) return;
+    if (Object.keys(updates).length === 0) {
+      return;
+    }
+
+    setPreviewData(computePreview(ids, updates));
+  };
+
+  const handleConfirmBulkEdit = async () => {
+    if (!previewData) {
+      return;
+    }
+
+    const { updates, affectedCards } = previewData;
+    const ids = affectedCards.map((c) => c.id);
+
+    // Save snapshot for undo
+    undoRef.current.push({
+      cards: affectedCards.map((c) => ({
+        id: c.id,
+        status: c.status,
+        color: c.color,
+        cardType: c.cardType,
+      })),
+      description: `Bulk edit: ${Object.keys(updates).join(", ")}`,
+    });
+    setUndoCount((c) => c + 1);
 
     setApplying(true);
-
     try {
-      // Optimistic local update
       setLocalCards((prev) =>
         prev.map((c) => (ids.includes(c.id) ? { ...c, ...updates } : c))
       );
-
       await bulkUpdateCardsAction(ids, updates);
       setBulkStatus("");
       setBulkColor("");
     } finally {
       setApplying(false);
+      setPreviewData(null);
     }
   };
 
   const handleCreateGroup = async () => {
     const ids = Array.from(selectedIds);
-    if (ids.length === 0 || !newGroupName.trim()) return;
+    if (ids.length === 0 || !newGroupName.trim()) {
+      return;
+    }
 
     setCreatingGroup(true);
 
@@ -405,7 +595,9 @@ export const BoardCanvas = ({
 
   const handleAssignToGroup = async (groupId: string) => {
     const ids = Array.from(selectedIds);
-    if (ids.length === 0) return;
+    if (ids.length === 0) {
+      return;
+    }
 
     // Optimistic
     setLocalCards((prev) =>
@@ -418,7 +610,9 @@ export const BoardCanvas = ({
 
   const handleUngroup = async () => {
     const ids = Array.from(selectedIds);
-    if (ids.length === 0) return;
+    if (ids.length === 0) {
+      return;
+    }
 
     // Optimistic
     setLocalCards((prev) =>
@@ -431,7 +625,9 @@ export const BoardCanvas = ({
 
   const handleToggleCollapse = async (groupId: string) => {
     const group = localGroups.find((g) => g.id === groupId);
-    if (!group) return;
+    if (!group) {
+      return;
+    }
 
     const newCollapsed = !group.collapsed;
 
@@ -450,7 +646,9 @@ export const BoardCanvas = ({
   };
 
   const handleDeleteGroup = async () => {
-    if (!groupToDelete) return;
+    if (!groupToDelete) {
+      return;
+    }
 
     const groupId = groupToDelete;
     setDeleteGroupDialogOpen(false);
@@ -480,12 +678,16 @@ export const BoardCanvas = ({
         {initialConnections.map((conn) => {
           const from = cardMap.get(conn.fromCardId);
           const to = cardMap.get(conn.toCardId);
-          if (!(from && to)) return null;
+          if (!(from && to)) {
+            return null;
+          }
 
           // Hide connections if either card is in a collapsed group
           const fromGroup = localGroups.find((g) => g.id === from.groupId);
           const toGroup = localGroups.find((g) => g.id === to.groupId);
-          if (fromGroup?.collapsed || toGroup?.collapsed) return null;
+          if (fromGroup?.collapsed || toGroup?.collapsed) {
+            return null;
+          }
 
           const x1 = from.positionX + from.width / 2;
           const y1 = from.positionY + from.height / 2;
@@ -580,8 +782,8 @@ export const BoardCanvas = ({
               )}
             </button>
             <span className="font-medium text-xs">{group.name}</span>
-            <span className="text-muted-foreground text-[10px]">
-              {groupCards.length} card{groupCards.length !== 1 ? "s" : ""}
+            <span className="text-[10px] text-muted-foreground">
+              {groupCards.length} card{groupCards.length === 1 ? "" : "s"}
             </span>
           </div>
           <button
@@ -604,7 +806,9 @@ export const BoardCanvas = ({
   const renderCard = (card: CardData) => {
     // Hide cards in collapsed groups
     const group = localGroups.find((g) => g.id === card.groupId);
-    if (group?.collapsed) return null;
+    if (group?.collapsed) {
+      return null;
+    }
 
     const isSelected = selectedIds.has(card.id);
     const isDragging = drag?.cardId === card.id;
@@ -642,7 +846,7 @@ export const BoardCanvas = ({
           >
             {card.status}
           </span>
-          <span className="text-muted-foreground text-[10px] uppercase tracking-wide">
+          <span className="text-[10px] text-muted-foreground uppercase tracking-wide">
             {card.cardType}
           </span>
         </div>
@@ -655,7 +859,9 @@ export const BoardCanvas = ({
   /* ------------------------------------------------------------------ */
 
   const renderBulkToolbar = () => {
-    if (selectedIds.size === 0) return null;
+    if (selectedIds.size === 0) {
+      return null;
+    }
 
     const ids = Array.from(selectedIds);
     const anyGrouped = ids.some(
@@ -667,6 +873,13 @@ export const BoardCanvas = ({
         <span className="font-medium text-xs tabular-nums">
           {selectedIds.size} selected
         </span>
+
+        {undoCount > 0 && (
+          <Button onClick={handleUndo} size="sm" variant="ghost">
+            <Undo2 className="mr-1 h-3.5 w-3.5" />
+            Undo
+          </Button>
+        )}
 
         <div className="h-4 w-px bg-border" />
 
@@ -728,7 +941,9 @@ export const BoardCanvas = ({
           <select
             className="h-7 rounded-md border border-input bg-background px-2 text-xs"
             onChange={(e) => {
-              if (e.target.value) handleAssignToGroup(e.target.value);
+              if (e.target.value) {
+                handleAssignToGroup(e.target.value);
+              }
             }}
             title="Assign to group"
             value=""
@@ -774,7 +989,7 @@ export const BoardCanvas = ({
         <DialogHeader>
           <DialogTitle>
             Create group from {selectedIds.size} card
-            {selectedIds.size !== 1 ? "s" : ""}
+            {selectedIds.size === 1 ? "" : "s"}
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
@@ -826,6 +1041,92 @@ export const BoardCanvas = ({
       </DialogContent>
     </Dialog>
   );
+
+  /* ------------------------------------------------------------------ */
+  /*  Render: bulk edit preview dialog                                   */
+  /* ------------------------------------------------------------------ */
+
+  const renderPreviewDialog = () => {
+    if (!previewData) {
+      return null;
+    }
+
+    return (
+      <Dialog
+        onOpenChange={(open) => {
+          if (!open) {
+            setPreviewData(null);
+          }
+        }}
+        open={!!previewData}
+      >
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Bulk Edit Preview</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm">
+              {previewData.affectedCards.length} card
+              {previewData.affectedCards.length === 1 ? "" : "s"} will be
+              updated:
+            </p>
+            <div className="space-y-2">
+              {previewData.summary.map((item, i) => (
+                <div className="flex items-center gap-2 text-sm" key={i}>
+                  <span className="font-medium">{item.property}:</span>
+                  <span className="text-muted-foreground">{item.from}</span>
+                  <span>→</span>
+                  <span className="font-medium">{item.to}</span>
+                  <span className="text-muted-foreground">({item.count})</span>
+                </div>
+              ))}
+            </div>
+            {previewData.warnings.length > 0 ? (
+              <div className="rounded-md border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-950">
+                {previewData.warnings.map((warning, i) => (
+                  <p
+                    className="text-amber-800 text-sm dark:text-amber-200"
+                    key={i}
+                  >
+                    {warning}
+                  </p>
+                ))}
+              </div>
+            ) : null}
+            <div className="rounded-md border bg-muted/50 p-3">
+              <p className="mb-1 font-medium text-muted-foreground text-xs uppercase tracking-wide">
+                Affected cards
+              </p>
+              <ul className="space-y-1">
+                {previewData.affectedCards.slice(0, 10).map((card) => (
+                  <li className="text-sm" key={card.id}>
+                    {card.title}
+                  </li>
+                ))}
+                {previewData.affectedCards.length > 10 ? (
+                  <li className="text-muted-foreground text-sm">
+                    +{previewData.affectedCards.length - 10} more
+                  </li>
+                ) : null}
+              </ul>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              onClick={() => setPreviewData(null)}
+              type="button"
+              variant="ghost"
+            >
+              Cancel
+            </Button>
+            <Button disabled={applying} onClick={handleConfirmBulkEdit}>
+              {applying ? "Applying…" : "Confirm Changes"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    );
+  };
 
   /* ------------------------------------------------------------------ */
   /*  Main render                                                        */
@@ -900,7 +1201,7 @@ export const BoardCanvas = ({
           </header>
           <div className="border-border border-b p-3">
             <div className="relative">
-              <Search className="-translate-y-1/2 absolute top-1/2 left-2 h-3.5 w-3.5 text-muted-foreground" />
+              <Search className="absolute top-1/2 left-2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
               <input
                 aria-label="Search entities"
                 className="w-full rounded-md border border-input bg-background py-1.5 pr-2 pl-8 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
@@ -943,6 +1244,9 @@ export const BoardCanvas = ({
 
       {/* Create group dialog */}
       {renderGroupDialog()}
+
+      {/* Bulk edit preview dialog */}
+      {renderPreviewDialog()}
 
       {/* Delete group confirmation */}
       <AlertDialog

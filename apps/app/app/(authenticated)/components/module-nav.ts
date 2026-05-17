@@ -143,6 +143,7 @@ export const modules: ModuleDefinition[] = [
           { title: "Overview", href: "/warehouse" },
           { title: "Inventory", href: "/warehouse/inventory" },
           { title: "Receiving", href: "/warehouse/receiving" },
+          { title: "Receiving History", href: "/warehouse/receiving/history" },
           { title: "Putaway", href: "/warehouse/putaway" },
           { title: "Pick & Pack", href: "/warehouse/pick-pack" },
           { title: "Shipments", href: "/warehouse/shipments" },

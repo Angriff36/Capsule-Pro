@@ -250,16 +250,16 @@ When memory_search returns a fact marked ⚠ STALE:
 - Commit often, small atomic changes. Format: "[type] what and why"
 - commit = Tier 1 (do it yourself). push = Tier 3 (verify_identity).
 
-## Project DNA: next-forge
+## Project DNA: capsule-pro
 Stack: TypeScript
 Style: [unknown]
-Structure: .automaker, .biome-sweep, .codex, .cursor, .github, .husky, .opencode, .playwright-mcp
+Structure: .autolab, .automaker, .biome-sweep, .codex, .cursor, .github, .husky, .idea
 Deploy: [NOT SET]
 Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[Emergency bridge — running bridge was not updated]
-No changes or facts in this session.
+[auto-bridge snapshot @ 10 changes]
+Files: apps/app/app/(authenticated)/command-board/[id]/board-canvas.tsx (edit), apps/app/app/(authenticated)/command-board/actions.ts (edit), IMPLEMENTATION_PLAN.md (edit)
 
 # === END COGNILAYER ===
