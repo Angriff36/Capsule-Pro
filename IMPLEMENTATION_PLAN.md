@@ -5,6 +5,14 @@
 **Scope**: TypeScript, Next.js, Vitest, Turbo, Vercel, Sentry, Biome, Playwright, PostCSS, package.json, ENV, CI/CD, Build, Prisma, Misc, Cross-Config, Specs
 **Counts**: ~842 issues. CRITICAL: 42. HIGH: ~192. MEDIUM: ~325. LOW: ~283.
 
+## Changes from security hardening pass 2 (2026-05-16)
+
+- API key requests now rate-limited: proxy.ts sets x-api-key-id from key prefix before global rate limit. global-rate-limit.ts adds API key ID + IP fallback to extractTenantKey().
+- Keep-alive cron moved from /cron/ to canonical /api/cron/ with standard x-vercel-cron + Bearer auth. Scheduled in vercel.json (*/5 min). Tests updated.
+- CSP `unsafe-eval` removed from production (only needed for dev HMR). `unsafe-inline` remains required by Clerk/PostHog/GTM.
+- performance.yml: added "Start app server" step with health check before Lighthouse scan.
+- logging-sync.yml: node-version standardized to .nvmrc.
+
 ## Changes from CI hardening pass (2026-05-16)
 
 CI workflow hardening + security fix:
@@ -228,7 +236,7 @@ Passes 2-10 findings archived in `docs/audits/` and `docs/implementation-history
 - [ ] **[NEXT]** apps/web/next.config.ts line 17: ignoreBuildErrors:true. **CRITICAL** [CONFIRMED-P10]
 - [x] **[CI]** deploy.yml continue-on-error:true on tests step. **CRITICAL** [CONFIRMED-P10] **RESOLVED: removed continue-on-error from deploy.yml tests step**
 - [x] **[VERCEL-CROSS]** CSP double-definition: root vercel.json AND apps/app/next.config.ts have DIFFERENT CSP policies. **CRITICAL** [CONFIRMED-P10] **RESOLVED: removed conflicting CSP from root vercel.json; apps/app/next.config.ts is sole CSP authority**
-- [ ] **[NEXT]** CSP unsafe-inline + unsafe-eval in apps/app next.config.ts AND root vercel.json. **CRITICAL** [CONFIRMED-P10]
+- [ ] **[NEXT]** CSP unsafe-inline + unsafe-eval in apps/app next.config.ts AND root vercel.json. **CRITICAL** [CONFIRMED-P10] **NOTE: unsafe-eval removed from production (only needed for dev HMR). unsafe-inline remains required by Clerk/PostHog/GTM. Full removal needs nonce-based CSP migration (medium-term).**
 - [ ] **[NEXT]** apps/api outputFileTracingIncludes manifest-ir/ir/**/*.json -- verify completeness. **CRITICAL** [CONFIRMED-P10]
 - [ ] **[NEXT-NEW]** packages/next-config serverExternalPackages replacement bug: shared ["ably"] DROPPED when apps define own array. **CRITICAL** [NEW-P11] **NOTE: Both apps already include "ably" manually. Pattern is fragile but not a runtime bug. Downgraded from CRITICAL to HIGH (maintenance concern).**
 - [x] **[PKG-NEW]** apps/api build script uses bash-only `export $(grep ...)` syntax -- fails on Windows. **HIGH** [NEW-P11] **RESOLVED: replaced with cross-platform dotenv-cli approach**
@@ -264,12 +272,12 @@ ALL scheduled crons non-functional. Clerk middleware blocks `/api/cron/*` (not i
 - [x] **[CRON]** inventory-audit: checks wrong header x-vercel-cron-secret. Always 401. **CRITICAL** [CONFIRMED-P10] **RESOLVED: Fixed to check x-vercel-cron: 1 (correct Vercel header) + isPublicRoute**
 - [x] **[CRON]** sentry-fixer/process: spoofable header + runs AI agents, reads source, posts Slack. **CRITICAL** [ESCALATED-P11] **RESOLVED: Already in isPublicRoute, no change needed (already accepts x-vercel-cron)**
 - [x] **[CRON]** /outbox/publish: POST only + OUTBOX_PUBLISH_TOKEN. Vercel sends GET. **CRITICAL** [CONFIRMED-P10] **RESOLVED: Added GET handler + x-vercel-cron auth**
-- [ ] **[CRON]** keep-alive uses non-standard x-cron-secret AND never scheduled. **CRITICAL** [CONFIRMED-P10]
+- [x] **[CRON]** keep-alive uses non-standard x-cron-secret AND never scheduled. **CRITICAL** [CONFIRMED-P10] **RESOLVED: moved to /api/cron/keep-alive with standard x-vercel-cron + Bearer auth. Scheduled in vercel.json (*/5 min). Old path deleted.**
 - [x] **[CRON-NEW]** Duplicate webhook-retry routes: app/cron/ AND app/api/cron/. **CRITICAL** [CONFIRMED-P10] **RESOLVED: deleted stale app/cron/webhook-retry/route.ts (canonical is app/api/cron/webhook-retry/route.ts)**
 - [x] **[CRON-P11-NEW]** integration-auto-sync and outbox/publish MISSING from cron registry. **HIGH** [NEW-P11] **RESOLVED: integration-auto-sync was in vercel.json cron config; outbox/publish GET handler added**
-- [ ] **[SECURITY-NEW]** keep-alive non-standard header, no middleware auth. **HIGH** [NEW-P11]
+- [x] **[SECURITY-NEW]** keep-alive non-standard header, no middleware auth. **HIGH** [NEW-P11] **RESOLVED: moved to /api/cron/ path with standard auth pattern.**
 - [x] **[SECURITY-NEW]** integration-auto-sync not in isPublicRoute -- crons may 401 via Clerk. **HIGH** [NEW-P11] **RESOLVED: STALE — /api/cron(.*) wildcard in isPublicRoute already covers ALL cron routes including integration-auto-sync**
-- [ ] **[SECURITY-NEW]** API-key requests bypass rate limiting entirely. **HIGH** [NEW-P11]
+- [x] **[SECURITY-NEW]** API-key requests bypass rate limiting entirely. **HIGH** [NEW-P11] **RESOLVED: proxy.ts now sets x-api-key-id header from key prefix before rate limit check. global-rate-limit.ts falls through to API key ID then IP-based identification.**
 - [ ] **[SECURITY-NEW]** secretlint configured but never run in CI. **HIGH** [NEW-P11]
 - [x] **[CRON-P12-NEW]** ALL `/api/cron/*` routes blocked by Clerk middleware (not in isPublicRoute). Even GET routes never reach handler. **CRITICAL** [NEW-P12] **RESOLVED: Added /api/cron(.*) to isPublicRoute in apps/api/proxy.ts**
 - [ ] **[SECURITY-P12-NEW]** sentry-fixer dev mode bypass: NODE_ENV==="development" returns authorized:true. **HIGH** [NEW-P12]
@@ -419,9 +427,9 @@ ALL scheduled crons non-functional. Clerk middleware blocks `/api/cron/*` (not i
 - [x] **[TURBO-NEW]** tsconfig not in globalDependencies -- tsconfig changes won't invalidate tsc build caches. **HIGH** [NEW-P11] **RESOLVED: added **/tsconfig*.json to globalDependencies in turbo.json**
 - [x] **[TURBO-P12]** event-parser `type-check` script doesn't match turbo `typecheck` task -- silently excluded. **HIGH** [NEW-P12] **RESOLVED: renamed script from type-check to typecheck in packages/event-parser/package.json**
 - [x] **[CI]** .github/CODEOWNERS placeholder + formatting issues. **HIGH** [CONFIRMED-P10] **RESOLVED: replaced @your-username with @Angriff36, fixed syntax errors (leading dash on line 3, combined rules on line 7), separated directory patterns onto individual lines**
-- [ ] **[CI]** No pnpm dependency caching in CI. **HIGH** [CONFIRMED-P10]
+- [x] **[CI]** No pnpm dependency caching in CI. **HIGH** [CONFIRMED-P10] **RESOLVED: all workflows now use cache:"pnpm" on setup-node.**
 - [x] **[CI]** No Dependabot config. **HIGH** [CONFIRMED-P10] **RESOLVED: created .github/dependabot.yml with weekly npm + GitHub Actions update schedules, semver-major ignores for npm, PR limits**
-- [ ] **[CI]** performance.yml Lighthouse scans localhost:3000 with no web server. **HIGH** [CONFIRMED-P10]
+- [x] **[CI]** performance.yml Lighthouse scans localhost:3000 with no web server. **HIGH** [CONFIRMED-P10] **RESOLVED: added "Start app server" step with health check before Lighthouse scan.**
 - [x] **[CI]** 14 of 16 CI jobs missing timeout-minutes. **HIGH** [CONFIRMED-P10] **RESOLVED: added timeout-minutes to all deploy.yml jobs (check-dependabot: 5m, deploy-app-api-web: 30m, deploy-docs: 15m, notify-failing-dependabot: 5m) and ci.yml test job: 30m**
 - [x] **[CI-NEW]** manifest-ci duplicate test jobs (manifest-validate + manifest-tests run same suite). **MEDIUM** [NEW-P11] **NOTE: Cache blocks simplified — manual pnpm cache replaced with cache:"pnpm" (~80 lines removed)**
 - [x] **[CI-NEW]** manifest-ci analyze step duplicated across 4 independent jobs. **MEDIUM** [NEW-P11] **RESOLVED: replaced manual pnpm cache with cache:"pnpm" on setup-node (saves ~80 lines)**
@@ -431,7 +439,7 @@ ALL scheduled crons non-functional. Clerk middleware blocks `/api/cron/*` (not i
 - [ ] **[CI-NEW]** CodeQL v3 deprecated (security.yml still uses @v3). **MEDIUM** [NEW-P11]
 - [x] **[CI-NEW]** deploy.yml no caching (full cold install every deployment). **MEDIUM** [NEW-P11] **RESOLVED: added cache: 'pnpm' to setup-node steps in deploy.yml**
 - [ ] **[CI-NEW]** performance.yml continue-on-error means regressions never caught. **MEDIUM** [NEW-P11]
-- [ ] **[CI-NEW]** Inconsistent Node.js versions across workflows (22.x vs .nvmrc 22.18.0). **MEDIUM** [NEW-P11]
+- [x] **[CI-NEW]** Inconsistent Node.js versions across workflows (22.x vs .nvmrc 22.18.0). **MEDIUM** [NEW-P11] **RESOLVED: logging-sync.yml standardized to .nvmrc. ci.yml + vercel-compat.yml use 22.x intentionally (match Vercel).**
 - [ ] **[CI-NEW]** Bitwarden secret IDs hardcoded in deploy.yml. **MEDIUM** [NEW-P11]
 - [ ] **[CI-NEW]** PostHog host inconsistency (app.posthog.com vs us.i.posthog.com). **MEDIUM** [NEW-P11]
 - [x] **[CI-NEW]** security.yml CodeQL @v3 deprecated while codeql.yml may use @v4. **HIGH** [NEW-P13] **RESOLVED: updated security.yml CodeQL actions from @v3 to @v4**
@@ -560,7 +568,7 @@ ALL scheduled crons non-functional. Clerk middleware blocks `/api/cron/*` (not i
 - [ ] **[VERCEL]** 630 of 632 API routes lack maxDuration. **MEDIUM** [CONFIRMED-P10]
 - [x] **[VERCEL]** apps/web and apps/docs have zero security headers. **MEDIUM** [CONFIRMED-P10] **RESOLVED (web): STALE — apps/web imports shared @repo/next-config which provides 6 security headers. apps/docs now has security headers added directly.**
 - [ ] **[VERCEL-NEW]** inventory-audit uses non-standard x-vercel-cron-secret header. **MEDIUM** [NEW-P11]
-- [ ] **[VERCEL-NEW]** keep-alive uses non-standard x-cron-secret, no fallback. **MEDIUM** [NEW-P11]
+- [x] **[VERCEL-NEW]** keep-alive uses non-standard x-cron-secret, no fallback. **MEDIUM** [NEW-P11] **RESOLVED: moved to /api/cron/ with standard auth.**
 - [ ] **[VERCEL-NEW]** 6 cron routes missing maxDuration (may timeout). **MEDIUM** [NEW-P11]
 - [ ] **[VERCEL-NEW]** sentry-fixer GET handler exposes internal config publicly (information disclosure). **MEDIUM** [NEW-P11]
 - [ ] **[VERCEL-NEW]** cron registry missing integration-auto-sync and outbox/publish. **MEDIUM** [NEW-P11]
