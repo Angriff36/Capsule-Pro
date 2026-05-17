@@ -42,7 +42,6 @@ describe("Prep List Auto-Generation", () => {
         payload: {},
         status: "pending",
         createdAt: new Date(),
-        updatedAt: new Date(),
         publishedAt: null,
         error: null,
       });
@@ -112,7 +111,6 @@ describe("Prep List Auto-Generation", () => {
         payload: {},
         status: "pending",
         createdAt: new Date(),
-        updatedAt: new Date(),
         publishedAt: null,
         error: null,
       });
