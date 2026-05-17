@@ -78,7 +78,7 @@
         "useExhaustiveDependencies": "warn",
         "noUnusedFunctionParameters": "warn",
         "noUnusedVariables": "warn",
-        "noUnusedImports": "warn"
+        "noUnusedImports": "error"
       },
       "a11y": {
         "useButtonType": "warn",

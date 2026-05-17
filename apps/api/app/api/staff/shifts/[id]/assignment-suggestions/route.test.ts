@@ -166,7 +166,7 @@ describe("assignment-suggestions route", () => {
       );
 
       const response = await GET(request, {
-        params: Promise.resolve({ shiftId: mockShiftId }),
+        params: Promise.resolve({ id: mockShiftId }),
       });
 
       expect(response.status).toBe(200);
@@ -185,7 +185,7 @@ describe("assignment-suggestions route", () => {
       );
 
       const response = await GET(request, {
-        params: Promise.resolve({ shiftId: mockShiftId }),
+        params: Promise.resolve({ id: mockShiftId }),
       });
 
       expect(response.status).toBe(401);
@@ -200,7 +200,7 @@ describe("assignment-suggestions route", () => {
       );
 
       const response = await GET(request, {
-        params: Promise.resolve({ shiftId: mockShiftId }),
+        params: Promise.resolve({ id: mockShiftId }),
       });
 
       expect(response.status).toBe(404);
@@ -218,7 +218,7 @@ describe("assignment-suggestions route", () => {
       );
 
       const response = await GET(request, {
-        params: Promise.resolve({ shiftId: mockShiftId }),
+        params: Promise.resolve({ id: mockShiftId }),
       });
 
       expect(response.status).toBe(200);
@@ -242,7 +242,7 @@ describe("assignment-suggestions route", () => {
       );
 
       const response = await GET(request, {
-        params: Promise.resolve({ shiftId: mockShiftId }),
+        params: Promise.resolve({ id: mockShiftId }),
       });
 
       expect(response.status).toBe(200);
@@ -264,7 +264,7 @@ describe("assignment-suggestions route", () => {
       );
 
       const response = await GET(request, {
-        params: Promise.resolve({ shiftId: mockShiftId }),
+        params: Promise.resolve({ id: mockShiftId }),
       });
 
       expect(response.status).toBe(500);
@@ -298,7 +298,7 @@ describe("assignment-suggestions route", () => {
       );
 
       const response = await POST(request, {
-        params: Promise.resolve({ shiftId: mockShiftId }),
+        params: Promise.resolve({ id: mockShiftId }),
       });
 
       expect(response.status).toBe(200);
@@ -325,7 +325,7 @@ describe("assignment-suggestions route", () => {
       );
 
       const response = await POST(request, {
-        params: Promise.resolve({ shiftId: mockShiftId }),
+        params: Promise.resolve({ id: mockShiftId }),
       });
 
       expect(response.status).toBe(200);
@@ -355,7 +355,7 @@ describe("assignment-suggestions route", () => {
       );
 
       const response = await POST(request, {
-        params: Promise.resolve({ shiftId: mockShiftId }),
+        params: Promise.resolve({ id: mockShiftId }),
       });
 
       expect(response.status).toBe(200);
@@ -388,7 +388,7 @@ describe("assignment-suggestions route", () => {
       );
 
       const response = await POST(request, {
-        params: Promise.resolve({ shiftId: mockShiftId }),
+        params: Promise.resolve({ id: mockShiftId }),
       });
 
       expect(response.status).toBe(200);
@@ -407,7 +407,7 @@ describe("assignment-suggestions route", () => {
       );
 
       const response = await POST(request, {
-        params: Promise.resolve({ shiftId: mockShiftId }),
+        params: Promise.resolve({ id: mockShiftId }),
       });
 
       expect(response.status).toBe(404);
@@ -428,7 +428,7 @@ describe("assignment-suggestions route", () => {
       );
 
       const response = await POST(request, {
-        params: Promise.resolve({ shiftId: mockShiftId }),
+        params: Promise.resolve({ id: mockShiftId }),
       });
 
       expect(response.status).toBe(401);
@@ -448,7 +448,7 @@ describe("assignment-suggestions route", () => {
       );
 
       const response = await POST(request, {
-        params: Promise.resolve({ shiftId: mockShiftId }),
+        params: Promise.resolve({ id: mockShiftId }),
       });
 
       expect(response.status).toBe(500);

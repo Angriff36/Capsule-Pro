@@ -83,7 +83,9 @@ export async function POST(request: NextRequest) {
         code: (validation.error as any)?.code,
         message: (validation.error as any)?.message,
       });
-      return validation.error;
+      return (
+        validation.error ?? manifestErrorResponse("Validation failed", 400)
+      );
     }
 
     log.info("[schedule-shift/update-validated] Executing command", {

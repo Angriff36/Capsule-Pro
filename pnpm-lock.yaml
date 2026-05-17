@@ -130,9 +130,6 @@ importers:
       '@angriff36/manifest':
         specifier: 0.3.39
         version: 0.3.39(@supabase/supabase-js@2.97.0)
-      '@capsule-pro/sales-reporting':
-        specifier: workspace:*
-        version: link:../../packages/sales-reporting
       '@react-pdf/renderer':
         specifier: ^4.3.2
         version: 4.3.2(react@19.2.4)
@@ -175,6 +172,9 @@ importers:
       '@repo/realtime':
         specifier: workspace:*
         version: link:../../packages/realtime
+      '@repo/sales-reporting':
+        specifier: workspace:*
+        version: link:../../packages/sales-reporting
       '@repo/sentry-integration':
         specifier: workspace:*
         version: link:../../packages/sentry-integration
@@ -269,9 +269,6 @@ importers:
       '@angriff36/manifest':
         specifier: 0.3.39
         version: 0.3.39(@supabase/supabase-js@2.97.0)
-      '@capsule-pro/sales-reporting':
-        specifier: workspace:*
-        version: link:../../packages/sales-reporting
       '@clerk/nextjs':
         specifier: ^6.37.2
         version: 6.37.2(next@15.5.18(@opentelemetry/api@1.9.0)(@playwright/test@1.58.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -350,6 +347,9 @@ importers:
       '@repo/realtime':
         specifier: workspace:*
         version: link:../../packages/realtime
+      '@repo/sales-reporting':
+        specifier: workspace:*
+        version: link:../../packages/sales-reporting
       '@repo/security':
         specifier: workspace:*
         version: link:../../packages/security
@@ -940,6 +940,9 @@ importers:
       next:
         specifier: 15.5.18
         version: 15.5.18(@babel/core@7.29.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.58.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
 
   packages/auth:
     dependencies:
@@ -1016,6 +1019,9 @@ importers:
       next:
         specifier: 15.5.18
         version: 15.5.18(@babel/core@7.29.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.58.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
 
   packages/collaboration:
     dependencies:
@@ -1177,9 +1183,6 @@ importers:
       recharts:
         specifier: ^2.15.4
         version: 2.15.4(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
-      server-only:
-        specifier: ^0.0.1
-        version: 0.0.1
       sonner:
         specifier: ^2.0.7
         version: 2.0.7(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -1347,6 +1350,9 @@ importers:
       next:
         specifier: 15.5.18
         version: 15.5.18(@babel/core@7.29.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.58.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
 
   packages/kitchen-state-transitions:
     devDependencies:
@@ -1471,6 +1477,9 @@ importers:
       next:
         specifier: 15.5.18
         version: 15.5.18(@babel/core@7.29.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.58.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
 
   packages/notifications:
     dependencies:
@@ -1598,6 +1607,9 @@ importers:
       '@types/node':
         specifier: 25.2.0
         version: 25.2.0
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
       vitest:
         specifier: ^4.0.18
         version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.2.0)(jiti@2.6.1)(jsdom@28.0.0(@noble/hashes@1.8.0))(lightningcss@1.30.2)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
@@ -1658,6 +1670,9 @@ importers:
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
       vitest:
         specifier: ^4.0.18
         version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.2.3)(jiti@2.6.1)(jsdom@28.0.0(@noble/hashes@1.8.0))(lightningcss@1.30.2)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
@@ -1785,6 +1800,9 @@ importers:
       '@types/react-dom':
         specifier: 19.2.3
         version: 19.2.3(@types/react@19.2.11)
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
 
   packages/storage:
     dependencies:

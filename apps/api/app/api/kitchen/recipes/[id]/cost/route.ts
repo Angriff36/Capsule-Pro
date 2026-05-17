@@ -174,10 +174,10 @@ export async function GET(
  */
 export async function POST(
   _request: NextRequest,
-  { params }: { params: Promise<{ recipeVersionId: string }> }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { recipeVersionId } = await params;
+    const { id: recipeVersionId } = await params;
     const { orgId, userId } = await auth();
 
     if (!(userId && orgId)) {
