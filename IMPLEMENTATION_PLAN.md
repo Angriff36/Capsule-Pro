@@ -120,6 +120,8 @@ Quick-win CRITICAL fixes applied:
 - apps/docs: added poweredByHeader:false + 5 security headers (X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy, HSTS)
 - apps/storybook: added poweredByHeader:false
 - Marked 4 stale plan items as RESOLVED (apps/web transpilePackages, CSP headers, security headers, docs/storybook shared config)
+- .github/CODEOWNERS: replaced @your-username placeholders with @Angriff36, fixed syntax errors
+- .github/dependabot.yml: created Dependabot config (weekly npm + GitHub Actions, semver-major ignores)
 - apps/api/vitest.config.integration.mts: removed invalid optimizeDeps.disable (removed in Vite 6, repo on Vite 7)
 - Verified apps/app setupFiles not needed (no jest-dom matcher usage, all 271 tests pass)
 - packages/event-parser: renamed type-check script to typecheck (matches turbo task name)
@@ -407,9 +409,9 @@ ALL scheduled crons non-functional. Clerk middleware blocks `/api/cron/*` (not i
 - [x] **[TURBO-NEW]** No remoteCache.signature:true for cache integrity. **HIGH** [NEW-P11] **RESOLVED: added signature: true to remoteCache in turbo.json**
 - [x] **[TURBO-NEW]** tsconfig not in globalDependencies -- tsconfig changes won't invalidate tsc build caches. **HIGH** [NEW-P11] **RESOLVED: added **/tsconfig*.json to globalDependencies in turbo.json**
 - [x] **[TURBO-P12]** event-parser `type-check` script doesn't match turbo `typecheck` task -- silently excluded. **HIGH** [NEW-P12] **RESOLVED: renamed script from type-check to typecheck in packages/event-parser/package.json**
-- [ ] **[CI]** .github/CODEOWNERS placeholder + formatting issues. **HIGH** [CONFIRMED-P10]
+- [x] **[CI]** .github/CODEOWNERS placeholder + formatting issues. **HIGH** [CONFIRMED-P10] **RESOLVED: replaced @your-username with @Angriff36, fixed syntax errors (leading dash on line 3, combined rules on line 7), separated directory patterns onto individual lines**
 - [ ] **[CI]** No pnpm dependency caching in CI. **HIGH** [CONFIRMED-P10]
-- [ ] **[CI]** No Dependabot config. **HIGH** [CONFIRMED-P10]
+- [x] **[CI]** No Dependabot config. **HIGH** [CONFIRMED-P10] **RESOLVED: created .github/dependabot.yml with weekly npm + GitHub Actions update schedules, semver-major ignores for npm, PR limits**
 - [ ] **[CI]** performance.yml Lighthouse scans localhost:3000 with no web server. **HIGH** [CONFIRMED-P10]
 - [x] **[CI]** 14 of 16 CI jobs missing timeout-minutes. **HIGH** [CONFIRMED-P10] **RESOLVED: added timeout-minutes to all deploy.yml jobs (check-dependabot: 5m, deploy-app-api-web: 30m, deploy-docs: 15m, notify-failing-dependabot: 5m) and ci.yml test job: 30m**
 - [ ] **[CI-NEW]** manifest-ci duplicate test jobs (manifest-validate + manifest-tests run same suite). **MEDIUM** [NEW-P11]
