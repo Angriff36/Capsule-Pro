@@ -581,7 +581,7 @@ ALL scheduled crons non-functional. Clerk middleware blocks `/api/cron/*` (not i
 - [x] **[VERCEL]** apps/web and apps/docs have zero security headers. **MEDIUM** [CONFIRMED-P10] **RESOLVED (web): STALE — apps/web imports shared @repo/next-config which provides 6 security headers. apps/docs now has security headers added directly.**
 - [ ] **[VERCEL-NEW]** inventory-audit uses non-standard x-vercel-cron-secret header. **MEDIUM** [NEW-P11]
 - [x] **[VERCEL-NEW]** keep-alive uses non-standard x-cron-secret, no fallback. **MEDIUM** [NEW-P11] **RESOLVED: moved to /api/cron/ with standard auth.**
-- [ ] **[VERCEL-NEW]** 6 cron routes missing maxDuration (may timeout). **MEDIUM** [NEW-P11]
+- [x] **[VERCEL-NEW]** 6 cron routes missing maxDuration (may timeout). **MEDIUM** [NEW-P11] **RESOLVED: Added maxDuration:60 to functions config for app/api/**/*.ts and app/cron/**/*.ts in apps/api/vercel.json.**
 - [ ] **[VERCEL-NEW]** sentry-fixer GET handler exposes internal config publicly (information disclosure). **MEDIUM** [NEW-P11]
 - [ ] **[VERCEL-NEW]** cron registry missing integration-auto-sync and outbox/publish. **MEDIUM** [NEW-P11]
 
@@ -635,7 +635,7 @@ ALL scheduled crons non-functional. Clerk middleware blocks `/api/cron/*` (not i
 - [ ] **[MISC]** apps/docs PostCSS uses legacy tailwindcss plugin name. **MEDIUM** [CONFIRMED-P10]
 - [ ] **[MISC]** .npmrc shamefully-hoist=true and strict-peer-dependencies=false. **MEDIUM** [CONFIRMED-P10]
 - [ ] **[MISC]** .gitignore 471 lines, .vercel listed 6 times, .env*.local 4 times. **MEDIUM** [CONFIRMED-P10]
-- [ ] **[MISC]** Missing .editorconfig. **MEDIUM** [CONFIRMED-P10]
+- [x] **[MISC]** Missing .editorconfig. **MEDIUM** [CONFIRMED-P10] **RESOLVED: Created .editorconfig with UTF-8, LF, 2-space indent, final newline, trailing whitespace trim.**
 - [ ] **[MISC]** 4 stale worktrees. **MEDIUM** [CONFIRMED-P10]
 - [ ] **[MISC]** 28 API route domains have ZERO spec coverage. **MEDIUM** [CONFIRMED-P10]
 - [ ] **[MISC]** ~564 :any annotations in production. **MEDIUM** [CONFIRMED-P10]
