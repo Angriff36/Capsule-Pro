@@ -43,13 +43,21 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
 
     // Validate shift before manifest runtime
-    const validation = await validateShift(tenantId, {
-      scheduleId: body.scheduleId,
-      employeeId: body.employeeId,
-      shiftStart: body.shiftStart,
-      shiftEnd: body.shiftEnd,
-      roleDuringShift: body.roleDuringShift,
-    });
+    const validation = await validateShift(
+      tenantId,
+      {
+        scheduleId: body.scheduleId,
+        employeeId: body.employeeId,
+        shiftStart: body.shiftStart,
+        shiftEnd: body.shiftEnd,
+        roleDuringShift: body.roleDuringShift,
+      },
+      undefined,
+      {
+        allowOverlap: body.allowOverlap === true,
+        ignoreAvailabilityWarning: body.ignoreAvailabilityWarning === true,
+      }
+    );
 
     if (!validation.valid) {
       log.error("[schedule-shift/create-validated] Validation failed", {
@@ -111,8 +119,8 @@ export async function POST(request: NextRequest) {
     return manifestSuccessResponse({
       result: result.result,
       events: result.emittedEvents,
-      warnings:
-        validation.overtime.severity === "WARN"
+      warnings: [
+        ...(validation.overtime.severity === "WARN"
           ? [
               {
                 code: "overtime_warning",
@@ -123,7 +131,21 @@ export async function POST(request: NextRequest) {
                 },
               },
             ]
-          : [],
+          : []),
+        ...(validation.availability.severity === "WARN" &&
+        !body.ignoreAvailabilityWarning
+          ? [
+              {
+                code: "availability_warning",
+                message: validation.availability.message,
+                details: {
+                  withinAvailability: validation.availability.withinAvailability,
+                  availabilityWindows: validation.availability.availabilityWindows,
+                },
+              },
+            ]
+          : []),
+      ],
     });
   } catch (error) {
     log.error("[schedule-shift/create-validated] Error", { error });

@@ -119,7 +119,9 @@ export function ShiftForm({
     roleDuringShift: shift?.role_during_shift || "",
     notes: shift?.notes || "",
     allowOverlap: false,
+    ignoreAvailabilityWarning: false,
   });
+  const [availabilityWarning, setAvailabilityWarning] = useState<string | null>(null);
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -178,6 +180,10 @@ export function ShiftForm({
 
   // Check available employees when times change
   useEffect(() => {
+    // Clear availability warning when inputs change (user is adjusting the shift)
+    setAvailabilityWarning(null);
+    setFormData((prev) => ({ ...prev, ignoreAvailabilityWarning: false }));
+
     async function checkAvailability() {
       if (formData.shiftStart && formData.shiftEnd && formData.locationId) {
         setCheckingAvailability(true);
@@ -244,6 +250,7 @@ export function ShiftForm({
       roleDuringShift: formData.roleDuringShift || undefined,
       notes: formData.notes || undefined,
       allowOverlap: formData.allowOverlap || undefined,
+      ignoreAvailabilityWarning: formData.ignoreAvailabilityWarning || undefined,
     };
 
     try {
@@ -263,12 +270,27 @@ export function ShiftForm({
       if (response.ok) {
         const result = await response.json();
 
+        // Check for availability warning in response
+        const availabilityWarn = result.warnings?.find(
+          (w: { code?: string; message?: string } | string) =>
+            typeof w === "object" && w.code === "availability_warning"
+        );
+        if (availabilityWarn && typeof availabilityWarn === "object") {
+          setAvailabilityWarning(availabilityWarn.message || "Employee may not be available for this shift.");
+        } else {
+          setAvailabilityWarning(null);
+        }
+
         // Show success with any warnings
         if (result.warnings && result.warnings.length > 0) {
+          const warningMessages = result.warnings.map(
+            (w: { code?: string; message?: string } | string) =>
+              typeof w === "object" ? w.message || w.code : w
+          );
           toast.success(
             `Shift ${isEditing ? "updated" : "created"} with warnings`,
             {
-              description: result.warnings.join(", "),
+              description: warningMessages.join(", "),
             }
           );
         } else {
@@ -527,6 +549,32 @@ export function ShiftForm({
                 type="checkbox"
               />
               <span className="text-sm">Allow overlapping shifts</span>
+            </label>
+          </div>
+        )}
+
+        {/* Availability Warning Override */}
+        {availabilityWarning && (
+          <div className="flex flex-col gap-2 rounded-md border border-orange-200 bg-orange-50 p-3 md:col-span-2">
+            <p className="text-sm font-medium text-orange-800">
+              Availability Warning
+            </p>
+            <p className="text-sm text-orange-700">{availabilityWarning}</p>
+            <label className="flex items-center gap-2">
+              <input
+                checked={formData.ignoreAvailabilityWarning}
+                className="h-4 w-4 rounded border-gray-300"
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    ignoreAvailabilityWarning: e.target.checked,
+                  })
+                }
+                type="checkbox"
+              />
+              <span className="text-sm text-orange-700">
+                Override: schedule outside employee&apos;s availability window
+              </span>
             </label>
           </div>
         )}

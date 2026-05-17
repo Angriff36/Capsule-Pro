@@ -75,7 +75,11 @@ export async function POST(request: NextRequest) {
         shiftEnd: body.shiftEnd,
         roleDuringShift: body.roleDuringShift,
       },
-      shiftId // Exclude current shift from overlap check
+      shiftId,
+      {
+        allowOverlap: body.allowOverlap === true,
+        ignoreAvailabilityWarning: body.ignoreAvailabilityWarning === true,
+      }
     );
 
     if (!validation.valid) {
@@ -140,8 +144,8 @@ export async function POST(request: NextRequest) {
     return manifestSuccessResponse({
       result: result.result,
       events: result.emittedEvents,
-      warnings:
-        validation.overtime.severity === "WARN"
+      warnings: [
+        ...(validation.overtime.severity === "WARN"
           ? [
               {
                 code: "overtime_warning",
@@ -152,7 +156,21 @@ export async function POST(request: NextRequest) {
                 },
               },
             ]
-          : [],
+          : []),
+        ...(validation.availability.severity === "WARN" &&
+        !body.ignoreAvailabilityWarning
+          ? [
+              {
+                code: "availability_warning",
+                message: validation.availability.message,
+                details: {
+                  withinAvailability: validation.availability.withinAvailability,
+                  availabilityWindows: validation.availability.availabilityWindows,
+                },
+              },
+            ]
+          : []),
+      ],
     });
   } catch (error) {
     log.error("[schedule-shift/update-validated] Error", { error });

@@ -3,14 +3,11 @@
 ## Build & Run
 
 - Monorepo with pnpm (ONLY — no npm, no yarn)
-- Primary folders: `apps/`, `packages/`, `specs/`
+- Primary folders: `apps/`, `packages/`, `specs/
 
 ## Session Start
 
-- Read `tasks/ledger.md` before starting work (know the scoring system, know the
-  leaderboard)
-- Read `IMPLEMENTATION_PLAN.md` **NEXT** for the current manifest-persistence /
-  repair quest marker (when applicable)
+- USE ls -la when searching for files. This will help you spot incorrectly configured things. Assume things aren't working correctly rather than assuming they are. Be skeptical and verify fully the things claimed in the app. 
 
 ## Planning File Discipline
 

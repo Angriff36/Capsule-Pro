@@ -358,7 +358,8 @@ describe("Shift Validation", () => {
             certification_name: "Food Handler",
             expiry_date: new Date("2027-12-31"),
           },
-        ]); // certifications
+        ]) // certifications
+        .mockResolvedValueOnce([]); // availability (no records)
 
       const result = await validateShift(tenantId, validBody);
 
@@ -381,7 +382,8 @@ describe("Shift Validation", () => {
             certification_name: "Food Handler",
             expiry_date: new Date("2027-12-31"),
           },
-        ]); // certifications
+        ]) // certifications
+        .mockResolvedValueOnce([]); // availability (no records)
 
       const result = await validateShift(tenantId, validBody);
 
