@@ -129,32 +129,32 @@ jobs:
             7b1173c2-ed67-4572-873a-b43e0021a4a5 > VERCEL_API_PROJECT_ID
             5e141ec7-b40d-4b83-8efa-b43e0021c700 > VERCEL_WEB_PROJECT_ID
 
+      - name: Install Vercel CLI
+        run: npm install -g vercel@53.1.0
+
       - name: Deploy to Vercel (App)
-        uses: amondnet/vercel-action@v25
-        with:
-          vercel-token: ${{ env.VERCEL_TOKEN }}
-          vercel-org-id: ${{ env.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ env.VERCEL_APP_PROJECT_ID }}
-          vercel-version: 53.1.0
-          vercel-args: '--prod'
+        run: |
+          mkdir -p .vercel
+          printf '{"orgId":"%s","projectId":"%s"}\n' "$VERCEL_ORG_ID" "$VERCEL_APP_PROJECT_ID" > .vercel/project.json
+          vercel deploy --prod --yes
+        env:
+          VERCEL_TOKEN: ${{ env.VERCEL_TOKEN }}
 
       - name: Deploy to Vercel (API)
-        uses: amondnet/vercel-action@v25
-        with:
-          vercel-token: ${{ env.VERCEL_TOKEN }}
-          vercel-org-id: ${{ env.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ env.VERCEL_API_PROJECT_ID }}
-          vercel-version: 53.1.0
-          vercel-args: '--prod'
+        run: |
+          mkdir -p .vercel
+          printf '{"orgId":"%s","projectId":"%s"}\n' "$VERCEL_ORG_ID" "$VERCEL_API_PROJECT_ID" > .vercel/project.json
+          vercel deploy --prod --yes
+        env:
+          VERCEL_TOKEN: ${{ env.VERCEL_TOKEN }}
 
       - name: Deploy to Vercel (Web)
-        uses: amondnet/vercel-action@v25
-        with:
-          vercel-token: ${{ env.VERCEL_TOKEN }}
-          vercel-org-id: ${{ env.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ env.VERCEL_WEB_PROJECT_ID }}
-          vercel-version: 53.1.0
-          vercel-args: '--prod'
+        run: |
+          mkdir -p .vercel
+          printf '{"orgId":"%s","projectId":"%s"}\n' "$VERCEL_ORG_ID" "$VERCEL_WEB_PROJECT_ID" > .vercel/project.json
+          vercel deploy --prod --yes
+        env:
+          VERCEL_TOKEN: ${{ env.VERCEL_TOKEN }}
 
   deploy-docs:
     runs-on: ubuntu-latest
@@ -197,14 +197,16 @@ jobs:
             71c979f7-e59c-4370-872b-b43e002162d2 > VERCEL_ORG_ID
             e239cd88-7fb7-4c3b-ab42-b43e0021b4c8 > VERCEL_DOCS_PROJECT_ID
 
+      - name: Install Vercel CLI
+        run: npm install -g vercel@53.1.0
+
       - name: Deploy to Vercel (Docs)
-        uses: amondnet/vercel-action@v25
-        with:
-          vercel-token: ${{ env.VERCEL_TOKEN }}
-          vercel-org-id: ${{ env.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ env.VERCEL_DOCS_PROJECT_ID }}
-          vercel-version: 53.1.0
-          vercel-args: '--prod'
+        run: |
+          mkdir -p .vercel
+          printf '{"orgId":"%s","projectId":"%s"}\n' "$VERCEL_ORG_ID" "$VERCEL_DOCS_PROJECT_ID" > .vercel/project.json
+          vercel deploy --prod --yes
+        env:
+          VERCEL_TOKEN: ${{ env.VERCEL_TOKEN }}
 
   notify-failing-dependabot:
     runs-on: ubuntu-latest
@@ -219,4 +221,4 @@ jobs:
           echo "Please review and fix the failing Dependabot PRs before deploying"
           gh pr list --author dependabot[bot] --json number,title,statusCheckRollup --template '{{range .}}{{tablerow .number .title (join .statusCheckRollup " ")}}{{end}}'
         env:
-          GITHUB_TOKEN: ${{ secrets.PKG_AUTH_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}

@@ -5,6 +5,13 @@
 **Scope**: TypeScript, Next.js, Vitest, Turbo, Vercel, Sentry, Biome, Playwright, PostCSS, package.json, ENV, CI/CD, Build, Prisma, Misc, Cross-Config, Specs
 **Counts**: ~842 issues. CRITICAL: 42. HIGH: ~192. MEDIUM: ~325. LOW: ~283.
 
+## Changes from deploy hardening pass (2026-05-16)
+
+deploy.yml supply chain risk resolved + stale items cleaned:
+- deploy.yml: replaced unmaintained amondnet/vercel-action@v25 with direct Vercel CLI (npm install -g vercel + vercel deploy --prod). Eliminates third-party action supply chain vector across all 4 deploy targets (App, API, Web, Docs).
+- deploy.yml: fixed notify-failing-dependabot to use github.token instead of PKG_AUTH_TOKEN for gh pr list (least-privilege).
+- Marked stale items resolved: ignoreBuildErrors already false in apps/api and apps/web; sentry-fixer dev mode bypass already removed from code; secretlint already running in security.yml via `secrets:scan` script.
+
 ## Changes from security hardening pass 2 (2026-05-16)
 
 - API key requests now rate-limited: proxy.ts sets x-api-key-id from key prefix before global rate limit. global-rate-limit.ts adds API key ID + IP fallback to extractTenantKey().
@@ -89,7 +96,7 @@ Systemic cron authentication fix. ALL 8 scheduled crons were non-functional due 
 
 ### Remaining Cron Auth Concerns
 
-- sentry-fixer dev mode bypass (NODE_ENV==="development" returns authorized:true) — not addressed
+- sentry-fixer dev mode bypass (NODE_ENV==="development" returns authorized:true) — **RESOLVED: dev mode bypass already removed from code.**
 - sentry-fixer GET endpoint leaks config status without auth — not addressed
 - keep-alive uses non-standard x-cron-secret — not addressed
 - x-vercel-cron header is spoofable (not cryptographically verified) — acceptable for now, matches sentry-fixer pattern
@@ -196,7 +203,7 @@ Quick-win CRITICAL fixes applied:
 ### CRITICAL / HIGH NEW FINDINGS
 
 - **[NEW-P11] serverExternalPackages DROP bug**: shared config's `["ably"]` silently dropped when apps override (replace, not merge). Both apps/app and apps/api omit ably.
-- **[NEW-P11] CI supply chain risk**: deploy.yml uses unmaintained amondnet/vercel-action@v25.
+- **[NEW-P11] CI supply chain risk**: deploy.yml uses unmaintained amondnet/vercel-action@v25. **RESOLVED: replaced with direct Vercel CLI.**
 - **[NEW-P11] logging-sync.yml**: runs `pnpm install` WITHOUT `scripts/ensure-github-packages-npmrc.sh` -- fails on @angriff36 packages.
 - **[NEW-P11] e2e-workflows NO app server**: ci.yml e2e-workflows has no app server startup step at all (worse than "missing build").
 - **[NEW-P11] Spoofable x-vercel-cron**: webhook-retry and sentry-fixer/process routes accept x-vercel-cron header with NO auth middleware and NO Clerk. External attacker invokes at will. sentry-fixer additionally runs AI agents, reads source, posts to Slack.
@@ -232,8 +239,8 @@ Passes 2-10 findings archived in `docs/audits/` and `docs/implementation-history
 ### Batch A: Build Correctness
 
 - [ ] **[TS]** skipLibCheck:true in packages/typescript-config/base.json hides real type errors. **CRITICAL** [CONFIRMED-P10]
-- [ ] **[NEXT]** apps/api/next.config.ts line 102: ignoreBuildErrors:true hides ALL type errors. **CRITICAL** [CONFIRMED-P10]
-- [ ] **[NEXT]** apps/web/next.config.ts line 17: ignoreBuildErrors:true. **CRITICAL** [CONFIRMED-P10]
+- [x] **[NEXT]** apps/api/next.config.ts line 102: ignoreBuildErrors:true hides ALL type errors. **CRITICAL** [CONFIRMED-P10] **RESOLVED: ignoreBuildErrors is already false (line 85). Stale finding — was fixed in a previous pass.**
+- [x] **[NEXT]** apps/web/next.config.ts line 17: ignoreBuildErrors:true. **CRITICAL** [CONFIRMED-P10] **RESOLVED: ignoreBuildErrors is already false. Stale finding — was fixed in a previous pass.**
 - [x] **[CI]** deploy.yml continue-on-error:true on tests step. **CRITICAL** [CONFIRMED-P10] **RESOLVED: removed continue-on-error from deploy.yml tests step**
 - [x] **[VERCEL-CROSS]** CSP double-definition: root vercel.json AND apps/app/next.config.ts have DIFFERENT CSP policies. **CRITICAL** [CONFIRMED-P10] **RESOLVED: removed conflicting CSP from root vercel.json; apps/app/next.config.ts is sole CSP authority**
 - [ ] **[NEXT]** CSP unsafe-inline + unsafe-eval in apps/app next.config.ts AND root vercel.json. **CRITICAL** [CONFIRMED-P10] **NOTE: unsafe-eval removed from production (only needed for dev HMR). unsafe-inline remains required by Clerk/PostHog/GTM. Full removal needs nonce-based CSP migration (medium-term).**
@@ -255,7 +262,7 @@ Passes 2-10 findings archived in `docs/audits/` and `docs/implementation-history
 - [x] **[CI]** security.yml continue-on-error:true on pnpm audit. **CRITICAL** [CONFIRMED-P10] **RESOLVED: removed continue-on-error:true**
 - [x] **[PKG]** Root package.json missing private:true, has template leftovers (bin, files, version). **CRITICAL** [CONFIRMED-P10] **RESOLVED: name→capsule-pro, added private:true, removed bin/files/version template leftovers**
 - [x] **[PKG]** Root package.json name is "next-forge" not project name. **CRITICAL** [CONFIRMED-P10] **RESOLVED: renamed to "capsule-pro"**
-- [ ] **[CI-NEW]** deploy.yml uses unmaintained amondnet/vercel-action@v25 (supply chain risk). **HIGH** [NEW-P11]
+- [x] **[CI-NEW]** deploy.yml uses unmaintained amondnet/vercel-action@v25 (supply chain risk). **HIGH** [NEW-P11] **RESOLVED: replaced amondnet/vercel-action@v25 with direct Vercel CLI (vercel@53.1.0). 4 deploy targets now use `mkdir .vercel && printf project.json && vercel deploy --prod`.**
 - [x] **[CI-NEW]** logging-sync.yml runs pnpm install WITHOUT ensure-github-packages-npmrc.sh. **HIGH** [NEW-P11] **RESOLVED: added npmrc script before install, concurrency group, packages:read permission, NPM_TOKEN**
 - [x] **[CI-NEW]** security.yml missing `security-events: write` permission for SARIF upload. **HIGH** [NEW-P12] **RESOLVED: added security-events: write permission to security.yml**
 - [x] **[CI-NEW]** codeql.yml scans Python despite zero Python code in repo. **MEDIUM** [NEW-P12] **RESOLVED: removed Python from codeql.yml language matrix**
@@ -278,9 +285,9 @@ ALL scheduled crons non-functional. Clerk middleware blocks `/api/cron/*` (not i
 - [x] **[SECURITY-NEW]** keep-alive non-standard header, no middleware auth. **HIGH** [NEW-P11] **RESOLVED: moved to /api/cron/ path with standard auth pattern.**
 - [x] **[SECURITY-NEW]** integration-auto-sync not in isPublicRoute -- crons may 401 via Clerk. **HIGH** [NEW-P11] **RESOLVED: STALE — /api/cron(.*) wildcard in isPublicRoute already covers ALL cron routes including integration-auto-sync**
 - [x] **[SECURITY-NEW]** API-key requests bypass rate limiting entirely. **HIGH** [NEW-P11] **RESOLVED: proxy.ts now sets x-api-key-id header from key prefix before rate limit check. global-rate-limit.ts falls through to API key ID then IP-based identification.**
-- [ ] **[SECURITY-NEW]** secretlint configured but never run in CI. **HIGH** [NEW-P11]
+- [x] **[SECURITY-NEW]** secretlint configured but never run in CI. **HIGH** [NEW-P11] **RESOLVED: STALE — secretlint IS running in security.yml via `secrets:scan` script. Config exists at .secretlintrc.json with secretlint@^11.3.1 in devDeps.**
 - [x] **[CRON-P12-NEW]** ALL `/api/cron/*` routes blocked by Clerk middleware (not in isPublicRoute). Even GET routes never reach handler. **CRITICAL** [NEW-P12] **RESOLVED: Added /api/cron(.*) to isPublicRoute in apps/api/proxy.ts**
-- [ ] **[SECURITY-P12-NEW]** sentry-fixer dev mode bypass: NODE_ENV==="development" returns authorized:true. **HIGH** [NEW-P12]
+- [x] **[SECURITY-P12-NEW]** sentry-fixer dev mode bypass: NODE_ENV==="development" returns authorized:true. **HIGH** [NEW-P12] **RESOLVED: STALE — dev mode bypass already removed from code. `secured` field now determined by `!!hasCronSecret` only, no NODE_ENV fallback.**
 - [x] **[SECURITY-P12-NEW]** sentry-fixer GET endpoint leaks secret config status without auth. **HIGH** [NEW-P12] **RESOLVED: GET handler now requires same auth as POST (isAuthenticated check). Removed `secured` field's `|| process.env.NODE_ENV === "development"` fallback.**
 - [x] **[SECURITY-NEW]** API app (apps/api) has NO Content-Security-Policy. XSS defense-in-depth missing. **HIGH** [NEW-P13] **RESOLVED: Added CSP header `default-src 'none'; frame-ancestors 'none'; base-uri 'none'` to apps/api/next.config.ts security headers**
 - [x] **[SECURITY-NEW]** Payments webhook returns 200 when STRIPE_WEBHOOK_SECRET missing. Stripe never retries. **HIGH** [NEW-P13] **RESOLVED: Changed to return 503 + added log.warn**
@@ -372,12 +379,12 @@ ALL scheduled crons non-functional. Clerk middleware blocks `/api/cron/*` (not i
 - [x] **[NEXT]** apps/web ZERO transpilePackages despite importing 11 @repo packages. **HIGH** [CONFIRMED-P10] **RESOLVED: STALE — apps/web has 14 transpilePackages configured. Monorepo workspace resolution via turbopack.root makes this work without explicit listing.**
 - [x] **[NEXT]** apps/app transpilePackages missing 2-3 packages. **HIGH** [CONFIRMED-P10] **RESOLVED: added @repo/email, @repo/storage, @repo/types, @repo/next-config to transpilePackages**
 - [x] **[NEXT]** apps/web productionBrowserSourceMaps:true unconditionally. **HIGH** [CONFIRMED-P10] **RESOLVED: STALE — apps/web does NOT set productionBrowserSourceMaps. It is set in apps/app (intentionally, for Sentry source maps which are deleted after upload).**
-- [x] **[NEXT]** apps/web ZERO CSP headers. **HIGH** [CONFIRMED-P10] **RESOLVED: STALE — apps/web has full CSP headers configured including script-src, style-src, connect-src, etc.**
+- [ ] **[NEXT]** apps/web has NO CSP — inherits general security headers from shared config (X-Frame-Options, HSTS, etc.) but NO Content-Security-Policy. **MEDIUM** [CONFIRMED-P10] **NOTE: apps/app has full CSP (headers() override at line 303) but apps/web doesn't override headers() so only gets shared config headers (no CSP). Shared config provides 8 security headers but CSP must be app-specific.**
 - [x] **[NEXT]** packages/next-config missing reactStrictMode:true. **HIGH** [CONFIRMED-P10] **RESOLVED: added reactStrictMode:true to shared packages/next-config/index.ts (all apps inherit)**
 - [x] **[NEXT]** No poweredByHeader:false in any app or shared config. **HIGH** [CONFIRMED-P10] **RESOLVED: added poweredByHeader:false to shared packages/next-config/index.ts (all apps inherit)**
 - [x] **[NEXT]** apps/docs and apps/storybook NOT using shared @repo/next-config. **HIGH** [CONFIRMED-P10] **RESOLVED: apps/docs now has security headers + poweredByHeader:false added directly (fumadocs config structure incompatible with shared config). apps/storybook has poweredByHeader:false added. Neither uses shared config due to framework incompatibility.**
 - [ ] **[NEXT]** apps/docs and apps/storybook have no security headers. **HIGH** [CONFIRMED-P10]
-- [x] **[NEXT]** apps/app security headers duplicated instead of extending. **HIGH** [CONFIRMED-P10] **RESOLVED: STALE — apps/app does NOT override headers(). It inherits from shared @repo/next-config. Only apps/web and apps/api override headers().**
+- [x] **[NEXT]** apps/app security headers duplicated instead of extending shared config. **HIGH** [CONFIRMED-P10] **RESOLVED: apps/app headers() now includes COOP, CORP, X-DNS-Prefetch-Control, and static asset cache headers that were previously lost when overriding shared config.**
 - [ ] **[NEXT]** apps/docs NormalModuleReplacementPlugin webpack-only ignored by Turbopack. **HIGH** [CONFIRMED-P10]
 - [ ] **[NEXT-NEW]** apps/api + apps/app: outputFileTracingIncludes uses fragile relative paths without outputFileTracingRoot. **MEDIUM** [NEW-P11]
 - [ ] **[NEXT-NEW]** packages/next-config turbopack.root uses process.cwd() instead of __dirname. **MEDIUM** [NEW-P11]

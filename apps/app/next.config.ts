@@ -320,6 +320,18 @@ const baseConfig: NextConfig = withToolbar(
               value: "max-age=63072000; includeSubDomains; preload",
             },
             {
+              key: "X-DNS-Prefetch-Control",
+              value: "on",
+            },
+            {
+              key: "Cross-Origin-Opener-Policy",
+              value: "same-origin",
+            },
+            {
+              key: "Cross-Origin-Resource-Policy",
+              value: "same-origin",
+            },
+            {
               key: "Content-Security-Policy",
               value: [
                 "default-src 'self'",
@@ -334,6 +346,27 @@ const baseConfig: NextConfig = withToolbar(
                 "base-uri 'self'",
                 "form-action 'self'",
               ].join("; "),
+            },
+          ],
+        },
+        {
+          // Cache static assets aggressively
+          source:
+            "/(.*)\\.(ico|png|jpg|jpeg|gif|svg|webp|avif|woff|woff2|ttf|eot)",
+          headers: [
+            {
+              key: "Cache-Control",
+              value: "public, max-age=31536000, immutable",
+            },
+          ],
+        },
+        {
+          // Cache JS/CSS with content hash
+          source: "/_next/static/(.*)",
+          headers: [
+            {
+              key: "Cache-Control",
+              value: "public, max-age=31536000, immutable",
             },
           ],
         },
