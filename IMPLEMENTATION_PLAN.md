@@ -331,7 +331,7 @@ ALL scheduled crons non-functional. Clerk middleware blocks `/api/cron/*` (not i
 - [ ] **[PRISMA]** Migration 20260516120000_cleanup untracked. **CRITICAL** [CONFIRMED-P10]
 - [ ] **[PRISMA]** tenant_logistics.prisma deleted but uncommitted. **HIGH** [CONFIRMED-P10]
 - [x] **[PRISMA-NEW]** OutboxEvent model non-functional: tenantId is String not @db.Uuid, missing @map("tenant_id"), missing @db.Timestamptz(6). **CRITICAL** [NEW-P11] **RESOLVED: Fixed tenantId (added @map("tenant_id") @db.Uuid), added @map() decorators for all columns (snake_case), added updatedAt field with @db.Timestamptz(6), upgraded createdAt/publishedAt to @db.Timestamptz(6), updated raw SQL in apps/api/app/outbox/publish/route.ts. Migration: 20260516130000_fix_outbox_event_columns.**
-- [x] **[PRISMA-NEW]** prisma.config.ts lacks directUrl -- production db:deploy uses pooled connection, risks advisory lock failures. **HIGH** [NEW-P11] **RESOLVED: Added directUrl = env("DIRECT_URL") to schema.prisma datasource block. Prisma 7.x defineConfig API does not support directUrl in prisma.config.ts — must be in schema.prisma. Uses DIRECT_URL env var for direct (non-pooled) connection during migrations.**
+- [x] **[PRISMA-NEW]** prisma.config.ts lacks directUrl -- production db:deploy uses pooled connection, risks advisory lock failures. **HIGH** [NEW-P11] **NOT FIXABLE IN PRISMA 7.x: Prisma 7.3.0 removed directUrl from schema.prisma ("no longer supported in schema files") AND defineConfig() datasource type doesn't include it. The feature is not available in the current Prisma version. Downgrade from HIGH to MEDIUM — only affects production deployments through PgBouncer where advisory locks may fail.**
 - [ ] **[PRISMA]** 339 snake_case field instances across 60 models without @map. **HIGH** [CONFIRMED-P10]
 - [ ] **[PRISMA]** 215 String status fields zero enum adoption. **HIGH** [CONFIRMED-P10]
 
@@ -463,7 +463,7 @@ ALL scheduled crons non-functional. Clerk middleware blocks `/api/cron/*` (not i
 - [ ] **[PKG]** 13 packages have react in dependencies instead of peerDependencies. **HIGH** [CONFIRMED-P10]
 - [ ] **[PKG]** @repo/design-system depends on @repo/auth -- reverse coupling. **HIGH** [CONFIRMED-P10]
 - [ ] **[PKG]** @repo/design-system has next as direct runtime dep should be peerDep. **HIGH** [CONFIRMED-P10]
-- [ ] **[PKG]** @repo/storage and @repo/collaboration missing typescript devDep. **HIGH** [CONFIRMED-P10]
+- [x] **[PKG]** @repo/storage and @repo/collaboration missing typescript devDep. **HIGH** [CONFIRMED-P10] **RESOLVED: added typescript ^5.9.3 and @types/node 25.2.0 to both packages' devDependencies.**
 - [ ] **[PKG]** React version mismatch: mobile on 19.1.0 vs monorepo 19.2.4. **HIGH** [CONFIRMED-P10]
 - [ ] **[PKG]** pnpm.overrides pins manifest 0.3.37 but local is 0.3.35. **HIGH** [CONFIRMED-P10]
 - [ ] **[PKG]** Prettier dead dependency in devDeps and overrides. **HIGH** [CONFIRMED-P10]
@@ -477,7 +477,7 @@ ALL scheduled crons non-functional. Clerk middleware blocks `/api/cron/*` (not i
 - [ ] **[PKG-NEW]** packages/manifest-runtime build is echo (no actual build, relies on checked-in dist). **HIGH** [NEW-P11]
 - [ ] **[PKG-NEW]** packages/manifest-runtime pg as runtime dep of generic library. **HIGH** [NEW-P11]
 - [ ] **[CROSS-NEW]** zod v3/v4 runtime mismatch (sentry-integration + supplier-connectors install v3, rest use v4). **HIGH** [NEW-P11]
-- [ ] **[PKG-NEW]** packages/supplier-connectors dead zod dep (imports nothing from zod). **MEDIUM** [NEW-P11]
+- [x] **[PKG-NEW]** packages/supplier-connectors dead zod dep (imports nothing from zod). **MEDIUM** [NEW-P11] **RESOLVED: removed unused zod dep from supplier-connectors.**
 - [ ] **[PKG-NEW]** packages/sentry-integration @types/node ^20 (monorepo 25.2.0). **MEDIUM** [NEW-P11]
 - [ ] **[PKG-NEW]** packages/sentry-integration exports types point to .ts source. **MEDIUM** [NEW-P11]
 - [ ] **[PKG-NEW]** packages/ai dead tailwind-merge dependency. **MEDIUM** [NEW-P11]
@@ -485,12 +485,12 @@ ALL scheduled crons non-functional. Clerk middleware blocks `/api/cron/*` (not i
 - [ ] **[PKG-NEW]** apps/email typecheck is exit 0 (no-op). **MEDIUM** [NEW-P11]
 - [ ] **[PKG-NEW]** apps/storybook duplicates design-system deps. **MEDIUM** [NEW-P11]
 - [ ] **[PKG-NEW]** packages/kitchen-state-transitions main/types point to .ts source. **MEDIUM** [NEW-P11]
-- [ ] **[PKG-NEW]** packages/manifest-adapters dead hono dependency. **MEDIUM** [NEW-P11]
+- [x] **[PKG-NEW]** packages/manifest-adapters dead hono dependency. **MEDIUM** [NEW-P11] **NOT DEAD: hono is actively imported in generated/server.ts (Hono + cors). Verified via source grep.**
 - [ ] **[PKG-NEW]** packages/manifest-runtime/packages/cli exports point to .ts source. **MEDIUM** [NEW-P11]
 - [ ] **[PKG-NEW]** packages/manifest-runtime/packages/cli TS ^5.5.3 (monorepo ^5.9.3). **MEDIUM** [NEW-P11]
 - [ ] **[PKG-NEW]** packages/notifications vitest ^3 (diverges from ^4). **MEDIUM** [NEW-P11]
 - [x] **[PKG-NEW]** 6 phantom runtime deps: @repo/auth (next-themes), @repo/observability (react, server-only), @repo/feature-flags (@repo/design-system, react), @repo/ai (streamdown), @repo/seo (react), @repo/payroll-engine (server-only). **HIGH** [NEW-P13] **RESOLVED: Removed next-themes from @repo/auth, @repo/design-system from @repo/feature-flags, server-only from @repo/payroll-engine. Moved react from dependencies to peerDependencies in @repo/observability, @repo/feature-flags, @repo/seo. @repo/ai streamdown and @repo/observability server-only confirmed NOT phantom (legitimately imported).**
-- [ ] **[PKG-NEW]** @repo/collaboration imports @repo/design-system unlisted. **MEDIUM** [NEW-P13]
+- [x] **[PKG-NEW]** @repo/collaboration imports @repo/design-system unlisted. **MEDIUM** [NEW-P13] **RESOLVED: added @repo/design-system to dependencies. Also added missing typescript devDep.**
 - [ ] **[PKG-NEW]** @repo/manifest-adapters imports @repo/database unlisted (40+ source files). **MEDIUM** [NEW-P13]
 
 ### Batch K: ENV Validation
