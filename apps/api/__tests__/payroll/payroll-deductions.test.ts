@@ -146,8 +146,8 @@ describe("Employee Deductions API", () => {
 
       expect(database.employeeDeduction.findMany).toHaveBeenCalled();
       const call = vi.mocked(database.employeeDeduction.findMany).mock.calls[0]?.[0];
-      expect(call?.where?.tenant_id).toBe(TEST_TENANT_ID);
-      expect(call?.where?.deleted_at).toBe(null);
+      expect(call?.where?.tenantId).toBe(TEST_TENANT_ID);
+      expect(call?.where?.deletedAt).toBe(null);
     });
 
     it("should order by created_at descending", async () => {

@@ -65,16 +65,6 @@ vi.mock("@repo/database", () => ({
 }));
 
 import { GET as listGET } from "@/app/api/events/[eventId]/timeline/route";
-import { POST as manifestDispatch } from "@/app/api/manifest/[entity]/commands/[command]/route";
-
-const dispatch =
-  (entity: string, command: string) => (req: NextRequest, _ctx?: unknown) =>
-    manifestDispatch(req, { params: Promise.resolve({ entity, command }) });
-
-const createPOST = dispatch("EventTimelineItem", "createItem");
-const deletePOST = dispatch("EventTimelineItem", "deleteItem");
-const togglePOST = dispatch("EventTimelineItem", "completeItem");
-const updatePOST = dispatch("EventTimelineItem", "updateItem");
 
 function setAuthOk() {
   mocks.authMock.mockResolvedValue({

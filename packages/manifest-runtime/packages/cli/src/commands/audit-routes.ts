@@ -784,7 +784,7 @@ export async function auditRoutesCommand(
     const commandsManifestPath = resolveRepoFilePath(
       root,
       options.commandsManifest,
-      "packages/manifest-ir/ir/kitchen/kitchen.commands.json"
+      "packages/manifest-ir/dist/commands.registry.json"
     );
     const exemptionsPath = resolveRepoFilePath(
       root,
