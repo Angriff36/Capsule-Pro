@@ -27,14 +27,14 @@ export class TimeEntryPrismaStore {
     }
     async getAll() {
         const rows = await this.prisma.timeEntry.findMany({
-            where: { tenantId: this.tenantId, deleted_at: null },
+            where: { tenantId: this.tenantId, deletedAt: null },
             orderBy: { createdAt: "desc" },
         });
         return rows.map((r) => this.mapToManifestEntity(r));
     }
     async getById(id) {
         const row = await this.prisma.timeEntry.findFirst({
-            where: { tenantId: this.tenantId, id, deleted_at: null },
+            where: { tenantId: this.tenantId, id, deletedAt: null },
         });
         return row ? this.mapToManifestEntity(row) : undefined;
     }
@@ -46,15 +46,15 @@ export class TimeEntryPrismaStore {
                 id,
                 employeeId: asString(data.employeeId),
                 locationId: asNullableString(data.locationId),
-                shift_id: asNullableString(data.shiftId ?? data.shift_id),
+                shiftId: asNullableString(data.shiftId ?? data.shift_id),
                 clockIn: data.clockIn
                     ? new Date(data.clockIn)
                     : new Date(),
                 clockOut: asNullableDate(data.clockOut),
                 breakMinutes: data.breakMinutes ?? 0,
                 notes: asNullableString(data.notes),
-                approved_by: asNullableString(data.approvedBy ?? data.approved_by),
-                approved_at: asNullableDate(data.approvedAt ?? data.approved_at),
+                approvedBy: asNullableString(data.approvedBy ?? data.approved_by),
+                approvedAt: asNullableDate(data.approvedAt ?? data.approved_at),
             },
         });
         return this.mapToManifestEntity(row);
@@ -88,7 +88,7 @@ export class TimeEntryPrismaStore {
             // Soft delete — sets deleted_at (snake_case field)
             await this.prisma.timeEntry.update({
                 where: { tenantId_id: { tenantId: this.tenantId, id } },
-                data: { deleted_at: new Date() },
+                data: { deletedAt: new Date() },
             });
             return true;
         }
@@ -127,8 +127,8 @@ export class TimeEntryPrismaStore {
             updatedAt: row.updatedAt
                 ? new Date(row.updatedAt).getTime()
                 : 0,
-            deletedAt: row.deleted_at
-                ? new Date(row.deleted_at).getTime()
+            deletedAt: row.deletedAt
+                ? new Date(row.deletedAt).getTime()
                 : null,
         };
     }
@@ -251,14 +251,14 @@ export class TrainingAssignmentPrismaStore {
     }
     async getAll() {
         const rows = await this.prisma.trainingAssignment.findMany({
-            where: { tenant_id: this.tenantId, deleted_at: null },
-            orderBy: { created_at: "desc" },
+            where: { tenantId: this.tenantId, deletedAt: null },
+            orderBy: { createdAt: "desc" },
         });
         return rows.map((r) => this.mapToManifestEntity(r));
     }
     async getById(id) {
         const row = await this.prisma.trainingAssignment.findFirst({
-            where: { tenant_id: this.tenantId, id, deleted_at: null },
+            where: { tenantId: this.tenantId, id, deletedAt: null },
         });
         return row ? this.mapToManifestEntity(row) : undefined;
     }
@@ -266,13 +266,13 @@ export class TrainingAssignmentPrismaStore {
         const id = data.id || crypto.randomUUID();
         const row = await this.prisma.trainingAssignment.create({
             data: {
-                tenant_id: this.tenantId,
+                tenantId: this.tenantId,
                 id,
-                module_id: asString(data.moduleId ?? data.module_id),
-                employee_id: asNullableString(data.employeeId ?? data.employee_id),
-                assigned_to_all: asBool(data.assignedToAll ?? data.assigned_to_all, false),
-                assigned_by: asString(data.assignedBy ?? data.assigned_by),
-                due_date: asNullableDate(data.dueDate ?? data.due_date),
+                moduleId: asString(data.moduleId ?? data.module_id),
+                employeeId: asNullableString(data.employeeId ?? data.employeeId),
+                assignedToAll: asBool(data.assignedToAll ?? data.assigned_to_all, false),
+                assignedBy: asString(data.assignedBy ?? data.assigned_by),
+                dueDate: asNullableDate(data.dueDate ?? data.due_date),
                 status: (data.status ?? "assigned") || "assigned",
             },
         });
@@ -288,9 +288,9 @@ export class TrainingAssignmentPrismaStore {
             if (data.assignedToAll !== undefined ||
                 data.assigned_to_all !== undefined)
                 patch.assigned_to_all = data.assignedToAll ?? data.assigned_to_all;
-            patch.updated_at = new Date();
+            patch.updatedAt = new Date();
             const updated = await this.prisma.trainingAssignment.update({
-                where: { tenant_id_id: { tenant_id: this.tenantId, id } },
+                where: { tenantId_id: { tenantId: this.tenantId, id } },
                 data: patch,
             });
             return this.mapToManifestEntity(updated);
@@ -304,8 +304,8 @@ export class TrainingAssignmentPrismaStore {
         try {
             // Soft delete — sets deleted_at (snake_case field)
             await this.prisma.trainingAssignment.update({
-                where: { tenant_id_id: { tenant_id: this.tenantId, id } },
-                data: { deleted_at: new Date() },
+                where: { tenantId_id: { tenantId: this.tenantId, id } },
+                data: { deletedAt: new Date() },
             });
             return true;
         }
@@ -316,15 +316,15 @@ export class TrainingAssignmentPrismaStore {
     }
     async clear() {
         await this.prisma.trainingAssignment.deleteMany({
-            where: { tenant_id: this.tenantId },
+            where: { tenantId: this.tenantId },
         });
     }
     mapToManifestEntity(row) {
         return {
             id: row.id,
-            tenantId: row.tenant_id,
+            tenantId: row.tenantId,
             moduleId: row.module_id ?? "",
-            employeeId: row.employee_id ?? null,
+            employeeId: row.employeeId ?? null,
             assignedToAll: row.assigned_to_all ?? false,
             assignedBy: row.assigned_by ?? "",
             dueDate: row.due_date
@@ -334,14 +334,14 @@ export class TrainingAssignmentPrismaStore {
             assignedAt: row.assigned_at
                 ? new Date(row.assigned_at).getTime()
                 : 0,
-            createdAt: row.created_at
-                ? new Date(row.created_at).getTime()
+            createdAt: row.createdAt
+                ? new Date(row.createdAt).getTime()
                 : 0,
-            updatedAt: row.updated_at
-                ? new Date(row.updated_at).getTime()
+            updatedAt: row.updatedAt
+                ? new Date(row.updatedAt).getTime()
                 : 0,
-            deletedAt: row.deleted_at
-                ? new Date(row.deleted_at).getTime()
+            deletedAt: row.deletedAt
+                ? new Date(row.deletedAt).getTime()
                 : null,
         };
     }

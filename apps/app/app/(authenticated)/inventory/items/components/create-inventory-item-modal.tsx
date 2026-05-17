@@ -31,9 +31,14 @@ import {
   formatQuantity,
   getCategoryLabel,
   getFSAStatusLabel,
+  getUnitLabel,
   type InventoryItemWithStatus,
   ITEM_CATEGORIES,
   type ItemCategory,
+  type Supplier,
+  UNITS_OF_MEASURE,
+  type UnitOfMeasure,
+  listSuppliers,
   type UpdateInventoryItemRequest,
   updateInventoryItem,
 } from "../../../../lib/use-inventory";
@@ -52,13 +57,18 @@ export const CreateInventoryItemModal = ({
   editItem,
 }: CreateInventoryItemModalProps) => {
   const [isLoading, setIsLoading] = useState(false);
+  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [formData, setFormData] = useState({
     item_number: "",
     name: "",
+    description: "",
     category: "other" as ItemCategory,
+    unit_of_measure: "each" as UnitOfMeasure,
     unit_cost: "",
     quantity_on_hand: "",
+    par_level: "",
     reorder_level: "",
+    supplier_id: "",
     tags: [] as string[],
     fsa_status: "unknown" as FSAStatus,
     fsa_temp_logged: false,
@@ -68,14 +78,24 @@ export const CreateInventoryItemModal = ({
   const [tagInput, setTagInput] = useState("");
 
   useEffect(() => {
+    listSuppliers()
+      .then(setSuppliers)
+      .catch(() => setSuppliers([]));
+  }, []);
+
+  useEffect(() => {
     if (editItem) {
       setFormData({
         item_number: editItem.item_number,
         name: editItem.name,
+        description: editItem.description ?? "",
         category: editItem.category as ItemCategory,
+        unit_of_measure: (editItem.unit_of_measure as UnitOfMeasure) ?? "each",
         unit_cost: editItem.unit_cost.toString(),
         quantity_on_hand: editItem.quantity_on_hand.toString(),
+        par_level: editItem.par_level?.toString() ?? "",
         reorder_level: editItem.reorder_level.toString(),
+        supplier_id: editItem.supplier_id ?? "",
         tags: editItem.tags,
         fsa_status: editItem.fsa_status ?? "unknown",
         fsa_temp_logged: editItem.fsa_temp_logged ?? false,
@@ -86,10 +106,14 @@ export const CreateInventoryItemModal = ({
       setFormData({
         item_number: "",
         name: "",
+        description: "",
         category: "other",
+        unit_of_measure: "each",
         unit_cost: "",
         quantity_on_hand: "",
+        par_level: "",
         reorder_level: "",
+        supplier_id: "",
         tags: [],
         fsa_status: "unknown",
         fsa_temp_logged: false,
@@ -108,16 +132,22 @@ export const CreateInventoryItemModal = ({
       const request: CreateInventoryItemRequest | UpdateInventoryItemRequest = {
         item_number: formData.item_number.trim(),
         name: formData.name.trim(),
+        description: formData.description.trim() || undefined,
         category: formData.category,
+        unit_of_measure: formData.unit_of_measure,
         unit_cost: formData.unit_cost
           ? Number.parseFloat(formData.unit_cost)
           : undefined,
         quantity_on_hand: formData.quantity_on_hand
           ? Number.parseFloat(formData.quantity_on_hand)
           : undefined,
+        par_level: formData.par_level
+          ? Number.parseFloat(formData.par_level)
+          : undefined,
         reorder_level: formData.reorder_level
           ? Number.parseFloat(formData.reorder_level)
           : undefined,
+        supplier_id: formData.supplier_id || undefined,
         tags: formData.tags.length > 0 ? formData.tags : undefined,
         fsa_status: formData.fsa_status,
         fsa_temp_logged: formData.fsa_temp_logged,
@@ -236,8 +266,75 @@ export const CreateInventoryItemModal = ({
               </Select>
             </div>
 
-            {/* Unit Cost, Quantity, Reorder Level */}
-            <div className="grid grid-cols-3 gap-4">
+            {/* Description */}
+            <div className="space-y-2">
+              <Label htmlFor="description">Description</Label>
+              <Input
+                disabled={isLoading}
+                id="description"
+                onChange={(e) =>
+                  setFormData({ ...formData, description: e.target.value })
+                }
+                placeholder="Brief description of the item"
+                value={formData.description}
+              />
+            </div>
+
+            {/* Unit of Measure & Supplier */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="unit_of_measure">Unit of Measure</Label>
+                <Select
+                  disabled={isLoading}
+                  onValueChange={(value) =>
+                    setFormData({
+                      ...formData,
+                      unit_of_measure: value as UnitOfMeasure,
+                    })
+                  }
+                  value={formData.unit_of_measure}
+                >
+                  <SelectTrigger id="unit_of_measure">
+                    <SelectValue placeholder="Select unit" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {UNITS_OF_MEASURE.map((unit) => (
+                      <SelectItem key={unit} value={unit}>
+                        {getUnitLabel(unit)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="supplier_id">Supplier</Label>
+                <Select
+                  disabled={isLoading}
+                  onValueChange={(value) =>
+                    setFormData({
+                      ...formData,
+                      supplier_id: value === "_none" ? "" : value,
+                    })
+                  }
+                  value={formData.supplier_id || "_none"}
+                >
+                  <SelectTrigger id="supplier_id">
+                    <SelectValue placeholder="Select supplier" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="_none">No supplier</SelectItem>
+                    {suppliers.map((s) => (
+                      <SelectItem key={s.id} value={s.id}>
+                        {s.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Unit Cost, Quantity, Par Level, Reorder Level */}
+            <div className="grid grid-cols-4 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="unit_cost">Unit Cost</Label>
                 <Input
@@ -280,6 +377,26 @@ export const CreateInventoryItemModal = ({
                     ? formatQuantity(
                         Number.parseFloat(formData.quantity_on_hand)
                       )
+                    : "-"}
+                </p>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="par_level">Par Level</Label>
+                <Input
+                  disabled={isLoading}
+                  id="par_level"
+                  min="0"
+                  onChange={(e) =>
+                    setFormData({ ...formData, par_level: e.target.value })
+                  }
+                  placeholder="0.000"
+                  step="0.001"
+                  type="number"
+                  value={formData.par_level}
+                />
+                <p className="text-muted-foreground text-xs">
+                  {formData.par_level
+                    ? formatQuantity(Number.parseFloat(formData.par_level))
                     : "-"}
                 </p>
               </div>

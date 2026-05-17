@@ -111,7 +111,7 @@ export const InvoiceTemplate = ({
   amountDue: "1250.00",
   currency: "USD",
   dueDate: "May 15, 2026",
-  paymentUrl: "https://app.convoy.com/invoices/abc123",
+  paymentUrl: "https://app.capsule.pro/invoices/abc123",
   notes: "Thank you for your business. Please remit payment by the due date.",
 };
 

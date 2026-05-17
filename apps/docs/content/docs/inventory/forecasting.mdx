@@ -1,0 +1,45 @@
+---
+title: Forecasting
+description: Depletion forecasting, reorder alerts, and automated suggestions.
+---
+
+The forecasting system predicts when inventory items will run out and suggests reorder actions.
+
+## Depletion Forecasting
+
+For each SKU, the system calculates:
+- **Current consumption rate** based on historical transactions
+- **Projected depletion date** given current stock and consumption
+- **Days until stockout**
+
+Configure forecast parameters:
+- **Horizon** — How far ahead to forecast
+- **Lead time** — Supplier delivery time
+- **Safety stock** — Buffer quantity
+
+## Reorder Alerts
+
+Items forecasted to deplete within a configurable threshold trigger alerts. The alerts endpoint returns items sorted by urgency.
+
+## Reorder Suggestions
+
+The system generates reorder suggestions based on:
+- Current stock vs. par levels
+- Consumption rate trends
+- Supplier lead times
+- Safety stock requirements
+
+Suggestions can be:
+- Reviewed and approved
+- Converted directly into purchase orders
+
+## Batch Forecasting
+
+Multiple SKUs can be forecasted simultaneously for dashboard views and planning.
+
+## Alert Subscriptions
+
+Subscribe to inventory alerts via:
+- Email
+- Slack
+- Webhook

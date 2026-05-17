@@ -18,6 +18,9 @@ import {
   type PrismaClient as TPrismaClient,
 } from "@repo/database/standalone";
 import ws from "ws";
+import { keys } from "../keys.js";
+
+const env = keys();
 
 // Configure Neon WebSocket (same as @repo/database)
 neonConfig.webSocketConstructor = ws;
@@ -50,7 +53,7 @@ function toNeonPoolerUrl(url: string): string {
 }
 
 function getConnectionString(): string {
-  const raw = process.env.DATABASE_URL;
+  const raw = env.DATABASE_URL;
   if (!raw) {
     throw new Error(
       "DATABASE_URL is not set. Ensure .env is loaded (preload.cts should handle this)."
@@ -62,7 +65,7 @@ function getConnectionString(): string {
 const connectionString = getConnectionString();
 
 // Dev-only: log which host we're using (no credentials)
-if (process.env.NODE_ENV !== "production") {
+if (env.NODE_ENV !== "production") {
   try {
     const u = new URL(connectionString);
     process.stderr.write(

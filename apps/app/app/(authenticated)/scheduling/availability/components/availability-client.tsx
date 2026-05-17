@@ -36,8 +36,7 @@ import {
 import { Loader2Icon, PlusIcon } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import type { ReactNode } from "react";
-import { useEffect, useRef, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import type { DayOfWeek } from "@/app/lib/staff/availability/types";
 import { getLocations } from "../../shifts/actions";
@@ -79,6 +78,18 @@ export function AvailabilityClient() {
   const router = useRouter();
   const searchParams = useSearchParams() ?? new URLSearchParams();
 
+  // State
+  const [availability, setAvailability] = useState<Availability[]>([]);
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [_locations, setLocations] = useState<Location[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 50,
+    total: 0,
+    totalPages: 0,
+  });
+
   // Filters
   const [filters, setFilters] = useState({
     employeeId: searchParams.get("employeeId") || "",
@@ -101,55 +112,52 @@ export function AvailabilityClient() {
   // Track initial mount to avoid URL push on first render
   const isMounted = useRef(false);
 
-  // Pagination (UI state — independent of query cache)
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(0);
-  const [total, setTotal] = useState(0);
-
-  // =========================================================================
-  // TanStack Query: availability entries
-  // =========================================================================
-  const {
-    data: availabilityData,
-    isLoading: loading,
-  } = useQuery({
-    queryKey: ["scheduling", "availability", filters, page],
-    queryFn: async () => {
-      const data = await getAvailability({
-        employeeId: filters.employeeId || undefined,
-        dayOfWeek: filters.dayOfWeek as DayOfWeek | undefined,
-        effectiveDate: filters.effectiveDate || undefined,
-        isActive: filters.isActive,
-        page,
-        limit: 50,
-      });
-      if (data.pagination) {
-        setTotalPages(data.pagination.totalPages);
-        setTotal(data.pagination.total);
+  // Fetch availability entries
+  const fetchAvailability = useCallback(
+    async (page = 1, limit = 50) => {
+      setLoading(true);
+      try {
+        const data = await getAvailability({
+          employeeId: filters.employeeId || undefined,
+          dayOfWeek: filters.dayOfWeek as DayOfWeek | undefined,
+          effectiveDate: filters.effectiveDate || undefined,
+          isActive: filters.isActive,
+          page,
+          limit,
+        });
+        setAvailability(data.availability || []);
+        setPagination(
+          data.pagination || { page, limit, total: 0, totalPages: 0 }
+        );
+      } catch (error) {
+        toast.error("Failed to load availability entries", {
+          description: error instanceof Error ? error.message : "Unknown error",
+        });
+      } finally {
+        setLoading(false);
       }
-      return data;
     },
-    staleTime: 30_000,
-  });
+    [filters]
+  );
 
-  const availability = availabilityData?.availability ?? [];
-  const pagination = { page, limit: 50, total, totalPages };
+  // Fetch filter options
+  const fetchFilterOptions = useCallback(async () => {
+    try {
+      const [employeesData, locationsData] = await Promise.all([
+        getEmployees(),
+        getLocations(),
+      ]);
+      setEmployees(employeesData.employees || []);
+      setLocations(locationsData.locations || []);
+    } catch (error) {
+      console.warn("Failed to load filter options:", error);
+    }
+  }, []);
 
-  // TanStack Query: shared employee/location caches
-  const { data: employeesData } = useQuery({
-    queryKey: ["scheduling", "employees"],
-    queryFn: async () => getEmployees(),
-    staleTime: 5 * 60_000,
-  });
-
-  const { data: locationsData } = useQuery({
-    queryKey: ["scheduling", "locations"],
-    queryFn: async () => getLocations(),
-    staleTime: 5 * 60_000,
-  });
-
-  const employees: Employee[] = employeesData?.employees ?? [];
-  const _locations: Location[] = locationsData?.locations ?? [];
+  // Fetch when filters or pagination change
+  useEffect(() => {
+    fetchAvailability(pagination.page, pagination.limit);
+  }, [fetchAvailability, pagination.page, pagination.limit]);
 
   // Update URL when filters change (skip initial mount)
   useEffect(() => {
@@ -174,7 +182,7 @@ export function AvailabilityClient() {
     value: string | number | boolean | undefined
   ) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
-    setPage(1);
+    setPagination((prev) => ({ ...prev, page: 1 }));
   };
 
   const handleRowClick = (entry: Availability) => {
@@ -261,7 +269,7 @@ export function AvailabilityClient() {
       accessorKey: "effective_until",
       header: "Effective Until",
       cell: ({ row }) => (
-        <div className="text-sm text-muted-foreground">
+        <div className="text-muted-foreground text-sm">
           {row.original.effectiveUntil
             ? formatDate(row.original.effectiveUntil)
             : "Ongoing"}
@@ -333,7 +341,7 @@ export function AvailabilityClient() {
       <KitchenOperationalHero
         actions={
           <Button
-            className="rounded-full bg-white px-5 text-[13px] font-medium text-primary hover:bg-white/90"
+            className="rounded-full bg-white px-5 font-medium text-[13px] text-primary hover:bg-white/90"
             onClick={() => setCreateModalOpen(true)}
             size="sm"
           >
@@ -379,7 +387,7 @@ export function AvailabilityClient() {
                 }
                 value={filters.employeeId || "__all__"}
               >
-                <SelectTrigger className="bg-canvas w-full">
+                <SelectTrigger className="w-full bg-canvas">
                   <SelectValue placeholder="All employees" />
                 </SelectTrigger>
                 <SelectContent>
@@ -405,7 +413,7 @@ export function AvailabilityClient() {
                 }
                 value={filters.dayOfWeek?.toString() || "__all__"}
               >
-                <SelectTrigger className="bg-canvas w-full">
+                <SelectTrigger className="w-full bg-canvas">
                   <SelectValue placeholder="All days" />
                 </SelectTrigger>
                 <SelectContent>
@@ -444,7 +452,7 @@ export function AvailabilityClient() {
                 }
                 value={availabilityFilterSelectValue}
               >
-                <SelectTrigger className="bg-canvas w-full">
+                <SelectTrigger className="w-full bg-canvas">
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
                 <SelectContent>
@@ -520,7 +528,7 @@ export function AvailabilityClient() {
                 <Button
                   disabled={pagination.page === 1}
                   onClick={() =>
-                    setPage((p) => p - 1)
+                    setPagination((prev) => ({ ...prev, page: prev.page - 1 }))
                   }
                   size="sm"
                   variant="outline"
@@ -530,7 +538,7 @@ export function AvailabilityClient() {
                 <Button
                   disabled={pagination.page === pagination.totalPages}
                   onClick={() =>
-                    setPage((p) => p + 1)
+                    setPagination((prev) => ({ ...prev, page: prev.page + 1 }))
                   }
                   size="sm"
                   variant="outline"
@@ -550,6 +558,7 @@ export function AvailabilityClient() {
           setSelectedAvailability(null);
         }}
         onDelete={() => {
+          fetchAvailability();
           setModalOpen(false);
           setSelectedAvailability(null);
         }}
@@ -580,6 +589,7 @@ export function AvailabilityClient() {
               onCancel={() => setCreateModalOpen(false)}
               onSuccess={() => {
                 setCreateModalOpen(false);
+                fetchAvailability();
               }}
             />
           </div>
@@ -610,6 +620,7 @@ export function AvailabilityClient() {
               onSuccess={() => {
                 setEditModalOpen(false);
                 setEditingAvailability(null);
+                fetchAvailability();
               }}
             />
           </div>

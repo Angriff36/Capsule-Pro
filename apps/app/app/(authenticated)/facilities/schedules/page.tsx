@@ -129,7 +129,7 @@ export default function SchedulesPage() {
     nextDueDate: "",
     estimatedHours: "",
     estimatedCost: "",
-    equipmentId: "",
+    equipmentId: "__none__",
   });
 
   useEffect(() => {
@@ -171,7 +171,7 @@ export default function SchedulesPage() {
       nextDueDate: "",
       estimatedHours: "",
       estimatedCost: "",
-      equipmentId: "",
+      equipmentId: "__none__",
     });
     setShowDialog(true);
   };
@@ -189,7 +189,7 @@ export default function SchedulesPage() {
       estimatedCost: schedule.estimatedCost
         ? schedule.estimatedCost.toNumber().toString()
         : "",
-      equipmentId: schedule.equipmentId || "",
+      equipmentId: schedule.equipmentId || "__none__",
     });
     setShowDialog(true);
   };
@@ -237,7 +237,7 @@ export default function SchedulesPage() {
           estimatedCost: form.estimatedCost
             ? Number.parseFloat(form.estimatedCost)
             : undefined,
-          equipmentId: form.equipmentId || undefined,
+          equipmentId: form.equipmentId === "__none__" ? undefined : form.equipmentId || undefined,
         });
         await loadData();
         setShowDialog(false);
@@ -740,7 +740,7 @@ export default function SchedulesPage() {
                       <SelectValue placeholder="Select equipment (optional)" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">None</SelectItem>
+                      <SelectItem value="__none__">None</SelectItem>
                       {assets.map((asset) => (
                         <SelectItem key={asset.id} value={asset.id}>
                           {asset.name}

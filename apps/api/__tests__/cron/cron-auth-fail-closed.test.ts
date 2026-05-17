@@ -87,7 +87,7 @@ async function importContractAlertsPOST() {
 }
 
 async function importKeepAliveGET() {
-  const mod = await import("../../app/cron/keep-alive/route");
+  const mod = await import("../../app/api/cron/keep-alive/route");
   return mod.GET;
 }
 
@@ -229,7 +229,7 @@ describe("cron/contract-expiration-alerts auth (E2-3 fail-closed regression)", (
 
 describe("cron/keep-alive auth (fail-closed regression)", () => {
   it("rejects with 503 when CRON_SECRET is not configured", async () => {
-    envHolder.CRON_SECRET = undefined;
+    process.env.CRON_SECRET = "";
     const GET = await importKeepAliveGET();
 
     const req = new Request("http://test/api/cron/keep-alive");
@@ -237,12 +237,12 @@ describe("cron/keep-alive auth (fail-closed regression)", () => {
 
     expect(res.status).toBe(503);
     expect(console.error).toHaveBeenCalledWith(
-      expect.stringContaining("CRON_SECRET is not configured")
+      expect.stringContaining("CRON_SECRET")
     );
   });
 
-  it("rejects with 401 when x-cron-secret header is missing", async () => {
-    envHolder.CRON_SECRET = "test-secret";
+  it("rejects with 401 when authorization header is missing", async () => {
+    process.env.CRON_SECRET = "test-secret";
     const GET = await importKeepAliveGET();
 
     const req = new Request("http://test/api/cron/keep-alive");
@@ -251,24 +251,36 @@ describe("cron/keep-alive auth (fail-closed regression)", () => {
     expect(res.status).toBe(401);
   });
 
-  it("rejects with 401 when x-cron-secret header has the wrong value", async () => {
-    envHolder.CRON_SECRET = "test-secret";
+  it("rejects with 401 when authorization header has the wrong secret", async () => {
+    process.env.CRON_SECRET = "test-secret";
     const GET = await importKeepAliveGET();
 
     const req = new Request("http://test/api/cron/keep-alive", {
-      headers: { "x-cron-secret": "wrong-secret" },
+      headers: { authorization: "Bearer wrong-secret" },
     });
     const res = await GET(req);
 
     expect(res.status).toBe(401);
   });
 
-  it("authorizes when x-cron-secret header matches the configured secret", async () => {
-    envHolder.CRON_SECRET = "test-secret";
+  it("authorizes when authorization header matches the configured secret", async () => {
+    process.env.CRON_SECRET = "test-secret";
     const GET = await importKeepAliveGET();
 
     const req = new Request("http://test/api/cron/keep-alive", {
-      headers: { "x-cron-secret": "test-secret" },
+      headers: { authorization: "Bearer test-secret" },
+    });
+    const res = await GET(req);
+
+    expect(res.status).toBe(200);
+  });
+
+  it("authorizes when x-vercel-cron header is set to 1", async () => {
+    process.env.CRON_SECRET = "test-secret";
+    const GET = await importKeepAliveGET();
+
+    const req = new Request("http://test/api/cron/keep-alive", {
+      headers: { "x-vercel-cron": "1" },
     });
     const res = await GET(req);
 

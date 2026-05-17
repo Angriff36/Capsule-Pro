@@ -1,0 +1,63 @@
+---
+title: Multi-Tenancy
+description: How Capsule Pro isolates data across organizations.
+---
+
+Capsule Pro uses a shared-database, schema-separated multi-tenancy model. All tenant data lives in the same Postgres instance but is isolated through composite primary keys and automatic scoping.
+
+## Database Schemas
+
+The database is organized into 10 PostgreSQL schemas:
+
+| Schema | Purpose |
+|--------|---------|
+| `core` | Shared enums, lookup tables, units of measure |
+| `platform` | Accounts, audit logs, platform-level data |
+| `tenant` | Base tenant configuration |
+| `tenant_crm` | Clients, leads, proposals, contacts, interactions |
+| `tenant_events` | Events, contracts, budgets, battle boards, reports |
+| `tenant_kitchen` | Recipes, dishes, menus, prep lists, tasks, stations, waste |
+| `tenant_inventory` | Inventory items, stock, purchase orders, shipments, cycle counts |
+| `tenant_staff` | Employees, schedules, shifts, availability, time-off, payroll |
+| `tenant_admin` | Administrative tasks, chat threads |
+| `tenant_accounting` | Chart of accounts, financial records |
+
+## Composite Primary Keys
+
+Every tenant-scoped model uses a composite primary key:
+
+```prisma
+model Recipe {
+  tenantId String
+  id       String @default(cuid())
+  // ... fields
+  @@id([tenantId, id])
+}
+```
+
+This ensures that tenant data cannot be accidentally accessed across boundaries — every query must include the `tenantId`.
+
+## Tenant Resolution
+
+When a request arrives:
+
+1. Clerk authenticates the user and provides the `orgId`
+2. The tenant resolution middleware maps `orgId` to an internal `tenantId`
+3. If the user has no tenant record, a 4-step provisioning cascade creates one:
+   - Look up existing tenant by org ID
+   - Create tenant if needed
+   - Look up or create user record
+   - Return resolved tenant context
+
+All subsequent database queries are automatically scoped to the resolved tenant.
+
+## Cross-Schema Queries
+
+Some features require joining data across schemas (e.g., recipe costs affecting event budgets). These use raw SQL with explicit schema prefixes:
+
+```sql
+SELECT r.name, eb.total_budget
+FROM tenant_kitchen.recipes r
+JOIN tenant_events.event_budgets eb ON eb.tenant_id = r.tenant_id
+WHERE r.tenant_id = $1
+```

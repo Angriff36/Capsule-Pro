@@ -28,6 +28,8 @@ import { Textarea } from "@repo/design-system/components/ui/textarea";
 import {
   CalendarIcon,
   CheckIcon,
+  DownloadIcon,
+  FileIcon,
   FilterIcon,
   MailIcon,
   MessageSquareIcon,
@@ -36,9 +38,11 @@ import {
   PlusIcon,
   SearchIcon,
   Trash2Icon,
+  UploadIcon,
+  XIcon,
   UserIcon,
 } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
   createClientInteraction,
@@ -46,6 +50,7 @@ import {
   getClientInteractions,
   updateClientInteraction,
 } from "../../../actions";
+import { apiFetch } from "@/app/lib/api";
 
 interface CommunicationsTabProps {
   clientId: string;
@@ -59,6 +64,15 @@ interface Interaction {
   interactionDate: Date;
   followUpDate: Date | null;
   followUpCompleted: boolean;
+}
+
+interface Attachment {
+  id: string;
+  fileName: string;
+  fileUrl: string;
+  fileType: string;
+  fileSize: number;
+  createdAt: string;
 }
 
 const INTERACTION_TYPES = [
@@ -86,6 +100,14 @@ export function CommunicationsTab({ clientId }: CommunicationsTabProps) {
 
   const [filterType, setFilterType] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
+  const [interactionAttachments, setInteractionAttachments] = useState<
+    Record<string, Attachment[]>
+  >({});
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const editFileInputRef = useRef<HTMLInputElement>(null);
+  const [editPendingFiles, setEditPendingFiles] = useState<File[]>([]);
 
   const fetchInteractions = useCallback(async () => {
     setLoading(true);
@@ -106,17 +128,102 @@ export function CommunicationsTab({ clientId }: CommunicationsTabProps) {
     fetchInteractions();
   }, [fetchInteractions]);
 
+  const fetchAttachments = useCallback(async (interactionIds: string[]) => {
+    const results: Record<string, Attachment[]> = {};
+    await Promise.all(
+      interactionIds.map(async (id) => {
+        try {
+          const response = await apiFetch(
+            `/api/crm/clients/interactions/attachments?interactionId=${id}`
+          );
+          if (response.ok) {
+            const data = await response.json();
+            results[id] = data.attachments || [];
+          }
+        } catch {
+          // Silently skip failed attachment fetches
+        }
+      })
+    );
+    setInteractionAttachments((prev) => ({ ...prev, ...results }));
+  }, []);
+
+  useEffect(() => {
+    if (interactions.length > 0) {
+      const idsWithoutAttachments = interactions.filter(
+        (i) => !interactionAttachments[i.id]
+      );
+      if (idsWithoutAttachments.length > 0) {
+        fetchAttachments(idsWithoutAttachments.map((i) => i.id));
+      }
+    }
+  }, [interactions, fetchAttachments, interactionAttachments]);
+
+  const uploadAttachments = async (interactionId: string, files: File[]) => {
+    const form = new FormData();
+    form.append("interactionId", interactionId);
+    for (const file of files) {
+      form.append("files", file);
+    }
+    const response = await apiFetch(
+      "/api/crm/clients/interactions/attachments",
+      { method: "POST", body: form }
+    );
+    if (!response.ok) throw new Error("Failed to upload attachments");
+    return response.json();
+  };
+
+  const handleDeleteAttachment = async (attachment: Attachment) => {
+    try {
+      const response = await apiFetch(
+        `/api/crm/clients/interactions/attachments?attachmentId=${attachment.id}`,
+        { method: "DELETE" }
+      );
+      if (!response.ok) throw new Error("Failed to delete attachment");
+      setInteractionAttachments((prev) => {
+        const updated = { ...prev };
+        for (const key of Object.keys(updated)) {
+          updated[key] = updated[key].filter((a) => a.id !== attachment.id);
+        }
+        return updated;
+      });
+      toast.success("Attachment deleted");
+    } catch {
+      toast.error("Failed to delete attachment");
+    }
+  };
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
     try {
-      await createClientInteraction(clientId, {
+      const interaction = await createClientInteraction(clientId, {
         interactionType: formData.interactionType,
         subject: formData.subject || undefined,
         description: formData.description || undefined,
         followUpDate: formData.followUpDate || undefined,
       });
-      toast.success("Interaction logged successfully");
+      if (pendingFiles.length > 0 && interaction?.id) {
+        setUploading(true);
+        try {
+          await uploadAttachments(interaction.id, pendingFiles);
+          toast.success(
+            `Interaction logged with ${pendingFiles.length} attachment(s)`
+          );
+        } catch {
+          toast.success("Interaction logged, but attachment upload failed");
+        }
+        setPendingFiles([]);
+        setUploading(false);
+      } else {
+        toast.success("Interaction logged successfully");
+      }
       setDialogOpen(false);
       resetForm();
       fetchInteractions();
@@ -141,6 +248,15 @@ export function CommunicationsTab({ clientId }: CommunicationsTabProps) {
         description: formData.description || undefined,
         followUpDate: formData.followUpDate || undefined,
       });
+      if (editPendingFiles.length > 0) {
+        setUploading(true);
+        try {
+          await uploadAttachments(selectedInteraction.id, editPendingFiles);
+        } catch {
+          toast.error("Failed to upload new attachments");
+        }
+        setUploading(false);
+      }
       toast.success("Interaction updated successfully");
       setEditDialogOpen(false);
       setSelectedInteraction(null);
@@ -213,6 +329,8 @@ export function CommunicationsTab({ clientId }: CommunicationsTabProps) {
       description: "",
       followUpDate: "",
     });
+    setPendingFiles([]);
+    setEditPendingFiles([]);
   };
 
   const getInteractionIcon = (type: string) => {
@@ -229,13 +347,13 @@ export function CommunicationsTab({ clientId }: CommunicationsTabProps) {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold">
+        <h2 className="font-semibold text-xl">
           Communication History ({interactions.length})
         </h2>
         <Dialog onOpenChange={setDialogOpen} open={dialogOpen}>
           <DialogTrigger asChild>
             <Button>
-              <PlusIcon className="h-4 w-4 mr-2" />
+              <PlusIcon className="mr-2 h-4 w-4" />
               Log Interaction
             </Button>
           </DialogTrigger>
@@ -247,7 +365,7 @@ export function CommunicationsTab({ clientId }: CommunicationsTabProps) {
               <div className="space-y-2">
                 <Label htmlFor="interactionType">Type *</Label>
                 <select
-                  className="w-full h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm"
+                  className="h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm"
                   id="interactionType"
                   onChange={(e) =>
                     setFormData({
@@ -299,6 +417,61 @@ export function CommunicationsTab({ clientId }: CommunicationsTabProps) {
                   value={formData.followUpDate}
                 />
               </div>
+              <div className="space-y-2">
+                <Label>Attachments</Label>
+                <input
+                  accept=".pdf,.png,.jpg,.jpeg,.gif,.doc,.docx,.txt,.csv,.xls,.xlsx"
+                  className="hidden"
+                  multiple
+                  onChange={(e) => {
+                    const files = Array.from(e.target.files || []);
+                    setPendingFiles((prev) => [...prev, ...files]);
+                    e.target.value = "";
+                  }}
+                  ref={fileInputRef}
+                  type="file"
+                />
+                <Button
+                  onClick={() => fileInputRef.current?.click()}
+                  size="sm"
+                  type="button"
+                  variant="outline"
+                >
+                  <UploadIcon className="mr-2 h-4 w-4" />
+                  Add Files
+                </Button>
+                {pendingFiles.length > 0 && (
+                  <div className="space-y-1">
+                    {pendingFiles.map((file, i) => (
+                      <div
+                        className="flex items-center justify-between rounded-md border px-2 py-1 text-sm"
+                        key={`${file.name}-${i}`}
+                      >
+                        <div className="flex items-center gap-2 truncate">
+                          <FileIcon className="h-3 w-3 flex-shrink-0" />
+                          <span className="truncate">{file.name}</span>
+                          <span className="text-muted-foreground text-xs">
+                            ({formatFileSize(file.size)})
+                          </span>
+                        </div>
+                        <Button
+                          className="h-6 w-6"
+                          onClick={() =>
+                            setPendingFiles((prev) =>
+                              prev.filter((_, idx) => idx !== i)
+                            )
+                          }
+                          size="icon"
+                          type="button"
+                          variant="ghost"
+                        >
+                          <XIcon className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
               <div className="flex justify-end gap-2">
                 <Button
                   onClick={() => {
@@ -320,10 +493,10 @@ export function CommunicationsTab({ clientId }: CommunicationsTabProps) {
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+      <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center">
         <div className="flex items-center gap-2">
           <FilterIcon className="h-4 w-4 text-muted-foreground" />
-          <div className="flex gap-1 flex-wrap">
+          <div className="flex flex-wrap gap-1">
             <Button
               className="h-7 text-xs"
               onClick={() => setFilterType("all")}
@@ -340,16 +513,16 @@ export function CommunicationsTab({ clientId }: CommunicationsTabProps) {
                 size="sm"
                 variant={filterType === type.value ? "default" : "outline"}
               >
-                <type.icon className="h-3 w-3 mr-1" />
+                <type.icon className="mr-1 h-3 w-3" />
                 {type.label}
               </Button>
             ))}
           </div>
         </div>
-        <div className="relative flex-1 max-w-xs">
-          <SearchIcon className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+        <div className="relative max-w-xs flex-1">
+          <SearchIcon className="absolute top-2.5 left-2.5 h-4 w-4 text-muted-foreground" />
           <Input
-            className="pl-9 h-9"
+            className="h-9 pl-9"
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search subject or description..."
             value={searchQuery}
@@ -358,26 +531,26 @@ export function CommunicationsTab({ clientId }: CommunicationsTabProps) {
       </div>
 
       {loading ? (
-        <div className="text-center py-8 text-muted-foreground">
+        <div className="py-8 text-center text-muted-foreground">
           Loading communications...
         </div>
       ) : interactions.length === 0 ? (
         <Card tone="canvas">
           <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-            <MessageSquareIcon className="h-12 w-12 text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-2">
+            <MessageSquareIcon className="mb-4 h-12 w-12 text-muted-foreground" />
+            <h3 className="mb-2 font-semibold text-lg">
               {filterType !== "all" || searchQuery
                 ? "No matching communications"
                 : "No communications yet"}
             </h3>
-            <p className="text-muted-foreground mb-4">
+            <p className="mb-4 text-muted-foreground">
               {filterType !== "all" || searchQuery
                 ? "Try adjusting your filters or search terms."
                 : "Log your first interaction with this client to start tracking your communication history."}
             </p>
             {filterType === "all" && !searchQuery && (
               <Button onClick={() => setDialogOpen(true)}>
-                <PlusIcon className="h-4 w-4 mr-2" />
+                <PlusIcon className="mr-2 h-4 w-4" />
                 Log First Interaction
               </Button>
             )}
@@ -389,12 +562,12 @@ export function CommunicationsTab({ clientId }: CommunicationsTabProps) {
             <Card key={interaction.id} tone="canvas">
               <CardContent className="py-4">
                 <div className="flex items-start gap-4">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted flex-shrink-0">
+                  <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-muted">
                     {getInteractionIcon(interaction.interactionType)}
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between mb-1">
-                      <div className="flex items-center gap-2 flex-wrap">
+                  <div className="min-w-0 flex-1">
+                    <div className="mb-1 flex items-center justify-between">
+                      <div className="flex flex-wrap items-center gap-2">
                         <span className="font-medium">
                           {getInteractionLabel(interaction.interactionType)}
                         </span>
@@ -428,18 +601,65 @@ export function CommunicationsTab({ clientId }: CommunicationsTabProps) {
                       </div>
                     </div>
                     {interaction.subject && (
-                      <div className="font-medium text-sm mb-1">
+                      <div className="mb-1 font-medium text-sm">
                         {interaction.subject}
                       </div>
                     )}
                     {interaction.description && (
-                      <p className="text-sm text-muted-foreground whitespace-pre-line">
+                      <p className="whitespace-pre-line text-muted-foreground text-sm">
                         {interaction.description}
                       </p>
                     )}
+                    {interactionAttachments[interaction.id]?.length > 0 && (
+                      <div className="mt-2 space-y-1">
+                        {interactionAttachments[interaction.id].map(
+                          (attachment) => (
+                            <div
+                              className="flex items-center justify-between rounded-md border px-2 py-1 text-sm"
+                              key={attachment.id}
+                            >
+                              <a
+                                className="flex items-center gap-2 text-primary hover:underline"
+                                href={attachment.fileUrl}
+                                rel="noopener noreferrer"
+                                target="_blank"
+                              >
+                                <FileIcon className="h-3 w-3 flex-shrink-0" />
+                                <span className="truncate">
+                                  {attachment.fileName}
+                                </span>
+                                <span className="text-muted-foreground text-xs">
+                                  ({formatFileSize(attachment.fileSize)})
+                                </span>
+                              </a>
+                              <div className="flex items-center gap-1">
+                                <a
+                                  className="text-muted-foreground hover:text-foreground"
+                                  href={attachment.fileUrl}
+                                  rel="noopener noreferrer"
+                                  target="_blank"
+                                >
+                                  <DownloadIcon className="h-3 w-3" />
+                                </a>
+                                <Button
+                                  className="h-6 w-6 text-destructive hover:text-destructive"
+                                  onClick={() =>
+                                    handleDeleteAttachment(attachment)
+                                  }
+                                  size="icon"
+                                  variant="ghost"
+                                >
+                                  <Trash2Icon className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            </div>
+                          )
+                        )}
+                      </div>
+                    )}
                     {interaction.followUpDate && (
-                      <div className="flex items-center justify-between gap-2 mt-2">
-                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <div className="mt-2 flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-1 text-muted-foreground text-xs">
                           <CalendarIcon className="h-3 w-3" />
                           Follow-up:{" "}
                           {new Date(
@@ -464,7 +684,7 @@ export function CommunicationsTab({ clientId }: CommunicationsTabProps) {
                             size="sm"
                             variant="ghost"
                           >
-                            <CheckIcon className="h-3 w-3 mr-1" />
+                            <CheckIcon className="mr-1 h-3 w-3" />
                             Mark Complete
                           </Button>
                         )}
@@ -488,7 +708,7 @@ export function CommunicationsTab({ clientId }: CommunicationsTabProps) {
             <div className="space-y-2">
               <Label htmlFor="edit-interactionType">Type *</Label>
               <select
-                className="w-full h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm"
+                className="h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm"
                 id="edit-interactionType"
                 onChange={(e) =>
                   setFormData({ ...formData, interactionType: e.target.value })
@@ -536,6 +756,61 @@ export function CommunicationsTab({ clientId }: CommunicationsTabProps) {
                 }
                 value={formData.followUpDate}
               />
+            </div>
+            <div className="space-y-2">
+              <Label>Add Attachments</Label>
+              <input
+                accept=".pdf,.png,.jpg,.jpeg,.gif,.doc,.docx,.txt,.csv,.xls,.xlsx"
+                className="hidden"
+                multiple
+                onChange={(e) => {
+                  const files = Array.from(e.target.files || []);
+                  setEditPendingFiles((prev) => [...prev, ...files]);
+                  e.target.value = "";
+                }}
+                ref={editFileInputRef}
+                type="file"
+              />
+              <Button
+                onClick={() => editFileInputRef.current?.click()}
+                size="sm"
+                type="button"
+                variant="outline"
+              >
+                <UploadIcon className="mr-2 h-4 w-4" />
+                Add Files
+              </Button>
+              {editPendingFiles.length > 0 && (
+                <div className="space-y-1">
+                  {editPendingFiles.map((file, i) => (
+                    <div
+                      className="flex items-center justify-between rounded-md border px-2 py-1 text-sm"
+                      key={`edit-${file.name}-${i}`}
+                    >
+                      <div className="flex items-center gap-2 truncate">
+                        <FileIcon className="h-3 w-3 flex-shrink-0" />
+                        <span className="truncate">{file.name}</span>
+                        <span className="text-muted-foreground text-xs">
+                          ({formatFileSize(file.size)})
+                        </span>
+                      </div>
+                      <Button
+                        className="h-6 w-6"
+                        onClick={() =>
+                          setEditPendingFiles((prev) =>
+                            prev.filter((_, idx) => idx !== i)
+                          )
+                        }
+                        size="icon"
+                        type="button"
+                        variant="ghost"
+                      >
+                        <XIcon className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
             <DialogFooter className="gap-2">
               <Button

@@ -30,6 +30,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { getTenantIdForOrg } from "../../../lib/tenant";
+import { DeleteTagButton } from "./components/delete-tag-button";
 
 export const metadata = {
   title: "Client Segmentation",
@@ -132,10 +133,12 @@ const SegmentTable = ({
   rows,
   total,
   emptyMessage,
+  renderAction,
 }: {
   rows: SegmentRow[];
   total: number;
   emptyMessage: string;
+  renderAction?: (row: SegmentRow) => React.ReactNode;
 }) => (
   <div className="overflow-hidden rounded-[22px] border border-hairline bg-canvas">
     <Table>
@@ -145,12 +148,13 @@ const SegmentTable = ({
           <TableHead className="text-right">Clients</TableHead>
           <TableHead className="text-right">Share</TableHead>
           <TableHead className="text-right">Filter</TableHead>
+          {renderAction && <TableHead className="w-12" />}
         </TableRow>
       </TableHeader>
       <TableBody>
         {rows.length === 0 ? (
           <TableRow>
-            <TableCell colSpan={4}>
+            <TableCell colSpan={renderAction ? 5 : 4}>
               <div className="py-6 text-center text-muted-foreground text-sm">
                 {emptyMessage}
               </div>
@@ -178,6 +182,7 @@ const SegmentTable = ({
                     View clients
                   </Link>
                 </TableCell>
+                {renderAction && <TableCell>{renderAction(row)}</TableCell>}
               </TableRow>
             );
           })
@@ -276,6 +281,9 @@ const ClientSegmentationPage = async () => {
           />
           <SegmentTable
             emptyMessage="No tags yet. Open a client and add tags from the contact info tab."
+            renderAction={(row) => (
+              <DeleteTagButton clientCount={row.count} tag={row.label} />
+            )}
             rows={tagSegments}
             total={totalClients}
           />

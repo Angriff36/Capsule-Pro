@@ -1,4 +1,5 @@
 import { initPlasmicLoader } from "@plasmicapp/loader-nextjs";
+import { env } from "@/env";
 import { invariant } from "@/app/lib/invariant";
 import { registerPlasmicComponents } from "./register-components";
 
@@ -9,8 +10,8 @@ export const getPlasmicLoader = () => {
     return loader;
   }
 
-  const projectId = process.env.PLASMIC_PROJECT_ID;
-  const token = process.env.PLASMIC_API_TOKEN;
+  const projectId = env.PLASMIC_PROJECT_ID;
+  const token = env.PLASMIC_API_TOKEN;
 
   invariant(projectId, "PLASMIC_PROJECT_ID must be set");
   invariant(token, "PLASMIC_API_TOKEN must be set");

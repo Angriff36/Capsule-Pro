@@ -163,7 +163,11 @@ const handlePaymentIntentFailed = async (data: Stripe.PaymentIntent) => {
 
 export const POST = async (request: Request): Promise<Response> => {
   if (!env.STRIPE_WEBHOOK_SECRET) {
-    return NextResponse.json({ message: "Not configured", ok: false });
+    log.warn("[StripeWebhook] STRIPE_WEBHOOK_SECRET not configured");
+    return NextResponse.json(
+      { message: "Webhook not configured", ok: false },
+      { status: 503 }
+    );
   }
 
   try {

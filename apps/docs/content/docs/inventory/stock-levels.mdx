@@ -1,0 +1,33 @@
+---
+title: Stock Levels
+description: Current stock, location breakdown, and manual adjustments.
+---
+
+The stock levels view provides a real-time picture of inventory across all storage locations.
+
+## Two Tabs
+
+1. **Stock Levels** — Current quantities with reorder/par status indicators
+2. **Transaction History** — All stock movements with timestamps and reasons
+
+## Stock Level Data
+
+Each item shows:
+- Current quantity
+- Reorder level and par level
+- Status indicator (OK, Low, Critical)
+- Breakdown by storage location
+
+## Manual Adjustments
+
+Stock can be adjusted manually with:
+- **Increase** or **Decrease** quantity
+- **Reason** for the adjustment
+- Adjustment creates a transaction record and an outbox event for real-time updates
+
+## Filters
+
+- Search by item name
+- Filter by category
+- Filter by location
+- Filter by reorder status (needs reorder, at par, overstocked)

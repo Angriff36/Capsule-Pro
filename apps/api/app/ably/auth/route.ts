@@ -35,6 +35,7 @@
 import { auth } from "@repo/auth/server";
 import Ably from "ably";
 import { NextResponse } from "next/server";
+import { corsHeaders } from "@/app/lib/cors";
 import { env } from "@/env";
 
 // Force Node.js runtime — the Ably SDK uses Node.js APIs (crypto, https) that
@@ -49,48 +50,11 @@ interface AuthRequest {
 const getClientId = (tenantId: string, userId: string) =>
   `tenant:${tenantId}:user:${userId}`;
 
-// Get allowed origins from environment or default to common dev ports.
-// Set ABLY_AUTH_CORS_ORIGINS on Vercel to include your production app domain.
-const getAllowedOrigins = (): string[] => {
-  const allowedOrigins = env.ABLY_AUTH_CORS_ORIGINS?.split(",").map(
-    (o: string) => o.trim()
-  );
-  return (
-    allowedOrigins || [
-      "http://localhost:2221",
-      "http://localhost:2222",
-      "http://localhost:3000",
-      "http://127.0.0.1:2221",
-      "http://127.0.0.1:2222",
-      "http://127.0.0.1:3000",
-    ]
-  );
-};
-
-function corsHeaders(request: Request) {
-  const origin = request.headers.get("origin");
-  const allowedOrigins = getAllowedOrigins();
-
-  // Reflect the request origin if it is in the allowlist; otherwise use the
-  // first configured origin as a safe fallback.
-  const allowedOrigin =
-    origin && allowedOrigins.includes(origin) ? origin : allowedOrigins[0];
-
-  return {
-    "Access-Control-Allow-Origin": allowedOrigin ?? "",
-    "Access-Control-Allow-Methods": "POST, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type",
-    // credentials: "include" is required on the client side when Clerk session
-    // cookies must be forwarded for cross-origin auth.
-    "Access-Control-Allow-Credentials": "true",
-  };
-}
-
 // Handle CORS preflight requests.
 export function OPTIONS(request: Request) {
   return new NextResponse(null, {
     status: 204,
-    headers: corsHeaders(request),
+    headers: corsHeaders(request, "POST, OPTIONS"),
   });
 }
 
@@ -108,14 +72,14 @@ export async function POST(request: Request) {
     console.error("[ably/auth] Clerk auth() threw:", err);
     return NextResponse.json(
       { error: "Authentication service unavailable" },
-      { status: 503, headers: corsHeaders(request) }
+      { status: 503, headers: corsHeaders(request, "POST, OPTIONS") }
     );
   }
 
   if (!userId) {
     return NextResponse.json(
       { error: "Unauthorized" },
-      { status: 401, headers: corsHeaders(request) }
+      { status: 401, headers: corsHeaders(request, "POST, OPTIONS") }
     );
   }
 
@@ -137,7 +101,7 @@ export async function POST(request: Request) {
   if (!tenantId) {
     return NextResponse.json(
       { error: "tenantId is required (body or session claim)" },
-      { status: 400, headers: corsHeaders(request) }
+      { status: 400, headers: corsHeaders(request, "POST, OPTIONS") }
     );
   }
 
@@ -182,7 +146,7 @@ export async function POST(request: Request) {
         );
         return NextResponse.json(
           { error: "Failed to create Ably token (fallback)" },
-          { status: 500, headers: corsHeaders(request) }
+          { status: 500, headers: corsHeaders(request, "POST, OPTIONS") }
         );
       }
     } else {
@@ -190,7 +154,7 @@ export async function POST(request: Request) {
       console.error("[ably/auth] createTokenRequest failed:", err);
       return NextResponse.json(
         { error: "Failed to create Ably token" },
-        { status: 500, headers: corsHeaders(request) }
+        { status: 500, headers: corsHeaders(request, "POST, OPTIONS") }
       );
     }
   }
@@ -201,6 +165,6 @@ export async function POST(request: Request) {
   // Shape: { keyName, ttl, timestamp, capability, clientId, nonce, mac }
   // https://ably.com/docs/api/rest-sdk/types#token-request
   return NextResponse.json(tokenRequest, {
-    headers: corsHeaders(request),
+    headers: corsHeaders(request, "POST, OPTIONS"),
   });
 }

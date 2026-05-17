@@ -129,6 +129,10 @@ const rewrites: NextConfig["rewrites"] = async () => {
       destination: `${apiBaseUrl}/api/logistics/:path*`,
     },
     {
+      source: "/api/manifest/:path*",
+      destination: `${apiBaseUrl}/api/manifest/:path*`,
+    },
+    {
       source: "/api/procurement/:path*",
       destination: `${apiBaseUrl}/api/procurement/:path*`,
     },
@@ -175,7 +179,7 @@ const rewrites: NextConfig["rewrites"] = async () => {
   ];
 };
 
-let nextConfig: NextConfig = withToolbar(
+const baseConfig: NextConfig = withToolbar(
   withLogging({
     ...config,
     distDir,
@@ -186,9 +190,13 @@ let nextConfig: NextConfig = withToolbar(
     deploymentId: process.env.VERCEL_DEPLOYMENT_ID,
     // Build-time linting is handled by Biome in this repo.
     eslint: {
-      // Linting is handled by Biome in CI and pre-commit.
-      // Next.js eslint runs during build — we gate on Biome instead.
       ignoreDuringBuilds: true,
+    },
+    // Type checking is handled by `pnpm tsc --noEmit` in CI.
+    // Next.js's built-in type checker crashes on Vercel when lstat-ing
+    // parenthesized route groups like (authenticated)/.
+    typescript: {
+      ignoreBuildErrors: false,
     },
     // Transpile workspace packages and heavy libraries for better performance
     transpilePackages: [
@@ -206,6 +214,10 @@ let nextConfig: NextConfig = withToolbar(
       "@angriff36/manifest",
       "@repo/manifest-adapters",
       "@repo/seo",
+      "@repo/email",
+      "@repo/storage",
+      "@repo/types",
+      "@repo/next-config",
     ],
     // Allow cross-origin requests to the Next.js dev server from:
     //   - The app itself on its own port (2221) — needed when the browser
@@ -231,10 +243,10 @@ let nextConfig: NextConfig = withToolbar(
         "recharts",
         "@repo/design-system",
       ],
-      // Reduce server action bundle size
-      serverActions: {
-        bodySizeLimit: "2mb",
-      },
+    },
+    // Reduce server action bundle size
+    serverActions: {
+      bodySizeLimit: "2mb",
     },
     // Enable source maps only when they can be uploaded to Sentry.
     // Local builds and non-Vercel deploys skip this to save build time.
@@ -308,10 +320,22 @@ let nextConfig: NextConfig = withToolbar(
               value: "max-age=63072000; includeSubDomains; preload",
             },
             {
+              key: "X-DNS-Prefetch-Control",
+              value: "on",
+            },
+            {
+              key: "Cross-Origin-Opener-Policy",
+              value: "same-origin",
+            },
+            {
+              key: "Cross-Origin-Resource-Policy",
+              value: "same-origin",
+            },
+            {
               key: "Content-Security-Policy",
               value: [
                 "default-src 'self'",
-                "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.clerk.com https://*.clerk.accounts.dev https://us-assets.i.posthog.com https://www.googletagmanager.com blob:",
+                `script-src 'self' 'unsafe-inline' ${process.env.NODE_ENV !== "production" ? "'unsafe-eval' " : ""}https://cdn.clerk.com https://*.clerk.accounts.dev https://us-assets.i.posthog.com https://www.googletagmanager.com blob:`,
                 "worker-src 'self' blob:",
                 "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
                 "font-src 'self' https://fonts.gstatic.com",
@@ -325,6 +349,27 @@ let nextConfig: NextConfig = withToolbar(
             },
           ],
         },
+        {
+          // Cache static assets aggressively
+          source:
+            "/(.*)\\.(ico|png|jpg|jpeg|gif|svg|webp|avif|woff|woff2|ttf|eot)",
+          headers: [
+            {
+              key: "Cache-Control",
+              value: "public, max-age=31536000, immutable",
+            },
+          ],
+        },
+        {
+          // Cache JS/CSS with content hash
+          source: "/_next/static/(.*)",
+          headers: [
+            {
+              key: "Cache-Control",
+              value: "public, max-age=31536000, immutable",
+            },
+          ],
+        },
       ];
     },
     // Externalize ably and pdfkit to avoid bundling issues
@@ -335,7 +380,7 @@ let nextConfig: NextConfig = withToolbar(
       "ably",
       "pdfkit",
       "vega-lite",
-      "@capsule-pro/sales-reporting",
+      "@repo/sales-reporting",
       "@clerk/backend",
     ],
     // Include manifest file in Vercel deployments for command-board chat
@@ -378,12 +423,11 @@ let nextConfig: NextConfig = withToolbar(
   })
 );
 
-if (env.VERCEL) {
-  nextConfig = withSentry(nextConfig);
-}
+const withVercel = (config: NextConfig): NextConfig =>
+  env.VERCEL ? withSentry(config) : config;
+const withAnalyze = (config: NextConfig): NextConfig =>
+  env.ANALYZE === "true" ? withAnalyzer(config) : config;
 
-if (env.ANALYZE === "true") {
-  nextConfig = withAnalyzer(nextConfig);
-}
+const nextConfig: NextConfig = withAnalyze(withVercel(baseConfig));
 
 export default nextConfig;

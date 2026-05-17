@@ -13,7 +13,7 @@
  *   - Required fields: employee_id, request_type, start_date, end_date, hours
  *   - Status enum: PENDING, APPROVED, REJECTED, CANCELLED
  *   - Soft-delete via deleted_at
- *   - Prisma model: EmployeeTimeOffRequest, client accessor: prisma.employeeTimeOffRequest
+ *   - Prisma model: EmployeeTimeOffRequest, client accessor: prisma.timeOffRequest
  *   - Manifest entity name: "TimeOffRequest"
  */
 import { asBool, asJsonInput, asNullableDate, asNullableString, asString, reportOp, toDecimalRequired, } from "./shared.js";
@@ -127,28 +127,28 @@ export class TimeOffRequestPrismaStore {
         this.tenantId = tenantId;
     }
     async getAll() {
-        const rows = await this.prisma.employeeTimeOffRequest.findMany({
-            where: { tenant_id: this.tenantId, deleted_at: null },
-            orderBy: { submitted_at: "desc" },
+        const rows = await this.prisma.timeOffRequest.findMany({
+            where: { tenantId: this.tenantId, deletedAt: null },
+            orderBy: { submittedAt: "desc" },
         });
         return rows.map((r) => this.mapToManifestEntity(r));
     }
     async getById(id) {
-        const row = await this.prisma.employeeTimeOffRequest.findFirst({
-            where: { tenant_id: this.tenantId, id, deleted_at: null },
+        const row = await this.prisma.timeOffRequest.findFirst({
+            where: { tenantId: this.tenantId, id, deletedAt: null },
         });
         return row ? this.mapToManifestEntity(row) : undefined;
     }
     async create(data) {
         const id = data.id ?? crypto.randomUUID();
-        const row = await this.prisma.employeeTimeOffRequest.create({
+        const row = await this.prisma.timeOffRequest.create({
             data: {
-                tenant_id: this.tenantId,
+                tenantId: this.tenantId,
                 id,
-                employee_id: asString(data.employeeId),
-                request_type: asString(data.requestType) || "VACATION",
-                start_date: asNullableDate(data.startDate) ?? new Date(),
-                end_date: asNullableDate(data.endDate) ?? new Date(),
+                employeeId: asString(data.employeeId),
+                requestType: asString(data.requestType) || "VACATION",
+                startDate: asNullableDate(data.startDate) ?? new Date(),
+                endDate: asNullableDate(data.endDate) ?? new Date(),
                 hours: toDecimalRequired(data.hours, 0),
                 reason: asNullableString(data.reason),
                 status: asString(data.status) || "PENDING",
@@ -160,13 +160,13 @@ export class TimeOffRequestPrismaStore {
         try {
             const patch = {};
             if (data.employeeId !== undefined)
-                patch.employee_id = asString(data.employeeId);
+                patch.employeeId = asString(data.employeeId);
             if (data.requestType !== undefined)
-                patch.request_type = asString(data.requestType);
+                patch.requestType = asString(data.requestType);
             if (data.startDate !== undefined)
-                patch.start_date = asNullableDate(data.startDate);
+                patch.startDate = asNullableDate(data.startDate);
             if (data.endDate !== undefined)
-                patch.end_date = asNullableDate(data.endDate);
+                patch.endDate = asNullableDate(data.endDate);
             if (data.hours !== undefined)
                 patch.hours = toDecimalRequired(data.hours, 0);
             if (data.reason !== undefined)
@@ -174,13 +174,13 @@ export class TimeOffRequestPrismaStore {
             if (data.status !== undefined)
                 patch.status = asString(data.status);
             if (data.reviewedBy !== undefined)
-                patch.reviewed_by = asNullableString(data.reviewedBy);
+                patch.reviewedBy = asNullableString(data.reviewedBy);
             if (data.reviewedAt !== undefined)
-                patch.reviewed_at = asNullableDate(data.reviewedAt);
+                patch.reviewedAt = asNullableDate(data.reviewedAt);
             if (data.rejectionReason !== undefined)
-                patch.rejection_reason = asNullableString(data.rejectionReason);
-            const row = await this.prisma.employeeTimeOffRequest.update({
-                where: { tenant_id_id: { tenant_id: this.tenantId, id } },
+                patch.rejectionReason = asNullableString(data.rejectionReason);
+            const row = await this.prisma.timeOffRequest.update({
+                where: { tenantId_id: { tenantId: this.tenantId, id } },
                 data: patch,
             });
             return this.mapToManifestEntity(row);
@@ -192,9 +192,9 @@ export class TimeOffRequestPrismaStore {
     }
     async delete(id) {
         try {
-            await this.prisma.employeeTimeOffRequest.update({
-                where: { tenant_id_id: { tenant_id: this.tenantId, id } },
-                data: { deleted_at: new Date() },
+            await this.prisma.timeOffRequest.update({
+                where: { tenantId_id: { tenantId: this.tenantId, id } },
+                data: { deletedAt: new Date() },
             });
             return true;
         }
@@ -204,28 +204,28 @@ export class TimeOffRequestPrismaStore {
         }
     }
     async clear() {
-        await this.prisma.employeeTimeOffRequest.deleteMany({
-            where: { tenant_id: this.tenantId },
+        await this.prisma.timeOffRequest.deleteMany({
+            where: { tenantId: this.tenantId },
         });
     }
     mapToManifestEntity(r) {
         return {
             id: r.id,
-            tenantId: r.tenant_id,
-            employeeId: r.employee_id ?? "",
-            requestType: r.request_type ?? "",
-            startDate: r.start_date ?? null,
-            endDate: r.end_date ?? null,
+            tenantId: r.tenantId,
+            employeeId: r.employeeId ?? "",
+            requestType: r.requestType ?? "",
+            startDate: r.startDate ?? null,
+            endDate: r.endDate ?? null,
             hours: r.hours ?? 0,
             reason: r.reason ?? null,
             status: r.status ?? "PENDING",
-            submittedAt: r.submitted_at ?? null,
-            reviewedBy: r.reviewed_by ?? null,
-            reviewedAt: r.reviewed_at ?? null,
-            rejectionReason: r.rejection_reason ?? null,
-            createdAt: r.created_at ?? null,
-            updatedAt: r.updated_at ?? null,
-            deletedAt: r.deleted_at ?? null,
+            submittedAt: r.submittedAt ?? null,
+            reviewedBy: r.reviewedBy ?? null,
+            reviewedAt: r.reviewedAt ?? null,
+            rejectionReason: r.rejectionReason ?? null,
+            createdAt: r.createdAt ?? null,
+            updatedAt: r.updatedAt ?? null,
+            deletedAt: r.deletedAt ?? null,
         };
     }
 }

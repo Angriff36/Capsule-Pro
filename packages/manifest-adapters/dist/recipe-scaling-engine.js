@@ -186,9 +186,9 @@ export async function scaleRecipe(db, tenantId, recipeVersionId, targetYieldQuan
     const recipeVersion = await db.$queryRaw(Prisma.sql `
       SELECT rv.id, rv.name, rv.yield_quantity, rv.yield_unit_id, rv.total_cost, rv.cost_per_yield
       FROM tenant_kitchen.recipe_versions rv
-      WHERE rv.tenant_id = ${tenantId}
+      WHERE rv.tenantId = ${tenantId}
         AND rv.id = ${recipeVersionId}
-        AND rv.deleted_at IS NULL
+        AND rv.deletedAt IS NULL
     `);
     if (!recipeVersion[0]) {
         throw new Error("Recipe version not found");
@@ -222,9 +222,9 @@ export async function scaleRecipe(db, tenantId, recipeVersionId, targetYieldQuan
         ri.ingredient_cost
       FROM tenant_kitchen.recipe_ingredients ri
       JOIN tenant_kitchen.ingredients i ON i.id = ri.ingredient_id
-      WHERE ri.tenant_id = ${tenantId}
-        AND ri.recipe_version_id = ${recipeVersionId}
-        AND ri.deleted_at IS NULL
+      WHERE ri.tenantId = ${tenantId}
+        AND ri.recipeVersionId = ${recipeVersionId}
+        AND ri.deletedAt IS NULL
       ORDER BY ri.sort_order
     `);
     // Scale each ingredient

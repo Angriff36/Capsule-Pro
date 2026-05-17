@@ -13,7 +13,14 @@
     "@types/node": "25.2.0",
     "@types/react": "19.2.11",
     "@types/react-dom": "19.2.3",
-    "next": "15.4.11"
+    "next": "15.4.11",
+    "typescript": "^5.9.3"
+  },
+  "main": "./index.ts",
+  "types": "./index.ts",
+  "exports": {
+    ".": "./index.ts",
+    "./proxy": "./proxy.ts"
   },
   "private": true,
   "scripts": {

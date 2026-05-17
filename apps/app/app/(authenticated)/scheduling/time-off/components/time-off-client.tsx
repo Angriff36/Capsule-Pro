@@ -37,8 +37,7 @@ import {
 import { Loader2Icon, PlusIcon } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import type { ReactNode } from "react";
-import { useEffect, useRef, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import type {
   TimeOffRequest,
@@ -67,6 +66,18 @@ export function TimeOffClient() {
   const router = useRouter();
   const searchParams = useSearchParams() ?? new URLSearchParams();
 
+  // State
+  const [timeOffRequests, setTimeOffRequests] = useState<TimeOffRequest[]>([]);
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [locations, setLocations] = useState<Location[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 50,
+    total: 0,
+    totalPages: 0,
+  });
+
   // Filters
   const [filters, setFilters] = useState({
     startDate: searchParams.get("startDate") || "",
@@ -87,61 +98,59 @@ export function TimeOffClient() {
   // Track initial mount to avoid URL push on first render
   const isMounted = useRef(false);
 
-  // Pagination (UI state — independent of query cache)
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(0);
-  const [total, setTotal] = useState(0);
-
-  // =========================================================================
-  // TanStack Query: time-off requests
-  // =========================================================================
-  const {
-    data: timeOffData,
-    isLoading: loading,
-  } = useQuery({
-    queryKey: ["scheduling", "time-off", filters, page],
-    queryFn: async () => {
-      const data = await getTimeOffRequests({
-        employeeId: filters.employeeId || undefined,
-        status:
-          (filters.status as
-            | "PENDING"
-            | "APPROVED"
-            | "REJECTED"
-            | "CANCELLED") || undefined,
-        startDate: filters.startDate || undefined,
-        endDate: filters.endDate || undefined,
-        requestType: (filters.type as TimeOffType) || undefined,
-        page,
-        limit: 50,
-      });
-      if (data.pagination) {
-        setTotalPages(data.pagination.totalPages);
-        setTotal(data.pagination.total);
+  // Fetch time off requests
+  const fetchTimeOffRequests = useCallback(
+    async (page = 1, limit = 50) => {
+      setLoading(true);
+      try {
+        const data = await getTimeOffRequests({
+          employeeId: filters.employeeId || undefined,
+          status:
+            (filters.status as
+              | "PENDING"
+              | "APPROVED"
+              | "REJECTED"
+              | "CANCELLED") || undefined,
+          startDate: filters.startDate || undefined,
+          endDate: filters.endDate || undefined,
+          requestType: (filters.type as TimeOffType) || undefined,
+          page,
+          limit,
+        });
+        setTimeOffRequests(data.requests || []);
+        setPagination(
+          data.pagination || { page, limit, total: 0, totalPages: 0 }
+        );
+      } catch (error) {
+        toast.error("Failed to load time off requests", {
+          description: error instanceof Error ? error.message : "Unknown error",
+        });
+      } finally {
+        setLoading(false);
       }
-      return data;
     },
-    staleTime: 30_000,
-  });
+    [filters]
+  );
 
-  const timeOffRequests = timeOffData?.requests ?? [];
-  const pagination = { page, limit: 50, total, totalPages };
+  // Fetch filter options
+  const fetchFilterOptions = useCallback(async () => {
+    try {
+      const [employeesData, locationsData] = await Promise.all([
+        getEmployees(),
+        getLocations(),
+      ]);
+      setEmployees(employeesData.employees || []);
+      setLocations(locationsData.locations || []);
+    } catch (error) {
+      console.warn("Failed to load filter options:", error);
+    }
+  }, []);
 
-  // TanStack Query: shared employee/location caches
-  const { data: employeesData } = useQuery({
-    queryKey: ["scheduling", "employees"],
-    queryFn: async () => getEmployees(),
-    staleTime: 5 * 60_000,
-  });
-
-  const { data: locationsData } = useQuery({
-    queryKey: ["scheduling", "locations"],
-    queryFn: async () => getLocations(),
-    staleTime: 5 * 60_000,
-  });
-
-  const employees: Employee[] = employeesData?.employees ?? [];
-  const locations: Location[] = locationsData?.locations ?? [];
+  // Fetch when filters or pagination change
+  useEffect(() => {
+    fetchTimeOffRequests(pagination.page, pagination.limit);
+    fetchFilterOptions();
+  }, [fetchTimeOffRequests, pagination.page, pagination.limit, fetchFilterOptions]);
 
   // Update URL when filters change (skip initial mount)
   useEffect(() => {
@@ -161,7 +170,7 @@ export function TimeOffClient() {
 
   const handleFilterChange = (key: string, value: string) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
-    setPage(1);
+    setPagination((prev) => ({ ...prev, page: 1 }));
   };
 
   const handleRowClick = (timeOff: TimeOffRequest) => {
@@ -308,7 +317,7 @@ export function TimeOffClient() {
       <KitchenOperationalHero
         actions={
           <Button
-            className="rounded-full bg-white px-5 text-[13px] font-medium text-primary hover:bg-white/90"
+            className="rounded-full bg-white px-5 font-medium text-[13px] text-primary hover:bg-white/90"
             onClick={() => setCreateModalOpen(true)}
             size="sm"
           >
@@ -379,7 +388,7 @@ export function TimeOffClient() {
                 }
                 value={filters.employeeId || "__all__"}
               >
-                <SelectTrigger className="bg-canvas w-full">
+                <SelectTrigger className="w-full bg-canvas">
                   <SelectValue placeholder="All employees" />
                 </SelectTrigger>
                 <SelectContent>
@@ -403,7 +412,7 @@ export function TimeOffClient() {
                 }
                 value={filters.locationId || "__all__"}
               >
-                <SelectTrigger className="bg-canvas w-full">
+                <SelectTrigger className="w-full bg-canvas">
                   <SelectValue placeholder="All locations" />
                 </SelectTrigger>
                 <SelectContent>
@@ -424,7 +433,7 @@ export function TimeOffClient() {
                 }
                 value={filters.status || "__all__"}
               >
-                <SelectTrigger className="bg-canvas w-full">
+                <SelectTrigger className="w-full bg-canvas">
                   <SelectValue placeholder="All statuses" />
                 </SelectTrigger>
                 <SelectContent>
@@ -444,7 +453,7 @@ export function TimeOffClient() {
                 }
                 value={filters.type || "__all__"}
               >
-                <SelectTrigger className="bg-canvas w-full">
+                <SelectTrigger className="w-full bg-canvas">
                   <SelectValue placeholder="All types" />
                 </SelectTrigger>
                 <SelectContent>
@@ -531,7 +540,7 @@ export function TimeOffClient() {
                 <Button
                   disabled={pagination.page === 1}
                   onClick={() =>
-                    setPage((p) => p - 1)
+                    setPagination((prev) => ({ ...prev, page: prev.page - 1 }))
                   }
                   size="sm"
                   variant="outline"
@@ -541,7 +550,7 @@ export function TimeOffClient() {
                 <Button
                   disabled={pagination.page === pagination.totalPages}
                   onClick={() =>
-                    setPage((p) => p + 1)
+                    setPagination((prev) => ({ ...prev, page: prev.page + 1 }))
                   }
                   size="sm"
                   variant="outline"
@@ -560,6 +569,7 @@ export function TimeOffClient() {
           setSelectedTimeOff(null);
         }}
         onDelete={() => {
+          fetchTimeOffRequests();
           setModalOpen(false);
           setSelectedTimeOff(null);
         }}
@@ -585,6 +595,7 @@ export function TimeOffClient() {
               onCancel={() => setCreateModalOpen(false)}
               onSuccess={() => {
                 setCreateModalOpen(false);
+                fetchTimeOffRequests();
               }}
             />
           </div>

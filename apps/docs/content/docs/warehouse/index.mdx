@@ -1,0 +1,26 @@
+---
+title: Warehouse
+description: Warehouse operations including receiving, shipments, and cycle count audits.
+---
+
+The Warehouse module handles physical goods movement — receiving deliveries, managing shipments, and conducting inventory audits.
+
+<CardGroup cols={3}>
+  <Card title="Receiving" href="/docs/warehouse/receiving">
+    PO receiving workflow with quality inspection.
+  </Card>
+  <Card title="Shipments" href="/docs/warehouse/shipments">
+    Shipment management with state machine and packing lists.
+  </Card>
+  <Card title="Audits" href="/docs/warehouse/audits">
+    Cycle count sessions with variance tracking.
+  </Card>
+</CardGroup>
+
+## Dashboard
+
+The warehouse dashboard at `/warehouse` shows:
+- Total inventory items and recent transactions
+- Pending purchase orders
+- Active shipments
+- Items requiring attention (low stock, quality holds)

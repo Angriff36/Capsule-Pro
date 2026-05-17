@@ -1,0 +1,26 @@
+---
+title: Receiving
+description: Purchase order receiving workflow with quality inspection.
+---
+
+The receiving workflow processes incoming deliveries against purchase orders.
+
+## Workflow
+
+1. **Search** for the purchase order by number
+2. For each PO item, record:
+   - **Received quantity** — Actual amount delivered
+   - **Quality status** — Approved, Needs Inspection, or Rejected
+   - **Discrepancy type** — Short shipment, overage, damage, wrong item
+3. **Complete receiving** — Finalizes the PO and updates inventory
+
+## Quality Inspection
+
+Three quality statuses:
+- **Approved** — Item passes inspection, added to available stock
+- **Needs Inspection** — Item is quarantined pending review
+- **Rejected** — Item is refused, not added to stock
+
+## Receiving Reports
+
+Analytics on receiving performance by supplier (response times, quality rates, discrepancy frequency).

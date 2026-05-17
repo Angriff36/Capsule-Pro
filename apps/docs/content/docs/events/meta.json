@@ -1,0 +1,4 @@
+{
+  "title": "Events",
+  "pages": ["index", "lifecycle", "contracts", "budgets", "battle-boards", "reports", "import-export"]
+}

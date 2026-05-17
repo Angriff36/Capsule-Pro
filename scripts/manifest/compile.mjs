@@ -23,6 +23,9 @@ const OUTPUT_DIR = join(process.cwd(), "packages/manifest-ir/ir/kitchen");
 const OUTPUT_FILE = join(OUTPUT_DIR, "kitchen.ir.json");
 const COMMANDS_FILE = join(OUTPUT_DIR, "kitchen.commands.json");
 const MERGE_REPORT_FILE = join(OUTPUT_DIR, "kitchen.merge-report.json");
+// Canonical merged registry — single source of truth for dispatcher + audit.
+const REGISTRY_DIR = join(process.cwd(), "packages/manifest-ir/dist");
+const REGISTRY_FILE = join(REGISTRY_DIR, "commands.registry.json");
 
 async function compileMergedManifests() {
   console.log("[manifest/compile] Starting merged compilation...");
@@ -110,6 +113,13 @@ async function compileMergedManifests() {
   writeFileSync(COMMANDS_FILE, JSON.stringify(commandsManifest, null, 2));
   console.log(
     `[manifest/compile] Emitted ${commandsManifest.length} entries to kitchen.commands.json`
+  );
+
+  // Emit canonical merged registry (same data, new canonical path).
+  mkdirSync(REGISTRY_DIR, { recursive: true });
+  writeFileSync(REGISTRY_FILE, JSON.stringify(commandsManifest, null, 2));
+  console.log(
+    `[manifest/compile] Emitted ${commandsManifest.length} entries to commands.registry.json`
   );
 
   // Also write provenance file

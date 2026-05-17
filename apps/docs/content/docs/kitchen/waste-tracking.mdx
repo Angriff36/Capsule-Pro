@@ -1,0 +1,36 @@
+---
+title: Waste Tracking
+description: Waste entry logging, trend analytics, and reduction recommendations.
+---
+
+The waste tracking system logs food waste events and provides analytics to help reduce waste over time.
+
+## Logging Waste
+
+Each waste entry records:
+
+| Field | Description |
+|-------|-------------|
+| Item | The inventory item that was wasted |
+| Quantity | Amount wasted |
+| Unit | Unit of measure |
+| Reason | Why it was wasted (expired, overproduction, damaged, etc.) |
+| Location | Where the waste occurred |
+| Notes | Additional context |
+
+## Analytics
+
+The waste dashboard provides:
+
+- **Trends** — Waste volume over time with trend lines
+- **Reports** — Waste grouped by reason, item, and location
+- **Recommendations** — System-generated suggestions for waste reduction
+
+## Mobile
+
+The mobile waste logging view at `/kitchen/waste/mobile` supports offline operation:
+
+- Select an item from the inventory
+- Enter quantity and select a reason
+- Add optional notes
+- Submit (queued offline if no connection)

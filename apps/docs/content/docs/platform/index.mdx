@@ -1,0 +1,71 @@
+---
+title: Platform Overview
+description: Architecture, tech stack, and core systems powering Capsule Pro.
+---
+
+Capsule Pro is a monorepo-based platform built with Next.js 15, React 19, and TypeScript. It uses pnpm workspaces with Turborepo for build orchestration.
+
+## Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| Framework | Next.js 15 (App Router) |
+| Language | TypeScript 5.9 |
+| Database | Neon Serverless Postgres via Prisma 7 |
+| Authentication | Clerk |
+| Payments | Stripe |
+| Realtime | Ably (transactional outbox pattern) |
+| Collaboration | Liveblocks |
+| AI | OpenAI via Vercel AI SDK |
+| UI | shadcn/ui + Radix UI + Tailwind CSS v4 |
+| Email | Resend + React Email |
+| Monitoring | Sentry + BetterStack/Logtail |
+| Analytics | PostHog + Vercel Analytics |
+| Deployment | Vercel |
+
+## Apps
+
+The monorepo contains 6 deployable applications:
+
+| App | Purpose | Port |
+|-----|---------|------|
+| `apps/app` | Main product application | 3000 |
+| `apps/api` | API backend with all domain endpoints | 3001 |
+| `apps/docs` | Documentation site (this site) | 2224 |
+| `apps/web` | Marketing / public website | -- |
+| `apps/storybook` | Design system component development | 6006 |
+| `apps/email` | Email template preview server | 2225 |
+
+## Packages
+
+30 internal packages provide shared functionality:
+
+<CardGroup cols={2}>
+  <Card title="@repo/database">
+    Prisma schema with 116+ models across 10 PostgreSQL schemas. Multi-tenant with composite primary keys.
+  </Card>
+  <Card title="@angriff36/manifest">
+    Custom DSL with lexer, parser, IR compiler, and runtime engine. All domain mutations flow through the Manifest pipeline.
+  </Card>
+  <Card title="@repo/design-system">
+    55 base UI components + 12 block components built on shadcn/ui, Radix, and Tailwind.
+  </Card>
+  <Card title="@repo/realtime">
+    18 typed events across kitchen, command board, and inventory domains. Transactional outbox with Ably transport.
+  </Card>
+  <Card title="@repo/payroll-engine">
+    Full payroll calculation with federal/state tax brackets, tip pooling, deductions, and multi-format export.
+  </Card>
+  <Card title="@repo/event-parser">
+    PDF and CSV document parsing for event import. Extracts menus, timelines, staff, and allergens.
+  </Card>
+</CardGroup>
+
+## Core Patterns
+
+- **IR-First Architecture** — The Manifest DSL compiles to an Intermediate Representation that governs all domain mutations
+- **Multi-Tenancy** — Every tenant-scoped model uses composite primary keys `[tenantId, id]` with automatic scoping middleware
+- **Transactional Outbox** — Domain events are written atomically with mutations, then published to Ably by a separate process
+- **Vendor Abstraction** — Every external service is wrapped in a `@repo/*` package for swappability
+- **Soft Deletes** — All models use `deletedAt` timestamps instead of hard deletes
+- **Status State Machines** — Formal state transitions stored in database tables with role-based guards

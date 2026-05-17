@@ -20,6 +20,9 @@ import type { NextRequest } from "next/server";
 import { requireCurrentUser } from "@/app/lib/tenant";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
 
+const DEFAULT_APP_URL = "https://app.capsule.pro";
+const DEFAULT_FROM_ADDRESS = "noreply@capsule.pro";
+
 export const runtime = "nodejs";
 
 /**
@@ -148,14 +151,14 @@ export async function POST(
 
       if (client?.email) {
         clientEmail = client.email;
-        const appUrl = process.env.APP_URL || "https://app.convoy.com";
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? DEFAULT_APP_URL;
         signingUrl = `${appUrl}/sign/contract/${signingToken}`;
         const clientName =
           client.first_name || client.company_name || "Valued Client";
 
         try {
           await resend.emails.send({
-            from: process.env.RESEND_FROM || "noreply@convoy.com",
+            from: process.env.RESEND_FROM ?? DEFAULT_FROM_ADDRESS,
             to: client.email,
             subject: `Contract for Signature: ${contract?.title ?? "Contract"}`,
             react: ContractTemplate({

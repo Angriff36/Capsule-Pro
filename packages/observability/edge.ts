@@ -7,7 +7,11 @@
  * are already lazy-loaded at the edge runtime level.
  */
 
-import { consoleLoggingIntegration, init } from "@sentry/nextjs";
+import {
+  consoleLoggingIntegration,
+  init,
+  vercelAIIntegration,
+} from "@sentry/nextjs";
 import { keys } from "./keys";
 import { tracesSampler } from "./tracing";
 
@@ -27,7 +31,7 @@ const getSentryEnvironment = () => {
     return explicit;
   }
 
-  const vercelEnv = process.env.VERCEL_ENV?.trim();
+  const vercelEnv = keys().VERCEL_ENV;
   if (vercelEnv) {
     return vercelEnv;
   }
@@ -58,12 +62,27 @@ export const initializeSentry = (): ReturnType<typeof init> => {
     // tracesSampler drops noise routes and applies the configured sample rate
     tracesSampler,
 
+    // Propagate trace context to these targets for distributed tracing
+    tracePropagationTargets: [
+      "localhost",
+      /^\//,
+      /^https:\/\/[a-z0-9-]+\.vercel\.app/,
+      /^https:\/\/[a-z0-9-]+\.capsule\.pro/,
+    ],
+
+    // Normalize nested data structures to prevent oversized payloads
+    normalizeDepth: 10,
+
+    // Identify this server in Sentry UI
+    serverName: process.env.VERCEL_URL ?? undefined,
+
     // Setting this option to true will print useful information to the console while you're setting up Sentry.
     debug: false,
 
-    // Integrations for console logging
+    // Integrations for console logging + AI SDK tracing
     integrations: [
       consoleLoggingIntegration({ levels: ["log", "error", "warn"] }),
+      vercelAIIntegration(),
     ],
     beforeSend(event) {
       if (shouldDropDevWebpackCacheError(event)) {
@@ -76,6 +95,19 @@ export const initializeSentry = (): ReturnType<typeof init> => {
         return null;
       }
 
+      return event;
+    },
+    beforeSendTransaction(event) {
+      // Drop noise transactions from static assets and health checks
+      const name = event.transaction ?? "";
+      if (
+        name.startsWith("/_next") ||
+        name.startsWith("/favicon") ||
+        name.startsWith("/api/health") ||
+        name.startsWith("/api/cron")
+      ) {
+        return null;
+      }
       return event;
     },
   });

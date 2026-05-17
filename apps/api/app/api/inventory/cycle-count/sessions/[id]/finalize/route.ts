@@ -153,7 +153,7 @@ async function processInventoryAdjustments(
 }
 
 interface RouteContext {
-  params: Promise<{ sessionId: string }>;
+  params: Promise<{ id: string }>;
 }
 
 /**
@@ -181,7 +181,7 @@ export async function POST(request: Request, context: RouteContext) {
       );
     }
 
-    const { sessionId } = await context.params;
+    const { id: sessionId } = await context.params;
     const body = await request.json();
 
     // Find the session by sessionId (not id)

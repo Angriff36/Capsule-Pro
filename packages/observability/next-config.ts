@@ -2,16 +2,16 @@ import { withLogtail } from "@logtail/next";
 import { withSentryConfig } from "@sentry/nextjs";
 import { keys } from "./keys";
 
-const sentryKeys = keys();
+const env = keys();
 const hasSentryUploadConfig =
-  sentryKeys.SENTRY_ORG &&
-  sentryKeys.SENTRY_PROJECT &&
-  sentryKeys.SENTRY_AUTH_TOKEN;
+  env.SENTRY_ORG &&
+  env.SENTRY_PROJECT &&
+  env.SENTRY_AUTH_TOKEN;
 
 export const sentryConfig: Parameters<typeof withSentryConfig>[1] = {
-  org: sentryKeys.SENTRY_ORG,
-  project: sentryKeys.SENTRY_PROJECT,
-  authToken: sentryKeys.SENTRY_AUTH_TOKEN,
+  org: env.SENTRY_ORG,
+  project: env.SENTRY_PROJECT,
+  authToken: env.SENTRY_AUTH_TOKEN,
 
   // Only print logs for uploading source maps in CI
   silent: !process.env.CI,
@@ -79,16 +79,16 @@ export const withSentry = (sourceConfig: object): object => {
 
 export const withLogging = (config: object): object => {
   const hasBetterStackSourceToken = Boolean(
-    process.env.BETTER_STACK_SOURCE_TOKEN ||
-      process.env.NEXT_PUBLIC_BETTER_STACK_SOURCE_TOKEN ||
-      process.env.LOGTAIL_SOURCE_TOKEN ||
-      process.env.NEXT_PUBLIC_LOGTAIL_SOURCE_TOKEN
+    env.BETTER_STACK_SOURCE_TOKEN ||
+      env.NEXT_PUBLIC_BETTER_STACK_SOURCE_TOKEN ||
+      env.LOGTAIL_SOURCE_TOKEN ||
+      env.NEXT_PUBLIC_LOGTAIL_SOURCE_TOKEN
   );
   const hasBetterStackIngestUrl = Boolean(
-    process.env.BETTER_STACK_INGESTING_URL ||
-      process.env.NEXT_PUBLIC_BETTER_STACK_INGESTING_URL ||
-      process.env.LOGTAIL_URL ||
-      process.env.NEXT_PUBLIC_LOGTAIL_URL
+    env.BETTER_STACK_INGESTING_URL ||
+      env.NEXT_PUBLIC_BETTER_STACK_INGESTING_URL ||
+      env.LOGTAIL_URL ||
+      env.NEXT_PUBLIC_LOGTAIL_URL
   );
 
   if (!(hasBetterStackSourceToken && hasBetterStackIngestUrl)) {

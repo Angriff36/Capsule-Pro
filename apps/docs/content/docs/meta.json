@@ -1,0 +1,24 @@
+{
+  "title": "Capsule Pro",
+  "pages": [
+    "index",
+    "quickstart",
+    "---Platform---",
+    "platform",
+    "---Modules---",
+    "command-board",
+    "events",
+    "kitchen",
+    "crm",
+    "inventory",
+    "warehouse",
+    "scheduling",
+    "payroll",
+    "analytics",
+    "administrative",
+    "---Reference---",
+    "integrations",
+    "architecture",
+    "internal"
+  ]
+}

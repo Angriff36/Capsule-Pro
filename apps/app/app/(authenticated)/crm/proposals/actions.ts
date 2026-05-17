@@ -15,6 +15,9 @@ import { serializeDecimals } from "@/app/lib/decimal";
 import { invariant } from "@/app/lib/invariant";
 import { getTenantId } from "@/app/lib/tenant";
 
+const DEFAULT_APP_URL = "https://app.capsule.pro";
+const DEFAULT_FROM_ADDRESS = "noreply@capsule.pro";
+
 // Types matching the API
 export interface ProposalFilters {
   search?: string;
@@ -571,7 +574,7 @@ export async function sendProposal(id: string, input: SendProposalInput = {}) {
   }
 
   // Build public proposal URL (no auth required)
-  const appUrl = process.env.APP_URL || "https://app.convoy.com";
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? DEFAULT_APP_URL;
   const proposalUrl = `${appUrl}/view/proposal/${publicToken}`;
 
   // Format total amount
@@ -586,7 +589,7 @@ export async function sendProposal(id: string, input: SendProposalInput = {}) {
   // Send email using Resend
   try {
     await resend.emails.send({
-      from: process.env.RESEND_FROM || "noreply@convoy.com",
+      from: process.env.RESEND_FROM ?? DEFAULT_FROM_ADDRESS,
       to: recipientEmail,
       subject: `Proposal: ${existingProposal.title}`,
       react: ProposalTemplate({
@@ -646,8 +649,7 @@ export async function getProposalPublicLink(id: string) {
     });
   }
 
-  const appUrl = process.env.APP_URL || "https://app.convoy.com";
-  const publicUrl = `${appUrl}/view/proposal/${publicToken}`;
+  const publicUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? DEFAULT_APP_URL}/view/proposal/${publicToken}`;
 
   return {
     success: true,

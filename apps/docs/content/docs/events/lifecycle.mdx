@@ -1,0 +1,46 @@
+---
+title: Event Lifecycle
+description: Event status workflow and the 10 IR commands that drive it.
+---
+
+Events follow a status-based lifecycle managed through Manifest IR commands.
+
+## Statuses
+
+| Status | Description |
+|--------|-------------|
+| Draft | Initial state, event is being planned |
+| Confirmed | Client has confirmed the event |
+| Tentative | Event is likely but not confirmed |
+| Cancelled | Event has been cancelled |
+| Completed | Event has been executed |
+| Postponed | Event has been delayed to a future date |
+
+## Manifest Commands
+
+10 IR commands manage the event lifecycle:
+
+| Command | Description |
+|---------|-------------|
+| `create` | Create a new event |
+| `update` | Update event details |
+| `cancel` | Cancel the event |
+| `archive` | Archive a completed/cancelled event |
+| `confirm` | Move to confirmed status |
+| `finalize` | Lock the event for execution |
+| `unfinalize` | Unlock a finalized event for changes |
+| `update-date` | Change the event date |
+| `update-guest-count` | Adjust expected guests |
+| `update-location` | Change the venue |
+
+## Event Detail View
+
+The event detail page at `/events/[eventId]` performs 5 parallel data queries:
+
+1. Event core data
+2. RSVPs and guest list
+3. Dishes and menu items
+4. Prep tasks
+5. Related events, recipe ingredients/steps, and inventory coverage
+
+Available actions: Export (CSV/PDF), Delete, View Battle Board.

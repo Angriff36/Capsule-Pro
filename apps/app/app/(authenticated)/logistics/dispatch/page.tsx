@@ -119,7 +119,7 @@ export default function DispatchPage() {
   const [selectedRoute, setSelectedRoute] = useState<DispatchRoute | null>(
     null
   );
-  const [selectedDriverId, setSelectedDriverId] = useState<string>("");
+  const [selectedDriverId, setSelectedDriverId] = useState<string>("__none__");
   const [assigning, setAssigning] = useState(false);
 
   useEffect(() => {
@@ -159,7 +159,7 @@ export default function DispatchPage() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             routeId: selectedRoute.id,
-            driverId: selectedDriverId || null,
+            driverId: selectedDriverId === "__none__" ? null : selectedDriverId || null,
           }),
         }
       );
@@ -463,7 +463,7 @@ export default function DispatchPage() {
                   <SelectValue placeholder="Choose a driver..." />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Unassigned</SelectItem>
+                  <SelectItem value="__none__">Unassigned</SelectItem>
                   {data.availableDrivers.map((driver) => (
                     <SelectItem key={driver.id} value={driver.id}>
                       {driver.name}
@@ -474,7 +474,7 @@ export default function DispatchPage() {
               </Select>
             </div>
 
-            {selectedDriverId === "" && selectedRoute?.driverId && (
+            {selectedDriverId === "__none__" && selectedRoute?.driverId && (
               <p className="text-sm text-muted-foreground">
                 This will remove the current driver assignment.
               </p>
@@ -490,7 +490,7 @@ export default function DispatchPage() {
             </Button>
             <Button disabled={assigning} onClick={handleAssign}>
               {assigning && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {selectedDriverId ? "Assign" : "Unassign"}
+              {selectedDriverId !== "__none__" ? "Assign" : "Unassign"}
             </Button>
           </DialogFooter>
         </DialogContent>

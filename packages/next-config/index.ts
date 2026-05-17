@@ -3,6 +3,8 @@ import withBundleAnalyzer from "@next/bundle-analyzer";
 import type { NextConfig } from "next";
 
 export const config: NextConfig = {
+  poweredByHeader: false,
+  reactStrictMode: true,
   turbopack: {
     root: path.resolve(process.cwd(), "..", ".."),
   },
@@ -72,6 +74,14 @@ export const config: NextConfig = {
           {
             key: "Strict-Transport-Security",
             value: "max-age=63072000; includeSubDomains; preload",
+          },
+          {
+            key: "Cross-Origin-Opener-Policy",
+            value: "same-origin",
+          },
+          {
+            key: "Cross-Origin-Resource-Policy",
+            value: "same-origin",
           },
         ],
       },

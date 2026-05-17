@@ -1,0 +1,55 @@
+---
+title: Proposals
+description: Proposal creation, pricing, line items, and client delivery.
+---
+
+Proposals are formal offers sent to clients or leads for catering services.
+
+## Proposal Structure
+
+| Field | Description |
+|-------|-------------|
+| Title | Proposal name |
+| Client/Lead | Linked client or lead |
+| Event Type | Type of catering event |
+| Date | Proposed event date |
+| Guest Count | Expected guests |
+| Venue | Proposed venue |
+| Line Items | Itemized pricing (type, description, quantity, unit price) |
+| Tax & Discount | Tax rate and discount amount |
+| Terms | Contract terms and conditions |
+| Expiration | Proposal expiration date |
+
+## Status Workflow
+
+Proposals move through 6 states:
+
+1. **Draft** — Being prepared
+2. **Sent** — Delivered to the client
+3. **Viewed** — Client has opened the proposal
+4. **Accepted** — Client accepted
+5. **Rejected** — Client declined
+6. **Withdrawn** — Proposal was pulled back
+
+## Manifest Commands
+
+- `create` / `update` — Proposal CRUD
+- `send` — Deliver to client
+- `accept` / `reject` — Client response
+- `withdraw` — Pull back a sent proposal
+- `mark-viewed` — Record that the client viewed it
+
+Line items:
+- `create` / `update` / `remove` — Line item management
+
+## PDF Export
+
+Proposals can be exported as PDF documents from the detail page.
+
+## Actions
+
+From the proposal list, you can:
+- Create new proposals
+- Search and filter by status
+- Duplicate an existing proposal
+- Delete proposals

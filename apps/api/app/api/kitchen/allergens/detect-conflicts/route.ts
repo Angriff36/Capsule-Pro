@@ -9,7 +9,7 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
-import { createManifestRuntime } from "@repo/manifest-adapters/manifest-runtime-factory";
+import { createManifestRuntime } from "@/lib/manifest-runtime";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
@@ -241,17 +241,10 @@ export async function POST(request: Request) {
 
     // Create warnings via manifest runtime with transaction for constraint validation and event emission
     await database.$transaction(async (tx) => {
-      const runtime = await createManifestRuntime(
-        {
-          prisma: database,
-          prismaOverride: tx,
-          log,
-          captureException,
-        },
-        {
-          user: { id: userId, tenantId },
-        }
-      );
+      const runtime = await createManifestRuntime({
+        user: { id: userId, tenantId },
+        prismaOverride: tx,
+      });
 
       // Check for conflicts and create warnings
       for (const guest of guests) {

@@ -1,0 +1,48 @@
+---
+title: Cycle Counts
+description: Physical inventory audits with variance tracking and reconciliation.
+---
+
+Cycle counts are physical inventory audits that verify system quantities against actual stock.
+
+## Session Lifecycle
+
+Each cycle count is a session with a defined lifecycle:
+
+1. `create` — Create a new count session (name + notes)
+2. `start` — Begin counting
+3. `complete` — Finish counting
+4. `finalize` — Reconcile variances and adjust stock
+5. `cancel` — Abort the session
+
+## Count Records
+
+Within a session, individual count records track:
+
+| Field | Description |
+|-------|-------------|
+| Item Number | Inventory item identifier |
+| Item Name | Display name |
+| Expected Quantity | System quantity |
+| Counted Quantity | Physical count |
+| Barcode | Scanned barcode |
+| Notes | Observer notes |
+
+Record commands: `create` / `update` / `verify`
+
+## Variance Reports
+
+After counting, variance reports highlight discrepancies:
+- Items with quantity differences
+- Percentage variance
+- Financial impact
+
+Report commands: `create` / `review` / `approve`
+
+## Finalization
+
+When a session is finalized:
+1. Variance reports are generated
+2. Stock adjustments are created for discrepancies
+3. Audit log entries are recorded
+4. All changes happen in a single transaction

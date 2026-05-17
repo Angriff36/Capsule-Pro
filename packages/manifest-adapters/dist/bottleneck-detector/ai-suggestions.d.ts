@@ -7,7 +7,7 @@
  * @packageDocumentation
  */
 import type { Bottleneck, ImprovementSuggestion } from "./types.js";
-declare function resolveOpenAiApiKey(): string | null;
+declare function getOpenAiApiKey(): string | null;
 /**
  * Generate AI-powered improvement suggestions for a bottleneck
  */
@@ -28,5 +28,5 @@ export declare function generateAiSuggestionsBatch(bottlenecks: Bottleneck[], co
  * Prioritize suggestions based on bottleneck severity and potential impact
  */
 export declare function prioritizeSuggestions(suggestions: ImprovementSuggestion[], maxCount?: number): ImprovementSuggestion[];
-export { resolveOpenAiApiKey };
+export { getOpenAiApiKey };
 //# sourceMappingURL=ai-suggestions.d.ts.map

@@ -1,6 +1,4 @@
 import { randomUUID } from "node:crypto";
-import { existsSync, readFileSync } from "node:fs";
-import { join } from "node:path";
 import { auth } from "@repo/auth/server";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
@@ -10,14 +8,14 @@ import {
   type UIMessage,
 } from "ai";
 import { requireTenantId } from "@/app/lib/tenant";
+import { env } from "@/env";
 import {
   runManifestActionAgentSafe,
   type StructuredAgentResponse,
 } from "./agent-loop";
 import { formatStructuredAgentResponseForDisplay } from "./response-format";
 
-const AI_MODEL = process.env.COMMAND_BOARD_AI_MODEL ?? "gpt-4o-mini";
-const NEWLINE_REGEX = /\r?\n/;
+const AI_MODEL = env.COMMAND_BOARD_AI_MODEL ?? "gpt-4o-mini";
 
 const SYSTEM_PROMPT = `You are Capsule AI, the built-in assistant for Capsule Pro — a catering management platform.
 
@@ -49,46 +47,6 @@ export const maxDuration = 60;
 interface ChatRequestBody {
   messages: UIMessage[];
   boardId?: string;
-}
-
-function resolveOpenAiApiKey(): string | null {
-  const envKey = process.env.OPENAI_API_KEY?.trim();
-  if (envKey) {
-    return envKey;
-  }
-
-  try {
-    const userProfile = process.env.USERPROFILE;
-    if (!userProfile) {
-      return null;
-    }
-
-    const envTxtPath = join(userProfile, "Documents", "env.txt");
-    if (!existsSync(envTxtPath)) {
-      return null;
-    }
-
-    const envContents = readFileSync(envTxtPath, "utf8");
-    const line = envContents
-      .split(NEWLINE_REGEX)
-      .map((entry) => entry.trim())
-      .find((entry) => entry.startsWith("OPENAI_API_KEY="));
-
-    if (!line) {
-      return null;
-    }
-
-    const key = line.slice("OPENAI_API_KEY=".length).trim();
-    return key ? key.replace(/^['"]|['"]$/g, "") : null;
-  } catch (error) {
-    captureException(error, {
-      tags: { route: "command-board-chat" },
-    });
-    log.error("[command-board-chat] Failed to resolve OPENAI_API_KEY", {
-      error: error instanceof Error ? error.message : "Unknown error",
-    });
-    return null;
-  }
 }
 
 function toStreamResponse(
@@ -132,7 +90,7 @@ export async function POST(request: Request): Promise<Response> {
       });
     }
 
-    const apiKey = resolveOpenAiApiKey();
+    const apiKey = env.OPENAI_API_KEY?.trim() || null;
     if (!apiKey) {
       return toStreamResponse(body.messages, {
         summary:
@@ -141,7 +99,6 @@ export async function POST(request: Request): Promise<Response> {
         errors: ["Missing OPENAI_API_KEY"],
         nextSteps: [
           "Set OPENAI_API_KEY in environment and retry.",
-          "If running locally, add OPENAI_API_KEY to Documents/env.txt.",
         ],
       });
     }

@@ -30,6 +30,12 @@ interface GeneratedRuntimeContext {
     role?: string;
   };
   entityName?: string;
+  /**
+   * Optional Prisma transaction client for atomic multi-entity writes.
+   * When provided, ALL internal Prisma operations use this client instead
+   * of the main singleton.
+   */
+  prismaOverride?: import("@repo/manifest-adapters/manifest-runtime-factory").PrismaTransactionClient;
 }
 
 /**
@@ -58,6 +64,7 @@ export async function createManifestRuntime(
   return createSharedRuntime(
     {
       prisma: database,
+      prismaOverride: ctx.prismaOverride,
       log,
       captureException,
       telemetry: sentryTelemetry,

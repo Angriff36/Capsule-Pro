@@ -93,35 +93,40 @@ export function VenuesClient() {
   const [searchInput, setSearchInput] = useState(filters.search || "");
 
   // Fetch venues
-  const fetchVenues = useCallback(async () => {
-    setLoading(true);
-    try {
-      const data = await getVenues(
-        {
-          ...filters,
-          search: filters.search || undefined,
-          venueType: filters.venueType,
-          city: filters.city || undefined,
-          isActive: filters.isActive,
-        },
-        pagination.page,
-        pagination.limit
-      );
-      setVenues(data.data || []);
-      setPagination(data.pagination || pagination);
-    } catch (error) {
-      toast.error("Failed to load venues", {
-        description: error instanceof Error ? error.message : "Unknown error",
-      });
-    } finally {
-      setLoading(false);
-    }
-  }, [filters, pagination.page, pagination.limit, pagination]);
+  const fetchVenues = useCallback(
+    async (page = 1, limit = 50) => {
+      setLoading(true);
+      try {
+        const data = await getVenues(
+          {
+            ...filters,
+            search: filters.search || undefined,
+            venueType: filters.venueType,
+            city: filters.city || undefined,
+            isActive: filters.isActive,
+          },
+          page,
+          limit
+        );
+        setVenues(data.data || []);
+        setPagination(
+          data.pagination || { page, limit, total: 0, totalPages: 0 }
+        );
+      } catch (error) {
+        toast.error("Failed to load venues", {
+          description: error instanceof Error ? error.message : "Unknown error",
+        });
+      } finally {
+        setLoading(false);
+      }
+    },
+    [filters]
+  );
 
-  // Initial load
+  // Fetch when filters or pagination change
   useEffect(() => {
-    fetchVenues();
-  }, [fetchVenues]);
+    fetchVenues(pagination.page, pagination.limit);
+  }, [fetchVenues, pagination.page, pagination.limit]);
 
   // Update URL when filters change
   useEffect(() => {
@@ -139,7 +144,11 @@ export function VenuesClient() {
       params.set("isActive", String(filters.isActive));
     }
     const queryString = params.toString();
-    router.push(`/crm/venues${queryString ? `?${queryString}` : ""}`);
+    const targetPath = `/crm/venues${queryString ? `?${queryString}` : ""}`;
+    const currentPath = `${window.location.pathname}${window.location.search}`;
+    if (targetPath !== currentPath) {
+      router.push(targetPath);
+    }
   }, [filters, router]);
 
   const handleFilterChange = (key: keyof VenueFilters, value: string) => {
@@ -268,7 +277,7 @@ export function VenuesClient() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">
+          <h1 className="font-semibold text-2xl tracking-tight">
             Venue Management
           </h1>
           <p className="text-muted-foreground">
@@ -287,7 +296,7 @@ export function VenuesClient() {
 
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-4">
-        <form className="flex-1 min-w-[200px]" onSubmit={handleSearchSubmit}>
+        <form className="min-w-[200px] flex-1" onSubmit={handleSearchSubmit}>
           <div className="relative">
             <Input
               className="pr-10"
@@ -406,7 +415,7 @@ export function VenuesClient() {
 
       {/* Pagination */}
       {pagination.totalPages > 1 && (
-        <div className="flex items-center justify-between text-sm text-muted-foreground">
+        <div className="flex items-center justify-between text-muted-foreground text-sm">
           <p>
             Showing {(pagination.page - 1) * pagination.limit + 1} to{" "}
             {Math.min(pagination.page * pagination.limit, pagination.total)} of{" "}

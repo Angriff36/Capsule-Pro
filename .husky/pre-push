@@ -1,13 +1,8 @@
 #!/usr/bin/env sh
-# Pre-push: fast checks before code leaves the machine.
-# Heavy CI gates run on PR; this catches obvious breakage early.
+# Pre-push checks: typecheck before pushing to remote
+set -e
 
-echo "[pre-push] Running fast typecheck..."
+echo "Running typecheck before push..."
+NODE_OPTIONS="--max-old-space-size=4096" pnpm check:all
 
-# Typecheck the three main apps (fast, covers most regressions)
-pnpm turbo typecheck --filter=./apps/app --filter=./apps/api --filter=./apps/web || {
-  echo "[pre-push] ❌ Typecheck failed. Fix errors and try again."
-  exit 1
-}
-
-echo "[pre-push] ✅ Typecheck passed."
+exit 0

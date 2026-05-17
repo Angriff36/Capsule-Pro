@@ -16,6 +16,7 @@ permissions:
 jobs:
   check-dependabot:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     outputs:
       has-failing-dependabot: ${{ steps.check.outputs.has-failing }}
 
@@ -33,10 +34,11 @@ jobs:
             echo "has-failing=false" >> $GITHUB_OUTPUT
           fi
         env:
-          GITHUB_TOKEN: ${{ secrets.PKG_AUTH_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   deploy-app-api-web:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     needs: check-dependabot
     if: needs.check-dependabot.outputs.has-failing-dependabot == 'false'
     env:
@@ -69,7 +71,7 @@ jobs:
       KNOCK_FEED_CHANNEL_ID: "dummy"
       NEXT_PUBLIC_GA_MEASUREMENT_ID: "G-DUMMY"
       NEXT_PUBLIC_POSTHOG_KEY: "phc_dummy"
-      NEXT_PUBLIC_POSTHOG_HOST: "https://app.posthog.com"
+      NEXT_PUBLIC_POSTHOG_HOST: "https://us.i.posthog.com"
       NEXT_PUBLIC_APP_URL: "https://capsule-pro-app.vercel.app"
       NEXT_PUBLIC_WEB_URL: "https://capsule-pro-web.vercel.app"
       NEXT_PUBLIC_API_URL: "https://capsule-pro-api.vercel.app"
@@ -84,6 +86,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
+          cache: 'pnpm'
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -94,8 +97,11 @@ jobs:
       - name: Generate Prisma client
         run: pnpm prisma:check
 
-      - name: Run linting
-        run: pnpm turbo typecheck --filter=./apps/app --filter=./apps/api --filter=./apps/web
+      - name: Typecheck (app, api, web)
+        run: pnpm check
+
+      - name: Lint explicit any (app, api, web production code)
+        run: pnpm lint:any
 
       - name: Generate code for deployment
         run: |
@@ -124,35 +130,36 @@ jobs:
             7b1173c2-ed67-4572-873a-b43e0021a4a5 > VERCEL_API_PROJECT_ID
             5e141ec7-b40d-4b83-8efa-b43e0021c700 > VERCEL_WEB_PROJECT_ID
 
+      - name: Install Vercel CLI
+        run: npm install -g vercel@53.1.0
+
       - name: Deploy to Vercel (App)
-        uses: amondnet/vercel-action@v25
-        with:
-          vercel-token: ${{ env.VERCEL_TOKEN }}
-          vercel-org-id: ${{ env.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ env.VERCEL_APP_PROJECT_ID }}
-          vercel-version: 53.1.0
-          vercel-args: '--prod'
+        run: |
+          mkdir -p .vercel
+          printf '{"orgId":"%s","projectId":"%s"}\n' "$VERCEL_ORG_ID" "$VERCEL_APP_PROJECT_ID" > .vercel/project.json
+          vercel deploy --prod --yes
+        env:
+          VERCEL_TOKEN: ${{ env.VERCEL_TOKEN }}
 
       - name: Deploy to Vercel (API)
-        uses: amondnet/vercel-action@v25
-        with:
-          vercel-token: ${{ env.VERCEL_TOKEN }}
-          vercel-org-id: ${{ env.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ env.VERCEL_API_PROJECT_ID }}
-          vercel-version: 53.1.0
-          vercel-args: '--prod'
+        run: |
+          mkdir -p .vercel
+          printf '{"orgId":"%s","projectId":"%s"}\n' "$VERCEL_ORG_ID" "$VERCEL_API_PROJECT_ID" > .vercel/project.json
+          vercel deploy --prod --yes
+        env:
+          VERCEL_TOKEN: ${{ env.VERCEL_TOKEN }}
 
       - name: Deploy to Vercel (Web)
-        uses: amondnet/vercel-action@v25
-        with:
-          vercel-token: ${{ env.VERCEL_TOKEN }}
-          vercel-org-id: ${{ env.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ env.VERCEL_WEB_PROJECT_ID }}
-          vercel-version: 53.1.0
-          vercel-args: '--prod'
+        run: |
+          mkdir -p .vercel
+          printf '{"orgId":"%s","projectId":"%s"}\n' "$VERCEL_ORG_ID" "$VERCEL_WEB_PROJECT_ID" > .vercel/project.json
+          vercel deploy --prod --yes
+        env:
+          VERCEL_TOKEN: ${{ env.VERCEL_TOKEN }}
 
   deploy-docs:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     needs: check-dependabot
     if: needs.check-dependabot.outputs.has-failing-dependabot == 'false'
     env:
@@ -169,6 +176,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
+          cache: 'pnpm'
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -190,17 +198,20 @@ jobs:
             71c979f7-e59c-4370-872b-b43e002162d2 > VERCEL_ORG_ID
             e239cd88-7fb7-4c3b-ab42-b43e0021b4c8 > VERCEL_DOCS_PROJECT_ID
 
+      - name: Install Vercel CLI
+        run: npm install -g vercel@53.1.0
+
       - name: Deploy to Vercel (Docs)
-        uses: amondnet/vercel-action@v25
-        with:
-          vercel-token: ${{ env.VERCEL_TOKEN }}
-          vercel-org-id: ${{ env.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ env.VERCEL_DOCS_PROJECT_ID }}
-          vercel-version: 53.1.0
-          vercel-args: '--prod'
+        run: |
+          mkdir -p .vercel
+          printf '{"orgId":"%s","projectId":"%s"}\n' "$VERCEL_ORG_ID" "$VERCEL_DOCS_PROJECT_ID" > .vercel/project.json
+          vercel deploy --prod --yes
+        env:
+          VERCEL_TOKEN: ${{ env.VERCEL_TOKEN }}
 
   notify-failing-dependabot:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     needs: check-dependabot
     if: needs.check-dependabot.outputs.has-failing-dependabot == 'true'
 
@@ -211,4 +222,4 @@ jobs:
           echo "Please review and fix the failing Dependabot PRs before deploying"
           gh pr list --author dependabot[bot] --json number,title,statusCheckRollup --template '{{range .}}{{tablerow .number .title (join .statusCheckRollup " ")}}{{end}}'
         env:
-          GITHUB_TOKEN: ${{ secrets.PKG_AUTH_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}

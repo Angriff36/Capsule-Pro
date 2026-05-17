@@ -62,12 +62,15 @@ import {
   ITEM_CATEGORIES,
   type ItemCategory,
   listInventoryItems,
+  listSuppliers,
   type StockStatus,
+  type Supplier,
 } from "../../../lib/use-inventory";
 import { CreateInventoryItemModal } from "./components/create-inventory-item-modal";
 
 export const InventoryItemsPageClient = () => {
   const [items, setItems] = useState<InventoryItemWithStatus[]>([]);
+  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -75,6 +78,7 @@ export const InventoryItemsPageClient = () => {
   const [categoryFilter, setCategoryFilter] = useState<ItemCategory | "all">(
     "all"
   );
+  const [supplierFilter, setSupplierFilter] = useState<string>("all");
   const [stockStatusFilter, setStockStatusFilter] = useState<
     StockStatus | "all"
   >("all");
@@ -100,13 +104,22 @@ export const InventoryItemsPageClient = () => {
   const [batchUpdateValue, setBatchUpdateValue] = useState<string>("");
   const [_batchUpdating, setBatchUpdating] = useState(false);
 
+  // Load suppliers once for the filter dropdown
+  useEffect(() => {
+    listSuppliers()
+      .then(setSuppliers)
+      .catch(() => setSuppliers([]));
+  }, []);
+
   const loadItems = useCallback(async () => {
     setIsLoading(true);
     try {
       const response = await listInventoryItems({
         page,
         limit: 20,
+        search: searchQuery || undefined,
         category: categoryFilter === "all" ? undefined : categoryFilter,
+        supplierId: supplierFilter === "all" ? undefined : supplierFilter,
         stockStatus:
           stockStatusFilter === "all" ? undefined : stockStatusFilter,
         fsaStatus: fsaStatusFilter === "all" ? undefined : fsaStatusFilter,
@@ -124,22 +137,11 @@ export const InventoryItemsPageClient = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [page, categoryFilter, stockStatusFilter, fsaStatusFilter]);
+  }, [page, searchQuery, categoryFilter, supplierFilter, stockStatusFilter, fsaStatusFilter]);
 
   useEffect(() => {
     loadItems();
   }, [loadItems]);
-
-  const filteredItems = items.filter((item) => {
-    if (!searchQuery) {
-      return true;
-    }
-    const query = searchQuery.toLowerCase();
-    return (
-      item.name.toLowerCase().includes(query) ||
-      item.item_number.toLowerCase().includes(query)
-    );
-  });
 
   const handleDelete = useCallback(async () => {
     if (!itemToDelete) {
@@ -179,12 +181,12 @@ export const InventoryItemsPageClient = () => {
 
   // Selection helpers
   const toggleSelectAll = useCallback(() => {
-    if (selectedIds.size === filteredItems.length) {
+    if (selectedIds.size === items.length) {
       setSelectedIds(new Set());
     } else {
-      setSelectedIds(new Set(filteredItems.map((item) => item.id)));
+      setSelectedIds(new Set(items.map((item) => item.id)));
     }
-  }, [filteredItems, selectedIds.size]);
+  }, [items, selectedIds.size]);
 
   const toggleSelectItem = useCallback((id: string) => {
     setSelectedIds((prev) => {
@@ -262,12 +264,19 @@ export const InventoryItemsPageClient = () => {
     (item) => item.stock_status === "out_of_stock"
   ).length;
 
+  const hasActiveFilters =
+    !!searchQuery ||
+    categoryFilter !== "all" ||
+    supplierFilter !== "all" ||
+    stockStatusFilter !== "all" ||
+    fsaStatusFilter !== "all";
+
   return (
     <>
       <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
         {/* Page Header */}
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">
+          <h1 className="font-semibold text-2xl tracking-tight">
             Inventory Items
           </h1>
           <p className="text-muted-foreground">
@@ -280,7 +289,7 @@ export const InventoryItemsPageClient = () => {
 
         {/* Performance Overview */}
         <section>
-          <h2 className="text-sm font-medium text-muted-foreground mb-4">
+          <h2 className="mb-4 font-medium text-muted-foreground text-sm">
             Performance Overview
           </h2>
           <div className="grid gap-4 md:grid-cols-4">
@@ -319,7 +328,7 @@ export const InventoryItemsPageClient = () => {
 
         {/* Filters Section */}
         <section>
-          <h2 className="text-sm font-medium text-muted-foreground mb-4">
+          <h2 className="mb-4 font-medium text-muted-foreground text-sm">
             Filters
           </h2>
           <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border bg-card p-4">
@@ -327,18 +336,22 @@ export const InventoryItemsPageClient = () => {
               <div className="relative">
                 <Input
                   className="w-64"
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search items..."
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    setPage(1);
+                  }}
+                  placeholder="Search by name or SKU..."
                   type="text"
                   value={searchQuery}
                 />
               </div>
               <Select
-                onValueChange={(value) =>
+                onValueChange={(value) => {
                   setCategoryFilter(
                     value === "all" ? "all" : (value as ItemCategory)
-                  )
-                }
+                  );
+                  setPage(1);
+                }}
                 value={categoryFilter}
               >
                 <SelectTrigger className="w-40">
@@ -354,11 +367,31 @@ export const InventoryItemsPageClient = () => {
                 </SelectContent>
               </Select>
               <Select
-                onValueChange={(value) =>
+                onValueChange={(value) => {
+                  setSupplierFilter(value);
+                  setPage(1);
+                }}
+                value={supplierFilter}
+              >
+                <SelectTrigger className="w-40">
+                  <SelectValue placeholder="Supplier" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Suppliers</SelectItem>
+                  {suppliers.map((s) => (
+                    <SelectItem key={s.id} value={s.id}>
+                      {s.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select
+                onValueChange={(value) => {
                   setStockStatusFilter(
                     value === "all" ? "all" : (value as StockStatus)
-                  )
-                }
+                  );
+                  setPage(1);
+                }}
                 value={stockStatusFilter}
               >
                 <SelectTrigger className="w-40">
@@ -372,11 +405,12 @@ export const InventoryItemsPageClient = () => {
                 </SelectContent>
               </Select>
               <Select
-                onValueChange={(value) =>
+                onValueChange={(value) => {
                   setFsaStatusFilter(
                     value === "all" ? "all" : (value as FSAStatus)
-                  )
-                }
+                  );
+                  setPage(1);
+                }}
                 value={fsaStatusFilter}
               >
                 <SelectTrigger className="w-40">
@@ -404,7 +438,7 @@ export const InventoryItemsPageClient = () => {
           <section>
             <div className="flex items-center justify-between rounded-xl border bg-muted/50 p-4">
               <div className="flex items-center gap-3">
-                <span className="text-sm font-medium">
+                <span className="font-medium text-sm">
                   {selectedIds.size} item{selectedIds.size !== 1 ? "s" : ""}{" "}
                   selected
                 </span>
@@ -456,9 +490,9 @@ export const InventoryItemsPageClient = () => {
 
         {/* Inventory Items Table Section */}
         <section>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-sm font-medium text-muted-foreground">
-              Inventory Items ({filteredItems.length})
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="font-medium text-muted-foreground text-sm">
+              Inventory Items ({totalCount})
             </h2>
             <Button asChild size="sm" variant="outline">
               <Link href="/inventory/import">
@@ -471,36 +505,27 @@ export const InventoryItemsPageClient = () => {
             <div className="flex items-center justify-center py-12">
               <div className="size-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
             </div>
-          ) : filteredItems.length === 0 ? (
+          ) : items.length === 0 ? (
             <div className="flex flex-col items-center justify-center rounded-xl border border-dashed p-12 text-center">
               <div className="mb-4 rounded-full bg-muted p-4">
                 <PackageIcon className="size-8 text-muted-foreground" />
               </div>
-              <h3 className="mb-2 text-lg font-semibold">
-                {searchQuery ||
-                categoryFilter !== "all" ||
-                stockStatusFilter !== "all" ||
-                fsaStatusFilter !== "all"
+              <h3 className="mb-2 font-semibold text-lg">
+                {hasActiveFilters
                   ? "No items found"
                   : "No inventory items yet"}
               </h3>
               <p className="mb-4 text-muted-foreground text-sm">
-                {searchQuery ||
-                categoryFilter !== "all" ||
-                stockStatusFilter !== "all" ||
-                fsaStatusFilter !== "all"
+                {hasActiveFilters
                   ? "Try adjusting your filters or search query"
                   : "Create your first inventory item to get started"}
               </p>
-              {!searchQuery &&
-                categoryFilter === "all" &&
-                stockStatusFilter === "all" &&
-                fsaStatusFilter === "all" && (
-                  <Button onClick={() => setIsCreateModalOpen(true)}>
-                    <PlusIcon className="mr-2 size-4" />
-                    Create Item
-                  </Button>
-                )}
+              {!hasActiveFilters && (
+                <Button onClick={() => setIsCreateModalOpen(true)}>
+                  <PlusIcon className="mr-2 size-4" />
+                  Create Item
+                </Button>
+              )}
             </div>
           ) : (
             <div className="rounded-xl border bg-card">
@@ -510,8 +535,8 @@ export const InventoryItemsPageClient = () => {
                     <TableHead className="w-10">
                       <Checkbox
                         checked={
-                          filteredItems.length > 0 &&
-                          selectedIds.size === filteredItems.length
+                          items.length > 0 &&
+                          selectedIds.size === items.length
                         }
                         onCheckedChange={toggleSelectAll}
                       />
@@ -528,7 +553,7 @@ export const InventoryItemsPageClient = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredItems.map((item) => (
+                  {items.map((item) => (
                     <TableRow key={item.id}>
                       <TableCell>
                         <Checkbox
@@ -547,7 +572,7 @@ export const InventoryItemsPageClient = () => {
                           {item.name}
                         </Link>
                         {item.tags.length > 0 && (
-                          <div className="flex flex-wrap gap-1 mt-1">
+                          <div className="mt-1 flex flex-wrap gap-1">
                             {item.tags.slice(0, 2).map((tag) => (
                               <Badge
                                 className="text-xs"

@@ -19,31 +19,31 @@ export class EmployeeAvailabilityPrismaStore {
         this.tenantId = tenantId;
     }
     async getAll() {
-        const rows = await this.prisma.employee_availability.findMany({
-            where: { tenant_id: this.tenantId, deleted_at: null },
+        const rows = await this.prisma.employeeAvailability.findMany({
+            where: { tenantId: this.tenantId, deletedAt: null },
             orderBy: { id: "desc" },
         });
         return rows.map((r) => this.mapToManifestEntity(r));
     }
     async getById(id) {
-        const row = await this.prisma.employee_availability.findFirst({
-            where: { tenant_id: this.tenantId, id, deleted_at: null },
+        const row = await this.prisma.employeeAvailability.findFirst({
+            where: { tenantId: this.tenantId, id, deletedAt: null },
         });
         return row ? this.mapToManifestEntity(row) : undefined;
     }
     async create(data) {
         const id = data.id ?? crypto.randomUUID();
-        const row = await this.prisma.employee_availability.create({
+        const row = await this.prisma.employeeAvailability.create({
             data: {
-                tenant_id: this.tenantId,
+                tenantId: this.tenantId,
                 id,
-                employee_id: data.employee_id,
-                day_of_week: data.day_of_week,
-                start_time: data.start_time,
-                end_time: data.end_time,
-                is_available: asBool(data.is_available, true),
-                effective_from: asNullableDate(data.effective_from) ?? new Date(),
-                effective_until: asNullableDate(data.effective_until),
+                employeeId: data.employeeId,
+                dayOfWeek: data.dayOfWeek,
+                startTime: data.startTime,
+                endTime: data.endTime,
+                isAvailable: asBool(data.is_available, true),
+                effectiveFrom: asNullableDate(data.effective_from) ?? new Date(),
+                effectiveUntil: asNullableDate(data.effective_until),
             },
         });
         return this.mapToManifestEntity(row);
@@ -51,22 +51,22 @@ export class EmployeeAvailabilityPrismaStore {
     async update(id, data) {
         try {
             const patch = {};
-            if (data.employee_id !== undefined)
-                patch.employee_id = data.employee_id;
-            if (data.day_of_week !== undefined)
-                patch.day_of_week = data.day_of_week;
-            if (data.start_time !== undefined)
-                patch.start_time = data.start_time;
-            if (data.end_time !== undefined)
-                patch.end_time = data.end_time;
+            if (data.employeeId !== undefined)
+                patch.employeeId = data.employeeId;
+            if (data.dayOfWeek !== undefined)
+                patch.dayOfWeek = data.dayOfWeek;
+            if (data.startTime !== undefined)
+                patch.startTime = data.startTime;
+            if (data.endTime !== undefined)
+                patch.endTime = data.endTime;
             if (data.is_available !== undefined)
                 patch.is_available = asBool(data.is_available, true);
             if (data.effective_from !== undefined)
                 patch.effective_from = asNullableDate(data.effective_from);
             if (data.effective_until !== undefined)
                 patch.effective_until = asNullableDate(data.effective_until);
-            const row = await this.prisma.employee_availability.update({
-                where: { tenant_id_id: { tenant_id: this.tenantId, id } },
+            const row = await this.prisma.employeeAvailability.update({
+                where: { tenantId_id: { tenantId: this.tenantId, id } },
                 data: patch,
             });
             return this.mapToManifestEntity(row);
@@ -78,9 +78,9 @@ export class EmployeeAvailabilityPrismaStore {
     }
     async delete(id) {
         try {
-            await this.prisma.employee_availability.update({
-                where: { tenant_id_id: { tenant_id: this.tenantId, id } },
-                data: { deleted_at: new Date() },
+            await this.prisma.employeeAvailability.update({
+                where: { tenantId_id: { tenantId: this.tenantId, id } },
+                data: { deletedAt: new Date() },
             });
             return true;
         }
@@ -90,24 +90,24 @@ export class EmployeeAvailabilityPrismaStore {
         }
     }
     async clear() {
-        await this.prisma.employee_availability.deleteMany({
-            where: { tenant_id: this.tenantId },
+        await this.prisma.employeeAvailability.deleteMany({
+            where: { tenantId: this.tenantId },
         });
     }
     mapToManifestEntity(r) {
         return {
             id: r.id,
-            tenant_id: r.tenant_id,
-            employee_id: r.employee_id ?? null,
-            day_of_week: r.day_of_week ?? null,
-            start_time: r.start_time ?? null,
-            end_time: r.end_time ?? null,
-            is_available: r.is_available ?? true,
-            effective_from: r.effective_from ?? null,
-            effective_until: r.effective_until ?? null,
-            created_at: r.created_at ?? null,
-            updated_at: r.updated_at ?? null,
-            deleted_at: r.deleted_at ?? null,
+            tenantId: r.tenantId,
+            employeeId: r.employeeId ?? null,
+            dayOfWeek: r.dayOfWeek ?? null,
+            startTime: r.startTime ?? null,
+            endTime: r.endTime ?? null,
+            isAvailable: r.is_available ?? true,
+            effectiveFrom: r.effective_from ?? null,
+            effectiveUntil: r.effective_until ?? null,
+            createdAt: r.createdAt ?? null,
+            updatedAt: r.updatedAt ?? null,
+            deletedAt: r.deletedAt ?? null,
         };
     }
 }

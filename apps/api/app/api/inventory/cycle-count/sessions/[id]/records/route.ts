@@ -36,7 +36,7 @@ function toNumber(value: { toNumber: () => number }): number {
 }
 
 interface RouteContext {
-  params: Promise<{ sessionId: string }>;
+  params: Promise<{ id: string }>;
 }
 
 /**
@@ -112,7 +112,7 @@ export async function GET(request: Request, context: RouteContext) {
       );
     }
 
-    const { sessionId } = await context.params;
+    const { id: sessionId } = await context.params;
     const { searchParams } = new URL(request.url);
     const { page, limit } = parsePaginationParams(searchParams);
 
@@ -186,9 +186,9 @@ export async function GET(request: Request, context: RouteContext) {
  */
 export async function POST(
   request: NextRequest,
-  context: { params: Promise<{ sessionId: string }> }
+  context: { params: Promise<{ id: string }> }
 ) {
-  const { sessionId } = await context.params;
+  const { id: sessionId } = await context.params;
   log.info("[CycleCountRecord/POST] Delegating to manifest create command", {
     sessionId,
   });

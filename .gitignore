@@ -270,7 +270,8 @@ sketch
 storybook-static/
 docs/
 !**/packages/manifest-runtime/docs/
-# Allow root-level docs/ tree so Implementation history & audit archives can be tracked
+!apps/docs/content/
+### Turbo ###
 !/docs/
 /docs/*
 !/docs/implementation-history/
@@ -469,3 +470,82 @@ pathlens-report-Angriff36-Capsule-Pro--2026-03-01.json
 .vercel
 .env*.local
 project-docs.zip
+
+# === Removed from tracking: local tool state, generated artifacts, scratch files ===
+
+# Local tool/IDE state
+.autolab/
+.specify/
+.idea/
+.cursor/
+.neon/
+.git-commit-msg
+
+# AI agent session/state
+memory/
+
+# Generated reports, audits, planning artifacts (root-level only)
+/audits/
+/reports/
+/planning/
+/archive/
+/automaker/
+/migration/
+/SLOPSCOPE_RULE_DISCOVERY_ARCHIVE/
+/slopscope/
+/e2es/
+/libs/
+/workflow/
+
+# Temp/test/gen directories
+/test-data/
+/test-gen/
+/testing/
+/tmp/
+/playwright-report/
+/weather-orchestration/
+
+# Scratch scripts and one-offs at root
+check_features.js
+install.sh
+loop.sh
+manifest-server.js
+sentry_fix.py
+update_plan.py
+cdp-screenshot.ps1
+
+# Generated/planning docs at root
+DESIGN.md
+FIXLIST.md
+TODO.md
+FeaturesTodo
+PROMPT_build.md
+PROMPT_build.md.template
+PROMPT_plan.md
+PROMPT_plan.md.template
+IMPLEMENTATION_PLAN.md
+IMPLEMENTATION_PLAN_SUMMARY.md
+SLOPSCOPE_RULE_DISCOVERY.md
+SLOPSCOPE_RULE_IMPLEMENTATION_PLAN.md
+
+# Tool config (local overrides, not shared)
+.lighthouserc.json
+.oac.json
+.secretlintignore
+.secretlintrc.json
+biome.autofix.jsonc
+manifest.config.yaml
+
+# Generated artifacts
+fixaitranscript
+triage.zip
+api_domains_summary.csv
+.tmpaudit-output-fixed.json
+.slopscope-rule-discovery-seen.json
+ir
+
+# Random scratch files
+WqZ9vMhG6z.png
+activity-feed-verification.spec.ts
+collaboration-workspace-verification.spec.ts
+playwright-verify-suggestions.spec.ts

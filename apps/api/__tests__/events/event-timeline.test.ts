@@ -45,15 +45,6 @@ vi.mock("@repo/auth/server", () => ({
 }));
 
 vi.mock("@/app/lib/tenant", () => ({
-  requireCurrentUser: vi.fn().mockResolvedValue({
-    id: "test-user-id",
-    tenantId: "test-tenant",
-    role: "admin",
-    email: "test@example.com",
-    firstName: "Test",
-    lastName: "User",
-  }),
-
   getTenantIdForOrg: mocks.tenantMock,
 }));
 
@@ -85,17 +76,6 @@ const deletePOST = dispatch("EventTimelineItem", "deleteItem");
 const togglePOST = dispatch("EventTimelineItem", "completeItem");
 const updatePOST = dispatch("EventTimelineItem", "updateItem");
 
-// TODO: Create these routes before enabling tests:
-// - events/[eventId]/timeline/commands/create-item
-// - events/[eventId]/timeline/commands/update-item
-// - events/[eventId]/timeline/commands/toggle-completed
-// - events/[eventId]/timeline/commands/delete-item
-// See GitHub issue #37.
-const createPOST = vi.fn();
-const updatePOST = vi.fn();
-const togglePOST = vi.fn();
-const deletePOST = vi.fn();
-
 function setAuthOk() {
   mocks.authMock.mockResolvedValue({
     orgId: TEST_ORG_ID,
@@ -122,10 +102,6 @@ function makeReq(body: unknown): NextRequest {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
-}
-
-function manifestParams(entity: string, command: string) {
-  return { params: Promise.resolve({ entity, command }) };
 }
 
 function eventParams(id: string) {
@@ -253,10 +229,7 @@ describe("Event Timeline API", () => {
   // ---------------------------------------------------------------- //
   // POST /create-item                                                 //
   // ---------------------------------------------------------------- //
-  // TODO: Create events/[eventId]/timeline/commands/create-item route
-  // before enabling these tests. See GitHub issue #37.
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  describe.skip("POST /commands/create-item", () => {
+  describe("POST /commands/create-item", () => {
     it("returns 401 when unauthenticated", async () => {
       setAuthMissingUser();
       const res = await createPOST(makeReq({}), eventParams(TEST_EVENT_ID));
@@ -331,9 +304,7 @@ describe("Event Timeline API", () => {
   // ---------------------------------------------------------------- //
   // POST /update-item                                                 //
   // ---------------------------------------------------------------- //
-  // TODO: Create events/[eventId]/timeline/commands/update-item route
-  // before enabling these tests. See GitHub issue #37.
-  describe.skip("POST /commands/update-item", () => {
+  describe("POST /commands/update-item", () => {
     it("returns 400 when itemId is invalid", async () => {
       setAuthOk();
       const res = await updatePOST(
@@ -410,9 +381,7 @@ describe("Event Timeline API", () => {
   // ---------------------------------------------------------------- //
   // POST /toggle-completed                                            //
   // ---------------------------------------------------------------- //
-  // TODO: Create events/[eventId]/timeline/commands/toggle-completed route
-  // before enabling these tests. See GitHub issue #37.
-  describe.skip("POST /commands/toggle-completed", () => {
+  describe("POST /commands/toggle-completed", () => {
     it("returns 400 when isCompleted is not a boolean", async () => {
       setAuthOk();
       const res = await togglePOST(
@@ -489,9 +458,7 @@ describe("Event Timeline API", () => {
   // ---------------------------------------------------------------- //
   // POST /delete-item                                                 //
   // ---------------------------------------------------------------- //
-  // TODO: Create events/[eventId]/timeline/commands/delete-item route
-  // before enabling these tests. See GitHub issue #37.
-  describe.skip("POST /commands/delete-item", () => {
+  describe("POST /commands/delete-item", () => {
     it("returns 404 when item is not found", async () => {
       setAuthOk();
       mocks.timelineFindFirstMock.mockResolvedValue(null);

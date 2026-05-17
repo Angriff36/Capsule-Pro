@@ -204,10 +204,31 @@ export const POST = async (request: Request): Promise<Response> => {
 };
 
 /**
- * GET endpoint for health check
+ * GET endpoint for health check.
+ *
+ * Requires the same authentication as the POST handler:
+ * a valid Sentry webhook signature or CRON_SECRET bearer token.
+ * Prevents unauthenticated reconnaissance of Sentry configuration state.
  */
-export const GET = (): Response => {
-  const configured = !!process.env.SENTRY_WEBHOOK_SECRET;
+export const GET = (request: Request): Response => {
+  const authHeader = request.headers.get("authorization");
+  const cronSecret = process.env.CRON_SECRET;
+  const webhookSecret = process.env.SENTRY_WEBHOOK_SECRET;
+
+  if (process.env.NODE_ENV !== "development") {
+    const bearerValid = cronSecret && authHeader === `Bearer ${cronSecret}`;
+    const webhookBearerValid =
+      webhookSecret && authHeader === `Bearer ${webhookSecret}`;
+
+    if (!bearerValid && !webhookBearerValid) {
+      return NextResponse.json(
+        { ok: false, error: "Unauthorized" },
+        { status: 401 },
+      );
+    }
+  }
+
+  const configured = !!webhookSecret;
   const enabled = process.env.SENTRY_FIXER_ENABLED === "true";
 
   return NextResponse.json({

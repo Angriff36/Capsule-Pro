@@ -138,6 +138,7 @@ Do not work on BYPASS routes during BROKEN_PRISMA_READ batches.
   with `read:packages`; same value as CI secret `PKG_AUTH_TOKEN`). Then use
   normal `pnpm install`. CI/Vercel inject auth via
   `scripts/ensure-github-packages-npmrc.sh`.
+- **GITHUB_PAT env var required for pnpm install:** The project `.npmrc` uses `${GITHUB_PAT}` for GitHub Packages auth. If `pnpm install` fails with `ERR_PNPM_FETCH_404` for `@angriff36/manifest`, set the env var: `export GITHUB_PAT=$(pnpm config get //npm.pkg.github.com/:_authToken 2>/dev/null | tr -d '[:space:]')`. The token is already in global pnpm config but the project `.npmrc` env var reference doesn't resolve without it.
 - IR is authority — filesystem is not source of truth for routes
 - `@angriff36/manifest` must be consumed as the published package version
   (currently pinned), not `workspace:*` in `apps/*` or `packages/*`
@@ -204,7 +205,7 @@ React Native boundary: clean (no violations in web apps).
 
 Vercel runs only what's in `apps/api/vercel.json` — adding a file under
 `apps/api/app/api/cron/` does NOT schedule it. The endpoint directory currently
-has 6 routes, all scheduled (8 total cron entries including non-cron paths):
+has 5 routes but only 3 are scheduled:
 
 | Route                             | Schedule       | Scheduled? |
 | --------------------------------- | -------------- | ---------- |
@@ -214,19 +215,20 @@ has 6 routes, all scheduled (8 total cron entries including non-cron paths):
 | `cron/contract-expiration-alerts` | `0 7 * * *`    | ✅         |
 | `cron/email-reminders`            | `*/15 * * * *` | ✅         |
 | `cron/idempotency-cleanup`        | `0 3 * * *`    | ✅         |
-| `cron/integration-auto-sync`      | `*/15 * * * *` | ✅         |
-| `outbox/publish`                  | `* * * * *`    | ✅         |
+| `cron/keep-alive`                 | `*/5 * * * *`  | ✅         |
 
 When you add a new cron endpoint, add the matching entry to `vercel.json` in the
 same PR, otherwise it never runs in production.
 
 ## E2E Product-Flow Tests in CI
 
-**E2E CI: NO e2e-workflows job exists in any workflow file.** This is an open gap
-— see P0.4 in IMPLEMENTATION_PLAN.md. E2E tests can be run locally:
+E2E tests run in the `e2e-workflows` job of `.github/workflows/ci.yml`. The job:
 
-- `pnpm test:e2e --project=chromium --workers=1`
-- `E2E_SUITE=workflows` for product-flow tests, `E2E_SUITE=spider` for smoke
+- Spins up a PostgreSQL 16 service container
+- Runs `prisma migrate deploy` to apply schema
+- Executes Playwright with `E2E_SUITE=workflows` (runs
+  `e2e/workflows/*.spec.ts`)
+- Uses `chromium` project (authenticated via Clerk setup project)
 
 **Required GitHub secrets:**
 
@@ -241,21 +243,28 @@ for smoke tests.
 
 ## Test & Logging Hygiene
 
-- **No `console.log` in production code.** Re-verified 2026-05-14 (v103 audit):
-  **~1,537 console statements** (broader scope includes manifest-runtime/cli).
-  console.log: **999**, console.error: **494**, console.warn: 39, console.info: 2,
-  console.debug: 3. Clean up when you touch them and use `@repo/observability` /
-  Sentry instead. **402** files import @repo/observability. Biome `noConsole` is OFF.
+- **No `console.log` in production code.** Re-verified 2026-05-10 (16-agent audit):
+  **~932 console statements across ~336 files** (~870 in production source) — clean
+  up when you touch them and use `@repo/observability` / Sentry instead. Error-path
+  logging is the biggest share; prioritize replacing `console.error` first.
 - **No `.bak` / `.backup` / `.new` / `.tmp` files in the repo.** Re-verified
-  2026-05-10 (16-agent audit): **0 files — CLEAN.**
+  2026-05-10 (16-agent audit): **0 files — CLEAN.** Prior count of 21 files has
+  been resolved. All `.bak`, `.backup`, `.new`, and `.tmp` files have been removed.
 - **No `describe.skip` or `test.todo` in committed code without a linked
   issue.** If a test must be skipped, open a follow-up ticket and reference it
   in a comment on the skip line. Current offenders:
   `apps/api/__tests__/sales-reporting/generate.test.ts:33`
   (tracked in GitHub issue #36 — PDF generation requires browser APIs).
-  **E2E (v103 re-count):** **47** `test.skip(true, …)` across spec files.
-  **5 describe.skip** across files.
-  **Test files (v103):** **247** total (114 API + 72 pkg + 61 E2E) -- down 55 from v102's 302.
+  Prior offenders `inventory/forecasting.test.ts:834-836` and
+  `email-templates/templates.test.ts:1073-1077` have been resolved. **E2E
+  (third-pass re-count):** **25** `test.skip(true, …)` conditionals across **6**
+  spec files — `integrated-payment-processor` (7), `recipe-scaling` (7),
+  `role-aware-empty-states` (4), `illustrated-empty-states` (4),
+  `communication-preferences` (2), `getting-started-checklist` (1). Prior note
+  of "35 across 8 files" over-counted. **Additional skipped tests (2026-05-10
+  audit):** ~70 total across all test files: 49 e2e test.skip + 6 describe.skip
+  (operations.test.ts 5 blocks, sales-reporting 1) + 48 manifest-runtime
+  validate.test.ts test.skip + 1 manifest-adapters test.skip.
 
 ## Schema ↔ Migrations ↔ Code Drift
 
@@ -288,15 +297,14 @@ before the route.
 
 ## RLS Reminder
 
-Tenant isolation is enforced via Postgres RLS policies on `tenant_*` schemas.
-**v107: 77/223 tables with RLS = ~34.5% coverage.** NOT all tables — only tenant_accounting, tenant_facilities, tenant_logistics are fully covered.
-- `tenant_accounting.*` — all tables with RLS via `20260514000000_add_rls_tenant_accounting`
-- `tenant_inventory`: 18/33 tables with RLS
-- `tenant_staff`: 16/37 tables with RLS
-- `tenant_kitchen`: 11/43 tables with RLS
-- `tenant_facilities`: **100% (5/5)** — all tables have full RLS
-- `tenant_logistics`: **100% (4/4)**
-- Bare `tenant` schema: only Venue has RLS (HIGH RISK)
+Tenant isolation is enforced via Postgres RLS policies on `tenant_*` schemas,
+but coverage is incomplete. Current critical gaps (no RLS policy):
+
+- `tenant_accounting.*` (all tables)
+- `tenant_inventory.vendor_catalogs`, `pricing_tiers`, `bulk_order_rules`,
+  `procurement_budgets`, `vendor_contacts`
+- ~~`tenant_staff.employee_bank_accounts`~~ **RLS now enabled** (resolved
+  2026-04-28)
 
 When adding a new `tenant_*`-schema table migration, include
 `ALTER TABLE ... ENABLE ROW LEVEL SECURITY;` +
@@ -407,16 +415,3 @@ these before blaming a tool or your environment.
 - **MCP server has 165 tests, not 10.** Prior plan passes read "10 test files"
   as "10 tests". If you touch `packages/mcp-server/`, expect to run ~165 `it()`
   blocks.
-- **Payroll EmployeeDeduction table name mismatch (v103 confirmed).**
-  `EmployeeDeduction` model has `@@map("EmployeeDeduction")` (PascalCase), but
-  `deductions/route.ts` queries `tenant_staff.employee_deductions` (snake_case).
-  This causes a runtime crash. Always check `@@map` before writing raw SQL table
-  names.
-- **Payroll `tenant_payroll` schema does not exist (v103 confirmed).**
-  `tax/list/route.ts` references `tenant_payroll` schema but it is not in
-  `schema.prisma`. This causes a runtime crash.
-- **Calendar sync callbacks use wrong database import (v103 confirmed).**
-  `google/route.ts:157` and `outlook/route.ts:160` import from `@/lib/database`
-  instead of `@repo/database`. Calendar sync will fail at runtime.
-- **@repo/mcp-server is ALIVE, not dead (v103 correction).**
-  v102 incorrectly listed it as dead. It has 3 runtime imports.

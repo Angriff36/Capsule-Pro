@@ -8,7 +8,8 @@ const isPublicRoute = createRouteMatcher([
   "/webhooks(.*)",
   "/outbox/publish",
   "/api/health(.*)",
-  "/api/public(.*)",
+  "/api/sentry-fixer/process",
+  "/api/cron(.*)",
 ]);
 
 const API_KEY_BEARER_PREFIX = "Bearer cp_";
@@ -16,24 +17,6 @@ const API_KEY_BEARER_PREFIX = "Bearer cp_";
 const middleware: NextMiddleware = clerkMiddleware(async (auth, req) => {
   try {
     if (isPublicRoute(req)) {
-      // Public read paths (GET): skip auth and rate limiting.
-      // Token validation is performed by the route handler.
-      if (req.method === "GET" || req.method === "HEAD") {
-        return;
-      }
-      // Public mutation paths (POST/PUT/PATCH/DELETE /api/public/*):
-      // apply rate limiting. Route handler validates the token.
-      const rateLimitResponse = await applyGlobalRateLimit(req);
-      if (rateLimitResponse) {
-        return rateLimitResponse;
-      }
-      return;
-    }
-
-    // Vercel Cron jobs carry x-vercel-cron header — allow through.
-    // The route handler performs its own authentication.
-    const vercelCronHeader = req.headers.get("x-vercel-cron");
-    if (vercelCronHeader === "1" || vercelCronHeader === "true") {
       return;
     }
 
@@ -42,15 +25,21 @@ const middleware: NextMiddleware = clerkMiddleware(async (auth, req) => {
     // resolveCurrentUser() or getAuthContext().
     const authHeader = req.headers.get("authorization");
     if (authHeader?.startsWith(API_KEY_BEARER_PREFIX)) {
-      const rateLimitResponse = await applyGlobalRateLimit(req);
+      // Derive a stable rate limit identity from the key prefix
+      // so API-key requests are rate-limited at the global layer.
+      const bearerToken = authHeader.slice("Bearer ".length);
+      const keyPrefix = bearerToken.slice(0, 12);
+      const requestHeaders = new Headers(req.headers);
+      requestHeaders.set("x-api-key-id", keyPrefix);
+      requestHeaders.set("x-api-path", req.nextUrl.pathname);
+      requestHeaders.set("x-api-method", req.method);
+
+      const rateLimitResponse = await applyGlobalRateLimit(
+        new Request(req, { headers: requestHeaders })
+      );
       if (rateLimitResponse) {
         return rateLimitResponse;
       }
-      // Pass the request path to route handlers via header so
-      // scope enforcement can map the route to a required scope.
-      const requestHeaders = new Headers(req.headers);
-      requestHeaders.set("x-api-path", req.nextUrl.pathname);
-      requestHeaders.set("x-api-method", req.method);
       return NextResponse.next({
         request: { headers: requestHeaders },
       });

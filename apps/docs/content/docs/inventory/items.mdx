@@ -1,0 +1,39 @@
+---
+title: Inventory Items
+description: Item management with FSA compliance and category tracking.
+---
+
+Inventory items represent physical goods tracked in the system.
+
+## Item Properties
+
+Items include standard inventory fields plus FSA (Food Standards Agency) compliance tracking:
+
+| Field | Description |
+|-------|-------------|
+| Name | Item name |
+| SKU | Stock keeping unit |
+| Category | Item classification |
+| Unit | Unit of measure |
+| Reorder Level | Minimum stock before reorder alert |
+| Par Level | Target stock level |
+| FSA Compliance | Food safety compliance status |
+
+## Search and Filter
+
+The items list supports:
+- Text search
+- Filter by category
+- Filter by stock status (in stock, low, out of stock)
+- Filter by FSA compliance status
+- Pagination
+
+## Manifest Commands
+
+- `create` / `adjust` / `restock` — Stock management
+- `consume` / `reserve` / `release-reservation` — Usage tracking
+- `waste` — Record waste (links to waste tracking)
+
+## Dependency Protection
+
+Deleting an inventory item checks 7 dependency tables to prevent orphaned references.

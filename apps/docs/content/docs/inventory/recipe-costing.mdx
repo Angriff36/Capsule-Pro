@@ -1,0 +1,38 @@
+---
+title: Recipe Costing
+description: Cost breakdown by recipe with scaling, waste factors, and budget propagation.
+---
+
+Recipe costing connects inventory prices to recipe ingredients, providing accurate cost-per-serving calculations.
+
+## Cost Calculation
+
+For each recipe:
+1. Look up each ingredient's current inventory price
+2. Convert units if needed (e.g., kg to g)
+3. Apply waste factor (configurable per ingredient)
+4. Sum all ingredient costs
+5. Divide by yield for per-serving cost
+
+## Recipe Cost Detail
+
+The detail view at `/inventory/recipe-costs/[recipeVersionId]` shows:
+- Ingredient-by-ingredient cost breakdown
+- Waste factor per ingredient
+- Total recipe cost
+- Per-serving cost
+- Links to inventory items
+
+## Actions
+
+- **Recalculate** — Refresh costs from current inventory prices
+- **Scale** — View costs at different serving sizes
+- **Update Budgets** — Propagate cost changes to linked event budgets
+- **Edit Waste Factors** — Adjust waste percentages per ingredient
+
+## Search and Filter
+
+The recipe cost list supports:
+- Text search
+- Filter by category, cuisine, and status
+- Pagination

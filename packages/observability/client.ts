@@ -23,7 +23,7 @@ const getSentryEnvironment = () => {
     return explicit;
   }
 
-  const vercelEnv = process.env.NEXT_PUBLIC_VERCEL_ENV?.trim();
+  const vercelEnv = keys().NEXT_PUBLIC_VERCEL_ENV;
   if (vercelEnv) {
     return vercelEnv;
   }
@@ -46,6 +46,17 @@ export const initializeSentry = () => {
 
     // Adjust this value in production, or use tracesSampler for greater control
     tracesSampleRate,
+
+    // Propagate trace context to these targets for distributed tracing
+    tracePropagationTargets: [
+      "localhost",
+      /^\//,
+      /^https:\/\/[a-z0-9-]+\.vercel\.app/,
+      /^https:\/\/[a-z0-9-]+\.capsule\.pro/,
+    ],
+
+    // Normalize nested data structures to prevent oversized payloads
+    normalizeDepth: 10,
 
     // Setting this option to true will print useful information to the console while you're setting up Sentry.
     debug: false,
@@ -72,5 +83,17 @@ export const initializeSentry = () => {
       // Send console.log, console.error, and console.warn calls as logs to Sentry
       Sentry.consoleLoggingIntegration({ levels: ["log", "error", "warn"] }),
     ],
+    beforeSendTransaction(event) {
+      // Drop noise transactions from static assets and instrumentation routes
+      const name = event.transaction ?? "";
+      if (
+        name.startsWith("/_next") ||
+        name.startsWith("/favicon") ||
+        name.startsWith("/monitoring")
+      ) {
+        return null;
+      }
+      return event;
+    },
   });
 };

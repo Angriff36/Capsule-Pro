@@ -1,0 +1,54 @@
+---
+title: Events
+description: Full event lifecycle management for catering operations.
+---
+
+Events are the core operational unit in Capsule Pro. Every catering job is an event — from initial inquiry through execution and post-event review.
+
+<CardGroup cols={2}>
+  <Card title="Event Lifecycle" href="/docs/events/lifecycle">
+    Status workflow from draft through completion, with 10 IR commands.
+  </Card>
+  <Card title="Contracts" href="/docs/events/contracts">
+    Contract management with document upload, signatures, and email delivery.
+  </Card>
+  <Card title="Budgets" href="/docs/events/budgets">
+    Event budgets with line items, approval workflows, and recipe cost integration.
+  </Card>
+  <Card title="Battle Boards" href="/docs/events/battle-boards">
+    Operational planning boards with staff assignments, timelines, and task management.
+  </Card>
+  <Card title="Reports" href="/docs/events/reports">
+    Pre-event review checklists with completion tracking.
+  </Card>
+  <Card title="Import & Export" href="/docs/events/import-export">
+    Document parsing (PDF/CSV), bulk import, and CSV/PDF export.
+  </Card>
+</CardGroup>
+
+## Event Data
+
+Each event contains:
+
+| Field | Description |
+|-------|-------------|
+| Title | Event name |
+| Event Number | Unique identifier |
+| Date | Event date and time |
+| Status | Current lifecycle state |
+| Guest Count | Expected number of guests |
+| Location | Venue address |
+| Client | Linked CRM client |
+| Dishes | Menu items for the event |
+| Prep Tasks | Kitchen preparation tasks |
+| Source Documents | Uploaded PDFs, CSVs, and images |
+
+## Dashboard
+
+The events dashboard at `/events` shows:
+
+- Total events count
+- Upcoming events
+- Total expected guests
+- Confirmed vs. tentative breakdown
+- Quick access to create, import, and view reports

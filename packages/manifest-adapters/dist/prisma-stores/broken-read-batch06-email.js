@@ -27,31 +27,31 @@ export class EmailTemplatePrismaStore {
         this.tenantId = tenantId;
     }
     async getAll() {
-        const rows = await this.prisma.email_templates.findMany({
-            where: { tenant_id: this.tenantId, deleted_at: null },
+        const rows = await this.prisma.emailTemplate.findMany({
+            where: { tenantId: this.tenantId, deletedAt: null },
             orderBy: { id: "desc" },
         });
         return rows.map((r) => this.mapToManifestEntity(r));
     }
     async getById(id) {
-        const row = await this.prisma.email_templates.findFirst({
-            where: { tenant_id: this.tenantId, id, deleted_at: null },
+        const row = await this.prisma.emailTemplate.findFirst({
+            where: { tenantId: this.tenantId, id, deletedAt: null },
         });
         return row ? this.mapToManifestEntity(row) : undefined;
     }
     async create(data) {
         const id = data.id ?? crypto.randomUUID();
-        const row = await this.prisma.email_templates.create({
+        const row = await this.prisma.emailTemplate.create({
             data: {
-                tenant_id: this.tenantId,
+                tenantId: this.tenantId,
                 id,
                 name: data.name,
                 subject: data.subject,
                 body: data.body,
-                template_type: asString(data.template_type),
-                merge_fields: asJsonInput(data.merge_fields),
-                is_active: asBool(data.is_active, true),
-                is_default: asBool(data.is_default, false),
+                templateType: asString(data.templateType),
+                mergeFields: asJsonInput(data.mergeFields),
+                isActive: asBool(data.isActive, true),
+                isDefault: asBool(data.isDefault, false),
             },
         });
         return this.mapToManifestEntity(row);
@@ -65,16 +65,16 @@ export class EmailTemplatePrismaStore {
                 patch.subject = data.subject;
             if (data.body !== undefined)
                 patch.body = data.body;
-            if (data.template_type !== undefined)
-                patch.template_type = asString(data.template_type);
-            if (data.merge_fields !== undefined)
-                patch.merge_fields = asJsonInput(data.merge_fields);
-            if (data.is_active !== undefined)
-                patch.is_active = asBool(data.is_active, true);
-            if (data.is_default !== undefined)
-                patch.is_default = asBool(data.is_default, false);
-            const row = await this.prisma.email_templates.update({
-                where: { tenant_id_id: { tenant_id: this.tenantId, id } },
+            if (data.templateType !== undefined)
+                patch.templateType = asString(data.templateType);
+            if (data.mergeFields !== undefined)
+                patch.mergeFields = asJsonInput(data.mergeFields);
+            if (data.isActive !== undefined)
+                patch.isActive = asBool(data.isActive, true);
+            if (data.isDefault !== undefined)
+                patch.isDefault = asBool(data.isDefault, false);
+            const row = await this.prisma.emailTemplate.update({
+                where: { tenantId_id: { tenantId: this.tenantId, id } },
                 data: patch,
             });
             return this.mapToManifestEntity(row);
@@ -86,9 +86,9 @@ export class EmailTemplatePrismaStore {
     }
     async delete(id) {
         try {
-            await this.prisma.email_templates.update({
-                where: { tenant_id_id: { tenant_id: this.tenantId, id } },
-                data: { deleted_at: new Date() },
+            await this.prisma.emailTemplate.update({
+                where: { tenantId_id: { tenantId: this.tenantId, id } },
+                data: { deletedAt: new Date() },
             });
             return true;
         }
@@ -98,24 +98,24 @@ export class EmailTemplatePrismaStore {
         }
     }
     async clear() {
-        await this.prisma.email_templates.deleteMany({
-            where: { tenant_id: this.tenantId },
+        await this.prisma.emailTemplate.deleteMany({
+            where: { tenantId: this.tenantId },
         });
     }
     mapToManifestEntity(r) {
         return {
             id: r.id,
-            tenant_id: r.tenant_id,
+            tenantId: r.tenantId,
             name: r.name ?? null,
             subject: r.subject ?? null,
             body: r.body ?? null,
-            template_type: r.template_type ?? null,
-            merge_fields: r.merge_fields ?? [],
-            is_active: r.is_active ?? true,
-            is_default: r.is_default ?? false,
-            created_at: r.created_at ?? null,
-            updated_at: r.updated_at ?? null,
-            deleted_at: r.deleted_at ?? null,
+            templateType: r.templateType ?? null,
+            mergeFields: r.mergeFields ?? [],
+            isActive: r.isActive ?? true,
+            isDefault: r.isDefault ?? false,
+            createdAt: r.createdAt ?? null,
+            updatedAt: r.updatedAt ?? null,
+            deletedAt: r.deletedAt ?? null,
         };
     }
 }

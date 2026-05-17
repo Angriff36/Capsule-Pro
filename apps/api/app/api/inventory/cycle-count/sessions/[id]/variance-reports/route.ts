@@ -16,7 +16,7 @@ function toNumber(value: { toNumber: () => number }): number {
 }
 
 interface RouteContext {
-  params: Promise<{ sessionId: string }>;
+  params: Promise<{ id: string }>;
 }
 
 type VarianceReportStatus = "pending" | "reviewed" | "approved" | "rejected";
@@ -39,7 +39,7 @@ export async function GET(request: Request, context: RouteContext) {
       );
     }
 
-    const { sessionId } = await context.params;
+    const { id: sessionId } = await context.params;
 
     // Find the session by sessionId to get the internal id
     const session = await database.cycleCountSession.findFirst({

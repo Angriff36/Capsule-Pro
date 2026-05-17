@@ -1,0 +1,34 @@
+---
+title: Timecards
+description: Time entry management with clock in/out, approval, and edit requests.
+---
+
+Timecards track employee work hours for payroll calculation.
+
+## Time Entries
+
+Managed through Manifest IR commands:
+- `clock-in` — Start a time entry
+- `clock-out` — End a time entry
+- `add-entry` — Manually add a time entry
+
+## Timecard Management
+
+The timecards page at `/payroll/timecards` provides:
+- Search and filter by status and date
+- Bulk selection for batch operations
+- Individual timecard detail modal
+
+## Approval Workflow
+
+From the detail modal, managers can:
+- **Approve** — Accept the timecard
+- **Flag Exception** — Mark for review
+- **Request Edit** — Ask the employee to correct
+
+## Edit Requests
+
+When corrections are needed:
+- `create` — Submit an edit request
+- `approve` — Manager approves the edit
+- `reject` — Manager rejects the edit

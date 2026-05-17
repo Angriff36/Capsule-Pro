@@ -2,8 +2,10 @@
  * Shared lower-level manifest command executor.
  *
  * This module provides `runManifestCommand` — the single function that
- * validates a (entity, command) pair against the compiled IR, creates a
- * Manifest runtime, executes the command, and returns a normalized Response.
+ * validates a (entity, command) pair against the canonical merged command
+ * registry, resolves kebab-case URL command slugs to camelCase Manifest
+ * command names, creates a Manifest runtime, executes the command, and
+ * returns a normalized Response.
  *
  * Callers (the dynamic dispatcher, domain REST adapters) must already be
  * authenticated — this helper does NOT resolve auth/tenant.  It accepts
@@ -17,31 +19,12 @@
  */
 
 import { captureException } from "@sentry/nextjs";
-// Compiled command registry — source of truth for which entity.command pairs exist.
-// Generated from packages/manifest-ir/ir/kitchen/kitchen.commands.json
-import commandsJson from "@/../../packages/manifest-ir/ir/kitchen/kitchen.commands.json";
+import { resolveCommand } from "@/lib/manifest/command-resolver";
 import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
-
-// ---------------------------------------------------------------------------
-// IR command registry (lazily built — zero-cost if never called)
-// ---------------------------------------------------------------------------
-
-let _registry: Set<string> | undefined;
-
-function getCommandRegistry(): Set<string> {
-  if (!_registry) {
-    _registry = new Set(
-      (commandsJson as Array<{ entity: string; command: string }>).map(
-        (c) => `${c.entity}.${c.command}`
-      )
-    );
-  }
-  return _registry;
-}
 
 // ---------------------------------------------------------------------------
 // Types
@@ -58,7 +41,7 @@ export interface ManifestUserContext {
 export interface RunManifestCommandParams {
   /** Manifest entity name (e.g. "PrepTask", "Event"). */
   entity: string;
-  /** Manifest command name (e.g. "create", "claim", "softDelete"). */
+  /** Manifest command name or kebab-case URL slug (e.g. "create", "soft-delete"). */
   command: string;
   /** Command payload — the body passed to the command handler. */
   body: Record<string, unknown>;
@@ -82,9 +65,9 @@ export interface RunManifestCommandParams {
  * when auth/tenant resolution has already been performed by the caller.
  * It:
  *
- * 1. Validates entity+command against the compiled manifest IR.
+ * 1. Resolves the command slug (exact or kebab→camel) against the merged registry.
  * 2. Builds a Manifest runtime with the supplied user context.
- * 3. Calls {@link RuntimeEngine.runCommand}.
+ * 3. Calls {@link RuntimeEngine.runCommand} with the canonical command name.
  * 4. Returns a normalized JSON Response (success or error).
  *
  * @example
@@ -119,20 +102,22 @@ export interface RunManifestCommandParams {
 export async function runManifestCommand(
   params: RunManifestCommandParams
 ): Promise<Response> {
-  const { entity, command, body, user, instanceId } = params;
+  const { entity, command: commandSlug, body, user, instanceId } = params;
 
   try {
-    // 1. Validate command exists in compiled IR
-    const registry = getCommandRegistry();
-    const commandKey = `${entity}.${command}`;
-    if (!registry.has(commandKey)) {
+    // 1. Resolve command slug → canonical camelCase command name
+    const resolved = resolveCommand(entity, commandSlug);
+    if (!resolved) {
       return manifestErrorResponse(
-        `Unknown command: ${commandKey}. Verify the entity and command names against the manifest IR.`,
+        `Unknown command: ${entity}.${commandSlug}. Verify the entity and command names against the manifest IR.`,
         404
       );
     }
 
+    const command = resolved.command;
+
     console.log(`[manifest/${entity}/${command}] Executing:`, {
+      slug: commandSlug,
       userId: user.id,
       userRole: user.role,
       tenantId: user.tenantId,
@@ -149,7 +134,7 @@ export async function runManifestCommand(
       entityName: entity,
     });
 
-    // 3. Execute command
+    // 3. Execute command with resolved canonical name
     const result = await runtime.runCommand(command, body, {
       entityName: entity,
       ...(instanceId ? { instanceId } : {}),
@@ -185,7 +170,7 @@ export async function runManifestCommand(
       events: result.emittedEvents,
     });
   } catch (error) {
-    console.error(`[manifest/${entity}/${command}] Error:`, error);
+    console.error(`[manifest/${entity}/${commandSlug}] Error:`, error);
     captureException(error);
     return manifestErrorResponse("Internal server error", 500);
   }

@@ -13,7 +13,7 @@
  *   - Required fields: employee_id, request_type, start_date, end_date, hours
  *   - Status enum: PENDING, APPROVED, REJECTED, CANCELLED
  *   - Soft-delete via deleted_at
- *   - Prisma model: EmployeeTimeOffRequest, client accessor: prisma.employeeTimeOffRequest
+ *   - Prisma model: EmployeeTimeOffRequest, client accessor: prisma.timeOffRequest
  *   - Manifest entity name: "TimeOffRequest"
  */
 import type { Store } from "@angriff36/manifest";

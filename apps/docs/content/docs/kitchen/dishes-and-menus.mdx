@@ -1,0 +1,58 @@
+---
+title: Dishes & Menus
+description: Dish composition, menu building, and dietary tracking.
+---
+
+## Dishes
+
+A Dish is a servable item that links to one or more recipes. Dishes have their own pricing, lead times, and dietary/allergen classifications.
+
+### Dish Properties
+
+| Field | Description |
+|-------|-------------|
+| Name | Display name |
+| Description | Detailed description |
+| Category | Classification (appetizer, entree, dessert, etc.) |
+| Linked Recipes | Recipes used to prepare this dish |
+| Pricing | Cost and selling price |
+| Lead Time | Preparation time required |
+| Dietary Tags | Vegetarian, vegan, gluten-free, etc. |
+| Allergens | Known allergen content |
+
+### Manifest Commands
+
+- `create` — Create a new dish
+- `update-lead-time` — Adjust preparation time
+- `update-pricing` — Change cost/price
+
+## Menus
+
+A Menu is a collection of dishes organized by course. Menus are used for event planning and client proposals.
+
+### Menu Properties
+
+| Field | Description |
+|-------|-------------|
+| Name | Menu name |
+| Description | Overview |
+| Category | Menu type |
+| Status | Draft, Active, or Inactive |
+| Pricing | Per-guest or fixed pricing |
+| Guest Limits | Minimum and maximum guest counts |
+| Dishes | Organized by course (appetizer, main, dessert, etc.) |
+
+### Menu Detail View
+
+The menu detail page shows:
+
+- All dishes grouped by course
+- Dietary summary across all dishes
+- Allergen summary across all dishes
+- Guest range information
+
+### Manifest Commands
+
+- `create` / `update` — Menu CRUD
+- `activate` / `deactivate` — Lifecycle management
+- `create` (MenuDish) — Add a dish to a menu

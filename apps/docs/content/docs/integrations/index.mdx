@@ -1,0 +1,94 @@
+---
+title: Integrations
+description: All third-party services and how they connect to Capsule Pro.
+---
+
+Capsule Pro integrates with 25+ external services. Each integration is wrapped in a dedicated `@repo/*` package for vendor abstraction.
+
+## Authentication & Security
+
+| Service | Package | Purpose |
+|---------|---------|---------|
+| Clerk | `@repo/auth` | User authentication, organization management, SSO |
+| Arcjet | `@repo/security` | Bot protection and request shielding |
+| Nosecone | `@repo/security` | Security headers |
+
+## Payments
+
+| Service | Package | Purpose |
+|---------|---------|---------|
+| Stripe | `@repo/payments` | Subscription billing, checkout sessions, payment links |
+
+Stripe webhooks handle `checkout.session.completed` and `subscription_schedule.canceled` events. Users are linked via Clerk `privateMetadata.stripeCustomerId`.
+
+## Real-Time
+
+| Service | Package | Purpose |
+|---------|---------|---------|
+| Ably | `@repo/realtime` | Event transport for kitchen, command board, and inventory updates |
+| Liveblocks | `@repo/collaboration` | Live cursors, presence, and collaborative editing on command boards |
+
+## AI
+
+| Service | Package | Purpose |
+|---------|---------|---------|
+| OpenAI | `@repo/ai` | GPT-4o-mini for command board chat, event summaries, conflict detection, prep task generation |
+
+Used via the Vercel AI SDK with streaming responses.
+
+## Email
+
+| Service | Package | Purpose |
+|---------|---------|---------|
+| Resend | `@repo/email` | Transactional email delivery (contracts, proposals, contact forms) |
+
+3 React Email templates: Contact, Contract, Proposal.
+
+## Monitoring & Observability
+
+| Service | Package | Purpose |
+|---------|---------|---------|
+| Sentry | `@repo/observability` | Error tracking across client, server, and edge runtimes with session replay |
+| BetterStack / Logtail | `@repo/observability` | Structured logging in production |
+| BetterStack Uptime | `@repo/observability` | Uptime monitoring with status display |
+
+Sentry includes an auto-fix pipeline: webhook receives alerts, queues fix jobs, generates fixes, creates GitHub PRs, and notifies via Slack.
+
+## Analytics
+
+| Service | Package | Purpose |
+|---------|---------|---------|
+| PostHog | `@repo/analytics` | Product analytics (client + server) |
+| Vercel Analytics | `@repo/analytics` | Web vitals and performance |
+| Google Analytics | `@repo/analytics` | Optional traffic analytics |
+
+## Notifications
+
+| Service | Package | Purpose |
+|---------|---------|---------|
+| Knock | `@repo/notifications` | In-app and push notifications |
+| Twilio | `@repo/notifications` | SMS notifications with E.164 validation |
+| Slack | `@repo/sentry-integration` | Internal alert delivery |
+
+## Storage & Infrastructure
+
+| Service | Package | Purpose |
+|---------|---------|---------|
+| Neon | `@repo/database` | Serverless Postgres with WebSocket adapter |
+| Vercel Blob | `@repo/storage` | File storage |
+| Upstash Redis | `@repo/rate-limit` | Rate limiting (sliding window) |
+| Vercel | -- | Deployment, edge functions, cron jobs |
+
+## Content & SEO
+
+| Service | Package | Purpose |
+|---------|---------|---------|
+| BaseHub | `@repo/cms` | Headless CMS for blog and legal pages |
+| Svix | `@repo/webhooks` | Webhook delivery and management portal |
+
+## Feature Management
+
+| Service | Package | Purpose |
+|---------|---------|---------|
+| Vercel Feature Flags | `@repo/feature-flags` | Feature flag management with toolbar |
+| Languine | `@repo/internationalization` | Translation management |

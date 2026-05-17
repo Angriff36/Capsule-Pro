@@ -6,51 +6,16 @@
  *
  * @packageDocumentation
  */
-import { existsSync, readFileSync } from "node:fs";
-import { join } from "node:path";
 import { createOpenAI } from "@ai-sdk/openai";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { generateObject } from "ai";
 import { z } from "zod";
-const NEWLINE_REGEX = /\r?\n/;
 // ============================================================================
 // OpenAI API Key Resolution
 // ============================================================================
-function resolveOpenAiApiKey() {
-    const envKey = process.env.OPENAI_API_KEY?.trim();
-    if (envKey) {
-        return envKey;
-    }
-    try {
-        const userProfile = process.env.USERPROFILE;
-        if (!userProfile) {
-            return null;
-        }
-        const envTxtPath = join(userProfile, "Documents", "env.txt");
-        if (!existsSync(envTxtPath)) {
-            return null;
-        }
-        const envContents = readFileSync(envTxtPath, "utf8");
-        const line = envContents
-            .split(NEWLINE_REGEX)
-            .map((entry) => entry.trim())
-            .find((entry) => entry.startsWith("OPENAI_API_KEY="));
-        if (!line) {
-            return null;
-        }
-        const key = line.slice("OPENAI_API_KEY=".length).trim();
-        return key ? key.replace(/^['"]|['"]$/g, "") : null;
-    }
-    catch (error) {
-        captureException(error, {
-            tags: { route: "bottleneck-ai-suggestions" },
-        });
-        log.error("[bottleneck-ai-suggestions] Failed to resolve OPENAI_API_KEY", {
-            error: error instanceof Error ? error.message : "Unknown error",
-        });
-        return null;
-    }
+function getOpenAiApiKey() {
+    return process.env.OPENAI_API_KEY?.trim() || null;
 }
 // ============================================================================
 // AI Suggestion Schema
@@ -93,7 +58,7 @@ const aiSuggestionSchema = z.object({
  * Generate AI-powered improvement suggestions for a bottleneck
  */
 export async function generateAiSuggestion(bottleneck, context) {
-    const apiKey = resolveOpenAiApiKey();
+    const apiKey = getOpenAiApiKey();
     if (!apiKey) {
         log.warn("[bottleneck-ai-suggestions] No OpenAI API key available");
         return null;
@@ -147,7 +112,7 @@ export async function generateAiSuggestion(bottleneck, context) {
  * Generate AI-powered suggestions for multiple bottlenecks
  */
 export async function generateAiSuggestionsBatch(bottlenecks, context) {
-    const apiKey = resolveOpenAiApiKey();
+    const apiKey = getOpenAiApiKey();
     if (!apiKey) {
         log.warn("[bottleneck-ai-suggestions] No OpenAI API key available");
         return [];
@@ -330,4 +295,4 @@ export function prioritizeSuggestions(suggestions, maxCount = 5) {
 // ============================================================================
 // Export utilities
 // ============================================================================
-export { resolveOpenAiApiKey };
+export { getOpenAiApiKey };

@@ -9,7 +9,8 @@
  * - Checks per-tenant config from database, falls back to defaults
  * - Returns 429 with standard rate limit headers when exceeded
  * - Adds x-ratelimit-* headers to all responses
- * - Fails open on Redis errors (allows request, logs warning)
+ * - Fails closed on Redis errors (blocks request with 429) by default
+ * - Routes in FAIL_OPEN_PATTERNS (health, webhooks) still pass through
  *
  * Individual routes can still use withRateLimit() for stricter limits.
  * The global layer provides baseline protection; per-route limits are
@@ -17,6 +18,7 @@
  */
 
 import { createRateLimiter, slidingWindow } from "@repo/rate-limit";
+import { log } from "@repo/observability/log";
 import { NextResponse } from "next/server";
 
 // ============================================================================
@@ -33,6 +35,16 @@ const EXEMPT_PATTERNS = [
   /^\/api\/health/, // Health checks
   /^\/outbox\//, // Internal outbox
   /^\/api\/public\//, // Public-facing endpoints
+];
+
+/**
+ * Routes that should fail-open (allow traffic) when Redis is down.
+ * These are infrastructure routes where availability is more critical
+ * than rate limiting. All other routes fail-closed on Redis errors.
+ */
+const FAIL_OPEN_PATTERNS = [
+  /^\/api\/health/, // Health checks must always respond
+  /^\/webhooks\//, // Webhook receivers must accept to avoid retry storms
 ];
 
 // ============================================================================
@@ -70,10 +82,10 @@ function normalizeEndpoint(pathname: string, method: string): string {
 
 /**
  * Extracts tenant identifier from request headers.
- * Set by Clerk middleware after authentication.
+ * Set by Clerk middleware after session auth, or by proxy.ts after API key auth.
  */
 function extractTenantKey(request: Request): string | null {
-  // Clerk sets this after successful auth
+  // Clerk sets this after successful session auth
   const tenantId = request.headers.get("x-tenant-id");
   if (tenantId) return `tenant:${tenantId}`;
 
@@ -84,6 +96,15 @@ function extractTenantKey(request: Request): string | null {
   // Fallback: use user ID
   const userId = request.headers.get("x-user-id");
   if (userId) return `user:${userId}`;
+
+  // API key identifier — set by proxy.ts after Bearer token detection
+  const apiKeyId = request.headers.get("x-api-key-id");
+  if (apiKeyId) return `apikey:${apiKeyId}`;
+
+  // Anonymous: fall back to IP-based key
+  const forwardedFor = request.headers.get("x-forwarded-for");
+  const ip = forwardedFor?.split(",")[0]?.trim();
+  if (ip) return `ip:${ip}`;
 
   return null;
 }
@@ -181,9 +202,31 @@ export async function applyGlobalRateLimit(
 
     return null;
   } catch (error) {
-    // Fail open — don't block traffic on Redis errors
-    console.error("[global-rate-limit] Redis error, allowing request:", error);
-    return null;
+    // Check if this route is designated as fail-open
+    const shouldFailOpen = FAIL_OPEN_PATTERNS.some((p) => p.test(pathname));
+
+    if (shouldFailOpen) {
+      log.error("[global-rate-limit] Redis error, fail-open allowing request", {
+        pathname,
+        error,
+      });
+      return null;
+    }
+
+    // Default: fail-closed — block traffic when Redis is unavailable
+    log.error("[global-rate-limit] Redis error, fail-closed blocking request", {
+      pathname,
+      error,
+    });
+    const headers = new Headers();
+    headers.set("retry-after", "60");
+
+    return NextResponse.json(
+      {
+        message: "Service temporarily unavailable. Please try again later.",
+      },
+      { status: 429, headers }
+    );
   }
 }
 

@@ -1,0 +1,47 @@
+---
+title: Clients
+description: Client profiles with contacts, preferences, interactions, and financial tracking.
+---
+
+Clients are the core CRM entity. Each client has a rich profile with multiple sub-entities.
+
+## Client Profile
+
+The client detail page at `/crm/clients/[id]` has 6 tabs:
+
+| Tab | Content |
+|-----|---------|
+| Contact | Primary contact information |
+| Contacts | All associated contacts (multiple per client) |
+| Events | Event history with this client |
+| Communications | Interaction timeline (calls, emails, meetings) |
+| Preferences | Dietary preferences, venue preferences, service notes |
+| Financial | Revenue history and lifetime value |
+
+## Client Types
+
+- **Company** — Business clients
+- **Individual** — Personal clients
+
+## Search and Filter
+
+The client list supports:
+- Text search across name and contact info
+- Filter by type (company/individual)
+- Filter by source (referral, website, etc.)
+- Pagination
+
+## Manifest Commands
+
+Client lifecycle:
+- `create` / `update` — Client CRUD
+- `archive` / `reactivate` — Soft lifecycle management
+
+Sub-entity commands:
+- **Contacts**: `create` / `update` / `remove` / `set-primary`
+- **Interactions**: `create` / `update` / `complete`
+- **Preferences**: `create` / `update` / `remove`
+
+## Add to Command Board
+
+Clients can be added to the Command Board as entity cards for strategic planning.

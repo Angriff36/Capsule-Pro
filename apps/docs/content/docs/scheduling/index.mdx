@@ -1,0 +1,34 @@
+---
+title: Scheduling
+description: Shift management, availability tracking, time-off requests, and labor budgets.
+---
+
+The Scheduling module manages staff work schedules with real-time updates via Ably.
+
+<CardGroup cols={2}>
+  <Card title="Shifts" href="/docs/scheduling/shifts">
+    Shift creation, employee assignment, and conflict detection.
+  </Card>
+  <Card title="Availability" href="/docs/scheduling/availability">
+    Employee availability windows and weekly patterns.
+  </Card>
+  <Card title="Time Off" href="/docs/scheduling/time-off">
+    Time-off requests with approval workflows.
+  </Card>
+  <Card title="Labor Budgets" href="/docs/scheduling/labor-budgets">
+    Budget tracking with threshold alerts.
+  </Card>
+</CardGroup>
+
+## Dashboard
+
+The scheduling dashboard at `/scheduling` displays real-time data from 10+ SQL queries:
+
+- Total staff count and scheduled hours
+- Open shifts needing coverage
+- Labor cost summary
+- Daily breakdown
+- Today's shifts
+- "Shift Battle Arena" leaderboard
+
+All metrics update in real-time via Ably WebSocket connection.

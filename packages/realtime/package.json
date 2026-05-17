@@ -6,13 +6,13 @@
   },
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",
+    "typescript": "^5.9.3",
     "vitest": "^4.0.18"
   },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.js"
+      "import": "./dist/index.js"
     }
   },
   "main": "./dist/index.js",

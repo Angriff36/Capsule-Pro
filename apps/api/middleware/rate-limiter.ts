@@ -40,6 +40,13 @@ export interface RateLimitOptions {
   prefix?: string;
   /** Whether to skip rate limiting (useful for testing) */
   skip?: boolean;
+  /**
+   * Whether to allow traffic when Redis is unavailable.
+   * Defaults to false (fail-closed: block on Redis errors).
+   * Set to true only for routes where availability matters more than
+   * rate limiting (e.g., health checks, webhook receivers).
+   */
+  failOpen?: boolean;
 }
 
 /**
@@ -413,13 +420,30 @@ export async function checkRateLimit(
       reset: resetDate,
     };
   } catch (error) {
-    // On Redis error, allow the request (fail open)
-    log.error("[rate-limiter] Redis error, allowing request", { error });
+    if (options?.failOpen) {
+      // Explicitly opted-in: allow traffic when Redis is down
+      log.error("[rate-limiter] Redis error, fail-open allowing request", {
+        error,
+      });
+      return {
+        success: true,
+        limit,
+        remaining: limit,
+        reset: new Date(Date.now() + windowMs),
+      };
+    }
+
+    // Default: fail-closed — block traffic when Redis is unavailable
+    log.error("[rate-limiter] Redis error, fail-closed blocking request", {
+      error,
+    });
+    const resetDate = new Date(Date.now() + windowMs);
     return {
-      success: true,
+      success: false,
       limit,
-      remaining: limit,
-      reset: new Date(Date.now() + windowMs),
+      remaining: 0,
+      reset: resetDate,
+      response: createRateLimitedResponse(limit, 0, resetDate, 60),
     };
   }
 }

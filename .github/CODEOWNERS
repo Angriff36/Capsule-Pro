@@ -1,23 +1,20 @@
 # Global owners
-
-- @your-username
+* @Angriff36
 
 # Database and backend
-
-packages/database/ @your-username apps/api/ @your-username
+packages/database/ @Angriff36
+apps/api/ @Angriff36
 
 # Frontend apps
-
-apps/app/ @your-username apps/web/ @your-username
+apps/app/ @Angriff36
+apps/web/ @Angriff36
 
 # Documentation
-
-apps/docs/ @your-username
+apps/docs/ @Angriff36
 
 # Infrastructure and CI/CD
+.github/ @Angriff36
+scripts/ @Angriff36
 
-.github/ @your-username scripts/ @your-username
-
-# Design system (may need design review)
-
-packages/design-system/ @your-username
+# Design system
+packages/design-system/ @Angriff36

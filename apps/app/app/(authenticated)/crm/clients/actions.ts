@@ -201,6 +201,33 @@ export async function getAvailableTags(): Promise<
 }
 
 /**
+ * Delete a tag from all clients globally
+ */
+export async function deleteTagGlobally(tag: string) {
+  const { orgId } = await auth();
+  invariant(orgId, "Unauthorized");
+
+  const tenantId = await getTenantId();
+  invariant(tag?.trim(), "Tag name is required");
+
+  const trimmedTag = tag.trim();
+
+  await database.$executeRaw`
+    UPDATE tenant_crm.clients
+    SET tags = array_remove(tags, ${trimmedTag}),
+        updated_at = now()
+    WHERE tenant_id = ${tenantId}
+      AND deleted_at IS NULL
+      AND ${trimmedTag} = ANY(tags)
+  `;
+
+  revalidatePath("/crm/clients");
+  revalidatePath("/crm/segmentation");
+
+  return { success: true };
+}
+
+/**
  * Get client by ID with full details
  */
 export async function getClientById(id: string) {

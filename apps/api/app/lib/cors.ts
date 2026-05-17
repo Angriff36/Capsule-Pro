@@ -16,14 +16,22 @@ const getAllowedOrigins = () => {
   return allowedOrigins?.length ? allowedOrigins : DEFAULT_ALLOWED_ORIGINS;
 };
 
-export const corsHeaders = (request: Request, methods: string) => {
+export const corsHeaders = (
+  request: Request,
+  methods: string
+): Record<string, string> => {
   const origin = request.headers.get("origin");
   const allowedOrigins = getAllowedOrigins();
-  const allowedOrigin =
-    origin && allowedOrigins.includes(origin) ? origin : allowedOrigins[0];
+
+  if (!(origin && allowedOrigins.includes(origin))) {
+    return {
+      "Access-Control-Allow-Methods": methods,
+      "Access-Control-Allow-Headers": "Content-Type",
+    };
+  }
 
   return {
-    "Access-Control-Allow-Origin": allowedOrigin,
+    "Access-Control-Allow-Origin": origin,
     "Access-Control-Allow-Methods": methods,
     "Access-Control-Allow-Headers": "Content-Type",
     "Access-Control-Allow-Credentials": "true",

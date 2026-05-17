@@ -29,6 +29,8 @@ import { auth } from "@repo/auth/server";
 import Ably from "ably";
 import { NextResponse } from "next/server";
 
+import { env } from "@/env";
+
 // Force Node.js runtime — the Ably SDK uses Node.js APIs (crypto, https) that
 // are not available on the Vercel Edge runtime.
 // https://nextjs.org/docs/app/api-reference/file-conventions/route#runtime
@@ -89,7 +91,7 @@ export async function POST(request: Request) {
     // ── 3. Validate env var ──────────────────────────────────────────────────
     // ABLY_API_KEY must be set in Vercel → capsule-pro-app → Environment Variables.
     // Format: "<AppID>.<KeyID>:<KeySecret>"  (the full root or named key string)
-    const apiKey = process.env.ABLY_API_KEY;
+    const apiKey = env.ABLY_API_KEY;
     if (!apiKey) {
       console.error(
         "[ably/auth] ABLY_API_KEY is not set. " +

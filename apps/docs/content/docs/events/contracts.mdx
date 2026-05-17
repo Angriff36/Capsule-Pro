@@ -1,0 +1,35 @@
+---
+title: Contracts
+description: Contract management with document upload, signatures, and email delivery.
+---
+
+Contracts link to events and clients, tracking the legal agreement for catering services.
+
+## Contract Properties
+
+| Field | Description |
+|-------|-------------|
+| Contract Number | Auto-generated unique identifier |
+| Event | Linked event |
+| Client | Linked CRM client |
+| Status | Draft, Sent, Signed, Expired, etc. |
+| Document | Uploaded PDF or Word document (max 10MB, base64) |
+| Signatures | Captured signatures with timestamps |
+
+## Workflow
+
+1. **Create** a contract linked to an event and client
+2. **Upload** the contract document (PDF or Word)
+3. **Send** the contract to the client via email (uses Resend)
+4. **Capture signatures** — client signs, status auto-updates to "signed"
+
+## Expiring Contracts
+
+The contracts list page highlights contracts expiring within a configurable number of days, with a dedicated alert section.
+
+## Search and Filter
+
+Contracts can be filtered by:
+- Status
+- Client
+- Document type

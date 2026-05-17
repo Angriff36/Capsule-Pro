@@ -7,7 +7,7 @@
  * GET /api/cron/inventory-audit
  *
  * Authentication:
- * - x-vercel-cron-secret: <CRON_SECRET> (Vercel Cron Jobs)
+ * - x-vercel-cron: 1 (Vercel Cron Jobs — header always present when CRON_SECRET is configured)
  * - Authorization: Bearer <CRON_SECRET> (Manual/scheduler calls)
  *
  * - If CRON_SECRET env var is not set, returns 503 (not configured)
@@ -140,11 +140,11 @@ export async function GET(request: Request): Promise<NextResponse> {
     );
   }
 
-  // Validate the secret - check both x-vercel-cron-secret header and Authorization header
-  const vercelCronSecret = request.headers.get("x-vercel-cron-secret");
+  // Validate auth: accept Vercel cron header OR Authorization: Bearer
+  const vercelCron = request.headers.get("x-vercel-cron");
   const authHeader = request.headers.get("authorization");
 
-  const isVercelCronValid = vercelCronSecret === cronSecret;
+  const isVercelCronValid = vercelCron === "1" && cronSecret;
   const isAuthHeaderValid = authHeader === `Bearer ${cronSecret}`;
 
   if (!(isVercelCronValid || isAuthHeaderValid)) {

@@ -16,8 +16,8 @@
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "strict": true,
-    "target": "ES2022",
-    "strictNullChecks": true
+    "types": ["node"],
+    "target": "ES2022"
   },
   "include": ["scripts/**/*.ts"],
   "exclude": ["apps", "packages", "archive", "node_modules"]

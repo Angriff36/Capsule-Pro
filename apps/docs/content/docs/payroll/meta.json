@@ -1,0 +1,4 @@
+{
+  "title": "Payroll",
+  "pages": ["index", "timecards", "periods-and-runs", "deductions-and-taxes", "export"]
+}

@@ -521,7 +521,7 @@ export class RecipeVersionPrismaStore {
             instructions: version.instructions ?? "",
             notes: version.notes ?? "",
             ingredientCount: 0, // Would need to query recipe_ingredients table
-            stepCount: 0, // Would need to query recipe_steps table
+            stepCount: 0, // Would need to query RecipeStep table
             totalCost: Number(version.totalCost) || 0,
             costPerYield: Number(version.costPerYield) || 0,
             createdAt: version.createdAt.getTime(),
@@ -629,8 +629,8 @@ export class RecipeIngredientPrismaStore {
 /**
  * Prisma-backed store for RecipeStep entities
  *
- * Maps Manifest RecipeStep entities to the Prisma recipe_steps table.
- * Note: Prisma model uses snake_case (recipe_steps).
+ * Maps Manifest RecipeStep entities to the Prisma RecipeStep table.
+ * Note: Prisma model uses snake_case (RecipeStep).
  */
 export class RecipeStepPrismaStore {
     prisma;
@@ -640,49 +640,49 @@ export class RecipeStepPrismaStore {
         this.tenantId = tenantId;
     }
     async getAll() {
-        const steps = await this.prisma.recipe_steps.findMany({
-            where: { tenant_id: this.tenantId, deleted_at: null },
+        const steps = await this.prisma.recipeStep.findMany({
+            where: { tenantId: this.tenantId, deletedAt: null },
         });
         return steps.map((step) => this.mapToManifestEntity(step));
     }
     async getById(id) {
-        const step = await this.prisma.recipe_steps.findFirst({
-            where: { tenant_id: this.tenantId, id, deleted_at: null },
+        const step = await this.prisma.recipeStep.findFirst({
+            where: { tenantId: this.tenantId, id, deletedAt: null },
         });
         return step ? this.mapToManifestEntity(step) : undefined;
     }
     async create(data) {
-        const step = await this.prisma.recipe_steps.create({
+        const step = await this.prisma.recipeStep.create({
             data: {
-                tenant_id: this.tenantId,
+                tenantId: this.tenantId,
                 id: data.id,
-                recipe_version_id: data.recipeVersionId,
-                step_number: data.stepNumber,
+                recipeVersionId: data.recipeVersionId,
+                stepNumber: data.stepNumber,
                 instruction: data.instruction,
-                duration_minutes: data.durationMinutes || null,
-                temperature_value: data.temperatureValue || null,
-                temperature_unit: data.temperatureUnit || null,
-                equipment_needed: data.equipmentNeeded
+                durationMinutes: data.durationMinutes || null,
+                temperatureValue: data.temperatureValue || null,
+                temperatureUnit: data.temperatureUnit || null,
+                equipmentNeeded: data.equipmentNeeded
                     ? data.equipmentNeeded
                         .split(",")
                         .filter(Boolean)
                     : [],
                 tips: data.tips || null,
-                video_url: data.videoUrl || null,
-                image_url: data.imageUrl || null,
+                videoUrl: data.videoUrl || null,
+                imageUrl: data.imageUrl || null,
             },
         });
         return this.mapToManifestEntity(step);
     }
     async update(id, data) {
         try {
-            const updated = await this.prisma.recipe_steps.update({
-                where: { tenant_id_id: { tenant_id: this.tenantId, id } },
+            const updated = await this.prisma.recipeStep.update({
+                where: { tenantId_id: { tenantId: this.tenantId, id } },
                 data: {
                     instruction: data.instruction,
-                    duration_minutes: data.durationMinutes,
+                    durationMinutes: data.durationMinutes,
                     tips: data.tips,
-                    updated_at: new Date(),
+                    updatedAt: new Date(),
                 },
             });
             return this.mapToManifestEntity(updated);
@@ -694,9 +694,9 @@ export class RecipeStepPrismaStore {
     }
     async delete(id) {
         try {
-            await this.prisma.recipe_steps.update({
-                where: { tenant_id_id: { tenant_id: this.tenantId, id } },
-                data: { deleted_at: new Date() },
+            await this.prisma.recipeStep.update({
+                where: { tenantId_id: { tenantId: this.tenantId, id } },
+                data: { deletedAt: new Date() },
             });
             return true;
         }
@@ -706,29 +706,29 @@ export class RecipeStepPrismaStore {
         }
     }
     async clear() {
-        await this.prisma.recipe_steps.updateMany({
-            where: { tenant_id: this.tenantId },
-            data: { deleted_at: new Date() },
+        await this.prisma.recipeStep.updateMany({
+            where: { tenantId: this.tenantId },
+            data: { deletedAt: new Date() },
         });
     }
     mapToManifestEntity(step) {
         return {
             id: step.id,
-            tenantId: step.tenant_id,
-            recipeVersionId: step.recipe_version_id,
-            stepNumber: step.step_number,
+            tenantId: step.tenantId,
+            recipeVersionId: step.recipeVersionId,
+            stepNumber: step.stepNumber,
             instruction: step.instruction,
-            durationMinutes: step.duration_minutes ?? 0,
-            temperatureValue: step.temperature_value
-                ? Number(step.temperature_value)
+            durationMinutes: step.durationMinutes ?? 0,
+            temperatureValue: step.temperatureValue
+                ? Number(step.temperatureValue)
                 : 0,
-            temperatureUnit: step.temperature_unit ?? "",
-            equipmentNeeded: step.equipment_needed?.join(",") ?? "",
+            temperatureUnit: step.temperatureUnit ?? "",
+            equipmentNeeded: step.equipmentNeeded?.join(",") ?? "",
             tips: step.tips ?? "",
-            videoUrl: step.video_url ?? "",
-            imageUrl: step.image_url ?? "",
-            createdAt: step.created_at.getTime(),
-            updatedAt: step.updated_at.getTime(),
+            videoUrl: step.videoUrl ?? "",
+            imageUrl: step.imageUrl ?? "",
+            createdAt: step.createdAt.getTime(),
+            updatedAt: step.updatedAt.getTime(),
         };
     }
 }

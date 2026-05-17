@@ -1,0 +1,44 @@
+---
+title: Battle Boards
+description: Operational planning boards with staff assignments and timelines.
+---
+
+Battle Boards are the operational execution plan for an event. They organize staff assignments, timeline tasks, and logistics.
+
+## Structure
+
+Each battle board contains:
+
+- **Staff Assignments** — Who is working the event and their roles
+- **Timeline** — Ordered tasks with timing (setup, service, breakdown)
+- **Notes** — Additional operational notes
+- **Status** — Draft, Ready, or Published
+
+## Workflow
+
+1. Create a battle board (manually or auto-generated from document import)
+2. Add staff assignments and timeline tasks
+3. Reorder and adjust timing
+4. Publish when ready for the team
+
+## Auto-Generation
+
+When events are imported from PDF documents, the event parser can automatically generate a battle board with:
+
+- Staff assignments extracted from the document
+- Timeline tasks from a 28-task template library
+- Layout suggestions based on event type
+
+## Manifest Commands
+
+Battle board voting lifecycle (for collaborative menu selection):
+- `create` / `open` — Board setup
+- `add-dish` / `remove-dish` — Manage dish options
+- `start-voting` / `vote` / `finalize` — Voting workflow
+
+## List View
+
+The battle boards list at `/events/battle-boards` shows all boards with:
+- Staff and timeline task counts
+- Status indicators (Draft, Ready, Published)
+- Quick navigation to individual boards

@@ -9,6 +9,8 @@ export default defineConfig({
   },
   test: {
     environment: "node",
+    globals: true,
+    restoreMocks: true,
     include: ["__tests__/**/*.test.ts"],
     testTimeout: 10_000,
   },

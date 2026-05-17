@@ -5,8 +5,7 @@
 
 import { openai } from "@ai-sdk/openai";
 import { database } from "@repo/database";
-import { createManifestRuntime } from "@repo/manifest-adapters/manifest-runtime-factory";
-import { log } from "@repo/observability/log";
+import { createManifestRuntime } from "@/lib/manifest-runtime";
 import { captureException } from "@sentry/nextjs";
 import { generateText } from "ai";
 import { v4 as uuidv4 } from "uuid";
@@ -412,17 +411,10 @@ export async function saveGeneratedTasks(
   try {
     // Create tasks via manifest runtime for constraint validation and event emission
     await database.$transaction(async (tx) => {
-      const runtime = await createManifestRuntime(
-        {
-          prisma: database,
-          prismaOverride: tx,
-          log,
-          captureException,
-        },
-        {
-          user: { id: userId, tenantId },
-        }
-      );
+      const runtime = await createManifestRuntime({
+        user: { id: userId, tenantId },
+        prismaOverride: tx,
+      });
 
       for (const task of tasks) {
         try {

@@ -197,8 +197,10 @@ async function sendSingleEmail(
     return null;
   }
 
+  const fromAddress = keys().RESEND_FROM ?? "Capsule <noreply@capsule.pro>";
+
   const result = await client.emails.send({
-    from: "Convoy <noreply@convoy.app>",
+    from: fromAddress,
     to: recipientName ? `${recipientName} <${to}>` : to,
     subject,
     html: htmlBody,

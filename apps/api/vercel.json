@@ -7,9 +7,11 @@
   "outputDirectory": ".next",
   "functions": {
     "app/api/**/*.ts": {
+      "maxDuration": 60,
       "regions": ["iad1"]
     },
     "app/cron/**/*.ts": {
+      "maxDuration": 60,
       "regions": ["iad1"]
     }
   },
@@ -44,6 +46,10 @@
     },
     {
       "path": "/outbox/publish",
+      "schedule": "* * * * *"
+    },
+    {
+      "path": "/api/cron/keep-alive",
       "schedule": "*/5 * * * *"
     }
   ]

@@ -21,7 +21,7 @@ import {
  */
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ shiftId: string }> }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const { orgId } = await auth();
   if (!orgId) {
@@ -29,7 +29,7 @@ export async function GET(
   }
 
   const tenantId = await getTenantIdForOrg(orgId);
-  const { shiftId } = await params;
+  const { id: shiftId } = await params;
   const { searchParams } = new URL(request.url);
 
   const locationId = searchParams.get("locationId");
@@ -105,7 +105,7 @@ export async function GET(
  */
 export async function POST(
   request: Request,
-  { params }: { params: Promise<{ shiftId: string }> }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const { orgId } = await auth();
   if (!orgId) {
@@ -113,7 +113,7 @@ export async function POST(
   }
 
   const tenantId = await getTenantIdForOrg(orgId);
-  const { shiftId } = await params;
+  const { id: shiftId } = await params;
 
   try {
     const body = await request.json();

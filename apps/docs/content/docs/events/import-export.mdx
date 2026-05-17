@@ -1,0 +1,54 @@
+---
+title: Import & Export
+description: Document parsing, bulk import, and data export capabilities.
+---
+
+## Import
+
+### Document Parsing
+
+Upload PDF or CSV files to automatically create events, dishes, battle boards, and reports:
+
+1. Upload a document at `/events/import`
+2. The event parser (`@repo/event-parser`) processes the file:
+   - **PDF** — Extracts sections, menus, timelines, staff, allergens, and equipment
+   - **CSV** — Parses structured event data (prep list and dish list formats)
+3. Parsed data creates:
+   - Event record
+   - Dishes and recipe associations
+   - Battle board with staff and timeline
+   - Pre-event review checklist
+
+The parser includes confidence scoring (0-100) and flags items that need manual review.
+
+### Bulk Import
+
+The server-to-server import endpoint accepts batch event data with:
+- Zod validation on all fields
+- Dry-run mode for validation without persistence
+- Auto-creation of related entities (dishes, clients)
+
+### CSV Column Formats
+
+Two CSV formats are supported:
+
+**Prep List Format** — Columns for item name, quantity, unit, station, notes
+
+**Dish List Format** — Columns for dish name, category, servings, dietary tags, allergens
+
+## Export
+
+### CSV Export
+
+- **Single event** — Export menu, staff, and guest data for one event
+- **Bulk export** — Export up to 5,000 events with configurable sections
+
+### PDF Export
+
+Event details can be exported as PDF documents using React-PDF templates, including:
+- Event overview
+- Menu and dish details
+- Staff assignments
+- Guest list
+
+Export is available from the event detail page with section selection.

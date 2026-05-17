@@ -286,8 +286,8 @@ describe("Rate Limiting Middleware", () => {
       });
     });
 
-    describe("fail-open on Redis errors", () => {
-      it("should allow request on Redis error (fail-open)", async () => {
+    describe("fail-closed on Redis errors (default)", () => {
+      it("should block request on Redis error when failOpen not set", async () => {
         const request = createMockRequest({
           headers: { "x-tenant-id": TEST_TENANT_ID },
         });
@@ -298,11 +298,30 @@ describe("Rate Limiting Middleware", () => {
 
         const result = await checkRateLimit(request, TEST_TENANT_ID);
 
-        expect(result.success).toBe(true);
-        expect(result.remaining).toBe(100); // default limit as remaining
+        expect(result.success).toBe(false);
+        expect(result.remaining).toBe(0);
+        expect(result.response).toBeDefined();
+        expect(result.response?.status).toBe(429);
       });
 
-      it("should log error via observability on Redis failure", async () => {
+      it("should block request on Redis error with failOpen: false", async () => {
+        const request = createMockRequest({
+          headers: { "x-tenant-id": TEST_TENANT_ID },
+        });
+
+        mockRateLimiter.limit.mockRejectedValue(
+          new Error("Redis connection failed")
+        );
+
+        const result = await checkRateLimit(request, TEST_TENANT_ID, {
+          failOpen: false,
+        });
+
+        expect(result.success).toBe(false);
+        expect(result.response?.status).toBe(429);
+      });
+
+      it("should log error via observability on fail-closed block", async () => {
         const { log } = await import("@repo/observability/log");
         const logSpy = vi.spyOn(log, "error").mockImplementation(() => {});
         const request = createMockRequest({
@@ -314,14 +333,64 @@ describe("Rate Limiting Middleware", () => {
         await checkRateLimit(request, TEST_TENANT_ID);
 
         expect(logSpy).toHaveBeenCalledWith(
-          "[rate-limiter] Redis error, allowing request",
+          "[rate-limiter] Redis error, fail-closed blocking request",
           { error: expect.any(Error) }
         );
 
         logSpy.mockRestore();
       });
 
-      it("should return remaining equal to limit on Redis error", async () => {
+      it("should return retry-after of 60 seconds on fail-closed", async () => {
+        const request = createMockRequest({
+          headers: { "x-tenant-id": TEST_TENANT_ID },
+        });
+
+        mockRateLimiter.limit.mockRejectedValue(new Error("Redis down"));
+
+        const result = await checkRateLimit(request, TEST_TENANT_ID);
+
+        expect(result.response?.headers.get("retry-after")).toBe("60");
+      });
+    });
+
+    describe("fail-open on Redis errors (opt-in)", () => {
+      it("should allow request on Redis error when failOpen: true", async () => {
+        const request = createMockRequest({
+          headers: { "x-tenant-id": TEST_TENANT_ID },
+        });
+
+        mockRateLimiter.limit.mockRejectedValue(
+          new Error("Redis connection failed")
+        );
+
+        const result = await checkRateLimit(request, TEST_TENANT_ID, {
+          failOpen: true,
+        });
+
+        expect(result.success).toBe(true);
+        expect(result.remaining).toBe(100);
+      });
+
+      it("should log fail-open via observability on Redis failure", async () => {
+        const { log } = await import("@repo/observability/log");
+        const logSpy = vi.spyOn(log, "error").mockImplementation(() => {});
+        const request = createMockRequest({
+          headers: { "x-tenant-id": TEST_TENANT_ID },
+        });
+
+        mockRateLimiter.limit.mockRejectedValue(new Error("Redis timeout"));
+
+        await checkRateLimit(request, TEST_TENANT_ID, { failOpen: true });
+
+        expect(logSpy).toHaveBeenCalledWith(
+          "[rate-limiter] Redis error, fail-open allowing request",
+          { error: expect.any(Error) }
+        );
+
+        logSpy.mockRestore();
+      });
+
+      it("should return remaining equal to limit on fail-open", async () => {
         const request = createMockRequest({
           headers: { "x-tenant-id": TEST_TENANT_ID },
         });
@@ -330,6 +399,7 @@ describe("Rate Limiting Middleware", () => {
 
         const result = await checkRateLimit(request, TEST_TENANT_ID, {
           limit: 25,
+          failOpen: true,
         });
 
         expect(result.remaining).toBe(25);
@@ -830,7 +900,7 @@ describe("Rate Limiting Middleware", () => {
     });
 
     describe("Redis connection issues", () => {
-      it("should handle Redis timeout gracefully", async () => {
+      it("should block on Redis timeout (fail-closed default)", async () => {
         const request = createMockRequest({
           headers: { "x-tenant-id": TEST_TENANT_ID },
         });
@@ -841,10 +911,11 @@ describe("Rate Limiting Middleware", () => {
 
         const result = await checkRateLimit(request, TEST_TENANT_ID);
 
-        expect(result.success).toBe(true);
+        expect(result.success).toBe(false);
+        expect(result.response?.status).toBe(429);
       });
 
-      it("should handle Redis connection refused", async () => {
+      it("should block on Redis connection refused (fail-closed default)", async () => {
         const request = createMockRequest({
           headers: { "x-tenant-id": TEST_TENANT_ID },
         });
@@ -855,10 +926,11 @@ describe("Rate Limiting Middleware", () => {
 
         const result = await checkRateLimit(request, TEST_TENANT_ID);
 
-        expect(result.success).toBe(true);
+        expect(result.success).toBe(false);
+        expect(result.response?.status).toBe(429);
       });
 
-      it("should handle Redis out of memory", async () => {
+      it("should block on Redis out of memory (fail-closed default)", async () => {
         const request = createMockRequest({
           headers: { "x-tenant-id": TEST_TENANT_ID },
         });
@@ -869,7 +941,8 @@ describe("Rate Limiting Middleware", () => {
 
         const result = await checkRateLimit(request, TEST_TENANT_ID);
 
-        expect(result.success).toBe(true);
+        expect(result.success).toBe(false);
+        expect(result.response?.status).toBe(429);
       });
     });
 

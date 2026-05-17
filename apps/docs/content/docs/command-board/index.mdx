@@ -1,0 +1,60 @@
+---
+title: Command Board
+description: Strategic planning hub with AI-assisted coordination and real-time collaboration.
+---
+
+The Command Board is the default landing page of Capsule Pro. It's a strategic planning and coordination hub where leadership can visualize and manage operational entities.
+
+## Core Concepts
+
+### Boards
+Each board is a canvas containing entity cards, groups, and connections. Boards support multiple layouts.
+
+### Cards
+Cards represent entities from across the platform — events, clients, tasks, recipes, etc. Cards can be positioned, resized, and connected.
+
+### Groups
+Cards can be organized into groups for visual clustering.
+
+### Connections
+Lines between cards represent relationships or dependencies.
+
+## AI Chat Assistant
+
+Each board includes an AI chat assistant powered by GPT-4o-mini via the Vercel AI SDK. The assistant can:
+
+- **Suggest board actions**: Show this week's items, show overdue items, auto-populate the board, clear the board
+- **Query board context**: Summarize events, tasks, overdue items, or provide a board overview
+
+The AI provides read-only suggestions — the user must approve any actions before they're applied.
+
+## Real-Time Collaboration
+
+The Command Board uses both Ably and Liveblocks for real-time features:
+
+- **Ably events**: Card CRUD, group changes, connection updates
+- **Liveblocks**: Live cursors, presence indicators (who's viewing the board)
+- **Vector clocks**: Conflict resolution for simultaneous edits
+
+11 real-time event types keep all connected clients in sync.
+
+## Manifest Commands
+
+### Board
+- `update` / `deactivate`
+
+### Cards
+- `create` / `update` / `remove` / `move` / `resize`
+
+### Groups
+- `create` / `update` / `remove`
+
+### Connections
+- `create` / `remove`
+
+### Layouts
+- `create` / `update` / `remove`
+
+## Auto-Population
+
+Boards can be auto-populated with matching entities from the database — for example, pulling in all events for the current week or all overdue tasks.

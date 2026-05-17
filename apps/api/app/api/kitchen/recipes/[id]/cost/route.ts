@@ -9,7 +9,7 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
-import { createManifestRuntime } from "@repo/manifest-adapters/manifest-runtime-factory";
+import { createManifestRuntime } from "@/lib/manifest-runtime";
 import {
   getBlockingConstraints,
   manifestErrorResponse,
@@ -19,7 +19,6 @@ import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { createSentryTelemetry } from "@/lib/manifest/telemetry";
 
 export const runtime = "nodejs";
 
@@ -174,10 +173,10 @@ export async function GET(
  */
 export async function POST(
   _request: NextRequest,
-  { params }: { params: Promise<{ recipeVersionId: string }> }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { recipeVersionId } = await params;
+    const { id: recipeVersionId } = await params;
     const { orgId, userId } = await auth();
 
     if (!(userId && orgId)) {
@@ -207,21 +206,11 @@ export async function POST(
     });
 
     // Update RecipeVersion costs via manifest runtime
-    const sentryTelemetry = createSentryTelemetry();
-
     const result = await database.$transaction(async (tx) => {
-      const runtime = await createManifestRuntime(
-        {
-          prisma: database,
-          prismaOverride: tx,
-          log,
-          captureException,
-          telemetry: sentryTelemetry,
-        },
-        {
-          user: { id: userId, tenantId },
-        }
-      );
+      const runtime = await createManifestRuntime({
+        user: { id: userId, tenantId },
+        prismaOverride: tx,
+      });
 
       const updateResult = await runtime.runCommand(
         "updateCosts",

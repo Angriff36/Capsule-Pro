@@ -1,7 +1,7 @@
 import type { ConstraintOutcome } from "@angriff36/manifest/ir";
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
-import { createManifestRuntime } from "@repo/manifest-adapters/manifest-runtime-factory";
+import { createManifestRuntime } from "@/lib/manifest-runtime";
 import {
   getBlockingConstraints,
   manifestConstraintBlockedResponse,
@@ -12,7 +12,6 @@ import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { createSentryTelemetry } from "@/lib/manifest/telemetry";
 
 export const runtime = "nodejs";
 
@@ -54,23 +53,13 @@ export async function POST(request: NextRequest) {
     // Collect all constraint outcomes
     let allConstraintOutcomes: ConstraintOutcome[] = [];
 
-    const sentryTelemetry = createSentryTelemetry();
-
     try {
       const result = await database.$transaction(async (tx) => {
         // Create manifest runtime with transaction client override
-        const runtime = await createManifestRuntime(
-          {
-            prisma: database,
-            prismaOverride: tx,
-            log,
-            captureException,
-            telemetry: sentryTelemetry,
-          },
-          {
-            user: { id: userId, tenantId },
-          }
-        );
+        const runtime = await createManifestRuntime({
+          user: { id: userId, tenantId },
+          prismaOverride: tx,
+        });
 
         // 1. Create PrepList via manifest runtime
         const prepListResult = await runtime.runCommand(

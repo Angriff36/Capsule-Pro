@@ -59,8 +59,8 @@ async function runTests(
       args.unshift("--filter", packageFilter);
     }
 
-    const env: Record<string, string> = {
-      ...(process.env as Record<string, string>),
+    const env: NodeJS.ProcessEnv = {
+      ...process.env,
       CI: "true",
     };
 
@@ -78,20 +78,25 @@ async function runTests(
       env,
       shell: true,
       stdio: "pipe",
-    });
+    }) as unknown as {
+      stdout: import("node:stream").Readable;
+      stderr: import("node:stream").Readable;
+      on(event: "close", listener: (code: number | null) => void): void;
+      on(event: "error", listener: (error: Error) => void): void;
+    };
 
     let stdout = "";
     let stderr = "";
 
-    child.stdout?.on("data", (data) => {
+    child.stdout.on("data", (data: Buffer) => {
       stdout += data.toString();
     });
 
-    child.stderr?.on("data", (data) => {
+    child.stderr.on("data", (data: Buffer) => {
       stderr += data.toString();
     });
 
-    child.on("close", (code) => {
+    child.on("close", (code: number | null) => {
       const duration = Date.now() - startTime;
 
       const result: TestResult = {
@@ -141,7 +146,7 @@ async function runTests(
       resolve(result);
     });
 
-    child.on("error", (error) => {
+    child.on("error", (error: Error) => {
       resolve({
         runId,
         passed: 0,

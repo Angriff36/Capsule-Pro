@@ -1,0 +1,39 @@
+---
+title: Allergens
+description: Allergen warnings, dish-level management, and guest conflict detection.
+---
+
+The allergen system tracks allergen content across ingredients, dishes, and events to prevent serving unsafe food to guests.
+
+## Four Tabs
+
+The allergen management page provides 4 views:
+
+1. **Warnings** — Active allergen warnings that need attention
+2. **Events** — Event-level allergen analysis
+3. **Dishes** — Dish-level allergen content
+4. **Recipes** — Recipe-level allergen tracking
+
+## Warning Management
+
+Allergen warnings are generated when:
+
+- A dish contains allergens that conflict with a guest's dietary restrictions
+- An ingredient's allergen classification changes
+- A menu is assigned to an event with guests who have known allergies
+
+Warnings can be acknowledged or resolved by kitchen staff.
+
+## Conflict Detection
+
+The system can detect allergen conflicts for a specific event by cross-referencing:
+
+- Guest dietary restrictions and allergies
+- Dish allergen content
+- Ingredient allergen classifications
+
+This runs via the `/api/kitchen/allergens/detect-conflicts` endpoint.
+
+## Dish Allergen Updates
+
+Dish allergens and dietary tags can be updated directly from the allergen management interface, which updates the dish record and regenerates any affected warnings.

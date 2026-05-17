@@ -1,0 +1,49 @@
+---
+title: Periods & Runs
+description: Pay period management and payroll run processing with approval workflow.
+---
+
+## Pay Periods
+
+Pay periods define the date range for payroll calculation.
+
+- **Create** a period with start and end dates (maximum 31 days)
+- **Filter** by status: Open, Processing, Closed
+- **View** period details
+
+## Payroll Runs
+
+A payroll run processes all timecards within a pay period.
+
+### Run Lifecycle
+
+| Status | Description |
+|--------|-------------|
+| Pending | Run created, not yet processed |
+| Processing | Calculations in progress |
+| Completed | Calculations finished, ready for review |
+| Approved | Manager approved the run |
+| Paid | Payments have been issued |
+
+### Processing
+
+When a payroll run is generated:
+1. All timecards for the period are collected
+2. The payroll engine calculates for each employee:
+   - Base pay from hours worked
+   - Tips and tip pool allocation
+   - Gross pay
+   - Pre-tax deductions
+   - Federal and state taxes
+   - Post-tax deductions
+   - Net pay
+
+### Approval
+
+From the run detail page:
+- **Approve** — Accept the payroll calculations
+- **Reject** (with reason) — Send back for corrections
+- **Finalize** — Lock the run
+- **Export CSV** — Download for external processing
+
+The page auto-polls when a run is in "Processing" status.

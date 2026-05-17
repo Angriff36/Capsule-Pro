@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { describe, expect, it } from "vitest";
 import { isBoardStateReadIntent } from "@/app/api/command-board/chat/agent-loop";
 

@@ -1,0 +1,62 @@
+---
+title: Prep Lists
+description: Event-driven prep list generation with station assignment and scaling.
+---
+
+Prep lists are generated from event data — they pull dishes, recipes, and guest counts to create a comprehensive list of everything that needs to be prepared.
+
+## Generation
+
+To generate a prep list:
+
+1. Select an event from the prep list page
+2. The system pulls all event dishes and their linked recipes
+3. Ingredient quantities are scaled based on guest count
+4. Items are grouped by station assignment
+
+The generation process uses recipe scaling to adjust quantities proportionally.
+
+## Station Assignment
+
+Each prep list item can be assigned to a kitchen station:
+
+- Hot Line
+- Cold Prep
+- Bakery
+- Prep Station
+- Garnish
+
+Station assignments help distribute work across the kitchen team.
+
+## Saving
+
+Generated prep lists can be saved in two ways:
+
+1. **To Production Board** — Creates prep tasks that appear on the kitchen production board
+2. **To Database** — Saves as a `PrepList` with `PrepListItem` records in a transaction
+
+## Auto-Generation
+
+The system supports automatic prep list generation via a background process. Pending auto-generation requests are queued and processed asynchronously.
+
+## AI Bulk Generation
+
+For events without detailed recipe data, AI can generate prep tasks:
+
+1. Event data is sent to GPT-4o-mini
+2. The AI generates a list of prep tasks based on the event type, guest count, and menu
+3. Generated tasks can be reviewed and saved to the database
+
+## Manifest Commands
+
+- `create` / `update` / `activate` / `cancel` / `mark-completed` — PrepList lifecycle
+- `update-station` / `update-quantity` — PrepListItem adjustments
+- `update-batch-multiplier` — Scale the entire list
+
+## Comments
+
+Prep list items support threaded comments with role-based policies:
+
+- `create` — Add a comment
+- `resolve` / `unresolve` — Mark comments as resolved
+- `soft-delete` — Remove a comment

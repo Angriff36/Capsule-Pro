@@ -21,9 +21,10 @@ import { Textarea } from "@repo/design-system/components/ui/textarea";
 import { ArrowLeftIcon, Loader2Icon } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { createClient } from "../actions";
+import { createClient, getAvailableTags } from "../actions";
+import { TagInput } from "../components/tag-input";
 
 export default function NewClientPage() {
   const router = useRouter();
@@ -31,6 +32,7 @@ export default function NewClientPage() {
   const [clientType, setClientType] = useState<"company" | "individual">(
     "individual"
   );
+  const [availableTags, setAvailableTags] = useState<string[]>([]);
   const [formData, setFormData] = useState({
     company_name: "",
     first_name: "",
@@ -45,12 +47,18 @@ export default function NewClientPage() {
     postalCode: "",
     countryCode: "",
     notes: "",
-    tags: "",
+    tags: [] as string[],
     source: "",
     defaultPaymentTerms: "30",
     taxId: "",
     taxExempt: false,
   });
+
+  useEffect(() => {
+    getAvailableTags().then((tags) =>
+      setAvailableTags(tags.map((t) => t.tag))
+    );
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -86,12 +94,7 @@ export default function NewClientPage() {
         postalCode: formData.postalCode || undefined,
         countryCode: formData.countryCode || undefined,
         notes: formData.notes || undefined,
-        tags: formData.tags
-          ? formData.tags
-              .split(",")
-              .map((t) => t.trim())
-              .filter(Boolean)
-          : undefined,
+        tags: formData.tags.length > 0 ? formData.tags : undefined,
         source: formData.source || undefined,
         defaultPaymentTerms: formData.defaultPaymentTerms
           ? Number.parseInt(formData.defaultPaymentTerms, 10)
@@ -404,13 +407,13 @@ export default function NewClientPage() {
               <h3 className="text-lg font-medium">Additional Information</h3>
               <div className="grid gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="tags">Tags</Label>
-                  <Input
-                    id="tags"
-                    onChange={(e) =>
-                      setFormData({ ...formData, tags: e.target.value })
+                  <Label>Tags</Label>
+                  <TagInput
+                    onChange={(tags) =>
+                      setFormData({ ...formData, tags })
                     }
-                    placeholder="e.g., VIP, Corporate (comma-separated)"
+                    placeholder="Add a tag…"
+                    suggestions={availableTags}
                     value={formData.tags}
                   />
                 </div>

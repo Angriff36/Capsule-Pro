@@ -7,9 +7,9 @@ const __dirname = dirname(__filename);
 
 export default defineConfig({
   test: {
-    environment: "jsdom",
-    setupFiles: ["./vitest.setup.ts"],
+    environment: "node",
     globals: true,
+    restoreMocks: true,
     include: ["**/*.test.{ts,tsx}", "**/*.spec.{ts,tsx}"],
     exclude: ["**/e2e/**", "**/node_modules/**"],
   },
@@ -82,6 +82,18 @@ export default defineConfig({
     {
       name: "mobile",
       root: "./apps/mobile",
+    },
+    {
+      name: "manifest-adapters",
+      root: "./packages/manifest-adapters",
+    },
+    {
+      name: "manifest-runtime",
+      root: "./packages/manifest-runtime",
+    },
+    {
+      name: "notifications",
+      root: "./packages/notifications",
     },
   ],
 });

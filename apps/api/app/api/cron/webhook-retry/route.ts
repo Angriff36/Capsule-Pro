@@ -46,11 +46,15 @@ export async function GET(request: Request): Promise<NextResponse> {
     );
   }
 
-  // Validate the Authorization header
+  // Validate auth: accept Vercel cron header OR Authorization: Bearer
+  const vercelCron = request.headers.get("x-vercel-cron");
   const authHeader = request.headers.get("authorization");
-  if (authHeader !== `Bearer ${cronSecret}`) {
+  const isVercelCron = vercelCron === "1" && cronSecret;
+  const isBearerValid = authHeader === `Bearer ${cronSecret}`;
+
+  if (!(isVercelCron || isBearerValid)) {
     log.error(
-      "[webhook-retry] Unauthorized request — invalid or missing Authorization header"
+      "[webhook-retry] Unauthorized request — invalid or missing authentication"
     );
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

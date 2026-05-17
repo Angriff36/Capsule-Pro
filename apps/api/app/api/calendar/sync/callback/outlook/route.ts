@@ -2,6 +2,7 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
+import { env } from "@/env";
 
 /**
  * GET /api/calendar/sync/callback/outlook
@@ -59,7 +60,7 @@ export async function GET(request: NextRequest) {
 
     // Verify HMAC signature
     const secret =
-      process.env.CALENDAR_SYNC_SECRET ?? process.env.NEXTAUTH_SECRET ?? "";
+      env.CALENDAR_SYNC_SECRET ?? process.env.NEXTAUTH_SECRET ?? "";
     const expectedSig = createHmac("sha256", secret)
       .update(
         JSON.stringify({
@@ -84,9 +85,9 @@ export async function GET(request: NextRequest) {
     const { tenantId } = stateData;
 
     // Exchange code for tokens
-    const clientId = process.env.MICROSOFT_CLIENT_ID;
-    const clientSecret = process.env.MICROSOFT_CLIENT_SECRET;
-    const redirectUri = `${process.env.OAUTH_REDIRECT_URI}/api/calendar/sync/callback/outlook`;
+    const clientId = env.MICROSOFT_CLIENT_ID;
+    const clientSecret = env.MICROSOFT_CLIENT_SECRET;
+    const redirectUri = `${env.OAUTH_REDIRECT_URI}/api/calendar/sync/callback/outlook`;
 
     if (!(clientId && clientSecret)) {
       return NextResponse.redirect(

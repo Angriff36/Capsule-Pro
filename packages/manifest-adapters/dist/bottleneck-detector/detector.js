@@ -268,16 +268,16 @@ export class BottleneckDetector {
         COUNT(CASE WHEN pli.is_completed = true THEN 1 END)::int as completed_items,
         COALESCE(AVG(
           CASE
-            WHEN pli.completed_at IS NOT NULL AND pli.created_at IS NOT NULL
-            THEN EXTRACT(EPOCH FROM (pli.completed_at - pli.created_at)) / 60
+            WHEN pli.completed_at IS NOT NULL AND pli.createdAt IS NOT NULL
+            THEN EXTRACT(EPOCH FROM (pli.completed_at - pli.createdAt)) / 60
             ELSE NULL
           END
         ), 0)::numeric as avg_completion_minutes
       FROM tenant_kitchen.prep_list_items pli
-      WHERE pli.tenant_id = $1
-        AND pli.created_at >= $2
-        AND pli.created_at <= $3
-        AND pli.deleted_at IS NULL
+      WHERE pli.tenantId = $1
+        AND pli.createdAt >= $2
+        AND pli.createdAt <= $3
+        AND pli.deletedAt IS NULL
         AND pli.station_id IS NOT NULL
         ${locationId ? "AND EXISTS (SELECT 1 FROM tenant_kitchen.stations s WHERE s.id = pli.station_id AND s.location_id = $4)" : ""}
       GROUP BY pli.station_id, pli.station_name
@@ -316,26 +316,26 @@ export class BottleneckDetector {
             this.prisma.$queryRawUnsafe(`
         SELECT COUNT(*)::int as count
         FROM tenant_kitchen.prep_tasks pt
-        WHERE pt.tenant_id = $1
+        WHERE pt.tenantId = $1
           AND pt.status NOT IN ('completed', 'cancelled')
-          AND pt.deleted_at IS NULL
+          AND pt.deletedAt IS NULL
           ${locationId ? "AND pt.location_id = $2" : ""}
         `, locationId ? [tenantId, locationId] : [tenantId]),
             this.prisma.$queryRawUnsafe(`
         SELECT COALESCE(AVG(
           CASE
             WHEN pt.actual_minutes IS NOT NULL THEN pt.actual_minutes
-            WHEN pt.completed_at IS NOT NULL AND pt.created_at IS NOT NULL
-            THEN EXTRACT(EPOCH FROM (pt.completed_at - pt.created_at)) / 60
+            WHEN pt.completed_at IS NOT NULL AND pt.createdAt IS NOT NULL
+            THEN EXTRACT(EPOCH FROM (pt.completed_at - pt.createdAt)) / 60
             ELSE NULL
           END
         ), 0)::numeric as avg_minutes
         FROM tenant_kitchen.prep_tasks pt
-        WHERE pt.tenant_id = $1
+        WHERE pt.tenantId = $1
           AND pt.status = 'completed'
           AND pt.completed_at >= $2
           AND pt.completed_at <= $3
-          AND pt.deleted_at IS NULL
+          AND pt.deletedAt IS NULL
           ${locationId ? "AND pt.location_id = $4" : ""}
         `, locationId
                 ? [tenantId, startDate, endDate, locationId]
@@ -463,9 +463,9 @@ export class BottleneckDetector {
           ELSE 0
         END)::numeric as overtime_hours
       FROM tenant_staff.time_entries te
-      WHERE te.tenant_id = $1
+      WHERE te.tenantId = $1
         AND te.clock_in >= $2
-        AND te.deleted_at IS NULL
+        AND te.deletedAt IS NULL
         ${locationId ? "AND te.location_id = $3" : ""}
       `, locationId ? [tenantId, weekAgo, locationId] : [tenantId, weekAgo]);
         const regularHours = Number(timeEntries[0]?.regular_hours || 0);
@@ -494,12 +494,12 @@ export class BottleneckDetector {
     async fetchEventMetrics(tenantId, startDate, endDate, locationId) {
         const result = await this.prisma.$queryRawUnsafe(`
       SELECT
-        AVG(EXTRACT(EPOCH FROM (e.event_date - e.created_at)) / 86400)::numeric as avg_days
+        AVG(EXTRACT(EPOCH FROM (e.event_date - e.createdAt)) / 86400)::numeric as avg_days
       FROM tenant_events.events e
-      WHERE e.tenant_id = $1
-        AND e.created_at >= $2
-        AND e.created_at <= $3
-        AND e.deleted_at IS NULL
+      WHERE e.tenantId = $1
+        AND e.createdAt >= $2
+        AND e.createdAt <= $3
+        AND e.deletedAt IS NULL
         ${locationId ? "AND e.location_id = $4" : ""}
       `, locationId
             ? [tenantId, startDate, endDate, locationId]
