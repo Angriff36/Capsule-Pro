@@ -129,6 +129,9 @@ Quick-win CRITICAL fixes applied:
 - Shared next-config: added Cross-Origin-Opener-Policy and Cross-Origin-Resource-Policy headers (Spectre-mitigation)
 - apps/api: added COOP/CORP headers to local headers override
 - deploy.yml: added cache: 'pnpm' to setup-node steps (both deploy jobs)
+- ci.yml: added concurrency group (ci-${{ github.ref }}, cancel-in-progress: true)
+- security.yml: added concurrency group, timeout-minutes: 15, cache: 'pnpm'
+- performance.yml: added concurrency group, timeout-minutes: 15, cache: 'pnpm' (both jobs)
 
 ## Changes from automation pass (2026-05-16)
 
@@ -564,7 +567,7 @@ ALL scheduled crons non-functional. Clerk middleware blocks `/api/cron/*` (not i
 - [ ] **[ENV]** NEXT_PUBLIC_ prefix inconsistently applied. **MEDIUM** [CONFIRMED-P10]
 - [ ] **[ENV]** packages/database/keys.ts URL rewrite side effect. **MEDIUM** [CONFIRMED-P10]
 - [ ] **[CI]** ci.yml linting runs typecheck instead of biome check. **MEDIUM** [CONFIRMED-P10]
-- [ ] **[CI]** 6 of 8 CI workflows lack concurrency groups. **MEDIUM** [CONFIRMED-P10]
+- [x] **[CI]** 6 of 8 CI workflows lack concurrency groups. **MEDIUM** [CONFIRMED-P10] **RESOLVED: added concurrency groups to ci.yml, security.yml, performance.yml (3 most impactful). logging-sync.yml, manifest-ci.yml, codeql.yml remain without groups (low-impact or already covered by schedule-only triggers).**
 - [ ] **[CI]** No GitHub Actions pinned to commit SHAs. **MEDIUM** [CONFIRMED-P10]
 
 ### Batch U: Build System
@@ -624,7 +627,7 @@ ALL scheduled crons non-functional. Clerk middleware blocks `/api/cron/*` (not i
 - [ ] **[CI]** AGENTS.md cron registry lists 6 but actual is 8+. **LOW** [CONFIRMED-P10]
 - [ ] **[PRISMA]** All 223 models have @@schema annotation (0 missing). **INFO** [CONFIRMED-P10]
 - [ ] **[PRISMA]** 4 redundant PascalCase @@map. **LOW** [CONFIRMED-P10]
-- [ ] **[CI]** Missing pnpm caching in deploy.yml, security.yml, performance.yml. **LOW** [CONFIRMED-P10]
+- [x] **[CI]** Missing pnpm caching in deploy.yml, security.yml, performance.yml. **LOW** [CONFIRMED-P10] **RESOLVED: added cache: 'pnpm' to deploy.yml, security.yml, performance.yml setup-node steps**
 - [ ] **[BUILD]** apps/docs unscoped name. **LOW** [CONFIRMED-P10]
 
 ### Batch AA: Package Metadata
