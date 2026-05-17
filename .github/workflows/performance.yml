@@ -61,6 +61,30 @@ jobs:
           RESEND_FROM: "noreply@ci-build.local"
           CLERK_SECRET_KEY: "not_a_real_stripe_key_dummy_value"
 
+      - name: Start app server
+        run: |
+          cd apps/app && pnpm start &
+          for i in $(seq 1 30); do
+            if curl -s -o /dev/null http://localhost:3000/ 2>/dev/null; then
+              echo "App server ready on port 3000"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "::error::App server failed to start within 60s"
+          exit 1
+        env:
+          SKIP_ENV_VALIDATION: true
+          DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
+          CLERK_SECRET_KEY: "not_a_real_stripe_key_dummy_value"
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: "pk_test_Y2kuZHVtbXkuYWNjb3VudHMuZGV2JA=="
+          NEXT_PUBLIC_CLERK_SIGN_IN_URL: "/sign-in"
+          NEXT_PUBLIC_CLERK_SIGN_UP_URL: "/sign-up"
+          NEXT_PUBLIC_APP_URL: "https://capsule-pro-app.vercel.app"
+          NEXT_PUBLIC_WEB_URL: "https://capsule-pro-web.vercel.app"
+          NEXT_PUBLIC_API_URL: "https://capsule-pro-api.vercel.app"
+          NEXT_PUBLIC_DOCS_URL: "https://capsule-pro-docs.vercel.app"
+
       - name: Run Lighthouse
         continue-on-error: true # Clerk auth middleware returns interstitial for unauthenticated requests
         uses: treosh/lighthouse-ci-action@v10

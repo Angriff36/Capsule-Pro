@@ -45,6 +45,10 @@
     {
       "path": "/outbox/publish",
       "schedule": "* * * * *"
+    },
+    {
+      "path": "/api/cron/keep-alive",
+      "schedule": "*/5 * * * *"
     }
   ]
 }

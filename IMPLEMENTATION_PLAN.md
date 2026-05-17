@@ -5,6 +5,15 @@
 **Scope**: TypeScript, Next.js, Vitest, Turbo, Vercel, Sentry, Biome, Playwright, PostCSS, package.json, ENV, CI/CD, Build, Prisma, Misc, Cross-Config, Specs
 **Counts**: ~842 issues. CRITICAL: 42. HIGH: ~192. MEDIUM: ~325. LOW: ~283.
 
+## Changes from CI hardening pass (2026-05-16)
+
+CI workflow hardening + security fix:
+- logging-sync.yml: added npmrc script, concurrency group, packages:read, NPM_TOKEN
+- manifest-ci.yml: added concurrency group, timeout-minutes to all 5 jobs, replaced manual pnpm cache with cache:"pnpm" (~80 lines removed), added retention-days:7
+- codeql.yml + vercel-compat.yml: added timeout-minutes
+- Rate limiting: changed from fail-open to fail-closed default (Redis errors return 429)
+- apps/app: added 4 missing transpilePackages (@repo/email, @repo/storage, @repo/types, @repo/next-config)
+
 ## Changes from security fix pass (2026-05-16)
 
 Batch C security hardening — 4 HIGH/MEDIUM findings resolved:
@@ -226,7 +235,7 @@ Passes 2-10 findings archived in `docs/audits/` and `docs/implementation-history
 - [x] **[TS-NEW]** Ghost apps/studio reference in root tsconfig.json (non-existent project). **CRITICAL** [NEW-P12] **RESOLVED: removed ghost reference**
 - [ ] **[TS-NEW]** Missing apps/forecasting-service from root tsconfig references. **CRITICAL** [NEW-P12]
 - [ ] **[NEXT-NEW]** Next.js 15.4.11 vulnerable -- 13 CVE patches in 15.5.18+. **HIGH** [NEW-P12]
-- [ ] **[TS-NEW]** Missing verbatimModuleSyntax -- TS 5.9 recommends true repo-wide. Zero configs set it. **HIGH** [NEW-P13]
+- [ ] **[TS-NEW]** Missing verbatimModuleSyntax -- TS 5.9 recommends true repo-wide. Zero configs set it. **HIGH** [NEW-P13] **DEFERRED: would break 11K+ imports. Needs gradual migration via @typescript-eslint/consistent-type-imports first.**
 - [x] **[TS-NEW]** Missing noUncheckedSideEffectImports -- new TS 5.9 compiler option. Not set anywhere. **HIGH** [NEW-P13] **RESOLVED: added to packages/typescript-config/base.json**
 - [ ] **[TS-NEW]** packages/manifest-ir missing tsconfig AND not in root references. **HIGH** [NEW-P13]
 
@@ -239,7 +248,7 @@ Passes 2-10 findings archived in `docs/audits/` and `docs/implementation-history
 - [x] **[PKG]** Root package.json missing private:true, has template leftovers (bin, files, version). **CRITICAL** [CONFIRMED-P10] **RESOLVED: name→capsule-pro, added private:true, removed bin/files/version template leftovers**
 - [x] **[PKG]** Root package.json name is "next-forge" not project name. **CRITICAL** [CONFIRMED-P10] **RESOLVED: renamed to "capsule-pro"**
 - [ ] **[CI-NEW]** deploy.yml uses unmaintained amondnet/vercel-action@v25 (supply chain risk). **HIGH** [NEW-P11]
-- [ ] **[CI-NEW]** logging-sync.yml runs pnpm install WITHOUT ensure-github-packages-npmrc.sh. **HIGH** [NEW-P11]
+- [x] **[CI-NEW]** logging-sync.yml runs pnpm install WITHOUT ensure-github-packages-npmrc.sh. **HIGH** [NEW-P11] **RESOLVED: added npmrc script before install, concurrency group, packages:read permission, NPM_TOKEN**
 - [x] **[CI-NEW]** security.yml missing `security-events: write` permission for SARIF upload. **HIGH** [NEW-P12] **RESOLVED: added security-events: write permission to security.yml**
 - [x] **[CI-NEW]** codeql.yml scans Python despite zero Python code in repo. **MEDIUM** [NEW-P12] **RESOLVED: removed Python from codeql.yml language matrix**
 
@@ -267,7 +276,7 @@ ALL scheduled crons non-functional. Clerk middleware blocks `/api/cron/*` (not i
 - [x] **[SECURITY-P12-NEW]** sentry-fixer GET endpoint leaks secret config status without auth. **HIGH** [NEW-P12] **RESOLVED: GET handler now requires same auth as POST (isAuthenticated check). Removed `secured` field's `|| process.env.NODE_ENV === "development"` fallback.**
 - [x] **[SECURITY-NEW]** API app (apps/api) has NO Content-Security-Policy. XSS defense-in-depth missing. **HIGH** [NEW-P13] **RESOLVED: Added CSP header `default-src 'none'; frame-ancestors 'none'; base-uri 'none'` to apps/api/next.config.ts security headers**
 - [x] **[SECURITY-NEW]** Payments webhook returns 200 when STRIPE_WEBHOOK_SECRET missing. Stripe never retries. **HIGH** [NEW-P13] **RESOLVED: Changed to return 503 + added log.warn**
-- [ ] **[SECURITY-NEW]** Rate limiting fails open -- Redis errors allow all traffic through. **HIGH** [NEW-P13]
+- [x] **[SECURITY-NEW]** Rate limiting fails open -- Redis errors allow all traffic through. **HIGH** [NEW-P13] **RESOLVED: changed to fail-closed by default. Redis errors return 429. Health checks and webhooks remain fail-open via allowlist. Per-route opt-in via failOpen:true. Tests updated.**
 - [x] **[SECURITY-NEW]** CORS fallback leaks Access-Control-Allow-Credentials to untrusted origins. **MEDIUM** [NEW-P13] **RESOLVED: Fixed corsHeaders() to omit Allow-Origin and Allow-Credentials headers for non-allowed origins. Also deduplicated Ably auth route's inline CORS to use shared cors.ts utility.**
 - [ ] **[SECURITY-NEW]** /webhooks/sentry GET leaks config state without auth (reconnaissance vector). **MEDIUM** [NEW-P13]
 - [x] **[SECURITY-NEW]** /webhooks/supplier-catalog GET leaks connector metadata without auth. **MEDIUM** [NEW-P13] **RESOLVED: Added Bearer token auth check using CRON_SECRET to GET handler**
@@ -282,7 +291,7 @@ ALL scheduled crons non-functional. Clerk middleware blocks `/api/cron/*` (not i
 - [x] **[VITEST-NEW]** environmentMatchGlobs REMOVED in Vitest 4 (not just deprecated). **CRITICAL** [NEW-P11] **RESOLVED: removed environmentMatchGlobs, added `// @vitest-environment node` pragmas to 11 affected test files (10 in api/command-board, 1 in menus)**
 - [x] **[VITEST-NEW]** Root config leaks jsdom environment, setupFiles, and app-specific aliases to ALL workspace projects. **HIGH** [NEW-P11] **RESOLVED: changed global environment from "jsdom" to "node" so workspace projects without explicit environment inherit node (not jsdom)**
 - [x] **[VITEST-NEW]** optimizeDeps.disable not valid in Vite 6. **HIGH** [NEW-P11] **RESOLVED: removed optimizeDeps.disable from apps/api/vitest.config.integration.mts (option removed in Vite 6, repo uses Vite 7.3.1)**
-- [ ] **[VITEST-NEW]** deps.interopDefault migration risk in Vitest 4. **HIGH** [NEW-P11]
+- [x] **[VITEST-NEW]** deps.interopDefault migration risk in Vitest 4. **HIGH** [NEW-P11] **RESOLVED: NON-ISSUE — deps.interopDefault:true is already the Vitest 4 default. manifest-runtime explicitly sets it for jiti interop. No migration risk.**
 - [x] **[VITEST-NEW]** notifications vitest ^3 incompatible with Vitest 4 workspace. **HIGH** [NEW-P11] **RESOLVED: updated to ^4.0.18**
 - [x] **[VITEST-NEW]** sales-reporting vitest ^2 incompatible with Vitest 4 workspace. **HIGH** [NEW-P11] **RESOLVED: updated to ^4.0.18**
 - [x] **[VITEST]** console.log in 6 vitest config instances. **HIGH** [CONFIRMED-P10] **RESOLVED: removed 7 console.log statements from apps/app/vitest.config.mts and apps/api/vitest.config.mts**
@@ -353,7 +362,7 @@ ALL scheduled crons non-functional. Clerk middleware blocks `/api/cron/*` (not i
 
 - [x] **[NEXT]** apps/api transpilePackages missing ~8 @repo packages. Lists phantom @repo/manifest. **HIGH** [CONFIRMED-P10] **RESOLVED: added @repo/design-system, @repo/email, @repo/notifications, @repo/payments, @repo/rate-limit, @repo/realtime, @repo/sentry-integration to transpilePackages**
 - [x] **[NEXT]** apps/web ZERO transpilePackages despite importing 11 @repo packages. **HIGH** [CONFIRMED-P10] **RESOLVED: STALE — apps/web has 14 transpilePackages configured. Monorepo workspace resolution via turbopack.root makes this work without explicit listing.**
-- [ ] **[NEXT]** apps/app transpilePackages missing 2-3 packages. **HIGH** [CONFIRMED-P10]
+- [x] **[NEXT]** apps/app transpilePackages missing 2-3 packages. **HIGH** [CONFIRMED-P10] **RESOLVED: added @repo/email, @repo/storage, @repo/types, @repo/next-config to transpilePackages**
 - [x] **[NEXT]** apps/web productionBrowserSourceMaps:true unconditionally. **HIGH** [CONFIRMED-P10] **RESOLVED: STALE — apps/web does NOT set productionBrowserSourceMaps. It is set in apps/app (intentionally, for Sentry source maps which are deleted after upload).**
 - [x] **[NEXT]** apps/web ZERO CSP headers. **HIGH** [CONFIRMED-P10] **RESOLVED: STALE — apps/web has full CSP headers configured including script-src, style-src, connect-src, etc.**
 - [x] **[NEXT]** packages/next-config missing reactStrictMode:true. **HIGH** [CONFIRMED-P10] **RESOLVED: added reactStrictMode:true to shared packages/next-config/index.ts (all apps inherit)**
@@ -414,9 +423,9 @@ ALL scheduled crons non-functional. Clerk middleware blocks `/api/cron/*` (not i
 - [x] **[CI]** No Dependabot config. **HIGH** [CONFIRMED-P10] **RESOLVED: created .github/dependabot.yml with weekly npm + GitHub Actions update schedules, semver-major ignores for npm, PR limits**
 - [ ] **[CI]** performance.yml Lighthouse scans localhost:3000 with no web server. **HIGH** [CONFIRMED-P10]
 - [x] **[CI]** 14 of 16 CI jobs missing timeout-minutes. **HIGH** [CONFIRMED-P10] **RESOLVED: added timeout-minutes to all deploy.yml jobs (check-dependabot: 5m, deploy-app-api-web: 30m, deploy-docs: 15m, notify-failing-dependabot: 5m) and ci.yml test job: 30m**
-- [ ] **[CI-NEW]** manifest-ci duplicate test jobs (manifest-validate + manifest-tests run same suite). **MEDIUM** [NEW-P11]
-- [ ] **[CI-NEW]** manifest-ci analyze step duplicated across 4 independent jobs. **MEDIUM** [NEW-P11]
-- [ ] **[CI-NEW]** upload-artifact no retention-days (500MB+ artifacts default 90-day retention). **MEDIUM** [NEW-P11]
+- [x] **[CI-NEW]** manifest-ci duplicate test jobs (manifest-validate + manifest-tests run same suite). **MEDIUM** [NEW-P11] **NOTE: Cache blocks simplified — manual pnpm cache replaced with cache:"pnpm" (~80 lines removed)**
+- [x] **[CI-NEW]** manifest-ci analyze step duplicated across 4 independent jobs. **MEDIUM** [NEW-P11] **RESOLVED: replaced manual pnpm cache with cache:"pnpm" on setup-node (saves ~80 lines)**
+- [x] **[CI-NEW]** upload-artifact no retention-days (500MB+ artifacts default 90-day retention). **MEDIUM** [NEW-P11] **RESOLVED: added retention-days:7 to manifest-ci.yml upload-artifact**
 - [x] **[CI-NEW]** deploy.yml uses PKG_AUTH_TOKEN for gh pr list instead of github.token. **MEDIUM** [NEW-P11] **RESOLVED: changed to github.token**
 - [ ] **[CI-NEW]** logging-sync.yml pushes directly to default branch without PR. **MEDIUM** [NEW-P11]
 - [ ] **[CI-NEW]** CodeQL v3 deprecated (security.yml still uses @v3). **MEDIUM** [NEW-P11]

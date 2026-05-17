@@ -323,7 +323,7 @@ const baseConfig: NextConfig = withToolbar(
               key: "Content-Security-Policy",
               value: [
                 "default-src 'self'",
-                "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.clerk.com https://*.clerk.accounts.dev https://us-assets.i.posthog.com https://www.googletagmanager.com blob:",
+                `script-src 'self' 'unsafe-inline' ${process.env.NODE_ENV !== "production" ? "'unsafe-eval' " : ""}https://cdn.clerk.com https://*.clerk.accounts.dev https://us-assets.i.posthog.com https://www.googletagmanager.com blob:`,
                 "worker-src 'self' blob:",
                 "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
                 "font-src 'self' https://fonts.gstatic.com",

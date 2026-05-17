@@ -82,10 +82,10 @@ function normalizeEndpoint(pathname: string, method: string): string {
 
 /**
  * Extracts tenant identifier from request headers.
- * Set by Clerk middleware after authentication.
+ * Set by Clerk middleware after session auth, or by proxy.ts after API key auth.
  */
 function extractTenantKey(request: Request): string | null {
-  // Clerk sets this after successful auth
+  // Clerk sets this after successful session auth
   const tenantId = request.headers.get("x-tenant-id");
   if (tenantId) return `tenant:${tenantId}`;
 
@@ -96,6 +96,15 @@ function extractTenantKey(request: Request): string | null {
   // Fallback: use user ID
   const userId = request.headers.get("x-user-id");
   if (userId) return `user:${userId}`;
+
+  // API key identifier — set by proxy.ts after Bearer token detection
+  const apiKeyId = request.headers.get("x-api-key-id");
+  if (apiKeyId) return `apikey:${apiKeyId}`;
+
+  // Anonymous: fall back to IP-based key
+  const forwardedFor = request.headers.get("x-forwarded-for");
+  const ip = forwardedFor?.split(",")[0]?.trim();
+  if (ip) return `ip:${ip}`;
 
   return null;
 }

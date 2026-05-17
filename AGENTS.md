@@ -214,6 +214,7 @@ has 5 routes but only 3 are scheduled:
 | `cron/contract-expiration-alerts` | `0 7 * * *`    | ✅         |
 | `cron/email-reminders`            | `*/15 * * * *` | ✅         |
 | `cron/idempotency-cleanup`        | `0 3 * * *`    | ✅         |
+| `cron/keep-alive`                 | `*/5 * * * *`  | ✅         |
 
 When you add a new cron endpoint, add the matching entry to `vercel.json` in the
 same PR, otherwise it never runs in production.
