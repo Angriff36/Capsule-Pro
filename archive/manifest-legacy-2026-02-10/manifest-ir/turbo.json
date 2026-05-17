@@ -1,4 +1,0 @@
-{
-  "extends": ["//"],
-  "tags": ["layer:package", "scope:data"]
-}
