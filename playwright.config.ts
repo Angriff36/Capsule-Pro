@@ -67,11 +67,12 @@ export default defineConfig({
   fullyParallel: false,
   workers: 1,
   retries: 0, // Fail hard — no retries, force fixes
+  forbidOnly: !!process.env.CI,
   reporter: process.env.CI ? [["github"], ["html"]] : [["list"], ["html"]],
 
   use: {
     baseURL,
-    trace: "on-first-retry",
+    trace: "retain-on-failure",
     screenshot: "only-on-failure",
     video: "retain-on-failure",
     ...(USE_PERSISTENT_BROWSER &&

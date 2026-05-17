@@ -480,7 +480,7 @@ ALL scheduled crons non-functional. Clerk middleware blocks `/api/cron/*` (not i
 - [x] **[PKG-NEW]** packages/supplier-connectors dead zod dep (imports nothing from zod). **MEDIUM** [NEW-P11] **RESOLVED: removed unused zod dep from supplier-connectors.**
 - [x] **[PKG-NEW]** packages/sentry-integration @types/node ^20 (monorepo 25.2.0). **MEDIUM** [NEW-P11] **RESOLVED: upgraded to 25.2.0**
 - [ ] **[PKG-NEW]** packages/sentry-integration exports types point to .ts source. **MEDIUM** [NEW-P11]
-- [ ] **[PKG-NEW]** packages/ai dead tailwind-merge dependency. **MEDIUM** [NEW-P11]
+- [x] **[PKG-NEW]** packages/ai dead tailwind-merge dependency. **MEDIUM** [NEW-P11] **RESOLVED: STALE — tailwind-merge actively imported in thread.tsx and message.tsx components.**
 - [ ] **[PKG-NEW]** apps/mobile missing typecheck/test scripts, TS ~5.9.2 tilde range. **MEDIUM** [NEW-P11]
 - [x] **[PKG-NEW]** apps/email typecheck is exit 0 (no-op). **MEDIUM** [NEW-P11] **RESOLVED: STALE — apps/email has no user TypeScript files outside auto-generated .react-email/. exit 0 is correct — nothing to typecheck at app level.**
 - [x] **[PKG-NEW]** apps/storybook duplicates design-system deps. **MEDIUM** [NEW-P11] **RESOLVED: STALE — @repo/design-system only listed once in apps/storybook/package.json dependencies. No duplicates found.**
@@ -624,10 +624,10 @@ ALL scheduled crons non-functional. Clerk middleware blocks `/api/cron/*` (not i
 ### Batch W: Playwright and Misc
 
 - [ ] **[PLAYWRIGHT]** chromium-unauth hardcoded testMatch ignores E2E_SUITE. **MEDIUM** [CONFIRMED-P10]
-- [ ] **[PLAYWRIGHT]** trace: on-first-retry dead config with retries:0. **MEDIUM** [CONFIRMED-P10]
+- [x] **[PLAYWRIGHT]** trace: on-first-retry dead config with retries:0. **MEDIUM** [CONFIRMED-P10] **RESOLVED: Changed trace from "on-first-retry" to "retain-on-failure" (matches retries:0 intent).**
 - [ ] **[PLAYWRIGHT]** Inconsistent Playwright version: root 1.58.1 vs app ^1.56.1. **MEDIUM** [CONFIRMED-P10]
 - [ ] **[PLAYWRIGHT]** fullyParallel:false and workers:1 hardcoded globally. **MEDIUM** [CONFIRMED-P10]
-- [ ] **[PLAYWRIGHT-NEW]** Missing forbidOnly: !!process.env.CI -- test.only can slip into CI. **MEDIUM** [NEW-P11]
+- [x] **[PLAYWRIGHT-NEW]** Missing forbidOnly: !!process.env.CI -- test.only can slip into CI. **MEDIUM** [NEW-P11] **RESOLVED: Added forbidOnly: !!process.env.CI to playwright.config.ts.**
 - [ ] **[PLAYWRIGHT]** global-setup.ts is dead code. **LOW** [CONFIRMED-P10]
 - [ ] **[PLAYWRIGHT]** WebServer health check uses /sign-in instead of /api/health. **LOW** [CONFIRMED-P10]
 - [ ] **[CSS-NEW]** apps/docs missing @tailwindcss/postcss dep entirely. **MEDIUM** [NEW-P11]
