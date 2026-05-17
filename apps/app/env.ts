@@ -31,13 +31,22 @@ export const env = createEnv({
   ],
   server: {
     ABLY_API_KEY: z.string().optional(),
+    OPENAI_API_KEY: z.string().optional(),
+    COMMAND_BOARD_AI_MODEL: z.string().optional(),
   },
   client: {},
   // When skipValidation is true, t3-env returns runtimeEnv directly without
   // merging extends presets. Pass process.env so all vars are still accessible.
   runtimeEnv: skip
-    ? { ...process.env, ABLY_API_KEY: process.env.ABLY_API_KEY }
+    ? {
+        ...process.env,
+        ABLY_API_KEY: process.env.ABLY_API_KEY,
+        OPENAI_API_KEY: process.env.OPENAI_API_KEY,
+        COMMAND_BOARD_AI_MODEL: process.env.COMMAND_BOARD_AI_MODEL,
+      }
     : {
         ABLY_API_KEY: process.env.ABLY_API_KEY,
+        OPENAI_API_KEY: process.env.OPENAI_API_KEY,
+        COMMAND_BOARD_AI_MODEL: process.env.COMMAND_BOARD_AI_MODEL,
       },
 });

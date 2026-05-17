@@ -9,12 +9,15 @@
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { wrapMcpServerWithSentry } from "@sentry/node";
+import { keys } from "./keys.js";
 import { governanceScannersPlugin } from "./plugins/governance-scanners.js";
 import { irIntrospectionPlugin } from "./plugins/ir-introspection.js";
 import { manifestQueriesPlugin } from "./plugins/manifest-queries.js";
 import { routeResolutionPlugin } from "./plugins/route-resolution.js";
 import { testReproPlugin } from "./plugins/test-repro.js";
 import type { McpIdentity, McpPlugin, ServerMode } from "./types.js";
+
+const env = keys();
 
 // ---------------------------------------------------------------------------
 // Plugin registry
@@ -54,7 +57,7 @@ export async function createServer(
   options: CreateServerOptions
 ): Promise<McpServer> {
   const { mode, identity } = options;
-  const isProd = process.env.NODE_ENV === "production";
+  const isProd = env.NODE_ENV === "production";
 
   // 1. Create raw server
   const serverName = mode === "admin" ? "capsule-pro-admin" : "capsule-pro";

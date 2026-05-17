@@ -13,6 +13,9 @@
  */
 
 import type { McpIdentity, TransportMode } from "../types.js";
+import { keys } from "../keys.js";
+
+const env = keys();
 
 // ---------------------------------------------------------------------------
 // Minimal Prisma interface (avoids importing @repo/database directly)
@@ -74,8 +77,8 @@ export async function resolveIdentity(
 async function resolveStdioIdentity(
   prisma: PrismaForAuth
 ): Promise<McpIdentity> {
-  const accountId = process.env.MCP_SERVICE_ACCOUNT_ID;
-  const tenantId = process.env.MCP_SERVICE_TENANT_ID;
+  const accountId = env.MCP_SERVICE_ACCOUNT_ID;
+  const tenantId = env.MCP_SERVICE_TENANT_ID;
 
   // ── Path 1: Explicit env vars ──
   if (accountId && tenantId) {

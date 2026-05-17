@@ -18,21 +18,24 @@
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { database } from "@repo/database/standalone";
 import { consoleLoggingIntegration, init } from "@sentry/node";
+import { keys } from "./keys.js";
 import { resolveIdentity } from "./lib/auth.js";
 import { startIRWatcher } from "./lib/ir-loader.js";
 import { disconnectPrisma, setPrisma } from "./lib/runtime-factory.js";
 import { createServer } from "./server.js";
 import type { ServerMode } from "./types.js";
 
+const env = keys();
+
 // ---------------------------------------------------------------------------
 // Sentry initialization (MUST be first)
 // ---------------------------------------------------------------------------
 
-const isProd = process.env.NODE_ENV === "production";
+const isProd = env.NODE_ENV === "production";
 
 init({
-  dsn: process.env.NEXT_PUBLIC_SENTRY_DSN ?? process.env.SENTRY_DSN,
-  environment: process.env.SENTRY_ENVIRONMENT ?? process.env.NODE_ENV,
+  dsn: process.env.NEXT_PUBLIC_SENTRY_DSN ?? env.SENTRY_DSN,
+  environment: env.SENTRY_ENVIRONMENT ?? env.NODE_ENV,
   tracesSampleRate: 1.0,
 
   // PII: disabled in production, enabled in dev for debugging
@@ -67,7 +70,7 @@ init({
 async function main() {
   // 1. Determine server mode
   const mode: ServerMode =
-    process.env.MCP_SERVER_MODE === "admin" ? "admin" : "tenant";
+    env.MCP_SERVER_MODE === "admin" ? "admin" : "tenant";
 
   // 2. Initialize Prisma
   // biome-ignore lint/suspicious/noExplicitAny: database is the full PrismaClient; PrismaLike is a structural subset

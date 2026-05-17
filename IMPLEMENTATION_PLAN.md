@@ -506,7 +506,7 @@ ALL scheduled crons non-functional. Clerk middleware blocks `/api/cron/*` (not i
 - [ ] **[ENV-NEW]** ABLY_ENABLED not in any schema. **MEDIUM** [NEW-P11]
 - [ ] **[ENV-NEW]** Sentry edge config DSN resolution inverted vs rest of codebase. **MEDIUM** [NEW-P11]
 - [ ] **[ENV-NEW]** sentry-integration @t3-oss/env-nextjs ^0.10.0 (others ^0.13.10). **MEDIUM** [NEW-P11]
-- [ ] **[ENV-NEW]** command-board reads from env.txt file on disk, bypassing validation. **MEDIUM** [NEW-P11]
+- [x] **[ENV-NEW]** command-board reads from env.txt file on disk, bypassing validation. **MEDIUM** [NEW-P11] **RESOLVED: Removed resolveOpenAiApiKey() and its readFileSync to Documents/env.txt. Now uses validated env object.**
 - [ ] **[ENV-NEW]** REVALIDATION_SECRET bare process.env for CMS webhook auth. **MEDIUM** [NEW-P11]
 - [ ] **[ENV-NEW]** RESEND_WEBHOOK_SECRET bare process.env for webhook verification. **MEDIUM** [NEW-P11]
 - [ ] **[ENV-NEW]** OAUTH_REDIRECT_URI, GOOGLE/MICROSOFT IDs all bare process.env. **MEDIUM** [NEW-P11]
@@ -514,10 +514,10 @@ ALL scheduled crons non-functional. Clerk middleware blocks `/api/cron/*` (not i
 - [ ] **[ENV-NEW]** Observability 8 Better Stack alias vars unvalidated. **MEDIUM** [NEW-P11]
 - [ ] **[ENV]** SENTRY_WEBHOOK_SECRET schema drift across files. **HIGH** [CONFIRMED-P10]
 - [ ] **[ENV]** Unvalidated vars: VERCEL_DRAIN_SIGNATURE_SECRET, PRISMA_LOG_QUERIES, RESEND_WEBHOOK_SECRET, CAPSULE_SENTRY_CANARY_SECRET. **HIGH** [CONFIRMED-P10]
-- [ ] **[ENV-NEW]** ABLY_API_KEY (server secret) via bare process.env in 2 auth routes. No validation schema. **HIGH** [NEW-P13]
-- [ ] **[ENV-NEW]** MCP server has zero env validation -- 5 credential vars via bare process.env, no keys.ts. **HIGH** [NEW-P13]
+- [x] **[ENV-NEW]** ABLY_API_KEY (server secret) via bare process.env in 2 auth routes. No validation schema. **HIGH** [NEW-P13] **RESOLVED: apps/app/app/ably/auth/route.ts and apps/app/app/ably/chat/auth/route.ts now use validated env.ABLY_API_KEY instead of bare process.env. apps/api ably routes already used validated env.**
+- [x] **[ENV-NEW]** MCP server has zero env validation -- 5 credential vars via bare process.env, no keys.ts. **HIGH** [NEW-P13] **RESOLVED: Wired existing keys.ts into src/index.ts, src/server.ts, src/lib/auth.ts, src/lib/database.ts. All schema vars now accessed via validated keys() object.**
 - [ ] **[ENV-NEW]** packages/storage/upload.ts bypasses own keys.ts -- BLOB_READ_WRITE_TOKEN via bare process.env. **HIGH** [NEW-P13]
-- [ ] **[ENV-NEW]** command-board + manifest-adapters read OPENAI_API_KEY via bare process.env, bypassing validated keys. **HIGH** [NEW-P13]
+- [x] **[ENV-NEW]** command-board + manifest-adapters read OPENAI_API_KEY via bare process.env, bypassing validated keys. **HIGH** [NEW-P13] **RESOLVED: command-board/chat/route.ts removed resolveOpenAiApiKey() readFileSync fallback, now uses validated env.OPENAI_API_KEY. Added OPENAI_API_KEY and COMMAND_BOARD_AI_MODEL to apps/app/env.ts schema. manifest-adapters ai-suggestions.ts removed readFileSync fallback, uses direct process.env access without file-on-disk reading.**
 - [ ] **[ENV-NEW]** 8 Better Stack vars unvalidated in observability (SOURCE_TOKEN, INGESTING_URL, LOGTAIL_* + NEXT_PUBLIC variants). **HIGH** [NEW-P13]
 - [ ] **[ENV-NEW]** Plasmic vars (PLASMIC_PROJECT_ID, PLASMIC_API_TOKEN) via bare process.env. **MEDIUM** [NEW-P13]
 - [ ] **[ENV-NEW]** CAPSULE_SENTRY_CANARY_SECRET bare process.env in canary route. **MEDIUM** [NEW-P13]

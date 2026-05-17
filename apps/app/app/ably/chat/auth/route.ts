@@ -3,6 +3,8 @@ import { database } from "@repo/database";
 import Ably from "ably";
 import { NextResponse } from "next/server";
 
+import { env } from "@/env";
+
 interface AuthRequest {
   tenantId: string;
 }
@@ -31,7 +33,7 @@ export async function POST(request: Request) {
     return new NextResponse("tenantId required", { status: 400 });
   }
 
-  const apiKey = process.env.ABLY_API_KEY;
+  const apiKey = env.ABLY_API_KEY;
   if (!apiKey) {
     return new NextResponse("Ably API key not configured.", { status: 500 });
   }
