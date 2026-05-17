@@ -21,13 +21,13 @@ import type {
   RuntimeOptions,
 } from "@angriff36/manifest";
 import type { IR, IRCommand } from "@angriff36/manifest/ir";
-import { createPermissionGuard, loadRolePolicies } from "./permission-guard.js";
-import { PrismaIdempotencyStore } from "./prisma-idempotency-store.js";
-import { PrismaJsonStore } from "./prisma-json-store.js";
-import type { PrismaStoreConfig } from "./prisma-store.js";
-import { createPrismaOutboxWriter, PrismaStore } from "./prisma-store.js";
-import { loadPrecompiledIR } from "./runtime/loadManifests.js";
-import { ManifestRuntimeEngine } from "./runtime-engine.js";
+import { createPermissionGuard, loadRolePolicies } from "./permission-guard";
+import { PrismaIdempotencyStore } from "./prisma-idempotency-store";
+import { PrismaJsonStore } from "./prisma-json-store";
+import type { PrismaStoreConfig } from "./prisma-store";
+import { createPrismaOutboxWriter, PrismaStore } from "./prisma-store";
+import { loadPrecompiledIR } from "./runtime/loadManifests";
+import { ManifestRuntimeEngine } from "./runtime-engine";
 
 // ---------------------------------------------------------------------------
 // Public types

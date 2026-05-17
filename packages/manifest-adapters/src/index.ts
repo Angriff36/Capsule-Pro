@@ -47,8 +47,8 @@ import type {
 } from "@angriff36/manifest";
 import type { IR, IRDiagnostic, OverrideRequest } from "@angriff36/manifest/ir";
 import { compileToIR } from "@angriff36/manifest/ir-compiler";
-import { enforceCommandOwnership } from "./ir-contract.js";
-import { ManifestRuntimeEngine } from "./runtime-engine.js";
+import { enforceCommandOwnership } from "./ir-contract";
+import { ManifestRuntimeEngine } from "./runtime-engine";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);

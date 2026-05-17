@@ -14,7 +14,7 @@ import {
   createPrepTaskRuntime,
   createRecipeRuntime,
   createStationRuntime,
-} from "./index.js";
+} from "./index";
 
 interface GeneratedRuntimeContext {
   user: {

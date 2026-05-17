@@ -4,7 +4,7 @@ import { readdir, readFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import type { IR } from "@angriff36/manifest/ir";
 import { compileToIR } from "@angriff36/manifest/ir-compiler";
-import { enforceCommandOwnership } from "../ir-contract.js";
+import { enforceCommandOwnership } from "../ir-contract";
 
 const MANIFEST_EXTENSION_RE = /\.manifest$/;
 
