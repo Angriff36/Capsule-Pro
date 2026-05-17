@@ -120,6 +120,8 @@ Quick-win CRITICAL fixes applied:
 - apps/docs: added poweredByHeader:false + 5 security headers (X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy, HSTS)
 - apps/storybook: added poweredByHeader:false
 - Marked 4 stale plan items as RESOLVED (apps/web transpilePackages, CSP headers, security headers, docs/storybook shared config)
+- apps/api/vitest.config.integration.mts: removed invalid optimizeDeps.disable (removed in Vite 6, repo on Vite 7)
+- Verified apps/app setupFiles not needed (no jest-dom matcher usage, all 271 tests pass)
 
 ## Changes from automation pass (2026-05-16)
 
@@ -264,14 +266,14 @@ ALL scheduled crons non-functional. Clerk middleware blocks `/api/cron/*` (not i
 - [x] **[VITEST]** apps/app environmentMatchGlobs DEPRECATED in Vitest 4.0 (will break). **CRITICAL** [CONFIRMED-P10] **RESOLVED: removed environmentMatchGlobs, added `// @vitest-environment node` pragmas to 11 affected test files (10 in api/command-board, 1 in menus)**
 - [x] **[VITEST-NEW]** environmentMatchGlobs REMOVED in Vitest 4 (not just deprecated). **CRITICAL** [NEW-P11] **RESOLVED: removed environmentMatchGlobs, added `// @vitest-environment node` pragmas to 11 affected test files (10 in api/command-board, 1 in menus)**
 - [x] **[VITEST-NEW]** Root config leaks jsdom environment, setupFiles, and app-specific aliases to ALL workspace projects. **HIGH** [NEW-P11] **RESOLVED: changed global environment from "jsdom" to "node" so workspace projects without explicit environment inherit node (not jsdom)**
-- [ ] **[VITEST-NEW]** optimizeDeps.disable not valid in Vite 6. **HIGH** [NEW-P11]
+- [x] **[VITEST-NEW]** optimizeDeps.disable not valid in Vite 6. **HIGH** [NEW-P11] **RESOLVED: removed optimizeDeps.disable from apps/api/vitest.config.integration.mts (option removed in Vite 6, repo uses Vite 7.3.1)**
 - [ ] **[VITEST-NEW]** deps.interopDefault migration risk in Vitest 4. **HIGH** [NEW-P11]
 - [x] **[VITEST-NEW]** notifications vitest ^3 incompatible with Vitest 4 workspace. **HIGH** [NEW-P11] **RESOLVED: updated to ^4.0.18**
 - [x] **[VITEST-NEW]** sales-reporting vitest ^2 incompatible with Vitest 4 workspace. **HIGH** [NEW-P11] **RESOLVED: updated to ^4.0.18**
 - [x] **[VITEST]** console.log in 6 vitest config instances. **HIGH** [CONFIRMED-P10] **RESOLVED: removed 7 console.log statements from apps/app/vitest.config.mts and apps/api/vitest.config.mts**
 - [x] **[VITEST]** restoreMocks NOT set in ANY of 14 configs. **HIGH** [CONFIRMED-P10] **RESOLVED: added restoreMocks:true to root vitest.config.ts and all 13 individual project vitest configs**
 - [x] **[VITEST]** globals:true in only 4 of 15 configs. **HIGH** [CONFIRMED-P10] **RESOLVED: standardized globals:true across all vitest configs (was in 4, now in all 14)**
-- [ ] **[VITEST]** apps/app no setupFiles despite jsdom. **HIGH** [CONFIRMED-P10]
+- [x] **[VITEST]** apps/app no setupFiles despite jsdom. **HIGH** [CONFIRMED-P10] **RESOLVED: NOT NEEDED — no test file uses jest-dom matchers or requires global React setup. All 271 tests pass without setupFiles. If jest-dom matchers are needed in future, add setupFiles pointing to root vitest.setup.ts.**
 - [ ] **[VITEST]** mobile in root workspace but no vitest config. **MEDIUM** [CONFIRMED-P10] **NOTE: mobile has no test files, so missing vitest config is expected.**
 - [x] **[VITEST]** Root workspace missing 3 packages: manifest-adapters, manifest-runtime, notifications. **MEDIUM** [CONFIRMED-P10] **RESOLVED: added manifest-adapters, manifest-runtime, notifications to root vitest workspace projects**
 

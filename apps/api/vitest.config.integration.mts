@@ -57,8 +57,4 @@ export default defineConfig({
       ),
     },
   },
-  optimizeDeps: {
-    // Disable optimization for database to ensure real connection
-    disable: process.env.VITEST === "true",
-  },
 });
