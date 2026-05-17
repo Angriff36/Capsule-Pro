@@ -118,7 +118,7 @@ const baseConfig: NextConfig = withLogging({
     "pdfjs-dist",
     "ably",
     "pdfkit",
-    "@capsule-pro/sales-reporting",
+    "@repo/sales-reporting",
   ],
   webpack: (webpackConfig: WebpackConfig, { isServer }: WebpackContext) => {
     if (isServer) {

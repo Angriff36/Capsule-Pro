@@ -380,7 +380,7 @@ const baseConfig: NextConfig = withToolbar(
       "ably",
       "pdfkit",
       "vega-lite",
-      "@capsule-pro/sales-reporting",
+      "@repo/sales-reporting",
       "@clerk/backend",
     ],
     // Include manifest file in Vercel deployments for command-board chat
