@@ -3,9 +3,10 @@
  *
  * Provides functions to generate, extract, and propagate correlation IDs
  * across API routes and service boundaries.
+ *
+ * Runtime-agnostic: uses Web Crypto API (globalThis.crypto) so this module
+ * works in Node.js, Edge Runtime, and browser contexts.
  */
-
-import { randomUUID } from "node:crypto";
 
 /** Header name for correlation ID propagation */
 export const CORRELATION_ID_HEADER = "x-correlation-id";
@@ -60,7 +61,7 @@ export function httpStatusToErrorCode(status: number): CommandBoardErrorCode {
  * Generate a new correlation ID (UUID v4).
  */
 export function generateCorrelationId(): string {
-  return randomUUID();
+  return globalThis.crypto.randomUUID();
 }
 
 /**

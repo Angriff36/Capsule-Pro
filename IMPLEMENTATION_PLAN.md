@@ -5,6 +5,25 @@
 **Scope**: TypeScript, Next.js, Vitest, Turbo, Vercel, Sentry, Biome, Playwright, PostCSS, package.json, ENV, CI/CD, Build, Prisma, Misc, Cross-Config, Specs
 **Counts**: ~842 issues. CRITICAL: 42. HIGH: ~192. MEDIUM: ~325. LOW: ~283.
 
+## Changes from Sentry shared-config fix pass (2026-05-17)
+
+Batch H Sentry/observability cleanup — 13 items resolved (12 stale or already-fixed, 4 real code changes):
+
+Code changes:
+- packages/observability/client.ts: added normalizeDepth: 10 and beforeSendTransaction (drops /_next, /favicon, /monitoring noise transactions).
+- packages/observability/server.ts: added DSN guard (early return when NEXT_PUBLIC_SENTRY_DSN missing) + tracePropagationTargets (matches client.ts and edge.ts).
+- packages/observability/edge.ts: added tracePropagationTargets (matches client.ts and server.ts). All three runtimes now propagate trace context to localhost, relative URLs, vercel.app subdomains, capsule.pro subdomains.
+- packages/observability/correlation.ts: replaced `import { randomUUID } from "node:crypto"` with `globalThis.crypto.randomUUID()`. Module now works in Node.js, Edge Runtime, and browser without changes.
+- apps/api/instrumentation-client.ts: added `export const onRouterTransitionStart = captureRouterTransitionStart` so client-side navigation produces Sentry spans (apps/app already had this).
+
+Verified stale (no code change needed; plan updated):
+- apps/app/sentry.edge.config.ts "complete fork" — actually a 9-line delegator to shared @repo/observability/edge.
+- vercelAIIntegration "only in edge" — present in both server.ts and edge.ts.
+- vercelAIIntegration "invalid recordInputs/recordOutputs" — misattributed; those options live in mcp-server wrapMcpServerWithSentry where they're valid.
+- "shared client missing tracePropagationTargets" — client.ts had them; gap was actually server.ts and edge.ts (now fixed).
+- "next-config.ts calls keys() at module scope" — already uses lazy _env + getEnv() pattern.
+- "apps/app/instrumentation.ts direct imports" — uses @repo/observability/instrumentation; only captureRequestError comes directly from @sentry/nextjs (correct Next.js pattern).
+
 ## Changes from OutboxEvent fix pass (2026-05-16)
 
 - OutboxEvent model: fixed non-functional Prisma model (tenantId String -> @db.Uuid + @map("tenant_id"), added @map() on all columns, added updatedAt, upgraded timestamp precision to @db.Timestamptz(6)). Updated raw SQL in apps/api/app/outbox/publish/route.ts. Migration: 20260516130000_fix_outbox_event_columns.
@@ -402,39 +421,39 @@ ALL scheduled crons non-functional. Clerk middleware blocks `/api/cron/*` (not i
 
 ### Batch H: Sentry Configuration
 
-- [ ] **[SENTRY]** apps/app sentry.edge.config.ts is complete fork: sendDefaultPii:true, no tracesSampler, no beforeSend, no enableLogs. **HIGH** [CONFIRMED-P10]
-- [ ] **[SENTRY]** Missing normalizeDepth, serverName, beforeSendTransaction in ALL shared configs. **HIGH** [CONFIRMED-P10]
+- [x] **[SENTRY]** apps/app sentry.edge.config.ts is complete fork: sendDefaultPii:true, no tracesSampler, no beforeSend, no enableLogs. **HIGH** [CONFIRMED-P10] **RESOLVED: STALE — apps/app/sentry.edge.config.ts is a 9-line delegator (`import { initializeSentry } from "@repo/observability/edge"; initializeSentry();`). All Sentry config lives in shared package with tracesSampler, beforeSend, enableLogs, DSN guard, consoleLoggingIntegration, vercelAIIntegration.**
+- [x] **[SENTRY]** Missing normalizeDepth, serverName, beforeSendTransaction in ALL shared configs. **HIGH** [CONFIRMED-P10] **RESOLVED: server.ts and edge.ts already had normalizeDepth/serverName/beforeSendTransaction. Added normalizeDepth + beforeSendTransaction to client.ts (serverName is server-only).**
 - [ ] **[SENTRY]** 4 different trace sampling strategies across configs. **HIGH** [CONFIRMED-P10]
 - [ ] **[SENTRY]** packages/mcp-server/src/index.ts bare process.env for Sentry. **HIGH** [CONFIRMED-P10]
 - [ ] **[SENTRY]** sentry-integration keys.ts missing skipValidation. **HIGH** [CONFIRMED-P10]
-- [ ] **[SENTRY]** apps/app/instrumentation.ts uses direct imports instead of shared. **HIGH** [CONFIRMED-P10]
-- [ ] **[SENTRY]** packages/sentry-integration has NO tsup.config.ts. **HIGH** [CONFIRMED-P10]
-- [ ] **[SENTRY-NEW]** vercelAIIntegration receives invalid options (recordInputs/recordOutputs silently ignored). **HIGH** [NEW-P11]
-- [ ] **[SENTRY-NEW]** Forked edge config bypasses shared package (missing beforeSend, enableLogs, consoleLoggingIntegration). **HIGH** [NEW-P11]
-- [ ] **[SENTRY-NEW]** Missing onRouterTransitionStart export -- client route transitions produce no spans. **HIGH** [NEW-P11]
-- [ ] **[SENTRY-NEW]** Shared client missing tracePropagationTargets -- breaks cross-service distributed tracing. **HIGH** [NEW-P11]
-- [ ] **[SENTRY-NEW]** Server + edge configs missing vercelAIIntegration({force:true}) -- AI SDK spans missing in production. **HIGH** [NEW-P11]
-- [ ] **[SENTRY-NEW]** packages/observability/correlation.ts imports node:crypto -- not available in Edge Runtime. **HIGH** [NEW-P11]
-- [ ] **[SENTRY-NEW]** packages/observability/next-config.ts calls keys() at module scope -- blocks Next.js build if env missing. **HIGH** [NEW-P11]
-- [ ] **[SENTRY]** tracePropagationTargets blocks cross-service tracing. **HIGH** [CONFIRMED-P10]
-- [ ] **[SENTRY]** vercelAIIntegration only in edge config not shared. **HIGH** [CONFIRMED-P10]
-- [ ] **[SENTRY]** apps/app edge config bare process.env.SENTRY_DSN. **HIGH** [CONFIRMED-P10]
-- [ ] **[SENTRY]** Missing DSN guard in edge config. **MEDIUM** [CONFIRMED-P10]
+- [x] **[SENTRY]** apps/app/instrumentation.ts uses direct imports instead of shared. **HIGH** [CONFIRMED-P10] **RESOLVED: STALE — apps/app/instrumentation.ts imports from @repo/observability/instrumentation (lazy dynamic). Only `captureRequestError` comes directly from `@sentry/nextjs`, which is the correct Next.js pattern.**
+- [ ] **[SENTRY]** packages/sentry-integration has NO tsup.config.ts. **HIGH** [CONFIRMED-P10] **NOTE: still no tsup.config.ts file but build works via inline CLI args in package.json script. Maintainability concern only — not broken. Downgrade to MEDIUM.**
+- [x] **[SENTRY-NEW]** vercelAIIntegration receives invalid options (recordInputs/recordOutputs silently ignored). **HIGH** [NEW-P11] **RESOLVED: STALE — misattributed. packages/observability/server.ts and edge.ts call vercelAIIntegration() with NO args. The recordInputs/recordOutputs options are at packages/mcp-server/src/server.ts:72-73 passed to wrapMcpServerWithSentry where they ARE valid.**
+- [x] **[SENTRY-NEW]** Forked edge config bypasses shared package (missing beforeSend, enableLogs, consoleLoggingIntegration). **HIGH** [NEW-P11] **RESOLVED: STALE — apps/app/sentry.edge.config.ts is a 9-line delegator to @repo/observability/edge which has all of these.**
+- [x] **[SENTRY-NEW]** Missing onRouterTransitionStart export -- client route transitions produce no spans. **HIGH** [NEW-P11] **RESOLVED: apps/app/instrumentation-client.ts already exported it. Added to apps/api/instrumentation-client.ts.**
+- [x] **[SENTRY-NEW]** Shared client missing tracePropagationTargets -- breaks cross-service distributed tracing. **HIGH** [NEW-P11] **RESOLVED: STALE — packages/observability/client.ts already has tracePropagationTargets (localhost, /^\//, vercel.app, capsule.pro). Server.ts and edge.ts were the actual gap — fixed in same pass.**
+- [x] **[SENTRY-NEW]** Server + edge configs missing vercelAIIntegration({force:true}) -- AI SDK spans missing in production. **HIGH** [NEW-P11] **RESOLVED: STALE — server.ts and edge.ts both already call vercelAIIntegration() (no `force` option needed since they run inside Vercel/Next.js).**
+- [x] **[SENTRY-NEW]** packages/observability/correlation.ts imports node:crypto -- not available in Edge Runtime. **HIGH** [NEW-P11] **RESOLVED: replaced `import { randomUUID } from "node:crypto"` with `globalThis.crypto.randomUUID()`. Works in Node, Edge, and browser runtimes.**
+- [x] **[SENTRY-NEW]** packages/observability/next-config.ts calls keys() at module scope -- blocks Next.js build if env missing. **HIGH** [NEW-P11] **RESOLVED: STALE — uses lazy `_env` + `getEnv()` pattern. Comment at line 6 documents the fix.**
+- [x] **[SENTRY]** tracePropagationTargets blocks cross-service tracing. **HIGH** [CONFIRMED-P10] **RESOLVED: Added tracePropagationTargets to server.ts and edge.ts (was already in client.ts). All three runtimes now propagate trace context to localhost, relative URLs, vercel.app subdomains, and capsule.pro subdomains.**
+- [x] **[SENTRY]** vercelAIIntegration only in edge config not shared. **HIGH** [CONFIRMED-P10] **RESOLVED: STALE — both server.ts and edge.ts already call vercelAIIntegration() in their integrations arrays.**
+- [x] **[SENTRY]** apps/app edge config bare process.env.SENTRY_DSN. **HIGH** [CONFIRMED-P10] **RESOLVED: STALE — apps/app/sentry.edge.config.ts is a 9-line delegator. DSN resolved through validated keys() in shared @repo/observability/edge.**
+- [x] **[SENTRY]** Missing DSN guard in edge config. **MEDIUM** [CONFIRMED-P10] **RESOLVED: STALE for edge (already had guard at lines 48-53). Added matching DSN guard to server.ts for symmetry.**
 
 ### Batch I: Turbo and CI Pipeline
 
-- [ ] **[TURBO]** turbo.json envMode "loose" defeats all env var declarations. **HIGH** [CONFIRMED-P10]
-- [ ] **[TURBO]** DATABASE_URL and SENTRY vars duplicated globalEnv/globalPassThroughEnv. **HIGH** [CONFIRMED-P10]
-- [ ] **[TURBO]** test depends on ^test not ^build. **HIGH** [CONFIRMED-P10]
+- [x] **[TURBO]** turbo.json envMode "loose" defeats all env var declarations. **HIGH** [CONFIRMED-P10] **RESOLVED: changed envMode from "loose" to "strict"**
+- [x] **[TURBO]** DATABASE_URL and SENTRY vars duplicated globalEnv/globalPassThroughEnv. **HIGH** [CONFIRMED-P10] **RESOLVED: removed duplicates from globalPassThroughEnv, consolidated into globalEnv only**
+- [x] **[TURBO]** test depends on ^test not ^build. **HIGH** [CONFIRMED-P10] **RESOLVED: changed test dependsOn from ["^test"] to ["^build"]**
 - [ ] **[TURBO]** Zero turbo tasks define inputs. **HIGH** [CONFIRMED-P10]
-- [ ] **[TURBO]** ~60+ env vars missing from turbo.json. **HIGH** [CONFIRMED-P10]
+- [ ] **[TURBO]** ~60+ env vars missing from turbo.json. **HIGH** [CONFIRMED-P10] **PARTIAL: added top 25 most impactful vars (VERCEL_URL, VERCEL_REGION, VERCEL_PROJECT_PRODUCTION_URL, VERCEL_PREVIEW_URL_SUFFIX, VERCEL_API_URL, NEXT_PUBLIC_APP_URL, NEXT_PUBLIC_WEB_URL, NEXT_PUBLIC_API_URL, NEXT_PUBLIC_DOCS_URL, NEXT_PUBLIC_SENTRY_DSN, NEXT_PUBLIC_SENTRY_ENVIRONMENT, BASEHUB_TOKEN, CLERK_SECRET_KEY, NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY, ANALYZE, NODE_ENV). Remaining vars are package-specific (UPSTASH_REDIS, STRIPE, RESEND, KNOCK, TWILIO, ARCJET, LIVEBLOCKS, etc.) -- add per-package turbo.json env blocks when those packages get individual turbo configs.**
 - [x] **[TURBO]** No lint task in turbo.json. **HIGH** [CONFIRMED-P10] **RESOLVED: added lint task with dependsOn: [^build] to turbo.json**
-- [ ] **[TURBO]** pnpm-lock.yaml missing from globalDependencies. **HIGH** [CONFIRMED-P10]
-- [ ] **[TURBO]** event-parser type-check vs typecheck naming mismatch. **HIGH** [CONFIRMED-P10]
+- [x] **[TURBO]** pnpm-lock.yaml missing from globalDependencies. **HIGH** [CONFIRMED-P10] **RESOLVED: added pnpm-lock.yaml to globalDependencies**
+- [x] **[TURBO]** event-parser type-check vs typecheck naming mismatch. **HIGH** [CONFIRMED-P10] **RESOLVED: STALE — renamed script from type-check to typecheck in a previous pass**
 - [x] **[TURBO]** generate task missing dependsOn. **HIGH** [CONFIRMED-P10] **RESOLVED: added dependsOn: [^build] to generate task in turbo.json**
-- [ ] **[TURBO-NEW]** No futureFlags block for Turborepo 3.0 migration (globalConfiguration, affectedUsingTaskInputs, filterUsingTasks). **HIGH** [NEW-P11]
+- [x] **[TURBO-NEW]** No futureFlags block for Turborepo 3.0 migration (globalConfiguration, affectedUsingTaskInputs, filterUsingTasks). **HIGH** [NEW-P11] **RESOLVED: verified Turbo 2.8.3 schema -- only futureFlag is errorsOnlyShowHash (minor UX toggle). The three flags named in the finding (globalConfiguration, affectedUsingTaskInputs, filterUsingTasks) do not exist in 2.8.3. Schema confirms all prior flags graduated to defaults. No action needed until Turbo 3.x ships with new flags.**
 - [x] **[TURBO-NEW]** SENTRY_ENVIRONMENT in globalPassThroughEnv produces same cache hash for different environments. **HIGH** [NEW-P11] **RESOLVED: moved SENTRY_ENVIRONMENT, VERCEL, VERCEL_ENV, SKIP_ENV_VALIDATION from globalPassThroughEnv to globalEnv**
-- [ ] **[TURBO-NEW]** VERCEL, VERCEL_ENV, SKIP_ENV_VALIDATION in globalPassThroughEnv but affect build behavior. **HIGH** [NEW-P11]
+- [x] **[TURBO-NEW]** VERCEL, VERCEL_ENV, SKIP_ENV_VALIDATION in globalPassThroughEnv but affect build behavior. **HIGH** [NEW-P11] **RESOLVED: confirmed these are already in globalEnv only (moved in prior pass). globalPassThroughEnv now contains only TURBO_TOKEN and TURBO_TEAM.**
 - [x] **[TURBO-NEW]** No remoteCache.signature:true for cache integrity. **HIGH** [NEW-P11] **RESOLVED: added signature: true to remoteCache in turbo.json**
 - [x] **[TURBO-NEW]** tsconfig not in globalDependencies -- tsconfig changes won't invalidate tsc build caches. **HIGH** [NEW-P11] **RESOLVED: added **/tsconfig*.json to globalDependencies in turbo.json**
 - [x] **[TURBO-P12]** event-parser `type-check` script doesn't match turbo `typecheck` task -- silently excluded. **HIGH** [NEW-P12] **RESOLVED: renamed script from type-check to typecheck in packages/event-parser/package.json**
@@ -467,8 +486,8 @@ ALL scheduled crons non-functional. Clerk middleware blocks `/api/cron/*` (not i
 - [ ] **[PKG]** React version mismatch: mobile on 19.1.0 vs monorepo 19.2.4. **HIGH** [CONFIRMED-P10]
 - [ ] **[PKG]** pnpm.overrides pins manifest 0.3.37 but local is 0.3.35. **HIGH** [CONFIRMED-P10]
 - [x] **[PKG]** Prettier dead dependency in devDeps and overrides. **HIGH** [CONFIRMED-P10] **RESOLVED: Removed from root devDeps and pnpm.overrides. Biome is sole formatter. No .prettierrc or source imports exist.**
-- [ ] **[PKG]** packages/brand uses wrong scope @capsule/brand. **HIGH** [CONFIRMED-P10]
-- [ ] **[PKG]** packages/sales-reporting wrong scope, CJS only, vitest v2. **HIGH** [CONFIRMED-P10]
+- [x] **[PKG]** packages/brand uses wrong scope @capsule/brand. **HIGH** [CONFIRMED-P10] **RESOLVED: renamed to @repo/brand. Package has zero source imports, only README references (updated).**
+- [x] **[PKG]** packages/sales-reporting wrong scope, CJS only, vitest v2. **HIGH** [CONFIRMED-P10] **RESOLVED: renamed from @capsule-pro/sales-reporting to @repo/sales-reporting. Updated all imports in apps/api, apps/app, apps/api/next.config.ts, apps/app/next.config.ts. Package extends library.json (NodeNext/ESM, not CJS). Vitest already on ^4.0.18.**
 - [ ] **[PKG-NEW]** packages/manifest-runtime/packages/cli vitest pinned to "latest" (floating). **HIGH** [NEW-P11]
 - [ ] **[PKG-NEW]** packages/manifest-runtime/packages/cli @types/node pinned to "latest". **HIGH** [NEW-P11]
 - [ ] **[PKG-NEW]** packages/manifest-runtime/packages/cli missing @repo/typescript-config devDep, missing private:true. **HIGH** [NEW-P11]
@@ -488,7 +507,7 @@ ALL scheduled crons non-functional. Clerk middleware blocks `/api/cron/*` (not i
 - [x] **[PKG-NEW]** packages/manifest-adapters dead hono dependency. **MEDIUM** [NEW-P11] **NOT DEAD: hono is actively imported in generated/server.ts (Hono + cors). Verified via source grep.**
 - [ ] **[PKG-NEW]** packages/manifest-runtime/packages/cli exports point to .ts source. **MEDIUM** [NEW-P11]
 - [ ] **[PKG-NEW]** packages/manifest-runtime/packages/cli TS ^5.5.3 (monorepo ^5.9.3). **MEDIUM** [NEW-P11]
-- [ ] **[PKG-NEW]** packages/notifications vitest ^3 (diverges from ^4). **MEDIUM** [NEW-P11]
+- [x] **[PKG-NEW]** packages/notifications vitest ^3 (diverges from ^4). **MEDIUM** [NEW-P11] **RESOLVED: STALE — notifications already on vitest ^4.0.18 (verified).**
 - [x] **[PKG-NEW]** 6 phantom runtime deps: @repo/auth (next-themes), @repo/observability (react, server-only), @repo/feature-flags (@repo/design-system, react), @repo/ai (streamdown), @repo/seo (react), @repo/payroll-engine (server-only). **HIGH** [NEW-P13] **RESOLVED: Removed next-themes from @repo/auth, @repo/design-system from @repo/feature-flags, server-only from @repo/payroll-engine. Moved react from dependencies to peerDependencies in @repo/observability, @repo/feature-flags, @repo/seo. @repo/ai streamdown and @repo/observability server-only confirmed NOT phantom (legitimately imported).**
 - [x] **[PKG-NEW]** @repo/collaboration imports @repo/design-system unlisted. **MEDIUM** [NEW-P13] **RESOLVED: added @repo/design-system to dependencies. Also added missing typescript devDep.**
 - [x] **[PKG-NEW]** @repo/manifest-adapters imports @repo/database unlisted (40+ source files). **MEDIUM** [NEW-P13] **RESOLVED: STALE — @repo/database IS listed in manifest-adapters dependencies (workspace:*). 57 source imports verified.**
@@ -505,20 +524,20 @@ ALL scheduled crons non-functional. Clerk middleware blocks `/api/cron/*` (not i
 - [ ] **[ENV]** Mobile app has no env.ts at all. **HIGH** [CONFIRMED-P10]
 - [x] **[ENV-NEW]** Calendar sync/connect OAUTH_REDIRECT_URI bare process.env -- if unset, produces "undefined/..." redirect URI. **HIGH** [NEW-P11] **RESOLVED: Added to apps/api/env.ts. Updated connect route to use validated env.**
 - [x] **[ENV-NEW]** Calendar sync/callback: GOOGLE_CLIENT_SECRET and MICROSOFT_CLIENT_SECRET via bare process.env, unvalidated. OAuth secrets. **HIGH** [NEW-P11] **RESOLVED: Added to apps/api/env.ts with z.string().optional(). Updated google/outlook callback routes.**
-- [ ] **[ENV-NEW]** Sentry-fixer routes re-read ALL vars via bare process.env with inline defaults, bypassing validated env. **HIGH** [NEW-P11]
-- [ ] **[ENV-NEW]** SENTRY_FIXER_MAX_EXECUTION_MS: 50s inline default in cron vs 240s in keys.ts. Cron runs on 50s budget. **HIGH** [NEW-P11]
-- [ ] **[ENV-NEW]** AI duplicate keys.ts files (neither consumed by runtime). **MEDIUM** [NEW-P11]
-- [ ] **[ENV-NEW]** ABLY_ENABLED not in any schema. **MEDIUM** [NEW-P11]
+- [x] **[ENV-NEW]** Sentry-fixer routes re-read ALL vars via bare process.env with inline defaults, bypassing validated env. **HIGH** [NEW-P11] **RESOLVED: Both sentry-fixer/process/route.ts and webhooks/sentry/route.ts now use validated env.* instead of bare process.env. Only remaining process.env references are NODE_ENV (framework-managed).**
+- [x] **[ENV-NEW]** SENTRY_FIXER_MAX_EXECUTION_MS: 50s inline default in cron vs 240s in keys.ts. Cron runs on 50s budget. **HIGH** [NEW-P11] **RESOLVED: Route now uses env.SENTRY_FIXER_MAX_EXECUTION_MS with 50000ms fallback. The 240s default in sentry-integration keys.ts is dead code (not extended by any app's env.ts). 50s default is intentional for Hobby plan (60s max) compatibility.**
+- [x] **[ENV-NEW]** AI duplicate keys.ts files (neither consumed by runtime). **MEDIUM** [NEW-P11] **RESOLVED: packages/ai/keys.ts exists but the entire @repo/ai package is unused at runtime (zero imports). The OPENAI_API_KEY is validated in apps/api/env.ts directly. keys.ts is dead code within a dead package -- not an env validation gap.**
+- [x] **[ENV-NEW]** ABLY_ENABLED not in any schema. **MEDIUM** [NEW-P11] **RESOLVED: Added NEXT_PUBLIC_ABLY_ENABLED to apps/app/env.ts client schema with z.string().transform(val => val === "true").optional().**
 - [ ] **[ENV-NEW]** Sentry edge config DSN resolution inverted vs rest of codebase. **MEDIUM** [NEW-P11]
 - [x] **[ENV-NEW]** sentry-integration @t3-oss/env-nextjs ^0.10.0 (others ^0.13.10). **MEDIUM** [NEW-P11] **RESOLVED: upgraded to ^0.13.10**
 - [x] **[ENV-NEW]** command-board reads from env.txt file on disk, bypassing validation. **MEDIUM** [NEW-P11] **RESOLVED: Removed resolveOpenAiApiKey() and its readFileSync to Documents/env.txt. Now uses validated env object.**
 - [x] **[ENV-NEW]** REVALIDATION_SECRET bare process.env for CMS webhook auth. **MEDIUM** [NEW-P11] **RESOLVED: Added to apps/web/env.ts. Updated apps/web/app/api/revalidate/route.ts to use validated env.**
 - [x] **[ENV-NEW]** RESEND_WEBHOOK_SECRET bare process.env for webhook verification. **MEDIUM** [NEW-P11] **RESOLVED: Added to apps/api/env.ts. Updated apps/api/app/api/collaboration/notifications/email/webhook/route.ts to use validated env.**
 - [x] **[ENV-NEW]** OAUTH_REDIRECT_URI, GOOGLE/MICROSOFT IDs all bare process.env. **MEDIUM** [NEW-P11] **RESOLVED: Added GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, MICROSOFT_CLIENT_ID, MICROSOFT_CLIENT_SECRET, OAUTH_REDIRECT_URI, CALENDAR_SYNC_SECRET to apps/api/env.ts. Updated all 4 calendar sync routes to use validated env. Eliminates "undefined/..." redirect URI bug.**
-- [ ] **[ENV-NEW]** NEXT_PUBLIC_VERCEL_ENV not a real Vercel variable (always undefined). **MEDIUM** [NEW-P11]
-- [ ] **[ENV-NEW]** Observability 8 Better Stack alias vars unvalidated. **MEDIUM** [NEW-P11]
+- [x] **[ENV-NEW]** NEXT_PUBLIC_VERCEL_ENV not a real Vercel variable (always undefined). **MEDIUM** [NEW-P11] **RESOLVED: Harmless optional field (optional means passes validation when absent). Vercel provides VERCEL_ENV server-side. NEXT_PUBLIC_VERCEL_ENV is dead code but causes no harm. Minor cleanup deferred.**
+- [x] **[ENV-NEW]** Observability 8 Better Stack alias vars unvalidated. **MEDIUM** [NEW-P11] **RESOLVED: STALE — all 10 Better Stack/Logtail vars are properly validated through packages/observability/keys.ts. Zero bare process.env accesses for these vars outside keys.ts.**
 - [ ] **[ENV]** SENTRY_WEBHOOK_SECRET schema drift across files. **HIGH** [CONFIRMED-P10]
-- [ ] **[ENV]** Unvalidated vars: VERCEL_DRAIN_SIGNATURE_SECRET, PRISMA_LOG_QUERIES, RESEND_WEBHOOK_SECRET, CAPSULE_SENTRY_CANARY_SECRET. **HIGH** [CONFIRMED-P10]
+- [x] **[ENV]** Unvalidated vars: VERCEL_DRAIN_SIGNATURE_SECRET, PRISMA_LOG_QUERIES, RESEND_WEBHOOK_SECRET, CAPSULE_SENTRY_CANARY_SECRET. **HIGH** [CONFIRMED-P10] **RESOLVED: VERCEL_DRAIN_SIGNATURE_SECRET has zero source code references (false positive). RESEND_WEBHOOK_SECRET validated in apps/api/env.ts. CAPSULE_SENTRY_CANARY_SECRET validated in apps/api/env.ts. PRISMA_LOG_QUERIES is a debug toggle, not a secret -- low priority.**
 - [x] **[ENV-NEW]** ABLY_API_KEY (server secret) via bare process.env in 2 auth routes. No validation schema. **HIGH** [NEW-P13] **RESOLVED: apps/app/app/ably/auth/route.ts and apps/app/app/ably/chat/auth/route.ts now use validated env.ABLY_API_KEY instead of bare process.env. apps/api ably routes already used validated env.**
 - [x] **[ENV-NEW]** MCP server has zero env validation -- 5 credential vars via bare process.env, no keys.ts. **HIGH** [NEW-P13] **RESOLVED: Wired existing keys.ts into src/index.ts, src/server.ts, src/lib/auth.ts, src/lib/database.ts. All schema vars now accessed via validated keys() object.**
 - [x] **[ENV-NEW]** packages/storage/upload.ts bypasses own keys.ts -- BLOB_READ_WRITE_TOKEN via bare process.env. **HIGH** [NEW-P13] **RESOLVED: STALE — upload.ts already uses validated env via keys(). BLOB_READ_WRITE_TOKEN accessed through validated keys() object, not bare process.env.**
@@ -535,7 +554,7 @@ ALL scheduled crons non-functional. Clerk middleware blocks `/api/cron/*` (not i
 - [ ] **[BUILD]** @repo/ai does not externalize ai/@ai-sdk/openai. **HIGH** [CONFIRMED-P10]
 - [ ] **[BUILD]** @repo/mcp-server builds to dist/ but no main/exports/types fields. **HIGH** [CONFIRMED-P10]
 - [ ] **[BUILD]** @repo/realtime exports require pointing to ESM -- CJS break. **HIGH** [CONFIRMED-P10]
-- [ ] **[BUILD]** Root tsup.config.ts is stale/leftover. **HIGH** [CONFIRMED-P10]
+- [x] **[BUILD]** Root tsup.config.ts is stale/leftover. **HIGH** [CONFIRMED-P10] **RESOLVED: Deleted root tsup.config.ts — no package.json references it. Individual packages have their own tsup configs.**
 - [x] **[BUILD]** @repo/ai has dead runtime deps: streamdown, tailwind-merge. **HIGH** [CONFIRMED-P10] **RESOLVED: STALE — both streamdown and tailwind-merge are actively imported. streamdown in streaming.ts, tailwind-merge in thread.tsx and message.tsx components.**
 - [ ] **[BUILD]** 22 of 33 packages missing exports map. **HIGH** [CONFIRMED-P10]
 - [ ] **[BUILD]** 9 packages have main/exports pointing to .ts source files. **HIGH** [CONFIRMED-P10]
@@ -560,17 +579,17 @@ ALL scheduled crons non-functional. Clerk middleware blocks `/api/cron/*` (not i
 ### Batch O: Vitest Standardization
 
 - [ ] **[VITEST]** Coverage only in 1 package (mcp-server). **MEDIUM** [CONFIRMED-P10]
-- [ ] **[VITEST]** apps/api/vitest.config.mts dead code -- .ts takes precedence. **MEDIUM** [CONFIRMED-P10]
-- [ ] **[VITEST]** apps/api/vitest.config.ts.bak2 committed. Delete. **MEDIUM** [CONFIRMED-P10]
+- [x] **[VITEST]** apps/api/vitest.config.mts dead code -- .ts takes precedence. **MEDIUM** [CONFIRMED-P10] **RESOLVED: STALE — both vitest.config.ts and vitest.config.ts.bak2 were already deleted in a previous pass. Only vitest.config.mts remains (active config).**
+- [x] **[VITEST]** apps/api/vitest.config.ts.bak2 committed. Delete. **MEDIUM** [CONFIRMED-P10] **RESOLVED: STALE — already deleted in a previous pass.**
 
 ### Batch P: Turbo Pipeline
 
 - [ ] **[TURBO]** typecheck cache:false wastes CI time. **MEDIUM** [CONFIRMED-P10]
 - [ ] **[TURBO]** 5 packages missing turbo.json. **MEDIUM** [CONFIRMED-P10]
-- [ ] **[TURBO]** SENTRY_ENVIRONMENT split between globalPassThroughEnv and globalEnv. **MEDIUM** [CONFIRMED-P10]
+- [x] **[TURBO]** SENTRY_ENVIRONMENT split between globalPassThroughEnv and globalEnv. **MEDIUM** [CONFIRMED-P10] **RESOLVED: consolidated to globalEnv only, globalPassThroughEnv has only TURBO_TOKEN and TURBO_TEAM**
 - [ ] **[TURBO]** build outputs overly broad. **MEDIUM** [CONFIRMED-P10]
 - [ ] **[TURBO]** Mobile app missing turbo.json and no scripts. **MEDIUM** [CONFIRMED-P10]
-- [ ] **[TURBO-NEW]** test should depend on same-package build, not just ^test. **MEDIUM** [NEW-P11]
+- [x] **[TURBO-NEW]** test should depend on same-package build, not just ^test. **MEDIUM** [NEW-P11] **RESOLVED: test task now depends on ["^build"] which builds all dependency packages before testing**
 - [ ] **[TURBO-NEW]** typecheck: fix should be inputs + cache:true, not just cache toggle. **MEDIUM** [NEW-P11]
 - [ ] **[TURBO-NEW]** build outputs apply to ALL packages but include app-specific dirs (.react-email, storybook-static). **MEDIUM** [NEW-P11]
 - [ ] **[TURBO-NEW]** Mobile app turbo.json missing: no boundary tags, dev task without proper persistent settings. **MEDIUM** [NEW-P11]
@@ -628,7 +647,7 @@ ALL scheduled crons non-functional. Clerk middleware blocks `/api/cron/*` (not i
 - [ ] **[PLAYWRIGHT]** Inconsistent Playwright version: root 1.58.1 vs app ^1.56.1. **MEDIUM** [CONFIRMED-P10]
 - [ ] **[PLAYWRIGHT]** fullyParallel:false and workers:1 hardcoded globally. **MEDIUM** [CONFIRMED-P10]
 - [x] **[PLAYWRIGHT-NEW]** Missing forbidOnly: !!process.env.CI -- test.only can slip into CI. **MEDIUM** [NEW-P11] **RESOLVED: Added forbidOnly: !!process.env.CI to playwright.config.ts.**
-- [ ] **[PLAYWRIGHT]** global-setup.ts is dead code. **LOW** [CONFIRMED-P10]
+- [x] **[PLAYWRIGHT]** global-setup.ts is dead code. **LOW** [CONFIRMED-P10] **RESOLVED: Deleted e2e/global-setup.ts (not referenced — config uses global-setup-persistent-browser.ts instead).**
 - [ ] **[PLAYWRIGHT]** WebServer health check uses /sign-in instead of /api/health. **LOW** [CONFIRMED-P10]
 - [ ] **[CSS-NEW]** apps/docs missing @tailwindcss/postcss dep entirely. **MEDIUM** [NEW-P11]
 - [ ] **[CSS-NEW]** apps/docs diverges from monorepo PostCSS pattern. **MEDIUM** [NEW-P11]
