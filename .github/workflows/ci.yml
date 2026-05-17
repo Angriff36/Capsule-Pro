@@ -161,6 +161,67 @@ jobs:
         env:
           DATABASE_URL: "postgresql://testuser:testpass@localhost:5432/capsule_test"
 
+      - name: Build apps for E2E testing
+        run: pnpm turbo run build --filter=./apps/app --filter=./apps/api
+        env:
+          NODE_OPTIONS: "--max-old-space-size=8192"
+          SKIP_ENV_VALIDATION: "true"
+          DATABASE_URL: "postgresql://testuser:testpass@localhost:5432/capsule_test"
+          BASEHUB_TOKEN: ${{ secrets.BASEHUB_TOKEN }}
+          # Server env vars (dummy values for build)
+          CLERK_SECRET_KEY: "not_a_real_key_dummy_value"
+          CLERK_WEBHOOK_SECRET: "webhook_secret_placeholder"
+          RESEND_FROM: "noreply@ci-build.local"
+          RESEND_TOKEN: "re_dummy"
+          STRIPE_SECRET_KEY: "not_a_real_key_dummy_value"
+          STRIPE_WEBHOOK_SECRET: "webhook_secret_placeholder"
+          BETTERSTACK_API_KEY: "dummy"
+          BETTERSTACK_URL: "https://dummy.betterstack.com"
+          FLAGS_SECRET: "dummy"
+          ARCJET_KEY: "ajkey_dummy"
+          SVIX_TOKEN: "api_key_placeholder"
+          LIVEBLOCKS_SECRET: "api_key_placeholder"
+          VERCEL_PROJECT_PRODUCTION_URL: "https://capsule-pro-app.vercel.app"
+          KNOCK_API_KEY: "dummy"
+          KNOCK_FEED_CHANNEL_ID: "dummy"
+          # Client env vars (real Clerk key for E2E auth)
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
+          NEXT_PUBLIC_CLERK_SIGN_IN_URL: "/sign-in"
+          NEXT_PUBLIC_CLERK_SIGN_UP_URL: "/sign-up"
+          NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL: "/"
+          NEXT_PUBLIC_CLERK_SIGN_IN_FORCE_REDIRECT_URL: "/"
+          NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL: "/"
+          NEXT_PUBLIC_CLERK_SIGN_UP_FORCE_REDIRECT_URL: "/"
+          NEXT_PUBLIC_GA_MEASUREMENT_ID: "G-DUMMY"
+          NEXT_PUBLIC_POSTHOG_KEY: "phc_dummy"
+          NEXT_PUBLIC_POSTHOG_HOST: "https://app.posthog.com"
+          NEXT_PUBLIC_APP_URL: "http://localhost:2221"
+          NEXT_PUBLIC_WEB_URL: "http://localhost:2222"
+          NEXT_PUBLIC_API_URL: "http://localhost:2223"
+          NEXT_PUBLIC_DOCS_URL: "http://localhost:2224"
+          NEXT_PUBLIC_ABLY_AUTH_URL: "http://localhost:2223/ably/auth"
+
+      - name: Start API server
+        run: |
+          pnpm --filter ./apps/api start &
+          for i in $(seq 1 30); do
+            if curl -s -o /dev/null http://localhost:2223/ 2>/dev/null; then
+              echo "API server ready on port 2223"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "::error::API server failed to start within 60s"
+          exit 1
+        env:
+          DATABASE_URL: "postgresql://testuser:testpass@localhost:5432/capsule_test"
+          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
+          SKIP_ENV_VALIDATION: "true"
+          PORT: "2223"
+
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install --with-deps chromium
+
       - name: Run E2E product-flow tests
         run: pnpm test:e2e --project=chromium --workers=1
         env:
@@ -173,7 +234,8 @@ jobs:
           DATABASE_URL: "postgresql://testuser:testpass@localhost:5432/capsule_test"
           # App config
           NEXT_PUBLIC_APP_URL: "http://localhost:2221"
-          NEXT_PUBLIC_API_URL: "http://localhost:2221"
+          NEXT_PUBLIC_API_URL: "http://localhost:2223"
+          PORT: "2221"
           # Disable external service integrations
           STRIPE_SECRET_KEY: "sk_test_dummy"
           RESEND_TOKEN: "re_dummy"

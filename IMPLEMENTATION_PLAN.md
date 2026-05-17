@@ -33,6 +33,18 @@
 - biome: added vcs.defaultBranch: "main" for --changed workflow support
 - biome: added css.parser.tailwindDirectives:true for Tailwind CSS support
 
+## Changes from CI e2e fix pass (2026-05-16)
+
+CRITICAL fix: CI e2e-workflows job had NO app server startup step. Playwright tests were running against nothing.
+
+### Fixes Applied
+
+- Added "Build apps for E2E testing" step that builds both apps/app and apps/api with full env vars (matching the test job's build step pattern)
+- Added "Start API server" step that starts the API on port 2223 in the background with a health check loop
+- Added "Install Playwright browsers" step to install Chromium
+- Fixed NEXT_PUBLIC_API_URL from "http://localhost:2221" to "http://localhost:2223" (was pointing to wrong port -- the app port instead of API port)
+- Added PORT: "2221" to the E2E test step env to ensure the app starts on the correct port
+
 ## Changes from cron-auth fix pass (2026-05-16)
 
 Systemic cron authentication fix. ALL 8 scheduled crons were non-functional due to:
@@ -183,7 +195,7 @@ Passes 2-10 findings archived in `docs/audits/` and `docs/implementation-history
 
 ### Batch B: Runtime Correctness
 
-- [ ] **[PLAYWRIGHT]** CI e2e-workflows has NO app server startup step at all. **CRITICAL** [ESCALATED-P11]
+- [x] **[PLAYWRIGHT]** CI e2e-workflows has NO app server startup step at all. **CRITICAL** [ESCALATED-P11] **RESOLVED: Added build step, API server start with health check, Playwright browser install, fixed NEXT_PUBLIC_API_URL and PORT env vars**
 - [x] **[CI]** .husky/pre-push exits 0 immediately. **CRITICAL** [CONFIRMED-P10] **RESOLVED: replaced exit 0 with typecheck run via `pnpm check`**
 - [x] **[CI]** security.yml uses aquasecurity/trivy-action@master unpinned. **CRITICAL** [CONFIRMED-P10] **RESOLVED: pinned to aquasecurity/trivy-action@0.30.0**
 - [x] **[CI]** security.yml continue-on-error:true on pnpm audit. **CRITICAL** [CONFIRMED-P10] **RESOLVED: removed continue-on-error:true**
