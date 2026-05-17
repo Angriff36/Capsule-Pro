@@ -122,6 +122,9 @@ Quick-win CRITICAL fixes applied:
 - Marked 4 stale plan items as RESOLVED (apps/web transpilePackages, CSP headers, security headers, docs/storybook shared config)
 - apps/api/vitest.config.integration.mts: removed invalid optimizeDeps.disable (removed in Vite 6, repo on Vite 7)
 - Verified apps/app setupFiles not needed (no jest-dom matcher usage, all 271 tests pass)
+- packages/event-parser: renamed type-check script to typecheck (matches turbo task name)
+- turbo.json: added lint task with dependsOn: [^build]
+- turbo.json: added dependsOn: [^build] to generate task
 
 ## Changes from automation pass (2026-05-16)
 
@@ -244,7 +247,7 @@ ALL scheduled crons non-functional. Clerk middleware blocks `/api/cron/*` (not i
 - [x] **[CRON-NEW]** Duplicate webhook-retry routes: app/cron/ AND app/api/cron/. **CRITICAL** [CONFIRMED-P10] **RESOLVED: deleted stale app/cron/webhook-retry/route.ts (canonical is app/api/cron/webhook-retry/route.ts)**
 - [x] **[CRON-P11-NEW]** integration-auto-sync and outbox/publish MISSING from cron registry. **HIGH** [NEW-P11] **RESOLVED: integration-auto-sync was in vercel.json cron config; outbox/publish GET handler added**
 - [ ] **[SECURITY-NEW]** keep-alive non-standard header, no middleware auth. **HIGH** [NEW-P11]
-- [ ] **[SECURITY-NEW]** integration-auto-sync not in isPublicRoute -- crons may 401 via Clerk. **HIGH** [NEW-P11]
+- [x] **[SECURITY-NEW]** integration-auto-sync not in isPublicRoute -- crons may 401 via Clerk. **HIGH** [NEW-P11] **RESOLVED: STALE — /api/cron(.*) wildcard in isPublicRoute already covers ALL cron routes including integration-auto-sync**
 - [ ] **[SECURITY-NEW]** API-key requests bypass rate limiting entirely. **HIGH** [NEW-P11]
 - [ ] **[SECURITY-NEW]** secretlint configured but never run in CI. **HIGH** [NEW-P11]
 - [x] **[CRON-P12-NEW]** ALL `/api/cron/*` routes blocked by Clerk middleware (not in isPublicRoute). Even GET routes never reach handler. **CRITICAL** [NEW-P12] **RESOLVED: Added /api/cron(.*) to isPublicRoute in apps/api/proxy.ts**
@@ -384,16 +387,16 @@ ALL scheduled crons non-functional. Clerk middleware blocks `/api/cron/*` (not i
 - [ ] **[TURBO]** test depends on ^test not ^build. **HIGH** [CONFIRMED-P10]
 - [ ] **[TURBO]** Zero turbo tasks define inputs. **HIGH** [CONFIRMED-P10]
 - [ ] **[TURBO]** ~60+ env vars missing from turbo.json. **HIGH** [CONFIRMED-P10]
-- [ ] **[TURBO]** No lint task in turbo.json. **HIGH** [CONFIRMED-P10]
+- [x] **[TURBO]** No lint task in turbo.json. **HIGH** [CONFIRMED-P10] **RESOLVED: added lint task with dependsOn: [^build] to turbo.json**
 - [ ] **[TURBO]** pnpm-lock.yaml missing from globalDependencies. **HIGH** [CONFIRMED-P10]
 - [ ] **[TURBO]** event-parser type-check vs typecheck naming mismatch. **HIGH** [CONFIRMED-P10]
-- [ ] **[TURBO]** generate task missing dependsOn. **HIGH** [CONFIRMED-P10]
+- [x] **[TURBO]** generate task missing dependsOn. **HIGH** [CONFIRMED-P10] **RESOLVED: added dependsOn: [^build] to generate task in turbo.json**
 - [ ] **[TURBO-NEW]** No futureFlags block for Turborepo 3.0 migration (globalConfiguration, affectedUsingTaskInputs, filterUsingTasks). **HIGH** [NEW-P11]
 - [ ] **[TURBO-NEW]** SENTRY_ENVIRONMENT in globalPassThroughEnv produces same cache hash for different environments. **HIGH** [NEW-P11]
 - [ ] **[TURBO-NEW]** VERCEL, VERCEL_ENV, SKIP_ENV_VALIDATION in globalPassThroughEnv but affect build behavior. **HIGH** [NEW-P11]
 - [ ] **[TURBO-NEW]** No remoteCache.signature:true for cache integrity. **HIGH** [NEW-P11]
 - [ ] **[TURBO-NEW]** tsconfig not in globalDependencies -- tsconfig changes won't invalidate tsc build caches. **HIGH** [NEW-P11]
-- [ ] **[TURBO-P12]** event-parser `type-check` script doesn't match turbo `typecheck` task -- silently excluded. **HIGH** [NEW-P12]
+- [x] **[TURBO-P12]** event-parser `type-check` script doesn't match turbo `typecheck` task -- silently excluded. **HIGH** [NEW-P12] **RESOLVED: renamed script from type-check to typecheck in packages/event-parser/package.json**
 - [ ] **[CI]** .github/CODEOWNERS placeholder + formatting issues. **HIGH** [CONFIRMED-P10]
 - [ ] **[CI]** No pnpm dependency caching in CI. **HIGH** [CONFIRMED-P10]
 - [ ] **[CI]** No Dependabot config. **HIGH** [CONFIRMED-P10]

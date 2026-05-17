@@ -81,6 +81,7 @@
   "envMode": "loose",
   "tasks": {
     "generate": {
+      "dependsOn": ["^build"],
       "cache": false
     },
     "build": {
@@ -100,6 +101,9 @@
     "typecheck": {
       "dependsOn": ["^typecheck"],
       "cache": false
+    },
+    "lint": {
+      "dependsOn": ["^build"]
     },
     "analyze": {
       "dependsOn": ["^build", "^analyze"]
