@@ -270,8 +270,7 @@ sketch
 storybook-static/
 docs/
 !**/packages/manifest-runtime/docs/
-!apps/docs/
-!apps/docs/**/
+!apps/docs/content/
 ### Turbo ###
 !/docs/
 /docs/*
