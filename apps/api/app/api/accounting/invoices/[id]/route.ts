@@ -19,6 +19,9 @@ import {
   validateInvoiceBusinessRules,
 } from "../validation";
 
+const DEFAULT_APP_URL = "https://app.capsule.pro";
+const DEFAULT_FROM_ADDRESS = "noreply@capsule.pro";
+
 type RouteContext = {
   params: Promise<{ id: string }>;
 };
@@ -372,12 +375,12 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       const clientEmail = invoice.client?.email;
       if (clientEmail) {
         try {
-          const appUrl = process.env.APP_URL || "https://app.convoy.com";
+          const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? DEFAULT_APP_URL;
           const paymentUrl = `${appUrl}/invoices/${invoice.id}`;
           const currency = "USD";
 
           await resend.emails.send({
-            from: process.env.RESEND_FROM || "noreply@convoy.com",
+            from: process.env.RESEND_FROM ?? DEFAULT_FROM_ADDRESS,
             to: clientEmail,
             subject: `Reminder: Invoice ${invoice.invoiceNumber} — ${invoice.amountDue.toString()} ${currency} due`,
             react: InvoiceTemplate({
@@ -506,7 +509,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     // transient Resend/SMTP outage.
     const clientEmail = updatedInvoice.client?.email;
     if (clientEmail) {
-      const appUrl = process.env.APP_URL || "https://app.convoy.com";
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? DEFAULT_APP_URL;
       const paymentUrl = `${appUrl}/invoices/${updatedInvoice.id}`;
       const clientName =
         updatedInvoice.client?.first_name ||
@@ -528,7 +531,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
       try {
         await resend.emails.send({
-          from: process.env.RESEND_FROM || "noreply@convoy.com",
+          from: process.env.RESEND_FROM ?? DEFAULT_FROM_ADDRESS,
           to: clientEmail,
           subject: `Invoice ${updatedInvoice.invoiceNumber} — ${amountDue} ${currency} due`,
           react: InvoiceTemplate({

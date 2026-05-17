@@ -10,6 +10,7 @@ export const keys = () =>
       TWILIO_AUTH_TOKEN: z.string().optional(),
       TWILIO_PHONE_NUMBER: z.string().optional(),
       RESEND_TOKEN: z.string().optional(),
+      RESEND_FROM: z.string().email().optional(),
     },
     client: {
       NEXT_PUBLIC_KNOCK_API_KEY: z.string().optional(),
@@ -24,5 +25,6 @@ export const keys = () =>
       TWILIO_AUTH_TOKEN: process.env.TWILIO_AUTH_TOKEN,
       TWILIO_PHONE_NUMBER: process.env.TWILIO_PHONE_NUMBER,
       RESEND_TOKEN: process.env.RESEND_TOKEN,
+      RESEND_FROM: process.env.RESEND_FROM,
     },
   });
