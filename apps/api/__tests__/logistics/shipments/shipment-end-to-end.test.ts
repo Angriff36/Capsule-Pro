@@ -23,6 +23,11 @@ vi.mock("@repo/auth/server", () => ({
 vi.mock("@/app/lib/tenant", () => ({
   getTenantIdForOrg: vi.fn(),
   requireCurrentUser: vi.fn(),
+  resolveCurrentUser: vi.fn(),
+}));
+
+vi.mock("@/app/lib/webhook-dispatch", () => ({
+  dispatchWebhooks: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock("@/app/lib/invariant", async () => {
@@ -39,7 +44,11 @@ vi.mock("@/lib/manifest-runtime", () => ({
 }));
 
 import { auth } from "@repo/auth/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import {
+  getTenantIdForOrg,
+  requireCurrentUser,
+  resolveCurrentUser,
+} from "@/app/lib/tenant";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
 
 const TEST_TENANT_ID = "a0000000-0000-4000-a000-000000000001";
@@ -270,6 +279,18 @@ describe("Shipment Persistence (write → read alignment)", () => {
       } as any);
       vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
       vi.mocked(database.user.findFirst).mockResolvedValue(mockUser as never);
+      vi.mocked(resolveCurrentUser).mockResolvedValue({
+        id: TEST_USER_ID,
+        tenantId: TEST_TENANT_ID,
+        role: "admin",
+        authUserId: TEST_CLERK_ID,
+      } as any);
+      vi.mocked(requireCurrentUser).mockResolvedValue({
+        id: TEST_USER_ID,
+        tenantId: TEST_TENANT_ID,
+        role: "admin",
+        authUserId: TEST_CLERK_ID,
+      } as any);
       mockRunCommand.mockClear();
       vi.mocked(createManifestRuntime).mockResolvedValue({
         runCommand: mockRunCommand,

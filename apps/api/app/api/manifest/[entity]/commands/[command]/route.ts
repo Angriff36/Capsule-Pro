@@ -3,6 +3,7 @@
 // All domain command POSTs route through here → guards, policies, constraints, actions, events.
 
 import { captureException } from "@sentry/nextjs";
+import { InvariantError } from "@/app/lib/invariant";
 import type { NextRequest } from "next/server";
 import { resolveCommand } from "@/lib/manifest/command-resolver";
 import { requireCurrentUser } from "@/app/lib/tenant";
@@ -59,8 +60,18 @@ export async function POST(
       entityName: entity,
     });
 
+    const bodyRecord = body as Record<string, unknown>;
+    const entityCamel = entity.charAt(0).toLowerCase() + entity.slice(1);
+    const rawId =
+      command !== "create"
+        ? (bodyRecord.id ?? bodyRecord[`${entityCamel}Id`])
+        : undefined;
+    const instanceId =
+      rawId != null ? String(rawId) : undefined;
+
     const result = await runtime.runCommand(command, body, {
       entityName: entity,
+      ...(instanceId ? { instanceId } : {}),
     });
 
     // ── Handle failures ──
@@ -93,6 +104,9 @@ export async function POST(
       events: result.emittedEvents,
     });
   } catch (error) {
+    if (error instanceof InvariantError) {
+      return manifestErrorResponse("Unauthorized", 401);
+    }
     console.error("[manifest/dispatcher] Error:", error);
     captureException(error);
     return manifestErrorResponse("Internal server error", 500);

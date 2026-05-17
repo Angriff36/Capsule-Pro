@@ -43,6 +43,7 @@ import {
   DownloadIcon,
   PlusIcon,
   RefreshCwIcon,
+  TrashIcon,
   TruckIcon,
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
@@ -160,6 +161,11 @@ export const ShipmentsPageClient = () => {
   });
   const [isAddItemModalOpen, setIsAddItemModalOpen] = useState(false);
 
+  // Locations for create form
+  const [locations, setLocations] = useState<
+    Array<{ id: string; name: string }>
+  >([]);
+
   // Load shipments
   const loadShipments = useCallback(async () => {
     setIsLoading(true);
@@ -214,7 +220,29 @@ export const ShipmentsPageClient = () => {
   useEffect(() => {
     loadShipments();
     loadInventoryItems();
+    apiFetch("/api/locations")
+      .then((r) => (r.ok ? r.json() : { locations: [] }))
+      .then((d) => setLocations(d.locations ?? d.data ?? []))
+      .catch(() => {});
   }, [loadShipments, loadInventoryItems]);
+
+  // Remove item from shipment
+  const handleRemoveItem = async (itemId: string) => {
+    if (!selectedShipment) return;
+    try {
+      const response = await apiFetch(
+        `/api/shipments/${selectedShipment.id}/items/${itemId}`,
+        { method: "DELETE" }
+      );
+      if (!response.ok) throw new Error("Failed to remove item");
+      toast.success("Item removed from shipment");
+      loadShipmentItems(selectedShipment.id);
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to remove item"
+      );
+    }
+  };
 
   // Handle create shipment
   const handleCreateShipment = async () => {
@@ -744,6 +772,7 @@ export const ShipmentsPageClient = () => {
                         <TableHead>Condition</TableHead>
                         <TableHead>Unit Cost</TableHead>
                         <TableHead>Total Cost</TableHead>
+                        <TableHead className="w-12" />
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -768,6 +797,16 @@ export const ShipmentsPageClient = () => {
                           </TableCell>
                           <TableCell>
                             {formatCurrency(item.total_cost)}
+                          </TableCell>
+                          <TableCell>
+                            <Button
+                              onClick={() => handleRemoveItem(item.id)}
+                              size="sm"
+                              title="Remove item"
+                              variant="ghost"
+                            >
+                              <TrashIcon className="h-4 w-4 text-destructive" />
+                            </Button>
                           </TableCell>
                         </TableRow>
                       ))}
@@ -918,6 +957,28 @@ export const ShipmentsPageClient = () => {
                 value={createForm.internal_notes || ""}
               />
             </div>
+            {locations.length > 0 && (
+              <div className="grid gap-2">
+                <Label htmlFor="location">Destination Location</Label>
+                <Select
+                  onValueChange={(v) =>
+                    setCreateForm({ ...createForm, location_id: v })
+                  }
+                  value={createForm.location_id || ""}
+                >
+                  <SelectTrigger id="location">
+                    <SelectValue placeholder="Select location" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {locations.map((loc) => (
+                      <SelectItem key={loc.id} value={loc.id}>
+                        {loc.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
           </div>
           <DialogFooter>
             <Button

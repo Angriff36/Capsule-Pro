@@ -630,8 +630,8 @@ export function isValidStatusTransition(
   const validTransitions: Record<ShipmentStatus, ShipmentStatus[]> = {
     draft: ["scheduled", "cancelled"],
     scheduled: ["preparing", "cancelled"],
-    preparing: ["in_transit", "scheduled", "cancelled"],
-    in_transit: ["delivered", "returned"],
+    preparing: ["in_transit", "cancelled"],
+    in_transit: ["delivered"],
     delivered: ["returned"],
     returned: [],
     cancelled: [],
@@ -649,8 +649,8 @@ export function getAllowedStatusTransitions(
   const transitions: Record<ShipmentStatus, ShipmentStatus[]> = {
     draft: ["scheduled", "cancelled"],
     scheduled: ["preparing", "cancelled"],
-    preparing: ["in_transit", "scheduled", "cancelled"],
-    in_transit: ["delivered", "returned"],
+    preparing: ["in_transit", "cancelled"],
+    in_transit: ["delivered"],
     delivered: ["returned"],
     returned: [],
     cancelled: [],
