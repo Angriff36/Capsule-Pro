@@ -6,7 +6,6 @@
 
 import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { InvariantError } from "@/app/lib/invariant";
 
 // ── constants ────────────────────────────────────────────────────────
 const TENANT_A = "10000000-0000-0000-0000-000000000001";
@@ -33,8 +32,6 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock("@repo/auth/server", () => ({ auth: mocks.auth }));
 vi.mock("@/app/lib/tenant", () => ({
-  requireCurrentUser: vi.fn(),
-
   getTenantIdForOrg: mocks.tenant,
   resolveCurrentUser: mocks.resolveCurrentUser,
 }));
@@ -67,9 +64,6 @@ vi.mock("@/app/lib/webhook-dispatch", () => ({
 }));
 vi.mock("@/lib/manifest-command-handler", () => ({
   executeManifestCommand: mocks.executeManifestCommand,
-}));
-vi.mock("@/lib/manifest-runtime", () => ({
-  createManifestRuntime: vi.fn(),
 }));
 
 function setAuth(tenantId: string | null = TENANT_A) {
@@ -111,9 +105,6 @@ const { GET: alertsGET } = await import(
   "@/app/api/kitchen/equipment/alerts/route"
 );
 
-// Import createManifestRuntime for mock
-import { createManifestRuntime } from "@/lib/manifest-runtime";
-
 // ── tests ────────────────────────────────────────────────────────────
 
 describe("Equipment API", () => {
@@ -125,20 +116,12 @@ describe("Equipment API", () => {
 
   describe("auth gates", () => {
     it("returns 401 when unauthenticated", async () => {
-      const { requireCurrentUser } = await import("@/app/lib/tenant");
-      (requireCurrentUser as ReturnType<typeof vi.fn>).mockRejectedValue(
-        new InvariantError("Unauthorized")
-      );
       mocks.auth.mockResolvedValue({ orgId: null, userId: null });
       const res = await listGET(makeRequest());
       expect(res.status).toBe(401);
     });
 
     it("returns 400 when tenant not found", async () => {
-      const { requireCurrentUser } = await import("@/app/lib/tenant");
-      (requireCurrentUser as ReturnType<typeof vi.fn>).mockRejectedValue(
-        new InvariantError("Unauthorized")
-      );
       mocks.auth.mockResolvedValue({ orgId: ORG_ID, userId: USER_ID });
       mocks.tenant.mockResolvedValue(null);
       const res = await listGET(makeRequest());
@@ -224,29 +207,20 @@ describe("Equipment API", () => {
 
   describe("POST /create", () => {
     it("delegates to executeManifestCommand with entity Equipment and command create", async () => {
-      const { requireCurrentUser } = await import("@/app/lib/tenant");
-      (requireCurrentUser as ReturnType<typeof vi.fn>).mockResolvedValue({
-        id: "test-user-id",
-        tenantId: "test-tenant",
-        role: "admin",
-        email: "test@example.com",
-        firstName: "Test",
-        lastName: "User",
-      });
-
-      const mockRuntime = {
-        runCommand: vi.fn().mockResolvedValue({
-          success: true,
-          result: {
-            id: EQUIPMENT_ID,
-            name: "Oven A",
-            type: "general",
-            locationId: LOCATION_ID,
-          },
-        }),
-      };
-
-      vi.mocked(createManifestRuntime).mockResolvedValue(mockRuntime as never);
+      mocks.executeManifestCommand.mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            success: true,
+            result: {
+              id: EQUIPMENT_ID,
+              name: "Oven A",
+              type: "general",
+              locationId: LOCATION_ID,
+            },
+          }),
+          { status: 200, headers: { "Content-Type": "application/json" } }
+        )
+      );
 
       const req = makeRequest("http://localhost", {
         name: "Oven A",
@@ -264,9 +238,11 @@ describe("Equipment API", () => {
       expect(json.success).toBe(true);
       expect(json.result.name).toBe("Oven A");
 
-      expect(createManifestRuntime).toHaveBeenCalledWith(
+      expect(mocks.executeManifestCommand).toHaveBeenCalledWith(
+        req,
         expect.objectContaining({
           entityName: "Equipment",
+          commandName: "create",
         })
       );
     });
@@ -276,24 +252,15 @@ describe("Equipment API", () => {
 
   describe("POST /update-status", () => {
     it("delegates to executeManifestCommand with entity Equipment and command updateStatus", async () => {
-      const { requireCurrentUser } = await import("@/app/lib/tenant");
-      (requireCurrentUser as ReturnType<typeof vi.fn>).mockResolvedValue({
-        id: "test-user-id",
-        tenantId: "test-tenant",
-        role: "admin",
-        email: "test@example.com",
-        firstName: "Test",
-        lastName: "User",
-      });
-
-      const mockRuntime = {
-        runCommand: vi.fn().mockResolvedValue({
-          success: true,
-          result: { id: EQUIPMENT_ID, status: "maintenance" },
-        }),
-      };
-
-      vi.mocked(createManifestRuntime).mockResolvedValue(mockRuntime as never);
+      mocks.executeManifestCommand.mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            success: true,
+            result: { id: EQUIPMENT_ID, status: "maintenance" },
+          }),
+          { status: 200, headers: { "Content-Type": "application/json" } }
+        )
+      );
 
       const req = makeRequest("http://localhost", {
         id: EQUIPMENT_ID,
@@ -307,9 +274,11 @@ describe("Equipment API", () => {
       });
       expect(res.status).toBe(200);
 
-      expect(createManifestRuntime).toHaveBeenCalledWith(
+      expect(mocks.executeManifestCommand).toHaveBeenCalledWith(
+        req,
         expect.objectContaining({
           entityName: "Equipment",
+          commandName: "updateStatus",
         })
       );
     });
@@ -319,27 +288,18 @@ describe("Equipment API", () => {
 
   describe("POST /schedule-maintenance", () => {
     it("delegates to executeManifestCommand with entity Equipment and command scheduleMaintenance", async () => {
-      const { requireCurrentUser } = await import("@/app/lib/tenant");
-      (requireCurrentUser as ReturnType<typeof vi.fn>).mockResolvedValue({
-        id: "test-user-id",
-        tenantId: "test-tenant",
-        role: "admin",
-        email: "test@example.com",
-        firstName: "Test",
-        lastName: "User",
-      });
-
-      const mockRuntime = {
-        runCommand: vi.fn().mockResolvedValue({
-          success: true,
-          result: {
-            workOrderId: "wo-1",
-            equipmentId: EQUIPMENT_ID,
-          },
-        }),
-      };
-
-      vi.mocked(createManifestRuntime).mockResolvedValue(mockRuntime as never);
+      mocks.executeManifestCommand.mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            success: true,
+            result: {
+              workOrderId: "wo-1",
+              equipmentId: EQUIPMENT_ID,
+            },
+          }),
+          { status: 200, headers: { "Content-Type": "application/json" } }
+        )
+      );
 
       const req = makeRequest("http://localhost", {
         equipmentId: EQUIPMENT_ID,
@@ -354,9 +314,11 @@ describe("Equipment API", () => {
       });
       expect(res.status).toBe(200);
 
-      expect(createManifestRuntime).toHaveBeenCalledWith(
+      expect(mocks.executeManifestCommand).toHaveBeenCalledWith(
+        req,
         expect.objectContaining({
           entityName: "Equipment",
+          commandName: "scheduleMaintenance",
         })
       );
     });
@@ -366,28 +328,19 @@ describe("Equipment API", () => {
 
   describe("POST /record-usage", () => {
     it("delegates to executeManifestCommand with entity Equipment and command recordUsage", async () => {
-      const { requireCurrentUser } = await import("@/app/lib/tenant");
-      (requireCurrentUser as ReturnType<typeof vi.fn>).mockResolvedValue({
-        id: "test-user-id",
-        tenantId: "test-tenant",
-        role: "admin",
-        email: "test@example.com",
-        firstName: "Test",
-        lastName: "User",
-      });
-
-      const mockRuntime = {
-        runCommand: vi.fn().mockResolvedValue({
-          success: true,
-          result: {
-            id: EQUIPMENT_ID,
-            usageHours: 150,
-            addedHours: 50,
-          },
-        }),
-      };
-
-      vi.mocked(createManifestRuntime).mockResolvedValue(mockRuntime as never);
+      mocks.executeManifestCommand.mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            success: true,
+            result: {
+              id: EQUIPMENT_ID,
+              usageHours: 150,
+              addedHours: 50,
+            },
+          }),
+          { status: 200, headers: { "Content-Type": "application/json" } }
+        )
+      );
 
       const req = makeRequest("http://localhost", {
         id: EQUIPMENT_ID,
@@ -409,9 +362,11 @@ describe("Equipment API", () => {
       expect(json.result.addedHours).toBe(50);
       expect(json.result.usageHours).toBe(150);
 
-      expect(createManifestRuntime).toHaveBeenCalledWith(
+      expect(mocks.executeManifestCommand).toHaveBeenCalledWith(
+        req,
         expect.objectContaining({
           entityName: "Equipment",
+          commandName: "recordUsage",
         })
       );
     });

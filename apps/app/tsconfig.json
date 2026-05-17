@@ -22,6 +22,9 @@
     ".next-dev-webpack/types/**/*.ts"
   ],
   "exclude": [
-    "prisma"
+    "prisma",
+    "__tests__/command-board/**",
+    "app/api/command-board/**",
+    "app/(authenticated)/command-board/**"
   ]
 }

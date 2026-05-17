@@ -19,12 +19,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 // Mocks (vi.hoisted so dynamic imports resolve the same mock instances)
 // ---------------------------------------------------------------------------
 
-const { mockDatabase, mockRunCommand, Prisma, TEST_TENANT_ID, TEST_ORG_ID, TEST_USER_ID, TEST_CLERK_ID } = vi.hoisted(() => {
-  const TEST_TENANT_ID = "tenant-test-001";
-  const TEST_ORG_ID = "org-test-123";
-  const TEST_USER_ID = "user-test-001";
-  const TEST_CLERK_ID = "clerk_test_001";
-
+const { mockDatabase, mockRunCommand, Prisma } = vi.hoisted(() => {
   const mockVendorContractStore = {
     findMany: vi.fn(),
     findUnique: vi.fn(),
@@ -56,10 +51,6 @@ const { mockDatabase, mockRunCommand, Prisma, TEST_TENANT_ID, TEST_ORG_ID, TEST_
     },
     mockRunCommand: vi.fn(),
     Prisma: { Decimal },
-    TEST_TENANT_ID,
-    TEST_ORG_ID,
-    TEST_USER_ID,
-    TEST_CLERK_ID,
   };
 });
 
@@ -76,28 +67,9 @@ vi.mock("@repo/auth/server", () => ({
   auth: vi.fn(),
 }));
 
-vi.mock("@/app/lib/invariant", () => ({
-  InvariantError: class InvariantError extends Error {
-    constructor(message: string) {
-      super(message);
-      this.name = "InvariantError";
-    }
-  },
-  invariant: (_condition: unknown, _message?: string) => {
-    // Invariant is not used in tests - requireCurrentUser mock handles auth failures
-  },
-}));
-
 vi.mock("@/app/lib/tenant", () => ({
   getTenantIdForOrg: vi.fn(),
-  requireCurrentUser: vi.fn().mockResolvedValue({
-    id: TEST_USER_ID,
-    tenantId: TEST_TENANT_ID,
-    role: "admin",
-    email: "test@example.com",
-    firstName: "Test",
-    lastName: "User",
-  }),
+  requireCurrentUser: vi.fn(),
 }));
 
 vi.mock("@sentry/nextjs", () => ({
@@ -110,8 +82,17 @@ vi.mock("@/lib/manifest-runtime", () => ({
 
 // Import mocked modules after vi.mock setup
 import { auth } from "@repo/auth/server";
-import { getTenantIdForOrg, requireCurrentUser } from "@/app/lib/tenant";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
+
+// ---------------------------------------------------------------------------
+// Test constants
+// ---------------------------------------------------------------------------
+
+const TEST_TENANT_ID = "tenant-test-001";
+const TEST_ORG_ID = "org-test-123";
+const TEST_USER_ID = "user-test-001";
+const TEST_CLERK_ID = "clerk_test_001";
 
 // ---------------------------------------------------------------------------
 // Mock data factories
@@ -233,11 +214,6 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
         orgId: null,
         userId: null,
       } as any);
-      vi.mocked(requireCurrentUser).mockRejectedValue(
-        new (await import("@/app/lib/invariant")).InvariantError(
-          "auth.orgId must exist"
-        )
-      );
 
       const { GET } = await import(
         "@/app/api/procurement/vendor-contracts/list/route"
@@ -351,14 +327,6 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
         userId: TEST_CLERK_ID,
       } as any);
       vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-      vi.mocked(requireCurrentUser).mockResolvedValue({
-        id: TEST_USER_ID,
-        tenantId: TEST_TENANT_ID,
-        role: "admin",
-        email: "test@example.com",
-        firstName: "Test",
-        lastName: "User",
-      });
       vi.mocked(mockDatabase.user.findFirst).mockResolvedValue(
         mockUser as never
       );
@@ -403,7 +371,10 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
       expect(mockRunCommand).toHaveBeenCalledWith(
         "create",
         expect.any(Object),
-        { entityName: "VendorContract" }
+        expect.objectContaining({
+          entityName: "VendorContract",
+          instanceId: undefined,
+        })
       );
     });
 
@@ -433,7 +404,10 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
       expect(mockRunCommand).toHaveBeenCalledWith(
         "update",
         expect.any(Object),
-        { entityName: "VendorContract" }
+        expect.objectContaining({
+          entityName: "VendorContract",
+          instanceId: "vc-001",
+        })
       );
     });
 
@@ -463,7 +437,10 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
       expect(mockRunCommand).toHaveBeenCalledWith(
         "submit",
         expect.any(Object),
-        { entityName: "VendorContract" }
+        expect.objectContaining({
+          entityName: "VendorContract",
+          instanceId: "vc-001",
+        })
       );
     });
 
@@ -493,7 +470,10 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
       expect(mockRunCommand).toHaveBeenCalledWith(
         "approve",
         expect.any(Object),
-        { entityName: "VendorContract" }
+        expect.objectContaining({
+          entityName: "VendorContract",
+          instanceId: "vc-001",
+        })
       );
     });
 
@@ -524,7 +504,10 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
       expect(mockRunCommand).toHaveBeenCalledWith(
         "reject",
         expect.any(Object),
-        { entityName: "VendorContract" }
+        expect.objectContaining({
+          entityName: "VendorContract",
+          instanceId: "vc-001",
+        })
       );
     });
 
@@ -554,7 +537,10 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
       expect(mockRunCommand).toHaveBeenCalledWith(
         "activate",
         expect.any(Object),
-        { entityName: "VendorContract" }
+        expect.objectContaining({
+          entityName: "VendorContract",
+          instanceId: "vc-001",
+        })
       );
     });
 
@@ -585,7 +571,10 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
       expect(mockRunCommand).toHaveBeenCalledWith(
         "terminate",
         expect.any(Object),
-        { entityName: "VendorContract" }
+        expect.objectContaining({
+          entityName: "VendorContract",
+          instanceId: "vc-001",
+        })
       );
     });
   });
@@ -597,11 +586,6 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
   describe("command route authentication", () => {
     it("create route returns 401 for unauthenticated requests", async () => {
       vi.mocked(auth).mockResolvedValue({ orgId: null } as any);
-      vi.mocked(requireCurrentUser).mockRejectedValue(
-        new (await import("@/app/lib/invariant")).InvariantError(
-          "auth.orgId must exist"
-        )
-      );
 
       const { POST } = await import(
         "@/app/api/manifest/[entity]/commands/[command]/route"
@@ -619,11 +603,6 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
 
     it("update route returns 401 for unauthenticated requests", async () => {
       vi.mocked(auth).mockResolvedValue({ orgId: null } as any);
-      vi.mocked(requireCurrentUser).mockRejectedValue(
-        new (await import("@/app/lib/invariant")).InvariantError(
-          "auth.orgId must exist"
-        )
-      );
 
       const { POST } = await import(
         "@/app/api/manifest/[entity]/commands/[command]/route"
@@ -641,11 +620,6 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
 
     it("submit route returns 401 for unauthenticated requests", async () => {
       vi.mocked(auth).mockResolvedValue({ orgId: null } as any);
-      vi.mocked(requireCurrentUser).mockRejectedValue(
-        new (await import("@/app/lib/invariant")).InvariantError(
-          "auth.orgId must exist"
-        )
-      );
 
       const { POST } = await import(
         "@/app/api/manifest/[entity]/commands/[command]/route"
@@ -673,14 +647,6 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
         userId: TEST_CLERK_ID,
       } as any);
       vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-      vi.mocked(requireCurrentUser).mockResolvedValue({
-        id: TEST_USER_ID,
-        tenantId: TEST_TENANT_ID,
-        role: "admin",
-        email: "test@example.com",
-        firstName: "Test",
-        lastName: "User",
-      });
       vi.mocked(mockDatabase.user.findFirst).mockResolvedValue(
         mockUser as never
       );

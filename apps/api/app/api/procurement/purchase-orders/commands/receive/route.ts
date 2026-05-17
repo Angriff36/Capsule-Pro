@@ -9,7 +9,6 @@ import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
-import { QUALITY_STATUS, PO_STATUS } from "../../constants";
 
 export async function POST(request: NextRequest) {
   try {
@@ -28,8 +27,8 @@ export async function POST(request: NextRequest) {
 
       const qualityStatus =
         Number(item.quantityReceived) >= Number(item.quantityOrdered)
-          ? QUALITY_STATUS.ACCEPTED
-          : QUALITY_STATUS.PARTIAL;
+          ? "accepted"
+          : "partial";
 
       await database.$queryRaw`
         UPDATE tenant_inventory.purchase_order_items
@@ -68,7 +67,7 @@ export async function POST(request: NextRequest) {
     if (allReceived) {
       await database.$queryRaw`
         UPDATE tenant_inventory.purchase_orders
-        SET status = ${PO_STATUS.RECEIVED}, received_by = ${userId}::uuid, received_at = NOW(), updated_at = NOW()
+        SET status = 'received', received_by = ${userId}::uuid, received_at = NOW(), updated_at = NOW()
         WHERE tenant_id = ${tenantId}::uuid AND id = ${orderId}::uuid
       `;
     }

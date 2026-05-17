@@ -51,41 +51,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // --- Mocks ---
 
-import { InvariantError } from "@/app/lib/invariant";
 vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
-vi.mock("@repo/database", () => ({
-  database: {
-    user: { findFirst: vi.fn(), findUnique: vi.fn() },
-    prepTask: {
-      findMany: vi.fn(),
-      count: vi.fn(),
-      findFirst: vi.fn(),
-      findUnique: vi.fn(),
-    },
-    station: {
-      findMany: vi.fn(),
-      count: vi.fn(),
-      findUnique: vi.fn(),
-      findFirst: vi.fn(),
-    },
-    prepListItem: { count: vi.fn() },
-  },
-}));
 vi.mock("@/app/lib/tenant", () => ({
   getTenantIdForOrg: vi.fn(),
   requireCurrentUser: vi.fn(),
 }));
 vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn() }));
-
-vi.mock("@/app/lib/invariant", () => ({
-  InvariantError: class extends Error {
-    constructor(message: string) {
-      super(message);
-      this.name = "InvariantError";
-    }
-  },
-  invariant: vi.fn(),
-}));
 
 vi.mock("@/lib/manifest-runtime", () => ({
   createManifestRuntime: vi.fn(),
@@ -110,7 +81,7 @@ vi.mock("@/lib/manifest-response", async () => {
 // --- Module imports (after mocks) ---
 
 const { auth } = await import("@repo/auth/server");
-const { getTenantIdForOrg, requireCurrentUser } = await import("@/app/lib/tenant");
+const { getTenantIdForOrg } = await import("@/app/lib/tenant");
 const { createManifestRuntime } = await import("@/lib/manifest-runtime");
 
 // --- Constants ---
@@ -130,24 +101,10 @@ function authed() {
     userId: TEST_USER_ID,
   } as never);
   vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID as never);
-  vi.mocked(requireCurrentUser).mockResolvedValue({
-    id: TEST_USER_ID,
-    tenantId: TEST_TENANT_ID,
-    role: "admin",
-    email: "test@example.com",
-    firstName: "Test",
-    lastName: "User",
-  } as never);
 }
 
 function unauthed() {
   vi.mocked(auth).mockResolvedValue({ orgId: null, userId: null } as never);
-  vi.mocked(requireCurrentUser).mockRejectedValue(
-    new InvariantError("Unauthorized") as never
-  );
-  vi.mocked(createManifestRuntime).mockResolvedValue({
-    runCommand: vi.fn().mockResolvedValue({ success: false }),
-  } as never);
 }
 
 function makeRequest(url: string, init?: RequestInit): NextRequest {
@@ -638,7 +595,7 @@ describe("Prep Tasks API", () => {
     });
 
     it("returns 404 when prep task not found in tenant", async () => {
-      vi.mocked(database.prepTask.findUnique).mockResolvedValue(null as never);
+      vi.mocked(database.prepTask.findFirst).mockResolvedValue(null as never);
 
       const { GET } = await import("@/app/api/kitchen/prep-tasks/[id]/route");
       const res = await GET(
@@ -652,7 +609,7 @@ describe("Prep Tasks API", () => {
     });
 
     it("returns 200 with prepTask payload scoped by id + tenantId + deletedAt:null", async () => {
-      vi.mocked(database.prepTask.findUnique).mockResolvedValue(
+      vi.mocked(database.prepTask.findFirst).mockResolvedValue(
         samplePrepTask() as never
       );
 
@@ -666,16 +623,17 @@ describe("Prep Tasks API", () => {
       const body = await res.json();
       expect(body.success).toBe(true);
       expect(body.prepTask.id).toBe(TEST_PREP_TASK_ID);
-      expect(database.prepTask.findUnique).toHaveBeenCalledWith({
+      expect(database.prepTask.findFirst).toHaveBeenCalledWith({
         where: {
-          tenantId_id: { tenantId: TEST_TENANT_ID, id: TEST_PREP_TASK_ID },
+          id: TEST_PREP_TASK_ID,
+          tenantId: TEST_TENANT_ID,
           deletedAt: null,
         },
       });
     });
 
     it("returns 500 on Prisma error", async () => {
-      vi.mocked(database.prepTask.findUnique).mockRejectedValue(
+      vi.mocked(database.prepTask.findFirst).mockRejectedValue(
         new Error("Boom") as never
       );
 
@@ -821,38 +779,29 @@ describe("Prep Tasks API", () => {
     it(`returns 401 when unauthenticated [${name}]`, async () => {
       unauthed();
       const mod = await import(routePath);
-      const res = await mod.POST(postRequest(path, sampleBody), {
-        params: Promise.resolve({ entity: "PrepTask", command: name }),
-      });
+      const res = await mod.POST(postRequest(path, sampleBody));
 
       expect(res.status).toBe(401);
       const body = await res.json();
       expect(body.message).toBe("Unauthorized");
     });
 
-    it(`returns 401 when tenant cannot be resolved [${name}]`, async () => {
+    it(`returns 400 when tenant cannot be resolved [${name}]`, async () => {
       vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
-      vi.mocked(requireCurrentUser).mockRejectedValue(
-        new InvariantError("Tenant not found") as never
-      );
 
       const mod = await import(routePath);
-      const res = await mod.POST(postRequest(path, sampleBody), {
-        params: Promise.resolve({ entity: "PrepTask", command: name }),
-      });
+      const res = await mod.POST(postRequest(path, sampleBody));
 
-      expect(res.status).toBe(401);
+      expect(res.status).toBe(400);
       const body = await res.json();
-      expect(body.message).toBe("Unauthorized");
+      expect(body.message).toBe("Tenant not found");
     });
 
     it(`returns 200 with result and events on success [${name}]`, async () => {
       mockRuntimeSuccess({ id: TEST_PREP_TASK_ID, status: "pending" });
 
       const mod = await import(routePath);
-      const res = await mod.POST(postRequest(path, sampleBody), {
-        params: Promise.resolve({ entity: "PrepTask", command: name }),
-      });
+      const res = await mod.POST(postRequest(path, sampleBody));
 
       expect(res.status).toBe(200);
       const body = await res.json();
@@ -864,8 +813,7 @@ describe("Prep Tasks API", () => {
       // tenantId would silently break command authorization at runtime.
       const runtimeCall = vi.mocked(createManifestRuntime).mock.calls[0][0];
       expect(runtimeCall).toEqual({
-        entityName: "PrepTask",
-        user: { id: TEST_USER_ID, tenantId: TEST_TENANT_ID, role: "admin" },
+        user: { id: TEST_USER_ID, tenantId: TEST_TENANT_ID },
       });
     });
 
@@ -873,9 +821,7 @@ describe("Prep Tasks API", () => {
       mockRuntimePolicyDenial("kitchenStaffOnly");
 
       const mod = await import(routePath);
-      const res = await mod.POST(postRequest(path, sampleBody), {
-        params: Promise.resolve({ entity: "PrepTask", command: name }),
-      });
+      const res = await mod.POST(postRequest(path, sampleBody));
 
       expect(res.status).toBe(403);
       const body = await res.json();
@@ -887,9 +833,7 @@ describe("Prep Tasks API", () => {
       mockRuntimeGuardFailure(0, "id is required");
 
       const mod = await import(routePath);
-      const res = await mod.POST(postRequest(path, sampleBody), {
-        params: Promise.resolve({ entity: "PrepTask", command: name }),
-      });
+      const res = await mod.POST(postRequest(path, sampleBody));
 
       expect(res.status).toBe(422);
       const body = await res.json();
@@ -901,9 +845,7 @@ describe("Prep Tasks API", () => {
       mockRuntimeFailure("Illegal state transition");
 
       const mod = await import(routePath);
-      const res = await mod.POST(postRequest(path, sampleBody), {
-        params: Promise.resolve({ entity: "PrepTask", command: name }),
-      });
+      const res = await mod.POST(postRequest(path, sampleBody));
 
       expect(res.status).toBe(400);
       const body = await res.json();
@@ -916,9 +858,7 @@ describe("Prep Tasks API", () => {
       );
 
       const mod = await import(routePath);
-      const res = await mod.POST(postRequest(path, sampleBody), {
-        params: Promise.resolve({ entity: "PrepTask", command: name }),
-      });
+      const res = await mod.POST(postRequest(path, sampleBody));
 
       expect(res.status).toBe(500);
       const body = await res.json();
@@ -936,9 +876,7 @@ describe("Prep Tasks API", () => {
       } as never);
 
       const mod = await import(routePath);
-      await mod.POST(postRequest(path, sampleBody), {
-        params: Promise.resolve({ entity: "PrepTask", command: name }),
-      });
+      await mod.POST(postRequest(path, sampleBody));
 
       // Pinned: kebab-case URL slug -> camelCase runtime name.
       expect(runCommand).toHaveBeenCalledWith(runtimeName, sampleBody, {

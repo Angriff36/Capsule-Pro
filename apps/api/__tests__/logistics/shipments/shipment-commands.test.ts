@@ -27,7 +27,6 @@
 import { database } from "@repo/database";
 import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { InvariantError } from "@/app/lib/invariant";
 
 vi.mock("@repo/auth/server", () => ({
   auth: vi.fn(),
@@ -47,7 +46,7 @@ vi.mock("@/lib/manifest-runtime", () => ({
 }));
 
 import { auth } from "@repo/auth/server";
-import { getTenantIdForOrg, requireCurrentUser } from "@/app/lib/tenant";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
 
 const TEST_TENANT_ID = "a0000000-0000-4000-a000-000000000001";
@@ -82,14 +81,6 @@ function authedAsAdmin() {
     userId: TEST_CLERK_ID,
   } as never);
   vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-  vi.mocked(requireCurrentUser).mockResolvedValue({
-    id: TEST_USER_ID,
-    tenantId: TEST_TENANT_ID,
-    role: "admin",
-    email: "test@example.com",
-    firstName: "Test",
-    lastName: "User",
-  });
   vi.mocked(database.user.findFirst).mockResolvedValue(adminUser as never);
 }
 
@@ -103,26 +94,26 @@ function mockRuntime(runCommand: ReturnType<typeof vi.fn>) {
 // Per-command auth/tenant/user guards — applied uniformly across every route
 // ---------------------------------------------------------------------------
 
-const SHIPMENT_COMMANDS: Array<{ verb: string; command: string; body: object }> = [
+const SHIPMENT_COMMANDS: Array<{ verb: string; file: string; body: object }> = [
   {
     verb: "create",
-    command: "create",
+    file: "create",
     body: { shipmentNumber: "SHP-NEW", carrier: "FedEx" },
   },
-  { verb: "update", command: "update", body: { id: TEST_SHIPMENT_ID } },
+  { verb: "update", file: "update", body: { id: TEST_SHIPMENT_ID } },
   {
     verb: "cancel",
-    command: "cancel",
+    file: "cancel",
     body: { id: TEST_SHIPMENT_ID, userId: TEST_USER_ID, reason: "duplicate" },
   },
   {
     verb: "schedule",
-    command: "schedule",
+    file: "schedule",
     body: { id: TEST_SHIPMENT_ID, userId: TEST_USER_ID, scheduledDate: 0 },
   },
   {
     verb: "ship",
-    command: "ship",
+    file: "ship",
     body: {
       id: TEST_SHIPMENT_ID,
       userId: TEST_USER_ID,
@@ -131,12 +122,12 @@ const SHIPMENT_COMMANDS: Array<{ verb: string; command: string; body: object }> 
   },
   {
     verb: "startPreparing",
-    command: "start-preparing",
+    file: "start-preparing",
     body: { id: TEST_SHIPMENT_ID, userId: TEST_USER_ID },
   },
   {
     verb: "markDelivered",
-    command: "mark-delivered",
+    file: "mark-delivered",
     body: {
       id: TEST_SHIPMENT_ID,
       userId: TEST_USER_ID,
@@ -151,78 +142,66 @@ describe("Shipment Command Routes — auth/tenant/user guards", () => {
     vi.clearAllMocks();
   });
 
-  for (const { verb, command, body } of SHIPMENT_COMMANDS) {
-    describe(`POST /commands/${command}`, () => {
+  for (const { verb, file, body } of SHIPMENT_COMMANDS) {
+    describe(`POST /commands/${file}`, () => {
       it(`${verb}: returns 401 when unauthenticated`, async () => {
         vi.mocked(auth).mockResolvedValue({
           orgId: null,
           userId: null,
         } as never);
-        vi.mocked(requireCurrentUser).mockRejectedValue(
-          new InvariantError("Unauthenticated")
-        );
 
-        const { POST } = await import(
-          "@/app/api/manifest/[entity]/commands/[command]/route"
+        const mod = await import(
+          `@/app/api/shipments/shipment/commands/${file}/route`
         );
-        const response = await POST(
+        const response = await mod.POST(
           createMockRequest("http://localhost:3000/test", {
             method: "POST",
             body: JSON.stringify(body),
-          }),
-          { params: Promise.resolve({ entity: "Shipment", command }) }
+          })
         );
 
         expect(response.status).toBe(401);
       });
 
-      it(`${verb}: returns 401 when tenant cannot be resolved`, async () => {
+      it(`${verb}: returns 400 when tenant cannot be resolved`, async () => {
         vi.mocked(auth).mockResolvedValue({
           orgId: TEST_ORG_ID,
           userId: TEST_CLERK_ID,
         } as never);
         vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
-        vi.mocked(requireCurrentUser).mockRejectedValue(
-          new InvariantError("Tenant not found")
-        );
 
-        const { POST } = await import(
-          "@/app/api/manifest/[entity]/commands/[command]/route"
+        const mod = await import(
+          `@/app/api/shipments/shipment/commands/${file}/route`
         );
-        const response = await POST(
+        const response = await mod.POST(
           createMockRequest("http://localhost:3000/test", {
             method: "POST",
             body: JSON.stringify(body),
-          }),
-          { params: Promise.resolve({ entity: "Shipment", command }) }
+          })
         );
 
-        expect(response.status).toBe(401);
+        expect(response.status).toBe(400);
       });
 
-      it(`${verb}: returns 401 when user not in database`, async () => {
+      it(`${verb}: returns 400 when user not in database`, async () => {
         vi.mocked(auth).mockResolvedValue({
           orgId: TEST_ORG_ID,
           userId: TEST_CLERK_ID,
         } as never);
         vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
         vi.mocked(database.user.findFirst).mockResolvedValue(null);
-        vi.mocked(requireCurrentUser).mockRejectedValue(
-          new InvariantError("User not found")
-        );
 
-        const { POST } = await import(
-          "@/app/api/manifest/[entity]/commands/[command]/route"
+        const mod = await import(
+          `@/app/api/shipments/shipment/commands/${file}/route`
         );
-        const response = await POST(
+        const response = await mod.POST(
           createMockRequest("http://localhost:3000/test", {
             method: "POST",
             body: JSON.stringify(body),
-          }),
-          { params: Promise.resolve({ entity: "Shipment", command }) }
+          })
         );
 
-        expect(response.status).toBe(401);
+        expect(response.status).toBe(400);
       });
 
       it(`${verb}: returns 500 on internal error`, async () => {
@@ -231,15 +210,14 @@ describe("Shipment Command Routes — auth/tenant/user guards", () => {
           new Error("runtime boom")
         );
 
-        const { POST } = await import(
-          "@/app/api/manifest/[entity]/commands/[command]/route"
+        const mod = await import(
+          `@/app/api/shipments/shipment/commands/${file}/route`
         );
-        const response = await POST(
+        const response = await mod.POST(
           createMockRequest("http://localhost:3000/test", {
             method: "POST",
             body: JSON.stringify(body),
-          }),
-          { params: Promise.resolve({ entity: "Shipment", command }) }
+          })
         );
 
         expect(response.status).toBe(500);
@@ -258,8 +236,8 @@ describe("Shipment Command Routes — runtime failure responses", () => {
     authedAsAdmin();
   });
 
-  for (const { verb, command, body } of SHIPMENT_COMMANDS) {
-    describe(`POST /commands/${command}`, () => {
+  for (const { verb, file, body } of SHIPMENT_COMMANDS) {
+    describe(`POST /commands/${file}`, () => {
       it(`${verb}: returns 403 when policy denies access`, async () => {
         const runCommand = vi.fn().mockResolvedValue({
           success: false,
@@ -267,15 +245,14 @@ describe("Shipment Command Routes — runtime failure responses", () => {
         });
         mockRuntime(runCommand);
 
-        const { POST } = await import(
-          "@/app/api/manifest/[entity]/commands/[command]/route"
+        const mod = await import(
+          `@/app/api/shipments/shipment/commands/${file}/route`
         );
-        const response = await POST(
+        const response = await mod.POST(
           createMockRequest("http://localhost:3000/test", {
             method: "POST",
             body: JSON.stringify(body),
-          }),
-          { params: Promise.resolve({ entity: "Shipment", command }) }
+          })
         );
         const data = await response.json();
 
@@ -292,15 +269,14 @@ describe("Shipment Command Routes — runtime failure responses", () => {
         });
         mockRuntime(runCommand);
 
-        const { POST } = await import(
-          "@/app/api/manifest/[entity]/commands/[command]/route"
+        const mod = await import(
+          `@/app/api/shipments/shipment/commands/${file}/route`
         );
-        const response = await POST(
+        const response = await mod.POST(
           createMockRequest("http://localhost:3000/test", {
             method: "POST",
             body: JSON.stringify(body),
-          }),
-          { params: Promise.resolve({ entity: "Shipment", command }) }
+          })
         );
         const data = await response.json();
 
@@ -315,15 +291,14 @@ describe("Shipment Command Routes — runtime failure responses", () => {
         });
         mockRuntime(runCommand);
 
-        const { POST } = await import(
-          "@/app/api/manifest/[entity]/commands/[command]/route"
+        const mod = await import(
+          `@/app/api/shipments/shipment/commands/${file}/route`
         );
-        const response = await POST(
+        const response = await mod.POST(
           createMockRequest("http://localhost:3000/test", {
             method: "POST",
             body: JSON.stringify(body),
-          }),
-          { params: Promise.resolve({ entity: "Shipment", command }) }
+          })
         );
         const data = await response.json();
 
@@ -400,7 +375,10 @@ describe("Shipment Command Routes — success paths", () => {
     expect(runCommand).toHaveBeenCalledWith(
       "update",
       expect.objectContaining({ trackingNumber: "T-9", carrier: "DHL" }),
-      { entityName: "Shipment" }
+      expect.objectContaining({
+        entityName: "Shipment",
+        instanceId: TEST_SHIPMENT_ID,
+      })
     );
   });
 
@@ -428,7 +406,7 @@ describe("Shipment Command Routes — success paths", () => {
         reason: "supplier delay",
         userId: TEST_USER_ID,
       }),
-      { entityName: "Shipment" }
+      expect.objectContaining({ instanceId: TEST_SHIPMENT_ID })
     );
   });
 
@@ -453,7 +431,7 @@ describe("Shipment Command Routes — success paths", () => {
     expect(runCommand).toHaveBeenCalledWith(
       "schedule",
       expect.objectContaining({ scheduledDate: 1_735_689_600_000 }),
-      { entityName: "Shipment" }
+      expect.objectContaining({ instanceId: TEST_SHIPMENT_ID })
     );
   });
 
@@ -478,7 +456,7 @@ describe("Shipment Command Routes — success paths", () => {
     expect(runCommand).toHaveBeenCalledWith(
       "ship",
       expect.objectContaining({ trackingNumber: "1Z9999" }),
-      { entityName: "Shipment" }
+      expect.objectContaining({ instanceId: TEST_SHIPMENT_ID })
     );
   });
 
@@ -504,7 +482,7 @@ describe("Shipment Command Routes — success paths", () => {
     expect(runCommand).toHaveBeenCalledWith(
       "startPreparing",
       expect.objectContaining({ userId: TEST_USER_ID }),
-      { entityName: "Shipment" }
+      expect.objectContaining({ instanceId: TEST_SHIPMENT_ID })
     );
   });
 
@@ -538,7 +516,7 @@ describe("Shipment Command Routes — success paths", () => {
         receivedBy: "Jane Doe",
         signature: "data:image/png;base64,xyz",
       }),
-      { entityName: "Shipment" }
+      expect.objectContaining({ instanceId: TEST_SHIPMENT_ID })
     );
   });
 });
@@ -564,9 +542,6 @@ describe("ShipmentItem.create command", () => {
       orgId: null,
       userId: null,
     } as never);
-    vi.mocked(requireCurrentUser).mockRejectedValue(
-      new InvariantError("Unauthenticated")
-    );
 
     const { POST } = await import(
       "@/app/api/manifest/[entity]/commands/[command]/route"
@@ -582,15 +557,12 @@ describe("ShipmentItem.create command", () => {
     expect(response.status).toBe(401);
   });
 
-  it("returns 401 when tenant resolution fails", async () => {
+  it("returns 400 when tenant resolution fails", async () => {
     vi.mocked(auth).mockResolvedValue({
       orgId: TEST_ORG_ID,
       userId: TEST_CLERK_ID,
     } as never);
     vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
-    vi.mocked(requireCurrentUser).mockRejectedValue(
-      new InvariantError("Tenant not found")
-    );
 
     const { POST } = await import(
       "@/app/api/manifest/[entity]/commands/[command]/route"
@@ -603,19 +575,16 @@ describe("ShipmentItem.create command", () => {
       { params: Promise.resolve({ entity: "ShipmentItem", command: "create" }) }
     );
 
-    expect(response.status).toBe(401);
+    expect(response.status).toBe(400);
   });
 
-  it("returns 401 when user not found", async () => {
+  it("returns 400 when user not found", async () => {
     vi.mocked(auth).mockResolvedValue({
       orgId: TEST_ORG_ID,
       userId: TEST_CLERK_ID,
     } as never);
     vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
     vi.mocked(database.user.findFirst).mockResolvedValue(null);
-    vi.mocked(requireCurrentUser).mockRejectedValue(
-      new InvariantError("User not found")
-    );
 
     const { POST } = await import(
       "@/app/api/manifest/[entity]/commands/[command]/route"
@@ -628,7 +597,7 @@ describe("ShipmentItem.create command", () => {
       { params: Promise.resolve({ entity: "ShipmentItem", command: "create" }) }
     );
 
-    expect(response.status).toBe(401);
+    expect(response.status).toBe(400);
   });
 
   it("forwards body to runtime with entityName ShipmentItem (no instanceId)", async () => {
@@ -732,9 +701,6 @@ describe("ShipmentItem.updateReceived command", () => {
       orgId: null,
       userId: null,
     } as never);
-    vi.mocked(requireCurrentUser).mockRejectedValue(
-      new InvariantError("Unauthenticated")
-    );
 
     const { POST } = await import(
       "@/app/api/manifest/[entity]/commands/[command]/route"
@@ -755,15 +721,12 @@ describe("ShipmentItem.updateReceived command", () => {
     expect(response.status).toBe(401);
   });
 
-  it("returns 401 when tenant resolution fails", async () => {
+  it("returns 400 when tenant resolution fails", async () => {
     vi.mocked(auth).mockResolvedValue({
       orgId: TEST_ORG_ID,
       userId: TEST_CLERK_ID,
     } as never);
     vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
-    vi.mocked(requireCurrentUser).mockRejectedValue(
-      new InvariantError("Tenant not found")
-    );
 
     const { POST } = await import(
       "@/app/api/manifest/[entity]/commands/[command]/route"
@@ -781,7 +744,7 @@ describe("ShipmentItem.updateReceived command", () => {
       }
     );
 
-    expect(response.status).toBe(401);
+    expect(response.status).toBe(400);
   });
 
   it("forwards body and instanceId to runtime", async () => {
@@ -815,7 +778,8 @@ describe("ShipmentItem.updateReceived command", () => {
     expect(response.status).toBe(200);
     // `updateReceived` is an instance-scoped manifest verb; the runtime
     // requires `instanceId` to load the target ShipmentItem before the
-    // guards/mutations run.
+    // guards/mutations run. The route extracts it from `body.shipmentItemId`
+    // (analogous to how Shipment.* commands extract `body.id`).
     expect(runCommand).toHaveBeenCalledWith(
       "updateReceived",
       expect.objectContaining({
@@ -823,8 +787,10 @@ describe("ShipmentItem.updateReceived command", () => {
         quantityDamaged: 2,
         condition: "damaged",
       }),
-      { entityName: "ShipmentItem" }
+      { entityName: "ShipmentItem", instanceId: "item-001" }
     );
+    const callArgs = runCommand.mock.calls[0]?.[2] ?? {};
+    expect(callArgs.instanceId).toBe("item-001");
   });
 
   it("returns 422 when manifest guard rejects (e.g. quantityReceived < 0)", async () => {

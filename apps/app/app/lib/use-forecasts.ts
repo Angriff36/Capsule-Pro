@@ -296,101 +296,9 @@ export function getDepletionText(daysUntilDepletion: number | null): string {
   return `${daysUntilDepletion} days`;
 }
 
-// ============================================================================
-// TanStack Query Hooks
-// ============================================================================
+// React Hook
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-
-export const forecastKeys = {
-  all: ["forecasts"] as const,
-  depletion: (sku: string, horizonDays: number) =>
-    [...forecastKeys.all, "depletion", sku, horizonDays] as const,
-  saved: (sku: string) => [...forecastKeys.all, "saved", sku] as const,
-  batch: (skuList: string[]) =>
-    [...forecastKeys.all, "batch", ...skuList.sort()] as const,
-  suggestions: () => [...forecastKeys.all, "suggestions"] as const,
-  alerts: () => [...forecastKeys.all, "alerts"] as const,
-};
-
-/** Get depletion forecast for a SKU */
-export function useDepletionForecast(
-  sku: string,
-  horizonDays = 30,
-  save = false
-) {
-  return useQuery({
-    queryKey: forecastKeys.depletion(sku, horizonDays),
-    queryFn: () => getDepletionForecast(sku, horizonDays, save),
-    enabled: !!sku,
-    staleTime: 5 * 60_000, // Forecasts are compute-heavy, cache 5 min
-  });
-}
-
-/** Get saved forecasts for a date range */
-export function useSavedForecasts(
-  sku: string,
-  fromDate: Date,
-  toDate: Date
-) {
-  return useQuery({
-    queryKey: [...forecastKeys.saved(sku), fromDate.toISOString(), toDate.toISOString()],
-    queryFn: () => getSavedForecasts(sku, fromDate, toDate),
-    enabled: !!sku,
-    staleTime: 5 * 60_000,
-  });
-}
-
-/** Get reorder suggestions */
-export function useReorderSuggestions(
-  sku?: string,
-  leadTimeDays = 7,
-  safetyStockDays = 3
-) {
-  return useQuery({
-    queryKey: [...forecastKeys.suggestions(), sku, leadTimeDays, safetyStockDays],
-    queryFn: () => getReorderSuggestions(sku, leadTimeDays, safetyStockDays),
-    staleTime: 5 * 60_000,
-  });
-}
-
-/** Get forecast alerts */
-export function useForecastAlerts(
-  criticalThresholdDays = 7,
-  warningThresholdDays = 14
-) {
-  return useQuery({
-    queryKey: [...forecastKeys.alerts(), criticalThresholdDays, warningThresholdDays],
-    queryFn: () => getForecastAlerts(criticalThresholdDays, warningThresholdDays),
-    staleTime: 60_000,
-    refetchInterval: 5 * 60_000, // Auto-refresh every 5 min
-  });
-}
-
-/** Generate reorder suggestions */
-export function useGenerateReorderSuggestions() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: ({
-      sku,
-      leadTimeDays,
-      safetyStockDays,
-      save,
-    }: {
-      sku?: string;
-      leadTimeDays?: number;
-      safetyStockDays?: number;
-      save?: boolean;
-    }) => generateReorderSuggestions(sku, leadTimeDays, safetyStockDays, save),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: forecastKeys.suggestions() });
-    },
-  });
-}
-
-// ============================================================================
-// Legacy compatibility wrapper
-// ============================================================================
+import { useCallback, useEffect, useState } from "react";
 
 interface UseForecastsOptions {
   sku?: string;
@@ -400,38 +308,107 @@ interface UseForecastsOptions {
   autoFetch?: boolean;
 }
 
-/** @deprecated Use useDepletionForecast + useReorderSuggestions instead */
 export function useForecasts(options: UseForecastsOptions = {}) {
   const {
     sku,
     horizonDays = 30,
     leadTimeDays = 7,
     safetyStockDays = 3,
+    autoFetch = true,
   } = options;
 
-  const forecastQuery = useDepletionForecast(sku ?? "", horizonDays);
-  const suggestionsQuery = useReorderSuggestions(sku, leadTimeDays, safetyStockDays);
-  const generateMutation = useGenerateReorderSuggestions();
+  const [forecast, setForecast] = useState<DepletionForecast | null>(null);
+  const [suggestions, setSuggestions] = useState<ReorderSuggestion[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch forecast for a SKU
+  const fetchForecast = useCallback(
+    async (skuToFetch: string) => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const data = await getDepletionForecast(skuToFetch, horizonDays);
+        setForecast(data);
+      } catch (err) {
+        const message =
+          err instanceof Error ? err.message : "Failed to fetch forecast";
+        setError(message);
+        toast.error(message);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [horizonDays]
+  );
+
+  // Fetch reorder suggestions
+  const fetchSuggestions = useCallback(
+    async (skuToFetch?: string) => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const data = await getReorderSuggestions(
+          skuToFetch,
+          leadTimeDays,
+          safetyStockDays
+        );
+        setSuggestions(data);
+      } catch (err) {
+        const message =
+          err instanceof Error ? err.message : "Failed to fetch suggestions";
+        setError(message);
+        toast.error(message);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [leadTimeDays, safetyStockDays]
+  );
+
+  // Generate new suggestions
+  const generateSuggestions = useCallback(
+    async (skuToGenerate?: string, save = false) => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const data = await generateReorderSuggestions(
+          skuToGenerate,
+          leadTimeDays,
+          safetyStockDays,
+          save
+        );
+        setSuggestions(data.suggestions);
+        toast.success(`Generated ${data.count} reorder suggestions`);
+        return data;
+      } catch (err) {
+        const message =
+          err instanceof Error ? err.message : "Failed to generate suggestions";
+        setError(message);
+        toast.error(message);
+        throw err;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [leadTimeDays, safetyStockDays]
+  );
+
+  // Auto-fetch on mount if SKU provided
+  useEffect(() => {
+    if (autoFetch && sku) {
+      fetchForecast(sku);
+      fetchSuggestions(sku);
+    }
+  }, [autoFetch, sku, fetchForecast, fetchSuggestions]);
 
   return {
-    forecast: forecastQuery.data ?? null,
-    suggestions: suggestionsQuery.data ?? [],
-    isLoading: forecastQuery.isLoading || suggestionsQuery.isLoading,
-    error: (forecastQuery.error || suggestionsQuery.error)?.message ?? null,
-    fetchForecast: async (skuToFetch: string) => {
-      // Changing SKU refetches automatically via query key change in useDepletionForecast
-      // This is a no-op wrapper for backward compat
-    },
-    fetchSuggestions: async (_skuToFetch?: string) => {
-      await suggestionsQuery.refetch();
-    },
-    generateSuggestions: async (skuToGenerate?: string, save = false) => {
-      return generateMutation.mutateAsync({
-        sku: skuToGenerate,
-        leadTimeDays,
-        safetyStockDays,
-        save,
-      });
-    },
+    forecast,
+    suggestions,
+    isLoading,
+    error,
+    fetchForecast,
+    fetchSuggestions,
+    generateSuggestions,
   };
 }

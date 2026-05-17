@@ -34,9 +34,6 @@ vi.mock("@/app/lib/tenant", () => ({
 
 vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn() }));
 
-// Import actual InvariantError for instanceof checks in route
-import { InvariantError } from "@/app/lib/invariant";
-
 vi.mock("@repo/database", () => ({
   database: {
     user: { findFirst: vi.fn() },
@@ -66,9 +63,7 @@ vi.mock("@/lib/manifest-response", async () => {
 // --- Imports (after mocks) ---
 
 const { auth } = await import("@repo/auth/server");
-const { getTenantIdForOrg, requireCurrentUser } = await import(
-  "@/app/lib/tenant"
-);
+const { getTenantIdForOrg } = await import("@/app/lib/tenant");
 const { database } = await import("@repo/database");
 const { createManifestRuntime } = await import("@/lib/manifest-runtime");
 
@@ -89,14 +84,6 @@ function authed() {
     userId: TEST_CLERK_ID,
   } as never);
   vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID as never);
-  vi.mocked(requireCurrentUser).mockResolvedValue({
-    id: TEST_USER_ID,
-    tenantId: TEST_TENANT_ID,
-    role: TEST_USER_ROLE,
-    email: "test@example.com",
-    firstName: "Test",
-    lastName: "User",
-  } as never);
   vi.mocked(database.user.findFirst).mockResolvedValue({
     id: TEST_USER_ID,
     tenantId: TEST_TENANT_ID,
@@ -107,14 +94,6 @@ function authed() {
 
 function unauthed() {
   vi.mocked(auth).mockResolvedValue({ orgId: null, userId: null } as never);
-  // Throwing InvariantError specifically so the route catches it and returns 401
-  vi.mocked(requireCurrentUser).mockRejectedValue(
-    new InvariantError("Unauthorized") as never
-  );
-  // Provide a no-op runtime to prevent errors in error paths
-  vi.mocked(createManifestRuntime).mockResolvedValue({
-    runCommand: vi.fn().mockResolvedValue({ success: false }),
-  } as never);
 }
 
 function makeRequest(url: string, init?: RequestInit): NextRequest {
@@ -243,77 +222,40 @@ describe("Notification Commands API", () => {
     it(`returns 401 when unauthenticated [${name}]`, async () => {
       unauthed();
       const mod = await import(routePath);
-      const res = await mod.POST(postRequest(path, sampleBody), {
-        params: Promise.resolve({
-          entity: "Notification",
-          command: name,
-        }),
-      });
+      const res = await mod.POST(postRequest(path, sampleBody));
 
       expect(res.status).toBe(401);
       const body = await res.json();
       expect(body.message).toBe("Unauthorized");
     });
 
-    // Note: requireCurrentUser auto-provisions tenants and users, so these
-    // scenarios succeed rather than return 400. Only auth failures return 401.
-    it(`succeeds even when tenant lookup is null [${name}]`, async () => {
-      vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID as never);
-      vi.mocked(requireCurrentUser).mockResolvedValue({
-        id: TEST_USER_ID,
-        tenantId: TEST_TENANT_ID,
-        role: TEST_USER_ROLE,
-        email: "test@example.com",
-        firstName: "Test",
-        lastName: "User",
-      } as never);
-      mockRuntimeSuccess({ id: TEST_NOTIFICATION_ID });
+    it(`returns 400 when tenant cannot be resolved [${name}]`, async () => {
+      vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
 
       const mod = await import(routePath);
-      const res = await mod.POST(postRequest(path, sampleBody), {
-        params: Promise.resolve({
-          entity: "Notification",
-          command: name,
-        }),
-      });
+      const res = await mod.POST(postRequest(path, sampleBody));
 
-      // Route auto-provisions, so it succeeds with 200
-      expect(res.status).toBe(200);
+      expect(res.status).toBe(400);
+      const body = await res.json();
+      expect(body.message).toBe("Tenant not found");
     });
 
-    it(`succeeds even when user lookup returns null [${name}]`, async () => {
-      vi.mocked(requireCurrentUser).mockResolvedValue({
-        id: TEST_USER_ID,
-        tenantId: TEST_TENANT_ID,
-        role: TEST_USER_ROLE,
-        email: "test@example.com",
-        firstName: "Test",
-        lastName: "User",
-      } as never);
-      mockRuntimeSuccess({ id: TEST_NOTIFICATION_ID });
+    it(`returns 400 when internal user cannot be resolved [${name}]`, async () => {
+      vi.mocked(database.user.findFirst).mockResolvedValue(null as never);
 
       const mod = await import(routePath);
-      const res = await mod.POST(postRequest(path, sampleBody), {
-        params: Promise.resolve({
-          entity: "Notification",
-          command: name,
-        }),
-      });
+      const res = await mod.POST(postRequest(path, sampleBody));
 
-      // Route auto-provisions users, so it succeeds with 200
-      expect(res.status).toBe(200);
+      expect(res.status).toBe(400);
+      const body = await res.json();
+      expect(body.message).toBe("User not found in database");
     });
 
     it(`returns 200 with result and events on success [${name}]`, async () => {
       mockRuntimeSuccess({ id: TEST_NOTIFICATION_ID });
 
       const mod = await import(routePath);
-      const res = await mod.POST(postRequest(path, sampleBody), {
-        params: Promise.resolve({
-          entity: "Notification",
-          command: name,
-        }),
-      });
+      const res = await mod.POST(postRequest(path, sampleBody));
 
       expect(res.status).toBe(200);
       const body = await res.json();
@@ -337,12 +279,7 @@ describe("Notification Commands API", () => {
       mockRuntimePolicyDenial("adminOnly");
 
       const mod = await import(routePath);
-      const res = await mod.POST(postRequest(path, sampleBody), {
-        params: Promise.resolve({
-          entity: "Notification",
-          command: name,
-        }),
-      });
+      const res = await mod.POST(postRequest(path, sampleBody));
 
       expect(res.status).toBe(403);
       const body = await res.json();
@@ -355,12 +292,7 @@ describe("Notification Commands API", () => {
       mockRuntimeGuardFailure(0, "id is required");
 
       const mod = await import(routePath);
-      const res = await mod.POST(postRequest(path, sampleBody), {
-        params: Promise.resolve({
-          entity: "Notification",
-          command: name,
-        }),
-      });
+      const res = await mod.POST(postRequest(path, sampleBody));
 
       expect(res.status).toBe(422);
       const body = await res.json();
@@ -372,12 +304,7 @@ describe("Notification Commands API", () => {
       mockRuntimeFailure("State transition not allowed");
 
       const mod = await import(routePath);
-      const res = await mod.POST(postRequest(path, sampleBody), {
-        params: Promise.resolve({
-          entity: "Notification",
-          command: name,
-        }),
-      });
+      const res = await mod.POST(postRequest(path, sampleBody));
 
       expect(res.status).toBe(400);
       const body = await res.json();
@@ -390,12 +317,7 @@ describe("Notification Commands API", () => {
       } as never);
 
       const mod = await import(routePath);
-      const res = await mod.POST(postRequest(path, sampleBody), {
-        params: Promise.resolve({
-          entity: "Notification",
-          command: name,
-        }),
-      });
+      const res = await mod.POST(postRequest(path, sampleBody));
 
       expect(res.status).toBe(400);
       const body = await res.json();
@@ -408,12 +330,7 @@ describe("Notification Commands API", () => {
       );
 
       const mod = await import(routePath);
-      const res = await mod.POST(postRequest(path, sampleBody), {
-        params: Promise.resolve({
-          entity: "Notification",
-          command: name,
-        }),
-      });
+      const res = await mod.POST(postRequest(path, sampleBody));
 
       expect(res.status).toBe(500);
       const body = await res.json();
@@ -431,31 +348,31 @@ describe("Notification Commands API", () => {
       } as never);
 
       const mod = await import(routePath);
-      await mod.POST(postRequest(path, sampleBody), {
-        params: Promise.resolve({
-          entity: "Notification",
-          command: name,
-        }),
-      });
+      await mod.POST(postRequest(path, sampleBody));
 
-      expect(runCommand).toHaveBeenCalledWith(runtimeName, sampleBody, {
-        entityName: "Notification",
-      });
+      if (hasInstanceId) {
+        expect(runCommand).toHaveBeenCalledWith(runtimeName, sampleBody, {
+          entityName: "Notification",
+          instanceId: sampleBody.id,
+        });
+      } else {
+        expect(runCommand).toHaveBeenCalledWith(runtimeName, sampleBody, {
+          entityName: "Notification",
+        });
+      }
     });
 
-    it(`scopes user to tenant via requireCurrentUser [${name}]`, async () => {
+    it(`scopes user lookup to tenant + clerk id [${name}]`, async () => {
       mockRuntimeSuccess();
 
       const mod = await import(routePath);
-      await mod.POST(postRequest(path, sampleBody), {
-        params: Promise.resolve({
-          entity: "Notification",
-          command: name,
-        }),
-      });
+      await mod.POST(postRequest(path, sampleBody));
 
-      // Verify requireCurrentUser was called (route uses requireCurrentUser, not direct db.user.findFirst)
-      expect(requireCurrentUser).toHaveBeenCalled();
+      expect(database.user.findFirst).toHaveBeenCalledWith({
+        where: {
+          AND: [{ tenantId: TEST_TENANT_ID }, { authUserId: TEST_CLERK_ID }],
+        },
+      });
     });
   });
 });

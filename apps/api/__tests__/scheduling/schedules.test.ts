@@ -61,8 +61,6 @@ vi.mock("@repo/database", () => ({
 }));
 vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
 vi.mock("@/app/lib/tenant", () => ({
-  requireCurrentUser: vi.fn(),
-
   getTenantIdForOrg: vi.fn(),
 }));
 vi.mock("@/lib/manifest-runtime", () => ({
@@ -73,11 +71,8 @@ vi.mock("@sentry/nextjs", () => ({
 }));
 
 const { auth } = await import("@repo/auth/server");
-const { getTenantIdForOrg, requireCurrentUser } = await import(
-  "@/app/lib/tenant"
-);
+const { getTenantIdForOrg } = await import("@/app/lib/tenant");
 const { createManifestRuntime } = await import("@/lib/manifest-runtime");
-const { InvariantError } = await import("@/app/lib/invariant");
 
 const TEST_TENANT_ID = "00000000-0000-0000-0000-000000000002";
 const TEST_USER_ID = "user_schedule_test";
@@ -96,14 +91,6 @@ function makeAuthedUser() {
     orgId: TEST_ORG_ID,
   } as never);
   vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-  vi.mocked(requireCurrentUser).mockResolvedValue({
-    id: TEST_USER_ID,
-    tenantId: TEST_TENANT_ID,
-    role: "admin",
-    email: "test@example.com",
-    firstName: "Test",
-    lastName: "User",
-  } as never);
 }
 
 function makeRuntime(mockRunCommand: ReturnType<typeof vi.fn>) {
@@ -135,9 +122,6 @@ describe("Schedule Command API", () => {
         userId: null,
         orgId: null,
       } as never);
-      vi.mocked(requireCurrentUser).mockRejectedValue(
-        new InvariantError("Unauthorized")
-      );
 
       const request = makeCommandRequest("create", {
         name: "Monday Dinner",
@@ -162,12 +146,10 @@ describe("Schedule Command API", () => {
       const createSchedule = await getCreateSchedule();
       const response = await createSchedule(request);
 
-      // Returns 500 because getTenantIdForOrg=null causes requireCurrentUser to
-      // throw a non-InvariantError which is caught by the generic catch block
-      expect(response.status).toBe(500);
+      expect(response.status).toBe(400);
       const body = await response.json();
       expect(body.success).toBe(false);
-      expect(body.message).toBe("Internal server error");
+      expect(body.message).toBe("Tenant not found");
     });
 
     it("should create a schedule through manifest runtime", async () => {
@@ -214,8 +196,7 @@ describe("Schedule Command API", () => {
       await createSchedule(request);
 
       expect(createManifestRuntime).toHaveBeenCalledWith({
-        entityName: "Schedule",
-        user: { id: TEST_USER_ID, tenantId: TEST_TENANT_ID, role: "admin" },
+        user: { id: TEST_USER_ID, tenantId: TEST_TENANT_ID },
       });
     });
 
@@ -317,9 +298,6 @@ describe("Schedule Command API", () => {
         userId: null,
         orgId: null,
       } as never);
-      vi.mocked(requireCurrentUser).mockRejectedValue(
-        new InvariantError("Unauthorized")
-      );
 
       const request = makeCommandRequest("update", { id: "schedule-001" });
       const updateSchedule = await getUpdateSchedule();
@@ -338,12 +316,10 @@ describe("Schedule Command API", () => {
       const updateSchedule = await getUpdateSchedule();
       const response = await updateSchedule(request);
 
-      // Returns 500 because getTenantIdForOrg=null causes requireCurrentUser to
-      // throw a non-InvariantError which is caught by the generic catch block
-      expect(response.status).toBe(500);
+      expect(response.status).toBe(400);
       const body = await response.json();
       expect(body.success).toBe(false);
-      expect(body.message).toBe("Internal server error");
+      expect(body.message).toBe("Tenant not found");
     });
 
     it("should update a schedule through manifest runtime", async () => {
@@ -460,9 +436,6 @@ describe("Schedule Command API", () => {
         userId: null,
         orgId: null,
       } as never);
-      vi.mocked(requireCurrentUser).mockRejectedValue(
-        new InvariantError("Unauthorized")
-      );
 
       const request = makeCommandRequest("close", { id: "schedule-001" });
       const closeSchedule = await getCloseSchedule();
@@ -481,12 +454,10 @@ describe("Schedule Command API", () => {
       const closeSchedule = await getCloseSchedule();
       const response = await closeSchedule(request);
 
-      // Returns 500 because getTenantIdForOrg=null causes requireCurrentUser to
-      // throw a non-InvariantError which is caught by the generic catch block
-      expect(response.status).toBe(500);
+      expect(response.status).toBe(400);
       const body = await response.json();
       expect(body.success).toBe(false);
-      expect(body.message).toBe("Internal server error");
+      expect(body.message).toBe("Tenant not found");
     });
 
     it("should close a schedule through manifest runtime", async () => {
@@ -593,9 +564,6 @@ describe("Schedule Command API", () => {
         userId: null,
         orgId: null,
       } as never);
-      vi.mocked(requireCurrentUser).mockRejectedValue(
-        new InvariantError("Unauthorized")
-      );
 
       const request = makeCommandRequest("release", { id: "schedule-001" });
       const releaseSchedule = await getReleaseSchedule();
@@ -614,12 +582,10 @@ describe("Schedule Command API", () => {
       const releaseSchedule = await getReleaseSchedule();
       const response = await releaseSchedule(request);
 
-      // Returns 500 because getTenantIdForOrg=null causes requireCurrentUser to
-      // throw a non-InvariantError which is caught by the generic catch block
-      expect(response.status).toBe(500);
+      expect(response.status).toBe(400);
       const body = await response.json();
       expect(body.success).toBe(false);
-      expect(body.message).toBe("Internal server error");
+      expect(body.message).toBe("Tenant not found");
     });
 
     it("should release a schedule through manifest runtime", async () => {
@@ -749,16 +715,13 @@ describe("Schedule Command API", () => {
         userId: null,
         orgId: null,
       } as never);
-      vi.mocked(requireCurrentUser).mockRejectedValue(
-        new InvariantError("Unauthorized")
-      );
 
       const request = makeCommandRequest("create", { name: "Test" });
       const createSchedule = await getCreateSchedule();
       await createSchedule(request);
 
-      // Note: createManifestRuntime may be called but runCommand should not be called
-      // since the 401 is returned early from the error handler
+      expect(createManifestRuntime).not.toHaveBeenCalled();
+      expect(mockRunCommand).not.toHaveBeenCalled();
     });
 
     it("should not call runCommand when tenant is missing", async () => {
@@ -768,8 +731,8 @@ describe("Schedule Command API", () => {
       const createSchedule = await getCreateSchedule();
       await createSchedule(request);
 
-      // Note: route may still call createManifestRuntime but the request fails
-      // The important thing is it doesn't succeed
+      expect(createManifestRuntime).not.toHaveBeenCalled();
+      expect(mockRunCommand).not.toHaveBeenCalled();
     });
 
     it("should handle auth throwing an exception gracefully", async () => {

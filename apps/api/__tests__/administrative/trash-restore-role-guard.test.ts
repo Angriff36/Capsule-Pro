@@ -21,14 +21,7 @@ vi.mock("@repo/database", () => ({
   },
 }));
 vi.mock("@/app/lib/tenant", () => ({
-  requireCurrentUser: vi.fn().mockResolvedValue({
-    id: "user-1",
-    tenantId: "tenant-1",
-    role: "admin",
-    email: "u@e.com",
-    firstName: "U",
-    lastName: "E",
-  }),
+  requireCurrentUser: vi.fn(),
 }));
 vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn() }));
 vi.mock("@repo/observability/log", () => ({

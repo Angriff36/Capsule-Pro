@@ -109,17 +109,9 @@ vi.mock("@/lib/manifest-runtime", () => ({
   ),
 }));
 
-// Mock getTenantIdForOrg and requireCurrentUser
+// Mock getTenantIdForOrg
 vi.mock("@/app/lib/tenant", () => ({
   getTenantIdForOrg: vi.fn(() => Promise.resolve("test-tenant")),
-  requireCurrentUser: vi.fn().mockResolvedValue({
-    id: "test-user-id",
-    tenantId: "test-tenant",
-    role: "admin",
-    email: "test@example.com",
-    firstName: "Test",
-    lastName: "User",
-  }),
 }));
 
 describe("Manifest Command Constraints - PrepTask Commands", () => {

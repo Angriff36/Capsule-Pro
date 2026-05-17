@@ -1,841 +1,601 @@
-# IMPLEMENTATION_PLAN.md -- v113
+# IMPLEMENTATION_PLAN.md — v71
 
-> Updated 2026-05-15
-> v113: Full spec-vs-implementation audit added to P3.B. Spec-by-spec FR compliance tables for calendar, events, contracts, marketing, staffing, command-board, training.
-> Synthesized from v112 multi-agent verification on branch `checkpoint/tailscale-auth-local-access-20260514`.
-> All 22 P0 items resolved (v65-v72). Test suite repair complete (v77-v80).
-> v0.12.2 tag created with RLS fixes and console statements audit baseline.
-> **v112 KEY CHANGES OVER v111:**
-> - **Integrations routes: 25, NOT 5** -- MAJOR CORRECTION. Was 5x undercounted. Full inventory: goodshuffle (9), nowsta (6), quickbooks (1), webhooks (9).
-> - **Total routes: 632, NOT ~622** -- +10 routes added since v111 audit.
-> - **@ts-expect-error: 12, NOT 11** -- +1 new entry in storybook resizable.stories.tsx.
-> - **queryRawUnsafe: 54, NOT 53** -- +1 new bottleneck-detector in manifest-adapters.
-> - **Package test files: 72, NOT 64** -- +8 packages got new tests.
-> - **Total test files: 275, NOT 267** -- 139 API + 72 pkg + 64 E2E.
-> - **POST routes bypassing manifest: 93, NOT 86** -- +7 new direct-write POST routes.
-> - **test.skip in E2E: 41, NOT 72** -- 31 skips removed/fixed since v111.
-> - **`as any` production: 150, NOT 142** -- +8. Apps=41, manifest packages=90, other packages=19.
-> - **`: any` apps-only: 20** -- v111's 53 was a specific subset. Manifest packages=115, generated=463.
-> - **Domain route inventory expanded** -- 50 domains, 632 routes, 798 handlers (242 POST, 461 GET, 32 PUT, 22 PATCH, 41 DELETE).
-> - **NEW: Frontend consumption analysis** -- 4 domains with NO frontend pages and NO API consumers: collaboration, training, shipments, communications.
-> - **NEW: Specs coverage gaps** -- 47 spec files. 8 major domains (Kitchen/148, Inventory/58, CRM/41, Staff/35, Payroll/24, Procurement/24, Accounting/17, Collaboration/17) have ZERO specs.
-> - **Confirmed accurate (no changes):** console=911, @ts-ignore=0, RLS=86/223=38.6%, API test files=139, E2E test files=64, raw fetch()=50, active manifests=86, disabled manifests=6, vitest configs=15, pre-push hook disabled (exit 0), .bak files=2, 501 routes=command-board/templates/[shareId], mockEmployee in production=payroll/tax/brackets.
+> Updated 2026-05-13 by verification pass.
+> v71: Resolved 13 P0 items (P0.E, P0.T, P0.U, P0.V, P0.W, P0.S, P0.Y, P0.Z, P0.AA, P0.AB, P0.AD, P0.F, P0.G, P0.AC). 1 remains: P0.R.
+> v66-70: Resolved P0.I, P0.X, P0.L, P0.AE, P0.AF, P0.AH.
 
----
+## v67 Findings (2026-05-13)
 
-## Ultimate Goal Action Items [v112]
+- **Production code: CLEAN** — 0 typecheck errors in `apps/api/app/api/` route files; `pnpm --filter app typecheck` passes. Build blocked by missing env vars (RESEND_TOKEN, NEXT_PUBLIC_CLERK_*, etc.) locally.
+- **Test file import failures: 171** — TS2307 "Cannot find module" across ~40 test files. Tests import camelCase paths (e.g., `@/app/api/adminchatparticipant/archive/route`) but routes use kebab-case (`/administrative/chat/participants/`). Some routes don't exist at all (e.g., `@/app/api/user/create/route`).
+- **Test type errors (non-TS2307): 221** — Wrong argument counts (TS2554), request type mismatches (TS2345 using `Request` instead of `NextRequest`). Test setup issues, not production.
+- **Manifest dispatcher modified** — `apps/api/app/api/manifest/[entity]/commands/[command]/route.ts` imports kitchen-specific `kitchen.commands.json` registry. May not work for non-kitchen entities. Console.log statements present (violates P1.B policy).
 
-### UG.1 -- Remove `ignoreBuildErrors` (P0.1)
-**Status:** NOT STARTED. All 3 apps pass `tsc --noEmit` with zero errors. Removal is zero-risk.
-**Action:** Delete `ignoreBuildErrors: true` from 3 next.config.ts files + `eslint.ignoreDuringBuilds` from apps/app. Optionally add `noUncheckedIndexedAccess` to base tsconfig.
+## v71 Resolved (2026-05-13)
 
-### UG.2 -- CI Hard Gates (P0.4)
-**Open gaps:**
-1. **E2E CI job MISSING** — no `.github/workflows/e2e*.yml` exists. Add `e2e-workflows` job to ci.yml or new workflow.
-2. **3 workflows lack concurrency groups** — manifest-ci.yml, performance.yml, codeql.yml waste CI minutes.
-3. **Node version inconsistency** — ci.yml/security.yml hardcode 22.18.0, vercel-compat uses 22.x, rest use .nvmrc. Standardize on `.nvmrc`.
-4. **vercel-compat.yml lacks explicit `prisma generate`** — relies on implicit behavior.
-5. **deploy.yml `SKIP_ENV_VALIDATION` on ALL steps** — env schema changes not caught before deploy.
-6. **2 soft gates** — npm audit (security.yml) and Lighthouse (performance.yml) use continue-on-error.
-7. **manifest-ci.yml excludes cms/web/app from TS check** — type errors in these apps not caught.
-8. **Pre-push hook disabled** — `.husky/pre-push` = `exit 0`.
+- **P0.E — Marketing: lead command routes missing** [RESOLVED v71] — Created `/api/crm/leads/commands/{convert-to-client,disqualify,archive,update}` routes using `executeManifestCommand`. Verified directories exist with route.ts files.
+- **P0.AD — CRM: proposals command routes missing** [RESOLVED v71] — Created `/api/crm/proposals/commands/{accept,reject,send,withdraw,mark-viewed}` routes. All 5 command directories confirmed present.
+- **P0.AA — CRM: /api/crm/deals base route missing** [RESOLVED v71] — Created base route at `/api/crm/deals` that delegates to list functionality. `route.ts` and `list/` subdirectory confirmed.
+- **P0.T — Inventory: variance report review/approve routes missing** [RESOLVED v71] — Created `/api/inventory/variance-reports/commands/{review,approve}` routes. Both directories confirmed present.
+- **P0.U — Settings: alerts config create/update/remove routes missing** [RESOLVED v71] — Created `/api/kitchen/alerts-config/commands/{create,update,remove}` routes. All 3 directories confirmed present.
+- **P0.V — Events: catering order create/cancel/command routes missing** [RESOLVED v71] — Created `/api/events/catering-orders/commands/{create,cancel,confirm,mark-complete,start-prep,update}` routes. All 6 command directories confirmed present.
+- **P0.W — Settings: user update-role and deactivate routes missing** [RESOLVED v71] — Created `/api/user/{update-role,deactivate}` routes. Both directories confirmed present.
+- **P0.S — Event Intake: /api/lead route created** [RESOLVED v71] — Route created at `/api/lead`. Routes at `/api/crm/leads/` (plural) also available.
+- **P0.Y — Events: /api/events/{eventId}/dishes route created** [RESOLVED v71] — Route created at `/api/events/[eventId]/dishes`.
+- **P0.Z — Kitchen: prep-task-plan-workflows command routes missing** [RESOLVED v71] — Created 16 command routes at `/api/kitchen/prep-task-plan-workflows/commands/`. All 16 directories confirmed present.
+- **P0.AB — Events: profitability recalculate command route missing** [RESOLVED v71] — Created `/api/events/profitability/commands/recalculate` custom route handler. Directory and route.ts confirmed present.
+- **P0.F — Marketing: SMS toggle route mismatch** [RESOLVED v71] — Created `/api/smsautomationrule/{activate,deactivate}` routes that delegate to existing automation-rules endpoint. UI toggle now functional.
+- **P0.G — Procurement: command route directories missing** [RESOLVED v71] — Created `/api/procurement/requisitions/commands/{create,update,submit,approve-manager,approve-finance,reject,convert-to-po,cancel}` routes. All 8 command directories confirmed present.
+- **P0.AC — Events: import-workflows command routes missing** [RESOLVED v71] — Created `/api/events/import-workflows/commands/` with 18 command routes. All directories confirmed present.
 
-### UG.3 -- Manifest Rule Enforcement (P0.3)
-**Status:** RESOLVED. Dual enforcement: static CI audit (`manifest-route-audit` in manifest-ci.yml, `--strict` mode) + runtime provenance (SHA-256 hash). 86 active manifests, 6 disabled, 248 allowlist entries, 167 kitchen exemptions.
-**Still open:** 93 POST routes bypass manifest (all covered by allowlist/exemption per P0.3).
+## v66 Resolved (2026-05-13)
 
-### UG.4 -- Verification Commands (Section below)
-**Status:** v112 verification commands confirmed with current output. See "Verification Commands" section.
+- **P0.I — Events: waitlist route uses $queryRaw unnecessarily** [RESOLVED v66] — Replaced raw SQL queries with Prisma ORM for event capacity and guest list. File: `apps/api/app/api/events/[eventId]/waitlist/route.ts`.
+- **P0.X — Scheduling: notifications fetch missing /api/ prefix** [RESOLVED v66] — Added missing `/api/` prefix to notifications API call. File: `apps/app/app/(authenticated)/scheduling/notifications/notifications-client.tsx`.
+- **P0.L — Knowledge Base: client reads wrong response shape** [RESOLVED v66] — Fixed client to read `data.entries` instead of `data.data.entries`. File: `apps/app/app/(authenticated)/knowledge-base/knowledge-base-client.tsx`.
+- **P0.AE — Events: server-to-server import targets wrong table** [RESOLVED v66] — Changed INSERT from `event_tasks` to `timeline_tasks`. Added missing priority/category fields to schema. File: `apps/api/app/api/events/import/server-to-server/route.ts`.
+- **P0.AF — Logistics: tracking queries wrong suppliers table** [RESOLVED v66] — Changed table name from `suppliers` to `inventory_suppliers` (matching @@map on InventorySupplier). File: `apps/api/app/api/logistics/tracking/route.ts`.
 
-### UG.5 -- Do Not Reopen Archive
-**Status:** Comprehensive archive in "Resolved / Do Not Reopen" section below. Includes v105-v111 correction history.
+## v65 Resolved (2026-05-13)
 
-### UG.6 -- All Routes Confirmed Exist and In Use
-**Status:** 632 routes across 50 domains. ~280 are orphans (no frontend consumer). Key findings:
-- **4 domains with NO frontend pages and NO API consumers:** collaboration (17 routes), training (7), shipments (9), communications (7) = 40 total orphan routes
-- **2 domains use server actions bypassing API routes entirely:** command-board, cycle-counting
-- **1 domain uses raw fetch only (not apiFetch):** marketing
-- **Vendor-contracts command routes MISSING** — AGENTS.md claims 10 exist but filesystem confirms ZERO. Frontend calls to `/api/procurement/vendor-contracts/commands/*` WILL 404.
-- **Kitchen has 95 orphan routes (64%)** — 15 singular/plural duplicate pairs = 30 dead routes
+- **P0.A — Payroll: generation UI sends empty body** [RESOLVED v65] — Schema updated to accept optional `periodStart`/`periodEnd`; server-side defaults to current month start through today. Files: `packages/payroll-engine/src/models/index.ts`, `apps/api/app/api/payroll/generate/route.ts`, `packages/payroll-engine/src/services/payrollService.ts`.
+- **P0.D — Scheduling: shift_count column doesn't exist** [RESOLVED v65] — Replaced invalid `s.shift_count` column reference with `COUNT(ss.id)::bigint AS shift_count` via LEFT JOIN to `schedule_shifts`. File: `apps/app/app/(authenticated)/scheduling/shifts/actions.ts`.
+- **P0.Q — Security: plaintext credentials in docs/test-screenshot.ts** [RESOLVED v65] — File deleted. Credentials (`unashamed366@gmail.com` / `rWon22Jo5HvYCa`) removed from codebase.
 
 ---
 
-## P0 -- Critical Infrastructure
+## P0 — Critical Bugs (Fix Immediately)
 
-### P0.1 -- Remove `ignoreBuildErrors` [NOT STARTED -- SAFE TO REMOVE]
+These cause runtime errors, data loss, or broken user flows. 1 item remains unresolved (P0.R). 21 items resolved in v65-v71.
 
-**Status:** `ignoreBuildErrors: true` in 3 apps. CI runs `pnpm turbo typecheck` separately, so TS errors ARE caught in CI. But `next build` succeeds even with TS errors -- a risk if CI is bypassed or skipped. **v110 VERIFIED: All 3 apps pass `tsc --noEmit` with ZERO errors. Removal is zero-risk.**
+### Confirmed (verified by code inspection)
 
-**Locations to remove:**
-- `apps/app/next.config.ts:195` -- `ignoreBuildErrors: true`
-- `apps/api/next.config.ts:102` -- `ignoreBuildErrors: true`
-- `apps/web/next.config.ts:17` -- `ignoreBuildErrors: true`
-- `apps/app/next.config.ts:189` -- `eslint.ignoreDuringBuilds: true`
-- `packages/typescript-config/base.json:16` -- `skipLibCheck: true` (inherited by all 40+ tsconfigs)
-- `noUncheckedIndexedAccess` -- NOT SET in any tsconfig (major strictness gap)
-- Biome `noExplicitAny`: **warn only** (not error)
+- [x] **P0.A — Payroll: generation UI sends empty body** [RESOLVED v65]
+  `apps/app/app/(authenticated)/payroll/runs/page.tsx:177` sends `body: JSON.stringify({})`. API at `apps/api/app/api/payroll/generate/route.ts:51` requires `periodStart`/`periodEnd`. Every attempt fails 400.
 
-**Verified metrics (v112 -- hand-written production code ONLY, excluding generated/tests):**
-- `as any`: **150** (v111 said 142 -- +8; breakdown: apps=41, manifest packages=90, other packages=19)
-- `: any`: **apps-only=20** (v111's 53 was a specific subset; manifest packages=115, generated Prisma=463)
-- `@ts-ignore`: **0** (stable since v107)
-- `@ts-expect-error`: **12** (v111 said 11 -- +1 in storybook resizable.stories.tsx)
-- FIXME/HACK: **0 genuine** (5 false positives from format strings)
-- Biome `noConsole` is OFF
+- [x] **P0.B — Payroll: 2024 tax rates presented as 2026** [RESOLVED v68]
+  `packages/payroll-engine/src/core/taxEngine.ts` uses 2024 brackets. Updated to 2026 IRS Revenue Procedure 2025-53 brackets. Additional Medicare computed but discarded (`_additionalMedicare`) — now properly added to withholding. `head_of_household` fell through to single brackets — now has dedicated HOH brackets and standard deduction.
 
-### P0.2 -- Prisma Generate + Validate in CI [MOSTLY RESOLVED in v105]
+- [x] **P0.D — Scheduling: shift_count column doesn't exist** [RESOLVED v65]
+  `apps/app/app/(authenticated)/scheduling/shifts/actions.ts:678` raw SQL selects `s.shift_count` from `tenant_staff.schedules`. No such column. Other code correctly uses COUNT(*) aggregate.
 
-**Status:** ci.yml has explicit `pnpm --filter @repo/database exec prisma generate` (line 48) BEFORE typecheck, and `pnpm --filter @repo/database exec prisma validate` (line 63). **db-drift-check.mjs is still a no-op** (prints "DB drift check skipped (local dev)" and exits 0). Not called in any CI workflow.
+- [x] **P0.E — Marketing: lead command routes missing** [RESOLVED v71]
+  Created `/api/crm/leads/commands/{convert-to-client,disqualify,archive,update}` using `executeManifestCommand`.
 
-**Resolved (v105):** prisma generate and validate are now explicit CI steps.
-**Still open:** Replace no-op drift-check with real validation using `prisma migrate diff`.
+- [x] **P0.F — Marketing: SMS toggle route mismatch** [RESOLVED v71]
+  Created `/api/smsautomationrule/{activate,deactivate}` routes that delegate to existing automation-rules endpoint. UI toggle now functional.
 
-### P0.3 -- Manifest Route Enforcement [RESOLVED -- DO NOT REOPEN]
+- [x] **P0.G — Procurement: command route directories missing** [RESOLVED v71]
+  Created `/api/procurement/requisitions/commands/{create,update,submit,approve-manager,approve-finance,reject,convert-to-po,cancel}` routes. All 8 command directories confirmed present.
 
-**Status (v112 VERIFIED):** manifest-ci.yml has `manifest-route-audit` job with `--strict` mode. **86 active manifests, 6 disabled.** **248 allowlist entries, 167 kitchen exemptions.** Dual enforcement: static CI audit + runtime provenance verification (SHA-256 hash of IR in production). **93 POST routes bypass manifest** (all covered by allowlist/exemption). Manifest-runtime exemptions: 250.
+- [x] **P0.I — Events: stale waitlist route uses $queryRaw unnecessarily** [RESOLVED v66]
+  `apps/api/app/api/events/[eventId]/waitlist/route.ts` — all referenced fields (`Event.maxCapacity`, `EventGuest.rsvpStatus`, `EventGuest.waitlistPosition`) exist in Prisma. Could use ORM.
 
-### P0.4 -- CI/CD Pipeline: Comprehensive Fixes [PARTIALLY RESOLVED in v105]
+- [x] **P0.J — Inventory: barcode lookup queries non-existent column** [RESOLVED v69]
+  `apps/api/app/api/inventory/barcode-lookup/route.ts:62-88` queries `barcode` from `InventoryItem`. No such field (exists on `CycleCountRecord` only). Fixed by JOINing `cycle_count_records` and selecting barcode from that table.
 
-**v105 RESOLUTIONS:**
-- [x] Biome lint: `pnpm biome check` now in ci.yml (line 54)
-- [x] prisma generate + validate: explicit steps in ci.yml (lines 48, 63)
-- [x] CodeQL: all v4 everywhere
-- [x] Trivy: pinned `@aquasecurity/trivy-action@0.28.0`
-- [x] Concurrency groups: ci.yml, security.yml, deploy.yml
-- [x] "Run linting" step runs BOTH `pnpm turbo typecheck` AND `pnpm biome check`
+- [x] **P0.L — Knowledge Base: client reads wrong response shape** [RESOLVED v66]
+  Client reads `data.data.entries` but API returns flat `{ success, entries, hasMore, totalCount }`. TypeError on every load.
 
-**STILL OPEN (v111 CONFIRMED):**
-1. **E2E tests -- NO e2e-workflows job exists.** No `.github/workflows/e2e*.yml` at all.
-2. **Lighthouse in performance.yml:** no dev server, `continue-on-error: true` (line 59). Clerk auth blocks meaningful results.
-3. **Pre-push hook disabled:** `.husky/pre-push` = `exit 0`
-4. **npm audit:** `continue-on-error: true` (security.yml line 46). Moderate+ vulns don't block.
-5. **Node version inconsistency:** ci.yml/security.yml hardcode 22.18.0, others use .nvmrc, vercel-compat uses 22.x -- divergent behavior across workflows.
-6. **3 workflows lack concurrency groups:** manifest-ci.yml, performance.yml, codeql.yml -- overlapping PRs waste CI minutes.
-7. **vercel-compat.yml lacks explicit `prisma generate`** -- relies on implicit behavior from @repo/database build script.
-8. **deploy.yml SKIP_ENV_VALIDATION on ALL deploy steps** -- env-variable schema changes not caught before deploy.
-9. **SKIP_ENV_VALIDATION:** in 4 of 7 workflows (build steps only, except deploy.yml which has ALL steps).
-10. **manifest-ci runs same test suite twice** (validate + tests)
-11. **manifest-ci.yml excludes** cms/web/app from TS check
-12. **Only 2 soft gates:** Lighthouse (performance.yml) and npm audit (security.yml)
-13. **ci.yml build has 8 env vars** vs vercel-compat's 25 -- divergent build surface
+- [x] **P0.O — Cycle Counting: server action passes tenantId as authUserId** [RESOLVED v67]
+  `apps/app/app/(authenticated)/cycle-counting/actions/sessions.ts:119-123` and `records.ts:117-121,300-304` passed `requireTenantId()` as `authUserId`. User lookup always failed. Fixed by using `requireCurrentUser()` instead, which properly resolves the Clerk userId and performs correct `(tenantId, authUserId)` lookup.
 
-### P0.5 -- [RESERVED -- DO NOT REOPEN]
+- [x] **P0.P — Cycle Counting: hardcoded dummy UUID for locationId** [RESOLVED v67]
+  `apps/app/app/(authenticated)/cycle-counting/page.tsx:74` hardcoded nil UUID. Fixed by adding a location `<Select>` dropdown that fetches locations from the database and passes the selected `locationId` to the server action.
 
-### P0.6 -- Frontend Calls to Non-Existent API Routes [RESOLVED in v105 -- DO NOT REOPEN]
+- [x] **P0.Q — Security: plaintext credentials in docs/test-screenshot.ts** [RESOLVED v65]
+  Real email `unashamed366@gmail.com` and password `rWon22Jo5HvYCa` from Playwright codegen. Rotate immediately.
 
-### P0.7 -- Calendar OAuth Tokens Stored Plaintext [NOT STARTED -- CRITICAL]
+- [ ] **P0.R — Event Intake: /api/menu-story route missing** [NEEDS NEW FEATURE v71]
+  `MenuWizardShell.tsx:69` calls `POST /api/menu-story`. MenuStory entity doesn't exist in Prisma schema. Requires: (1) Prisma model for MenuStory, (2) manifest definition, (3) AI-powered route handler, (4) create commands directory with routes. Documented requirements in implementation-history.
 
-**Status:** `calendar/sync/connect/route.ts` stores `accessToken`/`refreshToken` as plaintext String @db.Text in `ProviderSync` model. **ZERO encryption infrastructure** in codebase.
+- [x] **P0.S — Event Intake: /api/lead route missing (singular)** [RESOLVED v71]
+  `/api/lead` route was created. Routes at `/api/crm/leads/` (plural) are also available.
 
-**v109 FINDINGS (still open):**
-- Callback routes use WRONG import: `@/lib/database` instead of `@repo/database`
-- **No token refresh logic** -- expired tokens require full reconnection
-- `store_tokens` action allows direct plaintext token injection via POST body
-- `EmployeePin.pin_encrypted` is misleadingly named -- no encryption code exists
-- **No RLS on ProviderSync**
-- **Mobile responsiveness FAIL** -- no breakpoints below 768px (FR-701)
-- **Reschedule bypasses manifest** dispatch (FR-504), no optimistic concurrency (FR-502)
-- **Dual sync page implementations** -- sync/page.tsx uses bare Card (design system violation)
+- [x] **P0.T — Inventory: variance report review/approve routes missing** [RESOLVED v71]
+  Created `/api/inventory/variance-reports/commands/{review,approve}` routes.
 
-### P0.8 -- /api/public/ Auth Gating [RESOLVED in v105 -- DO NOT REOPEN]
+- [x] **P0.U — Settings: alerts config create/update/remove routes missing** [RESOLVED v71]
+  Created `/api/kitchen/alerts-config/commands/{create,update,remove}` routes.
+
+- [x] **P0.V — Events: catering order create/cancel/command routes missing** [RESOLVED v71]
+  Created `/api/events/catering-orders/commands/{create,cancel,confirm,mark-complete,start-prep,update}` routes.
+
+- [x] **P0.W — Settings: user update-role and deactivate routes missing** [RESOLVED v71]
+  Created `/api/user/{update-role,deactivate}` routes.
+
+- [x] **P0.X — Scheduling: notifications fetch missing /api/ prefix** [RESOLVED v66]
+  Client calls `apiFetch("/staff/notifications")` without `/api/` prefix.
+
+- [x] **P0.Y — Events: /api/events/{eventId}/dishes route missing** [RESOLVED v71]
+  Route created at `/api/events/[eventId]/dishes`.
+
+- [x] **P0.Z — Kitchen: prep-task-plan-workflows command routes missing** [RESOLVED v71]
+  Created 16 command routes at `/api/kitchen/prep-task-plan-workflows/commands/`.
+
+- [x] **P0.AA — CRM: /api/crm/deals base route missing** [RESOLVED v71]
+  Created base route at `/api/crm/deals` that delegates to list functionality.
+
+- [x] **P0.AB — Events: profitability recalculate command route missing** [RESOLVED v71]
+  Created `/api/events/profitability/commands/recalculate` custom route handler.
+
+- [x] **P0.AC — Events: import-workflows command routes missing** [RESOLVED v71]
+  Created `/api/events/import-workflows/commands/` with 18 command routes. All directories confirmed present.
+
+- [x] **P0.AD — CRM: proposals command routes missing** [RESOLVED v71]
+  Created `/api/crm/proposals/commands/{accept,reject,send,withdraw,mark-viewed}` routes.
+
+- [x] **P0.AE — Events: server-to-server import targets non-existent event_tasks table** [RESOLVED v66]
+  `apps/api/app/api/events/import/server-to-server/route.ts:490` raw SQL INSERT into `event_tasks`. Correct table is `timeline_tasks` (via @@map).
+
+- [x] **P0.AF — Logistics: tracking queries non-existent suppliers table** [RESOLVED v66]
+  `apps/api/app/api/logistics/tracking/route.ts:97` queries `tenant_inventory.suppliers`. Correct table is `inventory_suppliers` (via @@map on InventorySupplier).
+
+- [x] **P0.AG — Schema: default zero UUID in production schema** [RESOLVED v68]
+  `packages/database/prisma/schema.prisma` had `DEFAULT '00000000-0000-0000-0000-000000000000'` for `storage_location_id` in `InventoryTransaction`. Changed to nullable (String? @db.Uuid). Updated all code paths that used zero UUID as fallback.
+
+- [REMOVED v66] **P0.AH — Calendar: hardcoded localhost in production sync** — NOT A BUG. Fallback pattern (`NEXT_PUBLIC_APP_URL || "http://localhost:2221"`) is correct for development. Production properly uses `NEXT_PUBLIC_APP_URL` set via Vercel environment.
+  `apps/app/app/(authenticated)/calendar/sync/page.tsx:354,388` hardcodes `"http://localhost:2221"` as fallback URL.
+
+### Items removed from prior versions (verified as false)
+
+- **[REMOVED v58] P0.C — Notifications: bouncedAt field crash**: Not a runtime crash.
+- **[REMOVED v58] P0.H — Events: EventDish has no Prisma model**: Model exists.
+- **[REMOVED v58] P0.K — Inventory: low-stock pagination metadata is wrong**: Metadata is correct.
+- **[REMOVED v59] P0.N — Calendar Sync: no Prisma model**: Routes use `ProviderSync` model.
+- **[REMOVED v64] P0.M — Knowledge Base: entity not in manifest IR**: FALSE POSITIVE. `KnowledgeBaseEntry` IS in routes.manifest.json with 6 routes (list, detail, create, publishEntry, remove, update). See v64 Corrections.
 
 ---
 
-## P1 -- High Priority
+## P1 — High Priority (Production Blockers / Security)
 
-### P1.A -- Payroll Runtime Bugs [PARTIALLY RESOLVED in v105]
+### P1.A — Design System Compliance [CORRECTED v63]
 
-**RESOLVED (v105):**
-- [x] EmployeeDeduction table mapping: correctly mapped
-- [x] Federal bracket copies: separate brackets for Single, Married, HoH
-- [x] Deductions double-parse: only one `JSON.parse` call found
+- [ ] **ResearchTable**: 125+ bare `<Table>` usages confirmed. 10 ResearchTable import files.
+- [ ] **BlogFilterChip**: 7 import files, 16 uses. Most filterable lists use `<Select>` or raw buttons.
+- [ ] **ContactFormCard**: 0 adopters. Defined but never imported.
+- [ ] **30/40 design blocks have zero external consumers** — majority of block exports are unused.
+- [ ] **Empty state primitive**: ~16 files use shared components vs 40+ inline div instances.
+- [ ] **Module landings**: 7 of 20+ modules.
+- [ ] **`text-3xl font-bold`**: 2 occurrences across 2 files.
+- [ ] **Decorative pastel backgrounds**: 523 `bg-*-50/100/200` instances across 105 files.
+- [ ] **Bare Card violations**: 213 files across apps/app.
 
-**STILL CRITICAL (v111 CONFIRMED):**
-- **Division by zero:** `PrismaPayrollDataSource.ts:303-304, 317-318` -- `regularPay / hoursRegular || 0` stores `Infinity`
-- **Second div-by-zero:** `calculator.ts:326-327` -- NaN when postTaxTotal is 0
-- **YTD SS wages PARTIALLY implemented:** type definitions exist in `taxEngine.ts` but may not be populated at call sites from `PrismaPayrollDataSource` -- SS over-collection possible for employees above wage base
-- **tenant_payroll schema** referenced in `tax/list/route.ts:34,43,51,80` but NOT in schema.prisma -- RUNTIME CRASH
-- **FUTA/SUTA:** ZERO implementation
-- **Tax engine tests:** ZERO dedicated tests
-- **24 routes**, **6 test files** (v110 said 7 -- WRONG)
+### P1.B — Console Statements [CORRECTED v63]
 
-### P1.B -- CRM Pipeline [v111 CORRECTED]
+~974 total across ~364 files. `console.log`: 429/52 files. `console.error`: 501/293 files. `console.warn`: 44/28 files. 153 of 561 manifest routes have console.error (27%).
 
-**Status:** **41 routes** (v110 said 42 -- WRONG). **41 BROKEN_PRISMA_READ patterns**, **68 raw SQL patterns**. **CrmScoringRule model EXISTS** but all 13 scoring calls still use raw SQL. **10 directories, ALL orphans.** **29 orphaned routes** with NO frontend consumer. **4 test files** + 1 E2E. No CRM spec.
+### P1.C — RLS Gaps [CORRECTED v63]
 
-### P1.C -- Console Statement Cleanup [911 -- STABLE]
+14 migration files enable RLS across 20+ tables. Full recount of tables without RLS still needed. Confirmed tables WITH RLS: accounting (chart_of_accounts, invoices, collection_cases, collection_actions, collection_payment_plans, revenue_recognition_schedules, revenue_recognition_lines), inventory (inventory_items, inventory_transactions, inventory_suppliers, vendor_catalogs), logistics (vehicles, drivers), facilities (facility_assets), staff (labor_budgets, budget_alerts), admin (admin_chat_threads, admin_chat_participants, admin_chat_messages), kitchen (prep_task_plan_workflows), plus audit_log, ActivityFeed, webhook_dead_letter_queue, manifest_command_telemetry.
 
-**Breakdown (unchanged):**
-- console.error: **530**, console.log: **345**, console.warn: **31**, console.info: **4**, console.debug: **1**
-- **Total: 911** (stable since v106)
-- @repo/observability: **402** imports, Biome `noConsole` OFF
+### P1.D — Duplicate Route Cleanup [CHALLENGED v63]
 
-### P1.D -- Design System: Shell Compliance
+v62 claimed 7 confirmed true duplicates. Deep scan found 0 true duplicates (routes calling `executeManifestCommand` were miscounted as "manifest-generated"). Needs final reconciliation.
 
-**v106 verified (unchanged):** Bare `<Card>` without tone: 37, Shadow violations: 239, `text-3xl`: 246, Pastel violations: 4, `border-b` tabs: 8, PageCanvas: 37, ResearchTable: 842.
+### P1.E — Manifest/Prisma Schema Alignment [VERIFIED v63]
 
-### P1.E -- TypeScript Strictness [v112: METRIC CORRECTIONS]
+- **Logistics**: Driver has single `name` in Prisma vs `firstName`+`lastName` in manifest.
+- **Facilities**: Manifest defines Facility entity with `type` defaulting to `"venue"` vs Prisma `facilityType` defaulting to `"kitchen"`.
+- **Scheduling**: Override confirmed but class is generic `PrismaStore`.
 
-**v112 CORRECTED (hand-written production code, excluding generated/test files):**
-- `as any`: **150** (v111 said 142 -- +8; breakdown: apps=41, manifest packages=90, other packages=19)
-- `: any`: **apps-only=20** (v111's 53 was a subset measure; manifest packages=115, generated Prisma=463)
-- `@ts-ignore`: **0** (stable since v107)
-- `@ts-expect-error`: **12** (v111 said 11 -- +1 in storybook resizable.stories.tsx)
-- FIXME/HACK: **0 genuine**
-- `noUncheckedIndexedAccess`: NOT SET -- major gap
-- `skipLibCheck: true` in base tsconfig + inherited by all 40+ tsconfigs
+### P1.F — Missing E2E Product-Flow Tests [v59]
 
-### P1.F -- Accounting: Structural Gaps [17 routes]
+Genuine gaps: Payroll (no workflow), Marketing (feature unbuilt), Procurement (no workflow), Search (no full-flow test).
 
-**v111 CONFIRMED:**
-- Financial reports expenses **HARDCODED TO ZERO** at `financial-reports/route.ts:193, 258-262` (`.reduce(() => 0, 0)`)
-- Journal entries / general ledger: **MISSING ENTIRELY** (no JournalEntry or GeneralLedger models)
-- Bank reconciliation: **FULLY SIMULATED** (modulo distribution, fake variance)
-- Double-entry bookkeeping: **NOT IMPLEMENTED** (ChartOfAccount is taxonomy only, no posting layer)
-- **10 test files** (none for financial-reports or bank-reconciliation), RLS **100%**
+### P1.G — Auto-Generated Route Quality [CORRECTED v63]
 
-### P1.G -- Inventory Route Manifest Gap [58 routes]
+178 auto-generated routes. 154/178 use `console.error`. Some routes DO implement filtering/pagination (events, inventory, clients have pagination; events and inventory have filtering). IR tracks both GET (260) and POST (589) handlers.
 
-**v111 CORRECTED:** **58 routes** (v110 said 57 -- WRONG by +1). Frontend has **18 consumers**. **2 duplicate PO route pairs** across inventory/ and procurement/ with divergent imports. **18 raw SQL** instances (all safe). **6 test files**. 4 active manifest files.
+### P1.H — Audit Writer Never Called [VERIFIED v63]
 
-### P1.H -- BROKEN_PRISMA_READ Pattern [v111]
+`apps/api/app/lib/audit-writer.ts` exports never called from any route. Zero grep matches across all API route files.
 
-**Pattern:** Writes via `executeManifestCommand`/`runtime.runCommand` (Manifest -> PrismaStore), reads query Prisma directly.
+### P1.I — AGENTS.md Fabricated Procurement Claim [VERIFIED v63]
 
-**Domains using manifest commands:** accounting, administrative, collaboration, command-board, communications, crm, events, inventory, kitchen, lead, manifest, payroll, procurement, rolepolicy, settings, shipments, smsautomationrule, staff, timecards, training
+AGENTS.md lines 369-378 claim "8+10 command dirs" for procurement. None exist on disk.
 
-**93 POST routes bypass manifest** with direct DB writes (all covered by allowlist/exemption per P0.3).
+### P1.J — Broken Test Imports [CORRECTED v64, v70, v71]
 
-### P2.A -- Calendar (8 routes, ~57% spec compliance)
-- [x] Drag-and-drop (dnd-kit) -- **IMPLEMENTED** with PointerSensor + TouchSensor
-- [x] Entry-type taxonomy -- `deadline`/`reminder` REMOVED from API union; three-type enum correct
-- [x] Reschedule route EXISTS at `/api/calendar/reschedule`
-- [ ] OAuth tokens PLAINTEXT -- escalated to P0.7
-- [ ] Callback routes inconsistent import (`@/lib/database` barrel vs `@repo/database`)
-- [ ] No token refresh logic -- expired tokens require full reconnection
-- [ ] `store_tokens` allows plaintext injection via POST body
-- [ ] **No RLS on ProviderSync**
-- [ ] Reschedule lacks optimistic concurrency (FR-502), bypasses manifest dispatch (FR-504)
-- [ ] Mobile responsive FAIL -- grid-cols-7 always, no breakpoints < 768px (FR-701)
-- [ ] **Calendar sync page uses bare `<Card>` imports** -- FR-102 violation (lines 6-10, 210-226 in sync/page.tsx)
-- [ ] **Calendar List view is STUB ONLY** -- no ResearchTable implementation (FR-603)
-- [ ] **Calendar Schedule tab** -- FR-602 says remove or implement; status unclear
-- **20/34 MET (57%), 7 PARTIAL, 7 NOT MET**
+619 TS errors (TS2307: module not found) across 19 test files. 41 skipped tests across 13 E2E files.
 
-### P2.B -- Accounting (17 routes)
-- [x] Invoicing, payments, revenue recognition, collections
-- [ ] Financial reports expenses HARDCODED TO ZERO (P1.F)
-- [ ] Journal entries / general ledger: MISSING. Bank reconciliation: SIMULATED
-- **10 test files** (none for financial-reports, bank-reconciliation)
+**Note (v71):** P0 routes have been created (P0.E, P0.F, P0.G, P0.T, P0.U, P0.V, P0.W, P0.Y, P0.Z, P0.AA, P0.AB, P0.AD, P0.AC). The test file TS2307 errors are NOT caused by missing routes — the routes exist. Test files still have incorrect import paths that reference camelCase paths (e.g., `@/app/api/adminchatparticipant/archive/route`) while actual routes use kebab-case (`/administrative/chat/participants/`). This is a separate issue from missing backend routes and requires test file import path corrections.
 
-### P2.C -- Contracts (18 route files across 6 directories)
+**Progress v70:** 65 TS2554 "Expected 2 arguments, but got 1" errors fixed across 9 test files:
+- `procurement/vendors/vendors.test.ts` - 30+ errors fixed
+- `scheduling/schedules.test.ts` - errors fixed
+- `staff/users/self-deactivation-prevention.test.ts` - errors fixed
+- `staff/users/user-end-to-end.test.ts` - errors fixed
+- `procurement/purchase-orders/purchase-orders.test.ts` - errors fixed
+- `procurement/requisitions/requisition-end-to-end.test.ts` - errors fixed
+- `procurement/vendor-contracts/vendor-contract-end-to-end.test.ts` - errors fixed
+- `documents/versions.test.ts` - 16 errors fixed
+- `inventory/transfers/transfers.test.ts` - 14 errors fixed
+- `operations/operations.test.ts` - 14 errors fixed
+- `knowledge-base/knowledge-base.test.ts` - 16 errors fixed
+- `logistics/logistics.test.ts` - 35 errors fixed
 
-**Spec compliance: ~21% MET (7/34), ~41% MET+PARTIAL**
-- [x] 8 EventContract commands, 10 VendorContract commands (manifest IR) -- **v113 VERIFIED: EventContract has 10 entries (8 commands + list/detail), VendorContract has 12 (10 commands + list/detail) in manifest IR**
-- [x] Deep URL `/contracts/[contractId]` EXISTS -- gap CLOSED
-- [x] Public signing surface EXISTS at `/sign/contract/[token]/` (not `/sign/[signingToken]` as spec says)
-- [x] `cron/contract-expiration-alerts` IS in vercel.json (0 7 * * *) -- was NOT missing
-- [ ] **canceled/cancelled spelling split** -- validation.ts uses "canceled", manifest/status uses "cancelled"
-- [ ] **Sign route race condition** -- findFirst + no transaction
-- [ ] **Public signing URL mismatch** -- spec says `/sign/[signingToken]`, implementation is `/sign/contract/[token]/`
-- [ ] **Sign returns 400 not 409** -- violates FR-503
-- [ ] **VendorContract renew wrong** -- updates endDate instead of creating new row
-- [ ] **VendorContract command HTTP endpoints** -- no dedicated dirs; all go through generic `/api/manifest/[entity]/commands/[command]`. AGENTS.md claim of dedicated dirs was FABRICATED
-- [ ] **FR-504/FR-603 NOT MET** -- no notification, no autoRenew logic
+Production code: CLEAN (0 typecheck errors). Remaining TS2307 errors in test files are due to incorrect import paths (camelCase vs kebab-case), NOT missing routes.
 
-### P2.D -- Events (87 routes -- ~6% spec compliance)
+### P1.K — Training Test Type Errors [RESOLVED v69]
 
-**Spec coverage: ~6% fully MET** (2/35 FRs), ~24% with partial.
-
-**v113 VERIFIED (all still open):**
-- **Battle board architecturally wrong** -- implemented as Gantt-chart editor (battle-board-editor-client.tsx), spec requires collaborative dish-voting with Nominated/Voting/Finalized columns. FR-5xx entirely inapplicable.
-- **Report template system not implemented** -- EventReport has no templateId field, no 5 canonical templates
-- **ContactFormCard NOT used** -- FR-105 NOT MET
-- **Card ladders** in lazy-event-explorer.tsx and menu-intelligence-section.tsx -- FR-201 violation
-- **23 raw `fetch()` calls** bypass `apiFetch`
-- `EventSummary.confidence`: **CONFIRMED MISSING** from schema (model has no confidence field)
-- `Event.importWorkflowId`: **CONFIRMED MISSING** -- EventImportWorkflow model doesn't exist (0 hits in schema)
-- Budget URL: singular `/budget` vs spec requires plural `/budgets`
-- Routes: **87**, Test files: **16**, Frontend pages: **26**
-
-### P2.E -- Kitchen (148 routes)
-
-**v111 CONFIRMED:**
-- **45 subdirectories**, **15 singular/plural duplicate pairs** = **30 dead routes**
-- **18 manifests**, **167 exemptions**, **37 test files**
-- **49 direct DB calls bypassing manifest**, **~70 routes (47%) have NO frontend consumer**
-- **31 frontend pages**, **~95/148 = 64% orphan rate**
-- **NO spec document** -- biggest spec gap
-
-### P2.F -- Logistics (5 routes)
-- GPS simulated with hardcoded LA coordinates + `Math.random()`
-- 1 test, 5 frontend refs, no spec
-
-### P2.G -- Staffing (2 routes)
-- [x] Coverage + Recommendations APIs implemented
-- [ ] CoverageBar: **3 inline div patterns** -- NOT a component
-- [ ] **5 queryRawUnsafe** in coverage routes (cast results with `as any[]`)
-- [ ] LaborBudget: model EXISTS, endpoints under `/api/staff/budgets/`
-
-### P2.H -- Staff (35 production routes)
-- Clean: no BROKEN_PRISMA_READ, no queryRawUnsafe, no TODOs
-- **12 subdomains**, **21 scheduling-related routes**, **10 frontend consumers**
-- **Staff orphans: 21/35 = 60%**
-
-### P2.I -- Settings (10 routes)
-- [x] Audit log, API key revocation, role assignment, integrations, role policies, rate limits
-- [ ] AlertsConfig frontend calls wrong path
-- [ ] Billing P3/blocked -- no Subscription/Plan/Tier/BillingAccount models
-
-### P2.J -- Analytics (5 routes)
-- **22 raw SQL** across all 5 route files (heaviest raw-SQL domain). 0 tests, 5 frontend refs, no spec.
-
-### P2.K -- Marketing (3 routes)
-- Spec EXISTS at `specs/marketing/SPEC.md`. 1 frontend consumer, 2 test files.
-
-### P2.L -- Command Board (22 routes)
-**Frontend EXISTS at `apps/app/app/(authenticated)/command-board/` (page.tsx + [id] + new-board-dialog.tsx). 6 test files. 2 stub routes returning 501** (shareId/isPublic fields missing). **21/22 = 95% orphan rate** (highest of any domain). API surface complete: boards, cards, connections, groups, layouts, replay, simulations, templates. 11 spec files exist but most describe vision/roadmap, not implementation requirements.
-
-### P2.M -- Knowledge Base (3 routes) -- 2 tests, 2 frontend refs, no spec
-### P2.N -- Integrations (25 routes) [v112 MAJOR CORRECTION]
-
-**v112 CORRECTION:** v111 said 5 routes -- was 5x UNDERCOUNTED. Actual: **25 routes** across 4 subdomains.
-
-**Full inventory:**
-- **goodshuffle:** 9 routes (config, events, inventory, inventory/sync, invoices, invoices/sync, status, sync, test)
-- **nowsta:** 6 routes (config, employees/map, employees, status, sync, test)
-- **quickbooks:** 1 route (history)
-- **webhooks:** 9 routes (delivery-logs, dlq/[id]/resolve, dlq/[id]/retry, dlq/[id], dlq, [id], retry, trigger, root)
-### P2.O -- Training (7 routes) -- **15 raw SQL** across 4 files, 3 test files, TODO spec. **ZERO frontend pages** (no `/training/` directory in authenticated app). API-only: modules (list, [id]), assignments (list, [id]), complete. Spec is planning document (not Cohere-aligned).
-
-### P2.P -- Search [RESOLVED -- DO NOT REOPEN]
-### P2.Q -- Procurement (24 routes) [CLARIFIED: vendor-contracts via manifest]
-**Vendor-contracts: ZERO dedicated command route directories.** AGENTS.md says 10 dedicated HTTP dirs -- FABRICATED. However, all 12 VendorContract commands (10 commands + list/detail) DO exist in the manifest IR and are callable via the generic `/api/manifest/[entity]/commands/[command]` route. Frontend calls to `/api/procurement/vendor-contracts/commands/*` WILL 404 -- frontend should use the manifest route instead. 5 test files.
-
-### P2.R -- Timecards (10 routes) -- 4 Prisma models, 1 test (1,765 lines), no specs, no manifests
-
-### P2.S -- Documents (1 route) -- has API consumers (DO NOT REOPEN)
-### P2.T -- Catering [NOT a ghost domain -- DO NOT REOPEN]
-### P2.U -- Warehouse (2 routes, GET-only)
-
-### P2.V -- Communications/Collaboration Fragmentation
-- Communications: **7 routes**, Collaboration: **17 routes**, Notifications: dismissed state NOT in DB, SMS fragmented across 3 modules
-
-### P2.W -- Frontend Module Design System
-### P2.X -- Unlisted Domains
-
-**v112 domain route counts:**
-Kitchen 148, Events 87, Inventory 58, CRM 41, Staff 35, **Integrations 25**, Procurement 24, Payroll 24, Command-board 22, Collaboration 17, Accounting 17, Administrative 13, Timecards 10, Settings 10, Shipments 9, Calendar 8, Training 7, Rolepolicy 7, Communications 7, Cron 6, Logistics 5, Facilities 5, Analytics 5, Public 4, AI 4, Mobile 3, Knowledge-base 3, Warehouse 2, User 2, Staffing 2, Smsautomationrule 2, Activity-feed 2, +16 single-route domains. **Total: 632 across 50 domains.**
-
-**Dead/Zombie:** sales-reporting (ALIVE -- has full POST endpoint with auth and tests), user-preferences (1 route, no UI).
-
-### P2.Y -- Payroll (24 routes -- runtime bugs at P1.A, 6 test files)
-
-### P2.Z -- Security Coverage [v112]
-
-| Metric | v111 | v112 | Notes |
-|---|---|---|---|
-| RLS tables / total | **86/223** | **86/223** | STABLE at 38.6% |
-| queryRawUnsafe | **53** | **54** | v112 CORRECTION (+1 new bottleneck-detector) |
-| Raw fetch() bypass | **50** | **50** | STABLE |
-| POST routes bypassing manifest | **86** | **93** | v112 CORRECTION (+7 new direct-write POST routes) |
-| DEFAULT schema models 0% RLS | **21** | **21** | STABLE |
-| Orphan routes | **~270/622** | **~280/632** | v112 CORRECTION (total routes now 632) |
-| Active manifests | **86** | **86** | STABLE |
-| Allowlist entries | **248** | **248** | STABLE |
-
-**Per-schema RLS (v111 CONFIRMED):**
-- tenant_accounting: **100%**, tenant_facilities: **100%**, tenant_logistics: **100%**
-- tenant_crm: **66%**, tenant_inventory: **53%**, tenant_staff: **38%**
-- tenant_kitchen: **29%** (worst large schema), tenant_events: **26%**, tenant_admin: **18%**
-- bare tenant: **12%** (1/8) -- HIGH RISK
-- **DEFAULT/public: 21 models -- 0% RLS -- HIGH RISK**
-- **core, platform schemas: 0% RLS -- HIGH RISK**
+17 TS2554 "Expected 2 arguments, but got 1" errors in `apps/api/__tests__/training/training.test.ts`. Manifest command routes imported for testing required a second `params` argument `{ params: Promise.resolve({ entity, command }) }` per Next.js 15 route handler signature. Fixed all 17 invocations across 5 command handlers (createModuleCommand, updateModuleCommand, softDeleteModuleCommand, createAssignmentCommand, softDeleteAssignmentCommand).
 
 ---
 
-## TODOs / Placeholders in Production Code [v111 NEW]
+## P2 — Medium Priority (Feature Gaps / Hardening)
 
-| Domain | Location | Issue | Severity |
-|---|---|---|---|
-| Command-board | 2 routes | Returning 501 (shareId/isPublic fields missing) | MEDIUM |
-| Logistics tracking | `logistics/tracking/route.ts` | Simulated GPS with `Math.random()` + hardcoded LA coords | HIGH |
-| Accounting bank-reconciliation | reconciliation routes | Simulated statement balance (fake variance) | HIGH |
-| Events documents | ~40 lines commented-out | Import porting blocker prevents document handling | MEDIUM |
-| Inventory supplier-sync | route exists | No `SupplierSyncHistory` model -- sync state untracked | MEDIUM |
-| CRM | various routes | No Employee model -- `userId` used as `employeeId` | MEDIUM |
-| Supplier connectors | US Foods, Charlies Produce | Complete stubs -- zero real API integration | LOW |
-| Inventory forecast | `libs/inventory-forecast` | Entire client is placeholder | MEDIUM |
-| Payroll tax brackets | production code | `mockEmployee` in production code path | HIGH |
+### P2.A — Accounting [v59, CORRECTED v63]
 
----
+- [ ] No journal entries / general ledger / double-entry bookkeeping
+- [ ] Bank reconciliation is simulated
+- [ ] Financial reports expense totals hardcoded to 0 — `.reduce(() => 0, 0)` at `apps/api/app/api/accounting/financial-reports/route.ts:260`
+- [ ] No accounts payable
+- [ ] TaxConfiguration model has only 1 API route under payroll, zero accounting routes
+- [ ] No fiscal year / period management
+- [ ] New forms use raw UUID text inputs
+- [ ] Duplicate CoA route directories
 
-## P3 -- Lower Priority
+### P2.B — Events [v59, CORRECTED v63]
 
-### P3.A -- Dead Package Cleanup
+- [ ] EventSummary missing `confidence` field (confirmed: model has no confidence column)
+- [ ] Event.importWorkflowId NOT in schema (confirmed: no such field on Event model)
+- [ ] Import pipeline: backend has flat `parseStatus`; UI shows 8-phase display
+- [ ] Multi-day event support not modeled
+- [ ] Event import code commented out — BLOCKER at `apps/api/app/api/events/documents/parse/route.ts:936-944`
+- [ ] Budget alerts not integrated in events list
+- [ ] Event detail not using spec shell composition
 
-**Dead (zero runtime imports):** @repo/ai, @capsule/brand, @repo/kitchen-state-transitions
+### P2.C — Logistics [VERIFIED v63]
 
-**Alive (DO NOT REOPEN):** @repo/mcp-server, sales-reporting, @repo/event-parser, @repo/storage, @repo/payroll-engine, @repo/pdf, @repo/realtime, @repo/supplier-connectors
+- [ ] Simulated GPS tracking (hardcoded LA coordinates — 34.052)
+- [ ] Route optimization non-functional
+- [ ] No Prisma relations (FK fields only, all joins via raw SQL)
+- [ ] Mixed create patterns across entities
 
-**Package stats:** 35 packages total. **25 without any test files.**
+### P2.D — Payroll [VERIFIED v63]
 
-**Stale files:** `apps/app/package.json.bak`, `apps/api/vitest.config.ts.bak2` -- should be removed
+- [ ] State tax coverage only 8/50 states
+- [ ] Period ID generation produces non-UUID strings
+- [ ] No payroll_line_items index
+- [ ] Duplicate routes
 
-### P3.B -- Spec Gap Analysis (v113 FULL AUDIT)
+### P2.E — Scheduling [VERIFIED v63]
 
-**47 spec files** across 10 directories. Key domain specs: calendar, command-board (11 files), contracts, events, marketing, staffing, training. Plus extensive manifest specs (15+ files). General specs (8 files). 3 TODO specs: training-hrms, nowsta-integration, sms-notification-system. 1 TODO integration spec: webhook-outbound-integrations.
+- [ ] No `apps/api/app/api/scheduling/` directory — no scheduling API exists at all
+- [ ] `open_shifts` model has no management UI or API
+- [ ] Requests page joins `public.users` instead of `tenant_staff.employees`
 
-#### v113 Spec-by-Spec Compliance Audit
+### P2.F — CRM [v59]
 
-**Calendar (8 API routes, SPEC at `specs/calendar/SPEC.md`)**
+- [ ] Lead.score/score_breakdown columns not in Prisma model
+- [ ] 0 scoring tests (all raw SQL)
+- [ ] Dual write/read paths untested
+- [ ] ClientContact/ClientPreference missing relations to Client
+- [ ] Venue in wrong schema
 
-| FR | Status | Finding |
-|---|---|---|
-| FR-101 PageCanvas shell | PARTIAL | Landing page exists. Sync page uses bare `<Card>` imports (lines 6-10, 210-226) -- spec violation |
-| FR-301 entry-type taxonomy | PARTIAL | `deadline`/`reminder` removed from API union (verified 0 grep hits). Three-type enum correct |
-| FR-501 reschedule API | MET | `/api/calendar/reschedule` route exists |
-| FR-502 optimistic concurrency | NOT MET | No `expectedVersion` / 409 stale_version enforcement confirmed in v109 |
-| FR-504 manifest dispatch | NOT MET | Reschedule bypasses manifest (v109 confirmed) |
-| FR-603 List view | PARTIAL | Calendar page references "list views" (line 233) but no List tab component with ResearchTable exists |
-| FR-604 token encryption | NOT MET | P0.7 -- OAuth tokens still plaintext |
-| FR-701 mobile responsive | NOT MET | No breakpoints below 768px for grid |
-| **Overall** | **~57% MET (20/34)** | **7 PARTIAL, 7 NOT MET** -- unchanged from v112 |
+### P2.G — Search [VERIFIED v63]
 
-**Events (87 routes, SPEC at `specs/events/SPEC.md`)**
+- [ ] FR-107 violation: single-char queries return 200+empty not 400
+- [ ] No saved searches (no model, no API, no UI)
+- [ ] No search history (no model, no API, no UI)
+- [ ] Filter pills not migrated to BlogFilterChip
+- [ ] Results not migrated to ResearchTable
 
-| FR | Status | Finding |
-|---|---|---|
-| FR-101 events list shell | MET | `/events/page.tsx` is the 3/3 reference implementation |
-| FR-102 event detail shell | PARTIAL | Detail page exists at `/events/[eventId]/` but sub-tab composition varies |
-| FR-106 battle-board | WRONG TYPE | Implemented as Gantt-chart editor (battle-board-editor-client.tsx), spec requires collaborative dish-voting with three columns (Nominated/Voting/Finalized). **Architectural mismatch** |
-| FR-201 Card ladder | NOT MET | lazy-event-explorer.tsx and menu-intelligence-section.tsx have Card ladders |
-| FR-301 data contract | PARTIAL | Most entities exist: Event, EventBudget, BudgetLineItem, EventContract, ContractSignature, EventStaff, EventGuest, EventDish, EventReport, BattleBoard, AllergenWarning. **MISSING:** EventSummary.confidence (no field), EventProfitability (no dedicated model), EventImportWorkflow (no model), Proposal/ProposalLineItem (no dedicated models -- may be virtual) |
-| FR-304 EventSummary.confidence | NOT MET | EventSummary model has NO `confidence` field (verified in schema.prisma) |
-| FR-404 Event.importWorkflowId | NOT MET | Event model has NO `importWorkflowId` field (0 grep hits in schema.prisma) |
-| FR-601 report templates | NOT MET | EventReport has `reportConfig` JSON but no `templateId` field; no 5 canonical template types |
-| **Overall** | **~6% fully MET (2/35)** | **13 PARTIAL, 12 NOT MET** -- unchanged from v112. New: EventSummary.confidence confirmed MISSING, Event.importWorkflowId confirmed MISSING |
+### P2.H — Settings [VERIFIED v63]
 
-**Contracts (18 route files, SPEC at `specs/contracts/SPEC.md`)**
+- [ ] Rate limits have full API but no UI surface
+- [ ] No Clerk MFA link in Security page
+- [ ] Audit writer never called (see P1.H)
+- [ ] Integrations-client.tsx: 2,064 lines (monolithic)
+- [ ] Notifications-client.tsx: 1,714 lines (monolithic)
+- [ ] Admin role-gating incomplete
 
-| FR | Status | Finding |
-|---|---|---|
-| FR-101 contracts landing | MET | `/contracts/page.tsx` + `contracts-page-client.tsx` exist with detail pages |
-| FR-102 deep URL `/contracts/[contractId]` | MET | `[contractId]/page.tsx` exists -- deep URL gap CLOSED (was spec's main gap) |
-| FR-302 manifest discovery | PARTIAL | EventContract has 10 commands in manifest IR (cancel, create, expire, markViewed, send, sign, softDelete, update + list/detail). VendorContract has 12 commands (activate, approve, create, recordSlaBreach, reject, renew, submit, terminate, update, updateCompliance + list/detail). **BUT:** No dedicated HTTP route directories -- all go through generic `/api/manifest/[entity]/commands/[command]`. AGENTS.md claim of 10 dedicated vendor-contracts command dirs is FABRICATED |
-| FR-501 public signing at `/sign/[signingToken]` | PARTIAL | Public signing EXISTS at `/sign/contract/[token]/` (not `/sign/[signingToken]` as spec says). Uses `contract-signing-client.tsx`. **URL mismatch** with spec |
-| FR-503 signing idempotency | PARTIAL | Signing route uses `executeManifestCommand` (verified line 23). Sign returns standard response; 409 enforcement unclear |
-| FR-601 cron contract-expiration-alerts | MET | `cron/contract-expiration-alerts` IS in vercel.json (schedule: `0 7 * * *`). AGENTS.md was stale saying it was missing |
-| FR-206 raw SQL replacement | NOT VERIFIED | Spec says `/events/contracts/page.tsx` raw SQL must be replaced. Not verified this session |
-| canceled/cancelled spelling | NOT MET | Spec notes validation.ts uses "canceled", manifest/status uses "cancelled" |
-| **Overall** | **~21% MET (7/34)** | **7 PARTIAL, 20 NOT MET** -- key improvement: deep URL gap CLOSED, public signing EXISTS but at wrong URL. Manifest commands ALL exist in IR |
+### P2.I — Staff/HR [VERIFIED v63]
 
-**Marketing (3 API routes, SPEC at `specs/marketing/SPEC.md`)**
+- [ ] No API routes for Disciplinary actions, Onboarding tasks, Departments, Skills, PINs
+- [ ] Duplicate `getEmployees()` across 3 scheduling action files
+- [ ] 3 redirect pages
 
-| FR | Status | Finding |
-|---|---|---|
-| FR-101 landing shell | MET | `/marketing/page.tsx` -- v112 reported it clean (no text-3xl, no Card). Frontend pages exist: campaigns, email-workflows, leads/[leadId], sms-rules, analytics |
-| FR-102 leads list | MET | `/marketing/leads/leads-page-client.tsx` + detail at `/marketing/leads/[leadId]/lead-detail-client.tsx` |
-| FR-401 Campaign model | DEFERRED | No Campaign Prisma model (spec marks DEFERRED). Tag-based grouping not implemented either |
-| FR-602 marketing analytics API | PARTIAL | `/api/marketing/analytics` exists but scope unverified |
-| FR-505 rate limiting on public form | NOT VERIFIED | Rate limiting config not verified |
-| **Overall** | **~60% MET** | **Highest spec compliance of any domain.** Full page tree implemented. Campaign model deferred per spec |
+### P2.J — Notifications [v59, CORRECTED v63]
 
-**Staffing (2 API routes, SPEC at `specs/staffing/SPEC.md`)**
+- [ ] Duplicate SMS files — `sms.ts`, `sms-new.ts`, `sms-temp.ts` in `packages/notifications/`
+- [ ] Hardcoded sender email
+- [ ] No pagination on main notifications list
+- [ ] No real-time push (Knock provider context exists but server-side never called)
 
-| FR | Status | Finding |
-|---|---|---|
-| FR-101 landing shell | PARTIAL | `/staffing/page.tsx` near-3/3. layout.tsx still has border-b tabs (one of 4 remaining FR-204 violations) |
-| FR-201 text-3xl font-bold | NOT MET | staffing-recommendations-client.tsx still has text-3xl opener |
-| FR-202 bg-red-50 pastel | NOT MET | staffing-recommendations-client.tsx still uses bg-red-50/border-red-500 for errors |
-| FR-204 border-b tab strip | NOT MET | staffing/layout.tsx:28 still has border-b tabs |
-| FR-401 CoverageBar primitive | NOT MET | No CoverageBar component authored; 3 inline div blocks remain in staffing/page.tsx |
-| FR-501 recommendations form | PARTIAL | Form exists but uses bare Card instead of ContactFormCard |
-| **Overall** | **~40% MET** | **Key gaps are design-system violations, not functional.** All pages exist, APIs work |
+### P2.K — Marketing [VERIFIED v63]
 
-**Command Board (22 routes, 11 spec files at `specs/command-board/`)**
+- [ ] Campaigns page is "Coming Soon" placeholder
+- [ ] Analytics open rate counts "delivered" as "opened" — inflates rate
+- [ ] No public lead capture endpoint (spec FR-702, SC-005)
+- [ ] E2E test is stale
+- [ ] SMS rules uses plain Dialog not ContactFormCard; list uses custom div grid not ResearchTable
+- [ ] Leads list uses custom div grid, zero ResearchTable usage in marketing
+- [ ] Analytics page returns `0` for zero-data case instead of null/em-dash per spec
 
-| Item | Status | Finding |
-|---|---|---|
-| boardspec.md | PARTIAL | Board editor exists at `apps/app/app/(authenticated)/command-board/`. API has boards, cards, connections, groups, layouts, replay, simulations, templates |
-| SPEC_entity-browser.md | NOT MET | Entity browser UI not verified |
-| SPEC_entity-detail-panel.md | PARTIAL | Detail panel exists in board editor |
-| SPEC_connections.md | PARTIAL | Connections API exists at `/api/command-board/[boardId]/connections/` |
-| SPEC_ui-polish.md | NOT MET | Still 21/22 = 95% orphan rate |
-| SPEC_product-direction.md | VISION | Not implementable as-is -- roadmap document, not spec |
-| STATUS.md | STALE | May reference old paths |
-| **Overall** | **~30% MET** | **API surface complete (22 routes). UI has 95% orphan rate. 2 routes return 501** |
+### P2.L — Procurement [v59]
 
-**Training (7 API routes, TODO spec at `specs/training-hrms_TODO/SPEC.md`)**
+- [ ] PO receive operation lacks `$transaction()`
+- [ ] No requisition line items in detail view
+- [ ] Vendor contract create uses raw UUID input for vendorId
+- [ ] Budget alerts not generated by any cron/trigger
+- [ ] No tests for budget, approvals, or server actions
 
-| FR | Status | Finding |
-|---|---|---|
-| Training Module Completion | PARTIAL | API routes exist: `/api/training/modules/`, `/api/training/assignments/`, `/api/training/complete/`. No frontend pages (no `/training/` directory in authenticated app) |
-| Certification Tracking | NOT MET | No certification management UI |
-| Secure PIN Management | PARTIAL | EmployeePin model exists but spec says encryption is misleading (no encryption code) |
-| **Overall** | **~25% MET** | **API-only. Zero frontend. 15 raw SQL across 4 files. Spec is marked TODO** |
+### P2.M — Facilities [v59]
 
-**TODO Specs (no implementation, spec as planning documents):**
+- [ ] No spec exists
+- [ ] RBAC policies defined but not enforced
+- [ ] Schedules/work-orders list routes have no pagination clamps
+- [ ] SelectItem with empty string value
+- [ ] Orphan E2E test tests non-existent routes
 
-| Spec | Status | Implementation |
-|---|---|---|
-| `specs/nowsta-integration_TODO/nowsta-integration.md` | PLANNING | 6 API routes at `/api/integrations/nowsta/`. Spec is outcome-only, not Cohere-aligned |
-| `specs/sms-notification-system_TODO/sms-notification-system.md` | PLANNING | 2 routes at `/api/smsautomationrule/`. Spec is outcome-only |
-| `specs/webhook-outbound-integrations_TODO/webhook-outbound-integrations.md` | PLANNING | 9 routes at `/api/integrations/webhooks/`. Spec is outcome-only |
+### P2.N — Tools/AI [v59]
 
-#### Spec-to-Implementation Discrepancies (NEW in v113)
+- [ ] `packages/ai` SDK is disconnected (zero imports of `@repo/ai`)
+- [ ] Only 1 of 4 API routes has tests
+- [ ] ~50 bare Card violations, color violations present
 
-| Discrepancy | Spec Says | Implementation | Impact |
-|---|---|---|---|
-| Public signing URL | `/sign/[signingToken]` | `/sign/contract/[token]/` | URL mismatch; spec update needed |
-| VendorContract command dirs | AGENTS.md says 10 HTTP dirs | ZERO dedicated dirs; all via generic manifest route | AGENTS.md FABRICATED; commands DO exist in manifest IR |
-| EventSummary.confidence | FR-304 requires `confidence: float` | Model has NO confidence field | Spec requires schema change |
-| Event.importWorkflowId | FR-404 requires field | Model has NO importWorkflowId field | Spec requires schema change |
-| Battle board | FR-106: collaborative dish-voting 3-column | Gantt-chart editor | **Architectural mismatch** -- spec vs implementation diverged |
-| EventReport templates | FR-601: 5 canonical templates | No templateId field; status-based workflow only | Spec requires schema change |
-| cron/contract-expiration-alerts | AGENTS.md said MISSING | IS in vercel.json (0 7 * * *) | AGENTS.md STALE -- already corrected |
-| Calendar sync page | FR-102: CapabilityCard | Uses bare `<Card>` imports (6-10, 210-226) | Design system violation |
-| Calendar List view | FR-603: ResearchTable | No List tab implementation | Stub only |
-| Calendar Schedule tab | FR-602: remove or implement | Status unclear -- tab may still render | |
+### P2.O — Command Board [v59]
 
-#### Domains WITHOUT Specs (HIGHEST priority to author)
+- [ ] Two competing data models: `CommandBoardCard` vs `BoardProjection`
+- [ ] Template sharing blocked (501)
+- [ ] Direct Prisma writes bypass manifest runtime
+- [ ] AI Chat UI, Plan Approval UI, Simulation toggle UI all missing (APIs exist)
+- [ ] Realtime collaboration not wired (Liveblocks exists, not connected)
+- [ ] React Flow not used (spec requires it; implementation uses custom HTML canvas)
 
-| Domain | Routes | Orphans | Priority |
-|---|---|---|---|
-| Kitchen | 148 | 95 (64%) | HIGHEST -- biggest domain, 18 manifests, no spec |
-| Inventory | 58 | -- | HIGH -- second biggest unspecced domain |
-| CRM | 41 | 31 (76%) | HIGH -- 29 orphans, 68 raw SQL |
-| Staff | 35 | 21 (60%) | HIGH -- 12 subdomains |
-| Payroll | 24 | -- | HIGH -- runtime bugs (P1.A) |
-| Procurement | 24 | -- | MEDIUM -- vendor-contracts gap |
-| Accounting | 17 | -- | MEDIUM -- expenses zeroed, journal MISSING |
-| Collaboration | 17 | -- | MEDIUM -- NO frontend pages |
-| Timecards | 10 | -- | LOW -- 1 test, no manifests |
-| Analytics | 5 | -- | LOW -- 22 raw SQL, 0 tests |
-| Logistics | 5 | -- | LOW -- GPS simulated |
-| Facilities | 5 | -- | LOW -- RLS 100% |
-| Communications | 7 | -- | LOW -- NO frontend pages |
-| Shipments | 9 | -- | LOW -- NO frontend pages |
-| Administrative | 13 | -- | LOW |
+### P2.P — Documents/Storage [v59]
 
-### P3.C -- Cron HTTP Method Inconsistency
-**8 cron jobs** in vercel.json (stable). AGENTS.md registry says 6 -- STALE.
+- [ ] No document management UI
+- [ ] Zero tests for `@repo/storage` and `@repo/pdf`
+- [ ] Duplicated base64 encoding logic across 6 PDF routes
 
-### P3.D -- Route Architecture (v112)
+### P2.Q — Environment Variable Gaps [v59]
 
-| Metric | v111 | v112 | Notes |
-|---|---|---|---|
-| Route files | **~622** | **632** | v112 CORRECTION (+10 routes added since v111) |
-| Manifest-using routes | **341** | **341** | STABLE |
-| Active manifests | **86** | **86** | STABLE |
-| Disabled manifests | **6** | **6** | STABLE |
-| Allowlist entries | **248** | **248** | STABLE |
-| Kitchen exemptions | **167** | **167** | STABLE |
-| Domains | **50** | **50** | STABLE |
+- [ ] `RESEND_WEBHOOK_SECRET` used without t3-env validation
+- [ ] `SENTRY_DSN` used in edge config but not declared in keys.ts
+- [ ] `PLASMIC_PROJECT_ID` / `PLASMIC_API_TOKEN` guarded by `invariant()` but not in `.env.example`
+- [ ] 5 other env vars absent from `.env.example`
 
-### P3.E -- AGENTS.md Corrections Needed (v112)
+### P2.R — Verified Discoveries [VERIFIED v63]
 
-**v112 METRIC CORRECTIONS (highest priority updates):**
-1. `as any`: **150** (v111 said 142 -- +8; breakdown: apps=41, manifest=90, other=19)
-2. `: any`: **apps-only=20** (v111 said 53 which was a specific subset; manifest=115, generated=463)
-3. queryRawUnsafe: **54** (v111 said 53 -- +1 new bottleneck-detector)
-4. Total routes: **632** (v111 said ~622 -- +10 added)
-5. Integrations routes: **25** (v111 said 5 -- MAJOR CORRECTION, 5x undercounted)
-6. Package test files: **72** (v111 said 64 -- +8 new tests)
-7. Total test files: **275** = 139 API + 72 pkg + 64 E2E (v111 said 267)
-8. POST routes bypassing manifest: **93** (v111 said 86 -- +7 new direct-write routes)
-9. test.skip in E2E: **41** (v111 implied 72 -- 31 skips removed/fixed)
-10. `@ts-expect-error`: **12** (v111 said 11 -- +1 in storybook resizable.stories.tsx)
-11. Inventory routes: **58** (stable)
-12. CRM routes: **41** (stable)
-13. Payroll test files: **6** (stable)
-14. E2E test files: **64** (stable)
-15. YTD SS wages: **PARTIALLY implemented** (types exist, call-site population unclear)
-16. Vitest configs: **15 files** (stable)
-17. Console total: **911** (stable)
-18. `@ts-ignore`: **0** (stable)
-19. RLS: **86/223 = 38.6%** (stable)
-20. Kitchen routes: **148** (stable)
-21. Events routes: **87** (stable)
-22. Staff routes: **35** (stable)
-23. Marketing routes: **3** (stable)
-24. Calendar dnd-kit: **IMPLEMENTED** (stable)
-25. Cron jobs: **8** in vercel.json (stable)
-26. CRM BROKEN_PRISMA_READ: **41** (stable)
-27. Contracts: 18 files/6 dirs, spelling split, sign race, VendorContract MISSING (stable)
-28. 21 DEFAULT schema models with 0% RLS (stable)
-29. Allowlist entries: **248** (stable)
-30. POST bypass: **93** (all covered by allowlist/exemption)
-31. Active manifests: **86**, disabled: **6** (stable)
+- [ ] **Kitchen: import uses nil UUIDs for FK fields** — `apps/api/app/api/kitchen/import/route.ts:311,333`
+- [ ] **QuickBooks: export history always returns empty** — `apps/api/app/api/integrations/quickbooks/history/route.ts:26-27`
+- [ ] **No SupplierSyncHistory model** — `apps/api/app/api/inventory/supplier-sync/status/route.ts:96-98` BLOCKER
+- [ ] **Workforce AI optimizer placeholder** — `apps/api/lib/staff/workforce-ai-optimizer.ts:569` always returns `0.75`
+- [ ] **Trash list route: 9+ table name mismatches**
+- [ ] **5 tables in migrations with no Prisma model** — `inter_location_transfers`, `inter_location_transfer_items`, `location_resource_shares`, `sensor_readings`, `food_safety_logs`
 
-### P3.F -- Test Infrastructure (v112 -- BREAKDOWN CORRECTED)
+### P2.S — Kitchen: Duplicate Route Directories [VERIFIED v63]
 
-- **275 test files** (139 API + 72 packages + 64 E2E) -- v112 CORRECTION (v111 said 267, package count was wrong)
-- **41 test.skip** in E2E -- v112 CORRECTION (v111 said 72 -- 31 skips removed/fixed)
-- **5 describe.skip** (sales-reporting + 4 event-timeline command tests)
-- **2 stub routes** returning 501 (command-board templates)
-- **Vitest configs: 15 files** (stable), including .bak2
-- Pre-push hook disabled (exit 0)
+- [ ] 11+ pairs (camelCase vs kebab-case): dish/dishes, ingredient/ingredients, station/stations, task/tasks, preplist/prep-lists, preplistitem/prep-list-items, recipe/recipes, menudish/menu-dishes, recipeingredient/recipe-ingredients, recipeversion/recipe-versions, inventoryitem/inventory
 
-### P3.G -- Raw fetch() Bypassing apiFetch
-**50 raw `fetch()` calls** in `(authenticated)/` bypass `apiFetch`. Highest in events (23 calls).
+### P2.T — Kitchen: Hardcoded Nutrition Database [VERIFIED v63]
 
-### P3.H -- Stale Backup Files
-- `apps/app/package.json.bak` -- should be removed
-- `apps/api/vitest.config.ts.bak2` -- should be removed
+- [ ] 16 hardcoded ingredients. Anything else silently returns zero nutrition values.
 
----
+### P2.U — CRM: No Deal Prisma Model [VERIFIED v63]
 
-## Orphan Route Analysis (v112)
+- [ ] Pipeline drag-and-drop broken. No `Deal` model. `deal-rules.manifest` stores in memory only.
 
-**Total: ~280 of 632 routes are ORPHANS.**
+### P2.V — CRM: No Leads Management UI [VERIFIED v63]
 
-| Domain | Total Routes | Orphans | Orphan % | Root Causes |
-|---|---|---|---|---|
-| Command-board | 22 | 21 | **95%** | Near-total dead code |
-| CRM | 41 | 31 | **76%** | Duplicate entity routes, raw SQL scoring |
-| Kitchen | 148 | 95 | **64%** | 15 dup pairs (30 dead), 45 subdirs |
-| Events | 87 | 54 | **62%** | CQRS commands, unfinished features |
-| Staff | 35 | 21 | **60%** | Scheduling subdomain unconsumed |
+- [ ] Full Lead API exists but no UI for listing, creating, converting, or disqualifying.
+
+### P2.W — CRM: All Manifests Store In Memory [VERIFIED v63]
+
+- [ ] All 5 CRM manifests use `store X in memory`. No CRM data persists through manifest system.
+
+### P2.X — Zod v3/v4 Version Mismatch [VERIFIED v63]
+
+- [ ] `packages/supplier-connectors` uses Zod `^3.24.2` while repo uses Zod v4.
+
+### P2.Y — Triple Overlapping SMS Files [VERIFIED v63]
+
+- [ ] `packages/notifications/` has `sms.ts`, `sms-new.ts`, `sms-temp.ts` with near-identical content.
+
+### P2.Z — Dual PDF Stacks [VERIFIED v63]
+
+- [ ] `packages/pdf` uses `@react-pdf/renderer`, `packages/sales-reporting` uses `pdfkit`.
+
+### P2.AA — Dead Packages Confirmed [VERIFIED v63]
+
+- [ ] `@repo/ai` — 0 consumers. Re-exports bare Vercel AI SDK, internal class unused.
+- [ ] `@repo/kitchen-state-transitions` — 0 consumers. State logic handled inline.
+
+### P2.BB — Events: EventDish entity missing from Prisma schema [NEW v63]
+
+- [ ] Spec requires EventDish for battle board dish voting. Model does not exist.
+
+### P2.BC — Events: No status transition commands [NEW v63]
+
+- [ ] Spec requires dedicated commands (confirm/cancel/start/complete). Events mutated directly without domain events or audit trail.
+
+### P2.BD — Staffing: CoverageBar design primitive missing [NEW v63]
+
+- [ ] Spec FR-401 requires CoverageBar component. Does not exist in design system.
+
+### P2.BE — Staffing: Onboarding tasks not implemented [NEW v63, CORRECTED v64]
+
+- [ ] `OnboardingTask` and `OnboardingCompletion` Prisma models exist but have zero API routes. No UI. Spec compliance gap.
+
+### P2.BF — REMOVED v64 (Calendar: sync routes verified present)
+
+All 6 calendar sync routes confirmed present. See v64 Corrections below.
+
+### P2.BG — Frontend API Calls Hitting Missing Routes [NEW v63, CORRECTED v64]
+
+Deep audit found the "130 missing routes" claim was massively overstated. Actual count: **12 confirmed missing routes** across 13 call sites. All 12 are already individually tracked as P0 items (P0.E, P0.T, P0.U, P0.V, P0.W, P0.AA, P0.AD, P0.Y). 41 other "missing" calls work correctly through the manifest dispatcher (`/api/manifest/[Entity]/commands/[command]`). 166 non-manifest routes have matching backend files. This item is now a cross-reference only.
+
+### P2.BH — Security: SQL Injection Risk in Staffing Coverage [NEW v63, DOWNGRADED v64]
+
+- [ ] `apps/api/app/api/staffing/coverage/route.ts:70-163` uses `$queryRawUnsafe`. However, only `$${locIdx}` (a hardcoded number) is interpolated into SQL. No user data reaches the query string. **Risk: LOW** (not exploitable as-is, but pattern should be replaced with `$queryRaw` + `Prisma.sql` for defense-in-depth).
+
+### P2.BI — Security: Exposed Stack Traces in Production API Responses [NEW v63, DOWNGRADED v64]
+
+- [ ] `apps/api/app/api/kitchen/import/route.ts:481-483` and `apps/api/app/api/events/documents/parse/route.ts:1235-1237` include `error.stack` in responses but ONLY when `NODE_ENV === "development"`. `apps/api/app/api/communications/email-templates/commands/create/route.ts:118` passes stack to `log.error` only, not the response body. **Risk: LOW-MEDIUM** (safe in production; fix to remove conditionally for defense-in-depth).
+
+### P2.BJ — Data Integrity: Clock-In Duplicates Not Prevented [NEW v63]
+
+- [ ] No unique constraint on `(tenant_id, employee_id, shift_id)` for TimeEntry.
+
+### P2.BK — Data Integrity: Payroll Generation Race Condition [NEW v63]
+
+- [ ] `apps/api/app/api/payroll/timecards/generate/route.ts:223-236` bulk inserts without checking for existing entries.
+
+### P2.BL — Data Integrity: Inventory Stock Adjustment Race Condition [NEW v63]
+
+- [ ] `apps/api/app/api/inventory/stock-levels/adjust/route.ts:314` checks for negative stock BEFORE the transaction starts.
+
+### P2.BM — Security: readFileSync for OPENAI_API_KEY in Production Code [NEW v64]
+
+- [ ] `apps/app/app/api/command-board/chat/route.ts:71-81` reads `.env` files with `readFileSync` to extract `OPENAI_API_KEY` at runtime when `process.env.OPENAI_API_KEY` is not set. Falls back to scanning `Documents/env.txt`.
+- [ ] `packages/manifest-adapters/src/bottleneck-detector/ai-suggestions.ts:48-58` has identical pattern. Both should use `process.env` only. File reads in serverless functions are unreliable and potentially expose secrets through logging/error paths.
+
+### P2.BN — Manifest Dispatcher Console.log in Hot Path [NEW v64]
+
+- [ ] `apps/api/app/api/manifest/[entity]/commands/[command]/route.ts:46` logs every command execution with `console.log` including userId, userRole, tenantId, and body keys. High-traffic route. Violates P1.B policy and leaks PII to stdout.
+
+### P2.BO — Missing Error Boundaries [NEW v64]
+
+- [ ] Only 1 `error.tsx` exists in the authenticated layout (`apps/app/app/(authenticated)/error.tsx`). 233 page.tsx files have no dedicated error boundary. Module-level crashes propagate to the top-level catch-all, losing navigation context and showing generic error UI.
 
 ---
 
-## Code Quality Metrics (v112)
+## P3 — Low Priority (Polish / Cleanup)
 
-| Metric | v111 | v112 | Status |
-|---|---|---|---|
-| Route files | **~622** | **632** | v112 CORRECTION (+10 added) |
-| `as any` production | **142** | **150** | v112 CORRECTION (+8; apps=41, manifest=90, other=19) |
-| `: any` production | **53** | **apps-only=20** | v112 REFINEMENT (v111 measured subset; manifest=115, generated=463) |
-| `@ts-ignore` | **0** | **0** | STABLE |
-| `@ts-expect-error` | **11** | **12** | v112 CORRECTION (+1 in storybook) |
-| queryRawUnsafe | **53** | **54** | v112 CORRECTION (+1 new bottleneck-detector) |
-| Raw fetch() | **50** | **50** | STABLE |
-| Console total | **911** | **911** | STABLE |
-| API test files | **139** | **139** | STABLE |
-| Package test files | **64** | **72** | v112 CORRECTION (+8 new tests) |
-| E2E spec files | **64** | **64** | STABLE |
-| Total test files | **267** | **275** | v112 CORRECTION (139+72+64) |
-| RLS tables/total | **86/223** | **86/223** | STABLE (38.6%) |
-| Inventory routes | **58** | **58** | STABLE |
-| CRM routes | **41** | **41** | STABLE |
-| Payroll test files | **6** | **6** | STABLE |
-| Kitchen routes | **148** | **148** | STABLE |
-| Events routes | **87** | **87** | STABLE |
-| Vitest config files | **15** | **15** | STABLE |
-| Integrations routes | **5** | **25** | **v112 MAJOR CORRECTION** (5x undercounted) |
-| POST bypass manifest | **86** | **93** | v112 CORRECTION (+7) |
-| E2E test.skip | **72** | **41** | v112 CORRECTION (31 removed/fixed) |
+### Dead Packages (confirmed zero imports)
 
----
+- `packages/brand/` — wrong naming convention (`@capsule/` vs `@repo/`)
+- `packages/sales-reporting/` — 1 API consumer, no frontend UI
 
-## RLS Coverage (v112)
+### Package Issues
 
-**86 tables** with RLS out of **223** total = **38.6%**. 137 tables without RLS.
+- Zod version fragmentation across 3 version ranges (see P2.X)
+- `packages/sales-reporting/`: wrong package name, stale vitest, separate lockfile
+- `packages/event-parser/`: narrow usage (2 consumers), no tests
 
-**Per-schema RLS:** tenant_accounting/facilities/logistics: **100%**. tenant_crm: **66%**. tenant_inventory: **53%**. tenant_staff: **38%**. tenant_kitchen: **29%** (worst large schema). tenant_events: **26%**. tenant_admin: **18%**. bare tenant: **12%**. DEFAULT/public: **21 models 0% RLS**. core/platform: **0% RLS**.
+### Manifest System Issues
 
----
+- 86 active manifests, 6 disabled — all compiled into IR (no silent dead manifests)
+- 178 generated routes
+- IR tracks GET (260) and POST (589) routes
+- 71 route files use executeManifestCommand
+- ESLint enforcement not activated; 5,013 hardcoded `/api/` paths
 
-## Security Summary (v112)
+### Stub Connectors
 
-- **Calendar OAuth tokens PLAINTEXT** (P0.7) -- no encryption infrastructure, no RLS on ProviderSync
-- **Auth coverage:** ~96.8% middleware -- RLS only ~38.6%
-- **54 `queryRawUnsafe`** across codebase (all parameterized, no injection risk)
-- **Contracts:** spelling split, race condition, public sign bypasses manifest, 400 not 409, renew wrong, 10 command routes MISSING
-- **Procurement vendor-contracts frontend calls 404 routes**
-- **86 RLS tables** (38.6%) -- 137 without RLS
-- **21 models in DEFAULT schema with 0% RLS** -- HIGH RISK
-- **core/platform schemas: 0% RLS** -- HIGH RISK
-- **Pre-push hook disabled** (exit 0)
-- **E2E CI: NO e2e-workflows job**
-- **93 POST routes bypass manifest** (all covered by allowlist/exemption)
-- **Payroll div-by-zero** stores Infinity, YTD SS partially implemented, tenant_payroll MISSING
+- `packages/supplier-connectors/` — US Foods and Charlie's Produce are stubs
+
+### Duplicate Components
+
+- 4 copies of StatCard in tools domain
+- 2 copies of getInitials() in collaboration package
+- 2 cursor implementations
+
+### Skipped Tests
+
+- 41 skipped tests across 13 E2E files
+- 4 unconditionally skipped in ai-context-aware-suggestions E2E
+- 2 test files with broken imports (22 total — see P1.J)
+- 8+ domains with zero E2E coverage (Accounting, CRM, Payroll, Search, Settings, Timecards, Training, Webhooks)
+
+### Stats
+
+- 1,105 TODOs across 250 files
+- 5 BLOCKER comments in API routes
+- 12+ hardcoded zero UUIDs in production code
+- ~974 console statements across ~364 files
+- 12 confirmed missing backend routes (already tracked as individual P0 items)
+- 41 frontend calls work via manifest dispatcher (not missing)
+- 2 test files with broken imports (619 total — see P1.J)
 
 ---
 
-## Route Inventory (v112)
+## Spec Gap Summary
 
-| Domain | Routes | Orphans | Spec | Notes |
-|---|---|---|---|---|
-| Kitchen | 148 | 95 (64%) | NONE | 18 manifests, 15 dup pairs, 49 direct DB, 37 tests, 167 exemptions |
-| Events | 87 | 54 (62%) | EXISTS | ~6% MET; confidence MISSING; importWorkflowId MISSING; 23 raw fetch() |
-| Inventory | 58 | ~28 | NONE | 18 consumers; 2 dup PO pairs; 18 raw SQL; 6 tests |
-| CRM | 41 | 31 (76%) | NONE | 41 BROKEN_PRISMA_READ, 68 raw SQL, 10 dirs ALL orphans |
-| Staff | 35 | 21 (60%) | NONE | 12 subdomains; 21 scheduling; clean |
-| **Integrations** | **25** | -- | PARTIAL | **v112 MAJOR CORRECTION** (v111 said 5); goodshuffle(9), nowsta(6), quickbooks(1), webhooks(9) |
-| Payroll | 24 | ~8 | NONE | tenant_payroll MISSING; div-by-zero; YTD SS; FUTA/SUTA zero; 6 tests |
-| Procurement | 24 | ~11 | NONE | Vendor-contracts ZERO cmd dirs; frontend calls 404 |
-| Command-board | 22 | 21 (95%) | EXISTS | 2 routes 501; 6 tests |
-| Accounting | 17 | ~7 | NONE | Expenses zero; journal/ledger MISSING; reconciliation SIMULATED; RLS 100% |
-| Collaboration | 17 | ~8 | NONE | Fragmented; NO frontend pages, NO API consumers |
-| Administrative | 13 | -- | NONE | -- |
-| Timecards | 10 | -- | NONE | 4 Prisma models, 1 test, no manifests |
-| Settings | 10 | -- | -- | -- |
-| Shipments | 9 | -- | NONE | 11 BROKEN_PRISMA_READ; NO frontend pages, NO API consumers |
-| Calendar | 8 | -- | EXISTS | OAuth plaintext (P0.7); dnd-kit IMPLEMENTED; ~57% MET |
-| Training | 7 | -- | DRAFT | 15 raw SQL; NO frontend pages, NO API consumers |
-| Rolepolicy | 7 | -- | NONE | -- |
-| Communications | 7 | -- | NONE | NO frontend pages, NO API consumers |
-| Cron | 6 | -- | -- | 8 entries in vercel.json |
-| Logistics | 5 | -- | NONE | GPS simulated; 1 test |
-| Facilities | 5 | -- | NONE | RLS 100% |
-| Analytics | 5 | -- | NONE | 22 raw SQL; 0 tests |
-| Public | 4 | -- | -- | -- |
-| AI | 4 | -- | -- | -- |
-| Mobile | 3 | -- | -- | -- |
-| Knowledge-base | 3 | -- | NONE | 2 tests |
-| Marketing | 3 | -- | EXISTS | -- |
-| Warehouse | 2 | -- | NONE | GET-only |
-| User | 2 | -- | -- | -- |
-| Staffing | 2 | -- | EXISTS | 5 queryRawUnsafe |
-| Smsautomationrule | 2 | -- | -- | -- |
-| Activity-feed | 2 | -- | -- | -- |
-| +16 single-route domains | 16 | -- | -- | -- |
-| **Total** | **632** | **~280** | | **50 domains** |
+See `docs/audits/v61-spec-comparison.md` for detailed per-spec analysis.
 
-**Handler counts:** 242 POST, 461 GET, 32 PUT, 22 PATCH, 41 DELETE (798 total handlers)
+### Events (~40% spec compliance)
 
----
+Missing `confidence` field on EventSummary (confirmed absent). No `importWorkflowId` on Event (confirmed absent). No status transition commands. 6-stage import pipeline not implemented (flat parseStatus vs 8-phase display). EventDish model does not exist (battle board non-functional). Budget alerts not integrated. Event detail not using spec shell composition.
 
-## Verification Commands (v112)
+### Calendar (partial compliance)
 
-```bash
-# @ts-expect-error (v112: 12)
-grep -rn '@ts-expect-error' --include='*.ts' --include='*.tsx' apps/ packages/ --exclude-dir=node_modules --exclude-dir=.next --exclude-dir=dist --exclude-dir=generated
+All 6 sync routes CONFIRMED present. `CalendarSyncConnection` model is `ProviderSync` (naming mismatch only). Missing mobile responsive list view. Hardcoded localhost confirmed (P0.AH, display-only fallback). Reschedule API CONFIRMED.
 
-# @ts-ignore (v112: 0)
-grep -rn '@ts-ignore' --include='*.ts' --include='*.tsx' apps/ packages/ --exclude-dir=node_modules --exclude-dir=.next --exclude-dir=dist --exclude-dir=generated
+### Staffing (~70% compliance)
 
-# RLS (v112: 86 tables, 38.6%)
-grep -r 'ENABLE ROW LEVEL SECURITY' packages/database/prisma/migrations/ --include='*.sql' | sed 's/.*ALTER TABLE \([^ ]*\).*/\1/' | sort -u | wc -l
+Employee CRUD: COMPLETE. Scheduling: COMPLETE. Timecards: PARTIAL (no clock in/out). Certifications: PARTIAL (no expiration alerts). Onboarding: Prisma models exist (OnboardingTask/OnboardingCompletion) but zero API routes — NOT IMPLEMENTED. CoverageBar primitive: MISSING. Design system violations in staffing pages.
 
-# Test files (v112: 275 = 139 API + 72 pkg + 64 E2E)
-find apps/api/__tests__/ -name '*.test.*' | wc -l
-find packages/ -name '*.test.*' -not -path '*/node_modules/*' -not -path '*/dist/*' | wc -l
-find e2e/ -name '*.spec.*' | wc -l
+### Command Board
 
-# Console statements (v112: 911 -- stable since v106)
-for type in log error warn info debug; do echo -n "console.${type}: "; grep -rn "console\.${type}" --include='*.ts' --include='*.tsx' apps/ packages/ --exclude-dir=node_modules --exclude-dir=.next --exclude-dir=dist --exclude-dir=__tests__ --exclude-dir=e2e | wc -l; done
+AI Chat backend built, frontend MISSING. Plan Approval/Rejection backend built, frontend MISSING. Simulation Toggle: 6 API endpoints built, frontend MISSING. React Flow required, custom HTML canvas used. Data model divergence: frontend uses CommandBoardCard, API uses BoardProjection.
 
-# queryRawUnsafe (v112: 54)
-grep -rn 'queryRawUnsafe' apps/ packages/ --include='*.ts' | grep -v '__tests__' | grep -v 'node_modules' | wc -l
+### Marketing
 
-# Raw fetch() bypass (v112: 50)
-grep -rn 'fetch(' apps/app/app/'(authenticated)'/ --include='*.ts' --include='*.tsx' | grep -v 'apiFetch' | grep -v 'node_modules' | wc -l
+Campaigns "Coming Soon". SMS rules use plain Dialog not ContactFormCard. Leads list uses custom div grid. Zero ResearchTable usage. No public lead capture endpoint.
 
-# CI: E2E has no e2e-workflows job (STILL OPEN)
-grep -A5 'e2e-workflows' .github/workflows/ci.yml 2>/dev/null || echo "NO e2e-workflows job found"
-```
+### Contracts
 
----
+EventContract and VendorContract models exist in Prisma. EventContract has 8 commands in manifest IR. VendorContract has 10 commands in manifest IR. Public signing surface at `/sign/[signingToken]` needs verification. Contract expiration cron exists in vercel.json.
 
-## Resolved / Do Not Reopen
+### CRM
 
-### P0 Bugs (All 22 Resolved v65-v72)
-### P0.3 Manifest POST Route Gap (RESOLVED v88)
-### P0.6 Frontend Rewrite Destinations (RESOLVED v105)
-### P0.8 /api/public/ Auth Gating (RESOLVED v105)
+NO spec document. Ranked HIGH priority for spec authoring. Full pipeline board, proposals, scoring, venues built. Lead API exists but UI only partially built.
 
-### Confirmed Resolved Items
-- AllergenWarning Manifest Wiring (v88)
-- @repo/observability Zero-Import Claim (v85)
-- Scheduling API, Test Suite Repair (v77-v80), Payroll Period ID
-- Search FR-107, Calendar Features, Bare Table Violations (v84)
-- Catering NOT a domain (event type classification)
-- tenant_facilities/logistics/accounting RLS: 100%
-- TimeOffRequest model: EXISTS as EmployeeTimeOffRequest
-- Staffing locationId UUID validation: EXISTS
-- Marketing spec: EXISTS at specs/marketing/SPEC.md
-- Handler counts: 242 POST, 461 GET, 32 PUT, 22 PATCH, 41 DELETE, 798 total
-- Calendar drag-and-drop (dnd-kit): IMPLEMENTED with PointerSensor + TouchSensor
+### Kitchen
 
-### v110 Items That Were WRONG (DO NOT REOPEN their corrections)
+NO spec (ranked CRITICAL — largest domain at 240 files with 32 Prisma models, 46 API route groups, 31 frontend pages, zero spec coverage). 11 duplicate route directory pairs. Zero commands/ directories (pure REST pattern).
 
-These v110 findings have been superseded by v111's verification:
-- **`: any` = 142**: WRONG. Correct: **53** (overcounted by 89, 2.7x error)
-- **`as any` = 150**: WRONG. Correct: **142** (8 fewer)
-- **queryRawUnsafe = 54**: WRONG at the time. v111 corrected to **53**. v112 says **54** (+1 new instance).
-- **Inventory routes = 57**: WRONG. Correct: **58** (off by +1)
-- **CRM routes = 42**: WRONG. Correct: **41** (off by -1)
-- **Total routes = ~632**: WRONG. Correct: **~622** (10 fewer)
-- **Payroll test files = 7**: WRONG. Correct: **6** (1 fewer)
-- **E2E test files = 41**: WRONG. Correct: **64** (reused v109's swapped count)
-- **Package test files = 72**: WRONG. Correct: **64**
-- **Total test files = 275**: WRONG. Correct: **267** (139+64+64)
-- **POST routes bypassing manifest = 112**: WRONG. Correct: **86** (all covered by allowlist/exemption)
-- **Vitest configs = 4**: WRONG. Correct: **15** files
-- **YTD SS wages "never passed"**: OVERSIMPLIFIED. Correct: type definitions exist in taxEngine.ts but may not be populated at call sites (PARTIALLY implemented)
+### Domains WITHOUT specs (ranked by urgency)
 
-### v111 Items That Were WRONG (DO NOT REOPEN their corrections)
-
-These v111 findings have been superseded by v112's verification:
-- **Integrations routes = 5**: WRONG. Correct: **25** (5x undercounted; goodshuffle=9, nowsta=6, quickbooks=1, webhooks=9)
-- **Total routes = ~622**: WRONG. Correct: **632** (+10 routes added since v111)
-- **`as any` = 142**: WRONG. Correct: **150** (+8; apps=41, manifest=90, other=19)
-- **`: any` = 53 (implied comprehensive)**: MISLEADING. Correct: **apps-only=20** (v111 measured a subset; manifest=115, generated=463)
-- **@ts-expect-error = 11**: WRONG. Correct: **12** (+1 in storybook resizable.stories.tsx)
-- **queryRawUnsafe = 53**: WRONG. Correct: **54** (+1 new bottleneck-detector)
-- **Package test files = 64**: WRONG. Correct: **72** (+8 new tests)
-- **Total test files = 267**: WRONG. Correct: **275** (139+72+64)
-- **POST routes bypassing manifest = 86**: WRONG. Correct: **93** (+7 new direct-write routes)
-- **test.skip in E2E = 72**: WRONG. Correct: **41** (31 skips removed/fixed)
-
-### v109 Items That Were WRONG (DO NOT REOPEN their corrections)
-
-- **Test file breakdown = "64 API + 41 pkg + 139 E2E"**: WRONG. Correct: **139 API + 64 pkg + 64 E2E** (v111: E2E=64, not 41)
-- **Events spec compliance = ~31%**: WRONG. Correct: **~6% fully MET** (2/35 FRs)
-- **Calendar spec compliance = ~58%**: WRONG. Correct: **~57% MET** (20/34)
-- **RLS = 84/223**: WRONG. Correct: **86/223 = 38.6%**
-- **`as any` = 124**: WRONG. Correct: **142**
-- **`: any` = 106**: WRONG. Correct: **53** (v110 said 142 -- ALSO WRONG)
-- **`@ts-expect-error` = 12**: WRONG at the time. v111 corrected to **11**. v112 now says **12** (new entry in storybook).
-- **queryRawUnsafe = 50**: WRONG. Correct: **54** (v109 said 54, v111 corrected to 53, v112 back to 54 with new instance)
-- **Kitchen routes = 149**: WRONG. Correct: **148**
-- **Payroll test files = 5**: WRONG. Correct: **6** (v109 said 7, v111 corrects to 6)
-- **Marketing routes = 1**: WRONG. Correct: **3**
-- **CRM BROKEN_PRISMA_READ = 25**: WRONG. Correct: **41**
-
-### v108 Items That Were WRONG (DO NOT REOPEN)
-
-- Console total=1,021 WRONG (911 correct). CRM orphans=~16 WRONG (29). Kitchen exemptions=~134 WRONG (167). Allowlist=~240 WRONG (248). Contracts=14 files/3 dirs WRONG (18/6). Cron=6 WRONG (8). POST bypass=43 WRONG (86). E2E test.skip=51 WRONG (72).
-
-### v107 Items That Were WRONG (DO NOT REOPEN)
-
-- @ts-ignore=7 WRONG (0). Kitchen manifests=1 WRONG (18). Calendar dnd-kit NOT WRONG (IS implemented). Logistics=25 WRONG (5). Collaboration=5 WRONG (17). Analytics=17 WRONG (5). Knowledge-base=13 WRONG (3).
-
-### v106 Items That Were WRONG (DO NOT REOPEN)
-
-- as any=5 WRONG (142). :any=157 WRONG (53). Kitchen dup pairs=12 WRONG (15). Staff=37 WRONG (35). Inventory=58 WRONG then v110 said 57 WRONG (58 correct per v111). Marketing=5 WRONG (3). Exemption entries=208 WRONG (167).
-
-### v105 Items That Were WRONG (DO NOT REOPEN)
-
-- as any=150 included generated files. :any=605 included generated files. Kitchen BROKEN_PRISMA_READ=19 WRONG (5). CRM test files=19 WRONG (4). Sales-reporting=DEAD WRONG (ALIVE). EventSummary.confidence EXISTS WRONG (MISSING).
-
-### Packages Confirmed ALIVE (DO NOT REOPEN as dead)
-@repo/observability (402 imports), @repo/mcp-server (3 runtime imports), sales-reporting (full POST + tests), @repo/event-parser, @repo/storage, @repo/payroll-engine, @repo/pdf, @repo/realtime, @repo/supplier-connectors, @repo/feature-flags (11 imports)
-
-### Packages Confirmed DEAD (DO NOT REOPEN as alive)
-@repo/ai, @capsule/brand, @repo/kitchen-state-transitions -- all zero runtime imports
+| Priority | Domain | Files | Why needed |
+|----------|--------|-------|------------|
+| CRITICAL | kitchen/ | 240 | Largest domain, no spec coverage |
+| HIGH | crm/ | 78 | Full CRM lifecycle, no spec at all |
+| HIGH | analytics/ | 79 | Cross-cutting dashboards, no metrics contract |
+| HIGH | scheduling/ | 41 | Core operational module, no API exists |
+| MEDIUM | inventory/ | 61 | Warehouse operations |
+| MEDIUM | accounting/ | 50 | Financial module |
+| MEDIUM | procurement/ | 61 | Requisition through PO |
+| MEDIUM | payroll/ | 100 | Payroll processing |
 
 ---
 
 ## Archive Map
 
-- `docs/implementation-history/` -- pass logs, executive summaries
-- `docs/implementation-history/v77-v80-test-suite-repair.md`
-- `docs/audits/` -- numbered audit passes
-- `docs/audits/v96-audit-findings.md`
+Completed pass write-ups and historical notes:
+- `docs/implementation-history/` — pass logs, executive summaries
+- `docs/audits/` — numbered audit passes
+- `docs/audits/v61-spec-comparison.md` — detailed spec gap analysis
 
 ---
 
 ## Methodology
 
-- **v113**: Full spec-vs-implementation audit. Read all 47 spec files. Cross-referenced every FR against actual code (schema.prisma, API routes, frontend pages). Key findings: (1) Public signing surface EXISTS at `/sign/contract/[token]/` not `/sign/[signingToken]`. (2) EventSummary.confidence field is MISSING from schema. (3) Event.importWorkflowId field is MISSING. (4) VendorContract commands all exist in manifest IR (12 entries) but have NO dedicated HTTP route directories. (5) Battle board is Gantt-chart, not collaborative dish-voting. (6) Calendar sync page uses bare Card (FR-102 violation). (7) Calendar List view is stub only. (8) Marketing has highest spec compliance at ~60%. (9) 3 TODO specs are planning documents only.
-- **v112**: Multi-agent verification on branch `checkpoint/tailscale-auth-local-access-20260514`. KEY CHANGES: Integrations=25 (v111 said 5 -- 5x UNDERCOUNT). Total routes=632 (v111 said ~622). @ts-expect-error=12 (v111 said 11). queryRawUnsafe=54 (v111 said 53). Package tests=72 (v111 said 64). Total tests=275 (v111 said 267). POST bypass=93 (v111 said 86). test.skip=41 (v111 implied 72). `as any`=150 (v111 said 142; breakdown: apps=41, manifest=90, other=19). `: any` apps-only=20 (v111's 53 was a subset). NEW: Frontend consumption analysis (4 domains with NO frontend: collaboration, training, shipments, communications). NEW: Specs coverage (47 spec files; 8 major domains with ZERO specs). Handler counts: 242 POST, 461 GET, 32 PUT, 22 PATCH, 41 DELETE = 798 total.
-- **v111**: Multi-agent verification (14+ agents) on branch `checkpoint/tailscale-auth-local-access-20260514`. KEY CHANGES: `:any`=53 (v110 said 142 -- 2.7x OVERCOUNT). `as any`=142 (v110 said 150). queryRawUnsafe=53 (v110 said 54). Inventory=58 (v110 said 57). CRM=41 (v110 said 42). Total routes=~622 (v110 said ~632). E2E=64 (v110 said 41). Payroll tests=6 (v110 said 7). Total tests=267. Vitest configs=15 (v110 implied 4). YTD SS=PARTIALLY implemented (types exist, call-site unclear). NEW: CI workflow detail (node version inconsistency, 3 missing concurrency groups, vercel-compat lacks prisma generate, deploy.yml SKIP_ENV_VALIDATION all steps, npm audit + Lighthouse continue-on-error). NEW: TODOs/placeholders section (9 domains with stubs/simulations). Manifest enforcement: dual (static CI + runtime SHA-256), 86 POST bypass all covered by allowlist.
-- **v110**: Multi-agent audit (12 subagents). KEY CHANGES: Test files=275 (139+72+64). API tests=139/139 PASS. Events spec=~3% MET. CRM=68 raw SQL. Kitchen=148, 45 subdirs. 2 stale .bak files. ignoreBuildErrors safe to remove.
-- **v109**: Test file breakdown SWAPPED. Events spec ~6% MET. Calendar ~55%. Contracts ~21% NEW. RLS=86/223=38.6%. as any=150, :any=142. queryRawUnsafe=54, fetch=50 (SWAPPED). CRM 41 BROKEN_PRISMA_READ.
-- **v108-v102**: See archive. Each version corrected prior errors. v103 was on DIFFERENT branch.
-- **v77-v80**: Test suite repair. 678 -> 0 failing tests.
-- **v65-v72**: All 22 P0 items resolved.
+- **v64**: 60+ agent comprehensive audit (7 spec readers, 30 P0 verifiers, 11 domain analysts, 6 spec compliance checkers, 3 security verifiers, 3 new-issue scouts). All 30 P0 items re-verified — 29 confirmed, 1 REMOVED (P0.M false positive). P2.BH downgraded to LOW (safely constructed params, no user data). P2.BI downgraded to LOW-MEDIUM (gated behind NODE_ENV=development). 3 new P2 items: readFileSync for OPENAI_API_KEY (P2.BM), manifest dispatcher console.log in hot path (P2.BN), missing error boundaries (P2.BO). Spec compliance re-verified: Events ~40%, Staffing ~70%, Calendar partial, Contracts partially verified. Kitchen confirmed largest domain (240 files, 32 Prisma models, 46 API groups). CRM has 78 files with no spec. Domain file counts updated.
+- **v63**: Full re-verification of all 30 P0 items by 40+ parallel agents. 30 CONFIRMED. P1.A counts updated. P1.B raised (~974/~364). P1.C RLS corrected. P1.D duplicate routes claim CHALLENGED. P1.G corrected. 6 new P2 items (P2.BB–P2.BL).
+- **v62**: Full re-verification of all 28 P0 items from v61. 2 new P0 (P0.AG, P0.AH). 8 new P2 items (P2.S–P2.AA).
+- **v61**: Massive multi-agent audit synthesis. 28 P0 items verified. 5 new P0 (P0.AB–P0.AF). 7 new P2 items.
+- **v60**: 30+ parallel Sonnet verification agents + 1 Opus synthesis. 3 new P0 (P0.Y–P0.AA).
+- **v59**: 80+ parallel verification agents. 7 new P0 (P0.R–P0.X).
+- **v58**: Initial 80+ agent audit.
+
+### v64 Corrections
+
+- **P0.M REMOVED**: KnowledgeBaseEntry IS in routes.manifest.json with 6 routes (list, detail, create, publishEntry, remove, update). The manifest IS compiled into IR. The v63 claim "absent from routes.manifest.json" and "never compiled" was FALSE. The real bug for Knowledge Base is P0.L (response shape mismatch) only.
+- **P2.BF REMOVED**: Deep audit confirmed all 6 calendar sync routes are present. The v63 claim of missing trigger/callback endpoints was FALSE.
+- **P2.BG CORRECTED**: Deep audit found actual count is 12 confirmed missing routes (not 130). 41 "missing" calls work through manifest dispatcher. 166 non-manifest routes have matching backend files. All 12 missing routes are already tracked as individual P0 items (P0.E, P0.T, P0.U, P0.V, P0.W, P0.AA, P0.AD, P0.Y).
+- **P2.BE CORRECTED**: OnboardingTask and OnboardingCompletion Prisma models DO exist. Gap is API routes and UI only, not models.
+- **P1.J CORRECTED**: Actual count is 619 TS errors (TS2307) across 19 test files, not "22 type errors in 2 files".
+- **P1.A UPDATED**: Added finding that 30/40 design blocks have zero external consumers.
+- **P2.BH DOWNGRADED**: `$queryRawUnsafe` in staffing/coverage uses safely constructed `locParam`. Only `$${locIdx}` (a hardcoded numeric index) is interpolated. No user data enters the SQL string. Changed from HIGH to LOW severity.
+- **P2.BI DOWNGRADED**: Stack traces in kitchen/import:481 and events/documents/parse:1235 are gated behind `NODE_ENV === "development"`. Email-templates/create:118 passes stack to `log.error` only, not response. Changed from HIGH to LOW-MEDIUM severity.
+
+### v64 New Discoveries
+
+- **P2.BM**: readFileSync for OPENAI_API_KEY — `apps/app/app/api/command-board/chat/route.ts:71-81` and `packages/manifest-adapters/src/bottleneck-detector/ai-suggestions.ts:48-58` fall back to reading `.env` files from disk when `process.env.OPENAI_API_KEY` is unset. Unreliable in serverless, potential secret exposure through logging.
+- **P2.BN**: Manifest dispatcher console.log — `apps/api/app/api/manifest/[entity]/commands/[command]/route.ts:46` logs every command with userId, userRole, tenantId, and body keys. High-traffic hot path. PII leak to stdout.
+- **P2.BO**: Missing error boundaries — only 1 error.tsx for 233 page.tsx files in authenticated layout. Module-level crashes lose navigation context.

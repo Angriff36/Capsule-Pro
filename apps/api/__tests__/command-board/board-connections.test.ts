@@ -66,10 +66,9 @@ import { database } from "@repo/database";
 import { GET as listConnections } from "@/app/api/command-board/connections/list/route";
 import { getTenantIdForOrg, requireCurrentUser } from "@/app/lib/tenant";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
-import { InvariantError } from "@/app/lib/invariant";
 
 const mockAuth = vi.mocked(auth) as any;
-const mockGetTenantIdForOrg = vi.mocked(getTenantIdForOrg) as any;
+const mockGetTenantIdForOrg = vi.mocked(getTenantIdForOrg);
 const mockRequireCurrentUser = vi.mocked(requireCurrentUser);
 const mockCreateManifestRuntime = vi.mocked(createManifestRuntime);
 const mockConnection = vi.mocked(database.commandBoardConnection);
@@ -524,7 +523,7 @@ describe("Command Board Connection Tests", () => {
 
     it("should return 400 for unknown tenant", async () => {
       mockAuth.mockResolvedValue({ orgId: TEST_ORG_ID, userId: TEST_USER_ID });
-      mockGetTenantIdForOrg.mockResolvedValue(null);
+      mockGetTenantIdForOrg.mockResolvedValue(null as never);
 
       const request = new NextRequest(
         "http://localhost/api/command-board/connections/list"

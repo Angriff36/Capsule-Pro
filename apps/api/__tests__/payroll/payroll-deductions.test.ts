@@ -5,29 +5,14 @@
  * with authentication, authorization, tenant isolation, and error handling.
  */
 
-import { database } from "@/lib/database";
+import { database } from "@repo/database";
 import { NextRequest } from "next/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { GET as getDeduction } from "@/app/api/payroll/deductions/[id]/route";
 import { GET as listDeductions } from "@/app/api/payroll/deductions/list/route";
 
-const { mockDatabase } = vi.hoisted(() => ({
-  mockDatabase: {
-    employeeDeduction: {
-      findMany: vi.fn(),
-      findFirst: vi.fn(),
-    },
-  },
-}));
-
 // Mock dependencies
 vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
-vi.mock("@repo/database", () => ({
-  database: mockDatabase,
-}));
-vi.mock("@/lib/database", () => ({
-  database: mockDatabase,
-}));
 vi.mock("@/app/lib/tenant", () => ({
   getTenantIdForOrg: vi.fn(),
 }));
@@ -144,10 +129,14 @@ describe("Employee Deductions API", () => {
       );
       await listDeductions(request);
 
-      expect(database.employeeDeduction.findMany).toHaveBeenCalled();
-      const call = vi.mocked(database.employeeDeduction.findMany).mock.calls[0]?.[0];
-      expect(call?.where?.tenantId).toBe(TEST_TENANT_ID);
-      expect(call?.where?.deletedAt).toBe(null);
+      expect(database.employeeDeduction.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: {
+            tenant_id: TEST_TENANT_ID,
+            deleted_at: null,
+          },
+        })
+      );
     });
 
     it("should order by created_at descending", async () => {
@@ -247,6 +236,7 @@ describe("Employee Deductions API", () => {
           where: {
             id: "deduction-001",
             tenant_id: TEST_TENANT_ID,
+            deleted_at: null,
           },
         })
       );

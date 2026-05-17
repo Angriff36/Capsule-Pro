@@ -7,7 +7,6 @@
 import { database, Prisma } from "@repo/database";
 import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { InvariantError } from "@/app/lib/invariant";
 import { GET, POST } from "@/app/api/events/budgets/route";
 import {
   CreateEventBudgetSchema,
@@ -63,7 +62,7 @@ vi.mock("@sentry/nextjs", () => ({
 
 // Import mocked modules
 import { auth } from "@repo/auth/server";
-import { getTenantIdForOrg, requireCurrentUser } from "@/app/lib/tenant";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 // Test constants
 const TEST_TENANT_ID = "a0000000-0000-4000-a000-000000000001";
@@ -542,9 +541,6 @@ describe("Event Budget API", () => {
 
     it("should return 401 for unauthenticated requests", async () => {
       vi.mocked(auth).mockResolvedValue({ orgId: null } as any);
-      vi.mocked(requireCurrentUser).mockImplementation(() => {
-        throw new InvariantError("Unauthorized");
-      });
 
       const request = createMockRequest(
         "http://localhost:3000/api/events/budgets"
@@ -865,9 +861,6 @@ describe("Event Budget API", () => {
 
     it("should return 401 for unauthenticated requests", async () => {
       vi.mocked(auth).mockResolvedValue({ orgId: null } as any);
-      vi.mocked(requireCurrentUser).mockImplementation(() => {
-        throw new InvariantError("Unauthorized");
-      });
 
       const request = createMockRequest(
         "http://localhost:3000/api/events/budgets",

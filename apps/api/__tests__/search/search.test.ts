@@ -17,15 +17,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
 vi.mock("@/app/lib/tenant", () => ({
-  requireCurrentUser: vi.fn().mockResolvedValue({
-    id: "test-user-id",
-    tenantId: "test-tenant",
-    role: "admin",
-    email: "test@example.com",
-    firstName: "Test",
-    lastName: "User",
-  }),
-
   getTenantIdForOrg: vi.fn(),
   requireTenantId: vi.fn(),
 }));
@@ -132,23 +123,27 @@ describe("Global Search API — GET /api/search", () => {
 
   // ---------------------------------------------------------------- No query
   describe("missing or empty query parameter", () => {
-    it("returns 400 when q is not provided", async () => {
+    it("returns empty groups when q is not provided", async () => {
       const response = await GET(makeRequest());
       const body = await response.json();
 
-      expect(response.status).toBe(400);
-      expect(body.success).toBe(false);
+      expect(response.status).toBe(200);
+      expect(body.success).toBe(true);
+      expect(body.groups).toEqual([]);
+      expect(body.total).toBe(0);
     });
 
-    it("returns 400 when q is whitespace-only", async () => {
+    it("returns empty groups when q is whitespace-only", async () => {
       const response = await GET(makeRequest({ q: "   " }));
       const body = await response.json();
 
-      expect(response.status).toBe(400);
-      expect(body.success).toBe(false);
+      expect(response.status).toBe(200);
+      expect(body.success).toBe(true);
+      expect(body.groups).toEqual([]);
+      expect(body.total).toBe(0);
     });
 
-    it("does not call any database model when q is not provided", async () => {
+    it("does not call any database model when q is empty", async () => {
       await GET(makeRequest());
 
       expect(database.event.findMany).not.toHaveBeenCalled();
@@ -160,13 +155,14 @@ describe("Global Search API — GET /api/search", () => {
       expect(database.kitchenTask.findMany).not.toHaveBeenCalled();
     });
 
-    it("returns 400 when q is a single character (minimum 2 chars)", async () => {
+    it("returns empty groups when q is a single character (minimum 2 chars)", async () => {
       const response = await GET(makeRequest({ q: "a" }));
       const body = await response.json();
 
-      expect(response.status).toBe(400);
-      expect(body.success).toBe(false);
-      expect(body.message).toBe("Search query must be at least 2 characters");
+      expect(response.status).toBe(200);
+      expect(body.success).toBe(true);
+      expect(body.groups).toEqual([]);
+      expect(body.total).toBe(0);
     });
   });
 

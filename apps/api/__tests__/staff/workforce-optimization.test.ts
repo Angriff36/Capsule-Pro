@@ -44,79 +44,117 @@
 import { NextRequest } from "next/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-// WorkforceOptimization command params for manifest dispatcher
-const optimizationParams = (command: string) => ({
-  params: Promise.resolve({ entity: "WorkforceOptimization", command }),
-});
+// --- Mocks ---
 
-// Helper functions to get POST handlers with params bound
-async function getCreateOptimization() {
-  const mod = await import("@/app/api/manifest/[entity]/commands/[command]/route");
-  return (req: NextRequest) => mod.POST(req, optimizationParams("create"));
-}
-
-async function getStartOptimization() {
-  const mod = await import("@/app/api/manifest/[entity]/commands/[command]/route");
-  return (req: NextRequest) => mod.POST(req, optimizationParams("start"));
-}
-
-async function getCompleteOptimization() {
-  const mod = await import("@/app/api/manifest/[entity]/commands/[command]/route");
-  return (req: NextRequest) => mod.POST(req, optimizationParams("complete"));
-}
-
-async function getFailOptimization() {
-  const mod = await import("@/app/api/manifest/[entity]/commands/[command]/route");
-  return (req: NextRequest) => mod.POST(req, optimizationParams("fail"));
-}
-
-// Mock dependencies
 vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
+
 vi.mock("@/app/lib/tenant", () => ({
-  requireCurrentUser: vi.fn(),
   getTenantIdForOrg: vi.fn(),
+  requireCurrentUser: vi.fn(),
 }));
+
+vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn() }));
+
 vi.mock("@/lib/manifest-runtime", () => ({
   createManifestRuntime: vi.fn(),
 }));
-vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn() }));
 
-const { InvariantError } = await import("@/app/lib/invariant");
+vi.mock("@/lib/manifest-response", async () => {
+  const { NextResponse } = await import("next/server");
+  return {
+    manifestSuccessResponse: (data: unknown, status = 200) =>
+      NextResponse.json(
+        {
+          success: true,
+          ...(typeof data === "object" && data !== null ? data : { data }),
+        },
+        { status }
+      ),
+    manifestErrorResponse: (message: string, status: number) =>
+      NextResponse.json({ success: false, message }, { status }),
+  };
+});
+
+// --- Imports (after mocks) ---
+
 const { auth } = await import("@repo/auth/server");
-const { getTenantIdForOrg, requireCurrentUser } = await import("@/app/lib/tenant");
+const { getTenantIdForOrg } = await import("@/app/lib/tenant");
 const { createManifestRuntime } = await import("@/lib/manifest-runtime");
+
+// --- Constants ---
 
 const TEST_TENANT_ID = "00000000-0000-0000-0000-000000000900";
 const TEST_ORG_ID = "org_workforce_test";
 const TEST_CLERK_ID = "clerk_workforce_test";
 const TEST_OPTIMIZATION_ID = "99999999-9999-4999-a999-999999999999";
 
-function makeCommandRequest(body: Record<string, unknown> = {}) {
-  return new NextRequest("http://localhost/api/workforceoptimization/create", {
+// --- Helpers ---
+
+function authed() {
+  vi.mocked(auth).mockResolvedValue({
+    orgId: TEST_ORG_ID,
+    userId: TEST_CLERK_ID,
+  } as never);
+  vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID as never);
+}
+
+function unauthed() {
+  vi.mocked(auth).mockResolvedValue({ orgId: null, userId: null } as never);
+}
+
+function makeRequest(url: string, init?: RequestInit): NextRequest {
+  const opts: RequestInit = { ...init };
+  if (opts.body && !opts.headers) {
+    opts.headers = { "Content-Type": "application/json" };
+  }
+  return new NextRequest(new URL(url, "http://localhost:3000"), opts as never);
+}
+
+function postRequest(url: string, body: unknown = {}): NextRequest {
+  return makeRequest(url, {
     method: "POST",
     body: JSON.stringify(body),
   });
 }
 
-function makeAuthedUser() {
-  vi.mocked(auth).mockResolvedValue({
-    userId: TEST_CLERK_ID,
-    orgId: TEST_ORG_ID,
-  } as never);
-  vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-  vi.mocked(requireCurrentUser).mockResolvedValue({
-    id: TEST_CLERK_ID,
-    tenantId: TEST_TENANT_ID,
-    role: "admin",
-    email: "test@example.com",
-    firstName: "Test",
-    lastName: "User",
+function mockRuntimeSuccess(
+  result: Record<string, unknown> = { id: TEST_OPTIMIZATION_ID }
+) {
+  vi.mocked(createManifestRuntime).mockResolvedValue({
+    runCommand: vi.fn().mockResolvedValue({
+      success: true,
+      result,
+      emittedEvents: [
+        { type: "WorkforceOptimizationEvent", entityId: result.id },
+      ],
+    }),
   } as never);
 }
 
-function makeRuntime(mockRunCommand: ReturnType<typeof vi.fn>) {
+function mockRuntimeFailure(error: string) {
   vi.mocked(createManifestRuntime).mockResolvedValue({
-    runCommand: mockRunCommand,
+    runCommand: vi.fn().mockResolvedValue({
+      success: false,
+      error,
+    }),
+  } as never);
+}
+
+function mockRuntimePolicyDenial(policyName: string) {
+  vi.mocked(createManifestRuntime).mockResolvedValue({
+    runCommand: vi.fn().mockResolvedValue({
+      success: false,
+      policyDenial: { policyName },
+    }),
+  } as never);
+}
+
+function mockRuntimeGuardFailure(index: number, formatted: string) {
+  vi.mocked(createManifestRuntime).mockResolvedValue({
+    runCommand: vi.fn().mockResolvedValue({
+      success: false,
+      guardFailure: { index, formatted },
+    }),
   } as never);
 }
 
@@ -125,59 +163,94 @@ function makeRuntime(mockRunCommand: ReturnType<typeof vi.fn>) {
 describe("WorkforceOptimization Commands API", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    makeAuthedUser();
+    authed();
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
   });
 
-  describe("POST /api/workforceoptimization/create", () => {
-    const mockRunCommand = vi.fn();
+  type Cmd = {
+    name: string;
+    runtimeName: string;
+    path: string;
+    routePath: string;
+    sampleBody: Record<string, unknown>;
+  };
 
-    beforeEach(() => {
-      makeRuntime(mockRunCommand);
-    });
+  const COMMANDS: Cmd[] = [
+    {
+      name: "create",
+      runtimeName: "create",
+      path: "/api/workforceoptimization/create",
+      routePath: "@/app/api/workforceoptimization/create/route",
+      sampleBody: {
+        locationId: "loc_001",
+        optimizationType: "schedule",
+      },
+    },
+    {
+      name: "start",
+      runtimeName: "start",
+      path: "/api/workforceoptimization/start",
+      routePath: "@/app/api/workforceoptimization/start/route",
+      sampleBody: { id: TEST_OPTIMIZATION_ID },
+    },
+    {
+      name: "complete",
+      runtimeName: "complete",
+      path: "/api/workforceoptimization/complete",
+      routePath: "@/app/api/workforceoptimization/complete/route",
+      sampleBody: {
+        id: TEST_OPTIMIZATION_ID,
+        results: '{"recommendedShifts":3,"laborSavings":250}',
+      },
+    },
+    {
+      name: "fail",
+      runtimeName: "fail",
+      path: "/api/workforceoptimization/fail",
+      routePath: "@/app/api/workforceoptimization/fail/route",
+      sampleBody: {
+        id: TEST_OPTIMIZATION_ID,
+        error: "Insufficient employee availability",
+      },
+    },
+  ];
 
-    it("returns 401 when unauthenticated", async () => {
-      vi.mocked(auth).mockResolvedValue({ userId: null, orgId: null } as never);
-      vi.mocked(requireCurrentUser).mockRejectedValue(
-        new InvariantError("Unauthorized")
-      );
-
-      const request = makeCommandRequest({ locationId: "loc_001", optimizationType: "schedule" });
-      const createOptimization = await getCreateOptimization();
-      const res = await createOptimization(request);
+  describe.each(COMMANDS)("POST $path", ({
+    name,
+    runtimeName,
+    path,
+    routePath,
+    sampleBody,
+  }) => {
+    it(`returns 401 when unauthenticated [${name}]`, async () => {
+      unauthed();
+      const mod = await import(routePath);
+      const res = await mod.POST(postRequest(path, sampleBody));
 
       expect(res.status).toBe(401);
       const body = await res.json();
       expect(body.message).toBe("Unauthorized");
     });
 
-    it("returns 400 when tenant cannot be resolved", async () => {
+    it(`returns 400 when tenant cannot be resolved [${name}]`, async () => {
       vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
 
-      const request = makeCommandRequest({ locationId: "loc_001", optimizationType: "schedule" });
-      const createOptimization = await getCreateOptimization();
-      const res = await createOptimization(request);
+      const mod = await import(routePath);
+      const res = await mod.POST(postRequest(path, sampleBody));
 
-      // Returns 500 because getTenantIdForOrg=null causes requireCurrentUser to
-      // throw a non-InvariantError which is caught by the generic catch block
-      expect(res.status).toBe(500);
+      expect(res.status).toBe(400);
       const body = await res.json();
-      expect(body.message).toBe("Internal server error");
+      expect(body.message).toBe("Tenant not found");
     });
 
-    it("returns 200 with result and events on success", async () => {
-      mockRunCommand.mockResolvedValue({
-        success: true,
-        result: { id: TEST_OPTIMIZATION_ID, status: "pending" },
-        emittedEvents: [{ type: "WorkforceOptimizationEvent", entityId: TEST_OPTIMIZATION_ID }],
-      });
+    it(`returns 200 with result and events on success [${name}]`, async () => {
+      mockRuntimeSuccess({ id: TEST_OPTIMIZATION_ID, status: "pending" });
 
-      const request = makeCommandRequest({ locationId: "loc_001", optimizationType: "schedule" });
-      const createOptimization = await getCreateOptimization();
-      const res = await createOptimization(request);
+      const mod = await import(routePath);
+      const res = await mod.POST(postRequest(path, sampleBody));
 
       expect(res.status).toBe(200);
       const body = await res.json();
@@ -186,41 +259,38 @@ describe("WorkforceOptimization Commands API", () => {
       expect(body.events).toHaveLength(1);
 
       // Pin the user-context shape: routes pass clerk userId directly,
-      // NOT the resolved internal user.
-      expect(createManifestRuntime).toHaveBeenCalledWith({
-        entityName: "WorkforceOptimization",
-        user: { id: TEST_CLERK_ID, tenantId: TEST_TENANT_ID, role: "admin" },
+      // NOT the resolved internal user. A regression that adds
+      // database.user.findFirst lookup would surface here.
+      const runtimeCall = vi.mocked(createManifestRuntime).mock.calls[0][0];
+      expect(runtimeCall).toEqual({
+        user: {
+          id: TEST_CLERK_ID,
+          tenantId: TEST_TENANT_ID,
+        },
       });
     });
 
-    it("returns 403 on policy denial", async () => {
-      mockRunCommand.mockResolvedValue({
-        success: false,
-        policyDenial: { policyName: "ManagersCanRunOptimization" },
-      });
+    it(`returns 403 on policy denial [${name}]`, async () => {
+      mockRuntimePolicyDenial("ManagersCanRunOptimization");
 
-      const request = makeCommandRequest({ locationId: "loc_001", optimizationType: "schedule" });
-      const createOptimization = await getCreateOptimization();
-      const res = await createOptimization(request);
+      const mod = await import(routePath);
+      const res = await mod.POST(postRequest(path, sampleBody));
 
       expect(res.status).toBe(403);
       const body = await res.json();
-      expect(body.message).toContain("Access denied: ManagersCanRunOptimization");
-      expect(body.message).toContain("(role=admin)");
+      expect(body.message).toBe("Access denied: ManagersCanRunOptimization");
+      // Pin: this domain's policy-denial does NOT include `role=` suffix.
+      expect(body.message).not.toContain("role=");
     });
 
-    it("returns 422 on guard failure", async () => {
-      mockRunCommand.mockResolvedValue({
-        success: false,
-        guardFailure: {
-          index: 0,
-          formatted: "optimizationType must be one of schedule|assignment|performance",
-        },
-      });
+    it(`returns 422 on guard failure [${name}]`, async () => {
+      mockRuntimeGuardFailure(
+        0,
+        "optimizationType must be one of schedule|assignment|performance"
+      );
 
-      const request = makeCommandRequest({ locationId: "loc_001", optimizationType: "invalid" });
-      const createOptimization = await getCreateOptimization();
-      const res = await createOptimization(request);
+      const mod = await import(routePath);
+      const res = await mod.POST(postRequest(path, sampleBody));
 
       expect(res.status).toBe(422);
       const body = await res.json();
@@ -228,527 +298,66 @@ describe("WorkforceOptimization Commands API", () => {
       expect(body.message).toContain("optimizationType must be one of");
     });
 
-    it("returns 400 on generic command failure", async () => {
-      mockRunCommand.mockResolvedValue({
-        success: false,
-        error: "State transition not allowed",
-      });
+    it(`returns 400 on generic command failure [${name}]`, async () => {
+      mockRuntimeFailure("State transition not allowed");
 
-      const request = makeCommandRequest({ locationId: "loc_001", optimizationType: "schedule" });
-      const createOptimization = await getCreateOptimization();
-      const res = await createOptimization(request);
+      const mod = await import(routePath);
+      const res = await mod.POST(postRequest(path, sampleBody));
 
       expect(res.status).toBe(400);
       const body = await res.json();
       expect(body.message).toBe("State transition not allowed");
     });
 
-    it("returns 400 with default message when error is null", async () => {
-      mockRunCommand.mockResolvedValue({
-        success: false,
-        error: null,
-      });
+    it(`returns 400 with default message when error is null [${name}]`, async () => {
+      vi.mocked(createManifestRuntime).mockResolvedValue({
+        runCommand: vi.fn().mockResolvedValue({ success: false }),
+      } as never);
 
-      const request = makeCommandRequest({ locationId: "loc_001", optimizationType: "schedule" });
-      const createOptimization = await getCreateOptimization();
-      const res = await createOptimization(request);
+      const mod = await import(routePath);
+      const res = await mod.POST(postRequest(path, sampleBody));
 
       expect(res.status).toBe(400);
       const body = await res.json();
       expect(body.message).toBe("Command failed");
     });
 
-    it("returns 500 when runtime throws", async () => {
-      mockRunCommand.mockRejectedValue(new Error("Runtime explosion"));
+    it(`returns 500 when runtime throws [${name}]`, async () => {
+      vi.mocked(createManifestRuntime).mockRejectedValue(
+        new Error("Runtime explosion") as never
+      );
 
-      const request = makeCommandRequest({ locationId: "loc_001", optimizationType: "schedule" });
-      const createOptimization = await getCreateOptimization();
-      const res = await createOptimization(request);
+      const mod = await import(routePath);
+      const res = await mod.POST(postRequest(path, sampleBody));
 
       expect(res.status).toBe(500);
       const body = await res.json();
       expect(body.message).toBe("Internal server error");
     });
 
-    it("passes correct command name + entity (no instanceId) to runtime", async () => {
-      mockRunCommand.mockResolvedValue({
+    it(`passes correct command name + entity (no instanceId) to runtime [${name}]`, async () => {
+      const runCommand = vi.fn().mockResolvedValue({
         success: true,
         result: { id: TEST_OPTIMIZATION_ID },
         emittedEvents: [],
       });
+      vi.mocked(createManifestRuntime).mockResolvedValue({
+        runCommand,
+      } as never);
 
-      const request = makeCommandRequest({ locationId: "loc_001", optimizationType: "schedule" });
-      const createOptimization = await getCreateOptimization();
-      await createOptimization(request);
+      const mod = await import(routePath);
+      await mod.POST(postRequest(path, sampleBody));
 
-      // Pin the exact 3-arg shape: entity-scoped, so no `instanceId`
-      expect(mockRunCommand).toHaveBeenCalledWith(
-        "create",
-        { locationId: "loc_001", optimizationType: "schedule" },
-        { entityName: "WorkforceOptimization" }
-      );
+      // Pin the exact 3-arg shape: all 4 commands are entity-scoped,
+      // so no `instanceId` is passed even for state-transitioning verbs
+      // like start/complete/fail. The runtime resolves the instance from
+      // body.id. Adding `instanceId: body.id` here would double-route.
+      expect(runCommand).toHaveBeenCalledWith(runtimeName, sampleBody, {
+        entityName: "WorkforceOptimization",
+      });
 
       // Verify NO 4th arg or extra options key sneaked in.
-      const callArgs = mockRunCommand.mock.calls[0];
-      expect(callArgs).toHaveLength(3);
-      expect(callArgs[2]).not.toHaveProperty("instanceId");
-    });
-  });
-
-  describe("POST /api/workforceoptimization/start", () => {
-    const mockRunCommand = vi.fn();
-
-    beforeEach(() => {
-      makeRuntime(mockRunCommand);
-    });
-
-    it("returns 401 when unauthenticated", async () => {
-      vi.mocked(auth).mockResolvedValue({ userId: null, orgId: null } as never);
-      vi.mocked(requireCurrentUser).mockRejectedValue(
-        new InvariantError("Unauthorized")
-      );
-
-      const request = makeCommandRequest({ id: TEST_OPTIMIZATION_ID });
-      const startOptimization = await getStartOptimization();
-      const res = await startOptimization(request);
-
-      expect(res.status).toBe(401);
-      const body = await res.json();
-      expect(body.message).toBe("Unauthorized");
-    });
-
-    it("returns 400 when tenant cannot be resolved", async () => {
-      vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
-
-      const request = makeCommandRequest({ id: TEST_OPTIMIZATION_ID });
-      const startOptimization = await getStartOptimization();
-      const res = await startOptimization(request);
-
-      // Returns 500 because getTenantIdForOrg=null causes requireCurrentUser to
-      // throw a non-InvariantError which is caught by the generic catch block
-      expect(res.status).toBe(500);
-      const body = await res.json();
-      expect(body.message).toBe("Internal server error");
-    });
-
-    it("returns 200 with result and events on success", async () => {
-      mockRunCommand.mockResolvedValue({
-        success: true,
-        result: { id: TEST_OPTIMIZATION_ID, status: "in_progress" },
-        emittedEvents: [{ type: "WorkforceOptimizationEvent", entityId: TEST_OPTIMIZATION_ID }],
-      });
-
-      const request = makeCommandRequest({ id: TEST_OPTIMIZATION_ID });
-      const startOptimization = await getStartOptimization();
-      const res = await startOptimization(request);
-
-      expect(res.status).toBe(200);
-      const body = await res.json();
-      expect(body.success).toBe(true);
-      expect(body.result.id).toBe(TEST_OPTIMIZATION_ID);
-      expect(body.events).toHaveLength(1);
-    });
-
-    it("returns 403 on policy denial", async () => {
-      mockRunCommand.mockResolvedValue({
-        success: false,
-        policyDenial: { policyName: "ManagersCanRunOptimization" },
-      });
-
-      const request = makeCommandRequest({ id: TEST_OPTIMIZATION_ID });
-      const startOptimization = await getStartOptimization();
-      const res = await startOptimization(request);
-
-      expect(res.status).toBe(403);
-      const body = await res.json();
-      expect(body.message).toContain("Access denied: ManagersCanRunOptimization");
-      expect(body.message).toContain("(role=admin)");
-    });
-
-    it("returns 422 on guard failure", async () => {
-      mockRunCommand.mockResolvedValue({
-        success: false,
-        guardFailure: {
-          index: 0,
-          formatted: "Cannot start optimization that is not pending",
-        },
-      });
-
-      const request = makeCommandRequest({ id: TEST_OPTIMIZATION_ID });
-      const startOptimization = await getStartOptimization();
-      const res = await startOptimization(request);
-
-      expect(res.status).toBe(422);
-      const body = await res.json();
-      expect(body.message).toContain("Guard 0 failed");
-    });
-
-    it("returns 400 on generic command failure", async () => {
-      mockRunCommand.mockResolvedValue({
-        success: false,
-        error: "State transition not allowed",
-      });
-
-      const request = makeCommandRequest({ id: TEST_OPTIMIZATION_ID });
-      const startOptimization = await getStartOptimization();
-      const res = await startOptimization(request);
-
-      expect(res.status).toBe(400);
-      const body = await res.json();
-      expect(body.message).toBe("State transition not allowed");
-    });
-
-    it("returns 400 with default message when error is null", async () => {
-      mockRunCommand.mockResolvedValue({
-        success: false,
-        error: null,
-      });
-
-      const request = makeCommandRequest({ id: TEST_OPTIMIZATION_ID });
-      const startOptimization = await getStartOptimization();
-      const res = await startOptimization(request);
-
-      expect(res.status).toBe(400);
-      const body = await res.json();
-      expect(body.message).toBe("Command failed");
-    });
-
-    it("returns 500 when runtime throws", async () => {
-      mockRunCommand.mockRejectedValue(new Error("Runtime explosion"));
-
-      const request = makeCommandRequest({ id: TEST_OPTIMIZATION_ID });
-      const startOptimization = await getStartOptimization();
-      const res = await startOptimization(request);
-
-      expect(res.status).toBe(500);
-      const body = await res.json();
-      expect(body.message).toBe("Internal server error");
-    });
-
-    it("passes correct command name + entity (no instanceId) to runtime", async () => {
-      mockRunCommand.mockResolvedValue({
-        success: true,
-        result: { id: TEST_OPTIMIZATION_ID },
-        emittedEvents: [],
-      });
-
-      const request = makeCommandRequest({ id: TEST_OPTIMIZATION_ID });
-      const startOptimization = await getStartOptimization();
-      await startOptimization(request);
-
-      expect(mockRunCommand).toHaveBeenCalledWith(
-        "start",
-        { id: TEST_OPTIMIZATION_ID },
-        { entityName: "WorkforceOptimization" }
-      );
-
-      const callArgs = mockRunCommand.mock.calls[0];
-      expect(callArgs).toHaveLength(3);
-      expect(callArgs[2]).not.toHaveProperty("instanceId");
-    });
-  });
-
-  describe("POST /api/workforceoptimization/complete", () => {
-    const mockRunCommand = vi.fn();
-
-    beforeEach(() => {
-      makeRuntime(mockRunCommand);
-    });
-
-    it("returns 401 when unauthenticated", async () => {
-      vi.mocked(auth).mockResolvedValue({ userId: null, orgId: null } as never);
-      vi.mocked(requireCurrentUser).mockRejectedValue(
-        new InvariantError("Unauthorized")
-      );
-
-      const request = makeCommandRequest({ id: TEST_OPTIMIZATION_ID, results: '{"recommendedShifts":3}' });
-      const completeOptimization = await getCompleteOptimization();
-      const res = await completeOptimization(request);
-
-      expect(res.status).toBe(401);
-      const body = await res.json();
-      expect(body.message).toBe("Unauthorized");
-    });
-
-    it("returns 400 when tenant cannot be resolved", async () => {
-      vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
-
-      const request = makeCommandRequest({ id: TEST_OPTIMIZATION_ID, results: '{"recommendedShifts":3}' });
-      const completeOptimization = await getCompleteOptimization();
-      const res = await completeOptimization(request);
-
-      // Returns 500 because getTenantIdForOrg=null causes requireCurrentUser to
-      // throw a non-InvariantError which is caught by the generic catch block
-      expect(res.status).toBe(500);
-      const body = await res.json();
-      expect(body.message).toBe("Internal server error");
-    });
-
-    it("returns 200 with result and events on success", async () => {
-      mockRunCommand.mockResolvedValue({
-        success: true,
-        result: { id: TEST_OPTIMIZATION_ID, status: "completed", results: { recommendedShifts: 3 } },
-        emittedEvents: [{ type: "WorkforceOptimizationEvent", entityId: TEST_OPTIMIZATION_ID }],
-      });
-
-      const request = makeCommandRequest({ id: TEST_OPTIMIZATION_ID, results: '{"recommendedShifts":3}' });
-      const completeOptimization = await getCompleteOptimization();
-      const res = await completeOptimization(request);
-
-      expect(res.status).toBe(200);
-      const body = await res.json();
-      expect(body.success).toBe(true);
-      expect(body.result.id).toBe(TEST_OPTIMIZATION_ID);
-      expect(body.events).toHaveLength(1);
-    });
-
-    it("returns 403 on policy denial", async () => {
-      mockRunCommand.mockResolvedValue({
-        success: false,
-        policyDenial: { policyName: "ManagersCanRunOptimization" },
-      });
-
-      const request = makeCommandRequest({ id: TEST_OPTIMIZATION_ID, results: '{"recommendedShifts":3}' });
-      const completeOptimization = await getCompleteOptimization();
-      const res = await completeOptimization(request);
-
-      expect(res.status).toBe(403);
-      const body = await res.json();
-      expect(body.message).toContain("Access denied: ManagersCanRunOptimization");
-      expect(body.message).toContain("(role=admin)");
-    });
-
-    it("returns 422 on guard failure", async () => {
-      mockRunCommand.mockResolvedValue({
-        success: false,
-        guardFailure: {
-          index: 0,
-          formatted: "Cannot complete optimization that is not in_progress",
-        },
-      });
-
-      const request = makeCommandRequest({ id: TEST_OPTIMIZATION_ID, results: '{"recommendedShifts":3}' });
-      const completeOptimization = await getCompleteOptimization();
-      const res = await completeOptimization(request);
-
-      expect(res.status).toBe(422);
-      const body = await res.json();
-      expect(body.message).toContain("Guard 0 failed");
-    });
-
-    it("returns 400 on generic command failure", async () => {
-      mockRunCommand.mockResolvedValue({
-        success: false,
-        error: "State transition not allowed",
-      });
-
-      const request = makeCommandRequest({ id: TEST_OPTIMIZATION_ID, results: '{"recommendedShifts":3}' });
-      const completeOptimization = await getCompleteOptimization();
-      const res = await completeOptimization(request);
-
-      expect(res.status).toBe(400);
-      const body = await res.json();
-      expect(body.message).toBe("State transition not allowed");
-    });
-
-    it("returns 400 with default message when error is null", async () => {
-      mockRunCommand.mockResolvedValue({
-        success: false,
-        error: null,
-      });
-
-      const request = makeCommandRequest({ id: TEST_OPTIMIZATION_ID, results: '{"recommendedShifts":3}' });
-      const completeOptimization = await getCompleteOptimization();
-      const res = await completeOptimization(request);
-
-      expect(res.status).toBe(400);
-      const body = await res.json();
-      expect(body.message).toBe("Command failed");
-    });
-
-    it("returns 500 when runtime throws", async () => {
-      mockRunCommand.mockRejectedValue(new Error("Runtime explosion"));
-
-      const request = makeCommandRequest({ id: TEST_OPTIMIZATION_ID, results: '{"recommendedShifts":3}' });
-      const completeOptimization = await getCompleteOptimization();
-      const res = await completeOptimization(request);
-
-      expect(res.status).toBe(500);
-      const body = await res.json();
-      expect(body.message).toBe("Internal server error");
-    });
-
-    it("passes correct command name + entity (no instanceId) to runtime", async () => {
-      mockRunCommand.mockResolvedValue({
-        success: true,
-        result: { id: TEST_OPTIMIZATION_ID },
-        emittedEvents: [],
-      });
-
-      const request = makeCommandRequest({ id: TEST_OPTIMIZATION_ID, results: '{"recommendedShifts":3}' });
-      const completeOptimization = await getCompleteOptimization();
-      await completeOptimization(request);
-
-      expect(mockRunCommand).toHaveBeenCalledWith(
-        "complete",
-        { id: TEST_OPTIMIZATION_ID, results: '{"recommendedShifts":3}' },
-        { entityName: "WorkforceOptimization" }
-      );
-
-      const callArgs = mockRunCommand.mock.calls[0];
-      expect(callArgs).toHaveLength(3);
-      expect(callArgs[2]).not.toHaveProperty("instanceId");
-    });
-  });
-
-  describe("POST /api/workforceoptimization/fail", () => {
-    const mockRunCommand = vi.fn();
-
-    beforeEach(() => {
-      makeRuntime(mockRunCommand);
-    });
-
-    it("returns 401 when unauthenticated", async () => {
-      vi.mocked(auth).mockResolvedValue({ userId: null, orgId: null } as never);
-      vi.mocked(requireCurrentUser).mockRejectedValue(
-        new InvariantError("Unauthorized")
-      );
-
-      const request = makeCommandRequest({ id: TEST_OPTIMIZATION_ID, error: "Insufficient availability" });
-      const failOptimization = await getFailOptimization();
-      const res = await failOptimization(request);
-
-      expect(res.status).toBe(401);
-      const body = await res.json();
-      expect(body.message).toBe("Unauthorized");
-    });
-
-    it("returns 400 when tenant cannot be resolved", async () => {
-      vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
-
-      const request = makeCommandRequest({ id: TEST_OPTIMIZATION_ID, error: "Insufficient availability" });
-      const failOptimization = await getFailOptimization();
-      const res = await failOptimization(request);
-
-      // Returns 500 because getTenantIdForOrg=null causes requireCurrentUser to
-      // throw a non-InvariantError which is caught by the generic catch block
-      expect(res.status).toBe(500);
-      const body = await res.json();
-      expect(body.message).toBe("Internal server error");
-    });
-
-    it("returns 200 with result and events on success", async () => {
-      mockRunCommand.mockResolvedValue({
-        success: true,
-        result: { id: TEST_OPTIMIZATION_ID, status: "failed", error: "Insufficient availability" },
-        emittedEvents: [{ type: "WorkforceOptimizationEvent", entityId: TEST_OPTIMIZATION_ID }],
-      });
-
-      const request = makeCommandRequest({ id: TEST_OPTIMIZATION_ID, error: "Insufficient availability" });
-      const failOptimization = await getFailOptimization();
-      const res = await failOptimization(request);
-
-      expect(res.status).toBe(200);
-      const body = await res.json();
-      expect(body.success).toBe(true);
-      expect(body.result.id).toBe(TEST_OPTIMIZATION_ID);
-      expect(body.events).toHaveLength(1);
-    });
-
-    it("returns 403 on policy denial", async () => {
-      mockRunCommand.mockResolvedValue({
-        success: false,
-        policyDenial: { policyName: "ManagersCanRunOptimization" },
-      });
-
-      const request = makeCommandRequest({ id: TEST_OPTIMIZATION_ID, error: "Insufficient availability" });
-      const failOptimization = await getFailOptimization();
-      const res = await failOptimization(request);
-
-      expect(res.status).toBe(403);
-      const body = await res.json();
-      expect(body.message).toContain("Access denied: ManagersCanRunOptimization");
-      expect(body.message).toContain("(role=admin)");
-    });
-
-    it("returns 422 on guard failure", async () => {
-      mockRunCommand.mockResolvedValue({
-        success: false,
-        guardFailure: {
-          index: 0,
-          formatted: "Cannot fail optimization that is not in_progress",
-        },
-      });
-
-      const request = makeCommandRequest({ id: TEST_OPTIMIZATION_ID, error: "Insufficient availability" });
-      const failOptimization = await getFailOptimization();
-      const res = await failOptimization(request);
-
-      expect(res.status).toBe(422);
-      const body = await res.json();
-      expect(body.message).toContain("Guard 0 failed");
-    });
-
-    it("returns 400 on generic command failure", async () => {
-      mockRunCommand.mockResolvedValue({
-        success: false,
-        error: "State transition not allowed",
-      });
-
-      const request = makeCommandRequest({ id: TEST_OPTIMIZATION_ID, error: "Insufficient availability" });
-      const failOptimization = await getFailOptimization();
-      const res = await failOptimization(request);
-
-      expect(res.status).toBe(400);
-      const body = await res.json();
-      expect(body.message).toBe("State transition not allowed");
-    });
-
-    it("returns 400 with default message when error is null", async () => {
-      mockRunCommand.mockResolvedValue({
-        success: false,
-        error: null,
-      });
-
-      const request = makeCommandRequest({ id: TEST_OPTIMIZATION_ID, error: "Insufficient availability" });
-      const failOptimization = await getFailOptimization();
-      const res = await failOptimization(request);
-
-      expect(res.status).toBe(400);
-      const body = await res.json();
-      expect(body.message).toBe("Command failed");
-    });
-
-    it("returns 500 when runtime throws", async () => {
-      mockRunCommand.mockRejectedValue(new Error("Runtime explosion"));
-
-      const request = makeCommandRequest({ id: TEST_OPTIMIZATION_ID, error: "Insufficient availability" });
-      const failOptimization = await getFailOptimization();
-      const res = await failOptimization(request);
-
-      expect(res.status).toBe(500);
-      const body = await res.json();
-      expect(body.message).toBe("Internal server error");
-    });
-
-    it("passes correct command name + entity (no instanceId) to runtime", async () => {
-      mockRunCommand.mockResolvedValue({
-        success: true,
-        result: { id: TEST_OPTIMIZATION_ID },
-        emittedEvents: [],
-      });
-
-      const request = makeCommandRequest({ id: TEST_OPTIMIZATION_ID, error: "Insufficient availability" });
-      const failOptimization = await getFailOptimization();
-      await failOptimization(request);
-
-      expect(mockRunCommand).toHaveBeenCalledWith(
-        "fail",
-        { id: TEST_OPTIMIZATION_ID, error: "Insufficient availability" },
-        { entityName: "WorkforceOptimization" }
-      );
-
-      const callArgs = mockRunCommand.mock.calls[0];
+      const callArgs = runCommand.mock.calls[0];
       expect(callArgs).toHaveLength(3);
       expect(callArgs[2]).not.toHaveProperty("instanceId");
     });

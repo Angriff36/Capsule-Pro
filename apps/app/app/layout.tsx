@@ -3,6 +3,7 @@ import "./styles.css";
 import { GoogleAnalytics } from "@next/third-parties/google";
 import { AnalyticsProvider } from "@repo/analytics/provider";
 import { DesignSystemProvider } from "@repo/design-system";
+import { Toaster } from "@repo/design-system/components/ui/sonner";
 import { Analytics as VercelAnalytics } from "@vercel/analytics/react";
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
@@ -32,27 +33,28 @@ const RootLayout = async ({ children }: RootLayoutProperties) => {
   return (
     <html className={fonts} lang="en" suppressHydrationWarning>
       <body>
-        <DesignSystemProvider
-          helpUrl={env.NEXT_PUBLIC_DOCS_URL}
-          privacyUrl={new URL(
-            "/legal/privacy",
-            env.NEXT_PUBLIC_WEB_URL
-          ).toString()}
-          termsUrl={new URL(
-            "/legal/terms",
-            env.NEXT_PUBLIC_WEB_URL
-          ).toString()}
-        >
-          <ClerkProviderClient>
-            <QueryProvider>
-              <AuthHeader />
-              <AnalyticsProvider>
+        <ClerkProviderClient>
+          <QueryProvider>
+            <AuthHeader />
+            <AnalyticsProvider>
+              <DesignSystemProvider
+                helpUrl={env.NEXT_PUBLIC_DOCS_URL}
+                privacyUrl={new URL(
+                  "/legal/privacy",
+                  env.NEXT_PUBLIC_WEB_URL
+                ).toString()}
+                termsUrl={new URL(
+                  "/legal/terms",
+                  env.NEXT_PUBLIC_WEB_URL
+                ).toString()}
+              >
                 {children}
-              </AnalyticsProvider>
-              {Toolbar && <Toolbar />}
-            </QueryProvider>
-          </ClerkProviderClient>
-        </DesignSystemProvider>
+              </DesignSystemProvider>
+            </AnalyticsProvider>
+            {Toolbar && <Toolbar />}
+            <Toaster />
+          </QueryProvider>
+        </ClerkProviderClient>
         {process.env.NODE_ENV === "production" && <VercelAnalytics />}
         {env.NEXT_PUBLIC_GA_MEASUREMENT_ID && (
           <GoogleAnalytics gaId={env.NEXT_PUBLIC_GA_MEASUREMENT_ID} />

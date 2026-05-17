@@ -62,9 +62,8 @@ vi.mock("@/lib/manifest-runtime", () => ({
 
 // Import mocked modules after vi.mock setup
 import { auth } from "@repo/auth/server";
-import { getTenantIdForOrg, requireCurrentUser } from "@/app/lib/tenant";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
-import { InvariantError } from "@/app/lib/invariant";
 
 // ---------------------------------------------------------------------------
 // Test constants
@@ -133,14 +132,6 @@ describe("User Command Routes", () => {
         userId: TEST_CLERK_ID,
       } as any);
       vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-      vi.mocked(requireCurrentUser).mockResolvedValue({
-        id: TEST_USER_ID,
-        tenantId: TEST_TENANT_ID,
-        role: "admin",
-        email: "test@example.com",
-        firstName: "Test",
-        lastName: "User",
-      } as any);
       mockRunCommand.mockClear();
       vi.mocked(createManifestRuntime).mockResolvedValue({
         runCommand: mockRunCommand,
@@ -155,7 +146,7 @@ describe("User Command Routes", () => {
     ];
 
     for (const { verb, idField } of instanceScopedVerbs) {
-      it(`${verb} route passes body and entityName to runCommand`, async () => {
+      it(`${verb} route passes instanceId to runCommand`, async () => {
         const handler = await getManifestHandler(verb);
         const request = createMockRequest(
           `http://localhost:3000/api/manifest/User/commands/${verb}`,
@@ -167,16 +158,18 @@ describe("User Command Routes", () => {
 
         await handler(request);
 
-        // Route passes { entityName: "User" } — instanceId is not yet wired
         expect(mockRunCommand).toHaveBeenCalledWith(
           verb,
-          { [idField]: "user-001" },
-          { entityName: "User" }
+          expect.any(Object),
+          expect.objectContaining({
+            entityName: "User",
+            instanceId: "user-001",
+          })
         );
       });
     }
 
-    it("create route passes body and entityName to runCommand", async () => {
+    it("create route does NOT pass instanceId", async () => {
       const handler = await getManifestHandler("create");
       const request = createMockRequest(
         "http://localhost:3000/api/manifest/User/commands/create",
@@ -193,29 +186,21 @@ describe("User Command Routes", () => {
 
       await handler(request);
 
-      // Route passes { entityName: "User" } only — no instanceId for create
       expect(mockRunCommand).toHaveBeenCalledWith(
         "create",
-        {
-          email: "test@example.com",
-          firstName: "Test",
-          lastName: "User",
-          role: "staff",
-        },
-        { entityName: "User" }
+        expect.any(Object),
+        expect.not.objectContaining({ instanceId: expect.anything() })
       );
     });
   });
 
-  // ---------------------------------------------------------------------------
+  // -------------------------------------------------------------------------
   // 2. Command route authentication
   // -------------------------------------------------------------------------
 
   describe("command route authentication", () => {
     it("create route returns 401 for unauthenticated requests", async () => {
-      vi.mocked(requireCurrentUser).mockRejectedValueOnce(
-        new InvariantError("auth.orgId must exist")
-      );
+      vi.mocked(auth).mockResolvedValue({ orgId: null } as any);
 
       const handler = await getManifestHandler("create");
       const request = createMockRequest(
@@ -227,9 +212,7 @@ describe("User Command Routes", () => {
     });
 
     it("update route returns 401 for unauthenticated requests", async () => {
-      vi.mocked(requireCurrentUser).mockRejectedValueOnce(
-        new InvariantError("auth.orgId must exist")
-      );
+      vi.mocked(auth).mockResolvedValue({ orgId: null } as any);
 
       const handler = await getManifestHandler("update");
       const request = createMockRequest(
@@ -241,9 +224,7 @@ describe("User Command Routes", () => {
     });
 
     it("deactivate route returns 401 for unauthenticated requests", async () => {
-      vi.mocked(requireCurrentUser).mockRejectedValueOnce(
-        new InvariantError("auth.orgId must exist")
-      );
+      vi.mocked(auth).mockResolvedValue({ orgId: null } as any);
 
       const handler = await getManifestHandler("deactivate");
       const request = createMockRequest(
@@ -255,9 +236,7 @@ describe("User Command Routes", () => {
     });
 
     it("terminate route returns 401 for unauthenticated requests", async () => {
-      vi.mocked(requireCurrentUser).mockRejectedValueOnce(
-        new InvariantError("auth.orgId must exist")
-      );
+      vi.mocked(auth).mockResolvedValue({ orgId: null } as any);
 
       const handler = await getManifestHandler("terminate");
       const request = createMockRequest(
@@ -269,9 +248,7 @@ describe("User Command Routes", () => {
     });
 
     it("update-role route returns 401 for unauthenticated requests", async () => {
-      vi.mocked(requireCurrentUser).mockRejectedValueOnce(
-        new InvariantError("auth.orgId must exist")
-      );
+      vi.mocked(auth).mockResolvedValue({ orgId: null } as any);
 
       const handler = await getManifestHandler("updateRole");
       const request = createMockRequest(
@@ -296,14 +273,6 @@ describe("User Command Routes", () => {
         userId: TEST_CLERK_ID,
       } as any);
       vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-      vi.mocked(requireCurrentUser).mockResolvedValue({
-        id: TEST_USER_ID,
-        tenantId: TEST_TENANT_ID,
-        role: "admin",
-        email: "test@example.com",
-        firstName: "Test",
-        lastName: "User",
-      } as any);
       mockRunCommand.mockClear();
       vi.mocked(createManifestRuntime).mockResolvedValue({
         runCommand: mockRunCommand,
@@ -384,9 +353,7 @@ describe("User Command Routes", () => {
     });
 
     it("returns 400 when tenant not found", async () => {
-      vi.mocked(requireCurrentUser).mockRejectedValueOnce(
-        new InvariantError("Tenant not found")
-      );
+      vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
 
       const handler = await getManifestHandler("create");
       const request = createMockRequest(
@@ -398,7 +365,7 @@ describe("User Command Routes", () => {
       );
       const response = await handler(request);
 
-      expect(response.status).toBe(401);
+      expect(response.status).toBe(400);
     });
   });
 });

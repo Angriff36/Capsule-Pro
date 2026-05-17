@@ -12,7 +12,6 @@
  */
 
 import { database } from "@repo/database";
-import { InvariantError } from "@/app/lib/invariant";
 import { NextRequest } from "next/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -84,7 +83,7 @@ vi.mock("@/lib/pagination", () => ({
 // --- Import mocked modules ---
 
 const { auth } = await import("@repo/auth/server");
-const { getTenantIdForOrg, requireCurrentUser } = await import("@/app/lib/tenant");
+const { getTenantIdForOrg } = await import("@/app/lib/tenant");
 const { executeManifestCommand } = await import(
   "@/lib/manifest-command-handler"
 );
@@ -119,14 +118,6 @@ function makeAuthedUser() {
     userId: TEST_USER_ID,
   } as never);
   vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-  vi.mocked(requireCurrentUser).mockResolvedValue({
-    id: TEST_USER_ID,
-    tenantId: TEST_TENANT_ID,
-    role: "admin",
-    email: "test@example.com",
-    firstName: "Test",
-    lastName: "User",
-  });
 }
 
 function makeRequest(url: string, options: RequestInit = {}): NextRequest {
@@ -689,7 +680,10 @@ describe("Admin Task API", () => {
     });
 
     it("should return 401 for unauthenticated requests", async () => {
-      vi.mocked(requireCurrentUser).mockRejectedValue(new InvariantError("Unauthorized"));
+      vi.mocked(auth).mockResolvedValue({
+        orgId: null,
+        userId: null,
+      } as never);
 
       const request = makeRequest("/api/administrative/tasks/commands/create", {
         method: "POST",
@@ -705,8 +699,8 @@ describe("Admin Task API", () => {
       expect(body.message).toBe("Unauthorized");
     });
 
-    it("should return 401 when user is not found in database", async () => {
-      vi.mocked(requireCurrentUser).mockRejectedValue(new InvariantError("Unauthorized"));
+    it("should return 400 when user is not found in database", async () => {
+      vi.mocked(database.user.findFirst).mockResolvedValue(null);
 
       const request = makeRequest("/api/administrative/tasks/commands/create", {
         method: "POST",
@@ -716,9 +710,9 @@ describe("Admin Task API", () => {
         params: Promise.resolve({ entity: "AdminTask", command: "create" }),
       });
 
-      expect(response.status).toBe(401);
+      expect(response.status).toBe(400);
       const body = await response.json();
-      expect(body.message).toBe("Unauthorized");
+      expect(body.message).toBe("User not found in database");
     });
 
     it("should return 200 on successful task creation", async () => {

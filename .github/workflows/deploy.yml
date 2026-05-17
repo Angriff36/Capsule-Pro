@@ -114,7 +114,6 @@ jobs:
 
       - name: Run tests
         run: pnpm test
-        continue-on-error: true
 
       - name: Build all apps
         run: pnpm turbo run build --filter=./apps/app --filter=./apps/api --filter=./apps/web

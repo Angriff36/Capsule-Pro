@@ -13,9 +13,6 @@
 
 import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { InvariantError } from "@/app/lib/invariant";
-
-const mockRequireCurrentUser = vi.fn();
 
 // Mock auth module
 vi.mock("@repo/auth/server", () => ({
@@ -73,22 +70,12 @@ vi.mock("@/lib/manifest-runtime", () => ({
 
 // Mock tenant resolution
 vi.mock("@/app/lib/tenant", () => ({
-  requireCurrentUser: mockRequireCurrentUser,
-
   getTenantIdForOrg: vi.fn(() => Promise.resolve("test-tenant")),
 }));
 
 describe("Manifest HTTP - PrepListItem Commands", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockRequireCurrentUser.mockResolvedValue({
-      id: "test-user-id",
-      tenantId: "test-tenant",
-      role: "admin",
-      email: "test@example.com",
-      firstName: "Test",
-      lastName: "User",
-    });
   });
 
   // ==========================================================================
@@ -104,9 +91,11 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
     });
 
     it("should reject unauthorized requests", async () => {
-      mockRequireCurrentUser.mockRejectedValueOnce(
-        new InvariantError("Unauthorized")
-      );
+      const { auth } = await import("@repo/auth/server");
+      vi.mocked(auth).mockResolvedValueOnce({
+        orgId: null,
+        userId: null,
+      } as never);
 
       const { POST } = await import(
         "@/app/api/manifest/[entity]/commands/[command]/route"
@@ -138,15 +127,6 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
 
     it("should return 400 when tenant not found", async () => {
       const { getTenantIdForOrg } = await import("@/app/lib/tenant");
-      // Reset mockRequireCurrentUser to default before this specific test
-      mockRequireCurrentUser.mockResolvedValue({
-        id: "test-user-id",
-        tenantId: "test-tenant",
-        role: "admin",
-        email: "test@example.com",
-        firstName: "Test",
-        lastName: "User",
-      });
       vi.mocked(getTenantIdForOrg).mockResolvedValueOnce(null as never);
 
       const { POST } = await import(
@@ -172,9 +152,9 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
       });
       const data = await response.json();
 
-      // Note: route only calls requireCurrentUser (not getTenantIdForOrg)
-      // so 400 is not triggered here - it uses user from requireCurrentUser
-      expect(response.status).toBeGreaterThanOrEqual(200);
+      expect(response.status).toBe(400);
+      expect(data).toHaveProperty("success", false);
+      expect(data).toHaveProperty("message", "Tenant not found");
     });
 
     it("should process valid mark-completed request", async () => {
@@ -260,9 +240,11 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
     });
 
     it("should reject unauthorized requests", async () => {
-      mockRequireCurrentUser.mockRejectedValueOnce(
-        new InvariantError("Unauthorized")
-      );
+      const { auth } = await import("@repo/auth/server");
+      vi.mocked(auth).mockResolvedValueOnce({
+        orgId: null,
+        userId: null,
+      } as never);
 
       const { POST } = await import(
         "@/app/api/manifest/[entity]/commands/[command]/route"
@@ -293,14 +275,6 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
 
     it("should return 400 when tenant not found", async () => {
       const { getTenantIdForOrg } = await import("@/app/lib/tenant");
-      mockRequireCurrentUser.mockResolvedValue({
-        id: "test-user-id",
-        tenantId: "test-tenant",
-        role: "admin",
-        email: "test@example.com",
-        firstName: "Test",
-        lastName: "User",
-      });
       vi.mocked(getTenantIdForOrg).mockResolvedValueOnce(null as never);
 
       const { POST } = await import(
@@ -325,8 +299,9 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
       });
       const data = await response.json();
 
-      // Note: route uses user from requireCurrentUser, not getTenantIdForOrg
-      expect(response.status).toBeGreaterThanOrEqual(200);
+      expect(response.status).toBe(400);
+      expect(data).toHaveProperty("success", false);
+      expect(data).toHaveProperty("message", "Tenant not found");
     });
 
     it("should process valid mark-uncompleted request", async () => {
@@ -416,9 +391,11 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
     });
 
     it("should reject unauthorized requests", async () => {
-      mockRequireCurrentUser.mockRejectedValueOnce(
-        new InvariantError("Unauthorized")
-      );
+      const { auth } = await import("@repo/auth/server");
+      vi.mocked(auth).mockResolvedValueOnce({
+        orgId: null,
+        userId: null,
+      } as never);
 
       const { POST } = await import(
         "@/app/api/manifest/[entity]/commands/[command]/route"
@@ -451,14 +428,6 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
 
     it("should return 400 when tenant not found", async () => {
       const { getTenantIdForOrg } = await import("@/app/lib/tenant");
-      mockRequireCurrentUser.mockResolvedValue({
-        id: "test-user-id",
-        tenantId: "test-tenant",
-        role: "admin",
-        email: "test@example.com",
-        firstName: "Test",
-        lastName: "User",
-      });
       vi.mocked(getTenantIdForOrg).mockResolvedValueOnce(null as never);
 
       const { POST } = await import(
@@ -485,8 +454,9 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
       });
       const data = await response.json();
 
-      // Note: route uses user from requireCurrentUser, not getTenantIdForOrg
-      expect(response.status).toBeGreaterThanOrEqual(200);
+      expect(response.status).toBe(400);
+      expect(data).toHaveProperty("success", false);
+      expect(data).toHaveProperty("message", "Tenant not found");
     });
 
     it("should process valid update-prep-notes request", async () => {
@@ -572,9 +542,11 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
     });
 
     it("should reject unauthorized requests", async () => {
-      mockRequireCurrentUser.mockRejectedValueOnce(
-        new InvariantError("Unauthorized")
-      );
+      const { auth } = await import("@repo/auth/server");
+      vi.mocked(auth).mockResolvedValueOnce({
+        orgId: null,
+        userId: null,
+      } as never);
 
       const { POST } = await import(
         "@/app/api/manifest/[entity]/commands/[command]/route"
@@ -609,14 +581,6 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
 
     it("should return 400 when tenant not found", async () => {
       const { getTenantIdForOrg } = await import("@/app/lib/tenant");
-      mockRequireCurrentUser.mockResolvedValue({
-        id: "test-user-id",
-        tenantId: "test-tenant",
-        role: "admin",
-        email: "test@example.com",
-        firstName: "Test",
-        lastName: "User",
-      });
       vi.mocked(getTenantIdForOrg).mockResolvedValueOnce(null as never);
 
       const { POST } = await import(
@@ -645,8 +609,9 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
       });
       const data = await response.json();
 
-      // Note: route uses user from requireCurrentUser, not getTenantIdForOrg
-      expect(response.status).toBeGreaterThanOrEqual(200);
+      expect(response.status).toBe(400);
+      expect(data).toHaveProperty("success", false);
+      expect(data).toHaveProperty("message", "Tenant not found");
     });
 
     it("should process valid update-quantity request", async () => {
@@ -736,9 +701,11 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
     });
 
     it("should reject unauthorized requests", async () => {
-      mockRequireCurrentUser.mockRejectedValueOnce(
-        new InvariantError("Unauthorized")
-      );
+      const { auth } = await import("@repo/auth/server");
+      vi.mocked(auth).mockResolvedValueOnce({
+        orgId: null,
+        userId: null,
+      } as never);
 
       const { POST } = await import(
         "@/app/api/manifest/[entity]/commands/[command]/route"
@@ -771,14 +738,6 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
 
     it("should return 400 when tenant not found", async () => {
       const { getTenantIdForOrg } = await import("@/app/lib/tenant");
-      mockRequireCurrentUser.mockResolvedValue({
-        id: "test-user-id",
-        tenantId: "test-tenant",
-        role: "admin",
-        email: "test@example.com",
-        firstName: "Test",
-        lastName: "User",
-      });
       vi.mocked(getTenantIdForOrg).mockResolvedValueOnce(null as never);
 
       const { POST } = await import(
@@ -805,8 +764,9 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
       });
       const data = await response.json();
 
-      // Note: route uses user from requireCurrentUser, not getTenantIdForOrg
-      expect(response.status).toBeGreaterThanOrEqual(200);
+      expect(response.status).toBe(400);
+      expect(data).toHaveProperty("success", false);
+      expect(data).toHaveProperty("message", "Tenant not found");
     });
 
     it("should process valid update-station request", async () => {

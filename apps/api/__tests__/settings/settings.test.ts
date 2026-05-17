@@ -115,7 +115,6 @@ const { getTenantIdForOrg, requireCurrentUser, resolveCurrentUser } =
 const { createManifestRuntime } = await import("@/lib/manifest-runtime");
 const { generateApiKey } = await import("@/app/lib/api-key-service");
 const { requireDualAuth } = await import("@/middleware/dual-auth");
-const { InvariantError } = await import("@/app/lib/invariant");
 
 const TEST_TENANT_ID = "00000000-0000-0000-0000-000000000001";
 const TEST_USER_ID = "user_settings_test";
@@ -912,14 +911,6 @@ describe("Settings API", () => {
         orgId: TEST_ORG_ID,
       } as never);
       vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-      vi.mocked(requireCurrentUser).mockResolvedValue({
-        id: TEST_USER_ID,
-        tenantId: TEST_TENANT_ID,
-        role: "admin",
-        email: "admin@test.com",
-        firstName: "Test",
-        lastName: "Admin",
-      } as never);
       vi.mocked(createManifestRuntime).mockResolvedValue({
         runCommand: mockRunCommand,
       } as never);
@@ -962,9 +953,6 @@ describe("Settings API", () => {
           userId: null,
           orgId: null,
         } as never);
-        vi.mocked(requireCurrentUser).mockRejectedValue(
-          new InvariantError("Unauthorized") as never
-        );
 
         const request = new NextRequest(
           "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -981,21 +969,6 @@ describe("Settings API", () => {
       });
 
       it("should return 400 when user not found in database", async () => {
-        // The route uses requireCurrentUser for auth (via Clerk session),
-        // not a database lookup. The database.user.findFirst mock doesn't affect
-        // the route behavior in this test. Expect 200 if auth succeeds.
-        vi.mocked(auth).mockResolvedValue({
-          userId: TEST_CLERK_ID,
-          orgId: TEST_ORG_ID,
-        } as never);
-        vi.mocked(requireCurrentUser).mockResolvedValue({
-          id: TEST_USER_ID,
-          tenantId: TEST_TENANT_ID,
-          role: "admin",
-          email: "admin@test.com",
-          firstName: "Test",
-          lastName: "Admin",
-        } as never);
         vi.mocked(database.user.findFirst).mockResolvedValue(null as never);
 
         const request = new NextRequest(
@@ -1009,8 +982,9 @@ describe("Settings API", () => {
           params: Promise.resolve({ entity: "ApiKey", command: "create" }),
         });
 
-        // Route succeeds if requireCurrentUser succeeds
-        expect(response.status).toBe(200);
+        expect(response.status).toBe(400);
+        const body = await response.json();
+        expect(body.message).toBe("User not found in database");
       });
 
       it("should return 403 on policy denial", async () => {
@@ -1133,9 +1107,6 @@ describe("Settings API", () => {
           userId: null,
           orgId: null,
         } as never);
-        vi.mocked(requireCurrentUser).mockRejectedValue(
-          new InvariantError("Unauthorized") as never
-        );
 
         const request = new NextRequest(
           "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -1521,9 +1492,9 @@ describe("Settings API", () => {
       });
 
       it("should return 401 for unauthenticated requests", async () => {
-        vi.mocked(resolveCurrentUser).mockRejectedValue(
-          new InvariantError("Not authenticated") as never
-        );
+        const authError = new Error("Not authenticated");
+        authError.name = "InvariantError";
+        vi.mocked(resolveCurrentUser).mockRejectedValue(authError as never);
 
         const request = new NextRequest(
           "http://localhost/api/settings/rate-limits",
@@ -1778,7 +1749,10 @@ describe("Settings API", () => {
         expect(mockRateLimitRunCommand).toHaveBeenCalledWith(
           "softDelete",
           expect.objectContaining({ id: "rl-001" }),
-          expect.objectContaining({ entityName: "RateLimitConfig" })
+          expect.objectContaining({
+            entityName: "RateLimitConfig",
+            instanceId: "rl-001",
+          })
         );
       });
 
@@ -1796,14 +1770,14 @@ describe("Settings API", () => {
         expect(mockRateLimitRunCommand).toHaveBeenCalledWith(
           "softDelete",
           expect.objectContaining({ id: "rl-999" }),
-          expect.objectContaining({ entityName: "RateLimitConfig" })
+          expect.objectContaining({ instanceId: "rl-999" })
         );
       });
 
       it("should return 401 for unauthenticated requests", async () => {
-        vi.mocked(resolveCurrentUser).mockRejectedValue(
-          new InvariantError("Not authenticated") as never
-        );
+        const authError = new Error("Not authenticated");
+        authError.name = "InvariantError";
+        vi.mocked(resolveCurrentUser).mockRejectedValue(authError as never);
 
         const request = new NextRequest(
           "http://localhost/api/settings/rate-limits/rl-001",

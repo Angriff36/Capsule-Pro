@@ -69,16 +69,6 @@ vi.mock("@/app/lib/tenant", () => ({
 
 vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn() }));
 
-vi.mock("@/app/lib/invariant", () => ({
-  InvariantError: class extends Error {
-    constructor(message: string) {
-      super(message);
-      this.name = "InvariantError";
-    }
-  },
-  invariant: vi.fn(),
-}));
-
 vi.mock("@/lib/manifest-runtime", () => ({
   createManifestRuntime: vi.fn(),
 }));
@@ -102,9 +92,8 @@ vi.mock("@/lib/manifest-response", async () => {
 // --- Imports (after mocks) ---
 
 const { auth } = await import("@repo/auth/server");
-const { getTenantIdForOrg, requireCurrentUser } = await import("@/app/lib/tenant");
+const { getTenantIdForOrg } = await import("@/app/lib/tenant");
 const { createManifestRuntime } = await import("@/lib/manifest-runtime");
-const { InvariantError } = await import("@/app/lib/invariant");
 
 // --- Constants ---
 
@@ -121,26 +110,10 @@ function authed() {
     userId: TEST_CLERK_ID,
   } as never);
   vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID as never);
-  vi.mocked(requireCurrentUser).mockResolvedValue({
-    id: TEST_CLERK_ID,
-    tenantId: TEST_TENANT_ID,
-    role: "admin",
-    authUserId: TEST_CLERK_ID,
-    email: "test@example.com",
-    firstName: "Test",
-    lastName: "User",
-  } as never);
 }
 
 function unauthed() {
   vi.mocked(auth).mockResolvedValue({ orgId: null, userId: null } as never);
-  // Use imported InvariantError so instanceof check in route.ts passes
-  vi.mocked(requireCurrentUser).mockRejectedValue(
-    new InvariantError("Unauthorized") as never
-  );
-  vi.mocked(createManifestRuntime).mockResolvedValue({
-    runCommand: vi.fn().mockResolvedValue({ success: false }),
-  } as never);
 }
 
 function makeRequest(url: string, init?: RequestInit): NextRequest {
@@ -551,7 +524,7 @@ describe("Recipes API", () => {
     });
 
     it("returns 200 with recipe when found", async () => {
-      vi.mocked(database.recipe.findUnique).mockResolvedValue(
+      vi.mocked(database.recipe.findFirst).mockResolvedValue(
         sampleRecipe() as never
       );
 
@@ -568,17 +541,18 @@ describe("Recipes API", () => {
 
       // Pin the soft-delete + tenant filter — both must be present in
       // the where clause every single time.
-      const arg = vi.mocked(database.recipe.findUnique).mock.calls[0][0] as {
+      const arg = vi.mocked(database.recipe.findFirst).mock.calls[0][0] as {
         where: Record<string, unknown>;
       };
       expect(arg.where).toEqual({
-        tenantId_id: { tenantId: TEST_TENANT_ID, id: TEST_RECIPE_ID },
+        id: TEST_RECIPE_ID,
+        tenantId: TEST_TENANT_ID,
         deletedAt: null,
       });
     });
 
     it("returns 404 when recipe not found (or soft-deleted)", async () => {
-      vi.mocked(database.recipe.findUnique).mockResolvedValue(null as never);
+      vi.mocked(database.recipe.findFirst).mockResolvedValue(null as never);
 
       const { GET } = await import("@/app/api/kitchen/recipes/[id]/route");
       const res = await GET(
@@ -592,7 +566,7 @@ describe("Recipes API", () => {
     });
 
     it("returns 500 on unexpected DB error", async () => {
-      vi.mocked(database.recipe.findUnique).mockRejectedValue(
+      vi.mocked(database.recipe.findFirst).mockRejectedValue(
         new Error("DB explosion") as never
       );
 
@@ -666,39 +640,29 @@ describe("Recipes API", () => {
     it(`returns 401 when unauthenticated [${name}]`, async () => {
       unauthed();
       const mod = await import(routePath);
-      const res = await mod.POST(postRequest(path, sampleBody), {
-        params: Promise.resolve({ entity: "Recipe", command: name }),
-      });
+      const res = await mod.POST(postRequest(path, sampleBody));
 
       expect(res.status).toBe(401);
       const body = await res.json();
       expect(body.message).toBe("Unauthorized");
     });
 
-    it(`returns 401 when user resolution fails [${name}]`, async () => {
-      // requireCurrentUser throws InvariantError for auth failures (including tenant resolution)
-      vi.mocked(requireCurrentUser).mockRejectedValue(
-        new InvariantError("auth.orgId must exist") as never
-      );
-      mockRuntimeSuccess({ id: TEST_RECIPE_ID });
+    it(`returns 400 when tenant cannot be resolved [${name}]`, async () => {
+      vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
 
       const mod = await import(routePath);
-      const res = await mod.POST(postRequest(path, sampleBody), {
-        params: Promise.resolve({ entity: "Recipe", command: name }),
-      });
+      const res = await mod.POST(postRequest(path, sampleBody));
 
-      expect(res.status).toBe(401);
+      expect(res.status).toBe(400);
       const body = await res.json();
-      expect(body.message).toBe("Unauthorized");
+      expect(body.message).toBe("Tenant not found");
     });
 
     it(`returns 200 with result + events on success [${name}]`, async () => {
       mockRuntimeSuccess({ id: TEST_RECIPE_ID, name: "Caesar Dressing" });
 
       const mod = await import(routePath);
-      const res = await mod.POST(postRequest(path, sampleBody), {
-        params: Promise.resolve({ entity: "Recipe", command: name }),
-      });
+      const res = await mod.POST(postRequest(path, sampleBody));
 
       expect(res.status).toBe(200);
       const body = await res.json();
@@ -707,15 +671,14 @@ describe("Recipes API", () => {
       expect(body.events).toHaveLength(1);
 
       // Pin the user-context shape: clerk userId is forwarded directly
-      // (no database.user.findFirst lookup). Role is also included for RBAC.
+      // (no database.user.findFirst lookup). A regression that adds an
+      // internal-user resolution would surface here.
       const runtimeCall = vi.mocked(createManifestRuntime).mock.calls[0][0];
       expect(runtimeCall).toEqual({
         user: {
           id: TEST_CLERK_ID,
           tenantId: TEST_TENANT_ID,
-          role: "admin",
         },
-        entityName: "Recipe",
       });
     });
 
@@ -723,22 +686,20 @@ describe("Recipes API", () => {
       mockRuntimePolicyDenial("ChefsCanEditRecipes");
 
       const mod = await import(routePath);
-      const res = await mod.POST(postRequest(path, sampleBody), {
-        params: Promise.resolve({ entity: "Recipe", command: name }),
-      });
+      const res = await mod.POST(postRequest(path, sampleBody));
 
       expect(res.status).toBe(403);
       const body = await res.json();
-      expect(body.message).toBe("Access denied: ChefsCanEditRecipes (role=admin)");
+      expect(body.message).toBe("Access denied: ChefsCanEditRecipes");
+      // Pin: this domain's policy denial does NOT include `role=` suffix.
+      expect(body.message).not.toContain("role=");
     });
 
     it(`returns 422 on guard failure [${name}]`, async () => {
       mockRuntimeGuardFailure(0, "name must not be empty");
 
       const mod = await import(routePath);
-      const res = await mod.POST(postRequest(path, sampleBody), {
-        params: Promise.resolve({ entity: "Recipe", command: name }),
-      });
+      const res = await mod.POST(postRequest(path, sampleBody));
 
       expect(res.status).toBe(422);
       const body = await res.json();
@@ -750,9 +711,7 @@ describe("Recipes API", () => {
       mockRuntimeFailure("Recipe is already active");
 
       const mod = await import(routePath);
-      const res = await mod.POST(postRequest(path, sampleBody), {
-        params: Promise.resolve({ entity: "Recipe", command: name }),
-      });
+      const res = await mod.POST(postRequest(path, sampleBody));
 
       expect(res.status).toBe(400);
       const body = await res.json();
@@ -765,9 +724,7 @@ describe("Recipes API", () => {
       } as never);
 
       const mod = await import(routePath);
-      const res = await mod.POST(postRequest(path, sampleBody), {
-        params: Promise.resolve({ entity: "Recipe", command: name }),
-      });
+      const res = await mod.POST(postRequest(path, sampleBody));
 
       expect(res.status).toBe(400);
       const body = await res.json();
@@ -780,9 +737,7 @@ describe("Recipes API", () => {
       );
 
       const mod = await import(routePath);
-      const res = await mod.POST(postRequest(path, sampleBody), {
-        params: Promise.resolve({ entity: "Recipe", command: name }),
-      });
+      const res = await mod.POST(postRequest(path, sampleBody));
 
       expect(res.status).toBe(500);
       const body = await res.json();
@@ -800,9 +755,7 @@ describe("Recipes API", () => {
       } as never);
 
       const mod = await import(routePath);
-      await mod.POST(postRequest(path, sampleBody), {
-        params: Promise.resolve({ entity: "Recipe", command: name }),
-      });
+      await mod.POST(postRequest(path, sampleBody));
 
       // Pin the exact 3-arg shape: all 4 commands are entity-scoped, so
       // no `instanceId` is passed even for stateful verbs (activate /

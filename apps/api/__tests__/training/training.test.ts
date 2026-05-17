@@ -24,7 +24,6 @@ vi.mock("@repo/database", () => ({
     trainingAssignment: {
       findMany: vi.fn(),
       findFirst: vi.fn(),
-      findUnique: vi.fn(),
     },
     user: {
       findFirst: vi.fn(),
@@ -59,9 +58,6 @@ vi.mock("@/lib/sql-like", () => ({
 vi.mock("@sentry/nextjs", () => ({
   captureException: vi.fn(),
 }));
-
-import { captureException } from "@sentry/nextjs";
-import { InvariantError } from "@/app/lib/invariant";
 
 import { database } from "@repo/database";
 
@@ -162,16 +158,11 @@ function setupAuthMocks(
     orgId: opts.orgId ?? TEST_ORG_ID,
   } as never);
   vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-}
-
-function setupCurrentUser() {
   vi.mocked(requireCurrentUser).mockResolvedValue({
     id: TEST_USER_ID,
     tenantId: TEST_TENANT_ID,
     role: "admin",
-    email: "test@example.com",
-    firstName: "Test",
-    lastName: "User",
+    authUserId: TEST_CLERK_ID,
   } as never);
 }
 
@@ -510,8 +501,6 @@ describe("Training API", () => {
     const mockRunCommand = vi.fn();
 
     beforeEach(() => {
-      setupAuthMocks();
-      setupCurrentUser();
       setupCommandMocks();
       setupUserLookup();
       mockRunCommand.mockReset();
@@ -726,8 +715,6 @@ describe("Training API", () => {
     const mockRunCommand = vi.fn();
 
     beforeEach(() => {
-      setupAuthMocks();
-      setupCurrentUser();
       setupCommandMocks();
       setupUserLookup();
       mockRunCommand.mockReset();
@@ -737,9 +724,10 @@ describe("Training API", () => {
     });
 
     it("should return 401 for unauthenticated requests", async () => {
-      vi.mocked(requireCurrentUser).mockRejectedValue(
-        new InvariantError("auth.userId must exist") as never
-      );
+      vi.mocked(auth).mockResolvedValue({
+        userId: null,
+        orgId: null,
+      } as never);
 
       const request = new NextRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -758,13 +746,8 @@ describe("Training API", () => {
       expect(response.status).toBe(401);
     });
 
-    it("should return 401 when tenant not found", async () => {
-      vi.mocked(getTenantIdForOrg).mockReset();
+    it("should return 400 when tenant not found", async () => {
       vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
-      // Tenant not found causes requireCurrentUser to fail via InvariantError
-      vi.mocked(requireCurrentUser).mockRejectedValue(
-        new InvariantError("Tenant not found") as never
-      );
 
       const request = new NextRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -780,14 +763,13 @@ describe("Training API", () => {
         }),
       });
 
-      expect(response.status).toBe(401);
+      expect(response.status).toBe(400);
+      const body = await response.json();
+      expect(body.message).toBe("Tenant not found");
     });
 
-    it("should return 401 when user lookup fails", async () => {
-      // requireCurrentUser throws InvariantError for auth failures
-      vi.mocked(requireCurrentUser).mockRejectedValue(
-        new InvariantError("User lookup failed") as never
-      );
+    it("should return 400 when user not found in database", async () => {
+      vi.mocked(database.user.findFirst).mockResolvedValue(null as never);
 
       const request = new NextRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -803,7 +785,9 @@ describe("Training API", () => {
         }),
       });
 
-      expect(response.status).toBe(401);
+      expect(response.status).toBe(400);
+      const body = await response.json();
+      expect(body.message).toBe("User not found in database");
     });
 
     it("should create a module through manifest runtime", async () => {
@@ -951,8 +935,6 @@ describe("Training API", () => {
     const mockRunCommand = vi.fn();
 
     beforeEach(() => {
-      setupAuthMocks();
-      setupCurrentUser();
       setupCommandMocks();
       setupUserLookup();
       mockRunCommand.mockReset();
@@ -997,9 +979,10 @@ describe("Training API", () => {
     });
 
     it("should return 401 for unauthenticated requests", async () => {
-      vi.mocked(requireCurrentUser).mockRejectedValue(
-        new InvariantError("auth.userId must exist") as never
-      );
+      vi.mocked(auth).mockResolvedValue({
+        userId: null,
+        orgId: null,
+      } as never);
 
       const request = new NextRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -1026,8 +1009,6 @@ describe("Training API", () => {
     const mockRunCommand = vi.fn();
 
     beforeEach(() => {
-      setupAuthMocks();
-      setupCurrentUser();
       setupCommandMocks();
       setupUserLookup();
       mockRunCommand.mockReset();
@@ -1069,9 +1050,10 @@ describe("Training API", () => {
     });
 
     it("should return 401 for unauthenticated requests", async () => {
-      vi.mocked(requireCurrentUser).mockRejectedValue(
-        new InvariantError("auth.userId must exist") as never
-      );
+      vi.mocked(auth).mockResolvedValue({
+        userId: null,
+        orgId: null,
+      } as never);
 
       const request = new NextRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -1338,7 +1320,7 @@ describe("Training API", () => {
         status: "assigned",
       };
 
-      vi.mocked(database.trainingAssignment.findUnique).mockResolvedValue(
+      vi.mocked(database.trainingAssignment.findFirst).mockResolvedValue(
         mockAssignment as never
       );
 
@@ -1356,7 +1338,7 @@ describe("Training API", () => {
     });
 
     it("should return 404 when assignment not found", async () => {
-      vi.mocked(database.trainingAssignment.findUnique).mockResolvedValue(
+      vi.mocked(database.trainingAssignment.findFirst).mockResolvedValue(
         null as never
       );
 
@@ -1373,7 +1355,7 @@ describe("Training API", () => {
     });
 
     it("should enforce tenant isolation on detail queries", async () => {
-      vi.mocked(database.trainingAssignment.findUnique).mockResolvedValue(
+      vi.mocked(database.trainingAssignment.findFirst).mockResolvedValue(
         null as never
       );
 
@@ -1384,13 +1366,12 @@ describe("Training API", () => {
         params: Promise.resolve({ id: "assign-001" }),
       });
 
-      expect(database.trainingAssignment.findUnique).toHaveBeenCalledWith(
+      expect(database.trainingAssignment.findFirst).toHaveBeenCalledWith(
         expect.objectContaining({
           where: {
-            tenant_id_id: {
-              tenant_id: TEST_TENANT_ID,
-              id: "assign-001",
-            },
+            id: "assign-001",
+            tenant_id: TEST_TENANT_ID,
+            deleted_at: null,
           },
         })
       );
@@ -1499,8 +1480,6 @@ describe("Training API", () => {
     const mockRunCommand = vi.fn();
 
     beforeEach(() => {
-      setupAuthMocks();
-      setupCurrentUser();
       setupCommandMocks();
       setupUserLookup();
       mockRunCommand.mockReset();
@@ -1510,9 +1489,10 @@ describe("Training API", () => {
     });
 
     it("should return 401 for unauthenticated requests", async () => {
-      vi.mocked(requireCurrentUser).mockRejectedValue(
-        new InvariantError("auth.userId must exist") as never
-      );
+      vi.mocked(auth).mockResolvedValue({
+        userId: null,
+        orgId: null,
+      } as never);
 
       const request = new NextRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -1644,11 +1624,8 @@ describe("Training API", () => {
       expect(response.status).toBe(500);
     });
 
-    it("should return 401 when user lookup fails", async () => {
-      // requireCurrentUser throws InvariantError for auth failures
-      vi.mocked(requireCurrentUser).mockRejectedValue(
-        new InvariantError("User lookup failed") as never
-      );
+    it("should return 400 when user not found in database", async () => {
+      vi.mocked(database.user.findFirst).mockResolvedValue(null as never);
 
       const request = new NextRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -1664,7 +1641,9 @@ describe("Training API", () => {
         }),
       });
 
-      expect(response.status).toBe(401);
+      expect(response.status).toBe(400);
+      const body = await response.json();
+      expect(body.message).toBe("User not found in database");
     });
   });
 
@@ -1675,8 +1654,6 @@ describe("Training API", () => {
     const mockRunCommand = vi.fn();
 
     beforeEach(() => {
-      setupAuthMocks();
-      setupCurrentUser();
       setupCommandMocks();
       setupUserLookup();
       mockRunCommand.mockReset();
@@ -1718,9 +1695,10 @@ describe("Training API", () => {
     });
 
     it("should return 401 for unauthenticated requests", async () => {
-      vi.mocked(requireCurrentUser).mockRejectedValue(
-        new InvariantError("auth.userId must exist") as never
-      );
+      vi.mocked(auth).mockResolvedValue({
+        userId: null,
+        orgId: null,
+      } as never);
 
       const request = new NextRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",

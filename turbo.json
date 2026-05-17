@@ -79,7 +79,7 @@
     "enabled": true,
     "signature": true
   },
-  "envMode": "strict",
+  "envMode": "loose",
   "tasks": {
     "generate": {
       "dependsOn": ["^build"],

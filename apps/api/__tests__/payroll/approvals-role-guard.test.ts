@@ -36,7 +36,6 @@ vi.mock("@repo/observability/log", () => ({
 }));
 
 import { requireCurrentUser } from "@/app/lib/tenant";
-import { InvariantError } from "@/app/lib/invariant";
 
 const APPROVAL_ID = "a1111111-1111-4111-a111-111111111111";
 const TENANT = "tenant-1";
@@ -83,9 +82,7 @@ describe("PUT /api/payroll/approvals/[approvalId] — role guard", () => {
   });
 
   it("returns 401 when no session can be resolved", async () => {
-    vi.mocked(requireCurrentUser).mockRejectedValue(
-      new InvariantError("Unauthorized")
-    );
+    vi.mocked(requireCurrentUser).mockRejectedValue(new Error("no session"));
 
     const { PUT } = await import(
       "@/app/api/payroll/approvals/[approvalId]/route"

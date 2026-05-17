@@ -4,8 +4,6 @@
  * Client-side functions for interacting with recipe costing API.
  */
 
-import { apiFetch } from "@/app/lib/api";
-
 // ============================================================================
 // Type Definitions
 // ============================================================================
@@ -282,112 +280,11 @@ export async function updateEventBudgets(
 }
 
 // ============================================================================
-// TanStack Query Hooks
+// React Hooks
 // ============================================================================
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-
-export const recipeKeys = {
-  all: ["recipes"] as const,
-  lists: () => [...recipeKeys.all, "list"] as const,
-  list: (filters: RecipeListFilters) =>
-    [...recipeKeys.lists(), filters] as const,
-  details: () => [...recipeKeys.all, "detail"] as const,
-  detail: (id: string) => [...recipeKeys.details(), id] as const,
-  cost: (recipeVersionId: string) =>
-    [...recipeKeys.detail(recipeVersionId), "cost"] as const,
-};
-
-/** List recipes with caching — replaces useRecipes */
-export function useRecipesQuery(filters: RecipeListFilters = {}) {
-  return useQuery({
-    queryKey: recipeKeys.list(filters),
-    queryFn: async () => {
-      const result = await listRecipes(filters);
-      return result;
-    },
-    staleTime: 60_000, // Recipes change infrequently, cache longer
-  });
-}
-
-/** Get recipe cost breakdown — replaces useRecipeCost */
-export function useRecipeCostQuery(recipeVersionId: string) {
-  return useQuery({
-    queryKey: recipeKeys.cost(recipeVersionId),
-    queryFn: () => getRecipeCost(recipeVersionId),
-    enabled: !!recipeVersionId,
-    staleTime: 5 * 60_000, // Cost data is compute-heavy, cache 5 min
-  });
-}
-
-/** Recalculate recipe costs */
-export function useRecalculateRecipeCost() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (recipeVersionId: string) =>
-      recalculateRecipeCost(recipeVersionId),
-    onSuccess: (_data, recipeVersionId) => {
-      queryClient.invalidateQueries({
-        queryKey: recipeKeys.cost(recipeVersionId),
-      });
-    },
-  });
-}
-
-/** Scale recipe */
-export function useScaleRecipe() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: ({
-      recipeVersionId,
-      request,
-    }: {
-      recipeVersionId: string;
-      request: ScaleRecipeRequest;
-    }) => scaleRecipe(recipeVersionId, request),
-    onSuccess: (_data, { recipeVersionId }) => {
-      queryClient.invalidateQueries({
-        queryKey: recipeKeys.cost(recipeVersionId),
-      });
-    },
-  });
-}
-
-/** Update waste factor */
-export function useUpdateWasteFactor() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: ({
-      recipeVersionId,
-      request,
-    }: {
-      recipeVersionId: string;
-      request: UpdateWasteFactorRequest;
-    }) => updateWasteFactor(recipeVersionId, request),
-    onSuccess: (_data, { recipeVersionId }) => {
-      queryClient.invalidateQueries({
-        queryKey: recipeKeys.cost(recipeVersionId),
-      });
-    },
-  });
-}
-
-/** Update event budgets from recipe */
-export function useUpdateEventBudgetsFromRecipe() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (recipeVersionId: string) => updateEventBudgets(recipeVersionId),
-    onSuccess: (_data, recipeVersionId) => {
-      queryClient.invalidateQueries({
-        queryKey: recipeKeys.cost(recipeVersionId),
-      });
-    },
-  });
-}
-
-// ============================================================================
-// Legacy compatibility wrappers
-// ============================================================================
+import { useEffect, useState } from "react";
+import { apiFetch } from "@/app/lib/api";
 
 export interface UseRecipeCostResult {
   data: RecipeCostBreakdown | null;
@@ -397,22 +294,44 @@ export interface UseRecipeCostResult {
   recalculate: () => Promise<void>;
 }
 
-/** @deprecated Use useRecipeCostQuery + useRecalculateRecipeCost instead */
 export function useRecipeCost(recipeVersionId: string): UseRecipeCostResult {
-  const query = useRecipeCostQuery(recipeVersionId);
-  const recalcMutation = useRecalculateRecipeCost();
+  const [data, setData] = useState<RecipeCostBreakdown | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
 
-  return {
-    data: query.data ?? null,
-    loading: query.isLoading,
-    error: query.error as Error | null,
-    refetch: async () => {
-      await query.refetch();
-    },
-    recalculate: async () => {
-      await recalcMutation.mutateAsync(recipeVersionId);
-    },
+  const fetchCost = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const result = await getRecipeCost(recipeVersionId);
+      setData(result);
+    } catch (err) {
+      setError(err as Error);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const recalculate = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const result = await recalculateRecipeCost(recipeVersionId);
+      setData(result);
+    } catch (err) {
+      setError(err as Error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (recipeVersionId) {
+      fetchCost();
+    }
+  }, [recipeVersionId, fetchCost]);
+
+  return { data, loading, error, refetch: fetchCost, recalculate };
 }
 
 export interface UseRecipesResult {
@@ -428,19 +347,36 @@ export interface UseRecipesResult {
   refetch: () => Promise<void>;
 }
 
-/** @deprecated Use useRecipesQuery instead */
 export function useRecipes(filters: RecipeListFilters = {}): UseRecipesResult {
-  const query = useRecipesQuery(filters);
+  const [data, setData] = useState<Recipe[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+  const [pagination, setPagination] = useState<{
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  } | null>(null);
 
-  return {
-    data: query.data?.data ?? [],
-    loading: query.isLoading,
-    error: query.error as Error | null,
-    pagination: query.data?.pagination ?? null,
-    refetch: async () => {
-      await query.refetch();
-    },
+  const fetchRecipes = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const result = await listRecipes(filters);
+      setData(result.data);
+      setPagination(result.pagination);
+    } catch (err) {
+      setError(err as Error);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  useEffect(() => {
+    fetchRecipes();
+  }, [fetchRecipes]);
+
+  return { data, loading, error, pagination, refetch: fetchRecipes };
 }
 
 // ============================================================================

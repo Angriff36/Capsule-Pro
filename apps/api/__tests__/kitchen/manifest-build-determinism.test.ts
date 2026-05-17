@@ -407,12 +407,8 @@ describe("Test G: mirror check — commands.json entries have disk routes", () =
 
   it("command route coverage is tracked (forward mirror)", () => {
     // Forward mirror: for each commands.json entry with a domain mapping,
-    // check if a route exists on disk.
-    //
-    // NOTE: The manifest system uses a dynamic dispatcher at:
-    //   app/api/manifest/[entity]/commands/[command]/route.ts
-    // This single route handles ALL commands via runtime.runCommand().
-    // Individual entity command routes are NOT generated.
+    // check if a route exists on disk. This is informational — not all
+    // commands have routes yet (some are pending generation).
     //
     // CommandBoard entities are excluded — they are DEAD (replaced by
     // server actions per PATTERNS.md) and will never have generated routes.
@@ -428,13 +424,6 @@ describe("Test G: mirror check — commands.json entries have disk routes", () =
     let mapped = 0;
     let found = 0;
     const missing: string[] = [];
-
-    // The manifest dispatcher handles all commands
-    const dispatcherPath = join(
-      API_DIR,
-      "manifest/[entity]/commands/[command]/route.ts"
-    );
-    const dispatcherExists = existsSync(dispatcherPath);
 
     for (const cmd of commands as Array<{
       entity: string;
@@ -454,8 +443,7 @@ describe("Test G: mirror check — commands.json entries have disk routes", () =
         kebabCommand,
         "route.ts"
       );
-      // Check for individual route OR dispatcher (dispatcher covers all)
-      if (existsSync(routePath) || dispatcherExists) {
+      if (existsSync(routePath)) {
         found++;
       } else {
         missing.push(`${cmd.commandId} → ${domain}/commands/${kebabCommand}/`);
@@ -464,19 +452,13 @@ describe("Test G: mirror check — commands.json entries have disk routes", () =
 
     const coverage = mapped > 0 ? ((found / mapped) * 100).toFixed(1) : "0.0";
 
-    // If dispatcher exists, all mapped commands are covered
-    // (dispatcher is a single route that handles all commands)
-    if (dispatcherExists) {
-      found = mapped;
-    }
-
-    // All non-dead commands must be covered (by individual routes OR dispatcher)
+    // All non-dead commands must have routes. Coverage = 100%.
+    // As of Agent 52: 247 routes for 247 mapped commands (excluding 17 dead CommandBoard).
     expect(found).toBe(mapped);
 
     // Log coverage for visibility
     console.info(
       `\n[mirror] Command route coverage: ${found}/${mapped} (${coverage}%)\n` +
-        `[mirror] Dynamic dispatcher: ${dispatcherExists ? "YES" : "NO"}\n` +
         `[mirror] Missing routes: ${missing.length}\n`
     );
   });
@@ -502,24 +484,13 @@ describe("Test G: mirror check — commands.json entries have disk routes", () =
       }
     }
 
-    // The manifest dispatcher counts as 1 route that handles all commands
-    const dispatcherPath = join(
-      API_DIR,
-      "manifest/[entity]/commands/[command]/route.ts"
-    );
-    const hasDispatcher = existsSync(dispatcherPath);
-
     // Disk routes should never EXCEED commands.json (would mean orphan routes).
-    // Disk routes may be LESS than commands.json (dispatcher covers rest).
-    // Allow some individual routes plus dispatcher as valid setup.
-    const maxAllowed = hasDispatcher ? mappedCommands.length + 5 : mappedCommands.length + 5;
-    expect(diskRouteCount).toBeLessThanOrEqual(maxAllowed);
+    // Disk routes may be LESS than commands.json (pending generation).
+    // Temporary tolerance while commands.json catches up with newly generated routes.
+    expect(diskRouteCount).toBeLessThanOrEqual(mappedCommands.length + 5);
 
-    // If dispatcher exists, we don't require 230+ individual routes
-    // (dispatcher handles the rest of the commands)
-    if (!hasDispatcher) {
-      expect(diskRouteCount).toBeGreaterThanOrEqual(230);
-    }
+    // Disk routes should not drop below a floor (regression guard).
+    expect(diskRouteCount).toBeGreaterThanOrEqual(230);
   });
 });
 
@@ -604,7 +575,7 @@ describe("Test H — Route integrity (known issues)", () => {
     expect(content).toContain("createManifestRuntime");
   });
 
-  it("H5: exemptions registry does not reference non-existent non-dynamic paths", () => {
+  it("H5: exemptions registry does not reference deleted routes", () => {
     // Stale exemptions for deleted files are noise. Verify cleanup.
     const exemptionsFile = join(
       PROJECT_ROOT,
@@ -616,18 +587,15 @@ describe("Test H — Route integrity (known issues)", () => {
       path: string;
     }>;
 
-    // Allow stale exemptions - they may exist for files that were intentionally
-    // deleted or never existed. The exemption is just a skip marker.
-    // Only fail if we reference a path that exists but shouldn't be exempted.
     for (const exemption of exemptions) {
       const fullPath = join(PROJECT_ROOT, "apps/api", exemption.path);
-      // If the path doesn't exist, the exemption is stale but harmless
-      // (could be removed but doesn't break anything)
-      if (!existsSync(fullPath)) {
-        continue;
+      // Only check non-dynamic paths (skip [id] patterns — they always exist)
+      if (!exemption.path.includes("[")) {
+        expect(
+          existsSync(fullPath),
+          `Exemption references non-existent file: ${exemption.path}`
+        ).toBe(true);
       }
     }
-
-    console.info(`✓ Exemptions registry checked (${exemptions.length} entries)`);
   });
 });

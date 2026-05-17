@@ -21,10 +21,7 @@ export async function GET(request: NextRequest) {
     const url = request.nextUrl.searchParams;
     const q = url.get("q")?.trim();
     if (!q || q.length < 2) {
-      return manifestErrorResponse(
-        "Search query must be at least 2 characters",
-        400
-      );
+      return manifestSuccessResponse({ groups: [], total: 0 });
     }
 
     const type = url.get("type")?.trim();
