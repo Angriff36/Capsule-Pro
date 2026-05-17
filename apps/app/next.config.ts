@@ -129,6 +129,10 @@ const rewrites: NextConfig["rewrites"] = async () => {
       destination: `${apiBaseUrl}/api/logistics/:path*`,
     },
     {
+      source: "/api/manifest/:path*",
+      destination: `${apiBaseUrl}/api/manifest/:path*`,
+    },
+    {
       source: "/api/procurement/:path*",
       destination: `${apiBaseUrl}/api/procurement/:path*`,
     },
@@ -210,6 +214,10 @@ const baseConfig: NextConfig = withToolbar(
       "@angriff36/manifest",
       "@repo/manifest-adapters",
       "@repo/seo",
+      "@repo/email",
+      "@repo/storage",
+      "@repo/types",
+      "@repo/next-config",
     ],
     // Allow cross-origin requests to the Next.js dev server from:
     //   - The app itself on its own port (2221) — needed when the browser
