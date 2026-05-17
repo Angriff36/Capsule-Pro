@@ -26,7 +26,8 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { updateClient } from "../../../actions";
+import { updateClient, getAvailableTags } from "../../../actions";
+import { TagInput } from "../../../components/tag-input";
 
 interface ContactInfoTabProps {
   client: {
@@ -57,6 +58,7 @@ interface ContactInfoTabProps {
 export function ContactInfoTab({ client, onEdit }: ContactInfoTabProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [availableTags, setAvailableTags] = useState<string[]>([]);
   const [formData, setFormData] = useState({
     company_name: client.company_name || "",
     first_name: client.first_name || "",
@@ -72,8 +74,14 @@ export function ContactInfoTab({ client, onEdit }: ContactInfoTabProps) {
     countryCode: client.countryCode || "",
     taxId: client.taxId || "",
     notes: client.notes || "",
-    tags: client.tags.join(", "),
+    tags: [...client.tags],
   });
+
+  const handleEdit = async () => {
+    setIsEditing(true);
+    const tags = await getAvailableTags();
+    setAvailableTags(tags.map((t) => t.tag));
+  };
 
   const handleSave = async () => {
     setIsLoading(true);
@@ -93,12 +101,7 @@ export function ContactInfoTab({ client, onEdit }: ContactInfoTabProps) {
         countryCode: formData.countryCode || undefined,
         taxId: formData.taxId || undefined,
         notes: formData.notes || undefined,
-        tags: formData.tags
-          ? formData.tags
-              .split(",")
-              .map((t) => t.trim())
-              .filter(Boolean)
-          : undefined,
+        tags: formData.tags,
       });
       toast.success("Client updated successfully");
       setIsEditing(false);
@@ -130,7 +133,7 @@ export function ContactInfoTab({ client, onEdit }: ContactInfoTabProps) {
       countryCode: client.countryCode || "",
       taxId: client.taxId || "",
       notes: client.notes || "",
-      tags: client.tags.join(", "),
+      tags: [...client.tags],
     });
     setIsEditing(false);
   };
@@ -367,13 +370,13 @@ export function ContactInfoTab({ client, onEdit }: ContactInfoTabProps) {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="tags">Tags (comma-separated)</Label>
-                <Input
-                  id="tags"
-                  onChange={(e) =>
-                    setFormData({ ...formData, tags: e.target.value })
+                <Label>Tags</Label>
+                <TagInput
+                  onChange={(tags: string[]) =>
+                    setFormData({ ...formData, tags })
                   }
-                  placeholder="vip, repeat, corporate"
+                  placeholder="Add a tag…"
+                  suggestions={availableTags}
                   value={formData.tags}
                 />
               </div>
@@ -412,7 +415,7 @@ export function ContactInfoTab({ client, onEdit }: ContactInfoTabProps) {
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold">Contact Information</h2>
-        <Button onClick={() => setIsEditing(true)} size="sm" variant="outline">
+        <Button onClick={handleEdit} size="sm" variant="outline">
           <PencilIcon className="h-4 w-4 mr-2" />
           Edit
         </Button>
