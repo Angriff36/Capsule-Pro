@@ -7,7 +7,7 @@
 
 ## Changes from spec audit pass (2026-05-17)
 
-Comprehensive audit of all 25+ `specs/*` directories. **11 specs marked `_TODO` are fully implemented** and were renamed to `_COMPLETE`:
+Comprehensive audit of all 25+ `specs/*` directories. **14 specs marked `_TODO` are fully implemented** and were renamed to `_COMPLETE`:
 - `crm-client-detail-view` — all 6 acceptance criteria MET (FinancialTab now includes Total Revenue, Avg per Event, Est. Annual, Payment Terms, Tax Status, Lifetime Value)
 - `inventory-stock-levels` — full API + frontend + integrations (barcode scanner, kitchen waste, warehouse)
 - `inventory-recipe-costing` — full costing engine with unit conversions, waste factors, inventory cascade, event budget propagation
@@ -19,18 +19,18 @@ Comprehensive audit of all 25+ `specs/*` directories. **11 specs marked `_TODO` 
 - `inventory-depletion-forecasting` — full forecasting library (998 lines), batch processing, accuracy tracking
 - `bulk-grouping-operations` — all 6 criteria with canvas UI
 - `event-import-export` — all export criteria implemented despite unchecked marks in spec
+- `crm-client-communication-log` — all 6 acceptance criteria MET (file attachments via InteractionAttachment model, upload/list/delete API, frontend file picker + attachment display in timeline)
+- `event-contract-management` — all criteria MET (proactive expiration alert cron, full CRUD/signature/upload/PDF/status/send/history, Vercel cron at 0 7 * * *)
+- `payroll-timecard-system` — all criteria MET (bulk edit-request and flag-exception dialogs now apply to ALL selected entries)
 
 **Bug fix:** `apps/app/app/(authenticated)/payroll/timecards/timecard-bulk-actions.tsx` was dead code (never imported by page.tsx). Rewrote to accept `selectedCount` and action callbacks as props; wired into `page.tsx` with bulk approve/reject/edit-request/flag-exceptions handlers.
 
-**Remaining _TODO specs with real gaps:**
-- `crm-client-communication-log` — 5/6, missing file attachments
+**Remaining _TODO specs with real gaps (6):**
 - `crm-client-segmentation` — read views done, missing dedicated tag CRUD UI
 - `scheduling-availability-tracking` — missing calendar view and warning/override UI
-- `payroll-timecard-system` — bulk actions now functional but edit-request/flag dialogs only apply to first selected entry
 - `warehouse-cycle-counting` — implementation complete but spec files empty
 - `warehouse-receiving-workflow` — missing dedicated history endpoint
 - `event-timeline-builder` — two systems exist, gaps in block categorization and task linking
-- `event-contract-management` — missing proactive expiration alert cron
 - `bulk-edit-operations` — core done, preview/undo guardrails missing
 
 ## Changes from inventory-item-management spec completion pass (2026-05-17)

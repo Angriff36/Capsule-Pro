@@ -43,7 +43,7 @@ interface BrandingState {
 }
 
 const fontFamilies = [
-  { value: "", label: "Default (Helvetica)" },
+  { value: "__default__", label: "Default (Helvetica)" },
   { value: "Helvetica", label: "Helvetica" },
   { value: "Times-Roman", label: "Times Roman" },
   { value: "Courier", label: "Courier" },
@@ -76,7 +76,7 @@ const itemTypes = [
 ];
 
 const eventTypes = [
-  { value: "", label: "Any Event Type" },
+  { value: "__any__", label: "Any Event Type" },
   { value: "Wedding", label: "Wedding" },
   { value: "Corporate Event", label: "Corporate Event" },
   { value: "Social Gathering", label: "Social Gathering" },
@@ -93,7 +93,7 @@ export default function NewProposalTemplatePage() {
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [eventType, setEventType] = useState("");
+  const [eventType, setEventType] = useState("__any__");
   const [defaultTerms, setDefaultTerms] = useState("");
   const [defaultTaxRate, setDefaultTaxRate] = useState(0);
   const [defaultNotes, setDefaultNotes] = useState("");
@@ -105,7 +105,7 @@ export default function NewProposalTemplatePage() {
     primaryColor: "",
     secondaryColor: "",
     accentColor: "",
-    fontFamily: "",
+    fontFamily: "__default__",
   });
 
   const [lineItems, setLineItems] = useState<LineItem[]>([]);
@@ -163,7 +163,7 @@ export default function NewProposalTemplatePage() {
         const _result = await createProposalTemplate({
           name: name.trim(),
           description: description.trim() || null,
-          eventType: eventType || null,
+          eventType: eventType === "__any__" ? null : eventType,
           defaultTerms: defaultTerms.trim() || null,
           defaultTaxRate,
           defaultNotes: defaultNotes.trim() || null,
@@ -175,7 +175,7 @@ export default function NewProposalTemplatePage() {
             primaryColor: branding.primaryColor.trim() || null,
             secondaryColor: branding.secondaryColor.trim() || null,
             accentColor: branding.accentColor.trim() || null,
-            fontFamily: branding.fontFamily.trim() || null,
+            fontFamily: branding.fontFamily === "__default__" ? null : branding.fontFamily.trim() || null,
           },
         });
 
@@ -196,7 +196,7 @@ export default function NewProposalTemplatePage() {
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">
+          <h1 className="font-semibold text-2xl tracking-tight">
             New Template
           </h1>
           <p className="text-muted-foreground">
@@ -208,7 +208,7 @@ export default function NewProposalTemplatePage() {
       <form className="space-y-6" onSubmit={handleSubmit}>
         <div className="grid gap-6 lg:grid-cols-3">
           {/* Main Form */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="space-y-6 lg:col-span-2">
             {/* Basic Info */}
             <Card>
               <CardHeader>
@@ -294,7 +294,7 @@ export default function NewProposalTemplatePage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 {/* Add new line item */}
-                <div className="flex flex-col gap-3 p-4 border rounded-lg bg-muted/50">
+                <div className="flex flex-col gap-3 rounded-lg border bg-muted/50 p-4">
                   <div className="grid gap-3 md:grid-cols-5">
                     <div className="space-y-1">
                       <Label className="text-xs">Type</Label>
@@ -380,7 +380,7 @@ export default function NewProposalTemplatePage() {
 
                 {/* Line items table */}
                 {lineItems.length > 0 && (
-                  <div className="border rounded-lg">
+                  <div className="rounded-lg border">
                     <Table>
                       <TableHeader>
                         <TableRow>
@@ -430,7 +430,7 @@ export default function NewProposalTemplatePage() {
                 )}
 
                 {lineItems.length === 0 && (
-                  <p className="text-center text-muted-foreground py-8">
+                  <p className="py-8 text-center text-muted-foreground">
                     No items added yet. Add items above to define default line
                     items.
                   </p>
@@ -464,7 +464,7 @@ export default function NewProposalTemplatePage() {
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label>Active</Label>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-muted-foreground text-xs">
                       Available for use in proposals
                     </p>
                   </div>
@@ -474,7 +474,7 @@ export default function NewProposalTemplatePage() {
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label>Default Template</Label>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-muted-foreground text-xs">
                       Used when no template is selected
                     </p>
                   </div>
@@ -502,7 +502,7 @@ export default function NewProposalTemplatePage() {
                     placeholder="https://example.com/logo.png"
                     value={branding.logoUrl}
                   />
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-muted-foreground text-xs">
                     URL to your company logo for PDF proposals
                   </p>
                 </div>
@@ -523,7 +523,7 @@ export default function NewProposalTemplatePage() {
                       value={branding.primaryColor}
                     />
                     <Input
-                      className="w-12 h-9 p-1 cursor-pointer"
+                      className="h-9 w-12 cursor-pointer p-1"
                       onChange={(e) =>
                         setBranding({
                           ...branding,
@@ -552,7 +552,7 @@ export default function NewProposalTemplatePage() {
                       value={branding.secondaryColor}
                     />
                     <Input
-                      className="w-12 h-9 p-1 cursor-pointer"
+                      className="h-9 w-12 cursor-pointer p-1"
                       onChange={(e) =>
                         setBranding({
                           ...branding,
@@ -581,7 +581,7 @@ export default function NewProposalTemplatePage() {
                       value={branding.accentColor}
                     />
                     <Input
-                      className="w-12 h-9 p-1 cursor-pointer"
+                      className="h-9 w-12 cursor-pointer p-1"
                       onChange={(e) =>
                         setBranding({
                           ...branding,

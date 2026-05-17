@@ -54,7 +54,7 @@ interface LineItem {
 }
 
 const fontFamilies = [
-  { value: "", label: "Default (Helvetica)" },
+  { value: "__default__", label: "Default (Helvetica)" },
   { value: "Helvetica", label: "Helvetica" },
   { value: "Times-Roman", label: "Times Roman" },
   { value: "Courier", label: "Courier" },
@@ -76,7 +76,7 @@ const itemTypes = [
 ];
 
 const eventTypes = [
-  { value: "", label: "Any Event Type" },
+  { value: "__any__", label: "Any Event Type" },
   { value: "Wedding", label: "Wedding" },
   { value: "Corporate Event", label: "Corporate Event" },
   { value: "Social Gathering", label: "Social Gathering" },
@@ -96,7 +96,7 @@ export default function EditProposalTemplatePage() {
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [eventType, setEventType] = useState("");
+  const [eventType, setEventType] = useState("__any__");
   const [defaultTerms, setDefaultTerms] = useState("");
   const [defaultTaxRate, setDefaultTaxRate] = useState(0);
   const [defaultNotes, setDefaultNotes] = useState("");
@@ -108,7 +108,7 @@ export default function EditProposalTemplatePage() {
     primaryColor: "",
     secondaryColor: "",
     accentColor: "",
-    fontFamily: "",
+    fontFamily: "__default__",
   });
 
   const [lineItems, setLineItems] = useState<LineItem[]>([]);
@@ -133,7 +133,7 @@ export default function EditProposalTemplatePage() {
 
         setName(template.name);
         setDescription(template.description || "");
-        setEventType(template.eventType || "");
+        setEventType(template.eventType || "__any__");
         setDefaultTerms(template.defaultTerms || "");
         setDefaultTaxRate(template.defaultTaxRate?.toNumber() ?? 0);
         setDefaultNotes(template.defaultNotes || "");
@@ -146,7 +146,7 @@ export default function EditProposalTemplatePage() {
           primaryColor: template.primaryColor || "",
           secondaryColor: template.secondaryColor || "",
           accentColor: template.accentColor || "",
-          fontFamily: template.fontFamily || "",
+          fontFamily: template.fontFamily || "__default__",
         });
 
         const items = template.defaultLineItems as unknown as LineItem[];
@@ -208,7 +208,7 @@ export default function EditProposalTemplatePage() {
         await updateProposalTemplate(templateId, {
           name: name.trim(),
           description: description.trim() || null,
-          eventType: eventType || null,
+          eventType: eventType === "__any__" ? null : eventType,
           defaultTerms: defaultTerms.trim() || null,
           defaultTaxRate,
           defaultNotes: defaultNotes.trim() || null,
@@ -220,7 +220,7 @@ export default function EditProposalTemplatePage() {
             primaryColor: branding.primaryColor.trim() || null,
             secondaryColor: branding.secondaryColor.trim() || null,
             accentColor: branding.accentColor.trim() || null,
-            fontFamily: branding.fontFamily.trim() || null,
+            fontFamily: branding.fontFamily === "__default__" ? null : branding.fontFamily.trim() || null,
           },
         });
 
@@ -236,7 +236,7 @@ export default function EditProposalTemplatePage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
+      <div className="flex min-h-[400px] items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
     );
@@ -249,7 +249,7 @@ export default function EditProposalTemplatePage() {
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">
+          <h1 className="font-semibold text-2xl tracking-tight">
             Edit Template
           </h1>
           <p className="text-muted-foreground">Modify this proposal template</p>
@@ -259,7 +259,7 @@ export default function EditProposalTemplatePage() {
       <form className="space-y-6" onSubmit={handleSubmit}>
         <div className="grid gap-6 lg:grid-cols-3">
           {/* Main Form */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="space-y-6 lg:col-span-2">
             {/* Basic Info */}
             <Card tone="canvas">
               <CardHeader>
@@ -345,7 +345,7 @@ export default function EditProposalTemplatePage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 {/* Add new line item */}
-                <div className="flex flex-col gap-3 p-4 border rounded-lg bg-muted/50">
+                <div className="flex flex-col gap-3 rounded-lg border bg-muted/50 p-4">
                   <div className="grid gap-3 md:grid-cols-5">
                     <div className="space-y-1">
                       <Label className="text-xs">Type</Label>
@@ -431,7 +431,7 @@ export default function EditProposalTemplatePage() {
 
                 {/* Line items table */}
                 {lineItems.length > 0 && (
-                  <div className="border rounded-lg">
+                  <div className="rounded-lg border">
                     <Table>
                       <TableHeader>
                         <TableRow>
@@ -481,7 +481,7 @@ export default function EditProposalTemplatePage() {
                 )}
 
                 {lineItems.length === 0 && (
-                  <p className="text-center text-muted-foreground py-8">
+                  <p className="py-8 text-center text-muted-foreground">
                     No items added yet. Add items above to define default line
                     items.
                   </p>
@@ -515,7 +515,7 @@ export default function EditProposalTemplatePage() {
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label>Active</Label>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-muted-foreground text-xs">
                       Available for use in proposals
                     </p>
                   </div>
@@ -525,7 +525,7 @@ export default function EditProposalTemplatePage() {
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label>Default Template</Label>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-muted-foreground text-xs">
                       Used when no template is selected
                     </p>
                   </div>
@@ -553,7 +553,7 @@ export default function EditProposalTemplatePage() {
                     placeholder="https://example.com/logo.png"
                     value={branding.logoUrl}
                   />
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-muted-foreground text-xs">
                     URL to your company logo for PDF proposals
                   </p>
                 </div>
@@ -574,7 +574,7 @@ export default function EditProposalTemplatePage() {
                       value={branding.primaryColor}
                     />
                     <Input
-                      className="w-12 h-9 p-1 cursor-pointer"
+                      className="h-9 w-12 cursor-pointer p-1"
                       onChange={(e) =>
                         setBranding({
                           ...branding,
@@ -603,7 +603,7 @@ export default function EditProposalTemplatePage() {
                       value={branding.secondaryColor}
                     />
                     <Input
-                      className="w-12 h-9 p-1 cursor-pointer"
+                      className="h-9 w-12 cursor-pointer p-1"
                       onChange={(e) =>
                         setBranding({
                           ...branding,
@@ -632,7 +632,7 @@ export default function EditProposalTemplatePage() {
                       value={branding.accentColor}
                     />
                     <Input
-                      className="w-12 h-9 p-1 cursor-pointer"
+                      className="h-9 w-12 cursor-pointer p-1"
                       onChange={(e) =>
                         setBranding({
                           ...branding,

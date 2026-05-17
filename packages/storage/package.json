@@ -5,7 +5,8 @@
   "types": "./index.ts",
   "exports": {
     ".": "./index.ts",
-    "./keys": "./keys.ts"
+    "./keys": "./keys.ts",
+    "./upload": "./upload.ts"
   },
   "dependencies": {
     "@t3-oss/env-nextjs": "^0.13.10",

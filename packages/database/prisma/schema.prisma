@@ -169,6 +169,7 @@ model Account {
   employeePayrollPrefs           EmployeePayrollPrefs[]
   tipPools                       TipPool[]
   departments                    Department[]
+  interactionAttachments         InteractionAttachment[]
 
   @@map("accounts")
   @@schema("platform")
@@ -970,28 +971,48 @@ model Lead {
 }
 
 model ClientInteraction {
-  tenantId          String    @map("tenant_id") @db.Uuid
-  id                String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  clientId          String?   @map("client_id") @db.Uuid
-  leadId            String?   @map("lead_id") @db.Uuid
-  employeeId        String    @map("employee_id") @db.Uuid
-  interactionType   String    @map("interaction_type")
-  interactionDate   DateTime  @default(now()) @map("interaction_date") @db.Timestamptz(6)
+  tenantId          String                  @map("tenant_id") @db.Uuid
+  id                String                  @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  clientId          String?                 @map("client_id") @db.Uuid
+  leadId            String?                 @map("lead_id") @db.Uuid
+  employeeId        String                  @map("employee_id") @db.Uuid
+  interactionType   String                  @map("interaction_type")
+  interactionDate   DateTime                @default(now()) @map("interaction_date") @db.Timestamptz(6)
   subject           String?
   description       String?
-  followUpDate      DateTime? @map("follow_up_date") @db.Date
-  followUpCompleted Boolean   @default(false) @map("follow_up_completed")
-  createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt         DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-  deletedAt         DateTime? @map("deleted_at") @db.Timestamptz(6)
+  followUpDate      DateTime?               @map("follow_up_date") @db.Date
+  followUpCompleted Boolean                 @default(false) @map("follow_up_completed")
+  createdAt         DateTime                @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime                @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt         DateTime?               @map("deleted_at") @db.Timestamptz(6)
   correlation_id    String?
-  tenant            Account   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  tenant            Account                 @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  attachments       InteractionAttachment[]
 
   @@id([tenantId, id])
   @@index([clientId])
   @@index([leadId])
   @@index([employeeId], map: "client_interactions_employee_idx")
   @@map("client_interactions")
+  @@schema("tenant_crm")
+}
+
+model InteractionAttachment {
+  tenantId      String    @map("tenant_id") @db.Uuid
+  id            String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  interactionId String    @map("interaction_id") @db.Uuid
+  fileName      String    @map("file_name")
+  fileUrl       String    @map("file_url")
+  fileType      String    @map("file_type")
+  fileSize      Int       @map("file_size")
+  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  deletedAt     DateTime? @map("deleted_at") @db.Timestamptz(6)
+
+  tenant      Account           @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  interaction ClientInteraction @relation(fields: [tenantId, interactionId], references: [tenantId, id], onDelete: Cascade)
+
+  @@id([tenantId, id])
+  @@map("interaction_attachments")
   @@schema("tenant_crm")
 }
 

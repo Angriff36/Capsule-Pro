@@ -123,38 +123,45 @@ export function ClientsClient() {
   }, []);
 
   // Fetch clients
-  const fetchClients = useCallback(async () => {
-    setLoading(true);
-    try {
-      const data = await getClients(
-        {
-          ...filters,
-          search: filters.search || undefined,
-          clientType: filters.clientType,
-          source: filters.source || undefined,
-          tags:
-            filters.tags && filters.tags.length > 0 ? filters.tags : undefined,
-        },
-        pagination.page,
-        pagination.limit
-      );
-      setClients(data.data || []);
-      setPagination(data.pagination || pagination);
-    } catch (error) {
-      toast.error("Failed to load clients", {
-        description: error instanceof Error ? error.message : "Unknown error",
-      });
-    } finally {
-      setLoading(false);
-    }
-  }, [filters, pagination.page, pagination.limit, pagination]);
+  const fetchClients = useCallback(
+    async (page = 1, limit = 50) => {
+      setLoading(true);
+      try {
+        const data = await getClients(
+          {
+            ...filters,
+            search: filters.search || undefined,
+            clientType: filters.clientType,
+            source: filters.source || undefined,
+            tags:
+              filters.tags && filters.tags.length > 0
+                ? filters.tags
+                : undefined,
+          },
+          page,
+          limit
+        );
+        setClients(data.data || []);
+        setPagination(
+          data.pagination || { page, limit, total: 0, totalPages: 0 }
+        );
+      } catch (error) {
+        toast.error("Failed to load clients", {
+          description: error instanceof Error ? error.message : "Unknown error",
+        });
+      } finally {
+        setLoading(false);
+      }
+    },
+    [filters]
+  );
 
-  // Initial load
+  // Fetch when filters or pagination change
   useEffect(() => {
-    fetchClients();
-  }, [fetchClients]);
+    fetchClients(pagination.page, pagination.limit);
+  }, [fetchClients, pagination.page, pagination.limit]);
 
-  // Update URL when filters change
+  // Update URL when filters change (skip if URL already matches)
   useEffect(() => {
     const params = new URLSearchParams();
     if (filters.search) {
@@ -170,7 +177,11 @@ export function ClientsClient() {
       params.set("tags", filters.tags.join(","));
     }
     const queryString = params.toString();
-    router.push(`/crm/clients${queryString ? `?${queryString}` : ""}`);
+    const targetPath = `/crm/clients${queryString ? `?${queryString}` : ""}`;
+    const currentPath = `${window.location.pathname}${window.location.search}`;
+    if (targetPath !== currentPath) {
+      router.push(targetPath);
+    }
   }, [filters, router]);
 
   const handleFilterChange = (key: keyof ClientFilters, value: string) => {
@@ -262,7 +273,7 @@ export function ClientsClient() {
               {getClientDisplayName(row.original)}
             </div>
             {getClientSecondaryInfo(row.original) && (
-              <div className="text-sm text-muted-foreground">
+              <div className="text-muted-foreground text-sm">
                 {getClientSecondaryInfo(row.original)}
               </div>
             )}
@@ -332,13 +343,13 @@ export function ClientsClient() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Clients</h1>
+          <h1 className="font-semibold text-2xl tracking-tight">Clients</h1>
           <p className="text-muted-foreground">
             Manage your client relationships and contact information.
           </p>
         </div>
         <Button onClick={() => router.push("/crm/clients/new")}>
-          <PlusIcon className="h-4 w-4 mr-2" />
+          <PlusIcon className="mr-2 h-4 w-4" />
           New Client
         </Button>
       </div>
@@ -347,10 +358,10 @@ export function ClientsClient() {
 
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-3 rounded-lg border bg-muted/30 p-4">
-        <FilterIcon className="h-4 w-4 text-muted-foreground shrink-0" />
+        <FilterIcon className="h-4 w-4 shrink-0 text-muted-foreground" />
 
         <form
-          className="flex flex-wrap items-center gap-3 flex-1"
+          className="flex flex-1 flex-wrap items-center gap-3"
           onSubmit={handleSearchSubmit}
         >
           <Input
@@ -418,7 +429,7 @@ export function ClientsClient() {
                       key={tag}
                       onSelect={() => handleTagToggle(tag)}
                     >
-                      <div className="flex items-center gap-2 w-full">
+                      <div className="flex w-full items-center gap-2">
                         <Checkbox
                           checked={filters.tags?.includes(tag) ?? false}
                           className="pointer-events-none"
@@ -440,7 +451,7 @@ export function ClientsClient() {
           <>
             <Separator className="h-6 shrink-0" orientation="vertical" />
             <Button onClick={clearFilters} size="sm" variant="ghost">
-              <XIcon className="h-4 w-4 mr-2" />
+              <XIcon className="mr-2 h-4 w-4" />
               Clear
             </Button>
           </>
@@ -454,16 +465,16 @@ export function ClientsClient() {
         </div>
       ) : clients.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12 text-center">
-          <Building2Icon className="h-12 w-12 text-muted-foreground mb-4" />
-          <h3 className="text-lg font-semibold mb-2">No clients found</h3>
-          <p className="text-muted-foreground mb-4">
+          <Building2Icon className="mb-4 h-12 w-12 text-muted-foreground" />
+          <h3 className="mb-2 font-semibold text-lg">No clients found</h3>
+          <p className="mb-4 text-muted-foreground">
             {hasFilters
               ? "Try adjusting your filters or search terms."
               : "Get started by adding your first client."}
           </p>
           {!hasFilters && (
             <Button onClick={() => router.push("/crm/clients/new")}>
-              <PlusIcon className="h-4 w-4 mr-2" />
+              <PlusIcon className="mr-2 h-4 w-4" />
               Add Client
             </Button>
           )}
@@ -471,7 +482,7 @@ export function ClientsClient() {
       ) : (
         <>
           {/* Results count */}
-          <div className="text-sm font-medium text-muted-foreground">
+          <div className="font-medium text-muted-foreground text-sm">
             Showing {clients.length} of {pagination.total} clients
           </div>
 
@@ -537,7 +548,7 @@ export function ClientsClient() {
           {/* Pagination */}
           {pagination.totalPages > 1 && (
             <div className="flex items-center justify-between">
-              <div className="text-sm text-muted-foreground">
+              <div className="text-muted-foreground text-sm">
                 Page {pagination.page} of {pagination.totalPages}
               </div>
               <div className="flex gap-2">

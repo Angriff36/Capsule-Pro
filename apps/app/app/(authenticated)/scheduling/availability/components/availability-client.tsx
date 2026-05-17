@@ -113,27 +113,32 @@ export function AvailabilityClient() {
   const isMounted = useRef(false);
 
   // Fetch availability entries
-  const fetchAvailability = useCallback(async () => {
-    setLoading(true);
-    try {
-      const data = await getAvailability({
-        employeeId: filters.employeeId || undefined,
-        dayOfWeek: filters.dayOfWeek as DayOfWeek | undefined,
-        effectiveDate: filters.effectiveDate || undefined,
-        isActive: filters.isActive,
-        page: pagination.page,
-        limit: pagination.limit,
-      });
-      setAvailability(data.availability || []);
-      setPagination(data.pagination || pagination);
-    } catch (error) {
-      toast.error("Failed to load availability entries", {
-        description: error instanceof Error ? error.message : "Unknown error",
-      });
-    } finally {
-      setLoading(false);
-    }
-  }, [filters, pagination.page, pagination]);
+  const fetchAvailability = useCallback(
+    async (page = 1, limit = 50) => {
+      setLoading(true);
+      try {
+        const data = await getAvailability({
+          employeeId: filters.employeeId || undefined,
+          dayOfWeek: filters.dayOfWeek as DayOfWeek | undefined,
+          effectiveDate: filters.effectiveDate || undefined,
+          isActive: filters.isActive,
+          page,
+          limit,
+        });
+        setAvailability(data.availability || []);
+        setPagination(
+          data.pagination || { page, limit, total: 0, totalPages: 0 }
+        );
+      } catch (error) {
+        toast.error("Failed to load availability entries", {
+          description: error instanceof Error ? error.message : "Unknown error",
+        });
+      } finally {
+        setLoading(false);
+      }
+    },
+    [filters]
+  );
 
   // Fetch filter options
   const fetchFilterOptions = useCallback(async () => {
@@ -149,11 +154,10 @@ export function AvailabilityClient() {
     }
   }, []);
 
-  // Initial load
+  // Fetch when filters or pagination change
   useEffect(() => {
-    fetchAvailability();
-    fetchFilterOptions();
-  }, [fetchAvailability, fetchFilterOptions]);
+    fetchAvailability(pagination.page, pagination.limit);
+  }, [fetchAvailability, pagination.page, pagination.limit]);
 
   // Update URL when filters change (skip initial mount)
   useEffect(() => {
@@ -265,7 +269,7 @@ export function AvailabilityClient() {
       accessorKey: "effective_until",
       header: "Effective Until",
       cell: ({ row }) => (
-        <div className="text-sm text-muted-foreground">
+        <div className="text-muted-foreground text-sm">
           {row.original.effectiveUntil
             ? formatDate(row.original.effectiveUntil)
             : "Ongoing"}
@@ -337,7 +341,7 @@ export function AvailabilityClient() {
       <KitchenOperationalHero
         actions={
           <Button
-            className="rounded-full bg-white px-5 text-[13px] font-medium text-primary hover:bg-white/90"
+            className="rounded-full bg-white px-5 font-medium text-[13px] text-primary hover:bg-white/90"
             onClick={() => setCreateModalOpen(true)}
             size="sm"
           >
@@ -383,7 +387,7 @@ export function AvailabilityClient() {
                 }
                 value={filters.employeeId || "__all__"}
               >
-                <SelectTrigger className="bg-canvas w-full">
+                <SelectTrigger className="w-full bg-canvas">
                   <SelectValue placeholder="All employees" />
                 </SelectTrigger>
                 <SelectContent>
@@ -409,7 +413,7 @@ export function AvailabilityClient() {
                 }
                 value={filters.dayOfWeek?.toString() || "__all__"}
               >
-                <SelectTrigger className="bg-canvas w-full">
+                <SelectTrigger className="w-full bg-canvas">
                   <SelectValue placeholder="All days" />
                 </SelectTrigger>
                 <SelectContent>
@@ -448,7 +452,7 @@ export function AvailabilityClient() {
                 }
                 value={availabilityFilterSelectValue}
               >
-                <SelectTrigger className="bg-canvas w-full">
+                <SelectTrigger className="w-full bg-canvas">
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
                 <SelectContent>

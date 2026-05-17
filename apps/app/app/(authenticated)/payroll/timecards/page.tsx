@@ -191,6 +191,7 @@ export default function TimecardsPage() {
     null
   );
   const [editRequestReason, setEditRequestReason] = useState("");
+  const [editRequestBulkIds, setEditRequestBulkIds] = useState<string[]>([]);
 
   // Inline flag-exception dialog state
   const [flagExceptionDialogOpen, setFlagExceptionDialogOpen] = useState(false);
@@ -199,6 +200,7 @@ export default function TimecardsPage() {
   >(null);
   const [flagExceptionType, setFlagExceptionType] = useState("");
   const [flagExceptionNotes, setFlagExceptionNotes] = useState("");
+  const [flagExceptionBulkIds, setFlagExceptionBulkIds] = useState<string[]>([]);
 
   const fetchTimecards = useCallback(async () => {
     setLoading(true);
@@ -324,23 +326,19 @@ export default function TimecardsPage() {
 
   const handleBulkEditRequest = () => {
     if (selectedEntries.size === 0) return;
-    const firstId = Array.from(selectedEntries)[0];
-    if (firstId) {
-      setEditRequestEntryId(firstId);
-      setEditRequestReason("");
-      setEditRequestDialogOpen(true);
-    }
+    setEditRequestBulkIds(Array.from(selectedEntries));
+    setEditRequestEntryId(null);
+    setEditRequestReason("");
+    setEditRequestDialogOpen(true);
   };
 
   const handleBulkFlagExceptions = () => {
     if (selectedEntries.size === 0) return;
-    const firstId = Array.from(selectedEntries)[0];
-    if (firstId) {
-      setFlagExceptionEntryId(firstId);
-      setFlagExceptionType("");
-      setFlagExceptionNotes("");
-      setFlagExceptionDialogOpen(true);
-    }
+    setFlagExceptionBulkIds(Array.from(selectedEntries));
+    setFlagExceptionEntryId(null);
+    setFlagExceptionType("");
+    setFlagExceptionNotes("");
+    setFlagExceptionDialogOpen(true);
   };
 
   const handleFlagException = async (
@@ -825,6 +823,7 @@ export default function TimecardsPage() {
                               onClick={(e) => {
                                 e.stopPropagation();
                                 setEditRequestEntryId(entry.id);
+                                setEditRequestBulkIds([]);
                                 setEditRequestReason("");
                                 setEditRequestDialogOpen(true);
                               }}
@@ -839,6 +838,7 @@ export default function TimecardsPage() {
                               onClick={(e) => {
                                 e.stopPropagation();
                                 setFlagExceptionEntryId(entry.id);
+                                setFlagExceptionBulkIds([]);
                                 setFlagExceptionType("");
                                 setFlagExceptionNotes("");
                                 setFlagExceptionDialogOpen(true);
@@ -915,9 +915,15 @@ export default function TimecardsPage() {
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Request Edit</DialogTitle>
+            <DialogTitle>
+              {editRequestBulkIds.length > 1
+                ? `Request Edits (${editRequestBulkIds.length} entries)`
+                : "Request Edit"}
+            </DialogTitle>
             <DialogDescription>
-              Provide a reason for requesting an edit to this time entry
+              {editRequestBulkIds.length > 1
+                ? "Provide a reason for requesting edits to the selected time entries"
+                : "Provide a reason for requesting an edit to this time entry"}
             </DialogDescription>
           </DialogHeader>
           <div className="py-4">
@@ -939,16 +945,45 @@ export default function TimecardsPage() {
             </Button>
             <Button
               disabled={!editRequestReason.trim()}
-              onClick={() => {
-                if (editRequestEntryId) {
+              onClick={async () => {
+                if (editRequestBulkIds.length > 0) {
+                  setActionLoading(true);
+                  try {
+                    const response = await apiFetch("/api/timecards/bulk", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        timeEntryIds: editRequestBulkIds,
+                        editRequests: editRequestBulkIds.map((id) => ({
+                          timeEntryId: id,
+                          reason: editRequestReason,
+                        })),
+                      }),
+                    });
+                    if (!response.ok) throw new Error("Failed to request edits");
+                    toast.success(
+                      `Edit requests submitted for ${editRequestBulkIds.length} timecard(s)`
+                    );
+                    setSelectedEntries(new Set());
+                    fetchTimecards();
+                  } catch (error) {
+                    console.error("Error bulk requesting edits:", error);
+                    toast.error("Failed to request edits");
+                  } finally {
+                    setActionLoading(false);
+                  }
+                } else if (editRequestEntryId) {
                   handleEditRequest(editRequestEntryId, editRequestReason);
                 }
                 setEditRequestDialogOpen(false);
                 setEditRequestReason("");
                 setEditRequestEntryId(null);
+                setEditRequestBulkIds([]);
               }}
             >
-              Submit Request
+              {editRequestBulkIds.length > 0
+                ? `Submit ${editRequestBulkIds.length} Request${editRequestBulkIds.length > 1 ? "s" : ""}`
+                : "Submit Request"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -963,9 +998,15 @@ export default function TimecardsPage() {
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Flag Exception</DialogTitle>
+            <DialogTitle>
+              {flagExceptionBulkIds.length > 1
+                ? `Flag Exceptions (${flagExceptionBulkIds.length} entries)`
+                : "Flag Exception"}
+            </DialogTitle>
             <DialogDescription>
-              Record an exception for this time entry
+              {flagExceptionBulkIds.length > 1
+                ? "Record an exception for the selected time entries"
+                : "Record an exception for this time entry"}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
@@ -1009,8 +1050,36 @@ export default function TimecardsPage() {
             </Button>
             <Button
               disabled={!(flagExceptionType && flagExceptionNotes.trim())}
-              onClick={() => {
-                if (flagExceptionEntryId) {
+              onClick={async () => {
+                if (flagExceptionBulkIds.length > 0) {
+                  setActionLoading(true);
+                  try {
+                    const response = await apiFetch("/api/timecards/bulk", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        timeEntryIds: flagExceptionBulkIds,
+                        flagExceptions: flagExceptionBulkIds.map((id) => ({
+                          timeEntryId: id,
+                          exceptionType: flagExceptionType,
+                          notes: flagExceptionNotes,
+                        })),
+                      }),
+                    });
+                    if (!response.ok)
+                      throw new Error("Failed to flag exceptions");
+                    toast.success(
+                      `Exceptions flagged for ${flagExceptionBulkIds.length} timecard(s)`
+                    );
+                    setSelectedEntries(new Set());
+                    fetchTimecards();
+                  } catch (error) {
+                    console.error("Error bulk flagging exceptions:", error);
+                    toast.error("Failed to flag exceptions");
+                  } finally {
+                    setActionLoading(false);
+                  }
+                } else if (flagExceptionEntryId) {
                   handleFlagException(
                     flagExceptionEntryId,
                     flagExceptionType,
@@ -1021,9 +1090,12 @@ export default function TimecardsPage() {
                 setFlagExceptionType("");
                 setFlagExceptionNotes("");
                 setFlagExceptionEntryId(null);
+                setFlagExceptionBulkIds([]);
               }}
             >
-              Flag Exception
+              {flagExceptionBulkIds.length > 0
+                ? `Flag ${flagExceptionBulkIds.length} Exception${flagExceptionBulkIds.length > 1 ? "s" : ""}`
+                : "Flag Exception"}
             </Button>
           </DialogFooter>
         </DialogContent>

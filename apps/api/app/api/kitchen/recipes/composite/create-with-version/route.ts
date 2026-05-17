@@ -5,7 +5,7 @@ import {
   type IngredientInput,
   resolveIngredients,
 } from "@repo/database";
-import { createManifestRuntime } from "@repo/manifest-adapters/manifest-runtime-factory";
+import { createManifestRuntime } from "@/lib/manifest-runtime";
 import {
   getBlockingConstraints,
   manifestConstraintBlockedResponse,
@@ -16,7 +16,6 @@ import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { createSentryTelemetry } from "@/lib/manifest/telemetry";
 
 export const runtime = "nodejs";
 
@@ -129,7 +128,6 @@ export async function POST(request: NextRequest) {
     const versionId = crypto.randomUUID();
 
     // Execute everything in a single transaction
-    const sentryTelemetry = createSentryTelemetry();
     const hasOverride = Boolean(body.override);
 
     // Collect all constraint outcomes for potential override response
@@ -138,18 +136,10 @@ export async function POST(request: NextRequest) {
     // Execute everything in a single transaction with manifest runtime
     const result = await database.$transaction(async (tx) => {
       // Create manifest runtime WITH transaction client
-      const runtime = await createManifestRuntime(
-        {
-          prisma: database,
-          prismaOverride: tx,
-          log,
-          captureException,
-          telemetry: sentryTelemetry,
-        },
-        {
-          user: { id: userId, tenantId },
-        }
-      );
+      const runtime = await createManifestRuntime({
+        user: { id: userId, tenantId },
+        prismaOverride: tx,
+      });
 
       // 1. Create Recipe
       const recipeResult = await runtime.runCommand(

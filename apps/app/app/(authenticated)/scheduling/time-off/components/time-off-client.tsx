@@ -99,33 +99,38 @@ export function TimeOffClient() {
   const isMounted = useRef(false);
 
   // Fetch time off requests
-  const fetchTimeOffRequests = useCallback(async () => {
-    setLoading(true);
-    try {
-      const data = await getTimeOffRequests({
-        employeeId: filters.employeeId || undefined,
-        status:
-          (filters.status as
-            | "PENDING"
-            | "APPROVED"
-            | "REJECTED"
-            | "CANCELLED") || undefined,
-        startDate: filters.startDate || undefined,
-        endDate: filters.endDate || undefined,
-        requestType: (filters.type as TimeOffType) || undefined,
-        page: pagination.page,
-        limit: pagination.limit,
-      });
-      setTimeOffRequests(data.requests || []);
-      setPagination(data.pagination || pagination);
-    } catch (error) {
-      toast.error("Failed to load time off requests", {
-        description: error instanceof Error ? error.message : "Unknown error",
-      });
-    } finally {
-      setLoading(false);
-    }
-  }, [filters, pagination.page, pagination]);
+  const fetchTimeOffRequests = useCallback(
+    async (page = 1, limit = 50) => {
+      setLoading(true);
+      try {
+        const data = await getTimeOffRequests({
+          employeeId: filters.employeeId || undefined,
+          status:
+            (filters.status as
+              | "PENDING"
+              | "APPROVED"
+              | "REJECTED"
+              | "CANCELLED") || undefined,
+          startDate: filters.startDate || undefined,
+          endDate: filters.endDate || undefined,
+          requestType: (filters.type as TimeOffType) || undefined,
+          page,
+          limit,
+        });
+        setTimeOffRequests(data.requests || []);
+        setPagination(
+          data.pagination || { page, limit, total: 0, totalPages: 0 }
+        );
+      } catch (error) {
+        toast.error("Failed to load time off requests", {
+          description: error instanceof Error ? error.message : "Unknown error",
+        });
+      } finally {
+        setLoading(false);
+      }
+    },
+    [filters]
+  );
 
   // Fetch filter options
   const fetchFilterOptions = useCallback(async () => {
@@ -141,11 +146,11 @@ export function TimeOffClient() {
     }
   }, []);
 
-  // Initial load
+  // Fetch when filters or pagination change
   useEffect(() => {
-    fetchTimeOffRequests();
+    fetchTimeOffRequests(pagination.page, pagination.limit);
     fetchFilterOptions();
-  }, [fetchTimeOffRequests, fetchFilterOptions]);
+  }, [fetchTimeOffRequests, pagination.page, pagination.limit, fetchFilterOptions]);
 
   // Update URL when filters change (skip initial mount)
   useEffect(() => {
@@ -312,7 +317,7 @@ export function TimeOffClient() {
       <KitchenOperationalHero
         actions={
           <Button
-            className="rounded-full bg-white px-5 text-[13px] font-medium text-primary hover:bg-white/90"
+            className="rounded-full bg-white px-5 font-medium text-[13px] text-primary hover:bg-white/90"
             onClick={() => setCreateModalOpen(true)}
             size="sm"
           >
@@ -383,7 +388,7 @@ export function TimeOffClient() {
                 }
                 value={filters.employeeId || "__all__"}
               >
-                <SelectTrigger className="bg-canvas w-full">
+                <SelectTrigger className="w-full bg-canvas">
                   <SelectValue placeholder="All employees" />
                 </SelectTrigger>
                 <SelectContent>
@@ -407,7 +412,7 @@ export function TimeOffClient() {
                 }
                 value={filters.locationId || "__all__"}
               >
-                <SelectTrigger className="bg-canvas w-full">
+                <SelectTrigger className="w-full bg-canvas">
                   <SelectValue placeholder="All locations" />
                 </SelectTrigger>
                 <SelectContent>
@@ -428,7 +433,7 @@ export function TimeOffClient() {
                 }
                 value={filters.status || "__all__"}
               >
-                <SelectTrigger className="bg-canvas w-full">
+                <SelectTrigger className="w-full bg-canvas">
                   <SelectValue placeholder="All statuses" />
                 </SelectTrigger>
                 <SelectContent>
@@ -448,7 +453,7 @@ export function TimeOffClient() {
                 }
                 value={filters.type || "__all__"}
               >
-                <SelectTrigger className="bg-canvas w-full">
+                <SelectTrigger className="w-full bg-canvas">
                   <SelectValue placeholder="All types" />
                 </SelectTrigger>
                 <SelectContent>
