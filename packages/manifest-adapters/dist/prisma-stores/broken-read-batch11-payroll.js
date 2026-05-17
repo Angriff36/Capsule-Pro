@@ -128,29 +128,29 @@ export class PayrollPeriodPrismaStore {
         this.tenantId = tenantId;
     }
     async getAll() {
-        const rows = await this.prisma.payroll_periods.findMany({
-            where: { tenant_id: this.tenantId, deleted_at: null },
-            orderBy: { created_at: "desc" },
+        const rows = await this.prisma.payrollPeriod.findMany({
+            where: { tenantId: this.tenantId, deletedAt: null },
+            orderBy: { createdAt: "desc" },
         });
         return rows.map((r) => this.mapToManifestEntity(r));
     }
     async getById(id) {
-        const row = await this.prisma.payroll_periods.findFirst({
-            where: { tenant_id: this.tenantId, id, deleted_at: null },
+        const row = await this.prisma.payrollPeriod.findFirst({
+            where: { tenantId: this.tenantId, id, deletedAt: null },
         });
         return row ? this.mapToManifestEntity(row) : undefined;
     }
     async create(data) {
         const id = data.id || crypto.randomUUID();
-        const row = await this.prisma.payroll_periods.create({
+        const row = await this.prisma.payrollPeriod.create({
             data: {
-                tenant_id: this.tenantId,
+                tenantId: this.tenantId,
                 id,
-                period_start: (data.periodStart ?? data.period_start)
-                    ? new Date((data.periodStart ?? data.period_start))
+                periodStart: (data.periodStart ?? data.periodStart)
+                    ? new Date((data.periodStart ?? data.periodStart))
                     : new Date(),
-                period_end: (data.periodEnd ?? data.period_end)
-                    ? new Date((data.periodEnd ?? data.period_end))
+                periodEnd: (data.periodEnd ?? data.periodEnd)
+                    ? new Date((data.periodEnd ?? data.periodEnd))
                     : new Date(),
                 status: (data.status ?? "open") || "open",
             },
@@ -162,13 +162,13 @@ export class PayrollPeriodPrismaStore {
             const patch = {};
             if (data.status !== undefined)
                 patch.status = data.status;
-            if (data.periodStart !== undefined || data.period_start !== undefined)
-                patch.period_start = new Date((data.periodStart ?? data.period_start));
-            if (data.periodEnd !== undefined || data.period_end !== undefined)
-                patch.period_end = new Date((data.periodEnd ?? data.period_end));
-            patch.updated_at = new Date();
-            const updated = await this.prisma.payroll_periods.update({
-                where: { tenant_id_id: { tenant_id: this.tenantId, id } },
+            if (data.periodStart !== undefined || data.periodStart !== undefined)
+                patch.periodStart = new Date((data.periodStart ?? data.periodStart));
+            if (data.periodEnd !== undefined || data.periodEnd !== undefined)
+                patch.periodEnd = new Date((data.periodEnd ?? data.periodEnd));
+            patch.updatedAt = new Date();
+            const updated = await this.prisma.payrollPeriod.update({
+                where: { tenantId_id: { tenantId: this.tenantId, id } },
                 data: patch,
             });
             return this.mapToManifestEntity(updated);
@@ -181,9 +181,9 @@ export class PayrollPeriodPrismaStore {
     async delete(id) {
         try {
             // Soft delete — sets deleted_at
-            await this.prisma.payroll_periods.update({
-                where: { tenant_id_id: { tenant_id: this.tenantId, id } },
-                data: { deleted_at: new Date() },
+            await this.prisma.payrollPeriod.update({
+                where: { tenantId_id: { tenantId: this.tenantId, id } },
+                data: { deletedAt: new Date() },
             });
             return true;
         }
@@ -193,29 +193,29 @@ export class PayrollPeriodPrismaStore {
         }
     }
     async clear() {
-        await this.prisma.payroll_periods.deleteMany({
-            where: { tenant_id: this.tenantId },
+        await this.prisma.payrollPeriod.deleteMany({
+            where: { tenantId: this.tenantId },
         });
     }
     mapToManifestEntity(row) {
         return {
             id: row.id,
-            tenantId: row.tenant_id,
-            periodStart: row.period_start
-                ? new Date(row.period_start).getTime()
+            tenantId: row.tenantId,
+            periodStart: row.periodStart
+                ? new Date(row.periodStart).getTime()
                 : 0,
-            periodEnd: row.period_end
-                ? new Date(row.period_end).getTime()
+            periodEnd: row.periodEnd
+                ? new Date(row.periodEnd).getTime()
                 : 0,
             status: row.status ?? "open",
-            createdAt: row.created_at
-                ? new Date(row.created_at).getTime()
+            createdAt: row.createdAt
+                ? new Date(row.createdAt).getTime()
                 : 0,
-            updatedAt: row.updated_at
-                ? new Date(row.updated_at).getTime()
+            updatedAt: row.updatedAt
+                ? new Date(row.updatedAt).getTime()
                 : 0,
-            deletedAt: row.deleted_at
-                ? new Date(row.deleted_at).getTime()
+            deletedAt: row.deletedAt
+                ? new Date(row.deletedAt).getTime()
                 : null,
         };
     }
@@ -231,37 +231,37 @@ export class PayrollRunPrismaStore {
         this.tenantId = tenantId;
     }
     async getAll() {
-        const rows = await this.prisma.payroll_runs.findMany({
-            where: { tenant_id: this.tenantId, deleted_at: null },
-            orderBy: { created_at: "desc" },
+        const rows = await this.prisma.payrollRun.findMany({
+            where: { tenantId: this.tenantId, deletedAt: null },
+            orderBy: { createdAt: "desc" },
         });
         return rows.map((r) => this.mapToManifestEntity(r));
     }
     async getById(id) {
-        const row = await this.prisma.payroll_runs.findFirst({
-            where: { tenant_id: this.tenantId, id, deleted_at: null },
+        const row = await this.prisma.payrollRun.findFirst({
+            where: { tenantId: this.tenantId, id, deletedAt: null },
         });
         return row ? this.mapToManifestEntity(row) : undefined;
     }
     async create(data) {
         const id = data.id || crypto.randomUUID();
-        const row = await this.prisma.payroll_runs.create({
+        const row = await this.prisma.payrollRun.create({
             data: {
-                tenant_id: this.tenantId,
+                tenantId: this.tenantId,
                 id,
-                payroll_period_id: (data.payrollPeriodId ?? data.payroll_period_id) ?? "",
-                run_date: (data.runDate ?? data.run_date)
+                payrollPeriodId: (data.payrollPeriodId ?? data.payroll_period_id) ?? "",
+                runDate: (data.runDate ?? data.run_date)
                     ? new Date((data.runDate ?? data.run_date))
                     : new Date(),
                 status: (data.status ?? "pending") || "pending",
-                total_gross: toDecimalRequired(data.totalGross ?? data.total_gross, 0),
-                total_deductions: toDecimalRequired(data.totalDeductions ?? data.total_deductions, 0),
-                total_net: toDecimalRequired(data.totalNet ?? data.total_net, 0),
-                approved_by: asNullableString(data.approvedBy ?? data.approved_by),
-                approved_at: (data.approvedAt ?? data.approved_at)
+                totalGross: toDecimalRequired(data.totalGross ?? data.total_gross, 0),
+                totalDeductions: toDecimalRequired(data.totalDeductions ?? data.total_deductions, 0),
+                totalNet: toDecimalRequired(data.totalNet ?? data.total_net, 0),
+                approvedBy: asNullableString(data.approvedBy ?? data.approved_by),
+                approvedAt: (data.approvedAt ?? data.approved_at)
                     ? new Date((data.approvedAt ?? data.approved_at))
                     : null,
-                paid_at: (data.paidAt ?? data.paid_at)
+                paidAt: (data.paidAt ?? data.paid_at)
                     ? new Date((data.paidAt ?? data.paid_at))
                     : null,
             },
@@ -292,9 +292,9 @@ export class PayrollRunPrismaStore {
                     (data.paidAt ?? data.paid_at)
                         ? new Date((data.paidAt ?? data.paid_at))
                         : null;
-            patch.updated_at = new Date();
-            const updated = await this.prisma.payroll_runs.update({
-                where: { tenant_id_id: { tenant_id: this.tenantId, id } },
+            patch.updatedAt = new Date();
+            const updated = await this.prisma.payrollRun.update({
+                where: { tenantId_id: { tenantId: this.tenantId, id } },
                 data: patch,
             });
             return this.mapToManifestEntity(updated);
@@ -307,9 +307,9 @@ export class PayrollRunPrismaStore {
     async delete(id) {
         try {
             // Soft delete — sets deleted_at
-            await this.prisma.payroll_runs.update({
-                where: { tenant_id_id: { tenant_id: this.tenantId, id } },
-                data: { deleted_at: new Date() },
+            await this.prisma.payrollRun.update({
+                where: { tenantId_id: { tenantId: this.tenantId, id } },
+                data: { deletedAt: new Date() },
             });
             return true;
         }
@@ -319,14 +319,14 @@ export class PayrollRunPrismaStore {
         }
     }
     async clear() {
-        await this.prisma.payroll_runs.deleteMany({
-            where: { tenant_id: this.tenantId },
+        await this.prisma.payrollRun.deleteMany({
+            where: { tenantId: this.tenantId },
         });
     }
     mapToManifestEntity(row) {
         return {
             id: row.id,
-            tenantId: row.tenant_id,
+            tenantId: row.tenantId,
             payrollPeriodId: row.payroll_period_id ?? "",
             runDate: row.run_date
                 ? new Date(row.run_date).getTime()
@@ -342,14 +342,14 @@ export class PayrollRunPrismaStore {
             paidAt: row.paid_at
                 ? new Date(row.paid_at).getTime()
                 : null,
-            createdAt: row.created_at
-                ? new Date(row.created_at).getTime()
+            createdAt: row.createdAt
+                ? new Date(row.createdAt).getTime()
                 : 0,
-            updatedAt: row.updated_at
-                ? new Date(row.updated_at).getTime()
+            updatedAt: row.updatedAt
+                ? new Date(row.updatedAt).getTime()
                 : 0,
-            deletedAt: row.deleted_at
-                ? new Date(row.deleted_at).getTime()
+            deletedAt: row.deletedAt
+                ? new Date(row.deletedAt).getTime()
                 : null,
         };
     }

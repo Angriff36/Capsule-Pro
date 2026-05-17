@@ -1,11 +1,8 @@
 {
-  "extends": "@repo/typescript-config/base.json",
+  "extends": "@repo/typescript-config/bundler-library.json",
   "compilerOptions": {
     "outDir": "dist",
-    "rootDir": "src",
-    "strictNullChecks": true,
-    "module": "ESNext",
-    "moduleResolution": "Bundler"
+    "rootDir": "src"
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]

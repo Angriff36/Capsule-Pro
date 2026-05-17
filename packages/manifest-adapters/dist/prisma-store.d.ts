@@ -110,8 +110,8 @@ export declare class RecipeIngredientPrismaStore implements Store<EntityInstance
 /**
  * Prisma-backed store for RecipeStep entities
  *
- * Maps Manifest RecipeStep entities to the Prisma recipe_steps table.
- * Note: Prisma model uses snake_case (recipe_steps).
+ * Maps Manifest RecipeStep entities to the Prisma RecipeStep table.
+ * Note: Prisma model uses snake_case (RecipeStep).
  */
 export declare class RecipeStepPrismaStore implements Store<EntityInstance> {
     private readonly prisma;

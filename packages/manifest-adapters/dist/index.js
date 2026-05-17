@@ -235,7 +235,7 @@ export function createPostgresStoreProvider(databaseUrl, tenantId) {
         // Dynamically import PostgresStore only when databaseUrl is provided
         // This avoids requiring the pg package in environments that don't need it
         try {
-            const { PostgresStore: PGStore, } = require("@angriff36/manifest/src/manifest/stores.node");
+            const { PostgresStore: PGStore } = require("@angriff36/manifest/stores");
             return new PGStore({
                 connectionString: databaseUrl,
                 tableName,

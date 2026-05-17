@@ -219,7 +219,7 @@ export class BattleBoardPrismaStore {
             board_type: r.board_type ?? "event-specific",
             schema_version: r.schema_version ?? "mangia-battle-board@1",
             boardData: r.boardData ?? {},
-            document_url: r.document_url ?? null,
+            documentUrl: r.document_url ?? null,
             source_document_type: r.source_document_type ?? null,
             document_imported_at: r.document_imported_at ?? null,
             status: r.status ?? "draft",

@@ -23,30 +23,30 @@ export class EmployeeCertificationPrismaStore {
         this.tenantId = tenantId;
     }
     async getAll() {
-        const rows = await this.prisma.employee_certifications.findMany({
-            where: { tenant_id: this.tenantId, deleted_at: null },
+        const rows = await this.prisma.employeeCertification.findMany({
+            where: { tenantId: this.tenantId, deletedAt: null },
             orderBy: { id: "desc" },
         });
         return rows.map((r) => this.mapToManifestEntity(r));
     }
     async getById(id) {
-        const row = await this.prisma.employee_certifications.findFirst({
-            where: { tenant_id: this.tenantId, id, deleted_at: null },
+        const row = await this.prisma.employeeCertification.findFirst({
+            where: { tenantId: this.tenantId, id, deletedAt: null },
         });
         return row ? this.mapToManifestEntity(row) : undefined;
     }
     async create(data) {
         const id = data.id ?? crypto.randomUUID();
-        const row = await this.prisma.employee_certifications.create({
+        const row = await this.prisma.employeeCertification.create({
             data: {
-                tenant_id: this.tenantId,
+                tenantId: this.tenantId,
                 id,
-                employee_id: data.employee_id,
-                certification_type: data.certification_type,
-                certification_name: data.certification_name,
-                issued_date: asNullableDate(data.issued_date) ?? new Date(),
-                expiry_date: asNullableDate(data.expiry_date),
-                document_url: asNullableString(data.document_url),
+                employeeId: data.employeeId,
+                certificationType: data.certification_type,
+                certificationName: data.certificationName,
+                issuedDate: asNullableDate(data.issued_date) ?? new Date(),
+                expiryDate: asNullableDate(data.expiry_date),
+                documentUrl: asNullableString(data.document_url),
             },
         });
         return this.mapToManifestEntity(row);
@@ -54,20 +54,20 @@ export class EmployeeCertificationPrismaStore {
     async update(id, data) {
         try {
             const patch = {};
-            if (data.employee_id !== undefined)
-                patch.employee_id = data.employee_id;
+            if (data.employeeId !== undefined)
+                patch.employeeId = data.employeeId;
             if (data.certification_type !== undefined)
                 patch.certification_type = data.certification_type;
-            if (data.certification_name !== undefined)
-                patch.certification_name = data.certification_name;
+            if (data.certificationName !== undefined)
+                patch.certificationName = data.certificationName;
             if (data.issued_date !== undefined)
                 patch.issued_date = asNullableDate(data.issued_date);
             if (data.expiry_date !== undefined)
                 patch.expiry_date = asNullableDate(data.expiry_date);
             if (data.document_url !== undefined)
                 patch.document_url = asNullableString(data.document_url);
-            const row = await this.prisma.employee_certifications.update({
-                where: { tenant_id_id: { tenant_id: this.tenantId, id } },
+            const row = await this.prisma.employeeCertification.update({
+                where: { tenantId_id: { tenantId: this.tenantId, id } },
                 data: patch,
             });
             return this.mapToManifestEntity(row);
@@ -79,9 +79,9 @@ export class EmployeeCertificationPrismaStore {
     }
     async delete(id) {
         try {
-            await this.prisma.employee_certifications.update({
-                where: { tenant_id_id: { tenant_id: this.tenantId, id } },
-                data: { deleted_at: new Date() },
+            await this.prisma.employeeCertification.update({
+                where: { tenantId_id: { tenantId: this.tenantId, id } },
+                data: { deletedAt: new Date() },
             });
             return true;
         }
@@ -91,23 +91,23 @@ export class EmployeeCertificationPrismaStore {
         }
     }
     async clear() {
-        await this.prisma.employee_certifications.deleteMany({
-            where: { tenant_id: this.tenantId },
+        await this.prisma.employeeCertification.deleteMany({
+            where: { tenantId: this.tenantId },
         });
     }
     mapToManifestEntity(r) {
         return {
             id: r.id,
-            tenant_id: r.tenant_id,
-            employee_id: r.employee_id ?? null,
-            certification_type: r.certification_type ?? null,
-            certification_name: r.certification_name ?? null,
-            issued_date: r.issued_date ?? null,
-            expiry_date: r.expiry_date ?? null,
-            document_url: r.document_url ?? null,
-            created_at: r.created_at ?? null,
-            updated_at: r.updated_at ?? null,
-            deleted_at: r.deleted_at ?? null,
+            tenantId: r.tenantId,
+            employeeId: r.employeeId ?? null,
+            certificationType: r.certification_type ?? null,
+            certificationName: r.certificationName ?? null,
+            issuedDate: r.issued_date ?? null,
+            expiryDate: r.expiry_date ?? null,
+            documentUrl: r.document_url ?? null,
+            createdAt: r.createdAt ?? null,
+            updatedAt: r.updatedAt ?? null,
+            deletedAt: r.deletedAt ?? null,
         };
     }
 }
@@ -123,14 +123,14 @@ export class EmployeeDeductionPrismaStore {
     }
     async getAll() {
         const rows = await this.prisma.employeeDeduction.findMany({
-            where: { tenant_id: this.tenantId, deleted_at: null },
+            where: { tenantId: this.tenantId, deletedAt: null },
             orderBy: { id: "desc" },
         });
         return rows.map((r) => this.mapToManifestEntity(r));
     }
     async getById(id) {
         const row = await this.prisma.employeeDeduction.findFirst({
-            where: { tenant_id: this.tenantId, id, deleted_at: null },
+            where: { tenantId: this.tenantId, id, deletedAt: null },
         });
         return row ? this.mapToManifestEntity(row) : undefined;
     }
@@ -138,17 +138,17 @@ export class EmployeeDeductionPrismaStore {
         const id = data.id ?? crypto.randomUUID();
         const row = await this.prisma.employeeDeduction.create({
             data: {
-                tenant_id: this.tenantId,
+                tenantId: this.tenantId,
                 id,
-                employee_id: data.employee_id,
+                employeeId: data.employeeId,
                 type: data.type,
                 name: data.name,
                 amount: toDecimalInput(data.amount),
                 percentage: toDecimalInput(data.percentage),
-                is_pre_tax: asBool(data.is_pre_tax, false),
-                effective_date: asNullableDate(data.effective_date) ?? new Date(),
-                end_date: asNullableDate(data.end_date),
-                max_annual_amount: toDecimalInput(data.max_annual_amount),
+                isPreTax: asBool(data.isPreTax, false),
+                effectiveDate: asNullableDate(data.effectiveDate) ?? new Date(),
+                endDate: asNullableDate(data.endDate),
+                maxAnnualAmount: toDecimalInput(data.maxAnnualAmount),
             },
         });
         return this.mapToManifestEntity(row);
@@ -156,8 +156,8 @@ export class EmployeeDeductionPrismaStore {
     async update(id, data) {
         try {
             const patch = {};
-            if (data.employee_id !== undefined)
-                patch.employee_id = data.employee_id;
+            if (data.employeeId !== undefined)
+                patch.employeeId = data.employeeId;
             if (data.type !== undefined)
                 patch.type = data.type;
             if (data.name !== undefined)
@@ -166,16 +166,16 @@ export class EmployeeDeductionPrismaStore {
                 patch.amount = toDecimalInput(data.amount);
             if (data.percentage !== undefined)
                 patch.percentage = toDecimalInput(data.percentage);
-            if (data.is_pre_tax !== undefined)
-                patch.is_pre_tax = asBool(data.is_pre_tax, false);
-            if (data.effective_date !== undefined)
-                patch.effective_date = asNullableDate(data.effective_date);
-            if (data.end_date !== undefined)
-                patch.end_date = asNullableDate(data.end_date);
-            if (data.max_annual_amount !== undefined)
-                patch.max_annual_amount = toDecimalInput(data.max_annual_amount);
+            if (data.isPreTax !== undefined)
+                patch.isPreTax = asBool(data.isPreTax, false);
+            if (data.effectiveDate !== undefined)
+                patch.effectiveDate = asNullableDate(data.effectiveDate);
+            if (data.endDate !== undefined)
+                patch.endDate = asNullableDate(data.endDate);
+            if (data.maxAnnualAmount !== undefined)
+                patch.maxAnnualAmount = toDecimalInput(data.maxAnnualAmount);
             const row = await this.prisma.employeeDeduction.update({
-                where: { tenant_id_id: { tenant_id: this.tenantId, id } },
+                where: { tenantId_id: { tenantId: this.tenantId, id } },
                 data: patch,
             });
             return this.mapToManifestEntity(row);
@@ -188,8 +188,8 @@ export class EmployeeDeductionPrismaStore {
     async delete(id) {
         try {
             await this.prisma.employeeDeduction.update({
-                where: { tenant_id_id: { tenant_id: this.tenantId, id } },
-                data: { deleted_at: new Date() },
+                where: { tenantId_id: { tenantId: this.tenantId, id } },
+                data: { deletedAt: new Date() },
             });
             return true;
         }
@@ -200,25 +200,25 @@ export class EmployeeDeductionPrismaStore {
     }
     async clear() {
         await this.prisma.employeeDeduction.deleteMany({
-            where: { tenant_id: this.tenantId },
+            where: { tenantId: this.tenantId },
         });
     }
     mapToManifestEntity(r) {
         return {
             id: r.id,
-            tenant_id: r.tenant_id,
-            employee_id: r.employee_id ?? null,
+            tenantId: r.tenantId,
+            employeeId: r.employeeId ?? null,
             type: r.type ?? null,
             name: r.name ?? null,
             amount: r.amount ?? null,
             percentage: r.percentage ?? null,
-            is_pre_tax: r.is_pre_tax ?? false,
-            effective_date: r.effective_date ?? null,
-            end_date: r.end_date ?? null,
-            max_annual_amount: r.max_annual_amount ?? null,
-            created_at: r.created_at ?? null,
-            updated_at: r.updated_at ?? null,
-            deleted_at: r.deleted_at ?? null,
+            isPreTax: r.isPreTax ?? false,
+            effectiveDate: r.effectiveDate ?? null,
+            endDate: r.endDate ?? null,
+            maxAnnualAmount: r.maxAnnualAmount ?? null,
+            createdAt: r.createdAt ?? null,
+            updatedAt: r.updatedAt ?? null,
+            deletedAt: r.deletedAt ?? null,
         };
     }
 }
