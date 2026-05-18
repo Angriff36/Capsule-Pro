@@ -41,11 +41,11 @@ const RootLayout = async ({ children }: RootLayoutProperties) => {
                 helpUrl={env.NEXT_PUBLIC_DOCS_URL}
                 privacyUrl={new URL(
                   "/legal/privacy",
-                  env.NEXT_PUBLIC_WEB_URL
+                  env.NEXT_PUBLIC_WEB_URL || "https://example.com"
                 ).toString()}
                 termsUrl={new URL(
                   "/legal/terms",
-                  env.NEXT_PUBLIC_WEB_URL
+                  env.NEXT_PUBLIC_WEB_URL || "https://example.com"
                 ).toString()}
               >
                 {children}
