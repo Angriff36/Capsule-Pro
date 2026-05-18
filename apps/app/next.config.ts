@@ -4,13 +4,6 @@ import { withLogging, withSentry } from "@repo/observability/next-config";
 import type { NextConfig } from "next";
 import { env } from "./env";
 
-const OPENTELEMETRY_EXCLUDE = /@opentelemetry/;
-const SENTRY_EXCLUDE = /@sentry/;
-const CRITICAL_DEPENDENCY_WARNING =
-  /Critical dependency: the request of a dependency is an expression/;
-const PACK_FILE_CACHE_WARNING =
-  /Serializing big strings .* impacts deserialization performance/;
-
 /**
  * Resolve the API base URL for rewrites.
  *
@@ -31,9 +24,6 @@ const apiBaseUrl = (
       "http://127.0.0.1:2223"
 ).replace(/\/$/, "");
 const distDir = process.env.NEXT_DIST_DIR?.trim() || ".next";
-
-type WebpackConfig = Parameters<NonNullable<NextConfig["webpack"]>>[0];
-type WebpackContext = Parameters<NonNullable<NextConfig["webpack"]>>[1];
 
 const rewrites: NextConfig["rewrites"] = async () => {
   const baseRewritesResult =
@@ -189,9 +179,6 @@ const baseConfig: NextConfig = withToolbar(
     // but require manual passing — see getApiBaseUrl() in app/lib/api.ts.
     deploymentId: process.env.VERCEL_DEPLOYMENT_ID,
     // Build-time linting is handled by Biome in this repo.
-    eslint: {
-      ignoreDuringBuilds: true,
-    },
     // Type checking is handled by `pnpm tsc --noEmit` in CI.
     // Next.js's built-in type checker crashes on Vercel when lstat-ing
     // parenthesized route groups like (authenticated)/.
@@ -212,7 +199,6 @@ const baseConfig: NextConfig = withToolbar(
       "@repo/notifications",
       "@repo/collaboration",
       "@angriff36/manifest",
-      "@repo/manifest-adapters",
       "@repo/seo",
       "@repo/email",
       "@repo/storage",
@@ -236,6 +222,19 @@ const baseConfig: NextConfig = withToolbar(
       "localhost:25002",
       "127.0.0.1:25002",
     ],
+    // Turbopack aliases — replaces webpack resolve.alias for Next.js 16
+    // canvas is a Node-native module unavailable in browser/server bundles
+    turbopack: {
+      ...config.turbopack,
+      resolveAlias: {
+        // canvas is a Node-only module used by some PDF libs; stub it out for browser bundles
+        // Turbopack requires a string path, not a boolean — use empty module
+        canvas: require.resolve("./turbopack-empty-stub.js"),
+      },
+      // Map .js imports → .ts source for transpiled workspace packages that use ESM-style
+      // import extensions (e.g. `import './foo.js'` where foo.ts is the actual file)
+      resolveExtensions: [".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs", ".json"],
+    },
     experimental: {
       optimizePackageImports: [
         "lucide-react",
@@ -243,10 +242,14 @@ const baseConfig: NextConfig = withToolbar(
         "recharts",
         "@repo/design-system",
       ],
-    },
-    // Reduce server action bundle size
-    serverActions: {
-      bodySizeLimit: "2mb",
+      serverActions: {
+        bodySizeLimit: "2mb",
+        // Allow Tailscale proxy origins for Server Actions in dev/staging.
+        // Vercel production uses the deployment domain automatically.
+        ...(process.env.VERCEL !== "1"
+          ? { allowedOrigins: ["*.tail78dd9e.ts.net", "pop-os.tail78dd9e.ts.net"] }
+          : {}),
+      },
     },
     // Enable source maps only when they can be uploaded to Sentry.
     // Local builds and non-Vercel deploys skip this to save build time.
@@ -386,39 +389,6 @@ const baseConfig: NextConfig = withToolbar(
     // Include manifest file in Vercel deployments for command-board chat
     outputFileTracingIncludes: {
       "/*": ["../../packages/manifest-ir/dist/routes.manifest.json"],
-    },
-    webpack: (webpackConfig: WebpackConfig, context: WebpackContext) => {
-      // Production optimizations to reduce bundle size and build time
-      if (context.isServer && context.nextRuntime === "nodejs") {
-        webpackConfig.resolve = webpackConfig.resolve ?? {};
-        webpackConfig.resolve.alias = {
-          ...(webpackConfig.resolve.alias ?? {}),
-          canvas: false,
-        };
-
-        // Increase memory limit for production builds
-        if (process.env.NODE_ENV === "production") {
-          webpackConfig.optimization = {
-            ...webpackConfig.optimization,
-            moduleIds: "deterministic",
-            minimize: true,
-          };
-        }
-
-        // Suppress 'Critical dependency' and large string warnings that bloat logs/context
-        webpackConfig.ignoreWarnings = [
-          ...(webpackConfig.ignoreWarnings || []),
-          { module: OPENTELEMETRY_EXCLUDE },
-          { module: SENTRY_EXCLUDE },
-          {
-            message: CRITICAL_DEPENDENCY_WARNING,
-          },
-          {
-            message: PACK_FILE_CACHE_WARNING,
-          },
-        ];
-      }
-      return webpackConfig;
     },
   })
 );

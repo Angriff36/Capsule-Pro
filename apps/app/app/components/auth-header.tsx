@@ -1,8 +1,7 @@
 "use client";
 
 import {
-  SignedIn,
-  SignedOut,
+  Show,
   SignInButton,
   SignUpButton,
   UserButton,
@@ -22,13 +21,13 @@ export const AuthHeader = () => {
 
   return (
     <header>
-      <SignedOut>
+      <Show when="signed-out">
         <SignInButton />
         <SignUpButton />
-      </SignedOut>
-      <SignedIn>
+      </Show>
+      <Show when="signed-in">
         <UserButton />
-      </SignedIn>
+      </Show>
     </header>
   );
 };

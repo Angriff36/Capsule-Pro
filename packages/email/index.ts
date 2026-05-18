@@ -1,7 +1,17 @@
 import { Resend } from "resend";
 import { keys } from "./keys";
 
-export const resend = new Resend(keys().RESEND_TOKEN);
+// Lazy singleton — instantiated on first use, not at module load time.
+// This prevents build-time crashes when RESEND_TOKEN is not available.
+let _resend: Resend | null = null;
+export const resend = new Proxy({} as Resend, {
+  get(_target, prop) {
+    if (!_resend) {
+      _resend = new Resend(keys().RESEND_TOKEN);
+    }
+    return (_resend as any)[prop];
+  },
+});
 
 // Export types
 export type { ContactTemplateProps } from "./templates/contact";

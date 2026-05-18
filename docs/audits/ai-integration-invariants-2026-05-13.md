@@ -1,202 +1,149 @@
-# AI Integration Invariants Audit — capsule-pro
+# AI Integration Invariants Audit
 
-**Last updated:** 2026-05-15 (cron-24)
-**Git HEAD:** c6c2b6f3da787ebf1c77c04aeecef059403699c7
-**Auditor:** automated scheduled cron pass
+**Last updated:** 2026-05-18T01:48Z (cron-31)
+**Git HEAD:** d3bc878a57ba3fe7fa337c4694010b19159337b7
+**Auditor:** automated cron — no files modified
 
 ---
 
-## TL;DR Executive Summary — Top 5 Risks
+## Executive Summary — Top 5 Risks
 
-| # | Risk | File(s) | Status |
-|---|------|---------|--------|
-| 1 | **70 concrete manifest command routes** outside the single-dispatcher | `apps/api/app/api/**/commands/*/route.ts` | OPEN (backlog) |
-| 2 | **Prefix-based public matchers** silently expose future routes | `apps/app/proxy.ts:5-11` | SUSPICIOUS |
-| 3 | **`/api/public(.*)` blanket bypass** in API middleware | `apps/api/proxy.ts:7-11` | SUSPICIOUS |
-| 4 | **NotificationsProvider SSR theme** hardcoded to `"light"` | `apps/app/app/(authenticated)/components/notifications-provider.tsx:24` | SUSPICIOUS |
-| 5 | (No new #5 this run — all other previously confirmed bugs have been fixed) | — | FIXED |
+| # | Risk | Severity | File(s) |
+|---|------|----------|---------|
+| 1 | `useTheme()` called above `ThemeProvider` in ClerkProviderClient — Clerk dark mode always undefined | HIGH | `apps/app/app/clerk-provider.client.tsx:13` |
+| 2 | Concrete command routes in frontend app (`apps/app`) — bypass API-layer rate limiting and key auth | HIGH | `apps/app/app/api/staff/shifts/commands/*/route.ts` |
+| 3 | 80 concrete command route.ts files outside the single manifest dispatcher | MEDIUM | `apps/api/app/api/**/commands/*/route.ts` (78) + `apps/app` (2) |
+| 4 | `apps/api` public route allowlist includes `/api/cron(.*)` — any request to a cron endpoint skips auth | MEDIUM | `apps/api/proxy.ts:11` |
+| 5 | `apps/api` public route allowlist includes `/api/sentry-fixer/process` hardcoded — production endpoint silently unauthenticated | LOW-MEDIUM | `apps/api/proxy.ts:10` |
 
 ---
 
 ## Confirmed Bugs
 
-### BUG-1 — Concrete Manifest Command Routes (70 files) — OPEN
+### BUG-1 — `useTheme()` above `ThemeProvider` in ClerkProviderClient
 
-**Invariant:** `apps/api/app/api/manifest/[entity]/commands/[command]/route.ts` must be the _single_ dispatcher. All other `route.ts` files under any `commands/` directory are illegal per AGENTS.md.
+**File:** `apps/app/app/clerk-provider.client.tsx:13`
 
-**Count:** 70 concrete route files (unchanged since first detection).
+**Proof:**
+```tsx
+// clerk-provider.client.tsx
+const { resolvedTheme } = useTheme();   // ← line 13 — no ThemeProvider above this component
+```
+```tsx
+// layout.tsx — render tree (outer → inner)
+<ClerkProviderClient>          // ← useTheme() fires here, ThemeProvider not yet mounted
+  <QueryProvider>
+    <AnalyticsProvider>
+      <DesignSystemProvider>   // ← ThemeProvider is inside here
+        {children}
+      </DesignSystemProvider>
+    </AnalyticsProvider>
+  </QueryProvider>
+</ClerkProviderClient>
+```
 
-**Affected modules (partial):**
-- `apps/api/app/api/communications/email-templates/commands/create/route.ts`
-- `apps/api/app/api/staff/shifts/commands/create-validated/route.ts`
-- `apps/api/app/api/staff/shifts/commands/update-validated/route.ts`
-- `apps/api/app/api/inventory/bulk-order-rules/commands/{create,update}/route.ts`
-- `apps/api/app/api/inventory/variance-reports/commands/{review,approve}/route.ts`
-- `apps/api/app/api/kitchen/prep-task-plan-workflows/commands/` (16 routes)
-- `apps/api/app/api/kitchen/alerts-config/commands/` (3 routes)
-- `apps/api/app/api/events/import-workflows/commands/` (16 routes)
-- `apps/api/app/api/events/catering-orders/commands/` (6 routes)
-- `apps/api/app/api/events/profitability/commands/recalculate/route.ts`
-- `apps/api/app/api/crm/proposals/commands/` (5 routes)
-- `apps/api/app/api/crm/leads/commands/` (4 routes)
-- `apps/api/app/api/procurement/purchase-orders/commands/` (2 routes)
-- `apps/api/app/api/procurement/requisitions/commands/` (9 routes)
+`ClerkProviderClient` sits **above** `DesignSystemProvider` in the tree. `DesignSystemProvider` (packages/design-system/index.tsx:20) renders `ThemeProvider`. So when `ClerkProviderClient` calls `useTheme()`, there is no `ThemeProvider` ancestor — `resolvedTheme` is always `undefined`. The fallback (`undefined === "dark"` is false) means the Clerk `dark` theme is **never applied** even when the user is in dark mode.
 
-**Product impact:** These routes operate outside the manifest IR surface. They cannot be linted, coverage-checked, or verified against `routes.manifest.json`. Any drift between these routes and the manifest silently widens the gap tracked in IMPLEMENTATION_PLAN.md. Per AGENTS.md, "All mutations compile to Manifest domain commands" and "New/changed API write handlers must exist in canonical route surface."
+**Product impact:** Clerk modals, sign-in, sign-up, and user button always render in light mode regardless of system/user theme setting.
 
-**Proof:** `find apps/api/app/api -path '*/commands/*/route.ts' ! -path '*/manifest/*' -print | wc -l` → 70
+**Regressed at:** cron-25 (commit fe88f5be). Previously fixed, then reintroduced.
 
-**Smallest safe fix:** Progressively migrate concrete routes into the single manifest dispatcher (`apps/api/app/api/manifest/[entity]/commands/[command]/route.ts`), or formally allowlist them in IMPLEMENTATION_PLAN.md with an explicit rationale per entity. Do not add more concrete routes until the backlog is addressed.
+**Smallest safe fix:** Move `ClerkProviderClient` to be a child of `DesignSystemProvider`, or move `DesignSystemProvider` above `ClerkProviderClient`, or accept a `resolvedTheme` prop passed down from a server component that reads a cookie.
 
 ---
 
-## Previously Confirmed Bugs — Now Fixed
+### BUG-2 — Concrete command routes in frontend app (apps/app)
 
-### BUG-2 (FIXED — commit 9ba9b4d1) — Clerk theme flash / `useTheme()` above ThemeProvider
+**Files:**
+- `apps/app/app/api/staff/shifts/commands/create-validated/route.ts`
+- `apps/app/app/api/staff/shifts/commands/update-validated/route.ts`
 
-`apps/app/app/clerk-provider.client.tsx` previously called `useTheme()` at the top level while rendering _above_ `DesignSystemProvider` (which contains `ThemeProvider`). This caused the Clerk dark theme to never apply on first render.
+**Proof:** These are full concrete Next.js route handlers in `apps/app`. The `next.config.ts` rewrites `/api/staff/:path*` to the API app, but Next.js `afterFiles` rewrites only run when no filesystem route matches first. Since these files exist, they match before the rewrite fires — requests are handled locally in `apps/app`, bypassing:
+- `apps/api/proxy.ts` (rate limiting, API key authentication, Sentry capture)
+- The manifest command dispatcher
 
-**Current state:** `ClerkProviderClient` is now rendered _inside_ `DesignSystemProvider` in `apps/app/app/layout.tsx:46`. The component additionally uses `useSyncExternalStore` to read the DOM's `html.dark` class synchronously before hydration completes. Provider ordering is: `DesignSystemProvider → ClerkProviderClient → QueryProvider`. This is correct — `useTheme()` is called below `ThemeProvider`. **CONFIRMED FIXED.**
+**Product impact:** Staff shift mutations from the frontend hit the unguarded local handler. Rate limiting is skipped. API key-authenticated integrations that call `/api/staff/shifts/commands/*` get the frontend's lighter auth check instead of the API app's full guard stack.
 
-### BUG-3 (FIXED — commit 2dbdaa48) — Duplicate `<Toaster />`
+**Smallest safe fix:** Delete both files. The rewrite will then forward requests to the equivalent handlers in `apps/api/app/api/staff/shifts/commands/`.
 
-Duplicate `<Toaster />` rendered by both `apps/app/app/layout.tsx` and `packages/design-system/index.tsx`. No longer present. **CONFIRMED FIXED.**
+---
 
-### BUG-4 (FIXED — commit 2d60b7ac) — Shift command routes in `apps/app`
+### BUG-3 — 80 concrete command route.ts files outside manifest single-dispatcher
 
-`apps/app/app/api/staff/shifts/commands/{create-validated,update-validated}/route.ts` — concrete command routes living in the frontend app, bypassing API-layer middleware. No longer present in `apps/app`. **CONFIRMED FIXED.**
+**Count:** 78 in `apps/api/app/api/**/commands/*/route.ts` + 2 in `apps/app/app/api/staff/shifts/commands/*/route.ts` = **80 total** (up from 79 in cron-30; one new route added).
 
-### BUG-5 (FIXED — commit f6243963) — `sentry-fixer` in public routes allowlist
+Per AGENTS.md: _"Concrete generated command route files are illegal unless they are the single dispatcher: `apps/api/app/api/manifest/[entity]/commands/[command]/route.ts`"_
 
-`apps/app/proxy.ts` previously included `/sentry-fixer(.*)` in the public route matcher. Removed. **CONFIRMED FIXED.**
+The single legal dispatcher exists at `apps/api/app/api/manifest/[entity]/commands/[command]/route.ts`. All other command route files are illegal per the manifest invariant.
 
-### BUG-6 (FIXED — commit cbc329bd) — Hardcoded cost ratios
+**Product impact:** These routes operate outside the manifest runtime. Command lifecycle hooks, policy enforcement, and IR consistency guarantees the manifest dispatcher provides are bypassed for all these entities.
 
-Hardcoded percentage constants in recipe/costing logic. Removed. **CONFIRMED FIXED.**
-
-### BUG-7 (FIXED — commit b614e799) — Clerk fallback redirect cross-contamination
-
-`packages/auth/components/sign-in.tsx` and `sign-up.tsx` previously passed `signInFallbackRedirectUrl` to the wrong component (sign-in file passing sign-up URL and vice versa). Fixed. **CONFIRMED FIXED.**
+**Note:** This is a large-scale structural issue — not a quick fix. Treat as a backlog migration item, not a hotfix target.
 
 ---
 
 ## Suspicious but Unproven
 
-### SUSP-1 — Prefix-based public matchers
+### SUSP-1 — `NotificationsProvider` useTheme with mounted guard
 
-**File:** `apps/app/proxy.ts:5-11`
+**File:** `apps/app/app/(authenticated)/components/notifications-provider.tsx:16`
 
-```ts
-const isPublicRoute = createRouteMatcher([
-  "/sign-in(.*)",
-  "/sign-up(.*)",
-  "/plasmic(.*)",
-  "/view/proposal(.*)",
-  "/sign/contract(.*)",
-]);
-```
+`useTheme()` called with `mounted` guard. If this component renders in a layout that doesn't have `ThemeProvider` in its ancestor chain, the guard would mask a crash into a perpetual "light" theme. Cannot confirm the full layout ancestry path from this audit pass alone.
 
-Any future page added under `/plasmic/`, `/view/proposal/`, or `/sign/contract/` becomes public by default with no explicit decision. `/plasmic/` is particularly broad — if a Plasmic-generated page is added at `/plasmic/admin/...` it's unauthenticated automatically.
+### SUSP-2 — apps/api public route allows `/api/cron(.*)`
 
-**Risk:** Medium. Not a current crash but a latent auth bypass vector.
+**File:** `apps/api/proxy.ts:11`
 
-**Not changing in this pass.** Track: ensure no authenticated pages are ever added under these prefixes without reviewing this matcher.
+All cron routes are unauthenticated. If any cron endpoint performs destructive or sensitive operations, it can be triggered by any party with network access. No cron endpoint inventory was performed in this pass.
+
+### SUSP-3 — apps/api public route allows `/api/sentry-fixer/process`
+
+**File:** `apps/api/proxy.ts:10`
+
+Hardcoded single endpoint exempted from auth. If this handler has side effects (queue processing, error mutation), it's exposed. Needs endpoint-level verification.
 
 ---
 
-### SUSP-2 — `/api/public(.*)` blanket bypass in API middleware
+## False Alarms / Intentionally Valid
 
-**File:** `apps/api/proxy.ts:7-11`
-
-```ts
-const isPublicRoute = createRouteMatcher([
-  "/webhooks(.*)",
-  "/outbox/publish",
-  "/api/health(.*)",
-  "/api/public(.*)",
-]);
-```
-
-`/api/public(.*)` is a broad blanket. The comment says "Token validation is performed by the route handler." This is a convention-based guarantee, not a structural one — any route added under `/api/public/` that forgets to validate the token is silently unauthenticated.
-
-**Risk:** Medium. Worth auditing all current `/api/public/` handlers to confirm token validation is present.
-
-**Not changing in this pass.**
+| ID | File | Reason Valid |
+|----|------|-------------|
+| FA-1 | `packages/auth/provider.tsx` | Intentionally does NOT render ClerkProvider — comment explains this. |
+| FA-2 | `packages/auth/components/sign-in.tsx` / `sign-up.tsx` | Uses only `signInFallbackRedirectUrl` / `signUpFallbackRedirectUrl` — no deprecated `afterSignInUrl`/`afterSignUpUrl` coexistence. |
+| FA-3 | `packages/design-system/components/mode-toggle.tsx` | Called inside DesignSystemProvider subtree — ThemeProvider is present. |
+| FA-4 | `packages/design-system/components/ui/sonner.tsx` | Same — always rendered inside DesignSystemProvider. |
+| FA-5 | `apps/mobile/App.tsx` | ClerkProvider wraps QueryClientProvider wraps all hooks — correct order. |
+| FA-6 | `apps/storybook/.storybook/preview.tsx` | ThemeProvider explicitly wraps stories — correct. |
+| FA-7 | `apps/app/app/(unauthenticated)/sign-in/*` and `sign-up/*` | useAuth called inside ClerkProvider subtree (layout.tsx root wraps everything). |
+| FA-8 | `apps/app/app/query-provider.tsx` | QueryClientProvider is present; all useQuery/useMutation hooks are children. |
+| FA-9 | `apps/app/proxy.ts` | API routes return JSON 401/403 (jsonResponse helper). Page routes do HTML redirect — correct behavior for browser navigation. |
+| FA-10 | `apps/api/proxy.ts` | Returns JSON 401 on all auth failures — correct for an API-only app. |
 
 ---
 
-### SUSP-3 — NotificationsProvider SSR theme hardcoded to `"light"`
+## Manifest Route Inventory
 
-**File:** `apps/app/app/(authenticated)/components/notifications-provider.tsx:24`
+- **Legal dispatcher:** `apps/api/app/api/manifest/[entity]/commands/[command]/route.ts` ✓ exists
+- **Illegal concrete routes in apps/api:** 78 files
+- **Illegal concrete routes in apps/app:** 2 files
+- **Total illegal:** 80
 
-```ts
-const theme = mounted ? (resolvedTheme as "light" | "dark") : "light";
-```
-
-Dark-mode users (system or explicit) will see the Knock notification SDK initialized with `"light"` theme on SSR and for the first client render frame before `mounted` flips. This is a visual flash, not a crash. The `mounted` guard is correct hydration hygiene but the default value (`"light"`) is wrong for dark-mode-first users.
-
-**Risk:** Low (cosmetic). Smaller than the Clerk theme flash that was fixed.
-
-**Not changing in this pass.**
-
----
-
-## False Alarms / Intentionally Valid Patterns
-
-| # | File | Why it's valid |
-|---|------|----------------|
-| FA-1 | `apps/app/app/clerk-provider.client.tsx` | `ClerkProvider` is the single root provider, rendered inside `DesignSystemProvider`. Correct. |
-| FA-2 | `packages/auth/provider.tsx` | Explicitly does NOT render `ClerkProvider` — documented comment confirms intentional. |
-| FA-3 | `apps/mobile/App.tsx` | Mobile is a separate Expo app with its own provider tree. Separate `ClerkProvider` + `QueryClientProvider` is correct and independent. |
-| FA-4 | `packages/auth/components/sign-in.tsx` + `sign-up.tsx` | Uses `signInFallbackRedirectUrl` / `signUpFallbackRedirectUrl` (current API). No deprecated `afterSignInUrl` / `afterSignUpUrl` in source. Matches only appear in compiled `.next-dev/` bundles (internal Clerk SDK code). |
-| FA-5 | `packages/design-system/components/mode-toggle.tsx:21` | `useTheme()` called inside a component that will always be rendered below `ThemeProvider`. Not a provider ordering issue. |
-| FA-6 | `packages/design-system/components/ui/sonner.tsx:14` | Same as FA-5 — `useTheme()` inside component, not at provider level. |
-| FA-7 | All `useQuery`/`useMutation` hooks in `apps/app/app/lib/*` | All rendered below `QueryProvider` in the root layout. Valid. |
-| FA-8 | `apps/app/app/(unauthenticated)/sign-in/[[...sign-in]]/sign-in-with-analytics.tsx` | `useAuth()` called inside component rendered below `ClerkProviderClient`. Valid. |
-| FA-9 | `apps/app/app/components/auth-header.tsx` | `SignedIn`/`SignedOut` rendered below `ClerkProviderClient`. Valid. |
-| FA-10 | `apps/storybook/.storybook/preview.tsx` | Storybook's own isolated provider tree — intentionally wraps with `ThemeProvider`. Not app code. |
+Partial listing (apps/api, by domain):
+- `events/catering-orders/commands/*` — 6 routes
+- `events/import-workflows/commands/*` — 17 routes
+- `events/profitability/commands/*` — 1 route
+- `kitchen/prep-task-plan-workflows/commands/*` — 15 routes
+- `kitchen/alerts-config/commands/*` — 3 routes
+- `crm/proposals/commands/*` — 5 routes
+- `crm/leads/commands/*` — 4 routes
+- `inventory/bulk-order-rules/commands/*` — 2 routes
+- `inventory/variance-reports/commands/*` — 2 routes
+- `procurement/requisitions/commands/*` — 10 routes
+- `procurement/purchase-orders/commands/*` — 2 routes
+- `shipments/shipment/commands/*` — 7 routes
+- `staff/shifts/commands/*` — 2 routes
+- `communications/email-templates/commands/*` — 1 route
 
 ---
 
-## Provider Graph Summary
-
-```
-RootLayout (apps/app/app/layout.tsx)
-  └─ DesignSystemProvider          ← ThemeProvider lives here
-       └─ ClerkProviderClient      ← useTheme() called here ✓ (below ThemeProvider)
-            └─ QueryProvider       ← QueryClientProvider lives here
-                 └─ AnalyticsProvider
-                      └─ {children}
-                           └─ (authenticated)/layout.tsx
-                                └─ AblyProvider
-                                     └─ AiAssistantProvider
-                                          └─ GlobalSidebar
-```
-
-All provider dependencies satisfied. No ordering inversions detected.
-
----
-
-## Clerk Invariants Summary
-
-- **Single root ClerkProvider:** ✅ — exactly one, in `apps/app/app/clerk-provider.client.tsx`, rendered from root layout.
-- **No nested extra ClerkProviders in sub-layouts:** ✅ — scanned all `apps/app/app/**/layout.tsx` files; none add `ClerkProvider`.
-- **Deprecated redirect props:** ✅ — no `afterSignInUrl`/`afterSignUpUrl` in source files; only appears in compiled Clerk SDK internals (`.next-dev/`).
-- **Clerk appearance API:** ✅ — `appearance={{ theme: isDark ? dark : undefined, cssLayerName: "clerk" }}` matches current `@clerk/nextjs` API.
-
----
-
-## Auth Route Invariants Summary
-
-- **`apps/app/proxy.ts`:** API routes return JSON 401 (not HTML redirect). Page routes redirect to `/sign-in`. ✅
-- **`apps/api/proxy.ts`:** All non-public routes return JSON 401/401. ✅
-- **Public routes:** Explicit allowlist in both apps. SUSP-1 / SUSP-2 noted above.
-- **`/sentry-fixer/process`:** Previously in public route allowlist — removed (fixed).
-
----
-
-## Manifest Route Invariants Summary
-
-- **Single dispatcher path:** `apps/api/app/api/manifest/[entity]/commands/[command]/route.ts` ✅ exists.
-- **Concrete route files outside dispatcher:** 70 — **BUG-1 OPEN**.
-- **`apps/app` command routes:** 0 (previously 2, now fixed). ✅
+*No files were modified in this audit pass.*

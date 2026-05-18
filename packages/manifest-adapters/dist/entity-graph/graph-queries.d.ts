@@ -4,8 +4,8 @@
  * High-level query utilities for the entity graph.
  * Provides convenience methods for common queries and impact analysis.
  */
-import type { EntityGraph, GraphNode, GraphPath, ImpactAnalysisResult } from "./types.js";
-import { RelationshipType, TraversalDirection } from "./types.js";
+import type { EntityGraph, GraphNode, GraphPath, ImpactAnalysisResult } from "./types";
+import { RelationshipType, TraversalDirection } from "./types";
 /**
  * Result of a dependency chain query.
  */

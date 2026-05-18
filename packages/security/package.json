@@ -9,11 +9,11 @@
   },
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",
-    "next": "15.4.11",
+    "next": "16.2.6",
     "typescript": "^5.9.3"
   },
   "peerDependencies": {
-    "next": "15.4.11"
+    "next": "16.2.6"
   },
   "main": "./index.ts",
   "types": "./index.ts",

@@ -837,3 +837,52 @@ Several specs are marked `_TODO` but have substantial implementations:
 ---
 
 *This plan was generated from analysis of 500+ files across apps, packages, and specs directories.*
+
+---
+
+## Framework: Next.js 15.4 → 16.2 Upgrade (2026-05-18)
+
+**Branch:** `next-16-upgrade` | **Status:** ✅ Structurally complete, build validating
+
+### What Was Done
+
+| Item | Status | Notes |
+|------|--------|-------|
+| Version bumps (next, react, clerk) | ✅ | next@16.2.6, react@19.2.6, @clerk/nextjs@7.3.5 across all apps |
+| `pnpm.overrides` corrected | ✅ | Root override was silently pinning next@15.5.18 — fixed to 16.2.6 |
+| `middleware.ts` → `proxy.ts` | ✅ | apps/app and apps/api migrated; apps/web already had proxy.ts |
+| Webpack configs removed | ✅ | Both apps/app and apps/api — Turbopack is default in Next 16 |
+| `turbopack.resolveAlias` canvas | ✅ | Empty stub replaces boolean (Turbopack rejects booleans) |
+| `images.domains` removed | ✅ | Deprecated in Next 16; remotePatterns only |
+| `serverActions.allowedOrigins` | ✅ | Tailscale proxy origins preserved |
+| pdfjs-dist added to serverExternalPackages | ✅ | Prevents Turbopack from bundling Node-only PDF lib |
+| AGENTS.md + CLAUDE.md | ✅ | Next.js 16 AI agent conventions added to repo root |
+| No parallel route slots found | ✅ | No `default.js` files needed |
+| No `unstable_` / `experimental_ppr` found | ✅ | No async request API migration needed |
+
+### Remaining Blockers (not caused by this upgrade)
+
+- **RLS** — Row-level security not yet enforced at DB layer
+- **Prisma** — Schema drift and migration gaps (pre-existing)
+- **Env validation** — `RESEND_*` and other vars missing from CI/local; `SKIP_ENV_VALIDATION=true` required for builds
+- **Package boundaries** — Some cross-app imports bypass workspace package graph
+- **CI hardening** — No per-app build matrix; typecheck not gated on all apps
+- **manifest-adapters** — No build script; compiled output must be pre-built before consuming apps build
+
+### Additional fixes during upgrade (2026-05-18)
+
+| Fix | Status | Notes |
+|-----|--------|-------|
+| `turbopack.resolveAlias canvas: false` → empty stub | ✅ | Turbopack rejects boolean; created `turbopack-empty-stub.js` |
+| `prisma generate` | ✅ | Client was missing from `packages/database/generated/` — now generated |
+| `@angriff36/manifest/stores` turbopackIgnore | ✅ | Non-existent subpath in try/catch; added `/* turbopackIgnore: true */` |
+| `eslint` / `serverActions` in next.config.ts | ⚠️ | Invalid Next 16 top-level keys — need cleanup (non-blocking, warnings only) |
+| `apps/app` build | 🔄 | In progress (proc_4db8e669a5e8) |
+| `apps/api` build | ⏳ | Pending |
+| `apps/web` build | ⏳ | Pending |
+
+### Closed by this upgrade
+
+- ~~Next 15.5 outdated/CVE item~~ — resolved by upgrade to 16.2.6
+- ~~Duplicate next versions in lockfile~~ — resolved by fixing pnpm.overrides
+- ~~webpack config blocking Turbopack default~~ — resolved by removing webpack functions

@@ -5,8 +5,8 @@
  * Infers relationships from entity properties and commands.
  */
 import type { IR } from "@angriff36/manifest/ir";
-import type { EntityGraph } from "./types.js";
-import { RelationshipType } from "./types.js";
+import type { EntityGraph } from "./types";
+import { RelationshipType } from "./types";
 /**
  * Represents a known relationship between entities.
  */

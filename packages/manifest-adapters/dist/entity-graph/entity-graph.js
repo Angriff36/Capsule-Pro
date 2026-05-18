@@ -4,8 +4,8 @@
  * In-memory implementation of the EntityGraph interface using adjacency lists
  * for efficient traversal and querying.
  */
-import { createPath, extendPath } from "./factories.js";
-import { TraversalDirection } from "./types.js";
+import { createPath, extendPath } from "./factories";
+import { TraversalDirection } from "./types";
 /**
  * In-memory implementation of the entity graph.
  */

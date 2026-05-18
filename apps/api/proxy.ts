@@ -1,6 +1,5 @@
 import { clerkMiddleware, createRouteMatcher } from "@repo/auth/server";
 import { captureException } from "@sentry/nextjs";
-import type { NextMiddleware } from "next/server";
 import { NextResponse } from "next/server";
 import { applyGlobalRateLimit } from "@/middleware/global-rate-limit";
 
@@ -14,7 +13,7 @@ const isPublicRoute = createRouteMatcher([
 
 const API_KEY_BEARER_PREFIX = "Bearer cp_";
 
-const middleware: NextMiddleware = clerkMiddleware(async (auth, req) => {
+const proxy = clerkMiddleware(async (auth, req) => {
   try {
     if (isPublicRoute(req)) {
       return;
@@ -83,7 +82,7 @@ const middleware: NextMiddleware = clerkMiddleware(async (auth, req) => {
   }
 });
 
-export default middleware;
+export default proxy;
 
 export const config = {
   matcher: ["/api(.*)", "/trpc(.*)"],

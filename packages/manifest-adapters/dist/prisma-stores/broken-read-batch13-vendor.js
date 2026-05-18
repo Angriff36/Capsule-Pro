@@ -4,7 +4,7 @@
  * VendorCatalog  — tenant_inventory.vendor_catalog   (camelCase fields, Decimal, String[] tags)
  * VendorContract  — tenant_inventory.vendor_contracts (camelCase fields, many Decimals/Ints)
  */
-import { asBool, asNullableDate, asNullableNumber, asNullableString, asString, asStringArray, reportOp, toDecimalInput, toDecimalRequired, } from "./shared.js";
+import { asBool, asNullableDate, asNullableNumber, asNullableString, asString, asStringArray, reportOp, toDecimalInput, toDecimalRequired, } from "./shared";
 // ---------------------------------------------------------------------------
 // VendorCatalogPrismaStore
 // ---------------------------------------------------------------------------

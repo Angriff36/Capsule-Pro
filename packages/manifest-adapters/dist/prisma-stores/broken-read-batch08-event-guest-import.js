@@ -17,7 +17,7 @@
  *
  * Both soft-delete via deletedAt.
  */
-import { asBool, asJsonInput, asNullableDate, asNullableNumber, asNullableString, asStringArray, reportOp, } from "./shared.js";
+import { asBool, asJsonInput, asNullableDate, asNullableNumber, asNullableString, asStringArray, reportOp, } from "./shared";
 // ---------------------------------------------------------------------------
 // EventGuestPrismaStore  (tenant_events.event_guests)
 // ---------------------------------------------------------------------------

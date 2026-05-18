@@ -5,10 +5,12 @@
   "type": "module",
   "exports": {
     ".": {
-      "import": "./src/index.ts",
-      "default": "./src/index.ts"
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
     }
   },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "dependencies": {},
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",
@@ -16,7 +18,7 @@
     "typescript": "^5.9.3"
   },
   "scripts": {
-    "build": "tsc --noEmit",
+    "build": "tsc",
     "clean": "git clean -xdf .turbo dist node_modules",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   }

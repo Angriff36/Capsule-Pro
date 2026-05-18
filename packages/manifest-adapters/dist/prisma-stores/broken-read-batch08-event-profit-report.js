@@ -22,7 +22,7 @@
  *
  * Both soft-delete via deletedAt.
  */
-import { asJsonInput, asNullableDate, asNullableNumber, asNullableString, reportOp, toDecimalRequired, } from "./shared.js";
+import { asJsonInput, asNullableDate, asNullableNumber, asNullableString, reportOp, toDecimalRequired, } from "./shared";
 // ---------------------------------------------------------------------------
 // EventProfitabilityPrismaStore  (tenant_events.event_profitability)
 // ---------------------------------------------------------------------------

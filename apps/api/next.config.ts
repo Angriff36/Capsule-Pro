@@ -3,13 +3,6 @@ import { withLogging, withSentry } from "@repo/observability/next-config";
 import type { NextConfig } from "next";
 import { env } from "@/env";
 
-type WebpackConfig = Parameters<NonNullable<NextConfig["webpack"]>>[0];
-type WebpackContext = Parameters<NonNullable<NextConfig["webpack"]>>[1];
-
-const OPENTELEMETRY_EXCLUDE = /@opentelemetry/;
-const SENTRY_EXCLUDE = /@sentry/;
-const CRITICAL_DEPENDENCY_WARNING =
-  /Critical dependency: the request of a dependency is an expression/;
 const distDir = process.env.NEXT_DIST_DIR?.trim() || ".next";
 
 const baseConfig: NextConfig = withLogging({
@@ -93,8 +86,6 @@ const baseConfig: NextConfig = withLogging({
     "@repo/observability",
     "@repo/security",
     "@repo/event-parser",
-    "@repo/manifest-adapters",
-    "@repo/supplier-connectors",
     "@repo/design-system",
     "@repo/email",
     "@repo/notifications",
@@ -103,6 +94,11 @@ const baseConfig: NextConfig = withLogging({
     "@repo/realtime",
     "@repo/sentry-integration",
   ],
+  // Turbopack: resolve .js workspace imports to .ts sources
+  turbopack: {
+    ...config.turbopack,
+    resolveExtensions: [".ts", ".tsx", ".js", ".jsx", ".json", ".wasm"],
+  },
   experimental: {
     optimizePackageImports: ["date-fns"],
   },
@@ -116,44 +112,11 @@ const baseConfig: NextConfig = withLogging({
   // ably: SSR bundling hits keyv/got dynamic-require issues if not externalized.
   serverExternalPackages: [
     "pdfjs-dist",
+    "pdfjs-dist/legacy/build/pdf.worker.mjs",
     "ably",
     "pdfkit",
     "@repo/sales-reporting",
-  ],
-  webpack: (webpackConfig: WebpackConfig, { isServer }: WebpackContext) => {
-    if (isServer) {
-      const pdfjsExternal = "pdfjs-dist/legacy/build/pdf.worker.mjs";
-      const existingExternals = webpackConfig.externals;
-
-      if (Array.isArray(existingExternals)) {
-        webpackConfig.externals = [...existingExternals, pdfjsExternal];
-      } else if (existingExternals) {
-        webpackConfig.externals = [existingExternals, pdfjsExternal];
-      } else {
-        webpackConfig.externals = [pdfjsExternal];
-      }
-
-      webpackConfig.ignoreWarnings = [
-        ...(webpackConfig.ignoreWarnings || []),
-        { module: OPENTELEMETRY_EXCLUDE },
-        { module: SENTRY_EXCLUDE },
-        {
-          message: CRITICAL_DEPENDENCY_WARNING,
-        },
-      ];
-    }
-
-    // Resolve .js imports to .ts in workspace packages (ESM convention)
-    webpackConfig.resolve = {
-      ...webpackConfig.resolve,
-      extensionAlias: {
-        ".js": [".ts", ".tsx", ".js", ".jsx"],
-      },
-      extensions: [".ts", ".tsx", ".js", ".jsx", ".json", ".wasm"],
-    };
-
-    return webpackConfig;
-  },
+  ]
 });
 
 const withVercel = (config: NextConfig): NextConfig =>

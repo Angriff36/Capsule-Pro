@@ -5,7 +5,7 @@
  * prep task dependencies, equipment requirements, allergen constraints,
  * and workflow validation.
  */
-import { RuleOutcomeType, RuleSeverity, RuleType } from "./types.js";
+import { RuleOutcomeType, RuleSeverity, RuleType } from "./types";
 // ---------------------------------------------------------------------------
 // Rule Factory Helpers
 // ---------------------------------------------------------------------------

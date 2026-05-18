@@ -17,7 +17,7 @@
  *
  * Both soft-delete via deletedAt.
  */
-import { asJsonInput, asNullableDate, asNullableNumber, asNullableString, reportOp, } from "./shared.js";
+import { asJsonInput, asNullableDate, asNullableNumber, asNullableString, reportOp, } from "./shared";
 // ---------------------------------------------------------------------------
 // EventStaffAssignmentPrismaStore  (tenant_events.event_staff_assignments)
 // Manifest entity name: "EventStaff"

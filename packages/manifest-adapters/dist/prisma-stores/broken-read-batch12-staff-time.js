@@ -14,7 +14,7 @@
  *   All snake_case Prisma field names, soft-delete via deleted_at.
  *   Composite key tenant_id_id.
  */
-import { asBool, asNullableDate, asNullableNumber, asNullableString, asString, reportOp, } from "./shared.js";
+import { asBool, asNullableDate, asNullableNumber, asNullableString, asString, reportOp, } from "./shared";
 // ---------------------------------------------------------------------------
 // TimeEntryPrismaStore
 // ---------------------------------------------------------------------------

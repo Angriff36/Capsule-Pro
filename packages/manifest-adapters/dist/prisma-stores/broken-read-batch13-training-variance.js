@@ -4,7 +4,7 @@
  * TrainingModule  — tenant_staff.training_modules  (all snake_case fields)
  * VarianceReport  — tenant_inventory.variance_reports (camelCase fields, many Decimals)
  */
-import { asBool, asNullableDate, asNullableNumber, asNullableString, asString, reportOp, toDecimalInput, toDecimalRequired, } from "./shared.js";
+import { asBool, asNullableDate, asNullableNumber, asNullableString, asString, reportOp, toDecimalInput, toDecimalRequired, } from "./shared";
 // ---------------------------------------------------------------------------
 // TrainingModulePrismaStore
 // ---------------------------------------------------------------------------

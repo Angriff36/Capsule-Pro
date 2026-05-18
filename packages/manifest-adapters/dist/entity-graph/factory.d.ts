@@ -4,7 +4,7 @@
  * Factory function for creating new entity graphs.
  * Separated to avoid circular dependencies with the graph builder.
  */
-import { InMemoryEntityGraph } from "./entity-graph.js";
+import { InMemoryEntityGraph } from "./entity-graph";
 /**
  * Create a new empty entity graph.
  */

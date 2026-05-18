@@ -11,7 +11,7 @@
  *   - Required date column: hireDate
  */
 import { EmploymentType } from "@repo/database/standalone";
-import { asNullableDate, asNullableString, reportOp, toDecimalInput, } from "./shared.js";
+import { asNullableDate, asNullableString, reportOp, toDecimalInput, } from "./shared";
 // ---------------------------------------------------------------------------
 // UserPrismaStore
 // ---------------------------------------------------------------------------

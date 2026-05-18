@@ -4,7 +4,7 @@
  *
  * Pattern mirrors AlertsConfigPrismaStore in `../prisma-store.ts`.
  */
-import { asBool, asJsonInput, asNullableDate, asNullableString, asString, asStringArray, reportOp, toDecimalRequired, } from "./shared.js";
+import { asBool, asJsonInput, asNullableDate, asNullableString, asString, asStringArray, reportOp, toDecimalRequired, } from "./shared";
 // ---------------------------------------------------------------------------
 // ApiKey (platform.api_keys)
 // ---------------------------------------------------------------------------

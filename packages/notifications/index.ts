@@ -1,9 +1,17 @@
 import { Knock } from "@knocklabs/node";
 import { keys } from "./keys";
 
-const key = keys().KNOCK_SECRET_API_KEY;
-
-export const notifications = new Knock(key ? { apiKey: key } : undefined);
+// Lazy singleton — initialized on first property access to prevent build-time crashes.
+let _knock: Knock | null = null;
+export const notifications = new Proxy({} as Knock, {
+  get(_target, prop) {
+    if (!_knock) {
+      const key = keys().KNOCK_SECRET_API_KEY;
+      _knock = new Knock(key ? { apiKey: key } : undefined);
+    }
+    return (_knock as any)[prop];
+  },
+});
 
 // Re-export Email utilities
 export {

@@ -4,8 +4,8 @@
  * Integrates the kitchen operations rules engine with the Manifest runtime.
  * Provides hooks for rule evaluation before and after command execution.
  */
-import { allergenRules, equipmentRules, prepTaskRules, workflowRules, } from "./rules.js";
-import { getRulesEngine, } from "./rules-engine.js";
+import { allergenRules, equipmentRules, prepTaskRules, workflowRules, } from "./rules";
+import { getRulesEngine, } from "./rules-engine";
 const DEFAULT_INTEGRATION_CONFIG = {
     evaluateBeforeCommand: true,
     evaluateAfterCommand: false,

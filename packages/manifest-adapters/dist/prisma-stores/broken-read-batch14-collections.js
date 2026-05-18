@@ -31,7 +31,7 @@
  *     completedInstallments, endDate, frequency, nextPaymentDate, notes,
  *     completedAt, defaultedAt
  */
-import { asBool, asJsonInput, asNullableDate, asNullableNumber, asNullableString, asString, reportOp, toDecimalRequired, } from "./shared.js";
+import { asBool, asJsonInput, asNullableDate, asNullableNumber, asNullableString, asString, reportOp, toDecimalRequired, } from "./shared";
 // ---------------------------------------------------------------------------
 // Metadata keys for manifest-only CollectionCase properties
 // ---------------------------------------------------------------------------

@@ -5,7 +5,7 @@
  * ShipmentItem  — tenant_inventory.shipment_items (camelCase, Decimals)
  */
 import type { PrismaClient } from "@repo/database/standalone";
-import { type EntityInstance } from "./shared.js";
+import { type EntityInstance } from "./shared";
 export declare class ScheduleShiftPrismaStore implements Store<EntityInstance> {
     private readonly prisma;
     private readonly tenantId;

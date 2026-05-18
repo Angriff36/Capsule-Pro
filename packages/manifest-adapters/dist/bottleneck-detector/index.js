@@ -6,6 +6,6 @@
  *
  * @packageDocumentation
  */
-export * from "./ai-suggestions.js";
-export * from "./detector.js";
-export * from "./types.js";
+export * from "./ai-suggestions";
+export * from "./detector";
+export * from "./types";

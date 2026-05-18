@@ -11,7 +11,7 @@
  *
  * Both soft-delete via their respective deleted_at fields.
  */
-import { asBool, asNullableDate, asNullableString, reportOp, toDecimalInput, } from "./shared.js";
+import { asBool, asNullableDate, asNullableString, reportOp, toDecimalInput, } from "./shared";
 // ---------------------------------------------------------------------------
 // EmployeeCertificationPrismaStore  (tenant_staff.employee_certifications — snake_case)
 // ---------------------------------------------------------------------------

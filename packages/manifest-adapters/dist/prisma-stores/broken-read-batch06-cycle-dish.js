@@ -7,7 +7,7 @@
  * Both use camelCase Prisma field names and composite key `tenantId_id`.
  * Soft-delete via `deletedAt`.
  */
-import { asBool, asNullableDate, asNullableNumber, asNullableString, asStringArray, reportOp, toDecimalInput, toDecimalRequired, } from "./shared.js";
+import { asBool, asNullableDate, asNullableNumber, asNullableString, asStringArray, reportOp, toDecimalInput, toDecimalRequired, } from "./shared";
 // ---------------------------------------------------------------------------
 // CycleCountSessionPrismaStore  (tenant_inventory.cycle_count_sessions)
 // ---------------------------------------------------------------------------

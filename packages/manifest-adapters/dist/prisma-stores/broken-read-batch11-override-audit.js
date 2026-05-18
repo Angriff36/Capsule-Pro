@@ -5,7 +5,7 @@
  * No deletedAt or updatedAt columns — hard-delete semantics for delete(),
  * no soft-delete filtering in getAll/getById.
  */
-import { asNullableString, asString, reportOp, } from "./shared.js";
+import { asNullableString, asString, reportOp, } from "./shared";
 export class OverrideAuditPrismaStore {
     prisma;
     tenantId;
