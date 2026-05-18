@@ -49,7 +49,7 @@ const TimelineTaskSchema = z.object({
   description: z.string().optional(),
   startTime: z.string().optional(),
   endTime: z.string().optional(),
-  assigneeEmail: z.string().email().optional(),
+  assigneeEmail: z.email().optional(),
   status: z
     .enum(["pending", "in-progress", "completed", "cancelled"])
     .optional(),
@@ -96,7 +96,7 @@ const EventImportSchema = z.object({
   guestList: z.array(GuestSchema).default([]),
   timelineTasks: z.array(TimelineTaskSchema).default([]),
   contactName: z.string().optional(),
-  contactEmail: z.string().email().optional(),
+  contactEmail: z.email().optional(),
   contactPhone: z.string().optional(),
 });
 

@@ -19,15 +19,15 @@ import { getTenantId } from "@/app/lib/tenant";
 // ---------------------------------------------------------------------------
 
 const purchaseOrderItemSchema = z.object({
-  itemId: z.string().uuid(),
+  itemId: z.uuid(),
   quantityOrdered: z.coerce.number().positive(),
   unitCost: z.coerce.number().min(0),
   unitId: z.coerce.number().int().default(1),
 });
 
 const purchaseOrderSchema = z.object({
-  vendorId: z.string().uuid("Invalid vendor"),
-  locationId: z.string().uuid("Invalid location").optional().nullable(),
+  vendorId: z.uuid("Invalid vendor"),
+  locationId: z.uuid("Invalid location").optional().nullable(),
   expectedDeliveryDate: z
     .string()
     .optional()
@@ -42,7 +42,7 @@ const purchaseOrderSchema = z.object({
 });
 
 const purchaseRequisitionItemSchema = z.object({
-  itemId: z.string().uuid(),
+  itemId: z.uuid(),
   itemName: z.string().optional(),
   itemNumber: z.string().optional(),
   unitOfMeasure: z.string().optional(),

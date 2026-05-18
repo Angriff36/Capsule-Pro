@@ -16,7 +16,7 @@ const mapEmployeeSchema = z.object({
   nowstaEmployeeId: z.string().min(1, "Nowsta employee ID is required"),
   convoyEmployeeId: z.string().uuid("Invalid Convoy employee ID"),
   nowstaEmployeeName: z.string().optional(),
-  nowstaEmployeeEmail: z.string().email().optional(),
+  nowstaEmployeeEmail: z.email().optional(),
   confirm: z.boolean().default(false),
 });
 
