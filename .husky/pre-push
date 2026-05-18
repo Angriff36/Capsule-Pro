@@ -4,5 +4,3 @@ set -e
 
 echo "Running typecheck before push..."
 NODE_OPTIONS="--max-old-space-size=4096" pnpm check:all
-
-exit 0

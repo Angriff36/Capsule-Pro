@@ -48,7 +48,7 @@ function request(pathname: string) {
 }
 
 async function runMiddleware(pathname: string) {
-  const { default: middleware } = await import("../middleware");
+  const { default: middleware } = await import("../proxy");
   return (
     middleware as unknown as (req: { url: string }) => Promise<Response | void>
   )(request(pathname));
@@ -116,7 +116,7 @@ describe("app auth routing", () => {
   });
 
   test("matcher includes APIs and app pages but excludes _next/static assets", async () => {
-    const { config } = await import("../middleware");
+    const { config } = await import("../proxy");
     const matcher = new RegExp(`^${config.matcher[0]}$`);
 
     expect(matcher.test("/api/search")).toBe(true);
