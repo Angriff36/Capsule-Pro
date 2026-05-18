@@ -5,6 +5,8 @@
 Before any Next.js work, find and read the relevant doc in `node_modules/next/dist/docs/`.
 Your training data is outdated — the docs are the source of truth.
 
+<!-- END:nextjs-agent-rules -->
+
 ## Capsule Pro Dev Server
 
 - **App**: `http://localhost:2221` (Tailscale: `https://pop-os.tail78dd9e.ts.net`)
@@ -38,8 +40,6 @@ cd /home/oc/projects/capsule-pro
 source .env  # for INFISICAL_TOKEN
 infisical run --projectId=d8319856-8caf-4c22-8717-57ab28b326b3 --env=dev --path=/apps/capsule-pro/app -- pnpm --filter app dev
 ```
-
-<!-- END:nextjs-agent-rules -->
 
 ## Capsule Pro-Specific Rules
 
