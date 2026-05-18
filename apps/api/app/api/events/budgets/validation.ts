@@ -128,7 +128,7 @@ export const UpdateBudgetLineItemSchema = z
 
 // List Filters Schema
 export const EventBudgetListFiltersSchema = z.object({
-  eventId: z.string().uuid().optional(),
+  eventId: z.uuid().optional(),
   status: EventBudgetStatusSchema.optional(),
   search: z.string().optional(),
   page: z.coerce.number().int().min(1).default(1),

@@ -13,10 +13,10 @@ import { requireTenantId } from "@/app/lib/tenant";
 
 // Validation schemas
 const createCaseSchema = z.object({
-  invoiceId: z.string().uuid(),
+  invoiceId: z.uuid(),
   invoiceNumber: z.string().min(1),
-  eventId: z.string().uuid(),
-  clientId: z.string().uuid(),
+  eventId: z.uuid(),
+  clientId: z.uuid(),
   clientName: z.string().min(1),
   originalAmount: z.number().positive(),
   outstandingAmount: z.number().nonnegative(),

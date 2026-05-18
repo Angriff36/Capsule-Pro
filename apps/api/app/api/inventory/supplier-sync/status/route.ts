@@ -16,7 +16,7 @@ import { z } from "zod";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 const QuerySchema = z.object({
-  supplierId: z.string().uuid(),
+  supplierId: z.uuid(),
 });
 
 /**
