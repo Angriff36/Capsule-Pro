@@ -253,10 +253,15 @@ const baseConfig: NextConfig = withToolbar(
         "@repo/design-system",
       ],
     },
-    // Reduce server action bundle size
-    serverActions: {
-      bodySizeLimit: "2mb",
-    },
+      // Reduce server action bundle size
+      serverActions: {
+        bodySizeLimit: "2mb",
+        // Allow Tailscale proxy origins for Server Actions in dev/staging.
+        // Vercel production uses the deployment domain automatically.
+        ...(process.env.VERCEL !== "1"
+          ? { allowedOrigins: ["*.tail78dd9e.ts.net", "pop-os.tail78dd9e.ts.net"] }
+          : {}),
+      },
     // Enable source maps only when they can be uploaded to Sentry.
     // Local builds and non-Vercel deploys skip this to save build time.
     // Source maps are deleted after upload to Sentry.
