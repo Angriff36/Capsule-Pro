@@ -87,6 +87,20 @@
     },
     "build": {
       "dependsOn": ["^build", "generate"],
+      "env": [
+        "NEXT_PUBLIC_*",
+        "BASEHUB_TOKEN",
+        "CLERK_SECRET_KEY"
+      ],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "!**/*.md",
+        "!**/__tests__/**",
+        "!**/*.test.ts",
+        "!**/*.test.tsx",
+        "!**/*.spec.ts",
+        "!**/*.spec.tsx"
+      ],
       "outputs": [
         ".next/**",
         "!.next/cache/**",
@@ -101,7 +115,14 @@
     },
     "typecheck": {
       "dependsOn": ["^typecheck"],
-      "cache": false
+      "inputs": [
+        "**/*.ts",
+        "**/*.tsx",
+        "**/*.d.ts",
+        "tsconfig*.json",
+        "package.json"
+      ],
+      "outputs": []
     },
     "lint": {
       "dependsOn": ["^build"]
