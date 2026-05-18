@@ -86,8 +86,6 @@ const baseConfig: NextConfig = withLogging({
     "@repo/observability",
     "@repo/security",
     "@repo/event-parser",
-    "@repo/manifest-adapters",
-    "@repo/supplier-connectors",
     "@repo/design-system",
     "@repo/email",
     "@repo/notifications",
