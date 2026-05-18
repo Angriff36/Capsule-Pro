@@ -108,7 +108,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       );
     }
 
-    revalidateTag(tag);
+    revalidateTag(tag, "max");
     return NextResponse.json({
       revalidated: true,
       type: "tag",
