@@ -7,7 +7,7 @@
  *   - No Decimal fields, no String[] arrays
  *   - Soft-delete via deleted_at
  */
-import { asNullableNumber, asNullableString, reportOp, } from "./shared.js";
+import { asNullableNumber, asNullableString, reportOp, } from "./shared";
 // ---------------------------------------------------------------------------
 // EventDishPrismaStore  (tenant_events.event_dishes — snake_case model)
 // ---------------------------------------------------------------------------

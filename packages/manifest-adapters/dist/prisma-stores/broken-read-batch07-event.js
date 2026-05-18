@@ -20,7 +20,7 @@
  *
  * All three soft-delete via deletedAt.
  */
-import { asNullableDate, asNullableNumber, asNullableString, asStringArray, reportOp, toDecimalInput, toDecimalRequired, } from "./shared.js";
+import { asNullableDate, asNullableNumber, asNullableString, asStringArray, reportOp, toDecimalInput, toDecimalRequired, } from "./shared";
 // ---------------------------------------------------------------------------
 // EventPrismaStore
 // ---------------------------------------------------------------------------

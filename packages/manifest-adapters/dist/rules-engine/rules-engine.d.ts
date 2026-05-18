@@ -5,8 +5,8 @@
  * Provides dependency validation, equipment requirements, allergen constraints,
  * and workflow validation.
  */
-import type { AllergenRuleConfig, AllergenValidationResult, DependencyRuleConfig, DependencyValidationResult, EquipmentRequirement, EquipmentValidationResult, RuleContext, RuleEvaluationEvent, RuleEvaluationResult, RuleSet, RuleSetEvaluationEvent, RuleSetEvaluationResult, RulesEngineConfig, ValidatedRule, WorkflowTransitionRule, WorkflowValidationResult } from "./types.js";
-import { RuleOutcomeType, RuleSeverity, RuleType } from "./types.js";
+import type { AllergenRuleConfig, AllergenValidationResult, DependencyRuleConfig, DependencyValidationResult, EquipmentRequirement, EquipmentValidationResult, RuleContext, RuleEvaluationEvent, RuleEvaluationResult, RuleSet, RuleSetEvaluationEvent, RuleSetEvaluationResult, RulesEngineConfig, ValidatedRule, WorkflowTransitionRule, WorkflowValidationResult } from "./types";
+import { RuleOutcomeType, RuleSeverity, RuleType } from "./types";
 export declare class KitchenOperationsRulesEngine {
     private config;
     private ruleSets;

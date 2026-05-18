@@ -9,7 +9,7 @@
  *   PayrollRunPrismaStore — payroll_runs table, snake_case fields,
  *     soft-delete via deleted_at, Decimal fields for monetary totals.
  */
-import { asJsonInput, asNullableString, asString, reportOp, toDecimalRequired, } from "./shared.js";
+import { asJsonInput, asNullableString, asString, reportOp, toDecimalRequired, } from "./shared";
 // ---------------------------------------------------------------------------
 // PayrollApprovalHistoryPrismaStore
 // ---------------------------------------------------------------------------

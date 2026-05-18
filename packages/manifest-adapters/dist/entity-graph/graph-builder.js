@@ -4,9 +4,9 @@
  * Builds an entity relationship graph from Manifest IR and Prisma schema.
  * Infers relationships from entity properties and commands.
  */
-import { createEntityGraph } from "./entity-graph.js";
-import { createEdge, createTypeNode } from "./factories.js";
-import { RelationshipType } from "./types.js";
+import { createEntityGraph } from "./entity-graph";
+import { createEdge, createTypeNode } from "./factories";
+import { RelationshipType } from "./types";
 /**
  * Known entity relationships derived from the Prisma schema.
  * These are the core domain relationships that define how entities connect.

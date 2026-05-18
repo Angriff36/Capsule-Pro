@@ -7,8 +7,8 @@
  * @packageDocumentation
  */
 import type { PrismaClient } from "@repo/database";
-import type { Bottleneck, BottleneckAnalysis, BottleneckDetectorConfig, ImprovementSuggestion } from "./types.js";
-import { BottleneckCategory } from "./types.js";
+import type { Bottleneck, BottleneckAnalysis, BottleneckDetectorConfig, ImprovementSuggestion } from "./types";
+import { BottleneckCategory } from "./types";
 /**
  * Operational Bottleneck Detector
  *
@@ -118,5 +118,5 @@ export declare class BottleneckDetector {
  * Create a bottleneck detector instance
  */
 export declare function createBottleneckDetector(prisma: PrismaClient, config?: Partial<BottleneckDetectorConfig>): BottleneckDetector;
-export * from "./types.js";
+export * from "./types";
 //# sourceMappingURL=detector.d.ts.map

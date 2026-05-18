@@ -5,7 +5,7 @@
  * VendorContract  — tenant_inventory.vendor_contracts (camelCase fields, many Decimals/Ints)
  */
 import type { PrismaClient } from "@repo/database/standalone";
-import { type EntityInstance } from "./shared.js";
+import { type EntityInstance } from "./shared";
 export declare class VendorCatalogPrismaStore implements Store<EntityInstance> {
     private readonly prisma;
     private readonly tenantId;

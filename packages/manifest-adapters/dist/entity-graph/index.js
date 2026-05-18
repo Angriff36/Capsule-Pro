@@ -12,12 +12,12 @@
  * - TraversalDirection: Direction for graph traversal (upstream, downstream, both)
  */
 // Export implementation
-export { createEntityGraph, InMemoryEntityGraph } from "./entity-graph.js";
+export { createEntityGraph, InMemoryEntityGraph } from "./entity-graph";
 // Export factory functions
-export { createEdge, createInstanceNode, createPath, createTypeNode, edgeId, extendPath, } from "./factories.js";
+export { createEdge, createInstanceNode, createPath, createTypeNode, edgeId, extendPath, } from "./factories";
 // Export builder functions
-export { buildGraphFromKnownRelationships, getIncomingRelationships, getKnownRelationships, getOutgoingRelationships, getRelationshipsForEntity, } from "./graph-builder.js";
+export { buildGraphFromKnownRelationships, getIncomingRelationships, getKnownRelationships, getOutgoingRelationships, getRelationshipsForEntity, } from "./graph-builder";
 // Export query functions
-export { analyzeDeletionImpact, analyzeModificationImpact, findCircularDependencies, findCriticalPaths, findEntityGroups, findReachableEntities, getConnectionInfo, getDependencyChain, getDependents, getEntitySummary, groupByRelationshipType, } from "./graph-queries.js";
+export { analyzeDeletionImpact, analyzeModificationImpact, findCircularDependencies, findCriticalPaths, findEntityGroups, findReachableEntities, getConnectionInfo, getDependencyChain, getDependents, getEntitySummary, groupByRelationshipType, } from "./graph-queries";
 // Export enums
-export { Direction, RelationshipType, TraversalDirection } from "./types.js";
+export { Direction, RelationshipType, TraversalDirection } from "./types";

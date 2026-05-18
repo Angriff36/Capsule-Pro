@@ -13,7 +13,7 @@
  * corresponding column in the Prisma model. These fields are accepted on write
  * but silently dropped (not persisted). They are returned as defaults on read.
  */
-import { asNullableDate, asNullableString, reportOp, } from "./shared.js";
+import { asNullableDate, asNullableString, reportOp, } from "./shared";
 // ---------------------------------------------------------------------------
 // SchedulePrismaStore
 // ---------------------------------------------------------------------------

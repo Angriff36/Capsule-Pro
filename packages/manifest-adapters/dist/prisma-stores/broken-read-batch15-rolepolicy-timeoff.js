@@ -16,7 +16,7 @@
  *   - Prisma model: EmployeeTimeOffRequest, client accessor: prisma.timeOffRequest
  *   - Manifest entity name: "TimeOffRequest"
  */
-import { asBool, asJsonInput, asNullableDate, asNullableString, asString, reportOp, toDecimalRequired, } from "./shared.js";
+import { asBool, asJsonInput, asNullableDate, asNullableString, asString, reportOp, toDecimalRequired, } from "./shared";
 // ---------------------------------------------------------------------------
 // RolePolicyPrismaStore
 // ---------------------------------------------------------------------------

@@ -5,7 +5,7 @@
  * VarianceReport  — tenant_inventory.variance_reports (camelCase fields, many Decimals)
  */
 import type { PrismaClient } from "@repo/database/standalone";
-import { type EntityInstance } from "./shared.js";
+import { type EntityInstance } from "./shared";
 export declare class TrainingModulePrismaStore implements Store<EntityInstance> {
     private readonly prisma;
     private readonly tenantId;

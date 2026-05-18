@@ -15,7 +15,7 @@
  *
  * Both soft-delete via their respective deletedAt / deleted_at fields.
  */
-import { asBool, asJsonInput, asNullableDate, asNullableString, asString, reportOp, } from "./shared.js";
+import { asBool, asJsonInput, asNullableDate, asNullableString, asString, reportOp, } from "./shared";
 // ---------------------------------------------------------------------------
 // EmailTemplatePrismaStore  (tenant_admin.email_templates — snake_case)
 // ---------------------------------------------------------------------------

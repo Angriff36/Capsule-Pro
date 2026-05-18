@@ -21,7 +21,7 @@
  * Replaces the inline InventoryItemPrismaStore in prisma-store.ts.
  * Both soft-delete via deletedAt.
  */
-import { asBool, asJsonInput, asNullableString, asStringArray, reportOp, toDecimalRequired, } from "./shared.js";
+import { asBool, asJsonInput, asNullableString, asStringArray, reportOp, toDecimalRequired, } from "./shared";
 // ---------------------------------------------------------------------------
 // InventoryItemPrismaStore  (tenant_inventory.inventory_items)
 // ---------------------------------------------------------------------------

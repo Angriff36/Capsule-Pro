@@ -7,7 +7,7 @@
  * @packageDocumentation
  */
 import { randomUUID } from "node:crypto";
-import { BottleneckCategory } from "./types.js";
+import { BottleneckCategory } from "./types";
 // Default detection rules covering common operational bottlenecks
 const DEFAULT_DETECTION_RULES = [
     // Kitchen throughput bottlenecks
@@ -1007,4 +1007,4 @@ export function createBottleneckDetector(prisma, config) {
     return new BottleneckDetector(prisma, config);
 }
 // Re-export enums and types
-export * from "./types.js";
+export * from "./types";

@@ -20,7 +20,7 @@
  *   the manifest. We pass the value through `asJsonInput` so any
  *   JSON-serializable input (string, number, object, array) round-trips.
  */
-import { asBool, asJsonInput, asNullableDate, asNullableString, asString, reportOp, } from "./shared.js";
+import { asBool, asJsonInput, asNullableDate, asNullableString, asString, reportOp, } from "./shared";
 // ---------------------------------------------------------------------------
 // ClientContact (tenant_crm.client_contacts)
 // ---------------------------------------------------------------------------

@@ -4,7 +4,7 @@
  *
  * Pattern mirrors AlertsConfigPrismaStore in `../prisma-store.ts`.
  */
-import { asBool, asNullableDate, asNullableNumber, asNullableString, asString, reportOp, toDecimalInput, toDecimalRequired, } from "./shared.js";
+import { asBool, asNullableDate, asNullableNumber, asNullableString, asString, reportOp, toDecimalInput, toDecimalRequired, } from "./shared";
 // ---------------------------------------------------------------------------
 // BudgetLineItem (tenant_events.budget_line_items)
 // ---------------------------------------------------------------------------

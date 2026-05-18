@@ -4,7 +4,7 @@
  * ScheduleShift — tenant_staff.schedule_shifts  (mixed: camelCase + snake_case shift_start/shift_end/role_during_shift)
  * ShipmentItem  — tenant_inventory.shipment_items (camelCase, Decimals)
  */
-import { asNullableDate, asNullableNumber, asNullableString, asString, reportOp, toDecimalInput, toDecimalRequired, } from "./shared.js";
+import { asNullableDate, asNullableNumber, asNullableString, asString, reportOp, toDecimalInput, toDecimalRequired, } from "./shared";
 // ---------------------------------------------------------------------------
 // ScheduleShiftPrismaStore
 // ---------------------------------------------------------------------------

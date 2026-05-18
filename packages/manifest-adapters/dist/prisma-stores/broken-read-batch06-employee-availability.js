@@ -7,7 +7,7 @@
  *   - Soft-delete via deleted_at
  *   - Time fields (start_time, end_time) are @db.Time(6), passed through as strings
  */
-import { asBool, asNullableDate, reportOp, } from "./shared.js";
+import { asBool, asNullableDate, reportOp, } from "./shared";
 // ---------------------------------------------------------------------------
 // EmployeeAvailabilityPrismaStore  (tenant_staff.employee_availability — snake_case)
 // ---------------------------------------------------------------------------

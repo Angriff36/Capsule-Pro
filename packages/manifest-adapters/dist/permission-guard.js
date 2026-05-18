@@ -7,7 +7,7 @@
  *
  * @packageDocumentation
  */
-import { getPermissionsForRole, hasPermission, permissionCache, toRolePolicyData, } from "./permission-checker.js";
+import { getPermissionsForRole, hasPermission, permissionCache, toRolePolicyData, } from "./permission-checker";
 // ---------------------------------------------------------------------------
 // Permission Mapping
 // ---------------------------------------------------------------------------
