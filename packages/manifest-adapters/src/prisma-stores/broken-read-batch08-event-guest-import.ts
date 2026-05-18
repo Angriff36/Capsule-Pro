@@ -29,7 +29,7 @@ import {
   asStringArray,
   type EntityInstance,
   reportOp,
-} from "./shared.js";
+} from "./shared";
 
 // ---------------------------------------------------------------------------
 // EventGuestPrismaStore  (tenant_events.event_guests)

@@ -32,7 +32,7 @@ import {
   type EntityInstance,
   reportOp,
   toDecimalRequired,
-} from "./shared.js";
+} from "./shared";
 
 // ---------------------------------------------------------------------------
 // InventoryItemPrismaStore  (tenant_inventory.inventory_items)

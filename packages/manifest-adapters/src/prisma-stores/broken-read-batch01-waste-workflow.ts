@@ -17,7 +17,7 @@ import {
   reportOp,
   toDecimalInput,
   toDecimalRequired,
-} from "./shared.js";
+} from "./shared";
 
 // ---------------------------------------------------------------------------
 // WasteEntry (tenant_kitchen.waste_entries)

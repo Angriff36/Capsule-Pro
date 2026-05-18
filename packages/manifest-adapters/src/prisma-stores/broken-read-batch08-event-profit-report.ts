@@ -33,7 +33,7 @@ import {
   type EntityInstance,
   reportOp,
   toDecimalRequired,
-} from "./shared.js";
+} from "./shared";
 
 // ---------------------------------------------------------------------------
 // EventProfitabilityPrismaStore  (tenant_events.event_profitability)

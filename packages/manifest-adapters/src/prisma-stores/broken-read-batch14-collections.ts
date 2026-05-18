@@ -44,7 +44,7 @@ import {
   type EntityInstance,
   reportOp,
   toDecimalRequired,
-} from "./shared.js";
+} from "./shared";
 
 // ---------------------------------------------------------------------------
 // Metadata keys for manifest-only CollectionCase properties

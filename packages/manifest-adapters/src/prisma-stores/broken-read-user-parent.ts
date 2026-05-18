@@ -19,7 +19,7 @@ import {
   type EntityInstance,
   reportOp,
   toDecimalInput,
-} from "./shared.js";
+} from "./shared";
 
 // ---------------------------------------------------------------------------
 // UserPrismaStore

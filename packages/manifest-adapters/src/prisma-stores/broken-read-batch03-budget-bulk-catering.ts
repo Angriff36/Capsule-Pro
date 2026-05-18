@@ -17,7 +17,7 @@ import {
   reportOp,
   toDecimalInput,
   toDecimalRequired,
-} from "./shared.js";
+} from "./shared";
 
 // ---------------------------------------------------------------------------
 // BudgetLineItem (tenant_events.budget_line_items)

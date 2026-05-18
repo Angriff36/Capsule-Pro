@@ -42,25 +42,25 @@ export {
   workflowRules,
   // Workflow rules
   workflowTransitionRule,
-} from "./rules.js";
+} from "./rules";
 // Main exports
 export {
   getRulesEngine,
   KitchenOperationsRulesEngine,
   resetRulesEngine,
-} from "./rules-engine.js";
+} from "./rules-engine";
 export type {
   RuleEvaluationOptions,
   RuleHookResult,
   RulesEngineIntegrationConfig,
-} from "./runtime-integration.js";
+} from "./runtime-integration";
 // Runtime integration
 export {
   createRulesEngineMiddleware,
   getRulesEngineIntegration,
   RulesEngineIntegration,
   resetRulesEngineIntegration,
-} from "./runtime-integration.js";
+} from "./runtime-integration";
 export type {
   AllergenRuleConfig,
   AllergenValidationResult,
@@ -84,6 +84,6 @@ export type {
   ValidatedRule,
   WorkflowTransitionRule,
   WorkflowValidationResult,
-} from "./types.js";
+} from "./types";
 // Re-export enums as values
-export { RuleOutcomeType, RuleSeverity, RuleType } from "./types.js";
+export { RuleOutcomeType, RuleSeverity, RuleType } from "./types";

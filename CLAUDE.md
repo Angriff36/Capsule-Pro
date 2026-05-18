@@ -259,7 +259,7 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[auto-bridge snapshot @ 10 changes]
-Files: apps/api/app/api/staff/shifts/validation.ts (edit), apps/app/app/(authenticated)/cycle-counting/actions/sessions.ts (edit)
+[Emergency bridge — running bridge was not updated]
+No changes or facts in this session.
 
 # === END COGNILAYER ===

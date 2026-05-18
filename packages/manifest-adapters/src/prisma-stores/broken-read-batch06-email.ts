@@ -30,7 +30,7 @@ import {
   asString,
   type EntityInstance,
   reportOp,
-} from "./shared.js";
+} from "./shared";
 
 // ---------------------------------------------------------------------------
 // EmailTemplatePrismaStore  (tenant_admin.email_templates — snake_case)

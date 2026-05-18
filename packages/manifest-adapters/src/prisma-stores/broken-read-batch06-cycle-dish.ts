@@ -20,7 +20,7 @@ import {
   reportOp,
   toDecimalInput,
   toDecimalRequired,
-} from "./shared.js";
+} from "./shared";
 
 // ---------------------------------------------------------------------------
 // CycleCountSessionPrismaStore  (tenant_inventory.cycle_count_sessions)

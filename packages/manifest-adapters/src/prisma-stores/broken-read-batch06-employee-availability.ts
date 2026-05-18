@@ -15,7 +15,7 @@ import {
   asNullableDate,
   type EntityInstance,
   reportOp,
-} from "./shared.js";
+} from "./shared";
 
 // ---------------------------------------------------------------------------
 // EmployeeAvailabilityPrismaStore  (tenant_staff.employee_availability — snake_case)

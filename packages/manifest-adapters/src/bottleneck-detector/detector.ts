@@ -21,8 +21,8 @@ import type {
   SuggestionPriority,
   SuggestionType,
   TimeSeriesData,
-} from "./types.js";
-import { BottleneckCategory } from "./types.js";
+} from "./types";
+import { BottleneckCategory } from "./types";
 
 // Default detection rules covering common operational bottlenecks
 const DEFAULT_DETECTION_RULES: DetectionRule[] = [
@@ -1278,4 +1278,4 @@ export function createBottleneckDetector(
 }
 
 // Re-export enums and types
-export * from "./types.js";
+export * from "./types";

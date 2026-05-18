@@ -18,7 +18,7 @@ import {
   type EntityInstance,
   reportOp,
   toDecimalRequired,
-} from "./shared.js";
+} from "./shared";
 
 // ---------------------------------------------------------------------------
 // PurchaseOrderPrismaStore

@@ -19,7 +19,7 @@ import {
   asStringArray,
   type EntityInstance,
   reportOp,
-} from "./shared.js";
+} from "./shared";
 
 // ---------------------------------------------------------------------------
 // ChartOfAccount (tenant_accounting.chart_of_accounts)

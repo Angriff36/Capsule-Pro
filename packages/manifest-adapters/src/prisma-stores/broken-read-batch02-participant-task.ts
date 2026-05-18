@@ -13,7 +13,7 @@ import {
   asString,
   type EntityInstance,
   reportOp,
-} from "./shared.js";
+} from "./shared";
 
 // ---------------------------------------------------------------------------
 // AdminChatParticipant (tenant_admin.admin_chat_participants)
