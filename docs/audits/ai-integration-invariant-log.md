@@ -1736,3 +1736,81 @@ Concrete command route count: 70 non-dispatcher in `apps/api`. Unchanged.
 **Notes:** Main report overwritten at `docs/audits/ai-integration-invariants-2026-05-13.md`.
 
 ---
+
+## cron-29 — 2026-05-18T00:40Z (scheduled cron)
+
+**Git HEAD:** d3bc878a57ba3fe7fa337c4694010b19159337b7 *(new commit since cron-28 — was 0e4e0637)*
+
+**Summary:** 3 confirmed bugs, 3 suspicious items, 10 false alarms. Bug categories and counts unchanged from cron-28.
+
+**Confirmed Bugs:**
+
+1. **BUG-1** — `apps/app/app/clerk-provider.client.tsx:13` — `useTheme()` called above `ThemeProvider`; Clerk dark theme never applied. REGRESSED (since cron-25 / commit fe88f5be). Still unresolved.
+2. **BUG-2** — `apps/app/app/api/staff/shifts/commands/{create-validated,update-validated}/route.ts` — Concrete command routes in frontend app; bypass API-layer rate limiting and key auth. REGRESSED (since cron-25). Still unresolved.
+3. **BUG-3** — 77 concrete command `route.ts` files in `apps/api` outside manifest single-dispatcher (+ 2 in apps/app = 79 total). UNRESOLVED (backlog). Count unchanged from cron-28.
+
+**Previously reported bugs — status:**
+- **BUG-1 (Clerk theme ordering):** Still broken. New commit (d3bc878a) does not fix it — only `packages/manifest-adapters/src/index.ts` and `specs/general/IMPLEMENTATION_PLAN.md` modified per git status.
+- **BUG-2 (shift routes in apps/app):** Still present. New commit does not touch route files.
+- **BUG-3 (concrete manifest routes):** Still unresolved. 77 in apps/api + 2 in apps/app = 79 total. Count stable.
+- Duplicate Toaster: Still fixed (2dbdaa48).
+- Clerk fallback redirect cross-contamination: Still clean.
+- FA-1 through FA-10: All confirmed clean.
+
+**New commit delta:** HEAD changed (0e4e0637 → d3bc878a). Modified files: `packages/manifest-adapters/src/index.ts`, `specs/general/IMPLEMENTATION_PLAN.md`. No invariant-affecting changes detected.
+
+**Notes:** No source files modified in this audit pass. Provider graph, Clerk ordering, QueryClientProvider coverage, and auth middleware all reviewed. Main report overwritten at `docs/audits/ai-integration-invariants-2026-05-13.md`.
+
+---
+
+## cron-31 — 2026-05-18T01:48Z (scheduled cron)
+
+**Git HEAD:** d3bc878a57ba3fe7fa337c4694010b19159337b7 *(unchanged from cron-30)*
+
+**Summary:** 3 confirmed bugs, 3 suspicious items, 10 false alarms. Bug categories unchanged from cron-30. Concrete command route count increased by 1 (79 → 80 total).
+
+**Confirmed Bugs:**
+
+1. **BUG-1** — `apps/app/app/clerk-provider.client.tsx:13` — `useTheme()` called above `ThemeProvider`; Clerk dark theme never applied. REGRESSED (since cron-25). Still unresolved.
+2. **BUG-2** — `apps/app/app/api/staff/shifts/commands/{create-validated,update-validated}/route.ts` — Concrete command routes in frontend app; bypass API-layer rate limiting and key auth. REGRESSED (since cron-25). Still unresolved.
+3. **BUG-3** — 78 concrete command `route.ts` files in `apps/api` outside manifest single-dispatcher (+ 2 in apps/app = **80 total**). UNRESOLVED (backlog). Count up by 1 from cron-30 (was 79).
+
+**Previously reported bugs — status:**
+- **BUG-1 (Clerk theme ordering):** Still broken. Git HEAD unchanged (d3bc878a) — no fix landed since cron-30.
+- **BUG-2 (shift routes in apps/app):** Still present. No route file changes detected.
+- **BUG-3 (concrete manifest routes):** Still unresolved. 78 in apps/api + 2 in apps/app = 80 total. Count up by 1 (one new command route added since cron-30).
+- Duplicate Toaster: Still fixed (2dbdaa48).
+- Clerk fallback redirect cross-contamination: Still clean.
+- FA-1 through FA-10: All confirmed clean.
+
+**New commit delta:** None — HEAD unchanged from cron-30 (d3bc878a). No invariant-affecting changes detected.
+
+**Notes:** No source files modified in this audit pass. Main report overwritten at `docs/audits/ai-integration-invariants-2026-05-13.md`.
+
+---
+
+## cron-30 — 2026-05-18T01:14Z (scheduled cron)
+
+**Git HEAD:** d3bc878a57ba3fe7fa337c4694010b19159337b7 *(unchanged from cron-29)*
+
+**Summary:** 3 confirmed bugs, 3 suspicious items, 10 false alarms. Bug categories and counts unchanged from cron-29.
+
+**Confirmed Bugs:**
+
+1. **BUG-1** — `apps/app/app/clerk-provider.client.tsx:13` — `useTheme()` called above `ThemeProvider`; Clerk dark theme never applied. REGRESSED (since cron-25). Still unresolved.
+2. **BUG-2** — `apps/app/app/api/staff/shifts/commands/{create-validated,update-validated}/route.ts` — Concrete command routes in frontend app; bypass API-layer rate limiting and key auth. REGRESSED (since cron-25). Still unresolved.
+3. **BUG-3** — 77 concrete command `route.ts` files in `apps/api` outside manifest single-dispatcher (+ 2 in apps/app = 79 total). UNRESOLVED (backlog). Count unchanged from cron-29.
+
+**Previously reported bugs — status:**
+- **BUG-1 (Clerk theme ordering):** Still broken. Git HEAD unchanged (d3bc878a) — no fix landed since cron-29.
+- **BUG-2 (shift routes in apps/app):** Still present. No route file changes detected.
+- **BUG-3 (concrete manifest routes):** Still unresolved. 77 in apps/api + 2 in apps/app = 79 total. Count stable.
+- Duplicate Toaster: Still fixed (2dbdaa48).
+- Clerk fallback redirect cross-contamination: Still clean.
+- FA-1 through FA-10: All confirmed clean.
+
+**New commit delta:** None — HEAD unchanged from cron-29 (d3bc878a). Modified files per git status: `packages/manifest-adapters/src/index.ts`, `specs/general/IMPLEMENTATION_PLAN.md`, `apps/app/next.config.ts`. No invariant-affecting changes detected.
+
+**Notes:** No source files modified in this audit pass. Main report overwritten at `docs/audits/ai-integration-invariants-2026-05-13.md`.
+
+---

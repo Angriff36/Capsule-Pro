@@ -869,6 +869,18 @@ Several specs are marked `_TODO` but have substantial implementations:
 - **CI hardening** — No per-app build matrix; typecheck not gated on all apps
 - **manifest-adapters** — No build script; compiled output must be pre-built before consuming apps build
 
+### Additional fixes during upgrade (2026-05-18)
+
+| Fix | Status | Notes |
+|-----|--------|-------|
+| `turbopack.resolveAlias canvas: false` → empty stub | ✅ | Turbopack rejects boolean; created `turbopack-empty-stub.js` |
+| `prisma generate` | ✅ | Client was missing from `packages/database/generated/` — now generated |
+| `@angriff36/manifest/stores` turbopackIgnore | ✅ | Non-existent subpath in try/catch; added `/* turbopackIgnore: true */` |
+| `eslint` / `serverActions` in next.config.ts | ⚠️ | Invalid Next 16 top-level keys — need cleanup (non-blocking, warnings only) |
+| `apps/app` build | 🔄 | In progress (proc_4db8e669a5e8) |
+| `apps/api` build | ⏳ | Pending |
+| `apps/web` build | ⏳ | Pending |
+
 ### Closed by this upgrade
 
 - ~~Next 15.5 outdated/CVE item~~ — resolved by upgrade to 16.2.6

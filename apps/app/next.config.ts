@@ -179,9 +179,6 @@ const baseConfig: NextConfig = withToolbar(
     // but require manual passing — see getApiBaseUrl() in app/lib/api.ts.
     deploymentId: process.env.VERCEL_DEPLOYMENT_ID,
     // Build-time linting is handled by Biome in this repo.
-    eslint: {
-      ignoreDuringBuilds: true,
-    },
     // Type checking is handled by `pnpm tsc --noEmit` in CI.
     // Next.js's built-in type checker crashes on Vercel when lstat-ing
     // parenthesized route groups like (authenticated)/.
@@ -235,6 +232,9 @@ const baseConfig: NextConfig = withToolbar(
         // Turbopack requires a string path, not a boolean — use empty module
         canvas: require.resolve("./turbopack-empty-stub.js"),
       },
+      // Map .js imports → .ts source for transpiled workspace packages that use ESM-style
+      // import extensions (e.g. `import './foo.js'` where foo.ts is the actual file)
+      resolveExtensions: [".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs", ".json"],
     },
     experimental: {
       optimizePackageImports: [
@@ -243,8 +243,6 @@ const baseConfig: NextConfig = withToolbar(
         "recharts",
         "@repo/design-system",
       ],
-    },
-      // Reduce server action bundle size
       serverActions: {
         bodySizeLimit: "2mb",
         // Allow Tailscale proxy origins for Server Actions in dev/staging.
@@ -253,6 +251,7 @@ const baseConfig: NextConfig = withToolbar(
           ? { allowedOrigins: ["*.tail78dd9e.ts.net", "pop-os.tail78dd9e.ts.net"] }
           : {}),
       },
+    },
     // Enable source maps only when they can be uploaded to Sentry.
     // Local builds and non-Vercel deploys skip this to save build time.
     // Source maps are deleted after upload to Sentry.
