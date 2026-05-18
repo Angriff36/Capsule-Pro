@@ -3171,7 +3171,7 @@ export {
   syncRecipeToPrisma,
   syncRecipeVersionToPrisma,
   syncStationToPrisma,
-} from "./prisma-store.js";
+} from "./prisma-store";
 
 // ============ Prep List Auto-Generation Exports ============
 
@@ -3181,15 +3181,15 @@ export {
   type PrepListAutoGenerationResult,
   processPendingPrepListGenerations,
   triggerPrepListAutoGeneration,
-} from "./prep-list-autogeneration.js";
+} from "./prep-list-autogeneration";
 
 // ============ Optional Feature Modules ============
 
-export * as EntityGraph from "./entity-graph/index.js";
-export * from "./manifest-telemetry-collector.js";
-export * from "./permission-checker.js";
-export * from "./permission-guard.js";
-export * from "./prep-task-dependency-engine.js";
-export * from "./recipe-optimization-engine.js";
-export * from "./recipe-scaling-engine.js";
-export * as RulesEngine from "./rules-engine/index.js";
+export * as EntityGraph from "./entity-graph/index";
+export * from "./manifest-telemetry-collector";
+export * from "./permission-checker";
+export * from "./permission-guard";
+export * from "./prep-task-dependency-engine";
+export * from "./recipe-optimization-engine";
+export * from "./recipe-scaling-engine";
+export * as RulesEngine from "./rules-engine/index";

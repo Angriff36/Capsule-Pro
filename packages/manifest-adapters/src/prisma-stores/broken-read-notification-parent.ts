@@ -16,7 +16,7 @@ import {
   asNullableString,
   type EntityInstance,
   reportOp,
-} from "./shared.js";
+} from "./shared";
 
 // ---------------------------------------------------------------------------
 // NotificationPrismaStore

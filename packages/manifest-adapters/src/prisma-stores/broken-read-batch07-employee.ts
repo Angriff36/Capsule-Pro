@@ -21,7 +21,7 @@ import {
   type EntityInstance,
   reportOp,
   toDecimalInput,
-} from "./shared.js";
+} from "./shared";
 
 // ---------------------------------------------------------------------------
 // EmployeeCertificationPrismaStore  (tenant_staff.employee_certifications — snake_case)

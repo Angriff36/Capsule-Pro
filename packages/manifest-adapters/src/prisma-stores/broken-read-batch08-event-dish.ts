@@ -15,7 +15,7 @@ import {
   asNullableString,
   type EntityInstance,
   reportOp,
-} from "./shared.js";
+} from "./shared";
 
 // ---------------------------------------------------------------------------
 // EventDishPrismaStore  (tenant_events.event_dishes — snake_case model)

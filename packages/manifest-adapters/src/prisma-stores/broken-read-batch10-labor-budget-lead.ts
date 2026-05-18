@@ -16,7 +16,7 @@ import {
   reportOp,
   toDecimalInput,
   toDecimalRequired,
-} from "./shared.js";
+} from "./shared";
 
 // ---------------------------------------------------------------------------
 // LaborBudgetPrismaStore

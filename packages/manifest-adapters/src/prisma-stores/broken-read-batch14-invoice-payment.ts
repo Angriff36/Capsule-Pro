@@ -41,7 +41,7 @@ import {
   reportOp,
   toDecimalInput,
   toDecimalRequired,
-} from "./shared.js";
+} from "./shared";
 
 // ---------------------------------------------------------------------------
 // Metadata keys for manifest-only properties (no dedicated Prisma column)

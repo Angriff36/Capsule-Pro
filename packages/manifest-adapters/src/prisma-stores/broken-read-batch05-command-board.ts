@@ -37,7 +37,7 @@ import {
   asStringArray,
   type EntityInstance,
   reportOp,
-} from "./shared.js";
+} from "./shared";
 
 /** Coerce manifest visible-card input (string | string[]) to string[]. */
 function coerceVisibleCards(value: unknown): string[] {

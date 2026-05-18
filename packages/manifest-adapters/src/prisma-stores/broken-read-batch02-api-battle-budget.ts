@@ -17,7 +17,7 @@ import {
   type EntityInstance,
   reportOp,
   toDecimalRequired,
-} from "./shared.js";
+} from "./shared";
 
 // ---------------------------------------------------------------------------
 // ApiKey (platform.api_keys)

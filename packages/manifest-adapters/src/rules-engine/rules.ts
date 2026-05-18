@@ -13,8 +13,8 @@ import type {
   RuleEvaluationResult,
   ValidatedRule,
   WorkflowTransitionRule,
-} from "./types.js";
-import { RuleOutcomeType, RuleSeverity, RuleType } from "./types.js";
+} from "./types";
+import { RuleOutcomeType, RuleSeverity, RuleType } from "./types";
 
 // ---------------------------------------------------------------------------
 // Rule Factory Helpers

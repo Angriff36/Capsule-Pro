@@ -15,7 +15,7 @@ import {
   type EntityInstance,
   reportOp,
   toDecimalInput,
-} from "./shared.js";
+} from "./shared";
 
 // ---------------------------------------------------------------------------
 // PrepMethod (tenant_kitchen.prep_methods)

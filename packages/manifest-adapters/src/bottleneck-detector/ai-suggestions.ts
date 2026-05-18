@@ -18,7 +18,7 @@ import type {
   ImprovementSuggestion,
   SuggestionPriority,
   SuggestionType,
-} from "./types.js";
+} from "./types";
 
 // ============================================================================
 // OpenAI API Key Resolution
