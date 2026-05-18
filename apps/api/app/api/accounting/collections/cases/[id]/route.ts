@@ -14,7 +14,7 @@ import { requireTenantId } from "@/app/lib/tenant";
 // Validation schemas
 const recordPaymentSchema = z.object({
   amount: z.number().positive(),
-  paymentId: z.string().uuid().optional(),
+  paymentId: z.uuid().optional(),
   paymentDate: z.string().datetime().optional(),
 });
 
@@ -36,11 +36,11 @@ const setPrioritySchema = z.object({
 const writeOffSchema = z.object({
   amount: z.number().positive(),
   reason: z.string().min(1),
-  approvedBy: z.string().uuid(),
+  approvedBy: z.uuid(),
 });
 
 const createPaymentPlanSchema = z.object({
-  planId: z.string().uuid(),
+  planId: z.uuid(),
   nextPaymentDue: z.string().datetime(),
 });
 

@@ -70,7 +70,7 @@ export const AdminTaskFiltersSchema = z.object({
   status: z.enum(ADMIN_TASK_STATUSES).optional(),
   priority: z.enum(ADMIN_TASK_PRIORITIES).optional(),
   category: z.string().optional(),
-  assignedTo: z.string().uuid().optional(),
+  assignedTo: z.uuid().optional(),
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(20),
 });

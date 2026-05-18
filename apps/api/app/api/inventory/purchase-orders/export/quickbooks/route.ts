@@ -33,7 +33,7 @@ const QuickBooksBillExportRequestSchema = z.object({
   /** Filter by purchase order status */
   status: z.string().optional(),
   /** Filter by vendor ID */
-  vendorId: z.string().uuid().optional(),
+  vendorId: z.uuid().optional(),
   /** Export format */
   format: z.enum(["qbOnlineCsv", "iif"]).default("qbOnlineCsv"),
   /** Date format */

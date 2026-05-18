@@ -108,7 +108,7 @@ const ImportOptionsSchema = z.object({
   skipDuplicates: z.boolean().default(false),
   autoCreateEntities: z.boolean().default(true),
   notifyOnCompletion: z.boolean().default(false),
-  notificationUrl: z.string().url().optional(),
+  notificationUrl: z.url().optional(),
 });
 
 /**

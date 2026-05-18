@@ -27,7 +27,7 @@ type PayrollRunStatus =
 
 const UpdateApprovalSchema = z.object({
   status: z.enum(["approved", "rejected"]),
-  approvedBy: z.string().uuid().optional(),
+  approvedBy: z.uuid().optional(),
   rejectReason: z.string().optional(),
 });
 

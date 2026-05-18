@@ -7,7 +7,7 @@ import { database } from "@/lib/database";
 
 const createAlertRuleSchema = z.object({
   name: z.string().min(1),
-  equipmentId: z.string().uuid(),
+  equipmentId: z.uuid(),
   sensorType: z.string().min(1),
   condition: z.string().min(1),
   threshold: z.number().optional(),
