@@ -7,7 +7,7 @@
  * @module kitchen-ops/prep-list-autogeneration
  */
 import { createOutboxEvent } from "@repo/realtime";
-import { captureException } from "@sentry/nextjs";
+import { captureException } from "@sentry/node";
 /**
  * Trigger prep list auto-generation for an event.
  *

@@ -56,7 +56,7 @@ import { ShipmentPrismaStore } from "./prisma-stores/broken-read-shipment-parent
  * Uses dynamic import so this module doesn't hard-depend on @sentry/nextjs.
  */
 function reportStoreError(error, store, op) {
-    import("@sentry/nextjs")
+    import("@sentry/node")
         .then(({ captureException }) => {
         captureException(error, {
             tags: { source: "prisma-store", store, op },

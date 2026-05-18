@@ -6,7 +6,7 @@
  *
  * One factory per .manifest file. Import the one matching the command's domain.
  */
-import { createInventoryRuntime, createMenuRuntime, createPrepListRuntime, createPrepTaskRuntime, createRecipeRuntime, createStationRuntime, } from "./index.js";
+import { createInventoryRuntime, createMenuRuntime, createPrepListRuntime, createPrepTaskRuntime, createRecipeRuntime, createStationRuntime, } from "./index";
 export function createPrepTaskManifestRuntime(ctx) {
     return createPrepTaskRuntime({
         userId: ctx.user.id,

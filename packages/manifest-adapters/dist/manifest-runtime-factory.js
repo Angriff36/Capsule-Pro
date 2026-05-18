@@ -13,12 +13,12 @@
  *
  * @packageDocumentation
  */
-import { createPermissionGuard, loadRolePolicies } from "./permission-guard.js";
-import { PrismaIdempotencyStore } from "./prisma-idempotency-store.js";
-import { PrismaJsonStore } from "./prisma-json-store.js";
-import { createPrismaOutboxWriter, PrismaStore } from "./prisma-store.js";
-import { loadPrecompiledIR } from "./runtime/loadManifests.js";
-import { ManifestRuntimeEngine } from "./runtime-engine.js";
+import { createPermissionGuard, loadRolePolicies } from "./permission-guard";
+import { PrismaIdempotencyStore } from "./prisma-idempotency-store";
+import { PrismaJsonStore } from "./prisma-json-store";
+import { createPrismaOutboxWriter, PrismaStore } from "./prisma-store";
+import { loadPrecompiledIR } from "./runtime/loadManifests";
+import { ManifestRuntimeEngine } from "./runtime-engine";
 // ---------------------------------------------------------------------------
 // Internal constants
 // ---------------------------------------------------------------------------

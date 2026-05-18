@@ -12,11 +12,11 @@ interface GeneratedRuntimeContext {
         tenantId: string;
     };
 }
-export declare function createPrepTaskManifestRuntime(ctx: GeneratedRuntimeContext): Promise<import("./runtime-engine.js").ManifestRuntimeEngine>;
-export declare function createStationManifestRuntime(ctx: GeneratedRuntimeContext): Promise<import("./runtime-engine.js").ManifestRuntimeEngine>;
-export declare function createInventoryManifestRuntime(ctx: GeneratedRuntimeContext): Promise<import("./runtime-engine.js").ManifestRuntimeEngine>;
-export declare function createRecipeManifestRuntime(ctx: GeneratedRuntimeContext): Promise<import("./runtime-engine.js").ManifestRuntimeEngine>;
-export declare function createMenuManifestRuntime(ctx: GeneratedRuntimeContext): Promise<import("./runtime-engine.js").ManifestRuntimeEngine>;
-export declare function createPrepListManifestRuntime(ctx: GeneratedRuntimeContext): Promise<import("./runtime-engine.js").ManifestRuntimeEngine>;
+export declare function createPrepTaskManifestRuntime(ctx: GeneratedRuntimeContext): Promise<import("./runtime-engine").ManifestRuntimeEngine>;
+export declare function createStationManifestRuntime(ctx: GeneratedRuntimeContext): Promise<import("./runtime-engine").ManifestRuntimeEngine>;
+export declare function createInventoryManifestRuntime(ctx: GeneratedRuntimeContext): Promise<import("./runtime-engine").ManifestRuntimeEngine>;
+export declare function createRecipeManifestRuntime(ctx: GeneratedRuntimeContext): Promise<import("./runtime-engine").ManifestRuntimeEngine>;
+export declare function createMenuManifestRuntime(ctx: GeneratedRuntimeContext): Promise<import("./runtime-engine").ManifestRuntimeEngine>;
+export declare function createPrepListManifestRuntime(ctx: GeneratedRuntimeContext): Promise<import("./runtime-engine").ManifestRuntimeEngine>;
 export {};
 //# sourceMappingURL=manifest-runtime.d.ts.map

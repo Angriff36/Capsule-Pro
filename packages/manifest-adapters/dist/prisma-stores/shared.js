@@ -12,7 +12,7 @@ import { Prisma } from "@repo/database/standalone";
  * Uses dynamic import so this module doesn't hard-depend on @sentry/nextjs.
  */
 function reportStoreError(error, store, op) {
-    import("@sentry/nextjs")
+    import("@sentry/node")
         .then(({ captureException }) => {
         captureException(error, {
             tags: { source: "prisma-store", store, op },

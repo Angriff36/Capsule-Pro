@@ -5,7 +5,7 @@
  * It orchestrates the flow: Document Import -> Event Creation -> Battle Board/Checklist Generation
  */
 import type { EmittedEvent, RuntimeEngine } from "@angriff36/manifest";
-import { ManifestRuntimeEngine } from "./runtime-engine.js";
+import { ManifestRuntimeEngine } from "./runtime-engine";
 /**
  * Create a runtime engine with tenant context
  */

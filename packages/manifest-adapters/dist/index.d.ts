@@ -37,7 +37,7 @@
  */
 import type { CommandResult, EmittedEvent, RuntimeContext, RuntimeEngine } from "@angriff36/manifest";
 import type { OverrideRequest } from "@angriff36/manifest/ir";
-import { ManifestRuntimeEngine } from "./runtime-engine.js";
+import { ManifestRuntimeEngine } from "./runtime-engine";
 import type { Store } from "@angriff36/manifest";
 /**
  * Kitchen Ops Runtime Context

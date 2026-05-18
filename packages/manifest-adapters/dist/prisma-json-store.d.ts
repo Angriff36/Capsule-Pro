@@ -13,7 +13,7 @@
  */
 import type { Store } from "@angriff36/manifest";
 import type { PrismaClient } from "@repo/database/standalone";
-import type { EntityInstance } from "./prisma-store.js";
+import type { EntityInstance } from "./prisma-store";
 /**
  * Configuration for PrismaJsonStore
  */
