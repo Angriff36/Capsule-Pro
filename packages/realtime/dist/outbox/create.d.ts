@@ -50,6 +50,7 @@ export declare function createOutboxEvent(db: PrismaClient | Prisma.TransactionC
     tenantId: string;
     aggregateType: string;
     aggregateId: string;
+    updatedAt: Date;
     createdAt: Date;
     eventType: string;
     payload: import("@prisma/client/runtime/client").JsonValue;

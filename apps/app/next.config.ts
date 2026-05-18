@@ -4,13 +4,6 @@ import { withLogging, withSentry } from "@repo/observability/next-config";
 import type { NextConfig } from "next";
 import { env } from "./env";
 
-const OPENTELEMETRY_EXCLUDE = /@opentelemetry/;
-const SENTRY_EXCLUDE = /@sentry/;
-const CRITICAL_DEPENDENCY_WARNING =
-  /Critical dependency: the request of a dependency is an expression/;
-const PACK_FILE_CACHE_WARNING =
-  /Serializing big strings .* impacts deserialization performance/;
-
 /**
  * Resolve the API base URL for rewrites.
  *
@@ -31,9 +24,6 @@ const apiBaseUrl = (
       "http://127.0.0.1:2223"
 ).replace(/\/$/, "");
 const distDir = process.env.NEXT_DIST_DIR?.trim() || ".next";
-
-type WebpackConfig = Parameters<NonNullable<NextConfig["webpack"]>>[0];
-type WebpackContext = Parameters<NonNullable<NextConfig["webpack"]>>[1];
 
 const rewrites: NextConfig["rewrites"] = async () => {
   const baseRewritesResult =
@@ -400,39 +390,6 @@ const baseConfig: NextConfig = withToolbar(
     // Include manifest file in Vercel deployments for command-board chat
     outputFileTracingIncludes: {
       "/*": ["../../packages/manifest-ir/dist/routes.manifest.json"],
-    },
-    webpack: (webpackConfig: WebpackConfig, context: WebpackContext) => {
-      // Production optimizations to reduce bundle size and build time
-      if (context.isServer && context.nextRuntime === "nodejs") {
-        webpackConfig.resolve = webpackConfig.resolve ?? {};
-        webpackConfig.resolve.alias = {
-          ...(webpackConfig.resolve.alias ?? {}),
-          canvas: false,
-        };
-
-        // Increase memory limit for production builds
-        if (process.env.NODE_ENV === "production") {
-          webpackConfig.optimization = {
-            ...webpackConfig.optimization,
-            moduleIds: "deterministic",
-            minimize: true,
-          };
-        }
-
-        // Suppress 'Critical dependency' and large string warnings that bloat logs/context
-        webpackConfig.ignoreWarnings = [
-          ...(webpackConfig.ignoreWarnings || []),
-          { module: OPENTELEMETRY_EXCLUDE },
-          { module: SENTRY_EXCLUDE },
-          {
-            message: CRITICAL_DEPENDENCY_WARNING,
-          },
-          {
-            message: PACK_FILE_CACHE_WARNING,
-          },
-        ];
-      }
-      return webpackConfig;
     },
   })
 );
