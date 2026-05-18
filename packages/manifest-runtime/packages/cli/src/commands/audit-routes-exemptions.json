@@ -1,0 +1,2008 @@
+[
+  {
+    "path": "app/api/cron/contract-expiration-alerts/route.ts",
+    "methods": ["POST"],
+    "reason": "Cron job \u2014 infrastructure, not domain logic",
+    "category": "infrastructure",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/cron/email-reminders/route.ts",
+    "methods": ["POST"],
+    "reason": "Cron job \u2014 infrastructure, not domain logic",
+    "category": "infrastructure",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/kitchen/prep-lists/autogenerate/process/route.ts",
+    "methods": ["POST"],
+    "reason": "Cron outbox worker \u2014 infrastructure",
+    "category": "infrastructure",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/integrations/goodshuffle/config/route.ts",
+    "methods": ["POST", "DELETE"],
+    "reason": "Third-party integration config \u2014 not domain command",
+    "category": "integration",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/integrations/goodshuffle/inventory/sync/route.ts",
+    "methods": ["POST"],
+    "reason": "Third-party sync \u2014 not domain command",
+    "category": "integration",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/integrations/goodshuffle/invoices/sync/route.ts",
+    "methods": ["POST"],
+    "reason": "Third-party sync \u2014 not domain command",
+    "category": "integration",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/integrations/goodshuffle/sync/route.ts",
+    "methods": ["POST"],
+    "reason": "Third-party sync \u2014 not domain command",
+    "category": "integration",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/integrations/goodshuffle/test/route.ts",
+    "methods": ["POST"],
+    "reason": "Third-party integration test \u2014 not domain command",
+    "category": "integration",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/integrations/nowsta/config/route.ts",
+    "methods": ["POST", "DELETE"],
+    "reason": "Third-party integration config \u2014 not domain command",
+    "category": "integration",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/integrations/nowsta/employees/map/route.ts",
+    "methods": ["POST", "DELETE"],
+    "reason": "Third-party employee mapping \u2014 not domain command",
+    "category": "integration",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/integrations/nowsta/sync/route.ts",
+    "methods": ["POST"],
+    "reason": "Third-party sync \u2014 not domain command",
+    "category": "integration",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/integrations/nowsta/test/route.ts",
+    "methods": ["POST"],
+    "reason": "Third-party integration test \u2014 not domain command",
+    "category": "integration",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/integrations/webhooks/route.ts",
+    "methods": ["POST"],
+    "reason": "Register outbound webhook subscription",
+    "category": "webhook",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/integrations/webhooks/[id]/route.ts",
+    "methods": ["PUT", "DELETE"],
+    "reason": "Manage webhook subscription",
+    "category": "webhook",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/integrations/webhooks/retry/route.ts",
+    "methods": ["POST"],
+    "reason": "Webhook retry \u2014 infrastructure",
+    "category": "webhook",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/integrations/webhooks/trigger/route.ts",
+    "methods": ["POST"],
+    "reason": "Webhook trigger \u2014 infrastructure",
+    "category": "webhook",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/collaboration/notifications/email/webhook/route.ts",
+    "methods": ["POST"],
+    "reason": "Resend delivery-status webhook callback",
+    "category": "webhook",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/collaboration/notifications/sms/webhook/route.ts",
+    "methods": ["POST"],
+    "reason": "Twilio delivery-status callback",
+    "category": "webhook",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/public/contracts/[token]/sign/route.ts",
+    "methods": ["POST"],
+    "reason": "Public contract signing \u2014 no auth context",
+    "category": "public",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/public/proposals/[token]/respond/route.ts",
+    "methods": ["POST"],
+    "reason": "Public proposal accept/reject \u2014 no auth context",
+    "category": "public",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/events/contracts/[id]/document/route.ts",
+    "methods": ["POST"],
+    "reason": "File upload \u2014 not a command",
+    "category": "file-upload",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/events/documents/parse/route.ts",
+    "methods": ["POST"],
+    "reason": "PDF/CSV parsing \u2014 not a command",
+    "category": "file-upload",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/events/export/quickbooks/route.ts",
+    "methods": ["POST"],
+    "reason": "Export/reporting \u2014 read-aggregation, not mutation",
+    "category": "export",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/inventory/purchase-orders/export/quickbooks/route.ts",
+    "methods": ["POST"],
+    "reason": "Export/reporting \u2014 read-aggregation, not mutation",
+    "category": "export",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/payroll/export/quickbooks/route.ts",
+    "methods": ["POST"],
+    "reason": "Export/reporting \u2014 read-aggregation, not mutation",
+    "category": "export",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/sales-reporting/generate/route.ts",
+    "methods": ["POST"],
+    "reason": "Export/reporting \u2014 read-aggregation, not mutation",
+    "category": "export",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/collaboration/notifications/email/send/route.ts",
+    "methods": ["POST"],
+    "reason": "Email send \u2014 infrastructure side-effect, not domain command",
+    "category": "infrastructure",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/collaboration/notifications/email/preferences/route.ts",
+    "methods": ["POST"],
+    "reason": "Email preferences \u2014 user settings, not domain command",
+    "category": "infrastructure",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/collaboration/notifications/email/workflows/route.ts",
+    "methods": ["POST"],
+    "reason": "Email workflow config \u2014 infrastructure",
+    "category": "infrastructure",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/collaboration/notifications/email/workflows/[id]/route.ts",
+    "methods": ["PUT", "DELETE"],
+    "reason": "Email workflow config \u2014 infrastructure",
+    "category": "infrastructure",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/collaboration/notifications/sms/send/route.ts",
+    "methods": ["POST"],
+    "reason": "SMS send \u2014 infrastructure side-effect, not domain command",
+    "category": "infrastructure",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/collaboration/notifications/sms/preferences/route.ts",
+    "methods": ["POST"],
+    "reason": "SMS preferences \u2014 user settings, not domain command",
+    "category": "infrastructure",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/kitchen/ai/bulk-generate/prep-tasks/route.ts",
+    "methods": ["POST"],
+    "reason": "AI generation \u2014 orchestration, not domain command",
+    "category": "ai",
+    "owner": "ai-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/kitchen/ai/bulk-generate/prep-tasks/save/route.ts",
+    "methods": ["POST"],
+    "reason": "AI generation save \u2014 uses runCommand internally",
+    "category": "ai",
+    "owner": "ai-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/conflicts/detect/route.ts",
+    "methods": ["POST"],
+    "reason": "Conflict detection \u2014 read-aggregation, not mutation",
+    "category": "infrastructure",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/kitchen/allergens/detect-conflicts/route.ts",
+    "methods": ["POST"],
+    "reason": "Allergen conflict detection \u2014 read-aggregation, not mutation",
+    "category": "infrastructure",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/events/allergens/check/route.ts",
+    "methods": ["POST"],
+    "reason": "Allergen check \u2014 read-aggregation, not mutation",
+    "category": "infrastructure",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/events/allergens/warnings/acknowledge/route.ts",
+    "methods": ["POST"],
+    "reason": "Uses executeManifestCommand (wraps runCommand) but lives outside commands/ namespace",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/kitchen/overrides/route.ts",
+    "methods": ["POST"],
+    "reason": "Override creation \u2014 legacy, should migrate to manifest command",
+    "category": "legacy-migrate",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/kitchen/prep-lists/generate/route.ts",
+    "methods": ["POST"],
+    "reason": "Prep list generation \u2014 orchestration, not domain command",
+    "category": "infrastructure",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/kitchen/prep-lists/save-db/route.ts",
+    "methods": ["POST"],
+    "reason": "Prep list save \u2014 uses runCommand internally",
+    "category": "infrastructure",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/kitchen/recipes/composite/create-with-version/route.ts",
+    "methods": ["POST"],
+    "reason": "Composite operation \u2014 orchestrates multiple manifest commands",
+    "category": "composite",
+    "owner": "backend-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/kitchen/recipes/[recipeId]/composite/update-with-version/route.ts",
+    "methods": ["POST"],
+    "reason": "Composite operation \u2014 orchestrates multiple manifest commands",
+    "category": "composite",
+    "owner": "backend-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/kitchen/recipes/[recipeId]/composite/restore-version/route.ts",
+    "methods": ["POST"],
+    "reason": "Composite operation \u2014 orchestrates multiple manifest commands",
+    "category": "composite",
+    "owner": "backend-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/kitchen/recipes/[recipeId]/cost/route.ts",
+    "methods": ["POST"],
+    "reason": "Cost calculation \u2014 read-aggregation, not mutation",
+    "category": "infrastructure",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/kitchen/recipes/[recipeId]/scale/route.ts",
+    "methods": ["POST", "PATCH"],
+    "reason": "Recipe scaling \u2014 read-aggregation, not mutation",
+    "category": "infrastructure",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/kitchen/recipes/[recipeId]/update-budgets/route.ts",
+    "methods": ["POST"],
+    "reason": "Budget update \u2014 orchestration across entities",
+    "category": "composite",
+    "owner": "backend-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/events/import/server-to-server/route.ts",
+    "methods": ["POST"],
+    "reason": "Server-to-server import \u2014 infrastructure",
+    "category": "infrastructure",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/events/[eventId]/shipments/generate/route.ts",
+    "methods": ["POST"],
+    "reason": "Shipment generation \u2014 orchestration, not domain command",
+    "category": "composite",
+    "owner": "backend-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/inventory/alerts/subscribe/route.ts",
+    "methods": ["POST"],
+    "reason": "Uses executeManifestCommand \u2192 AlertsConfig.create",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/inventory/reorder-suggestions/route.ts",
+    "methods": ["POST"],
+    "reason": "Reorder suggestions \u2014 read-aggregation, not mutation",
+    "category": "infrastructure",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/staff/shifts/[shiftId]/assignment-suggestions/route.ts",
+    "methods": ["POST"],
+    "reason": "Assignment suggestions \u2014 read-aggregation, not mutation",
+    "category": "infrastructure",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/staff/shifts/bulk-assignment-suggestions/route.ts",
+    "methods": ["POST"],
+    "reason": "Bulk assignment suggestions \u2014 read-aggregation, not mutation",
+    "category": "infrastructure",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/staff/shifts/bulk-assignment/route.ts",
+    "methods": ["POST"],
+    "reason": "Bulk assignment \u2014 orchestration, not single domain command",
+    "category": "composite",
+    "owner": "backend-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/timecards/bulk/route.ts",
+    "methods": ["POST"],
+    "reason": "Bulk transaction \u2014 multi-entity (TimeEntry approve/reject + TimecardEditRequest upsert + exception flags) in single $transaction. No IR command for bulk operations. Needs Timecard.bulkApprove aggregate command.",
+    "category": "composite",
+    "owner": "backend-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/training/modules/route.ts",
+    "methods": ["POST"],
+    "reason": "Legacy manual write \u2014 migrate to Manifest command",
+    "category": "legacy-migrate",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/training/modules/[id]/route.ts",
+    "methods": ["PUT", "DELETE"],
+    "reason": "Legacy manual write \u2014 migrate to Manifest command",
+    "category": "legacy-migrate",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/training/assignments/route.ts",
+    "methods": ["POST"],
+    "reason": "Legacy manual write \u2014 migrate to Manifest command",
+    "category": "legacy-migrate",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/training/complete/route.ts",
+    "methods": ["POST"],
+    "reason": "Legacy manual write \u2014 migrate to Manifest command",
+    "category": "legacy-migrate",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/user-preferences/route.ts",
+    "methods": ["POST"],
+    "reason": "User preferences \u2014 settings, not domain command",
+    "category": "infrastructure",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/accounting/accounts/route.ts",
+    "methods": ["POST"],
+    "reason": "Accounting CRUD \u2014 no manifest commands defined yet",
+    "category": "legacy-migrate",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/accounting/accounts/[id]/route.ts",
+    "methods": ["PUT", "DELETE"],
+    "reason": "Accounting CRUD \u2014 no manifest commands defined yet",
+    "category": "legacy-migrate",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/administrative/tasks/route.ts",
+    "methods": ["POST"],
+    "reason": "Administrative tasks CRUD \u2014 no manifest commands defined yet",
+    "category": "legacy-migrate",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/administrative/tasks/[id]/route.ts",
+    "methods": ["PATCH", "DELETE"],
+    "reason": "Administrative tasks CRUD \u2014 no manifest commands defined yet",
+    "category": "legacy-migrate",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/administrative/chat/threads/route.ts",
+    "methods": ["POST"],
+    "reason": "Chat threads \u2014 no manifest commands defined yet",
+    "category": "legacy-migrate",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/administrative/chat/threads/[threadId]/route.ts",
+    "methods": ["PATCH"],
+    "reason": "Chat threads \u2014 no manifest commands defined yet",
+    "category": "legacy-migrate",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/administrative/chat/threads/[threadId]/messages/route.ts",
+    "methods": ["POST"],
+    "reason": "Chat messages \u2014 no manifest commands defined yet",
+    "category": "legacy-migrate",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/command-board/route.ts",
+    "methods": ["POST"],
+    "reason": "Uses executeManifestCommand \u2192 CommandBoard.create",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/command-board/[boardId]/route.ts",
+    "methods": ["PUT", "DELETE"],
+    "reason": "Uses executeManifestCommand \u2192 CommandBoard.update/deactivate",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/command-board/layouts/route.ts",
+    "methods": ["POST"],
+    "reason": "Uses executeManifestCommand \u2192 CommandBoardLayout.create",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/command-board/layouts/[layoutId]/route.ts",
+    "methods": ["PUT", "DELETE"],
+    "reason": "Uses executeManifestCommand \u2192 CommandBoardLayout.update/remove",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/crm/clients/route.ts",
+    "methods": ["POST"],
+    "reason": "Uses executeManifestCommand (wraps runCommand) but lives outside commands/ namespace",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/crm/clients/[id]/route.ts",
+    "methods": ["PUT", "DELETE"],
+    "reason": "Uses executeManifestCommand (wraps runCommand) but lives outside commands/ namespace",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/crm/clients/[id]/contacts/route.ts",
+    "methods": ["POST"],
+    "reason": "Uses executeManifestCommand (wraps runCommand) but lives outside commands/ namespace",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/crm/clients/[id]/interactions/route.ts",
+    "methods": ["POST"],
+    "reason": "Uses executeManifestCommand (wraps runCommand) but lives outside commands/ namespace",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/crm/clients/[id]/interactions/[interactionId]/route.ts",
+    "methods": ["PUT", "DELETE"],
+    "reason": "Uses executeManifestCommand (wraps runCommand) but lives outside commands/ namespace",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/crm/clients/[id]/preferences/route.ts",
+    "methods": ["POST"],
+    "reason": "Uses executeManifestCommand (wraps runCommand) but lives outside commands/ namespace",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/crm/proposals/route.ts",
+    "methods": ["POST"],
+    "reason": "Uses executeManifestCommand (wraps runCommand) but lives outside commands/ namespace",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/crm/proposals/[id]/route.ts",
+    "methods": ["PUT", "DELETE"],
+    "reason": "Uses executeManifestCommand (wraps runCommand) but lives outside commands/ namespace",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/crm/proposals/[id]/send/route.ts",
+    "methods": ["POST"],
+    "reason": "Uses executeManifestCommand (wraps runCommand) but lives outside commands/ namespace",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/events/battle-boards/route.ts",
+    "methods": ["POST"],
+    "reason": "Uses executeManifestCommand (wraps runCommand) but lives outside commands/ namespace",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/events/battle-boards/[boardId]/route.ts",
+    "methods": ["PUT", "DELETE"],
+    "reason": "Uses executeManifestCommand (wraps runCommand) but lives outside commands/ namespace",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/events/budgets/route.ts",
+    "methods": ["POST"],
+    "reason": "Legacy budgets CRUD \u2014 should use manifest commands",
+    "category": "legacy-migrate",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/events/budgets/[id]/route.ts",
+    "methods": ["PUT", "DELETE"],
+    "reason": "Uses executeManifestCommand (wraps runCommand) but lives outside commands/ namespace",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/events/budgets/[id]/line-items/route.ts",
+    "methods": ["POST"],
+    "reason": "Uses executeManifestCommand (wraps runCommand) but lives outside commands/ namespace",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/events/budgets/[id]/line-items/[lineItemId]/route.ts",
+    "methods": ["PUT", "DELETE"],
+    "reason": "Uses executeManifestCommand (wraps runCommand) but lives outside commands/ namespace",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/events/contracts/route.ts",
+    "methods": ["POST"],
+    "reason": "Legacy contracts CRUD \u2014 should use manifest commands",
+    "category": "legacy-migrate",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/events/contracts/[id]/route.ts",
+    "methods": ["PUT", "DELETE"],
+    "reason": "Uses executeManifestCommand (wraps runCommand) but lives outside commands/ namespace",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/events/contracts/[id]/send/route.ts",
+    "methods": ["POST"],
+    "reason": "Legacy contract send \u2014 should use manifest commands",
+    "category": "legacy-migrate",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/events/contracts/[id]/signature/route.ts",
+    "methods": ["POST"],
+    "reason": "Legacy contract signature \u2014 should use manifest commands",
+    "category": "legacy-migrate",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/events/contracts/[id]/signatures/route.ts",
+    "methods": ["POST"],
+    "reason": "Uses executeManifestCommand (wraps runCommand) but lives outside commands/ namespace",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/events/contracts/[id]/status/route.ts",
+    "methods": ["PATCH"],
+    "reason": "Legacy contract status \u2014 should use manifest commands",
+    "category": "legacy-migrate",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/events/[eventId]/guests/route.ts",
+    "methods": ["POST"],
+    "reason": "Uses executeManifestCommand (wraps runCommand) but lives outside commands/ namespace",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/events/guests/[guestId]/route.ts",
+    "methods": ["PUT", "DELETE"],
+    "reason": "Uses executeManifestCommand (wraps runCommand) but lives outside commands/ namespace",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/events/reports/route.ts",
+    "methods": ["POST"],
+    "reason": "Uses executeManifestCommand (wraps runCommand) but lives outside commands/ namespace",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/events/reports/[reportId]/route.ts",
+    "methods": ["PUT", "DELETE"],
+    "reason": "Uses executeManifestCommand (wraps runCommand) but lives outside commands/ namespace",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/inventory/items/route.ts",
+    "methods": ["POST"],
+    "reason": "Uses executeManifestCommand (wraps runCommand) but lives outside commands/ namespace",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/inventory/items/[id]/route.ts",
+    "methods": ["PUT", "DELETE"],
+    "reason": "Legacy inventory items \u2014 should use manifest commands",
+    "category": "legacy-migrate",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/inventory/stock-levels/adjust/route.ts",
+    "methods": ["POST"],
+    "reason": "Legacy stock adjustment \u2014 should use manifest commands",
+    "category": "legacy-migrate",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/inventory/cycle-count/sessions/route.ts",
+    "methods": ["POST"],
+    "reason": "Uses executeManifestCommand (wraps runCommand) but lives outside commands/ namespace",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/inventory/cycle-count/sessions/[sessionId]/route.ts",
+    "methods": ["PUT", "DELETE"],
+    "reason": "Uses executeManifestCommand (wraps runCommand) but lives outside commands/ namespace",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/inventory/cycle-count/sessions/[sessionId]/records/route.ts",
+    "methods": ["POST"],
+    "reason": "Uses executeManifestCommand (wraps runCommand) but lives outside commands/ namespace",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/inventory/cycle-count/sessions/[sessionId]/finalize/route.ts",
+    "methods": ["POST"],
+    "reason": "Legacy cycle count finalize \u2014 should use manifest commands",
+    "category": "legacy-migrate",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/inventory/cycle-count/records/[id]/route.ts",
+    "methods": ["PUT", "DELETE"],
+    "reason": "Uses executeManifestCommand (wraps runCommand) but lives outside commands/ namespace",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/inventory/purchase-orders/[id]/complete/route.ts",
+    "methods": ["POST"],
+    "reason": "Legacy PO complete \u2014 should use manifest commands",
+    "category": "legacy-migrate",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/inventory/purchase-orders/[id]/items/[itemId]/quality/route.ts",
+    "methods": ["PUT"],
+    "reason": "Uses executeManifestCommand (wraps runCommand) but lives outside commands/ namespace",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/inventory/purchase-orders/[id]/items/[itemId]/quantity/route.ts",
+    "methods": ["PUT"],
+    "reason": "Legacy PO item quantity \u2014 should use manifest commands",
+    "category": "legacy-migrate",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/payroll/approvals/route.ts",
+    "methods": ["POST"],
+    "reason": "Payroll domain \u2014 no manifest commands defined yet",
+    "category": "legacy-migrate",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/payroll/approvals/[approvalId]/route.ts",
+    "methods": ["PUT"],
+    "reason": "Payroll domain \u2014 no manifest commands defined yet",
+    "category": "legacy-migrate",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/payroll/deductions/route.ts",
+    "methods": ["POST"],
+    "reason": "Payroll domain \u2014 no manifest commands defined yet",
+    "category": "legacy-migrate",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/payroll/generate/route.ts",
+    "methods": ["POST"],
+    "reason": "Payroll domain \u2014 no manifest commands defined yet",
+    "category": "legacy-migrate",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/payroll/periods/route.ts",
+    "methods": ["POST"],
+    "reason": "Payroll domain \u2014 no manifest commands defined yet",
+    "category": "legacy-migrate",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/payroll/runs/[runId]/route.ts",
+    "methods": ["PUT"],
+    "reason": "Payroll domain \u2014 no manifest commands defined yet",
+    "category": "legacy-migrate",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/shipments/route.ts",
+    "methods": ["POST"],
+    "reason": "Uses executeManifestCommand (wraps runCommand) but lives outside commands/ namespace",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/shipments/[id]/route.ts",
+    "methods": ["PUT", "DELETE"],
+    "reason": "Uses executeManifestCommand \u2192 Shipment.update/cancel",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/shipments/[id]/status/route.ts",
+    "methods": ["POST"],
+    "reason": "Legacy shipment status \u2014 should use manifest commands",
+    "category": "legacy-migrate",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/shipments/[id]/items/route.ts",
+    "methods": ["POST"],
+    "reason": "Uses executeManifestCommand (wraps runCommand) but lives outside commands/ namespace",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/shipments/[id]/items/[itemId]/route.ts",
+    "methods": ["PUT", "DELETE"],
+    "reason": "Legacy shipment items \u2014 should use manifest commands",
+    "category": "legacy-migrate",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/staff/availability/route.ts",
+    "methods": ["POST"],
+    "reason": "Staff availability \u2014 no manifest commands defined yet",
+    "category": "legacy-migrate",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/staff/availability/[id]/route.ts",
+    "methods": ["PATCH", "DELETE"],
+    "reason": "Staff availability \u2014 no manifest commands defined yet",
+    "category": "legacy-migrate",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/staff/availability/batch/route.ts",
+    "methods": ["POST"],
+    "reason": "Staff availability batch \u2014 no manifest commands defined yet",
+    "category": "legacy-migrate",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/staff/budgets/route.ts",
+    "methods": ["POST"],
+    "reason": "Staff budgets \u2014 no manifest commands defined yet",
+    "category": "legacy-migrate",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/staff/budgets/[id]/route.ts",
+    "methods": ["PUT", "DELETE"],
+    "reason": "Staff budgets \u2014 no manifest commands defined yet",
+    "category": "legacy-migrate",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/staff/budgets/alerts/route.ts",
+    "methods": ["POST"],
+    "reason": "Staff budget alerts \u2014 no manifest commands defined yet",
+    "category": "legacy-migrate",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/staff/certifications/route.ts",
+    "methods": ["POST"],
+    "reason": "Staff certifications \u2014 no manifest commands defined yet",
+    "category": "legacy-migrate",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/staff/certifications/[id]/route.ts",
+    "methods": ["PUT", "DELETE"],
+    "reason": "Staff certifications \u2014 no manifest commands defined yet",
+    "category": "legacy-migrate",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/staff/employees/[id]/route.ts",
+    "methods": ["PUT", "PATCH"],
+    "reason": "Uses executeManifestCommand \u2192 User.update",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/staff/shifts/route.ts",
+    "methods": ["POST"],
+    "reason": "Uses executeManifestCommand (wraps runCommand) but lives outside commands/ namespace",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/staff/shifts/[shiftId]/route.ts",
+    "methods": ["PUT", "DELETE"],
+    "reason": "Uses executeManifestCommand (wraps runCommand) but lives outside commands/ namespace",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/staff/time-off/requests/route.ts",
+    "methods": ["POST"],
+    "reason": "Time-off requests \u2014 no manifest commands defined yet",
+    "category": "legacy-migrate",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/staff/time-off/requests/[id]/route.ts",
+    "methods": ["PATCH", "DELETE"],
+    "reason": "Time-off requests \u2014 no manifest commands defined yet",
+    "category": "legacy-migrate",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/timecards/route.ts",
+    "methods": ["POST"],
+    "reason": "Uses executeManifestCommand (wraps runCommand) but lives outside commands/ namespace",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/timecards/[id]/route.ts",
+    "methods": ["PUT", "DELETE"],
+    "reason": "Uses executeManifestCommand (wraps runCommand) but lives outside commands/ namespace",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/kitchen/tasks/route.ts",
+    "methods": ["POST"],
+    "reason": "Uses executeManifestCommand (wraps runCommand) but lives outside commands/ namespace",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/kitchen/tasks/[id]/route.ts",
+    "methods": ["PATCH", "DELETE"],
+    "reason": "Uses executeManifestCommand (wraps runCommand) but lives outside commands/ namespace",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/kitchen/tasks/[id]/claim/route.ts",
+    "methods": ["POST"],
+    "reason": "Legacy task claim \u2014 should use manifest commands",
+    "category": "legacy-migrate",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/kitchen/tasks/[id]/release/route.ts",
+    "methods": ["POST"],
+    "reason": "Uses executeManifestCommand (wraps runCommand) but lives outside commands/ namespace",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/kitchen/tasks/bundle-claim/route.ts",
+    "methods": ["POST"],
+    "reason": "Legacy bundle claim \u2014 should use manifest commands",
+    "category": "legacy-migrate",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/kitchen/waste/entries/route.ts",
+    "methods": ["POST"],
+    "reason": "Legacy waste entries \u2014 should use manifest commands",
+    "category": "legacy-migrate",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/kitchen/waste/entries/[id]/route.ts",
+    "methods": ["PUT", "DELETE"],
+    "reason": "Uses executeManifestCommand (wraps runCommand) but lives outside commands/ namespace",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/kitchen/prep-lists/route.ts",
+    "methods": ["POST"],
+    "reason": "Uses executeManifestCommand (wraps runCommand) but lives outside commands/ namespace",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/kitchen/prep-lists/[id]/route.ts",
+    "methods": ["PATCH", "DELETE"],
+    "reason": "Uses executeManifestCommand (wraps runCommand) but lives outside commands/ namespace",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/kitchen/prep-lists/items/[id]/route.ts",
+    "methods": ["PATCH", "DELETE"],
+    "reason": "Uses executeManifestCommand (wraps runCommand) but lives outside commands/ namespace",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/staff/shifts/commands/create-validated/route.ts",
+    "methods": ["POST"],
+    "reason": "Validated shift create \u2014 composite with extra validation",
+    "category": "composite",
+    "owner": "backend-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/staff/shifts/commands/update-validated/route.ts",
+    "methods": ["POST"],
+    "reason": "Validated shift update \u2014 composite with extra validation",
+    "category": "composite",
+    "owner": "backend-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/kitchen/allergens/update-dish/route.ts",
+    "methods": ["POST"],
+    "reason": "Uses runCommand but lives outside commands/ namespace \u2014 needs path migration",
+    "category": "legacy-migrate",
+    "owner": "kitchen-team",
+    "expires": "2026-09-01",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/kitchen/tasks/[id]/claim-shadow-manifest/route.ts",
+    "methods": ["POST"],
+    "reason": "Shadow route for claim \u2014 uses runCommand but outside commands/ namespace",
+    "category": "legacy-migrate",
+    "owner": "kitchen-team",
+    "expires": "2026-09-01",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/kitchen/tasks/sync-claims/route.ts",
+    "methods": ["POST"],
+    "reason": "Uses runCommand but lives outside commands/ namespace \u2014 needs path migration",
+    "category": "legacy-migrate",
+    "owner": "kitchen-team",
+    "expires": "2026-09-01",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/kitchen/prep-lists/[id]/items/[itemId]/complete/route.ts",
+    "methods": ["POST"],
+    "reason": "Uses runCommand but lives outside commands/ namespace \u2014 needs path migration",
+    "category": "legacy-migrate",
+    "owner": "kitchen-team",
+    "expires": "2026-09-01",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/kitchen/menus/dishes/commands/create/route.ts",
+    "methods": ["POST"],
+    "reason": "Uses runCommand but path does not match IR (should be menu-dishes/commands/create)",
+    "category": "legacy-migrate",
+    "owner": "kitchen-team",
+    "expires": "2026-09-01",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/kitchen/recipes/versions/commands/create/route.ts",
+    "methods": ["POST"],
+    "reason": "Uses runCommand but path does not match IR (should be recipe-versions/commands/create)",
+    "category": "legacy-migrate",
+    "owner": "kitchen-team",
+    "expires": "2026-09-01",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/inventory/cycle-count/sessions/[sessionId]/records/route.ts",
+    "methods": ["POST"],
+    "reason": "Cycle count records \u2014 uses executeManifestCommand but outside commands/ namespace",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/inventory/cycle-count/sessions/[sessionId]/finalize/route.ts",
+    "methods": ["POST"],
+    "reason": "Cycle count finalize \u2014 uses executeManifestCommand but outside commands/ namespace",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/events/budgets/[id]/line-items/[lineItemId]/route.ts",
+    "methods": ["PUT", "DELETE"],
+    "reason": "Event budget line items \u2014 uses executeManifestCommand but outside commands/ namespace",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/crm/clients/[id]/interactions/[interactionId]/route.ts",
+    "methods": ["PUT", "DELETE"],
+    "reason": "CRM client interactions \u2014 uses executeManifestCommand but outside commands/ namespace",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/collaboration/notifications/email/workflows/[id]/route.ts",
+    "methods": ["PUT", "DELETE"],
+    "reason": "Email workflow config \u2014 infrastructure, not domain command",
+    "category": "infrastructure",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/administrative/chat/threads/[threadId]/messages/route.ts",
+    "methods": ["POST"],
+    "reason": "Chat messages \u2014 uses executeManifestCommand but outside commands/ namespace",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/kitchen/prep-lists/[id]/items/[itemId]/complete/route.ts",
+    "methods": ["POST"],
+    "reason": "Prep list item complete \u2014 uses executeManifestCommand but outside commands/ namespace",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/inventory/purchase-orders/[id]/items/[itemId]/quantity/route.ts",
+    "methods": ["PUT"],
+    "reason": "PO item quantity \u2014 uses executeManifestCommand but outside commands/ namespace",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/inventory/purchase-orders/[id]/items/[itemId]/quality/route.ts",
+    "methods": ["PUT"],
+    "reason": "PO item quality \u2014 uses executeManifestCommand but outside commands/ namespace",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/analytics/kitchen/route.ts",
+    "methods": ["GET"],
+    "reason": "Kitchen analytics \u2014 read-only aggregation, not domain mutation",
+    "category": "infrastructure",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/analytics/finance/route.ts",
+    "methods": ["GET"],
+    "reason": "Finance analytics \u2014 read-only aggregation, not domain mutation",
+    "category": "infrastructure",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/analytics/events/profitability/route.ts",
+    "methods": ["GET"],
+    "reason": "Event profitability analytics \u2014 read-only aggregation, not domain mutation",
+    "category": "infrastructure",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/analytics/staff/summary/route.ts",
+    "methods": ["GET"],
+    "reason": "Staff analytics summary \u2014 read-only aggregation, not domain mutation",
+    "category": "infrastructure",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/analytics/staff/employees/[employeeId]/route.ts",
+    "methods": ["GET"],
+    "reason": "Employee performance analytics \u2014 read-only aggregation, not domain mutation",
+    "category": "infrastructure",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/analytics/events/profitability/route.ts",
+    "methods": ["GET"],
+    "reason": "Event profitability \u2014 read-only aggregation, not domain mutation",
+    "category": "infrastructure",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/accounting/collections/cases/route.ts",
+    "methods": ["GET", "POST"],
+    "reason": "Collections cases CRUD \u2014 pending manifest migration",
+    "category": "legacy-migrate",
+    "owner": "backend-team",
+    "expiresOn": "2026-12-01"
+  },
+  {
+    "path": "app/api/accounting/collections/cases/[id]/route.ts",
+    "methods": ["GET", "PATCH", "DELETE"],
+    "reason": "Collections cases CRUD \u2014 pending manifest migration",
+    "category": "legacy-migrate",
+    "owner": "backend-team",
+    "expiresOn": "2026-12-01"
+  },
+  {
+    "path": "app/api/accounting/invoices/route.ts",
+    "methods": ["GET", "POST"],
+    "reason": "Invoices CRUD \u2014 pending manifest migration",
+    "category": "legacy-migrate",
+    "owner": "backend-team",
+    "expiresOn": "2026-12-01"
+  },
+  {
+    "path": "app/api/accounting/invoices/[id]/route.ts",
+    "methods": ["GET", "PUT", "PATCH", "POST", "DELETE"],
+    "reason": "Invoices CRUD \u2014 pending manifest migration",
+    "category": "legacy-migrate",
+    "owner": "backend-team",
+    "expiresOn": "2026-12-01"
+  },
+  {
+    "path": "app/api/accounting/payments/route.ts",
+    "methods": ["GET", "POST"],
+    "reason": "Payments CRUD \u2014 pending manifest migration",
+    "category": "legacy-migrate",
+    "owner": "backend-team",
+    "expiresOn": "2026-12-01"
+  },
+  {
+    "path": "app/api/accounting/payments/[id]/route.ts",
+    "methods": ["GET", "POST", "PUT", "PATCH", "DELETE"],
+    "reason": "Payments CRUD \u2014 pending manifest migration",
+    "category": "legacy-migrate",
+    "owner": "backend-team",
+    "expiresOn": "2026-12-01"
+  },
+  {
+    "path": "app/api/accounting/payment-methods/route.ts",
+    "methods": ["GET", "POST"],
+    "reason": "Payment methods CRUD \u2014 pending manifest migration",
+    "category": "legacy-migrate",
+    "owner": "backend-team",
+    "expiresOn": "2026-12-01"
+  },
+  {
+    "path": "app/api/accounting/payment-methods/[id]/route.ts",
+    "methods": ["GET", "PUT", "PATCH", "DELETE"],
+    "reason": "Payment methods CRUD \u2014 pending manifest migration",
+    "category": "legacy-migrate",
+    "owner": "backend-team",
+    "expiresOn": "2026-12-01"
+  },
+  {
+    "path": "app/api/accounting/revenue-recognition/schedules/route.ts",
+    "methods": ["GET", "POST"],
+    "reason": "Revenue recognition CRUD \u2014 pending manifest migration",
+    "category": "legacy-migrate",
+    "owner": "backend-team",
+    "expiresOn": "2026-12-01"
+  },
+  {
+    "path": "app/api/accounting/revenue-recognition/schedules/[id]/route.ts",
+    "methods": ["GET", "PUT", "PATCH", "DELETE"],
+    "reason": "Revenue recognition CRUD \u2014 pending manifest migration",
+    "category": "legacy-migrate",
+    "owner": "backend-team",
+    "expiresOn": "2026-12-01"
+  },
+  {
+    "path": "app/api/activity-feed/list/route.ts",
+    "methods": ["GET", "POST"],
+    "reason": "Activity feed \u2014 pending manifest migration",
+    "category": "legacy-migrate",
+    "owner": "backend-team",
+    "expiresOn": "2026-12-01"
+  },
+  {
+    "path": "app/api/administrative/chat/participants/commands/archive/route.ts",
+    "methods": ["POST"],
+    "reason": "Chat commands \u2014 pending manifest migration",
+    "category": "legacy-migrate",
+    "owner": "backend-team",
+    "expiresOn": "2026-12-01"
+  },
+  {
+    "path": "app/api/administrative/chat/participants/commands/unarchive/route.ts",
+    "methods": ["POST"],
+    "reason": "Chat commands \u2014 pending manifest migration",
+    "category": "legacy-migrate",
+    "owner": "backend-team",
+    "expiresOn": "2026-12-01"
+  },
+  {
+    "path": "app/api/administrative/chat/participants/commands/clear-history/route.ts",
+    "methods": ["POST"],
+    "reason": "Chat commands \u2014 pending manifest migration",
+    "category": "legacy-migrate",
+    "owner": "backend-team",
+    "expiresOn": "2026-12-01"
+  },
+  {
+    "path": "app/api/manifest/[entity]/commands/[command]/route.ts",
+    "methods": ["GET", "POST", "PUT", "PATCH", "DELETE"],
+    "reason": "Dynamic command dispatcher \u2014 wildcard path intentionally has no single IR entry; calls runManifestCommand which wraps runCommand",
+    "category": "dispatcher",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/administrative/trash/restore/route.ts",
+    "methods": ["POST", "DELETE"],
+    "reason": "Soft-delete restore \u2014 cross-entity infrastructure, not a single domain command",
+    "category": "infrastructure",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/ai-event-setup/parse/route.ts",
+    "methods": ["POST"],
+    "reason": "AI event setup NL parsing \u2014 LLM orchestration, not domain command",
+    "category": "ai",
+    "owner": "ai-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/ai/bulk-tasks/route.ts",
+    "methods": ["POST"],
+    "reason": "AI bulk task generation \u2014 LLM orchestration, not domain command",
+    "category": "ai",
+    "owner": "ai-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/ai/bulk-tasks/confirm/route.ts",
+    "methods": ["POST"],
+    "reason": "AI bulk task confirmation \u2014 LLM orchestration, not domain command",
+    "category": "ai",
+    "owner": "ai-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/calendar/reschedule/route.ts",
+    "methods": ["PATCH"],
+    "reason": "Calendar reschedule \u2014 cross-entity orchestration, not domain command",
+    "category": "infrastructure",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/calendar/sync/connect/route.ts",
+    "methods": ["POST"],
+    "reason": "Calendar sync connect \u2014 third-party integration, not domain command",
+    "category": "integration",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/calendar/sync/disconnect/route.ts",
+    "methods": ["POST"],
+    "reason": "Calendar sync disconnect \u2014 third-party integration, not domain command",
+    "category": "integration",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/calendar/sync/trigger/route.ts",
+    "methods": ["POST"],
+    "reason": "Calendar sync trigger \u2014 infrastructure side-effect, not domain command",
+    "category": "integration",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/collaboration/notifications/email/templates/route.ts",
+    "methods": ["POST"],
+    "reason": "Email template management \u2014 infrastructure settings, not domain command",
+    "category": "infrastructure",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/collaboration/notifications/email/templates/[id]/route.ts",
+    "methods": ["PUT", "DELETE"],
+    "reason": "Email template management \u2014 infrastructure settings, not domain command",
+    "category": "infrastructure",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/communications/sms/automation-rules/route.ts",
+    "methods": ["POST"],
+    "reason": "SMS automation rules \u2014 infrastructure config, not domain command",
+    "category": "infrastructure",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/communications/sms/automation-rules/[id]/route.ts",
+    "methods": ["PUT", "PATCH", "DELETE"],
+    "reason": "SMS automation rules \u2014 infrastructure config, not domain command",
+    "category": "infrastructure",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/command-board/simulations/route.ts",
+    "methods": ["POST"],
+    "reason": "Command board simulation CRUD \u2014 planning/simulation layer, not direct domain command",
+    "category": "composite",
+    "owner": "backend-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/command-board/simulations/[id]/route.ts",
+    "methods": ["PUT", "DELETE"],
+    "reason": "Command board simulation CRUD \u2014 planning/simulation layer",
+    "category": "composite",
+    "owner": "backend-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/command-board/simulations/[id]/apply/route.ts",
+    "methods": ["POST"],
+    "reason": "Apply simulation \u2014 composite operation",
+    "category": "composite",
+    "owner": "backend-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/command-board/simulations/[id]/discard/route.ts",
+    "methods": ["POST"],
+    "reason": "Discard simulation \u2014 composite operation",
+    "category": "composite",
+    "owner": "backend-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/command-board/simulations/merge/route.ts",
+    "methods": ["POST"],
+    "reason": "Merge simulation \u2014 composite operation",
+    "category": "composite",
+    "owner": "backend-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/command-board/templates/[shareId]/route.ts",
+    "methods": ["GET", "POST", "PUT", "DELETE"],
+    "reason": "Command board template management \u2014 infrastructure",
+    "category": "infrastructure",
+    "owner": "backend-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/crm/scoring/route.ts",
+    "methods": ["POST"],
+    "reason": "CRM lead scoring \u2014 no manifest command defined; pending migration",
+    "category": "legacy-migrate",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/crm/scoring/[id]/route.ts",
+    "methods": ["PUT", "DELETE"],
+    "reason": "CRM lead scoring \u2014 no manifest command defined; pending migration",
+    "category": "legacy-migrate",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/crm/scoring/calculate/route.ts",
+    "methods": ["POST"],
+    "reason": "CRM score calculation \u2014 read-aggregation, not mutation",
+    "category": "infrastructure",
+    "owner": "backend-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/crm/venues/route.ts",
+    "methods": ["POST"],
+    "reason": "CRM venues CRUD \u2014 no manifest command defined; pending migration",
+    "category": "legacy-migrate",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/crm/venues/[id]/route.ts",
+    "methods": ["PUT", "DELETE"],
+    "reason": "CRM venues CRUD \u2014 no manifest command defined; pending migration",
+    "category": "legacy-migrate",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/events/[eventId]/battle-board/email/route.ts",
+    "methods": ["POST"],
+    "reason": "Battle board email send \u2014 infrastructure side-effect, not domain command",
+    "category": "infrastructure",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/integrations/webhooks/dlq/[id]/route.ts",
+    "methods": ["DELETE"],
+    "reason": "Webhook DLQ management \u2014 infrastructure",
+    "category": "webhook",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/integrations/webhooks/dlq/[id]/retry/route.ts",
+    "methods": ["POST"],
+    "reason": "Webhook DLQ retry \u2014 infrastructure",
+    "category": "webhook",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/integrations/webhooks/dlq/[id]/resolve/route.ts",
+    "methods": ["POST"],
+    "reason": "Webhook DLQ resolve \u2014 infrastructure",
+    "category": "webhook",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/inventory/audit/reports/route.ts",
+    "methods": ["POST"],
+    "reason": "Inventory audit reporting \u2014 read-aggregation, not mutation",
+    "category": "infrastructure",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/inventory/audit/reports/[id]/route.ts",
+    "methods": ["DELETE"],
+    "reason": "Inventory audit report management \u2014 infrastructure",
+    "category": "infrastructure",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/inventory/audit/discrepancies/[id]/route.ts",
+    "methods": ["GET", "PUT", "PATCH", "DELETE"],
+    "reason": "Inventory audit discrepancy management \u2014 infrastructure",
+    "category": "infrastructure",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/inventory/audit/discrepancies/[id]/resolve/route.ts",
+    "methods": ["POST"],
+    "reason": "Inventory audit discrepancy resolve \u2014 infrastructure",
+    "category": "infrastructure",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/inventory/audit/schedule/route.ts",
+    "methods": ["GET", "POST", "PATCH", "DELETE"],
+    "reason": "Inventory audit schedule \u2014 infrastructure config, not domain command",
+    "category": "infrastructure",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/inventory/batch/route.ts",
+    "methods": ["POST"],
+    "reason": "Inventory batch operation \u2014 bulk infrastructure, not single domain command",
+    "category": "composite",
+    "owner": "backend-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/inventory/cycle-count/sessions/[id]/records/route.ts",
+    "methods": ["POST"],
+    "reason": "Cycle count records \u2014 sessionId param alias; already exempted via [sessionId] path",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/inventory/cycle-count/sessions/[id]/finalize/route.ts",
+    "methods": ["POST"],
+    "reason": "Cycle count finalize \u2014 sessionId param alias; already exempted via [sessionId] path",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/inventory/import/route.ts",
+    "methods": ["POST"],
+    "reason": "Inventory CSV import \u2014 file upload/import orchestration, not domain command",
+    "category": "file-upload",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/inventory/supplier-sync/route.ts",
+    "methods": ["POST"],
+    "reason": "Inventory supplier sync \u2014 third-party integration, not domain command",
+    "category": "integration",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/kitchen/import/route.ts",
+    "methods": ["POST"],
+    "reason": "Kitchen data import \u2014 file upload/import orchestration, not domain command",
+    "category": "file-upload",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/kitchen/ingredients/calculate-cost/route.ts",
+    "methods": ["POST"],
+    "reason": "Ingredient cost calculation \u2014 read-aggregation, not mutation",
+    "category": "infrastructure",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/kitchen/iot/alert-rules/route.ts",
+    "methods": ["POST"],
+    "reason": "IoT alert rules \u2014 infrastructure config, not domain command",
+    "category": "infrastructure",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/kitchen/iot/alerts/route.ts",
+    "methods": ["POST"],
+    "reason": "IoT alerts \u2014 infrastructure telemetry, not domain command",
+    "category": "infrastructure",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/kitchen/iot/alerts/[id]/route.ts",
+    "methods": ["GET", "PUT", "PATCH", "DELETE"],
+    "reason": "IoT alert management \u2014 infrastructure, not domain command",
+    "category": "infrastructure",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/kitchen/iot/probes/route.ts",
+    "methods": ["POST"],
+    "reason": "IoT probe registration \u2014 infrastructure, not domain command",
+    "category": "infrastructure",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/kitchen/iot/readings/route.ts",
+    "methods": ["POST"],
+    "reason": "IoT sensor readings \u2014 infrastructure telemetry, not domain command",
+    "category": "infrastructure",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/kitchen/nutrition-labels/generate/route.ts",
+    "methods": ["POST"],
+    "reason": "Nutrition label generation \u2014 read-aggregation/PDF, not domain command",
+    "category": "infrastructure",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/kitchen/recipes/[id]/composite/restore-version/route.ts",
+    "methods": ["POST"],
+    "reason": "Composite operation \u2014 orchestrates multiple manifest commands (recipeId alias)",
+    "category": "composite",
+    "owner": "backend-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/kitchen/recipes/[id]/composite/update-with-version/route.ts",
+    "methods": ["POST"],
+    "reason": "Composite operation \u2014 orchestrates multiple manifest commands (recipeId alias)",
+    "category": "composite",
+    "owner": "backend-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/kitchen/recipes/[id]/cost/route.ts",
+    "methods": ["POST"],
+    "reason": "Recipe cost calculation \u2014 read-aggregation (recipeId alias)",
+    "category": "infrastructure",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/kitchen/recipes/[id]/scale/route.ts",
+    "methods": ["POST", "PATCH"],
+    "reason": "Recipe scaling \u2014 read-aggregation (recipeId alias)",
+    "category": "infrastructure",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/kitchen/recipes/[id]/update-budgets/route.ts",
+    "methods": ["POST"],
+    "reason": "Budget update \u2014 orchestration across entities (recipeId alias)",
+    "category": "composite",
+    "owner": "backend-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/mobile/app-settings/route.ts",
+    "methods": ["GET", "PATCH"],
+    "reason": "Mobile app settings \u2014 user preferences/infrastructure, not domain command",
+    "category": "infrastructure",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/mobile/notification-preferences/route.ts",
+    "methods": ["GET", "PATCH"],
+    "reason": "Mobile notification preferences \u2014 user settings, not domain command",
+    "category": "infrastructure",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/mobile/push-token/route.ts",
+    "methods": ["POST"],
+    "reason": "Push token registration \u2014 infrastructure, not domain command",
+    "category": "infrastructure",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/payroll/tax/brackets/route.ts",
+    "methods": ["GET", "POST", "PUT", "PATCH", "DELETE"],
+    "reason": "Payroll tax brackets config \u2014 infrastructure settings, not domain command",
+    "category": "legacy-migrate",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/payroll/tax/list/route.ts",
+    "methods": ["GET", "PUT"],
+    "reason": "Payroll tax list \u2014 read-aggregation, not domain command",
+    "category": "infrastructure",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/payroll/timecards/generate/route.ts",
+    "methods": ["POST"],
+    "reason": "Timecard generation \u2014 orchestration, not single domain command",
+    "category": "composite",
+    "owner": "backend-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/procurement/approvals/action/route.ts",
+    "methods": ["POST"],
+    "reason": "Procurement approval action \u2014 no manifest command defined; pending migration",
+    "category": "legacy-migrate",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/rolepolicy/grant/route.ts",
+    "methods": ["POST"],
+    "reason": "Role policy grant \u2014 infrastructure RBAC, not domain command",
+    "category": "infrastructure",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/rolepolicy/revoke/route.ts",
+    "methods": ["POST"],
+    "reason": "Role policy revoke \u2014 infrastructure RBAC, not domain command",
+    "category": "infrastructure",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/rolepolicy/update/route.ts",
+    "methods": ["POST"],
+    "reason": "Role policy update \u2014 infrastructure RBAC, not domain command",
+    "category": "infrastructure",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/settings/rate-limits/route.ts",
+    "methods": ["POST"],
+    "reason": "Rate limit config \u2014 infrastructure settings, not domain command",
+    "category": "infrastructure",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/settings/rate-limits/[id]/route.ts",
+    "methods": ["GET", "PATCH", "DELETE"],
+    "reason": "Rate limit config \u2014 infrastructure settings, not domain command",
+    "category": "infrastructure",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/staff/optimize-schedule/route.ts",
+    "methods": ["POST"],
+    "reason": "Schedule optimization \u2014 read-aggregation/AI, not domain command",
+    "category": "ai",
+    "owner": "ai-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/staff/predict-performance/route.ts",
+    "methods": ["POST"],
+    "reason": "Performance prediction \u2014 read-aggregation/AI, not domain command",
+    "category": "ai",
+    "owner": "ai-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/staff/shifts/[id]/assignment-suggestions/route.ts",
+    "methods": ["POST"],
+    "reason": "Assignment suggestions \u2014 read-aggregation (shiftId alias)",
+    "category": "infrastructure",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/staffing/recommendations/route.ts",
+    "methods": ["POST"],
+    "reason": "Staffing recommendations \u2014 read-aggregation/AI, not domain command",
+    "category": "ai",
+    "owner": "ai-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/webhooks/supplier-catalog/route.ts",
+    "methods": ["POST"],
+    "reason": "Supplier catalog webhook \u2014 inbound third-party integration, not domain command",
+    "category": "webhook",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/user/update-role/route.ts",
+    "methods": ["POST"],
+    "reason": "User role update \u2014 uses runManifestCommand but outside commands/ namespace",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/user/deactivate/route.ts",
+    "methods": ["POST"],
+    "reason": "User deactivation \u2014 uses runManifestCommand but outside commands/ namespace",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  }
+]
