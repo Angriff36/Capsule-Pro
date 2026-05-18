@@ -21,7 +21,7 @@ const sendEmailSchema = z.object({
   recipients: z
     .array(
       z.object({
-        email: z.string().email(),
+        email: z.email(),
         employeeId: z.string().optional(),
         clientId: z.string().optional(),
         name: z.string().optional(),
@@ -42,7 +42,7 @@ const sendFromTemplateSchema = z.object({
   recipients: z
     .array(
       z.object({
-        email: z.string().email(),
+        email: z.email(),
         employeeId: z.string().optional(),
         clientId: z.string().optional(),
         name: z.string().optional(),

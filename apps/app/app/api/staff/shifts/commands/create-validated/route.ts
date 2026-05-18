@@ -6,10 +6,10 @@ import { z } from "zod";
 import { requireTenantId } from "@/app/lib/tenant";
 
 const createShiftSchema = z.object({
-  scheduleId: z.string().uuid(),
-  employeeId: z.string().uuid(),
-  locationId: z.string().uuid(),
-  eventId: z.string().uuid().optional(),
+  scheduleId: z.uuid(),
+  employeeId: z.uuid(),
+  locationId: z.uuid(),
+  eventId: z.uuid().optional(),
   shiftStart: z.number(), // epoch ms
   shiftEnd: z.number(), // epoch ms
   roleDuringShift: z.string().optional(),
@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
     const parsed = createShiftSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json(
-        { message: "Validation failed", errors: parsed.error.flatten() },
+        { message: "Validation failed", errors: z.treeifyError(parsed.error) },
         { status: 400 }
       );
     }
