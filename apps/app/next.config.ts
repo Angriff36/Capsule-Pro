@@ -236,6 +236,15 @@ const baseConfig: NextConfig = withToolbar(
       "localhost:25002",
       "127.0.0.1:25002",
     ],
+    // Turbopack aliases — replaces webpack resolve.alias for Next.js 16
+    // canvas is a Node-native module unavailable in browser/server bundles
+    turbopack: {
+      ...config.turbopack,
+      resolveAlias: {
+        ...config.turbopack?.resolveAlias,
+        canvas: false,
+      },
+    },
     experimental: {
       optimizePackageImports: [
         "lucide-react",
