@@ -231,8 +231,9 @@ const baseConfig: NextConfig = withToolbar(
     turbopack: {
       ...config.turbopack,
       resolveAlias: {
-        ...config.turbopack?.resolveAlias,
-        canvas: false,
+        // canvas is a Node-only module used by some PDF libs; stub it out for browser bundles
+        // Turbopack requires a string path, not a boolean — use empty module
+        canvas: require.resolve("./turbopack-empty-stub.js"),
       },
     },
     experimental: {
