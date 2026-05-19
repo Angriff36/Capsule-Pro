@@ -104,6 +104,8 @@ async function requireAuth() {
 
 /**
  * Parse FormData into a plain object and validate with the given Zod schema.
+ * Uses safeParse per Zod best-practice to avoid unhandled ZodError exceptions
+ * at the action boundary; re-throws as a readable Error on failure.
  */
 function parseFormData<T extends z.ZodTypeAny>(
   formData: FormData,
@@ -114,7 +116,11 @@ function parseFormData<T extends z.ZodTypeAny>(
     // Keep the last value for multi-value keys (not needed here, but safe)
     raw[key] = value;
   }
-  return schema.parse(raw);
+  const result = schema.safeParse(raw);
+  if (!result.success) {
+    throw new Error(z.prettifyError(result.error));
+  }
+  return result.data;
 }
 
 // ---------------------------------------------------------------------------
