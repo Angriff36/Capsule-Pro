@@ -15,7 +15,7 @@ import { requireTenantId } from "@/app/lib/tenant";
 const recordPaymentSchema = z.object({
   amount: z.number().positive(),
   paymentId: z.uuid().optional(),
-  paymentDate: z.string().datetime().optional(),
+  paymentDate: z.iso.datetime().optional(),
 });
 
 const escalateDunningSchema = z.object({
@@ -41,7 +41,7 @@ const writeOffSchema = z.object({
 
 const createPaymentPlanSchema = z.object({
   planId: z.uuid(),
-  nextPaymentDue: z.string().datetime(),
+  nextPaymentDue: z.iso.datetime(),
 });
 
 interface RouteContext {
