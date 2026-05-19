@@ -26,6 +26,7 @@ const driverSchema = z.object({
     .transform((v) => v || null),
   email: z
     .string()
+    .email({ message: "Invalid email address" })
     .optional()
     .transform((v) => v || null),
   licenseNumber: z
