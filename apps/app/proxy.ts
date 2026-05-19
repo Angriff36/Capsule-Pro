@@ -96,5 +96,7 @@ export const config = {
      * direct helper tests.
      */
     "/((?!(?:sign-in|sign-up|plasmic|view/proposal|sign/contract)(?:/|$)|_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|manifest.webmanifest|site.webmanifest|.*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
+    // Always run for Clerk-specific frontend API routes
+    "/__clerk/(.*)",
   ],
 };
