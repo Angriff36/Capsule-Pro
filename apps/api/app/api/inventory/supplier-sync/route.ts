@@ -32,7 +32,7 @@ export const runtime = "nodejs";
 // ============================================================================
 
 const SyncRequestSchema = z.object({
-  supplierId: z.string().uuid("Invalid supplier ID"),
+  supplierId: z.uuid({ error: "Invalid supplier ID" }),
   connectorId: z.string().min(1, "Connector ID is required"),
   fullSync: z.boolean().optional().default(true),
 });
