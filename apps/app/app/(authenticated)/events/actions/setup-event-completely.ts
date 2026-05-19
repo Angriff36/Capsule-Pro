@@ -47,7 +47,7 @@ export async function setupEventCompletely(
 
   // ── Fetch event ──────────────────────────────────────────────────────
 
-  const events = await database.$queryRawUnsafe<
+  const events = await database.$queryRaw<
     Array<{
       id: string;
       name: string;
@@ -55,13 +55,9 @@ export async function setupEventCompletely(
       venue_name: string | null;
       venue_entity_id: string | null;
     }>
-  >(
-    `SELECT id, name, client_id, venue_name, venue_entity_id
+  >`SELECT id, name, client_id, venue_name, venue_entity_id
      FROM tenant_events.events
-     WHERE tenant_id = $1 AND id = $2 AND deleted_at IS NULL`,
-    tenantId,
-    eventId
-  );
+     WHERE tenant_id = ${tenantId}::uuid AND id = ${eventId}::uuid AND deleted_at IS NULL`;
 
   if (events.length === 0) {
     throw new Error(`Event not found: ${eventId}`);
@@ -95,26 +91,18 @@ export async function setupEventCompletely(
     };
   } else {
     try {
-      const clients = await database.$queryRawUnsafe<
+      const clients = await database.$queryRaw<
         Array<{ id: string; company_name: string }>
-      >(
-        `SELECT id, company_name
+      >`SELECT id, company_name
          FROM tenant_crm.clients
-         WHERE tenant_id = $1 AND deleted_at IS NULL
+         WHERE tenant_id = ${tenantId}::uuid AND deleted_at IS NULL
          ORDER BY created_at DESC
-         LIMIT 1`,
-        tenantId
-      );
+         LIMIT 1`;
 
       if (clients.length > 0) {
-        await database.$executeRawUnsafe(
-          `UPDATE tenant_events.events
-           SET client_id = $1, updated_at = NOW()
-           WHERE tenant_id = $2 AND id = $3`,
-          clients[0].id,
-          tenantId,
-          eventId
-        );
+        await database.$executeRaw`UPDATE tenant_events.events
+           SET client_id = ${clients[0].id}::uuid, updated_at = NOW()
+           WHERE tenant_id = ${tenantId}::uuid AND id = ${eventId}::uuid`;
         result.steps.clientAssigned = {
           completed: true,
           skipped: false,
@@ -152,14 +140,9 @@ export async function setupEventCompletely(
     // No venue — set a placeholder from the event name so the step turns green
     try {
       const defaultVenueName = `${event.name} Venue`;
-      await database.$executeRawUnsafe(
-        `UPDATE tenant_events.events
-         SET venue_name = $1, updated_at = NOW()
-         WHERE tenant_id = $2 AND id = $3`,
-        defaultVenueName,
-        tenantId,
-        eventId
-      );
+      await database.$executeRaw`UPDATE tenant_events.events
+         SET venue_name = ${defaultVenueName}, updated_at = NOW()
+         WHERE tenant_id = ${tenantId}::uuid AND id = ${eventId}::uuid`;
       result.steps.venueVerified = {
         completed: true,
         skipped: false,
@@ -181,15 +164,11 @@ export async function setupEventCompletely(
 
   try {
     // Check how many dishes already assigned
-    const existingDishes = await database.$queryRawUnsafe<
+    const existingDishes = await database.$queryRaw<
       Array<{ cnt: bigint }>
-    >(
-      `SELECT COUNT(*) as cnt
+    >`SELECT COUNT(*) as cnt
        FROM tenant_events.event_dishes
-       WHERE tenant_id = $1 AND event_id = $2 AND deleted_at IS NULL`,
-      tenantId,
-      eventId
-    );
+       WHERE tenant_id = ${tenantId}::uuid AND event_id = ${eventId}::uuid AND deleted_at IS NULL`;
 
     if (Number(existingDishes[0].cnt) > 0) {
       result.steps.dishesAdded = {
@@ -199,31 +178,23 @@ export async function setupEventCompletely(
       };
     } else {
       // Pick up to 3 active dishes
-      const dishes = await database.$queryRawUnsafe<
+      const dishes = await database.$queryRaw<
         Array<{ id: string; name: string }>
-      >(
-        `SELECT id, name
+      >`SELECT id, name
          FROM tenant_kitchen.dishes
-         WHERE tenant_id = $1 AND deleted_at IS NULL AND is_active = true
+         WHERE tenant_id = ${tenantId}::uuid AND deleted_at IS NULL AND is_active = true
          ORDER BY created_at DESC
-         LIMIT 3`,
-        tenantId
-      );
+         LIMIT 3`;
 
       let added = 0;
       for (const dish of dishes) {
         try {
-          await database.$executeRawUnsafe(
-            `INSERT INTO tenant_events.event_dishes (
+          await database.$executeRaw`INSERT INTO tenant_events.event_dishes (
                tenant_id, id, event_id, dish_id, quantity_servings,
                created_at, updated_at
              ) VALUES (
-               $1, gen_random_uuid(), $2, $3, 1, NOW(), NOW()
-             )`,
-            tenantId,
-            eventId,
-            dish.id
-          );
+               ${tenantId}::uuid, gen_random_uuid(), ${eventId}::uuid, ${dish.id}::uuid, 1, NOW(), NOW()
+             )`;
           added++;
         } catch {
           // Duplicate or other constraint — skip, try next dish
@@ -263,15 +234,11 @@ export async function setupEventCompletely(
   // ── Step 4: Staff ────────────────────────────────────────────────────
 
   try {
-    const existingStaff = await database.$queryRawUnsafe<
+    const existingStaff = await database.$queryRaw<
       Array<{ cnt: bigint }>
-    >(
-      `SELECT COUNT(*) as cnt
+    >`SELECT COUNT(*) as cnt
        FROM tenant_events.event_staff_assignments
-       WHERE tenant_id = $1 AND event_id = $2 AND deleted_at IS NULL`,
-      tenantId,
-      eventId
-    );
+       WHERE tenant_id = ${tenantId}::uuid AND event_id = ${eventId}::uuid AND deleted_at IS NULL`;
 
     if (Number(existingStaff[0].cnt) > 0) {
       result.steps.staffAssigned = {
@@ -280,43 +247,30 @@ export async function setupEventCompletely(
         detail: `${existingStaff[0].cnt} staff already assigned`,
       };
     } else {
-      const employees = await database.$queryRawUnsafe<
+      const employees = await database.$queryRaw<
         Array<{ id: string; first_name: string; last_name: string }>
-      >(
-        `SELECT id, first_name, last_name
+      >`SELECT id, first_name, last_name
          FROM tenant_staff.employees
-         WHERE tenant_id = $1 AND deleted_at IS NULL AND is_active = true
+         WHERE tenant_id = ${tenantId}::uuid AND deleted_at IS NULL AND is_active = true
          ORDER BY created_at DESC
-         LIMIT 2`,
-        tenantId
-      );
+         LIMIT 2`;
 
       let assigned = 0;
       const names: string[] = [];
 
       for (const emp of employees) {
         // Check for existing assignment (avoid duplicates)
-        const alreadyAssigned = await database.$queryRawUnsafe<
+        const alreadyAssigned = await database.$queryRaw<
           Array<{ id: string }>
-        >(
-          `SELECT id
+        >`SELECT id
            FROM tenant_events.event_staff_assignments
-           WHERE tenant_id = $1 AND event_id = $2 AND employee_id = $3 AND deleted_at IS NULL`,
-          tenantId,
-          eventId,
-          emp.id
-        );
+           WHERE tenant_id = ${tenantId}::uuid AND event_id = ${eventId}::uuid AND employee_id = ${emp.id}::uuid AND deleted_at IS NULL`;
 
         if (alreadyAssigned.length > 0) continue;
 
-        await database.$executeRawUnsafe(
-          `INSERT INTO tenant_events.event_staff_assignments (
+        await database.$executeRaw`INSERT INTO tenant_events.event_staff_assignments (
              tenant_id, event_id, employee_id, role, created_at, updated_at
-           ) VALUES ($1, $2, $3, 'staff', NOW(), NOW())`,
-          tenantId,
-          eventId,
-          emp.id
-        );
+           ) VALUES (${tenantId}::uuid, ${eventId}::uuid, ${emp.id}::uuid, 'staff', NOW(), NOW())`;
         assigned++;
         names.push(`${emp.first_name} ${emp.last_name}`);
       }
@@ -351,15 +305,11 @@ export async function setupEventCompletely(
   // ── Step 5: Prep List ────────────────────────────────────────────────
 
   try {
-    const existingPrepLists = await database.$queryRawUnsafe<
+    const existingPrepLists = await database.$queryRaw<
       Array<{ cnt: bigint }>
-    >(
-      `SELECT COUNT(*) as cnt
+    >`SELECT COUNT(*) as cnt
        FROM tenant_kitchen.prep_lists
-       WHERE tenant_id = $1 AND event_id = $2`,
-      tenantId,
-      eventId
-    );
+       WHERE tenant_id = ${tenantId}::uuid AND event_id = ${eventId}::uuid`;
 
     if (Number(existingPrepLists[0].cnt) > 0) {
       result.steps.prepListGenerated = {
@@ -370,30 +320,21 @@ export async function setupEventCompletely(
     } else {
       // Create a minimal prep list record so the checklist step turns green.
       // Full generation (ingredients from recipes) can happen separately.
-      const eventDate = await database.$queryRawUnsafe<
+      const eventDate = await database.$queryRaw<
         Array<{ event_date: Date | null }>
-      >(
-        `SELECT event_date FROM tenant_events.events
-         WHERE tenant_id = $1 AND id = $2`,
-        tenantId,
-        eventId
-      );
+      >`SELECT event_date FROM tenant_events.events
+         WHERE tenant_id = ${tenantId}::uuid AND id = ${eventId}::uuid`;
 
       const serviceDate =
         eventDate[0]?.event_date ?? new Date(Date.now() + 7 * 86_400_000);
 
-      await database.$executeRawUnsafe(
-        `INSERT INTO tenant_kitchen.prep_lists (
+      const prepListTitle = `${event.name} - Prep List`;
+      await database.$executeRaw`INSERT INTO tenant_kitchen.prep_lists (
            tenant_id, id, event_id, title, status, service_date,
            created_at, updated_at
          ) VALUES (
-           $1, gen_random_uuid(), $2, $3, 'draft', $4, NOW(), NOW()
-         )`,
-        tenantId,
-        eventId,
-        `${event.name} - Prep List`,
-        serviceDate
-      );
+           ${tenantId}::uuid, gen_random_uuid(), ${eventId}::uuid, ${prepListTitle}, 'draft', ${serviceDate}::timestamptz, NOW(), NOW()
+         )`;
 
       result.steps.prepListGenerated = {
         completed: true,
@@ -415,15 +356,11 @@ export async function setupEventCompletely(
   // ── Step 6: Contract ─────────────────────────────────────────────────
 
   try {
-    const existingContracts = await database.$queryRawUnsafe<
+    const existingContracts = await database.$queryRaw<
       Array<{ cnt: bigint }>
-    >(
-      `SELECT COUNT(*) as cnt
+    >`SELECT COUNT(*) as cnt
        FROM tenant_events.event_contracts
-       WHERE tenant_id = $1 AND event_id = $2 AND deleted_at IS NULL`,
-      tenantId,
-      eventId
-    );
+       WHERE tenant_id = ${tenantId}::uuid AND event_id = ${eventId}::uuid AND deleted_at IS NULL`;
 
     if (Number(existingContracts[0].cnt) > 0) {
       result.steps.contractCreated = {
@@ -434,20 +371,15 @@ export async function setupEventCompletely(
     } else {
       // Use event's client if assigned, otherwise null
       const clientId = event.client_id ?? null;
+      const contractTitle = `${event.name} - Standard Catering Agreement`;
 
-      await database.$executeRawUnsafe(
-        `INSERT INTO tenant_events.event_contracts (
+      await database.$executeRaw`INSERT INTO tenant_events.event_contracts (
            tenant_id, id, event_id, client_id, title, status,
            created_at, updated_at
          ) VALUES (
-           $1, gen_random_uuid(), $2, $3, $4, 'draft',
+           ${tenantId}::uuid, gen_random_uuid(), ${eventId}::uuid, ${clientId}::uuid, ${contractTitle}, 'draft',
            NOW(), NOW()
-         )`,
-        tenantId,
-        eventId,
-        clientId,
-        `${event.name} - Standard Catering Agreement`
-      );
+         )`;
 
       result.steps.contractCreated = {
         completed: true,
@@ -469,15 +401,11 @@ export async function setupEventCompletely(
   // ── Step 7: Budget ───────────────────────────────────────────────────
 
   try {
-    const existingBudgets = await database.$queryRawUnsafe<
+    const existingBudgets = await database.$queryRaw<
       Array<{ cnt: bigint }>
-    >(
-      `SELECT COUNT(*) as cnt
+    >`SELECT COUNT(*) as cnt
        FROM tenant_events.event_budgets
-       WHERE tenant_id = $1 AND event_id = $2 AND deleted_at IS NULL`,
-      tenantId,
-      eventId
-    );
+       WHERE tenant_id = ${tenantId}::uuid AND event_id = ${eventId}::uuid AND deleted_at IS NULL`;
 
     if (Number(existingBudgets[0].cnt) > 0) {
       result.steps.budgetCreated = {
@@ -486,18 +414,14 @@ export async function setupEventCompletely(
         detail: "Budget already exists",
       };
     } else {
-      await database.$executeRawUnsafe(
-        `INSERT INTO tenant_events.event_budgets (
+      await database.$executeRaw`INSERT INTO tenant_events.event_budgets (
            tenant_id, id, event_id, version, status,
            total_budget_amount, total_actual_amount, variance_amount,
            variance_percentage, created_at, updated_at
          ) VALUES (
-           $1, gen_random_uuid(), $2, 1, 'draft',
+           ${tenantId}::uuid, gen_random_uuid(), ${eventId}::uuid, 1, 'draft',
            0, 0, 0, 0, NOW(), NOW()
-         )`,
-        tenantId,
-        eventId
-      );
+         )`;
 
       result.steps.budgetCreated = {
         completed: true,
