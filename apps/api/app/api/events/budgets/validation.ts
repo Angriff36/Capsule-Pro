@@ -91,7 +91,7 @@ export const UpdateEventBudgetSchema = z
       .optional(),
     notes: z.string().optional(),
   })
-  .refine((data) => Object.keys(data).length > 0, {
+  .refine((data) => Object.values(data).some((v) => v !== undefined), {
     error: "At least one field must be provided for update",
   });
 
@@ -122,7 +122,7 @@ export const UpdateBudgetLineItemSchema = z
     sortOrder: z.number().int().min(0).optional(),
     notes: z.string().optional(),
   })
-  .refine((data) => Object.keys(data).length > 0, {
+  .refine((data) => Object.values(data).some((v) => v !== undefined), {
     error: "At least one field must be provided for update",
   });
 
