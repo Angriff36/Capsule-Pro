@@ -120,7 +120,11 @@ function generateRequisitionNumber(year: number, suffix: string): string {
 export async function createPurchaseOrder(input: CreatePurchaseOrderInput) {
   const { tenantId, userId } = await requireAuth();
 
-  const data = purchaseOrderSchema.parse(input);
+  const parsed = purchaseOrderSchema.safeParse(input);
+  if (!parsed.success) {
+    return { error: `Validation failed: ${z.prettifyError(parsed.error)}` };
+  }
+  const data = parsed.data;
 
   // Resolve locationId: prefer explicit selection, fall back to primary or first active location
   let locationId = data.locationId;
@@ -192,7 +196,11 @@ export async function createPurchaseRequisition(
 ) {
   const { tenantId, userId } = await requireAuth();
 
-  const data = purchaseRequisitionSchema.parse(input);
+  const parsed = purchaseRequisitionSchema.safeParse(input);
+  if (!parsed.success) {
+    return { error: `Validation failed: ${z.prettifyError(parsed.error)}` };
+  }
+  const data = parsed.data;
 
   // Calculate estimated totals
   const subtotal = data.items.reduce(
