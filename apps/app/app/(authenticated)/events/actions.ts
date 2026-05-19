@@ -8,7 +8,7 @@ import { requireTenantId } from "../../lib/tenant";
 import { type EventStatus, eventStatuses } from "./constants";
 import { importEventFromCsvText, importEventFromPdf } from "./importer";
 import { z } from "zod";
-import { createEventSchema } from "./validation";
+import { createEventSchema, updateEventSchema } from "./validation";
 
 const getString = (formData: FormData, key: string): string | undefined => {
   const value = formData.get(key);
@@ -277,72 +277,72 @@ export const createEvent = async (
 
 export const updateEvent = async (formData: FormData): Promise<void> => {
   const tenantId = await requireTenantId();
-  const eventId = getString(formData, "eventId");
-  const eventDate = getDate(formData, "eventDate");
-  const title = getString(formData, "title");
-  const eventType = getString(formData, "eventType");
-  const guestCount = getNumber(formData, "guestCount");
 
-  if (!eventId) {
-    throw new Error("Event id is required.");
+  const rawData = {
+    eventId: getString(formData, "eventId"),
+    title: getString(formData, "title"),
+    eventType: getString(formData, "eventType"),
+    eventDate: getString(formData, "eventDate"),
+    guestCount: getString(formData, "guestCount"),
+    status: getString(formData, "status"),
+    budget: getString(formData, "budget"),
+    ticketPrice: getString(formData, "ticketPrice"),
+    ticketTier: getOptionalString(formData, "ticketTier"),
+    eventFormat: getOptionalString(formData, "eventFormat"),
+    accessibilityOptions: getList(formData, "accessibilityOptions"),
+    featuredMediaUrl: getOptionalString(formData, "featuredMediaUrl"),
+    venueName: getOptionalString(formData, "venueName"),
+    venueAddress: getOptionalString(formData, "venueAddress"),
+    notes: getOptionalString(formData, "notes"),
+    clientId: getOptionalString(formData, "clientId"),
+    tags: getTags(formData),
+    eventNumber: getOptionalString(formData, "eventNumber"),
+  };
+
+  const parsed = updateEventSchema.safeParse(rawData);
+
+  if (!parsed.success) {
+    throw new Error(`Validation failed: ${z.prettifyError(parsed.error)}`);
   }
 
-  if (!eventDate) {
-    throw new Error("Event date is required.");
-  }
+  const data = parsed.data;
+  const eventId = data.eventId;
 
-  if (!title) {
-    throw new Error("Event title is required.");
-  }
-
-  if (!eventType) {
-    throw new Error("Event type is required.");
-  }
-
-  if (!guestCount || guestCount < 1) {
-    throw new Error("Guest count must be at least 1.");
-  }
-
-  const status = getStatus(formData);
-
-  if (!eventStatuses.includes(status)) {
-    throw new Error("Invalid status.");
-  }
+  // Use noon UTC to avoid timezone shifts across midnight boundaries
+  const eventDate = new Date(`${data.eventDate}T12:00:00Z`);
 
   const missingFields = await computeMissingEventFields({
     tenantId,
     eventId,
-    title,
-    eventType,
+    title: data.title,
+    eventType: data.eventType,
     eventDate,
-    guestCount,
-    venueName: getOptionalString(formData, "venueName"),
+    guestCount: data.guestCount,
+    venueName: data.venueName,
   });
-  const tags = mergeTags(getTags(formData), missingFields);
-
-  const eventNumberInput = getOptionalString(formData, "eventNumber");
+  const tags = mergeTags(data.tags, missingFields);
 
   await database.event.updateMany({
     where: {
       AND: [{ tenantId }, { id: eventId }],
     },
     data: {
-      ...(eventNumberInput !== undefined && { eventNumber: eventNumberInput }),
-      title,
-      eventType,
+      ...(data.eventNumber !== undefined && { eventNumber: data.eventNumber }),
+      title: data.title,
+      eventType: data.eventType,
       eventDate,
-      guestCount,
-      status,
-      budget: getNumberOrNull(formData, "budget"),
-      ticketPrice: getNumberOrNull(formData, "ticketPrice"),
-      ticketTier: getOptionalString(formData, "ticketTier"),
-      eventFormat: getOptionalString(formData, "eventFormat"),
-      accessibilityOptions: getList(formData, "accessibilityOptions"),
-      featuredMediaUrl: getOptionalString(formData, "featuredMediaUrl"),
-      venueName: getOptionalString(formData, "venueName"),
-      venueAddress: getOptionalString(formData, "venueAddress"),
-      notes: getOptionalString(formData, "notes"),
-      clientId: getOptionalString(formData, "clientId"),
+      guestCount: data.guestCount,
+      status: data.status,
+      budget: data.budget ?? null,
+      ticketPrice: data.ticketPrice ?? null,
+      ticketTier: data.ticketTier,
+      eventFormat: data.eventFormat,
+      accessibilityOptions: data.accessibilityOptions,
+      featuredMediaUrl: data.featuredMediaUrl ?? null,
+      venueName: data.venueName,
+      venueAddress: data.venueAddress,
+      notes: data.notes,
+      clientId: data.clientId,
       tags,
     },
   });
