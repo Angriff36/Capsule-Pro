@@ -62,7 +62,7 @@ export const CreateEventBudgetSchema = z
       return lineItemsTotal <= data.totalBudgetAmount;
     },
     {
-      message:
+      error:
         "Line item budgeted amounts cannot exceed the total budget amount",
       path: ["lineItems"],
     }
@@ -76,7 +76,7 @@ export const CreateEventBudgetSchema = z
       return true;
     },
     {
-      message: "Non-draft budgets must have a positive total budget amount",
+      error: "Non-draft budgets must have a positive total budget amount",
       path: ["totalBudgetAmount"],
     }
   );
@@ -92,7 +92,7 @@ export const UpdateEventBudgetSchema = z
     notes: z.string().optional(),
   })
   .refine((data) => Object.keys(data).length > 0, {
-    message: "At least one field must be provided for update",
+    error: "At least one field must be provided for update",
   });
 
 // Create Budget Line Item Schema
@@ -123,7 +123,7 @@ export const UpdateBudgetLineItemSchema = z
     notes: z.string().optional(),
   })
   .refine((data) => Object.keys(data).length > 0, {
-    message: "At least one field must be provided for update",
+    error: "At least one field must be provided for update",
   });
 
 // List Filters Schema
