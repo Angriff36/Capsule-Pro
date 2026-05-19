@@ -26,8 +26,8 @@ const purchaseOrderItemSchema = z.object({
 });
 
 const purchaseOrderSchema = z.object({
-  vendorId: z.uuid("Invalid vendor"),
-  locationId: z.uuid("Invalid location").optional().nullable(),
+  vendorId: z.uuid({ message: "Invalid vendor" }),
+  locationId: z.uuid({ message: "Invalid location" }).optional().nullable(),
   expectedDeliveryDate: z
     .string()
     .optional()
