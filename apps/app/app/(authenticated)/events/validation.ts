@@ -45,7 +45,7 @@ export const updateEventSchema = z.object({
   eventId: z.string().min(1, "Event id is required"),
   title: z.string().min(1, "Event title is required"),
   eventType: z.string().min(1, "Event type is required"),
-  eventDate: z.string().min(1, "Event date is required"),
+  eventDate: z.iso.date(),
   guestCount: z.coerce.number().int().min(1, "Guest count must be at least 1"),
   status: z
     .enum([
