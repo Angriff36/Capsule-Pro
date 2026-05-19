@@ -7,6 +7,7 @@ import { redirect } from "next/navigation";
 import { requireTenantId } from "../../lib/tenant";
 import { type EventStatus, eventStatuses } from "./constants";
 import { importEventFromCsvText, importEventFromPdf } from "./importer";
+import { z } from "zod";
 import { createEventSchema } from "./validation";
 
 const getString = (formData: FormData, key: string): string | undefined => {
@@ -206,9 +207,7 @@ export const createEvent = async (
   const parsed = createEventSchema.safeParse(rawData);
 
   if (!parsed.success) {
-    const issues = parsed.error.issues ?? [];
-    const errors = issues.map((e) => e.message).join(", ");
-    return { error: `Validation failed: ${errors}` };
+    return { error: `Validation failed: ${z.prettifyError(parsed.error)}` };
   }
 
   const data = parsed.data;
