@@ -5,6 +5,7 @@
  * POST   /api/events/budgets      - Create a new event budget
  */
 
+import { ZodError } from "zod";
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
@@ -83,6 +84,12 @@ export async function GET(request: Request) {
       totalPages,
     });
   } catch (error) {
+    if (error instanceof ZodError) {
+      return NextResponse.json(
+        { message: "Invalid query parameters", errors: error.issues },
+        { status: 400 }
+      );
+    }
     captureException(error);
     log.error("Error fetching event budgets:", error);
     return NextResponse.json(
@@ -246,18 +253,16 @@ export async function POST(request: Request) {
 
     return NextResponse.json(budgetWithLineItems, { status: 201 });
   } catch (error) {
-    captureException(error);
-    if (error instanceof Error) {
-      if (error.name === "ZodError") {
-        return NextResponse.json(
-          { message: "Validation error", errors: error },
-          { status: 400 }
-        );
-      }
-      if (error instanceof InvariantError) {
-        return NextResponse.json({ message: error.message }, { status: 400 });
-      }
+    if (error instanceof ZodError) {
+      return NextResponse.json(
+        { message: "Validation error", errors: error.issues },
+        { status: 400 }
+      );
     }
+    if (error instanceof InvariantError) {
+      return NextResponse.json({ message: error.message }, { status: 400 });
+    }
+    captureException(error);
     log.error("Error creating event budget:", error);
     return NextResponse.json(
       { message: "Failed to create event budget" },
