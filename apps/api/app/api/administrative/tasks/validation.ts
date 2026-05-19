@@ -54,7 +54,7 @@ export const UpdateAdminTaskSchema = z
     sourceId: z.uuid({ error: "sourceId must be a valid UUID" }).nullable(),
   })
   .partial()
-  .refine((data) => Object.keys(data).length > 0, {
+  .refine((data) => Object.values(data).some((v) => v !== undefined), {
     error: "At least one field must be provided for update",
   });
 
