@@ -27,11 +27,11 @@ export const PayrollPrefsSchema = z.object({
 export type PayrollPrefs = z.infer<typeof PayrollPrefsSchema>;
 
 export const EmployeeSchema = z.object({
-  id: z.string().uuid(),
-  tenantId: z.string().uuid(),
+  id: z.uuid(),
+  tenantId: z.uuid(),
   name: z.string(),
   department: z.string().optional(),
-  roleId: z.string().uuid(),
+  roleId: z.uuid(),
   currency: z.string().default("USD"),
   hourlyRate: z.number().min(0),
   taxInfo: TaxInfoSchema.optional(),
@@ -45,8 +45,8 @@ export type Employee = z.infer<typeof EmployeeSchema>;
 // ============================================
 
 export const RoleSchema = z.object({
-  id: z.string().uuid(),
-  tenantId: z.string().uuid(),
+  id: z.uuid(),
+  tenantId: z.uuid(),
   name: z.string(),
   baseRate: z.number().min(0), // per hour
   overtimeMultiplier: z.number().min(1).default(1.5),
@@ -60,9 +60,9 @@ export type Role = z.infer<typeof RoleSchema>;
 // ============================================
 
 export const TimeEntrySchema = z.object({
-  id: z.string().uuid(),
-  tenantId: z.string().uuid(),
-  employeeId: z.string().uuid(),
+  id: z.uuid(),
+  tenantId: z.uuid(),
+  employeeId: z.uuid(),
   date: z.coerce.date(),
   hoursWorked: z.number().min(0),
   hoursRegular: z.number().min(0),
@@ -83,12 +83,12 @@ export const TipAllocationRule = z.enum([
 ]);
 
 export const TipPoolSchema = z.object({
-  id: z.string().uuid(),
-  tenantId: z.string().uuid(),
-  periodId: z.string().uuid(),
+  id: z.uuid(),
+  tenantId: z.uuid(),
+  periodId: z.uuid(),
   totalTips: z.number().min(0),
   allocationRule: TipAllocationRule,
-  fixedShares: z.record(z.string().uuid(), z.number()).optional(), // employeeId -> share percentage
+  fixedShares: z.record(z.uuid(), z.number()).optional(), // employeeId -> share percentage
 });
 
 export type TipPool = z.infer<typeof TipPoolSchema>;
@@ -112,9 +112,9 @@ export const DeductionTypeEnum = z.enum([
 ]);
 
 export const DeductionSchema = z.object({
-  id: z.string().uuid(),
-  tenantId: z.string().uuid(),
-  employeeId: z.string().uuid(),
+  id: z.uuid(),
+  tenantId: z.uuid(),
+  employeeId: z.uuid(),
   type: DeductionTypeEnum,
   name: z.string(),
   amount: z.number().min(0).optional(), // fixed amount
@@ -141,8 +141,8 @@ export const PayrollPeriodStatusEnum = z.enum([
 ]);
 
 export const PayrollPeriodSchema = z.object({
-  id: z.string().uuid(),
-  tenantId: z.string().uuid(),
+  id: z.uuid(),
+  tenantId: z.uuid(),
   startDate: z.coerce.date(),
   endDate: z.coerce.date(),
   status: PayrollPeriodStatusEnum.default("draft"),
@@ -158,7 +158,7 @@ export type PayrollPeriod = z.infer<typeof PayrollPeriodSchema>;
 // ============================================
 
 export const DeductionLineSchema = z.object({
-  deductionId: z.string().uuid(),
+  deductionId: z.uuid(),
   type: DeductionTypeEnum,
   name: z.string(),
   amount: z.number(),
@@ -183,10 +183,10 @@ export const TaxWithholdingSchema = z.object({
 export type TaxWithholding = z.infer<typeof TaxWithholdingSchema>;
 
 export const PayrollRecordSchema = z.object({
-  id: z.string().uuid(),
-  tenantId: z.string().uuid(),
-  periodId: z.string().uuid(),
-  employeeId: z.string().uuid(),
+  id: z.uuid(),
+  tenantId: z.uuid(),
+  periodId: z.uuid(),
+  employeeId: z.uuid(),
   employeeName: z.string(),
   department: z.string().optional(),
   roleName: z.string(),
@@ -204,7 +204,7 @@ export const PayrollRecordSchema = z.object({
   totalDeductions: z.number().min(0),
   netPay: z.number(),
   currency: z.string().default("USD"),
-  auditId: z.string().uuid().optional(),
+  auditId: z.uuid().optional(),
   createdAt: z.coerce.date().optional(),
 });
 
@@ -215,9 +215,9 @@ export type PayrollRecord = z.infer<typeof PayrollRecordSchema>;
 // ============================================
 
 export const PayrollAuditSchema = z.object({
-  id: z.string().uuid(),
-  tenantId: z.string().uuid(),
-  periodId: z.string().uuid(),
+  id: z.uuid(),
+  tenantId: z.uuid(),
+  periodId: z.uuid(),
   action: z.enum([
     "generated",
     "recalculated",
@@ -225,7 +225,7 @@ export const PayrollAuditSchema = z.object({
     "exported",
     "voided",
   ]),
-  userId: z.string().uuid().optional(),
+  userId: z.uuid().optional(),
   timestamp: z.coerce.date(),
   inputSnapshot: z.unknown().optional(),
   rulesVersion: z.string().optional(),
@@ -247,8 +247,8 @@ export type PayrollAudit = z.infer<typeof PayrollAuditSchema>;
 // ============================================
 
 export const PayrollCalculationInputSchema = z.object({
-  tenantId: z.string().uuid(),
-  periodId: z.string().uuid(),
+  tenantId: z.uuid(),
+  periodId: z.uuid(),
   periodStart: z.coerce.date(),
   periodEnd: z.coerce.date(),
   employees: z.array(EmployeeSchema),
@@ -279,9 +279,9 @@ export type GeneratePayrollRequest = z.infer<
 >;
 
 export const GeneratePayrollResponseSchema = z.object({
-  batchId: z.string().uuid(),
+  batchId: z.uuid(),
   status: z.enum(["processing", "completed", "failed"]),
-  periodId: z.string().uuid(),
+  periodId: z.uuid(),
   estimatedTotals: z.object({
     totalGross: z.number(),
     totalNet: z.number(),
