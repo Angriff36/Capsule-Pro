@@ -3,7 +3,7 @@ import { z } from "zod";
 export const createEventSchema = z.object({
   title: z.string().min(1, "Event title is required"),
   eventType: z.string().default("catering"),
-  eventDate: z.string().date("Event date must be a valid date (YYYY-MM-DD)"),
+  eventDate: z.iso.date(),
   guestCount: z.coerce
     .number()
     .int()

@@ -26,9 +26,7 @@ export const CreateAdminTaskSchema = z.object({
   priority: z.enum(ADMIN_TASK_PRIORITIES).default("medium"),
   category: z.string().max(100).optional(),
   dueDate: z
-    .string()
-    .datetime({ offset: true })
-    .or(z.string().date())
+    .union([z.iso.datetime({ offset: true }), z.iso.date()])
     .transform((str) => new Date(str))
     .optional(),
   assignedTo: z.uuid({ error: "assignedTo must be a valid UUID" }).optional(),
@@ -48,9 +46,7 @@ export const UpdateAdminTaskSchema = z
     priority: z.enum(ADMIN_TASK_PRIORITIES),
     category: z.string().max(100).nullable(),
     dueDate: z
-      .string()
-      .datetime({ offset: true })
-      .or(z.string().date())
+      .union([z.iso.datetime({ offset: true }), z.iso.date()])
       .transform((str) => new Date(str))
       .nullable(),
     assignedTo: z.uuid({ error: "assignedTo must be a valid UUID" }).nullable(),
