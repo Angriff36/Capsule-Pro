@@ -30,7 +30,7 @@ export const BudgetCategorySchema = z.enum([
 // Create Event Budget Schema
 export const CreateEventBudgetSchema = z
   .object({
-    eventId: z.string().uuid("Invalid event ID format"),
+    eventId: z.uuid({ error: "Invalid event ID format" }),
     status: EventBudgetStatusSchema.optional().default("draft"),
     totalBudgetAmount: z.number().min(0, "Budget amount must be non-negative"),
     notes: z.string().optional(),

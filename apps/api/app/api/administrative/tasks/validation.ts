@@ -31,9 +31,9 @@ export const CreateAdminTaskSchema = z.object({
     .or(z.string().date())
     .transform((str) => new Date(str))
     .optional(),
-  assignedTo: z.string().uuid("assignedTo must be a valid UUID").optional(),
+  assignedTo: z.uuid({ error: "assignedTo must be a valid UUID" }).optional(),
   sourceType: z.string().max(100).optional(),
-  sourceId: z.string().uuid("sourceId must be a valid UUID").optional(),
+  sourceId: z.uuid({ error: "sourceId must be a valid UUID" }).optional(),
 });
 
 export type CreateAdminTaskInput = z.infer<typeof CreateAdminTaskSchema>;
@@ -53,9 +53,9 @@ export const UpdateAdminTaskSchema = z
       .or(z.string().date())
       .transform((str) => new Date(str))
       .nullable(),
-    assignedTo: z.string().uuid("assignedTo must be a valid UUID").nullable(),
+    assignedTo: z.uuid({ error: "assignedTo must be a valid UUID" }).nullable(),
     sourceType: z.string().max(100).nullable(),
-    sourceId: z.string().uuid("sourceId must be a valid UUID").nullable(),
+    sourceId: z.uuid({ error: "sourceId must be a valid UUID" }).nullable(),
   })
   .partial()
   .refine((data) => Object.keys(data).length > 0, {
