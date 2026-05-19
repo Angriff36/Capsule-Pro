@@ -84,9 +84,9 @@ export const SentryIssueAlertSchema = z.object({
   data: z.object({
     event: z.object({
       event_id: z.string().optional(),
-      url: z.string().url(),
-      web_url: z.string().url(),
-      issue_url: z.string().url(),
+      url: z.url(),
+      web_url: z.url(),
+      issue_url: z.url(),
       issue_id: z.string(),
       type: z.string().optional(),
       message: z.string().optional(),
