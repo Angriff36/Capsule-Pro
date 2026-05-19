@@ -9,7 +9,6 @@ const createShiftSchema = z.object({
   scheduleId: z.uuid(),
   employeeId: z.uuid(),
   locationId: z.uuid(),
-  eventId: z.uuid().optional(),
   shiftStart: z.number(), // epoch ms
   shiftEnd: z.number(), // epoch ms
   roleDuringShift: z.string().optional(),
