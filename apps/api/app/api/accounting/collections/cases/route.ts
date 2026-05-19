@@ -125,7 +125,14 @@ export async function POST(request: NextRequest) {
     const tenantId = await requireTenantId();
     const body = await request.json();
 
-    const validated = createCaseSchema.parse(body);
+    const parseResult = createCaseSchema.safeParse(body);
+    if (!parseResult.success) {
+      return NextResponse.json(
+        { error: "Validation failed", details: parseResult.error.issues },
+        { status: 400 }
+      );
+    }
+    const validated = parseResult.data;
 
     // Verify invoice exists and belongs to tenant
     const invoice = await database.invoice.findFirst({
@@ -196,12 +203,6 @@ export async function POST(request: NextRequest) {
     );
   } catch (error) {
     captureException(error);
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: "Validation failed", details: error.issues },
-        { status: 400 }
-      );
-    }
     log.error("Error creating collection case:", error);
     return NextResponse.json(
       { error: "Failed to create collection case" },
