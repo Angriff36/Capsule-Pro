@@ -10,7 +10,7 @@ export const keys = () =>
       TWILIO_AUTH_TOKEN: z.string().optional(),
       TWILIO_PHONE_NUMBER: z.string().optional(),
       RESEND_TOKEN: z.string().optional(),
-      RESEND_FROM: z.string().email().optional(),
+      RESEND_FROM: z.email().optional(),
     },
     client: {
       NEXT_PUBLIC_KNOCK_API_KEY: z.string().optional(),
