@@ -9,6 +9,16 @@
 .pi/
 /nul
 
+# Local staging area for files being reviewed for removal (not for production)
+/junk/
+
+# Local-only files excluded from production GitHub release (kept on disk for dev/CLI use)
+/.husky/
+/e2e/
+/.vscode/
+/.infisical.json
+/.neon
+
 # Agent session files (ledger, todo, lessons — local only)
 /tasks/
 session-ses_*.md
@@ -525,6 +535,9 @@ PROMPT_plan.md
 PROMPT_plan.md.template
 IMPLEMENTATION_PLAN.md
 !docs/audits/root-implementation-plan/IMPLEMENTATION_PLAN.md
+!docs/audits/root-implementation-plan/PROMPT_build.md
+!docs/audits/root-implementation-plan/PROMPT_plan.md
+!docs/audits/root-implementation-plan/loop.sh
 IMPLEMENTATION_PLAN_SUMMARY.md
 SLOPSCOPE_RULE_DISCOVERY.md
 SLOPSCOPE_RULE_IMPLEMENTATION_PLAN.md

@@ -1,6 +1,0 @@
-#!/usr/bin/env sh
-# Pre-push checks: typecheck before pushing to remote
-set -e
-
-echo "Running typecheck before push..."
-NODE_OPTIONS="--max-old-space-size=4096" pnpm check:all
