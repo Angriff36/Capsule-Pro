@@ -1,5 +1,7 @@
 # Manifest Route Generation Bloat Report
 
+> **⚠️ HISTORICAL DOCUMENT (2026-05-08).** This report documented the 232 generated per-command routes and the bloat from the old generation system. The dynamic dispatcher at `apps/api/app/api/manifest/[entity]/commands/[command]/route.ts` has since replaced all generated routes. This report is kept for historical context; the bloat it describes has been resolved.
+
 **Date:** 2026-05-08  
 **Scope:** `apps/api/app/api/` route surface vs `packages/manifest-ir/dist/routes.manifest.json`  
 **Method:** Filesystem census + IR canonical route comparison + generator analysis

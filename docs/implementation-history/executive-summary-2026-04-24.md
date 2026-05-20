@@ -1,5 +1,7 @@
 # Implementation Plan Archive — Executive Summary & Re-verification Deltas (2026-04-24)
 
+> **⚠️ HISTORICAL DOCUMENT (2026-04-24).** Route counts and bypass numbers here are stale — this predates the dispatcher consolidation and constitution adoption. The schema-and-techdebt findings on nonconformances remain valid as historical context. For current architectural standards, see `constitution.md`.
+
 Snapshot of the post-`b8c31eef` audit summary and the second/third re-verification passes. Kept verbatim for historical reference; do not edit.
 
 ## Executive Summary

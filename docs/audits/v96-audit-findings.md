@@ -3,6 +3,7 @@
 > Date: 2026-05-14
 > Methodology: 38 Sonnet subagents launched (25 successful, 8 rate-limited, 5 still running at synthesis time)
 > Direct verification via Bash for key metrics
+> **⚠️ HISTORICAL SNAPSHOT (2026-05-14).** Route counts here predate dispatcher consolidation; the 209–211 POST handlers and per-entity command route numbers are stale. Current architecture uses a single dynamic dispatcher. See `constitution.md` for binding standards.
 
 ---
 
