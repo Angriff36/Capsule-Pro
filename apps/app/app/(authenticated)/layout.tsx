@@ -3,8 +3,6 @@ import { SidebarProvider } from "@repo/design-system/components/ui/sidebar";
 import { showBetaFeature } from "@repo/feature-flags";
 import { secure } from "@repo/security";
 import type { ReactNode } from "react";
-import { AblyProvider } from "@/app/ably-provider";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { env } from "@/env";
 import {
   AiAssistantButton,
@@ -25,13 +23,17 @@ interface AppLayoutProperties {
  *
  * The Knock notification SDK (@knocklabs/react) is now only loaded when the user
  * actually clicks on the notifications bell icon, not on every page load.
+ *
+ * Realtime subscriptions are now established per-feature via the SSE-based
+ * `useRealtimeChannel` hook (apps/app/app/lib/use-realtime-channel.ts).
+ * No app-wide realtime provider is required.
  */
 const AppLayout = async ({ children }: AppLayoutProperties) => {
   if (env.ARCJET_KEY) {
     await secure(["CATEGORY:PREVIEW"]);
   }
 
-  const { orgId, userId, redirectToSignIn } = await auth();
+  const { userId, redirectToSignIn } = await auth();
 
   if (!userId) {
     return redirectToSignIn();
@@ -39,7 +41,6 @@ const AppLayout = async ({ children }: AppLayoutProperties) => {
 
   const user = await currentUser();
   const betaFeature = await showBetaFeature();
-  const tenantId = orgId ? await getTenantIdForOrg(orgId) : null;
 
   if (!user) {
     return redirectToSignIn();
@@ -47,20 +48,18 @@ const AppLayout = async ({ children }: AppLayoutProperties) => {
 
   return (
     <SidebarProvider>
-      <AblyProvider tenantId={tenantId}>
-        <AiAssistantProvider>
-          <GlobalSidebar userId={user.id}>
-            {betaFeature && (
-              <div className="m-4 rounded-full bg-blue-500 p-1.5 text-center text-sm text-white">
-                Beta feature now available
-              </div>
-            )}
-            {children}
-          </GlobalSidebar>
-          <AiAssistantButton />
-          <AiAssistantPanel />
-        </AiAssistantProvider>
-      </AblyProvider>
+      <AiAssistantProvider>
+        <GlobalSidebar userId={user.id}>
+          {betaFeature && (
+            <div className="m-4 rounded-full bg-blue-500 p-1.5 text-center text-sm text-white">
+              Beta feature now available
+            </div>
+          )}
+          {children}
+        </GlobalSidebar>
+        <AiAssistantButton />
+        <AiAssistantPanel />
+      </AiAssistantProvider>
     </SidebarProvider>
   );
 };

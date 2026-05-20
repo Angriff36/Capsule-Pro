@@ -1,20 +1,13 @@
-import { captureRequestError } from "@sentry/nextjs";
+import * as Sentry from '@sentry/nextjs';
 
-// Only initialize Sentry if DSN is configured
-// This prevents loading the SDK when not in use
 export async function register() {
-  const hasSentryDsn = Boolean(
-    process.env.NEXT_PUBLIC_SENTRY_DSN || process.env.SENTRY_DSN
-  );
-
-  if (!hasSentryDsn) {
-    return;
+  if (process.env.NEXT_RUNTIME === 'nodejs') {
+    await import('./sentry.server.config');
   }
 
-  const { initializeSentry } = await import(
-    "@repo/observability/instrumentation"
-  );
-  await initializeSentry();
+  if (process.env.NEXT_RUNTIME === 'edge') {
+    await import('./sentry.edge.config');
+  }
 }
 
-export const onRequestError = captureRequestError;
+export const onRequestError = Sentry.captureRequestError;

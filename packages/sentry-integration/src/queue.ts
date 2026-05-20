@@ -1,3 +1,4 @@
+import * as Sentry from "@repo/observability/sentry";
 import type { SentryFixJobStatus, SentryIssueAlertPayload } from "./types.js";
 
 /**
@@ -274,21 +275,52 @@ export class SentryJobQueue {
    * Enqueue a new job
    */
   async enqueue(input: CreateJobInput): Promise<SentryFixJobRecord> {
-    const check = await this.shouldProcessAlert(input.sentryIssueId);
-    if (!check.canProcess) {
-      throw new Error(`Cannot enqueue job: ${check.reason}`);
-    }
+    return Sentry.startSpan(
+      {
+        name: "sentry-fixer.enqueue",
+        op: "queue.publish",
+        attributes: {
+          "fixer.issue_id": input.sentryIssueId,
+          "fixer.org": input.organizationSlug,
+        },
+      },
+      async () => {
+        const check = await this.shouldProcessAlert(input.sentryIssueId);
+        if (!check.canProcess) {
+          Sentry.addBreadcrumb({
+            category: "fixer.queue",
+            message: `Enqueue skipped: ${check.reason}`,
+            level: "info",
+            data: { issueId: input.sentryIssueId, reason: check.reason },
+          });
+          throw new Error(`Cannot enqueue job: ${check.reason}`);
+        }
 
-    return this.store.create({
-      ...input,
-      maxRetries: input.maxRetries ?? this.config.maxRetries,
-    });
+        const job = await this.store.create({
+          ...input,
+          maxRetries: input.maxRetries ?? this.config.maxRetries,
+        });
+        Sentry.addBreadcrumb({
+          category: "fixer.queue",
+          message: `Job enqueued: ${job.id}`,
+          level: "info",
+          data: { jobId: job.id, issueId: input.sentryIssueId },
+        });
+        return job;
+      }
+    );
   }
 
   /**
    * Mark job as running
    */
   async startJob(jobId: string): Promise<SentryFixJobRecord> {
+    Sentry.addBreadcrumb({
+      category: "fixer.queue",
+      message: `Job started: ${jobId}`,
+      level: "info",
+      data: { jobId },
+    });
     return this.store.update(jobId, {
       status: "running",
       startedAt: new Date(),
@@ -302,6 +334,12 @@ export class SentryJobQueue {
     jobId: string,
     result: { branchName: string; prUrl: string; prNumber: number }
   ): Promise<SentryFixJobRecord> {
+    Sentry.addBreadcrumb({
+      category: "fixer.queue",
+      message: `Job succeeded: ${jobId} → PR #${result.prNumber}`,
+      level: "info",
+      data: { jobId, prNumber: result.prNumber, prUrl: result.prUrl },
+    });
     return this.store.update(jobId, {
       status: "succeeded",
       branchName: result.branchName,
@@ -323,6 +361,15 @@ export class SentryJobQueue {
     const newRetryCount = job.retryCount + 1;
     const shouldRetry = newRetryCount < job.maxRetries;
 
+    Sentry.addBreadcrumb({
+      category: "fixer.queue",
+      message: shouldRetry
+        ? `Job failed, requeued (retry ${newRetryCount}/${job.maxRetries}): ${jobId}`
+        : `Job failed permanently (${newRetryCount}/${job.maxRetries}): ${jobId}`,
+      level: shouldRetry ? "warning" : "error",
+      data: { jobId, retryCount: newRetryCount, error },
+    });
+
     return this.store.update(jobId, {
       status: shouldRetry ? "queued" : "failed",
       errorMessage: error,
@@ -335,6 +382,12 @@ export class SentryJobQueue {
    * Cancel a job
    */
   async cancelJob(jobId: string, reason: string): Promise<SentryFixJobRecord> {
+    Sentry.addBreadcrumb({
+      category: "fixer.queue",
+      message: `Job cancelled: ${jobId} (${reason})`,
+      level: "warning",
+      data: { jobId, reason },
+    });
     return this.store.update(jobId, {
       status: "cancelled",
       errorMessage: reason,

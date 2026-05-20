@@ -39,10 +39,12 @@ import {
 } from "@repo/design-system/components/ui/select";
 import { Skeleton } from "@repo/design-system/components/ui/skeleton";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
-import type Ably from "ably";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { getAblyClient } from "@/app/ably-provider";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
+import {
+  type RealtimeEventMessage,
+  useRealtimeChannel,
+} from "@/app/lib/use-realtime-channel";
 
 interface AdminChatMessage {
   id: string;
@@ -144,7 +146,6 @@ interface AdministrativeChatClientProps {
   employeeId: string;
 }
 
-const authUrl = "/ably/chat/auth";
 const messageName = "admin.chat.message";
 const messageCacheLimit = 200;
 const loadLimit = 50;
@@ -211,10 +212,10 @@ const parseRealtimePayload = (value: unknown): RealtimePayload => {
 };
 
 const toRealtimeMessage = (
-  message: Ably.Message,
+  data: unknown,
   employeeId: string
 ): { threadId: string; message: AdminChatMessage } | null => {
-  const payload = parseRealtimePayload(message.data);
+  const payload = parseRealtimePayload(data);
   const text = payload.text ?? "";
   const threadId = payload.threadId ?? "";
 
@@ -222,7 +223,7 @@ const toRealtimeMessage = (
     return null;
   }
 
-  const fallbackTimestamp = message.timestamp ?? Date.now();
+  const fallbackTimestamp = Date.now();
   const parsedTimestamp = payload.createdAt
     ? new Date(payload.createdAt).getTime()
     : fallbackTimestamp;
@@ -232,7 +233,7 @@ const toRealtimeMessage = (
 
   const authorId = payload.authorId ?? "";
   const authorName = payload.authorName ?? "Unknown";
-  const id = payload.id ?? message.id ?? `${timestamp}`;
+  const id = payload.id ?? `${timestamp}`;
 
   return {
     threadId,
@@ -351,7 +352,6 @@ export function AdministrativeChatClient({
   const [activeThreadId, setActiveThreadId] = useState<string | null>(null);
   const [messages, setMessages] = useState<AdminChatMessage[]>([]);
   const [draft, setDraft] = useState("");
-  const [isConnected, setIsConnected] = useState(false);
   const [hasMore, setHasMore] = useState(false);
   const [nextBefore, setNextBefore] = useState<string | null>(null);
   const [isLoadingThreads, setIsLoadingThreads] = useState(true);
@@ -362,78 +362,17 @@ export function AdministrativeChatClient({
   const [employees, setEmployees] = useState<EmployeeOption[]>([]);
   const [selectedEmployeeId, setSelectedEmployeeId] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const clientRef = useRef<Ably.Realtime | null>(null);
-  const channelRef = useRef<Ably.RealtimeChannel | null>(null);
 
   const activeThread = useMemo(
     () => threads.find((thread) => thread.id === activeThreadId) ?? null,
     [activeThreadId, threads]
   );
 
-  useEffect(() => {
-    if (!tenantId) {
-      return;
-    }
-
-    let isMounted = true;
-
-    const initializeConnection = async () => {
-      try {
-        const testResponse = await fetch(authUrl, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({ tenantId }),
-        }).catch(() => null);
-
-        if (!testResponse?.ok) {
-          return;
-        }
-
-        if (!isMounted) {
-          return;
-        }
-
-        const client = getAblyClient(tenantId, authUrl);
-
-        clientRef.current = client;
-
-        client.connection.on((stateChange) => {
-          if (!isMounted) {
-            return;
-          }
-          setIsConnected(stateChange.current === "connected");
-        });
-      } catch (connectionError) {
-        if (process.env.NODE_ENV === "development") {
-          console.warn(
-            "[AdministrativeChat] Initialization error:",
-            connectionError
-          );
-        }
-      }
-    };
-
-    initializeConnection().catch((connectionError) => {
-      if (process.env.NODE_ENV === "development") {
-        console.warn(
-          "[AdministrativeChat] Connection failed:",
-          connectionError
-        );
-      }
-    });
-
-    return () => {
-      isMounted = false;
-      try {
-        channelRef.current?.unsubscribe();
-      } catch (cleanupError) {
-        if (process.env.NODE_ENV === "development") {
-          console.warn("[AdministrativeChat] Cleanup error:", cleanupError);
-        }
-      }
-    };
-  }, [tenantId]);
+  // Realtime status is implicit with SSE — the browser's `EventSource`
+  // auto-reconnects, and individual message arrival is the only meaningful
+  // health signal we have. We show "Live" whenever the subscription is
+  // attached.
+  const isConnected = Boolean(tenantId);
 
   useEffect(() => {
     if (!(tenantId && employeeId)) {
@@ -589,17 +528,28 @@ export function AdministrativeChatClient({
     };
   }, [activeThreadId, employeeId]);
 
-  useEffect(() => {
-    if (!(clientRef.current && activeThread && tenantId)) {
-      return;
+  // Subscribe to the active thread's SSE channel. Each thread maps to a
+  // distinct fanout channel (team vs direct) so the server only emits the
+  // messages this user can see. The hook re-attaches whenever the active
+  // thread changes.
+  const activeChannel = useMemo(() => {
+    if (!(activeThread && tenantId)) {
+      return null;
     }
+    return channelForThread(tenantId, activeThread);
+  }, [activeThread, tenantId]);
 
-    const channelName = channelForThread(tenantId, activeThread);
-    const channel = clientRef.current.channels.get(channelName);
-    channelRef.current = channel;
+  const channelList = useMemo(
+    () => (activeChannel ? [activeChannel] : []),
+    [activeChannel]
+  );
 
-    const handleMessage = (message: Ably.Message) => {
-      const parsed = toRealtimeMessage(message, employeeId);
+  const handleRealtime = useCallback(
+    (event: RealtimeEventMessage) => {
+      if (event.name !== messageName) {
+        return;
+      }
+      const parsed = toRealtimeMessage(event.data, employeeId);
       if (!parsed) {
         return;
       }
@@ -623,37 +573,19 @@ export function AdministrativeChatClient({
         })
       );
 
-      if (parsed.threadId !== activeThread.id) {
+      if (parsed.threadId !== activeThread?.id) {
         return;
       }
 
       setMessages((prev) => mergeMessages(prev, [parsed.message]));
-    };
+    },
+    [activeThread, employeeId]
+  );
 
-    try {
-      channel.subscribe(messageName, handleMessage);
-    } catch (subscribeError) {
-      if (process.env.NODE_ENV === "development") {
-        console.warn(
-          "[AdministrativeChat] Subscription error:",
-          subscribeError
-        );
-      }
-    }
-
-    return () => {
-      try {
-        channel.unsubscribe(messageName, handleMessage);
-      } catch (unsubscribeError) {
-        if (process.env.NODE_ENV === "development") {
-          console.warn(
-            "[AdministrativeChat] Unsubscribe error:",
-            unsubscribeError
-          );
-        }
-      }
-    };
-  }, [activeThread, employeeId, tenantId]);
+  useRealtimeChannel(tenantId, handleRealtime, {
+    enabled: channelList.length > 0,
+    channels: channelList,
+  });
 
   const handleSend = async () => {
     if (!activeThreadId) {
@@ -805,19 +737,9 @@ export function AdministrativeChatClient({
         return team ? [team, mapped, ...direct] : [mapped, ...direct];
       });
 
-      if (clientRef.current) {
-        try {
-          await clientRef.current.auth.authorize();
-        } catch (authorizeError) {
-          if (process.env.NODE_ENV === "development") {
-            console.warn(
-              "[AdministrativeChat] Re-auth failed:",
-              authorizeError
-            );
-          }
-        }
-      }
-
+      // With SSE the channel subscription is re-keyed automatically when
+      // `activeThreadId` changes (see `useRealtimeChannel` effect), so no
+      // explicit re-auth is required after starting a new direct thread.
       setActiveThreadId(mapped.id);
       setSelectedEmployeeId("");
     } catch (startError) {

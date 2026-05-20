@@ -8,7 +8,7 @@ export const config: NextConfig = {
   turbopack: {
     root: path.resolve(process.cwd(), "..", ".."),
   },
-  serverExternalPackages: ["ably"],
+  serverExternalPackages: [],
   images: {
     formats: ["image/avif", "image/webp"],
     remotePatterns: [

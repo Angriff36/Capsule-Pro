@@ -166,6 +166,13 @@ const rewrites: NextConfig["rewrites"] = async () => {
       source: "/api/search/:path*",
       destination: `${apiBaseUrl}/api/search/:path*`,
     },
+    {
+      // SSE realtime endpoint — replaces Ably for browser subscriptions.
+      // Streams events from apps/api over a long-lived text/event-stream
+      // connection. Next.js rewrites forward streams unbuffered.
+      source: "/api/realtime/:path*",
+      destination: `${apiBaseUrl}/api/realtime/:path*`,
+    },
   ];
 };
 
@@ -343,7 +350,7 @@ const baseConfig: NextConfig = withToolbar(
                 "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
                 "font-src 'self' https://fonts.gstatic.com",
                 "img-src 'self' data: blob: https://img.clerk.com",
-                "connect-src 'self' https://*.clerk.com https://*.clerk.accounts.dev https://clerk-telemetry.com https://*.sentry.io https://us.i.posthog.com https://us-assets.i.posthog.com https://*.ably.io https://*.ably-realtime.com https://*.ably.net",
+                "connect-src 'self' https://*.clerk.com https://*.clerk.accounts.dev https://clerk-telemetry.com https://*.sentry.io https://us.i.posthog.com https://us-assets.i.posthog.com",
                 "frame-ancestors 'none'",
                 "frame-src 'self' https://*.clerk.accounts.dev",
                 "base-uri 'self'",
@@ -375,12 +382,10 @@ const baseConfig: NextConfig = withToolbar(
         },
       ];
     },
-    // Externalize ably and pdfkit to avoid bundling issues
-    // ably: Turbopack + Ably causes keyv dynamic require failures in SSR
+    // Externalize heavy packages with native deps / dynamic requires.
     // pdfkit: Needs access to .afm font files from node_modules
     serverExternalPackages: [
       "@prisma/adapter-neon",
-      "ably",
       "pdfkit",
       "vega-lite",
       "@repo/sales-reporting",

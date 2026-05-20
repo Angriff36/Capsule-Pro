@@ -177,20 +177,20 @@ describe("Publisher - Race Condition Handling", () => {
     expect(scenario.solution).toContain("Double-check");
   });
 
-  it("documented: prevents lost updates with UPDATE after Ably publish", () => {
+  it("documented: prevents lost updates with UPDATE after SSE publish", () => {
     const flow = {
-      step1: "Publish to Ably",
+      step1: "Publish to SSE",
       step2: "UPDATE status to 'published'",
-      step3: "If Ably fails, UPDATE status to 'failed'",
+      step3: "If SSE fails, UPDATE status to 'failed'",
       guarantee: "Event status reflects actual publish result",
     };
-    expect(flow.step1).toContain("Ably");
+    expect(flow.step1).toContain("SSE");
     expect(flow.guarantee).toContain("actual publish");
   });
 
-  it("documented: handles Ably publish errors gracefully", () => {
+  it("documented: handles SSE publish errors gracefully", () => {
     const errorHandling = {
-      action: "Catch Ably publish errors",
+      action: "Catch SSE publish errors",
       response: "UPDATE status to 'failed' with error message",
       continue: "Process next event in batch",
     };
@@ -203,7 +203,7 @@ describe("Publisher - Batch Processing", () => {
   it("documented: processes events sequentially within batch", () => {
     const batchProcessing = {
       behavior: "for loop over events",
-      effect: "Ably publishes are sequential",
+      effect: "SSE publishes are sequential",
       reason: "Simpler error handling and status updates",
     };
     expect(batchProcessing.behavior).toContain("for loop");

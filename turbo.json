@@ -1,32 +1,85 @@
 {
   "$schema": "https://turborepo.com/schema.json",
+  "envMode": "loose",
+  "globalDependencies": ["**/.env.*local", "**/tsconfig*.json"],
+  "globalEnv": [
+    "NEXT_PUBLIC_*",
+    "ANALYZE",
+    "SENTRY_ENVIRONMENT",
+    "SKIP_ENV_VALIDATION",
+    "VERCEL",
+    "VERCEL_ENV"
+  ],
   "globalPassThroughEnv": [
-    "BASEHUB_TOKEN",
-    "NEXT_PUBLIC_APP_URL",
-    "NEXT_PUBLIC_WEB_URL",
-    "NEXT_PUBLIC_API_URL",
-    "DATABASE_URL",
-    "CLERK_SECRET_KEY",
-    "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY",
     "TURBO_TOKEN",
     "TURBO_TEAM",
-    "SENTRY_ORG",
-    "SENTRY_PROJECT",
-    "SENTRY_AUTH_TOKEN",
-    "ANALYZE",
-    "NEXT_DIST_DIR"
-  ],
-  "globalEnv": [
+    "TURBO_REMOTE_CACHE_SIGNATURE_KEY",
+    "INFISICAL_TOKEN",
+    "INFISICAL_CLIENT_ID",
+    "INFISICAL_CLIENT_SECRET",
+    "INFISICAL_API_URL",
+    "AGENT_VAULT_ADDR",
+    "AGENT_VAULT_TOKEN",
+    "AGENT_VAULT_VAULT",
+    "HTTPS_PROXY",
+    "HTTP_PROXY",
+    "NO_PROXY",
+    "NODE_EXTRA_CA_CERTS",
+    "NODE_ENV",
+    "CI",
+    "NEXT_DIST_DIR",
+    "ABLY_API_KEY",
+    "ABLY_AUTH_CORS_ORIGINS",
+    "ARCJET_KEY",
+    "BASEHUB_TOKEN",
+    "BETTERSTACK_API_KEY",
+    "CAPSULE_SENTRY_CANARY_SECRET",
+    "CLERK_SECRET_KEY",
+    "CLERK_WEBHOOK_SECRET",
+    "COMMAND_BOARD_AI_MODEL",
+    "CRON_SECRET",
     "DATABASE_URL",
+    "SHADOW_DATABASE_URL",
+    "EXPERIMENTATION_CONFIG_ITEM_KEY",
+    "FLAGS_SECRET",
+    "GITHUB_PACKAGES_TOKEN",
+    "GITHUB_PAT",
+    "GITHUB_REPO_NAME",
+    "GITHUB_REPO_OWNER",
+    "GITHUB_TOKEN",
+    "GOOGLE_CLIENT_ID",
+    "GOOGLE_CLIENT_SECRET",
+    "KNOCK_API_KEY",
+    "KNOCK_FEED_CHANNEL_ID",
+    "KNOCK_SECRET_API_KEY",
+    "KNOCK_SIGNING_KEY",
+    "LIVEBLOCKS_SECRET",
+    "MICROSOFT_CLIENT_ID",
+    "MICROSOFT_CLIENT_SECRET",
+    "MINIMAX_API_KEY",
+    "NPM_TOKEN",
+    "OAUTH_REDIRECT_URI",
+    "OPENAI_API_KEY",
+    "OUTBOX_PUBLISH_TOKEN",
+    "PLASMIC_API_TOKEN",
+    "PLASMIC_PROJECT_ID",
+    "RESEND_FROM",
+    "RESEND_TOKEN",
+    "SENTRY_AUTH_TOKEN",
+    "SENTRY_FIXER_ENABLED",
     "SENTRY_ORG",
     "SENTRY_PROJECT",
-    "SENTRY_AUTH_TOKEN",
-    "SENTRY_ENVIRONMENT",
-    "VERCEL",
-    "VERCEL_ENV",
-    "SKIP_ENV_VALIDATION"
+    "SENTRY_WEBHOOK_SECRET",
+    "STRIPE_SECRET_KEY",
+    "STRIPE_WEBHOOK_SECRET",
+    "SUPERMEMORY_API_KEY",
+    "SVIX_TOKEN",
+    "UPSTASH_REDIS_REST_TOKEN",
+    "UPSTASH_REDIS_REST_URL",
+    "VERCEL_API_PROJECT_ID",
+    "VERCEL_APP_PROJECT_ID",
+    "VERCEL_OIDC_TOKEN"
   ],
-  "globalDependencies": ["**/.env.*local", "**/tsconfig*.json"],
   "boundaries": {
     "tags": {
       "layer:app": {
@@ -79,19 +132,9 @@
     "enabled": true,
     "signature": true
   },
-  "envMode": "loose",
   "tasks": {
-    "generate": {
-      "dependsOn": ["^build"],
-      "cache": false
-    },
     "build": {
-      "dependsOn": ["^build", "generate"],
-      "env": [
-        "NEXT_PUBLIC_*",
-        "BASEHUB_TOKEN",
-        "CLERK_SECRET_KEY"
-      ],
+      "dependsOn": ["^build"],
       "inputs": [
         "$TURBO_DEFAULT$",
         "!**/*.md",
@@ -101,17 +144,10 @@
         "!**/*.spec.ts",
         "!**/*.spec.tsx"
       ],
-      "outputs": [
-        ".next/**",
-        "!.next/cache/**",
-        "**/generated/**",
-        "storybook-static/**",
-        ".react-email/**",
-        "dist/**"
-      ]
+      "outputs": ["dist/**"]
     },
-    "test": {
-      "dependsOn": ["^test"]
+    "generate": {
+      "outputs": []
     },
     "typecheck": {
       "dependsOn": ["^typecheck"],
@@ -125,17 +161,33 @@
       "outputs": []
     },
     "lint": {
-      "dependsOn": ["^build"]
+      "outputs": []
     },
-    "analyze": {
-      "dependsOn": ["^build", "^analyze"]
+    "test": {
+      "dependsOn": ["^build", "^test"],
+      "outputs": []
+    },
+    "test:integration": {
+      "dependsOn": ["^build"],
+      "cache": false
+    },
+    "test:watch": {
+      "cache": false,
+      "persistent": true
     },
     "dev": {
       "cache": false,
       "persistent": true
     },
+    "dev:infisical": {
+      "cache": false,
+      "persistent": true
+    },
     "translate": {
-      "dependsOn": ["^translate"],
+      "cache": false
+    },
+    "analyze": {
+      "dependsOn": ["^build"],
       "cache": false
     },
     "clean": {
@@ -144,9 +196,74 @@
     "//#clean": {
       "cache": false
     },
-    "dev:infisical": {
-      "cache": false,
-      "persistent": true
+    "app#build": {
+      "dependsOn": ["^build"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "!**/*.md",
+        "!**/__tests__/**",
+        "!**/*.test.ts",
+        "!**/*.test.tsx",
+        "!**/*.spec.ts",
+        "!**/*.spec.tsx"
+      ],
+      "outputs": [".next/**", "!.next/cache/**"]
+    },
+    "api#build": {
+      "dependsOn": ["^build"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "!**/*.md",
+        "!**/__tests__/**",
+        "!**/*.test.ts",
+        "!**/*.test.tsx",
+        "!**/*.spec.ts",
+        "!**/*.spec.tsx"
+      ],
+      "outputs": [".next/**", "!.next/cache/**"]
+    },
+    "web#build": {
+      "dependsOn": ["^build"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "!**/*.md",
+        "!**/__tests__/**",
+        "!**/*.test.ts",
+        "!**/*.test.tsx",
+        "!**/*.spec.ts",
+        "!**/*.spec.tsx"
+      ],
+      "outputs": [".next/**", "!.next/cache/**"]
+    },
+    "docs#build": {
+      "dependsOn": ["^build"],
+      "outputs": [".next/**", "!.next/cache/**"]
+    },
+    "@repo/storybook#build": {
+      "dependsOn": ["^build"],
+      "outputs": ["storybook-static/**"]
+    },
+    "email#build": {
+      "dependsOn": ["^build"],
+      "outputs": [".react-email/**"]
+    },
+    "@repo/database#build": {
+      "outputs": ["generated/**"],
+      "inputs": ["prisma/**", "package.json"]
+    },
+    "@repo/database#generate": {
+      "outputs": ["generated/**"],
+      "inputs": ["prisma/**", "package.json"]
+    },
+    "@repo/database#typecheck": {
+      "dependsOn": ["@repo/database#generate", "^typecheck"]
+    },
+    "@repo/cms#build": {
+      "outputs": ["basehub-types.d.ts"],
+      "env": ["BASEHUB_TOKEN"]
+    },
+    "@repo/internationalization#translate": {
+      "cache": false
     }
   }
 }

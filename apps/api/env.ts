@@ -22,8 +22,13 @@ export const env = createEnv({
     payments(),
   ],
   server: {
-    ABLY_API_KEY: z.string().min(1),
-    ABLY_AUTH_CORS_ORIGINS: z.string().optional(),
+    /**
+     * Comma-separated list of origins allowed to call apps/api with
+     * credentials (used by the shared `corsHeaders` helper). When unset,
+     * a baked-in localhost dev whitelist applies. Previously named
+     * `ABLY_AUTH_CORS_ORIGINS`; the value semantics are unchanged.
+     */
+    REALTIME_CORS_ORIGINS: z.string().optional(),
     OUTBOX_PUBLISH_TOKEN: z.string().min(1),
     CRON_SECRET: z.string().min(1).optional(),
 
@@ -75,8 +80,8 @@ export const env = createEnv({
   runtimeEnv: skip
     ? (process.env as Record<string, string | undefined>)
     : {
-        ABLY_API_KEY: process.env.ABLY_API_KEY,
-        ABLY_AUTH_CORS_ORIGINS: process.env.ABLY_AUTH_CORS_ORIGINS,
+        REALTIME_CORS_ORIGINS:
+          process.env.REALTIME_CORS_ORIGINS ?? process.env.ABLY_AUTH_CORS_ORIGINS,
         OUTBOX_PUBLISH_TOKEN: process.env.OUTBOX_PUBLISH_TOKEN,
         CRON_SECRET: process.env.CRON_SECRET,
 

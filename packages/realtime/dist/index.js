@@ -1,5 +1,10 @@
 /**
- * @repo/realtime - Realtime event transport using outbox pattern + Ably.
+ * @repo/realtime - Realtime event transport using the outbox pattern.
+ *
+ * Transport-agnostic primitives (types, channel naming, outbox helpers).
+ * The current runtime fanout is the in-process SSE pub/sub in apps/api
+ * (`apps/api/lib/realtime/pubsub.ts`); this package does not depend on
+ * any specific broker.
  *
  * This package provides:
  * - Type-safe event definitions with discriminated unions

@@ -177,7 +177,7 @@ export const getSchedulingMetrics = cache(
           FROM tenant_staff.schedule_shifts s
           JOIN tenant_staff.employees e
             ON e.tenant_id = s.tenant_id
-           AND e.id = s.employeeId
+           AND e.id = s.employee_id
           WHERE s.tenant_id = ${tenantId}
             AND s.deleted_at IS NULL
             AND s.shift_start >= ${weekStart}
@@ -201,7 +201,7 @@ export const getSchedulingMetrics = cache(
           FROM tenant_staff.schedule_shifts s
           JOIN tenant_staff.employees e
             ON e.tenant_id = s.tenant_id
-           AND e.id = s.employeeId
+           AND e.id = s.employee_id
           WHERE s.tenant_id = ${tenantId}
             AND s.deleted_at IS NULL
             AND s.shift_start >= ${previousWeekStart}
@@ -335,7 +335,7 @@ export const getHappeningToday = cache(
         FROM tenant_staff.schedule_shifts s
         JOIN tenant_staff.employees e
           ON e.tenant_id = s.tenant_id
-         AND e.id = s.employeeId
+         AND e.id = s.employee_id
         WHERE s.tenant_id = ${tenantId}
           AND s.deleted_at IS NULL
           AND s.shift_start >= ${startOfToday}
@@ -374,7 +374,7 @@ export const getLeaderboard = cache(
     return timedQueryRaw<LeaderboardRow[]>(
       Prisma.sql`
         SELECT
-          s.employeeId,
+          s.employee_id AS "employeeId",
           e.first_name,
           e.last_name,
           e.role,
@@ -382,12 +382,12 @@ export const getLeaderboard = cache(
         FROM tenant_staff.schedule_shifts s
         JOIN tenant_staff.employees e
           ON e.tenant_id = s.tenant_id
-         AND e.id = s.employeeId
+         AND e.id = s.employee_id
         WHERE s.tenant_id = ${tenantId}
           AND s.deleted_at IS NULL
           AND s.shift_start >= ${weekStart}
           AND s.shift_start < ${weekEnd}
-        GROUP BY s.employeeId, e.first_name, e.last_name, e.role
+        GROUP BY s.employee_id, e.first_name, e.last_name, e.role
         ORDER BY shift_count DESC, e.last_name ASC
         LIMIT 3
       `,

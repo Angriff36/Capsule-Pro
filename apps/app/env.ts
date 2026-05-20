@@ -30,7 +30,6 @@ export const env = createEnv({
     webhooks(),
   ],
   server: {
-    ABLY_API_KEY: z.string().optional(),
     OPENAI_API_KEY: z.string().optional(),
     COMMAND_BOARD_AI_MODEL: z.string().optional(),
     PLASMIC_PROJECT_ID: z.string().optional(),
@@ -42,14 +41,12 @@ export const env = createEnv({
   runtimeEnv: skip
     ? {
         ...process.env,
-        ABLY_API_KEY: process.env.ABLY_API_KEY,
         OPENAI_API_KEY: process.env.OPENAI_API_KEY,
         COMMAND_BOARD_AI_MODEL: process.env.COMMAND_BOARD_AI_MODEL,
         PLASMIC_PROJECT_ID: process.env.PLASMIC_PROJECT_ID,
         PLASMIC_API_TOKEN: process.env.PLASMIC_API_TOKEN,
       }
     : {
-        ABLY_API_KEY: process.env.ABLY_API_KEY,
         OPENAI_API_KEY: process.env.OPENAI_API_KEY,
         COMMAND_BOARD_AI_MODEL: process.env.COMMAND_BOARD_AI_MODEL,
         PLASMIC_PROJECT_ID: process.env.PLASMIC_PROJECT_ID,

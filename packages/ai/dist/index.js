@@ -1357,7 +1357,7 @@ var AISDK = class {
   credentialValidator;
   constructor(options = {}) {
     this.config = {
-      apiKey: options.apiKey ?? process.env.API_KEY ?? "",
+      apiKey: options.apiKey ?? process.env.OPENAI_API_KEY ?? "",
       baseUrl: options.baseUrl ?? "https://api.example.com",
       defaultTimeout: options.defaultTimeout ?? 6e4,
       defaultMaxRetries: options.defaultMaxRetries ?? 3,

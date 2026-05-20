@@ -10,6 +10,7 @@
     "./keys": "./keys.ts",
     "./log": "./log.ts",
     "./next-config": "./next-config.ts",
+    "./sentry": "./sentry.ts",
     "./server": "./server.ts",
     "./status": "./status/index.tsx",
     "./tracing": "./tracing.ts"

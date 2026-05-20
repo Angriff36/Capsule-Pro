@@ -1,37 +1,39 @@
 "use client";
 
-import type { Message } from "ably";
-import { useChannel } from "ably/react";
 import { useRouter } from "next/navigation";
+import { useCallback } from "react";
+import {
+  type RealtimeEventMessage,
+  useRealtimeChannel,
+} from "@/app/lib/use-realtime-channel";
 
 interface SchedulingRealtimeProps {
   tenantId: string;
   userId?: string | null;
 }
 
-const isOpenShiftEvent = (eventName?: string) =>
-  eventName?.startsWith("open_shift.") ?? false;
-
-function SchedulingRealtimeSubscription({ tenantId }: { tenantId: string }) {
-  const router = useRouter();
-
-  useChannel(`tenant:${tenantId}`, (message: Message) => {
-    if (!isOpenShiftEvent(message.name)) {
-      return;
-    }
-
-    router.refresh();
-  });
-
-  return null;
-}
+const isOpenShiftEvent = (name?: string) =>
+  name?.startsWith("open_shift.") ?? false;
 
 const SchedulingRealtime = ({ tenantId }: SchedulingRealtimeProps) => {
-  if (!(tenantId && process.env.NEXT_PUBLIC_ABLY_ENABLED)) {
-    return null;
-  }
+  const router = useRouter();
+  const enabled = Boolean(
+    tenantId && process.env.NEXT_PUBLIC_REALTIME_ENABLED
+  );
 
-  return <SchedulingRealtimeSubscription tenantId={tenantId} />;
+  const handleMessage = useCallback(
+    (message: RealtimeEventMessage) => {
+      if (!isOpenShiftEvent(message.name)) {
+        return;
+      }
+      router.refresh();
+    },
+    [router]
+  );
+
+  useRealtimeChannel(tenantId, handleMessage, { enabled });
+
+  return null;
 };
 
 export default SchedulingRealtime;

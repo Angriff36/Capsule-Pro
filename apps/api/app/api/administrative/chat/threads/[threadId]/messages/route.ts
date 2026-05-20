@@ -2,12 +2,11 @@ import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
-import Ably from "ably";
 import { NextResponse } from "next/server";
 import { corsHeaders } from "@/app/lib/cors";
 import { InvariantError, invariant } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { env } from "@/env";
+import { publish as publishToChannel } from "@/lib/realtime/pubsub";
 
 export const runtime = "nodejs";
 
@@ -327,7 +326,6 @@ export async function POST(request: Request, context: RouteContext) {
       },
     });
 
-    const ably = new Ably.Rest({ key: env.ABLY_API_KEY });
     const channelName = channelNameForThread(
       tenantId,
       threadId,
@@ -335,13 +333,20 @@ export async function POST(request: Request, context: RouteContext) {
     );
 
     try {
-      await ably.channels.get(channelName).publish(MESSAGE_EVENT, {
-        id: message.id,
-        threadId,
-        text: message.text,
-        authorId: message.authorId,
-        authorName: message.authorName,
-        createdAt: message.createdAt.toISOString(),
+      // Fan out to SSE subscribers on this channel. The pub/sub registry is
+      // in-process; subscribers connected to the same node will see the
+      // message immediately. Persisted in `adminChatMessage` regardless, so
+      // late joiners get history on initial load.
+      publishToChannel(channelName, {
+        name: MESSAGE_EVENT,
+        data: {
+          id: message.id,
+          threadId,
+          text: message.text,
+          authorId: message.authorId,
+          authorName: message.authorName,
+          createdAt: message.createdAt.toISOString(),
+        },
       });
     } catch (publishError) {
       log.error("Failed to publish admin chat message:", publishError);

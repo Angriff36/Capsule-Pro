@@ -393,6 +393,74 @@ async function reduceInventoryQuantity(
 }
 
 /**
+ * Validates that sufficient stock exists for all items in an outgoing shipment.
+ * Throws InvariantError with details of any items that are insufficient.
+ * Must be called BEFORE the status update to prevent the transition on failure.
+ */
+async function validateStockAvailability(
+  tenantId: string,
+  shipmentId: string
+): Promise<void> {
+  const shipmentItems = await fetchShipmentItems(tenantId, shipmentId);
+
+  if (shipmentItems.length === 0) {
+    return;
+  }
+
+  const itemIds = shipmentItems.map((item) => item.item_id);
+
+  const stockLevels = await database.$queryRaw<
+    Array<{
+      id: string;
+      name: string;
+      item_number: string;
+      quantity_on_hand: number;
+    }>
+  >`
+    SELECT i.id, i.name, i.item_number, i.quantity_on_hand
+    FROM "tenant_inventory"."inventory_items" i
+    WHERE i.tenant_id = ${tenantId}::uuid
+      AND i.id = ANY(${itemIds}::uuid[])
+      AND i.deleted_at IS NULL
+  `;
+
+  const stockMap = new Map(stockLevels.map((s) => [s.id, s]));
+  const insufficientItems: Array<{
+    name: string;
+    itemNumber: string;
+    available: number;
+    needed: number;
+  }> = [];
+
+  for (const item of shipmentItems) {
+    const stock = stockMap.get(item.item_id);
+    const available = stock ? Number(stock.quantity_on_hand) : 0;
+    const needed = Number(item.quantity_shipped);
+
+    if (needed > available) {
+      insufficientItems.push({
+        name: stock?.name ?? item.item_id,
+        itemNumber: stock?.item_number ?? "unknown",
+        available,
+        needed,
+      });
+    }
+  }
+
+  if (insufficientItems.length > 0) {
+    const details = insufficientItems
+      .map(
+        (i) =>
+          `${i.name} (${i.itemNumber}): ${i.available} available, ${i.needed} needed`
+      )
+      .join("; ");
+    throw new InvariantError(
+      `Insufficient stock for shipment preparation: ${details}`
+    );
+  }
+}
+
+/**
  * Processes inventory reservation when a shipment enters "preparing" status
  * This is for OUTGOING shipments (to events) - items are removed from inventory
  */
@@ -674,6 +742,11 @@ export async function POST(
     // Validate status transition
     validateStatusTransition(existing.status, body.status);
     validateDeliveryConfirmation(body.status, body);
+
+    // Validate stock availability before preparation (outgoing shipments only)
+    if (body.status === "preparing" && existing.eventId) {
+      await validateStockAvailability(tenantId, id);
+    }
 
     // Build and execute update
     const updateData = buildUpdateData(body, existing);

@@ -5,7 +5,7 @@
 export declare const REALTIME_EVENT_VERSION: 1;
 /**
  * Base interface for all realtime events.
- * These fields are included in every Ably message for consumer deduplication and ordering.
+ * These fields are included in every realtime message for consumer deduplication and ordering.
  */
 export interface RealtimeEventBase {
     /** Unique event ID (mirrors OutboxEvent.id, used for consumer deduplication) */

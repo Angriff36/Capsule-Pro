@@ -3,11 +3,11 @@
  * Phase 1 uses tenant-wide channels only.
  */
 /**
- * Generate the Ably channel name for a tenant.
+ * Generate the fanout channel name for a tenant.
  * Phase 1 pattern: tenant:{tenantId}
  *
  * @param tenantId - The tenant identifier
- * @returns The Ably channel name
+ * @returns The fanout channel name
  * @throws Error if tenantId is empty or invalid
  */
 export declare function getChannelName(tenantId: string): string;

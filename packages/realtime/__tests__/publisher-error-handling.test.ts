@@ -1,6 +1,6 @@
 /**
  * Unit tests for publisher error recovery scenarios.
- * Tests Ably connection failures, network timeout handling, retry logic, and error states.
+ * Tests publish failures, network timeout handling, retry logic, and error states.
  */
 
 import { describe, expect, it } from "vitest";
@@ -145,30 +145,30 @@ describe("Publisher Error Handling - Payload Size Error Response", () => {
   });
 });
 
-describe("Publisher Error Handling - Ably Connection Failures", () => {
-  it("documented: catches Ably publish errors", () => {
+describe("Publisher Error Handling - Publish Failures", () => {
+  it("documented: catches publish errors", () => {
     const errorHandling = {
-      mechanism: "try-catch around Ably publish",
+      mechanism: "try-catch around publish",
       action: "Update event status to failed on error",
     };
     expect(errorHandling.mechanism).toContain("try-catch");
   });
 
   it("documented: updates status to failed with error message", () => {
-    const ablyError = {
+    const publishError = {
       status: "failed",
-      errorPrefix: "ABLY_ERROR",
-      messageFormat: "Error message from Ably exception",
+      errorPrefix: "PUBLISH_ERROR",
+      messageFormat: "Error message from publish exception",
     };
-    expect(ablyError.status).toBe("failed");
-    expect(ablyError.errorPrefix).toBe("ABLY_ERROR");
+    expect(publishError.status).toBe("failed");
+    expect(publishError.errorPrefix).toBe("PUBLISH_ERROR");
   });
 
   it("documented: extracts message from Error objects", () => {
-    const error = new Error("Ably connection timeout");
+    const error = new Error("Publish stream closed");
     const message =
       error instanceof Error ? error.message : "Unknown publish error";
-    expect(message).toBe("Ably connection timeout");
+    expect(message).toBe("Publish stream closed");
   });
 
   it("documented: handles non-Error errors", () => {
@@ -180,7 +180,7 @@ describe("Publisher Error Handling - Ably Connection Failures", () => {
     expect(message).toBe("Unknown publish error");
   });
 
-  it("documented: continues processing after Ably error", () => {
+  it("documented: continues processing after publish error", () => {
     const flow = {
       step1: "Catch error",
       step2: "Update event to failed",
@@ -192,13 +192,13 @@ describe("Publisher Error Handling - Ably Connection Failures", () => {
 });
 
 describe("Publisher Error Handling - Network Timeout Scenarios", () => {
-  it("documented: Ably SDK handles connection timeouts", () => {
+  it("documented: publish layer handles connection timeouts", () => {
     const timeoutBehavior = {
-      sdkResponsibility: "Ably Rest SDK manages connection timeouts",
-      publisherResponse: "Catch timeout errors as Ably errors",
+      sdkResponsibility: "Pub/sub transport manages connection timeouts",
+      publisherResponse: "Catch timeout errors as publish errors",
       statusUpdate: "Mark event as failed",
     };
-    expect(timeoutBehavior.sdkResponsibility).toContain("Ably");
+    expect(timeoutBehavior.sdkResponsibility).toContain("Pub/sub");
   });
 
   it("documented: timeout does not crash the publisher", () => {
@@ -311,16 +311,16 @@ describe("Publisher Error Handling - Error Message Format", () => {
     expect(payloadError).toMatch(/\d+ bytes/);
   });
 
-  it("documented: Ably errors include error prefix", () => {
-    const ablyError = "ABLY_ERROR: Connection timeout";
-    expect(ablyError).toMatch(/^ABLY_ERROR:/);
+  it("documented: publish errors include error prefix", () => {
+    const publishError = "PUBLISH_ERROR: stream closed";
+    expect(publishError).toMatch(/^PUBLISH_ERROR:/);
   });
 
   it("documented: error messages are human-readable", () => {
     const errors = [
       "PAYLOAD_TOO_LARGE: 70000 bytes (max 65536)",
-      "ABLY_ERROR: Connection timeout",
-      "ABLY_ERROR: Invalid API key",
+      "PUBLISH_ERROR: stream closed",
+      "PUBLISH_ERROR: listener threw",
     ];
     errors.forEach((error) => {
       expect(typeof error).toBe("string");
@@ -342,8 +342,8 @@ describe("Publisher Error Handling - Monitoring and Observability", () => {
   it("documented: error count helps detect publishing issues", () => {
     const errorMonitoring = {
       metric: "failed counter in response",
-      increasing: "May indicate Ably or network issues",
-      action: "Check Ably status and error messages",
+      increasing: "May indicate pub/sub or network issues",
+      action: "Check publisher logs and error messages",
     };
     expect(errorMonitoring.metric).toContain("failed");
   });

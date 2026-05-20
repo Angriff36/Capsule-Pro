@@ -4,11 +4,11 @@
  */
 
 /**
- * Generate the Ably channel name for a tenant.
+ * Generate the fanout channel name for a tenant.
  * Phase 1 pattern: tenant:{tenantId}
  *
  * @param tenantId - The tenant identifier
- * @returns The Ably channel name
+ * @returns The fanout channel name
  * @throws Error if tenantId is empty or invalid
  */
 export function getChannelName(tenantId: string): string {

@@ -1,6 +1,8 @@
 import { exec } from "node:child_process";
 import { promisify } from "node:util";
 
+import * as Sentry from "@repo/observability/sentry";
+
 const execAsync = promisify(exec);
 
 import { attemptAIFix, type FileEdit, revertEdits } from "./fixer.js";
@@ -89,75 +91,174 @@ export class SentryJobRunner {
    * Execute a fix job
    */
   async execute(
-    _job: SentryFixJobRecord,
+    job: SentryFixJobRecord,
     issue: ParsedSentryIssue
   ): Promise<JobExecutionResult> {
-    try {
-      // Step 1: Create a branch
-      const branchName = this.generateBranchName(issue);
-      const _gitResult = await this.createBranch(branchName);
+    return Sentry.startSpan(
+      {
+        name: "sentry-fixer.execute",
+        op: "fixer.execute",
+        attributes: {
+          "fixer.job_id": job.id,
+          "fixer.retry_count": job.retryCount,
+          "fixer.issue_id": issue.issueId,
+          "fixer.environment": issue.environment ?? "unknown",
+          "fixer.org": issue.organizationSlug,
+          "fixer.project": issue.projectSlug,
+          "fixer.exception_type": issue.exceptionType ?? "unknown",
+        },
+      },
+      async (parentSpan) => {
+        Sentry.setTag("fixer.issue_id", issue.issueId);
+        Sentry.setTag("fixer.org", issue.organizationSlug);
 
-      // Step 2: Check if any stack trace files are in blocked paths
-      const stackFiles = (issue.stackFrames ?? [])
-        .map((f) => f.filename ?? f.absPath ?? "")
-        .filter(Boolean);
-      const blockedFiles = stackFiles.filter((f) =>
-        isBlockedPath(f, this.config.blockedPatterns)
-      );
-      if (blockedFiles.length > 0) {
-        await this.cleanupBranch(branchName);
-        return {
-          success: false,
-          error: `Cannot auto-fix blocked paths: ${blockedFiles.join(", ")}`,
+        const captureFailure = (error: unknown, where: string) => {
+          Sentry.captureException(error, {
+            tags: {
+              component: "sentry-fixer",
+              "fixer.failure_stage": where,
+              "fixer.issue_id": issue.issueId,
+            },
+            contexts: {
+              fixer: {
+                jobId: job.id,
+                retryCount: job.retryCount,
+                issueId: issue.issueId,
+                organizationSlug: issue.organizationSlug,
+                projectSlug: issue.projectSlug,
+                environment: issue.environment,
+                release: issue.release,
+                exceptionType: issue.exceptionType,
+                exceptionValue: issue.exceptionValue,
+                issueUrl: issue.issueUrl,
+              },
+            },
+          });
         };
-      }
 
-      // Step 3: Attempt to fix the issue
-      const fixResult = await this.attemptFix(issue);
-      if (!fixResult.success) {
-        await this.cleanupBranch(branchName);
-        return {
-          success: false,
-          error: fixResult.error ?? "Failed to generate fix",
-        };
-      }
+        try {
+          // Step 1: Create a branch
+          const branchName = this.generateBranchName(issue);
+          await Sentry.startSpan(
+            {
+              name: "git.create-branch",
+              op: "git.branch",
+              attributes: { "git.branch": branchName },
+            },
+            () => this.createBranch(branchName)
+          );
 
-      // Step 4: Run tests — revert AI edits if they break things
-      if (this.config.runTests) {
-        const testResult = await this.runTests();
-        if (!testResult.success) {
-          // Revert the AI's edits before cleaning up the branch
-          if (this.lastAppliedEdits.length > 0) {
-            await revertEdits(this.lastAppliedEdits, this.config.workingDir);
-            this.lastAppliedEdits = [];
+          // Step 2: Check if any stack trace files are in blocked paths
+          const stackFiles = (issue.stackFrames ?? [])
+            .map((f) => f.filename ?? f.absPath ?? "")
+            .filter(Boolean);
+          const blockedFiles = stackFiles.filter((f) =>
+            isBlockedPath(f, this.config.blockedPatterns)
+          );
+          if (blockedFiles.length > 0) {
+            Sentry.addBreadcrumb({
+              category: "fixer",
+              message: `Blocked by path patterns: ${blockedFiles.join(", ")}`,
+              level: "warning",
+            });
+            parentSpan.setAttribute("fixer.outcome", "blocked");
+            await this.cleanupBranch(branchName);
+            return {
+              success: false,
+              error: `Cannot auto-fix blocked paths: ${blockedFiles.join(", ")}`,
+            };
           }
-          await this.cleanupBranch(branchName);
+
+          // Step 3: Attempt to fix the issue
+          const fixResult = await Sentry.startSpan(
+            {
+              name: "fixer.ai-fix",
+              op: "ai.attempt-fix",
+              attributes: { "ai.model": this.config.aiModel },
+            },
+            () => this.attemptFix(issue)
+          );
+          if (!fixResult.success) {
+            Sentry.addBreadcrumb({
+              category: "fixer",
+              message: `AI fix failed: ${fixResult.error}`,
+              level: "warning",
+            });
+            parentSpan.setAttribute("fixer.outcome", "ai_failed");
+            await this.cleanupBranch(branchName);
+            return {
+              success: false,
+              error: fixResult.error ?? "Failed to generate fix",
+            };
+          }
+
+          // Step 4: Run tests — revert AI edits if they break things
+          if (this.config.runTests) {
+            const testResult = await Sentry.startSpan(
+              {
+                name: "fixer.run-tests",
+                op: "test",
+                attributes: { "test.command": this.config.testCommand },
+              },
+              () => this.runTests()
+            );
+            if (!testResult.success) {
+              Sentry.addBreadcrumb({
+                category: "fixer",
+                message: `Tests failed after fix: ${testResult.error}`,
+                level: "warning",
+              });
+              parentSpan.setAttribute("fixer.outcome", "tests_failed");
+              // Revert the AI's edits before cleaning up the branch
+              if (this.lastAppliedEdits.length > 0) {
+                await revertEdits(this.lastAppliedEdits, this.config.workingDir);
+                this.lastAppliedEdits = [];
+              }
+              await this.cleanupBranch(branchName);
+              return {
+                success: false,
+                error: `Tests failed after applying fix: ${testResult.error}`,
+              };
+            }
+          }
+
+          // Step 5: Commit and push
+          await Sentry.startSpan(
+            { name: "git.commit-push", op: "git.push" },
+            () => this.commitAndPush(branchName, issue)
+          );
+
+          // Step 6: Create PR
+          const prResult = await Sentry.startSpan(
+            { name: "github.create-pr", op: "github.pr" },
+            () => this.createPullRequest(branchName, issue)
+          );
+
+          parentSpan.setAttribute("fixer.outcome", "succeeded");
+          parentSpan.setAttribute("fixer.pr_number", prResult.number);
+          Sentry.addBreadcrumb({
+            category: "fixer",
+            message: `Created PR #${prResult.number}: ${prResult.url}`,
+            level: "info",
+          });
+
+          return {
+            success: true,
+            branchName,
+            prUrl: prResult.url,
+            prNumber: prResult.number,
+          };
+        } catch (error) {
+          const message = error instanceof Error ? error.message : "Unknown error";
+          parentSpan.setAttribute("fixer.outcome", "error");
+          captureFailure(error, "execute");
           return {
             success: false,
-            error: `Tests failed after applying fix: ${testResult.error}`,
+            error: message,
           };
         }
       }
-
-      // Step 5: Commit and push
-      await this.commitAndPush(branchName, issue);
-
-      // Step 6: Create PR
-      const prResult = await this.createPullRequest(branchName, issue);
-
-      return {
-        success: true,
-        branchName,
-        prUrl: prResult.url,
-        prNumber: prResult.number,
-      };
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Unknown error";
-      return {
-        success: false,
-        error: message,
-      };
-    }
+    );
   }
 
   /**

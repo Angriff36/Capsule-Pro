@@ -10,7 +10,7 @@ const DEFAULT_ALLOWED_ORIGINS = [
 ];
 
 const getAllowedOrigins = () => {
-  const allowedOrigins = env.ABLY_AUTH_CORS_ORIGINS?.split(",").map(
+  const allowedOrigins = env.REALTIME_CORS_ORIGINS?.split(",").map(
     (value: string) => value.trim()
   );
   return allowedOrigins?.length ? allowedOrigins : DEFAULT_ALLOWED_ORIGINS;

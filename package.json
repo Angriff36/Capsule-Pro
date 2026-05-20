@@ -2,7 +2,7 @@
   "name": "capsule-pro",
   "private": true,
   "dependencies": {
-    "@angriff36/manifest": "0.3.39",
+    "@angriff36/manifest": "0.5.0",
     "@prisma/adapter-neon": "7.3.0",
     "@prisma/client": "7.3.0",
     "ai": "^6.0.70",
@@ -24,6 +24,7 @@
     "commander": "^14.0.3",
     "cross-env": "^10.1.0",
     "husky": "^9.1.7",
+    "knip": "^6.14.1",
     "node-mocks-http": "^1.17.2",
     "pg": "^8.18.0",
     "prisma": "7.3.0",
@@ -161,7 +162,10 @@
     "governance:verify-routes": "pnpm exec tsx scripts/verify-governance-route-findings.mjs",
     "vercel:bisect": "node scripts/vercel-bisect.mjs",
     "e2e:lint": "bash e2e/scripts/lint-workflow-specs.sh",
-    "dev:web:infisical": "turbo run dev:infisical --filter=./apps/api --filter=./apps/app --parallel --continue"
+    "install:infisical": "infisical run --env=dev --path=/apps/capsule-pro/app --project-config-dir=. -- pnpm install",
+    "dev:web:infisical": "turbo run dev:infisical --filter=./apps/api --filter=./apps/app --parallel --continue",
+    "build:infisical": "turbo run build:infisical",
+    "knip": "knip"
   },
   "type": "module"
 }

@@ -1,53 +1,39 @@
 "use client";
 
-// biome-ignore lint/performance/noBarrelFile: Sentry requires namespace import for logger
-import * as Sentry from "@sentry/nextjs";
-import type { Message } from "ably";
-import { useChannel, useConnectionStateListener } from "ably/react";
 import { useRouter } from "next/navigation";
-
-const { logger } = Sentry;
+import { useCallback } from "react";
+import {
+  type RealtimeEventMessage,
+  useRealtimeChannel,
+} from "@/app/lib/use-realtime-channel";
 
 interface ProductionBoardRealtimeProps {
   tenantId: string;
   userId?: string | null;
 }
 
-const isKitchenTaskEvent = (eventName?: string) =>
-  eventName?.startsWith("kitchen.task.") ?? false;
-
-function ProductionBoardRealtimeSubscription({
-  tenantId,
-}: {
-  tenantId: string;
-}) {
-  const router = useRouter();
-
-  useConnectionStateListener(["failed", "suspended"], (stateChange) => {
-    if (process.env.NODE_ENV === "development") {
-      logger.warn(
-        logger.fmt`[ProductionBoardRealtime] Ably connection ${stateChange.current}: ${stateChange.reason?.message ?? "unknown reason"}`
-      );
-    }
-  });
-
-  useChannel(`tenant:${tenantId}`, (message: Message) => {
-    if (!isKitchenTaskEvent(message.name)) {
-      return;
-    }
-
-    router.refresh();
-  });
-
-  return null;
-}
+const isKitchenTaskEvent = (name?: string) =>
+  name?.startsWith("kitchen.task.") ?? false;
 
 export function ProductionBoardRealtime({
   tenantId,
 }: ProductionBoardRealtimeProps) {
-  if (!(tenantId && process.env.NEXT_PUBLIC_ABLY_ENABLED)) {
-    return null;
-  }
+  const router = useRouter();
+  const enabled = Boolean(
+    tenantId && process.env.NEXT_PUBLIC_REALTIME_ENABLED
+  );
 
-  return <ProductionBoardRealtimeSubscription tenantId={tenantId} />;
+  const handleMessage = useCallback(
+    (message: RealtimeEventMessage) => {
+      if (!isKitchenTaskEvent(message.name)) {
+        return;
+      }
+      router.refresh();
+    },
+    [router]
+  );
+
+  useRealtimeChannel(tenantId, handleMessage, { enabled });
+
+  return null;
 }
