@@ -1,5 +1,7 @@
 # Capsule-Pro Implementation Plan
 
+> **⚠️ HISTORICAL DOCUMENT (Feb 2026).** This plan predates the dynamic dispatcher and constitution adoption. Route structure described here (per-entity command routes) has been replaced. For current architecture, see `constitution.md` and `specs/manifest/PATTERNS.md`.
+
 **Last Updated**: 2026-02-14 (Steps/Ingredients SQL Migration + Waste Entry Type Fix)
 **Build Status**: ✅ PASSING
 **Test Status**: ✅ 649 passing (542 api + 107 app), 0 failures

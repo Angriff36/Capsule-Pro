@@ -1,5 +1,7 @@
 # Convoy Implementation Plan
 
+> **⚠️ HISTORICAL DOCUMENT (Feb 2026).** API route structures described here use legacy per-entity generated routes. Current canonical write path: `POST /api/manifest/{entity}/commands/{command}`. See `constitution.md` and `specs/manifest/PATTERNS.md`.
+
 > Last updated: 2026-02-19
 > Generated from comprehensive codebase analysis using 20+ parallel agents
 

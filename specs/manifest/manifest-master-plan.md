@@ -12,9 +12,11 @@
 
 **Goal:** Document all manifest files needed to cover Capsule-Pro's domain entities, with priority ordering based on architectural dependencies and business value.
 
-**Architecture:** Each manifest defines entities with properties, computed fields, constraints (block/warn/ok), commands with guards/mutates/emits, policies, and events. Manifests compile to IR and generate route handlers.
+**Architecture:** Each manifest defines entities with properties, computed fields, constraints (block/warn/ok), commands with guards/mutates/emits, policies, and events. Manifests compile to IR for runtime execution. All governed writes route through the dynamic dispatcher at `POST /api/manifest/{entity}/commands/{command}`.
 
 **Tech Stack:** Manifest DSL (.manifest files), Prisma, Next.js API routes, Outbox pattern
+
+**Constitution:** `constitution.md` is the binding authority on all Manifest integration rules. This master plan describes intended coverage; the constitution defines how integration must work.
 
 ---
 
@@ -26,15 +28,13 @@
 cd apps/api && pnpm test -- --run manifest-preptask-runtime.test.ts
 ```
 
-Tests pass ✓ (542 tests)
-
 ### HTTP Integration Test
 
-The API routes are auto-generated. Example endpoint:
+All governed mutations route through the dynamic dispatcher:
 
 ```
-POST /api/kitchen/inventory/commands/create
-POST /api/kitchen/prep-tasks/commands/claim
+POST /api/manifest/InventoryItem/commands/create
+POST /api/manifest/PrepTask/commands/claim
 ```
 
 ### Manual Verification (if needed)
@@ -43,7 +43,7 @@ POST /api/kitchen/prep-tasks/commands/claim
 2. Test create inventory:
 
 ```javascript
-fetch("http://localhost:2223/api/kitchen/inventory/commands/create", {
+fetch("http://localhost:2223/api/manifest/InventoryItem/commands/create", {
   method: "POST",
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify({

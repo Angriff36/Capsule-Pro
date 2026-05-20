@@ -1,8 +1,10 @@
 # Prisma Adapter for Manifest — Specification
 
-**Status**: Draft
+**Status**: Draft — see note below
 **Last Updated**: 2026-02-15
 **Scope**: `packages/manifest-adapters/src/prisma-store.ts` (existing), new generic adapter (v1), optional Prisma generator (v2)
+
+> **Note (2026-05-20):** The hand-written `*PrismaStore` pattern described here is still in use. New entities should be added to `ENTITIES_WITH_SPECIFIC_STORES` in `prisma-store.ts` and registered in `commands.registry.json`. The generic adapter approach in this spec (v1) remains the recommended migration path for reducing hand-written store boilerplate. Constitution authority: `constitution.md`.
 
 ---
 

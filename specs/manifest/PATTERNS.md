@@ -1,19 +1,20 @@
 # Manifest Integration Patterns — Capsule-Pro
 
-> Last updated: 2026-02-16
+> **Last updated:** 2026-05-20
+> **Constitution:** `constitution.md` is the binding authority on all Manifest integration rules. This document describes observed patterns; the constitution defines what is required.
+>
+> **Key architectural shift (April-May 2026):** Generated per-command routes at `{domain}/{entity}/commands/{command}/route.ts` have been replaced by a **single dynamic dispatcher** at `apps/api/app/api/manifest/[entity]/commands/[command]/route.ts`. All governed mutations route through this dispatcher. The old 232 generated route files are being removed.
 >
 > **Context7 Library:** `/angriff36/manifest` (1478 snippets)
->
-> This document describes the actual patterns in use across the codebase, the gaps between them, and the recommended path forward.
 
 ---
 
 ## Table of Contents
 
 1. [Architecture Overview](#architecture-overview)
-2. [Pattern A: Generated Single-Entity Command Routes](#pattern-a-generated-single-entity-command-routes)
-3. [Pattern B: Server Action with Manifest Constraint Checking](#pattern-b-server-action-with-manifest-constraint-checking)
-4. [Pattern C: Direct apiFetch (No Manifest)](#pattern-c-direct-apifetch-no-manifest)
+2. [The Canonical Pattern: Dynamic Dispatcher](#the-canonical-pattern-dynamic-dispatcher)
+3. [Pattern B: Server Action with Manifest (Legacy — Needs Migration)](#pattern-b-server-action-with-manifest-legacy--needs-migration)
+4. [Pattern C: Read Routes (Constitution-Conformant)](#pattern-c-read-routes-constitution-conformant)
 5. [The Runtime Pipeline](#the-runtime-pipeline)
 6. [Store Providers](#store-providers)
 7. [Multi-Entity Orchestration](#multi-entity-orchestration)
@@ -25,76 +26,85 @@
 
 ## Architecture Overview
 
-Capsule-Pro has **three distinct patterns** for how the frontend executes domain commands. They coexist, sometimes for the same entity.
+Capsule-Pro has consolidated to a **single canonical write pattern**: the dynamic dispatcher. Legacy generated routes are being removed.
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                        apps/app (Frontend)                       │
+│                     CURRENT (May 2026)                           │
 │                                                                  │
-│  Pattern A: apiFetch("/api/kitchen/prep-tasks/commands/claim")   │
-│             → Next.js rewrite → apps/api route handler           │
-│             → createManifestRuntime → runtime.runCommand          │
-│             → PrismaStore persist → outbox events                │
+│  All governed writes:                                            │
+│    POST /api/manifest/{entity}/commands/{command}                │
+│    → apps/api/app/api/manifest/[entity]/commands/[command]/route.ts │
+│    → resolveCommand(entity, commandSlug) against registry         │
+│    → createManifestRuntime({ user, entityName })                  │
+│    → runtime.runCommand(command, body, { entityName, instanceId })│
+│    → PrismaStore or PrismaJsonStore persist                       │
+│    → Guards → Policies → Constraints → Mutate → Emit Events       │
 │                                                                  │
-│  Pattern B: Server action (actions-manifest.ts)                  │
-│             → createRecipeRuntime (constraint check only)        │
-│             → Hand-rolled raw SQL ($executeRaw) for persistence  │
-│             → Manual outbox event creation                       │
-│             → revalidatePath + redirect                          │
+│  Reads (constitution Article 3):                                  │
+│    GET /api/{domain}/{entity}/list → direct Prisma reads          │
+│    GET /api/{domain}/{entity}/:id   → direct Prisma reads         │
 │                                                                  │
-│  Pattern C: apiFetch("/api/events/event/commands/create")        │
-│             → Next.js rewrite → apps/api route handler           │
-│             → createManifestRuntime → runtime.runCommand          │
-│             → PrismaJsonStore persist (generic JSON blob)        │
+│  Legacy (being migrated away from):                              │
+│    Legacy generated routes at {domain}/{entity}/commands/{cmd}    │
+│    Server actions with hand-rolled persistence (recipes)          │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
 ### Which pattern is used where?
 
-| Domain                                    | Pattern  | Frontend Callers | Notes                                                  |
-| ----------------------------------------- | -------- | ---------------- | ------------------------------------------------------ |
-| Kitchen (prep tasks, stations, inventory) | A        | 41 matches       | Full Manifest pipeline, PrismaStore                    |
-| Kitchen (recipes, dishes)                 | **B**    | Server actions   | Manifest for constraints only, raw SQL for persistence |
-| Events                                    | A/C      | 36 matches       | Generated routes, PrismaJsonStore for newer entities   |
-| CRM                                       | A/C      | 10 matches       | Generated routes                                       |
-| Staff                                     | A/C      | 8 matches        | Generated routes                                       |
-| Inventory (purchasing)                    | A/C      | 30 matches       | Generated routes                                       |
-| Shipments                                 | A/C      | 15 matches       | Generated routes                                       |
-| Timecards                                 | A/C      | 6 matches        | Generated routes                                       |
-| Command Board                             | **DEAD** | 0 matches        | Replaced by server actions (React Flow rewrite)        |
+| Domain                          | Pattern          | Notes                                                      |
+| ------------------------------- | ---------------- | ---------------------------------------------------------- |
+| All kitchen entities            | **Dispatcher**   | Full Manifest pipeline via dynamic dispatcher              |
+| Events, CRM, Staff, Inventory   | **Dispatcher**   | Full Manifest pipeline                                     |
+| Recipes (create/update)         | **Server Action** | LEGACY — uses Manifest constraints only, raw SQL persist  |
+| Command Board                   | **DEAD**         | Removed — React Flow rewrite                               |
 
 ---
 
-## Pattern A: Generated Single-Entity Command Routes
+## The Canonical Pattern: Dynamic Dispatcher
 
-**Location:** `apps/api/app/api/{domain}/{entity}/commands/{command}/route.ts`
-**Count:** 232 route files with `"Generated from Manifest IR - DO NOT EDIT"` header
-**Used by:** Kitchen (non-recipe), Events, CRM, Staff, Inventory, Shipments, Timecards
+**Location:** `apps/api/app/api/manifest/[entity]/commands/[command]/route.ts`
+**Status:** Single entry point for all governed mutations. Generated by the `manifest:compile` step.
 
 ### How it works
 
+The dispatcher is a single dynamic route that resolves entity and command from the URL, validates against the canonical command registry, creates a Manifest runtime, and executes the command:
+
 ```typescript
-// apps/api/app/api/kitchen/prep-tasks/commands/claim/route.ts
-// Auto-generated Next.js command handler for PrepTask.claim
-// Generated from Manifest IR - DO NOT EDIT
+// apps/api/app/api/manifest/[entity]/commands/[command]/route.ts
+export async function POST(
+  request: NextRequest,
+  { params }: { params: Promise<{ entity: string; command: string }> }
+): Promise<Response> {
+  const { entity, command: commandSlug } = await params;
 
-import { createManifestRuntime } from "@/lib/manifest-runtime";
+  // Validate against canonical merged command registry
+  const resolved = resolveCommand(entity, commandSlug);
+  if (!resolved) {
+    return manifestErrorResponse(
+      `Unknown command: ${entity}.${commandSlug}`, 404
+    );
+  }
 
-export async function POST(request: NextRequest) {
-  const { orgId, userId } = await auth();
-  const tenantId = await getTenantIdForOrg(orgId);
-  const body = await request.json();
+  const currentUser = await requireCurrentUser();
+  const body = await request.json().catch(() => ({}));
 
   const runtime = await createManifestRuntime({
-    user: { id: userId, tenantId },
-    entityName: "PrepTask",
+    user: { id: currentUser.id, tenantId: currentUser.tenantId, role: currentUser.role },
+    entityName: entity,
   });
 
-  const result = await runtime.runCommand("claim", body, {
-    entityName: "PrepTask",
+  const result = await runtime.runCommand(resolved.command, body, {
+    entityName: entity,
+    ...(instanceId ? { instanceId } : {}),
   });
 
-  // Handle policyDenial, guardFailure, or success
+  if (!result.success) {
+    // Policy denial → 403, guard failure → 422, other → 400
+    return manifestErrorResponse(/* ... */);
+  }
+
   return manifestSuccessResponse({
     result: result.result,
     events: result.emittedEvents,
@@ -102,7 +112,7 @@ export async function POST(request: NextRequest) {
 }
 ```
 
-### What the runtime does (from `apps/api/lib/manifest-runtime.ts`)
+### What the runtime does
 
 1. **Resolves manifest file** — `ENTITY_TO_MANIFEST` maps entity name → `.manifest` file
 2. **Compiles to IR** — `compileToIR(source)` with caching
@@ -112,128 +122,66 @@ export async function POST(request: NextRequest) {
 6. **Wires idempotency** — `PrismaIdempotencyStore` for command deduplication
 7. **Returns `ManifestRuntimeEngine`** — Ready to `runCommand()`
 
-### Entities with dedicated PrismaStore (hand-written field mappings)
+### Entities with dedicated PrismaStore
 
 ```
 PrepTask, Recipe, RecipeVersion, Ingredient, RecipeIngredient, Dish,
 Menu, MenuDish, PrepList, PrepListItem, Station, InventoryItem, KitchenTask
 ```
 
-All other entities (Events, CRM, Staff, etc.) use `PrismaJsonStore` — a generic JSON blob store that doesn't map to dedicated Prisma models.
+All other entities use `PrismaJsonStore` — a generic JSON blob store.
 
 ### Strengths
 
-- Consistent pattern across all domains
+- Single dispatch point — no per-command route sprawl
 - Full Manifest pipeline: guards → constraints → mutate → persist → emit events
 - Idempotency, telemetry, outbox all wired automatically
-- Generated code — no hand-writing route handlers
+- Commands validated against canonical registry at dispatch time
 
 ### Limitations
 
-- **One entity per `runCommand` call** — Cannot create Recipe + RecipeVersion + Ingredients atomically
-- **No complex input parsing** — Expects JSON body, not FormData
-- **No file uploads** — No image handling
-- **No Next.js-specific features** — No `revalidatePath`, no `redirect`
-- **No cross-entity transactions** — Each `runCommand` is independent
+- **One entity per `runCommand` call** — Cannot atomically create Recipe + RecipeVersion + Ingredients
+- **No cross-entity transactions** — Each `runCommand` is independent (caller wraps in `prisma.$transaction`)
+- **No file uploads** — Image handling must happen before/outside the dispatcher
 
 ---
 
-## Pattern B: Server Action with Manifest Constraint Checking
+## Pattern B: Server Action with Manifest (Legacy — Needs Migration)
 
 **Location:** `apps/app/app/(authenticated)/kitchen/recipes/actions-manifest.ts`
-**Count:** 1 file, 1162 lines
-**Used by:** Recipe create, Recipe update, Dish create
+**Status:** NONCONFORMING per constitution Article 2. Uses Manifest for constraint checking only; persistence is hand-rolled raw SQL. Emits events manually outside the runtime.
 
-### How it works
+### What it does
 
-```typescript
-// "use server" — runs on the Next.js server, called directly from React components
+The recipe creation flow is inherently multi-entity (Recipe + RecipeVersion + N RecipeIngredients + N RecipeSteps + image upload). The server action:
+1. Parses FormData, uploads images
+2. Creates a Manifest runtime for **constraint checking only**
+3. Creates in-memory instances via `runtime.createInstance()`
+4. Runs commands for constraint outcomes
+5. **BYPASSES Manifest persistence** — uses raw `$executeRaw` SQL
+6. **BYPASSES Manifest event system** — manually calls `enqueueOutboxEvent`
+7. Handles Next.js-specific `revalidatePath`/`redirect`
 
-export const createRecipe = async (formData: FormData) => {
-  // 1. Parse complex FormData (ingredients as JSON/text, steps, image file)
-  const name = String(formData.get("name")).trim();
-  const ingredientInputs = parseIngredientInput(formData.get("ingredients"));
-  const imageFile = readImageFile(formData, "imageFile");
+### Nonconformance
 
-  // 2. Upload image to Vercel Blob storage
-  const imageUrl = imageFile ? await uploadImage(tenantId, `recipes/${recipeId}/hero`, imageFile) : null;
+Per constitution Article 2: "Application code must not duplicate guard logic, constraint evaluation, policy checks, or transition rules outside the runtime." The server action's raw SQL persistence and manual event emission duplicate runtime behavior.
 
-  // 3. Create Manifest runtime for CONSTRAINT CHECKING ONLY
-  const runtimeContext = await createRuntimeContext();
-  const runtime = await createRecipeRuntime(runtimeContext);
+### Migration Path
 
-  // 4. Create entity instances in Manifest (in-memory)
-  await runtime.createInstance("Recipe", { id: recipeId, tenantId, name, ... });
-  await runtime.createInstance("RecipeVersion", { id: versionId, recipeId, ... });
-
-  // 5. Run command for constraint checking
-  const versionResult = await createRecipeVersion(runtime, versionId, ...);
-
-  // 6. Check blocking constraints
-  const blockingConstraints = versionResult.constraintOutcomes?.filter(o => !o.passed && o.severity === "block");
-  if (blockingConstraints?.length > 0) throw new Error(`Cannot create recipe: ${messages}`);
-
-  // 7. HAND-ROLLED PERSISTENCE — raw SQL, NOT through Manifest store
-  await database.$executeRaw(Prisma.sql`INSERT INTO tenant_kitchen.recipes (...) VALUES (...)`);
-  await database.$executeRaw(Prisma.sql`INSERT INTO tenant_kitchen.recipe_versions (...) VALUES (...)`);
-  for (const ingredient of ingredientInputs) {
-    const ingredientId = await ensureIngredientId(tenantId, ingredient.name, unitId);
-    await database.$executeRaw(Prisma.sql`INSERT INTO tenant_kitchen.recipe_ingredients (...) VALUES (...)`);
-  }
-  for (const step of stepInputs) {
-    await database.$executeRaw(Prisma.sql`INSERT INTO tenant_kitchen.recipe_steps (...) VALUES (...)`);
-  }
-
-  // 8. Manual outbox event
-  await enqueueOutboxEvent(tenantId, "recipe", recipeId, "recipe.created", { ... });
-
-  // 9. Next.js-specific
-  revalidatePath("/kitchen/recipes");
-  redirect("/kitchen/recipes");
-};
-```
-
-### Why this pattern exists
-
-The recipe creation flow is **inherently multi-entity**:
-
-- 1 Recipe
-- 1 RecipeVersion
-- N RecipeIngredients (each may auto-create an Ingredient)
-- N RecipeSteps
-- 1 Image upload
-- 1 Outbox event
-
-The generated single-entity routes can't handle this. `runtime.runCommand()` operates on one entity at a time (confirmed by Manifest docs: _"The runtime itself does not manage database transactions; transaction management should be handled at the caller level."_).
-
-### What Manifest provides here
-
-**Only constraint checking.** The runtime creates in-memory instances, runs guards and constraints, and returns `constraintOutcomes`. The actual persistence is entirely hand-rolled SQL.
-
-### What Manifest does NOT provide here
-
-- No PrismaStore persistence (uses raw SQL instead)
-- No outbox integration (manual `enqueueOutboxEvent`)
-- No idempotency
-- No telemetry hooks
-- No transactional atomicity across entities
-
-### The gap
-
-The `createRuntimeContext()` in the server action creates a `KitchenOpsContext` with a `PrismaStoreProvider`, but the code never uses it for persistence. It creates instances with `runtime.createInstance()` (in-memory) and runs commands for constraint outcomes, then throws all that away and does raw SQL.
+The recommended replacement is a composite API route that uses the Embedded Runtime Pattern within a `prisma.$transaction`, delegating all persistence and event emission to the Manifest runtime. See [Multi-Entity Orchestration](#multi-entity-orchestration) below.
 
 ---
 
-## Pattern C: Direct apiFetch (No Manifest)
+## Pattern C: Read Routes (Constitution-Conformant)
 
-**Location:** Various frontend hooks and pages
-**Used by:** Some older kitchen routes, custom queries
+**Location:** Various GET routes in `apps/api/app/api/`
+**Status:** Constitution Article 3 explicitly permits reads to bypass the runtime.
 
-Some routes in `apps/api` are hand-written (not generated) and don't use the Manifest runtime at all. They do direct Prisma queries. The frontend calls them via `apiFetch()`.
+Read routes do direct Prisma queries. This is by design — Manifest is a command/write-side system. Reads bypass it for performance and flexibility.
 
-Example: `apps/api/app/api/kitchen/recipe/list/route.ts` — a list/read route that just does `prisma.recipe.findMany()`.
+Example: `apps/api/app/api/kitchen/recipes/list/route.ts` — does `prisma.recipe.findMany()`.
 
-**Read routes generally don't need Manifest** — Manifest is a command/write-side system. Reads bypass it for performance.
+**Rule:** Read models may not define domain meaning, enforce invariants, or encode alternative state machines (constitution Article 3).
 
 ---
 
@@ -428,88 +376,64 @@ export async function POST(request: NextRequest) {
 
 ## Dead Routes & Cleanup
 
-### Confirmed Dead (safe to delete)
+### Already Removed
 
-| Route Group                                             | Count   | Reason                                          |
-| ------------------------------------------------------- | ------- | ----------------------------------------------- |
-| `apps/api/app/api/command-board/boards/commands/*`      | 5       | Replaced by server actions (React Flow rewrite) |
-| `apps/api/app/api/command-board/cards/commands/*`       | 5       | Same                                            |
-| `apps/api/app/api/command-board/connections/commands/*` | 2       | Same                                            |
-| `apps/api/app/api/command-board/groups/commands/*`      | 3       | Same                                            |
-| `apps/api/app/api/command-board/layouts/commands/*`     | 3       | Same                                            |
-| `apps/api/app/api/command-board/[boardId]/draft`        | 1       | Old draft system removed                        |
-| `apps/api/app/api/kitchen/manifest/*`                   | 9       | Gen 1 routes, replaced by server actions        |
-| `other-app/`                                            | 1       | Dead sandbox, no package.json                   |
-| **Total**                                               | **~30** |                                                 |
+| Route Group                                  | Status  | Reason                                      |
+| -------------------------------------------- | ------- | ------------------------------------------- |
+| Generated per-command routes (232 files)     | GONE    | Replaced by dynamic dispatcher              |
+| Command board manifest routes                | GONE    | React Flow rewrite                          |
+| Gen 1 kitchen/manifest routes                | GONE    | Replaced by dispatcher                      |
+| `other-app/`                                 | GONE    | Dead sandbox, no package.json               |
 
-### Still Live (keep)
+### Legacy Routes Still Pending Migration
 
-| Route                                                | Reason                                 |
-| ---------------------------------------------------- | -------------------------------------- |
-| `apps/api/app/api/command-board/[boardId]/replay`    | Called by `use-replay-events.ts`       |
-| `apps/api/app/api/command-board/chat`                | Actually in `apps/app`, not `apps/api` |
-| All other domain routes (kitchen, events, CRM, etc.) | Actively called by frontend            |
+| Route                                                      | Issue                                |
+| ---------------------------------------------------------- | ------------------------------------ |
+| `apps/api/app/api/kitchen/tasks/[id]/route.ts`            | Direct `database.kitchenTask` writes |
+| `communications/email-templates/commands/create/route.ts`  | Concrete command route (should use dispatcher) |
+| `inventory/bulk-order-rules/commands/create/route.ts`      | Concrete command route (should use dispatcher) |
+| `inventory/bulk-order-rules/commands/update/route.ts`      | Concrete command route (should use dispatcher) |
+| `staff/shifts/commands/create-validated/route.ts`          | Concrete command route with inline validation |
+| `staff/shifts/commands/update-validated/route.ts`          | Concrete command route with inline validation |
 
-### Two Generations of Generated Routes
+### Two Generations of Routes (Historical)
 
-| Generation | Header                                        | Location                          | Status                                 |
-| ---------- | --------------------------------------------- | --------------------------------- | -------------------------------------- |
-| Gen 1      | `"DO NOT EDIT - Changes will be overwritten"` | `kitchen/manifest/`, `other-app/` | **ALL DEAD**                           |
-| Gen 2      | `"Generated from Manifest IR - DO NOT EDIT"`  | All domains                       | **Mostly live** (except command-board) |
+| Generation | Header                                        | Status      |
+| ---------- | --------------------------------------------- | ----------- |
+| Gen 1      | `"DO NOT EDIT - Changes will be overwritten"` | ALL DEAD    |
+| Gen 2      | `"Generated from Manifest IR - DO NOT EDIT"`  | Being removed, replaced by dispatcher |
 
 ---
 
 ## Migration Strategy
 
-### Phase 1: Fix Pattern B (Recipe Server Action)
+### Phase 1: Complete Dispatcher Consolidation ✅ IN PROGRESS
 
-**Goal:** Make the recipe server action use Manifest for persistence, not just constraint checking.
+**Goal:** All governed writes route through `POST /api/manifest/{entity}/commands/{command}`. No per-entity command route files.
 
-**Option 1: Migrate to Composite API Route** (recommended for consistency)
+1. ✅ Dynamic dispatcher created at `manifest/[entity]/commands/[command]/route.ts`
+2. ✅ Canonical command registry (`commands.registry.json`) validates dispatch
+3. 🔄 Remove remaining concrete command routes (6 files)
+4. 🔄 Migrate `kitchen/tasks/[id]/route.ts` to use dispatcher or `executeManifestCommand`
+5. 🔄 Create constitution-aligned bypass registry for intentional exemptions
+
+### Phase 2: Recipe Server Action Migration
+
+**Goal:** Replace `actions-manifest.ts` with a composite API route that uses Manifest for persistence, not just constraint checking.
 
 1. Create `apps/api/app/api/kitchen/recipes/composite/create-with-version/route.ts`
-2. Move FormData parsing to a shared utility
+2. Use `prisma.$transaction` + multiple `runCommand` calls (Embedded Runtime Pattern)
 3. Handle image upload separately (upload first, pass URL)
-4. Frontend calls the composite route via `apiFetch`
+4. Move FormData parsing to shared utility
 5. Delete the server action
-
-**Option 2: Enhance Server Action with PrismaStore Sync** (faster, less consistent)
-
-1. Replace raw SQL with `syncRecipeToPrisma`, `syncRecipeVersionToPrisma`, etc.
-2. Keep the server action pattern
-3. Still bypasses the generated route system
-
-**Option 3: Keep As-Is** (pragmatic)
-
-1. The server action works
-2. Manifest constraint checking is wired
-3. Raw SQL is tested and correct
-4. Migrate later when Manifest supports multi-entity transactions natively
-
-### Phase 2: Delete Dead Routes
-
-1. Delete all command-board manifest routes (30 files)
-2. Delete Gen 1 kitchen/manifest routes (9 files)
-3. Delete `other-app/` directory
-4. Verify no regressions with `pnpm check`
 
 ### Phase 3: PrismaStore for Remaining Entities
 
-Currently only 13 entities have dedicated PrismaStore implementations. The other ~45 entities use PrismaJsonStore (JSON blob). For entities that need relational queries or FK constraints, add dedicated PrismaStore implementations.
+Currently only 13 entities have dedicated PrismaStore. Others use PrismaJsonStore. Add dedicated stores for high-traffic relational entities.
 
-Priority order:
+### Phase 4: Remove Legacy Routes
 
-1. Event, CateringOrder (high-traffic, relational)
-2. Client, Proposal (CRM core)
-3. PurchaseOrder, Shipment (inventory core)
-4. Others as needed
-
-### Phase 4: Frontend Consistency
-
-Migrate remaining direct Prisma routes to use Manifest runtime:
-
-- 42 routes identified in `IMPLEMENTATION_PLAN.md` as bypassing Manifest
-- Focus on write operations (reads can stay as direct Prisma for performance)
+Delete all remaining concrete command routes and direct-Prisma-write routes that duplicate dispatcher behavior.
 
 ---
 
@@ -517,10 +441,11 @@ Migrate remaining direct Prisma routes to use Manifest runtime:
 
 | Date       | Decision                                                | Rationale                                                                                                     |
 | ---------- | ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| 2026-02-10 | Use `store X in memory` in .manifest files              | PrismaStore adapter provided at runtime via `storeProvider`, not declared in manifest                         |
+| 2026-02-10 | Use `store X in memory` in .manifest files              | PrismaStore adapter provided at runtime via `storeProvider`                                                  |
 | 2026-02-10 | PrismaJsonStore as fallback                             | Zero-config persistence for entities without dedicated Prisma models                                          |
-| 2026-02-14 | Recipe server action uses Manifest for constraints only | Multi-entity creation (recipe + version + ingredients + steps + image) can't be done in a single `runCommand` |
-| 2026-02-15 | Generated routes for all 232 commands                   | Consistent pattern, auto-generated from IR                                                                    |
+| 2026-02-14 | Recipe server action uses Manifest for constraints only | Multi-entity creation can't be done in a single `runCommand` (legacy — needs migration)                      |
+| 2026-02-15 | Generated routes for all commands (HISTORICAL)          | Was consistent pattern; replaced by dynamic dispatcher in April 2026                                         |
 | 2026-02-15 | Command board routes dead after React Flow rewrite      | Server actions replaced all board CRUD                                                                        |
-| 2026-02-16 | Document three coexisting patterns                      | Acknowledge reality before forcing migration                                                                  |
-| 2026-02-16 | Recommend composite command routes for multi-entity ops | Embedded Runtime Pattern from Manifest docs, wraps in `prisma.$transaction`                                   |
+| 2026-04-??  | Dynamic dispatcher replaces generated routes            | Single entry point eliminates per-command file sprawl; validates against canonical registry                  |
+| 2026-05-20 | Constitution.md adopted as binding authority            | All Manifest integration decisions must align with constitution; docs updated to reflect this                |
+| 2026-05-20 | Server action flagged as nonconforming                  | Raw SQL persistence and manual events violate Article 2; migration to composite route planned                |

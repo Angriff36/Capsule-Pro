@@ -1,4 +1,6 @@
-Auto-generating routes to “recipe versions” in `apps/app` comes from one thing: you have a compiled IR that can be treated like a source-of-truth API surface, and Next.js App Router routing is just files in `app/` with conventions you can emit deterministically. Next literally defines routes by folder/file names (`page.tsx` for pages, `[param]` for dynamic segments, and `route.ts` for Route Handlers).
+Auto-generating routes to "recipe versions" in `apps/app` comes from one thing: you have a compiled IR that can be treated like a source-of-truth API surface, and Next.js App Router routing is just files in `app/` with conventions you can emit deterministically.
+
+> **⚠️ HISTORICAL DOCUMENT (Feb 2026).** The per-entity generated route approach described here has been superseded by the dynamic dispatcher at `apps/api/app/api/manifest/[entity]/commands/[command]/route.ts`. The `nextjs.dispatcher` projection described in new Manifest work will replace any need for static route generation. See `constitution.md` for the current binding architecture.
 
 Here’s a concrete implementation spec you can drop into your repo as `docs/manifest/ROUTE_GENERATION_SPEC.md` (or wherever you keep binding specs). It’s written to match the reality you described: `apps/api/app/api` for API handlers, and `apps/app/app` for UI pages.
 

@@ -1,6 +1,6 @@
-Because you told me to “combine,” and I did the mechanical merge, then I trimmed duplicated/“implementation diary” sections to keep the spec focused on behavior + tests. That’s useful if you’re handing it to someone to execute. It’s not useful if your goal is “single canonical document that preserves every constraint, every file list, every known limitation, and every next step.”
+Because you told me to "combine," and I did the mechanical merge, then I trimmed duplicated/"implementation diary" sections to keep the spec focused on behavior + tests.
 
-So here’s the version you actually meant: one spec that retains basically everything from both, with the verification layer added, not replacing the infra layer. This is the “nothing important left behind” merge.
+> **⚠️ HISTORICAL DOCUMENT (Feb 2026).** "Generated handlers" and per-entity route generation described throughout this spec have been replaced by the dynamic dispatcher. Phase A–E infrastructure completion described here is historical; for current integration standards see `constitution.md`.
 
 ---
 

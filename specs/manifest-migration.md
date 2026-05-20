@@ -1,5 +1,7 @@
 # Manifest Migration
 
+> **⚠️ HISTORICAL DOCUMENT.** This predates the dynamic dispatcher and constitution adoption. The stated goal (Manifest-first, no direct Prisma CRUD) is now the binding constitutional requirement. See `constitution.md` for the authoritative rules. Current status: dispatcher is live; legacy routes and recipe server action still pending migration.
+
 ## Goal
 
 Migrate the application from direct Prisma CRUD operations to the Manifest system for state management, enabling declarative entity definitions with commands, constraints, projections, and runtime execution across PrepTask and other domain entities.

@@ -2,6 +2,7 @@
 
 > **Created:** 2026-02-22
 > **Status:** ✅ COMPLETE (2026-02-23) — All 13 tasks implemented
+> **⚠️ HISTORICAL DOCUMENT.** The generated-route patterns and PATTERNS.md references here reflect the pre-dispatcher architecture. The dispatcher has since replaced generated per-entity command routes. See `constitution.md` and updated `specs/manifest/PATTERNS.md`.
 > **Prerequisite reading:** `specs/manifest/PATTERNS.md`, this investigation report
 > **Branch:** `fix/dev-server-stability`
 > **Implementation tracking:** `IMPLEMENTATION_PLAN.md` (root)

@@ -43,7 +43,9 @@ infisical run --projectId=d8319856-8caf-4c22-8717-57ab28b326b3 --env=dev --path=
 
 ## Capsule Pro-Specific Rules
 
-- All API routes go through `apps/app/lib/manifest/routes.ts` — do not bypass the manifest
+- **Constitution**: `constitution.md` is the binding Manifest Integration Charter. All governed writes go through Manifest runtime. Reads bypass runtime. Read it before any architectural work.
+- All governed domain mutations execute via `RuntimeEngine.runCommand()` — never direct Prisma writes
+- The command dispatcher is at `apps/api/app/api/manifest/[entity]/commands/[command]/route.ts` — singular dynamic entry point
 - Auth: Clerk (`auth().protect()`) on all protected routes
 - Prisma: no foreign keys, use flat keys, Decimal fields must be cast with `.toFixed(2)`
 - No `.js` extensions in imports — use `.ts`/`.tsx` only
