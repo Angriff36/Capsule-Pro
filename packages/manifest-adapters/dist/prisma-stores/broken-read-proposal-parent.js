@@ -10,7 +10,7 @@
  *   - Timestamp fields: sentAt, viewedAt, acceptedAt, rejectedAt
  *   - Soft-delete via deletedAt
  */
-import { asNullableDate, asNullableNumber, asNullableString, reportOp, toDecimalRequired, } from "./shared.js";
+import { asNullableDate, asNullableNumber, asNullableString, reportOp, toDecimalRequired, } from "./shared";
 // ---------------------------------------------------------------------------
 // ProposalPrismaStore
 // ---------------------------------------------------------------------------

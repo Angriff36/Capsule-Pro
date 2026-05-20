@@ -6,7 +6,7 @@
  * are snake_case WITHOUT @map). It has NO deletedAt and NO updatedAt columns,
  * so this store uses hard-delete semantics and omits soft-delete filtering.
  */
-import { asNullableString, reportOp, toDecimalInput, toDecimalRequired, } from "./shared.js";
+import { asNullableString, reportOp, toDecimalInput, toDecimalRequired, } from "./shared";
 export class InventoryTransactionPrismaStore {
     prisma;
     tenantId;

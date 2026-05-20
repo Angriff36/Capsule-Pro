@@ -5,7 +5,7 @@
  * for efficient traversal and querying.
  */
 
-import { createPath, extendPath } from "./factories.js";
+import { createPath, extendPath } from "./factories";
 import type {
   EntityGraph,
   GraphEdge,
@@ -15,8 +15,8 @@ import type {
   ImpactAnalysisResult,
   RelationshipQuery,
   RelationshipQueryResult,
-} from "./types.js";
-import { TraversalDirection } from "./types.js";
+} from "./types";
+import { TraversalDirection } from "./types";
 
 /**
  * In-memory implementation of the entity graph.

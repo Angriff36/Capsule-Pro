@@ -27,7 +27,7 @@
  *     processorResponseMessage, chargebackAt, fraudStatus, fraudScore,
  *     fraudReasons, reviewedAt, reviewedBy, description, externalReference
  */
-import { asBool, asJsonInput, asNullableDate, asNullableNumber, asNullableString, asString, reportOp, toDecimalInput, toDecimalRequired, } from "./shared.js";
+import { asBool, asJsonInput, asNullableDate, asNullableNumber, asNullableString, asString, reportOp, toDecimalInput, toDecimalRequired, } from "./shared";
 // ---------------------------------------------------------------------------
 // Metadata keys for manifest-only properties (no dedicated Prisma column)
 // ---------------------------------------------------------------------------

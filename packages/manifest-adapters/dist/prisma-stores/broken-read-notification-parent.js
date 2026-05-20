@@ -8,7 +8,7 @@
  *   - Boolean isRead with nullable readAt timestamp
  *   - Status transitions: markRead, markDismissed, remove
  */
-import { asNullableDate, asNullableString, reportOp, } from "./shared.js";
+import { asNullableDate, asNullableString, reportOp, } from "./shared";
 // ---------------------------------------------------------------------------
 // NotificationPrismaStore
 // ---------------------------------------------------------------------------

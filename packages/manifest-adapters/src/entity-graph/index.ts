@@ -13,7 +13,7 @@
  */
 
 // Export implementation
-export { createEntityGraph, InMemoryEntityGraph } from "./entity-graph.js";
+export { createEntityGraph, InMemoryEntityGraph } from "./entity-graph";
 // Export factory functions
 export {
   createEdge,
@@ -22,7 +22,7 @@ export {
   createTypeNode,
   edgeId,
   extendPath,
-} from "./factories.js";
+} from "./factories";
 // Export builder functions
 export {
   buildGraphFromKnownRelationships,
@@ -31,7 +31,7 @@ export {
   getOutgoingRelationships,
   getRelationshipsForEntity,
   type KnownRelationship,
-} from "./graph-builder.js";
+} from "./graph-builder";
 // Export query functions
 export {
   analyzeDeletionImpact,
@@ -49,7 +49,7 @@ export {
   getDependents,
   getEntitySummary,
   groupByRelationshipType,
-} from "./graph-queries.js";
+} from "./graph-queries";
 // Export all types
 export type {
   EntityGraph,
@@ -61,6 +61,6 @@ export type {
   ImpactAnalysisResult,
   RelationshipQuery,
   RelationshipQueryResult,
-} from "./types.js";
+} from "./types";
 // Export enums
-export { Direction, RelationshipType, TraversalDirection } from "./types.js";
+export { Direction, RelationshipType, TraversalDirection } from "./types";

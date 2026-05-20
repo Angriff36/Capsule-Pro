@@ -19,7 +19,7 @@
  */
 import type { Store } from "@angriff36/manifest";
 import type { PrismaClient } from "@repo/database/standalone";
-import { type EntityInstance } from "./shared.js";
+import { type EntityInstance } from "./shared";
 export declare class EventGuestPrismaStore implements Store<EntityInstance> {
     private readonly prisma;
     private readonly tenantId;

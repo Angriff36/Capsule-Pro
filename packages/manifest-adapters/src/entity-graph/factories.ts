@@ -10,7 +10,7 @@ import type {
   GraphNode,
   GraphPath,
   RelationshipType,
-} from "./types.js";
+} from "./types";
 
 /**
  * Create a type node for an entity schema.

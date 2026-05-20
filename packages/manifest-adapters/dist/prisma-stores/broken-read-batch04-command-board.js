@@ -20,7 +20,7 @@
  *   `asJsonInput`. `vectorClock` (Json?) is not in the manifest; reads
  *   pass it through as-is, writes leave it untouched.
  */
-import { asBool, asJsonInput, asNullableNumber, asNullableString, asString, asStringArray, reportOp, } from "./shared.js";
+import { asBool, asJsonInput, asNullableNumber, asNullableString, asString, asStringArray, reportOp, } from "./shared";
 /** Coerce manifest tag input (string | string[]) to string[]. */
 function coerceTags(value) {
     if (Array.isArray(value)) {

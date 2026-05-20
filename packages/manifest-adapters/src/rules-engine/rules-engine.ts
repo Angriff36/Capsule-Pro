@@ -23,8 +23,8 @@ import type {
   ValidatedRule,
   WorkflowTransitionRule,
   WorkflowValidationResult,
-} from "./types.js";
-import { RuleOutcomeType, RuleSeverity, RuleType } from "./types.js";
+} from "./types";
+import { RuleOutcomeType, RuleSeverity, RuleType } from "./types";
 
 // Default configuration
 const DEFAULT_CONFIG: RulesEngineConfig = {

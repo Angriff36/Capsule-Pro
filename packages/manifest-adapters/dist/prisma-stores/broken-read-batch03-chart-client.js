@@ -8,7 +8,7 @@
  * soft-delete. `delete` performs a hard delete; `getAll`/`getById` do not
  * filter by deletedAt.
  */
-import { asBool, asNullableNumber, asNullableString, asString, asStringArray, reportOp, } from "./shared.js";
+import { asBool, asNullableNumber, asNullableString, asString, asStringArray, reportOp, } from "./shared";
 const VALID_ACCOUNT_TYPES = new Set([
     "ASSET",
     "LIABILITY",

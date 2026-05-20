@@ -10,7 +10,7 @@
  *   - Status lifecycle: draft → scheduled → preparing → in_transit → delivered / cancelled
  *   - Soft-delete via deletedAt
  */
-import { asNullableDate, asNullableNumber, asNullableString, reportOp, toDecimalInput, } from "./shared.js";
+import { asNullableDate, asNullableNumber, asNullableString, reportOp, toDecimalInput, } from "./shared";
 // ---------------------------------------------------------------------------
 // ShipmentPrismaStore
 // ---------------------------------------------------------------------------

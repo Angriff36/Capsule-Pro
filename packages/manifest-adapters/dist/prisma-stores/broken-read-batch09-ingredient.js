@@ -13,7 +13,7 @@
  * Replaces the inline IngredientPrismaStore in prisma-store.ts.
  * Soft-deletes via deletedAt.
  */
-import { asBool, asNullableNumber, asNullableString, asStringArray, reportOp, toDecimalInput, } from "./shared.js";
+import { asBool, asNullableNumber, asNullableString, asStringArray, reportOp, toDecimalInput, } from "./shared";
 // ---------------------------------------------------------------------------
 // IngredientPrismaStore  (tenant_kitchen.ingredients)
 // ---------------------------------------------------------------------------

@@ -31,7 +31,7 @@ import {
   asString,
   type EntityInstance,
   reportOp,
-} from "./shared.js";
+} from "./shared";
 
 // ---------------------------------------------------------------------------
 // ClientContact (tenant_crm.client_contacts)

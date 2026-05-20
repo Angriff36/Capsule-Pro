@@ -8,7 +8,7 @@
  * @packageDocumentation
  */
 import type { RuntimeEngine } from "@angriff36/manifest";
-import { type Permission, type RolePolicyData } from "./permission-checker.js";
+import { type Permission, type RolePolicyData } from "./permission-checker";
 /**
  * Map of manifest commands to permissions
  * Format: "Entity.command" -> "permission"

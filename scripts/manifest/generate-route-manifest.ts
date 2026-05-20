@@ -45,7 +45,7 @@ const ENTITY_DOMAIN_MAP: Record<string, string> = {
   AlertsConfig: "kitchen/alerts-config",
   OverrideAudit: "kitchen/override-audits",
   // ─── Events & Catering ───
-  Event: "events/event",
+  Event: "manifest/Event",
   EventProfitability: "events/profitability",
   EventSummary: "events/summaries",
   EventReport: "events/reports",
@@ -156,6 +156,39 @@ function applyDomainPaths(manifest: any): any {
   return { ...manifest, routes: patched };
 }
 
+/**
+ * Patch paths in the generated routes.ts source code.
+ *
+ * The TS output contains string literals like return "/api/event/archive"
+ * and JSDoc comments like POST /api/event/archive. This rewrites each
+ * command path using ENTITY_DOMAIN_MAP so the TS helpers return correct URLs.
+ */
+function applyDomainPathsTs(tsCode: string): string {
+  let result = tsCode;
+  for (const [entity, domain] of Object.entries(ENTITY_DOMAIN_MAP)) {
+    // Match the entity's kebab-case root segment (e.g. "event" for Event)
+    const entityKebab = toKebabCase(entity);
+    // Replace return "/api/{entityKebab}/{command}" with the domain path
+    // This handles both the return statement and JSDoc comments
+    const returnRegex = new RegExp(
+      `"/api/${entityKebab}/([a-z0-9-]+)"`,
+      "g"
+    );
+    result = result.replace(returnRegex, (_match, command: string) => {
+      return `"/api/${domain}/commands/${command}"`;
+    });
+    // Also fix JSDoc comments: POST /api/{entityKebab}/{command}
+    const jsdocRegex = new RegExp(
+      `POST /api/${entityKebab}/([a-z0-9-]+)`,
+      "g"
+    );
+    result = result.replace(jsdocRegex, (_match, command: string) => {
+      return `POST /api/${domain}/commands/${command}`;
+    });
+  }
+  return result;
+}
+
 function printSummary(manifest: { routes?: unknown[] }) {
   const routes = Array.isArray(manifest.routes) ? manifest.routes : [];
   const reads = routes.filter((r: any) => r.method === "GET").length;
@@ -209,7 +242,8 @@ function main() {
   writeFileSync(manifestOut, JSON.stringify(patchedManifest, null, 2));
   // routes.ts path helpers are derived from the same IR — patch them too
   // by regenerating from the patched manifest paths
-  writeFileSync(routesTsOut, routesTsResult.artifacts[0].code);
+  const patchedTsCode = applyDomainPathsTs(routesTsResult.artifacts[0].code);
+  writeFileSync(routesTsOut, patchedTsCode);
 
   if (format === "summary") {
     printSummary(patchedManifest);

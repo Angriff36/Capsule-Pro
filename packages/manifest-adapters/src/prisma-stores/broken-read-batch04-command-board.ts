@@ -32,7 +32,7 @@ import {
   asStringArray,
   type EntityInstance,
   reportOp,
-} from "./shared.js";
+} from "./shared";
 
 /** Coerce manifest tag input (string | string[]) to string[]. */
 function coerceTags(value: unknown): string[] {

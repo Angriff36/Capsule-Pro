@@ -27,7 +27,7 @@ import {
   asNullableString,
   type EntityInstance,
   reportOp,
-} from "./shared.js";
+} from "./shared";
 
 // ---------------------------------------------------------------------------
 // EventStaffAssignmentPrismaStore  (tenant_events.event_staff_assignments)

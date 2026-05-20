@@ -5,7 +5,7 @@
  * prep task dependencies, equipment requirements, allergen constraints,
  * and workflow validation.
  */
-import type { AllergenRuleConfig, DependencyRuleConfig, ValidatedRule, WorkflowTransitionRule } from "./types.js";
+import type { AllergenRuleConfig, DependencyRuleConfig, ValidatedRule, WorkflowTransitionRule } from "./types";
 /**
  * Rule: Prep task cannot be claimed if its recipe is not active.
  */

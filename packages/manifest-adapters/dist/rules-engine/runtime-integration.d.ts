@@ -4,8 +4,8 @@
  * Integrates the kitchen operations rules engine with the Manifest runtime.
  * Provides hooks for rule evaluation before and after command execution.
  */
-import { type KitchenOperationsRulesEngine } from "./rules-engine.js";
-import type { RuleSetEvaluationResult } from "./types.js";
+import { type KitchenOperationsRulesEngine } from "./rules-engine";
+import type { RuleSetEvaluationResult } from "./types";
 export interface CommandResult {
     success: boolean;
     errors?: string[];

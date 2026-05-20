@@ -4,7 +4,7 @@
  *
  * Pattern mirrors AlertsConfigPrismaStore in `../prisma-store.ts`.
  */
-import { asNullableDate, asNullableString, asString, reportOp, } from "./shared.js";
+import { asNullableDate, asNullableString, asString, reportOp, } from "./shared";
 // ---------------------------------------------------------------------------
 // AdminChatParticipant (tenant_admin.admin_chat_participants)
 // ---------------------------------------------------------------------------

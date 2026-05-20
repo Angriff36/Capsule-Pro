@@ -6,7 +6,7 @@
  *
  * @packageDocumentation
  */
-import type { Bottleneck, ImprovementSuggestion } from "./types.js";
+import type { Bottleneck, ImprovementSuggestion } from "./types";
 declare function getOpenAiApiKey(): string | null;
 /**
  * Generate AI-powered improvement suggestions for a bottleneck

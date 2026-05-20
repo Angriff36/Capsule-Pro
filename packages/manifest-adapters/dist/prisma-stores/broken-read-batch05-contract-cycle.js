@@ -26,7 +26,7 @@
  *   `verifiedById` / `offlineId` as `string = ""`, while Prisma marks
  *   them nullable. We coerce via `asNullableString`.
  */
-import { asBool, asNullableDate, asNullableString, asString, reportOp, toDecimalRequired, } from "./shared.js";
+import { asBool, asNullableDate, asNullableString, asString, reportOp, toDecimalRequired, } from "./shared";
 // ---------------------------------------------------------------------------
 // ContractSignature (tenant_events.contract_signatures)
 // ---------------------------------------------------------------------------

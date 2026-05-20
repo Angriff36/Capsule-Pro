@@ -10,8 +10,8 @@ import type {
   GraphNode,
   GraphPath,
   ImpactAnalysisResult,
-} from "./types.js";
-import { RelationshipType, TraversalDirection } from "./types.js";
+} from "./types";
+import { RelationshipType, TraversalDirection } from "./types";
 
 // ---------------------------------------------------------------------------
 // Query Result Types

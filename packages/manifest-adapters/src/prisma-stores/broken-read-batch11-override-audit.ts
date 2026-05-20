@@ -13,7 +13,7 @@ import {
   asString,
   type EntityInstance,
   reportOp,
-} from "./shared.js";
+} from "./shared";
 
 export class OverrideAuditPrismaStore implements Store<EntityInstance> {
   constructor(

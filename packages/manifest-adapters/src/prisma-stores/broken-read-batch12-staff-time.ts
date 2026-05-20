@@ -25,7 +25,7 @@ import {
   asString,
   type EntityInstance,
   reportOp,
-} from "./shared.js";
+} from "./shared";
 
 // ---------------------------------------------------------------------------
 // TimeEntryPrismaStore

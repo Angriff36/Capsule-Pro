@@ -3,7 +3,7 @@
  *
  * Pattern mirrors AlertsConfigPrismaStore in `../prisma-store.ts`.
  */
-import { asBool, asJsonInput, asNullableDate, asNullableNumber, asNullableString, asString, reportOp, toDecimalInput, toDecimalRequired, } from "./shared.js";
+import { asBool, asJsonInput, asNullableDate, asNullableNumber, asNullableString, asString, reportOp, toDecimalInput, toDecimalRequired, } from "./shared";
 // ---------------------------------------------------------------------------
 // WasteEntry (tenant_kitchen.waste_entries)
 // ---------------------------------------------------------------------------

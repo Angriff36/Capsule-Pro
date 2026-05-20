@@ -4,7 +4,7 @@
  * PurchaseOrderItem — tenant_inventory.purchase_order_items (camelCase, Decimals)
  * ProposalLineItem  — tenant_crm.proposal_line_items         (camelCase, Decimals)
  */
-import { asNullableString, asString, reportOp, toDecimalInput, toDecimalRequired, } from "./shared.js";
+import { asNullableString, asString, reportOp, toDecimalInput, toDecimalRequired, } from "./shared";
 // ---------------------------------------------------------------------------
 // PurchaseOrderItemPrismaStore
 // ---------------------------------------------------------------------------

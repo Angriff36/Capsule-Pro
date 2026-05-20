@@ -5,7 +5,7 @@
  * Provides dependency validation, equipment requirements, allergen constraints,
  * and workflow validation.
  */
-import { RuleOutcomeType, RuleSeverity, RuleType } from "./types.js";
+import { RuleOutcomeType, RuleSeverity, RuleType } from "./types";
 // Default configuration
 const DEFAULT_CONFIG = {
     enabled: true,

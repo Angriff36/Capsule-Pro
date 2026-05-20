@@ -2,7 +2,7 @@
   "name": "web",
   "dependencies": {
     "@arcjet/next": "1.0.0",
-    "@next/third-parties": "15.4.11",
+    "@next/third-parties": "16.2.6",
     "@radix-ui/react-icons": "^1.3.2",
     "@repo/analytics": "workspace:*",
     "@repo/cms": "workspace:*",
@@ -42,6 +42,7 @@
     "basehub": "^9.5.3",
     "concurrently": "^9.2.1",
     "cross-env": "^10.1.0",
+    "dotenv-cli": "^10.0.0",
     "tailwindcss": "^4.1.18",
     "typescript": "^5.9.3",
     "vitest": "^4.0.18"
@@ -52,7 +53,7 @@
   "private": true,
   "scripts": {
     "analyze": "cross-env ANALYZE=true npm run build",
-    "build": "export $(grep -v '^#' ../../.env.local | xargs) && basehub && next build",
+    "build": "dotenv -e ../../.env.local -- basehub && dotenv -e ../../.env.local -- next build",
     "clean": "git clean -xdf .cache .turbo dist node_modules",
     "dev": "concurrently \"basehub dev\" \"next dev -p 2222\"",
     "start": "next start",

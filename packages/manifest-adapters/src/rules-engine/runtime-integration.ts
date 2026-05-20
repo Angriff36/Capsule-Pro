@@ -10,16 +10,16 @@ import {
   equipmentRules,
   prepTaskRules,
   workflowRules,
-} from "./rules.js";
+} from "./rules";
 import {
   getRulesEngine,
   type KitchenOperationsRulesEngine,
-} from "./rules-engine.js";
+} from "./rules-engine";
 import type {
   RuleContext,
   RuleEvaluationResult,
   RuleSetEvaluationResult,
-} from "./types.js";
+} from "./types";
 
 // Local CommandResult type for compatibility
 export interface CommandResult {

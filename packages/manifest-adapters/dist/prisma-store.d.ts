@@ -7,15 +7,15 @@
  */
 import type { Store } from "@angriff36/manifest";
 import type { PrismaClient } from "@repo/database/standalone";
-import { DishPrismaStore } from "./prisma-stores/broken-read-batch06-cycle-dish.js";
+import { DishPrismaStore } from "./prisma-stores/broken-read-batch06-cycle-dish";
 export { DishPrismaStore };
-import { EmailTemplatePrismaStore } from "./prisma-stores/broken-read-batch06-email.js";
+import { EmailTemplatePrismaStore } from "./prisma-stores/broken-read-batch06-email";
 export { EmailTemplatePrismaStore };
-import { EventPrismaStore } from "./prisma-stores/broken-read-batch07-event.js";
+import { EventPrismaStore } from "./prisma-stores/broken-read-batch07-event";
 export { EventPrismaStore };
-import { IngredientPrismaStore } from "./prisma-stores/broken-read-batch09-ingredient.js";
+import { IngredientPrismaStore } from "./prisma-stores/broken-read-batch09-ingredient";
 export { IngredientPrismaStore };
-import { InventoryItemPrismaStore } from "./prisma-stores/broken-read-batch09-inventory.js";
+import { InventoryItemPrismaStore } from "./prisma-stores/broken-read-batch09-inventory";
 export { InventoryItemPrismaStore };
 export interface EntityInstance {
     id: string;

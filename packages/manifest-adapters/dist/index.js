@@ -1904,15 +1904,15 @@ export function formatPolicyDenial(denial) {
     };
 }
 // ============ Prisma Store Exports ============
-export { createPrismaStoreProvider, DishPrismaStore, IngredientPrismaStore, InventoryItemPrismaStore, loadDishFromPrisma, loadIngredientFromPrisma, loadInventoryItemFromPrisma, loadMenuDishFromPrisma, loadMenuFromPrisma, loadPrepListFromPrisma, loadPrepListItemFromPrisma, loadPrepTaskFromPrisma, loadRecipeFromPrisma, loadRecipeIngredientFromPrisma, loadRecipeVersionFromPrisma, loadStationFromPrisma, MenuDishPrismaStore, MenuPrismaStore, PrepListItemPrismaStore, PrepListPrismaStore, PrepTaskPrismaStore, RecipeIngredientPrismaStore, RecipePrismaStore, RecipeVersionPrismaStore, StationPrismaStore, syncDishToPrisma, syncIngredientToPrisma, syncInventoryItemToPrisma, syncMenuDishToPrisma, syncMenuToPrisma, syncPrepListItemToPrisma, syncPrepListToPrisma, syncPrepTaskToPrisma, syncRecipeIngredientToPrisma, syncRecipeToPrisma, syncRecipeVersionToPrisma, syncStationToPrisma, } from "./prisma-store.js";
+export { createPrismaStoreProvider, DishPrismaStore, IngredientPrismaStore, InventoryItemPrismaStore, loadDishFromPrisma, loadIngredientFromPrisma, loadInventoryItemFromPrisma, loadMenuDishFromPrisma, loadMenuFromPrisma, loadPrepListFromPrisma, loadPrepListItemFromPrisma, loadPrepTaskFromPrisma, loadRecipeFromPrisma, loadRecipeIngredientFromPrisma, loadRecipeVersionFromPrisma, loadStationFromPrisma, MenuDishPrismaStore, MenuPrismaStore, PrepListItemPrismaStore, PrepListPrismaStore, PrepTaskPrismaStore, RecipeIngredientPrismaStore, RecipePrismaStore, RecipeVersionPrismaStore, StationPrismaStore, syncDishToPrisma, syncIngredientToPrisma, syncInventoryItemToPrisma, syncMenuDishToPrisma, syncMenuToPrisma, syncPrepListItemToPrisma, syncPrepListToPrisma, syncPrepTaskToPrisma, syncRecipeIngredientToPrisma, syncRecipeToPrisma, syncRecipeVersionToPrisma, syncStationToPrisma, } from "./prisma-store";
 // ============ Prep List Auto-Generation Exports ============
-export { generatePrepListImmediately, processPendingPrepListGenerations, triggerPrepListAutoGeneration, } from "./prep-list-autogeneration.js";
+export { generatePrepListImmediately, processPendingPrepListGenerations, triggerPrepListAutoGeneration, } from "./prep-list-autogeneration";
 // ============ Optional Feature Modules ============
-export * as EntityGraph from "./entity-graph/index.js";
-export * from "./manifest-telemetry-collector.js";
-export * from "./permission-checker.js";
-export * from "./permission-guard.js";
-export * from "./prep-task-dependency-engine.js";
-export * from "./recipe-optimization-engine.js";
-export * from "./recipe-scaling-engine.js";
-export * as RulesEngine from "./rules-engine/index.js";
+export * as EntityGraph from "./entity-graph/index";
+export * from "./manifest-telemetry-collector";
+export * from "./permission-checker";
+export * from "./permission-guard";
+export * from "./prep-task-dependency-engine";
+export * from "./recipe-optimization-engine";
+export * from "./recipe-scaling-engine";
+export * as RulesEngine from "./rules-engine/index";

@@ -15,7 +15,7 @@ import {
   reportOp,
   toDecimalInput,
   toDecimalRequired,
-} from "./shared.js";
+} from "./shared";
 
 export class InventoryTransactionPrismaStore implements Store<EntityInstance> {
   constructor(

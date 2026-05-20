@@ -25,7 +25,7 @@
  *   manifest declares it as `string = ""`. We coerce to `null` via
  *   `asNullableString` when blank.
  */
-import { asBool, asJsonInput, asNullableNumber, asNullableString, asString, asStringArray, reportOp, } from "./shared.js";
+import { asBool, asJsonInput, asNullableNumber, asNullableString, asString, asStringArray, reportOp, } from "./shared";
 /** Coerce manifest visible-card input (string | string[]) to string[]. */
 function coerceVisibleCards(value) {
     if (Array.isArray(value)) {

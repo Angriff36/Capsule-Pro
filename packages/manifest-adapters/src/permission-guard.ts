@@ -16,7 +16,7 @@ import {
   permissionCache,
   type RolePolicyData,
   toRolePolicyData,
-} from "./permission-checker.js";
+} from "./permission-checker";
 
 // ---------------------------------------------------------------------------
 // Permission Mapping

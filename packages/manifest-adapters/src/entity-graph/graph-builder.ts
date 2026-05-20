@@ -6,10 +6,10 @@
  */
 
 import type { IR } from "@angriff36/manifest/ir";
-import { createEntityGraph } from "./entity-graph.js";
-import { createEdge, createTypeNode } from "./factories.js";
-import type { EntityGraph } from "./types.js";
-import { RelationshipType } from "./types.js";
+import { createEntityGraph } from "./entity-graph";
+import { createEdge, createTypeNode } from "./factories";
+import type { EntityGraph } from "./types";
+import { RelationshipType } from "./types";
 
 /**
  * Represents a known relationship between entities.

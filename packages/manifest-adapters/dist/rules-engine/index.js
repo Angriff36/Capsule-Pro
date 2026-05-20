@@ -28,10 +28,10 @@ prepTaskTransitions, stationCapacityRule,
 // Equipment rules
 stationEquipmentRule, workflowRules, 
 // Workflow rules
-workflowTransitionRule, } from "./rules.js";
+workflowTransitionRule, } from "./rules";
 // Main exports
-export { getRulesEngine, KitchenOperationsRulesEngine, resetRulesEngine, } from "./rules-engine.js";
+export { getRulesEngine, KitchenOperationsRulesEngine, resetRulesEngine, } from "./rules-engine";
 // Runtime integration
-export { createRulesEngineMiddleware, getRulesEngineIntegration, RulesEngineIntegration, resetRulesEngineIntegration, } from "./runtime-integration.js";
+export { createRulesEngineMiddleware, getRulesEngineIntegration, RulesEngineIntegration, resetRulesEngineIntegration, } from "./runtime-integration";
 // Re-export enums as values
-export { RuleOutcomeType, RuleSeverity, RuleType } from "./types.js";
+export { RuleOutcomeType, RuleSeverity, RuleType } from "./types";

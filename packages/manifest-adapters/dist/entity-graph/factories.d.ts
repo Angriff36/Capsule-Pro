@@ -4,7 +4,7 @@
  * Helper functions for creating graph nodes, edges, and paths.
  * Separated to avoid circular dependencies.
  */
-import type { GraphEdge, GraphNode, GraphPath, RelationshipType } from "./types.js";
+import type { GraphEdge, GraphNode, GraphPath, RelationshipType } from "./types";
 /**
  * Create a type node for an entity schema.
  */
