@@ -243,12 +243,14 @@ const baseConfig: NextConfig = withToolbar(
       resolveExtensions: [".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs", ".json"],
     },
     experimental: {
-      optimizePackageImports: [
-        "lucide-react",
-        "date-fns",
-        "recharts",
-        "@repo/design-system",
-      ],
+      // `@repo/design-system` is intentionally NOT listed here: it is a workspace
+      // package already in `transpilePackages`, and combining the two confuses
+      // Turbopack's chunk graph (manifests as random "module factory is not
+      // available" errors for things like `jsx-dev-runtime` when deeply-imported
+      // components — e.g. SidebarProvider — mount). Per Next.js docs, Turbopack
+      // already optimizes barrel imports automatically and does not require this
+      // option, so we limit it to compiled npm packages.
+      optimizePackageImports: ["lucide-react", "date-fns", "recharts"],
       serverActions: {
         bodySizeLimit: "2mb",
         // Allow Tailscale proxy origins for Server Actions in dev/staging.
@@ -311,6 +313,12 @@ const baseConfig: NextConfig = withToolbar(
     ],
     rewrites,
     async headers() {
+      // Custom Cache-Control on /_next/static/* breaks Turbopack dev: chunks
+      // recompile on every change but the browser holds the previous file as
+      // `immutable` for a year, causing "module factory is not available"
+      // errors when a module id is moved between chunks. Next.js sets correct
+      // headers itself in dev; only override in production.
+      const isProd = process.env.NODE_ENV === "production";
       return [
         {
           source: "/(.*)",
@@ -370,16 +378,20 @@ const baseConfig: NextConfig = withToolbar(
             },
           ],
         },
-        {
-          // Cache JS/CSS with content hash
-          source: "/_next/static/(.*)",
-          headers: [
-            {
-              key: "Cache-Control",
-              value: "public, max-age=31536000, immutable",
-            },
-          ],
-        },
+        ...(isProd
+          ? [
+              {
+                // Cache JS/CSS with content hash (production only — see comment above).
+                source: "/_next/static/(.*)",
+                headers: [
+                  {
+                    key: "Cache-Control",
+                    value: "public, max-age=31536000, immutable",
+                  },
+                ],
+              },
+            ]
+          : []),
       ];
     },
     // Externalize heavy packages with native deps / dynamic requires.

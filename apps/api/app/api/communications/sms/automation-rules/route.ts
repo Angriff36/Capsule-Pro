@@ -1,3 +1,20 @@
+// DEPRECATED ALIAS — canonical dispatcher: /api/manifest/SmsAutomationRule/commands/create
+// (GET is a non-Manifest paginated read — reads may bypass the runtime per
+// constitution §3.)
+//
+// Blocker (structural): SmsAutomationRule is not in ENTITIES_WITH_SPECIFIC_STORES
+// (packages/manifest-adapters/src/manifest-runtime-factory.ts) and falls back
+// to PrismaJsonStore, which does not populate the relational
+// `sms_automation_rules` table. The secondary `database.sms_automation_rules.create`
+// is what actually persists the row that the GET handler (and downstream
+// automation workers) reads.
+//
+// To remove this alias safely: implement a dedicated SmsAutomationRule
+// PrismaStore that maps every manifest field to the relational column, then
+// add "SmsAutomationRule" to ENTITIES_WITH_SPECIFIC_STORES. Then this POST can
+// forward to /api/manifest/SmsAutomationRule/commands/create; the GET can
+// remain as-is or be replaced by a list query against the new store.
+
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { log } from "@repo/observability/log";

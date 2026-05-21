@@ -1,3 +1,10 @@
+// DEPRECATED ALIAS — canonical dispatcher: /api/manifest/EventContract/commands/send
+// After the manifest command succeeds, generates a signingToken, persists it
+// via direct DB update, fetches client via raw SQL, dispatches Resend email
+// (best-effort), and returns {result, clientEmail, signingUrl, ...}. The plan
+// (per the file's existing TODO comment) is to move these side effects into
+// manifest event handlers and then collapse this route.
+
 /**
  * @module ContractSendAPI
  * @intent Handle sending contracts to clients for signature via manifest runtime

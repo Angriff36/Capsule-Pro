@@ -1,3 +1,9 @@
+// DEPRECATED ALIAS — canonical dispatcher: /api/manifest/RecipeVersion/commands/updateCosts
+// Multi-method: GET is a read-only cost breakdown. POST recalculates and runs
+// updateCosts, then batch-updates `recipeIngredient.costCalculatedAt` outside
+// the manifest and merges {...breakdown, events, constraintOutcomes} into the
+// response. Pre/post side effects + custom response merge prevent pure forward.
+
 /**
  * @module RecipeCost
  * @intent Handle API requests to calculate and update recipe costs

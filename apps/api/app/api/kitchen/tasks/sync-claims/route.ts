@@ -1,3 +1,9 @@
+// DEPRECATED ALIAS — canonical dispatcher: /api/manifest/PrepTask/commands/claim (and /release)
+// Intentional batch wrapper: iterates N items, runs the appropriate per-item
+// claim/release command, and aggregates {successful, failed, summary}. The
+// dispatcher is one-command-per-request; this orchestrator remains until the
+// manifest supports batch-command primitives.
+
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { parseError } from "@repo/observability/error";

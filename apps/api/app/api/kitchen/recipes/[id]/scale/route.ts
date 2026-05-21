@@ -1,3 +1,9 @@
+// DEPRECATED ALIAS — canonical dispatcher: /api/manifest/RecipeIngredient/commands/updateWasteFactor (PATCH only)
+// Multi-method, mixed-mode route: GET computes scaled quantities (no manifest),
+// POST computes scaled costs (no manifest), PATCH is the only mutation and
+// calls runCommand. `[id]` is interpreted as recipeId/recipeVersionId depending
+// on method. Splitting URLs would break existing clients.
+
 /**
  * @module RecipeScale
  * @intent Handle API requests to scale recipe costs and update ingredient waste factors

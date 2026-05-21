@@ -1,3 +1,9 @@
+// DEPRECATED ALIAS — canonical dispatcher: /api/manifest/ScheduleShift/commands/update
+// "Validated" variant: invokes cross-entity validateShift() (overlap, overtime,
+// availability checks) BEFORE runCommand, then injects {warnings:[...]} into
+// the response. Pre-command validation cannot be expressed as a manifest guard
+// today; this alias stays until that lifts.
+
 // Validated shift update route
 // Wraps manifest runtime with cross-entity validation for overlaps, overtime, and certifications
 // Returns structured ConstraintOutcome results per spec

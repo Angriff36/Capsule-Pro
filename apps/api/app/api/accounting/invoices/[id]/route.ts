@@ -1,7 +1,72 @@
 /**
  * Single Invoice API Routes
  *
- * Handles operations on individual invoices
+ * Handles operations on individual invoices.
+ *
+ * MANIFEST GOVERNANCE STATUS — REAL VIOLATION, NOT AN ALIAS
+ * ---------------------------------------------------------
+ * Direct writes to `database.invoice` here are constitution violations
+ * (Invoice is a governed entity with a dedicated PrismaStore). Surfaced by
+ * `pnpm manifest:audit-direct-writes`. This route is NOT marked as a
+ * `DEPRECATED ALIAS` — it is the original implementation.
+ *
+ * Per-action blockers (preventing safe migration in this pass):
+ *
+ *   - PUT /update:      Generic field updates (lineItems, notes, dueDate,
+ *                       paymentTerms) with totals recalculation. Manifest
+ *                       has `updateLineItems(lineItems)` only and ONLY for
+ *                       DRAFT status. Route allows updating notes/dueDate
+ *                       in any status that passes `validateInvoiceAccess`.
+ *                       Migration would tighten the contract.
+ *   - apply-payment:    Route auto-flips status to `"PAID"` when amountDue
+ *                       falls within the 0.01 epsilon AND sets `paidAt`.
+ *                       Manifest `applyPayment` ALWAYS sets
+ *                       `status="PARTIALLY_PAID"` (no auto-PAID transition,
+ *                       no paidAt). Migration would break the
+ *                       fully-paid-via-apply-payment branch pinned by
+ *                       `invoice-patch-actions.test.ts`.
+ *   - mark-as-paid:     Route also writes `amountPaid = invoice.total` so
+ *                       the ledger nets to zero. Manifest `markAsPaid` only
+ *                       sets status + paidAt + amountDue=0 — leaves
+ *                       amountPaid untouched. The result is observably
+ *                       different (downstream reports read amountPaid).
+ *   - mark-overdue:     Route just sets `status="OVERDUE"`. Manifest
+ *                       `markOverdue` guards `dueDate < now()` AND
+ *                       `status != "OVERDUE"`. Route allows manual
+ *                       re-marking; manifest would 422.
+ *   - send-reminder:    Route sends an email (best-effort) and only updates
+ *                       `updatedAt`. Manifest `sendReminder` mutates
+ *                       `reminderCount` and `lastReminderAt` instead. Route
+ *                       depends on email being a side-effect; manifest does
+ *                       not emit an email.
+ *   - POST /send:       Updates `{ status: "SENT", sentAt }` and sends an
+ *                       email. Manifest `send(clientContactId)` requires a
+ *                       parameter the route doesn't pass and guards
+ *                       `status == "DRAFT"` AND `amountDue > 0`. The email
+ *                       is a non-manifest side effect that mirrors
+ *                       EventContract.send.
+ *   - DELETE /void:     Mutations match (`status="VOID"`), but manifest
+ *                       `voidInvoice` guards `amountPaid == 0` strictly
+ *                       and emits `InvoiceVoided`. The route's
+ *                       `validateInvoiceBusinessRules` enforces similar
+ *                       checks, but no DELETE test exists — migration
+ *                       without test coverage is unsafe.
+ *
+ * Concrete migration path:
+ *   1. Decide ledger-arithmetic ownership: should the manifest commands
+ *      perform the auto-PAID transition (apply-payment) and write amountPaid
+ *      on markAsPaid, or should the route keep doing them? Migrating
+ *      without resolving this changes invoice status semantics.
+ *   2. Add a non-manifest email side-effect (manifest event handler) for
+ *      send + send-reminder so the routes can stop owning Resend calls.
+ *   3. Write a DELETE-action test, then migrate that single branch first.
+ *      It is the closest to 1:1 between route and manifest.
+ *   4. Update `invoice-patch-actions.test.ts` to mock the manifest runtime
+ *      rather than `database.invoice.update`.
+ *
+ * Do not silence this finding by adding a `DEPRECATED ALIAS` marker. Until
+ * the structural divergences above are addressed, this is a tracked
+ * violation.
  */
 
 import { database } from "@repo/database";

@@ -1,9 +1,19 @@
 # CLAUDE.md
 
-This file defines how agents work in this repo. It is enforceable behavior, not suggestions.
+This file defines **agent behavior** for this repo. It is enforceable behavior, not suggestions.
+
+## MANDATORY READS — before any work
+
+1. **[`AGENTS.md`](./AGENTS.md)** — operational source of truth: dev server, build/typecheck/test commands, Manifest CLI cheat sheet, database/migration workflow, process management, git safety, known gotchas.
+2. **[`docs/manifest/governance.md`](./docs/manifest/governance.md)** — Manifest governance and compliance. Required reading before any Manifest, API route, dispatcher, governed-entity, auth, or test-of-governed-behavior work. Pairs with the formal charter at `docs/manifest/constitution/constitution-v1.md`.
+
+If you are about to touch a Next.js route, a Prisma migration, or a Manifest-governed entity and you have not opened these docs in this session, stop and open them first.
 
 If you are unsure what to do next, default to: reproduce → isolate → fix root cause → add/strengthen tests → verify → document.
-# CLAUDE.md — 12-rule template
+
+---
+
+# 12-rule template
 
 These rules apply to every task in this project unless explicitly overridden.
 Bias: caution over speed on non-trivial work. Use judgment on trivial tasks.
@@ -65,55 +75,6 @@ If you genuinely think a convention is harmful, surface it. Don't fork silently.
 "Completed" is wrong if anything was skipped silently.
 "Tests pass" is wrong if any were skipped.
 Default to surfacing uncertainty, not hiding it.
-## Operational Rules
-
-Operational rules (build commands, validation, manifest persistence, planning file discipline, known gotchas) are owned by `AGENTS.md`. Read it as part of session start.
-
-@AGENTS.md
-
----
-
-## Database & Migrations
-
-**Canonical doc:** `docs/database/CONTRIBUTING.md` — schema-change workflow, table/migration documentation templates, and rollback rules. **Read it before any schema or migration work.** Supplementary references: `docs/database/README.md` (architecture), `docs/database/SCHEMAS.md` (per-schema overview), `docs/database/KNOWN_ISSUES.md` (active gotchas).
-
-### Hard rules (non-negotiable)
-
-1. **Never hand-author a `migrations/<ts>_name/migration.sql` folder.** Use `pnpm db:dev --create-only --name <name>` so the shadow DB validates every table reference at authoring time. Hand-written SQL skips validation and is the #1 cause of failed `db:deploy` runs (`P3018`, "relation does not exist"). **Do not run `prisma migrate dev` directly** (`npx prisma …`, `pnpm --filter @repo/database exec prisma migrate dev`, etc.) — that path is **unsupported**: it bypasses the repo workflow. The supported migrate-dev entrypoint is **`pnpm db:dev`** (and `pnpm migrate`, which chains into `db:dev`).
-2. **Verify table names against `schema.prisma` before writing raw SQL.** Naming is **not** consistently snake_case in this repo. Examples that have burned past sessions:
-   - `model User` → `@@map("employees")` → table is `tenant_staff.employees`, NOT `users`
-   - `model EmployeeDeduction` → no `@@map` → table is `tenant_staff.EmployeeDeduction` (PascalCase), NOT `employee_deductions`
-   Always `grep -n "@@map\|model <Name>" packages/database/prisma/schema.prisma` for any model whose table you reference. If the model has no `@@map`, the table name is the PascalCase model name verbatim.
-3. **Existing migrations are immutable.** Never edit a committed migration file — add a new one. The only exception is repairing a migration that is in a failed state on the dev DB *before* it has been applied anywhere else; in that case mark it rolled-back (`pnpm migrate:resolve --rolled-back <name>`), patch the SQL, and redeploy.
-4. **Never run `prisma db push`** (disabled in this repo) and **never run `prisma migrate reset`** without explicit user confirmation — it drops all data.
-5. **`pnpm db:repair` creates untracked folders.** If you run it, `git add` the new folder *immediately* and commit. Auto-stash hooks will eat untracked migration folders and leave orphan rows in `_prisma_migrations`. If you see stash@{N} entries containing `*_repair_drift/`, that's how migration folders get lost.
-
-### Standard workflow (from `docs/database/CONTRIBUTING.md`, copied here for visibility)
-
-Use the repo's wrapper scripts — not raw `pnpm prisma`. The wrappers ensure correct workspace filtering, pass through `--schema`, and run drift checks in the right order. **`SHADOW_DATABASE_URL`** is **optional** for `pnpm db:dev`: Prisma Migrate auto-creates and deletes the shadow database automatically (Neon supports this natively — manual setup is no longer required per [Neon's changelog](https://neon.com/docs/changelog)). Only if `prisma migrate dev` actually fails with a shadow database create permission error should you bootstrap it: `pnpm db:neon-shadow -- --write` (emergency fallback only). It is **not** part of `@repo/database/keys` (app/runtime validation is **`DATABASE_URL` only**). `packages/database/prisma.config.ts` uses `DIRECT_URL` (with `DATABASE_URL` fallback) for the main connection and sets `shadowDatabaseUrl` only when `SHADOW_DATABASE_URL` is present. Next/Vercel build, `prisma generate`, `db:deploy`, `migrate:status`, and app startup do **not** require it.
-
-```
-1. pnpm db:check                                      # detect drift first
-2. edit packages/database/prisma/schema.prisma        # source of truth
-3. pnpm db:dev -- --create-only --name X             # generate + validate SQL via shadow DB (args after --)
-4. review the generated migration                     # verify it does what you intend
-5. pnpm db:deploy                                     # apply to current DB
-6. pnpm db:check                                      # confirm zero drift
-7. commit schema + migration folder + any docs in one commit
-```
-
-`pnpm migrate` runs steps 1–3 chained (`db:check && prisma:format && prisma:check && db:dev`) but **omits `--create-only`**, so it auto-applies the generated migration. Use it only when you don't need a review-before-apply step. `pnpm migrate:status` is the wrapper for `prisma migrate status`; `pnpm migrate:resolve` for `prisma migrate resolve`.
-
-### Recovery cheatsheet (when things are already broken)
-
-- **`P3009` "failed migrations in target database":** run `pnpm migrate:resolve --rolled-back <name>`, fix the SQL, redeploy.
-- **`_prisma_migrations` row exists but folder is missing:** **first** try to restore the folder. Check `git stash list` for `*_repair_drift/` (folder may be in `stash@{N}^3` untracked tree, recover with `git show stash@{N}^3:<path> > <path>`). Also check unreachable git blobs (`git fsck --unreachable`) and other dev clones. **Restoring the file is always the preferred fix** — Prisma's official guidance is to repair migration histories by restoring/reverting migration files, not by editing `_prisma_migrations`.
-- **`_prisma_migrations` row truly unrecoverable** (folder lost from every clone, stash, and reachable/unreachable history): deleting the row is a last resort. **Required before any DELETE:**
-   1. Manually verify the row has `rolled_back_at` set OR `applied_steps_count = 0` OR you have audited the schema and confirmed the migration's effects are already baked into a later migration. Capture the verification query output.
-   2. Get explicit user approval — never delete `_prisma_migrations` rows autonomously.
-   3. Run the DELETE inside a transaction so you can roll back if anything looks wrong.
-   Prefer restoring the file over deleting the row in every ambiguous case.
-- **Table-name mismatch in raw SQL:** grep schema for `@@map`, fix the migration SQL, mark rolled-back via `pnpm migrate:resolve --rolled-back <name>`, redeploy.
 
 ---
 
@@ -126,8 +87,8 @@ Use the repo's wrapper scripts — not raw `pnpm prisma`. The wrappers ensure co
 - Write detailed specs upfront to reduce ambiguity
 
 ### 2. Subagent Strategy
-- Use subagents liberally to keep main context window clean. 
-- Any time there will be more than 2 files read use a subagent and have it return a succinct summary. Use Haiku models for exploration and file reads, use sonnet models for debugging and use opus 4.6 model for architecture and decisions. 
+- Use subagents liberally to keep main context window clean.
+- Any time there will be more than 2 files read use a subagent and have it return a succinct summary. Use Haiku models for exploration and file reads, use sonnet models for debugging and use opus 4.6 model for architecture and decisions.
 - Offload research, exploration, and parallel analysis to subagents
 - For complex problems, throw more compute at it via subagents
 - One tack per subagent for focused execution
@@ -143,7 +104,7 @@ Use the repo's wrapper scripts — not raw `pnpm prisma`. The wrappers ensure co
 - Diff behavior between main and your changes when relevant
 - Ask yourself: "Would a staff engineer approve this?"
 - Run tests, check logs, demonstrate correctness
-- This is from a preexisting bug or error unrelated to my changes is NOT justification to ignore it. FIX IT AT THE END OF YOUR CURRENT TASK, improve the codebase over time!
+- A preexisting bug or error unrelated to your changes is NOT justification to ignore it. FIX IT AT THE END OF YOUR CURRENT TASK, improve the codebase over time!
 
 ### 5. Demand Elegance (Balanced)
 - For non-trivial changes: pause and ask "is there a more elegant way?"
@@ -174,9 +135,9 @@ Use the repo's wrapper scripts — not raw `pnpm prisma`. The wrappers ensure co
 
 - **Simplicity First**: Make every change as simple as possible. Impact minimal code.
 - **No Laziness**: Find root causes. No temporary fixes. Senior developer standards.
-- **Minimat Impact**: Changes should only touch what's necessary. Avoid introducing bugs.
+- **Minimal Impact**: Changes should only touch what's necessary. Avoid introducing bugs.
 
-
+---
 
 # === COGNILAYER (auto-generated, do not delete) ===
 
@@ -259,7 +220,11 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[auto-bridge snapshot @ 10 changes]
-Files: packages/manifest-adapters/src/bottleneck-detector/ai-suggestions.ts (edit), packages/manifest-adapters/src/event-import-runtime.ts (edit), packages/manifest-adapters/src/prep-list-autogeneration.ts (edit), apps/api/__tests__/accounting/payment-create-idempotency.test.ts (edit), apps/docs/package.json (edit), packages/sentry-integration/package.json (edit), biome.autofix.jsonc (edit), biome.jsonc (edit)
+[proactive bridge @ 91% context — saved before compacting]
+Files (4):
+  scripts/manifest/audit-direct-writes.mjs (create)
+  package.json (edit)
+  scripts/manifest/audit-direct-writes.mjs (edit)
+  apps/api/app/api/smsautomationrule/activate/route.ts (edit)
 
 # === END COGNILAYER ===

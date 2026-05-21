@@ -1,3 +1,10 @@
+// DEPRECATED ALIAS — canonical dispatcher: /api/manifest/EmailTemplate/commands/create
+// Calls runCommand("create") for validation only, then explicitly invokes
+// runtime.createInstance("EmailTemplate", ...) because runCommand alone does
+// not persist (documented in the file's leading comment). Forwarding to the
+// dispatcher would lose persistence. Migrate after the manifest runtime is
+// fixed to persist on create.
+
 // Manifest command handler for EmailTemplate.create
 // Updated: 2026-04-26 — Fixed: runCommand alone does not persist entities.
 // The runtime engine's create command only evaluates guards/policies and emits

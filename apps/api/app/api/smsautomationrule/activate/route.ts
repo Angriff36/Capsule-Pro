@@ -1,3 +1,26 @@
+// DEPRECATED ALIAS — canonical dispatcher: /api/manifest/SmsAutomationRule/commands/update
+//
+// Blocker (structural): SmsAutomationRule is NOT in ENTITIES_WITH_SPECIFIC_STORES
+// (packages/manifest-adapters/src/manifest-runtime-factory.ts), so the runtime
+// falls back to PrismaJsonStore — which writes the entity to a generic JSON
+// column, NOT to the relational `sms_automation_rules` table. Without the
+// secondary direct `database.sms_automation_rules.update` here, the legacy
+// columns (is_active, ...) would never flip and existing reads (this same
+// route's GET handler, downstream automation runners) would see stale state.
+//
+// To remove this alias safely:
+//   1. Implement a dedicated SmsAutomationRule PrismaStore (analogous to the
+//      ones in packages/manifest-adapters/src/prisma-stores/*) that maps every
+//      manifest field to the snake_case relational column.
+//   2. Add "SmsAutomationRule" to ENTITIES_WITH_SPECIFIC_STORES.
+//   3. Confirm runtime.runCommand("update", { id, isActive: true }) updates
+//      `sms_automation_rules.is_active` directly.
+//   4. Then this route can be deleted (or converted to a thin forwarder for
+//      backward compatibility).
+//
+// Migration path for clients: POST {id, isActive: true} to
+// /api/manifest/SmsAutomationRule/commands/update.
+
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { log } from "@repo/observability/log";

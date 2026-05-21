@@ -1,3 +1,9 @@
+// DEPRECATED ALIAS — canonical dispatcher: /api/manifest/PrepTask/commands/claim
+// Shadow/non-production route used to evaluate generated Manifest command
+// handling. Folds the URL `[id]` and auth `userId` into the body before
+// runCommand. Kept as an alias so the shadow contract stays observable; not
+// reachable in production traffic.
+
 // Shadow endpoint for evaluating generated Manifest command handling.
 // This route is intentionally separate from the production claim endpoint.
 

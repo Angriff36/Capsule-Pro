@@ -1,3 +1,9 @@
+// DEPRECATED ALIAS — canonical dispatcher: /api/manifest/Recipe/commands/create (plus RecipeVersion/RecipeIngredient/RecipeStep)
+// 4-entity composite transaction with ingredient resolution
+// (resolveIngredients), constraint-outcome aggregation, and override semantics.
+// Single-command dispatcher cannot express the composite. Kept until manifest
+// supports composite-create primitives.
+
 import type { ConstraintOutcome } from "@angriff36/manifest/ir";
 import { auth } from "@repo/auth/server";
 import {

@@ -9,6 +9,69 @@
  * - processedAt, completedAt, refundedAt
  * - createdAt, updatedAt, deletedAt
  * - No relations (invoice, event, client) - only IDs
+ *
+ * MANIFEST GOVERNANCE STATUS — REAL VIOLATION, NOT AN ALIAS
+ * ---------------------------------------------------------
+ * Direct writes to `database.payment`, `database.invoice`, and
+ * `database.paymentRefundAttempt` are constitution violations (all three
+ * are governed entities). Surfaced by `pnpm manifest:audit-direct-writes`.
+ * This route is NOT marked as a `DEPRECATED ALIAS` — it is the original
+ * implementation, and migration is gated by money-movement invariants the
+ * manifest cannot currently express.
+ *
+ * Per-handler blockers (preventing safe migration in this pass):
+ *
+ *   - PUT /process:     Gateway is the source of truth for outcome and
+ *                       `gatewayTransactionId`. The route's "SECURITY
+ *                       INVARIANT — DO NOT REMOVE" comment is enforced by
+ *                       NOT parsing the request body and by mutating only
+ *                       after `processPaymentGateway` returns. A naive
+ *                       migration to `runtime.runCommand` would let payload
+ *                       fields back into the mutation path. The manifest
+ *                       has no command that accepts an authoritative
+ *                       gateway-result-derived state.
+ *
+ *                       Cascading invoice write (amountPaid/amountDue/
+ *                       status/paidAt) must run AFTER the payment write
+ *                       and only when the gateway returned success. The
+ *                       manifest runtime cannot express "command A then
+ *                       conditionally command B" atomically.
+ *
+ *   - POST /refund:     Same gateway-as-authority pattern, plus three
+ *                       additional invariants the manifest does not own:
+ *                         (a) refund clamping at `payment.amount`
+ *                         (b) status derivation from clamped amount
+ *                             (REFUNDED vs PARTIALLY_REFUNDED) and the
+ *                             "fall back to SENT, never stay PAID" rule on
+ *                             the linked invoice
+ *                         (c) the append-only `payment_refund_attempts`
+ *                             audit row that captures gateway response
+ *                             data even when the user's connection 502s
+ *
+ *                       Manifest `Invoice.recordRefund(refundAmount,
+ *                       paymentId)` performs simple delta arithmetic and
+ *                       always sets status to PARTIALLY_PAID — missing
+ *                       both the gateway-result authority and the
+ *                       status-fallback-to-SENT rule.
+ *
+ * Concrete migration path:
+ *   1. Add manifest commands that accept gateway-derived authoritative
+ *      result objects (Payment.recordProcessResult / Payment.recordRefundResult)
+ *      so the runtime never reads from the HTTP body.
+ *   2. Extend `Invoice.recordRefund` to re-derive status from the
+ *      post-refund balance (fall back to SENT when amountPaid hits zero)
+ *      and to clear `paidAt`.
+ *   3. Add a composite manifest flow (or a documented bypass with real
+ *      `whyRuntimeNotRequired`) for the two-entity transactional pattern
+ *      Payment + Invoice + PaymentRefundAttempt.
+ *   4. Rewrite `payment-process-gateway.test.ts`,
+ *      `payment-refund-clamp.test.ts`, and `payment-rate-limit.test.ts`
+ *      against the new manifest call shape. The invariants pinned by
+ *      these tests are exactly what migration must preserve.
+ *
+ * Do not silence this finding by adding a `DEPRECATED ALIAS` marker. Money
+ * movement is the highest-risk surface in this batch — migrate behind real
+ * test rewrites or not at all.
  */
 
 import { database } from "@repo/database";

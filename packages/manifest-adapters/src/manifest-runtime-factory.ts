@@ -228,6 +228,8 @@ const ENTITIES_WITH_SPECIFIC_STORES = new Set([
   "CollectionPaymentPlan",
   "RolePolicy",
   "TimeOffRequest",
+  "RevenueRecognitionSchedule",
+  "RevenueRecognitionLine",
 ]);
 
 /** Default precompiled IR path (relative to monorepo root). */

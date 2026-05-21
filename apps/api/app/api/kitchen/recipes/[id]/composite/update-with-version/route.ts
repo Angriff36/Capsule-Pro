@@ -1,3 +1,8 @@
+// DEPRECATED ALIAS — canonical dispatcher: /api/manifest/Recipe/commands/update (plus RecipeVersion/RecipeIngredient/RecipeStep)
+// Composite update+create across Recipe + new RecipeVersion + ingredients +
+// steps, with constraint/override handling and field-merging defaults. Same
+// composite rationale as create-with-version and restore-version.
+
 import type { ConstraintOutcome } from "@angriff36/manifest/ir";
 import { auth } from "@repo/auth/server";
 import {

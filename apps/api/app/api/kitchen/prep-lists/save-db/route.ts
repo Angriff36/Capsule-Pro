@@ -1,3 +1,9 @@
+// DEPRECATED ALIAS — canonical dispatcher: /api/manifest/PrepList/commands/create (and PrepListItem.create)
+// Composite transaction: creates a PrepList plus N PrepListItem records in one
+// request, with manifestConstraintBlockedResponse handling. The canonical
+// dispatcher takes a single (entity, command); composite create stays here
+// until the manifest exposes a composite-create primitive.
+
 import type { ConstraintOutcome } from "@angriff36/manifest/ir";
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";

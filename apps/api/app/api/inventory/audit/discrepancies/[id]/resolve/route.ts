@@ -1,3 +1,11 @@
+// DEPRECATED ALIAS — canonical dispatchers: /api/manifest/VarianceReport/commands/{review,approve}
+// Two-stage flow: optionally runs review (when status=pending and !skipReview),
+// then runs approve with a computed adjustmentAmount (validated against
+// VALID_ADJUSTMENT_TYPES), then a direct DB update for resolution metadata
+// (rootCause, resolutionNotes, resolvedById, resolvedAt). Custom response via
+// formatDiscrepancy(). Multi-command + metadata side effects prevent pure
+// forward.
+
 /**
  * Inventory Audit Discrepancy Resolve API
  *

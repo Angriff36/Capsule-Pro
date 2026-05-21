@@ -1,3 +1,10 @@
+// DEPRECATED ALIAS — canonical dispatcher: /api/manifest/TrainingModule/commands/create
+// TrainingModule is NOT registered in the manifest runtime's store registry
+// (ENTITIES_WITH_SPECIFIC_STORES), so the POST handler falls back to raw SQL
+// against tenant_staff.training_modules and the GET handler is a custom listing
+// endpoint with pagination/search/category filters. Both methods stay until
+// TrainingModule gets a PrismaStore adapter.
+
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
 import { log } from "@repo/observability/log";

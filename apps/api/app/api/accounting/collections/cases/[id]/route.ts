@@ -2,6 +2,61 @@
  * Collection Case Detail API Routes
  *
  * Handles individual collection case operations
+ *
+ * MANIFEST GOVERNANCE STATUS — REAL VIOLATION, NOT AN ALIAS
+ * ---------------------------------------------------------
+ * Direct writes to `database.collectionCase` here are constitution violations
+ * per `docs/manifest/governance.md` (CollectionCase is a governed entity with
+ * a dedicated `CollectionCasePrismaStore`). This route is NOT marked as a
+ * `DEPRECATED ALIAS` because it has never been redesigned as one — it is the
+ * original implementation. Surfaced by `pnpm manifest:audit-direct-writes`.
+ *
+ * Per-action blockers (preventing safe migration in this pass):
+ *
+ *   - assignTo:         Manifest writes BOTH `assignedTo` and `assignedAt`
+ *                       (assignedAt lives in metadata JSON); route only writes
+ *                       `assignedTo`. Adding assignedAt is an observable
+ *                       response-shape change.
+ *   - recordPayment:    Manifest applies delta arithmetic only; route ALSO
+ *                       transitions `status="PAID"` when `outstanding<=0.01`.
+ *                       Manifest has no such status flip. Pinned by test
+ *                       (`collection-case-patch-actions.test.ts`).
+ *   - escalateDunning:  Route derives priority from stage (HIGH for
+ *                       REMINDER_2/3, URGENT for FINAL_NOTICE/COLLECTIONS).
+ *                       Manifest's escalateDunning does not. Pinned by test.
+ *   - setPriority:      Route appends to `notes`. Manifest doesn't preserve
+ *                       prior notes content.
+ *   - markDisputed:     Manifest sets `status="DISPUTED"`; route doesn't
+ *                       change status and instead appends to `notes`.
+ *   - resolveDispute:   Manifest sets `status="ACTIVE"` + `disputeResolvedAt`;
+ *                       route only flips `isDisputed` and appends notes.
+ *   - escalateToLegal:  Manifest `escalateToLegalWithDetails` requires
+ *                       `legalCaseNumber`+`legalFirm`; route accepts them
+ *                       optionally and stuffs the values into `notes` instead
+ *                       of the dedicated columns.
+ *   - writeOff:         Manifest mutation arithmetic differs from route
+ *                       (manifest uses self.outstandingAmount - amount;
+ *                       route uses Math.min(amount, outstanding)).
+ *   - updateAging:      Mutations are identical, BUT route uses
+ *                       `requireTenantId` (no user), and the manifest runtime
+ *                       requires a `user` context for RBAC policy guard.
+ *                       Switching to `requireCurrentUser` is a cross-route
+ *                       auth change.
+ *   - close, reopen,
+ *     createPaymentPlan: All append to `notes`, manifest doesn't.
+ *
+ * Concrete migration path (whichever lands first, in order):
+ *   1. Decide whether the notes-appending and status-derivation behaviors
+ *      should move into the manifest commands (additive event handlers or
+ *      new command params) or be deprecated as legacy display-only state.
+ *   2. Once parity is achieved, switch the route to `requireCurrentUser`
+ *      and call `runtime.runCommand("...", body, { entityName, instanceId })`
+ *      per action, returning the read-back row via `findFirst`.
+ *   3. Update `collection-case-patch-actions.test.ts` to assert against the
+ *      manifest runtime call rather than mocked Prisma calls.
+ *
+ * Do not silence this finding by adding a `DEPRECATED ALIAS` marker. Until
+ * the structural blockers above are addressed, this is a tracked violation.
  */
 
 import { database } from "@repo/database";

@@ -1,3 +1,10 @@
+// DEPRECATED ALIAS — canonical dispatchers: /api/manifest/PrepListItem/commands/{markCompleted,markUncompleted}
+// Body-content multiplexer: branches on `body.completed` to choose
+// markCompleted vs markUncompleted, ignoring the URL `[id]` (prepList) and
+// using only `[itemId]`. Injects completedByUserId from auth. The dispatcher
+// takes the command as a URL segment; this route exists for clients that POST
+// a `completed` boolean.
+
 // Prep list item completion endpoint for mobile kitchen app
 // Handles both marking completed and uncompleted based on request body
 

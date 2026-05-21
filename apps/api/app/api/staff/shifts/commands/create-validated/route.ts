@@ -1,3 +1,8 @@
+// DEPRECATED ALIAS — canonical dispatcher: /api/manifest/ScheduleShift/commands/create
+// Mirror of /update-validated for create. Same pre-command validateShift()
+// rationale: overlap/overtime/availability checks must run before the manifest
+// create executes, and warnings are surfaced in the response.
+
 // Validated shift creation route
 // Wraps manifest runtime with cross-entity validation for overlaps, overtime, and certifications
 // Returns structured ConstraintOutcome results per spec

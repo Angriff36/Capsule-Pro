@@ -172,7 +172,12 @@ entity RevenueRecognitionSchedule {
   command cancel(reason: string) {
     guard self.status in ["PENDING", "IN_PROGRESS", "PAUSED"] "Cannot cancel completed recognition"
     mutate status = "CANCELLED"
-    mutate notes = self.notes + "\nCancelled: " + reason
+    // Audit-trail append is conditional on `reason` so callers that omit
+    // a reason (the legacy route shape) do not write `"\nCancelled: "` as a
+    // sentinel. Callers that supply a non-empty reason get a proper audit
+    // entry. See `apps/api/app/api/accounting/revenue-recognition/schedules/[id]/route.ts`
+    // for the migration that drove this change.
+    mutate notes = reason != "" ? self.notes + "\nCancelled: " + reason : self.notes
     mutate updatedAt = now()
     emit RecognitionCancelled
   }

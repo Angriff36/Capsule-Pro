@@ -10,6 +10,58 @@
  * `status` is a free-text column with values: ACTIVE | VERIFIED | FLAGGED |
  * EXPIRED. Card expiry month/year fields are NOT in the schema — do not
  * reintroduce references to them without a matching migration.
+ *
+ * MANIFEST GOVERNANCE STATUS — REAL VIOLATION, NOT AN ALIAS
+ * ---------------------------------------------------------
+ * Direct writes to `database.paymentMethod` here are constitution violations
+ * (PaymentMethod is a governed entity per `manifest-registry/entities.json`).
+ * Surfaced by `pnpm manifest:audit-direct-writes`. This route is NOT marked
+ * as a `DEPRECATED ALIAS` — it is the original implementation.
+ *
+ * Per-action blockers (preventing safe migration in this pass):
+ *
+ *   - PUT /update:      Generic update path (cardLastFour, cardNetwork,
+ *                       isDefault). Manifest has no generic `update` command;
+ *                       only purpose-specific commands (markAsDefault,
+ *                       markExpired, verify, flagForFraud, markInvalid,
+ *                       updateToken). Migration would require new commands
+ *                       or breaking the PUT contract.
+ *   - mark-as-default:  Route runs `database.paymentMethod.updateMany` to
+ *                       UNSET other defaults for the same client (multi-row
+ *                       transactional concern), then sets this row.
+ *                       Manifest `markAsDefault` is single-instance; cannot
+ *                       atomically clear sibling defaults.
+ *   - verify:           Manifest `verify(method)` REQUIRES a `method`
+ *                       parameter; route's PATCH body doesn't pass one.
+ *                       Migration would need a default or schema change.
+ *                       Manifest mutates `verifiedAt` and `verificationMethod`
+ *                       columns — route writes only `status="VERIFIED"`.
+ *   - flag-for-fraud:   Route sets `status="FLAGGED"`; manifest `flagForFraud`
+ *                       sets `status="FRAUDULENT"` AND `fraudFlagged=true`.
+ *                       Status string differs → observable response change.
+ *   - mark-expired:     Manifest `markExpired` ALSO sets `expiresAt=now()`
+ *                       and guards `type in ["CREDIT_CARD","DEBIT_CARD"]`.
+ *                       Route only sets `status="EXPIRED"`. New column write +
+ *                       new guard = behavior change.
+ *   - remove, DELETE:   Soft delete via `deletedAt=now()`. Manifest has no
+ *                       softDelete command for PaymentMethod. Cannot migrate.
+ *
+ * Concrete migration path:
+ *   1. Reconcile status values (FLAGGED vs FRAUDULENT) — decide which is
+ *      canonical and update the other side. Either the manifest or callers
+ *      will need to change, so coordinate with the frontend (apps/app).
+ *   2. Add a `softDelete` command to the manifest, or accept that deletion
+ *      stays as a bypass entry (with proper `whyRuntimeNotRequired`).
+ *   3. Add a manifest command that allows the multi-row "clear other
+ *      defaults" intent (e.g. `setDefault(clientId)` that runs as a service
+ *      command across multiple rows). Until then, mark-as-default must
+ *      retain its updateMany.
+ *   4. Once 1–3 land, switch PATCH actions one by one to
+ *      `runtime.runCommand(...)` and rewrite
+ *      `payment-method-patch-actions.test.ts` against the new shape.
+ *
+ * Do not silence this finding by adding a `DEPRECATED ALIAS` marker. Until
+ * the divergences above are addressed, this is a tracked violation.
  */
 
 import { database } from "@repo/database";

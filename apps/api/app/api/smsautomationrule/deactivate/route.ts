@@ -1,3 +1,18 @@
+// DEPRECATED ALIAS — canonical dispatcher: /api/manifest/SmsAutomationRule/commands/update
+//
+// Blocker (structural): same as /api/smsautomationrule/activate/route.ts —
+// SmsAutomationRule is not in ENTITIES_WITH_SPECIFIC_STORES, so the runtime
+// uses PrismaJsonStore and does NOT write the relational `is_active` column.
+// The secondary `database.sms_automation_rules.update` here is what actually
+// flips the column to false.
+//
+// To remove this alias safely: implement a dedicated SmsAutomationRule
+// PrismaStore (see /activate blocker for full steps), then this route and its
+// /activate sibling can be deleted.
+//
+// Migration path for clients: POST {id, isActive: false} to
+// /api/manifest/SmsAutomationRule/commands/update.
+
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { log } from "@repo/observability/log";

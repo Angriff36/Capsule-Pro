@@ -1,3 +1,8 @@
+// DEPRECATED ALIAS — canonical dispatcher: /api/manifest/RecipeVersion/commands/create (plus RecipeIngredient/RecipeStep)
+// Composite create across RecipeVersion + ingredients + steps, sourcing data
+// from an existing version. Single-command dispatcher cannot express the
+// composite. Kept until manifest supports composite-create primitives.
+
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { createManifestRuntime } from "@/lib/manifest-runtime";

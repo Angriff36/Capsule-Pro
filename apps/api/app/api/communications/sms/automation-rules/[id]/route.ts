@@ -1,3 +1,18 @@
+// DEPRECATED ALIAS — canonical dispatcher: /api/manifest/SmsAutomationRule/commands/{update,softDelete}
+// (GET is a non-Manifest single-resource read.)
+//
+// Blocker (structural): same as the parent /communications/sms/automation-rules
+// route — SmsAutomationRule is not in ENTITIES_WITH_SPECIFIC_STORES and falls
+// back to PrismaJsonStore, so the relational columns (`is_active`, `deleted_at`,
+// etc.) are NOT written by the manifest store. The secondary direct DB updates
+// in PATCH and DELETE are what keep the relational table consistent.
+//
+// To remove this alias safely: implement a dedicated SmsAutomationRule
+// PrismaStore that writes every manifest field to the relational column, then
+// add "SmsAutomationRule" to ENTITIES_WITH_SPECIFIC_STORES. Once parity is
+// confirmed in tests, this route can be deleted; clients should POST to
+// /api/manifest/SmsAutomationRule/commands/{update,softDelete}.
+
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { log } from "@repo/observability/log";

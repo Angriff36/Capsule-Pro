@@ -1,3 +1,9 @@
+// DEPRECATED ALIAS — canonical dispatcher: /api/manifest/AllergenWarning/commands/create
+// Service-style endpoint that queries guests + dishes, deletes stale warnings,
+// then loops to create N AllergenWarnings. Not a single command — kept as an
+// intentional orchestrator until the manifest supports cross-entity service
+// commands.
+
 /**
  * @module AllergenConflictDetectionService
  * @intent Automatically detect allergen conflicts and generate warnings

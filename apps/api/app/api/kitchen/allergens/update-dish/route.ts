@@ -1,3 +1,9 @@
+// DEPRECATED ALIAS — canonical dispatcher: /api/manifest/Dish/commands/update
+// Pre-command adapter: hydrates the current Dish row (the manifest update
+// command requires all fields) and converts allergens/dietaryTags arrays to
+// comma-separated strings to match the persisted column shape. Pure forward
+// would lose both the hydration and the array↔string adapter.
+
 /**
  * @module UpdateDishAllergens
  * @intent Handle API requests to update allergen and dietary tag information for dishes

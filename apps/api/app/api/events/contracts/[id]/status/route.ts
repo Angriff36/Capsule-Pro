@@ -1,3 +1,10 @@
+// DEPRECATED ALIAS — canonical dispatchers: /api/manifest/EventContract/commands/{send,markViewed,sign,expire,cancel}
+// Status-to-command multiplexer: PATCH receives a `status` value and routes to
+// one of five manifest commands with per-status payload builders (e.g.
+// `cancelled` injects `reason` + `canceledBy`). Forwards Idempotency-Key
+// header. A single dispatcher cannot do status→command mapping; this alias
+// remains until clients move to per-command POSTs.
+
 /**
  * @module ContractStatusAPI
  * @intent Handle contract status transitions via manifest runtime

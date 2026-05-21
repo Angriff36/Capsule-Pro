@@ -1,0 +1,8144 @@
+{
+  "irHash": "",
+  "compilerVersion": "0.3.8",
+  "commands": [
+    {
+      "entity": "AdminChatParticipant",
+      "command": "archive",
+      "commandId": "AdminChatParticipant.archive",
+      "policies": [],
+      "guardCount": 0,
+      "emits": [
+        "ChatParticipantArchived"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "AdminChatParticipant",
+      "command": "unarchive",
+      "commandId": "AdminChatParticipant.unarchive",
+      "policies": [],
+      "guardCount": 0,
+      "emits": [
+        "ChatParticipantUnarchived"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "AdminChatParticipant",
+      "command": "clearHistory",
+      "commandId": "AdminChatParticipant.clearHistory",
+      "policies": [],
+      "guardCount": 0,
+      "emits": [
+        "ChatHistoryCleared"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "AdminTask",
+      "command": "create",
+      "commandId": "AdminTask.create",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "AdminTaskCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "AdminTask",
+      "command": "update",
+      "commandId": "AdminTask.update",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "AdminTaskUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "AdminTask",
+      "command": "moveToTodo",
+      "commandId": "AdminTask.moveToTodo",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "AdminTaskStatusChanged"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "AdminTask",
+      "command": "startProgress",
+      "commandId": "AdminTask.startProgress",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "AdminTaskStatusChanged"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "AdminTask",
+      "command": "complete",
+      "commandId": "AdminTask.complete",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "AdminTaskStatusChanged"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "AdminTask",
+      "command": "cancel",
+      "commandId": "AdminTask.cancel",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "AdminTaskStatusChanged"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "AdminTask",
+      "command": "reopen",
+      "commandId": "AdminTask.reopen",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "AdminTaskStatusChanged"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "AdminTask",
+      "command": "softDelete",
+      "commandId": "AdminTask.softDelete",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "AdminTaskDeleted"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "AiEventSetupSession",
+      "command": "parse",
+      "commandId": "AiEventSetupSession.parse",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "AiEventSetupSessionParsed"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "AiEventSetupSession",
+      "command": "confirm",
+      "commandId": "AiEventSetupSession.confirm",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "AiEventSetupSessionConfirmed"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "AiEventSetupSession",
+      "command": "markCreated",
+      "commandId": "AiEventSetupSession.markCreated",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "AiEventSetupSessionCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "AiEventSetupSession",
+      "command": "cancel",
+      "commandId": "AiEventSetupSession.cancel",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "AiEventSetupSessionCancelled"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "AiEventSetupSession",
+      "command": "updateConfidence",
+      "commandId": "AiEventSetupSession.updateConfidence",
+      "policies": [],
+      "guardCount": 0,
+      "emits": [
+        "AiEventSetupSessionUpdated"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "AlertsConfig",
+      "command": "create",
+      "commandId": "AlertsConfig.create",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "AlertsConfigCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "AlertsConfig",
+      "command": "update",
+      "commandId": "AlertsConfig.update",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "AlertsConfigUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "AlertsConfig",
+      "command": "remove",
+      "commandId": "AlertsConfig.remove",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "AlertsConfigRemoved"
+      ],
+      "effects": [
+        "compute"
+      ]
+    },
+    {
+      "entity": "AllergenWarning",
+      "command": "create",
+      "commandId": "AllergenWarning.create",
+      "policies": [],
+      "guardCount": 3,
+      "emits": [
+        "AllergenWarningCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "AllergenWarning",
+      "command": "acknowledge",
+      "commandId": "AllergenWarning.acknowledge",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "AllergenWarningAcknowledged"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "AllergenWarning",
+      "command": "resolve",
+      "commandId": "AllergenWarning.resolve",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "AllergenWarningResolved"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "AllergenWarning",
+      "command": "applyOverride",
+      "commandId": "AllergenWarning.applyOverride",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "AllergenWarningOverridden"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "AllergenWarning",
+      "command": "softDelete",
+      "commandId": "AllergenWarning.softDelete",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "AllergenWarningDeleted"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "ApiKey",
+      "command": "create",
+      "commandId": "ApiKey.create",
+      "policies": [],
+      "guardCount": 4,
+      "emits": [
+        "ApiKeyCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "ApiKey",
+      "command": "update",
+      "commandId": "ApiKey.update",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "ApiKeyUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "ApiKey",
+      "command": "revoke",
+      "commandId": "ApiKey.revoke",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "ApiKeyRevoked"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "ApiKey",
+      "command": "softDelete",
+      "commandId": "ApiKey.softDelete",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "ApiKeyDeleted"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "ApiKey",
+      "command": "recordUsage",
+      "commandId": "ApiKey.recordUsage",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "ApiKeyUsed"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "BankAccount",
+      "command": "create",
+      "commandId": "BankAccount.create",
+      "policies": [],
+      "guardCount": 4,
+      "emits": [
+        "BankAccountCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "BankAccount",
+      "command": "remove",
+      "commandId": "BankAccount.remove",
+      "policies": [],
+      "guardCount": 0,
+      "emits": [
+        "BankAccountDeleted"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "BankAccount",
+      "command": "setDefault",
+      "commandId": "BankAccount.setDefault",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "BankAccountDefaultSet"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "BankAccount",
+      "command": "update",
+      "commandId": "BankAccount.update",
+      "policies": [],
+      "guardCount": 0,
+      "emits": [
+        "BankAccountUpdated"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "BankAccount",
+      "command": "verify",
+      "commandId": "BankAccount.verify",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "BankAccountVerified"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "BattleBoard",
+      "command": "create",
+      "commandId": "BattleBoard.create",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "BattleBoardCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "BattleBoard",
+      "command": "open",
+      "commandId": "BattleBoard.open",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "BattleBoardOpened"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "BattleBoard",
+      "command": "startVoting",
+      "commandId": "BattleBoard.startVoting",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "BattleBoardVotingStarted"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "BattleBoard",
+      "command": "addDish",
+      "commandId": "BattleBoard.addDish",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "BattleBoardDishAdded"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "BattleBoard",
+      "command": "removeDish",
+      "commandId": "BattleBoard.removeDish",
+      "policies": [],
+      "guardCount": 3,
+      "emits": [
+        "BattleBoardDishRemoved"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "BattleBoard",
+      "command": "vote",
+      "commandId": "BattleBoard.vote",
+      "policies": [],
+      "guardCount": 3,
+      "emits": [
+        "BattleBoardVoteCast"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "BattleBoard",
+      "command": "finalize",
+      "commandId": "BattleBoard.finalize",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "BattleBoardFinalized"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Budget",
+      "command": "create",
+      "commandId": "Budget.create",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "BudgetCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Budget",
+      "command": "remove",
+      "commandId": "Budget.remove",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "BudgetDeleted"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Budget",
+      "command": "update",
+      "commandId": "Budget.update",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "BudgetUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Budget",
+      "command": "refresh",
+      "commandId": "Budget.refresh",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "BudgetRefreshed"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "BulkOrderRule",
+      "command": "create",
+      "commandId": "BulkOrderRule.create",
+      "policies": [],
+      "guardCount": 4,
+      "emits": [
+        "BulkOrderRuleCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "BulkOrderRule",
+      "command": "update",
+      "commandId": "BulkOrderRule.update",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "BulkOrderRuleUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "BulkOrderRule",
+      "command": "softDelete",
+      "commandId": "BulkOrderRule.softDelete",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "BulkOrderRuleDeactivated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "CateringOrder",
+      "command": "create",
+      "commandId": "CateringOrder.create",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "CateringOrderCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "CateringOrder",
+      "command": "update",
+      "commandId": "CateringOrder.update",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "CateringOrderUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "CateringOrder",
+      "command": "confirm",
+      "commandId": "CateringOrder.confirm",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "CateringOrderConfirmed"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "CateringOrder",
+      "command": "cancel",
+      "commandId": "CateringOrder.cancel",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "CateringOrderCancelled"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "CateringOrder",
+      "command": "startPrep",
+      "commandId": "CateringOrder.startPrep",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "CateringOrderPrepStarted"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "CateringOrder",
+      "command": "markComplete",
+      "commandId": "CateringOrder.markComplete",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "CateringOrderCompleted"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "ChartOfAccount",
+      "command": "create",
+      "commandId": "ChartOfAccount.create",
+      "policies": [],
+      "guardCount": 3,
+      "emits": [
+        "ChartOfAccountCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "ChartOfAccount",
+      "command": "update",
+      "commandId": "ChartOfAccount.update",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "ChartOfAccountUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "ChartOfAccount",
+      "command": "deactivate",
+      "commandId": "ChartOfAccount.deactivate",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "ChartOfAccountDeactivated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "ClientInteraction",
+      "command": "create",
+      "commandId": "ClientInteraction.create",
+      "policies": [],
+      "guardCount": 3,
+      "emits": [
+        "ClientInteractionCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "ClientInteraction",
+      "command": "update",
+      "commandId": "ClientInteraction.update",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "ClientInteractionUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "ClientInteraction",
+      "command": "complete",
+      "commandId": "ClientInteraction.complete",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "ClientInteractionCompleted"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Client",
+      "command": "create",
+      "commandId": "Client.create",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "ClientCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Client",
+      "command": "update",
+      "commandId": "Client.update",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "ClientUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Client",
+      "command": "archive",
+      "commandId": "Client.archive",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "ClientArchived"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Client",
+      "command": "reactivate",
+      "commandId": "Client.reactivate",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "ClientReactivated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "ClientContact",
+      "command": "create",
+      "commandId": "ClientContact.create",
+      "policies": [],
+      "guardCount": 3,
+      "emits": [
+        "ClientContactCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "ClientContact",
+      "command": "update",
+      "commandId": "ClientContact.update",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "ClientContactUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "ClientContact",
+      "command": "remove",
+      "commandId": "ClientContact.remove",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "ClientContactRemoved"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "ClientContact",
+      "command": "setPrimary",
+      "commandId": "ClientContact.setPrimary",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "ClientContactSetPrimary"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "ClientPreference",
+      "command": "create",
+      "commandId": "ClientPreference.create",
+      "policies": [],
+      "guardCount": 3,
+      "emits": [
+        "ClientPreferenceCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "ClientPreference",
+      "command": "update",
+      "commandId": "ClientPreference.update",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "ClientPreferenceUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "ClientPreference",
+      "command": "remove",
+      "commandId": "ClientPreference.remove",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "ClientPreferenceRemoved"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "CollectionCase",
+      "command": "assignTo",
+      "commandId": "CollectionCase.assignTo",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "CollectionAssigned"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "CollectionCase",
+      "command": "updateStatus",
+      "commandId": "CollectionCase.updateStatus",
+      "policies": [],
+      "guardCount": 0,
+      "emits": [
+        "CollectionStatusChanged"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "CollectionCase",
+      "command": "resolve",
+      "commandId": "CollectionCase.resolve",
+      "policies": [],
+      "guardCount": 0,
+      "emits": [
+        "CollectionStatusChanged"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "CollectionCase",
+      "command": "recordPayment",
+      "commandId": "CollectionCase.recordPayment",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "CollectionPaymentRecorded"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "CollectionCase",
+      "command": "markResolved",
+      "commandId": "CollectionCase.markResolved",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "CollectionResolved"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "CollectionCase",
+      "command": "escalateDunning",
+      "commandId": "CollectionCase.escalateDunning",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "DunningEscalated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "CollectionCase",
+      "command": "escalateToLegal",
+      "commandId": "CollectionCase.escalateToLegal",
+      "policies": [],
+      "guardCount": 0,
+      "emits": [
+        "DunningEscalated"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "CollectionCase",
+      "command": "setUrgentPriority",
+      "commandId": "CollectionCase.setUrgentPriority",
+      "policies": [],
+      "guardCount": 0,
+      "emits": [],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "CollectionCase",
+      "command": "setHighPriority",
+      "commandId": "CollectionCase.setHighPriority",
+      "policies": [],
+      "guardCount": 0,
+      "emits": [],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "CollectionCase",
+      "command": "resetDunning",
+      "commandId": "CollectionCase.resetDunning",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "DunningReset"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "CollectionCase",
+      "command": "createPaymentPlan",
+      "commandId": "CollectionCase.createPaymentPlan",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "PaymentPlanCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "CollectionCase",
+      "command": "markDisputed",
+      "commandId": "CollectionCase.markDisputed",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "CollectionDisputed"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "CollectionCase",
+      "command": "resolveDispute",
+      "commandId": "CollectionCase.resolveDispute",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "DisputeResolved"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "CollectionCase",
+      "command": "escalateToLegalWithDetails",
+      "commandId": "CollectionCase.escalateToLegalWithDetails",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "EscalatedToLegal"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "CollectionCase",
+      "command": "writeOff",
+      "commandId": "CollectionCase.writeOff",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "CollectionWrittenOff"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "CollectionCase",
+      "command": "updateAging",
+      "commandId": "CollectionCase.updateAging",
+      "policies": [],
+      "guardCount": 0,
+      "emits": [
+        "AgingUpdated"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "CollectionCase",
+      "command": "setPriority",
+      "commandId": "CollectionCase.setPriority",
+      "policies": [],
+      "guardCount": 0,
+      "emits": [
+        "PriorityChanged"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "CollectionCase",
+      "command": "close",
+      "commandId": "CollectionCase.close",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "CollectionClosed"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "CollectionAction",
+      "command": "complete",
+      "commandId": "CollectionAction.complete",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "ActionCompleted"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "CollectionAction",
+      "command": "fail",
+      "commandId": "CollectionAction.fail",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "ActionFailed"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "CollectionAction",
+      "command": "skip",
+      "commandId": "CollectionAction.skip",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "ActionSkipped"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "CollectionAction",
+      "command": "reschedule",
+      "commandId": "CollectionAction.reschedule",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "ActionRescheduled"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "CollectionPaymentPlan",
+      "command": "recordInstallment",
+      "commandId": "CollectionPaymentPlan.recordInstallment",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "InstallmentRecorded"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "CollectionPaymentPlan",
+      "command": "markCompleted",
+      "commandId": "CollectionPaymentPlan.markCompleted",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "PaymentPlanCompleted"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "CollectionPaymentPlan",
+      "command": "markDefaulted",
+      "commandId": "CollectionPaymentPlan.markDefaulted",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "PaymentPlanDefaulted"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "CollectionPaymentPlan",
+      "command": "cancel",
+      "commandId": "CollectionPaymentPlan.cancel",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "PaymentPlanCancelled"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "CollectionPaymentPlan",
+      "command": "modify",
+      "commandId": "CollectionPaymentPlan.modify",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "PaymentPlanModified"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "CommandBoard",
+      "command": "create",
+      "commandId": "CommandBoard.create",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "CommandBoardCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "CommandBoard",
+      "command": "update",
+      "commandId": "CommandBoard.update",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "CommandBoardUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "CommandBoard",
+      "command": "activate",
+      "commandId": "CommandBoard.activate",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "CommandBoardActivated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "CommandBoard",
+      "command": "deactivate",
+      "commandId": "CommandBoard.deactivate",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "CommandBoardDeactivated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "CommandBoardCard",
+      "command": "create",
+      "commandId": "CommandBoardCard.create",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "CommandBoardCardCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "CommandBoardCard",
+      "command": "update",
+      "commandId": "CommandBoardCard.update",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "CommandBoardCardUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "CommandBoardCard",
+      "command": "move",
+      "commandId": "CommandBoardCard.move",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "CommandBoardCardMoved"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "CommandBoardCard",
+      "command": "resize",
+      "commandId": "CommandBoardCard.resize",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "CommandBoardCardResized"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "CommandBoardCard",
+      "command": "remove",
+      "commandId": "CommandBoardCard.remove",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "CommandBoardCardDeleted"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "CommandBoardGroup",
+      "command": "create",
+      "commandId": "CommandBoardGroup.create",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "CommandBoardGroupCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "CommandBoardGroup",
+      "command": "update",
+      "commandId": "CommandBoardGroup.update",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "CommandBoardGroupUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "CommandBoardGroup",
+      "command": "remove",
+      "commandId": "CommandBoardGroup.remove",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "CommandBoardGroupDeleted"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "CommandBoardConnection",
+      "command": "create",
+      "commandId": "CommandBoardConnection.create",
+      "policies": [],
+      "guardCount": 4,
+      "emits": [
+        "CommandBoardConnectionCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "CommandBoardConnection",
+      "command": "remove",
+      "commandId": "CommandBoardConnection.remove",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "CommandBoardConnectionDeleted"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "CommandBoardLayout",
+      "command": "create",
+      "commandId": "CommandBoardLayout.create",
+      "policies": [],
+      "guardCount": 3,
+      "emits": [
+        "CommandBoardLayoutCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "CommandBoardLayout",
+      "command": "update",
+      "commandId": "CommandBoardLayout.update",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "CommandBoardLayoutUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "CommandBoardLayout",
+      "command": "remove",
+      "commandId": "CommandBoardLayout.remove",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "CommandBoardLayoutDeleted"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Container",
+      "command": "create",
+      "commandId": "Container.create",
+      "policies": [],
+      "guardCount": 5,
+      "emits": [
+        "ContainerCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Container",
+      "command": "update",
+      "commandId": "Container.update",
+      "policies": [],
+      "guardCount": 5,
+      "emits": [
+        "ContainerUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Container",
+      "command": "deactivate",
+      "commandId": "Container.deactivate",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "ContainerDeactivated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "CycleCountSession",
+      "command": "create",
+      "commandId": "CycleCountSession.create",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "CycleCountSessionCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "CycleCountSession",
+      "command": "start",
+      "commandId": "CycleCountSession.start",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "CycleCountSessionStarted"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "CycleCountSession",
+      "command": "complete",
+      "commandId": "CycleCountSession.complete",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "CycleCountSessionCompleted"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "CycleCountSession",
+      "command": "finalize",
+      "commandId": "CycleCountSession.finalize",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "CycleCountSessionFinalized"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "CycleCountSession",
+      "command": "cancel",
+      "commandId": "CycleCountSession.cancel",
+      "policies": [],
+      "guardCount": 3,
+      "emits": [
+        "CycleCountSessionCancelled"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "CycleCountRecord",
+      "command": "create",
+      "commandId": "CycleCountRecord.create",
+      "policies": [],
+      "guardCount": 3,
+      "emits": [
+        "CycleCountRecordCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "CycleCountRecord",
+      "command": "update",
+      "commandId": "CycleCountRecord.update",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "CycleCountRecordUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "CycleCountRecord",
+      "command": "verify",
+      "commandId": "CycleCountRecord.verify",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "CycleCountRecordVerified"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "CycleCountRecord",
+      "command": "remove",
+      "commandId": "CycleCountRecord.remove",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "CycleCountRecordRemoved"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "VarianceReport",
+      "command": "create",
+      "commandId": "VarianceReport.create",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "VarianceReportCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "VarianceReport",
+      "command": "review",
+      "commandId": "VarianceReport.review",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "VarianceReportReviewed"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "VarianceReport",
+      "command": "approve",
+      "commandId": "VarianceReport.approve",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "VarianceReportApproved"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Deal",
+      "command": "updateStage",
+      "commandId": "Deal.updateStage",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "DealStageUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Deal",
+      "command": "close",
+      "commandId": "Deal.close",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "DealClosed"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Dish",
+      "command": "create",
+      "commandId": "Dish.create",
+      "policies": [],
+      "guardCount": 5,
+      "emits": [
+        "DishCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Dish",
+      "command": "update",
+      "commandId": "Dish.update",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "DishUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Dish",
+      "command": "deactivate",
+      "commandId": "Dish.deactivate",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "DishDeactivated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Dish",
+      "command": "updatePricing",
+      "commandId": "Dish.updatePricing",
+      "policies": [],
+      "guardCount": 3,
+      "emits": [
+        "DishPricingUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Dish",
+      "command": "updateLeadTime",
+      "commandId": "Dish.updateLeadTime",
+      "policies": [],
+      "guardCount": 4,
+      "emits": [
+        "DishLeadTimeUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "DocumentVersion",
+      "command": "create",
+      "commandId": "DocumentVersion.create",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "DocumentVersionCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "DocumentVersion",
+      "command": "restore",
+      "commandId": "DocumentVersion.restore",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "DocumentVersionRestored"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "EmailTemplate",
+      "command": "create",
+      "commandId": "EmailTemplate.create",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "EmailTemplateCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "EmailTemplate",
+      "command": "update",
+      "commandId": "EmailTemplate.update",
+      "policies": [],
+      "guardCount": 3,
+      "emits": [
+        "EmailTemplateUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "EmailTemplate",
+      "command": "softDelete",
+      "commandId": "EmailTemplate.softDelete",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "EmailTemplateDeleted"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "EmailWorkflow",
+      "command": "create",
+      "commandId": "EmailWorkflow.create",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "EmailWorkflowCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "EmailWorkflow",
+      "command": "update",
+      "commandId": "EmailWorkflow.update",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "EmailWorkflowUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "EmailWorkflow",
+      "command": "softDelete",
+      "commandId": "EmailWorkflow.softDelete",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "EmailWorkflowDeleted"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "EmployeeAvailability",
+      "command": "create",
+      "commandId": "EmployeeAvailability.create",
+      "policies": [],
+      "guardCount": 4,
+      "emits": [
+        "EmployeeAvailabilityCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "EmployeeAvailability",
+      "command": "update",
+      "commandId": "EmployeeAvailability.update",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "EmployeeAvailabilityUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "EmployeeAvailability",
+      "command": "softDelete",
+      "commandId": "EmployeeAvailability.softDelete",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "EmployeeAvailabilityDeleted"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "EmployeeCertification",
+      "command": "create",
+      "commandId": "EmployeeCertification.create",
+      "policies": [],
+      "guardCount": 4,
+      "emits": [
+        "EmployeeCertificationCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "EmployeeCertification",
+      "command": "update",
+      "commandId": "EmployeeCertification.update",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "EmployeeCertificationUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "EmployeeCertification",
+      "command": "softDelete",
+      "commandId": "EmployeeCertification.softDelete",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "EmployeeCertificationDeleted"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Equipment",
+      "command": "scheduleMaintenance",
+      "commandId": "Equipment.scheduleMaintenance",
+      "policies": [],
+      "guardCount": 3,
+      "emits": [
+        "EquipmentMaintenanceScheduled"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Equipment",
+      "command": "recordMaintenance",
+      "commandId": "Equipment.recordMaintenance",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "EquipmentMaintenanceRecorded"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Equipment",
+      "command": "updateStatus",
+      "commandId": "Equipment.updateStatus",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "EquipmentStatusUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Equipment",
+      "command": "updateCondition",
+      "commandId": "Equipment.updateCondition",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "EquipmentConditionUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Equipment",
+      "command": "recordUsage",
+      "commandId": "Equipment.recordUsage",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "EquipmentUsageRecorded"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Equipment",
+      "command": "create",
+      "commandId": "Equipment.create",
+      "policies": [],
+      "guardCount": 5,
+      "emits": [
+        "EquipmentCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Equipment",
+      "command": "retire",
+      "commandId": "Equipment.retire",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "EquipmentRetired"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "WorkOrder",
+      "command": "assign",
+      "commandId": "WorkOrder.assign",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "WorkOrderAssigned"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "WorkOrder",
+      "command": "startWork",
+      "commandId": "WorkOrder.startWork",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "WorkOrderStarted"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "WorkOrder",
+      "command": "completeWork",
+      "commandId": "WorkOrder.completeWork",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "WorkOrderCompleted"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "WorkOrder",
+      "command": "updateStatus",
+      "commandId": "WorkOrder.updateStatus",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "WorkOrderStatusUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "WorkOrder",
+      "command": "create",
+      "commandId": "WorkOrder.create",
+      "policies": [],
+      "guardCount": 5,
+      "emits": [
+        "WorkOrderCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "WorkOrder",
+      "command": "start",
+      "commandId": "WorkOrder.start",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "WorkOrderStarted"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "WorkOrder",
+      "command": "complete",
+      "commandId": "WorkOrder.complete",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "WorkOrderCompleted"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "WorkOrder",
+      "command": "cancel",
+      "commandId": "WorkOrder.cancel",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "WorkOrderCancelled"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "WorkOrder",
+      "command": "updatePriority",
+      "commandId": "WorkOrder.updatePriority",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "WorkOrderPriorityUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "WorkOrder",
+      "command": "reschedule",
+      "commandId": "WorkOrder.reschedule",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "WorkOrderRescheduled"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "AutomatedFollowup",
+      "command": "create",
+      "commandId": "AutomatedFollowup.create",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "FollowupCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "AutomatedFollowup",
+      "command": "complete",
+      "commandId": "AutomatedFollowup.complete",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "FollowupSent"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "AutomatedFollowup",
+      "command": "generate",
+      "commandId": "AutomatedFollowup.generate",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "FollowupGenerated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "AutomatedFollowup",
+      "command": "skip",
+      "commandId": "AutomatedFollowup.skip",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "FollowupSkipped"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "EventTimelineItem",
+      "command": "createItem",
+      "commandId": "EventTimelineItem.createItem",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "TimelineItemCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "EventTimelineItem",
+      "command": "deleteItem",
+      "commandId": "EventTimelineItem.deleteItem",
+      "policies": [],
+      "guardCount": 0,
+      "emits": [
+        "TimelineItemDeleted"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "EventTimelineItem",
+      "command": "completeItem",
+      "commandId": "EventTimelineItem.completeItem",
+      "policies": [],
+      "guardCount": 0,
+      "emits": [
+        "TimelineItemCompleted"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "EventTimelineItem",
+      "command": "updateItem",
+      "commandId": "EventTimelineItem.updateItem",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "TimelineItemUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "EventWaitlistEntry",
+      "command": "addGuest",
+      "commandId": "EventWaitlistEntry.addGuest",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "WaitlistGuestAdded"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "EventWaitlistEntry",
+      "command": "promote",
+      "commandId": "EventWaitlistEntry.promote",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "WaitlistGuestPromoted"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "EventWaitlistEntry",
+      "command": "updateRsvp",
+      "commandId": "EventWaitlistEntry.updateRsvp",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "WaitlistRsvpUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "EventBudget",
+      "command": "create",
+      "commandId": "EventBudget.create",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "EventBudgetCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "EventBudget",
+      "command": "update",
+      "commandId": "EventBudget.update",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "EventBudgetUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "EventBudget",
+      "command": "approve",
+      "commandId": "EventBudget.approve",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "EventBudgetApproved"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "EventBudget",
+      "command": "finalize",
+      "commandId": "EventBudget.finalize",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "EventBudgetFinalized"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "BudgetLineItem",
+      "command": "create",
+      "commandId": "BudgetLineItem.create",
+      "policies": [],
+      "guardCount": 4,
+      "emits": [
+        "BudgetLineItemCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "BudgetLineItem",
+      "command": "update",
+      "commandId": "BudgetLineItem.update",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "BudgetLineItemUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "BudgetLineItem",
+      "command": "remove",
+      "commandId": "BudgetLineItem.remove",
+      "policies": [],
+      "guardCount": 0,
+      "emits": [
+        "BudgetLineItemRemoved"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "EventContract",
+      "command": "create",
+      "commandId": "EventContract.create",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "ContractCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "EventContract",
+      "command": "update",
+      "commandId": "EventContract.update",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "ContractUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "EventContract",
+      "command": "send",
+      "commandId": "EventContract.send",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "ContractSent"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "EventContract",
+      "command": "markViewed",
+      "commandId": "EventContract.markViewed",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "ContractViewed"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "EventContract",
+      "command": "sign",
+      "commandId": "EventContract.sign",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "ContractSigned"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "EventContract",
+      "command": "expire",
+      "commandId": "EventContract.expire",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "ContractExpired"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "EventContract",
+      "command": "cancel",
+      "commandId": "EventContract.cancel",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "ContractCancelled"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "EventContract",
+      "command": "softDelete",
+      "commandId": "EventContract.softDelete",
+      "policies": [],
+      "guardCount": 0,
+      "emits": [
+        "ContractDeleted"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "ContractSignature",
+      "command": "create",
+      "commandId": "ContractSignature.create",
+      "policies": [],
+      "guardCount": 3,
+      "emits": [
+        "SignatureCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "ContractSignature",
+      "command": "softDelete",
+      "commandId": "ContractSignature.softDelete",
+      "policies": [],
+      "guardCount": 0,
+      "emits": [
+        "SignatureDeleted"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "EventDish",
+      "command": "create",
+      "commandId": "EventDish.create",
+      "policies": [],
+      "guardCount": 3,
+      "emits": [
+        "EventDishCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "EventDish",
+      "command": "remove",
+      "commandId": "EventDish.remove",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "EventDishRemoved"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "EventGuest",
+      "command": "create",
+      "commandId": "EventGuest.create",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "EventGuestCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "EventGuest",
+      "command": "update",
+      "commandId": "EventGuest.update",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "EventGuestUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "EventGuest",
+      "command": "softDelete",
+      "commandId": "EventGuest.softDelete",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "EventGuestDeleted"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "EventImportWorkflow",
+      "command": "create",
+      "commandId": "EventImportWorkflow.create",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "EventImportWorkflowCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "EventImportWorkflow",
+      "command": "startParsing",
+      "commandId": "EventImportWorkflow.startParsing",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "EventImportWorkflowParsingStarted"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "EventImportWorkflow",
+      "command": "completeParsing",
+      "commandId": "EventImportWorkflow.completeParsing",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "EventImportWorkflowParsingCompleted"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "EventImportWorkflow",
+      "command": "startExtracting",
+      "commandId": "EventImportWorkflow.startExtracting",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "EventImportWorkflowExtractingStarted"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "EventImportWorkflow",
+      "command": "completeExtraction",
+      "commandId": "EventImportWorkflow.completeExtraction",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "EventImportWorkflowExtractingCompleted"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "EventImportWorkflow",
+      "command": "startValidating",
+      "commandId": "EventImportWorkflow.startValidating",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "EventImportWorkflowValidatingStarted"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "EventImportWorkflow",
+      "command": "completeValidation",
+      "commandId": "EventImportWorkflow.completeValidation",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "EventImportWorkflowValidationCompleted"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "EventImportWorkflow",
+      "command": "startProposing",
+      "commandId": "EventImportWorkflow.startProposing",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "EventImportWorkflowProposingStarted"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "EventImportWorkflow",
+      "command": "completeProposing",
+      "commandId": "EventImportWorkflow.completeProposing",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "EventImportWorkflowProposingCompleted"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "EventImportWorkflow",
+      "command": "startReserving",
+      "commandId": "EventImportWorkflow.startReserving",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "EventImportWorkflowReservingStarted"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "EventImportWorkflow",
+      "command": "completeReserving",
+      "commandId": "EventImportWorkflow.completeReserving",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "EventImportWorkflowReservingCompleted"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "EventImportWorkflow",
+      "command": "startActivating",
+      "commandId": "EventImportWorkflow.startActivating",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "EventImportWorkflowActivatingStarted"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "EventImportWorkflow",
+      "command": "completeActivating",
+      "commandId": "EventImportWorkflow.completeActivating",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "EventImportWorkflowCompleted"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "EventImportWorkflow",
+      "command": "fail",
+      "commandId": "EventImportWorkflow.fail",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "EventImportWorkflowFailed"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "EventImportWorkflow",
+      "command": "pause",
+      "commandId": "EventImportWorkflow.pause",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "EventImportWorkflowPaused"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "EventImportWorkflow",
+      "command": "resume",
+      "commandId": "EventImportWorkflow.resume",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "EventImportWorkflowResumed"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "EventImportWorkflow",
+      "command": "cancel",
+      "commandId": "EventImportWorkflow.cancel",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "EventImportWorkflowCancelled"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "EventImportWorkflow",
+      "command": "retry",
+      "commandId": "EventImportWorkflow.retry",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "EventImportWorkflowRetried"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "EventReport",
+      "command": "create",
+      "commandId": "EventReport.create",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "EventReportCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "EventReport",
+      "command": "submit",
+      "commandId": "EventReport.submit",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "EventReportSubmitted"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "EventReport",
+      "command": "approve",
+      "commandId": "EventReport.approve",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "EventReportApproved"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "EventReport",
+      "command": "complete",
+      "commandId": "EventReport.complete",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "EventReportCompleted"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Event",
+      "command": "create",
+      "commandId": "Event.create",
+      "policies": [],
+      "guardCount": 0,
+      "emits": [
+        "EventCreated"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Event",
+      "command": "update",
+      "commandId": "Event.update",
+      "policies": [],
+      "guardCount": 10,
+      "emits": [
+        "EventUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Event",
+      "command": "confirm",
+      "commandId": "Event.confirm",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "EventConfirmed"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Event",
+      "command": "cancel",
+      "commandId": "Event.cancel",
+      "policies": [],
+      "guardCount": 3,
+      "emits": [
+        "EventCancelled"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Event",
+      "command": "archive",
+      "commandId": "Event.archive",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "EventArchived"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Event",
+      "command": "updateGuestCount",
+      "commandId": "Event.updateGuestCount",
+      "policies": [],
+      "guardCount": 4,
+      "emits": [
+        "EventGuestCountUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Event",
+      "command": "updateDate",
+      "commandId": "Event.updateDate",
+      "policies": [],
+      "guardCount": 4,
+      "emits": [
+        "EventDateUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Event",
+      "command": "updateLocation",
+      "commandId": "Event.updateLocation",
+      "policies": [],
+      "guardCount": 3,
+      "emits": [
+        "EventLocationUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Event",
+      "command": "finalize",
+      "commandId": "Event.finalize",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "EventFinalized"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Event",
+      "command": "unfinalize",
+      "commandId": "Event.unfinalize",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "EventUnfinalized"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "EventProfitability",
+      "command": "create",
+      "commandId": "EventProfitability.create",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "EventProfitabilityCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "EventProfitability",
+      "command": "update",
+      "commandId": "EventProfitability.update",
+      "policies": [],
+      "guardCount": 0,
+      "emits": [
+        "EventProfitabilityUpdated"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "EventProfitability",
+      "command": "recalculate",
+      "commandId": "EventProfitability.recalculate",
+      "policies": [],
+      "guardCount": 0,
+      "emits": [
+        "EventProfitabilityRecalculated"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "EventSummary",
+      "command": "create",
+      "commandId": "EventSummary.create",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "EventSummaryCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "EventSummary",
+      "command": "update",
+      "commandId": "EventSummary.update",
+      "policies": [],
+      "guardCount": 0,
+      "emits": [
+        "EventSummaryUpdated"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "EventSummary",
+      "command": "refresh",
+      "commandId": "EventSummary.refresh",
+      "policies": [],
+      "guardCount": 0,
+      "emits": [
+        "EventSummaryRefreshed"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "EventStaff",
+      "command": "assign",
+      "commandId": "EventStaff.assign",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "EventStaffAssigned"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "EventStaff",
+      "command": "unassign",
+      "commandId": "EventStaff.unassign",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "EventStaffUnassigned"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Facility",
+      "command": "create",
+      "commandId": "Facility.create",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "FacilityCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Facility",
+      "command": "remove",
+      "commandId": "Facility.remove",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "FacilityDeleted"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Facility",
+      "command": "edit",
+      "commandId": "Facility.edit",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "FacilityUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "FacilityArea",
+      "command": "create",
+      "commandId": "FacilityArea.create",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "FacilityAreaCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "FacilityArea",
+      "command": "remove",
+      "commandId": "FacilityArea.remove",
+      "policies": [],
+      "guardCount": 0,
+      "emits": [
+        "FacilityAreaDeleted"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "FacilityArea",
+      "command": "edit",
+      "commandId": "FacilityArea.edit",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "FacilityAreaUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "FacilityAsset",
+      "command": "create",
+      "commandId": "FacilityAsset.create",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "FacilityAssetCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "FacilityAsset",
+      "command": "remove",
+      "commandId": "FacilityAsset.remove",
+      "policies": [],
+      "guardCount": 0,
+      "emits": [
+        "FacilityAssetDeleted"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "FacilityAsset",
+      "command": "update",
+      "commandId": "FacilityAsset.update",
+      "policies": [],
+      "guardCount": 0,
+      "emits": [
+        "FacilityAssetUpdated"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "FacilitySchedule",
+      "command": "create",
+      "commandId": "FacilitySchedule.create",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "FacilityScheduleCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "FacilitySchedule",
+      "command": "remove",
+      "commandId": "FacilitySchedule.remove",
+      "policies": [],
+      "guardCount": 0,
+      "emits": [
+        "FacilityScheduleDeleted"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "FacilitySchedule",
+      "command": "edit",
+      "commandId": "FacilitySchedule.edit",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "FacilityScheduleUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "FacilitySchedule",
+      "command": "complete",
+      "commandId": "FacilitySchedule.complete",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "FacilityScheduleCompleted"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "FacilityWorkOrder",
+      "command": "create",
+      "commandId": "FacilityWorkOrder.create",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "FacilityWorkOrderCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "FacilityWorkOrder",
+      "command": "updateStatus",
+      "commandId": "FacilityWorkOrder.updateStatus",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "FacilityWorkOrderStatusUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Ingredient",
+      "command": "create",
+      "commandId": "Ingredient.create",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "IngredientCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Ingredient",
+      "command": "update",
+      "commandId": "Ingredient.update",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "IngredientUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Ingredient",
+      "command": "deactivate",
+      "commandId": "Ingredient.deactivate",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "IngredientDeactivated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Ingredient",
+      "command": "updateAllergens",
+      "commandId": "Ingredient.updateAllergens",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "IngredientAllergensUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Ingredient",
+      "command": "updateShelfLife",
+      "commandId": "Ingredient.updateShelfLife",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "IngredientShelfLifeUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "InventoryItem",
+      "command": "reserve",
+      "commandId": "InventoryItem.reserve",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "InventoryReserved"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "InventoryItem",
+      "command": "consume",
+      "commandId": "InventoryItem.consume",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "InventoryConsumed"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "InventoryItem",
+      "command": "waste",
+      "commandId": "InventoryItem.waste",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "InventoryWasted"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "InventoryItem",
+      "command": "adjust",
+      "commandId": "InventoryItem.adjust",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "InventoryAdjusted"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "InventoryItem",
+      "command": "restock",
+      "commandId": "InventoryItem.restock",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "InventoryRestocked"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "InventoryItem",
+      "command": "releaseReservation",
+      "commandId": "InventoryItem.releaseReservation",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "InventoryReservationReleased"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "InventoryItem",
+      "command": "create",
+      "commandId": "InventoryItem.create",
+      "policies": [],
+      "guardCount": 7,
+      "emits": [
+        "InventoryItemCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "InventorySupplier",
+      "command": "create",
+      "commandId": "InventorySupplier.create",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "InventorySupplierCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "InventorySupplier",
+      "command": "update",
+      "commandId": "InventorySupplier.update",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "InventorySupplierUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "InventorySupplier",
+      "command": "deactivate",
+      "commandId": "InventorySupplier.deactivate",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "InventorySupplierDeactivated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "InventoryTransaction",
+      "command": "create",
+      "commandId": "InventoryTransaction.create",
+      "policies": [],
+      "guardCount": 3,
+      "emits": [
+        "InventoryTransactionCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "InventoryTransfer",
+      "command": "create",
+      "commandId": "InventoryTransfer.create",
+      "policies": [],
+      "guardCount": 3,
+      "emits": [
+        "TransferCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "InventoryTransfer",
+      "command": "approve",
+      "commandId": "InventoryTransfer.approve",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "TransferApproved"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "InventoryTransfer",
+      "command": "ship",
+      "commandId": "InventoryTransfer.ship",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "TransferShipped"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "InventoryTransfer",
+      "command": "receive",
+      "commandId": "InventoryTransfer.receive",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "TransferReceived"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "InventoryTransfer",
+      "command": "cancel",
+      "commandId": "InventoryTransfer.cancel",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "TransferCancelled"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Invoice",
+      "command": "send",
+      "commandId": "Invoice.send",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "InvoiceSent"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Invoice",
+      "command": "markViewed",
+      "commandId": "Invoice.markViewed",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "InvoiceViewed"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Invoice",
+      "command": "applyPayment",
+      "commandId": "Invoice.applyPayment",
+      "policies": [],
+      "guardCount": 3,
+      "emits": [
+        "PaymentApplied"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Invoice",
+      "command": "markAsPaid",
+      "commandId": "Invoice.markAsPaid",
+      "policies": [],
+      "guardCount": 0,
+      "emits": [
+        "PaymentApplied"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Invoice",
+      "command": "recordRefund",
+      "commandId": "Invoice.recordRefund",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "RefundRecorded"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Invoice",
+      "command": "markOverdue",
+      "commandId": "Invoice.markOverdue",
+      "policies": [],
+      "guardCount": 3,
+      "emits": [
+        "InvoiceMarkedOverdue"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Invoice",
+      "command": "sendReminder",
+      "commandId": "Invoice.sendReminder",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "InvoiceReminderSent"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Invoice",
+      "command": "voidInvoice",
+      "commandId": "Invoice.voidInvoice",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "InvoiceVoided"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Invoice",
+      "command": "writeOff",
+      "commandId": "Invoice.writeOff",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "InvoiceWrittenOff"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Invoice",
+      "command": "updateLineItems",
+      "commandId": "Invoice.updateLineItems",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "InvoiceLineItemsUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "KitchenTask",
+      "command": "claim",
+      "commandId": "KitchenTask.claim",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "KitchenTaskClaimed"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "KitchenTask",
+      "command": "start",
+      "commandId": "KitchenTask.start",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "KitchenTaskStarted"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "KitchenTask",
+      "command": "complete",
+      "commandId": "KitchenTask.complete",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "KitchenTaskCompleted"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "KitchenTask",
+      "command": "release",
+      "commandId": "KitchenTask.release",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "KitchenTaskReleased"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "KitchenTask",
+      "command": "reassign",
+      "commandId": "KitchenTask.reassign",
+      "policies": [],
+      "guardCount": 3,
+      "emits": [
+        "KitchenTaskReassigned"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "KitchenTask",
+      "command": "updatePriority",
+      "commandId": "KitchenTask.updatePriority",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "KitchenTaskPriorityUpdated"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "KitchenTask",
+      "command": "updateComplexity",
+      "commandId": "KitchenTask.updateComplexity",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "KitchenTaskComplexityUpdated"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "KitchenTask",
+      "command": "updateTitle",
+      "commandId": "KitchenTask.updateTitle",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "KitchenTaskTitleUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "KitchenTask",
+      "command": "updateSummary",
+      "commandId": "KitchenTask.updateSummary",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "KitchenTaskSummaryUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "KitchenTask",
+      "command": "updateDueDate",
+      "commandId": "KitchenTask.updateDueDate",
+      "policies": [],
+      "guardCount": 0,
+      "emits": [
+        "KitchenTaskDueDateUpdated"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "KitchenTask",
+      "command": "updateTags",
+      "commandId": "KitchenTask.updateTags",
+      "policies": [],
+      "guardCount": 0,
+      "emits": [
+        "KitchenTaskTagsUpdated"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "KitchenTask",
+      "command": "addTag",
+      "commandId": "KitchenTask.addTag",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "KitchenTaskTagAdded"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "KitchenTask",
+      "command": "removeTag",
+      "commandId": "KitchenTask.removeTag",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "KitchenTaskTagRemoved"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "KitchenTask",
+      "command": "cancel",
+      "commandId": "KitchenTask.cancel",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "KitchenTaskCanceled"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "KitchenTask",
+      "command": "create",
+      "commandId": "KitchenTask.create",
+      "policies": [],
+      "guardCount": 4,
+      "emits": [
+        "KitchenTaskCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "KnowledgeBaseEntry",
+      "command": "create",
+      "commandId": "KnowledgeBaseEntry.create",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "KnowledgeBaseEntryCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "KnowledgeBaseEntry",
+      "command": "remove",
+      "commandId": "KnowledgeBaseEntry.remove",
+      "policies": [],
+      "guardCount": 0,
+      "emits": [
+        "KnowledgeBaseEntryDeleted"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "KnowledgeBaseEntry",
+      "command": "update",
+      "commandId": "KnowledgeBaseEntry.update",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "KnowledgeBaseEntryUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "KnowledgeBaseEntry",
+      "command": "publishEntry",
+      "commandId": "KnowledgeBaseEntry.publishEntry",
+      "policies": [],
+      "guardCount": 3,
+      "emits": [
+        "KnowledgeBaseEntryPublished"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "LaborBudget",
+      "command": "create",
+      "commandId": "LaborBudget.create",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "LaborBudgetCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "LaborBudget",
+      "command": "update",
+      "commandId": "LaborBudget.update",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "LaborBudgetUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "LaborBudget",
+      "command": "softDelete",
+      "commandId": "LaborBudget.softDelete",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "LaborBudgetDeleted"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "BudgetAlert",
+      "command": "acknowledge",
+      "commandId": "BudgetAlert.acknowledge",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "BudgetAlertAcknowledged"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "BudgetAlert",
+      "command": "resolve",
+      "commandId": "BudgetAlert.resolve",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "BudgetAlertResolved"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Lead",
+      "command": "create",
+      "commandId": "Lead.create",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "LeadCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Lead",
+      "command": "update",
+      "commandId": "Lead.update",
+      "policies": [],
+      "guardCount": 3,
+      "emits": [
+        "LeadUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Lead",
+      "command": "convertToClient",
+      "commandId": "Lead.convertToClient",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "LeadConvertedToClient"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Lead",
+      "command": "disqualify",
+      "commandId": "Lead.disqualify",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "LeadDisqualified"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Lead",
+      "command": "archive",
+      "commandId": "Lead.archive",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "LeadArchived"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Driver",
+      "command": "create",
+      "commandId": "Driver.create",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "DriverCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Driver",
+      "command": "remove",
+      "commandId": "Driver.remove",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "DriverDeleted"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Driver",
+      "command": "update",
+      "commandId": "Driver.update",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "DriverUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Vehicle",
+      "command": "create",
+      "commandId": "Vehicle.create",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "VehicleCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Vehicle",
+      "command": "remove",
+      "commandId": "Vehicle.remove",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "VehicleDeleted"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Vehicle",
+      "command": "update",
+      "commandId": "Vehicle.update",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "VehicleUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "LogisticsRoute",
+      "command": "create",
+      "commandId": "LogisticsRoute.create",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "LogisticsRouteCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "LogisticsRoute",
+      "command": "remove",
+      "commandId": "LogisticsRoute.remove",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "LogisticsRouteDeleted"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "LogisticsRoute",
+      "command": "update",
+      "commandId": "LogisticsRoute.update",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "LogisticsRouteUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "LogisticsRoute",
+      "command": "updateStatus",
+      "commandId": "LogisticsRoute.updateStatus",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "LogisticsRouteStatusUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "LogisticsRoute",
+      "command": "optimize",
+      "commandId": "LogisticsRoute.optimize",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "LogisticsRouteOptimized"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "LogisticsDispatch",
+      "command": "assign",
+      "commandId": "LogisticsDispatch.assign",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "LogisticsDispatchAssigned"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Menu",
+      "command": "update",
+      "commandId": "Menu.update",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "MenuUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Menu",
+      "command": "activate",
+      "commandId": "Menu.activate",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "MenuActivated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Menu",
+      "command": "deactivate",
+      "commandId": "Menu.deactivate",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "MenuDeactivated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Menu",
+      "command": "create",
+      "commandId": "Menu.create",
+      "policies": [],
+      "guardCount": 5,
+      "emits": [
+        "MenuCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "MenuDish",
+      "command": "updateCourse",
+      "commandId": "MenuDish.updateCourse",
+      "policies": [],
+      "guardCount": 0,
+      "emits": [
+        "MenuDishUpdated"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "MenuDish",
+      "command": "create",
+      "commandId": "MenuDish.create",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "MenuDishAdded"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "MenuDish",
+      "command": "remove",
+      "commandId": "MenuDish.remove",
+      "policies": [],
+      "guardCount": 0,
+      "emits": [
+        "MenuDishRemoved"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Notification",
+      "command": "create",
+      "commandId": "Notification.create",
+      "policies": [],
+      "guardCount": 3,
+      "emits": [
+        "NotificationCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Notification",
+      "command": "markRead",
+      "commandId": "Notification.markRead",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "NotificationMarkedRead"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Notification",
+      "command": "markDismissed",
+      "commandId": "Notification.markDismissed",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "NotificationDismissed"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Notification",
+      "command": "remove",
+      "commandId": "Notification.remove",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "NotificationDeleted"
+      ],
+      "effects": [
+        "compute"
+      ]
+    },
+    {
+      "entity": "OverrideAudit",
+      "command": "create",
+      "commandId": "OverrideAudit.create",
+      "policies": [],
+      "guardCount": 5,
+      "emits": [
+        "OverrideAuditCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "OverrideAudit",
+      "command": "authorize",
+      "commandId": "OverrideAudit.authorize",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "OverrideAuditAuthorized"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PaymentMethod",
+      "command": "markAsDefault",
+      "commandId": "PaymentMethod.markAsDefault",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "PaymentMethodSetDefault"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PaymentMethod",
+      "command": "markNotDefault",
+      "commandId": "PaymentMethod.markNotDefault",
+      "policies": [],
+      "guardCount": 0,
+      "emits": [
+        "PaymentMethodUnsetDefault"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PaymentMethod",
+      "command": "markExpired",
+      "commandId": "PaymentMethod.markExpired",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "PaymentMethodExpired"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PaymentMethod",
+      "command": "markInvalid",
+      "commandId": "PaymentMethod.markInvalid",
+      "policies": [],
+      "guardCount": 0,
+      "emits": [
+        "PaymentMethodInvalidated"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PaymentMethod",
+      "command": "flagForFraud",
+      "commandId": "PaymentMethod.flagForFraud",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "PaymentMethodFraudFlagged"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PaymentMethod",
+      "command": "verify",
+      "commandId": "PaymentMethod.verify",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "PaymentMethodVerified"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PaymentMethod",
+      "command": "updateToken",
+      "commandId": "PaymentMethod.updateToken",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "PaymentMethodTokenUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Payment",
+      "command": "process",
+      "commandId": "Payment.process",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "PaymentProcessed"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Payment",
+      "command": "processFailed",
+      "commandId": "Payment.processFailed",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "PaymentProcessed"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Payment",
+      "command": "refund",
+      "commandId": "Payment.refund",
+      "policies": [],
+      "guardCount": 3,
+      "emits": [
+        "PaymentRefunded"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Payment",
+      "command": "partialRefund",
+      "commandId": "Payment.partialRefund",
+      "policies": [],
+      "guardCount": 3,
+      "emits": [
+        "PaymentRefunded"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Payment",
+      "command": "markChargeback",
+      "commandId": "Payment.markChargeback",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "PaymentChargeback"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Payment",
+      "command": "updateFraudStatus",
+      "commandId": "Payment.updateFraudStatus",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "PaymentFailedFraudCheck"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Payment",
+      "command": "markFraudReviewed",
+      "commandId": "Payment.markFraudReviewed",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "FraudReviewCompleted"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Payment",
+      "command": "markFraudPassed",
+      "commandId": "Payment.markFraudPassed",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "FraudReviewCompleted"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Payment",
+      "command": "markFraudFailed",
+      "commandId": "Payment.markFraudFailed",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "FraudReviewCompleted"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PayrollPeriod",
+      "command": "create",
+      "commandId": "PayrollPeriod.create",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "PayrollPeriodCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "EmployeeDeduction",
+      "command": "create",
+      "commandId": "EmployeeDeduction.create",
+      "policies": [],
+      "guardCount": 3,
+      "emits": [
+        "EmployeeDeductionCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PayrollApprovalHistory",
+      "command": "create",
+      "commandId": "PayrollApprovalHistory.create",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "PayrollApprovalRequested"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PayrollRun",
+      "command": "updateStatus",
+      "commandId": "PayrollRun.updateStatus",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "PayrollRunStatusChanged"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PrepComment",
+      "command": "create",
+      "commandId": "PrepComment.create",
+      "policies": [],
+      "guardCount": 3,
+      "emits": [
+        "PrepCommentCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PrepComment",
+      "command": "resolve",
+      "commandId": "PrepComment.resolve",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "PrepCommentResolved"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PrepComment",
+      "command": "unresolve",
+      "commandId": "PrepComment.unresolve",
+      "policies": [],
+      "guardCount": 3,
+      "emits": [
+        "PrepCommentUnresolved"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PrepComment",
+      "command": "softDelete",
+      "commandId": "PrepComment.softDelete",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "PrepCommentDeleted"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PrepList",
+      "command": "update",
+      "commandId": "PrepList.update",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "PrepListUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PrepList",
+      "command": "updateBatchMultiplier",
+      "commandId": "PrepList.updateBatchMultiplier",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "PrepListBatchMultiplierUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PrepList",
+      "command": "finalize",
+      "commandId": "PrepList.finalize",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "PrepListFinalized"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PrepList",
+      "command": "activate",
+      "commandId": "PrepList.activate",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "PrepListActivated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PrepList",
+      "command": "deactivate",
+      "commandId": "PrepList.deactivate",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "PrepListDeactivated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PrepList",
+      "command": "markCompleted",
+      "commandId": "PrepList.markCompleted",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "PrepListCompleted"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PrepList",
+      "command": "cancel",
+      "commandId": "PrepList.cancel",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "PrepListCancelled"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PrepList",
+      "command": "create",
+      "commandId": "PrepList.create",
+      "policies": [],
+      "guardCount": 3,
+      "emits": [
+        "PrepListCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PrepList",
+      "command": "createFromSeed",
+      "commandId": "PrepList.createFromSeed",
+      "policies": [],
+      "guardCount": 9,
+      "emits": [
+        "PrepListSeedImported"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PrepList",
+      "command": "reopen",
+      "commandId": "PrepList.reopen",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "PrepListReopened"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PrepListItem",
+      "command": "updateQuantity",
+      "commandId": "PrepListItem.updateQuantity",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "PrepListItemUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PrepListItem",
+      "command": "updateStation",
+      "commandId": "PrepListItem.updateStation",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "PrepListItemStationChanged"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PrepListItem",
+      "command": "updatePrepNotes",
+      "commandId": "PrepListItem.updatePrepNotes",
+      "policies": [],
+      "guardCount": 0,
+      "emits": [
+        "PrepListItemNotesUpdated"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PrepListItem",
+      "command": "markCompleted",
+      "commandId": "PrepListItem.markCompleted",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "PrepListItemCompleted"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PrepListItem",
+      "command": "markUncompleted",
+      "commandId": "PrepListItem.markUncompleted",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "PrepListItemUncompleted"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PrepListItem",
+      "command": "create",
+      "commandId": "PrepListItem.create",
+      "policies": [],
+      "guardCount": 3,
+      "emits": [
+        "PrepListItemCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PrepMethod",
+      "command": "create",
+      "commandId": "PrepMethod.create",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "PrepMethodCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PrepMethod",
+      "command": "update",
+      "commandId": "PrepMethod.update",
+      "policies": [],
+      "guardCount": 3,
+      "emits": [
+        "PrepMethodUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PrepMethod",
+      "command": "deactivate",
+      "commandId": "PrepMethod.deactivate",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "PrepMethodDeactivated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PrepTaskPlanWorkflow",
+      "command": "create",
+      "commandId": "PrepTaskPlanWorkflow.create",
+      "policies": [],
+      "guardCount": 3,
+      "emits": [
+        "PrepTaskPlanWorkflowCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PrepTaskPlanWorkflow",
+      "command": "startGenerating",
+      "commandId": "PrepTaskPlanWorkflow.startGenerating",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "PrepTaskPlanWorkflowGeneratingStarted"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PrepTaskPlanWorkflow",
+      "command": "completeGeneration",
+      "commandId": "PrepTaskPlanWorkflow.completeGeneration",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "PrepTaskPlanWorkflowGenerationCompleted"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PrepTaskPlanWorkflow",
+      "command": "startReviewing",
+      "commandId": "PrepTaskPlanWorkflow.startReviewing",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "PrepTaskPlanWorkflowReviewingStarted"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PrepTaskPlanWorkflow",
+      "command": "completeReview",
+      "commandId": "PrepTaskPlanWorkflow.completeReview",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "PrepTaskPlanWorkflowReviewingCompleted"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PrepTaskPlanWorkflow",
+      "command": "startApproving",
+      "commandId": "PrepTaskPlanWorkflow.startApproving",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "PrepTaskPlanWorkflowApprovingStarted"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PrepTaskPlanWorkflow",
+      "command": "approvePlan",
+      "commandId": "PrepTaskPlanWorkflow.approvePlan",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "PrepTaskPlanWorkflowApproved"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PrepTaskPlanWorkflow",
+      "command": "rejectPlan",
+      "commandId": "PrepTaskPlanWorkflow.rejectPlan",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "PrepTaskPlanWorkflowRejected"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PrepTaskPlanWorkflow",
+      "command": "startInstantiating",
+      "commandId": "PrepTaskPlanWorkflow.startInstantiating",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "PrepTaskPlanWorkflowInstantiatingStarted"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PrepTaskPlanWorkflow",
+      "command": "completeInstantiation",
+      "commandId": "PrepTaskPlanWorkflow.completeInstantiation",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "PrepTaskPlanWorkflowInstantiatingCompleted"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PrepTaskPlanWorkflow",
+      "command": "startScheduling",
+      "commandId": "PrepTaskPlanWorkflow.startScheduling",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "PrepTaskPlanWorkflowSchedulingStarted"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PrepTaskPlanWorkflow",
+      "command": "completeScheduling",
+      "commandId": "PrepTaskPlanWorkflow.completeScheduling",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "PrepTaskPlanWorkflowCompleted"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PrepTaskPlanWorkflow",
+      "command": "fail",
+      "commandId": "PrepTaskPlanWorkflow.fail",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "PrepTaskPlanWorkflowFailed"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PrepTaskPlanWorkflow",
+      "command": "cancel",
+      "commandId": "PrepTaskPlanWorkflow.cancel",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "PrepTaskPlanWorkflowCancelled"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PrepTaskPlanWorkflow",
+      "command": "retry",
+      "commandId": "PrepTaskPlanWorkflow.retry",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "PrepTaskPlanWorkflowRetried"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PrepTaskPlanWorkflow",
+      "command": "quickApprove",
+      "commandId": "PrepTaskPlanWorkflow.quickApprove",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "PrepTaskPlanWorkflowQuickApproved"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PrepTask",
+      "command": "claim",
+      "commandId": "PrepTask.claim",
+      "policies": [],
+      "guardCount": 3,
+      "emits": [
+        "PrepTaskClaimed"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PrepTask",
+      "command": "unclaim",
+      "commandId": "PrepTask.unclaim",
+      "policies": [],
+      "guardCount": 4,
+      "emits": [
+        "PrepTaskUnclaimed"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PrepTask",
+      "command": "start",
+      "commandId": "PrepTask.start",
+      "policies": [],
+      "guardCount": 3,
+      "emits": [
+        "PrepTaskStarted"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PrepTask",
+      "command": "complete",
+      "commandId": "PrepTask.complete",
+      "policies": [],
+      "guardCount": 4,
+      "emits": [
+        "PrepTaskCompleted"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PrepTask",
+      "command": "release",
+      "commandId": "PrepTask.release",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "PrepTaskReleased"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PrepTask",
+      "command": "reassign",
+      "commandId": "PrepTask.reassign",
+      "policies": [],
+      "guardCount": 3,
+      "emits": [
+        "PrepTaskReassigned"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PrepTask",
+      "command": "updateQuantity",
+      "commandId": "PrepTask.updateQuantity",
+      "policies": [],
+      "guardCount": 3,
+      "emits": [
+        "PrepTaskQuantityUpdated"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PrepTask",
+      "command": "cancel",
+      "commandId": "PrepTask.cancel",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "PrepTaskCanceled"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PrepTask",
+      "command": "create",
+      "commandId": "PrepTask.create",
+      "policies": [],
+      "guardCount": 3,
+      "emits": [
+        "PrepTaskCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PrepTask",
+      "command": "updateStatus",
+      "commandId": "PrepTask.updateStatus",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "PrepTaskStatusUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PrepTask",
+      "command": "updatePriority",
+      "commandId": "PrepTask.updatePriority",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "PrepTaskPriorityUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PrepTask",
+      "command": "updateAssignment",
+      "commandId": "PrepTask.updateAssignment",
+      "policies": [],
+      "guardCount": 0,
+      "emits": [
+        "PrepTaskAssignmentUpdated"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PrepTask",
+      "command": "updateDueDate",
+      "commandId": "PrepTask.updateDueDate",
+      "policies": [],
+      "guardCount": 0,
+      "emits": [
+        "PrepTaskDueDateUpdated"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PricingTier",
+      "command": "create",
+      "commandId": "PricingTier.create",
+      "policies": [],
+      "guardCount": 3,
+      "emits": [
+        "PricingTierCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PricingTier",
+      "command": "update",
+      "commandId": "PricingTier.update",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "PricingTierUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PricingTier",
+      "command": "softDelete",
+      "commandId": "PricingTier.softDelete",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "PricingTierDeactivated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PurchaseRequisition",
+      "command": "create",
+      "commandId": "PurchaseRequisition.create",
+      "policies": [],
+      "guardCount": 3,
+      "emits": [
+        "PurchaseRequisitionCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PurchaseRequisition",
+      "command": "update",
+      "commandId": "PurchaseRequisition.update",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "PurchaseRequisitionUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PurchaseRequisition",
+      "command": "submit",
+      "commandId": "PurchaseRequisition.submit",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "PurchaseRequisitionSubmitted"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PurchaseRequisition",
+      "command": "approveManager",
+      "commandId": "PurchaseRequisition.approveManager",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "PurchaseRequisitionManagerApproved"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PurchaseRequisition",
+      "command": "approveFinance",
+      "commandId": "PurchaseRequisition.approveFinance",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "PurchaseRequisitionFinanceApproved"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PurchaseRequisition",
+      "command": "reject",
+      "commandId": "PurchaseRequisition.reject",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "PurchaseRequisitionRejected"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PurchaseRequisition",
+      "command": "convertToPo",
+      "commandId": "PurchaseRequisition.convertToPo",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "PurchaseRequisitionConverted"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PurchaseRequisition",
+      "command": "cancel",
+      "commandId": "PurchaseRequisition.cancel",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "PurchaseRequisitionCancelled"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PurchaseRequisitionItem",
+      "command": "create",
+      "commandId": "PurchaseRequisitionItem.create",
+      "policies": [],
+      "guardCount": 4,
+      "emits": [
+        "PurchaseRequisitionItemCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PurchaseRequisitionItem",
+      "command": "update",
+      "commandId": "PurchaseRequisitionItem.update",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "PurchaseRequisitionItemUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PurchaseRequisitionItem",
+      "command": "remove",
+      "commandId": "PurchaseRequisitionItem.remove",
+      "policies": [],
+      "guardCount": 0,
+      "emits": [
+        "PurchaseRequisitionItemRemoved"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Proposal",
+      "command": "create",
+      "commandId": "Proposal.create",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "ProposalCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Proposal",
+      "command": "update",
+      "commandId": "Proposal.update",
+      "policies": [],
+      "guardCount": 3,
+      "emits": [
+        "ProposalUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Proposal",
+      "command": "send",
+      "commandId": "Proposal.send",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "ProposalSent"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Proposal",
+      "command": "markViewed",
+      "commandId": "Proposal.markViewed",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "ProposalViewed"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Proposal",
+      "command": "accept",
+      "commandId": "Proposal.accept",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "ProposalAccepted"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Proposal",
+      "command": "reject",
+      "commandId": "Proposal.reject",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "ProposalRejected"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Proposal",
+      "command": "withdraw",
+      "commandId": "Proposal.withdraw",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "ProposalWithdrawn"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "ProposalLineItem",
+      "command": "create",
+      "commandId": "ProposalLineItem.create",
+      "policies": [],
+      "guardCount": 4,
+      "emits": [
+        "ProposalLineItemCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "ProposalLineItem",
+      "command": "update",
+      "commandId": "ProposalLineItem.update",
+      "policies": [],
+      "guardCount": 4,
+      "emits": [
+        "ProposalLineItemUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "ProposalLineItem",
+      "command": "remove",
+      "commandId": "ProposalLineItem.remove",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "ProposalLineItemRemoved"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PurchaseOrder",
+      "command": "create",
+      "commandId": "PurchaseOrder.create",
+      "policies": [],
+      "guardCount": 3,
+      "emits": [
+        "PurchaseOrderCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PurchaseOrder",
+      "command": "submit",
+      "commandId": "PurchaseOrder.submit",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "PurchaseOrderSubmitted"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PurchaseOrder",
+      "command": "approve",
+      "commandId": "PurchaseOrder.approve",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "PurchaseOrderApproved"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PurchaseOrder",
+      "command": "reject",
+      "commandId": "PurchaseOrder.reject",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "PurchaseOrderRejected"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PurchaseOrder",
+      "command": "cancel",
+      "commandId": "PurchaseOrder.cancel",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "PurchaseOrderCancelled"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PurchaseOrder",
+      "command": "markOrdered",
+      "commandId": "PurchaseOrder.markOrdered",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "PurchaseOrderOrdered"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PurchaseOrder",
+      "command": "markReceived",
+      "commandId": "PurchaseOrder.markReceived",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "PurchaseOrderReceived"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PurchaseOrderItem",
+      "command": "create",
+      "commandId": "PurchaseOrderItem.create",
+      "policies": [],
+      "guardCount": 4,
+      "emits": [
+        "PurchaseOrderItemCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PurchaseOrderItem",
+      "command": "update",
+      "commandId": "PurchaseOrderItem.update",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "PurchaseOrderItemUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PurchaseOrderItem",
+      "command": "remove",
+      "commandId": "PurchaseOrderItem.remove",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "PurchaseOrderItemRemoved"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "QACheck",
+      "command": "create",
+      "commandId": "QACheck.create",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "QACheckCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "QACheck",
+      "command": "complete",
+      "commandId": "QACheck.complete",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "QACheckCompleted"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "QACorrectiveAction",
+      "command": "create",
+      "commandId": "QACorrectiveAction.create",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "CorrectiveActionCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "QACorrectiveAction",
+      "command": "resolve",
+      "commandId": "QACorrectiveAction.resolve",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "CorrectiveActionResolved"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "QATemperatureLog",
+      "command": "log",
+      "commandId": "QATemperatureLog.log",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "TemperatureLogged"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "RateLimitConfig",
+      "command": "create",
+      "commandId": "RateLimitConfig.create",
+      "policies": [],
+      "guardCount": 6,
+      "emits": [
+        "RateLimitConfigCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "RateLimitConfig",
+      "command": "update",
+      "commandId": "RateLimitConfig.update",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "RateLimitConfigUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "RateLimitConfig",
+      "command": "softDelete",
+      "commandId": "RateLimitConfig.softDelete",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "RateLimitConfigDeleted"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "RateLimitConfig",
+      "command": "turnOn",
+      "commandId": "RateLimitConfig.turnOn",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "RateLimitConfigActivated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "RateLimitConfig",
+      "command": "turnOff",
+      "commandId": "RateLimitConfig.turnOff",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "RateLimitConfigDeactivated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Recipe",
+      "command": "update",
+      "commandId": "Recipe.update",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "RecipeUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Recipe",
+      "command": "deactivate",
+      "commandId": "Recipe.deactivate",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "RecipeDeactivated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Recipe",
+      "command": "activate",
+      "commandId": "Recipe.activate",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "RecipeActivated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Recipe",
+      "command": "create",
+      "commandId": "Recipe.create",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "RecipeCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "RecipeVersion",
+      "command": "create",
+      "commandId": "RecipeVersion.create",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "RecipeVersionCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "RecipeVersion",
+      "command": "restore",
+      "commandId": "RecipeVersion.restore",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "RecipeVersionRestored"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "RecipeVersion",
+      "command": "updateCosts",
+      "commandId": "RecipeVersion.updateCosts",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "RecipeVersionCostUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "RecipeIngredient",
+      "command": "updateQuantity",
+      "commandId": "RecipeIngredient.updateQuantity",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "RecipeIngredientUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "RecipeIngredient",
+      "command": "updateWasteFactor",
+      "commandId": "RecipeIngredient.updateWasteFactor",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "RecipeIngredientWasteFactorUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "RecipeIngredient",
+      "command": "create",
+      "commandId": "RecipeIngredient.create",
+      "policies": [],
+      "guardCount": 4,
+      "emits": [
+        "RecipeIngredientCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "RecipeIngredient",
+      "command": "remove",
+      "commandId": "RecipeIngredient.remove",
+      "policies": [],
+      "guardCount": 0,
+      "emits": [
+        "RecipeIngredientRemoved"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "RecipeStep",
+      "command": "create",
+      "commandId": "RecipeStep.create",
+      "policies": [],
+      "guardCount": 3,
+      "emits": [
+        "RecipeStepCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "RecipeStep",
+      "command": "updateInstruction",
+      "commandId": "RecipeStep.updateInstruction",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "RecipeStepUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "RecipeStep",
+      "command": "remove",
+      "commandId": "RecipeStep.remove",
+      "policies": [],
+      "guardCount": 0,
+      "emits": [
+        "RecipeStepRemoved"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "RevenueRecognitionSchedule",
+      "command": "create",
+      "commandId": "RevenueRecognitionSchedule.create",
+      "policies": [],
+      "guardCount": 6,
+      "emits": [
+        "RecognitionStarted"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "RevenueRecognitionSchedule",
+      "command": "startRecognition",
+      "commandId": "RevenueRecognitionSchedule.startRecognition",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "RecognitionStarted"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "RevenueRecognitionSchedule",
+      "command": "recognizeAmount",
+      "commandId": "RevenueRecognitionSchedule.recognizeAmount",
+      "policies": [],
+      "guardCount": 3,
+      "emits": [
+        "RevenueRecognized"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "RevenueRecognitionSchedule",
+      "command": "completeIfFullyRecognized",
+      "commandId": "RevenueRecognitionSchedule.completeIfFullyRecognized",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "RecognitionCompleted"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "RevenueRecognitionSchedule",
+      "command": "recognizeMilestone",
+      "commandId": "RevenueRecognitionSchedule.recognizeMilestone",
+      "policies": [],
+      "guardCount": 3,
+      "emits": [
+        "MilestoneRecognized"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "RevenueRecognitionSchedule",
+      "command": "completeIfAllMilestones",
+      "commandId": "RevenueRecognitionSchedule.completeIfAllMilestones",
+      "policies": [],
+      "guardCount": 3,
+      "emits": [
+        "RecognitionCompleted"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "RevenueRecognitionSchedule",
+      "command": "recognizePercentage",
+      "commandId": "RevenueRecognitionSchedule.recognizePercentage",
+      "policies": [],
+      "guardCount": 4,
+      "emits": [
+        "PercentageRecognized"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "RevenueRecognitionSchedule",
+      "command": "completeIfPercentageFull",
+      "commandId": "RevenueRecognitionSchedule.completeIfPercentageFull",
+      "policies": [],
+      "guardCount": 3,
+      "emits": [
+        "RecognitionCompleted"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "RevenueRecognitionSchedule",
+      "command": "pause",
+      "commandId": "RevenueRecognitionSchedule.pause",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "RecognitionPaused"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "RevenueRecognitionSchedule",
+      "command": "resume",
+      "commandId": "RevenueRecognitionSchedule.resume",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "RecognitionResumed"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "RevenueRecognitionSchedule",
+      "command": "cancel",
+      "commandId": "RevenueRecognitionSchedule.cancel",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "RecognitionCancelled"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "RevenueRecognitionSchedule",
+      "command": "adjustSchedule",
+      "commandId": "RevenueRecognitionSchedule.adjustSchedule",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "ScheduleAdjusted"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "RevenueRecognitionLine",
+      "command": "create",
+      "commandId": "RevenueRecognitionLine.create",
+      "policies": [],
+      "guardCount": 3,
+      "emits": [
+        "LineCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "RevenueRecognitionLine",
+      "command": "recognize",
+      "commandId": "RevenueRecognitionLine.recognize",
+      "policies": [],
+      "guardCount": 3,
+      "emits": [
+        "LineRecognized"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "RevenueRecognitionLine",
+      "command": "skip",
+      "commandId": "RevenueRecognitionLine.skip",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "LineSkipped"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "RevenueRecognitionLine",
+      "command": "cancel",
+      "commandId": "RevenueRecognitionLine.cancel",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "LineCancelled"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "RolePolicy",
+      "command": "update",
+      "commandId": "RolePolicy.update",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "RolePolicyUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "RolePolicy",
+      "command": "grant",
+      "commandId": "RolePolicy.grant",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "RolePolicyPermissionGranted"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "RolePolicy",
+      "command": "revoke",
+      "commandId": "RolePolicy.revoke",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "RolePolicyPermissionRevoked"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "SampleData",
+      "command": "seed",
+      "commandId": "SampleData.seed",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "SampleDataSeeded"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "SampleData",
+      "command": "clear",
+      "commandId": "SampleData.clear",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "SampleDataCleared"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "SampleData",
+      "command": "reseed",
+      "commandId": "SampleData.reseed",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "SampleDataReseeded"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Schedule",
+      "command": "create",
+      "commandId": "Schedule.create",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "ScheduleCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Schedule",
+      "command": "update",
+      "commandId": "Schedule.update",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "ScheduleUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Schedule",
+      "command": "release",
+      "commandId": "Schedule.release",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "SchedulePublished"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Schedule",
+      "command": "close",
+      "commandId": "Schedule.close",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "ScheduleClosed"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "ScheduleShift",
+      "command": "create",
+      "commandId": "ScheduleShift.create",
+      "policies": [],
+      "guardCount": 5,
+      "emits": [
+        "ScheduleShiftCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "ScheduleShift",
+      "command": "update",
+      "commandId": "ScheduleShift.update",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "ScheduleShiftUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "ScheduleShift",
+      "command": "remove",
+      "commandId": "ScheduleShift.remove",
+      "policies": [],
+      "guardCount": 0,
+      "emits": [
+        "ScheduleShiftRemoved"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Shipment",
+      "command": "create",
+      "commandId": "Shipment.create",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "ShipmentCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Shipment",
+      "command": "update",
+      "commandId": "Shipment.update",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "ShipmentUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Shipment",
+      "command": "schedule",
+      "commandId": "Shipment.schedule",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "ShipmentScheduled"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Shipment",
+      "command": "startPreparing",
+      "commandId": "Shipment.startPreparing",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "ShipmentPreparationStarted"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Shipment",
+      "command": "ship",
+      "commandId": "Shipment.ship",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "ShipmentShipped"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Shipment",
+      "command": "markDelivered",
+      "commandId": "Shipment.markDelivered",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "ShipmentDelivered"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Shipment",
+      "command": "cancel",
+      "commandId": "Shipment.cancel",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "ShipmentCancelled"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "ShipmentItem",
+      "command": "create",
+      "commandId": "ShipmentItem.create",
+      "policies": [],
+      "guardCount": 3,
+      "emits": [
+        "ShipmentItemCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "ShipmentItem",
+      "command": "updateReceived",
+      "commandId": "ShipmentItem.updateReceived",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "ShipmentItemReceived"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "SmsAutomationRule",
+      "command": "create",
+      "commandId": "SmsAutomationRule.create",
+      "policies": [],
+      "guardCount": 3,
+      "emits": [
+        "SmsAutomationRuleCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "SmsAutomationRule",
+      "command": "update",
+      "commandId": "SmsAutomationRule.update",
+      "policies": [],
+      "guardCount": 3,
+      "emits": [
+        "SmsAutomationRuleUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "SmsAutomationRule",
+      "command": "activate",
+      "commandId": "SmsAutomationRule.activate",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "SmsAutomationRuleActivated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "SmsAutomationRule",
+      "command": "deactivate",
+      "commandId": "SmsAutomationRule.deactivate",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "SmsAutomationRuleDeactivated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "SmsAutomationRule",
+      "command": "softDelete",
+      "commandId": "SmsAutomationRule.softDelete",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "SmsAutomationRuleDeleted"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "StaffPerformance",
+      "command": "create",
+      "commandId": "StaffPerformance.create",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "PerformanceReviewCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "StaffPerformance",
+      "command": "update",
+      "commandId": "StaffPerformance.update",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "PerformanceReviewUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "StaffPerformance",
+      "command": "remove",
+      "commandId": "StaffPerformance.remove",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "PerformanceReviewRemoved"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "StaffPerformance",
+      "command": "complete",
+      "commandId": "StaffPerformance.complete",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "PerformanceReviewCompleted"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Station",
+      "command": "assignTask",
+      "commandId": "Station.assignTask",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "StationTaskAssigned"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Station",
+      "command": "removeTask",
+      "commandId": "Station.removeTask",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "StationTaskRemoved"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Station",
+      "command": "updateCapacity",
+      "commandId": "Station.updateCapacity",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "StationCapacityUpdated"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Station",
+      "command": "deactivate",
+      "commandId": "Station.deactivate",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "StationDeactivated"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Station",
+      "command": "activate",
+      "commandId": "Station.activate",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "StationActivated"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Station",
+      "command": "updateEquipment",
+      "commandId": "Station.updateEquipment",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "StationEquipmentUpdated"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Station",
+      "command": "create",
+      "commandId": "Station.create",
+      "policies": [],
+      "guardCount": 3,
+      "emits": [
+        "StationCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "TimeEntry",
+      "command": "clockIn",
+      "commandId": "TimeEntry.clockIn",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "TimeEntryClockedIn"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "TimeEntry",
+      "command": "clockOut",
+      "commandId": "TimeEntry.clockOut",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "TimeEntryClockedOut"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "TimeEntry",
+      "command": "addEntry",
+      "commandId": "TimeEntry.addEntry",
+      "policies": [],
+      "guardCount": 3,
+      "emits": [
+        "TimeEntryAdded"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "TimeEntry",
+      "command": "softDelete",
+      "commandId": "TimeEntry.softDelete",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "TimeEntryDeleted"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "TimecardEditRequest",
+      "command": "create",
+      "commandId": "TimecardEditRequest.create",
+      "policies": [],
+      "guardCount": 3,
+      "emits": [
+        "TimecardEditRequested"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "TimecardEditRequest",
+      "command": "approve",
+      "commandId": "TimecardEditRequest.approve",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "TimecardEditApproved"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "TimecardEditRequest",
+      "command": "reject",
+      "commandId": "TimecardEditRequest.reject",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "TimecardEditRejected"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "TimeOffRequest",
+      "command": "create",
+      "commandId": "TimeOffRequest.create",
+      "policies": [],
+      "guardCount": 4,
+      "emits": [
+        "TimeOffRequestCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "TimeOffRequest",
+      "command": "approve",
+      "commandId": "TimeOffRequest.approve",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "TimeOffRequestApproved"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "TimeOffRequest",
+      "command": "reject",
+      "commandId": "TimeOffRequest.reject",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "TimeOffRequestRejected"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "TimeOffRequest",
+      "command": "cancel",
+      "commandId": "TimeOffRequest.cancel",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "TimeOffRequestCancelled"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "TimeOffRequest",
+      "command": "softDelete",
+      "commandId": "TimeOffRequest.softDelete",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "TimeOffRequestDeleted"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "TrainingAssignment",
+      "command": "create",
+      "commandId": "TrainingAssignment.create",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "TrainingAssignmentCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "TrainingAssignment",
+      "command": "softDelete",
+      "commandId": "TrainingAssignment.softDelete",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "TrainingAssignmentDeleted"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "TrainingModule",
+      "command": "create",
+      "commandId": "TrainingModule.create",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "TrainingModuleCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "TrainingModule",
+      "command": "update",
+      "commandId": "TrainingModule.update",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "TrainingModuleUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "TrainingModule",
+      "command": "softDelete",
+      "commandId": "TrainingModule.softDelete",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "TrainingModuleDeleted"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "User",
+      "command": "create",
+      "commandId": "User.create",
+      "policies": [],
+      "guardCount": 3,
+      "emits": [
+        "UserCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "User",
+      "command": "update",
+      "commandId": "User.update",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "UserUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "User",
+      "command": "deactivate",
+      "commandId": "User.deactivate",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "UserDeactivated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "User",
+      "command": "terminate",
+      "commandId": "User.terminate",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "UserTerminated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "User",
+      "command": "updateRole",
+      "commandId": "User.updateRole",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "UserRoleUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "VendorCatalog",
+      "command": "create",
+      "commandId": "VendorCatalog.create",
+      "policies": [],
+      "guardCount": 4,
+      "emits": [
+        "VendorCatalogCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "VendorCatalog",
+      "command": "update",
+      "commandId": "VendorCatalog.update",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "VendorCatalogUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "VendorCatalog",
+      "command": "softDelete",
+      "commandId": "VendorCatalog.softDelete",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "VendorCatalogDeactivated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "VendorContract",
+      "command": "create",
+      "commandId": "VendorContract.create",
+      "policies": [],
+      "guardCount": 3,
+      "emits": [
+        "VendorContractCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "VendorContract",
+      "command": "update",
+      "commandId": "VendorContract.update",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "VendorContractUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "VendorContract",
+      "command": "submit",
+      "commandId": "VendorContract.submit",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "VendorContractSubmitted"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "VendorContract",
+      "command": "approve",
+      "commandId": "VendorContract.approve",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "VendorContractApproved"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "VendorContract",
+      "command": "reject",
+      "commandId": "VendorContract.reject",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "VendorContractRejected"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "VendorContract",
+      "command": "activate",
+      "commandId": "VendorContract.activate",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "VendorContractActivated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "VendorContract",
+      "command": "terminate",
+      "commandId": "VendorContract.terminate",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "VendorContractTerminated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "VendorContract",
+      "command": "renew",
+      "commandId": "VendorContract.renew",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "VendorContractRenewed"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "VendorContract",
+      "command": "updateCompliance",
+      "commandId": "VendorContract.updateCompliance",
+      "policies": [],
+      "guardCount": 4,
+      "emits": [
+        "VendorContractComplianceUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "VendorContract",
+      "command": "recordSlaBreach",
+      "commandId": "VendorContract.recordSlaBreach",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "VendorContractSlaBreachRecorded"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Vendor",
+      "command": "create",
+      "commandId": "Vendor.create",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "VendorCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Vendor",
+      "command": "remove",
+      "commandId": "Vendor.remove",
+      "policies": [],
+      "guardCount": 0,
+      "emits": [
+        "VendorDeleted"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Vendor",
+      "command": "update",
+      "commandId": "Vendor.update",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "VendorUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Vendor",
+      "command": "addContact",
+      "commandId": "Vendor.addContact",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "VendorContactAdded"
+      ],
+      "effects": [
+        "compute"
+      ]
+    },
+    {
+      "entity": "Vendor",
+      "command": "rate",
+      "commandId": "Vendor.rate",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "VendorRated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "VersionedEntity",
+      "command": "register",
+      "commandId": "VersionedEntity.register",
+      "policies": [],
+      "guardCount": 3,
+      "emits": [
+        "VersionedEntityRegistered"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "VersionedEntity",
+      "command": "lock",
+      "commandId": "VersionedEntity.lock",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "VersionedEntityLocked"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "VersionedEntity",
+      "command": "unlock",
+      "commandId": "VersionedEntity.unlock",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "VersionedEntityUnlocked"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "VersionedEntity",
+      "command": "updateName",
+      "commandId": "VersionedEntity.updateName",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "VersionedEntityRenamed"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "EntityVersion",
+      "command": "create",
+      "commandId": "EntityVersion.create",
+      "policies": [],
+      "guardCount": 5,
+      "emits": [
+        "EntityVersionCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "EntityVersion",
+      "command": "approve",
+      "commandId": "EntityVersion.approve",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "EntityVersionApproved"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "EntityVersion",
+      "command": "reject",
+      "commandId": "EntityVersion.reject",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "EntityVersionRejected"
+      ],
+      "effects": [
+        "compute"
+      ]
+    },
+    {
+      "entity": "EntityVersion",
+      "command": "restore",
+      "commandId": "EntityVersion.restore",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "EntityVersionRestored"
+      ],
+      "effects": [
+        "compute"
+      ]
+    },
+    {
+      "entity": "VersionApproval",
+      "command": "create",
+      "commandId": "VersionApproval.create",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "VersionApprovalRequested"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "VersionApproval",
+      "command": "approve",
+      "commandId": "VersionApproval.approve",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "VersionApprovalCompleted"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "VersionApproval",
+      "command": "reject",
+      "commandId": "VersionApproval.reject",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "VersionApprovalRejected"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "VersionApproval",
+      "command": "cancel",
+      "commandId": "VersionApproval.cancel",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "VersionApprovalCancelled"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "WasteEntry",
+      "command": "create",
+      "commandId": "WasteEntry.create",
+      "policies": [],
+      "guardCount": 4,
+      "emits": [
+        "WasteEntryCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "WasteEntry",
+      "command": "update",
+      "commandId": "WasteEntry.update",
+      "policies": [],
+      "guardCount": 3,
+      "emits": [
+        "WasteEntryUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "WasteEntry",
+      "command": "softDelete",
+      "commandId": "WasteEntry.softDelete",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "WasteEntryDeleted"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Workflow",
+      "command": "create",
+      "commandId": "Workflow.create",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "WorkflowCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Workflow",
+      "command": "update",
+      "commandId": "Workflow.update",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "WorkflowUpdated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Workflow",
+      "command": "activate",
+      "commandId": "Workflow.activate",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "WorkflowActivated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "Workflow",
+      "command": "deactivate",
+      "commandId": "Workflow.deactivate",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "WorkflowDeactivated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "WorkforceOptimization",
+      "command": "create",
+      "commandId": "WorkforceOptimization.create",
+      "policies": [],
+      "guardCount": 2,
+      "emits": [
+        "WorkforceOptimizationCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "WorkforceOptimization",
+      "command": "start",
+      "commandId": "WorkforceOptimization.start",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "WorkforceOptimizationStarted"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "WorkforceOptimization",
+      "command": "complete",
+      "commandId": "WorkforceOptimization.complete",
+      "policies": [],
+      "guardCount": 1,
+      "emits": [
+        "WorkforceOptimizationCompleted"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    },
+    {
+      "entity": "WorkforceOptimization",
+      "command": "fail",
+      "commandId": "WorkforceOptimization.fail",
+      "policies": [],
+      "guardCount": 0,
+      "emits": [
+        "WorkforceOptimizationFailed"
+      ],
+      "effects": [
+        "mutate"
+      ]
+    },
+    {
+      "entity": "PerformancePrediction",
+      "command": "create",
+      "commandId": "PerformancePrediction.create",
+      "policies": [],
+      "guardCount": 3,
+      "emits": [
+        "PerformancePredictionCreated"
+      ],
+      "effects": [
+        "compute",
+        "mutate"
+      ]
+    }
+  ]
+}
