@@ -2,7 +2,7 @@
   "$schema": "Manifest ↔ Prisma schema-drift allowlist. See scripts/manifest/audit-schema-drift.mjs for semantics.",
   "_doc": {
     "globalAdapterDerived": "Cross-cutting fields that EVERY Prisma store adapter injects from runtime context, not from command input. Applies to every governed entity.",
-    "adapterDerived": "Per-entity fields that the entity's Prisma store adapter derives via a documented rule (e.g. looking up a parent entity).",
+    "adapterDerived": "Per-entity fields that the entity's Prisma store adapter derives via a documented rule (e.g. looking up a parent entity, normalizing case from manifest camelCase to Prisma snake_case).",
     "nonconforming": "Per constitution §14, acknowledged tech debt with an active removal plan. Bypass is not permission.",
     "ignoredEntities": "Entity names to skip entirely (e.g. infrastructure tables incorrectly tagged as governed).",
     "ignoredFields": "Per-entity field allowlist for fields the audit should not enforce."
@@ -14,7 +14,89 @@
       "reviewBy": "2027-01-01"
     }
   },
-  "adapterDerived": {},
+  "adapterDerived": {
+    "ClientContact": {
+      "first_name": {
+        "rule": "Prisma field is literal snake_case `first_name` (no @map); manifest declares camelCase `firstName`. ClientContactPrismaStore.create in packages/manifest-adapters/src/prisma-stores/broken-read-batch04-client-trio.ts normalizes via `first_name: asString(data.first_name ?? data.firstName)`. Manifest-driven flow always passes `firstName`. Tech-debt note: the cleaner long-term fix is renaming the Prisma field to `firstName @map(\"first_name\")` so the schema convention is uniform; deferred to avoid a Prisma-first change in violation of constitution §14 ordering.",
+        "owner": "crm",
+        "reviewBy": "2026-09-01"
+      },
+      "last_name": {
+        "rule": "Prisma field is literal snake_case `last_name` (no @map); manifest declares camelCase `lastName`. Same adapter handling as `first_name` in ClientContactPrismaStore (broken-read-batch04-client-trio.ts).",
+        "owner": "crm",
+        "reviewBy": "2026-09-01"
+      }
+    },
+    "BattleBoard": {
+      "board_name": {
+        "rule": "Prisma field is literal snake_case `board_name` (no @map); manifest declares `boardName`. BattleBoardPrismaStore.create (broken-read-batch02) normalizes via `board_name: asString(data.board_name ?? data.boardName)`.",
+        "owner": "platform",
+        "reviewBy": "2026-09-01"
+      }
+    },
+    "CateringOrder": {
+      "customer_id": {
+        "rule": "Prisma field is `customer_id @db.Uuid` (no @map); manifest declares `customerId`. CateringOrderPrismaStore.create (broken-read-batch03) normalizes via `customer_id: asString(data.customer_id ?? data.customerId)`.",
+        "owner": "events",
+        "reviewBy": "2026-09-01"
+      },
+      "delivery_date": {
+        "rule": "Prisma field is `delivery_date DateTime` (no @map); manifest declares `deliveryDate: number`. Adapter normalizes via `data.delivery_date ?? data.deliveryDate` and converts to Date.",
+        "owner": "events",
+        "reviewBy": "2026-09-01"
+      },
+      "delivery_time": {
+        "rule": "Prisma field is `delivery_time String` (no @map); manifest declares `deliveryTime`. Adapter normalizes via `data.delivery_time ?? data.deliveryTime`.",
+        "owner": "events",
+        "reviewBy": "2026-09-01"
+      }
+    },
+    "InventorySupplier": {
+      "supplier_number": {
+        "rule": "Prisma field is literal snake_case `supplier_number` (no @map); manifest declares `supplierNumber`. InventorySupplierPrismaStore.create (broken-read-batch09) normalizes via `supplier_number: asString(data.supplierNumber ?? data.supplier_number)`.",
+        "owner": "inventory",
+        "reviewBy": "2026-09-01"
+      }
+    },
+    "Workflow": {
+      "trigger_type": {
+        "rule": "Prisma field is literal snake_case `trigger_type` (no @map); manifest declares `triggerType`. WorkflowPrismaStore.create (broken-read-batch01) normalizes via `trigger_type: asString(data.trigger_type ?? data.triggerType)`.",
+        "owner": "platform",
+        "reviewBy": "2026-09-01"
+      }
+    },
+    "Notification": {
+      "recipient_employee_id": {
+        "rule": "Prisma field is literal snake_case `recipient_employee_id @db.Uuid` (no @map); manifest declares `recipientEmployeeId`. NotificationPrismaStore.create reads `data.recipientEmployeeId` and writes to `recipient_employee_id`. One-direction (manifest→Prisma) is correct for the dispatcher path; raw snake_case input is not supported and not needed because all governed flows go through the manifest dispatcher.",
+        "owner": "collaboration",
+        "reviewBy": "2026-09-01"
+      },
+      "notification_type": {
+        "rule": "Prisma field is literal snake_case `notification_type` (no @map); manifest declares `notificationType`. Same one-direction adapter pattern as `recipient_employee_id`.",
+        "owner": "collaboration",
+        "reviewBy": "2026-09-01"
+      }
+    },
+    "Schedule": {
+      "schedule_date": {
+        "rule": "Prisma field is `schedule_date DateTime @db.Date` (no @map); manifest declares `scheduleDate: number`. SchedulePrismaStore.create reads `data.scheduleDate` and writes to `schedule_date` (one-direction; manifest dispatcher only).",
+        "owner": "staff",
+        "reviewBy": "2026-09-01"
+      }
+    },
+    "ScheduleShift": {
+      "shift_start": {
+        "rule": "Prisma field is `shift_start DateTime @db.Timestamptz(6)` (no @map); manifest declares `shiftStart: number`. ScheduleShiftPrismaStore.create (broken-read-batch13) normalizes via `data.shift_start ?? data.shiftStart` and converts to Date.",
+        "owner": "staff",
+        "reviewBy": "2026-09-01"
+      },
+      "shift_end": {
+        "rule": "Prisma field is `shift_end DateTime @db.Timestamptz(6)` (no @map); manifest declares `shiftEnd: number`. Same adapter handling as `shift_start` in ScheduleShiftPrismaStore.",
+        "owner": "staff",
+        "reviewBy": "2026-09-01"
+      }
+    }
+  },
   "nonconforming": {},
   "ignoredEntities": [],
   "ignoredFields": {}
