@@ -363,7 +363,7 @@ export declare function createIngredient(engine: RuntimeEngine, ingredientId: st
 /**
  * Create a recipe version
  */
-export declare function createRecipeVersion(engine: RuntimeEngine, versionId: string, yieldQty: number, yieldUnit: number, prepTime: number, cookTime: number, restTime: number, difficulty: number, instructionsText: string, notesText: string): Promise<RecipeCommandResult>;
+export declare function createRecipeVersion(engine: RuntimeEngine, versionId: string, recipeId: string, name: string, versionNumber: number, yieldQty: number, yieldUnit: number, prepTime: number, cookTime: number, restTime: number, difficulty: number, instructionsText: string, notesText: string): Promise<RecipeCommandResult>;
 /**
  * Create a new recipe ingredient via Manifest command pipeline
  */

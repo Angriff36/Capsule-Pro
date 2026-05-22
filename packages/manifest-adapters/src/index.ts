@@ -1631,6 +1631,9 @@ export async function createIngredient(
 export async function createRecipeVersion(
   engine: RuntimeEngine,
   versionId: string,
+  recipeId: string,
+  name: string,
+  versionNumber: number,
   yieldQty: number,
   yieldUnit: number,
   prepTime: number,
@@ -1643,6 +1646,9 @@ export async function createRecipeVersion(
   const result = await engine.runCommand(
     "create",
     {
+      recipeId,
+      name,
+      versionNumber,
       yieldQty,
       yieldUnit,
       prepTime,
@@ -1660,7 +1666,7 @@ export async function createRecipeVersion(
 
   return {
     ...result,
-    recipeId: versionId,
+    recipeId,
   };
 }
 

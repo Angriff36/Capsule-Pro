@@ -22,7 +22,7 @@ export async function GET(
     const tenantId = await requireTenantId();
     const { id } = await params;
 
-    const report = await database.eventReport.findUnique({
+    const report = await database.eventReport.findFirst({
       where: { id, tenantId, deletedAt: null },
       include: {
         event: {

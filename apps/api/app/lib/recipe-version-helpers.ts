@@ -368,6 +368,9 @@ export async function createVersionWithConstraints(
     const result = await createRecipeVersion(
       runtime,
       data.id,
+      data.recipeId,
+      data.name,
+      data.versionNumber,
       data.yieldQuantity,
       data.yieldUnitId,
       data.prepTimeMinutes,

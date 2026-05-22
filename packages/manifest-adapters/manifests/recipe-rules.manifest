@@ -119,10 +119,16 @@ entity RecipeVersion {
     }
   }
 
-  command create(yieldQty: number, yieldUnit: number, prepTime: number, cookTime: number, restTime: number, difficulty: number, instructionsText: string, notesText: string) {
+  command create(recipeId: string, name: string, versionNumber: number, yieldQty: number, yieldUnit: number, prepTime: number, cookTime: number, restTime: number, difficulty: number, instructionsText: string, notesText: string) {
+    guard recipeId != null and recipeId != "" "Recipe ID is required"
+    guard name != null and name != "" "Recipe version name is required"
+    guard versionNumber != null and versionNumber > 0 "Version number must be positive"
     guard yieldQty != null and yieldQty > 0 "Yield quantity must be positive"
     guard yieldUnit != null and yieldUnit > 0 "Yield unit is required"
 
+    mutate recipeId = recipeId
+    mutate name = name
+    mutate versionNumber = versionNumber
     mutate yieldQuantity = yieldQty
     mutate yieldUnitId = yieldUnit
     mutate prepTimeMinutes = prepTime

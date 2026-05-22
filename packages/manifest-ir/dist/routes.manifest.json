@@ -1,7 +1,7 @@
 {
   "$schema": "https://manifest.lang/spec/routes-v1.schema.json",
   "version": "1.0",
-  "generatedAt": "2026-05-18T02:36:05.027Z",
+  "generatedAt": "2026-05-22T19:02:16.071Z",
   "basePath": "/api",
   "routes": [
     {
@@ -16208,6 +16208,12 @@
           "required": true
         },
         {
+          "name": "locationId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
           "name": "prepListId",
           "type": "string",
           "location": "body",
@@ -18809,6 +18815,24 @@
       "path": "/api/kitchen/recipe-versions/commands/create",
       "method": "POST",
       "params": [
+        {
+          "name": "recipeId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "versionNumber",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
         {
           "name": "yieldQty",
           "type": "number",

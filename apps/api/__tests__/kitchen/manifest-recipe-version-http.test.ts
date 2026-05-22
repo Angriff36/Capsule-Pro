@@ -145,6 +145,8 @@ describe("Manifest HTTP - RecipeVersion Commands", () => {
           method: "POST",
           body: JSON.stringify({
             recipeId: "recipe-001",
+            name: "Test Recipe Version",
+            versionNumber: 1,
             yieldQty: 10,
             yieldUnit: 1,
             prepTime: 30,
@@ -179,6 +181,8 @@ describe("Manifest HTTP - RecipeVersion Commands", () => {
           method: "POST",
           body: JSON.stringify({
             recipeId: "recipe-001",
+            name: "Test Recipe Version",
+            versionNumber: 1,
             yieldQty: 10,
             yieldUnit: 1,
             prepTime: 30,
@@ -247,6 +251,8 @@ describe("Manifest HTTP - RecipeVersion Commands", () => {
           method: "POST",
           body: JSON.stringify({
             recipeId: "recipe-001",
+            name: "Test Recipe Version",
+            versionNumber: 1,
             yieldQty: 10,
             yieldUnit: 1,
             prepTime: 30,
@@ -321,6 +327,8 @@ describe("Manifest HTTP - RecipeVersion Commands", () => {
           method: "POST",
           body: JSON.stringify({
             recipeId: "recipe-001",
+            name: "Test Recipe Version",
+            versionNumber: 1,
             yieldQty: 10,
             yieldUnit: 1,
             prepTime: 120,
@@ -397,6 +405,8 @@ describe("Manifest HTTP - RecipeVersion Commands", () => {
           method: "POST",
           body: JSON.stringify({
             recipeId: "recipe-001",
+            name: "Test Recipe Version",
+            versionNumber: 1,
             yieldQty: 10,
             yieldUnit: 1,
             prepTime: 180,
@@ -451,6 +461,8 @@ describe("Manifest HTTP - RecipeVersion Commands", () => {
           method: "POST",
           body: JSON.stringify({
             recipeId: "recipe-001",
+            name: "Test Recipe Version",
+            versionNumber: 1,
             yieldQty: 10,
             yieldUnit: 1,
             prepTime: 30,
@@ -500,6 +512,8 @@ describe("Manifest HTTP - RecipeVersion Commands", () => {
           method: "POST",
           body: JSON.stringify({
             recipeId: "recipe-001",
+            name: "Test Recipe Version",
+            versionNumber: 1,
             yieldQty: 10,
             yieldUnit: 1,
             prepTime: -30, // Invalid - negative time

@@ -1035,6 +1035,8 @@ describe("Manifest HTTP Constraint Enforcement - RecipeVersion Commands", () => 
           method: "POST",
           body: JSON.stringify({
             recipeId: "recipe-001",
+            name: "Test Recipe Version",
+            versionNumber: 1,
             yieldQty: 10,
             yieldUnit: 1,
             prepTime: 30,
@@ -1082,6 +1084,8 @@ describe("Manifest HTTP Constraint Enforcement - RecipeVersion Commands", () => 
           method: "POST",
           body: JSON.stringify({
             recipeId: "recipe-001",
+            name: "Test Recipe Version",
+            versionNumber: 1,
             yieldQty: 10,
             yieldUnit: 1,
             prepTime: 30,
@@ -1131,6 +1135,8 @@ describe("Manifest HTTP Constraint Enforcement - RecipeVersion Commands", () => 
           method: "POST",
           body: JSON.stringify({
             recipeId: "recipe-001",
+            name: "Test Recipe Version",
+            versionNumber: 1,
             yieldQty: 10,
             yieldUnit: 1,
             prepTime: -30, // Invalid - negative time
@@ -1201,6 +1207,8 @@ describe("Manifest HTTP Constraint Enforcement - RecipeVersion Commands", () => 
           method: "POST",
           body: JSON.stringify({
             recipeId: "recipe-001",
+            name: "Test Recipe Version",
+            versionNumber: 1,
             yieldQty: 10,
             yieldUnit: 1,
             prepTime: 120,
@@ -1277,6 +1285,8 @@ describe("Manifest HTTP Constraint Enforcement - RecipeVersion Commands", () => 
           method: "POST",
           body: JSON.stringify({
             recipeId: "recipe-001",
+            name: "Test Recipe Version",
+            versionNumber: 1,
             yieldQty: 10,
             yieldUnit: 1,
             prepTime: 180, // 3 hours
@@ -1353,6 +1363,8 @@ describe("Manifest HTTP Constraint Enforcement - RecipeVersion Commands", () => 
           method: "POST",
           body: JSON.stringify({
             recipeId: "recipe-001",
+            name: "Test Recipe Version",
+            versionNumber: 1,
             yieldQty: 10,
             yieldUnit: 1,
             prepTime: 30,
