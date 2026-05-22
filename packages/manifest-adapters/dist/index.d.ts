@@ -564,6 +564,7 @@ export declare function createPrepTaskInstance(engine: RuntimeEngine, data: {
     id: string;
     tenantId: string;
     eventId: string;
+    locationId: string;
     name: string;
     taskType?: string;
     quantityTotal?: number;

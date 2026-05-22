@@ -45,6 +45,7 @@ import { VendorCatalogPrismaStore, VendorContractPrismaStore, } from "./prisma-s
 import { CollectionActionPrismaStore, CollectionCasePrismaStore, CollectionPaymentPlanPrismaStore, } from "./prisma-stores/broken-read-batch14-collections";
 import { InvoicePrismaStore, PaymentMethodPrismaStore, PaymentPrismaStore, } from "./prisma-stores/broken-read-batch14-invoice-payment";
 import { RolePolicyPrismaStore, TimeOffRequestPrismaStore, } from "./prisma-stores/broken-read-batch15-rolepolicy-timeoff";
+import { RevenueRecognitionLinePrismaStore, RevenueRecognitionSchedulePrismaStore, } from "./prisma-stores/revenue-recognition";
 import { NotificationPrismaStore } from "./prisma-stores/broken-read-notification-parent";
 import { PurchaseOrderPrismaStore } from "./prisma-stores/broken-read-po-parent";
 import { ProposalPrismaStore } from "./prisma-stores/broken-read-proposal-parent";
@@ -1567,6 +1568,10 @@ export function createPrismaStoreProvider(prisma, tenantId) {
                 return new RolePolicyPrismaStore(prisma, tenantId);
             case "TimeOffRequest":
                 return new TimeOffRequestPrismaStore(prisma, tenantId);
+            case "RevenueRecognitionSchedule":
+                return new RevenueRecognitionSchedulePrismaStore(prisma, tenantId);
+            case "RevenueRecognitionLine":
+                return new RevenueRecognitionLinePrismaStore(prisma, tenantId);
             default:
                 console.error(`[createPrismaStoreProvider] No store for entity "${entityName}" — commands will fail`);
                 return undefined;

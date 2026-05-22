@@ -121,6 +121,8 @@ const ENTITIES_WITH_SPECIFIC_STORES = new Set([
     "CollectionPaymentPlan",
     "RolePolicy",
     "TimeOffRequest",
+    "RevenueRecognitionSchedule",
+    "RevenueRecognitionLine",
 ]);
 /** Default precompiled IR path (relative to monorepo root). */
 const DEFAULT_IR_PATH = "packages/manifest-ir/ir/kitchen/kitchen.ir.json";

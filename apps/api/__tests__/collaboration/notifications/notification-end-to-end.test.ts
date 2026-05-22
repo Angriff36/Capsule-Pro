@@ -66,7 +66,7 @@ vi.mock("@/lib/manifest-runtime", () => ({
 
 // Import mocked modules after vi.mock setup
 import { auth } from "@repo/auth/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { getTenantIdForOrg, requireCurrentUser } from "@/app/lib/tenant";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
 
 // ---------------------------------------------------------------------------
@@ -281,15 +281,22 @@ describe("Notification Persistence (write → read alignment)", () => {
   });
 
   // -------------------------------------------------------------------------
-  // 3. Command routes pass instanceId for instance-scoped verbs
+  // 3. Canonical dispatcher passes instanceId for instance-scoped verbs
   // -------------------------------------------------------------------------
+  //
+  // History: the concrete per-command routes under
+  //   apps/api/app/api/collaboration/notifications/commands/<verb>/route.ts
+  // were deleted during the manifest dispatcher migration (constitution §6).
+  // The dispatcher at apps/api/app/api/manifest/[entity]/commands/[command]/route.ts
+  // now extracts `id` from the request body for any non-create command and
+  // passes it as `instanceId` to runCommand. These tests verify that
+  // behavior against the actual dispatcher.
 
-  describe("instanceId on command routes (Blocker #1 fix)", () => {
+  describe("instanceId on dispatcher (Blocker #1 fix)", () => {
     const mockUser = {
       id: TEST_USER_ID,
       tenantId: TEST_TENANT_ID,
       role: "admin",
-      authUserId: TEST_CLERK_ID,
     };
 
     const mockRunCommand = vi.fn().mockResolvedValue({
@@ -299,42 +306,30 @@ describe("Notification Persistence (write → read alignment)", () => {
     });
 
     beforeEach(() => {
-      vi.mocked(auth).mockResolvedValue({
-        orgId: TEST_ORG_ID,
-        userId: TEST_CLERK_ID,
-      } as any);
-      vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-      vi.mocked(database.user.findFirst).mockResolvedValue(mockUser as never);
+      vi.mocked(requireCurrentUser).mockResolvedValue(mockUser as never);
       mockRunCommand.mockClear();
       vi.mocked(createManifestRuntime).mockResolvedValue({
         runCommand: mockRunCommand,
       } as any);
     });
 
-    const instanceScopedVerbs = [
-      { verb: "markRead", file: "mark-read" },
-      { verb: "markDismissed", file: "mark-dismissed" },
-      { verb: "remove", file: "remove" },
-    ];
+    const instanceScopedVerbs = ["markRead", "markDismissed", "remove"];
 
-    for (const { verb, file } of instanceScopedVerbs) {
-      it(`${verb} route passes instanceId to runCommand`, async () => {
-        const mod = await import(
-          `@/app/api/collaboration/notifications/commands/${file}/route`
+    for (const verb of instanceScopedVerbs) {
+      it(`dispatcher passes instanceId for Notification.${verb}`, async () => {
+        const { POST } = await import(
+          "@/app/api/manifest/[entity]/commands/[command]/route"
         );
         const request = createMockRequest(
-          `http://localhost:3000/api/collaboration/notifications/commands/${file}`,
+          `http://localhost:3000/api/manifest/Notification/commands/${verb}`,
           {
             method: "POST",
             body: JSON.stringify({ id: "notif-003" }),
           }
         );
 
-        await mod.POST(request, {
-          params: Promise.resolve({
-            entity: "Notification",
-            command: "create",
-          }),
+        await POST(request, {
+          params: Promise.resolve({ entity: "Notification", command: verb }),
         });
 
         expect(mockRunCommand).toHaveBeenCalledWith(
@@ -348,12 +343,12 @@ describe("Notification Persistence (write → read alignment)", () => {
       });
     }
 
-    it("create route does NOT pass instanceId", async () => {
-      const mod = await import(
+    it("dispatcher does NOT pass instanceId for create", async () => {
+      const { POST } = await import(
         "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       const request = createMockRequest(
-        "http://localhost:3000/api/collaboration/notifications/commands/create",
+        "http://localhost:3000/api/manifest/Notification/commands/create",
         {
           method: "POST",
           body: JSON.stringify({
@@ -363,7 +358,7 @@ describe("Notification Persistence (write → read alignment)", () => {
         }
       );
 
-      await mod.POST(request, {
+      await POST(request, {
         params: Promise.resolve({ entity: "Notification", command: "create" }),
       });
 

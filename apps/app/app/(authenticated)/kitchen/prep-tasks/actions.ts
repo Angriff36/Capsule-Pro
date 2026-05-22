@@ -64,6 +64,7 @@ async function createRuntimeAndContext() {
 export async function createPrepTask(data: {
   id: string;
   eventId: string;
+  locationId: string;
   name: string;
   taskType?: string;
   quantityTotal?: number;

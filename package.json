@@ -113,6 +113,8 @@
     "manifest:validate": "pnpm exec manifest validate packages/manifest-ir/ir/kitchen/kitchen.ir.json",
     "manifest:audit-direct-writes": "node scripts/manifest/audit-direct-writes.mjs",
     "manifest:audit-direct-writes:strict": "node scripts/manifest/audit-direct-writes.mjs --strict",
+    "manifest:audit-schema-drift": "node scripts/manifest/audit-schema-drift.mjs",
+    "manifest:audit-schema-drift:strict": "node scripts/manifest/audit-schema-drift.mjs --strict",
     "bump-deps": "pnpm dlx npm-check-updates --deep -u --reject recharts && pnpm install",
     "bump-ui": "cd packages/design-system && pnpm dlx shadcn@latest add --all --overwrite",
     "clean:hard": "git clean -xdf",

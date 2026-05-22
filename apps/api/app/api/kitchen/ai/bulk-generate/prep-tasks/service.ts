@@ -408,6 +408,23 @@ export async function saveGeneratedTasks(
   const errors: string[] = [];
   let created = 0;
 
+  // PrepTask.create requires locationId (manifest-governed property). The AI
+  // generator only knows the eventId, so we look up the event's locationId
+  // once before the loop and pass it on every task.
+  const event = await database.event.findFirst({
+    where: { tenantId, id: eventId, deletedAt: null },
+    select: { locationId: true },
+  });
+  if (!event?.locationId) {
+    return {
+      created: 0,
+      errors: [
+        `Cannot generate prep tasks: event ${eventId} has no locationId.`,
+      ],
+    };
+  }
+  const locationId = event.locationId;
+
   try {
     // Create tasks via manifest runtime for constraint validation and event emission
     await database.$transaction(async (tx) => {
@@ -423,6 +440,7 @@ export async function saveGeneratedTasks(
             {
               name: task.name,
               eventId,
+              locationId,
               prepListId: "", // AI-generated tasks don't have prep lists
               taskType: task.taskType || "prep",
               priority: task.priority,

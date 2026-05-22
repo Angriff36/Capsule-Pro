@@ -2785,6 +2785,7 @@ export async function createPrepTaskInstance(
     id: string;
     tenantId: string;
     eventId: string;
+    locationId: string;
     name: string;
     taskType?: string;
     quantityTotal?: number;
@@ -2800,6 +2801,7 @@ export async function createPrepTaskInstance(
     id: data.id,
     tenantId: data.tenantId,
     eventId: data.eventId,
+    locationId: data.locationId,
     name: data.name,
     taskType: data.taskType || "prep",
     status: "open",

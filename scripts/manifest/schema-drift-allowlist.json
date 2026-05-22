@@ -1,0 +1,21 @@
+{
+  "$schema": "Manifest ↔ Prisma schema-drift allowlist. See scripts/manifest/audit-schema-drift.mjs for semantics.",
+  "_doc": {
+    "globalAdapterDerived": "Cross-cutting fields that EVERY Prisma store adapter injects from runtime context, not from command input. Applies to every governed entity.",
+    "adapterDerived": "Per-entity fields that the entity's Prisma store adapter derives via a documented rule (e.g. looking up a parent entity).",
+    "nonconforming": "Per constitution §14, acknowledged tech debt with an active removal plan. Bypass is not permission.",
+    "ignoredEntities": "Entity names to skip entirely (e.g. infrastructure tables incorrectly tagged as governed).",
+    "ignoredFields": "Per-entity field allowlist for fields the audit should not enforce."
+  },
+  "globalAdapterDerived": {
+    "tenantId": {
+      "rule": "Every Prisma store adapter injects tenantId from RuntimeContext.user.tenantId. See packages/manifest-adapters/src/prisma-store.ts where each .create() sets `tenantId: this.tenantId`. Constitution §19 requires runtime tenant context on every governed command.",
+      "owner": "platform",
+      "reviewBy": "2027-01-01"
+    }
+  },
+  "adapterDerived": {},
+  "nonconforming": {},
+  "ignoredEntities": [],
+  "ignoredFields": {}
+}

@@ -37,6 +37,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 // These are deterministic test UUIDs (not random to ensure consistency)
 const TEST_TENANT_ID = "00000000-0000-0000-0000-000000000001";
 const TEST_USER_ID = "00000000-0000-0000-0000-000000000002";
+const TEST_LOCATION_ID = "00000000-0000-0000-0000-000000000003";
 
 function normalizeIR(ir: IR): IR {
   if (ir.entities.length !== 1) {
@@ -192,6 +193,7 @@ describe("Manifest Runtime - Concurrency + Outbox Integration", () => {
       const createResult = await runtime.createInstance("PrepTask", {
         id: taskId,
         tenantId: TEST_TENANT_ID,
+        locationId: TEST_LOCATION_ID,
         eventId: "event-001",
         name: "Test outbox task",
         status: "open",
@@ -250,6 +252,7 @@ describe("Manifest Runtime - Concurrency + Outbox Integration", () => {
       await runtime.createInstance("PrepTask", {
         id: taskId,
         tenantId: TEST_TENANT_ID,
+        locationId: TEST_LOCATION_ID,
         eventId: "event-002",
         name: "Test failing task",
         status: "open",
@@ -385,6 +388,7 @@ describe("Manifest Runtime - Concurrency + Outbox Integration", () => {
       await runtime1.createInstance("PrepTask", {
         id: taskId,
         tenantId: tenant1Id,
+        locationId: TEST_LOCATION_ID,
         eventId: "event-005",
         name: "Tenant 1 task",
         status: "open",
@@ -446,6 +450,7 @@ describe("Manifest Runtime - Concurrency + Outbox Integration", () => {
       await runtime.createInstance("PrepTask", {
         id: taskId,
         tenantId: TEST_TENANT_ID,
+        locationId: TEST_LOCATION_ID,
         eventId: "event-006",
         name: "Test transaction task",
         status: "open",
@@ -488,6 +493,7 @@ describe("Manifest Runtime - Concurrency + Outbox Integration", () => {
       await runtime.createInstance("PrepTask", {
         id: taskId,
         tenantId: TEST_TENANT_ID,
+        locationId: TEST_LOCATION_ID,
         eventId: "event-007",
         name: "Test compound key",
         status: "open",
@@ -554,6 +560,7 @@ describe("Manifest Runtime - Concurrency + Outbox Integration", () => {
       await otherRuntime.createInstance("PrepTask", {
         id: taskId, // Same ID!
         tenantId: otherTenantId,
+        locationId: TEST_LOCATION_ID,
         eventId: "event-008",
         name: "Other tenant task",
         status: "open",

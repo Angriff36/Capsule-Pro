@@ -1702,6 +1702,7 @@ export async function createPrepTaskInstance(engine, data) {
         id: data.id,
         tenantId: data.tenantId,
         eventId: data.eventId,
+        locationId: data.locationId,
         name: data.name,
         taskType: data.taskType || "prep",
         status: "open",
