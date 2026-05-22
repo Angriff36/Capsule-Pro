@@ -4,6 +4,7 @@
 entity KnowledgeBaseEntry {
   property required id: string
   property required tenantId: string
+  property required slug: string
   property required title: string
   property category: string = "general"
   property content: string = ""
@@ -21,10 +22,12 @@ entity KnowledgeBaseEntry {
   constraint validStatus: self.status in ["draft", "published", "archived"] "Invalid entry status"
   constraint validCategory: self.category in ["general", "policies", "procedures", "recipes", "safety", "training", "other"] "Invalid category"
 
-  command create(title: string, category: string, content: string, tags: string, authorId: string) {
+  command create(slug: string, title: string, category: string, content: string, tags: string, authorId: string) {
+    guard slug != null and slug != "" "Slug is required"
     guard title != null and title != "" "Title is required"
     guard authorId != null and authorId != "" "Author ID is required"
 
+    mutate slug = slug
     mutate title = title
     mutate category = category
     mutate content = content
@@ -76,6 +79,7 @@ policy StaffCanViewKB execute: user.role in ["staff", "editor", "manager", "admi
 event KnowledgeBaseEntryCreated: "knowledgebase.entry.created" {
   entryId: string
   tenantId: string
+  slug: string
   title: string
   category: string
   authorId: string

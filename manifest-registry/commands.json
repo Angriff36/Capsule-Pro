@@ -4167,7 +4167,7 @@
       "command": "create",
       "commandId": "KnowledgeBaseEntry.create",
       "policies": [],
-      "guardCount": 2,
+      "guardCount": 3,
       "emits": [
         "KnowledgeBaseEntryCreated"
       ],

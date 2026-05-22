@@ -1925,6 +1925,7 @@
       "properties": [
         "id",
         "tenantId",
+        "slug",
         "title",
         "category",
         "content",
