@@ -373,6 +373,7 @@ scripts/*
 !scripts/ensure-github-packages-npmrc.sh
 !scripts/test-route-conformance.mjs
 !scripts/sync-manifest-runtime.mjs
+!scripts/verify-governance-route-findings.mjs
 !scripts/ensure-github-packages-npmrc.sh
 
 # Local Netlify folder
