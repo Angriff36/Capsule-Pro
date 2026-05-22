@@ -1,7 +1,7 @@
 {
   "$schema": "https://manifest.lang/spec/routes-v1.schema.json",
   "version": "1.0",
-  "generatedAt": "2026-05-22T20:18:22.101Z",
+  "generatedAt": "2026-05-22T23:41:39.315Z",
   "basePath": "/api",
   "routes": [
     {
@@ -8835,13 +8835,7 @@
       "method": "POST",
       "params": [
         {
-          "name": "firstName",
-          "type": "string",
-          "location": "body",
-          "required": true
-        },
-        {
-          "name": "lastName",
+          "name": "name",
           "type": "string",
           "location": "body",
           "required": true
@@ -8904,13 +8898,7 @@
       "method": "POST",
       "params": [
         {
-          "name": "firstName",
-          "type": "string",
-          "location": "body",
-          "required": true
-        },
-        {
-          "name": "lastName",
+          "name": "name",
           "type": "string",
           "location": "body",
           "required": true

@@ -2031,8 +2031,7 @@
       "properties": [
         "id",
         "tenantId",
-        "firstName",
-        "lastName",
+        "name",
         "email",
         "phone",
         "licenseNumber",

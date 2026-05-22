@@ -3,8 +3,7 @@
 entity Driver {
   property required id: string
   property required tenantId: string
-  property required firstName: string
-  property required lastName: string
+  property required name: string
   property email: string = ""
   property phone: string = ""
   property licenseNumber: string = ""
@@ -16,7 +15,6 @@ entity Driver {
   property createdAt: number = 0
   property updatedAt: number = 0
 
-  computed fullName: string = self.firstName + " " + self.lastName
   computed isActive: boolean = self.status == "active"
   computed licenseExpiring: boolean = self.licenseExpiry > 0 and now() + (30 * 86400000) > self.licenseExpiry
 
@@ -25,17 +23,15 @@ entity Driver {
   constraint warnLicenseExpiring:warn self.licenseExpiring and self.status == "active" {
     messageTemplate: "Driver '{driverName}' license expiring within 30 days"
     details: {
-      driverName: self.fullName
+      driverName: self.name
       licenseExpiry: self.licenseExpiry
     }
   }
 
-  command create(firstName: string, lastName: string, email: string, phone: string, licenseNumber: string, licenseExpiry: number, notes: string) {
-    guard firstName != null and firstName != "" "First name is required"
-    guard lastName != null and lastName != "" "Last name is required"
+  command create(name: string, email: string, phone: string, licenseNumber: string, licenseExpiry: number, notes: string) {
+    guard name != null and name != "" "Driver name is required"
 
-    mutate firstName = firstName
-    mutate lastName = lastName
+    mutate name = name
     mutate email = email
     mutate phone = phone
     mutate licenseNumber = licenseNumber
@@ -58,12 +54,10 @@ entity Driver {
     emit DriverDeleted
   }
 
-  command update(firstName: string, lastName: string, email: string, phone: string, licenseNumber: string, licenseExpiry: number, notes: string) {
-    guard firstName != null and firstName != "" "First name is required"
-    guard lastName != null and lastName != "" "Last name is required"
+  command update(name: string, email: string, phone: string, licenseNumber: string, licenseExpiry: number, notes: string) {
+    guard name != null and name != "" "Driver name is required"
 
-    mutate firstName = firstName
-    mutate lastName = lastName
+    mutate name = name
     mutate email = email
     mutate phone = phone
     mutate licenseNumber = licenseNumber

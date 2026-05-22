@@ -4362,7 +4362,7 @@
       "command": "create",
       "commandId": "Driver.create",
       "policies": [],
-      "guardCount": 2,
+      "guardCount": 1,
       "emits": [
         "DriverCreated"
       ],
@@ -4390,7 +4390,7 @@
       "command": "update",
       "commandId": "Driver.update",
       "policies": [],
-      "guardCount": 2,
+      "guardCount": 1,
       "emits": [
         "DriverUpdated"
       ],
