@@ -4,25 +4,30 @@
 entity DocumentVersion {
   property required id: string
   property required tenantId: string
+  property required documentType: string
   property required documentId: string
   property required versionNumber: number
   property required content: string
-  property changeDescription: string = ""
+  property required changeSummary: string
   property createdBy: string = ""
   property createdAt: number = 0
   property updatedAt: number = 0
 
   computed isLatest: boolean = false
 
-  command create(documentId: string, content: string, changeDescription: string, createdBy: string) {
+  command create(documentId: string, documentType: string, versionNumber: number, content: string, changeSummary: string, createdBy: string) {
     guard documentId != null and documentId != "" "Document ID is required"
+    guard documentType != null and documentType != "" "Document type is required"
+    guard versionNumber > 0 "Version number must be positive"
     guard content != null and content != "" "Content is required"
+    guard changeSummary != null and changeSummary != "" "Change summary is required"
 
     mutate documentId = documentId
+    mutate documentType = documentType
+    mutate versionNumber = versionNumber
     mutate content = content
-    mutate changeDescription = changeDescription
+    mutate changeSummary = changeSummary
     mutate createdBy = createdBy
-    mutate versionNumber = 1
     mutate createdAt = now()
     mutate updatedAt = now()
 
@@ -43,6 +48,7 @@ policy EditorsCanManageDocuments execute: user.role in ["editor", "manager", "ad
 event DocumentVersionCreated: "document.version.created" {
   versionId: string
   documentId: string
+  documentType: string
   versionNumber: number
   createdBy: string
   createdAt: number

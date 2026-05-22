@@ -1907,7 +1907,7 @@
       "command": "create",
       "commandId": "DocumentVersion.create",
       "policies": [],
-      "guardCount": 2,
+      "guardCount": 5,
       "emits": [
         "DocumentVersionCreated"
       ],
@@ -5628,7 +5628,7 @@
       "command": "create",
       "commandId": "PrepTask.create",
       "policies": [],
-      "guardCount": 3,
+      "guardCount": 4,
       "emits": [
         "PrepTaskCreated"
       ],
@@ -6367,7 +6367,7 @@
       "command": "create",
       "commandId": "RecipeVersion.create",
       "policies": [],
-      "guardCount": 2,
+      "guardCount": 5,
       "emits": [
         "RecipeVersionCreated"
       ],
