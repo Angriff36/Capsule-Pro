@@ -4,10 +4,12 @@
 entity LaborBudget {
   property required id: string
   property required tenantId: string
+  property required name: string
   property locationId: string = ""
   property periodStart: string = ""
   property periodEnd: string = ""
-  property budgetAmount: number = 0
+  property budgetTarget: number = 0
+  property budgetUnit: string = "hours"
   property budgetType: string = "weekly"
   property notes: string = ""
   property createdBy: string = ""
@@ -17,13 +19,15 @@ entity LaborBudget {
 
   computed isDeleted: boolean = self.deletedAt > 0
 
-  command create(locationId: string, periodStart: string, periodEnd: string, budgetAmount: number, budgetType: string, notes: string, createdBy: string) {
-    guard budgetAmount > 0 "Budget amount must be positive"
+  command create(name: string, locationId: string, periodStart: string, periodEnd: string, budgetTarget: number, budgetUnit: string, budgetType: string, notes: string, createdBy: string) {
+    guard budgetTarget > 0 "Budget target must be positive"
 
+    mutate name = name
     mutate locationId = locationId
     mutate periodStart = periodStart
     mutate periodEnd = periodEnd
-    mutate budgetAmount = budgetAmount
+    mutate budgetTarget = budgetTarget
+    mutate budgetUnit = budgetUnit
     mutate budgetType = budgetType
     mutate notes = notes
     mutate createdBy = createdBy
@@ -33,13 +37,15 @@ entity LaborBudget {
     emit LaborBudgetCreated
   }
 
-  command update(locationId: string, periodStart: string, periodEnd: string, budgetAmount: number, budgetType: string, notes: string) {
+  command update(name: string, locationId: string, periodStart: string, periodEnd: string, budgetTarget: number, budgetUnit: string, budgetType: string, notes: string) {
     guard self.deletedAt == 0 "Cannot update a deleted budget"
 
+    mutate name = name
     mutate locationId = locationId
     mutate periodStart = periodStart
     mutate periodEnd = periodEnd
-    mutate budgetAmount = budgetAmount
+    mutate budgetTarget = budgetTarget
+    mutate budgetUnit = budgetUnit
     mutate budgetType = budgetType
     mutate notes = notes
     mutate updatedAt = now()
@@ -101,7 +107,7 @@ policy LaborBudgetManagement execute: user.role in ["manager", "admin"] "Manager
 event LaborBudgetCreated: "staff.labor-budget.created" {
   budgetId: string
   tenantId: string
-  budgetAmount: number
+  budgetTarget: number
   createdAt: number
 }
 

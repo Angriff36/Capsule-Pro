@@ -175,7 +175,7 @@ export class InventoryTransactionPrismaStore implements Store<EntityInstance> {
       reason: (row.reason as string) ?? "",
       referenceType: (row.referenceType as string) ?? null,
       referenceId: (row.referenceId as string) ?? null,
-      employee_id: (row.employeeId as string) ?? null,
+      employeeId: (row.employee_id as string) ?? null,
     };
   }
 }

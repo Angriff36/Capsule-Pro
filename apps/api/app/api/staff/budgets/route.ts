@@ -52,12 +52,15 @@ export function POST(request: NextRequest) {
     entityName: "LaborBudget",
     commandName: "create",
     transformBody: (body, ctx) => ({
+      name: body.name || "",
       locationId: body.locationId || "",
       periodStart: body.periodStart || "",
       periodEnd: body.periodEnd || "",
-      budgetAmount: body.budgetAmount ?? body.amount ?? 0,
+      budgetTarget:
+        body.budgetTarget ?? body.budgetAmount ?? body.amount ?? 0,
+      budgetUnit: body.budgetUnit || "hours",
       budgetType: body.budgetType || body.type || "weekly",
-      notes: body.notes || "",
+      notes: body.notes || body.description || "",
       createdBy: ctx.userId,
     }),
   });
