@@ -154,6 +154,7 @@ export function POST(request: NextRequest) {
       employeeId: body.employeeId || body.employee_id,
       startDate: body.startDate || body.start_date,
       endDate: body.endDate || body.end_date,
+      hours: Number(body.hours ?? body.hours_requested ?? 0),
       requestType: body.requestType || body.request_type,
       reason: body.reason || "",
     }),

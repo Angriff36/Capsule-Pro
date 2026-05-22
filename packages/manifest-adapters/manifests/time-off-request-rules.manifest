@@ -7,6 +7,7 @@ entity TimeOffRequest {
   property employeeId: string = ""
   property startDate: string = ""
   property endDate: string = ""
+  property hours: number = 0
   property reason: string = ""
   property requestType: string = ""
   property status: string = "PENDING"
@@ -26,15 +27,17 @@ entity TimeOffRequest {
   constraint requireEndDate: self.endDate != "" "End date is required"
   constraint requireRequestType: self.requestType != "" "Request type is required"
 
-  command create(employeeId: string, startDate: string, endDate: string, reason: string, requestType: string) {
+  command create(employeeId: string, startDate: string, endDate: string, hours: number, reason: string, requestType: string) {
     guard employeeId != null and employeeId != "" "Employee ID is required"
     guard startDate != null and startDate != "" "Start date is required"
     guard endDate != null and endDate != "" "End date is required"
+    guard hours > 0 "Hours must be positive"
     guard requestType != null and requestType != "" "Request type is required"
 
     mutate employeeId = employeeId
     mutate startDate = startDate
     mutate endDate = endDate
+    mutate hours = hours
     mutate reason = reason
     mutate requestType = requestType
     mutate status = "PENDING"
@@ -101,6 +104,7 @@ event TimeOffRequestCreated: "staff.time-off-request.created" {
   employeeId: string
   startDate: string
   endDate: string
+  hours: number
   requestType: string
   createdAt: number
 }

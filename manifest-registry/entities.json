@@ -3429,6 +3429,7 @@
         "employeeId",
         "startDate",
         "endDate",
+        "hours",
         "reason",
         "requestType",
         "status",

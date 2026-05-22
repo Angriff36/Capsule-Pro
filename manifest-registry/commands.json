@@ -7352,7 +7352,7 @@
       "command": "create",
       "commandId": "TimeOffRequest.create",
       "policies": [],
-      "guardCount": 4,
+      "guardCount": 5,
       "emits": [
         "TimeOffRequestCreated"
       ],
