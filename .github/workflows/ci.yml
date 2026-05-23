@@ -225,7 +225,13 @@ jobs:
           DATABASE_URL: "postgresql://testuser:testpass@localhost:5432/capsule_test"
           BASEHUB_TOKEN: ${{ secrets.BASEHUB_TOKEN }}
           # Server env vars (dummy values for build)
-          CLERK_SECRET_KEY: "not_a_real_key_dummy_value"
+          # CLERK_SECRET_KEY intentionally not set — SKIP_ENV_VALIDATION=true
+          # bypasses zod parsing (packages/auth/keys.ts declares it .optional()),
+          # and the Clerk SDK falls back to "" when absent. The E2E build step
+          # only invokes `next build` for apps/app + apps/api; runtime Clerk
+          # auth is exercised later by the Start API server + Run E2E test
+          # steps, both of which inject the real ${{ secrets.CLERK_SECRET_KEY }}.
+          # Matches deploy.yml convention (see CI-drain Task 12 / 12b / 12c).
           CLERK_WEBHOOK_SECRET: "webhook_secret_placeholder"
           RESEND_FROM: "noreply@ci-build.local"
           RESEND_TOKEN: "re_dummy"
