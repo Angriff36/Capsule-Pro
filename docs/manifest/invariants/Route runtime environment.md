@@ -1,1 +1,0 @@
- Manifest Route Runtime Is Hard-Pinned to Node.js — Routes that instantiate manifest runtime must export runtime = "nodejs", with invariant tests guarding regressions.  
