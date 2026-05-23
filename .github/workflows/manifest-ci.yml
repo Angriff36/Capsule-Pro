@@ -477,6 +477,45 @@ jobs:
           echo
           echo "::notice::integration-check findings above are advisory until governance backlog clears."
 
+  manifest-direct-writes-baseline:
+    name: Direct-Write Audit (Baseline + Block New)
+    # BLOCKING — constitution §2 requires governed-entity writes to go through
+    # RuntimeEngine.runCommand. The upstream `direct-writes` detector only matches
+    # the literal `prisma.X.method` identifier, but Capsule writes via `database.X.method`
+    # (re-exported PrismaClient). This Capsule-local audit closes that blind spot.
+    #
+    # Existing debt is captured in manifest/governance/baselines/direct-writes.json
+    # (113 (file, entity) pairs across 76 files at the 2026-05-22 baseline). The
+    # baseline wrapper fails CI on ANY new (file, governedEntity) pair not present
+    # in the baseline. To intentionally accept a new state (e.g. after migrating
+    # a file off the list), regenerate locally with:
+    #   node scripts/manifest/audit-direct-writes-baseline.mjs --save-baseline
+    # and commit the updated baseline file.
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: "pnpm"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Install dependencies
+        run: bash scripts/ensure-github-packages-npmrc.sh && pnpm install --frozen-lockfile
+        env:
+          NPM_TOKEN: ${{ secrets.PKG_AUTH_TOKEN }}
+
+      - name: Audit direct writes vs baseline
+        run: pnpm manifest:audit-direct-writes:baseline
+
   manifest-enforce-surface:
     # Reporting gate (not blocking). Runs `manifest enforce-surface` so
     # contributors see when their changes introduce a new duplicate or bypass

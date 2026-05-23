@@ -1,0 +1,460 @@
+{
+  "generatedAt": "2026-05-23T05:51:44.776Z",
+  "capturedFromReport": "manifest/reports/direct-writes/direct-writes.json",
+  "note": "Baseline of Capsule-local direct-write audit findings. Each entry is a (file, governedEntity) pair currently in the 'reported, governed, no alias, no bypass' bucket. New entries are blocked by scripts/manifest/audit-direct-writes-baseline.mjs. Regenerate ONLY after intentionally migrating or bypassing a finding.",
+  "count": 113,
+  "violations": [
+    {
+      "file": "apps/api/app/api/accounting/collections/cases/[id]/route.ts",
+      "entity": "CollectionCase"
+    },
+    {
+      "file": "apps/api/app/api/accounting/collections/cases/route.ts",
+      "entity": "CollectionCase"
+    },
+    {
+      "file": "apps/api/app/api/accounting/invoices/[id]/route.ts",
+      "entity": "Invoice"
+    },
+    {
+      "file": "apps/api/app/api/accounting/invoices/route.ts",
+      "entity": "Invoice"
+    },
+    {
+      "file": "apps/api/app/api/accounting/payment-methods/[id]/route.ts",
+      "entity": "PaymentMethod"
+    },
+    {
+      "file": "apps/api/app/api/accounting/payment-methods/route.ts",
+      "entity": "PaymentMethod"
+    },
+    {
+      "file": "apps/api/app/api/accounting/payments/[id]/route.ts",
+      "entity": "Invoice"
+    },
+    {
+      "file": "apps/api/app/api/accounting/payments/[id]/route.ts",
+      "entity": "Payment"
+    },
+    {
+      "file": "apps/api/app/api/accounting/payments/route.ts",
+      "entity": "Payment"
+    },
+    {
+      "file": "apps/api/app/api/accounting/revenue-recognition/schedules/[id]/route.ts",
+      "entity": "RevenueRecognitionLine"
+    },
+    {
+      "file": "apps/api/app/api/accounting/revenue-recognition/schedules/[id]/route.ts",
+      "entity": "RevenueRecognitionSchedule"
+    },
+    {
+      "file": "apps/api/app/api/accounting/revenue-recognition/schedules/route.ts",
+      "entity": "RevenueRecognitionSchedule"
+    },
+    {
+      "file": "apps/api/app/api/administrative/chat/threads/[threadId]/messages/route.ts",
+      "entity": "AdminChatParticipant"
+    },
+    {
+      "file": "apps/api/app/api/administrative/chat/threads/[threadId]/route.ts",
+      "entity": "AdminChatParticipant"
+    },
+    {
+      "file": "apps/api/app/api/administrative/chat/threads/route.ts",
+      "entity": "AdminChatParticipant"
+    },
+    {
+      "file": "apps/api/app/api/ai/bulk-tasks/confirm/route.ts",
+      "entity": "PrepTask"
+    },
+    {
+      "file": "apps/api/app/api/calendar/reschedule/route.ts",
+      "entity": "Event"
+    },
+    {
+      "file": "apps/api/app/api/calendar/reschedule/route.ts",
+      "entity": "ScheduleShift"
+    },
+    {
+      "file": "apps/api/app/api/calendar/sync/trigger/route.ts",
+      "entity": "Event"
+    },
+    {
+      "file": "apps/api/app/api/command-board/simulations/[id]/discard/route.ts",
+      "entity": "CommandBoard"
+    },
+    {
+      "file": "apps/api/app/api/command-board/simulations/[id]/route.ts",
+      "entity": "CommandBoard"
+    },
+    {
+      "file": "apps/api/app/api/command-board/simulations/route.ts",
+      "entity": "CommandBoard"
+    },
+    {
+      "file": "apps/api/app/api/command-board/simulations/route.ts",
+      "entity": "CommandBoardGroup"
+    },
+    {
+      "file": "apps/api/app/api/communications/sms/automation-rules/[id]/route.ts",
+      "entity": "SmsAutomationRule"
+    },
+    {
+      "file": "apps/api/app/api/communications/sms/automation-rules/route.ts",
+      "entity": "SmsAutomationRule"
+    },
+    {
+      "file": "apps/api/app/api/cron/inventory-audit/route.ts",
+      "entity": "CycleCountSession"
+    },
+    {
+      "file": "apps/api/app/api/events/[eventId]/shipments/generate/route.ts",
+      "entity": "Shipment"
+    },
+    {
+      "file": "apps/api/app/api/events/[eventId]/shipments/generate/route.ts",
+      "entity": "ShipmentItem"
+    },
+    {
+      "file": "apps/api/app/api/events/contracts/[id]/document/route.ts",
+      "entity": "EventContract"
+    },
+    {
+      "file": "apps/api/app/api/events/contracts/[id]/send/route.ts",
+      "entity": "EventContract"
+    },
+    {
+      "file": "apps/api/app/api/events/documents/parse/route.ts",
+      "entity": "BattleBoard"
+    },
+    {
+      "file": "apps/api/app/api/events/documents/parse/route.ts",
+      "entity": "Dish"
+    },
+    {
+      "file": "apps/api/app/api/events/documents/parse/route.ts",
+      "entity": "Event"
+    },
+    {
+      "file": "apps/api/app/api/events/documents/parse/route.ts",
+      "entity": "EventReport"
+    },
+    {
+      "file": "apps/api/app/api/events/documents/parse/route.ts",
+      "entity": "Recipe"
+    },
+    {
+      "file": "apps/api/app/api/events/profitability/commands/recalculate/route.ts",
+      "entity": "EventProfitability"
+    },
+    {
+      "file": "apps/api/app/api/inventory/audit/discrepancies/[id]/resolve/route.ts",
+      "entity": "VarianceReport"
+    },
+    {
+      "file": "apps/api/app/api/inventory/audit/discrepancies/[id]/route.ts",
+      "entity": "VarianceReport"
+    },
+    {
+      "file": "apps/api/app/api/inventory/batch/route.ts",
+      "entity": "InventoryItem"
+    },
+    {
+      "file": "apps/api/app/api/inventory/cycle-count/sessions/[id]/finalize/route.ts",
+      "entity": "CycleCountSession"
+    },
+    {
+      "file": "apps/api/app/api/inventory/cycle-count/sessions/[id]/finalize/route.ts",
+      "entity": "InventoryItem"
+    },
+    {
+      "file": "apps/api/app/api/inventory/cycle-count/sessions/[id]/finalize/route.ts",
+      "entity": "InventoryTransaction"
+    },
+    {
+      "file": "apps/api/app/api/inventory/cycle-count/sessions/[id]/finalize/route.ts",
+      "entity": "VarianceReport"
+    },
+    {
+      "file": "apps/api/app/api/kitchen/allergens/detect-conflicts/route.ts",
+      "entity": "AllergenWarning"
+    },
+    {
+      "file": "apps/api/app/api/kitchen/import/route.ts",
+      "entity": "Dish"
+    },
+    {
+      "file": "apps/api/app/api/kitchen/import/route.ts",
+      "entity": "PrepList"
+    },
+    {
+      "file": "apps/api/app/api/kitchen/import/route.ts",
+      "entity": "PrepListItem"
+    },
+    {
+      "file": "apps/api/app/api/kitchen/import/route.ts",
+      "entity": "Recipe"
+    },
+    {
+      "file": "apps/api/app/api/kitchen/import/route.ts",
+      "entity": "RecipeVersion"
+    },
+    {
+      "file": "apps/api/app/api/kitchen/recipes/[id]/cost/route.ts",
+      "entity": "RecipeIngredient"
+    },
+    {
+      "file": "apps/api/app/api/kitchen/tasks/shared-task-helpers.ts",
+      "entity": "PrepTask"
+    },
+    {
+      "file": "apps/api/app/api/procurement/approvals/action/route.ts",
+      "entity": "PurchaseOrder"
+    },
+    {
+      "file": "apps/api/app/api/public/contracts/[token]/sign/route.ts",
+      "entity": "ContractSignature"
+    },
+    {
+      "file": "apps/api/app/api/public/contracts/[token]/sign/route.ts",
+      "entity": "EventContract"
+    },
+    {
+      "file": "apps/api/app/api/public/proposals/[token]/respond/route.ts",
+      "entity": "Proposal"
+    },
+    {
+      "file": "apps/api/app/api/public/proposals/[token]/route.ts",
+      "entity": "Proposal"
+    },
+    {
+      "file": "apps/api/app/api/settings/api-keys/[id]/revoke/route.ts",
+      "entity": "ApiKey"
+    },
+    {
+      "file": "apps/api/app/api/settings/api-keys/[id]/rotate/route.ts",
+      "entity": "ApiKey"
+    },
+    {
+      "file": "apps/api/app/api/settings/api-keys/[id]/route.ts",
+      "entity": "ApiKey"
+    },
+    {
+      "file": "apps/api/app/api/settings/api-keys/route.ts",
+      "entity": "ApiKey"
+    },
+    {
+      "file": "apps/api/app/api/settings/rate-limits/[id]/route.ts",
+      "entity": "RateLimitConfig"
+    },
+    {
+      "file": "apps/api/app/api/smsautomationrule/activate/route.ts",
+      "entity": "SmsAutomationRule"
+    },
+    {
+      "file": "apps/api/app/api/smsautomationrule/deactivate/route.ts",
+      "entity": "SmsAutomationRule"
+    },
+    {
+      "file": "apps/api/app/api/webhooks/supplier-catalog/route.ts",
+      "entity": "VendorCatalog"
+    },
+    {
+      "file": "apps/api/app/lib/recipe-version-helpers.ts",
+      "entity": "Recipe"
+    },
+    {
+      "file": "apps/api/app/lib/recipe-version-helpers.ts",
+      "entity": "RecipeIngredient"
+    },
+    {
+      "file": "apps/api/app/lib/recipe-version-helpers.ts",
+      "entity": "RecipeStep"
+    },
+    {
+      "file": "apps/api/app/lib/recipe-version-helpers.ts",
+      "entity": "RecipeVersion"
+    },
+    {
+      "file": "apps/api/app/lib/tenant.ts",
+      "entity": "User"
+    },
+    {
+      "file": "apps/api/app/webhooks/payments/route.ts",
+      "entity": "Invoice"
+    },
+    {
+      "file": "apps/api/app/webhooks/payments/route.ts",
+      "entity": "Payment"
+    },
+    {
+      "file": "apps/app/app/(authenticated)/administrative/kanban/actions.ts",
+      "entity": "AdminTask"
+    },
+    {
+      "file": "apps/app/app/(authenticated)/command-board/actions.ts",
+      "entity": "CommandBoard"
+    },
+    {
+      "file": "apps/app/app/(authenticated)/command-board/actions.ts",
+      "entity": "CommandBoardCard"
+    },
+    {
+      "file": "apps/app/app/(authenticated)/command-board/actions.ts",
+      "entity": "CommandBoardGroup"
+    },
+    {
+      "file": "apps/app/app/(authenticated)/crm/clients/actions.ts",
+      "entity": "Client"
+    },
+    {
+      "file": "apps/app/app/(authenticated)/crm/clients/actions.ts",
+      "entity": "ClientContact"
+    },
+    {
+      "file": "apps/app/app/(authenticated)/crm/clients/actions.ts",
+      "entity": "ClientInteraction"
+    },
+    {
+      "file": "apps/app/app/(authenticated)/crm/clients/actions.ts",
+      "entity": "ClientPreference"
+    },
+    {
+      "file": "apps/app/app/(authenticated)/crm/proposals/actions.ts",
+      "entity": "Proposal"
+    },
+    {
+      "file": "apps/app/app/(authenticated)/crm/proposals/actions.ts",
+      "entity": "ProposalLineItem"
+    },
+    {
+      "file": "apps/app/app/(authenticated)/cycle-counting/actions/finalization.ts",
+      "entity": "CycleCountSession"
+    },
+    {
+      "file": "apps/app/app/(authenticated)/cycle-counting/actions/finalization.ts",
+      "entity": "InventoryItem"
+    },
+    {
+      "file": "apps/app/app/(authenticated)/cycle-counting/actions/finalization.ts",
+      "entity": "InventoryTransaction"
+    },
+    {
+      "file": "apps/app/app/(authenticated)/cycle-counting/actions/finalization.ts",
+      "entity": "VarianceReport"
+    },
+    {
+      "file": "apps/app/app/(authenticated)/cycle-counting/actions/records.ts",
+      "entity": "CycleCountRecord"
+    },
+    {
+      "file": "apps/app/app/(authenticated)/cycle-counting/actions/sessions.ts",
+      "entity": "CycleCountSession"
+    },
+    {
+      "file": "apps/app/app/(authenticated)/events/[eventId]/event-mutation-actions.ts",
+      "entity": "Event"
+    },
+    {
+      "file": "apps/app/app/(authenticated)/events/actions.ts",
+      "entity": "Event"
+    },
+    {
+      "file": "apps/app/app/(authenticated)/events/actions/event-dishes.ts",
+      "entity": "Dish"
+    },
+    {
+      "file": "apps/app/app/(authenticated)/events/actions/generate-proposal.ts",
+      "entity": "Proposal"
+    },
+    {
+      "file": "apps/app/app/(authenticated)/events/actions/generate-proposal.ts",
+      "entity": "ProposalLineItem"
+    },
+    {
+      "file": "apps/app/app/(authenticated)/events/actions/task-breakdown.ts",
+      "entity": "PrepTask"
+    },
+    {
+      "file": "apps/app/app/(authenticated)/events/importer.ts",
+      "entity": "Dish"
+    },
+    {
+      "file": "apps/app/app/(authenticated)/events/importer.ts",
+      "entity": "Event"
+    },
+    {
+      "file": "apps/app/app/(authenticated)/events/importer.ts",
+      "entity": "Recipe"
+    },
+    {
+      "file": "apps/app/app/(authenticated)/facilities/actions.ts",
+      "entity": "Facility"
+    },
+    {
+      "file": "apps/app/app/(authenticated)/facilities/actions.ts",
+      "entity": "FacilityArea"
+    },
+    {
+      "file": "apps/app/app/(authenticated)/facilities/actions.ts",
+      "entity": "FacilityAsset"
+    },
+    {
+      "file": "apps/app/app/(authenticated)/kitchen/recipes/menus/actions-manifest.ts",
+      "entity": "Menu"
+    },
+    {
+      "file": "apps/app/app/(authenticated)/logistics/actions.ts",
+      "entity": "Driver"
+    },
+    {
+      "file": "apps/app/app/(authenticated)/logistics/actions.ts",
+      "entity": "Vehicle"
+    },
+    {
+      "file": "apps/app/app/(authenticated)/marketing/leads/actions.ts",
+      "entity": "Lead"
+    },
+    {
+      "file": "apps/app/app/(authenticated)/procurement/actions.ts",
+      "entity": "PurchaseOrder"
+    },
+    {
+      "file": "apps/app/app/(authenticated)/procurement/actions.ts",
+      "entity": "PurchaseRequisition"
+    },
+    {
+      "file": "apps/app/app/(authenticated)/scheduling/availability/actions.ts",
+      "entity": "EmployeeAvailability"
+    },
+    {
+      "file": "apps/app/app/(authenticated)/settings/email-templates/actions.ts",
+      "entity": "EmailTemplate"
+    },
+    {
+      "file": "apps/app/app/(authenticated)/settings/email-workflows/actions.ts",
+      "entity": "EmailWorkflow"
+    },
+    {
+      "file": "apps/app/app/(authenticated)/staff/team/actions.ts",
+      "entity": "User"
+    },
+    {
+      "file": "apps/app/app/(unauthenticated)/view/proposal/[token]/page.tsx",
+      "entity": "Proposal"
+    },
+    {
+      "file": "apps/app/app/lib/tenant.ts",
+      "entity": "User"
+    },
+    {
+      "file": "packages/notifications/email-workflow-triggers.ts",
+      "entity": "EmailWorkflow"
+    },
+    {
+      "file": "packages/supplier-connectors/src/sync-service.ts",
+      "entity": "VendorCatalog"
+    }
+  ]
+}
