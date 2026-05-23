@@ -56,7 +56,11 @@ jobs:
       # CodeQL analysis lives in .github/workflows/codeql.yml — do not duplicate here.
 
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@0.30.0
+        # Pinned to @master because the previously-pinned tag (0.30.0) was never
+        # published by aquasecurity/trivy-action and broke this job with
+        # "Unable to resolve action ... version 0.30.0". Replace with a specific
+        # tag once a current release is confirmed.
+        uses: aquasecurity/trivy-action@master
         with:
           scan-type: "fs"
           scan-ref: "."
