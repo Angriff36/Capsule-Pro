@@ -33,11 +33,12 @@ Notes:
 - **Purpose:** Prisma Migrate uses a **shadow database** during `migrate dev`.
   In this repo, `packages/database/prisma.config.ts` sets `shadowDatabaseUrl`
   only when `SHADOW_DATABASE_URL` is present; otherwise that field is omitted.
-- **Where it is required:** **`pnpm db:dev`** (root `package.json`) runs
-  `scripts/require-shadow-database-url-for-migrate-dev.mjs` first, which
-  requires a **valid URL** in `SHADOW_DATABASE_URL` (typically a dedicated empty
-  Neon database/branch). **`pnpm migrate`** chains into `pnpm db:dev`, so the
-  same requirement applies when that command reaches the migrate-dev step.
+- **Where it is required:** **Optional in all paths.** Neon auto-creates and
+  deletes the shadow database for `prisma migrate dev`, so neither `pnpm db:dev`
+  nor `pnpm migrate` enforces a preflight check on `SHADOW_DATABASE_URL`. Provide
+  one explicitly only if you need a dedicated shadow DB/branch (e.g. an org
+  policy that disallows shadow auto-create) or if `prisma migrate dev` errors
+  with a shadow-DB create-permission failure — see `pnpm db:neon-shadow` below.
 - **Where it is not required:** App and API **env validation** (`@repo/database/keys`)
   only includes **`DATABASE_URL`**. Vercel/Next **build**, **`prisma generate`**,
   **`pnpm db:deploy`** / **`migrate deploy`**, **`migrate:status`**, and **runtime
@@ -75,8 +76,8 @@ If you use **Neon**, provision an empty shadow database on your **dev** branch
    already exists) and `neon connection-string <branch> --database-name capsule_shadow --prisma`
    (non-pooled by default), then appends **`SHADOW_DATABASE_URL`** to
    **`packages/database/.env.local`** (gitignored). Prisma loads that file via
-   `packages/database/prisma.config.ts`; **`scripts/require-shadow-database-url-for-migrate-dev.mjs`**
-   reads the same paths so **`pnpm db:dev`** picks it up without exporting it in your shell.
+   `packages/database/prisma.config.ts`, so **`pnpm db:dev`** picks it up without
+   exporting it in your shell.
 
 3. **Do not** add `SHADOW_DATABASE_URL` to Vercel **Production** (or any runtime-only
    env). Next build, **`prisma generate`**, **`pnpm db:deploy`**, **`migrate:status`**,

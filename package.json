@@ -128,7 +128,7 @@
     "db:neon-audit": "node scripts/neon-audit-readonly.mjs",
     "db:neon-backup-and-audit": "node scripts/neon-schema-backup-pgdump.mjs && node scripts/neon-audit-readonly.mjs",
     "db:deploy": "pnpm --filter @repo/database exec prisma migrate deploy",
-    "db:dev": "node scripts/require-shadow-database-url-for-migrate-dev.mjs && pnpm --filter @repo/database exec prisma migrate dev",
+    "db:dev": "pnpm --filter @repo/database exec prisma migrate dev",
     "db:push": "echo \"❌ Disabled. Use pnpm migrate (dev) or pnpm migrate:deploy (CI/prod).\" && exit 1",
     "db:repair": "node scripts/db-drift-repair.mjs",
     "dev": "turbo dev --parallel",
