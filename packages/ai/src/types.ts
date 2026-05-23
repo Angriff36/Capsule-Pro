@@ -61,7 +61,7 @@ export type Metrics = z.infer<typeof MetricsSchema>;
 
 export const SDKConfigSchema = z.object({
   apiKey: z.string().optional(),
-  baseUrl: z.string().url().optional(),
+  baseUrl: z.url().optional(),
   defaultTimeout: z.number().min(1000).max(300_000).optional(),
   defaultMaxRetries: z.number().min(0).max(10).optional(),
   debug: z.boolean().optional(),

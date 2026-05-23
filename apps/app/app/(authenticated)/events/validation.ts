@@ -3,7 +3,7 @@ import { z } from "zod";
 export const createEventSchema = z.object({
   title: z.string().min(1, "Event title is required"),
   eventType: z.string().default("catering"),
-  eventDate: z.string().min(1, "Event date is required"),
+  eventDate: z.iso.date(),
   guestCount: z.coerce
     .number()
     .int()
@@ -40,3 +40,35 @@ export const createEventSchema = z.object({
 });
 
 export type CreateEventInput = z.infer<typeof createEventSchema>;
+
+export const updateEventSchema = z.object({
+  eventId: z.string().min(1, "Event id is required"),
+  title: z.string().min(1, "Event title is required"),
+  eventType: z.string().min(1, "Event type is required"),
+  eventDate: z.iso.date(),
+  guestCount: z.coerce.number().int().min(1, "Guest count must be at least 1"),
+  status: z
+    .enum([
+      "draft",
+      "confirmed",
+      "tentative",
+      "postponed",
+      "completed",
+      "cancelled",
+    ])
+    .default("confirmed"),
+  budget: z.coerce.number().nullable().optional(),
+  ticketPrice: z.coerce.number().min(0).nullable().optional(),
+  ticketTier: z.string().nullable().optional(),
+  eventFormat: z.string().nullable().optional(),
+  accessibilityOptions: z.array(z.string()).default([]),
+  featuredMediaUrl: z.string().nullable().optional(),
+  venueName: z.string().nullable().optional(),
+  venueAddress: z.string().nullable().optional(),
+  notes: z.string().nullable().optional(),
+  clientId: z.string().nullable().optional(),
+  tags: z.array(z.string()).default([]),
+  eventNumber: z.string().nullable().optional(),
+});
+
+export type UpdateEventInput = z.infer<typeof updateEventSchema>;

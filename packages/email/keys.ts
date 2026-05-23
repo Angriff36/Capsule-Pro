@@ -7,7 +7,7 @@ export const keys = () =>
     server: {
       RESEND_FROM: process.env.SKIP_ENV_VALIDATION
         ? z.string().optional()
-        : z.string().email(),
+        : z.email(),
       RESEND_TOKEN: process.env.SKIP_ENV_VALIDATION
         ? z.string().optional()
         : z.string().startsWith("re_"),

@@ -14,7 +14,7 @@ export const keys = () =>
 
       // Slack integration for notifications
       SLACK_BOT_TOKEN: z.string().min(1).optional(),
-      SLACK_WEBHOOK_URL: z.string().url().optional(),
+      SLACK_WEBHOOK_URL: z.url().optional(),
       SLACK_CHANNEL_ID: z.string().min(1).optional(),
 
       // Job runner configuration

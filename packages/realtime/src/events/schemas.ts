@@ -14,7 +14,7 @@ export const RealtimeEventBaseSchema = z.object({
   tenantId: z.string().min(1),
   aggregateType: z.string().min(1),
   aggregateId: z.string().min(1),
-  occurredAt: z.string().datetime(),
+  occurredAt: z.iso.datetime(),
 });
 
 /**
@@ -23,20 +23,20 @@ export const RealtimeEventBaseSchema = z.object({
 export const KitchenTaskClaimedPayloadSchema = z.object({
   taskId: z.string().min(1),
   employeeId: z.string().min(1),
-  claimedAt: z.string().datetime(),
+  claimedAt: z.iso.datetime(),
 });
 
 export const KitchenTaskReleasedPayloadSchema = z.object({
   taskId: z.string().min(1),
   employeeId: z.string().min(1),
-  releasedAt: z.string().datetime(),
+  releasedAt: z.iso.datetime(),
 });
 
 export const KitchenTaskProgressPayloadSchema = z.object({
   taskId: z.string().min(1),
   employeeId: z.string().min(1),
   progressPercent: z.number().int().min(0).max(100),
-  updatedAt: z.string().datetime(),
+  updatedAt: z.iso.datetime(),
 });
 
 /**
@@ -50,7 +50,7 @@ export const CommandBoardCardCreatedPayloadSchema = z.object({
   positionX: z.number(),
   positionY: z.number(),
   createdBy: z.string().min(1),
-  createdAt: z.string().datetime(),
+  createdAt: z.iso.datetime(),
 });
 
 export const CommandBoardCardUpdatedPayloadSchema = z.object({
@@ -58,7 +58,7 @@ export const CommandBoardCardUpdatedPayloadSchema = z.object({
   cardId: z.string().min(1),
   changes: z.record(z.string(), z.unknown()),
   updatedBy: z.string().min(1),
-  updatedAt: z.string().datetime(),
+  updatedAt: z.iso.datetime(),
 });
 
 export const CommandBoardCardMovedPayloadSchema = z.object({
@@ -73,14 +73,14 @@ export const CommandBoardCardMovedPayloadSchema = z.object({
     y: z.number(),
   }),
   movedBy: z.string().min(1),
-  movedAt: z.string().datetime(),
+  movedAt: z.iso.datetime(),
 });
 
 export const CommandBoardCardDeletedPayloadSchema = z.object({
   boardId: z.string().min(1),
   cardId: z.string().min(1),
   deletedBy: z.string().min(1),
-  deletedAt: z.string().datetime(),
+  deletedAt: z.iso.datetime(),
 });
 
 export const CommandBoardUpdatedPayloadSchema = z.object({
@@ -88,20 +88,20 @@ export const CommandBoardUpdatedPayloadSchema = z.object({
   name: z.string(),
   changes: z.record(z.string(), z.unknown()),
   updatedBy: z.string().min(1),
-  updatedAt: z.string().datetime(),
+  updatedAt: z.iso.datetime(),
 });
 
 export const CommandBoardUserJoinedPayloadSchema = z.object({
   boardId: z.string().min(1),
   userId: z.string().min(1),
   userName: z.string(),
-  joinedAt: z.string().datetime(),
+  joinedAt: z.iso.datetime(),
 });
 
 export const CommandBoardUserLeftPayloadSchema = z.object({
   boardId: z.string().min(1),
   userId: z.string().min(1),
-  leftAt: z.string().datetime(),
+  leftAt: z.iso.datetime(),
 });
 
 export const CommandBoardCursorMovedPayloadSchema = z.object({
@@ -111,7 +111,7 @@ export const CommandBoardCursorMovedPayloadSchema = z.object({
     x: z.number(),
     y: z.number(),
   }),
-  movedAt: z.string().datetime(),
+  movedAt: z.iso.datetime(),
 });
 
 /**
@@ -124,7 +124,7 @@ export const CommandBoardConnectionCreatedPayloadSchema = z.object({
   toCardId: z.string().min(1),
   relationshipType: z.string().min(1),
   createdBy: z.string().min(1),
-  createdAt: z.string().datetime(),
+  createdAt: z.iso.datetime(),
 });
 
 export const CommandBoardConnectionUpdatedPayloadSchema = z.object({
@@ -132,7 +132,7 @@ export const CommandBoardConnectionUpdatedPayloadSchema = z.object({
   connectionId: z.string().min(1),
   changes: z.record(z.string(), z.unknown()),
   updatedBy: z.string().min(1),
-  updatedAt: z.string().datetime(),
+  updatedAt: z.iso.datetime(),
 });
 
 export const CommandBoardConnectionDeletedPayloadSchema = z.object({
@@ -141,7 +141,7 @@ export const CommandBoardConnectionDeletedPayloadSchema = z.object({
   fromCardId: z.string().min(1),
   toCardId: z.string().min(1),
   deletedBy: z.string().min(1),
-  deletedAt: z.string().datetime(),
+  deletedAt: z.iso.datetime(),
 });
 
 /**
@@ -152,7 +152,7 @@ export const InventoryStockAdjustedPayloadSchema = z.object({
   quantity: z.number(),
   reason: z.string(),
   employeeId: z.string().min(1),
-  adjustedAt: z.string().datetime(),
+  adjustedAt: z.iso.datetime(),
   previousQuantity: z.number(),
   newQuantity: z.number(),
 });
@@ -162,7 +162,7 @@ export const InventoryStockConsumedPayloadSchema = z.object({
   quantity: z.number(),
   prepTaskId: z.string().min(1),
   employeeId: z.string().min(1),
-  consumedAt: z.string().datetime(),
+  consumedAt: z.iso.datetime(),
   previousQuantity: z.number(),
   newQuantity: z.number(),
 });
@@ -172,7 +172,7 @@ export const InventoryStockReceivedPayloadSchema = z.object({
   quantity: z.number(),
   purchaseOrderLineItemId: z.string().min(1),
   employeeId: z.string().min(1),
-  receivedAt: z.string().datetime(),
+  receivedAt: z.iso.datetime(),
   previousQuantity: z.number(),
   newQuantity: z.number(),
   supplierId: z.string().optional(),
@@ -183,7 +183,7 @@ export const InventoryStockWastedPayloadSchema = z.object({
   quantity: z.number(),
   reason: z.string(),
   employeeId: z.string().min(1),
-  wastedAt: z.string().datetime(),
+  wastedAt: z.iso.datetime(),
   previousQuantity: z.number(),
   newQuantity: z.number(),
   wasteCategory: z.string().optional(),

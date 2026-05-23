@@ -30,7 +30,7 @@ export const BudgetCategorySchema = z.enum([
 // Create Event Budget Schema
 export const CreateEventBudgetSchema = z
   .object({
-    eventId: z.string().uuid("Invalid event ID format"),
+    eventId: z.uuid({ error: "Invalid event ID format" }),
     status: EventBudgetStatusSchema.optional().default("draft"),
     totalBudgetAmount: z.number().min(0, "Budget amount must be non-negative"),
     notes: z.string().optional(),
@@ -62,7 +62,7 @@ export const CreateEventBudgetSchema = z
       return lineItemsTotal <= data.totalBudgetAmount;
     },
     {
-      message:
+      error:
         "Line item budgeted amounts cannot exceed the total budget amount",
       path: ["lineItems"],
     }
@@ -76,7 +76,7 @@ export const CreateEventBudgetSchema = z
       return true;
     },
     {
-      message: "Non-draft budgets must have a positive total budget amount",
+      error: "Non-draft budgets must have a positive total budget amount",
       path: ["totalBudgetAmount"],
     }
   );
@@ -91,8 +91,8 @@ export const UpdateEventBudgetSchema = z
       .optional(),
     notes: z.string().optional(),
   })
-  .refine((data) => Object.keys(data).length > 0, {
-    message: "At least one field must be provided for update",
+  .refine((data) => Object.values(data).some((v) => v !== undefined), {
+    error: "At least one field must be provided for update",
   });
 
 // Create Budget Line Item Schema
@@ -122,8 +122,8 @@ export const UpdateBudgetLineItemSchema = z
     sortOrder: z.number().int().min(0).optional(),
     notes: z.string().optional(),
   })
-  .refine((data) => Object.keys(data).length > 0, {
-    message: "At least one field must be provided for update",
+  .refine((data) => Object.values(data).some((v) => v !== undefined), {
+    error: "At least one field must be provided for update",
   });
 
 // List Filters Schema

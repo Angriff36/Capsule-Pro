@@ -26,14 +26,12 @@ export const CreateAdminTaskSchema = z.object({
   priority: z.enum(ADMIN_TASK_PRIORITIES).default("medium"),
   category: z.string().max(100).optional(),
   dueDate: z
-    .string()
-    .datetime({ offset: true })
-    .or(z.string().date())
+    .union([z.iso.datetime({ offset: true }), z.iso.date()])
     .transform((str) => new Date(str))
     .optional(),
-  assignedTo: z.string().uuid("assignedTo must be a valid UUID").optional(),
+  assignedTo: z.uuid({ error: "assignedTo must be a valid UUID" }).optional(),
   sourceType: z.string().max(100).optional(),
-  sourceId: z.string().uuid("sourceId must be a valid UUID").optional(),
+  sourceId: z.uuid({ error: "sourceId must be a valid UUID" }).optional(),
 });
 
 export type CreateAdminTaskInput = z.infer<typeof CreateAdminTaskSchema>;
@@ -48,18 +46,16 @@ export const UpdateAdminTaskSchema = z
     priority: z.enum(ADMIN_TASK_PRIORITIES),
     category: z.string().max(100).nullable(),
     dueDate: z
-      .string()
-      .datetime({ offset: true })
-      .or(z.string().date())
+      .union([z.iso.datetime({ offset: true }), z.iso.date()])
       .transform((str) => new Date(str))
       .nullable(),
-    assignedTo: z.string().uuid("assignedTo must be a valid UUID").nullable(),
+    assignedTo: z.uuid({ error: "assignedTo must be a valid UUID" }).nullable(),
     sourceType: z.string().max(100).nullable(),
-    sourceId: z.string().uuid("sourceId must be a valid UUID").nullable(),
+    sourceId: z.uuid({ error: "sourceId must be a valid UUID" }).nullable(),
   })
   .partial()
-  .refine((data) => Object.keys(data).length > 0, {
-    message: "At least one field must be provided for update",
+  .refine((data) => Object.values(data).some((v) => v !== undefined), {
+    error: "At least one field must be provided for update",
   });
 
 export type UpdateAdminTaskInput = z.infer<typeof UpdateAdminTaskSchema>;

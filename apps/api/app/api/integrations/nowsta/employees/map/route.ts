@@ -14,7 +14,7 @@ import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 const mapEmployeeSchema = z.object({
   nowstaEmployeeId: z.string().min(1, "Nowsta employee ID is required"),
-  convoyEmployeeId: z.string().uuid("Invalid Convoy employee ID"),
+  convoyEmployeeId: z.uuid({ error: "Invalid Convoy employee ID" }),
   nowstaEmployeeName: z.string().optional(),
   nowstaEmployeeEmail: z.email().optional(),
   confirm: z.boolean().default(false),

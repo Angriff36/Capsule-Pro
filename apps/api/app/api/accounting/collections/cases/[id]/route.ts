@@ -15,7 +15,7 @@ import { requireTenantId } from "@/app/lib/tenant";
 const recordPaymentSchema = z.object({
   amount: z.number().positive(),
   paymentId: z.uuid().optional(),
-  paymentDate: z.string().datetime().optional(),
+  paymentDate: z.iso.datetime().optional(),
 });
 
 const escalateDunningSchema = z.object({
@@ -41,7 +41,7 @@ const writeOffSchema = z.object({
 
 const createPaymentPlanSchema = z.object({
   planId: z.uuid(),
-  nextPaymentDue: z.string().datetime(),
+  nextPaymentDue: z.iso.datetime(),
 });
 
 interface RouteContext {
@@ -144,7 +144,14 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     }
 
     if (action === "recordPayment") {
-      const validated = recordPaymentSchema.parse(body);
+      const parseResult = recordPaymentSchema.safeParse(body);
+      if (!parseResult.success) {
+        return NextResponse.json(
+          { error: "Validation failed", details: parseResult.error.issues },
+          { status: 400 }
+        );
+      }
+      const validated = parseResult.data;
       const newCollected =
         Number(collectionCase.collectedAmount) + validated.amount;
       const newOutstanding =
@@ -194,7 +201,14 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     }
 
     if (action === "setPriority") {
-      const validated = setPrioritySchema.parse(body);
+      const parseResult = setPrioritySchema.safeParse(body);
+      if (!parseResult.success) {
+        return NextResponse.json(
+          { error: "Validation failed", details: parseResult.error.issues },
+          { status: 400 }
+        );
+      }
+      const validated = parseResult.data;
       const updated = await database.collectionCase.update({
         where: { id },
         data: {
@@ -268,7 +282,14 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     }
 
     if (action === "writeOff") {
-      const validated = writeOffSchema.parse(body);
+      const parseResult = writeOffSchema.safeParse(body);
+      if (!parseResult.success) {
+        return NextResponse.json(
+          { error: "Validation failed", details: parseResult.error.issues },
+          { status: 400 }
+        );
+      }
+      const validated = parseResult.data;
       const amountToWriteOff = Math.min(
         validated.amount,
         Number(collectionCase.outstandingAmount)
@@ -328,7 +349,14 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     }
 
     if (action === "createPaymentPlan") {
-      const validated = createPaymentPlanSchema.parse(body);
+      const parseResult = createPaymentPlanSchema.safeParse(body);
+      if (!parseResult.success) {
+        return NextResponse.json(
+          { error: "Validation failed", details: parseResult.error.issues },
+          { status: 400 }
+        );
+      }
+      const validated = parseResult.data;
       const updated = await database.collectionCase.update({
         where: { id },
         data: {

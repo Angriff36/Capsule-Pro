@@ -77,7 +77,7 @@ const WebhookPayloadSchema = z.object({
   connectorId: z.string().min(1),
   supplierId: z.uuid(),
   event: z.enum(["catalog.updated", "pricing.changed", "availability.changed"]),
-  timestamp: z.string().datetime(),
+  timestamp: z.iso.datetime(),
   products: z.array(WebhookProductSchema).min(1),
 });
 

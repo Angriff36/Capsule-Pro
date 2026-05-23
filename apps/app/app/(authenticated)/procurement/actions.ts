@@ -26,8 +26,8 @@ const purchaseOrderItemSchema = z.object({
 });
 
 const purchaseOrderSchema = z.object({
-  vendorId: z.uuid("Invalid vendor"),
-  locationId: z.uuid("Invalid location").optional().nullable(),
+  vendorId: z.uuid({ error: "Invalid vendor" }),
+  locationId: z.uuid({ error: "Invalid location" }).optional().nullable(),
   expectedDeliveryDate: z
     .string()
     .optional()
@@ -120,7 +120,11 @@ function generateRequisitionNumber(year: number, suffix: string): string {
 export async function createPurchaseOrder(input: CreatePurchaseOrderInput) {
   const { tenantId, userId } = await requireAuth();
 
-  const data = purchaseOrderSchema.parse(input);
+  const parsed = purchaseOrderSchema.safeParse(input);
+  if (!parsed.success) {
+    return { error: `Validation failed: ${z.prettifyError(parsed.error)}` };
+  }
+  const data = parsed.data;
 
   // Resolve locationId: prefer explicit selection, fall back to primary or first active location
   let locationId = data.locationId;
@@ -192,7 +196,11 @@ export async function createPurchaseRequisition(
 ) {
   const { tenantId, userId } = await requireAuth();
 
-  const data = purchaseRequisitionSchema.parse(input);
+  const parsed = purchaseRequisitionSchema.safeParse(input);
+  if (!parsed.success) {
+    return { error: `Validation failed: ${z.prettifyError(parsed.error)}` };
+  }
+  const data = parsed.data;
 
   // Calculate estimated totals
   const subtotal = data.items.reduce(
