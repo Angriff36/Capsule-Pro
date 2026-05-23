@@ -204,9 +204,17 @@ jobs:
         # Supabase scaffolding or makes the migrations env-agnostic.
         id: migrate
         continue-on-error: true
-        run: |
-          cd packages/database
-          pnpm exec prisma migrate deploy
+        # Route through the canonical `pnpm migrate:deploy` wrapper instead of
+        # invoking `prisma migrate deploy` directly (CLAUDE.md hard rule: CI
+        # must use the same migration path as developers so the
+        # `db:validate-migrations` + `prisma:check` preflight catches table-name
+        # drift before deploy — the 2026-05-02 EmployeeDeduction-style class
+        # of incidents). The wrapper is filesystem-only for the validator and
+        # uses prisma generate for the schema check; neither requires a DB
+        # connection. `prisma migrate deploy` itself still runs against
+        # DATABASE_URL below. Working dir is the repo root (no `cd`) — the
+        # wrapper uses `pnpm --filter @repo/database` internally.
+        run: pnpm migrate:deploy
         env:
           DATABASE_URL: "postgresql://testuser:testpass@localhost:5432/capsule_test"
 
