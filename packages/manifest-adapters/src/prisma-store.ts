@@ -168,6 +168,7 @@ import { ProposalPrismaStore } from "./prisma-stores/broken-read-proposal-parent
 import { PurchaseRequisitionPrismaStore } from "./prisma-stores/broken-read-requisition-parent";
 import { SchedulePrismaStore } from "./prisma-stores/broken-read-schedule-parent";
 import { ShipmentPrismaStore } from "./prisma-stores/broken-read-shipment-parent";
+import { UserPrismaStore } from "./prisma-stores/broken-read-user-parent";
 
 /**
  * Report a silent store error to Sentry without blocking the return path.
@@ -1833,6 +1834,8 @@ export function createPrismaStoreProvider(
         return new RolePolicyPrismaStore(prisma, tenantId);
       case "TimeOffRequest":
         return new TimeOffRequestPrismaStore(prisma, tenantId);
+      case "User":
+        return new UserPrismaStore(prisma, tenantId);
       default:
         console.error(
           `[createPrismaStoreProvider] No store for entity "${entityName}" — commands will fail`

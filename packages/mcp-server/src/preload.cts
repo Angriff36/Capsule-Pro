@@ -14,12 +14,8 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
 const nodePath = require("node:path");
 
-// In CJS context, __dirname is always available; only fall back to cwd
-// eslint-disable-next-line no-undef
-const preloadDir =
-  typeof import.meta.dirname !== "undefined"
-    ? import.meta.dirname
-    : process.cwd();
+// In CJS context, __dirname is always available
+const preloadDir = __dirname;
 const repoRoot = nodePath.resolve(preloadDir, "../../..");
 
 // MCP/Cursor may spawn with cwd = home; set project root so loadPrecompiledIR finds IR
@@ -30,5 +26,11 @@ if (!(process.env.MCP_PROJECT_ROOT || process.env.REPO_ROOT)) {
 // Load .env from monorepo root (quiet mode to avoid polluting stdout)
 require("dotenv").config({
   path: nodePath.resolve(repoRoot, ".env"),
+  quiet: true,
+});
+
+// Also load .env.local which contains secrets (DATABASE_URL, Clerk keys, etc.)
+require("dotenv").config({
+  path: nodePath.resolve(repoRoot, ".env.local"),
   quiet: true,
 });
