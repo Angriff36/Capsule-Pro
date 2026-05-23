@@ -123,6 +123,7 @@
     "ports": "pwsh -Command \"2221..2226 | ForEach-Object { $port = $_; Get-NetTCPConnection -LocalPort $port -ErrorAction SilentlyContinue | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force -ErrorAction SilentlyContinue } }\"",
     "db:check": "node scripts/db-drift-check.mjs",
     "db:validate-migrations": "node scripts/validate-migration-table-schemas.mjs",
+    "db:validate-migrations:test": "node --test scripts/__tests__/validate-migration-table-schemas.test.mjs",
     "db:neon-shadow": "node scripts/neon-shadow-database-setup.mjs",
     "db:neon-backup-schema": "node scripts/neon-schema-backup-pgdump.mjs",
     "db:neon-audit": "node scripts/neon-audit-readonly.mjs",

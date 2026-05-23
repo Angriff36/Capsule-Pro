@@ -375,6 +375,8 @@ scripts/*
 !scripts/sync-manifest-runtime.mjs
 !scripts/verify-governance-route-findings.mjs
 !scripts/validate-migration-table-schemas.mjs
+!scripts/__tests__/
+!scripts/__tests__/validate-migration-table-schemas.test.mjs
 !scripts/ensure-github-packages-npmrc.sh
 
 # Local Netlify folder
