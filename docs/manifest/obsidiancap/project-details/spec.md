@@ -1,0 +1,9 @@
+Convoy is a multi-tenant catering operations platform built around a full-screen “Strategic Command Board.” Instead of traditional CRM/TPP list views, the primary UI is a drag-and-drop, real-time dashboard that visually maps how work relates across the business—clients, events, tasks, employees, schedules, inventory, and profitability—so users can run operations from one high-agency board with clear ownership, status, and next actions.
+
+AI reduces the administrative burden by automating heavy UI work (bulk combining/grouping, bulk edits, task generation, conflict detection, summaries, and suggested next steps), while humans remain in control through direct manipulation of the command board. The goal is to remove the barrier-to-entry of traditional enterprise systems while keeping the system operationally precise.
+
+The platform uses shared canonical entities across all modules (CRM, Events, Kitchen Ops, Scheduling, Payroll, Inventory, Reporting) so the same task/employee/event/client appears consistently everywhere. Modules must remain loosely coupled and independently usable (e.g., CRM-only without Kitchen, Scheduling-only without Inventory), while still interoperating cleanly when enabled together.
+
+Tenant isolation is non-negotiable and enforced end-to-end (strict tenant_id patterns, RLS alignment, role-based access, auditing, soft-delete recovery). Real-time updates and collaboration power operational boards (including kanban workflows, task claiming, progress states, leadership/war-room views), and background processing should follow a reliable outbox/event publishing pattern. Documentation is treated as a product feature via living MDX docs (Fumadocs) maintained alongside the codebase.
+
+Tech stack context: Next.js 16 + React 19, TypeScript, Turborepo/pnpm, Neon Postgres + Prisma, Clerk auth, Tailwind v4, Biome, Vitest, Ably (realtime), Liveblocks (collab), plus Stripe/Resend/Sentry/BetterStack/etc.

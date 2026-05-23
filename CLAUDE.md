@@ -259,7 +259,8 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[auto-bridge snapshot @ 10 changes]
-Files: packages/manifest-adapters/src/bottleneck-detector/ai-suggestions.ts (edit), packages/manifest-adapters/src/event-import-runtime.ts (edit), packages/manifest-adapters/src/prep-list-autogeneration.ts (edit), apps/api/__tests__/accounting/payment-create-idempotency.test.ts (edit), apps/docs/package.json (edit), packages/sentry-integration/package.json (edit), biome.autofix.jsonc (edit), biome.jsonc (edit)
+[proactive bridge @ 98% context — saved before compacting]
+Files (1):
+  biome.jsonc (edit)
 
 # === END COGNILAYER ===

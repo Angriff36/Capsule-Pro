@@ -28,7 +28,7 @@
   "dependencies": {
     "@repo/database": "workspace:*",
     "@repo/realtime": "workspace:*",
-    "@angriff36/manifest": "0.6.1",
+    "@angriff36/manifest": "0.8.0",
     "@sentry/node": "^10.38.0",
     "hono": "^4.10.5"
   },

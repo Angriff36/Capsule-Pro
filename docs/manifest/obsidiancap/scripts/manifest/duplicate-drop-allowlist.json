@@ -1,0 +1,23 @@
+{
+  "description": "Allowlisted dropped duplicate keys from manifest merge report. Update only after reviewing provenance in kitchen.merge-report.json.",
+  "allowlistKeys": [
+    "command:Dish.create",
+    "command:Dish.updateLeadTime",
+    "command:Dish.updatePricing",
+    "command:Ingredient.create",
+    "command:Ingredient.updateAllergens",
+    "entity:Dish",
+    "entity:Ingredient",
+    "event-channel:kitchen.dish.created",
+    "event-channel:kitchen.dish.leadtime.updated",
+    "event-channel:kitchen.dish.pricing.updated",
+    "event-channel:kitchen.ingredient.allergens.updated",
+    "event-channel:kitchen.ingredient.created",
+    "policy:KitchenStaffCanManage",
+    "policy:ManagersCanAdjust",
+    "policy:ManagersCanCancel",
+    "policy:ManagersCanDeactivate",
+    "store:Dish:undefined",
+    "store:Ingredient:undefined"
+  ]
+}

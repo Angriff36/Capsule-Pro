@@ -2,7 +2,7 @@
   "name": "capsule-pro",
   "private": true,
   "dependencies": {
-    "@angriff36/manifest": "0.6.1",
+    "@angriff36/manifest": "0.8.0",
     "@prisma/adapter-neon": "7.3.0",
     "@prisma/client": "7.3.0",
     "ai": "^6.0.70",
