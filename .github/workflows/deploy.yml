@@ -85,7 +85,7 @@ jobs:
       # pnpm/action-setup must come before actions/setup-node when cache: pnpm
       # is used — setup-node invokes pnpm to compute the cache key.
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -121,7 +121,7 @@ jobs:
         run: pnpm turbo run build --filter=./apps/app --filter=./apps/api --filter=./apps/web
 
       - name: Load Vercel secrets
-        uses: bitwarden/sm-action@v2
+        uses: bitwarden/sm-action@f1de238fc00c738c56140796018be9084c2b5d21 # v2 (currently v2.1.0)
         with:
           access_token: ${{ secrets.BW_ACCESS_TOKEN }}
           secrets: |
@@ -176,7 +176,7 @@ jobs:
       # pnpm/action-setup must come before actions/setup-node when cache: pnpm
       # is used — setup-node invokes pnpm to compute the cache key.
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -193,7 +193,7 @@ jobs:
           NODE_OPTIONS: "--max-old-space-size=4096"
 
       - name: Load Vercel secrets
-        uses: bitwarden/sm-action@v2
+        uses: bitwarden/sm-action@f1de238fc00c738c56140796018be9084c2b5d21 # v2 (currently v2.1.0)
         with:
           access_token: ${{ secrets.BW_ACCESS_TOKEN }}
           secrets: |
