@@ -445,6 +445,10 @@ spec-prompt-template-generator.md
 # ^build, so CI sees no dist unless we commit it. Same pattern as manifest-adapters.
 !packages/sentry-integration/dist/
 !packages/sentry-integration/dist/**
+# Same rationale for supplier-connectors — apps/api/app/api/webhooks/supplier-catalog/
+# route.ts imports it; dist must be committed.
+!packages/supplier-connectors/dist/
+!packages/supplier-connectors/dist/**
 **/build/
 **/.output/
 **/.vite/
