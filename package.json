@@ -86,7 +86,7 @@
     }
   },
   "scripts": {
-    "analyze": "cross-env TURBO_UI=0 turbo analyze",
+    "analyze": "cross-env TURBO_UI=0 turbo analyze --filter=app --filter=api --filter=web",
     "boundaries": "turbo boundaries",
     "browser-tools": "pnpm dlx @modelcontextprotocol/server-playwright",
     "build": "pnpm prisma:check && turbo build --filter=./apps/app --filter=./apps/api --filter=./apps/web",
