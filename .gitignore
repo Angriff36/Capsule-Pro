@@ -411,6 +411,9 @@ apps\app\prisma\seed-dev.ts.specify/.current-feature
 **/.progress.md
 **/.speckit-state.json
 *.txt
+# scripts/lint-explicit-any-baseline.txt is the tracked baseline for the
+# explicit-any debt check; allow despite the broad *.txt ignore above.
+!scripts/lint-explicit-any-baseline.txt
 diagnose-db-alignment.report.json
 e2e/3MH0rWud9c.png
 DATABASE_PRE_MIGRATION_CHECKLIST.md
