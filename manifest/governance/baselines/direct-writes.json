@@ -1,460 +1,718 @@
 {
-  "generatedAt": "2026-05-23T05:51:44.776Z",
+  "generatedAt": "2026-05-23T06:00:18.426Z",
   "capturedFromReport": "manifest/reports/direct-writes/direct-writes.json",
-  "note": "Baseline of Capsule-local direct-write audit findings. Each entry is a (file, governedEntity) pair currently in the 'reported, governed, no alias, no bypass' bucket. New entries are blocked by scripts/manifest/audit-direct-writes-baseline.mjs. Regenerate ONLY after intentionally migrating or bypassing a finding.",
-  "count": 113,
+  "keyShape": [
+    "file",
+    "entity",
+    "method"
+  ],
+  "note": "Baseline of Capsule-local direct-write audit findings. Each entry is a (file, governedEntity, method) triple currently in the 'reported, governed, no alias, no bypass' bucket. New triples are blocked by scripts/manifest/audit-direct-writes-baseline.mjs. Regenerate ONLY after intentionally migrating or bypassing a finding.",
+  "count": 141,
   "violations": [
     {
       "file": "apps/api/app/api/accounting/collections/cases/[id]/route.ts",
-      "entity": "CollectionCase"
+      "entity": "CollectionCase",
+      "method": "update"
     },
     {
       "file": "apps/api/app/api/accounting/collections/cases/route.ts",
-      "entity": "CollectionCase"
+      "entity": "CollectionCase",
+      "method": "create"
     },
     {
       "file": "apps/api/app/api/accounting/invoices/[id]/route.ts",
-      "entity": "Invoice"
+      "entity": "Invoice",
+      "method": "update"
     },
     {
       "file": "apps/api/app/api/accounting/invoices/route.ts",
-      "entity": "Invoice"
+      "entity": "Invoice",
+      "method": "create"
     },
     {
       "file": "apps/api/app/api/accounting/payment-methods/[id]/route.ts",
-      "entity": "PaymentMethod"
+      "entity": "PaymentMethod",
+      "method": "update"
+    },
+    {
+      "file": "apps/api/app/api/accounting/payment-methods/[id]/route.ts",
+      "entity": "PaymentMethod",
+      "method": "updateMany"
     },
     {
       "file": "apps/api/app/api/accounting/payment-methods/route.ts",
-      "entity": "PaymentMethod"
+      "entity": "PaymentMethod",
+      "method": "create"
+    },
+    {
+      "file": "apps/api/app/api/accounting/payment-methods/route.ts",
+      "entity": "PaymentMethod",
+      "method": "updateMany"
     },
     {
       "file": "apps/api/app/api/accounting/payments/[id]/route.ts",
-      "entity": "Invoice"
+      "entity": "Invoice",
+      "method": "update"
     },
     {
       "file": "apps/api/app/api/accounting/payments/[id]/route.ts",
-      "entity": "Payment"
+      "entity": "Payment",
+      "method": "update"
     },
     {
       "file": "apps/api/app/api/accounting/payments/route.ts",
-      "entity": "Payment"
+      "entity": "Payment",
+      "method": "create"
     },
     {
       "file": "apps/api/app/api/accounting/revenue-recognition/schedules/[id]/route.ts",
-      "entity": "RevenueRecognitionLine"
+      "entity": "RevenueRecognitionLine",
+      "method": "create"
     },
     {
       "file": "apps/api/app/api/accounting/revenue-recognition/schedules/[id]/route.ts",
-      "entity": "RevenueRecognitionSchedule"
+      "entity": "RevenueRecognitionLine",
+      "method": "update"
+    },
+    {
+      "file": "apps/api/app/api/accounting/revenue-recognition/schedules/[id]/route.ts",
+      "entity": "RevenueRecognitionSchedule",
+      "method": "update"
     },
     {
       "file": "apps/api/app/api/accounting/revenue-recognition/schedules/route.ts",
-      "entity": "RevenueRecognitionSchedule"
+      "entity": "RevenueRecognitionSchedule",
+      "method": "create"
     },
     {
       "file": "apps/api/app/api/administrative/chat/threads/[threadId]/messages/route.ts",
-      "entity": "AdminChatParticipant"
+      "entity": "AdminChatParticipant",
+      "method": "upsert"
     },
     {
       "file": "apps/api/app/api/administrative/chat/threads/[threadId]/route.ts",
-      "entity": "AdminChatParticipant"
+      "entity": "AdminChatParticipant",
+      "method": "update"
+    },
+    {
+      "file": "apps/api/app/api/administrative/chat/threads/[threadId]/route.ts",
+      "entity": "AdminChatParticipant",
+      "method": "upsert"
     },
     {
       "file": "apps/api/app/api/administrative/chat/threads/route.ts",
-      "entity": "AdminChatParticipant"
+      "entity": "AdminChatParticipant",
+      "method": "upsert"
     },
     {
       "file": "apps/api/app/api/ai/bulk-tasks/confirm/route.ts",
-      "entity": "PrepTask"
+      "entity": "PrepTask",
+      "method": "create"
     },
     {
       "file": "apps/api/app/api/calendar/reschedule/route.ts",
-      "entity": "Event"
+      "entity": "Event",
+      "method": "update"
     },
     {
       "file": "apps/api/app/api/calendar/reschedule/route.ts",
-      "entity": "ScheduleShift"
+      "entity": "ScheduleShift",
+      "method": "update"
     },
     {
       "file": "apps/api/app/api/calendar/sync/trigger/route.ts",
-      "entity": "Event"
+      "entity": "Event",
+      "method": "create"
+    },
+    {
+      "file": "apps/api/app/api/calendar/sync/trigger/route.ts",
+      "entity": "Event",
+      "method": "update"
     },
     {
       "file": "apps/api/app/api/command-board/simulations/[id]/discard/route.ts",
-      "entity": "CommandBoard"
+      "entity": "CommandBoard",
+      "method": "update"
     },
     {
       "file": "apps/api/app/api/command-board/simulations/[id]/route.ts",
-      "entity": "CommandBoard"
+      "entity": "CommandBoard",
+      "method": "update"
     },
     {
       "file": "apps/api/app/api/command-board/simulations/route.ts",
-      "entity": "CommandBoard"
+      "entity": "CommandBoard",
+      "method": "create"
     },
     {
       "file": "apps/api/app/api/command-board/simulations/route.ts",
-      "entity": "CommandBoardGroup"
+      "entity": "CommandBoardGroup",
+      "method": "createMany"
     },
     {
       "file": "apps/api/app/api/communications/sms/automation-rules/[id]/route.ts",
-      "entity": "SmsAutomationRule"
+      "entity": "SmsAutomationRule",
+      "method": "update"
     },
     {
       "file": "apps/api/app/api/communications/sms/automation-rules/route.ts",
-      "entity": "SmsAutomationRule"
+      "entity": "SmsAutomationRule",
+      "method": "create"
     },
     {
       "file": "apps/api/app/api/cron/inventory-audit/route.ts",
-      "entity": "CycleCountSession"
+      "entity": "CycleCountSession",
+      "method": "create"
     },
     {
       "file": "apps/api/app/api/events/[eventId]/shipments/generate/route.ts",
-      "entity": "Shipment"
+      "entity": "Shipment",
+      "method": "create"
     },
     {
       "file": "apps/api/app/api/events/[eventId]/shipments/generate/route.ts",
-      "entity": "ShipmentItem"
+      "entity": "ShipmentItem",
+      "method": "createMany"
     },
     {
       "file": "apps/api/app/api/events/contracts/[id]/document/route.ts",
-      "entity": "EventContract"
+      "entity": "EventContract",
+      "method": "update"
     },
     {
       "file": "apps/api/app/api/events/contracts/[id]/send/route.ts",
-      "entity": "EventContract"
+      "entity": "EventContract",
+      "method": "update"
     },
     {
       "file": "apps/api/app/api/events/documents/parse/route.ts",
-      "entity": "BattleBoard"
+      "entity": "BattleBoard",
+      "method": "create"
     },
     {
       "file": "apps/api/app/api/events/documents/parse/route.ts",
-      "entity": "Dish"
+      "entity": "Dish",
+      "method": "create"
     },
     {
       "file": "apps/api/app/api/events/documents/parse/route.ts",
-      "entity": "Event"
+      "entity": "Event",
+      "method": "create"
     },
     {
       "file": "apps/api/app/api/events/documents/parse/route.ts",
-      "entity": "EventReport"
+      "entity": "EventReport",
+      "method": "create"
     },
     {
       "file": "apps/api/app/api/events/documents/parse/route.ts",
-      "entity": "Recipe"
+      "entity": "Recipe",
+      "method": "create"
     },
     {
       "file": "apps/api/app/api/events/profitability/commands/recalculate/route.ts",
-      "entity": "EventProfitability"
+      "entity": "EventProfitability",
+      "method": "update"
     },
     {
       "file": "apps/api/app/api/inventory/audit/discrepancies/[id]/resolve/route.ts",
-      "entity": "VarianceReport"
+      "entity": "VarianceReport",
+      "method": "update"
     },
     {
       "file": "apps/api/app/api/inventory/audit/discrepancies/[id]/route.ts",
-      "entity": "VarianceReport"
+      "entity": "VarianceReport",
+      "method": "update"
     },
     {
       "file": "apps/api/app/api/inventory/batch/route.ts",
-      "entity": "InventoryItem"
+      "entity": "InventoryItem",
+      "method": "updateMany"
     },
     {
       "file": "apps/api/app/api/inventory/cycle-count/sessions/[id]/finalize/route.ts",
-      "entity": "CycleCountSession"
+      "entity": "CycleCountSession",
+      "method": "update"
     },
     {
       "file": "apps/api/app/api/inventory/cycle-count/sessions/[id]/finalize/route.ts",
-      "entity": "InventoryItem"
+      "entity": "InventoryItem",
+      "method": "update"
     },
     {
       "file": "apps/api/app/api/inventory/cycle-count/sessions/[id]/finalize/route.ts",
-      "entity": "InventoryTransaction"
+      "entity": "InventoryTransaction",
+      "method": "create"
     },
     {
       "file": "apps/api/app/api/inventory/cycle-count/sessions/[id]/finalize/route.ts",
-      "entity": "VarianceReport"
+      "entity": "VarianceReport",
+      "method": "createMany"
+    },
+    {
+      "file": "apps/api/app/api/inventory/cycle-count/sessions/[id]/finalize/route.ts",
+      "entity": "VarianceReport",
+      "method": "updateMany"
     },
     {
       "file": "apps/api/app/api/kitchen/allergens/detect-conflicts/route.ts",
-      "entity": "AllergenWarning"
+      "entity": "AllergenWarning",
+      "method": "deleteMany"
     },
     {
       "file": "apps/api/app/api/kitchen/import/route.ts",
-      "entity": "Dish"
+      "entity": "Dish",
+      "method": "create"
     },
     {
       "file": "apps/api/app/api/kitchen/import/route.ts",
-      "entity": "PrepList"
+      "entity": "PrepList",
+      "method": "create"
     },
     {
       "file": "apps/api/app/api/kitchen/import/route.ts",
-      "entity": "PrepListItem"
+      "entity": "PrepListItem",
+      "method": "create"
     },
     {
       "file": "apps/api/app/api/kitchen/import/route.ts",
-      "entity": "Recipe"
+      "entity": "Recipe",
+      "method": "create"
     },
     {
       "file": "apps/api/app/api/kitchen/import/route.ts",
-      "entity": "RecipeVersion"
+      "entity": "RecipeVersion",
+      "method": "create"
     },
     {
       "file": "apps/api/app/api/kitchen/recipes/[id]/cost/route.ts",
-      "entity": "RecipeIngredient"
+      "entity": "RecipeIngredient",
+      "method": "updateMany"
     },
     {
       "file": "apps/api/app/api/kitchen/tasks/shared-task-helpers.ts",
-      "entity": "PrepTask"
+      "entity": "PrepTask",
+      "method": "update"
     },
     {
       "file": "apps/api/app/api/procurement/approvals/action/route.ts",
-      "entity": "PurchaseOrder"
+      "entity": "PurchaseOrder",
+      "method": "update"
     },
     {
       "file": "apps/api/app/api/public/contracts/[token]/sign/route.ts",
-      "entity": "ContractSignature"
+      "entity": "ContractSignature",
+      "method": "create"
     },
     {
       "file": "apps/api/app/api/public/contracts/[token]/sign/route.ts",
-      "entity": "EventContract"
+      "entity": "EventContract",
+      "method": "update"
     },
     {
       "file": "apps/api/app/api/public/proposals/[token]/respond/route.ts",
-      "entity": "Proposal"
+      "entity": "Proposal",
+      "method": "update"
     },
     {
       "file": "apps/api/app/api/public/proposals/[token]/route.ts",
-      "entity": "Proposal"
+      "entity": "Proposal",
+      "method": "update"
     },
     {
       "file": "apps/api/app/api/settings/api-keys/[id]/revoke/route.ts",
-      "entity": "ApiKey"
+      "entity": "ApiKey",
+      "method": "update"
     },
     {
       "file": "apps/api/app/api/settings/api-keys/[id]/rotate/route.ts",
-      "entity": "ApiKey"
+      "entity": "ApiKey",
+      "method": "update"
     },
     {
       "file": "apps/api/app/api/settings/api-keys/[id]/route.ts",
-      "entity": "ApiKey"
+      "entity": "ApiKey",
+      "method": "update"
     },
     {
       "file": "apps/api/app/api/settings/api-keys/route.ts",
-      "entity": "ApiKey"
+      "entity": "ApiKey",
+      "method": "create"
     },
     {
       "file": "apps/api/app/api/settings/rate-limits/[id]/route.ts",
-      "entity": "RateLimitConfig"
+      "entity": "RateLimitConfig",
+      "method": "update"
     },
     {
       "file": "apps/api/app/api/smsautomationrule/activate/route.ts",
-      "entity": "SmsAutomationRule"
+      "entity": "SmsAutomationRule",
+      "method": "update"
     },
     {
       "file": "apps/api/app/api/smsautomationrule/deactivate/route.ts",
-      "entity": "SmsAutomationRule"
+      "entity": "SmsAutomationRule",
+      "method": "update"
     },
     {
       "file": "apps/api/app/api/webhooks/supplier-catalog/route.ts",
-      "entity": "VendorCatalog"
+      "entity": "VendorCatalog",
+      "method": "upsert"
     },
     {
       "file": "apps/api/app/lib/recipe-version-helpers.ts",
-      "entity": "Recipe"
+      "entity": "Recipe",
+      "method": "update"
     },
     {
       "file": "apps/api/app/lib/recipe-version-helpers.ts",
-      "entity": "RecipeIngredient"
+      "entity": "RecipeIngredient",
+      "method": "create"
     },
     {
       "file": "apps/api/app/lib/recipe-version-helpers.ts",
-      "entity": "RecipeStep"
+      "entity": "RecipeStep",
+      "method": "create"
     },
     {
       "file": "apps/api/app/lib/recipe-version-helpers.ts",
-      "entity": "RecipeVersion"
+      "entity": "RecipeVersion",
+      "method": "create"
     },
     {
       "file": "apps/api/app/lib/tenant.ts",
-      "entity": "User"
+      "entity": "User",
+      "method": "create"
+    },
+    {
+      "file": "apps/api/app/lib/tenant.ts",
+      "entity": "User",
+      "method": "update"
     },
     {
       "file": "apps/api/app/webhooks/payments/route.ts",
-      "entity": "Invoice"
+      "entity": "Invoice",
+      "method": "update"
     },
     {
       "file": "apps/api/app/webhooks/payments/route.ts",
-      "entity": "Payment"
+      "entity": "Payment",
+      "method": "update"
     },
     {
       "file": "apps/app/app/(authenticated)/administrative/kanban/actions.ts",
-      "entity": "AdminTask"
+      "entity": "AdminTask",
+      "method": "create"
+    },
+    {
+      "file": "apps/app/app/(authenticated)/administrative/kanban/actions.ts",
+      "entity": "AdminTask",
+      "method": "update"
     },
     {
       "file": "apps/app/app/(authenticated)/command-board/actions.ts",
-      "entity": "CommandBoard"
+      "entity": "CommandBoard",
+      "method": "create"
     },
     {
       "file": "apps/app/app/(authenticated)/command-board/actions.ts",
-      "entity": "CommandBoardCard"
+      "entity": "CommandBoardCard",
+      "method": "update"
     },
     {
       "file": "apps/app/app/(authenticated)/command-board/actions.ts",
-      "entity": "CommandBoardGroup"
+      "entity": "CommandBoardCard",
+      "method": "updateMany"
+    },
+    {
+      "file": "apps/app/app/(authenticated)/command-board/actions.ts",
+      "entity": "CommandBoardGroup",
+      "method": "create"
+    },
+    {
+      "file": "apps/app/app/(authenticated)/command-board/actions.ts",
+      "entity": "CommandBoardGroup",
+      "method": "update"
     },
     {
       "file": "apps/app/app/(authenticated)/crm/clients/actions.ts",
-      "entity": "Client"
+      "entity": "Client",
+      "method": "create"
     },
     {
       "file": "apps/app/app/(authenticated)/crm/clients/actions.ts",
-      "entity": "ClientContact"
+      "entity": "Client",
+      "method": "update"
     },
     {
       "file": "apps/app/app/(authenticated)/crm/clients/actions.ts",
-      "entity": "ClientInteraction"
+      "entity": "ClientContact",
+      "method": "create"
     },
     {
       "file": "apps/app/app/(authenticated)/crm/clients/actions.ts",
-      "entity": "ClientPreference"
+      "entity": "ClientContact",
+      "method": "update"
+    },
+    {
+      "file": "apps/app/app/(authenticated)/crm/clients/actions.ts",
+      "entity": "ClientContact",
+      "method": "updateMany"
+    },
+    {
+      "file": "apps/app/app/(authenticated)/crm/clients/actions.ts",
+      "entity": "ClientInteraction",
+      "method": "create"
+    },
+    {
+      "file": "apps/app/app/(authenticated)/crm/clients/actions.ts",
+      "entity": "ClientInteraction",
+      "method": "update"
+    },
+    {
+      "file": "apps/app/app/(authenticated)/crm/clients/actions.ts",
+      "entity": "ClientPreference",
+      "method": "create"
+    },
+    {
+      "file": "apps/app/app/(authenticated)/crm/clients/actions.ts",
+      "entity": "ClientPreference",
+      "method": "update"
     },
     {
       "file": "apps/app/app/(authenticated)/crm/proposals/actions.ts",
-      "entity": "Proposal"
+      "entity": "Proposal",
+      "method": "create"
     },
     {
       "file": "apps/app/app/(authenticated)/crm/proposals/actions.ts",
-      "entity": "ProposalLineItem"
+      "entity": "Proposal",
+      "method": "update"
+    },
+    {
+      "file": "apps/app/app/(authenticated)/crm/proposals/actions.ts",
+      "entity": "ProposalLineItem",
+      "method": "createMany"
     },
     {
       "file": "apps/app/app/(authenticated)/cycle-counting/actions/finalization.ts",
-      "entity": "CycleCountSession"
+      "entity": "CycleCountSession",
+      "method": "update"
     },
     {
       "file": "apps/app/app/(authenticated)/cycle-counting/actions/finalization.ts",
-      "entity": "InventoryItem"
+      "entity": "InventoryItem",
+      "method": "update"
     },
     {
       "file": "apps/app/app/(authenticated)/cycle-counting/actions/finalization.ts",
-      "entity": "InventoryTransaction"
+      "entity": "InventoryTransaction",
+      "method": "create"
     },
     {
       "file": "apps/app/app/(authenticated)/cycle-counting/actions/finalization.ts",
-      "entity": "VarianceReport"
+      "entity": "VarianceReport",
+      "method": "createMany"
+    },
+    {
+      "file": "apps/app/app/(authenticated)/cycle-counting/actions/finalization.ts",
+      "entity": "VarianceReport",
+      "method": "updateMany"
     },
     {
       "file": "apps/app/app/(authenticated)/cycle-counting/actions/records.ts",
-      "entity": "CycleCountRecord"
+      "entity": "CycleCountRecord",
+      "method": "create"
+    },
+    {
+      "file": "apps/app/app/(authenticated)/cycle-counting/actions/records.ts",
+      "entity": "CycleCountRecord",
+      "method": "update"
     },
     {
       "file": "apps/app/app/(authenticated)/cycle-counting/actions/sessions.ts",
-      "entity": "CycleCountSession"
+      "entity": "CycleCountSession",
+      "method": "create"
+    },
+    {
+      "file": "apps/app/app/(authenticated)/cycle-counting/actions/sessions.ts",
+      "entity": "CycleCountSession",
+      "method": "update"
     },
     {
       "file": "apps/app/app/(authenticated)/events/[eventId]/event-mutation-actions.ts",
-      "entity": "Event"
+      "entity": "Event",
+      "method": "updateMany"
     },
     {
       "file": "apps/app/app/(authenticated)/events/actions.ts",
-      "entity": "Event"
+      "entity": "Event",
+      "method": "updateMany"
     },
     {
       "file": "apps/app/app/(authenticated)/events/actions/event-dishes.ts",
-      "entity": "Dish"
+      "entity": "Dish",
+      "method": "create"
     },
     {
       "file": "apps/app/app/(authenticated)/events/actions/generate-proposal.ts",
-      "entity": "Proposal"
+      "entity": "Proposal",
+      "method": "create"
     },
     {
       "file": "apps/app/app/(authenticated)/events/actions/generate-proposal.ts",
-      "entity": "ProposalLineItem"
+      "entity": "ProposalLineItem",
+      "method": "createMany"
     },
     {
       "file": "apps/app/app/(authenticated)/events/actions/task-breakdown.ts",
-      "entity": "PrepTask"
+      "entity": "PrepTask",
+      "method": "create"
     },
     {
       "file": "apps/app/app/(authenticated)/events/importer.ts",
-      "entity": "Dish"
+      "entity": "Dish",
+      "method": "create"
     },
     {
       "file": "apps/app/app/(authenticated)/events/importer.ts",
-      "entity": "Event"
+      "entity": "Event",
+      "method": "create"
     },
     {
       "file": "apps/app/app/(authenticated)/events/importer.ts",
-      "entity": "Recipe"
+      "entity": "Recipe",
+      "method": "create"
     },
     {
       "file": "apps/app/app/(authenticated)/facilities/actions.ts",
-      "entity": "Facility"
+      "entity": "Facility",
+      "method": "create"
     },
     {
       "file": "apps/app/app/(authenticated)/facilities/actions.ts",
-      "entity": "FacilityArea"
+      "entity": "FacilityArea",
+      "method": "create"
     },
     {
       "file": "apps/app/app/(authenticated)/facilities/actions.ts",
-      "entity": "FacilityAsset"
+      "entity": "FacilityAsset",
+      "method": "create"
     },
     {
       "file": "apps/app/app/(authenticated)/kitchen/recipes/menus/actions-manifest.ts",
-      "entity": "Menu"
+      "entity": "Menu",
+      "method": "create"
+    },
+    {
+      "file": "apps/app/app/(authenticated)/kitchen/recipes/menus/actions-manifest.ts",
+      "entity": "Menu",
+      "method": "update"
     },
     {
       "file": "apps/app/app/(authenticated)/logistics/actions.ts",
-      "entity": "Driver"
+      "entity": "Driver",
+      "method": "create"
     },
     {
       "file": "apps/app/app/(authenticated)/logistics/actions.ts",
-      "entity": "Vehicle"
+      "entity": "Vehicle",
+      "method": "create"
     },
     {
       "file": "apps/app/app/(authenticated)/marketing/leads/actions.ts",
-      "entity": "Lead"
+      "entity": "Lead",
+      "method": "create"
     },
     {
       "file": "apps/app/app/(authenticated)/procurement/actions.ts",
-      "entity": "PurchaseOrder"
+      "entity": "PurchaseOrder",
+      "method": "create"
     },
     {
       "file": "apps/app/app/(authenticated)/procurement/actions.ts",
-      "entity": "PurchaseRequisition"
+      "entity": "PurchaseRequisition",
+      "method": "create"
     },
     {
       "file": "apps/app/app/(authenticated)/scheduling/availability/actions.ts",
-      "entity": "EmployeeAvailability"
+      "entity": "EmployeeAvailability",
+      "method": "create"
+    },
+    {
+      "file": "apps/app/app/(authenticated)/scheduling/availability/actions.ts",
+      "entity": "EmployeeAvailability",
+      "method": "update"
     },
     {
       "file": "apps/app/app/(authenticated)/settings/email-templates/actions.ts",
-      "entity": "EmailTemplate"
+      "entity": "EmailTemplate",
+      "method": "create"
+    },
+    {
+      "file": "apps/app/app/(authenticated)/settings/email-templates/actions.ts",
+      "entity": "EmailTemplate",
+      "method": "update"
+    },
+    {
+      "file": "apps/app/app/(authenticated)/settings/email-templates/actions.ts",
+      "entity": "EmailTemplate",
+      "method": "updateMany"
     },
     {
       "file": "apps/app/app/(authenticated)/settings/email-workflows/actions.ts",
-      "entity": "EmailWorkflow"
+      "entity": "EmailWorkflow",
+      "method": "create"
+    },
+    {
+      "file": "apps/app/app/(authenticated)/settings/email-workflows/actions.ts",
+      "entity": "EmailWorkflow",
+      "method": "update"
     },
     {
       "file": "apps/app/app/(authenticated)/staff/team/actions.ts",
-      "entity": "User"
+      "entity": "User",
+      "method": "create"
+    },
+    {
+      "file": "apps/app/app/(authenticated)/staff/team/actions.ts",
+      "entity": "User",
+      "method": "update"
     },
     {
       "file": "apps/app/app/(unauthenticated)/view/proposal/[token]/page.tsx",
-      "entity": "Proposal"
+      "entity": "Proposal",
+      "method": "update"
     },
     {
       "file": "apps/app/app/lib/tenant.ts",
-      "entity": "User"
+      "entity": "User",
+      "method": "create"
+    },
+    {
+      "file": "apps/app/app/lib/tenant.ts",
+      "entity": "User",
+      "method": "update"
     },
     {
       "file": "packages/notifications/email-workflow-triggers.ts",
-      "entity": "EmailWorkflow"
+      "entity": "EmailWorkflow",
+      "method": "update"
     },
     {
       "file": "packages/supplier-connectors/src/sync-service.ts",
-      "entity": "VendorCatalog"
+      "entity": "VendorCatalog",
+      "method": "create"
+    },
+    {
+      "file": "packages/supplier-connectors/src/sync-service.ts",
+      "entity": "VendorCatalog",
+      "method": "update"
+    },
+    {
+      "file": "packages/supplier-connectors/src/sync-service.ts",
+      "entity": "VendorCatalog",
+      "method": "updateMany"
     }
   ]
 }
