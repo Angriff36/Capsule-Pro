@@ -13,6 +13,18 @@ permissions:
   contents: read
   packages: read
 
+env:
+  # Turbo remote cache credentials. turbo.json declares
+  # `remoteCache: { enabled: true, signature: true }` plus the three vars in
+  # `globalPassThroughEnv`. Without these wired into the workflow env, every
+  # `pnpm turbo run build` (lines below) is a cache miss against the team
+  # cache populated by ci.yml. Fork PRs and Dependabot do NOT receive repo
+  # secrets — the references resolve to empty strings and turbo silently
+  # falls back to local-only cache (verified locally with all three unset).
+  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+  TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
+  TURBO_REMOTE_CACHE_SIGNATURE_KEY: ${{ secrets.TURBO_REMOTE_CACHE_SIGNATURE_KEY }}
+
 jobs:
   check-dependabot:
     runs-on: ubuntu-latest
