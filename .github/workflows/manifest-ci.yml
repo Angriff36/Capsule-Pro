@@ -317,6 +317,47 @@ jobs:
             --exemptions packages/manifest-ir/ir/kitchen/audit-routes-exemptions.json
           echo "Route boundary audit passed (strict mode)"
 
+  manifest-enforce-surface:
+    # Reporting gate (not blocking). Runs `manifest enforce-surface` so
+    # contributors see when their changes introduce a new duplicate or bypass
+    # write path against the Manifest command registry. Flip `continue-on-error`
+    # to `false` (and add `--strict`) once raw SQL / $executeRaw detection
+    # exists upstream and the known 30 findings are either fixed or have
+    # bypass-registry entries.
+    name: Enforce Surface (Reported)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: "pnpm"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Install dependencies
+        run: bash scripts/ensure-github-packages-npmrc.sh && pnpm install --frozen-lockfile
+        env:
+          NPM_TOKEN: ${{ secrets.PKG_AUTH_TOKEN }}
+
+      - name: Run enforce-surface (reporting only)
+        continue-on-error: true
+        run: |
+          echo "Running manifest enforce-surface (reporting; not blocking)..."
+          pnpm exec manifest enforce-surface \
+            --root . \
+            --commands-registry packages/manifest-ir/dist/commands.registry.json \
+            --format text
+          echo
+          echo "::notice::enforce-surface findings above are advisory until raw-SQL detection lands and known violations are exempted."
+
   snapshot-check:
     name: Snapshot Check
     runs-on: ubuntu-latest

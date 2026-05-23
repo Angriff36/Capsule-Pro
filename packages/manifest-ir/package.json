@@ -7,7 +7,7 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
-    "@angriff36/manifest": "0.5.0"
+    "@angriff36/manifest": "0.6.1"
   },
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",
