@@ -45,6 +45,7 @@ import { VendorCatalogPrismaStore, VendorContractPrismaStore, } from "./prisma-s
 import { CollectionActionPrismaStore, CollectionCasePrismaStore, CollectionPaymentPlanPrismaStore, } from "./prisma-stores/broken-read-batch14-collections";
 import { InvoicePrismaStore, PaymentMethodPrismaStore, PaymentPrismaStore, } from "./prisma-stores/broken-read-batch14-invoice-payment";
 import { RolePolicyPrismaStore, TimeOffRequestPrismaStore, } from "./prisma-stores/broken-read-batch15-rolepolicy-timeoff";
+import { InventoryTransferPrismaStore } from "./prisma-stores/broken-read-batch16-inventory-transfer";
 import { NotificationPrismaStore } from "./prisma-stores/broken-read-notification-parent";
 import { PurchaseOrderPrismaStore } from "./prisma-stores/broken-read-po-parent";
 import { ProposalPrismaStore } from "./prisma-stores/broken-read-proposal-parent";
@@ -1382,7 +1383,12 @@ function timestampToDate(value) {
  * This returns a function that provides the appropriate Store implementation
  * for each entity type, backed by Prisma.
  */
-export function createPrismaStoreProvider(prisma, tenantId) {
+export function createPrismaStoreProvider(prisma, tenantId, 
+/** RuntimeContext.user.id, plumbed by manifest-runtime-factory.ts.
+ * Used by entity stores that audit-derive a "who initiated" field
+ * (e.g. InventoryTransfer.requestedBy) rather than capturing it from
+ * the command body. Most stores ignore this arg. */
+userId = "") {
     return (entityName) => {
         switch (entityName) {
             case "AlertsConfig":
@@ -1567,6 +1573,8 @@ export function createPrismaStoreProvider(prisma, tenantId) {
                 return new RolePolicyPrismaStore(prisma, tenantId);
             case "TimeOffRequest":
                 return new TimeOffRequestPrismaStore(prisma, tenantId);
+            case "InventoryTransfer":
+                return new InventoryTransferPrismaStore(prisma, tenantId, userId);
             default:
                 console.error(`[createPrismaStoreProvider] No store for entity "${entityName}" — commands will fail`);
                 return undefined;
@@ -2480,7 +2488,7 @@ export class PrismaStore {
     outboxWriter;
     eventCollector;
     constructor(config) {
-        this.store = createPrismaStoreProvider(config.prisma, config.tenantId)(config.entityName);
+        this.store = createPrismaStoreProvider(config.prisma, config.tenantId, config.userId ?? "")(config.entityName);
         this.outboxWriter = config.outboxWriter;
         this.eventCollector = config.eventCollector;
     }

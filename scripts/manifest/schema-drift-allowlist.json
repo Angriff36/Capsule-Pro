@@ -14,7 +14,25 @@
       "reviewBy": "2027-01-01"
     }
   },
-  "adapterDerived": {},
+  "adapterDerived": {
+    "InventoryTransfer": {
+      "transferNumber": {
+        "rule": "Generated server-side by InventoryTransferPrismaStore.create in packages/manifest-adapters/src/prisma-stores/broken-read-batch16-inventory-transfer.ts. Pattern: `TRF-${count+1, zero-padded to 6}` where count is tenant-scoped prisma.inventoryTransfer.count(). The UI does not send transferNumber; the manifest does not declare it as a create param. Matches the contract in apps/api/__tests__/inventory/transfers/transfers.quarantine.test.ts.",
+        "owner": "inventory-platform",
+        "reviewBy": "2027-01-01"
+      },
+      "requestedBy": {
+        "rule": "Adapter-derived from RuntimeContext.user.id. Plumbed via createPrismaStoreProvider's userId arg (packages/manifest-adapters/src/prisma-store.ts) -> InventoryTransferPrismaStore constructor's requestedBy arg -> tx.inventoryTransfer.create({ data: { requestedBy: this.requestedBy || null } }). Prisma column is nullable; we explicitly never silently fall back to empty string per IMPLEMENTATION_PLAN.md.",
+        "owner": "inventory-platform",
+        "reviewBy": "2027-01-01"
+      },
+      "items": {
+        "rule": "Manifest declares items as string with default '[]' because the manifest IR grammar has no array<object> kind. The dispatcher passes the UI's items array (or a server-to-server JSON string) verbatim; InventoryTransferPrismaStore.asTransferItems normalizes both shapes and fans out to inventory_transfer_items rows inside the same $transaction as the parent row. Same grammar-blocked pattern as ClientPreference.preferenceValue + CommandBoardLayout.viewport.",
+        "owner": "inventory-platform",
+        "reviewBy": "2027-01-01"
+      }
+    }
+  },
   "nonconforming": {},
   "ignoredEntities": [],
   "ignoredFields": {}

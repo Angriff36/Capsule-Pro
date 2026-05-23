@@ -228,6 +228,7 @@ const ENTITIES_WITH_SPECIFIC_STORES = new Set([
   "CollectionPaymentPlan",
   "RolePolicy",
   "TimeOffRequest",
+  "InventoryTransfer",
 ]);
 
 /** Default precompiled IR path (relative to monorepo root). */
@@ -387,6 +388,9 @@ export async function createManifestRuntime(
         tenantId: resolvedUser.tenantId,
         outboxWriter,
         eventCollector,
+        // userId — surfaced for entity stores that audit-derive caller
+        // identity (e.g. InventoryTransfer.requestedBy). Most stores ignore.
+        userId: resolvedUser.id,
       };
 
       return new PrismaStore(config);
