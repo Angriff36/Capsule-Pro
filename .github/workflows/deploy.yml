@@ -47,7 +47,10 @@ jobs:
       NODE_OPTIONS: "--max-old-space-size=8192"
       DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
       BASEHUB_TOKEN: ${{ secrets.BASEHUB_TOKEN }}
-      CLERK_SECRET_KEY: "not_a_real_stripe_key_dummy_value"
+      # CLERK_SECRET_KEY intentionally not set at build time.
+      # `packages/auth/keys.ts` declares it `.optional()`, SKIP_ENV_VALIDATION=true
+      # bypasses zod parsing, and the Clerk SDK falls back to "" when absent.
+      # Real value is injected by Vercel at runtime, not by this workflow.
       CLERK_WEBHOOK_SECRET: "webhook_secret_placeholder"
       NEXT_PUBLIC_CLERK_SIGN_IN_URL: "/sign-in"
       NEXT_PUBLIC_CLERK_SIGN_UP_URL: "/sign-up"
