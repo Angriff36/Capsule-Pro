@@ -396,9 +396,25 @@ jobs:
   manifest-registry-drift:
     name: Governance Registry Drift Check
     # BLOCKING — proves the committed manifest/governance/{commands,entities}.json
-    # match the current IR. If a manifest source changes but the registries
-    # aren't regenerated and committed, governance audits would run against
-    # stale data. Producer: `pnpm manifest:registries`.
+    # match the registries that the CURRENT manifest sources would produce.
+    # If a manifest source under packages/manifest-adapters/manifests/ changes
+    # but neither kitchen.ir.json nor the governance registries are regenerated
+    # and committed, governance audits would run against stale data.
+    #
+    # Flow:
+    #   1. `manifest:compile` re-derives kitchen.ir.json (and siblings) from
+    #      the .manifest sources. Without this step, step 2 would consume the
+    #      committed (possibly stale) IR and could produce a false green:
+    #      stale-IR-in, stale-registry-out, matches stale-committed-registry.
+    #   2. `manifest:registries` emits manifest/governance/{commands,entities}.json
+    #      from the fresh IR.
+    #   3. `git diff` against the committed registries fails if either differs.
+    #
+    # We do NOT diff packages/manifest-ir/ir/kitchen/ directly because
+    # scripts/manifest/compile.mjs stamps a fresh `compiledAt` ISO into the
+    # IR + provenance on every run, so a naive diff would always fire.
+    # The downstream commands/entities registries are timestamp-free derivations
+    # of the IR's substantive content, so they are the correct drift surface.
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -425,6 +441,12 @@ jobs:
         env:
           NPM_TOKEN: ${{ secrets.PKG_AUTH_TOKEN }}
 
+      - name: Compile manifest IR
+        # Re-derive kitchen.ir.json from .manifest sources so the next step
+        # emits registries from the CURRENT source-of-truth IR — not from
+        # whatever IR was last committed. See header comment for rationale.
+        run: pnpm manifest:compile
+
       - name: Re-emit governance registries
         run: pnpm manifest:registries
 
@@ -432,7 +454,7 @@ jobs:
         run: |
           if ! git diff --exit-code manifest/governance/commands.json manifest/governance/entities.json; then
             echo "::error::manifest/governance registries are stale."
-            echo "Run 'pnpm manifest:registries' locally and commit the result."
+            echo "Run 'pnpm manifest:compile && pnpm manifest:registries' locally and commit the result."
             exit 1
           fi
           echo "Governance registries are in sync with IR."
