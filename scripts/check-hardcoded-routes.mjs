@@ -18,7 +18,6 @@
  *   - scripts/**                          (build/CI scripts)
  *   - *.test.ts, *.test.tsx, *.spec.ts    (test files)
  *   - apps/api/**                         (API server — not client code)
- *   - eslint.config.mjs                   (ESLint config for this rule)
  */
 
 import { readdirSync, readFileSync } from "node:fs";
@@ -48,7 +47,6 @@ const ALLOWLIST = [
   "apps/app/app/lib/api.ts",
   "apps/app/next.config.ts",
   "apps/app/env.ts",
-  "eslint.config.mjs",
 ];
 
 /** Directory prefixes that are always allowed. */

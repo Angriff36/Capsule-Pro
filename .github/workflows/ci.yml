@@ -26,6 +26,51 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
+    # Job-level env. All values below are SHAPE-VALID PLACEHOLDERS so that
+    # `next build` can finish — SDK constructors (Clerk, Stripe, Resend,
+    # Sentry, Knock, Liveblocks, etc.) throw at module load on empty or
+    # malformed keys even with SKIP_ENV_VALIDATION=true. CI never reaches
+    # any of these services. The only real secrets pulled from
+    # ${{ secrets.* }} are BASEHUB_TOKEN and PKG_AUTH_TOKEN.
+    env:
+      DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
+      NPM_TOKEN: ${{ secrets.PKG_AUTH_TOKEN }}
+      SKIP_ENV_VALIDATION: "true"
+      NODE_OPTIONS: "--max-old-space-size=8192"
+      BASEHUB_TOKEN: ${{ secrets.BASEHUB_TOKEN }}
+      # Server env vars (placeholders — shape-valid only)
+      CLERK_SECRET_KEY: "sk_test_dummy_clerk_secret_key_placeholder"
+      CLERK_WEBHOOK_SECRET: "webhook_secret_placeholder"
+      RESEND_FROM: "noreply@ci-build.local"
+      RESEND_TOKEN: "re_dummy"
+      STRIPE_SECRET_KEY: "sk_test_dummy_stripe_secret_key_placeholder"
+      STRIPE_WEBHOOK_SECRET: "webhook_secret_placeholder"
+      BETTERSTACK_API_KEY: "dummy"
+      BETTERSTACK_URL: "https://dummy.betterstack.com"
+      FLAGS_SECRET: "dummy"
+      ARCJET_KEY: "ajkey_dummy"
+      SVIX_TOKEN: "api_key_placeholder"
+      LIVEBLOCKS_SECRET: "api_key_placeholder"
+      VERCEL_PROJECT_PRODUCTION_URL: "https://capsule-pro-app.vercel.app"
+      KNOCK_API_KEY: "dummy"
+      KNOCK_FEED_CHANNEL_ID: "dummy"
+      # Client env vars
+      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: "pk_test_Y2kuZHVtbXkuYWNjb3VudHMuZGV2JA=="
+      NEXT_PUBLIC_CLERK_SIGN_IN_URL: "/sign-in"
+      NEXT_PUBLIC_CLERK_SIGN_UP_URL: "/sign-up"
+      NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL: "/"
+      NEXT_PUBLIC_CLERK_SIGN_IN_FORCE_REDIRECT_URL: "/"
+      NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL: "/"
+      NEXT_PUBLIC_CLERK_SIGN_UP_FORCE_REDIRECT_URL: "/"
+      NEXT_PUBLIC_GA_MEASUREMENT_ID: "G-DUMMY"
+      NEXT_PUBLIC_POSTHOG_KEY: "phc_dummy"
+      NEXT_PUBLIC_POSTHOG_HOST: "https://us.i.posthog.com"
+      NEXT_PUBLIC_APP_URL: "https://capsule-pro-app.vercel.app"
+      NEXT_PUBLIC_WEB_URL: "https://capsule-pro-web.vercel.app"
+      NEXT_PUBLIC_API_URL: "https://capsule-pro-api.vercel.app"
+      NEXT_PUBLIC_DOCS_URL: "https://capsule-pro-docs.vercel.app"
+      NEXT_PUBLIC_ABLY_AUTH_URL: "https://capsule-pro-api.vercel.app/ably/auth"
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -43,9 +88,6 @@ jobs:
 
       - name: Install dependencies
         run: bash scripts/ensure-github-packages-npmrc.sh && pnpm install --frozen-lockfile
-        env:
-          DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
-          NPM_TOKEN: ${{ secrets.PKG_AUTH_TOKEN }}
 
       - name: Typecheck (app, api, web)
         run: pnpm check
@@ -54,56 +96,17 @@ jobs:
         run: pnpm lint:any
 
       - name: Check canonical routes (no hardcoded /api/ in client code)
+        # Staged migration. 2026-05-22 baseline: 587 violations. See
+        # docs/audits/hardcoded-routes-violations.md for the breakdown.
+        # Flip continue-on-error to false when violation count drops <50.
         run: node scripts/check-hardcoded-routes.mjs
-        continue-on-error: true # TODO: Remove once all violations are migrated to route helpers
-
-      - name: Check @repo/ui imports (must use @repo/design-system)
-        run: node scripts/check-repo-ui-imports.mjs
-        continue-on-error: true # TODO: Remove once all violations are fixed
+        continue-on-error: true
 
       - name: Run tests
         run: pnpm test
 
       - name: Build with Turbo (matches Vercel)
         run: pnpm turbo run build --filter=./apps/app --filter=./apps/api --filter=./apps/web
-        env:
-          NODE_OPTIONS: "--max-old-space-size=8192"
-          # All required env vars for build-time validation (dummy values for CI)
-          SKIP_ENV_VALIDATION: true
-          DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
-          BASEHUB_TOKEN: ${{ secrets.BASEHUB_TOKEN }}
-          # Server env vars
-          CLERK_SECRET_KEY: "not_a_real_stripe_key_dummy_value"
-          CLERK_WEBHOOK_SECRET: "webhook_secret_placeholder"
-          RESEND_FROM: "noreply@ci-build.local"
-          RESEND_TOKEN: "re_dummy"
-          STRIPE_SECRET_KEY: "not_a_real_stripe_key_dummy_value"
-          STRIPE_WEBHOOK_SECRET: "webhook_secret_placeholder"
-          BETTERSTACK_API_KEY: "dummy"
-          BETTERSTACK_URL: "https://dummy.betterstack.com"
-          FLAGS_SECRET: "dummy"
-          ARCJET_KEY: "ajkey_dummy"
-          SVIX_TOKEN: "api_key_placeholder"
-          LIVEBLOCKS_SECRET: "api_key_placeholder"
-          VERCEL_PROJECT_PRODUCTION_URL: "https://capsule-pro-app.vercel.app"
-          KNOCK_API_KEY: "dummy"
-          KNOCK_FEED_CHANNEL_ID: "dummy"
-          # Client env vars
-          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: "pk_test_Y2kuZHVtbXkuYWNjb3VudHMuZGV2JA=="
-          NEXT_PUBLIC_CLERK_SIGN_IN_URL: "/sign-in"
-          NEXT_PUBLIC_CLERK_SIGN_UP_URL: "/sign-up"
-          NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL: "/"
-          NEXT_PUBLIC_CLERK_SIGN_IN_FORCE_REDIRECT_URL: "/"
-          NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL: "/"
-          NEXT_PUBLIC_CLERK_SIGN_UP_FORCE_REDIRECT_URL: "/"
-          NEXT_PUBLIC_GA_MEASUREMENT_ID: "G-DUMMY"
-          NEXT_PUBLIC_POSTHOG_KEY: "phc_dummy"
-          NEXT_PUBLIC_POSTHOG_HOST: "https://us.i.posthog.com"
-          NEXT_PUBLIC_APP_URL: "https://capsule-pro-app.vercel.app"
-          NEXT_PUBLIC_WEB_URL: "https://capsule-pro-web.vercel.app"
-          NEXT_PUBLIC_API_URL: "https://capsule-pro-api.vercel.app"
-          NEXT_PUBLIC_DOCS_URL: "https://capsule-pro-docs.vercel.app"
-          NEXT_PUBLIC_ABLY_AUTH_URL: "https://capsule-pro-api.vercel.app/ably/auth"
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4

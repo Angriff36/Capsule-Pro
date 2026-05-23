@@ -11,8 +11,9 @@
  *   3. Add a re-export below (or import directly from the generated file)
  *   4. Use the helper in your component: `apiFetch(routes.myNewRoute())`
  *
- * The CI conformance check and ESLint rule will reject any raw "/api/" strings
- * in client code outside this module and the allowlisted files.
+ * The CI conformance check (scripts/check-hardcoded-routes.mjs) rejects any
+ * raw "/api/" strings in client code outside this module and the allowlisted
+ * files.
  *
  * @module routes
  */

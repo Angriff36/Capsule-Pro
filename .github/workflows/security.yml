@@ -51,16 +51,7 @@ jobs:
       - name: Run secretlint
         run: pnpm secrets:scan
 
-      - name: Run CodeQL Analysis
-        uses: github/codeql-action/init@v4
-        with:
-          languages: javascript
-
-      - name: Autobuild
-        uses: github/codeql-action/autobuild@v4
-
-      - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v4
+      # CodeQL analysis lives in .github/workflows/codeql.yml — do not duplicate here.
 
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@0.30.0
