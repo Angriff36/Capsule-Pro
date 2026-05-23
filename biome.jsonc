@@ -48,8 +48,7 @@
       "!!**/.react-email",
       "!!**/.specify",
       "!!**/*.tsbuildinfo",
-      "!!**/*.snap",
-      "!!eslint.config.mjs"
+      "!!**/*.snap"
     ]
   },
   "extends": [

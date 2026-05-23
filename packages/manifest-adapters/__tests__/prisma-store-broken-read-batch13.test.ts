@@ -158,21 +158,28 @@ import {
 // ===========================================================================
 
 describe("TrainingModulePrismaStore", () => {
+  // Prisma always exposes the model field name (camelCase) regardless of
+  // @map("snake_case") in schema.prisma. Earlier fixtures used snake_case
+  // keys (matching the DB column names) — that's what Prisma writes to the
+  // database, but it is NOT what the Prisma client returns or accepts in
+  // where:/data: clauses. Fixtures and assertions below use the camelCase
+  // model field names, matching the actual Prisma surface and the store
+  // source.
   const fakeRow = {
-    tenant_id: TID,
+    tenantId: TID,
     id: "mod-1",
     title: "Safety Training",
     description: "Basic safety",
-    content_url: "https://example.com/safety.pdf",
-    content_type: "document",
-    duration_minutes: 30,
+    contentUrl: "https://example.com/safety.pdf",
+    contentType: "document",
+    durationMinutes: 30,
     category: "safety",
-    is_required: true,
-    is_active: true,
-    created_by: "user-1",
-    created_at: NOW,
-    updated_at: NOW,
-    deleted_at: null,
+    isRequired: true,
+    isActive: true,
+    createdBy: "user-1",
+    createdAt: NOW,
+    updatedAt: NOW,
+    deletedAt: null,
   };
 
   it("create maps fields and tenantId", async () => {
@@ -195,16 +202,16 @@ describe("TrainingModulePrismaStore", () => {
     });
     expect(client.trainingModule.create).toHaveBeenCalledWith({
       data: expect.objectContaining({
-        tenant_id: TID,
+        tenantId: TID,
         title: "Safety Training",
         description: "Basic safety",
-        is_required: true,
-        is_active: true,
+        isRequired: true,
+        isActive: true,
       }),
     });
   });
 
-  it("getAll filters by tenant_id and deleted_at null", async () => {
+  it("getAll filters by tenantId and deletedAt null", async () => {
     const client = makeMockClient();
     client.trainingModule.findMany.mockResolvedValue([fakeRow]);
     const store = new TrainingModulePrismaStore(
@@ -213,14 +220,14 @@ describe("TrainingModulePrismaStore", () => {
     );
     const result = await store.getAll();
     expect(client.trainingModule.findMany).toHaveBeenCalledWith({
-      where: { tenant_id: TID, deleted_at: null },
-      orderBy: { created_at: "desc" },
+      where: { tenantId: TID, deletedAt: null },
+      orderBy: { createdAt: "desc" },
     });
     expect(result).toHaveLength(1);
     expect(result[0].id).toBe("mod-1");
   });
 
-  it("getById uses composite key tenant_id_id", async () => {
+  it("getById uses composite key tenantId_id", async () => {
     const client = makeMockClient();
     client.trainingModule.findFirst.mockResolvedValue(fakeRow);
     const store = new TrainingModulePrismaStore(
@@ -229,12 +236,12 @@ describe("TrainingModulePrismaStore", () => {
     );
     const result = await store.getById("mod-1");
     expect(client.trainingModule.findFirst).toHaveBeenCalledWith({
-      where: { tenant_id: TID, id: "mod-1", deleted_at: null },
+      where: { tenantId: TID, id: "mod-1", deletedAt: null },
     });
     expect(result?.id).toBe("mod-1");
   });
 
-  it("update patches snake_case fields", async () => {
+  it("update patches camelCase fields", async () => {
     const client = makeMockClient();
     client.trainingModule.update.mockResolvedValue(fakeRow);
     const store = new TrainingModulePrismaStore(
@@ -243,16 +250,16 @@ describe("TrainingModulePrismaStore", () => {
     );
     await store.update("mod-1", { title: "Updated" });
     expect(client.trainingModule.update).toHaveBeenCalledWith({
-      where: { tenant_id_id: { tenant_id: TID, id: "mod-1" } },
+      where: { tenantId_id: { tenantId: TID, id: "mod-1" } },
       data: expect.objectContaining({ title: "Updated" }),
     });
   });
 
-  it("delete soft-deletes via deleted_at", async () => {
+  it("delete soft-deletes via deletedAt", async () => {
     const client = makeMockClient();
     client.trainingModule.update.mockResolvedValue({
       ...fakeRow,
-      deleted_at: NOW,
+      deletedAt: NOW,
     });
     const store = new TrainingModulePrismaStore(
       client as unknown as Parameters<typeof TrainingModulePrismaStore>[0],
@@ -260,8 +267,8 @@ describe("TrainingModulePrismaStore", () => {
     );
     const result = await store.delete("mod-1");
     expect(client.trainingModule.update).toHaveBeenCalledWith({
-      where: { tenant_id_id: { tenant_id: TID, id: "mod-1" } },
-      data: { deleted_at: expect.any(Date) },
+      where: { tenantId_id: { tenantId: TID, id: "mod-1" } },
+      data: { deletedAt: expect.any(Date) },
     });
     expect(result).toBe(true);
   });

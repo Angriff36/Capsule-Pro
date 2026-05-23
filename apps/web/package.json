@@ -52,7 +52,8 @@
   },
   "private": true,
   "scripts": {
-    "analyze": "cross-env ANALYZE=true npm run build",
+    "analyze": "next experimental-analyze --output",
+    "analyze:serve": "next experimental-analyze",
     "build": "dotenv -e ../../.env.local -- basehub && dotenv -e ../../.env.local -- next build",
     "clean": "git clean -xdf .cache .turbo dist node_modules",
     "dev": "concurrently \"basehub dev\" \"next dev -p 2222\"",

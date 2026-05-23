@@ -1,0 +1,592 @@
+{
+  "generatedAt": "2026-05-23T06:31:54.104Z",
+  "keyShape": [
+    "advisoryId",
+    "moduleName"
+  ],
+  "severities": [
+    "moderate",
+    "high",
+    "critical"
+  ],
+  "note": "Baseline of pnpm audit advisories at moderate+ severity. Each entry is an (advisoryId, moduleName) pair currently in the dependency tree. New advisories are blocked by scripts/security/audit-baseline.mjs. Regenerate ONLY after intentionally bumping deps that change the advisory set.",
+  "count": 144,
+  "advisories": [
+    {
+      "advisoryId": "GHSA-2328-f5f3-gj25",
+      "moduleName": "node-forge"
+    },
+    {
+      "advisoryId": "GHSA-23c5-xmqv-rm74",
+      "moduleName": "minimatch"
+    },
+    {
+      "advisoryId": "GHSA-25h7-pfq9-p65f",
+      "moduleName": "flatted"
+    },
+    {
+      "advisoryId": "GHSA-26pp-8wgv-hjvm",
+      "moduleName": "hono"
+    },
+    {
+      "advisoryId": "GHSA-27v5-c462-wpq7",
+      "moduleName": "path-to-regexp"
+    },
+    {
+      "advisoryId": "GHSA-2g4f-4pwh-qvx6",
+      "moduleName": "ajv"
+    },
+    {
+      "advisoryId": "GHSA-2mjp-6q6p-2qxm",
+      "moduleName": "undici"
+    },
+    {
+      "advisoryId": "GHSA-2pr8-phx7-x9h3",
+      "moduleName": "protobufjs"
+    },
+    {
+      "advisoryId": "GHSA-2qvq-rjwj-gvw9",
+      "moduleName": "handlebars"
+    },
+    {
+      "advisoryId": "GHSA-2v35-w6hq-6mfw",
+      "moduleName": "@xmldom/xmldom"
+    },
+    {
+      "advisoryId": "GHSA-2w6w-674q-4c4q",
+      "moduleName": "handlebars"
+    },
+    {
+      "advisoryId": "GHSA-33vc-wfww-vjfv",
+      "moduleName": "jsondiffpatch"
+    },
+    {
+      "advisoryId": "GHSA-345p-7cg4-v4c7",
+      "moduleName": "@modelcontextprotocol/sdk"
+    },
+    {
+      "advisoryId": "GHSA-3644-q5cj-c5c7",
+      "moduleName": "langsmith"
+    },
+    {
+      "advisoryId": "GHSA-378v-28hj-76wf",
+      "moduleName": "bn.js"
+    },
+    {
+      "advisoryId": "GHSA-38f7-945m-qr2g",
+      "moduleName": "effect"
+    },
+    {
+      "advisoryId": "GHSA-39q2-94rc-95cp",
+      "moduleName": "dompurify"
+    },
+    {
+      "advisoryId": "GHSA-3mfm-83xf-c92r",
+      "moduleName": "handlebars"
+    },
+    {
+      "advisoryId": "GHSA-3p68-rc4w-qgx5",
+      "moduleName": "axios"
+    },
+    {
+      "advisoryId": "GHSA-3ppc-4f35-3m26",
+      "moduleName": "minimatch"
+    },
+    {
+      "advisoryId": "GHSA-3v7f-55p6-f55p",
+      "moduleName": "picomatch"
+    },
+    {
+      "advisoryId": "GHSA-3w6x-2g7m-8v23",
+      "moduleName": "axios"
+    },
+    {
+      "advisoryId": "GHSA-43fc-jf86-j433",
+      "moduleName": "axios"
+    },
+    {
+      "advisoryId": "GHSA-445q-vr5w-6q77",
+      "moduleName": "axios"
+    },
+    {
+      "advisoryId": "GHSA-458j-xx4x-4375",
+      "moduleName": "hono"
+    },
+    {
+      "advisoryId": "GHSA-46wh-pxpv-q5gq",
+      "moduleName": "express-rate-limit"
+    },
+    {
+      "advisoryId": "GHSA-48c2-rrv3-qjmp",
+      "moduleName": "yaml"
+    },
+    {
+      "advisoryId": "GHSA-4992-7rv2-5pvq",
+      "moduleName": "undici"
+    },
+    {
+      "advisoryId": "GHSA-4r6h-8v6p-xvw6",
+      "moduleName": "xlsx"
+    },
+    {
+      "advisoryId": "GHSA-4w7w-66w2-5vf9",
+      "moduleName": "vite"
+    },
+    {
+      "advisoryId": "GHSA-58qx-3vcg-4xpx",
+      "moduleName": "ws"
+    },
+    {
+      "advisoryId": "GHSA-5c6j-r48x-rmvq",
+      "moduleName": "serialize-javascript"
+    },
+    {
+      "advisoryId": "GHSA-5c9x-8gcm-mpgx",
+      "moduleName": "axios"
+    },
+    {
+      "advisoryId": "GHSA-5m6q-g25r-mvwx",
+      "moduleName": "node-forge"
+    },
+    {
+      "advisoryId": "GHSA-5pgg-2g8v-p4x9",
+      "moduleName": "xlsx"
+    },
+    {
+      "advisoryId": "GHSA-5pq2-9x2x-5p6w",
+      "moduleName": "hono"
+    },
+    {
+      "advisoryId": "GHSA-5rq4-664w-9x2c",
+      "moduleName": "basic-ftp"
+    },
+    {
+      "advisoryId": "GHSA-62hf-57xw-28j9",
+      "moduleName": "axios"
+    },
+    {
+      "advisoryId": "GHSA-66ff-xgx4-vchm",
+      "moduleName": "protobufjs"
+    },
+    {
+      "advisoryId": "GHSA-677m-j7p3-52f9",
+      "moduleName": "socket.io-parser"
+    },
+    {
+      "advisoryId": "GHSA-685m-2w69-288q",
+      "moduleName": "protobufjs"
+    },
+    {
+      "advisoryId": "GHSA-69xw-7hcm-h432",
+      "moduleName": "hono"
+    },
+    {
+      "advisoryId": "GHSA-6chq-wfr3-2hj9",
+      "moduleName": "axios"
+    },
+    {
+      "advisoryId": "GHSA-6v7q-wjvx-w8wg",
+      "moduleName": "basic-ftp"
+    },
+    {
+      "advisoryId": "GHSA-6wqw-2p9w-4vw4",
+      "moduleName": "hono"
+    },
+    {
+      "advisoryId": "GHSA-737v-mqg7-c878",
+      "moduleName": "defu"
+    },
+    {
+      "advisoryId": "GHSA-75px-5xx7-5xc7",
+      "moduleName": "protobufjs"
+    },
+    {
+      "advisoryId": "GHSA-7h2j-956f-4vf2",
+      "moduleName": "@isaacs/brace-expansion"
+    },
+    {
+      "advisoryId": "GHSA-7r86-cg39-jmmj",
+      "moduleName": "minimatch"
+    },
+    {
+      "advisoryId": "GHSA-7rx3-28cr-v5wh",
+      "moduleName": "handlebars"
+    },
+    {
+      "advisoryId": "GHSA-8r9q-7v3j-jr4g",
+      "moduleName": "@modelcontextprotocol/sdk"
+    },
+    {
+      "advisoryId": "GHSA-92pp-h63x-v22m",
+      "moduleName": "@hono/node-server"
+    },
+    {
+      "advisoryId": "GHSA-9cx6-37pm-9jff",
+      "moduleName": "handlebars"
+    },
+    {
+      "advisoryId": "GHSA-9ppj-qmqm-q256",
+      "moduleName": "tar"
+    },
+    {
+      "advisoryId": "GHSA-9r54-q6cx-xmh5",
+      "moduleName": "hono"
+    },
+    {
+      "advisoryId": "GHSA-9vqf-7f2p-gf9v",
+      "moduleName": "hono"
+    },
+    {
+      "advisoryId": "GHSA-9wv6-86v2-598j",
+      "moduleName": "path-to-regexp"
+    },
+    {
+      "advisoryId": "GHSA-c2c7-rcm5-vvqj",
+      "moduleName": "picomatch"
+    },
+    {
+      "advisoryId": "GHSA-cj63-jhhr-wcxv",
+      "moduleName": "dompurify"
+    },
+    {
+      "advisoryId": "GHSA-cjmm-f4jc-qw8r",
+      "moduleName": "dompurify"
+    },
+    {
+      "advisoryId": "GHSA-crv5-9vww-q3g8",
+      "moduleName": "dompurify"
+    },
+    {
+      "advisoryId": "GHSA-cvhv-6xm6-c3v4",
+      "moduleName": "agents"
+    },
+    {
+      "advisoryId": "GHSA-f23m-r3pf-42rh",
+      "moduleName": "lodash"
+    },
+    {
+      "advisoryId": "GHSA-f269-vfmq-vjvj",
+      "moduleName": "undici"
+    },
+    {
+      "advisoryId": "GHSA-f6ww-3ggp-fr8h",
+      "moduleName": "@xmldom/xmldom"
+    },
+    {
+      "advisoryId": "GHSA-f886-m6hf-6m8v",
+      "moduleName": "brace-expansion"
+    },
+    {
+      "advisoryId": "GHSA-fv7c-fp4j-7gwp",
+      "moduleName": "@babel/plugin-transform-modules-systemjs"
+    },
+    {
+      "advisoryId": "GHSA-fvcv-3m26-pcqx",
+      "moduleName": "axios"
+    },
+    {
+      "advisoryId": "GHSA-fw9q-39r9-c252",
+      "moduleName": "langsmith"
+    },
+    {
+      "advisoryId": "GHSA-fx83-v9x8-x52w",
+      "moduleName": "protobufjs"
+    },
+    {
+      "advisoryId": "GHSA-g9mf-h72j-4rw9",
+      "moduleName": "undici"
+    },
+    {
+      "advisoryId": "GHSA-h5c3-5r3r-rr8q",
+      "moduleName": "@octokit/plugin-paginate-rest"
+    },
+    {
+      "advisoryId": "GHSA-h7mw-gpvr-xq4m",
+      "moduleName": "dompurify"
+    },
+    {
+      "advisoryId": "GHSA-h8r8-wccr-v5f2",
+      "moduleName": "dompurify"
+    },
+    {
+      "advisoryId": "GHSA-hcf7-66rw-9f5r",
+      "moduleName": "turbo"
+    },
+    {
+      "advisoryId": "GHSA-j3q9-mxjg-w52f",
+      "moduleName": "path-to-regexp"
+    },
+    {
+      "advisoryId": "GHSA-j759-j44w-7fr8",
+      "moduleName": "@xmldom/xmldom"
+    },
+    {
+      "advisoryId": "GHSA-jggg-4jg4-v7c6",
+      "moduleName": "protobufjs"
+    },
+    {
+      "advisoryId": "GHSA-jvwf-75h9-cwgg",
+      "moduleName": "protobufjs"
+    },
+    {
+      "advisoryId": "GHSA-m7pr-hjqh-92cm",
+      "moduleName": "axios"
+    },
+    {
+      "advisoryId": "GHSA-mjf5-7g4m-gx5w",
+      "moduleName": "storybook"
+    },
+    {
+      "advisoryId": "GHSA-mw96-cpmx-2vgc",
+      "moduleName": "rollup"
+    },
+    {
+      "advisoryId": "GHSA-p6xx-57qc-3wxr",
+      "moduleName": "hono"
+    },
+    {
+      "advisoryId": "GHSA-p77w-8qqv-26rm",
+      "moduleName": "hono"
+    },
+    {
+      "advisoryId": "GHSA-p9ff-h696-f583",
+      "moduleName": "vite"
+    },
+    {
+      "advisoryId": "GHSA-pf86-5x62-jrwf",
+      "moduleName": "axios"
+    },
+    {
+      "advisoryId": "GHSA-phc3-fgpg-7m6h",
+      "moduleName": "undici"
+    },
+    {
+      "advisoryId": "GHSA-pmwg-cvhr-8vh7",
+      "moduleName": "axios"
+    },
+    {
+      "advisoryId": "GHSA-ppp5-5v6c-4jwp",
+      "moduleName": "node-forge"
+    },
+    {
+      "advisoryId": "GHSA-q3j6-qgpj-74h6",
+      "moduleName": "fast-uri"
+    },
+    {
+      "advisoryId": "GHSA-q5qw-h33p-qvwr",
+      "moduleName": "hono"
+    },
+    {
+      "advisoryId": "GHSA-q67f-28xg-22rw",
+      "moduleName": "node-forge"
+    },
+    {
+      "advisoryId": "GHSA-q6x5-8v7m-xcrf",
+      "moduleName": "@protobufjs/utf8"
+    },
+    {
+      "advisoryId": "GHSA-q6x5-8v7m-xcrf",
+      "moduleName": "protobufjs"
+    },
+    {
+      "advisoryId": "GHSA-q8mj-m7cp-5q26",
+      "moduleName": "qs"
+    },
+    {
+      "advisoryId": "GHSA-q8qp-cvcw-x6jj",
+      "moduleName": "axios"
+    },
+    {
+      "advisoryId": "GHSA-qffp-2rhf-9h96",
+      "moduleName": "tar"
+    },
+    {
+      "advisoryId": "GHSA-qj8w-gfj5-8c6v",
+      "moduleName": "serialize-javascript"
+    },
+    {
+      "advisoryId": "GHSA-qjx8-664m-686j",
+      "moduleName": "js-cookie"
+    },
+    {
+      "advisoryId": "GHSA-qp7p-654g-cw7p",
+      "moduleName": "hono"
+    },
+    {
+      "advisoryId": "GHSA-qx2v-qp2m-jg93",
+      "moduleName": "postcss"
+    },
+    {
+      "advisoryId": "GHSA-r354-f388-2fhh",
+      "moduleName": "hono"
+    },
+    {
+      "advisoryId": "GHSA-r4q5-vmmm-2653",
+      "moduleName": "follow-redirects"
+    },
+    {
+      "advisoryId": "GHSA-r5fr-rjxr-66jc",
+      "moduleName": "lodash"
+    },
+    {
+      "advisoryId": "GHSA-r5rp-j6wh-rvv4",
+      "moduleName": "hono"
+    },
+    {
+      "advisoryId": "GHSA-r7x9-8ph7-w8cg",
+      "moduleName": "agents"
+    },
+    {
+      "advisoryId": "GHSA-rf6f-7fwh-wjgh",
+      "moduleName": "flatted"
+    },
+    {
+      "advisoryId": "GHSA-rmvr-2pp2-xj38",
+      "moduleName": "@octokit/request"
+    },
+    {
+      "advisoryId": "GHSA-rp42-5vxx-qpwr",
+      "moduleName": "basic-ftp"
+    },
+    {
+      "advisoryId": "GHSA-rpmf-866q-6p89",
+      "moduleName": "basic-ftp"
+    },
+    {
+      "advisoryId": "GHSA-rr7j-v2q5-chgv",
+      "moduleName": "langsmith"
+    },
+    {
+      "advisoryId": "GHSA-v2v4-37r5-5v8g",
+      "moduleName": "ip-address"
+    },
+    {
+      "advisoryId": "GHSA-v2wj-7wpq-c8vv",
+      "moduleName": "dompurify"
+    },
+    {
+      "advisoryId": "GHSA-v2wj-q39q-566r",
+      "moduleName": "vite"
+    },
+    {
+      "advisoryId": "GHSA-v34v-rq6j-cj6p",
+      "moduleName": "langsmith"
+    },
+    {
+      "advisoryId": "GHSA-v39h-62p7-jpjc",
+      "moduleName": "fast-uri"
+    },
+    {
+      "advisoryId": "GHSA-v8w9-8mx6-g223",
+      "moduleName": "hono"
+    },
+    {
+      "advisoryId": "GHSA-v9jr-rg53-9pgp",
+      "moduleName": "dompurify"
+    },
+    {
+      "advisoryId": "GHSA-v9p9-hfj2-hcw8",
+      "moduleName": "undici"
+    },
+    {
+      "advisoryId": "GHSA-vf2m-468p-8v99",
+      "moduleName": "axios"
+    },
+    {
+      "advisoryId": "GHSA-vqx2-fgx2-5wq9",
+      "moduleName": "@clerk/shared"
+    },
+    {
+      "advisoryId": "GHSA-vrm6-8vpv-qv8q",
+      "moduleName": "undici"
+    },
+    {
+      "advisoryId": "GHSA-vvjj-xcjg-gr5g",
+      "moduleName": "nodemailer"
+    },
+    {
+      "advisoryId": "GHSA-w24r-5266-9c3c",
+      "moduleName": "@clerk/backend"
+    },
+    {
+      "advisoryId": "GHSA-w24r-5266-9c3c",
+      "moduleName": "@clerk/clerk-expo"
+    },
+    {
+      "advisoryId": "GHSA-w24r-5266-9c3c",
+      "moduleName": "@clerk/clerk-js"
+    },
+    {
+      "advisoryId": "GHSA-w24r-5266-9c3c",
+      "moduleName": "@clerk/clerk-react"
+    },
+    {
+      "advisoryId": "GHSA-w24r-5266-9c3c",
+      "moduleName": "@clerk/shared"
+    },
+    {
+      "advisoryId": "GHSA-w332-q679-j88p",
+      "moduleName": "hono"
+    },
+    {
+      "advisoryId": "GHSA-w5cr-2qhr-jqc5",
+      "moduleName": "agents"
+    },
+    {
+      "advisoryId": "GHSA-w5hq-g745-h8pq",
+      "moduleName": "uuid"
+    },
+    {
+      "advisoryId": "GHSA-w9j2-pvgh-6h63",
+      "moduleName": "axios"
+    },
+    {
+      "advisoryId": "GHSA-wc8c-qw6v-h7f6",
+      "moduleName": "@hono/node-server"
+    },
+    {
+      "advisoryId": "GHSA-wh4c-j3r5-mjhp",
+      "moduleName": "@xmldom/xmldom"
+    },
+    {
+      "advisoryId": "GHSA-wmmm-f939-6g9c",
+      "moduleName": "hono"
+    },
+    {
+      "advisoryId": "GHSA-x6wf-f3px-wcqx",
+      "moduleName": "@xmldom/xmldom"
+    },
+    {
+      "advisoryId": "GHSA-xf4j-xp2r-rqqx",
+      "moduleName": "hono"
+    },
+    {
+      "advisoryId": "GHSA-xhpv-hc6g-r9c6",
+      "moduleName": "handlebars"
+    },
+    {
+      "advisoryId": "GHSA-xjpj-3mr7-gcpf",
+      "moduleName": "handlebars"
+    },
+    {
+      "advisoryId": "GHSA-xpcf-pg52-r92g",
+      "moduleName": "hono"
+    },
+    {
+      "advisoryId": "GHSA-xq3m-2v4x-88gg",
+      "moduleName": "protobufjs"
+    },
+    {
+      "advisoryId": "GHSA-xx4v-prfh-6cgc",
+      "moduleName": "@octokit/request-error"
+    },
+    {
+      "advisoryId": "GHSA-xx6v-rp6x-q39c",
+      "moduleName": "axios"
+    },
+    {
+      "advisoryId": "GHSA-xxjr-mmjv-4gpg",
+      "moduleName": "lodash"
+    }
+  ]
+}

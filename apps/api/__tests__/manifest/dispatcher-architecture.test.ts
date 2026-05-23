@@ -14,7 +14,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
-const PROJECT_ROOT = resolve(import.meta.dirname, "../../..");
+const PROJECT_ROOT = resolve(import.meta.dirname, "../../../..");
 const COMMANDS_JSON = resolve(
   PROJECT_ROOT,
   "packages/manifest-ir/ir/kitchen/kitchen.commands.json"
