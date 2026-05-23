@@ -1,17 +1,27 @@
-// @generated — Generated from Manifest IR. DO NOT EDIT.
-// Singular dynamic command dispatcher.
-// All domain command POSTs route through here → guards, policies, constraints, actions, events.
+// @generated — Generated from Manifest IR. DO NOT EDIT by hand; regenerate
+// via the route projection. This dispatcher is the singular dynamic command
+// route — all domain command POSTs route through here → guards, policies,
+// constraints, actions, events.
+//
+// Canonical URL: POST /api/manifest/[entity]/commands/[command]
+// Next.js maps the [entity] and [command] segments to the params object below.
+//
+// Architecture: this file is intentionally THIN. It owns:
+//   - URL params + body parsing
+//   - Auth/tenant resolution (via requireCurrentUser)
+//   - instanceId extraction from the body
+// It then delegates execution to runManifestCommand from
+// @/lib/manifest/execute-command, which is the canonical shared command
+// executor (resolveCommand → createManifestRuntime → runtime.runCommand →
+// normalized response). The domain REST adapters under app/api/user/* and
+// elsewhere already delegate through the same helper; the dispatcher must
+// not duplicate that logic.
 
-import { captureException } from "@sentry/nextjs";
-import { InvariantError } from "@/app/lib/invariant";
 import type { NextRequest } from "next/server";
-import { resolveCommand } from "@/lib/manifest/command-resolver";
+import { InvariantError } from "@/app/lib/invariant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
+import { manifestErrorResponse } from "@/lib/manifest-response";
 import { requireCurrentUser } from "@/app/lib/tenant";
-import {
-  manifestErrorResponse,
-  manifestSuccessResponse,
-} from "@/lib/manifest-response";
-import { createManifestRuntime } from "@/lib/manifest-runtime";
 
 export const runtime = "nodejs";
 
@@ -20,95 +30,44 @@ export async function POST(
   { params }: { params: Promise<{ entity: string; command: string }> }
 ): Promise<Response> {
   try {
-    const { entity, command: commandSlug } = await params;
+    const { entity, command } = await params;
 
-    // ── Resolve command slug → canonical camelCase command name ──
-    // URL segment may be kebab-case (e.g. "soft-delete"), but manifest
-    // commands use camelCase ("softDelete"). The resolver tries exact
-    // match first, then kebab→camel conversion.
-    const resolved = resolveCommand(entity, commandSlug);
-    if (!resolved) {
-      return manifestErrorResponse(
-        `Unknown command: ${entity}.${commandSlug}. Verify the entity and command names against the manifest IR.`,
-        404
-      );
-    }
-
-    const command = resolved.command;
-
-    // ── Auth / tenant / user resolution ──
+    // Auth / tenant / user resolution (dispatcher-only responsibility).
     const currentUser = await requireCurrentUser();
 
-    // ── Parse request body ──
-    const body = await request.json().catch(() => ({}));
+    // Parse request body (dispatcher-only responsibility).
+    const body = (await request
+      .json()
+      .catch(() => ({}))) as Record<string, unknown>;
 
-    console.log(`[manifest/${entity}/${command}] Executing:`, {
-      slug: commandSlug,
-      userId: currentUser.id,
-      userRole: currentUser.role,
-      tenantId: currentUser.tenantId,
-      bodyKeys: Object.keys(body),
-    });
+    // instanceId extraction: for non-create commands, look at body.id or
+    // body.<entity>Id. The shared executor uses instanceId to target the
+    // correct entity instance.
+    const entityCamel = entity.charAt(0).toLowerCase() + entity.slice(1);
+    const rawId =
+      command !== "create"
+        ? (body.id ?? body[`${entityCamel}Id`])
+        : undefined;
+    const instanceId = rawId != null ? String(rawId) : undefined;
 
-    // ── Build runtime + execute command ──
-    const runtime = await createManifestRuntime({
+    return runManifestCommand({
+      entity,
+      command,
+      body,
       user: {
         id: currentUser.id,
         tenantId: currentUser.tenantId,
         role: currentUser.role,
       },
-      entityName: entity,
-    });
-
-    const bodyRecord = body as Record<string, unknown>;
-    const entityCamel = entity.charAt(0).toLowerCase() + entity.slice(1);
-    const rawId =
-      command !== "create"
-        ? (bodyRecord.id ?? bodyRecord[`${entityCamel}Id`])
-        : undefined;
-    const instanceId =
-      rawId != null ? String(rawId) : undefined;
-
-    const result = await runtime.runCommand(command, body, {
-      entityName: entity,
       ...(instanceId ? { instanceId } : {}),
-    });
-
-    // ── Handle failures ──
-    if (!result.success) {
-      console.error(`[manifest/${entity}/${command}] Failed:`, {
-        policyDenial: result.policyDenial,
-        guardFailure: result.guardFailure,
-        error: result.error,
-        userRole: currentUser.role,
-      });
-
-      if (result.policyDenial) {
-        return manifestErrorResponse(
-          `Access denied: ${result.policyDenial.policyName} (role=${currentUser.role})`,
-          403
-        );
-      }
-      if (result.guardFailure) {
-        return manifestErrorResponse(
-          `Guard ${result.guardFailure.index} failed: ${result.guardFailure.formatted}`,
-          422
-        );
-      }
-      return manifestErrorResponse(result.error ?? "Command failed", 400);
-    }
-
-    // ── Success ──
-    return manifestSuccessResponse({
-      result: result.result,
-      events: result.emittedEvents,
     });
   } catch (error) {
     if (error instanceof InvariantError) {
       return manifestErrorResponse("Unauthorized", 401);
     }
-    console.error("[manifest/dispatcher] Error:", error);
-    captureException(error);
+    // Any other pre-execution error (e.g. params resolution). Execution
+    // errors are caught inside runManifestCommand.
+    console.error("[manifest/dispatcher] Pre-execution error:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }
