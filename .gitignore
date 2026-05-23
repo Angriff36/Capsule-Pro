@@ -33,6 +33,9 @@ session-ses_*.md
 # Agent-generated audit / report artifacts (local only, not app code)
 /manifest-audit/
 /reports/implementation-theatre/
+# Manifest audit report output dir (canonical location going forward)
+/manifest/reports/*
+!/manifest/reports/README.md
 
 # Storybook build artifacts
 **/storybook-static/
@@ -557,6 +560,9 @@ api_domains_summary.csv
 .tmpaudit-output-fixed.json
 .slopscope-rule-discovery-seen.json
 ir
+# manifest/ir/ is the canonical layout marker — keep its README tracked
+!manifest/ir/
+!manifest/ir/README.md
 
 # Random scratch files
 WqZ9vMhG6z.png

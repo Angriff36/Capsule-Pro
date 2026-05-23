@@ -325,6 +325,46 @@ jobs:
           echo
           echo "::notice::audit-routes findings above are advisory until ownership errors are resolved or exempted."
 
+  manifest-registry-drift:
+    name: Governance Registry Drift Check
+    # BLOCKING — proves the committed manifest/governance/{commands,entities}.json
+    # match the current IR. If a manifest source changes but the registries
+    # aren't regenerated and committed, governance audits would run against
+    # stale data. Producer: `pnpm manifest:registries`.
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: "pnpm"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Install dependencies
+        run: bash scripts/ensure-github-packages-npmrc.sh && pnpm install --frozen-lockfile
+        env:
+          NPM_TOKEN: ${{ secrets.PKG_AUTH_TOKEN }}
+
+      - name: Re-emit governance registries
+        run: pnpm manifest:registries
+
+      - name: Verify no drift
+        run: |
+          if ! git diff --exit-code manifest/governance/commands.json manifest/governance/entities.json; then
+            echo "::error::manifest/governance registries are stale."
+            echo "Run 'pnpm manifest:registries' locally and commit the result."
+            exit 1
+          fi
+          echo "Governance registries are in sync with IR."
+
   manifest-bypass-audit:
     name: Bypass Registry Audit
     runs-on: ubuntu-latest
@@ -352,7 +392,7 @@ jobs:
       - name: Validate bypasses.json schema + expiry
         # BLOCKING — bypasses.json is small, schema validation is cheap, and
         # an invalid bypass registry would silently disable governance checks.
-        run: pnpm exec manifest audit-bypasses --registry bypasses.json --strict-expiry
+        run: pnpm exec manifest audit-bypasses --registry manifest/governance/bypasses.json --strict-expiry
 
   manifest-governance-audit:
     name: Governance Audit (Reporting)
@@ -392,8 +432,8 @@ jobs:
           # Paths resolve relative to --root, hence the ../.. prefix.
           pnpm exec manifest audit-governance \
             -r apps/api \
-            --commands-registry ../../manifest-registry/commands.json \
-            --bypass-registry ../../bypasses.json
+            --commands-registry ../../manifest/governance/commands.json \
+            --bypass-registry ../../manifest/governance/bypasses.json
           echo
           echo "::notice::audit-governance findings above are advisory until conformance-test or bypass backlog clears."
 
@@ -432,8 +472,8 @@ jobs:
           echo "Running manifest integration-check (reporting; not blocking)..."
           pnpm exec manifest integration-check \
             --root apps/api \
-            --commands-registry manifest-registry/commands.json \
-            --bypass-registry bypasses.json
+            --commands-registry manifest/governance/commands.json \
+            --bypass-registry manifest/governance/bypasses.json
           echo
           echo "::notice::integration-check findings above are advisory until governance backlog clears."
 
@@ -468,12 +508,21 @@ jobs:
           NPM_TOKEN: ${{ secrets.PKG_AUTH_TOKEN }}
 
       - name: Run enforce-surface (reporting only)
+        # NOTE: --commands-registry points at the kitchen-scope runtime sidecar
+        # (packages/manifest-ir/dist/commands.registry.json), not the full
+        # governance registry. This is intentional — enforce-surface checks
+        # whether app code writes through registered commands, and the dispatcher
+        # currently only resolves kitchen commands. Switching to the full
+        # governance registry would surface non-kitchen routes as drift, which
+        # is true but already reported by audit-routes. See
+        # docs/audits/manifest-artifact-layout-adr.md.
         continue-on-error: true
         run: |
           echo "Running manifest enforce-surface (reporting; not blocking)..."
           pnpm exec manifest enforce-surface \
             --root . \
             --commands-registry packages/manifest-ir/dist/commands.registry.json \
+            --bypass-registry manifest/governance/bypasses.json \
             --format text
           echo
           echo "::notice::enforce-surface findings above are advisory until raw-SQL detection lands and known violations are exempted."

@@ -111,6 +111,7 @@
     "manifest:route-audit": "pnpm exec manifest audit-routes --root apps/api --commands-manifest packages/manifest-ir/dist/commands.registry.json --exemptions packages/manifest-ir/ir/kitchen/audit-routes-exemptions.json",
     "manifest:routes:ir": "tsx scripts/manifest/generate-route-manifest.ts",
     "manifest:validate": "pnpm exec manifest validate packages/manifest-ir/ir/kitchen/kitchen.ir.json",
+    "manifest:registries": "node scripts/manifest/emit-registries.mjs",
     "bump-deps": "pnpm dlx npm-check-updates --deep -u --reject recharts && pnpm install",
     "bump-ui": "cd packages/design-system && pnpm dlx shadcn@latest add --all --overwrite",
     "clean:hard": "git clean -xdf",
