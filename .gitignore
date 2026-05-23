@@ -557,7 +557,10 @@ SLOPSCOPE_RULE_IMPLEMENTATION_PLAN.md
 .lighthouserc.json
 .oac.json
 .secretlintignore
-.secretlintrc.json
+# .secretlintrc.json is required by `pnpm secrets:scan` (used in security.yml).
+# It was previously gitignored; secrets:scan has always failed in CI because
+# of this. Restoring it as a tracked config.
+# .secretlintrc.json
 biome.autofix.jsonc
 manifest.config.yaml
 
