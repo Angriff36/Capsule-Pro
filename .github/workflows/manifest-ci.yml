@@ -63,13 +63,9 @@ jobs:
 
           echo "All manifest files validated successfully"
 
-      - name: Check manifest conformance tests
-        run: |
-          echo "Running manifest conformance tests..."
-          cd apps/api
-          pnpm test __tests__/kitchen/ -- --run
-        env:
-          DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
+      # Kitchen conformance test run moved to the dedicated `manifest-tests` job
+      # below to avoid duplication. That job also excludes DB-dependent tests
+      # (prep-tasks.test.ts) since this CI tier has no Postgres service.
 
   manifest-codegen-check:
     name: Check Generated Code Is Up-to-Date
@@ -100,8 +96,14 @@ jobs:
           NPM_TOKEN: ${{ secrets.PKG_AUTH_TOKEN }}
 
       - name: Generate code (Prisma, etc.)
+        # Scope analyze away from apps/web + @repo/cms — their analyze step
+        # builds basehub types from the live CMS, and CI's BASEHUB_TOKEN
+        # points at a different branch than local dev (documented as
+        # environment-dependent in manifest-typescript-check). The
+        # manifest gates don't need basehub types — only Prisma + manifest
+        # codegen.
         run: |
-          pnpm run analyze
+          pnpm turbo run analyze --filter=!web --filter=!@repo/cms
         env:
           NODE_OPTIONS: "--max-old-space-size=8192"
           DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
@@ -180,8 +182,14 @@ jobs:
           NPM_TOKEN: ${{ secrets.PKG_AUTH_TOKEN }}
 
       - name: Generate code (Prisma, etc.)
+        # Scope analyze away from apps/web + @repo/cms — their analyze step
+        # builds basehub types from the live CMS, and CI's BASEHUB_TOKEN
+        # points at a different branch than local dev (documented as
+        # environment-dependent in manifest-typescript-check). The
+        # manifest gates don't need basehub types — only Prisma + manifest
+        # codegen.
         run: |
-          pnpm run analyze
+          pnpm turbo run analyze --filter=!web --filter=!@repo/cms
         env:
           NODE_OPTIONS: "--max-old-space-size=8192"
           DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
@@ -248,8 +256,14 @@ jobs:
           NPM_TOKEN: ${{ secrets.PKG_AUTH_TOKEN }}
 
       - name: Generate code (Prisma, etc.)
+        # Scope analyze away from apps/web + @repo/cms — their analyze step
+        # builds basehub types from the live CMS, and CI's BASEHUB_TOKEN
+        # points at a different branch than local dev (documented as
+        # environment-dependent in manifest-typescript-check). The
+        # manifest gates don't need basehub types — only Prisma + manifest
+        # codegen.
         run: |
-          pnpm run analyze
+          pnpm turbo run analyze --filter=!web --filter=!@repo/cms
         env:
           NODE_OPTIONS: "--max-old-space-size=8192"
           DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
@@ -279,10 +293,15 @@ jobs:
           LIVEBLOCKS_SECRET: "api_key_placeholder"
 
       - name: Run manifest integration tests
+        # --exclude prep-tasks.test.ts: those tests hit the live Prisma client
+        # against tenant_staff.user_preferences etc. and need a real DB. This
+        # job's DATABASE_URL is a dummy localhost connection. The full kitchen
+        # suite (including prep-tasks) runs in the e2e job with an ephemeral
+        # Postgres service.
         run: |
-          echo "Running manifest integration tests..."
+          echo "Running manifest integration tests (excluding DB-dependent prep-tasks.test.ts)..."
           cd apps/api
-          pnpm test __tests__/kitchen/ -- --run
+          pnpm test __tests__/kitchen/ -- --run --exclude '**/prep-tasks.test.ts'
         env:
           DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
 
@@ -640,8 +659,14 @@ jobs:
           NPM_TOKEN: ${{ secrets.PKG_AUTH_TOKEN }}
 
       - name: Generate code (Prisma, etc.)
+        # Scope analyze away from apps/web + @repo/cms — their analyze step
+        # builds basehub types from the live CMS, and CI's BASEHUB_TOKEN
+        # points at a different branch than local dev (documented as
+        # environment-dependent in manifest-typescript-check). The
+        # manifest gates don't need basehub types — only Prisma + manifest
+        # codegen.
         run: |
-          pnpm run analyze
+          pnpm turbo run analyze --filter=!web --filter=!@repo/cms
         env:
           NODE_OPTIONS: "--max-old-space-size=8192"
           DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
