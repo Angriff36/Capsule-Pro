@@ -88,7 +88,8 @@
   },
   "private": true,
   "scripts": {
-    "analyze": "cross-env ANALYZE=true npm run build",
+    "analyze": "next experimental-analyze --output",
+    "analyze:serve": "next experimental-analyze",
     "build": "node -e \"const fs=require('node:fs'); for (const d of ['.next','.next-dev/types','.next-dev-webpack/types']) fs.rmSync(d, { recursive: true, force: true });\" && next build",
     "clean": "git clean -xdf .cache .turbo dist node_modules",
     "dev": "dotenv -e ../../.env.local -e .env.local -e ../../packages/database/.env -- cross-env SKIP_ENV_VALIDATION=true NEXT_DIST_DIR=.next-dev next dev --turbopack -p 2221",
