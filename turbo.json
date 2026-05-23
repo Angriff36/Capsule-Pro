@@ -238,6 +238,15 @@
     },
     "docs#build": {
       "dependsOn": ["^build"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "!**/*.md",
+        "!**/__tests__/**",
+        "!**/*.test.ts",
+        "!**/*.test.tsx",
+        "!**/*.spec.ts",
+        "!**/*.spec.tsx"
+      ],
       "outputs": [".next/**", "!.next/cache/**"]
     },
     "@repo/storybook#build": {

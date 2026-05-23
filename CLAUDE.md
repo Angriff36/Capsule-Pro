@@ -259,9 +259,7 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[proactive bridge @ 92% context — saved before compacting]
-Files (2):
-  apps/api/package.json (edit)
-  IMPLEMENTATION_PLAN.md (edit)
+[Emergency bridge — running bridge was not updated]
+Files: apps/app/vitest.config.mts (edit), IMPLEMENTATION_PLAN.md (edit)
 
 # === END COGNILAYER ===
