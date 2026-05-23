@@ -107,11 +107,11 @@ jobs:
         run: pnpm lint:any
 
       - name: Check canonical routes (no hardcoded /api/ in client code)
-        # Staged migration. 2026-05-22 baseline: 587 violations. See
-        # docs/audits/hardcoded-routes-violations.md for the breakdown.
-        # Flip continue-on-error to false when violation count drops <50.
+        # Ratcheted against scripts/check-canonical-routes-baseline.txt.
+        # New hardcoded routes fail CI; existing violations are tolerated up
+        # to the baseline count. See docs/audits/hardcoded-routes-violations.md
+        # for the migration plan; lower the baseline number to lock in wins.
         run: node scripts/check-hardcoded-routes.mjs
-        continue-on-error: true
 
       - name: Run tests
         run: pnpm test

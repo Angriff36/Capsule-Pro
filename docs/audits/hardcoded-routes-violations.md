@@ -1,16 +1,15 @@
 # Hardcoded Route Violations — Migration Status
 
-**Baseline:** 2026-05-22
+**Baseline:** 2026-05-22 (ratcheted)
 **Violations:** 587 across 186 files
 **CI gate:** `scripts/check-hardcoded-routes.mjs` in `.github/workflows/ci.yml`
-**Status:** Staged (`continue-on-error: true`)
-**Blocking condition:** violation count drops below **50**
+**Status:** Ratcheted — baseline is `scripts/check-canonical-routes-baseline.txt`. New violations fail CI; existing violations are tolerated up to the baseline count.
 
-## Why staged
+## Why ratcheted
 
 `check-hardcoded-routes.mjs` rejects raw `"/api/..."` string literals and template expressions in client code (`apps/app/**`, `packages/ui/**`). The intent is to force all client-to-API calls through the typed route helpers in `apps/app/app/lib/routes.ts`.
 
-The repo has not finished that migration. Flipping the gate blocking today would block every PR. Per CI rules, the gate stays advisory with an explicit blocking condition until the backlog clears.
+The repo has not finished that migration. Failing CI on the full 587 today would block every PR. Per CI rules, the gate uses the same ratchet pattern as `lint-explicit-any` so new violations cannot accumulate while the migration burns down.
 
 ## Top concentrations
 
@@ -42,17 +41,12 @@ Recommended order — fixing hooks first eliminates downstream call sites withou
 
 Run `node scripts/check-hardcoded-routes.mjs` locally to see the full current list.
 
-## When to flip the gate blocking
+## How to lock in wins
 
-When `node scripts/check-hardcoded-routes.mjs` reports **fewer than 50 violations**, edit `.github/workflows/ci.yml`:
+When a PR removes hardcoded routes, the script will report:
 
-```diff
-       - name: Check canonical routes (no hardcoded /api/ in client code)
--        # Staged migration. 2026-05-22 baseline: 587 violations. See
--        # docs/audits/hardcoded-routes-violations.md for the breakdown.
--        # Flip continue-on-error to false when violation count drops <50.
-         run: node scripts/check-hardcoded-routes.mjs
--        continue-on-error: true
+```
+[check-hardcoded-routes] ✅ Count improved (N < 587). Update scripts/check-canonical-routes-baseline.txt to lock in the win.
 ```
 
-…and delete this document.
+Edit `scripts/check-canonical-routes-baseline.txt` and replace `587` with the new count. Commit the lower number in the same PR. The baseline never goes up; once at `0`, delete the baseline file's contents (set to `0`) or remove the file and adjust the script to fail on any non-zero — at that point this document can be deleted.
