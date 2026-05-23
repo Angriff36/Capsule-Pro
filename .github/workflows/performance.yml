@@ -1,13 +1,13 @@
 name: Performance
 
+# Nightly only — Lighthouse is advisory (Clerk auth interstitial breaks
+# unauthenticated runs) and bundle-analysis is artifact-only. Per-PR runs
+# wasted CI minutes without gating anything.
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main, develop]
   schedule:
     # Run daily at 2 AM UTC
     - cron: "0 2 * * *"
+  workflow_dispatch:
 
 concurrency:
   group: performance-${{ github.ref }}
@@ -30,14 +30,16 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # pnpm/action-setup must come before actions/setup-node when cache: pnpm
+      # is used — setup-node invokes pnpm to compute the cache key.
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version-file: ".nvmrc"
           cache: "pnpm"
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
 
       - name: Install dependencies
         run: bash scripts/ensure-github-packages-npmrc.sh && pnpm install --frozen-lockfile
@@ -112,14 +114,16 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # pnpm/action-setup must come before actions/setup-node when cache: pnpm
+      # is used — setup-node invokes pnpm to compute the cache key.
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version-file: ".nvmrc"
           cache: "pnpm"
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
 
       - name: Install dependencies
         run: bash scripts/ensure-github-packages-npmrc.sh && pnpm install --frozen-lockfile

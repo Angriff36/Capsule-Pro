@@ -33,6 +33,9 @@ session-ses_*.md
 # Agent-generated audit / report artifacts (local only, not app code)
 /manifest-audit/
 /reports/implementation-theatre/
+# Manifest audit report output dir (canonical location going forward)
+/manifest/reports/*
+!/manifest/reports/README.md
 
 # Storybook build artifacts
 **/storybook-static/
@@ -286,6 +289,11 @@ docs/
 /docs/*
 !/docs/implementation-history/
 !/docs/audits/
+# Manifest constitution + governance are normative repo charter — tracked.
+!/docs/manifest/
+!/docs/manifest/governance.md
+!/docs/manifest/constitution/
+!/docs/manifest/constitution/**
 ### Turbo ###
 # Turborepo task cache
 .turbo
@@ -356,8 +364,13 @@ scripts/*
 !scripts/validate-manifests.mjs
 !scripts/manifest/
 !scripts/manifest/*.mjs
+!scripts/security/
+!scripts/security/*.mjs
 !scripts/check-hardcoded-routes.mjs
 !scripts/check-staged-write-routes.mjs
+!scripts/lint-explicit-any.mjs
+!scripts/lint-explicit-any-baseline.txt
+!scripts/ensure-github-packages-npmrc.sh
 !scripts/test-route-conformance.mjs
 !scripts/sync-manifest-runtime.mjs
 !scripts/ensure-github-packages-npmrc.sh
@@ -403,6 +416,9 @@ apps\app\prisma\seed-dev.ts.specify/.current-feature
 **/.progress.md
 **/.speckit-state.json
 *.txt
+# scripts/lint-explicit-any-baseline.txt is the tracked baseline for the
+# explicit-any debt check; allow despite the broad *.txt ignore above.
+!scripts/lint-explicit-any-baseline.txt
 diagnose-db-alignment.report.json
 e2e/3MH0rWud9c.png
 DATABASE_PRE_MIGRATION_CHECKLIST.md
@@ -434,6 +450,16 @@ spec-prompt-template-generator.md
 # manifest-adapters dist is consumed directly by apps/api (no publish step); must be committed
 !packages/manifest-adapters/dist/
 !packages/manifest-adapters/dist/**
+# sentry-integration dist must be committed — apps/api/app/webhooks/sentry/route.ts
+# imports subpath exports (@repo/sentry-integration/queue, /webhook) that resolve
+# to ./dist/*.d.ts via package.json exports. turbo typecheck doesn't depend on
+# ^build, so CI sees no dist unless we commit it. Same pattern as manifest-adapters.
+!packages/sentry-integration/dist/
+!packages/sentry-integration/dist/**
+# Same rationale for supplier-connectors — apps/api/app/api/webhooks/supplier-catalog/
+# route.ts imports it; dist must be committed.
+!packages/supplier-connectors/dist/
+!packages/supplier-connectors/dist/**
 **/build/
 **/.output/
 **/.vite/
@@ -545,8 +571,11 @@ SLOPSCOPE_RULE_IMPLEMENTATION_PLAN.md
 # Tool config (local overrides, not shared)
 .lighthouserc.json
 .oac.json
-.secretlintignore
-.secretlintrc.json
+# .secretlintignore
+# .secretlintrc.json is required by `pnpm secrets:scan` (used in security.yml).
+# It was previously gitignored; secrets:scan has always failed in CI because
+# of this. Restoring it as a tracked config.
+# .secretlintrc.json
 biome.autofix.jsonc
 manifest.config.yaml
 
@@ -557,6 +586,9 @@ api_domains_summary.csv
 .tmpaudit-output-fixed.json
 .slopscope-rule-discovery-seen.json
 ir
+# manifest/ir/ is the canonical layout marker — keep its README tracked
+!manifest/ir/
+!manifest/ir/README.md
 
 # Random scratch files
 WqZ9vMhG6z.png
