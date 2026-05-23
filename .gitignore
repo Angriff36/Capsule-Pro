@@ -289,6 +289,11 @@ docs/
 /docs/*
 !/docs/implementation-history/
 !/docs/audits/
+# Manifest constitution + governance are normative repo charter — tracked.
+!/docs/manifest/
+!/docs/manifest/governance.md
+!/docs/manifest/constitution/
+!/docs/manifest/constitution/**
 ### Turbo ###
 # Turborepo task cache
 .turbo
