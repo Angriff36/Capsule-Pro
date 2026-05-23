@@ -150,7 +150,7 @@
       "outputs": []
     },
     "typecheck": {
-      "dependsOn": ["^typecheck"],
+      "dependsOn": ["^typecheck", "@repo/database#generate"],
       "inputs": [
         "**/*.ts",
         "**/*.tsx",
@@ -161,6 +161,7 @@
       "outputs": []
     },
     "lint": {
+      "dependsOn": ["@repo/database#generate"],
       "outputs": []
     },
     "test": {
