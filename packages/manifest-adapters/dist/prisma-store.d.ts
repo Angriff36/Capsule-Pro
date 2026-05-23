@@ -234,7 +234,12 @@ export declare class PrepTaskPlanWorkflowPrismaStore implements Store<EntityInst
  * This returns a function that provides the appropriate Store implementation
  * for each entity type, backed by Prisma.
  */
-export declare function createPrismaStoreProvider(prisma: PrismaClient, tenantId: string): (entityName: string) => Store<EntityInstance> | undefined;
+export declare function createPrismaStoreProvider(prisma: PrismaClient, tenantId: string, 
+/** RuntimeContext.user.id, plumbed by manifest-runtime-factory.ts.
+ * Used by entity stores that audit-derive a "who initiated" field
+ * (e.g. InventoryTransfer.requestedBy) rather than capturing it from
+ * the command body. Most stores ignore this arg. */
+userId?: string): (entityName: string) => Store<EntityInstance> | undefined;
 /**
  * Load a PrepTask from Prisma into the Manifest runtime
  *
@@ -473,6 +478,9 @@ export interface PrismaStoreConfig {
     tenantId: string;
     outboxWriter: (tx: PrismaClient, events: unknown[]) => Promise<void>;
     eventCollector?: unknown[];
+    /** RuntimeContext.user.id — threaded through to per-entity stores that
+     * audit-derive caller identity (e.g. InventoryTransfer.requestedBy). */
+    userId?: string;
 }
 /**
  * Generic PrismaStore class that wraps entity-specific stores

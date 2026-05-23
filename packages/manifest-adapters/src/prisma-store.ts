@@ -162,6 +162,7 @@ import {
   RolePolicyPrismaStore,
   TimeOffRequestPrismaStore,
 } from "./prisma-stores/broken-read-batch15-rolepolicy-timeoff";
+import { InventoryTransferPrismaStore } from "./prisma-stores/broken-read-batch16-inventory-transfer";
 import { NotificationPrismaStore } from "./prisma-stores/broken-read-notification-parent";
 import { PurchaseOrderPrismaStore } from "./prisma-stores/broken-read-po-parent";
 import { ProposalPrismaStore } from "./prisma-stores/broken-read-proposal-parent";
@@ -1647,7 +1648,12 @@ function timestampToDate(value: unknown): Date | null {
  */
 export function createPrismaStoreProvider(
   prisma: PrismaClient,
-  tenantId: string
+  tenantId: string,
+  /** RuntimeContext.user.id, plumbed by manifest-runtime-factory.ts.
+   * Used by entity stores that audit-derive a "who initiated" field
+   * (e.g. InventoryTransfer.requestedBy) rather than capturing it from
+   * the command body. Most stores ignore this arg. */
+  userId = ""
 ): (entityName: string) => Store<EntityInstance> | undefined {
   return (entityName: string) => {
     switch (entityName) {
@@ -1833,6 +1839,8 @@ export function createPrismaStoreProvider(
         return new RolePolicyPrismaStore(prisma, tenantId);
       case "TimeOffRequest":
         return new TimeOffRequestPrismaStore(prisma, tenantId);
+      case "InventoryTransfer":
+        return new InventoryTransferPrismaStore(prisma, tenantId, userId);
       default:
         console.error(
           `[createPrismaStoreProvider] No store for entity "${entityName}" — commands will fail`
@@ -2925,6 +2933,9 @@ export interface PrismaStoreConfig {
   tenantId: string;
   outboxWriter: (tx: PrismaClient, events: unknown[]) => Promise<void>;
   eventCollector?: unknown[];
+  /** RuntimeContext.user.id — threaded through to per-entity stores that
+   * audit-derive caller identity (e.g. InventoryTransfer.requestedBy). */
+  userId?: string;
 }
 
 /**
@@ -2945,7 +2956,8 @@ export class PrismaStore implements Store<EntityInstance> {
   constructor(config: PrismaStoreConfig) {
     this.store = createPrismaStoreProvider(
       config.prisma,
-      config.tenantId
+      config.tenantId,
+      config.userId ?? ""
     )(config.entityName) as Store<EntityInstance>;
     this.outboxWriter = config.outboxWriter;
     this.eventCollector = config.eventCollector;

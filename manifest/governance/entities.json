@@ -1821,7 +1821,8 @@
         "receiveDate",
         "notes",
         "createdAt",
-        "updatedAt"
+        "updatedAt",
+        "items"
       ]
     },
     {

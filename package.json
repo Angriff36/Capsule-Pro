@@ -171,7 +171,9 @@
     "install:infisical": "infisical run --env=dev --path=/apps/capsule-pro/app --project-config-dir=. -- pnpm install",
     "dev:web:infisical": "turbo run dev:infisical --filter=./apps/api --filter=./apps/app --parallel --continue",
     "build:infisical": "turbo run build:infisical",
-    "knip": "knip"
+    "knip": "knip",
+    "manifest:audit-schema-drift": "node scripts/manifest/audit-schema-drift.mjs",
+    "manifest:audit-schema-drift:strict": "node scripts/manifest/audit-schema-drift.mjs --strict"
   },
   "type": "module"
 }
