@@ -259,14 +259,9 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[proactive bridge @ 75% context — saved before compacting]
-Files (7):
-  .github/workflows/ci.yml (edit)
-  .github/workflows/manifest-ci.yml (edit)
-  .github/workflows/security.yml (edit)
-  .github/workflows/performance.yml (edit)
-  .github/workflows/deploy.yml (edit)
-  .github/workflows/logging-sync.yml (edit)
+[proactive bridge @ 92% context — saved before compacting]
+Files (2):
+  apps/api/package.json (edit)
   IMPLEMENTATION_PLAN.md (edit)
 
 # === END COGNILAYER ===
