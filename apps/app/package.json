@@ -3,7 +3,7 @@
   "dependencies": {
     "@ai-sdk/openai": "^3.0.25",
     "@ai-sdk/react": "^3.0.88",
-    "@angriff36/manifest": "0.6.1",
+    "@angriff36/manifest": "0.8.0",
     "@capsule-pro/sales-reporting": "workspace:*",
     "@clerk/nextjs": "^7.3.5",
     "@clerk/themes": "^2.2.68",

@@ -28,8 +28,8 @@ importers:
   .:
     dependencies:
       '@angriff36/manifest':
-        specifier: 0.6.1
-        version: 0.6.1(@supabase/supabase-js@2.97.0(bufferutil@4.1.0)(utf-8-validate@5.0.10))
+        specifier: 0.8.0
+        version: 0.8.0(@supabase/supabase-js@2.97.0(bufferutil@4.1.0)(utf-8-validate@5.0.10))
       '@prisma/adapter-neon':
         specifier: 7.3.0
         version: 7.3.0
@@ -131,8 +131,8 @@ importers:
         specifier: ^3.0.25
         version: 3.0.25(zod@4.3.6)
       '@angriff36/manifest':
-        specifier: 0.6.1
-        version: 0.6.1(@supabase/supabase-js@2.97.0(bufferutil@4.1.0)(utf-8-validate@5.0.10))
+        specifier: 0.8.0
+        version: 0.8.0(@supabase/supabase-js@2.97.0(bufferutil@4.1.0)(utf-8-validate@5.0.10))
       '@capsule-pro/sales-reporting':
         specifier: workspace:*
         version: link:../../packages/sales-reporting
@@ -267,8 +267,8 @@ importers:
         specifier: ^3.0.88
         version: 3.0.88(react@19.2.6)(zod@4.3.6)
       '@angriff36/manifest':
-        specifier: 0.6.1
-        version: 0.6.1(@supabase/supabase-js@2.97.0(bufferutil@4.1.0)(utf-8-validate@5.0.10))
+        specifier: 0.8.0
+        version: 0.8.0(@supabase/supabase-js@2.97.0(bufferutil@4.1.0)(utf-8-validate@5.0.10))
       '@capsule-pro/sales-reporting':
         specifier: workspace:*
         version: link:../../packages/sales-reporting
@@ -406,7 +406,7 @@ importers:
         version: 0.563.0(react@19.2.6)
       next:
         specifier: 16.2.6
-        version: 16.2.6(@babel/core@7.29.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.58.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+        version: 16.2.6(@opentelemetry/api@1.9.0)(@playwright/test@1.58.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       next-themes:
         specifier: ^0.4.6
         version: 0.4.6(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
@@ -512,7 +512,7 @@ importers:
         version: 15.8.5(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(lucide-react@0.563.0(react@19.2.6))(next@16.2.6(@opentelemetry/api@1.9.0)(@playwright/test@1.58.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(tailwindcss@4.1.18)
       next:
         specifier: 16.2.6
-        version: 16.2.6(@babel/core@7.29.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.58.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+        version: 16.2.6(@opentelemetry/api@1.9.0)(@playwright/test@1.58.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       react:
         specifier: 19.2.6
         version: 19.2.6
@@ -571,7 +571,7 @@ importers:
         version: 19.2.14
       next:
         specifier: 16.2.6
-        version: 16.2.6(@babel/core@7.29.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.58.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+        version: 16.2.6(@opentelemetry/api@1.9.0)(@playwright/test@1.58.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       react-email:
         specifier: 5.2.7
         version: 5.2.7(bufferutil@4.1.0)(utf-8-validate@5.0.10)
@@ -801,7 +801,7 @@ importers:
         version: 10.1.1(esbuild@0.27.2)
       next:
         specifier: 16.2.6
-        version: 16.2.6(@babel/core@7.29.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.58.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+        version: 16.2.6(@opentelemetry/api@1.9.0)(@playwright/test@1.58.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       react:
         specifier: 19.2.6
         version: 19.2.6
@@ -942,7 +942,7 @@ importers:
         version: 19.2.3(@types/react@19.2.14)
       next:
         specifier: 16.2.6
-        version: 16.2.6(@babel/core@7.29.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.58.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+        version: 16.2.6(@opentelemetry/api@1.9.0)(@playwright/test@1.58.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
@@ -985,7 +985,7 @@ importers:
         version: 19.2.3(@types/react@19.2.14)
       next:
         specifier: 16.2.6
-        version: 16.2.6(@babel/core@7.29.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.58.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+        version: 16.2.6(@opentelemetry/api@1.9.0)(@playwright/test@1.58.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
@@ -1021,7 +1021,7 @@ importers:
         version: 19.2.3(@types/react@19.2.14)
       next:
         specifier: 16.2.6
-        version: 16.2.6(@babel/core@7.29.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.58.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+        version: 16.2.6(@opentelemetry/api@1.9.0)(@playwright/test@1.58.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
@@ -1164,7 +1164,7 @@ importers:
         version: 0.563.0(react@19.2.6)
       next:
         specifier: 16.2.6
-        version: 16.2.6(@babel/core@7.29.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.58.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+        version: 16.2.6(@opentelemetry/api@1.9.0)(@playwright/test@1.58.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       next-themes:
         specifier: ^0.4.6
         version: 0.4.6(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
@@ -1315,7 +1315,7 @@ importers:
         version: 19.2.3(@types/react@19.2.14)
       next:
         specifier: 16.2.6
-        version: 16.2.6(@babel/core@7.29.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.58.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+        version: 16.2.6(@opentelemetry/api@1.9.0)(@playwright/test@1.58.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
@@ -1352,7 +1352,7 @@ importers:
         version: 19.2.3(@types/react@19.2.14)
       next:
         specifier: 16.2.6
-        version: 16.2.6(@babel/core@7.29.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.58.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+        version: 16.2.6(@opentelemetry/api@1.9.0)(@playwright/test@1.58.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
@@ -1372,8 +1372,8 @@ importers:
   packages/manifest-adapters:
     dependencies:
       '@angriff36/manifest':
-        specifier: 0.6.1
-        version: 0.6.1(@supabase/supabase-js@2.97.0(bufferutil@4.1.0)(utf-8-validate@5.0.10))
+        specifier: 0.8.0
+        version: 0.8.0(@supabase/supabase-js@2.97.0(bufferutil@4.1.0)(utf-8-validate@5.0.10))
       '@repo/database':
         specifier: workspace:*
         version: link:../database
@@ -1400,8 +1400,8 @@ importers:
   packages/manifest-ir:
     dependencies:
       '@angriff36/manifest':
-        specifier: 0.6.1
-        version: 0.6.1(@supabase/supabase-js@2.97.0(bufferutil@4.1.0)(utf-8-validate@5.0.10))
+        specifier: 0.8.0
+        version: 0.8.0(@supabase/supabase-js@2.97.0(bufferutil@4.1.0)(utf-8-validate@5.0.10))
     devDependencies:
       '@repo/typescript-config':
         specifier: workspace:*
@@ -1413,8 +1413,8 @@ importers:
   packages/mcp-server:
     dependencies:
       '@angriff36/manifest':
-        specifier: 0.6.1
-        version: 0.6.1(@supabase/supabase-js@2.97.0(bufferutil@4.1.0)(utf-8-validate@5.0.10))
+        specifier: 0.8.0
+        version: 0.8.0(@supabase/supabase-js@2.97.0(bufferutil@4.1.0)(utf-8-validate@5.0.10))
       '@modelcontextprotocol/sdk':
         specifier: ^1.26.0
         version: 1.26.0(@cfworker/json-schema@4.1.1)(zod@4.3.6)
@@ -1479,7 +1479,7 @@ importers:
         version: link:../typescript-config
       next:
         specifier: 16.2.6
-        version: 16.2.6(@babel/core@7.29.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.58.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+        version: 16.2.6(@opentelemetry/api@1.9.0)(@playwright/test@1.58.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
@@ -1565,7 +1565,7 @@ importers:
         version: 19.2.3(@types/react@19.2.14)
       next:
         specifier: 16.2.6
-        version: 16.2.6(@babel/core@7.29.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.58.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+        version: 16.2.6(@opentelemetry/api@1.9.0)(@playwright/test@1.58.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
@@ -1734,7 +1734,7 @@ importers:
         version: link:../typescript-config
       next:
         specifier: 16.2.6
-        version: 16.2.6(@babel/core@7.29.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.58.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+        version: 16.2.6(@opentelemetry/api@1.9.0)(@playwright/test@1.58.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
@@ -1783,7 +1783,7 @@ importers:
         version: 4.6.2
       next:
         specifier: 16.2.6
-        version: 16.2.6(@babel/core@7.29.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.58.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+        version: 16.2.6(@opentelemetry/api@1.9.0)(@playwright/test@1.58.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       react:
         specifier: 19.2.6
         version: 19.2.6
@@ -1966,8 +1966,8 @@ packages:
     resolution: {integrity: sha512-UrcABB+4bUrFABwbluTIBErXwvbsU/V7TZWfmbgJfbkwiBuziS9gxdODUyuiecfdGQ85jglMW6juS3+z5TsKLw==}
     engines: {node: '>=10'}
 
-  '@angriff36/manifest@0.6.1':
-    resolution: {integrity: sha512-4MmcS/YV0vRvmepG0EOKz73MdYpCx4Te4Cr8coWwG8sh/BmQb4fEzmuRpIkh0mrQrAsuT3lcRTrkvsqGAWVePQ==, tarball: https://npm.pkg.github.com/download/@angriff36/manifest/0.6.1/91d8a4aaef1ab0228a6120236efde269be23abe3}
+  '@angriff36/manifest@0.8.0':
+    resolution: {integrity: sha512-4vAkgbPx9Geha2d4HY/TrxBtnbRyBQomDPlun4QQJdpbHAlVx3NZnTsjzDMk5KXOEcrilh4+ws8Oo6Cj7Pn8+A==, tarball: https://npm.pkg.github.com/download/@angriff36/manifest/0.8.0/bd628638a5400f9bf8f4d9918d6b9abc3e0be7cf}
     hasBin: true
     peerDependencies:
       '@supabase/supabase-js': ^2
@@ -12773,7 +12773,6 @@ packages:
     resolution: {integrity: sha512-iiRSuRmLihoEJ4YGkoqSq3/r4MR0OmkMTYDda0Pq7DAWqJwMylTilXu46T16gfS3DUp3fhiVuz7NtRMbk3uBhw==}
     engines: {node: '>=20.18.0'}
     hasBin: true
-    bundledDependencies: []
 
   pdfjs-dist@5.4.296:
     resolution: {integrity: sha512-DlOzet0HO7OEnmUmB6wWGJrrdvbyJKftI1bhMitK7O2N8W2gc757yyYBbINy9IDafXAV9wmKr9t7xsTaNKRG5Q==}
@@ -15763,7 +15762,7 @@ snapshots:
 
   '@alloc/quick-lru@5.2.0': {}
 
-  '@angriff36/manifest@0.6.1(@supabase/supabase-js@2.97.0(bufferutil@4.1.0)(utf-8-validate@5.0.10))':
+  '@angriff36/manifest@0.8.0(@supabase/supabase-js@2.97.0(bufferutil@4.1.0)(utf-8-validate@5.0.10))':
     dependencies:
       '@supabase/supabase-js': 2.97.0(bufferutil@4.1.0)(utf-8-validate@5.0.10)
       '@types/pg': 8.16.0
@@ -28325,7 +28324,7 @@ snapshots:
       postcss: 8.4.31
       react: 19.2.6
       react-dom: 19.2.6(react@19.2.6)
-      styled-jsx: 5.1.6(@babel/core@7.29.0)(react@19.2.6)
+      styled-jsx: 5.1.6(react@19.2.6)
     optionalDependencies:
       '@next/swc-darwin-arm64': 16.2.6
       '@next/swc-darwin-x64': 16.2.6
@@ -30851,6 +30850,11 @@ snapshots:
       react: 19.2.6
     optionalDependencies:
       '@babel/core': 7.29.0
+
+  styled-jsx@5.1.6(react@19.2.6):
+    dependencies:
+      client-only: 0.0.1
+      react: 19.2.6
 
   styled-jsx@5.1.7(@babel/core@7.29.0)(react@19.2.6):
     dependencies:
