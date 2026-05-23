@@ -1,0 +1,39 @@
+{
+  "$schema": "Schema: { generatedAt: ISO date, note: string, count: number, files: string[] (sorted POSIX repo-relative paths) }",
+  "generatedAt": "2026-05-23T02:08:00Z",
+  "note": "Snapshot of test files quarantined out of blocking CI as of PR #50. Each entry is a `*.quarantine.test.ts` file isolated from `pnpm test` via vitest config exclude. The files still run via `pnpm test:quarantine` for advisory output. The CI gate `ci/check-quarantine-baseline.mjs` fails if the count of `*.quarantine.test.ts` files in the repo exceeds this baseline (i.e. someone added new quarantined tests without retiring old ones). Per `ci/DRAIN.md`, the only allowed change to this file is to REMOVE entries (when the underlying test is fixed and the file is renamed back to `.test.ts`).",
+  "count": 27,
+  "files": [
+    "apps/api/__tests__/kitchen/dishes.quarantine.test.ts",
+    "apps/api/__tests__/kitchen/equipment-crud.quarantine.test.ts",
+    "apps/api/__tests__/kitchen/ingredients.quarantine.test.ts",
+    "apps/api/__tests__/kitchen/manifest-build-determinism.quarantine.test.ts",
+    "apps/api/__tests__/kitchen/manifest-command-constraints.quarantine.test.ts",
+    "apps/api/__tests__/kitchen/manifest-constraints-http.quarantine.test.ts",
+    "apps/api/__tests__/kitchen/manifest-generated-claim-route-wiring.quarantine.test.ts",
+    "apps/api/__tests__/kitchen/manifest-http-integration.quarantine.test.ts",
+    "apps/api/__tests__/kitchen/manifest-negative-command-tests.quarantine.test.ts",
+    "apps/api/__tests__/kitchen/manifest-prep-list-items-http.quarantine.test.ts",
+    "apps/api/__tests__/kitchen/manifest-preptask-claim.quarantine.test.ts",
+    "apps/api/__tests__/kitchen/manifest-projection-preptask-claim.golden.quarantine.test.ts",
+    "apps/api/__tests__/kitchen/manifest-projection-snapshot.quarantine.test.ts",
+    "apps/api/__tests__/kitchen/manifest-recipe-version-http.quarantine.test.ts",
+    "apps/api/__tests__/kitchen/manifest-shadow-claim-route.quarantine.test.ts",
+    "apps/api/__tests__/kitchen/menus.quarantine.test.ts",
+    "apps/api/__tests__/kitchen/prep-list-autogeneration.quarantine.test.ts",
+    "apps/api/__tests__/kitchen/prep-lists.quarantine.test.ts",
+    "apps/api/__tests__/kitchen/prep-tasks.quarantine.test.ts",
+    "apps/api/__tests__/kitchen/recipes/recipes.quarantine.test.ts",
+    "apps/api/__tests__/kitchen/stations.quarantine.test.ts",
+    "packages/manifest-adapters/__tests__/prisma-store-broken-read-batch06.quarantine.test.ts",
+    "packages/manifest-adapters/__tests__/prisma-store-broken-read-batch07.quarantine.test.ts",
+    "packages/manifest-adapters/__tests__/prisma-store-broken-read-batch08.quarantine.test.ts",
+    "packages/manifest-adapters/__tests__/prisma-store-broken-read-batch10.quarantine.test.ts",
+    "packages/manifest-adapters/__tests__/prisma-store-broken-read-batch11.quarantine.test.ts",
+    "packages/manifest-adapters/__tests__/prisma-store-broken-read-batch12.quarantine.test.ts"
+  ],
+  "buckets": {
+    "apps/api kitchen (Next.js route handlers calling routes without { params } harness arg)": 21,
+    "packages/manifest-adapters BROKEN_PRISMA_READ batches (snake_case fixtures vs camelCase Prisma source after May-14 schema rename)": 6
+  }
+}

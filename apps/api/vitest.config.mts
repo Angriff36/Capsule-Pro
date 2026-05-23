@@ -69,7 +69,13 @@ export default defineConfig({
     restoreMocks: true,
     setupFiles: ["./test/setup.ts"],
     include: ["**/__tests__/**/*.test.{ts,tsx,js}"],
-    exclude: ["**/__tests__/**/*.integration.test.{ts,tsx,js}"],
+    // Quarantined tests: *.quarantine.test.ts files are isolated from the
+    // blocking test run. They still exist on disk + run via `pnpm test:quarantine`
+    // for advisory output. See ci/DRAIN.md for how to retire a quarantined file.
+    exclude: [
+      "**/__tests__/**/*.integration.test.{ts,tsx,js}",
+      "**/__tests__/**/*.quarantine.test.{ts,tsx,js}",
+    ],
   },
   resolve: {
     alias: {

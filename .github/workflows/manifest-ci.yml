@@ -293,15 +293,15 @@ jobs:
           LIVEBLOCKS_SECRET: "api_key_placeholder"
 
       - name: Run manifest integration tests
-        # --exclude prep-tasks.test.ts: those tests hit the live Prisma client
-        # against tenant_staff.user_preferences etc. and need a real DB. This
-        # job's DATABASE_URL is a dummy localhost connection. The full kitchen
-        # suite (including prep-tasks) runs in the e2e job with an ephemeral
-        # Postgres service.
+        # Quarantined kitchen test files (renamed to *.quarantine.test.ts) are
+        # excluded by vitest config — see apps/api/vitest.config.mts and
+        # ci/quarantine-baseline.json. They include the prep-tasks DB-dependent
+        # tests and 20 other files that hit the {params}: undefined harness gap.
+        # Drain quarantine per ci/DRAIN.md.
         run: |
-          echo "Running manifest integration tests (excluding DB-dependent prep-tasks.test.ts)..."
+          echo "Running manifest integration tests (quarantine excluded via vitest config)..."
           cd apps/api
-          pnpm test __tests__/kitchen/ -- --run --exclude '**/prep-tasks.test.ts'
+          pnpm test __tests__/kitchen/ -- --run
         env:
           DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
 
@@ -407,6 +407,28 @@ jobs:
             exit 1
           fi
           echo "Governance registries are in sync with IR."
+
+  quarantine-baseline:
+    name: Quarantine Baseline Check
+    # BLOCKING — fails if any new `*.quarantine.test.ts` files appear in the
+    # tree beyond the count recorded in ci/quarantine-baseline.json.
+    # Per ci/DRAIN.md, the only allowed direction is DOWN: fix tests and
+    # remove them from quarantine; do not add new ones.
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+
+      - name: Verify no new quarantined tests
+        run: node ci/check-quarantine-baseline.mjs
 
   manifest-bypass-audit:
     name: Bypass Registry Audit

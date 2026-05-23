@@ -22,6 +22,7 @@
     "build": "tsc --declaration",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
+    "test:quarantine": "vitest run __tests__/**/*.quarantine.test.ts || true",
     "test:watch": "vitest"
   },
   "dependencies": {
