@@ -106,18 +106,24 @@ export class TrainingModulePrismaStore {
         });
     }
     mapToManifestEntity(row) {
+        // Prisma always exposes the model field name (camelCase) regardless of
+        // @map("snake_case") in schema.prisma. Earlier versions of this method
+        // read row.content_url / row.is_required / row.created_by (snake_case)
+        // which always returned undefined; the camelCase reads below match what
+        // Prisma actually returns. Verified against:
+        //   model TrainingModule { contentUrl @map("content_url") ... }
         return {
             id: row.id,
             tenantId: row.tenantId,
             title: row.title ?? "",
             description: row.description ?? null,
-            contentUrl: row.content_url ?? null,
-            contentType: row.content_type ?? "document",
+            contentUrl: row.contentUrl ?? null,
+            contentType: row.contentType ?? "document",
             durationMinutes: row.durationMinutes ?? null,
             category: row.category ?? null,
-            isRequired: row.is_required ?? false,
+            isRequired: row.isRequired ?? false,
             isActive: row.isActive ?? true,
-            createdBy: row.created_by ?? null,
+            createdBy: row.createdBy ?? null,
             createdAt: row.createdAt
                 ? new Date(row.createdAt).getTime()
                 : 0,
