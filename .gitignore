@@ -437,6 +437,12 @@ spec-prompt-template-generator.md
 # manifest-adapters dist is consumed directly by apps/api (no publish step); must be committed
 !packages/manifest-adapters/dist/
 !packages/manifest-adapters/dist/**
+# sentry-integration dist must be committed — apps/api/app/webhooks/sentry/route.ts
+# imports subpath exports (@repo/sentry-integration/queue, /webhook) that resolve
+# to ./dist/*.d.ts via package.json exports. turbo typecheck doesn't depend on
+# ^build, so CI sees no dist unless we commit it. Same pattern as manifest-adapters.
+!packages/sentry-integration/dist/
+!packages/sentry-integration/dist/**
 **/build/
 **/.output/
 **/.vite/

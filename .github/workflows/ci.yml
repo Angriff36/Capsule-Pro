@@ -161,6 +161,18 @@ jobs:
       - name: Wait for PostgreSQL
         run: until pg_isready -h localhost -U testuser -d capsule_test; do sleep 2; done
 
+      - name: Create Supabase-only roles for migration portability
+        # Many migrations contain `CREATE POLICY ... FOR ALL TO service_role`,
+        # which is a Supabase-managed role. Prod runs on Supabase where the role
+        # exists; the ephemeral postgres:16-alpine service container does not
+        # have it, so migrations fail with `role "service_role" does not exist`
+        # (P3018 / 42704). Pre-create the role so migrations apply unchanged.
+        # Existing migrations are immutable per docs/database/CONTRIBUTING.md;
+        # we must adapt the test DB, not the SQL.
+        run: |
+          PGPASSWORD=testpass psql -h localhost -U testuser -d capsule_test -c \
+            "DO \$\$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'service_role') THEN CREATE ROLE service_role; END IF; END \$\$;"
+
       - name: Run database migrations
         run: |
           cd packages/database
