@@ -112,7 +112,12 @@ export class InventoryTransferPrismaStore implements Store<EntityInstance> {
           transferNumber,
           fromLocationId: asString(data.fromLocationId),
           toLocationId: asString(data.toLocationId),
-          status: asString(data.status) || "pending",
+          // Fallback to "pending_approval" (in manifest validStatus) rather
+          // than the Prisma column default "pending" (which violates the
+          // manifest constraint). The manifest's create command always
+          // mutates status to "pending_approval", so this fallback is a
+          // belt-and-suspenders guard for direct-store callers.
+          status: asString(data.status) || "pending_approval",
           // requestedBy is adapter-derived from RuntimeContext.user.id;
           // the manifest no longer captures it as a create-command param.
           requestedBy: this.requestedBy || null,

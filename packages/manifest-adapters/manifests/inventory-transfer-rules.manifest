@@ -45,7 +45,13 @@ entity InventoryTransfer {
     mutate toLocationId = toLocationId
     mutate notes = notes
     mutate items = items
-    mutate status = "pending"
+    // Initial status must be in validStatus and reachable by `approve`
+    // (which requires self.status == "pending_approval"). Without an
+    // explicit submit-for-approval command in the manifest, starting in
+    // "pending_approval" is the only state from which the workflow can
+    // progress. "pending" (the Prisma column default) is NOT in
+    // validStatus and would violate the constraint.
+    mutate status = "pending_approval"
     mutate createdAt = now()
     mutate updatedAt = now()
 
