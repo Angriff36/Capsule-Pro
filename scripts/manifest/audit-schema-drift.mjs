@@ -311,12 +311,59 @@ function checkEntity({
     const derivedRule = adapterDerived[field.name];
     const bypassEntry = nonconforming[field.name];
 
+    // Resolution order (per constitution §14 and the "How to resolve" guidance):
+    // 1. declared in manifest with matching kind          → allowed (create_param/property_default)
+    // 2. declared but wrong kind, with adapter-derived    → allowed (adapter_derived, overrides type_mismatch)
+    // 3. declared but wrong kind, with nonconforming      → allowed (nonconforming_bypass, overrides type_mismatch)
+    // 4. declared but wrong kind, no allowlist            → violation (type_mismatch)
+    // 5. not declared, with adapter-derived               → allowed (adapter_derived)
+    // 6. not declared, with nonconforming                 → allowed (nonconforming_bypass)
+    // 7. not declared, no allowlist                       → violation (missing)
+    // The allowlist must be consulted BEFORE pushing a type_mismatch violation;
+    // otherwise the allowlist is unreachable for type_mismatch cases and the
+    // documented "Either align the manifest type … or add an adapter-derived rule"
+    // resolution path becomes a no-op.
+
     if (declared && !typeMismatch) {
       allowed.push({
         field: field.name,
         prismaType: field.prismaType,
         coverage: declaredAsParam ? "create_param" : "property_default",
         manifestKind: actualKind,
+      });
+      continue;
+    }
+
+    if (derivedRule) {
+      allowed.push({
+        field: field.name,
+        prismaType: field.prismaType,
+        coverage: "adapter_derived",
+        rule: derivedRule,
+        ...(typeMismatch
+          ? {
+              overriddenViolation: "type_mismatch",
+              manifestKind: actualKind,
+              expectedManifestKind: expectedKind,
+            }
+          : {}),
+      });
+      continue;
+    }
+
+    if (bypassEntry) {
+      allowed.push({
+        field: field.name,
+        prismaType: field.prismaType,
+        coverage: "nonconforming_bypass",
+        bypass: bypassEntry,
+        ...(typeMismatch
+          ? {
+              overriddenViolation: "type_mismatch",
+              manifestKind: actualKind,
+              expectedManifestKind: expectedKind,
+            }
+          : {}),
       });
       continue;
     }
@@ -330,26 +377,6 @@ function checkEntity({
         actualManifestKind: actualKind,
         source: declaredAsParam ? "create_param" : "property",
         recommendation: `Manifest declares ${field.name} as ${actualKind}; Prisma requires ${field.prismaType} (${expectedKind}). Align the manifest type, change Prisma, or add an adapter-derived rule.`,
-      });
-      continue;
-    }
-
-    if (derivedRule) {
-      allowed.push({
-        field: field.name,
-        prismaType: field.prismaType,
-        coverage: "adapter_derived",
-        rule: derivedRule,
-      });
-      continue;
-    }
-
-    if (bypassEntry) {
-      allowed.push({
-        field: field.name,
-        prismaType: field.prismaType,
-        coverage: "nonconforming_bypass",
-        bypass: bypassEntry,
       });
       continue;
     }

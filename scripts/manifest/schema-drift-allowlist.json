@@ -95,6 +95,70 @@
         "owner": "staff",
         "reviewBy": "2026-09-01"
       }
+    },
+    "EmployeeAvailability": {
+      "startTime": {
+        "rule": "Prisma field is `startTime DateTime @map(\"start_time\") @db.Time(6)` — time-of-day storage, NOT a full DateTime/instant. Manifest declares `startTime: string = \"\"` because @db.Time(6) values are pass-through strings (e.g. \"09:00:00\"); coercing to epoch ms would lose semantics (date component is irrelevant for time-of-day). EmployeeAvailabilityPrismaStore.create in packages/manifest-adapters/src/prisma-stores/broken-read-batch06-employee-availability.ts:53 passes `data.startTime as string` directly. One-direction (manifest dispatcher → Prisma); the type_mismatch flag is a false positive of the audit's blanket DateTime→number convention. Long-term cleanup: either teach the audit script that @db.Time(6) should expect manifest `string`, or split EmployeeAvailability.startTime/endTime into HH:MM:SS string properties (already what they are). reviewBy is unchanged from the existing allowlist cadence.",
+        "owner": "staff",
+        "reviewBy": "2026-09-01"
+      },
+      "endTime": {
+        "rule": "Prisma field is `endTime DateTime @map(\"end_time\") @db.Time(6)` — time-of-day storage, NOT a full DateTime/instant. Same handling as `startTime` in EmployeeAvailabilityPrismaStore (broken-read-batch06-employee-availability.ts:54). Pass-through string; no Date coercion appropriate.",
+        "owner": "staff",
+        "reviewBy": "2026-09-01"
+      }
+    },
+    "EmployeeCertification": {
+      "issuedDate": {
+        "rule": "Prisma field is `issuedDate DateTime @map(\"issued_date\") @db.Date` — date-only storage. Manifest declares `issuedDate: string = \"\"` (ISO date format \"YYYY-MM-DD\" expected); Prisma 7 accepts ISO date strings for @db.Date fields without coercion. EmployeeCertification has no dedicated PrismaStore — falls back to the generic adapter, which passes the string through. One-direction (manifest dispatcher → Prisma). Long-term tech debt: align manifest type to `number` (epoch ms) per the convention established by PayrollPeriod/TimeOffRequest, requires adding an EmployeeCertificationPrismaStore that does `new Date(epochMs)` coercion.",
+        "owner": "staff",
+        "reviewBy": "2026-09-01"
+      }
+    },
+    "PayrollPeriod": {
+      "periodStart": {
+        "rule": "Prisma field is `periodStart DateTime @map(\"period_start\") @db.Date` — date-only storage. Manifest declares `periodStart: string = \"\"` (ISO date format). PayrollPeriodPrismaStore.create in packages/manifest-adapters/src/prisma-stores/broken-read-batch11-payroll.ts:170-174 coerces via `data.periodStart ? new Date(data.periodStart) : new Date()` (Date constructor accepts both ISO string and epoch ms). mapToManifestEntity:237-239 converts Date→epoch ms on read, so the read shape is `number` even though the write shape is `string`. Long-term tech debt: align manifest write type to `number` so write/read shapes match the convention established by CateringOrder.delivery_date, Schedule.schedule_date, ScheduleShift.shift_start/shift_end. Requires API route transformBody + UI alignment; out of scope for this allowlist pass.",
+        "owner": "staff",
+        "reviewBy": "2026-09-01"
+      },
+      "periodEnd": {
+        "rule": "Prisma field is `periodEnd DateTime @map(\"period_end\") @db.Date` — date-only storage. Same handling as `periodStart` in PayrollPeriodPrismaStore (broken-read-batch11-payroll.ts:175-178). Write accepts string; read returns epoch ms.",
+        "owner": "staff",
+        "reviewBy": "2026-09-01"
+      }
+    },
+    "EmployeeDeduction": {
+      "effectiveDate": {
+        "rule": "Prisma field is `effectiveDate DateTime @map(\"effective_date\") @db.Date` — date-only storage. Manifest declares `effectiveDate: string = \"\"` (ISO date format). EmployeeDeduction has no dedicated PrismaStore yet; generic adapter passes the string through and Prisma 7 accepts ISO date strings for @db.Date fields. One-direction (manifest dispatcher → Prisma). Long-term tech debt: same as EmployeeCertification.issuedDate — align manifest to `number` once a dedicated adapter exists.",
+        "owner": "staff",
+        "reviewBy": "2026-09-01"
+      }
+    },
+    "TimeOffRequest": {
+      "startDate": {
+        "rule": "Prisma field is `startDate DateTime @map(\"start_date\") @db.Date` — date-only storage. Manifest declares `startDate: string = \"\"` (ISO date format). TimeOffRequestPrismaStore.create in packages/manifest-adapters/src/prisma-stores/broken-read-batch15-rolepolicy-timeoff.ts:173 coerces via `asNullableDate(data.startDate) ?? new Date()` (asNullableDate accepts ISO strings, epoch ms, and Date instances; see asNullableDate helper). Long-term tech debt: align manifest write type to `number` per the established convention; requires the API route transformBody at apps/api/app/api/staff/time-off/requests/route.ts to convert ISO→epoch ms (currently passes string through from request body) plus UI alignment.",
+        "owner": "staff",
+        "reviewBy": "2026-09-01"
+      },
+      "endDate": {
+        "rule": "Prisma field is `endDate DateTime @map(\"end_date\") @db.Date` — date-only storage. Same handling as `startDate` in TimeOffRequestPrismaStore (broken-read-batch15-rolepolicy-timeoff.ts:174).",
+        "owner": "staff",
+        "reviewBy": "2026-09-01"
+      }
+    },
+    "ClientPreference": {
+      "preferenceValue": {
+        "rule": "Prisma field is `preferenceValue Json @map(\"preference_value\")` — JSON storage. Manifest declares `preferenceValue: string = \"\"` because the manifest IR grammar (packages/manifest-ir/dsl/grammar.peg) has no `object` kind yet — `string|number|boolean` are the only scalar property types available. ClientPreferencePrismaStore.create in packages/manifest-adapters/src/prisma-stores/broken-read-batch04-client-trio.ts:314 coerces via `asJsonInput(data.preferenceValue)`, which accepts strings (parsed/passed as JSON), numbers, booleans, objects, and arrays. The adapter file header explicitly documents this mismatch (lines 19-21). Long-term tech debt: when manifest IR grammar gains an `object` kind, align manifest type to `object` and remove this allowlist entry — until then, allowlist is the only option per the audit's documented resolution paths.",
+        "owner": "crm",
+        "reviewBy": "2026-09-01"
+      }
+    },
+    "CommandBoardLayout": {
+      "viewport": {
+        "rule": "Prisma field is `viewport Json` (no @map) — JSON storage. Manifest declares `viewport: string = \"{}\"` because the manifest IR grammar has no `object` kind yet. CommandBoardLayoutPrismaStore.create in packages/manifest-adapters/src/prisma-stores/broken-read-batch05-command-board.ts:306 coerces via `asJsonInput(data.viewport)` so JSON objects round-trip cleanly while string defaults like \"{}\" are stored as valid JSON strings. The adapter file header documents this handling (lines 16-19). Long-term tech debt: same as ClientPreference.preferenceValue — blocked on manifest IR grammar gaining an `object` kind.",
+        "owner": "platform",
+        "reviewBy": "2026-09-01"
+      }
     }
   },
   "nonconforming": {},
