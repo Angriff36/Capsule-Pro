@@ -1,19 +1,42 @@
 /**
- * Shared lower-level manifest command executor.
+ * Capsule-Pro canonical transport execution wrapper for Manifest commands.
  *
- * This module provides `runManifestCommand` — the single function that
- * validates a (entity, command) pair against the canonical merged command
- * registry, resolves kebab-case URL command slugs to camelCase Manifest
- * command names, creates a Manifest runtime, executes the command, and
- * returns a normalized Response.
+ * Provenance
+ * ----------
+ * Extracted from the dispatcher route in commit `9dba0dd75` (2026-05-09,
+ * "refactor(api): extract shared manifest command execution helper"). The
+ * dispatcher (apps/api/app/api/manifest/[entity]/commands/[command]/route.ts)
+ * existed first as a 102-line inline route created in `1467cb609`
+ * (2026-05-08); the May-9 commit reduced it to 34 lines and moved the
+ * execution body here. **This file is not legacy scaffolding** — it is the
+ * extraction result and is named in CAPSULE_PRO_CONSTITUTION.md §7 and §20.
  *
- * Callers (the dynamic dispatcher, domain REST adapters) must already be
- * authenticated — this helper does NOT resolve auth/tenant.  It accepts
- * pre-resolved user context directly.
+ * Canonical callers
+ * -----------------
+ * - The dynamic dispatcher (params/body/auth then delegates here).
+ * - Hand-written domain REST adapters at apps/api/app/api/user/* that
+ *   hard-code entity+command and delegate execution. Per §7 narrow exception.
  *
- * All mutations MUST flow through this helper (or the higher-level
- * executeManifestCommand handler) to enforce manifest invariants.
- * Direct Prisma writes bypass guards, policies, and event emission.
+ * What this helper does
+ * ---------------------
+ * - Resolves a (entity, command) pair via the canonical merged registry,
+ *   handling kebab-case URL slug → camelCase Manifest command name.
+ * - Creates a Manifest runtime with the supplied user context.
+ * - Calls RuntimeEngine.runCommand.
+ * - Normalizes the result into success/error Response shapes, mapping
+ *   policy denial → 403, guard failure → 422, command error → 400,
+ *   uncaught exception → 500.
+ *
+ * Callers MUST already be authenticated. This helper does NOT resolve
+ * auth/tenant; it accepts a pre-resolved ManifestUserContext.
+ *
+ * Constitutional position
+ * -----------------------
+ * Per §7 Dispatcher Execution Wrapper Rule: this module is the only
+ * Capsule-Pro module permitted to invoke RuntimeEngine.runCommand and the
+ * only module permitted to perform command resolution, runtime creation,
+ * result normalization, policy/guard/error/event mapping for HTTP transport.
+ * The dispatcher and the /api/user/* domain adapters MUST delegate here.
  *
  * @packageDocumentation
  */

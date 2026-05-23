@@ -108,6 +108,39 @@ This rule applies symmetrically to any other Manifest-projection-emitted transpo
 
 The narrow legitimate exception is `apps/api/app/api/user/*` style hand-written domain REST adapters that delegate to `runManifestCommand` with hard-coded `entity` and `command` values for a single endpoint. These are not dispatcher candidates because they encode a fixed command and may add endpoint-specific shape (e.g. mapping URL params to body keys). They still MUST delegate execution; they may not duplicate the responsibilities listed above.
 
+#### 7.1 Verified history (do not second-guess)
+
+The dispatcher + helper architecture was established in two commits:
+
+- **`1467cb609` (2026-05-08, "feat: manifest command dispatcher — single dynamic route replacing N per-command files")** — created the dispatcher as a single 102-line route with `createManifestRuntime` + `runtime.runCommand` inline. `execute-command.ts` did not yet exist.
+- **`9dba0dd75` (2026-05-09, "refactor(api): extract shared manifest command execution helper")** — extracted the execution body into `apps/api/lib/manifest/execute-command.ts`'s `runManifestCommand`. Dispatcher reduced to 34 lines that import and call `runManifestCommand`. **This is the canonical shape this rule codifies.**
+
+Between May 9 and May 22, **the dispatcher silently regressed back to inline execution** through a chain of unrelated commits — most notably `44fce89f1 ("fix(payroll): update tax engine to 2026 IRS brackets")` which reverted the dispatcher to 101 lines of inline `createManifestRuntime` + `runtime.runCommand`, then `bbf2dad61` (an ultracite/biome format pass), `8e65f6818` (slug resolver), and `0dfc811ef` (warehouse work) layered on top of the regressed shape. The regression was caused by careless rebases/merges; it was NOT a deliberate architectural choice.
+
+Commit `0282218eb` (PR #50) restored the canonical 9dba0dd75 shape.
+
+Future agents auditing this file MUST treat the May-9 extraction + the dispatcher's delegation to `runManifestCommand` as canonical. The inline shape is the regressed shape, NOT a legitimate alternative architecture. Do not "re-evaluate `execute-command.ts` as legacy scaffolding"; it is the extraction result and is named in §20 Required Repo Artifacts.
+
+#### 7.2 Upstream generator gap (known projection drift)
+
+The upstream `@angriff36/manifest` package's `nextjs.dispatcher` projection (the `_generateDispatcherHandler` method in `node_modules/@angriff36/manifest/dist/manifest/projections/nextjs/generator.js`, lines ~500-580) predates the May-9 extraction. It still emits the pre-extraction inline shape:
+
+- `import { createManifestRuntime } from "@/lib/manifest-runtime"` (L511)
+- `const runtime = await createManifestRuntime({...})` (L549)
+- `const result = await runtime.runCommand(command, body, {...})` (L560)
+
+This is projection drift relative to this rule. The drift is currently **dormant** because:
+- The upstream CLI does not expose `nextjs.dispatcher` as a `--surface` option (accepts only `route, command, types, client, all`).
+- Capsule's generation wrappers (`scripts/manifest/generate.mjs`, `scripts/manifest/generate-all-routes.mjs`) do not invoke the dispatcher surface.
+
+The drift becomes **live** the moment any of these change. The constitutional fix is one of:
+
+1. Upstream PR to `@angriff36/manifest` patching `_generateDispatcherHandler` to emit the May-9 delegating shape (imports `runManifestCommand`, delegates execution).
+2. Capsule generation wrapper that runs the upstream generator and post-processes the output to substitute the inline block with delegation. Wire into the `manifest-codegen-check` CI job with `git diff --exit-code`.
+3. Removing the `// @generated` banner from the dispatcher and declaring it hand-maintained per `9dba0dd75` until upstream is fixed. Honest but contradicts §8 Generator Source Rule.
+
+Tracked as known debt; see `docs/audits/manifest-artifact-layout-adr.md` follow-up list.
+
 ---
 
 ### 8. Generator Source Rule
