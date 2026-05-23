@@ -189,7 +189,7 @@ function auditRouteBoundaries() {
       "--commands-manifest",
       "packages/manifest-ir/ir/kitchen/kitchen.commands.json",
       "--exemptions",
-      "packages/manifest-runtime/packages/cli/src/commands/audit-routes-exemptions.json",
+      "packages/manifest-ir/ir/kitchen/audit-routes-exemptions.json",
     ],
     {
       stdio: "inherit",
