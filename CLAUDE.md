@@ -260,6 +260,6 @@ Last: [first session]
 
 ## Last Session Bridge
 [Emergency bridge — running bridge was not updated]
-Files: apps/app/vitest.config.mts (edit), IMPLEMENTATION_PLAN.md (edit)
+Files: .infisical.json (create), apps/app/package.json (edit)
 
 # === END COGNILAYER ===
