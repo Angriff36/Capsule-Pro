@@ -10,17 +10,17 @@ entity PurchaseRequisition {
   property required id: string
   property required tenantId: string
   property required requisitionNumber: string
-  property requestedBy: string = ""
-  property requestDate: datetime = now()
+  property required requestedBy: string = ""
+  property required requestDate: datetime = now()
   property requiredBy: datetime = now()
   property locationId: string = ""
   property department: string = ""
   property justification: string = ""
-  property status: string = "draft"
-  property subtotal: money = 0
-  property estimatedTax: money = 0
-  property estimatedShipping: money = 0
-  property estimatedTotal: money = 0
+  property required status: string = "draft"
+  property required subtotal: money = 0
+  property required estimatedTax: money = 0
+  property required estimatedShipping: money = 0
+  property required estimatedTotal: money = 0
   property approvedBy: string = ""
   property approvedAt: datetime = now()
   property managerApprovalBy: string = ""
@@ -33,11 +33,13 @@ entity PurchaseRequisition {
   property notes: string = ""
   property submittedAt: datetime = now()
   property itemCategory: string = ""
-  property priority: string = "normal"
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  property required priority: string = "normal"
+  property required createdAt: datetime = now()
+  property required updatedAt: datetime = now()
   property deletedAt: datetime = now()
   property itemCount: int = 0
+
+  key [tenantId, id]
 
   hasMany items: PurchaseRequisitionItem
 
@@ -182,19 +184,21 @@ entity PurchaseRequisitionItem {
   property required requisitionId: string
   property required itemId: string
   property itemName: string = ""
-  property quantityRequested: decimal = 0
+  property required quantityRequested: decimal = 0
   property unitId: int = 0
-  property estimatedUnitCost: money = 0
-  property estimatedTotalCost: money = 0
+  property required estimatedUnitCost: money = 0
+  property required estimatedTotalCost: money = 0
   property suggestedVendorId: string = ""
   property suggestedVendorName: string = ""
   property specifications: string = ""
   property notes: string = ""
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  property required createdAt: datetime = now()
+  property required updatedAt: datetime = now()
   property deletedAt: datetime = now()
 
-  belongsTo requisition: PurchaseRequisition
+  key [tenantId, id]
+
+  belongsTo requisition: PurchaseRequisition fields [tenantId, requisitionId] references [tenantId, id] onDelete cascade
 
   computed totalCost: number = self.quantityRequested * self.estimatedUnitCost
   computed hasSuggestedVendor: boolean = self.suggestedVendorId != ""

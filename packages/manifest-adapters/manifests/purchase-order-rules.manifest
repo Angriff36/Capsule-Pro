@@ -7,24 +7,25 @@ entity PurchaseOrder {
   property required poNumber: string
   property required vendorId: string
   property required locationId: string
-  property orderDate: datetime = now()
+  property required orderDate: datetime = now()
   property expectedDeliveryDate: datetime = now()
   property actualDeliveryDate: datetime = now()
-  property status: string = "draft"
-  property subtotal: money = 0
-  property taxAmount: money = 0
-  property shippingAmount: money = 0
-  property total: money = 0
+  property required status: string = "draft"
+  property required subtotal: money = 0
+  property required taxAmount: money = 0
+  property required shippingAmount: money = 0
+  property required total: money = 0
   property notes: string = ""
   property submittedBy: string = ""
   property submittedAt: datetime = now()
   property receivedBy: string = ""
   property receivedAt: datetime = now()
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  property required createdAt: datetime = now()
+  property required updatedAt: datetime = now()
   property deletedAt: datetime = now()
   property itemCount: int = 0
-  property items: string = ""
+
+  key [tenantId, id]
 
   hasMany items: PurchaseOrderItem
 
@@ -47,8 +48,7 @@ entity PurchaseOrder {
     }
   }
 
-  command create(poNumber: string, vendorId: string, locationId: string, notes: string, items: string) {
-    // items is a JSON-encoded array of line items — PrismaJsonStore preserves it
+  command create(poNumber: string, vendorId: string, locationId: string, notes: string) {
     guard poNumber != null and poNumber != "" "PO number is required"
     guard vendorId != null and vendorId != "" "Vendor is required"
     guard locationId != null and locationId != "" "Location is required"
@@ -57,7 +57,6 @@ entity PurchaseOrder {
     mutate vendorId = vendorId
     mutate locationId = locationId
     mutate notes = notes
-    mutate items = items
     mutate status = "draft"
     mutate subtotal = 0
     mutate taxAmount = 0
@@ -172,20 +171,22 @@ entity PurchaseOrderItem {
   property required tenantId: string
   property required purchaseOrderId: string
   property required itemId: string
-  property quantityOrdered: decimal = 0
-  property quantityReceived: decimal = 0
-  property unitId: int = 0
-  property unitCost: money = 0
-  property totalCost: money = 0
+  property required quantityOrdered: decimal = 0
+  property required quantityReceived: decimal = 0
+  property required unitId: int = 0
+  property required unitCost: money = 0
+  property required totalCost: money = 0
   property qualityStatus: string = "pending"
   property discrepancyType: string = ""
   property discrepancyAmount: money = 0
   property notes: string = ""
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  property required createdAt: datetime = now()
+  property required updatedAt: datetime = now()
   property deletedAt: datetime = now()
 
-  belongsTo purchaseOrder: PurchaseOrder
+  key [tenantId, id]
+
+  belongsTo purchaseOrder: PurchaseOrder fields [purchaseOrderId] references [id] onDelete cascade
 
   computed isFullyReceived: boolean = self.quantityReceived >= self.quantityOrdered
   computed isPartiallyReceived: boolean = self.quantityReceived > 0 and self.quantityReceived < self.quantityOrdered
