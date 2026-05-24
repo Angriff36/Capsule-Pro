@@ -11,33 +11,35 @@ entity PurchaseRequisition {
   property required tenantId: string
   property required requisitionNumber: string
   property requestedBy: string = ""
-  property requestDate: number = 0
-  property requiredBy: number = 0
+  property requestDate: datetime = now()
+  property requiredBy: datetime = now()
   property locationId: string = ""
   property department: string = ""
   property justification: string = ""
   property status: string = "draft"
-  property subtotal: number = 0
-  property estimatedTax: number = 0
-  property estimatedShipping: number = 0
-  property estimatedTotal: number = 0
+  property subtotal: money = 0
+  property estimatedTax: money = 0
+  property estimatedShipping: money = 0
+  property estimatedTotal: money = 0
   property approvedBy: string = ""
-  property approvedAt: number = 0
+  property approvedAt: datetime = now()
   property managerApprovalBy: string = ""
-  property managerApprovalAt: number = 0
+  property managerApprovalAt: datetime = now()
   property financeApprovalBy: string = ""
-  property financeApprovalAt: number = 0
+  property financeApprovalAt: datetime = now()
   property convertedToPoId: string = ""
-  property convertedAt: number = 0
+  property convertedAt: datetime = now()
   property rejectionReason: string = ""
   property notes: string = ""
-  property submittedAt: number = 0
+  property submittedAt: datetime = now()
   property itemCategory: string = ""
   property priority: string = "normal"
-  property createdAt: number = 0
-  property updatedAt: number = 0
-  property deletedAt: number = 0
-  property itemCount: number = 0
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
+  property deletedAt: datetime = now()
+  property itemCount: int = 0
+
+  hasMany items: PurchaseRequisitionItem
 
   computed isDraft: boolean = self.status == "draft"
   computed isPending: boolean = self.status == "pending_manager"
@@ -171,7 +173,7 @@ entity PurchaseRequisition {
     emit PurchaseRequisitionCancelled
   }
 
-  store PurchaseRequisition in memory
+  store PurchaseRequisition in durable
 }
 
 entity PurchaseRequisitionItem {
@@ -180,17 +182,19 @@ entity PurchaseRequisitionItem {
   property required requisitionId: string
   property required itemId: string
   property itemName: string = ""
-  property quantityRequested: number = 0
-  property unitId: number = 0
-  property estimatedUnitCost: number = 0
-  property estimatedTotalCost: number = 0
+  property quantityRequested: decimal = 0
+  property unitId: int = 0
+  property estimatedUnitCost: money = 0
+  property estimatedTotalCost: money = 0
   property suggestedVendorId: string = ""
   property suggestedVendorName: string = ""
   property specifications: string = ""
   property notes: string = ""
-  property createdAt: number = 0
-  property updatedAt: number = 0
-  property deletedAt: number = 0
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
+  property deletedAt: datetime = now()
+
+  belongsTo requisition: PurchaseRequisition
 
   computed totalCost: number = self.quantityRequested * self.estimatedUnitCost
   computed hasSuggestedVendor: boolean = self.suggestedVendorId != ""
@@ -244,7 +248,7 @@ entity PurchaseRequisitionItem {
     emit PurchaseRequisitionItemRemoved
   }
 
-  store PurchaseRequisitionItem in memory
+  store PurchaseRequisitionItem in durable
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

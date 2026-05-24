@@ -26,9 +26,9 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@angriff36/manifest": "1.0.0",
     "@repo/database": "workspace:*",
     "@repo/realtime": "workspace:*",
-    "@angriff36/manifest": "0.9.3",
     "@sentry/node": "^10.38.0",
     "hono": "^4.10.5"
   },
