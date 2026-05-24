@@ -1,0 +1,67 @@
+---
+title: Start Here
+description: What this platform is, how Manifest governs it, and where to look for what.
+---
+
+Capsule Pro is a multi-tenant operations platform for catering businesses. This page is the five-minute orientation for anyone — human or agent — who needs to understand how the pieces fit before touching code or docs.
+
+## What Manifest Is
+
+Manifest is a business-logic DSL (domain-specific language) built into this repo. You write commands, constraints, guards, and policies in Manifest files. The compiler turns them into an **Intermediate Representation (IR)** — a JSON/TypeScript structure that is the **single semantic source of truth** for all domain behavior.
+
+The IR drives everything downstream:
+
+- The **runtime** (`RuntimeEngine.runCommand()`) reads the IR to execute every governed domain mutation.
+- The **PrismaProjection** reads the IR to generate `schema.prisma` (the database schema).
+- **TypeScript clients**, **Hono route handlers**, and **test scaffolding** are all generated projections of the IR.
+
+**If the IR and the code disagree, the IR wins. If the IR and `schema.prisma` disagree, the IR wins.**
+
+## What PrismaProjection Is (and Isn't)
+
+`schema.prisma` is **not** the source of truth for the data model. It is a **derived projection** — output produced by running PrismaProjection over the IR.
+
+- `typeMappings` in the projection config control how IR field types map to Prisma scalar types.
+- `tableMappings` control which IR entities map to which tables and schemas.
+- Composite primary keys (e.g., `(tenant_id, id)`) are declared in the IR and emitted into `schema.prisma` automatically.
+
+Do **not** hand-edit `schema.prisma` to change the data model. Change the IR; the projection will update the schema.
+
+## What the Runtime Is
+
+The runtime is the enforcer. Every governed mutation — any tenant-scoped create, update, delete, or state-change — must go through `RuntimeEngine.runCommand()`. Direct Prisma writes for governed entities are forbidden.
+
+The execution pipeline is fixed:
+
+```
+Idempotency check → Policies → Constraints → Guards → Actions → Events
+```
+
+See [Manifest System](/docs/platform/manifest-system) for the full breakdown.
+
+## Where to Touch What
+
+| I want to… | Touch this |
+|---|---|
+| Change domain behavior (rules, constraints, actions) | IR / Manifest command files |
+| Change the database schema | IR (then regenerate via PrismaProjection) |
+| Add a new database migration | `pnpm db:dev -- --create-only --name <name>` — see [CLAUDE.md](/docs/internal/development-notes) |
+| Add a new API route for a governed entity | The command dispatcher at `apps/api/app/api/manifest/[entity]/commands/[command]/route.ts` |
+| Change auth or tenant scoping | `packages/auth`, `apps/app/app/lib/tenant.ts` |
+| Change realtime behavior | Outbox table + `apps/api/app/outbox/publish/route.ts` |
+| Understand the full tech stack | [Architecture](/docs/architecture) |
+| Understand the storage projection contract | [Storage Projection](/docs/platform/storage-projection) |
+
+## What the Conformance Tests Are
+
+Conformance tests live in the Manifest package and verify that the runtime, store adapters, and projections behave consistently with the IR semantics. If a conformance test fails, the IR semantics are broken — this is a blocker, not a warning.
+
+## What Is and Isn't Binding
+
+| Layer | Authority | Location |
+|---|---|---|
+| IR + Manifest spec | **Binding** — semantic law | Manifest package |
+| Conformance tests | **Binding** — runtime law | Manifest package |
+| `schema.prisma` | **Derived** — do not treat as source | `packages/database/prisma/` |
+| This docs app | **Advisory** — orientation, not law | `apps/docs/` |
+| `CLAUDE.md` / `AGENTS.md` | **Binding** — workflow law for agents | Repo root |

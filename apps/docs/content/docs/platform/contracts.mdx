@@ -1,0 +1,34 @@
+---
+title: Contracts
+description: Where the binding contracts live and how to find them.
+---
+
+The word "contracts" means different things in different contexts here. This page disambiguates them.
+
+## Domain Mutation Contract
+
+The contract for how Capsule Pro's governed domain mutations work is the **Manifest system**. The binding law lives in the IR and the Manifest spec — not in this docs app. This page is a signpost, not a second copy.
+
+- **What's binding:** The Manifest IR, conformance tests, and the execution pipeline defined in the runtime.
+- **Where it lives:** The Manifest package (separate from this docs app).
+- **What documents it here:** [Manifest System](/docs/platform/manifest-system) — an orientation page, not the spec itself.
+
+## Data Contract (Storage)
+
+The contract for how the IR maps to the database is the **storage projection**. See [Storage Projection](/docs/platform/storage-projection).
+
+`schema.prisma` is a **derived output** of that contract — not the contract itself.
+
+## Recipes and Ingredients Contract
+
+The contract for how recipes relate to ingredients, portions, and costing is documented at [Recipes & Ingredients Contract](/docs/internal/recipes-ingredients-contract).
+
+## Event Contracts (Documents)
+
+Catering event contracts (the PDF documents sent to clients) are managed through the Events module. See [Events → Contracts](/docs/events/contracts).
+
+---
+
+<Note>
+This folder does not duplicate any spec. If you're looking for the authoritative spec for Manifest behavior, go to the Manifest package. If you're looking for database schema decisions, go to `docs/database/CONTRIBUTING.md` in the repo root.
+</Note>

@@ -369,6 +369,7 @@ scripts/*
 !scripts/check-hardcoded-routes.mjs
 !scripts/check-staged-write-routes.mjs
 !scripts/lint-explicit-any.mjs
+!scripts/check-spec-integrity.mjs
 !scripts/lint-explicit-any-baseline.txt
 !scripts/ensure-github-packages-npmrc.sh
 !scripts/test-route-conformance.mjs
