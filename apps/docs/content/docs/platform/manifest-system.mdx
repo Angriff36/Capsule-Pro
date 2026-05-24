@@ -3,7 +3,11 @@ title: Manifest System
 description: The custom DSL and IR-first architecture that governs all domain mutations.
 ---
 
-The Manifest system is a custom domain-specific language (DSL) that compiles to an Intermediate Representation (IR). The IR is the single source of truth for all domain behavior — runtime execution, store operations, and code generation all derive from it.
+The Manifest system is a custom domain-specific language (DSL) that compiles to an **Intermediate Representation (IR)**. The IR is the **single semantic source of truth** for all domain behavior — the runtime, the database schema, and all generated code derive from it.
+
+<Note>
+`schema.prisma` is a **derived projection** of the IR, not the source. To change the data model, change the IR. The PrismaProjection then generates `schema.prisma`. See [Storage Projection](/docs/platform/storage-projection) for details.
+</Note>
 
 ## Pipeline
 
@@ -47,12 +51,11 @@ The runtime is store-agnostic. Available store implementations:
 - **MemoryStore** — In-memory store for testing
 - **LocalStorageStore** — Browser-based store for offline scenarios
 
-## Code Generation
+## Projections (Code Generation)
 
-The Manifest compiler can generate:
+The Manifest compiler generates projections of the IR. These are outputs — never edit them directly.
 
-- **TypeScript client** — Typed command functions for each entity
-- **Hono server** — HTTP route handlers for each command
-- **Vitest tests** — Test scaffolding for command behavior
-
-Generated code is a projection of the IR and should never be edited directly.
+- **PrismaProjection** — Generates `schema.prisma` from IR entity definitions, type mappings, and table mappings. Composite primary keys (`tenant_id, id`) are declared in the IR and emitted automatically. See [Storage Projection](/docs/platform/storage-projection).
+- **TypeScript client** — Typed command functions for each entity.
+- **Hono server** — HTTP route handlers for each command.
+- **Vitest tests** — Test scaffolding for command behavior.
