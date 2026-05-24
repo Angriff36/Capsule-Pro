@@ -202,7 +202,7 @@ entity Equipment {
 
 }
 
-entity WorkOrder {
+entity MaintenanceWorkOrder {
   property required id: string
   property required tenantId: string
   property required equipmentId: string
@@ -249,7 +249,7 @@ entity WorkOrder {
     mutate status = "assigned"
     mutate updatedAt = now()
 
-    emit WorkOrderAssigned
+    emit MaintenanceWorkOrderAssigned
   }
 
   command startWork(userId: string) {
@@ -258,7 +258,7 @@ entity WorkOrder {
     mutate status = "in_progress"
     mutate updatedAt = now()
 
-    emit WorkOrderStarted
+    emit MaintenanceWorkOrderStarted
   }
 
   command completeWork(actualCost: number, partsUsed: string, notes: string, userId: string) {
@@ -270,7 +270,7 @@ entity WorkOrder {
     mutate completedDate = now()
     mutate updatedAt = now()
 
-    emit WorkOrderCompleted
+    emit MaintenanceWorkOrderCompleted
   }
 
   command updateStatus(newStatus: string, reason: string, userId: string) {
@@ -290,7 +290,7 @@ entity WorkOrder {
     mutate status = newStatus
     mutate updatedAt = now()
 
-    emit WorkOrderStatusUpdated
+    emit MaintenanceWorkOrderStatusUpdated
   }
 
   command create(equipmentId: string, equipmentName: string, title: string, type: string, priority: string, description: string, estimatedCost: number, scheduledDate: number) {
@@ -323,13 +323,13 @@ entity WorkOrder {
     mutate createdAt = now()
     mutate updatedAt = now()
 
-    emit WorkOrderCreated
+    emit MaintenanceWorkOrderCreated
   }
 }
 
 policy ManagersCanManageEquipment execute: user.role in ["kitchen_lead", "manager", "admin"] "Only managers can manage equipment"
 policy KitchenStaffCanViewEquipment execute: user.role in ["kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen staff can view equipment"
-policy ManagersCanManageWorkOrders execute: user.role in ["kitchen_lead", "manager", "admin"] "Only managers can manage work orders"
+policy ManagersCanManageMaintenanceWorkOrders execute: user.role in ["kitchen_lead", "manager", "admin"] "Only managers can manage work orders"
 
 event EquipmentCreated: "equipment.created" {
   equipmentId: string
@@ -398,7 +398,7 @@ event EquipmentRetired: "equipment.retired" {
   retiredAt: number
 }
 
-event WorkOrderCreated: "workorder.created" {
+event MaintenanceWorkOrderCreated: "maintenance.workorder.created" {
   workOrderId: string
   equipmentId: string
   equipmentName: string
@@ -408,7 +408,7 @@ event WorkOrderCreated: "workorder.created" {
   createdAt: number
 }
 
-event WorkOrderAssigned: "workorder.assigned" {
+event MaintenanceWorkOrderAssigned: "maintenance.workorder.assigned" {
   workOrderId: string
   equipmentId: string
   equipmentName: string
@@ -418,14 +418,14 @@ event WorkOrderAssigned: "workorder.assigned" {
   assignedAt: number
 }
 
-event WorkOrderStarted: "workorder.started" {
+event MaintenanceWorkOrderStarted: "maintenance.workorder.started" {
   workOrderId: string
   equipmentId: string
   startedBy: string
   startedAt: number
 }
 
-event WorkOrderCompleted: "workorder.completed" {
+event MaintenanceWorkOrderCompleted: "maintenance.workorder.completed" {
   workOrderId: string
   equipmentId: string
   equipmentName: string
@@ -435,7 +435,7 @@ event WorkOrderCompleted: "workorder.completed" {
   completedAt: number
 }
 
-event WorkOrderStatusUpdated: "workorder.status.updated" {
+event MaintenanceWorkOrderStatusUpdated: "maintenance.workorder.status.updated" {
   workOrderId: string
   equipmentName: string
   oldStatus: string

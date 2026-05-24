@@ -30,11 +30,27 @@ entity Dish {
   computed hasLeadTime: boolean = self.minPrepLeadDays > 0
   computed isDeactivated: boolean = self.isActive == false
 
+  constraint validName: self.name != null and self.name != "" "Dish name is required"
   constraint positivePrice: self.pricePerPerson >= 0 "Price per person cannot be negative"
   constraint positiveCost: self.costPerPerson >= 0 "Cost per person cannot be negative"
   constraint positiveMinLeadDays: self.minPrepLeadDays >= 0 "Minimum prep lead days cannot be negative"
   constraint positiveMaxLeadDays: self.maxPrepLeadDays >= 0 "Maximum prep lead days cannot be negative"
   constraint leadDaysOrder: self.maxPrepLeadDays == 0 or self.maxPrepLeadDays >= self.minPrepLeadDays "Max prep lead days must be >= min prep lead days"
+
+  constraint warnCostExceedsPrice:warn self.costPerPerson > self.pricePerPerson and self.pricePerPerson > 0 {
+    messageTemplate: "Dish cost ({cost}) exceeds price ({price})"
+    details: {
+      cost: self.costPerPerson
+      price: self.pricePerPerson
+    }
+  }
+
+  constraint warnLongLeadTime:warn self.minPrepLeadDays > 3 {
+    messageTemplate: "Dish requires {days} days advance notice"
+    details: {
+      minPrepLeadDays: self.minPrepLeadDays
+    }
+  }
 
   constraint warnNoPrice:warn self.pricePerPerson == 0 and self.isActive {
     messageTemplate: "Active dish '{dishName}' has no price set"
@@ -122,6 +138,23 @@ entity Dish {
     guard self.isActive "Cannot update pricing on a deactivated dish"
     guard pricePerPerson >= 0 "Price per person cannot be negative"
     guard costPerPerson >= 0 "Cost per person cannot be negative"
+
+    constraint warnPriceDecrease:warn pricePerPerson < self.pricePerPerson {
+      messageTemplate: "Price decreased from {oldPrice} to {newPrice}"
+      details: {
+        oldPrice: self.pricePerPerson
+        newPrice: pricePerPerson
+      }
+    }
+
+    constraint warnMarginBelowThreshold:warn pricePerPerson > 0 and (costPerPerson / pricePerPerson) > 0.75 {
+      messageTemplate: "New pricing has low profit margin ({marginPercent}% cost)"
+      details: {
+        costPerPerson: costPerPerson
+        pricePerPerson: pricePerPerson
+        marginPercent: (costPerPerson / pricePerPerson) * 100
+      }
+    }
 
     constraint warnLowMargin:warn pricePerPerson > 0 and costPerPerson > 0 and ((pricePerPerson - costPerPerson) / pricePerPerson) * 100 < 20 {
       messageTemplate: "New pricing for '{dishName}' results in a low margin ({margin}%)"

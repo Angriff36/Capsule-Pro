@@ -20,7 +20,14 @@ entity Ingredient {
   computed hasAllergens: boolean = self.allergens != ""
   computed isDeactivated: boolean = self.isActive == false
 
-  constraint requireName: self.name != "" "Ingredient name is required"
+  constraint requireName: self.name != null and self.name != "" "Ingredient name is required"
+
+  constraint warnMajorAllergen:warn self.allergens != null and (self.allergens contains "nuts" or self.allergens contains "dairy" or self.allergens contains "gluten") {
+    messageTemplate: "Ingredient contains major allergen: {allergens}"
+    details: {
+      allergens: self.allergens
+    }
+  }
 
   constraint warnNoShelfLife:warn self.shelfLifeDays == 0 {
     messageTemplate: "Ingredient '{ingredientName}' has no shelf life configured"
