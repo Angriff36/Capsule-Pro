@@ -452,6 +452,7 @@ spec-prompt-template-generator.md
 !packages/manifest-runtime/dist/**
 # Route manifest artifacts must be committed for CI and dev-time validation
 !packages/manifest-ir/dist/
+packages/manifest-ir/dist/*
 !packages/manifest-ir/dist/routes.manifest.json
 !packages/manifest-ir/dist/routes.ts
 # manifest-adapters dist is consumed directly by apps/api (no publish step); must be committed
@@ -585,6 +586,9 @@ SLOPSCOPE_RULE_IMPLEMENTATION_PLAN.md
 # .secretlintrc.json
 biome.autofix.jsonc
 manifest.config.yaml
+
+# Declaration source maps (not needed for typechecking or production)
+**/*.d.ts.map
 
 # Generated artifacts
 fixaitranscript
