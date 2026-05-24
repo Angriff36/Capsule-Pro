@@ -4,7 +4,7 @@
  *
  * CI guard for the docs app. Fails if:
  *  1. Any .mdx file under apps/docs/content/docs/ is missing title or description frontmatter.
- *  2. Any internal /docs/ href in an .mdx file points to a slug with no corresponding content file.
+ *  2. Any internal /docs/ link (Markdown or JSX href) points to a slug with no content file.
  *
  * Usage: node scripts/check-spec-integrity.mjs
  */
@@ -44,13 +44,17 @@ function parseFrontmatter(content) {
   return result;
 }
 
-/** Convert a /docs/foo/bar slug to the expected file path under DOCS_ROOT */
-function slugToPath(slug) {
-  // strip leading /docs/
-  const rel = slug.replace(/^\/docs\/?/, "");
-  if (!rel) return join(DOCS_ROOT, "index.mdx");
-  // try exact match, then index file
-  return rel; // resolved below
+/** Extract all /docs/ slugs from both Markdown and JSX/HTML link syntaxes. */
+function extractDocsLinks(content) {
+  const slugs = [];
+  // Markdown: [text](/docs/slug)
+  const mdRe = /\]\(\/docs\/([^)#?\s]*)\)/g;
+  // JSX/HTML: href="/docs/slug"
+  const hrefRe = /href=["']\/docs\/([^"'#?]*)["']/g;
+  let m;
+  while ((m = mdRe.exec(content)) !== null) slugs.push(m[1].replace(/\/$/, ""));
+  while ((m = hrefRe.exec(content)) !== null) slugs.push(m[1].replace(/\/$/, ""));
+  return slugs;
 }
 
 // ── Main ──────────────────────────────────────────────────────────────────────
@@ -77,12 +81,8 @@ async function main() {
     if (!fm.title) errors.push(`MISSING title: ${rel}`);
     if (!fm.description) errors.push(`MISSING description: ${rel}`);
 
-    // 2. Internal link check — find href="/docs/..." patterns
-    const linkRe = /href=["']\/docs\/([^"'#?]*)["']/g;
-    let m;
-    while ((m = linkRe.exec(content)) !== null) {
-      const slug = m[1].replace(/\/$/, ""); // strip trailing slash
-      // Accept if slug itself or slug/index exists
+    // 2. Internal link check — Markdown [text](/docs/...) and JSX href="/docs/..."
+    for (const slug of extractDocsLinks(content)) {
       if (!knownSlugs.has(slug) && !knownSlugs.has(`${slug}/index`)) {
         errors.push(`BROKEN LINK in ${rel}: /docs/${slug || "(root)"}`);
       }
