@@ -2,7 +2,7 @@
   "name": "capsule-pro",
   "private": true,
   "dependencies": {
-    "@angriff36/manifest": "0.8.0",
+    "@angriff36/manifest": "0.9.3",
     "@prisma/adapter-neon": "7.3.0",
     "@prisma/client": "7.3.0",
     "ai": "^6.0.70",
@@ -129,7 +129,7 @@
     "db:neon-backup-and-audit": "node scripts/neon-schema-backup-pgdump.mjs && node scripts/neon-audit-readonly.mjs",
     "db:deploy": "pnpm --filter @repo/database exec prisma migrate deploy",
     "db:dev": "node scripts/require-shadow-database-url-for-migrate-dev.mjs && pnpm --filter @repo/database exec prisma migrate dev",
-    "db:push": "echo \"❌ Disabled. Use pnpm migrate (dev) or pnpm migrate:deploy (CI/prod).\" && exit 1",
+    "db:push": "echo \"\u274c Disabled. Use pnpm migrate (dev) or pnpm migrate:deploy (CI/prod).\" && exit 1",
     "db:repair": "node scripts/db-drift-repair.mjs",
     "dev": "turbo dev --parallel",
     "dev:app": "turbo run dev --filter=./apps/app",
