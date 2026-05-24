@@ -13,9 +13,9 @@ entity WorkOrder {
   property description: string = ""
   property scheduledDate: number = 0
   property assignedTo: string = ""
-  property completedAt: number = 0
-  property createdAt: number = 0
-  property updatedAt: number = 0
+  property completedAt: datetime = now()
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
 
   computed isCompleted: boolean = self.status == "completed"
   computed isCancelled: boolean = self.status == "cancelled"

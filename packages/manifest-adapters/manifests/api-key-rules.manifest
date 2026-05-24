@@ -10,12 +10,12 @@ entity ApiKey {
   property hashedKey: string = ""
   property scopes: string = "[]"
   property lastUsedAt: number = 0
-  property expiresAt: number = 0
+  property expiresAt: datetime = now()
   property revokedAt: number = 0
   property createdByUserId: string = ""
-  property createdAt: number = 0
-  property updatedAt: number = 0
-  property deletedAt: number = 0
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
+  property deletedAt: datetime = now()
 
   computed isRevoked: boolean = self.revokedAt > 0
   computed isExpired: boolean = self.expiresAt > 0 and self.expiresAt < now()

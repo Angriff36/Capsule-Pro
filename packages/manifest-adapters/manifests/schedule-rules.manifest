@@ -5,15 +5,15 @@ entity Schedule {
   property required id: string
   property required tenantId: string
   property locationId: string = ""
-  property scheduleDate: number = 0
+  property scheduleDate: datetime = now()
   property status: string = "draft"
-  property publishedAt: number = 0
+  property publishedAt: datetime = now()
   property publishedBy: string = ""
   property notes: string = ""
-  property shiftCount: number = 0
-  property createdAt: number = 0
-  property updatedAt: number = 0
-  property deletedAt: number = 0
+  property shiftCount: int = 0
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
+  property deletedAt: datetime = now()
 
   computed isDraft: boolean = self.status == "draft"
   computed isPublished: boolean = self.status == "published"
@@ -93,13 +93,13 @@ entity ScheduleShift {
   property required scheduleId: string
   property required employeeId: string
   property required locationId: string
-  property shiftStart: number = 0
-  property shiftEnd: number = 0
+  property optional shiftStart: datetime
+  property optional shiftEnd: datetime
   property roleDuringShift: string = ""
   property notes: string = ""
-  property createdAt: number = 0
-  property updatedAt: number = 0
-  property deletedAt: number = 0
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
+  property deletedAt: datetime = now()
 
   computed durationHours: number = self.shiftEnd > self.shiftStart ? (self.shiftEnd - self.shiftStart) / 3600000 : 0
   computed isAssigned: boolean = self.employeeId != ""

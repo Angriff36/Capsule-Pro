@@ -7,9 +7,9 @@ entity WorkforceOptimization {
   property locationId: string = ""
   property optimizationType: string = "" // "schedule", "assignment", "performance"
   property status: string = "pending" // "pending", "in_progress", "completed", "failed"
-  property createdAt: number = 0
-  property updatedAt: number = 0
-  property completedAt: number = 0
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
+  property completedAt: datetime = now()
 
   computed isPending: boolean = self.status == "pending"
   computed isInProgress: boolean = self.status == "in_progress"
@@ -66,12 +66,12 @@ entity PerformancePrediction {
   property required tenantId: string
   property employeeId: string = ""
   property predictionType: string = "" // "productivity", "attendance", "overtime_risk", "skill_match"
-  property predictionHorizon: number = 0 // days
-  property predictionScore: number = 0 // 0-100
+  property predictionHorizon: int = 0 // days
+  property predictionScore: decimal = 0 // 0-100
   property confidence: string = "medium" // "low", "medium", "high"
   property factors: string = "" // JSON string of factors
-  property createdAt: number = 0
-  property expiresAt: number = 0
+  property createdAt: datetime = now()
+  property expiresAt: datetime = now()
 
   computed isExpired: boolean = self.expiresAt < now()
 

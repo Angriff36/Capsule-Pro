@@ -11,11 +11,11 @@ entity PrepTask {
   property required status: string = "open"
   property stationId: string = ""
   property claimedBy: string = ""
-  property claimedAt: number = 0
+  property claimedAt: datetime = now()
   property quantityTotal: number = 0
   property quantityCompleted: number = 0
   property quantityUnitId: string = ""
-  property servingsTotal: number = 0
+  property servingsTotal: int = 0
   property startByDate: number = 0
   property dueByDate: number = 0
   property priority: number = 5

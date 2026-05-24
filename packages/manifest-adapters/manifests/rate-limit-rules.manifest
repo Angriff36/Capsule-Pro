@@ -9,9 +9,9 @@ entity RateLimitConfig {
   property windowMs: number = 60000
   property maxRequests: number = 100
   property burstAllowance: number = 0
-  property priority: number = 0
+  property priority: int = 0
   property isActive: boolean = true
-  property createdAt: number = 0
+  property createdAt: datetime = now()
   property updatedAt: number = 0
   property deletedAt: number = 0
 

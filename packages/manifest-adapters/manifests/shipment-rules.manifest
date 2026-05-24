@@ -14,7 +14,7 @@ entity Shipment {
   property shippedDate: number = 0
   property estimatedDeliveryDate: number = 0
   property actualDeliveryDate: number = 0
-  property totalItems: number = 0
+  property totalItems: int = 0
   property shippingCost: number = 0
   property totalValue: number = 0
   property trackingNumber: string = ""
@@ -26,9 +26,9 @@ entity Shipment {
   property notes: string = ""
   property internalNotes: string = ""
   property reference: string = ""
-  property createdAt: number = 0
-  property updatedAt: number = 0
-  property deletedAt: number = 0
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
+  property deletedAt: datetime = now()
 
   computed isDraft: boolean = self.status == "draft"
   computed isScheduled: boolean = self.status == "scheduled"
@@ -170,9 +170,9 @@ entity ShipmentItem {
   property conditionNotes: string = ""
   property lotNumber: string = ""
   property expirationDate: number = 0
-  property createdAt: number = 0
-  property updatedAt: number = 0
-  property deletedAt: number = 0
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
+  property deletedAt: datetime = now()
 
   computed isFullyReceived: boolean = self.quantityReceived >= self.quantityShipped
   computed hasDamage: boolean = self.quantityDamaged > 0

@@ -47,7 +47,7 @@ entity BankAccount {
     emit BankAccountDeleted
   }
 
-  command setDefault() {
+  command markDefault() {
     guard self.status == "active" "Cannot set inactive account as default"
 
     mutate isDefault = true

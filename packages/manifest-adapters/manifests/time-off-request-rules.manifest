@@ -11,11 +11,11 @@ entity TimeOffRequest {
   property requestType: string = ""
   property status: string = "PENDING"
   property processedBy: string = ""
-  property processedAt: number = 0
+  property processedAt: datetime = now()
   property rejectionReason: string = ""
-  property createdAt: number = 0
-  property updatedAt: number = 0
-  property deletedAt: number = 0
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
+  property deletedAt: datetime = now()
 
   computed isDeleted: boolean = self.deletedAt > 0
   computed isPending: boolean = self.status == "PENDING"

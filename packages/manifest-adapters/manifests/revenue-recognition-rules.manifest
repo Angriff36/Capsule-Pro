@@ -30,8 +30,8 @@ entity RevenueRecognitionSchedule {
   property serviceEndDate: number = 0
 
   // Milestone tracking (for MILESTONE_BASED method)
-  property totalMilestones: number = 0
-  property completedMilestones: number = 0
+  property totalMilestones: int = 0
+  property completedMilestones: int = 0
 
   // Metadata
   property description: string = ""
@@ -39,9 +39,9 @@ entity RevenueRecognitionSchedule {
   property metadata: string = ""
 
   // Timestamps
-  property required createdAt: number = 0
-  property required updatedAt: number = 0
-  property completedAt: number = 0
+  property required createdAt: datetime = now()
+  property required updatedAt: datetime = now()
+  property completedAt: datetime = now()
 
   // Computed properties
   computed recognitionPercentage: number = self.totalAmount > 0 ? (self.recognizedAmount / self.totalAmount) * 100 : 0
@@ -196,7 +196,7 @@ entity RevenueRecognitionLine {
   property required scheduleId: string
 
   // Line details
-  property required sequence: number = 0
+  property required sequence: int = 0
   property required amount: number = 0
   property required recognizedAmount: number = 0
   property required status: string = "PENDING"
@@ -216,8 +216,8 @@ entity RevenueRecognitionLine {
   property metadata: string = ""
 
   // Timestamps
-  property required createdAt: number = 0
-  property required updatedAt: number = 0
+  property required createdAt: datetime = now()
+  property required updatedAt: datetime = now()
 
   // Computed properties
   computed isRecognized: boolean = self.status == "RECOGNIZED"

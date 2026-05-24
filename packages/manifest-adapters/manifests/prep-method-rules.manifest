@@ -7,7 +7,7 @@ entity PrepMethod {
   property required name: string
   property category: string = ""
   property description: string = ""
-  property estimatedDurationMinutes: number = 0
+  property estimatedDurationMinutes: decimal = 0
   property requiresCertification: string = ""
   property isActive: boolean = true
   property createdAt: number = 0

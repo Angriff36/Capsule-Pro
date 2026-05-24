@@ -8,18 +8,18 @@ entity CateringOrder {
   property customerId: string = ""
   property eventId: string = ""
   property orderStatus: string = "draft"
-  property orderDate: number = 0
-  property deliveryDate: number = 0
+  property orderDate: datetime = now()
+  property optional deliveryDate: datetime
   property deliveryTime: string = ""
-  property subtotalAmount: number = 0
-  property taxAmount: number = 0
-  property discountAmount: number = 0
-  property serviceChargeAmount: number = 0
+  property subtotalAmount: money = 0
+  property taxAmount: money = 0
+  property discountAmount: money = 0
+  property serviceChargeAmount: money = 0
   property totalAmount: number = 0
   property depositRequired: boolean = false
-  property depositAmount: number = 0
+  property depositAmount: money = 0
   property depositPaid: boolean = false
-  property depositPaidAt: number = 0
+  property depositPaidAt: datetime = now()
   property venueName: string = ""
   property venueAddress: string = ""
   property venueCity: string = ""
@@ -27,14 +27,14 @@ entity CateringOrder {
   property venueZip: string = ""
   property venueContactName: string = ""
   property venueContactPhone: string = ""
-  property guestCount: number = 0
+  property guestCount: int = 0
   property specialInstructions: string = ""
   property dietaryRestrictions: string = ""
-  property staffRequired: number = 0
-  property staffAssigned: number = 0
-  property createdAt: number = 0
-  property updatedAt: number = 0
-  property deletedAt: number = 0
+  property staffRequired: int = 0
+  property staffAssigned: int = 0
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
+  property deletedAt: datetime = now()
 
   computed isDraft: boolean = self.orderStatus == "draft"
   computed isConfirmed: boolean = self.orderStatus == "confirmed"

@@ -10,8 +10,8 @@ entity ChartOfAccount {
   property parentId: string = ""
   property description: string = ""
   property isActive: boolean = true
-  property createdAt: number = 0
-  property updatedAt: number = 0
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
 
   computed hasParent: boolean = self.parentId != ""
 

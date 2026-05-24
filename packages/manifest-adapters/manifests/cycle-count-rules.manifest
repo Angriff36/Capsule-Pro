@@ -9,20 +9,20 @@ entity CycleCountSession {
   property required sessionName: string
   property countType: string = "ad_hoc"
   property scheduledDate: number = 0
-  property startedAt: number = 0
-  property completedAt: number = 0
+  property startedAt: datetime = now()
+  property completedAt: datetime = now()
   property finalizedAt: number = 0
   property status: string = "draft"
-  property totalItems: number = 0
-  property countedItems: number = 0
+  property totalItems: int = 0
+  property countedItems: int = 0
   property totalVariance: number = 0
   property variancePercentage: number = 0
   property notes: string = ""
   property createdById: string = ""
   property approvedById: string = ""
-  property createdAt: number = 0
-  property updatedAt: number = 0
-  property deletedAt: number = 0
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
+  property deletedAt: datetime = now()
 
   computed isDraft: boolean = self.status == "draft"
   computed isInProgress: boolean = self.status == "in_progress"
@@ -139,9 +139,9 @@ entity CycleCountRecord {
   property verifiedAt: number = 0
   property syncStatus: string = "synced"
   property offlineId: string = ""
-  property createdAt: number = 0
-  property updatedAt: number = 0
-  property deletedAt: number = 0
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
+  property deletedAt: datetime = now()
 
   computed hasVariance: boolean = self.variance != 0
   computed isOvercount: boolean = self.variance > 0

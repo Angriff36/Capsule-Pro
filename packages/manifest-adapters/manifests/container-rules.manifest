@@ -10,12 +10,12 @@ entity Container {
   property sizeDescription: string = ""
   property capacityVolumeMl: number = 0
   property capacityWeightG: number = 0
-  property capacityPortions: number = 0
+  property capacityPortions: int = 0
   property isReusable: boolean = true
   property isActive: boolean = true
-  property createdAt: number = 0
-  property updatedAt: number = 0
-  property deletedAt: number = 0
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
+  property deletedAt: datetime = now()
 
   computed hasVolumeCapacity: boolean = self.capacityVolumeMl > 0
   computed hasWeightCapacity: boolean = self.capacityWeightG > 0

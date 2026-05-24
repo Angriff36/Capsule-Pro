@@ -7,7 +7,7 @@ entity PayrollPeriod {
   property periodStart: string = ""
   property periodEnd: string = ""
   property status: string = "open"
-  property createdAt: number = 0
+  property createdAt: datetime = now()
   property updatedAt: number = 0
   property deletedAt: number = 0
 

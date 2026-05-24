@@ -11,7 +11,7 @@ entity Proposal {
   property title: string = ""
   property eventDate: number = 0
   property eventType: string = ""
-  property guestCount: number = 0
+  property guestCount: int = 0
   property venueName: string = ""
   property venueAddress: string = ""
   property subtotal: number = 0
@@ -27,10 +27,10 @@ entity Proposal {
   property rejectedAt: number = 0
   property notes: string = ""
   property termsAndConditions: string = ""
-  property lineItemCount: number = 0
-  property createdAt: number = 0
-  property updatedAt: number = 0
-  property deletedAt: number = 0
+  property lineItemCount: int = 0
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
+  property deletedAt: datetime = now()
 
   computed isDraft: boolean = self.status == "draft"
   computed isSent: boolean = self.status == "sent" or self.status == "viewed"
@@ -248,7 +248,7 @@ entity ProposalLineItem {
   property unitPrice: number = 0
   property total: number = 0
   property totalPrice: number = 0
-  property sortOrder: number = 0
+  property sortOrder: int = 0
   property notes: string = ""
   property createdAt: number = 0
   property updatedAt: number = 0

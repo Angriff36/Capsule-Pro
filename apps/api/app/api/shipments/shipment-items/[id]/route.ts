@@ -1,48 +1,59 @@
 // Auto-generated Next.js API detail route for ShipmentItem
 // Generated from Manifest IR - DO NOT EDIT
 
-import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import {
-  manifestErrorResponse,
-  manifestSuccessResponse,
-} from "@/lib/manifest-response";
+import { database } from "@repo/database";
+import { manifestErrorResponse, manifestSuccessResponse } from "@/lib/manifest-response";
+import { auth } from "@repo/auth/server";
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { orgId, userId } = await auth();
-    if (!(userId && orgId)) {
-      return manifestErrorResponse("Unauthorized", 401);
-    }
+  const { orgId, userId } = await auth();
+  if (!(userId && orgId)) {
+    return manifestErrorResponse({ error: "Unauthorized", diagnostics: [] }, 401);
+  }
 
-    const tenantId = await getTenantIdForOrg(orgId);
+  const tenantId = await getTenantIdForOrg(orgId);
 
-    if (!tenantId) {
-      return manifestErrorResponse("Tenant not found", 400);
-    }
+  if (!tenantId) {
+    return manifestErrorResponse({ error: "Tenant not found", diagnostics: [] }, 400);
+  }
 
     const { id } = await params;
 
-    const shipmentItem = await database.shipmentItem.findUnique({
+    // Using findFirst — multi-field filter (tenant/soft-delete) requires findFirst on Prisma 7+.
+    const shipmentItem = await database.shipmentItem.findFirst({
       where: {
         id,
         tenantId,
-        deletedAt: null,
+        deletedAt: null
       },
     });
 
     if (!shipmentItem) {
-      return manifestErrorResponse("ShipmentItem not found", 404);
+      return manifestErrorResponse({ error: "ShipmentItem not found", diagnostics: [] }, 404);
     }
 
     return manifestSuccessResponse({ shipmentItem });
   } catch (error) {
+    // Auth helpers (clerk, next-auth, custom) may throw on invalid/expired
+    // tokens. Goal step 4: auth failures MUST NEVER surface as 500.
+    const isAuthError = error instanceof Error && (
+      /unauth/i.test(error.message) ||
+      /token/i.test(error.message) ||
+      /session/i.test(error.message)
+    );
+    if (isAuthError) {
+      return manifestErrorResponse({ error: "Unauthorized", diagnostics: [] }, 401);
+    }
     console.error("Error fetching shipmentItem:", error);
-    return manifestErrorResponse("Internal server error", 500);
+    return manifestErrorResponse(
+      { error: "Internal server error", diagnostics: [{ kind: "runtime_error", message: error instanceof Error ? error.message : String(error) }] },
+      500,
+    );
   }
 }

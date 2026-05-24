@@ -171,13 +171,13 @@
   },
   {
     "entity": "BankAccount",
-    "command": "remove",
-    "commandId": "BankAccount.remove"
+    "command": "markDefault",
+    "commandId": "BankAccount.markDefault"
   },
   {
     "entity": "BankAccount",
-    "command": "setDefault",
-    "commandId": "BankAccount.setDefault"
+    "command": "remove",
+    "commandId": "BankAccount.remove"
   },
   {
     "entity": "BankAccount",
@@ -1585,6 +1585,31 @@
     "commandId": "LogisticsRoute.updateStatus"
   },
   {
+    "entity": "MaintenanceWorkOrder",
+    "command": "assign",
+    "commandId": "MaintenanceWorkOrder.assign"
+  },
+  {
+    "entity": "MaintenanceWorkOrder",
+    "command": "completeWork",
+    "commandId": "MaintenanceWorkOrder.completeWork"
+  },
+  {
+    "entity": "MaintenanceWorkOrder",
+    "command": "create",
+    "commandId": "MaintenanceWorkOrder.create"
+  },
+  {
+    "entity": "MaintenanceWorkOrder",
+    "command": "startWork",
+    "commandId": "MaintenanceWorkOrder.startWork"
+  },
+  {
+    "entity": "MaintenanceWorkOrder",
+    "command": "updateStatus",
+    "commandId": "MaintenanceWorkOrder.updateStatus"
+  },
+  {
     "entity": "Menu",
     "command": "activate",
     "commandId": "Menu.activate"
@@ -2896,11 +2921,6 @@
   },
   {
     "entity": "WorkOrder",
-    "command": "assign",
-    "commandId": "WorkOrder.assign"
-  },
-  {
-    "entity": "WorkOrder",
     "command": "cancel",
     "commandId": "WorkOrder.cancel"
   },
@@ -2908,11 +2928,6 @@
     "entity": "WorkOrder",
     "command": "complete",
     "commandId": "WorkOrder.complete"
-  },
-  {
-    "entity": "WorkOrder",
-    "command": "completeWork",
-    "commandId": "WorkOrder.completeWork"
   },
   {
     "entity": "WorkOrder",
@@ -2931,17 +2946,7 @@
   },
   {
     "entity": "WorkOrder",
-    "command": "startWork",
-    "commandId": "WorkOrder.startWork"
-  },
-  {
-    "entity": "WorkOrder",
     "command": "updatePriority",
     "commandId": "WorkOrder.updatePriority"
-  },
-  {
-    "entity": "WorkOrder",
-    "command": "updateStatus",
-    "commandId": "WorkOrder.updateStatus"
   }
 ]

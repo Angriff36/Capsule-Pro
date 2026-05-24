@@ -17,9 +17,9 @@ entity AllergenWarning {
   property resolved: boolean = false
   property resolvedAt: number = 0
   property notes: string = ""
-  property createdAt: number = 0
-  property updatedAt: number = 0
-  property deletedAt: number = 0
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
+  property deletedAt: datetime = now()
 
   computed isHighSeverity: boolean = self.severity == "critical"
   computed isPending: boolean = self.isAcknowledged == false and self.resolved == false

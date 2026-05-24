@@ -13,9 +13,9 @@ entity VendorCatalog {
   property baseUnitCost: number = 0
   property currency: string = "USD"
   property required unitOfMeasure: string = "each"
-  property leadTimeDays: number = 0
-  property leadTimeMinDays: number = 0
-  property leadTimeMaxDays: number = 0
+  property leadTimeDays: int = 0
+  property leadTimeMinDays: int = 0
+  property leadTimeMaxDays: int = 0
   property minimumOrderQuantity: number = 0
   property orderMultiple: number = 0
   property isActive: boolean = true
@@ -25,9 +25,9 @@ entity VendorCatalog {
   property notes: string = ""
   property tags: string = "[]"
   property lastCostUpdate: number = 0
-  property createdAt: number = 0
-  property updatedAt: number = 0
-  property deletedAt: number = 0
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
+  property deletedAt: datetime = now()
 
   computed isDeleted: boolean = self.deletedAt > 0
   computed isEffective: boolean = (self.effectiveFrom == 0 or self.effectiveFrom <= now()) and (self.effectiveTo == 0 or self.effectiveTo >= now())

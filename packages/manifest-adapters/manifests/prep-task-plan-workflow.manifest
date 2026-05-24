@@ -8,8 +8,8 @@ entity PrepTaskPlanWorkflow {
   property eventId: string = ""
   property idempotencyKey: string = ""
   property status: string = "created"
-  property currentStep: number = 0
-  property totalSteps: number = 5
+  property currentStep: int = 0
+  property totalSteps: int = 5
   property generationOptions: string = "{}"
   property generatedTasks: string = "[]"
   property reviewedTasks: string = "[]"
@@ -20,9 +20,9 @@ entity PrepTaskPlanWorkflow {
   property constraintOutcomes: string = "[]"
   property errors: string = "[]"
   property warnings: string = "[]"
-  property generatedCount: number = 0
-  property approvedCount: number = 0
-  property instantiatedCount: number = 0
+  property generatedCount: decimal = 0
+  property approvedCount: int = 0
+  property instantiatedCount: int = 0
   property reviewedBy: string = ""
   property reviewedAt: number = 0
   property approvedBy: string = ""

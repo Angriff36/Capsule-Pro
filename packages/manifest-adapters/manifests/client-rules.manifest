@@ -25,9 +25,9 @@ entity Client {
   property source: string = ""
   property assignedTo: string = ""
   property isActive: boolean = true
-  property createdAt: number = 0
-  property updatedAt: number = 0
-  property deletedAt: number = 0
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
+  property deletedAt: datetime = now()
 
   computed displayName: string = self.clientType == "company" ? self.companyName : self.firstName + " " + self.lastName
   computed hasEmail: boolean = self.email != null and self.email != ""
@@ -160,9 +160,9 @@ entity ClientContact {
   property isPrimary: boolean = false
   property isBillingContact: boolean = false
   property notes: string = ""
-  property createdAt: number = 0
-  property updatedAt: number = 0
-  property deletedAt: number = 0
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
+  property deletedAt: datetime = now()
 
   computed fullName: string = self.firstName + " " + self.lastName
   computed hasContactInfo: boolean = self.email != "" or self.phone != "" or self.phoneMobile != ""
@@ -254,9 +254,9 @@ entity ClientPreference {
   property preferenceKey: string = ""
   property preferenceValue: string = ""
   property notes: string = ""
-  property createdAt: number = 0
-  property updatedAt: number = 0
-  property deletedAt: number = 0
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
+  property deletedAt: datetime = now()
 
   constraint validClientId: self.clientId != null and self.clientId != "" "Client ID is required"
   constraint validPreferenceType: self.preferenceType != null and self.preferenceType != "" "Preference type is required"

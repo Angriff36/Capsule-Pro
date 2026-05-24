@@ -9,7 +9,7 @@ entity PrepList {
   property batchMultiplier: number = 1
   property dietaryRestrictions: string = ""
   property status: string = "draft"
-  property totalItems: number = 0
+  property totalItems: int = 0
   property totalEstimatedTime: number = 0
   property notes: string = ""
   property generatedAt: number = 0
@@ -214,7 +214,7 @@ entity PrepListItem {
   property dishId: string = ""
   property dishName: string = ""
   property recipeVersionId: string = ""
-  property sortOrder: number = 0
+  property sortOrder: int = 0
   property isCompleted: boolean = false
   property completedAt: number = 0
   property completedBy: string = ""

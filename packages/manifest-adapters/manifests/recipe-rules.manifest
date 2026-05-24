@@ -74,7 +74,7 @@ entity RecipeVersion {
   property required recipeId: string
   property required tenantId: string
   property required name: string
-  property required versionNumber: number
+  property required versionNumber: int
   property category: string = ""
   property cuisineType: string = ""
   property description: string = ""
@@ -82,14 +82,14 @@ entity RecipeVersion {
   property yieldQuantity: number = 1
   property yieldUnitId: number = 1
   property yieldDescription: string = ""
-  property prepTimeMinutes: number = 0
-  property cookTimeMinutes: number = 0
-  property restTimeMinutes: number = 0
+  property prepTimeMinutes: int = 0
+  property cookTimeMinutes: int = 0
+  property restTimeMinutes: int = 0
   property difficultyLevel: number = 1
   property instructions: string = ""
   property notes: string = ""
-  property ingredientCount: number = 0
-  property stepCount: number = 0
+  property ingredientCount: int = 0
+  property stepCount: int = 0
   property totalCost: number = 0
   property costPerYield: number = 0
   property createdAt: number = 0
@@ -249,7 +249,7 @@ entity RecipeStep {
   property required recipeVersionId: string
   property required stepNumber: number
   property required instruction: string
-  property durationMinutes: number = 0
+  property durationMinutes: decimal = 0
   property temperatureValue: number = 0
   property temperatureUnit: string = ""
   property equipmentNeeded: string = ""

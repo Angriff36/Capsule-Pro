@@ -717,6 +717,16 @@ export function logisticsRouteDetailPath(id: string): string {
   return "/api/logisticsroute/" + encodeURIComponent(id);
 }
 
+/** GET /api/maintenanceworkorder/list */
+export function maintenanceWorkOrderListPath(): string {
+  return "/api/maintenanceworkorder/list";
+}
+
+/** GET /api/maintenanceworkorder/:id */
+export function maintenanceWorkOrderDetailPath(id: string): string {
+  return "/api/maintenanceworkorder/" + encodeURIComponent(id);
+}
+
 /** GET /api/menu/list */
 export function menuListPath(): string {
   return "/api/kitchen/menus/commands/list";
@@ -1481,14 +1491,14 @@ export function bankAccountCreatePath(): string {
   return "/api/bankaccount/create";
 }
 
+/** POST /api/bankaccount/mark-default */
+export function bankAccountMarkDefaultPath(): string {
+  return "/api/bankaccount/mark-default";
+}
+
 /** POST /api/bankaccount/remove */
 export function bankAccountRemovePath(): string {
   return "/api/bankaccount/remove";
-}
-
-/** POST /api/bankaccount/set-default */
-export function bankAccountSetDefaultPath(): string {
-  return "/api/bankaccount/set-default";
 }
 
 /** POST /api/bankaccount/update */
@@ -2896,6 +2906,31 @@ export function logisticsRouteUpdateStatusPath(): string {
   return "/api/logisticsroute/update-status";
 }
 
+/** POST /api/maintenanceworkorder/assign */
+export function maintenanceWorkOrderAssignPath(): string {
+  return "/api/maintenanceworkorder/assign";
+}
+
+/** POST /api/maintenanceworkorder/complete-work */
+export function maintenanceWorkOrderCompleteWorkPath(): string {
+  return "/api/maintenanceworkorder/complete-work";
+}
+
+/** POST /api/maintenanceworkorder/create */
+export function maintenanceWorkOrderCreatePath(): string {
+  return "/api/maintenanceworkorder/create";
+}
+
+/** POST /api/maintenanceworkorder/start-work */
+export function maintenanceWorkOrderStartWorkPath(): string {
+  return "/api/maintenanceworkorder/start-work";
+}
+
+/** POST /api/maintenanceworkorder/update-status */
+export function maintenanceWorkOrderUpdateStatusPath(): string {
+  return "/api/maintenanceworkorder/update-status";
+}
+
 /** POST /api/kitchen/menus/commands/activate */
 export function menuActivatePath(): string {
   return "/api/kitchen/menus/commands/activate";
@@ -4206,11 +4241,6 @@ export function workforceOptimizationStartPath(): string {
   return "/api/workforceoptimization/start";
 }
 
-/** POST /api/workorder/assign */
-export function workOrderAssignPath(): string {
-  return "/api/workorder/assign";
-}
-
 /** POST /api/workorder/cancel */
 export function workOrderCancelPath(): string {
   return "/api/workorder/cancel";
@@ -4219,11 +4249,6 @@ export function workOrderCancelPath(): string {
 /** POST /api/workorder/complete */
 export function workOrderCompletePath(): string {
   return "/api/workorder/complete";
-}
-
-/** POST /api/workorder/complete-work */
-export function workOrderCompleteWorkPath(): string {
-  return "/api/workorder/complete-work";
 }
 
 /** POST /api/workorder/create */
@@ -4241,19 +4266,9 @@ export function workOrderStartPath(): string {
   return "/api/workorder/start";
 }
 
-/** POST /api/workorder/start-work */
-export function workOrderStartWorkPath(): string {
-  return "/api/workorder/start-work";
-}
-
 /** POST /api/workorder/update-priority */
 export function workOrderUpdatePriorityPath(): string {
   return "/api/workorder/update-priority";
-}
-
-/** POST /api/workorder/update-status */
-export function workOrderUpdateStatusPath(): string {
-  return "/api/workorder/update-status";
 }
 
 // ============================================================================
@@ -4412,6 +4427,8 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "LogisticsDispatch.get.detail", path: "/api/logisticsdispatch/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "LogisticsRoute.get.list", path: "/api/logisticsroute/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "LogisticsRoute.get.detail", path: "/api/logisticsroute/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "MaintenanceWorkOrder.get.list", path: "/api/maintenanceworkorder/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "MaintenanceWorkOrder.get.detail", path: "/api/maintenanceworkorder/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "Menu.get.list", path: "/api/kitchen/menus/commands/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "Menu.get.detail", path: "/api/menu/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "MenuDish.get.list", path: "/api/menudish/list", method: "GET", source: "entity-read", auth: true, tenant: true },
@@ -4564,8 +4581,8 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "AutomatedFollowup.generate", path: "/api/automatedfollowup/generate", method: "POST", source: "command", auth: true, tenant: true },
   { id: "AutomatedFollowup.skip", path: "/api/automatedfollowup/skip", method: "POST", source: "command", auth: true, tenant: true },
   { id: "BankAccount.create", path: "/api/bankaccount/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "BankAccount.markDefault", path: "/api/bankaccount/mark-default", method: "POST", source: "command", auth: true, tenant: true },
   { id: "BankAccount.remove", path: "/api/bankaccount/remove", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "BankAccount.setDefault", path: "/api/bankaccount/set-default", method: "POST", source: "command", auth: true, tenant: true },
   { id: "BankAccount.update", path: "/api/bankaccount/update", method: "POST", source: "command", auth: true, tenant: true },
   { id: "BankAccount.verify", path: "/api/bankaccount/verify", method: "POST", source: "command", auth: true, tenant: true },
   { id: "BattleBoard.addDish", path: "/api/battleboard/add-dish", method: "POST", source: "command", auth: true, tenant: true },
@@ -4847,6 +4864,11 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "LogisticsRoute.remove", path: "/api/logisticsroute/remove", method: "POST", source: "command", auth: true, tenant: true },
   { id: "LogisticsRoute.update", path: "/api/logisticsroute/update", method: "POST", source: "command", auth: true, tenant: true },
   { id: "LogisticsRoute.updateStatus", path: "/api/logisticsroute/update-status", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "MaintenanceWorkOrder.assign", path: "/api/maintenanceworkorder/assign", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "MaintenanceWorkOrder.completeWork", path: "/api/maintenanceworkorder/complete-work", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "MaintenanceWorkOrder.create", path: "/api/maintenanceworkorder/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "MaintenanceWorkOrder.startWork", path: "/api/maintenanceworkorder/start-work", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "MaintenanceWorkOrder.updateStatus", path: "/api/maintenanceworkorder/update-status", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Menu.activate", path: "/api/kitchen/menus/commands/activate", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Menu.create", path: "/api/kitchen/menus/commands/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Menu.deactivate", path: "/api/kitchen/menus/commands/deactivate", method: "POST", source: "command", auth: true, tenant: true },
@@ -5109,14 +5131,10 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "WorkforceOptimization.create", path: "/api/workforceoptimization/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "WorkforceOptimization.fail", path: "/api/workforceoptimization/fail", method: "POST", source: "command", auth: true, tenant: true },
   { id: "WorkforceOptimization.start", path: "/api/workforceoptimization/start", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "WorkOrder.assign", path: "/api/workorder/assign", method: "POST", source: "command", auth: true, tenant: true },
   { id: "WorkOrder.cancel", path: "/api/workorder/cancel", method: "POST", source: "command", auth: true, tenant: true },
   { id: "WorkOrder.complete", path: "/api/workorder/complete", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "WorkOrder.completeWork", path: "/api/workorder/complete-work", method: "POST", source: "command", auth: true, tenant: true },
   { id: "WorkOrder.create", path: "/api/workorder/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "WorkOrder.reschedule", path: "/api/workorder/reschedule", method: "POST", source: "command", auth: true, tenant: true },
   { id: "WorkOrder.start", path: "/api/workorder/start", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "WorkOrder.startWork", path: "/api/workorder/start-work", method: "POST", source: "command", auth: true, tenant: true },
   { id: "WorkOrder.updatePriority", path: "/api/workorder/update-priority", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "WorkOrder.updateStatus", path: "/api/workorder/update-status", method: "POST", source: "command", auth: true, tenant: true },
 ] as const;

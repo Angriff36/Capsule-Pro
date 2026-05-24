@@ -10,9 +10,9 @@ entity CommandBoard {
   property status: string = "draft"
   property isTemplate: boolean = false
   property tags: string = ""
-  property createdAt: number = 0
-  property updatedAt: number = 0
-  property deletedAt: number = 0
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
+  property deletedAt: datetime = now()
 
   computed isDraft: boolean = self.status == "draft"
   computed isActive: boolean = self.status == "active"
@@ -98,16 +98,16 @@ entity CommandBoardCard {
   property positionY: number = 0
   property width: number = 200
   property height: number = 150
-  property zIndex: number = 0
+  property zIndex: int = 0
   property color: string = ""
   property metadata: string = "{}"
   property groupId: string = ""
   property entityId: string = ""
   property entityType: string = ""
-  property version: number = 0
-  property createdAt: number = 0
-  property updatedAt: number = 0
-  property deletedAt: number = 0
+  property version: int = 0
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
+  property deletedAt: datetime = now()
 
   computed isPending: boolean = self.status == "pending"
   computed isInProgress: boolean = self.status == "in_progress"
@@ -220,10 +220,10 @@ entity CommandBoardGroup {
   property positionY: number = 0
   property width: number = 300
   property height: number = 200
-  property zIndex: number = 0
-  property createdAt: number = 0
-  property updatedAt: number = 0
-  property deletedAt: number = 0
+  property zIndex: int = 0
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
+  property deletedAt: datetime = now()
 
   computed isDeleted: boolean = self.deletedAt > 0
 
@@ -287,9 +287,9 @@ entity CommandBoardConnection {
   property relationshipType: string = "generic"
   property label: string = ""
   property visible: boolean = true
-  property createdAt: number = 0
-  property updatedAt: number = 0
-  property deletedAt: number = 0
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
+  property deletedAt: datetime = now()
 
   computed isDeleted: boolean = self.deletedAt > 0
 
@@ -337,12 +337,12 @@ entity CommandBoardLayout {
   property name: string = ""
   property viewport: string = "{}"
   property visibleCards: string = ""
-  property gridSize: number = 40
+  property gridSize: int = 40
   property showGrid: boolean = true
   property snapToGrid: boolean = true
-  property createdAt: number = 0
-  property updatedAt: number = 0
-  property deletedAt: number = 0
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
+  property deletedAt: datetime = now()
 
   constraint validName: self.name != null and self.name != "" "Layout name is required"
   constraint validBoardId: self.boardId != null and self.boardId != "" "Board ID is required"

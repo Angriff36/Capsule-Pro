@@ -8,20 +8,20 @@ entity AiEventSetupSession {
   property originalInput: string = ""
   property parsedTitle: string = ""
   property parsedEventType: string = ""
-  property parsedEventDate: number = 0
-  property parsedGuestCount: number = 0
+  property optional parsedEventDate: datetime
+  property parsedGuestCount: int = 0
   property parsedVenueName: string = ""
   property parsedVenueAddress: string = ""
   property parsedNotes: string = ""
   property parsedTags: string = ""
   property status: string = "pending"
-  property confidence: number = 0
+  property confidence: decimal = 0
   property missingFields: string = "[]"
   property suggestions: string = "[]"
   property createdEventId: string = ""
-  property createdAt: number = 0
-  property updatedAt: number = 0
-  property completedAt: number = 0
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
+  property completedAt: datetime = now()
 
   computed isPending: boolean = self.status == "pending"
   computed isParsed: boolean = self.status == "parsed"
