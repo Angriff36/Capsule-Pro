@@ -143,40 +143,34 @@ jobs:
         run: npm install -g vercel@53.1.0
 
       - name: Load Vercel secrets (App) from Infisical
-        uses: Infisical/secrets-action@v1.0.7
-        with:
-          method: universal-auth
-          client-id: ${{ secrets.INFISICAL_CLIENT_ID }}
-          client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET }}
-          env-slug: prod
-          project-id: d8319856-8caf-4c22-8717-57ab28b326b3
-          secret-path: /apps/capsule-pro/app
+        run: |
+          TOKEN=$(curl -fsS -X POST "https://app.infisical.com/api/v1/auth/universal-auth/login" -H "Content-Type: application/json" -d "{\"clientId\":\"$INFISICAL_CLIENT_ID\",\"clientSecret\":\"$INFISICAL_CLIENT_SECRET\"}" | python3 -c "import json,sys; print(json.load(sys.stdin)['accessToken'])")
+          curl -fsS "https://app.infisical.com/api/v3/secrets/raw?environment=prod&workspaceId=d8319856-8caf-4c22-8717-57ab28b326b3&secretPath=%2Fapps%2Fcapsule-pro%2Fapp" -H "Authorization: Bearer $TOKEN" | python3 -c "import json,sys,os; f=open(os.environ['GITHUB_ENV'],'a'); [f.write(s['secretKey']+'='+s['secretValue']+'\n') for s in json.load(sys.stdin).get('secrets',[])]"
+        env:
+          INFISICAL_CLIENT_ID: ${{ secrets.INFISICAL_CLIENT_ID }}
+          INFISICAL_CLIENT_SECRET: ${{ secrets.INFISICAL_CLIENT_SECRET }}
 
       - name: Deploy to Vercel (App)
         run: vercel deploy --prod --yes
 
       - name: Load Vercel secrets (API) from Infisical
-        uses: Infisical/secrets-action@v1.0.7
-        with:
-          method: universal-auth
-          client-id: ${{ secrets.INFISICAL_CLIENT_ID }}
-          client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET }}
-          env-slug: prod
-          project-id: d8319856-8caf-4c22-8717-57ab28b326b3
-          secret-path: /apps/capsule-pro/api
+        run: |
+          TOKEN=$(curl -fsS -X POST "https://app.infisical.com/api/v1/auth/universal-auth/login" -H "Content-Type: application/json" -d "{\"clientId\":\"$INFISICAL_CLIENT_ID\",\"clientSecret\":\"$INFISICAL_CLIENT_SECRET\"}" | python3 -c "import json,sys; print(json.load(sys.stdin)['accessToken'])")
+          curl -fsS "https://app.infisical.com/api/v3/secrets/raw?environment=prod&workspaceId=d8319856-8caf-4c22-8717-57ab28b326b3&secretPath=%2Fapps%2Fcapsule-pro%2Fapi" -H "Authorization: Bearer $TOKEN" | python3 -c "import json,sys,os; f=open(os.environ['GITHUB_ENV'],'a'); [f.write(s['secretKey']+'='+s['secretValue']+'\n') for s in json.load(sys.stdin).get('secrets',[])]"
+        env:
+          INFISICAL_CLIENT_ID: ${{ secrets.INFISICAL_CLIENT_ID }}
+          INFISICAL_CLIENT_SECRET: ${{ secrets.INFISICAL_CLIENT_SECRET }}
 
       - name: Deploy to Vercel (API)
         run: vercel deploy --prod --yes
 
       - name: Load Vercel secrets (Web) from Infisical
-        uses: Infisical/secrets-action@v1.0.7
-        with:
-          method: universal-auth
-          client-id: ${{ secrets.INFISICAL_CLIENT_ID }}
-          client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET }}
-          env-slug: prod
-          project-id: d8319856-8caf-4c22-8717-57ab28b326b3
-          secret-path: /apps/capsule-pro/web
+        run: |
+          TOKEN=$(curl -fsS -X POST "https://app.infisical.com/api/v1/auth/universal-auth/login" -H "Content-Type: application/json" -d "{\"clientId\":\"$INFISICAL_CLIENT_ID\",\"clientSecret\":\"$INFISICAL_CLIENT_SECRET\"}" | python3 -c "import json,sys; print(json.load(sys.stdin)['accessToken'])")
+          curl -fsS "https://app.infisical.com/api/v3/secrets/raw?environment=prod&workspaceId=d8319856-8caf-4c22-8717-57ab28b326b3&secretPath=%2Fapps%2Fcapsule-pro%2Fweb" -H "Authorization: Bearer $TOKEN" | python3 -c "import json,sys,os; f=open(os.environ['GITHUB_ENV'],'a'); [f.write(s['secretKey']+'='+s['secretValue']+'\n') for s in json.load(sys.stdin).get('secrets',[])]"
+        env:
+          INFISICAL_CLIENT_ID: ${{ secrets.INFISICAL_CLIENT_ID }}
+          INFISICAL_CLIENT_SECRET: ${{ secrets.INFISICAL_CLIENT_SECRET }}
 
       - name: Deploy to Vercel (Web)
         continue-on-error: true
@@ -216,18 +210,16 @@ jobs:
         env:
           NODE_OPTIONS: "--max-old-space-size=4096"
 
-      - name: Load Vercel secrets (Docs) from Infisical
-        uses: Infisical/secrets-action@v1.0.7
-        with:
-          method: universal-auth
-          client-id: ${{ secrets.INFISICAL_CLIENT_ID }}
-          client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET }}
-          env-slug: prod
-          project-id: d8319856-8caf-4c22-8717-57ab28b326b3
-          secret-path: /apps/capsule-pro/docs
-
       - name: Install Vercel CLI
         run: npm install -g vercel@53.1.0
+
+      - name: Load Vercel secrets (Docs) from Infisical
+        run: |
+          TOKEN=$(curl -fsS -X POST "https://app.infisical.com/api/v1/auth/universal-auth/login" -H "Content-Type: application/json" -d "{\"clientId\":\"$INFISICAL_CLIENT_ID\",\"clientSecret\":\"$INFISICAL_CLIENT_SECRET\"}" | python3 -c "import json,sys; print(json.load(sys.stdin)['accessToken'])")
+          curl -fsS "https://app.infisical.com/api/v3/secrets/raw?environment=prod&workspaceId=d8319856-8caf-4c22-8717-57ab28b326b3&secretPath=%2Fapps%2Fcapsule-pro%2Fdocs" -H "Authorization: Bearer $TOKEN" | python3 -c "import json,sys,os; f=open(os.environ['GITHUB_ENV'],'a'); [f.write(s['secretKey']+'='+s['secretValue']+'\n') for s in json.load(sys.stdin).get('secrets',[])]"
+        env:
+          INFISICAL_CLIENT_ID: ${{ secrets.INFISICAL_CLIENT_ID }}
+          INFISICAL_CLIENT_SECRET: ${{ secrets.INFISICAL_CLIENT_SECRET }}
 
       - name: Deploy to Vercel (Docs)
         run: vercel deploy --prod --yes
