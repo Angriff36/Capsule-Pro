@@ -293,6 +293,7 @@ export const modules: ModuleDefinition[] = [
           { title: "Kitchen", href: "/analytics/kitchen" },
           { title: "Events", href: "/analytics/events" },
           { title: "Sales", href: "/analytics/sales" },
+          { title: "Chart Builder", href: "/analytics/sales/chart-builder" },
           { title: "Finance", href: "/analytics/finance" },
           { title: "Staff", href: "/analytics/staff" },
           { title: "Clients", href: "/analytics/clients" },

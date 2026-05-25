@@ -259,7 +259,7 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[Emergency bridge — running bridge was not updated]
-Files: .infisical.json (create), apps/app/package.json (edit)
+[auto-bridge snapshot @ 10 changes]
+Files: scripts/check-spec-integrity.mjs (create), apps/docs/content/docs/internal/meta.json (edit), apps/docs/content/docs/platform/meta.json (edit), apps/docs/content/docs/meta.json (edit), apps/docs/content/docs/platform/manifest-system.mdx (edit), apps/docs/content/docs/internal/documentation-governance.mdx (create), apps/docs/content/docs/platform/storage-projection.mdx (create), apps/docs/content/docs/platform/contracts.mdx (create), apps/docs/content/docs/start-here.mdx (create)
 
 # === END COGNILAYER ===

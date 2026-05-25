@@ -17,6 +17,7 @@ import {
   TableHeader,
   TableRow,
 } from "@repo/design-system/components/ui/table";
+import { Button } from "@repo/design-system/components/ui/button";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -191,14 +192,19 @@ const AnalyticsEventsPage = async () => {
 
   return (
     <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
-      <div className="space-y-0.5">
-        <h1 className="text-2xl font-semibold tracking-tight">
-          Event analytics
-        </h1>
-        <p className="text-muted-foreground">
-          Live event budget, invoicing, and report status for the latest 12
-          events.
-        </p>
+      <div className="flex items-start justify-between gap-4">
+        <div className="space-y-0.5">
+          <h1 className="text-2xl font-semibold tracking-tight">
+            Event analytics
+          </h1>
+          <p className="text-muted-foreground">
+            Live event budget, invoicing, and report status for the latest 12
+            events.
+          </p>
+        </div>
+        <Button asChild size="sm" variant="outline">
+          <Link href="/analytics/events/advanced">Advanced analytics</Link>
+        </Button>
       </div>
 
       <Separator />
