@@ -25,6 +25,19 @@ import { enforceCommandOwnership } from "@repo/manifest-runtime/ir-contract";
 import { ManifestRuntimeEngine } from "@repo/manifest-runtime/runtime-engine";
 import { describe, expect, it } from "vitest";
 
+// Minimal storeProvider mock required by Manifest 1.0.5+ for durable entities.
+// These are compilation/instantiation smoke tests — real store logic is tested
+// in integration tests that wire a Prisma-backed storeProvider.
+const MOCK_STORE_PROVIDER = {
+  getEntityStore: () => ({
+    findOne: async () => null,
+    findMany: async () => [],
+    create: async () => ({}),
+    update: async () => ({}),
+    delete: async () => {},
+  }),
+} as any;
+
 const MANIFEST_DIR = join(
   process.cwd(),
   "../../manifest/source"
@@ -684,6 +697,7 @@ describe("Manifest All-Phases Compilation", () => {
           tenantId: "test-tenant",
           role: "admin",
         },
+        storeProvider: MOCK_STORE_PROVIDER,
       });
 
       expect(runtime).toBeDefined();

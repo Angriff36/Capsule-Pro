@@ -43,7 +43,7 @@ async function buildDeterministicRuntime(userOverrides?: {
 }) {
   const manifestPath = join(
     process.cwd(),
-    "../../packages/manifest-adapters/manifests/prep-task-rules.manifest"
+    "../../manifest/source/prep-task-rules.manifest"
   );
   const source = readFileSync(manifestPath, "utf-8");
   const { ir, diagnostics } = await compileToIR(source);

@@ -17,7 +17,7 @@ import { describe, expect, it } from "vitest";
 
 const MANIFEST_DIR = join(
   process.cwd(),
-  "../../packages/manifest-adapters/manifests"
+  "../../manifest/source"
 );
 
 async function getRolePolicyRuntime(userRole: string) {

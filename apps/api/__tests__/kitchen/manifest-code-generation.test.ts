@@ -108,7 +108,7 @@ describe("Manifest Code Generation Inventory", () => {
     console.info("Code Generation Workflow (Preferred for New Features)");
     console.info("\n");
     console.info(
-      "  1. Edit the manifest spec (e.g., packages/manifest-adapters/manifests/recipe-rules.manifest)"
+      "  1. Edit the manifest spec (e.g., manifest/source/recipe-rules.manifest)"
     );
     console.info(
       "  2. Run: npx tsx packages/manifest/bin/compile.ts <file>.manifest --output ./generated"
@@ -123,7 +123,7 @@ describe("Manifest Code Generation Inventory", () => {
     // Verify the manifest compilation infrastructure exists
     const manifestBinPath = join(
       PROJECT_ROOT,
-      "packages/manifest-adapters/manifests"
+      "manifest/source"
     );
     expect(existsSync(manifestBinPath)).toBe(true);
 

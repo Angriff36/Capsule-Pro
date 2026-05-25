@@ -10,7 +10,7 @@ const TEST_TENANT_ID = "tenant-test-001";
 async function buildRuntime() {
   const manifestRoot = join(
     process.cwd(),
-    "../../packages/manifest-adapters/manifests"
+    "../../manifest/source"
   );
 
   const manifestFiles = [

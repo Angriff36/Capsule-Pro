@@ -5,7 +5,7 @@
  * a single dynamic dispatcher at `app/api/manifest/[entity]/commands/[command]/route.ts`.
  * Per-command concrete route files are architecturally illegal.
  *
- * @see packages/manifest-ir/ir/kitchen/kitchen.commands.json
+ * @see manifest/ir/kitchen.commands.json
  * @see packages/manifest-runtime/packages/cli/src/commands/audit-routes.ts
  */
 
@@ -17,7 +17,7 @@ import { describe, expect, it } from "vitest";
 const PROJECT_ROOT = resolve(import.meta.dirname, "../../../..");
 const COMMANDS_JSON = resolve(
   PROJECT_ROOT,
-  "packages/manifest-ir/ir/kitchen/kitchen.commands.json"
+  "manifest/ir/kitchen.commands.json"
 );
 const DISPATCHER = resolve(
   PROJECT_ROOT,
