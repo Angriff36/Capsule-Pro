@@ -143,7 +143,7 @@ jobs:
         run: npm install -g vercel@53.1.0
 
       - name: Deploy to Vercel (App)
-        run: vercel pull --yes --environment=production --cwd apps/app && vercel build --prod --cwd apps/app && vercel deploy --prebuilt --prod --cwd apps/app
+        run: vercel pull --yes --environment=production && vercel build --prod && vercel deploy --prebuilt --prod
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
@@ -151,7 +151,7 @@ jobs:
           NPM_TOKEN: ${{ secrets.PKG_AUTH_TOKEN }}
 
       - name: Deploy to Vercel (API)
-        run: vercel pull --yes --environment=production --cwd apps/api && vercel build --prod --cwd apps/api && vercel deploy --prebuilt --prod --cwd apps/api
+        run: vercel pull --yes --environment=production && vercel build --prod && vercel deploy --prebuilt --prod
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
@@ -160,7 +160,7 @@ jobs:
 
       - name: Deploy to Vercel (Web)
         continue-on-error: true
-        run: vercel pull --yes --environment=production --cwd apps/web && vercel build --prod --cwd apps/web && vercel deploy --prebuilt --prod --cwd apps/web
+        run: vercel pull --yes --environment=production && vercel build --prod && vercel deploy --prebuilt --prod
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
@@ -205,7 +205,7 @@ jobs:
         run: npm install -g vercel@53.1.0
 
       - name: Deploy to Vercel (Docs)
-        run: vercel pull --yes --environment=production --cwd apps/docs && vercel build --prod --cwd apps/docs && vercel deploy --prebuilt --prod --cwd apps/docs
+        run: vercel pull --yes --environment=production && vercel build --prod && vercel deploy --prebuilt --prod
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
