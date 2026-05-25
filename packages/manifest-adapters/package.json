@@ -16,7 +16,8 @@
     "./runtime/loadManifests": "./dist/runtime/loadManifests.js",
     "./prisma-json-store": "./dist/prisma-json-store.js",
     "./prisma-idempotency-store": "./dist/prisma-idempotency-store.js",
-    "./manifest-runtime-factory": "./dist/manifest-runtime-factory.js"
+    "./manifest-runtime-factory": "./dist/manifest-runtime-factory.js",
+    "./bottleneck-detector": "./dist/bottleneck-detector/index.js"
   },
   "scripts": {
     "build": "tsc --declaration",

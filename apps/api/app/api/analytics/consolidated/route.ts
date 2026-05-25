@@ -178,9 +178,6 @@ export async function GET(request: Request) {
         createdAt: { gte: startDate, lte: endDate },
       },
       _count: { id: true },
-      _sum: {
-        // Could add value fields here
-      },
     });
 
     metrics.transfers = {
@@ -343,7 +340,7 @@ export async function GET_LOCATIONS(request: Request) {
           where: {
             tenantId,
             locationId: location.id,
-            deletedAt: null,
+            deleted_at: null,
           },
         });
 

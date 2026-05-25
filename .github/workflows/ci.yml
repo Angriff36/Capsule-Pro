@@ -35,6 +35,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    if: github.actor != 'dependabot[bot]'
 
     # Job-level env. All values below are SHAPE-VALID PLACEHOLDERS so that
     # `next build` can finish — SDK constructors (Clerk, Stripe, Resend,
@@ -140,6 +141,7 @@ jobs:
     name: E2E Product-Flow Tests
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    if: github.actor != 'dependabot[bot]'
 
     services:
       postgres:

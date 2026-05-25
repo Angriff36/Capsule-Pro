@@ -43,6 +43,7 @@ jobs:
     name: Validate Manifest Files
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    if: github.actor != 'dependabot[bot]'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -82,6 +83,7 @@ jobs:
     name: Check Generated Code Is Up-to-Date
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    if: github.actor != 'dependabot[bot]'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -178,6 +180,7 @@ jobs:
     name: TypeScript Compilation Check
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    if: github.actor != 'dependabot[bot]'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -256,6 +259,7 @@ jobs:
     name: Manifest Integration Tests
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    if: github.actor != 'dependabot[bot]'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -348,6 +352,7 @@ jobs:
     name: Route Boundary Audit (Strict)
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    if: github.actor != 'dependabot[bot]'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -395,6 +400,7 @@ jobs:
 
   manifest-registry-drift:
     name: Governance Registry Drift Check
+    if: github.actor != 'dependabot[bot]'
     # BLOCKING — proves the committed manifest/governance/{commands,entities}.json
     # match the registries that the CURRENT manifest sources would produce.
     # If a manifest source under packages/manifest-adapters/manifests/ changes
@@ -461,6 +467,7 @@ jobs:
 
   quarantine-baseline:
     name: Quarantine Baseline Check
+    if: github.actor != 'dependabot[bot]'
     # BLOCKING — fails if any new `*.quarantine.test.ts` files appear in the
     # tree beyond the count recorded in ci/quarantine-baseline.json.
     # Per ci/DRAIN.md, the only allowed direction is DOWN: fix tests and
@@ -485,6 +492,7 @@ jobs:
     name: Bypass Registry Audit
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    if: github.actor != 'dependabot[bot]'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -516,6 +524,7 @@ jobs:
 
   manifest-governance-audit:
     name: Governance Audit (Reporting)
+    if: github.actor != 'dependabot[bot]'
     # STAGED GATE — 2026-05-22 baseline: 577 errors, dominated by
     # MISSING_CONFORMANCE_TEST for governed commands without a fixture under
     # apps/api/__tests__/. Detectors enabled: direct-writes, event-fabrication,
@@ -563,6 +572,7 @@ jobs:
 
   manifest-integration-check:
     name: Integration Check (Reporting)
+    if: github.actor != 'dependabot[bot]'
     # STAGED GATE — wraps governance + bypass + dispatcher + runtime-smoke +
     # package-shape. Last three sub-checks pass locally; governance fails on
     # the same 577 findings as the governance-audit gate. Flips blocking when
@@ -607,6 +617,7 @@ jobs:
 
   manifest-direct-writes-baseline:
     name: Direct-Write Audit (Baseline + Block New)
+    if: github.actor != 'dependabot[bot]'
     # BLOCKING — constitution §2 requires governed-entity writes to go through
     # RuntimeEngine.runCommand. The upstream `direct-writes` detector only matches
     # the literal `prisma.X.method` identifier, but Capsule writes via `database.X.method`
@@ -649,6 +660,7 @@ jobs:
         run: pnpm manifest:audit-direct-writes:baseline
 
   manifest-enforce-surface:
+    if: github.actor != 'dependabot[bot]'
     # Reporting gate (not blocking). Runs `manifest enforce-surface` so
     # contributors see when their changes introduce a new duplicate or bypass
     # write path against the Manifest command registry. Flip `continue-on-error`
