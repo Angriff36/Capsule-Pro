@@ -1,11 +1,11 @@
 import { auth } from "@repo/auth/server";
 import type { Prisma } from "@repo/database";
 import { database } from "@repo/database";
-import { claimPrepTask } from "@repo/manifest-adapters";
+import { claimPrepTask } from "@repo/manifest-runtime";
 import {
   createNextResponse,
   hasBlockingConstraints,
-} from "@repo/manifest-adapters/api-response";
+} from "@repo/manifest-runtime/api-response";
 import { triggerTaskAssignedSms } from "@repo/notifications";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";

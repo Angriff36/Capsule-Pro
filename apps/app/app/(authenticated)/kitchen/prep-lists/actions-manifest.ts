@@ -22,7 +22,7 @@ import {
   updatePrepListItemNotes,
   updatePrepListItemQuantity,
   updatePrepListItemStation,
-} from "@repo/manifest-adapters";
+} from "@repo/manifest-runtime";
 // biome-ignore lint/performance/noNamespaceImport: Sentry.logger requires namespace import
 import * as Sentry from "@sentry/nextjs";
 import { revalidatePath } from "next/cache";
@@ -113,7 +113,7 @@ async function createRuntimeContext(): Promise<KitchenOpsContext> {
 
   // Dynamically import PrismaStore to avoid circular dependencies
   const { createPrismaStoreProvider } = await import(
-    "@repo/manifest-adapters/prisma-store"
+    "@repo/manifest-runtime/prisma-store"
   );
 
   return {

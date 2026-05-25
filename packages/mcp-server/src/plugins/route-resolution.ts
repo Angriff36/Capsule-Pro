@@ -52,7 +52,7 @@ let resolvedManifestPath: string | null = null;
 function loadRoutesManifest(): RouteManifest {
   const manifestPath = join(
     projectRoot,
-    "packages/manifest-ir/dist/routes.manifest.json"
+    "manifest/runtime/routes.manifest.json"
   );
   resolvedManifestPath = manifestPath;
 

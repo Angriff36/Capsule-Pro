@@ -5,7 +5,7 @@ import {
   createRecipeRuntime,
   createRecipeVersion,
   type KitchenOpsContext,
-} from "@repo/manifest-adapters";
+} from "@repo/manifest-runtime";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
@@ -228,7 +228,7 @@ export async function createRuntimeContext(
   authContext: AuthContext
 ): Promise<KitchenOpsContext> {
   const { createPrismaStoreProvider } = await import(
-    "@repo/manifest-adapters/prisma-store"
+    "@repo/manifest-runtime/prisma-store"
   );
 
   return {

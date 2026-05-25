@@ -11,8 +11,8 @@
 import { auth } from "@repo/auth/server";
 import type { Prisma } from "@repo/database";
 import { database } from "@repo/database";
-import { claimPrepTask } from "@repo/manifest-adapters";
-import { hasBlockingConstraints } from "@repo/manifest-adapters/api-response";
+import { claimPrepTask } from "@repo/manifest-runtime";
+import { hasBlockingConstraints } from "@repo/manifest-runtime/api-response";
 import { triggerTaskAssignedSms } from "@repo/notifications";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";

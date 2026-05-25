@@ -14,7 +14,7 @@ import {
   reassignPrepTask,
   releasePrepTask,
   startPrepTask,
-} from "@repo/manifest-adapters";
+} from "@repo/manifest-runtime";
 import { revalidatePath } from "next/cache";
 import { getTenantIdForOrg } from "../../../lib/tenant";
 
@@ -250,7 +250,7 @@ export async function manifestAssignTaskToStation(
 ) {
   const { runtime } = await createRuntimeAndContext();
 
-  const kitchenOps = await import("@repo/manifest-adapters");
+  const kitchenOps = await import("@repo/manifest-runtime");
   const result = await kitchenOps.assignTaskToStation(
     runtime,
     stationId,
@@ -269,7 +269,7 @@ export async function manifestRemoveTaskFromStation(
 ) {
   const { runtime } = await createRuntimeAndContext();
 
-  const kitchenOps = await import("@repo/manifest-adapters");
+  const kitchenOps = await import("@repo/manifest-runtime");
   const result = await kitchenOps.removeTaskFromStation(
     runtime,
     stationId,
@@ -287,7 +287,7 @@ export async function manifestUpdateStationCapacity(
 ) {
   const { runtime, userId } = await createRuntimeAndContext();
 
-  const kitchenOps = await import("@repo/manifest-adapters");
+  const kitchenOps = await import("@repo/manifest-runtime");
   const result = await kitchenOps.updateStationCapacity(
     runtime,
     stationId,
@@ -311,7 +311,7 @@ export async function manifestReserveInventory(
 ) {
   const { runtime, userId } = await createRuntimeAndContext();
 
-  const kitchenOps = await import("@repo/manifest-adapters");
+  const kitchenOps = await import("@repo/manifest-runtime");
   const result = await kitchenOps.reserveInventory(
     runtime,
     itemId,
@@ -332,7 +332,7 @@ export async function manifestConsumeInventory(
 ) {
   const { runtime, userId } = await createRuntimeAndContext();
 
-  const kitchenOps = await import("@repo/manifest-adapters");
+  const kitchenOps = await import("@repo/manifest-runtime");
   const result = await kitchenOps.consumeInventory(
     runtime,
     itemId,
@@ -353,7 +353,7 @@ export async function manifestRestockInventory(
 ) {
   const { runtime, userId } = await createRuntimeAndContext();
 
-  const kitchenOps = await import("@repo/manifest-adapters");
+  const kitchenOps = await import("@repo/manifest-runtime");
   const result = await kitchenOps.restockInventory(
     runtime,
     itemId,

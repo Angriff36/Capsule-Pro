@@ -129,7 +129,7 @@ function isConcreteCommandRouteFile(relativeApiPath: string): boolean {
 function loadCommandRegistry(projectRoot: string): Set<string> {
   const commandsPath = join(
     projectRoot,
-    "packages/manifest-ir/ir/kitchen/kitchen.commands.json"
+    "manifest/ir/kitchen.commands.json"
   );
   const raw = JSON.parse(readFileSync(commandsPath, "utf-8")) as Array<{
     entity: string;
@@ -169,7 +169,7 @@ export function scanRouteConformance(
 
   const manifestPath = join(
     projectRoot,
-    "packages/manifest-ir/dist/routes.manifest.json"
+    "manifest/runtime/routes.manifest.json"
   );
   const apiDir = join(projectRoot, "apps/api/app/api");
   const dispatcherFile = join(

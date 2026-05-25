@@ -1,0 +1,140 @@
+// Payment Method Rules Manifest
+// Defines payment method storage and tokenization rules
+
+entity PaymentMethod {
+  property required id: string
+  property required tenantId: string
+
+  // Client and reference
+  property required clientId: string = ""
+  property externalMethodId: string = ""
+
+  // Method type
+  property required type: string = "CREDIT_CARD"
+
+  // Card details (tokenized)
+  property cardLastFour: string = ""
+  property cardNetwork: string = ""
+  property cardExpiryMonth: int = 0
+  property cardExpiryYear: int = 0
+  property cardHolderName: string = ""
+
+  // Bank account details (ACH/Wire)
+  property bankAccountLastFour: string = ""
+  property bankAccountType: string = ""
+  property bankRoutingNumber: string = ""
+
+  // Digital wallet
+  property walletProvider: string = ""
+  property walletEmail: string = ""
+
+  // Status
+  property required status: string = "ACTIVE"
+  property required isDefault: boolean = false
+  property fraudFlagged: boolean = false
+
+  // Verification
+  property verifiedAt: datetime
+  property verificationMethod: string = ""
+
+  // Metadata
+  property nickname: string = ""
+  property metadata: string = "{}"
+
+  // Timestamps
+  property required createdAt: datetime = now()
+  property expiresAt: datetime
+
+  // Computed properties
+  computed isExpired: boolean = self.expiresAt != null and self.expiresAt < now()
+  computed isUsable: boolean = self.status == "ACTIVE" and self.isExpired == false and self.fraudFlagged == false
+
+  // Constraints
+  constraint default_for_active_only: self.isDefault == false or self.status == "ACTIVE" "Only active payment methods can be default"
+
+  // Commands
+  command markAsDefault() {
+    guard self.isUsable "Payment method must be usable to be set as default"
+    guard self.isExpired == false "Cannot set expired card as default"
+    mutate isDefault = true
+    emit PaymentMethodSetDefault
+  }
+
+  command markNotDefault() {
+    mutate isDefault = false
+    emit PaymentMethodUnsetDefault
+  }
+
+  command markExpired() {
+    guard self.type in ["CREDIT_CARD", "DEBIT_CARD"] "Only cards can expire"
+    mutate status = "EXPIRED"
+    mutate expiresAt = now()
+    emit PaymentMethodExpired
+  }
+
+  command markInvalid(reason: string) {
+    mutate status = "INVALID"
+    emit PaymentMethodInvalidated
+  }
+
+  command flagForFraud(reason: string) {
+    guard self.fraudFlagged == false "Already flagged for fraud"
+    mutate fraudFlagged = true
+    mutate status = "FRAUDULENT"
+    emit PaymentMethodFraudFlagged
+  }
+
+  command verify(method: string) {
+    guard self.status == "ACTIVE" "Can only verify active payment methods"
+    mutate verifiedAt = now()
+    mutate verificationMethod = method
+    emit PaymentMethodVerified
+  }
+
+  command updateToken(newToken: string) {
+    guard self.status == "ACTIVE" "Can only update active payment methods"
+    mutate externalMethodId = newToken
+    emit PaymentMethodTokenUpdated
+  }
+}
+
+store PaymentMethod in durable
+
+// Events
+event PaymentMethodSetDefault: "payment-method.set-default" {
+  paymentMethodId: string
+  clientId: string
+}
+
+event PaymentMethodUnsetDefault: "payment-method.unset-default" {
+  paymentMethodId: string
+  clientId: string
+}
+
+event PaymentMethodExpired: "payment-method.expired" {
+  paymentMethodId: string
+  clientId: string
+}
+
+event PaymentMethodInvalidated: "payment-method.invalidated" {
+  paymentMethodId: string
+  clientId: string
+  reason: string
+}
+
+event PaymentMethodFraudFlagged: "payment-method.fraud-flagged" {
+  paymentMethodId: string
+  clientId: string
+  reason: string
+}
+
+event PaymentMethodVerified: "payment-method.verified" {
+  paymentMethodId: string
+  clientId: string
+  method: string
+}
+
+event PaymentMethodTokenUpdated: "payment-method.token-updated" {
+  paymentMethodId: string
+  clientId: string
+}

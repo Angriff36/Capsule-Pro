@@ -13,7 +13,7 @@
 
 import { existsSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { loadPrecompiledIR } from "@repo/manifest-adapters/runtime/loadManifests";
+import { loadPrecompiledIR } from "@repo/manifest-runtime/runtime/loadManifests";
 import { describe, expect, it } from "vitest";
 
 describe("manifest repo-root path resolution", () => {

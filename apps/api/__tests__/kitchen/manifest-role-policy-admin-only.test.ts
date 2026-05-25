@@ -11,8 +11,8 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { compileToIR } from "@angriff36/manifest/ir-compiler";
-import { enforceCommandOwnership } from "@repo/manifest-adapters/ir-contract";
-import { ManifestRuntimeEngine } from "@repo/manifest-adapters/runtime-engine";
+import { enforceCommandOwnership } from "@repo/manifest-runtime/ir-contract";
+import { ManifestRuntimeEngine } from "@repo/manifest-runtime/runtime-engine";
 import { describe, expect, it } from "vitest";
 
 const MANIFEST_DIR = join(

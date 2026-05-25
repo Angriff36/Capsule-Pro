@@ -2,7 +2,7 @@
  * Manifest runtime factory — API app shim.
  *
  * This module is a thin wrapper around the shared factory in
- * `@repo/manifest-adapters/manifest-runtime-factory`. It injects the
+ * `@repo/manifest-runtime/manifest-runtime-factory`. It injects the
  * API-specific singletons (database, Sentry, logger) and preserves the
  * existing export surface so that generated routes keep importing from
  * `@/lib/manifest-runtime` without changes.
@@ -12,7 +12,7 @@
 
 import type { RuntimeEngine } from "@angriff36/manifest";
 import { database } from "@repo/database";
-import { createManifestRuntime as createSharedRuntime } from "@repo/manifest-adapters/manifest-runtime-factory";
+import { createManifestRuntime as createSharedRuntime } from "@repo/manifest-runtime/manifest-runtime-factory";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { createSentryTelemetry } from "./manifest/telemetry";
@@ -35,13 +35,13 @@ interface GeneratedRuntimeContext {
    * When provided, ALL internal Prisma operations use this client instead
    * of the main singleton.
    */
-  prismaOverride?: import("@repo/manifest-adapters/manifest-runtime-factory").PrismaTransactionClient;
+  prismaOverride?: import("@repo/manifest-runtime/manifest-runtime-factory").PrismaTransactionClient;
 }
 
 /**
  * Create a manifest runtime with Prisma-based storage and transactional outbox.
  *
- * Delegates to the shared factory in `@repo/manifest-adapters`, injecting
+ * Delegates to the shared factory in `@repo/manifest-runtime`, injecting
  * API-specific singletons for database access, logging, error capture, and
  * Sentry telemetry.
  *

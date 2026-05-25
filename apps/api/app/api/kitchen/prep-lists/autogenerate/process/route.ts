@@ -9,7 +9,7 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
-import { processPendingPrepListGenerations } from "@repo/manifest-adapters";
+import { processPendingPrepListGenerations } from "@repo/manifest-runtime";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";

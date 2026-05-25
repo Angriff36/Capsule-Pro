@@ -46,9 +46,9 @@ const AUDIT_CMD = [
   "--format",
   "json",
   "--commands-manifest",
-  "packages/manifest-ir/dist/commands.registry.json",
+  "manifest/runtime/commands.registry.json",
   "--exemptions",
-  "packages/manifest-ir/ir/kitchen/audit-routes-exemptions.json",
+  "manifest/governance/audit-routes-exemptions.json",
   ">",  outFile,
   "2>/dev/null",
 ].join(" ");

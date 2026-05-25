@@ -4,7 +4,7 @@
  * WHY THIS EXISTS
  * ---------------
  * The Manifest runtime already supports per-command idempotency via
- * `PrismaIdempotencyStore` (see `@repo/manifest-adapters/prisma-idempotency-store`),
+ * `PrismaIdempotencyStore` (see `@repo/manifest-runtime/prisma-idempotency-store`),
  * keyed by `idempotencyKey` on `runCommand(...)`. That covers any route that
  * dispatches through `manifestCommandHandler`.
  *

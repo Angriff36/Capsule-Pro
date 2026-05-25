@@ -1,0 +1,39 @@
+{
+  "name": "@repo/manifest-runtime",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./prisma-store": "./src/prisma-store.ts",
+    "./api-response": "./src/api-response.ts",
+    "./route-helpers": "./src/route-helpers.ts",
+    "./ir-contract": "./src/ir-contract.ts",
+    "./runtime-engine": "./src/runtime-engine.ts",
+    "./manifest-runtime": "./src/manifest-runtime.ts",
+    "./runtime/loadManifests": "./src/runtime/loadManifests.ts",
+    "./prisma-json-store": "./src/prisma-json-store.ts",
+    "./prisma-idempotency-store": "./src/prisma-idempotency-store.ts",
+    "./manifest-runtime-factory": "./src/manifest-runtime-factory.ts",
+    "./commands-registry": "./src/commands-registry.ts"
+  },
+  "dependencies": {
+    "@angriff36/manifest": "1.0.5",
+    "@repo/database": "workspace:*",
+    "@repo/realtime": "workspace:*",
+    "@sentry/node": "^10.38.0",
+    "hono": "^4.10.5"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "workspace:*",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.18"
+  },
+  "scripts": {
+    "build": "tsc --declaration",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  }
+}

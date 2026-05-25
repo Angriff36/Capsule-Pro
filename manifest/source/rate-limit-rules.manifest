@@ -1,0 +1,127 @@
+// Administration - Rate Limit Rules
+// Manifest spec for rate limit configuration management
+
+entity RateLimitConfig {
+  property required id: string
+  property required tenantId: string
+  property required name: string = ""
+  property required endpointPattern: string = ""
+  property required windowMs: int = 60000
+  property required maxRequests: int = 100
+  property burstAllowance: int = 0
+  property required priority: int = 0
+  property required isActive: boolean = true
+  property required createdAt: datetime = now()
+  property required updatedAt: datetime = now()
+  property deletedAt: datetime
+
+  constraint requireName: self.name != "" "Rate limit name is required"
+  constraint requireEndpointPattern: self.endpointPattern != "" "Endpoint pattern is required"
+
+  command create(name: string, endpointPattern: string, windowMs: number, maxRequests: number, burstAllowance: number = 0, priority: number = 0) {
+    guard name != "" "Rate limit name is required"
+    guard endpointPattern != "" "Endpoint pattern is required"
+    guard windowMs > 0 "Window duration must be positive"
+    guard maxRequests > 0 "Maximum requests must be positive"
+    guard burstAllowance >= 0 "Burst allowance cannot be negative"
+    guard priority >= 0 and priority <= 100 "Priority must be between 0 and 100"
+    mutate name = name
+    mutate endpointPattern = endpointPattern
+    mutate windowMs = windowMs
+    mutate maxRequests = maxRequests
+    mutate burstAllowance = burstAllowance
+    mutate priority = priority
+    mutate isActive = true
+    mutate createdAt = now()
+    mutate updatedAt = now()
+    emit RateLimitConfigCreated
+  }
+
+  command update(name: string, endpointPattern: string, windowMs: number, maxRequests: number, burstAllowance: number = 0, priority: number = 0, isActive: boolean = true) {
+    guard self.deletedAt == null "Cannot update deleted rate limit configuration"
+    mutate name = name
+    mutate endpointPattern = endpointPattern
+    mutate windowMs = windowMs
+    mutate maxRequests = maxRequests
+    mutate burstAllowance = burstAllowance
+    mutate priority = priority
+    mutate isActive = isActive
+    mutate updatedAt = now()
+    emit RateLimitConfigUpdated
+  }
+
+  command softDelete(reason: string = "") {
+    guard self.deletedAt == null "Cannot modify deleted rate limit configuration"
+    mutate deletedAt = now()
+    mutate updatedAt = now()
+    emit RateLimitConfigDeleted
+  }
+
+  command turnOn() {
+    guard self.deletedAt == null "Cannot modify deleted rate limit configuration"
+    mutate isActive = true
+    mutate updatedAt = now()
+    emit RateLimitConfigActivated
+  }
+
+  command turnOff() {
+    guard self.deletedAt == null "Cannot modify deleted rate limit configuration"
+    mutate isActive = false
+    mutate updatedAt = now()
+    emit RateLimitConfigDeactivated
+  }
+
+  store RateLimitConfig in durable
+}
+
+policy AdminCanManageRateLimits execute: user.role in ["admin"] "Only admins can manage rate limit configurations"
+
+event RateLimitConfigCreated: "admin.rate_limit.created" {
+  rateLimitConfigId: string
+  tenantId: string
+  name: string
+  endpointPattern: string
+  windowMs: number
+  maxRequests: number
+  burstAllowance: number
+  priority: number
+  createdAt: number
+}
+
+event RateLimitConfigUpdated: "admin.rate_limit.updated" {
+  rateLimitConfigId: string
+  tenantId: string
+  name: string
+  endpointPattern: string
+  windowMs: number
+  maxRequests: number
+  burstAllowance: number
+  priority: number
+  isActive: boolean
+  updatedAt: number
+}
+
+event RateLimitConfigDeleted: "admin.rate_limit.deleted" {
+  rateLimitConfigId: string
+  tenantId: string
+  name: string
+  endpointPattern: string
+  reason: string
+  deletedAt: number
+}
+
+event RateLimitConfigActivated: "admin.rate_limit.activated" {
+  rateLimitConfigId: string
+  tenantId: string
+  name: string
+  endpointPattern: string
+  updatedAt: number
+}
+
+event RateLimitConfigDeactivated: "admin.rate_limit.deactivated" {
+  rateLimitConfigId: string
+  tenantId: string
+  name: string
+  endpointPattern: string
+  updatedAt: number
+}

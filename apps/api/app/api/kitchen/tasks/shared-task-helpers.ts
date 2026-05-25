@@ -11,14 +11,14 @@ import {
   createPrepTaskRuntime,
   type KitchenOpsContext,
   type PrepTaskCommandResult,
-} from "@repo/manifest-adapters";
+} from "@repo/manifest-runtime";
 import { NextResponse } from "next/server";
 
 // Re-export commonly used types
 export type {
   ApiErrorResponse,
   ApiSuccessResponse,
-} from "@repo/manifest-adapters/api-response";
+} from "@repo/manifest-runtime/api-response";
 
 // ============ Types ============
 
@@ -174,7 +174,7 @@ export async function createManifestRuntime(
   taskContext: TaskContext
 ): Promise<ManifestRuntimeResult> {
   const { createPrismaStoreProvider } = await import(
-    "@repo/manifest-adapters/prisma-store"
+    "@repo/manifest-runtime/prisma-store"
   );
 
   const runtimeContext: KitchenOpsContext = {
@@ -420,12 +420,12 @@ export async function processStatusChange(
   | { success: false; error: { message: string; status: number } }
 > {
   const { createPrismaStoreProvider } = await import(
-    "@repo/manifest-adapters/prisma-store"
+    "@repo/manifest-runtime/prisma-store"
   );
 
   // Import Manifest commands
   const { completePrepTask, cancelPrepTask, releasePrepTask } = await import(
-    "@repo/manifest-adapters"
+    "@repo/manifest-runtime"
   );
 
   // Create runtime context

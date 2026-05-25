@@ -10,7 +10,7 @@ import {
   type PrepListAutoGenerationInput,
   processPendingPrepListGenerations,
   triggerPrepListAutoGeneration,
-} from "@repo/manifest-adapters";
+} from "@repo/manifest-runtime";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock the database

@@ -1,7 +1,7 @@
 /**
  * IR loading, caching, and hot-reload for the MCP server.
  *
- * Reuses `loadPrecompiledIR` from `@repo/manifest-adapters` for the actual
+ * Reuses `loadPrecompiledIR` from `@repo/manifest-runtime` for the actual
  * loading logic. This module adds:
  * - A typed accessor for the cached IR
  * - File watching for hot-reload during development
@@ -13,13 +13,13 @@
 import { existsSync, watch } from "node:fs";
 import { resolve } from "node:path";
 import type { IR } from "@angriff36/manifest/ir";
-import { loadPrecompiledIR } from "@repo/manifest-adapters/runtime/loadManifests";
+import { loadPrecompiledIR } from "@repo/manifest-runtime/runtime/loadManifests";
 
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
 
-const DEFAULT_IR_PATH = "packages/manifest-ir/ir/kitchen/kitchen.ir.json";
+const DEFAULT_IR_PATH = "manifest/ir/kitchen/kitchen.ir.json";
 
 // ---------------------------------------------------------------------------
 // State

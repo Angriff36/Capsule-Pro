@@ -4,7 +4,7 @@
  * Tests the invariant: "setPrisma/getPrisma manage a singleton correctly,
  * and getPrisma throws when not initialized."
  *
- * Note: runtime-factory.ts imports from @repo/manifest-adapters which
+ * Note: runtime-factory.ts imports from @repo/manifest-runtime which
  * transitively imports @repo/database/standalone, triggering DATABASE_URL
  * validation. We mock the transitive dependency to avoid this.
  */
@@ -12,7 +12,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock the transitive imports that require DATABASE_URL
-vi.mock("@repo/manifest-adapters/manifest-runtime-factory", () => ({
+vi.mock("@repo/manifest-runtime/manifest-runtime-factory", () => ({
   createManifestRuntime: vi.fn(),
 }));
 
@@ -36,7 +36,7 @@ describe("runtime-factory Prisma lifecycle", () => {
     vi.resetModules();
 
     // Re-apply mocks after reset
-    vi.doMock("@repo/manifest-adapters/manifest-runtime-factory", () => ({
+    vi.doMock("@repo/manifest-runtime/manifest-runtime-factory", () => ({
       createManifestRuntime: vi.fn(),
     }));
     vi.doMock("@sentry/node", () => ({
@@ -90,7 +90,7 @@ describe("MCP_ALLOW_DB env gate", () => {
   beforeEach(async () => {
     vi.resetModules();
 
-    vi.doMock("@repo/manifest-adapters/manifest-runtime-factory", () => ({
+    vi.doMock("@repo/manifest-runtime/manifest-runtime-factory", () => ({
       createManifestRuntime: vi.fn(),
     }));
     vi.doMock("@sentry/node", () => ({

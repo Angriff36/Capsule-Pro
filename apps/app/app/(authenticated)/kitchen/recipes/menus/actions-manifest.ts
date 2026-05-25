@@ -14,7 +14,7 @@ import {
   deactivateMenu,
   type KitchenOpsContext,
   updateMenu,
-} from "@repo/manifest-adapters";
+} from "@repo/manifest-runtime";
 import { revalidatePath } from "next/cache";
 import { requireCurrentUser, requireTenantId } from "../../../../lib/tenant";
 

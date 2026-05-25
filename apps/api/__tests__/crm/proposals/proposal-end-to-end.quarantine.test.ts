@@ -75,7 +75,7 @@ vi.mock("@/lib/manifest-runtime", () => ({
 
 vi.mock("@/lib/manifest-command-handler", async () => {
   const { manifestSuccessResponse } = await import(
-    "@repo/manifest-adapters/route-helpers"
+    "@repo/manifest-runtime/route-helpers"
   );
   return {
     executeManifestCommand: vi.fn(

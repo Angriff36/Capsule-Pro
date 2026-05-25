@@ -13,7 +13,7 @@ import { ContractTemplate, resend } from "@repo/email";
 import {
   manifestErrorResponse,
   manifestSuccessResponse,
-} from "@repo/manifest-adapters/route-helpers";
+} from "@repo/manifest-runtime/route-helpers";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";

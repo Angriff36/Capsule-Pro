@@ -1,0 +1,152 @@
+// Vendor Catalog Rules
+// Manifest spec for vendor catalog management
+// Version: @angriff36/manifest v0.3.35
+
+entity VendorCatalog {
+  property required id: string
+  property required tenantId: string
+  property required supplierId: string
+  property required itemNumber: string = ""
+  property required itemName: string = ""
+  property description: string = ""
+  property category: string = ""
+  property required baseUnitCost: number = 0
+  property required currency: string = "USD"
+  property required unitOfMeasure: string = "each"
+  property leadTimeDays: int = 0
+  property leadTimeMinDays: int = 0
+  property leadTimeMaxDays: int = 0
+  property minimumOrderQuantity: number = 0
+  property orderMultiple: number = 0
+  property required isActive: boolean = true
+  property effectiveFrom: datetime
+  property effectiveTo: datetime
+  property supplierSku: string = ""
+  property notes: string = ""
+  property required tags: array<string>
+  property lastCostUpdate: datetime
+  property required createdAt: datetime = now()
+  property required updatedAt: datetime = now()
+  property deletedAt: datetime
+
+  computed isDeleted: boolean = self.deletedAt != null
+  computed isEffective: boolean = (self.effectiveFrom == null or self.effectiveFrom <= now()) and (self.effectiveTo == null or self.effectiveTo >= now())
+
+  constraint requireItemNumber: self.itemNumber != null and self.itemNumber != "" "Item number is required"
+  constraint requireItemName: self.itemName != null and self.itemName != "" "Item name is required"
+  constraint requireUnitOfMeasure: self.unitOfMeasure in ["each", "case", "lb", "oz", "kg", "units", "cases"] "Invalid unit of measure"
+  constraint validCurrency: self.currency in ["USD", "EUR", "JPY", "CAD"] "Invalid currency"
+  constraint validUnitCost: self.baseUnitCost >= 0 "Unit cost must be non-negative"
+
+  command create(supplierId: string, itemNumber: string, itemName: string, description: string, category: string, baseUnitCost: number, currency: string, unitOfMeasure: string, leadTimeDays: number, leadTimeMinDays: number, leadTimeMaxDays: number, minimumOrderQuantity: number, orderMultiple: number, effectiveFrom: number, effectiveTo: number, supplierSku: string, notes: string, tags: string) {
+    guard itemNumber != null and itemNumber != "" "Item number is required"
+    guard itemName != null and itemName != "" "Item name is required"
+    guard unitOfMeasure in ["each", "case", "lb", "oz", "kg", "units", "cases"] "Invalid unit of measure"
+    guard baseUnitCost >= 0 "Unit cost must be non-negative"
+
+    mutate supplierId = supplierId
+    mutate itemNumber = itemNumber
+    mutate itemName = itemName
+    mutate description = description
+    mutate category = category
+    mutate baseUnitCost = baseUnitCost
+    mutate currency = currency
+    mutate unitOfMeasure = unitOfMeasure
+    mutate leadTimeDays = leadTimeDays
+    mutate leadTimeMinDays = leadTimeMinDays
+    mutate leadTimeMaxDays = leadTimeMaxDays
+    mutate minimumOrderQuantity = minimumOrderQuantity
+    mutate orderMultiple = orderMultiple
+    mutate effectiveFrom = effectiveFrom
+    mutate effectiveTo = effectiveTo
+    mutate supplierSku = supplierSku
+    mutate notes = notes
+    mutate tags = tags
+    mutate isActive = true
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit VendorCatalogCreated
+  }
+
+  command update(supplierId: string, itemNumber: string, itemName: string, description: string, category: string, baseUnitCost: number, currency: string, unitOfMeasure: string, leadTimeDays: number, leadTimeMinDays: number, leadTimeMaxDays: number, minimumOrderQuantity: number, orderMultiple: number, isActive: boolean, effectiveFrom: number, effectiveTo: number, supplierSku: string, notes: string, tags: string, lastCostUpdate: number) {
+    guard self.deletedAt == null "Cannot update a deleted catalog entry"
+
+    mutate supplierId = supplierId
+    mutate itemNumber = itemNumber
+    mutate itemName = itemName
+    mutate description = description
+    mutate category = category
+    mutate baseUnitCost = baseUnitCost
+    mutate currency = currency
+    mutate unitOfMeasure = unitOfMeasure
+    mutate leadTimeDays = leadTimeDays
+    mutate leadTimeMinDays = leadTimeMinDays
+    mutate leadTimeMaxDays = leadTimeMaxDays
+    mutate minimumOrderQuantity = minimumOrderQuantity
+    mutate orderMultiple = orderMultiple
+    mutate isActive = isActive
+    mutate effectiveFrom = effectiveFrom
+    mutate effectiveTo = effectiveTo
+    mutate supplierSku = supplierSku
+    mutate notes = notes
+    mutate tags = tags
+    mutate lastCostUpdate = lastCostUpdate
+    mutate updatedAt = now()
+
+    emit VendorCatalogUpdated
+  }
+
+  command softDelete(reason: string) {
+    guard self.deletedAt == null "Catalog entry is already deleted"
+
+    constraint warnActiveEntry:warn self.isActive {
+      messageTemplate: "Deleting active catalog entry '{itemName}'"
+      details: {
+        itemNumber: self.itemNumber
+        itemName: self.itemName
+        reason: reason
+      }
+    }
+
+    mutate isActive = false
+    mutate deletedAt = now()
+    mutate updatedAt = now()
+
+    emit VendorCatalogDeactivated
+  }
+
+  store VendorCatalog in durable
+}
+
+event VendorCatalogCreated: "inventory.vendor-catalog.created" {
+  catalogId: string
+  tenantId: string
+  supplierId: string
+  itemNumber: string
+  itemName: string
+  baseUnitCost: number
+  currency: string
+  unitOfMeasure: string
+  createdAt: number
+}
+
+event VendorCatalogUpdated: "inventory.vendor-catalog.updated" {
+  catalogId: string
+  tenantId: string
+  supplierId: string
+  itemNumber: string
+  itemName: string
+  baseUnitCost: number
+  updatedAt: number
+}
+
+event VendorCatalogDeactivated: "inventory.vendor-catalog.deactivated" {
+  catalogId: string
+  tenantId: string
+  supplierId: string
+  itemNumber: string
+  itemName: string
+  reason: string
+  deletedAt: number
+}

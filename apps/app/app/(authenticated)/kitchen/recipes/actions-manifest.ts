@@ -6,7 +6,7 @@ import {
   createDish as createDishManifest,
   createRecipeRuntime,
   type KitchenOpsContext,
-} from "@repo/manifest-adapters";
+} from "@repo/manifest-runtime";
 import { put } from "@repo/storage";
 // biome-ignore lint/performance/noNamespaceImport: Sentry.logger requires namespace import
 import * as Sentry from "@sentry/nextjs";
@@ -315,7 +315,7 @@ async function createRuntimeContext(): Promise<KitchenOpsContext> {
 
   // Dynamically import PrismaStore to avoid circular dependencies
   const { createPrismaStoreProvider } = await import(
-    "@repo/manifest-adapters/prisma-store"
+    "@repo/manifest-runtime/prisma-store"
   );
 
   return {

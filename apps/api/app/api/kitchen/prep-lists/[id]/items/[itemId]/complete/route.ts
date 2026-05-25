@@ -5,7 +5,7 @@ import { auth } from "@repo/auth/server";
 import {
   manifestErrorResponse,
   manifestSuccessResponse,
-} from "@repo/manifest-adapters/route-helpers";
+} from "@repo/manifest-runtime/route-helpers";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";

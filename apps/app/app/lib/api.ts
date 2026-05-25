@@ -106,7 +106,7 @@ function getKnownPatterns(): Set<string> {
       const path = require("node:path");
       const manifestPath = path.resolve(
         process.cwd(),
-        "packages/manifest-ir/dist/routes.manifest.json"
+        "manifest/runtime/routes.manifest.json"
       );
       if (fs.existsSync(manifestPath)) {
         const manifest: RouteManifest = JSON.parse(

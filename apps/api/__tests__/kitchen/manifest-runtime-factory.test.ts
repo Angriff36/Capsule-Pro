@@ -14,7 +14,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 // ---------------------------------------------------------------------------
 
 // Mock the IR loader so we don't need the actual IR file on disk.
-vi.mock("@repo/manifest-adapters/runtime/loadManifests", () => ({
+vi.mock("@repo/manifest-runtime/runtime/loadManifests", () => ({
   loadPrecompiledIR: vi.fn(() => ({
     ir: {
       version: "1.0",
@@ -33,7 +33,7 @@ vi.mock("@repo/manifest-adapters/runtime/loadManifests", () => ({
 
 // Capture PrismaStore constructor calls.
 const prismaStoreConstructorSpy = vi.fn();
-vi.mock("@repo/manifest-adapters/prisma-store", () => {
+vi.mock("@repo/manifest-runtime/prisma-store", () => {
   class MockPrismaStore {
     constructor(config: unknown) {
       prismaStoreConstructorSpy(config);
@@ -69,7 +69,7 @@ vi.mock("@repo/manifest-adapters/prisma-store", () => {
 
 // Capture PrismaJsonStore constructor calls.
 const prismaJsonStoreConstructorSpy = vi.fn();
-vi.mock("@repo/manifest-adapters/prisma-json-store", () => {
+vi.mock("@repo/manifest-runtime/prisma-json-store", () => {
   class MockPrismaJsonStore {
     constructor(config: unknown) {
       prismaJsonStoreConstructorSpy(config);
@@ -101,7 +101,7 @@ vi.mock("@repo/manifest-adapters/prisma-json-store", () => {
 
 // Capture PrismaIdempotencyStore constructor calls.
 const idempotencyStoreConstructorSpy = vi.fn();
-vi.mock("@repo/manifest-adapters/prisma-idempotency-store", () => {
+vi.mock("@repo/manifest-runtime/prisma-idempotency-store", () => {
   class MockPrismaIdempotencyStore {
     constructor(config: unknown) {
       idempotencyStoreConstructorSpy(config);
@@ -122,7 +122,7 @@ vi.mock("@repo/manifest-adapters/prisma-idempotency-store", () => {
 });
 
 // Mock ManifestRuntimeEngine so we don't need the real runtime.
-vi.mock("@repo/manifest-adapters/runtime-engine", () => {
+vi.mock("@repo/manifest-runtime/runtime-engine", () => {
   class MockManifestRuntimeEngine {
     ir: unknown;
     context: unknown;
@@ -151,8 +151,8 @@ vi.mock("@repo/manifest-adapters/runtime-engine", () => {
 // Import the factory under test (after mocks are set up)
 // ---------------------------------------------------------------------------
 
-import type { CreateManifestRuntimeDeps } from "@repo/manifest-adapters/manifest-runtime-factory";
-import { createManifestRuntime } from "@repo/manifest-adapters/manifest-runtime-factory";
+import type { CreateManifestRuntimeDeps } from "@repo/manifest-runtime/manifest-runtime-factory";
+import { createManifestRuntime } from "@repo/manifest-runtime/manifest-runtime-factory";
 
 // ---------------------------------------------------------------------------
 // Helpers

@@ -84,10 +84,10 @@ describe("Manifest-Generated PrepTask.claim Handler", () => {
     expect(content).toContain("@angriff36/manifest");
     expect(content).toContain("RuntimeEngine");
 
-    // Verify it delegates to the shared factory in @repo/manifest-adapters
+    // Verify it delegates to the shared factory in @repo/manifest-runtime
     expect(content).toContain("createManifestRuntime");
     expect(content).toContain(
-      "@repo/manifest-adapters/manifest-runtime-factory"
+      "@repo/manifest-runtime/manifest-runtime-factory"
     );
 
     console.info("✓ Runtime factory verified");

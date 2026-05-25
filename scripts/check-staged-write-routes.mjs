@@ -8,7 +8,7 @@
  * - Methods: POST, PUT, PATCH, DELETE
  *
  * Passes when each staged write method maps to:
- *  1) A method+path entry in packages/manifest-ir/dist/routes.manifest.json, or
+ *  1) A method+path entry in manifest/runtime/routes.manifest.json, or
  *  2) An infrastructure allowlist rule (webhooks/auth/cron/health).
  */
 
@@ -17,7 +17,7 @@ import { existsSync, readFileSync } from "node:fs";
 
 const ROUTE_FILE_RE = /^apps\/api\/app\/api\/.+\/route\.(ts|tsx|js|jsx)$/;
 const WRITE_METHODS = ["POST", "PUT", "PATCH", "DELETE"];
-const ROUTE_MANIFEST_PATH = "packages/manifest-ir/dist/routes.manifest.json";
+const ROUTE_MANIFEST_PATH = "manifest/runtime/routes.manifest.json";
 const INFRA_ALLOWLIST_PATH =
   "scripts/manifest/write-route-infra-allowlist.json";
 

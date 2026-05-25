@@ -4,7 +4,7 @@ import { join, resolve } from "node:path";
 import {
   getCompiledManifestBundle,
   loadManifests,
-} from "@repo/manifest-adapters/runtime/loadManifests";
+} from "@repo/manifest-runtime/runtime/loadManifests";
 import { afterEach, describe, expect, it } from "vitest";
 
 const TMP_PREFIX = join(tmpdir(), "manifest-loader-invariant-");

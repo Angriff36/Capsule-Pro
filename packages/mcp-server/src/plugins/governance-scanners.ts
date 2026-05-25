@@ -260,7 +260,7 @@ function scanDocumentationDrift(): ScanResult {
       const domain = relativePath.split(/[/\\]/)[0];
       const irPath = join(
         projectRoot,
-        "packages/manifest-ir/ir",
+        "manifest/ir",
         domain,
         `${domain}.ir.json`
       );
@@ -290,7 +290,7 @@ function scanDocumentationDrift(): ScanResult {
       }
     }
 
-    const irPath = join(projectRoot, "packages/manifest-ir/ir");
+    const irPath = join(projectRoot, "manifest/ir");
     const irFiles = scanDirectory(irPath, IR_FILE_PATTERN);
     scannedFiles += irFiles.length;
 

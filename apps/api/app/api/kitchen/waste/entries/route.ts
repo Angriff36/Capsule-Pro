@@ -1,7 +1,7 @@
 import { auth } from "@repo/auth/server";
 import type { Prisma } from "@repo/database";
 import { database, type PrismaClient } from "@repo/database";
-import { wasteInventory } from "@repo/manifest-adapters";
+import { wasteInventory } from "@repo/manifest-runtime";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -269,7 +269,7 @@ async function validateAndExecuteWasteCommand(
   reason: string,
   userId: string
 ) {
-  const { createInventoryRuntime } = await import("@repo/manifest-adapters");
+  const { createInventoryRuntime } = await import("@repo/manifest-runtime");
 
   const runtime = await createInventoryRuntime({
     tenantId,

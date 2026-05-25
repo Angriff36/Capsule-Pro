@@ -1,7 +1,7 @@
 /**
  * MCP-specific runtime factory.
  *
- * Thin wrapper around `@repo/manifest-adapters/manifest-runtime-factory`
+ * Thin wrapper around `@repo/manifest-runtime/manifest-runtime-factory`
  * that injects MCP-appropriate dependencies (Sentry for Node.js standalone
  * process, not Next.js).
  *
@@ -14,7 +14,7 @@ import {
   createManifestRuntime,
   type ManifestTelemetryHooks,
   type PrismaLike,
-} from "@repo/manifest-adapters/manifest-runtime-factory";
+} from "@repo/manifest-runtime/manifest-runtime-factory";
 import { addBreadcrumb, captureException } from "@sentry/node";
 import type { McpIdentity } from "../types.js";
 

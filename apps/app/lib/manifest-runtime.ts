@@ -2,7 +2,7 @@
  * Manifest runtime factory — App shim for server actions.
  *
  * This module is a thin wrapper around the shared factory in
- * `@repo/manifest-adapters/manifest-runtime-factory`. It injects the
+ * `@repo/manifest-runtime/manifest-runtime-factory`. It injects the
  * app-specific singletons (database, Sentry, logger) so server actions
  * can use the manifest runtime directly.
  *
@@ -11,7 +11,7 @@
 
 import type { RuntimeEngine } from "@angriff36/manifest";
 import { database } from "@repo/database";
-import { createManifestRuntime as createSharedRuntime } from "@repo/manifest-adapters/manifest-runtime-factory";
+import { createManifestRuntime as createSharedRuntime } from "@repo/manifest-runtime/manifest-runtime-factory";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 
@@ -30,7 +30,7 @@ interface GeneratedRuntimeContext {
 /**
  * Create a manifest runtime with Prisma-based storage and transactional outbox.
  *
- * Delegates to the shared factory in `@repo/manifest-adapters`, injecting
+ * Delegates to the shared factory in `@repo/manifest-runtime`, injecting
  * app-specific singletons for database access, logging, and error capture.
  *
  * @example

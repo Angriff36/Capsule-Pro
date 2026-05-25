@@ -30,7 +30,7 @@ import { database } from "@repo/database";
 import {
   createPrismaOutboxWriter,
   PrismaStore,
-} from "@repo/manifest-adapters/prisma-store";
+} from "@repo/manifest-runtime/prisma-store";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 // Use valid UUIDs for tenant and user IDs

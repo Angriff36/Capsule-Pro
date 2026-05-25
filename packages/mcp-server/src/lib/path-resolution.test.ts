@@ -103,7 +103,7 @@ describe("ir-loader MCP_PROJECT_ROOT", () => {
 
     // Mock the transitive imports that ir-loader needs
     vi.doMock("@angriff36/manifest/ir", () => ({}));
-    vi.doMock("@repo/manifest-adapters/runtime/loadManifests", () => ({
+    vi.doMock("@repo/manifest-runtime/runtime/loadManifests", () => ({
       loadPrecompiledIR: vi.fn(() => ({
         ir: {
           entities: [],
