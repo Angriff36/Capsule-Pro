@@ -105,8 +105,8 @@ const baseConfig: NextConfig = withLogging({
   },
   outputFileTracingIncludes: {
     "/*": [
-      "../../packages/manifest-adapters/manifests/**/*.manifest",
-      "../../packages/manifest-ir/ir/**/*.json",
+      "../../manifest/source/**/*.manifest",
+      "../../manifest/ir/**/*.json",
     ],
   },
   // pdfjs-dist / pdfkit: native assets and worker paths must stay in node_modules.

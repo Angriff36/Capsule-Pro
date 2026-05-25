@@ -17,7 +17,7 @@ Closes #<issue_number>
 
 ## Manifest Changes (if applicable)
 
-If this PR modifies manifest files in `packages/manifest-adapters/manifests/`:
+If this PR modifies manifest files in `manifest/source/`:
 
 ### Manifest Validation Required
 

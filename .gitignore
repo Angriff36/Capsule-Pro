@@ -282,7 +282,6 @@ sketch
 
 storybook-static/
 docs/
-!**/packages/manifest-runtime/docs/
 !apps/docs/content/
 ### Turbo ###
 !/docs/
@@ -443,15 +442,8 @@ spec-prompt-template-generator.md
 # Generic JS/TS build output (apps/tools, not just packages/*/dist)
 **/dist/
 # Vendored manifest-runtime has no build step; its dist must be committed
-!packages/manifest-runtime/dist/
-!packages/manifest-runtime/dist/**
 # Route manifest artifacts must be committed for CI and dev-time validation
-!packages/manifest-ir/dist/
-!packages/manifest-ir/dist/routes.manifest.json
-!packages/manifest-ir/dist/routes.ts
 # manifest-adapters dist is consumed directly by apps/api (no publish step); must be committed
-!packages/manifest-adapters/dist/
-!packages/manifest-adapters/dist/**
 # sentry-integration dist must be committed — apps/api/app/webhooks/sentry/route.ts
 # imports subpath exports (@repo/sentry-integration/queue, /webhook) that resolve
 # to ./dist/*.d.ts via package.json exports. turbo typecheck doesn't depend on

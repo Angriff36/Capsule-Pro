@@ -358,15 +358,15 @@ jobs:
         # uses the wrapped {irHash, compilerVersion, commands} envelope.
         # Flip --strict back on (and remove continue-on-error) when ownership
         # error count drops to 0 or unresolved cases are added to the
-        # exemptions registry at packages/manifest-ir/ir/kitchen/audit-routes-exemptions.json.
+        # exemptions registry at manifest/governance/audit-routes-exemptions.json.
         continue-on-error: true
         run: |
           echo "Running route boundary audit (reporting; not blocking)..."
           pnpm exec manifest audit-routes \
             --strict \
             --root apps/api \
-            --commands-manifest packages/manifest-ir/ir/kitchen/kitchen.commands.json \
-            --exemptions packages/manifest-ir/ir/kitchen/audit-routes-exemptions.json
+            --commands-manifest manifest/ir/kitchen.commands.json \
+            --exemptions manifest/governance/audit-routes-exemptions.json
           echo
           echo "::notice::audit-routes findings above are advisory until ownership errors are resolved or exempted."
 
@@ -639,7 +639,7 @@ jobs:
 
       - name: Run enforce-surface (reporting only)
         # NOTE: --commands-registry points at the kitchen-scope runtime sidecar
-        # (packages/manifest-ir/dist/commands.registry.json), not the full
+        # (manifest/runtime/commands.registry.json), not the full
         # governance registry. This is intentional — enforce-surface checks
         # whether app code writes through registered commands, and the dispatcher
         # currently only resolves kitchen commands. Switching to the full
@@ -651,7 +651,7 @@ jobs:
           echo "Running manifest enforce-surface (reporting; not blocking)..."
           pnpm exec manifest enforce-surface \
             --root . \
-            --commands-registry packages/manifest-ir/dist/commands.registry.json \
+            --commands-registry manifest/runtime/commands.registry.json \
             --bypass-registry manifest/governance/bypasses.json \
             --format text
           echo

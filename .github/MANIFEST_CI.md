@@ -143,7 +143,7 @@ When creating a PR that modifies manifest files, the `.github/pull_request_templ
 
 All manifest files are located in:
 ```
-packages/manifest-adapters/manifests/
+manifest/source/
 ├── prep-task-rules.manifest
 ├── recipe-rules.manifest
 ├── menu-rules.manifest
