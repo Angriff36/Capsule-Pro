@@ -202,7 +202,7 @@ jobs:
           secrets: |
             9eac2295-b47e-405e-b1cd-b43e00214c72 > VERCEL_TOKEN
             71c979f7-e59c-4370-872b-b43e002162d2 > VERCEL_ORG_ID
-            e239cd88-7fb7-4c3b-ab42-b43e0021b4c8 > VERCEL_DOCS_PROJECT_ID
+            e239cd88-7fb7-4c3b-ab42-b43e0021b4c8 > VERCEL_PROJECT_ID
 
       - name: Strip trailing newline from Vercel token
         run: echo "VERCEL_TOKEN=${VERCEL_TOKEN%$'\n'}" >> $GITHUB_ENV
@@ -213,7 +213,7 @@ jobs:
       - name: Deploy to Vercel (Docs)
         run: |
           mkdir -p .vercel
-          printf '{"orgId":"%s","projectId":"%s"}\n' "$VERCEL_ORG_ID" "$VERCEL_DOCS_PROJECT_ID" > .vercel/project.json
+          printf '{"orgId":"%s","projectId":"%s"}\n' "$VERCEL_ORG_ID" "$VERCEL_PROJECT_ID" > .vercel/project.json
           vercel deploy --prod --yes
         env:
           VERCEL_TOKEN: ${{ env.VERCEL_TOKEN }}
