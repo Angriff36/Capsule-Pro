@@ -5,7 +5,7 @@
 
 Manifest Integration Charter
 
-Version: 2  
+Version: 3  
 Status: Binding  
 Audience: Humans, agents, CI checks, repo auditors, implementation plans
 
@@ -201,6 +201,36 @@ The UI must not encode authoritative state machines, transition graphs, validati
 The Command Board is an orchestration surface, not a semantic authority.
 
 Every governed mutation triggered by UI or Command Board workflows must invoke Manifest runtime.
+
+---
+
+## 4a. Manifest Workspace Layout Rule
+
+Capsule-Pro-owned Manifest artifacts live under the top-level `manifest/` directory. The `@angriff36/manifest` package (v1.0.5, GitHub Packages) owns generic Manifest compiler, parser, projection, and runtime primitives. Capsule-Pro does not vendor, fork, or reimplement upstream Manifest package code. No generated Manifest artifacts may live under `packages/`. No new `packages/manifest-*` workspace packages may be created without updating this constitution.
+
+The retired packages `packages/manifest-runtime`, `packages/manifest-ir`, and `packages/manifest-adapters` are forbidden resurrection paths. Agents must treat the directory paths `packages/manifest-runtime/`, `packages/manifest-ir/`, and `packages/manifest-adapters/` as non-existent for all new code, imports, and config.
+
+### Canonical homes
+
+| Artifact | Canonical Path | Classification |
+|----------|---------------|----------------|
+| Capsule-owned .manifest source and projection config | `manifest/source/` | Capsule source |
+| Generated merged IR, commands JSON, merge report, provenance | `manifest/ir/` | Generated IR (script consumers) |
+| `@repo/manifest-runtime` workspace package (shared Capsule runtime adapter code) | `manifest/runtime/` | Shared runtime workspace package |
+| Generated runtime registry, routes manifest, route implementations | `manifest/runtime/` | Generated runtime artifacts |
+| Governance registries: commands, entities, bypasses, baselines, allowlists | `manifest/governance/` | Governance data |
+| Compile, build, audit, generation, and utility scripts | `manifest/scripts/` | Build pipeline scripts |
+| Human-readable audit and normalization reports | `manifest/reports/` | Reports |
+| API-side runtime glue: command resolver, execution wrapper, outbox, telemetry | `apps/api/lib/manifest/` | API transport glue |
+| API runtime factory (Sentry/DB injection) | `apps/api/lib/manifest-runtime.ts` | API transport glue |
+| API command handler for REST domain adapters | `apps/api/lib/manifest-command-handler.ts` | API transport glue |
+| Canonical Next.js App Router HTTP dispatcher | `apps/api/app/api/manifest/[entity]/commands/[command]/route.ts` | API dispatcher route |
+
+### Dispatcher Execution Wrapper Rule
+
+Only `apps/api/lib/manifest/execute-command.ts` may perform HTTP transport command resolution, runtime creation, `RuntimeEngine.runCommand` invocation, and success/error normalization for governed commands. The dispatcher route (`apps/api/app/api/manifest/[entity]/commands/[command]/route.ts`) and narrow approved domain adapters (`apps/api/app/api/user/*`) must delegate command execution to this wrapper. Other routes, server actions, jobs, workflows, and scripts must not call `RuntimeEngine.runCommand` directly unless this constitution is updated or an approved bypass/governance exception exists.
+
+The command resolver (`apps/api/lib/manifest/command-resolver.ts`) must resolve against the generated command registry exposed by `@repo/manifest-runtime/commands-registry` via `getCommandsRegistry()`. It must not reference old `packages/manifest-ir` paths.
 
 ---
 
@@ -529,31 +559,31 @@ Capsule-Pro must maintain these artifacts or equivalent machine-readable replace
 
 ### Governed entity registry
 
-Lists governed, projection, infrastructure, bypass-approved, and unknown/nonconforming entities.
+`manifest/governance/entities.json` — Lists governed, projection, infrastructure, bypass-approved, and unknown/nonconforming entities.
 
 ### Bypass registry
 
-Lists all approved direct mutation bypasses with justification, owner, and review date.
+`manifest/governance/bypasses.json` — Lists all approved direct mutation bypasses with justification, owner, and review date.
 
 ### Command registry
 
-Maps entity/command pairs to compiled IR/runtime command definitions.
+`manifest/runtime/commands.registry.json` and the typed `@repo/manifest-runtime/commands-registry` export — Maps entity/command pairs to compiled IR/runtime command definitions. The `@repo/manifest-runtime/commands-registry` helper is the canonical runtime API for consuming the registry.
 
 ### Runtime adapter map
 
-Shows which adapters/effects are allowed to persist governed state.
+`manifest/runtime/` package exports and source — Shows which adapters/effects are allowed to persist governed state. The package.json exports field is the canonical list of available adapters.
 
 ### Route audit
 
-Identifies direct writes in routes/server actions/jobs and classifies them as conforming, bypass-approved, or nonconforming.
+`manifest/governance/` (baselines, allowlists, exemptions) and `manifest/reports/` — Identifies direct writes in routes/server actions/jobs and classifies them as conforming, bypass-approved, or nonconforming.
 
 ### Event audit
 
-Identifies semantic event creation and verifies runtime origin.
+`manifest/governance/` or `manifest/reports/` — Identifies semantic event creation and verifies runtime origin.
 
 ### Conformance test index
 
-Maps governed commands to tests proving runtime behavior.
+Current repo: no centralized conformance test index exists. Status: MISSING ENFORCEMENT. Agents must classify this absence as a tooling gap, not permission to skip conformance testing.
 
 Without these artifacts, agents must classify missing information as missing evidence, not as permission to guess.
 
@@ -593,6 +623,20 @@ Application code may adapt Clerk context into Manifest context.
 Application code may not use Clerk context to bypass Manifest semantics.
 
 If Clerk and Manifest disagree, the command must fail closed unless the Manifest specification defines a valid resolution.
+
+---
+
+## 19a. Relocation Enforcement Rule
+
+The 2026-05-25 Manifest relocation moved all Capsule-Pro-owned Manifest artifacts from `packages/manifest-*` to the top-level `manifest/` workspace. The following rules enforce this layout:
+
+If any non-historical code, config, import, script, or CI pipeline references `packages/manifest-ir`, `packages/manifest-runtime`, `packages/manifest-adapters`, `@repo/manifest-adapters`, `@repo/manifest-ir`, or the old `@repo/manifest-runtime` package path, agents must report NONCONFORMANCE unless the reference is inside migration notes, historical docs, or test fixture data documenting the pre-relocation state.
+
+Runtime imports must use `@repo/manifest-runtime` (the active workspace package at `manifest/runtime/`) or app-local Manifest glue paths (`apps/api/lib/manifest/*`). No runtime code may import from retired package paths.
+
+Build and audit scripts must read from and write to `manifest/` paths exclusively. Script-generated artifacts must land in `manifest/ir/`, `manifest/runtime/`, `manifest/reports/`, or `manifest/governance/` as specified by the Canonical Homes table in §4a.
+
+The directory paths `packages/manifest-runtime/`, `packages/manifest-ir/`, and `packages/manifest-adapters/` must not be recreated. If a tool, script, or developer accidentally recreates them, agents must treat the recreated directories as nonconforming and report them for removal.
 
 ---
 
