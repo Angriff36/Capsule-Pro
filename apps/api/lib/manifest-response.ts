@@ -19,8 +19,12 @@ export function manifestSuccessResponse(data: unknown, status = 200): Response {
 }
 
 export function manifestErrorResponse(
-  message: string,
+  message: string | { error: string; diagnostics?: unknown[] },
   status: number
 ): Response {
-  return NextResponse.json({ success: false, message }, { status });
+  const body =
+    typeof message === "string"
+      ? { success: false, message }
+      : { success: false, error: message.error, diagnostics: message.diagnostics ?? [] };
+  return NextResponse.json(body, { status });
 }

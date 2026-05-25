@@ -1829,6 +1829,7 @@ model InventoryTransaction {
   referenceType       String?  @map("reference_type")
   referenceId         String?  @map("reference_id") @db.Uuid
   employee_id         String?  @db.Uuid
+  deletedAt           DateTime? @map("deleted_at") @db.Timestamptz(6)
   tenant              Account  @relation(fields: [tenantId], references: [id], onDelete: Restrict)
 
   @@id([tenantId, id])
@@ -2016,6 +2017,8 @@ model AlertsConfig {
   id          String  @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   channel     String
   destination String
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  deletedAt   DateTime? @map("deleted_at") @db.Timestamptz(6)
   tenant      Account @relation(fields: [tenantId], references: [id], onDelete: Restrict)
 
   @@id([tenantId, id])
@@ -2683,6 +2686,7 @@ model Notification {
   readAt                DateTime? @map("read_at") @db.Timestamptz(6)
   createdAt             DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   correlation_id        String?
+  deletedAt             DateTime? @map("deleted_at") @db.Timestamptz(6)
   tenant                Account   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
 
   @@id([tenantId, id])
@@ -2767,6 +2771,7 @@ model TimecardEditRequest {
   status                String    @default("pending")
   createdAt             DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt             DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt             DateTime? @map("deleted_at") @db.Timestamptz(6)
   tenant                Account   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
 
   @@id([tenantId, id])
@@ -4218,6 +4223,7 @@ model OverrideAudit {
   authorizedAt    DateTime? @map("authorized_at") @db.Timestamptz(6)
 
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
 
   @@unique([tenantId, id])
   @@index([tenantId, entityType, entityId])
@@ -5545,6 +5551,8 @@ model PayrollApprovalHistory {
   performedBy    String   @map("performed_by") @db.Uuid
   performedAt    DateTime @default(now()) @map("performed_at") @db.Timestamptz(6)
   reason         String?
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  deletedAt      DateTime? @map("deleted_at") @db.Timestamptz(6)
 
   @@id([tenantId, id])
   @@index([tenantId, payrollRunId])
