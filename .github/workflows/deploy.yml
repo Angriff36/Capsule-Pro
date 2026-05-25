@@ -143,26 +143,32 @@ jobs:
         run: npm install -g vercel@53.1.0
 
       - name: Deploy to Vercel (App)
-        run: vercel deploy --prod --yes
+        run: vercel pull --yes --environment=production && vercel build --prod && vercel deploy --prebuilt --prod
+        working-directory: apps/app
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_APP }}
+          NPM_TOKEN: ${{ secrets.PKG_AUTH_TOKEN }}
 
       - name: Deploy to Vercel (API)
-        run: vercel deploy --prod --yes
+        run: vercel pull --yes --environment=production && vercel build --prod && vercel deploy --prebuilt --prod
+        working-directory: apps/api
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_API }}
+          NPM_TOKEN: ${{ secrets.PKG_AUTH_TOKEN }}
 
       - name: Deploy to Vercel (Web)
         continue-on-error: true
-        run: vercel deploy --prod --yes
+        run: vercel pull --yes --environment=production && vercel build --prod && vercel deploy --prebuilt --prod
+        working-directory: apps/web
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_WEB }}
+          NPM_TOKEN: ${{ secrets.PKG_AUTH_TOKEN }}
 
   deploy-docs:
     runs-on: ubuntu-latest
@@ -202,11 +208,13 @@ jobs:
         run: npm install -g vercel@53.1.0
 
       - name: Deploy to Vercel (Docs)
-        run: vercel deploy --prod --yes
+        run: vercel pull --yes --environment=production && vercel build --prod && vercel deploy --prebuilt --prod
+        working-directory: apps/docs
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_DOCS_PROJECT_ID }}
+          NPM_TOKEN: ${{ secrets.PKG_AUTH_TOKEN }}
 
   notify-failing-dependabot:
     runs-on: ubuntu-latest
