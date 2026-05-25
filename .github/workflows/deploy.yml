@@ -141,27 +141,46 @@ jobs:
 
       - name: Install Infisical CLI
         run: |
-          curl -1sLf 'https://dl.cloudsmith.io/public/infisical/infisical-cli/setup.deb.sh' | sudo -E bash
-          sudo apt-get install -y infisical
+          curl -Lo /tmp/infisical.tar.gz \
+            "https://github.com/Infisical/infisical/releases/latest/download/infisical_linux_amd64.tar.gz"
+          sudo tar -xzf /tmp/infisical.tar.gz -C /usr/local/bin infisical
 
       - name: Install Vercel CLI
         run: npm install -g vercel@53.1.0
 
       - name: Deploy to Vercel (App)
-        run: infisical run --env=prod --path=/apps/capsule-pro/app --project-config-dir=. -- vercel deploy --prod --yes
+        run: |
+          infisical run \
+            --env=prod \
+            --projectId=d8319856-8caf-4c22-8717-57ab28b326b3 \
+            --path=/apps/capsule-pro/app \
+            -- vercel deploy --prod --yes
         env:
-          INFISICAL_TOKEN: ${{ secrets.INFISICAL_TOKEN }}
+          INFISICAL_CLIENT_ID: ${{ secrets.INFISICAL_CLIENT_ID }}
+          INFISICAL_CLIENT_SECRET: ${{ secrets.INFISICAL_CLIENT_SECRET }}
 
       - name: Deploy to Vercel (API)
-        run: infisical run --env=prod --path=/apps/capsule-pro/api --project-config-dir=. -- vercel deploy --prod --yes
+        run: |
+          infisical run \
+            --env=prod \
+            --projectId=d8319856-8caf-4c22-8717-57ab28b326b3 \
+            --path=/apps/capsule-pro/api \
+            -- vercel deploy --prod --yes
         env:
-          INFISICAL_TOKEN: ${{ secrets.INFISICAL_TOKEN }}
+          INFISICAL_CLIENT_ID: ${{ secrets.INFISICAL_CLIENT_ID }}
+          INFISICAL_CLIENT_SECRET: ${{ secrets.INFISICAL_CLIENT_SECRET }}
 
       - name: Deploy to Vercel (Web)
         continue-on-error: true
-        run: infisical run --env=prod --path=/apps/capsule-pro/web --project-config-dir=. -- vercel deploy --prod --yes
+        run: |
+          infisical run \
+            --env=prod \
+            --projectId=d8319856-8caf-4c22-8717-57ab28b326b3 \
+            --path=/apps/capsule-pro/web \
+            -- vercel deploy --prod --yes
         env:
-          INFISICAL_TOKEN: ${{ secrets.INFISICAL_TOKEN }}
+          INFISICAL_CLIENT_ID: ${{ secrets.INFISICAL_CLIENT_ID }}
+          INFISICAL_CLIENT_SECRET: ${{ secrets.INFISICAL_CLIENT_SECRET }}
 
   deploy-docs:
     runs-on: ubuntu-latest
@@ -199,16 +218,23 @@ jobs:
 
       - name: Install Infisical CLI
         run: |
-          curl -1sLf 'https://dl.cloudsmith.io/public/infisical/infisical-cli/setup.deb.sh' | sudo -E bash
-          sudo apt-get install -y infisical
+          curl -Lo /tmp/infisical.tar.gz \
+            "https://github.com/Infisical/infisical/releases/latest/download/infisical_linux_amd64.tar.gz"
+          sudo tar -xzf /tmp/infisical.tar.gz -C /usr/local/bin infisical
 
       - name: Install Vercel CLI
         run: npm install -g vercel@53.1.0
 
       - name: Deploy to Vercel (Docs)
-        run: infisical run --env=prod --path=/apps/capsule-pro/docs --project-config-dir=. -- vercel deploy --prod --yes
+        run: |
+          infisical run \
+            --env=prod \
+            --projectId=d8319856-8caf-4c22-8717-57ab28b326b3 \
+            --path=/apps/capsule-pro/docs \
+            -- vercel deploy --prod --yes
         env:
-          INFISICAL_TOKEN: ${{ secrets.INFISICAL_TOKEN }}
+          INFISICAL_CLIENT_ID: ${{ secrets.INFISICAL_CLIENT_ID }}
+          INFISICAL_CLIENT_SECRET: ${{ secrets.INFISICAL_CLIENT_SECRET }}
 
   notify-failing-dependabot:
     runs-on: ubuntu-latest
