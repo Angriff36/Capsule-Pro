@@ -142,54 +142,27 @@ jobs:
       - name: Install Vercel CLI
         run: npm install -g vercel@53.1.0
 
-      - name: Load Vercel secrets (App) from Infisical
-        run: |
-          python3 << 'PYEOF'
-          import json, urllib.request, os
-          req = urllib.request.Request('https://app.infisical.com/api/v1/auth/universal-auth/login', data=json.dumps({'clientId': os.environ['INFISICAL_CLIENT_ID'], 'clientSecret': os.environ['INFISICAL_CLIENT_SECRET']}).encode(), headers={'Content-Type': 'application/json'})
-          token = json.load(urllib.request.urlopen(req))['accessToken']
-          req2 = urllib.request.Request('https://app.infisical.com/api/v3/secrets/raw?environment=prod&workspaceId=d8319856-8caf-4c22-8717-57ab28b326b3&secretPath=%2Fapps%2Fcapsule-pro%2Fapp', headers={'Authorization': 'Bearer ' + token})
-          open(os.environ['GITHUB_ENV'], 'a').writelines(s['secretKey'] + '=' + s['secretValue'] + '\n' for s in json.load(urllib.request.urlopen(req2)).get('secrets', []))
-          PYEOF
-        env:
-          INFISICAL_CLIENT_ID: ${{ secrets.INFISICAL_CLIENT_ID }}
-          INFISICAL_CLIENT_SECRET: ${{ secrets.INFISICAL_CLIENT_SECRET }}
-
       - name: Deploy to Vercel (App)
         run: vercel deploy --prod --yes
-
-      - name: Load Vercel secrets (API) from Infisical
-        run: |
-          python3 << 'PYEOF'
-          import json, urllib.request, os
-          req = urllib.request.Request('https://app.infisical.com/api/v1/auth/universal-auth/login', data=json.dumps({'clientId': os.environ['INFISICAL_CLIENT_ID'], 'clientSecret': os.environ['INFISICAL_CLIENT_SECRET']}).encode(), headers={'Content-Type': 'application/json'})
-          token = json.load(urllib.request.urlopen(req))['accessToken']
-          req2 = urllib.request.Request('https://app.infisical.com/api/v3/secrets/raw?environment=prod&workspaceId=d8319856-8caf-4c22-8717-57ab28b326b3&secretPath=%2Fapps%2Fcapsule-pro%2Fapi', headers={'Authorization': 'Bearer ' + token})
-          open(os.environ['GITHUB_ENV'], 'a').writelines(s['secretKey'] + '=' + s['secretValue'] + '\n' for s in json.load(urllib.request.urlopen(req2)).get('secrets', []))
-          PYEOF
         env:
-          INFISICAL_CLIENT_ID: ${{ secrets.INFISICAL_CLIENT_ID }}
-          INFISICAL_CLIENT_SECRET: ${{ secrets.INFISICAL_CLIENT_SECRET }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_APP }}
 
       - name: Deploy to Vercel (API)
         run: vercel deploy --prod --yes
-
-      - name: Load Vercel secrets (Web) from Infisical
-        run: |
-          python3 << 'PYEOF'
-          import json, urllib.request, os
-          req = urllib.request.Request('https://app.infisical.com/api/v1/auth/universal-auth/login', data=json.dumps({'clientId': os.environ['INFISICAL_CLIENT_ID'], 'clientSecret': os.environ['INFISICAL_CLIENT_SECRET']}).encode(), headers={'Content-Type': 'application/json'})
-          token = json.load(urllib.request.urlopen(req))['accessToken']
-          req2 = urllib.request.Request('https://app.infisical.com/api/v3/secrets/raw?environment=prod&workspaceId=d8319856-8caf-4c22-8717-57ab28b326b3&secretPath=%2Fapps%2Fcapsule-pro%2Fweb', headers={'Authorization': 'Bearer ' + token})
-          open(os.environ['GITHUB_ENV'], 'a').writelines(s['secretKey'] + '=' + s['secretValue'] + '\n' for s in json.load(urllib.request.urlopen(req2)).get('secrets', []))
-          PYEOF
         env:
-          INFISICAL_CLIENT_ID: ${{ secrets.INFISICAL_CLIENT_ID }}
-          INFISICAL_CLIENT_SECRET: ${{ secrets.INFISICAL_CLIENT_SECRET }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_API }}
 
       - name: Deploy to Vercel (Web)
         continue-on-error: true
         run: vercel deploy --prod --yes
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_WEB }}
 
   deploy-docs:
     runs-on: ubuntu-latest
@@ -228,21 +201,12 @@ jobs:
       - name: Install Vercel CLI
         run: npm install -g vercel@53.1.0
 
-      - name: Load Vercel secrets (Docs) from Infisical
-        run: |
-          python3 << 'PYEOF'
-          import json, urllib.request, os
-          req = urllib.request.Request('https://app.infisical.com/api/v1/auth/universal-auth/login', data=json.dumps({'clientId': os.environ['INFISICAL_CLIENT_ID'], 'clientSecret': os.environ['INFISICAL_CLIENT_SECRET']}).encode(), headers={'Content-Type': 'application/json'})
-          token = json.load(urllib.request.urlopen(req))['accessToken']
-          req2 = urllib.request.Request('https://app.infisical.com/api/v3/secrets/raw?environment=prod&workspaceId=d8319856-8caf-4c22-8717-57ab28b326b3&secretPath=%2Fapps%2Fcapsule-pro%2Fdocs', headers={'Authorization': 'Bearer ' + token})
-          open(os.environ['GITHUB_ENV'], 'a').writelines(s['secretKey'] + '=' + s['secretValue'] + '\n' for s in json.load(urllib.request.urlopen(req2)).get('secrets', []))
-          PYEOF
-        env:
-          INFISICAL_CLIENT_ID: ${{ secrets.INFISICAL_CLIENT_ID }}
-          INFISICAL_CLIENT_SECRET: ${{ secrets.INFISICAL_CLIENT_SECRET }}
-
       - name: Deploy to Vercel (Docs)
         run: vercel deploy --prod --yes
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_DOCS_PROJECT_ID }}
 
   notify-failing-dependabot:
     runs-on: ubuntu-latest
