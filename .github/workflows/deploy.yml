@@ -143,7 +143,10 @@ jobs:
         run: npm install -g vercel@53.1.0
 
       - name: Deploy to Vercel (App)
-        run: vercel pull --yes --environment=production && vercel build --prod && vercel deploy --prebuilt --prod
+        run: |
+          vercel pull --yes --environment=production
+          set -o allexport; source .vercel/.env.production.local; set +o allexport
+          vercel build --prod && vercel deploy --prebuilt --prod
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
@@ -151,7 +154,10 @@ jobs:
           NPM_TOKEN: ${{ secrets.PKG_AUTH_TOKEN }}
 
       - name: Deploy to Vercel (API)
-        run: vercel pull --yes --environment=production && vercel build --prod && vercel deploy --prebuilt --prod
+        run: |
+          vercel pull --yes --environment=production
+          set -o allexport; source .vercel/.env.production.local; set +o allexport
+          vercel build --prod && vercel deploy --prebuilt --prod
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
@@ -160,7 +166,10 @@ jobs:
 
       - name: Deploy to Vercel (Web)
         continue-on-error: true
-        run: vercel pull --yes --environment=production && vercel build --prod && vercel deploy --prebuilt --prod
+        run: |
+          vercel pull --yes --environment=production
+          set -o allexport; source .vercel/.env.production.local; set +o allexport
+          vercel build --prod && vercel deploy --prebuilt --prod
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
@@ -205,7 +214,10 @@ jobs:
         run: npm install -g vercel@53.1.0
 
       - name: Deploy to Vercel (Docs)
-        run: vercel pull --yes --environment=production && vercel build --prod && vercel deploy --prebuilt --prod
+        run: |
+          vercel pull --yes --environment=production
+          set -o allexport; source .vercel/.env.production.local; set +o allexport
+          vercel build --prod && vercel deploy --prebuilt --prod
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
