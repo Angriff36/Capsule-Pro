@@ -114,9 +114,9 @@ export default defineConfig({
     alias: {
       "@": path.resolve(import.meta.dirname, "./"),
       // Subpath exports must be listed before the catch-all @repo alias
-      "@repo/manifest-adapters/manifest-runtime-factory": path.resolve(
+      "@repo/manifest-runtime": path.resolve(
         import.meta.dirname,
-        "../../packages/manifest-adapters/src/manifest-runtime-factory.ts"
+        "../../manifest/runtime"
       ),
       "@repo": path.resolve(import.meta.dirname, "../../packages"),
       "server-only": path.resolve(
