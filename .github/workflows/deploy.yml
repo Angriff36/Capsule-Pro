@@ -139,51 +139,48 @@ jobs:
         continue-on-error: true
         run: pnpm turbo run build --filter=./apps/web
 
-      - name: Install Infisical CLI
-        run: |
-          ASSET_URL=$(curl -fsSL -H "Authorization: Bearer $GITHUB_TOKEN" "https://api.github.com/repos/Infisical/infisical-cli/releases/latest" | python3 -c "import json,sys; d=json.load(sys.stdin); u=[a['browser_download_url'] for a in d.get('assets',[]) if 'linux' in a['name'] and 'amd64' in a['name'] and a['name'].endswith('.tar.gz')]; print(u[0]) if u else sys.exit('no linux amd64 tar.gz: ' + str([a['name'] for a in d.get('assets',[])])[:300])")
-          curl -fsSLo /tmp/infisical.tar.gz "$ASSET_URL"
-          mkdir -p /tmp/infisical-bin
-          tar -xzf /tmp/infisical.tar.gz -C /tmp/infisical-bin
-          sudo install -m 0755 "$(find /tmp/infisical-bin -name infisical -type f | head -1)" /usr/local/bin/infisical
-          infisical --version
-
       - name: Install Vercel CLI
         run: npm install -g vercel@53.1.0
 
+      - name: Load Vercel secrets (App) from Infisical
+        uses: Infisical/secrets-action@v1.0.7
+        with:
+          method: universal-auth
+          client-id: ${{ secrets.INFISICAL_CLIENT_ID }}
+          client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET }}
+          env-slug: prod
+          project-id: d8319856-8caf-4c22-8717-57ab28b326b3
+          secret-path: /apps/capsule-pro/app
+
       - name: Deploy to Vercel (App)
-        run: |
-          infisical run \
-            --env=prod \
-            --projectId=d8319856-8caf-4c22-8717-57ab28b326b3 \
-            --path=/apps/capsule-pro/app \
-            -- vercel deploy --prod --yes
-        env:
-          INFISICAL_CLIENT_ID: ${{ secrets.INFISICAL_CLIENT_ID }}
-          INFISICAL_CLIENT_SECRET: ${{ secrets.INFISICAL_CLIENT_SECRET }}
+        run: vercel deploy --prod --yes
+
+      - name: Load Vercel secrets (API) from Infisical
+        uses: Infisical/secrets-action@v1.0.7
+        with:
+          method: universal-auth
+          client-id: ${{ secrets.INFISICAL_CLIENT_ID }}
+          client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET }}
+          env-slug: prod
+          project-id: d8319856-8caf-4c22-8717-57ab28b326b3
+          secret-path: /apps/capsule-pro/api
 
       - name: Deploy to Vercel (API)
-        run: |
-          infisical run \
-            --env=prod \
-            --projectId=d8319856-8caf-4c22-8717-57ab28b326b3 \
-            --path=/apps/capsule-pro/api \
-            -- vercel deploy --prod --yes
-        env:
-          INFISICAL_CLIENT_ID: ${{ secrets.INFISICAL_CLIENT_ID }}
-          INFISICAL_CLIENT_SECRET: ${{ secrets.INFISICAL_CLIENT_SECRET }}
+        run: vercel deploy --prod --yes
+
+      - name: Load Vercel secrets (Web) from Infisical
+        uses: Infisical/secrets-action@v1.0.7
+        with:
+          method: universal-auth
+          client-id: ${{ secrets.INFISICAL_CLIENT_ID }}
+          client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET }}
+          env-slug: prod
+          project-id: d8319856-8caf-4c22-8717-57ab28b326b3
+          secret-path: /apps/capsule-pro/web
 
       - name: Deploy to Vercel (Web)
         continue-on-error: true
-        run: |
-          infisical run \
-            --env=prod \
-            --projectId=d8319856-8caf-4c22-8717-57ab28b326b3 \
-            --path=/apps/capsule-pro/web \
-            -- vercel deploy --prod --yes
-        env:
-          INFISICAL_CLIENT_ID: ${{ secrets.INFISICAL_CLIENT_ID }}
-          INFISICAL_CLIENT_SECRET: ${{ secrets.INFISICAL_CLIENT_SECRET }}
+        run: vercel deploy --prod --yes
 
   deploy-docs:
     runs-on: ubuntu-latest
@@ -219,28 +216,21 @@ jobs:
         env:
           NODE_OPTIONS: "--max-old-space-size=4096"
 
-      - name: Install Infisical CLI
-        run: |
-          ASSET_URL=$(curl -fsSL -H "Authorization: Bearer $GITHUB_TOKEN" "https://api.github.com/repos/Infisical/infisical-cli/releases/latest" | python3 -c "import json,sys; d=json.load(sys.stdin); u=[a['browser_download_url'] for a in d.get('assets',[]) if 'linux' in a['name'] and 'amd64' in a['name'] and a['name'].endswith('.tar.gz')]; print(u[0]) if u else sys.exit('no linux amd64 tar.gz: ' + str([a['name'] for a in d.get('assets',[])])[:300])")
-          curl -fsSLo /tmp/infisical.tar.gz "$ASSET_URL"
-          mkdir -p /tmp/infisical-bin
-          tar -xzf /tmp/infisical.tar.gz -C /tmp/infisical-bin
-          sudo install -m 0755 "$(find /tmp/infisical-bin -name infisical -type f | head -1)" /usr/local/bin/infisical
-          infisical --version
+      - name: Load Vercel secrets (Docs) from Infisical
+        uses: Infisical/secrets-action@v1.0.7
+        with:
+          method: universal-auth
+          client-id: ${{ secrets.INFISICAL_CLIENT_ID }}
+          client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET }}
+          env-slug: prod
+          project-id: d8319856-8caf-4c22-8717-57ab28b326b3
+          secret-path: /apps/capsule-pro/docs
 
       - name: Install Vercel CLI
         run: npm install -g vercel@53.1.0
 
       - name: Deploy to Vercel (Docs)
-        run: |
-          infisical run \
-            --env=prod \
-            --projectId=d8319856-8caf-4c22-8717-57ab28b326b3 \
-            --path=/apps/capsule-pro/docs \
-            -- vercel deploy --prod --yes
-        env:
-          INFISICAL_CLIENT_ID: ${{ secrets.INFISICAL_CLIENT_ID }}
-          INFISICAL_CLIENT_SECRET: ${{ secrets.INFISICAL_CLIENT_SECRET }}
+        run: vercel deploy --prod --yes
 
   notify-failing-dependabot:
     runs-on: ubuntu-latest
