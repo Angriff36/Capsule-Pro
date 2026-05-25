@@ -153,30 +153,21 @@ jobs:
         run: npm install -g vercel@53.1.0
 
       - name: Deploy to Vercel (App)
-        run: |
-          mkdir -p .vercel
-          printf '{"orgId":"%s","projectId":"%s"}\n' "$VERCEL_ORG_ID" "$VERCEL_APP_PROJECT_ID" > .vercel/project.json
-          vercel deploy --prod --yes
+        run: vercel deploy --prod --yes
         env:
           VERCEL_TOKEN: ${{ env.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ env.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ env.VERCEL_APP_PROJECT_ID }}
 
       - name: Deploy to Vercel (API)
-        run: |
-          mkdir -p .vercel
-          printf '{"orgId":"%s","projectId":"%s"}\n' "$VERCEL_ORG_ID" "$VERCEL_API_PROJECT_ID" > .vercel/project.json
-          vercel deploy --prod --yes
+        run: vercel deploy --prod --yes
         env:
           VERCEL_TOKEN: ${{ env.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ env.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ env.VERCEL_API_PROJECT_ID }}
 
       - name: Deploy to Vercel (Web)
-        run: |
-          mkdir -p .vercel
-          printf '{"orgId":"%s","projectId":"%s"}\n' "$VERCEL_ORG_ID" "$VERCEL_WEB_PROJECT_ID" > .vercel/project.json
-          vercel deploy --prod --yes
+        run: vercel deploy --prod --yes
         env:
           VERCEL_TOKEN: ${{ env.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ env.VERCEL_ORG_ID }}
@@ -232,10 +223,7 @@ jobs:
         run: npm install -g vercel@53.1.0
 
       - name: Deploy to Vercel (Docs)
-        run: |
-          mkdir -p .vercel
-          printf '{"orgId":"%s","projectId":"%s"}\n' "$VERCEL_ORG_ID" "$VERCEL_DOCS_PROJECT_ID" > .vercel/project.json
-          vercel deploy --prod --yes
+        run: vercel deploy --prod --yes
         env:
           VERCEL_TOKEN: ${{ env.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ env.VERCEL_ORG_ID }}

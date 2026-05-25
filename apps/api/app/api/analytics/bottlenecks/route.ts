@@ -1,7 +1,7 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { createBottleneckDetector } from "@repo/manifest-adapters/bottleneck-detector";
+import { createBottleneckDetector, BottleneckCategory } from "@repo/manifest-adapters/bottleneck-detector";
 import { NextResponse } from "next/server";
 
 /**
@@ -45,7 +45,7 @@ export async function GET(request: Request) {
     if (category) {
       const bottlenecks = await detector.detectByCategory(
         tenantId,
-        category as any,
+        category as BottleneckCategory,
         locationId || undefined
       );
 

@@ -19,6 +19,22 @@ interface ConsolidatedReportFilters {
   metrics?: string[];
 }
 
+interface LocationRef {
+  id: string;
+  name: string;
+  isPrimary: boolean;
+}
+
+interface ConsolidatedMetrics {
+  locations: LocationRef[];
+  summary: { totalLocations: number; reportPeriod: { start: string; end: string } };
+  inventory?: unknown;
+  transfers?: unknown;
+  recipes?: unknown;
+  waste?: unknown;
+  staffing?: unknown;
+}
+
 /**
  * Parse consolidated report filters from URL search params
  */
@@ -97,7 +113,7 @@ export async function GET(request: Request) {
       : new Date();
 
     // Build consolidated metrics
-    const metrics: Record<string, any> = {
+    const metrics: ConsolidatedMetrics = {
       locations: locations,
       summary: {
         totalLocations: locations.length,
