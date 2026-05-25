@@ -3,9 +3,8 @@ import { existsSync, readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 
 const ROUTE_SURFACE_MANIFEST_RELATIVE_PATH = join(
-  "packages",
-  "manifest-ir",
-  "dist",
+  "manifest",
+  "runtime",
   "routes.manifest.json"
 );
 

@@ -393,7 +393,7 @@ const baseConfig: NextConfig = withToolbar(
     ],
     // Include manifest file in Vercel deployments for command-board chat
     outputFileTracingIncludes: {
-      "/*": ["../../packages/manifest-ir/dist/routes.manifest.json"],
+      "/*": ["../../manifest/runtime/routes.manifest.json"],
     },
   })
 );
