@@ -141,9 +141,19 @@ jobs:
 
       - name: Install Infisical CLI
         run: |
-          curl -Lo /tmp/infisical.tar.gz \
-            "https://github.com/Infisical/infisical/releases/latest/download/infisical_linux_amd64.tar.gz"
-          sudo tar -xzf /tmp/infisical.tar.gz -C /usr/local/bin infisical
+          ASSET_URL=$(curl -fsSL "https://api.github.com/repos/Infisical/infisical/releases/latest" \
+            | python3 -c "
+import json, sys
+data = json.load(sys.stdin)
+url = next(a['browser_download_url'] for a in data['assets']
+           if 'linux' in a['name'] and 'amd64' in a['name'] and a['name'].endswith('.tar.gz'))
+print(url)
+")
+          curl -fsSLo /tmp/infisical.tar.gz "$ASSET_URL"
+          mkdir -p /tmp/infisical-bin
+          tar -xzf /tmp/infisical.tar.gz -C /tmp/infisical-bin
+          sudo install -m 0755 "$(find /tmp/infisical-bin -name infisical -type f | head -1)" /usr/local/bin/infisical
+          infisical --version
 
       - name: Install Vercel CLI
         run: npm install -g vercel@53.1.0
@@ -218,9 +228,19 @@ jobs:
 
       - name: Install Infisical CLI
         run: |
-          curl -Lo /tmp/infisical.tar.gz \
-            "https://github.com/Infisical/infisical/releases/latest/download/infisical_linux_amd64.tar.gz"
-          sudo tar -xzf /tmp/infisical.tar.gz -C /usr/local/bin infisical
+          ASSET_URL=$(curl -fsSL "https://api.github.com/repos/Infisical/infisical/releases/latest" \
+            | python3 -c "
+import json, sys
+data = json.load(sys.stdin)
+url = next(a['browser_download_url'] for a in data['assets']
+           if 'linux' in a['name'] and 'amd64' in a['name'] and a['name'].endswith('.tar.gz'))
+print(url)
+")
+          curl -fsSLo /tmp/infisical.tar.gz "$ASSET_URL"
+          mkdir -p /tmp/infisical-bin
+          tar -xzf /tmp/infisical.tar.gz -C /tmp/infisical-bin
+          sudo install -m 0755 "$(find /tmp/infisical-bin -name infisical -type f | head -1)" /usr/local/bin/infisical
+          infisical --version
 
       - name: Install Vercel CLI
         run: npm install -g vercel@53.1.0
