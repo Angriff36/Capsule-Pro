@@ -25,9 +25,7 @@ import {
   ArrowDown,
   ArrowUp,
   DollarSign,
-  PieChart,
-  Star,
-  TrendingDown,
+  PieChart as PieChartIcon,
   TrendingUp,
 } from "lucide-react";
 import { useState } from "react";
@@ -483,7 +481,7 @@ const CategoryAnalysisTable = ({
 
 const EmptyState = () => (
   <div className="flex flex-col items-center justify-center py-16 text-center">
-    <PieChart className="size-16 text-muted-foreground/50 mb-4" />
+    <PieChartIcon className="size-16 text-muted-foreground/50 mb-4" />
     <h3 className="text-lg font-semibold mb-2">No Menu Data Available</h3>
     <p className="text-muted-foreground text-sm max-w-md">
       Start adding dishes to your events to see menu engineering insights. The

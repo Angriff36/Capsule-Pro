@@ -112,12 +112,12 @@ interface MenuPerformanceSummary {
 
 interface CategoryAnalysis {
   category: string;
-  total_dishes: number;
-  total_orders: number;
-  total_revenue: number;
-  total_contribution_margin: number;
-  average_margin_percent: number;
-  top_dish: string | null;
+  totalDishes: number;
+  totalOrders: number;
+  totalRevenue: number;
+  totalContributionMargin: number;
+  averageMarginPercent: number;
+  topDish: string | null;
 }
 
 async function fetchMenuPerformanceSummary(
@@ -260,14 +260,14 @@ function getCategoryAnalysis(
 
     return {
       category,
-      total_dishes: items.length,
-      total_orders: totalOrders,
-      total_revenue: totalRevenue,
-      total_contribution_margin: totalContributionMargin,
-      average_margin_percent: averageMarginPercent,
-      top_dish: sortedByMargin[0]?.dish_name || null,
+      totalDishes: items.length,
+      totalOrders,
+      totalRevenue,
+      totalContributionMargin,
+      averageMarginPercent,
+      topDish: sortedByMargin[0]?.dish_name || null,
     };
-  }).sort((a, b) => b.total_contribution_margin - a.total_contribution_margin);
+  }).sort((a, b) => b.totalContributionMargin - a.totalContributionMargin);
 }
 
 function generateRecommendations(
