@@ -452,11 +452,11 @@ export async function GET(request: Request) {
       // Staffing counts by location
       Promise.all(
         locations.map(async (location) => {
-          const count = await database.user.count({
+          const count = await database.employeeLocation.count({
             where: {
-              orgId,
-              deletedAt: null,
-              defaultLocationId: location.id,
+              tenantId,
+              locationId: location.id,
+              deleted_at: null,
             },
           });
           return {

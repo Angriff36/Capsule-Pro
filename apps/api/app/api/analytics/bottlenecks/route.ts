@@ -1,7 +1,7 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { createBottleneckDetector } from "@repo/manifest-adapters";
+import { createBottleneckDetector } from "@repo/manifest-adapters/bottleneck-detector";
 import { NextResponse } from "next/server";
 
 /**
@@ -58,7 +58,7 @@ export async function GET(request: Request) {
         bottlenecks,
         summary: {
           total: bottlenecks.length,
-          bySeverity: bottlenecks.reduce((acc, b) => {
+          bySeverity: bottlenecks.reduce((acc: Record<string, number>, b) => {
             acc[b.severity] = (acc[b.severity] || 0) + 1;
             return acc;
           }, {} as Record<string, number>),
@@ -80,7 +80,7 @@ export async function GET(request: Request) {
 
     // Format response
     const response = {
-      summary: {
+      meta: {
         period,
         startDate: analysis.analysisPeriod.start.toISOString(),
         endDate: analysis.analysisPeriod.end.toISOString(),

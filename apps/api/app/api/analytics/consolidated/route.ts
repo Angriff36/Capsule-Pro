@@ -109,8 +109,7 @@ export async function GET(request: Request) {
     };
 
     // Inventory metrics by location
-    const inventoryMetrics = await database.inventoryItem.groupBy({
-      by: [],
+    const inventoryMetrics = await database.inventoryItem.aggregate({
       where: {
         tenantId,
         deletedAt: null,
@@ -165,7 +164,7 @@ export async function GET(request: Request) {
     };
 
     // Transfer metrics
-    const transferMetrics = await database.interLocationTransfer.groupBy({
+    const transferMetrics = await database.inventoryTransfer.groupBy({
       by: ["status"],
       where: {
         tenantId,
@@ -238,14 +237,14 @@ export async function GET(request: Request) {
           createdAt: { gte: startDate, lte: endDate },
         },
         _count: { id: true },
-        _sum: { cost: true },
+        _sum: { totalCost: true },
       });
 
       wasteByLocation.push({
         locationId: location.id,
         locationName: location.name,
-        totalWasteEntries: wasteData._count.id,
-        totalWasteCost: Number(wasteData._sum.cost ?? 0),
+        totalWasteEntries: wasteData._count?.id ?? 0,
+        totalWasteCost: Number(wasteData._sum?.totalCost ?? 0),
       });
     }
 
@@ -270,7 +269,7 @@ export async function GET(request: Request) {
         where: {
           tenantId,
           locationId: location.id,
-          deletedAt: null,
+          deleted_at: null,
         },
       });
 
@@ -359,7 +358,7 @@ export async function GET_LOCATIONS(request: Request) {
         });
 
         // Get recent transfers
-        const transfersOut = await database.interLocationTransfer.count({
+        const transfersOut = await database.inventoryTransfer.count({
           where: {
             tenantId,
             fromLocationId: location.id,
@@ -370,7 +369,7 @@ export async function GET_LOCATIONS(request: Request) {
           },
         });
 
-        const transfersIn = await database.interLocationTransfer.count({
+        const transfersIn = await database.inventoryTransfer.count({
           where: {
             tenantId,
             toLocationId: location.id,

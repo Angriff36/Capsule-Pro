@@ -261,7 +261,7 @@ function getCategoryAnalysis(
     return {
       category,
       total_dishes: items.length,
-      total_orders,
+      total_orders: totalOrders,
       total_revenue: totalRevenue,
       total_contribution_margin: totalContributionMargin,
       average_margin_percent: averageMarginPercent,
