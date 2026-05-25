@@ -131,6 +131,9 @@ jobs:
             7b1173c2-ed67-4572-873a-b43e0021a4a5 > VERCEL_API_PROJECT_ID
             5e141ec7-b40d-4b83-8efa-b43e0021c700 > VERCEL_WEB_PROJECT_ID
 
+      - name: Strip trailing newline from Vercel token
+        run: echo "VERCEL_TOKEN=${VERCEL_TOKEN%$'\n'}" >> $GITHUB_ENV
+
       - name: Install Vercel CLI
         run: npm install -g vercel@53.1.0
 
@@ -200,6 +203,9 @@ jobs:
             9eac2295-b47e-405e-b1cd-b43e00214c72 > VERCEL_TOKEN
             71c979f7-e59c-4370-872b-b43e002162d2 > VERCEL_ORG_ID
             e239cd88-7fb7-4c3b-ab42-b43e0021b4c8 > VERCEL_DOCS_PROJECT_ID
+
+      - name: Strip trailing newline from Vercel token
+        run: echo "VERCEL_TOKEN=${VERCEL_TOKEN%$'\n'}" >> $GITHUB_ENV
 
       - name: Install Vercel CLI
         run: npm install -g vercel@53.1.0
