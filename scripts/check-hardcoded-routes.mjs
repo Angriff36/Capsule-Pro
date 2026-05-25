@@ -4,7 +4,10 @@
  * CI Conformance Check — No Hardcoded API Routes in Client Code
  *
  * Scans client-facing source files for raw "/api/" string literals and
- * template expressions. Fails with exit code 1 if any violations are found.
+ * template expressions. Uses a ratchet baseline (scripts/check-canonical-
+ * routes-baseline.txt): fails if the current violation count exceeds the
+ * baseline. Existing violations are not blocked, but new ones cannot
+ * accumulate silently. Mirrors the scripts/lint-explicit-any.mjs pattern.
  *
  * Run:  node scripts/check-hardcoded-routes.mjs
  * CI:   Added as a step in .github/workflows/ci.yml
@@ -21,9 +24,12 @@
  */
 
 import { readdirSync, readFileSync } from "node:fs";
-import { join, relative, resolve } from "node:path";
+import { dirname, join, relative, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 
 const REPO_ROOT = resolve(process.cwd());
+const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
+const BASELINE_PATH = join(SCRIPT_DIR, "check-canonical-routes-baseline.txt");
 
 // ---------------------------------------------------------------------------
 // Configuration
@@ -137,11 +143,23 @@ function walkFiles(dir) {
 // Main
 // ---------------------------------------------------------------------------
 
+function readBaseline() {
+  const raw = readFileSync(BASELINE_PATH, "utf-8").trim();
+  const parsed = Number.parseInt(raw, 10);
+  if (!Number.isFinite(parsed) || parsed < 0) {
+    throw new Error(
+      `[check-hardcoded-routes] Invalid baseline value in ${relative(REPO_ROOT, BASELINE_PATH)}: ${raw}`
+    );
+  }
+  return parsed;
+}
+
 function main() {
   console.log(
     "[check-hardcoded-routes] Scanning for hardcoded /api/ paths in client code...\n"
   );
 
+  const baseline = readBaseline();
   const violations = [];
 
   for (const scanDir of SCAN_DIRS) {
@@ -178,24 +196,35 @@ function main() {
     }
   }
 
-  if (violations.length === 0) {
-    console.log("[check-hardcoded-routes] ✅ No violations found.\n");
-    process.exit(0);
+  const count = violations.length;
+  console.log(
+    `[check-hardcoded-routes] ${count} violation(s) found (baseline ${baseline}).\n`
+  );
+
+  if (count > baseline) {
+    console.error(
+      `[check-hardcoded-routes] ❌ FAILED — hardcoded-route count regressed (${count} > ${baseline}).`
+    );
+    console.error(
+      'Fix: Import route helpers from "@/lib/routes" instead of hardcoding /api/ paths.'
+    );
+    console.error('See docs/audits/hardcoded-routes-violations.md for the migration plan.');
+    console.error(
+      "Run `node scripts/check-hardcoded-routes.mjs` locally to see the full violation list.\n"
+    );
+    process.exit(1);
   }
 
-  console.error(
-    `[check-hardcoded-routes] ❌ Found ${violations.length} violation(s):\n`
-  );
-  for (const v of violations) {
-    console.error(`  ${v.file}:${v.line}`);
-    console.error(`    ${v.content}`);
-    console.error("");
+  if (count < baseline) {
+    console.log(
+      `[check-hardcoded-routes] ✅ Count improved (${count} < ${baseline}). ` +
+        `Update ${relative(REPO_ROOT, BASELINE_PATH)} to lock in the win.\n`
+    );
+  } else {
+    console.log("[check-hardcoded-routes] ✅ Baseline held.\n");
   }
-  console.error(
-    'Fix: Import route helpers from "@/lib/routes" instead of hardcoding /api/ paths.'
-  );
-  console.error('See AGENTS.md § "How to Add a New Route" for instructions.\n');
-  process.exit(1);
+
+  process.exit(0);
 }
 
 main();

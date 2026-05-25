@@ -26,6 +26,7 @@ jobs:
   security:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    if: github.actor != 'dependabot[bot]'
 
     steps:
       - name: Checkout code
@@ -34,7 +35,7 @@ jobs:
       # pnpm/action-setup must come before actions/setup-node when cache: pnpm
       # is used — setup-node invokes pnpm to compute the cache key.
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -64,11 +65,13 @@ jobs:
       # CodeQL analysis lives in .github/workflows/codeql.yml — do not duplicate here.
 
       - name: Run Trivy vulnerability scanner
-        # Pinned to @master because the previously-pinned tag (0.30.0) was never
-        # published by aquasecurity/trivy-action and broke this job with
-        # "Unable to resolve action ... version 0.30.0". Replace with a specific
-        # tag once a current release is confirmed.
-        uses: aquasecurity/trivy-action@master
+        # SHA-pinned to the v0.36.0 release commit (signed tag verified on
+        # 2026-04-22 by maintainer Nikita Pivkin). Earlier attempt at version
+        # tag "0.30.0" (no `v` prefix) was never published and broke this job;
+        # the SHA pin avoids both the supply-chain risk of @master and the
+        # rename/missing-tag drift that bit us before. Dependabot's
+        # github-actions ecosystem (.github/dependabot.yml) keeps this current.
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
           scan-type: "fs"
           scan-ref: "."

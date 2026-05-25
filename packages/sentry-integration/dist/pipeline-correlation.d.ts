@@ -4,12 +4,11 @@
  * so logs can be joined without inferring health from static files.
  */
 /** Unique substring searched in Sentry UI / logs for controlled canary runs. */
-declare const CAPSULE_SENTRY_CANARY_FINGERPRINT = "[CAPSULE_CANARY] sentry-e2e-verify-2026-04";
-type SentryRemediationPipelineStage = "sentry_canary_emit" | "sentry_webhook_received" | "sentry_job_enqueued" | "sentry_worker_pickup" | "sentry_worker_complete" | "sentry_worker_failed";
-declare const buildPipelineCorrelationId: (parts: {
+export declare const CAPSULE_SENTRY_CANARY_FINGERPRINT = "[CAPSULE_CANARY] sentry-e2e-verify-2026-04";
+export type SentryRemediationPipelineStage = "sentry_canary_emit" | "sentry_webhook_received" | "sentry_job_enqueued" | "sentry_worker_pickup" | "sentry_worker_complete" | "sentry_worker_failed";
+export declare const buildPipelineCorrelationId: (parts: {
     sentryIssueId: string;
     sentryEventId: string | null;
 }) => string;
-declare const pipelineLogFields: (stage: SentryRemediationPipelineStage, correlationId: string, extra?: Record<string, unknown>) => Record<string, unknown>;
-
-export { CAPSULE_SENTRY_CANARY_FINGERPRINT, type SentryRemediationPipelineStage, buildPipelineCorrelationId, pipelineLogFields };
+export declare const pipelineLogFields: (stage: SentryRemediationPipelineStage, correlationId: string, extra?: Record<string, unknown>) => Record<string, unknown>;
+//# sourceMappingURL=pipeline-correlation.d.ts.map

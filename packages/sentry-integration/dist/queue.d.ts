@@ -1,10 +1,8 @@
-import { c as SentryFixJobStatus, a as SentryIssueAlertPayload } from './types-CETBS6t6.js';
-import 'zod';
-
+import type { SentryFixJobStatus, SentryIssueAlertPayload } from "./types.js";
 /**
  * Job record interface - matches Prisma model
  */
-interface SentryFixJobRecord {
+export interface SentryFixJobRecord {
     id: string;
     sentryIssueId: string;
     sentryEventId: string | null;
@@ -30,7 +28,7 @@ interface SentryFixJobRecord {
 /**
  * Job creation input
  */
-interface CreateJobInput {
+export interface CreateJobInput {
     sentryIssueId: string;
     sentryEventId: string | null;
     organizationSlug: string;
@@ -45,7 +43,7 @@ interface CreateJobInput {
 /**
  * Job update input
  */
-interface UpdateJobInput {
+export interface UpdateJobInput {
     status?: SentryFixJobStatus;
     branchName?: string;
     prUrl?: string;
@@ -58,7 +56,7 @@ interface UpdateJobInput {
 /**
  * Job queue configuration
  */
-interface JobQueueConfig {
+export interface JobQueueConfig {
     /** Rate limit window in minutes - prevent multiple jobs for same issue */
     rateLimitMinutes: number;
     /** Deduplication window in minutes - skip duplicate alerts */
@@ -72,7 +70,7 @@ interface JobQueueConfig {
  * Job queue interface - abstracts database operations
  * Implementations can use Prisma, in-memory storage, etc.
  */
-interface JobQueueStore {
+export interface JobQueueStore {
     create(input: CreateJobInput): Promise<SentryFixJobRecord>;
     update(id: string, input: UpdateJobInput): Promise<SentryFixJobRecord>;
     getById(id: string): Promise<SentryFixJobRecord | null>;
@@ -85,7 +83,7 @@ interface JobQueueStore {
 /**
  * In-memory job store for testing/development
  */
-declare class InMemoryJobStore implements JobQueueStore {
+export declare class InMemoryJobStore implements JobQueueStore {
     private readonly jobs;
     private readonly issueIndex;
     create(input: CreateJobInput): Promise<SentryFixJobRecord>;
@@ -102,7 +100,7 @@ declare class InMemoryJobStore implements JobQueueStore {
  * Job queue manager
  * Handles deduplication, rate limiting, and job lifecycle
  */
-declare class SentryJobQueue {
+export declare class SentryJobQueue {
     private readonly store;
     private readonly config;
     constructor(store: JobQueueStore, config?: JobQueueConfig);
@@ -154,6 +152,5 @@ declare class SentryJobQueue {
 /**
  * Create a job queue with the default in-memory store
  */
-declare const createJobQueue: (config?: Partial<JobQueueConfig>) => SentryJobQueue;
-
-export { type CreateJobInput, InMemoryJobStore, type JobQueueConfig, type JobQueueStore, type SentryFixJobRecord, SentryJobQueue, type UpdateJobInput, createJobQueue };
+export declare const createJobQueue: (config?: Partial<JobQueueConfig>) => SentryJobQueue;
+//# sourceMappingURL=queue.d.ts.map

@@ -163,6 +163,10 @@ const rewrites: NextConfig["rewrites"] = async () => {
       destination: `${apiBaseUrl}/api/rolepolicy/:path*`,
     },
     {
+      source: "/api/sales-reporting/:path*",
+      destination: `${apiBaseUrl}/api/sales-reporting/:path*`,
+    },
+    {
       source: "/api/search/:path*",
       destination: `${apiBaseUrl}/api/search/:path*`,
     },
@@ -236,7 +240,7 @@ const baseConfig: NextConfig = withToolbar(
       resolveAlias: {
         // canvas is a Node-only module used by some PDF libs; stub it out for browser bundles
         // Turbopack requires a string path, not a boolean — use empty module
-        canvas: require.resolve("./turbopack-empty-stub.js"),
+        canvas: "./turbopack-empty-stub.js",
       },
       // Map .js imports → .ts source for transpiled workspace packages that use ESM-style
       // import extensions (e.g. `import './foo.js'` where foo.ts is the actual file)

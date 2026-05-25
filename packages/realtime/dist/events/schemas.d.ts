@@ -12,7 +12,7 @@ export declare const RealtimeEventBaseSchema: z.ZodObject<{
     tenantId: z.ZodString;
     aggregateType: z.ZodString;
     aggregateId: z.ZodString;
-    occurredAt: z.ZodString;
+    occurredAt: z.ZodISODateTime;
 }, z.core.$strip>;
 /**
  * Kitchen event payload schemas.
@@ -20,18 +20,18 @@ export declare const RealtimeEventBaseSchema: z.ZodObject<{
 export declare const KitchenTaskClaimedPayloadSchema: z.ZodObject<{
     taskId: z.ZodString;
     employeeId: z.ZodString;
-    claimedAt: z.ZodString;
+    claimedAt: z.ZodISODateTime;
 }, z.core.$strip>;
 export declare const KitchenTaskReleasedPayloadSchema: z.ZodObject<{
     taskId: z.ZodString;
     employeeId: z.ZodString;
-    releasedAt: z.ZodString;
+    releasedAt: z.ZodISODateTime;
 }, z.core.$strip>;
 export declare const KitchenTaskProgressPayloadSchema: z.ZodObject<{
     taskId: z.ZodString;
     employeeId: z.ZodString;
     progressPercent: z.ZodNumber;
-    updatedAt: z.ZodString;
+    updatedAt: z.ZodISODateTime;
 }, z.core.$strip>;
 /**
  * Command Board event payload schemas.
@@ -44,14 +44,14 @@ export declare const CommandBoardCardCreatedPayloadSchema: z.ZodObject<{
     positionX: z.ZodNumber;
     positionY: z.ZodNumber;
     createdBy: z.ZodString;
-    createdAt: z.ZodString;
+    createdAt: z.ZodISODateTime;
 }, z.core.$strip>;
 export declare const CommandBoardCardUpdatedPayloadSchema: z.ZodObject<{
     boardId: z.ZodString;
     cardId: z.ZodString;
     changes: z.ZodRecord<z.ZodString, z.ZodUnknown>;
     updatedBy: z.ZodString;
-    updatedAt: z.ZodString;
+    updatedAt: z.ZodISODateTime;
 }, z.core.$strip>;
 export declare const CommandBoardCardMovedPayloadSchema: z.ZodObject<{
     boardId: z.ZodString;
@@ -65,31 +65,31 @@ export declare const CommandBoardCardMovedPayloadSchema: z.ZodObject<{
         y: z.ZodNumber;
     }, z.core.$strip>;
     movedBy: z.ZodString;
-    movedAt: z.ZodString;
+    movedAt: z.ZodISODateTime;
 }, z.core.$strip>;
 export declare const CommandBoardCardDeletedPayloadSchema: z.ZodObject<{
     boardId: z.ZodString;
     cardId: z.ZodString;
     deletedBy: z.ZodString;
-    deletedAt: z.ZodString;
+    deletedAt: z.ZodISODateTime;
 }, z.core.$strip>;
 export declare const CommandBoardUpdatedPayloadSchema: z.ZodObject<{
     boardId: z.ZodString;
     name: z.ZodString;
     changes: z.ZodRecord<z.ZodString, z.ZodUnknown>;
     updatedBy: z.ZodString;
-    updatedAt: z.ZodString;
+    updatedAt: z.ZodISODateTime;
 }, z.core.$strip>;
 export declare const CommandBoardUserJoinedPayloadSchema: z.ZodObject<{
     boardId: z.ZodString;
     userId: z.ZodString;
     userName: z.ZodString;
-    joinedAt: z.ZodString;
+    joinedAt: z.ZodISODateTime;
 }, z.core.$strip>;
 export declare const CommandBoardUserLeftPayloadSchema: z.ZodObject<{
     boardId: z.ZodString;
     userId: z.ZodString;
-    leftAt: z.ZodString;
+    leftAt: z.ZodISODateTime;
 }, z.core.$strip>;
 export declare const CommandBoardCursorMovedPayloadSchema: z.ZodObject<{
     boardId: z.ZodString;
@@ -98,7 +98,7 @@ export declare const CommandBoardCursorMovedPayloadSchema: z.ZodObject<{
         x: z.ZodNumber;
         y: z.ZodNumber;
     }, z.core.$strip>;
-    movedAt: z.ZodString;
+    movedAt: z.ZodISODateTime;
 }, z.core.$strip>;
 /**
  * Command Board Connection event payload schemas.
@@ -110,14 +110,14 @@ export declare const CommandBoardConnectionCreatedPayloadSchema: z.ZodObject<{
     toCardId: z.ZodString;
     relationshipType: z.ZodString;
     createdBy: z.ZodString;
-    createdAt: z.ZodString;
+    createdAt: z.ZodISODateTime;
 }, z.core.$strip>;
 export declare const CommandBoardConnectionUpdatedPayloadSchema: z.ZodObject<{
     boardId: z.ZodString;
     connectionId: z.ZodString;
     changes: z.ZodRecord<z.ZodString, z.ZodUnknown>;
     updatedBy: z.ZodString;
-    updatedAt: z.ZodString;
+    updatedAt: z.ZodISODateTime;
 }, z.core.$strip>;
 export declare const CommandBoardConnectionDeletedPayloadSchema: z.ZodObject<{
     boardId: z.ZodString;
@@ -125,7 +125,7 @@ export declare const CommandBoardConnectionDeletedPayloadSchema: z.ZodObject<{
     fromCardId: z.ZodString;
     toCardId: z.ZodString;
     deletedBy: z.ZodString;
-    deletedAt: z.ZodString;
+    deletedAt: z.ZodISODateTime;
 }, z.core.$strip>;
 /**
  * Stock/Inventory event payload schemas.
@@ -135,7 +135,7 @@ export declare const InventoryStockAdjustedPayloadSchema: z.ZodObject<{
     quantity: z.ZodNumber;
     reason: z.ZodString;
     employeeId: z.ZodString;
-    adjustedAt: z.ZodString;
+    adjustedAt: z.ZodISODateTime;
     previousQuantity: z.ZodNumber;
     newQuantity: z.ZodNumber;
 }, z.core.$strip>;
@@ -144,7 +144,7 @@ export declare const InventoryStockConsumedPayloadSchema: z.ZodObject<{
     quantity: z.ZodNumber;
     prepTaskId: z.ZodString;
     employeeId: z.ZodString;
-    consumedAt: z.ZodString;
+    consumedAt: z.ZodISODateTime;
     previousQuantity: z.ZodNumber;
     newQuantity: z.ZodNumber;
 }, z.core.$strip>;
@@ -153,7 +153,7 @@ export declare const InventoryStockReceivedPayloadSchema: z.ZodObject<{
     quantity: z.ZodNumber;
     purchaseOrderLineItemId: z.ZodString;
     employeeId: z.ZodString;
-    receivedAt: z.ZodString;
+    receivedAt: z.ZodISODateTime;
     previousQuantity: z.ZodNumber;
     newQuantity: z.ZodNumber;
     supplierId: z.ZodOptional<z.ZodString>;
@@ -163,7 +163,7 @@ export declare const InventoryStockWastedPayloadSchema: z.ZodObject<{
     quantity: z.ZodNumber;
     reason: z.ZodString;
     employeeId: z.ZodString;
-    wastedAt: z.ZodString;
+    wastedAt: z.ZodISODateTime;
     previousQuantity: z.ZodNumber;
     newQuantity: z.ZodNumber;
     wasteCategory: z.ZodOptional<z.ZodString>;
@@ -177,12 +177,12 @@ export declare const KitchenTaskClaimedEventSchema: z.ZodObject<{
     tenantId: z.ZodString;
     aggregateType: z.ZodString;
     aggregateId: z.ZodString;
-    occurredAt: z.ZodString;
+    occurredAt: z.ZodISODateTime;
     eventType: z.ZodLiteral<"kitchen.task.claimed">;
     payload: z.ZodObject<{
         taskId: z.ZodString;
         employeeId: z.ZodString;
-        claimedAt: z.ZodString;
+        claimedAt: z.ZodISODateTime;
     }, z.core.$strip>;
 }, z.core.$strip>;
 export declare const KitchenTaskReleasedEventSchema: z.ZodObject<{
@@ -191,12 +191,12 @@ export declare const KitchenTaskReleasedEventSchema: z.ZodObject<{
     tenantId: z.ZodString;
     aggregateType: z.ZodString;
     aggregateId: z.ZodString;
-    occurredAt: z.ZodString;
+    occurredAt: z.ZodISODateTime;
     eventType: z.ZodLiteral<"kitchen.task.released">;
     payload: z.ZodObject<{
         taskId: z.ZodString;
         employeeId: z.ZodString;
-        releasedAt: z.ZodString;
+        releasedAt: z.ZodISODateTime;
     }, z.core.$strip>;
 }, z.core.$strip>;
 export declare const KitchenTaskProgressEventSchema: z.ZodObject<{
@@ -205,13 +205,13 @@ export declare const KitchenTaskProgressEventSchema: z.ZodObject<{
     tenantId: z.ZodString;
     aggregateType: z.ZodString;
     aggregateId: z.ZodString;
-    occurredAt: z.ZodString;
+    occurredAt: z.ZodISODateTime;
     eventType: z.ZodLiteral<"kitchen.task.progress">;
     payload: z.ZodObject<{
         taskId: z.ZodString;
         employeeId: z.ZodString;
         progressPercent: z.ZodNumber;
-        updatedAt: z.ZodString;
+        updatedAt: z.ZodISODateTime;
     }, z.core.$strip>;
 }, z.core.$strip>;
 /**
@@ -223,7 +223,7 @@ export declare const CommandBoardCardCreatedEventSchema: z.ZodObject<{
     tenantId: z.ZodString;
     aggregateType: z.ZodString;
     aggregateId: z.ZodString;
-    occurredAt: z.ZodString;
+    occurredAt: z.ZodISODateTime;
     eventType: z.ZodLiteral<"command.board.card.created">;
     payload: z.ZodObject<{
         boardId: z.ZodString;
@@ -233,7 +233,7 @@ export declare const CommandBoardCardCreatedEventSchema: z.ZodObject<{
         positionX: z.ZodNumber;
         positionY: z.ZodNumber;
         createdBy: z.ZodString;
-        createdAt: z.ZodString;
+        createdAt: z.ZodISODateTime;
     }, z.core.$strip>;
 }, z.core.$strip>;
 export declare const CommandBoardCardUpdatedEventSchema: z.ZodObject<{
@@ -242,14 +242,14 @@ export declare const CommandBoardCardUpdatedEventSchema: z.ZodObject<{
     tenantId: z.ZodString;
     aggregateType: z.ZodString;
     aggregateId: z.ZodString;
-    occurredAt: z.ZodString;
+    occurredAt: z.ZodISODateTime;
     eventType: z.ZodLiteral<"command.board.card.updated">;
     payload: z.ZodObject<{
         boardId: z.ZodString;
         cardId: z.ZodString;
         changes: z.ZodRecord<z.ZodString, z.ZodUnknown>;
         updatedBy: z.ZodString;
-        updatedAt: z.ZodString;
+        updatedAt: z.ZodISODateTime;
     }, z.core.$strip>;
 }, z.core.$strip>;
 export declare const CommandBoardCardMovedEventSchema: z.ZodObject<{
@@ -258,7 +258,7 @@ export declare const CommandBoardCardMovedEventSchema: z.ZodObject<{
     tenantId: z.ZodString;
     aggregateType: z.ZodString;
     aggregateId: z.ZodString;
-    occurredAt: z.ZodString;
+    occurredAt: z.ZodISODateTime;
     eventType: z.ZodLiteral<"command.board.card.moved">;
     payload: z.ZodObject<{
         boardId: z.ZodString;
@@ -272,7 +272,7 @@ export declare const CommandBoardCardMovedEventSchema: z.ZodObject<{
             y: z.ZodNumber;
         }, z.core.$strip>;
         movedBy: z.ZodString;
-        movedAt: z.ZodString;
+        movedAt: z.ZodISODateTime;
     }, z.core.$strip>;
 }, z.core.$strip>;
 export declare const CommandBoardCardDeletedEventSchema: z.ZodObject<{
@@ -281,13 +281,13 @@ export declare const CommandBoardCardDeletedEventSchema: z.ZodObject<{
     tenantId: z.ZodString;
     aggregateType: z.ZodString;
     aggregateId: z.ZodString;
-    occurredAt: z.ZodString;
+    occurredAt: z.ZodISODateTime;
     eventType: z.ZodLiteral<"command.board.card.deleted">;
     payload: z.ZodObject<{
         boardId: z.ZodString;
         cardId: z.ZodString;
         deletedBy: z.ZodString;
-        deletedAt: z.ZodString;
+        deletedAt: z.ZodISODateTime;
     }, z.core.$strip>;
 }, z.core.$strip>;
 export declare const CommandBoardUpdatedEventSchema: z.ZodObject<{
@@ -296,14 +296,14 @@ export declare const CommandBoardUpdatedEventSchema: z.ZodObject<{
     tenantId: z.ZodString;
     aggregateType: z.ZodString;
     aggregateId: z.ZodString;
-    occurredAt: z.ZodString;
+    occurredAt: z.ZodISODateTime;
     eventType: z.ZodLiteral<"command.board.updated">;
     payload: z.ZodObject<{
         boardId: z.ZodString;
         name: z.ZodString;
         changes: z.ZodRecord<z.ZodString, z.ZodUnknown>;
         updatedBy: z.ZodString;
-        updatedAt: z.ZodString;
+        updatedAt: z.ZodISODateTime;
     }, z.core.$strip>;
 }, z.core.$strip>;
 export declare const CommandBoardUserJoinedEventSchema: z.ZodObject<{
@@ -312,13 +312,13 @@ export declare const CommandBoardUserJoinedEventSchema: z.ZodObject<{
     tenantId: z.ZodString;
     aggregateType: z.ZodString;
     aggregateId: z.ZodString;
-    occurredAt: z.ZodString;
+    occurredAt: z.ZodISODateTime;
     eventType: z.ZodLiteral<"command.board.user.joined">;
     payload: z.ZodObject<{
         boardId: z.ZodString;
         userId: z.ZodString;
         userName: z.ZodString;
-        joinedAt: z.ZodString;
+        joinedAt: z.ZodISODateTime;
     }, z.core.$strip>;
 }, z.core.$strip>;
 export declare const CommandBoardUserLeftEventSchema: z.ZodObject<{
@@ -327,12 +327,12 @@ export declare const CommandBoardUserLeftEventSchema: z.ZodObject<{
     tenantId: z.ZodString;
     aggregateType: z.ZodString;
     aggregateId: z.ZodString;
-    occurredAt: z.ZodString;
+    occurredAt: z.ZodISODateTime;
     eventType: z.ZodLiteral<"command.board.user.left">;
     payload: z.ZodObject<{
         boardId: z.ZodString;
         userId: z.ZodString;
-        leftAt: z.ZodString;
+        leftAt: z.ZodISODateTime;
     }, z.core.$strip>;
 }, z.core.$strip>;
 export declare const CommandBoardCursorMovedEventSchema: z.ZodObject<{
@@ -341,7 +341,7 @@ export declare const CommandBoardCursorMovedEventSchema: z.ZodObject<{
     tenantId: z.ZodString;
     aggregateType: z.ZodString;
     aggregateId: z.ZodString;
-    occurredAt: z.ZodString;
+    occurredAt: z.ZodISODateTime;
     eventType: z.ZodLiteral<"command.board.cursor.moved">;
     payload: z.ZodObject<{
         boardId: z.ZodString;
@@ -350,7 +350,7 @@ export declare const CommandBoardCursorMovedEventSchema: z.ZodObject<{
             x: z.ZodNumber;
             y: z.ZodNumber;
         }, z.core.$strip>;
-        movedAt: z.ZodString;
+        movedAt: z.ZodISODateTime;
     }, z.core.$strip>;
 }, z.core.$strip>;
 /**
@@ -362,7 +362,7 @@ export declare const CommandBoardConnectionCreatedEventSchema: z.ZodObject<{
     tenantId: z.ZodString;
     aggregateType: z.ZodString;
     aggregateId: z.ZodString;
-    occurredAt: z.ZodString;
+    occurredAt: z.ZodISODateTime;
     eventType: z.ZodLiteral<"command.board.connection.created">;
     payload: z.ZodObject<{
         boardId: z.ZodString;
@@ -371,7 +371,7 @@ export declare const CommandBoardConnectionCreatedEventSchema: z.ZodObject<{
         toCardId: z.ZodString;
         relationshipType: z.ZodString;
         createdBy: z.ZodString;
-        createdAt: z.ZodString;
+        createdAt: z.ZodISODateTime;
     }, z.core.$strip>;
 }, z.core.$strip>;
 export declare const CommandBoardConnectionUpdatedEventSchema: z.ZodObject<{
@@ -380,14 +380,14 @@ export declare const CommandBoardConnectionUpdatedEventSchema: z.ZodObject<{
     tenantId: z.ZodString;
     aggregateType: z.ZodString;
     aggregateId: z.ZodString;
-    occurredAt: z.ZodString;
+    occurredAt: z.ZodISODateTime;
     eventType: z.ZodLiteral<"command.board.connection.updated">;
     payload: z.ZodObject<{
         boardId: z.ZodString;
         connectionId: z.ZodString;
         changes: z.ZodRecord<z.ZodString, z.ZodUnknown>;
         updatedBy: z.ZodString;
-        updatedAt: z.ZodString;
+        updatedAt: z.ZodISODateTime;
     }, z.core.$strip>;
 }, z.core.$strip>;
 export declare const CommandBoardConnectionDeletedEventSchema: z.ZodObject<{
@@ -396,7 +396,7 @@ export declare const CommandBoardConnectionDeletedEventSchema: z.ZodObject<{
     tenantId: z.ZodString;
     aggregateType: z.ZodString;
     aggregateId: z.ZodString;
-    occurredAt: z.ZodString;
+    occurredAt: z.ZodISODateTime;
     eventType: z.ZodLiteral<"command.board.connection.deleted">;
     payload: z.ZodObject<{
         boardId: z.ZodString;
@@ -404,7 +404,7 @@ export declare const CommandBoardConnectionDeletedEventSchema: z.ZodObject<{
         fromCardId: z.ZodString;
         toCardId: z.ZodString;
         deletedBy: z.ZodString;
-        deletedAt: z.ZodString;
+        deletedAt: z.ZodISODateTime;
     }, z.core.$strip>;
 }, z.core.$strip>;
 /**
@@ -416,14 +416,14 @@ export declare const InventoryStockAdjustedEventSchema: z.ZodObject<{
     tenantId: z.ZodString;
     aggregateType: z.ZodString;
     aggregateId: z.ZodString;
-    occurredAt: z.ZodString;
+    occurredAt: z.ZodISODateTime;
     eventType: z.ZodLiteral<"inventory.stock.adjusted">;
     payload: z.ZodObject<{
         stockItemId: z.ZodString;
         quantity: z.ZodNumber;
         reason: z.ZodString;
         employeeId: z.ZodString;
-        adjustedAt: z.ZodString;
+        adjustedAt: z.ZodISODateTime;
         previousQuantity: z.ZodNumber;
         newQuantity: z.ZodNumber;
     }, z.core.$strip>;
@@ -434,14 +434,14 @@ export declare const InventoryStockConsumedEventSchema: z.ZodObject<{
     tenantId: z.ZodString;
     aggregateType: z.ZodString;
     aggregateId: z.ZodString;
-    occurredAt: z.ZodString;
+    occurredAt: z.ZodISODateTime;
     eventType: z.ZodLiteral<"inventory.stock.consumed">;
     payload: z.ZodObject<{
         stockItemId: z.ZodString;
         quantity: z.ZodNumber;
         prepTaskId: z.ZodString;
         employeeId: z.ZodString;
-        consumedAt: z.ZodString;
+        consumedAt: z.ZodISODateTime;
         previousQuantity: z.ZodNumber;
         newQuantity: z.ZodNumber;
     }, z.core.$strip>;
@@ -452,14 +452,14 @@ export declare const InventoryStockReceivedEventSchema: z.ZodObject<{
     tenantId: z.ZodString;
     aggregateType: z.ZodString;
     aggregateId: z.ZodString;
-    occurredAt: z.ZodString;
+    occurredAt: z.ZodISODateTime;
     eventType: z.ZodLiteral<"inventory.stock.received">;
     payload: z.ZodObject<{
         stockItemId: z.ZodString;
         quantity: z.ZodNumber;
         purchaseOrderLineItemId: z.ZodString;
         employeeId: z.ZodString;
-        receivedAt: z.ZodString;
+        receivedAt: z.ZodISODateTime;
         previousQuantity: z.ZodNumber;
         newQuantity: z.ZodNumber;
         supplierId: z.ZodOptional<z.ZodString>;
@@ -471,14 +471,14 @@ export declare const InventoryStockWastedEventSchema: z.ZodObject<{
     tenantId: z.ZodString;
     aggregateType: z.ZodString;
     aggregateId: z.ZodString;
-    occurredAt: z.ZodString;
+    occurredAt: z.ZodISODateTime;
     eventType: z.ZodLiteral<"inventory.stock.wasted">;
     payload: z.ZodObject<{
         stockItemId: z.ZodString;
         quantity: z.ZodNumber;
         reason: z.ZodString;
         employeeId: z.ZodString;
-        wastedAt: z.ZodString;
+        wastedAt: z.ZodISODateTime;
         previousQuantity: z.ZodNumber;
         newQuantity: z.ZodNumber;
         wasteCategory: z.ZodOptional<z.ZodString>;
@@ -494,12 +494,12 @@ export declare const RealtimeEventSchema: z.ZodDiscriminatedUnion<[z.ZodObject<{
     tenantId: z.ZodString;
     aggregateType: z.ZodString;
     aggregateId: z.ZodString;
-    occurredAt: z.ZodString;
+    occurredAt: z.ZodISODateTime;
     eventType: z.ZodLiteral<"kitchen.task.claimed">;
     payload: z.ZodObject<{
         taskId: z.ZodString;
         employeeId: z.ZodString;
-        claimedAt: z.ZodString;
+        claimedAt: z.ZodISODateTime;
     }, z.core.$strip>;
 }, z.core.$strip>, z.ZodObject<{
     id: z.ZodString;
@@ -507,12 +507,12 @@ export declare const RealtimeEventSchema: z.ZodDiscriminatedUnion<[z.ZodObject<{
     tenantId: z.ZodString;
     aggregateType: z.ZodString;
     aggregateId: z.ZodString;
-    occurredAt: z.ZodString;
+    occurredAt: z.ZodISODateTime;
     eventType: z.ZodLiteral<"kitchen.task.released">;
     payload: z.ZodObject<{
         taskId: z.ZodString;
         employeeId: z.ZodString;
-        releasedAt: z.ZodString;
+        releasedAt: z.ZodISODateTime;
     }, z.core.$strip>;
 }, z.core.$strip>, z.ZodObject<{
     id: z.ZodString;
@@ -520,13 +520,13 @@ export declare const RealtimeEventSchema: z.ZodDiscriminatedUnion<[z.ZodObject<{
     tenantId: z.ZodString;
     aggregateType: z.ZodString;
     aggregateId: z.ZodString;
-    occurredAt: z.ZodString;
+    occurredAt: z.ZodISODateTime;
     eventType: z.ZodLiteral<"kitchen.task.progress">;
     payload: z.ZodObject<{
         taskId: z.ZodString;
         employeeId: z.ZodString;
         progressPercent: z.ZodNumber;
-        updatedAt: z.ZodString;
+        updatedAt: z.ZodISODateTime;
     }, z.core.$strip>;
 }, z.core.$strip>, z.ZodObject<{
     id: z.ZodString;
@@ -534,7 +534,7 @@ export declare const RealtimeEventSchema: z.ZodDiscriminatedUnion<[z.ZodObject<{
     tenantId: z.ZodString;
     aggregateType: z.ZodString;
     aggregateId: z.ZodString;
-    occurredAt: z.ZodString;
+    occurredAt: z.ZodISODateTime;
     eventType: z.ZodLiteral<"command.board.card.created">;
     payload: z.ZodObject<{
         boardId: z.ZodString;
@@ -544,7 +544,7 @@ export declare const RealtimeEventSchema: z.ZodDiscriminatedUnion<[z.ZodObject<{
         positionX: z.ZodNumber;
         positionY: z.ZodNumber;
         createdBy: z.ZodString;
-        createdAt: z.ZodString;
+        createdAt: z.ZodISODateTime;
     }, z.core.$strip>;
 }, z.core.$strip>, z.ZodObject<{
     id: z.ZodString;
@@ -552,14 +552,14 @@ export declare const RealtimeEventSchema: z.ZodDiscriminatedUnion<[z.ZodObject<{
     tenantId: z.ZodString;
     aggregateType: z.ZodString;
     aggregateId: z.ZodString;
-    occurredAt: z.ZodString;
+    occurredAt: z.ZodISODateTime;
     eventType: z.ZodLiteral<"command.board.card.updated">;
     payload: z.ZodObject<{
         boardId: z.ZodString;
         cardId: z.ZodString;
         changes: z.ZodRecord<z.ZodString, z.ZodUnknown>;
         updatedBy: z.ZodString;
-        updatedAt: z.ZodString;
+        updatedAt: z.ZodISODateTime;
     }, z.core.$strip>;
 }, z.core.$strip>, z.ZodObject<{
     id: z.ZodString;
@@ -567,7 +567,7 @@ export declare const RealtimeEventSchema: z.ZodDiscriminatedUnion<[z.ZodObject<{
     tenantId: z.ZodString;
     aggregateType: z.ZodString;
     aggregateId: z.ZodString;
-    occurredAt: z.ZodString;
+    occurredAt: z.ZodISODateTime;
     eventType: z.ZodLiteral<"command.board.card.moved">;
     payload: z.ZodObject<{
         boardId: z.ZodString;
@@ -581,7 +581,7 @@ export declare const RealtimeEventSchema: z.ZodDiscriminatedUnion<[z.ZodObject<{
             y: z.ZodNumber;
         }, z.core.$strip>;
         movedBy: z.ZodString;
-        movedAt: z.ZodString;
+        movedAt: z.ZodISODateTime;
     }, z.core.$strip>;
 }, z.core.$strip>, z.ZodObject<{
     id: z.ZodString;
@@ -589,13 +589,13 @@ export declare const RealtimeEventSchema: z.ZodDiscriminatedUnion<[z.ZodObject<{
     tenantId: z.ZodString;
     aggregateType: z.ZodString;
     aggregateId: z.ZodString;
-    occurredAt: z.ZodString;
+    occurredAt: z.ZodISODateTime;
     eventType: z.ZodLiteral<"command.board.card.deleted">;
     payload: z.ZodObject<{
         boardId: z.ZodString;
         cardId: z.ZodString;
         deletedBy: z.ZodString;
-        deletedAt: z.ZodString;
+        deletedAt: z.ZodISODateTime;
     }, z.core.$strip>;
 }, z.core.$strip>, z.ZodObject<{
     id: z.ZodString;
@@ -603,14 +603,14 @@ export declare const RealtimeEventSchema: z.ZodDiscriminatedUnion<[z.ZodObject<{
     tenantId: z.ZodString;
     aggregateType: z.ZodString;
     aggregateId: z.ZodString;
-    occurredAt: z.ZodString;
+    occurredAt: z.ZodISODateTime;
     eventType: z.ZodLiteral<"command.board.updated">;
     payload: z.ZodObject<{
         boardId: z.ZodString;
         name: z.ZodString;
         changes: z.ZodRecord<z.ZodString, z.ZodUnknown>;
         updatedBy: z.ZodString;
-        updatedAt: z.ZodString;
+        updatedAt: z.ZodISODateTime;
     }, z.core.$strip>;
 }, z.core.$strip>, z.ZodObject<{
     id: z.ZodString;
@@ -618,13 +618,13 @@ export declare const RealtimeEventSchema: z.ZodDiscriminatedUnion<[z.ZodObject<{
     tenantId: z.ZodString;
     aggregateType: z.ZodString;
     aggregateId: z.ZodString;
-    occurredAt: z.ZodString;
+    occurredAt: z.ZodISODateTime;
     eventType: z.ZodLiteral<"command.board.user.joined">;
     payload: z.ZodObject<{
         boardId: z.ZodString;
         userId: z.ZodString;
         userName: z.ZodString;
-        joinedAt: z.ZodString;
+        joinedAt: z.ZodISODateTime;
     }, z.core.$strip>;
 }, z.core.$strip>, z.ZodObject<{
     id: z.ZodString;
@@ -632,12 +632,12 @@ export declare const RealtimeEventSchema: z.ZodDiscriminatedUnion<[z.ZodObject<{
     tenantId: z.ZodString;
     aggregateType: z.ZodString;
     aggregateId: z.ZodString;
-    occurredAt: z.ZodString;
+    occurredAt: z.ZodISODateTime;
     eventType: z.ZodLiteral<"command.board.user.left">;
     payload: z.ZodObject<{
         boardId: z.ZodString;
         userId: z.ZodString;
-        leftAt: z.ZodString;
+        leftAt: z.ZodISODateTime;
     }, z.core.$strip>;
 }, z.core.$strip>, z.ZodObject<{
     id: z.ZodString;
@@ -645,7 +645,7 @@ export declare const RealtimeEventSchema: z.ZodDiscriminatedUnion<[z.ZodObject<{
     tenantId: z.ZodString;
     aggregateType: z.ZodString;
     aggregateId: z.ZodString;
-    occurredAt: z.ZodString;
+    occurredAt: z.ZodISODateTime;
     eventType: z.ZodLiteral<"command.board.cursor.moved">;
     payload: z.ZodObject<{
         boardId: z.ZodString;
@@ -654,7 +654,7 @@ export declare const RealtimeEventSchema: z.ZodDiscriminatedUnion<[z.ZodObject<{
             x: z.ZodNumber;
             y: z.ZodNumber;
         }, z.core.$strip>;
-        movedAt: z.ZodString;
+        movedAt: z.ZodISODateTime;
     }, z.core.$strip>;
 }, z.core.$strip>, z.ZodObject<{
     id: z.ZodString;
@@ -662,7 +662,7 @@ export declare const RealtimeEventSchema: z.ZodDiscriminatedUnion<[z.ZodObject<{
     tenantId: z.ZodString;
     aggregateType: z.ZodString;
     aggregateId: z.ZodString;
-    occurredAt: z.ZodString;
+    occurredAt: z.ZodISODateTime;
     eventType: z.ZodLiteral<"command.board.connection.created">;
     payload: z.ZodObject<{
         boardId: z.ZodString;
@@ -671,7 +671,7 @@ export declare const RealtimeEventSchema: z.ZodDiscriminatedUnion<[z.ZodObject<{
         toCardId: z.ZodString;
         relationshipType: z.ZodString;
         createdBy: z.ZodString;
-        createdAt: z.ZodString;
+        createdAt: z.ZodISODateTime;
     }, z.core.$strip>;
 }, z.core.$strip>, z.ZodObject<{
     id: z.ZodString;
@@ -679,14 +679,14 @@ export declare const RealtimeEventSchema: z.ZodDiscriminatedUnion<[z.ZodObject<{
     tenantId: z.ZodString;
     aggregateType: z.ZodString;
     aggregateId: z.ZodString;
-    occurredAt: z.ZodString;
+    occurredAt: z.ZodISODateTime;
     eventType: z.ZodLiteral<"command.board.connection.updated">;
     payload: z.ZodObject<{
         boardId: z.ZodString;
         connectionId: z.ZodString;
         changes: z.ZodRecord<z.ZodString, z.ZodUnknown>;
         updatedBy: z.ZodString;
-        updatedAt: z.ZodString;
+        updatedAt: z.ZodISODateTime;
     }, z.core.$strip>;
 }, z.core.$strip>, z.ZodObject<{
     id: z.ZodString;
@@ -694,7 +694,7 @@ export declare const RealtimeEventSchema: z.ZodDiscriminatedUnion<[z.ZodObject<{
     tenantId: z.ZodString;
     aggregateType: z.ZodString;
     aggregateId: z.ZodString;
-    occurredAt: z.ZodString;
+    occurredAt: z.ZodISODateTime;
     eventType: z.ZodLiteral<"command.board.connection.deleted">;
     payload: z.ZodObject<{
         boardId: z.ZodString;
@@ -702,7 +702,7 @@ export declare const RealtimeEventSchema: z.ZodDiscriminatedUnion<[z.ZodObject<{
         fromCardId: z.ZodString;
         toCardId: z.ZodString;
         deletedBy: z.ZodString;
-        deletedAt: z.ZodString;
+        deletedAt: z.ZodISODateTime;
     }, z.core.$strip>;
 }, z.core.$strip>, z.ZodObject<{
     id: z.ZodString;
@@ -710,14 +710,14 @@ export declare const RealtimeEventSchema: z.ZodDiscriminatedUnion<[z.ZodObject<{
     tenantId: z.ZodString;
     aggregateType: z.ZodString;
     aggregateId: z.ZodString;
-    occurredAt: z.ZodString;
+    occurredAt: z.ZodISODateTime;
     eventType: z.ZodLiteral<"inventory.stock.adjusted">;
     payload: z.ZodObject<{
         stockItemId: z.ZodString;
         quantity: z.ZodNumber;
         reason: z.ZodString;
         employeeId: z.ZodString;
-        adjustedAt: z.ZodString;
+        adjustedAt: z.ZodISODateTime;
         previousQuantity: z.ZodNumber;
         newQuantity: z.ZodNumber;
     }, z.core.$strip>;
@@ -727,14 +727,14 @@ export declare const RealtimeEventSchema: z.ZodDiscriminatedUnion<[z.ZodObject<{
     tenantId: z.ZodString;
     aggregateType: z.ZodString;
     aggregateId: z.ZodString;
-    occurredAt: z.ZodString;
+    occurredAt: z.ZodISODateTime;
     eventType: z.ZodLiteral<"inventory.stock.consumed">;
     payload: z.ZodObject<{
         stockItemId: z.ZodString;
         quantity: z.ZodNumber;
         prepTaskId: z.ZodString;
         employeeId: z.ZodString;
-        consumedAt: z.ZodString;
+        consumedAt: z.ZodISODateTime;
         previousQuantity: z.ZodNumber;
         newQuantity: z.ZodNumber;
     }, z.core.$strip>;
@@ -744,14 +744,14 @@ export declare const RealtimeEventSchema: z.ZodDiscriminatedUnion<[z.ZodObject<{
     tenantId: z.ZodString;
     aggregateType: z.ZodString;
     aggregateId: z.ZodString;
-    occurredAt: z.ZodString;
+    occurredAt: z.ZodISODateTime;
     eventType: z.ZodLiteral<"inventory.stock.received">;
     payload: z.ZodObject<{
         stockItemId: z.ZodString;
         quantity: z.ZodNumber;
         purchaseOrderLineItemId: z.ZodString;
         employeeId: z.ZodString;
-        receivedAt: z.ZodString;
+        receivedAt: z.ZodISODateTime;
         previousQuantity: z.ZodNumber;
         newQuantity: z.ZodNumber;
         supplierId: z.ZodOptional<z.ZodString>;
@@ -762,14 +762,14 @@ export declare const RealtimeEventSchema: z.ZodDiscriminatedUnion<[z.ZodObject<{
     tenantId: z.ZodString;
     aggregateType: z.ZodString;
     aggregateId: z.ZodString;
-    occurredAt: z.ZodString;
+    occurredAt: z.ZodISODateTime;
     eventType: z.ZodLiteral<"inventory.stock.wasted">;
     payload: z.ZodObject<{
         stockItemId: z.ZodString;
         quantity: z.ZodNumber;
         reason: z.ZodString;
         employeeId: z.ZodString;
-        wastedAt: z.ZodString;
+        wastedAt: z.ZodISODateTime;
         previousQuantity: z.ZodNumber;
         newQuantity: z.ZodNumber;
         wasteCategory: z.ZodOptional<z.ZodString>;

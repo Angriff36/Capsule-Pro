@@ -1,11 +1,9 @@
-import { SentryFixJobRecord } from './queue.js';
-import { P as ParsedSentryIssue, J as JobExecutionResult } from './types-CETBS6t6.js';
-import 'zod';
-
+import type { SentryFixJobRecord } from "./queue.js";
+import type { JobExecutionResult, ParsedSentryIssue } from "./types.js";
 /**
  * Job runner configuration
  */
-interface JobRunnerConfig {
+export interface JobRunnerConfig {
     /** GitHub repository owner */
     repoOwner: string;
     /** GitHub repository name */
@@ -36,7 +34,7 @@ interface JobRunnerConfig {
  * 3. Run tests
  * 4. Open a PR
  */
-declare class SentryJobRunner {
+export declare class SentryJobRunner {
     private readonly config;
     private lastAppliedEdits;
     constructor(config: Partial<JobRunnerConfig> & Pick<JobRunnerConfig, "repoOwner" | "repoName" | "githubToken" | "openaiApiKey">);
@@ -88,6 +86,5 @@ declare class SentryJobRunner {
 /**
  * Create a job runner with configuration
  */
-declare const createJobRunner: (config: Partial<JobRunnerConfig> & Pick<JobRunnerConfig, "repoOwner" | "repoName" | "githubToken" | "openaiApiKey">) => SentryJobRunner;
-
-export { type JobRunnerConfig, SentryJobRunner, createJobRunner };
+export declare const createJobRunner: (config: Partial<JobRunnerConfig> & Pick<JobRunnerConfig, "repoOwner" | "repoName" | "githubToken" | "openaiApiKey">) => SentryJobRunner;
+//# sourceMappingURL=runner.d.ts.map

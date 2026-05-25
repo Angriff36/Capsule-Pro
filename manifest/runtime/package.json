@@ -17,7 +17,8 @@
     "./prisma-json-store": "./src/prisma-json-store.ts",
     "./prisma-idempotency-store": "./src/prisma-idempotency-store.ts",
     "./manifest-runtime-factory": "./src/manifest-runtime-factory.ts",
-    "./commands-registry": "./src/commands-registry.ts"
+    "./commands-registry": "./src/commands-registry.ts",
+    "./bottleneck-detector": "./src/bottleneck-detector/index.ts"
   },
   "dependencies": {
     "@angriff36/manifest": "1.0.5",

@@ -9,34 +9,30 @@ export default defineConfig({
       name: "vitest-database-mock",
       enforce: "pre",
       resolveId(id, importer) {
-        // Intercept imports to the database package (multiple patterns)
+        // Normalize path separators once so checks stay platform-agnostic.
+        const normalizedId = id.replace(/\\/g, "/");
+        const normalizedImporter = importer?.replace(/\\/g, "/");
+        // Intercept imports to the database package
         if (
           id === "@repo/database" ||
-          id.endsWith("\\packages\\database") ||
-          id.endsWith("/packages/database") ||
-          id.includes("packages/database") ||
-          id.includes("\\packages\\database") ||
-          (importer &&
-            (importer.includes("recipes") || importer.includes("menus")) &&
-            id.includes("database"))
+          normalizedId.includes("packages/database") ||
+          (normalizedImporter &&
+            (normalizedImporter.includes("recipes") ||
+              normalizedImporter.includes("menus")) &&
+            normalizedId.includes("database"))
         ) {
           return path.resolve(
             import.meta.dirname,
             "./test/mocks/@repo/database.ts"
           );
         }
-        // Intercept imports to the database generated client - multiple patterns
-        const normalizedId = id.replace(/\\/g, "/");
+        // Intercept imports to the database generated client
         if (
-          id.includes("database/generated/client") ||
-          id.includes("generated\\client") ||
           normalizedId.includes("database/generated/client") ||
           normalizedId.includes("packages/database/generated") ||
           normalizedId.endsWith("/generated/client") ||
-          normalizedId.endsWith("\\generated\\client") ||
-          id.includes("packages\\database\\generated\\client") ||
-          id.includes("packages/database/generated/client") ||
-          (importer?.includes("database") && id.includes("generated/client"))
+          (normalizedImporter?.includes("database") &&
+            normalizedId.includes("generated/client"))
         ) {
           return path.resolve(
             import.meta.dirname,
@@ -44,7 +40,7 @@ export default defineConfig({
           );
         }
         // Intercept storage package
-        if (id === "@repo/storage" || id.includes("packages/storage")) {
+        if (id === "@repo/storage" || normalizedId.includes("packages/storage")) {
           return path.resolve(
             import.meta.dirname,
             "./test/mocks/@repo/storage.ts"
@@ -60,11 +56,11 @@ export default defineConfig({
         return undefined;
       },
       load(id) {
+        const normalizedId = id.replace(/\\/g, "/");
         // Intercept loading of the actual database index.ts file
         if (
-          id.includes("\\packages\\database\\index.ts") ||
-          id.includes("/packages/database/index.ts") ||
-          id.includes("packages/database/index.js")
+          normalizedId.includes("/packages/database/index.ts") ||
+          normalizedId.includes("packages/database/index.js")
         ) {
           // Return the mock content directly instead of loading the actual file
           // This mocks all the imports and exports from the real database/index.ts

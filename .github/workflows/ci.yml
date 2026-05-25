@@ -20,11 +20,22 @@ permissions:
 env:
   NPM_TOKEN: ${{ secrets.PKG_AUTH_TOKEN }}
   DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
+  # Turbo remote cache credentials. turbo.json declares
+  # `remoteCache: { enabled: true, signature: true }` plus the three vars in
+  # `globalPassThroughEnv`. Without these wired into the workflow env, every
+  # CI run is a cache miss. Fork PRs and Dependabot do NOT receive repo
+  # secrets — the references resolve to empty strings and turbo silently
+  # falls back to local-only cache (verified locally with all three unset;
+  # `turbo run build --dry` exits 0 and reports `Cached (Remote) = false`).
+  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+  TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
+  TURBO_REMOTE_CACHE_SIGNATURE_KEY: ${{ secrets.TURBO_REMOTE_CACHE_SIGNATURE_KEY }}
 
 jobs:
   test:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    if: github.actor != 'dependabot[bot]'
 
     # Job-level env. All values below are SHAPE-VALID PLACEHOLDERS so that
     # `next build` can finish — SDK constructors (Clerk, Stripe, Resend,
@@ -78,7 +89,7 @@ jobs:
           fetch-depth: 0
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
 
       - name: Setup Node.js
         # Node version is sourced from .nvmrc — keep it the only source of truth.
@@ -97,11 +108,11 @@ jobs:
         run: pnpm lint:any
 
       - name: Check canonical routes (no hardcoded /api/ in client code)
-        # Staged migration. 2026-05-22 baseline: 587 violations. See
-        # docs/audits/hardcoded-routes-violations.md for the breakdown.
-        # Flip continue-on-error to false when violation count drops <50.
+        # Ratcheted against scripts/check-canonical-routes-baseline.txt.
+        # New hardcoded routes fail CI; existing violations are tolerated up
+        # to the baseline count. See docs/audits/hardcoded-routes-violations.md
+        # for the migration plan; lower the baseline number to lock in wins.
         run: node scripts/check-hardcoded-routes.mjs
-        continue-on-error: true
 
       - name: Run tests
         run: pnpm test
@@ -130,6 +141,7 @@ jobs:
     name: E2E Product-Flow Tests
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    if: github.actor != 'dependabot[bot]'
 
     services:
       postgres:
@@ -153,7 +165,7 @@ jobs:
           fetch-depth: 0
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
 
       - name: Setup Node.js
         # Node version is sourced from .nvmrc — keep it the only source of truth.
@@ -194,9 +206,17 @@ jobs:
         # Supabase scaffolding or makes the migrations env-agnostic.
         id: migrate
         continue-on-error: true
-        run: |
-          cd packages/database
-          pnpm exec prisma migrate deploy
+        # Route through the canonical `pnpm migrate:deploy` wrapper instead of
+        # invoking `prisma migrate deploy` directly (CLAUDE.md hard rule: CI
+        # must use the same migration path as developers so the
+        # `db:validate-migrations` + `prisma:check` preflight catches table-name
+        # drift before deploy — the 2026-05-02 EmployeeDeduction-style class
+        # of incidents). The wrapper is filesystem-only for the validator and
+        # uses prisma generate for the schema check; neither requires a DB
+        # connection. `prisma migrate deploy` itself still runs against
+        # DATABASE_URL below. Working dir is the repo root (no `cd`) — the
+        # wrapper uses `pnpm --filter @repo/database` internally.
+        run: pnpm migrate:deploy
         env:
           DATABASE_URL: "postgresql://testuser:testpass@localhost:5432/capsule_test"
 
@@ -215,7 +235,13 @@ jobs:
           DATABASE_URL: "postgresql://testuser:testpass@localhost:5432/capsule_test"
           BASEHUB_TOKEN: ${{ secrets.BASEHUB_TOKEN }}
           # Server env vars (dummy values for build)
-          CLERK_SECRET_KEY: "not_a_real_key_dummy_value"
+          # CLERK_SECRET_KEY intentionally not set — SKIP_ENV_VALIDATION=true
+          # bypasses zod parsing (packages/auth/keys.ts declares it .optional()),
+          # and the Clerk SDK falls back to "" when absent. The E2E build step
+          # only invokes `next build` for apps/app + apps/api; runtime Clerk
+          # auth is exercised later by the Start API server + Run E2E test
+          # steps, both of which inject the real ${{ secrets.CLERK_SECRET_KEY }}.
+          # Matches deploy.yml convention (see CI-drain Task 12 / 12b / 12c).
           CLERK_WEBHOOK_SECRET: "webhook_secret_placeholder"
           RESEND_FROM: "noreply@ci-build.local"
           RESEND_TOKEN: "re_dummy"

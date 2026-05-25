@@ -55,7 +55,8 @@
   "scripts": {
     "analyze": "next experimental-analyze --output",
     "analyze:serve": "next experimental-analyze",
-    "build": "node -e \"const fs=require('node:fs'); for (const d of ['.next','.next-dev/types','.next-dev-webpack/types']) fs.rmSync(d, { recursive: true, force: true });\" && dotenv -e ../../.env.local -e .env.local -- next build",
+    "build": "node -e \"const fs=require('node:fs'); for (const d of ['.next','.next-dev/types','.next-dev-webpack/types']) fs.rmSync(d, { recursive: true, force: true });\" && next build",
+    "build:dev": "node -e \"const fs=require('node:fs'); for (const d of ['.next','.next-dev/types','.next-dev-webpack/types']) fs.rmSync(d, { recursive: true, force: true });\" && dotenv -e ../../.env.local -e .env.local -- next build",
     "clean": "git clean -xdf .cache .turbo dist node_modules",
     "dev": "concurrently \"npm:next\" \"npm:stripe\"",
     "next": "dotenv -e ../../.env.local -e .env.local -e ../../packages/database/.env -- cross-env NEXT_DIST_DIR=.next-dev next dev -p 2223",

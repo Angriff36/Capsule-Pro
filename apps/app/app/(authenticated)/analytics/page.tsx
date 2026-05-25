@@ -285,6 +285,14 @@ const AnalyticsPage = async () => {
             >
               <Link href="/analytics/clients">Client analytics</Link>
             </Button>
+            <Button
+              asChild
+              className="border-white/25 bg-transparent text-white hover:bg-white/10"
+              size="sm"
+              variant="outline"
+            >
+              <Link href="/analytics/sales-reporting">Sales reporting</Link>
+            </Button>
             <Button asChild size="default" variant="on-dark">
               <Link href="/analytics/finance">Financial detail</Link>
             </Button>

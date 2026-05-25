@@ -92,10 +92,10 @@
     "analyze:serve": "next experimental-analyze",
     "build": "node -e \"const fs=require('node:fs'); for (const d of ['.next','.next-dev/types','.next-dev-webpack/types']) fs.rmSync(d, { recursive: true, force: true });\" && next build",
     "clean": "git clean -xdf .cache .turbo dist node_modules",
-    "dev": "dotenv -e ../../.env.local -e .env.local -e ../../packages/database/.env -- cross-env SKIP_ENV_VALIDATION=true NEXT_DIST_DIR=.next-dev next dev --turbopack -p 2221",
+    "dev": "node -e \"const fs=require('node:fs'); for (const d of ['.next-dev','.next-dev/types','.next-dev-webpack/types']) fs.rmSync(d, { recursive: true, force: true });\" && dotenv -e ../../.env.local -e .env.local -e ../../packages/database/.env -- cross-env SKIP_ENV_VALIDATION=true NEXT_DIST_DIR=.next-dev next dev --turbopack -p 2221",
     "start": "next start",
     "test": "cross-env NODE_ENV=test vitest run --passWithNoTests",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false",
-    "dev:infisical": "infisical run --env=dev --path=/apps/capsule-pro/app --project-config-dir=../.. -- cross-env SKIP_ENV_VALIDATION=true NEXT_DIST_DIR=.next-dev next dev --turbopack -p 2221"
+    "dev:infisical": "node -e \"const fs=require('node:fs'); for (const d of ['.next-dev','.next-dev/types','.next-dev-webpack/types']) fs.rmSync(d, { recursive: true, force: true });\" && infisical run --env=dev --path=/apps/capsule-pro/app --project-config-dir=../.. -- cross-env SKIP_ENV_VALIDATION=true NEXT_DIST_DIR=.next-dev next dev --turbopack -p 2221"
   }
 }

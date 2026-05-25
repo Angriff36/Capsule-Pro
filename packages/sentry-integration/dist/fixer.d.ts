@@ -1,10 +1,8 @@
-import { b as StackFrame, P as ParsedSentryIssue } from './types-CETBS6t6.js';
-import 'zod';
-
+import type { ParsedSentryIssue, StackFrame } from "./types.js";
 /**
  * Configuration for the AI fixer
  */
-interface FixerConfig {
+export interface FixerConfig {
     /** OpenAI API key */
     openaiApiKey: string;
     /** Model to use for analysis */
@@ -21,7 +19,7 @@ interface FixerConfig {
 /**
  * A single file edit returned by the AI
  */
-interface FileEdit {
+export interface FileEdit {
     filePath: string;
     originalContent: string;
     newContent: string;
@@ -30,7 +28,7 @@ interface FileEdit {
 /**
  * Result of the AI fix attempt
  */
-interface FixResult {
+export interface FixResult {
     success: boolean;
     edits: FileEdit[];
     analysis: string;
@@ -46,11 +44,11 @@ interface FixResult {
  * - webpack-internal:///path/to/file.ts
  * - node_modules/...
  */
-declare function resolveFramePath(frame: StackFrame, workingDir: string): string | null;
+export declare function resolveFramePath(frame: StackFrame, workingDir: string): string | null;
 /**
  * Revert applied edits (used when tests fail after applying a fix)
  */
-declare function revertEdits(edits: FileEdit[], workingDir: string): Promise<void>;
+export declare function revertEdits(edits: FileEdit[], workingDir: string): Promise<void>;
 /**
  * Attempt to fix a Sentry issue using AI analysis.
  *
@@ -63,6 +61,5 @@ declare function revertEdits(edits: FileEdit[], workingDir: string): Promise<voi
  * 4. Apply edits via search-and-replace
  * 5. Return result (caller handles git commit, tests, PR)
  */
-declare function attemptAIFix(issue: ParsedSentryIssue, config: Partial<FixerConfig> & Pick<FixerConfig, "openaiApiKey" | "workingDir">): Promise<FixResult>;
-
-export { type FileEdit, type FixResult, type FixerConfig, attemptAIFix, resolveFramePath, revertEdits };
+export declare function attemptAIFix(issue: ParsedSentryIssue, config: Partial<FixerConfig> & Pick<FixerConfig, "openaiApiKey" | "workingDir">): Promise<FixResult>;
+//# sourceMappingURL=fixer.d.ts.map
