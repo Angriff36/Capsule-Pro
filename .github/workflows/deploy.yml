@@ -144,8 +144,13 @@ jobs:
 
       - name: Load Vercel secrets (App) from Infisical
         run: |
-          TOKEN=$(curl -fsS -X POST "https://app.infisical.com/api/v1/auth/universal-auth/login" -H "Content-Type: application/json" -d "{\"clientId\":\"$INFISICAL_CLIENT_ID\",\"clientSecret\":\"$INFISICAL_CLIENT_SECRET\"}" | python3 -c "import json,sys; print(json.load(sys.stdin)['accessToken'])")
-          curl -fsS "https://app.infisical.com/api/v3/secrets/raw?environment=prod&workspaceId=d8319856-8caf-4c22-8717-57ab28b326b3&secretPath=%2Fapps%2Fcapsule-pro%2Fapp" -H "Authorization: Bearer $TOKEN" | python3 -c "import json,sys,os; f=open(os.environ['GITHUB_ENV'],'a'); [f.write(s['secretKey']+'='+s['secretValue']+'\n') for s in json.load(sys.stdin).get('secrets',[])]"
+          python3 << 'PYEOF'
+          import json, urllib.request, os
+          req = urllib.request.Request('https://app.infisical.com/api/v1/auth/universal-auth/login', data=json.dumps({'clientId': os.environ['INFISICAL_CLIENT_ID'], 'clientSecret': os.environ['INFISICAL_CLIENT_SECRET']}).encode(), headers={'Content-Type': 'application/json'})
+          token = json.load(urllib.request.urlopen(req))['accessToken']
+          req2 = urllib.request.Request('https://app.infisical.com/api/v3/secrets/raw?environment=prod&workspaceId=d8319856-8caf-4c22-8717-57ab28b326b3&secretPath=%2Fapps%2Fcapsule-pro%2Fapp', headers={'Authorization': 'Bearer ' + token})
+          open(os.environ['GITHUB_ENV'], 'a').writelines(s['secretKey'] + '=' + s['secretValue'] + '\n' for s in json.load(urllib.request.urlopen(req2)).get('secrets', []))
+          PYEOF
         env:
           INFISICAL_CLIENT_ID: ${{ secrets.INFISICAL_CLIENT_ID }}
           INFISICAL_CLIENT_SECRET: ${{ secrets.INFISICAL_CLIENT_SECRET }}
@@ -155,8 +160,13 @@ jobs:
 
       - name: Load Vercel secrets (API) from Infisical
         run: |
-          TOKEN=$(curl -fsS -X POST "https://app.infisical.com/api/v1/auth/universal-auth/login" -H "Content-Type: application/json" -d "{\"clientId\":\"$INFISICAL_CLIENT_ID\",\"clientSecret\":\"$INFISICAL_CLIENT_SECRET\"}" | python3 -c "import json,sys; print(json.load(sys.stdin)['accessToken'])")
-          curl -fsS "https://app.infisical.com/api/v3/secrets/raw?environment=prod&workspaceId=d8319856-8caf-4c22-8717-57ab28b326b3&secretPath=%2Fapps%2Fcapsule-pro%2Fapi" -H "Authorization: Bearer $TOKEN" | python3 -c "import json,sys,os; f=open(os.environ['GITHUB_ENV'],'a'); [f.write(s['secretKey']+'='+s['secretValue']+'\n') for s in json.load(sys.stdin).get('secrets',[])]"
+          python3 << 'PYEOF'
+          import json, urllib.request, os
+          req = urllib.request.Request('https://app.infisical.com/api/v1/auth/universal-auth/login', data=json.dumps({'clientId': os.environ['INFISICAL_CLIENT_ID'], 'clientSecret': os.environ['INFISICAL_CLIENT_SECRET']}).encode(), headers={'Content-Type': 'application/json'})
+          token = json.load(urllib.request.urlopen(req))['accessToken']
+          req2 = urllib.request.Request('https://app.infisical.com/api/v3/secrets/raw?environment=prod&workspaceId=d8319856-8caf-4c22-8717-57ab28b326b3&secretPath=%2Fapps%2Fcapsule-pro%2Fapi', headers={'Authorization': 'Bearer ' + token})
+          open(os.environ['GITHUB_ENV'], 'a').writelines(s['secretKey'] + '=' + s['secretValue'] + '\n' for s in json.load(urllib.request.urlopen(req2)).get('secrets', []))
+          PYEOF
         env:
           INFISICAL_CLIENT_ID: ${{ secrets.INFISICAL_CLIENT_ID }}
           INFISICAL_CLIENT_SECRET: ${{ secrets.INFISICAL_CLIENT_SECRET }}
@@ -166,8 +176,13 @@ jobs:
 
       - name: Load Vercel secrets (Web) from Infisical
         run: |
-          TOKEN=$(curl -fsS -X POST "https://app.infisical.com/api/v1/auth/universal-auth/login" -H "Content-Type: application/json" -d "{\"clientId\":\"$INFISICAL_CLIENT_ID\",\"clientSecret\":\"$INFISICAL_CLIENT_SECRET\"}" | python3 -c "import json,sys; print(json.load(sys.stdin)['accessToken'])")
-          curl -fsS "https://app.infisical.com/api/v3/secrets/raw?environment=prod&workspaceId=d8319856-8caf-4c22-8717-57ab28b326b3&secretPath=%2Fapps%2Fcapsule-pro%2Fweb" -H "Authorization: Bearer $TOKEN" | python3 -c "import json,sys,os; f=open(os.environ['GITHUB_ENV'],'a'); [f.write(s['secretKey']+'='+s['secretValue']+'\n') for s in json.load(sys.stdin).get('secrets',[])]"
+          python3 << 'PYEOF'
+          import json, urllib.request, os
+          req = urllib.request.Request('https://app.infisical.com/api/v1/auth/universal-auth/login', data=json.dumps({'clientId': os.environ['INFISICAL_CLIENT_ID'], 'clientSecret': os.environ['INFISICAL_CLIENT_SECRET']}).encode(), headers={'Content-Type': 'application/json'})
+          token = json.load(urllib.request.urlopen(req))['accessToken']
+          req2 = urllib.request.Request('https://app.infisical.com/api/v3/secrets/raw?environment=prod&workspaceId=d8319856-8caf-4c22-8717-57ab28b326b3&secretPath=%2Fapps%2Fcapsule-pro%2Fweb', headers={'Authorization': 'Bearer ' + token})
+          open(os.environ['GITHUB_ENV'], 'a').writelines(s['secretKey'] + '=' + s['secretValue'] + '\n' for s in json.load(urllib.request.urlopen(req2)).get('secrets', []))
+          PYEOF
         env:
           INFISICAL_CLIENT_ID: ${{ secrets.INFISICAL_CLIENT_ID }}
           INFISICAL_CLIENT_SECRET: ${{ secrets.INFISICAL_CLIENT_SECRET }}
@@ -215,8 +230,13 @@ jobs:
 
       - name: Load Vercel secrets (Docs) from Infisical
         run: |
-          TOKEN=$(curl -fsS -X POST "https://app.infisical.com/api/v1/auth/universal-auth/login" -H "Content-Type: application/json" -d "{\"clientId\":\"$INFISICAL_CLIENT_ID\",\"clientSecret\":\"$INFISICAL_CLIENT_SECRET\"}" | python3 -c "import json,sys; print(json.load(sys.stdin)['accessToken'])")
-          curl -fsS "https://app.infisical.com/api/v3/secrets/raw?environment=prod&workspaceId=d8319856-8caf-4c22-8717-57ab28b326b3&secretPath=%2Fapps%2Fcapsule-pro%2Fdocs" -H "Authorization: Bearer $TOKEN" | python3 -c "import json,sys,os; f=open(os.environ['GITHUB_ENV'],'a'); [f.write(s['secretKey']+'='+s['secretValue']+'\n') for s in json.load(sys.stdin).get('secrets',[])]"
+          python3 << 'PYEOF'
+          import json, urllib.request, os
+          req = urllib.request.Request('https://app.infisical.com/api/v1/auth/universal-auth/login', data=json.dumps({'clientId': os.environ['INFISICAL_CLIENT_ID'], 'clientSecret': os.environ['INFISICAL_CLIENT_SECRET']}).encode(), headers={'Content-Type': 'application/json'})
+          token = json.load(urllib.request.urlopen(req))['accessToken']
+          req2 = urllib.request.Request('https://app.infisical.com/api/v3/secrets/raw?environment=prod&workspaceId=d8319856-8caf-4c22-8717-57ab28b326b3&secretPath=%2Fapps%2Fcapsule-pro%2Fdocs', headers={'Authorization': 'Bearer ' + token})
+          open(os.environ['GITHUB_ENV'], 'a').writelines(s['secretKey'] + '=' + s['secretValue'] + '\n' for s in json.load(urllib.request.urlopen(req2)).get('secrets', []))
+          PYEOF
         env:
           INFISICAL_CLIENT_ID: ${{ secrets.INFISICAL_CLIENT_ID }}
           INFISICAL_CLIENT_SECRET: ${{ secrets.INFISICAL_CLIENT_SECRET }}
