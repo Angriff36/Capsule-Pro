@@ -67,7 +67,7 @@ function findRepoRoot(startDir: string): string {
  * Next.js started the server from.
  */
 function resolveManifestsDir(manifestsDir?: string): string {
-  const rel = manifestsDir ?? "packages/manifest-adapters/manifests";
+  const rel = manifestsDir ?? "manifest/source";
 
   // Already absolute — caller knows what they want (e.g. test fixtures).
   if (resolve(rel) === rel) {

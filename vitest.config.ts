@@ -84,12 +84,8 @@ export default defineConfig({
       root: "./apps/mobile",
     },
     {
-      name: "manifest-adapters",
-      root: "./packages/manifest-adapters",
-    },
-    {
       name: "manifest-runtime",
-      root: "./packages/manifest-runtime",
+      root: "./manifest/runtime",
     },
     {
       name: "notifications",

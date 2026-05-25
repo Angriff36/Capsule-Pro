@@ -22,7 +22,7 @@ import { join } from "node:path";
 const CAMEL_CASE_REGEX = /([A-Z])/g;
 const FIRST_CHAR_REGEX = /^./;
 
-const MANIFEST_DIR = "packages/manifest-adapters/manifests";
+const MANIFEST_DIR = "manifest/source";
 
 // ANSI color codes
 const colors = {

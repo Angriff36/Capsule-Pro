@@ -25,7 +25,7 @@ import { join, resolve } from "node:path";
 const VERBOSE = process.argv.includes("--verbose");
 
 const ROOT = resolve(process.cwd());
-const MANIFESTS_DIR = join(ROOT, "packages/manifest-adapters/manifests");
+const MANIFESTS_DIR = join(ROOT, "manifest/source");
 const COMMANDS_JSON = join(
   ROOT,
   "manifest/ir/kitchen.commands.json"

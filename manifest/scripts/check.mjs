@@ -12,20 +12,19 @@ const isCi =
   process.env.GITHUB_ACTIONS === "true";
 
 const requiredPaths = [
-  "packages/manifest-adapters/manifests",
+  "manifest/source",
   "manifest/ir/kitchen.ir.json",
   "manifest/ir/kitchen.provenance.json",
   "manifest/ir/kitchen.merge-report.json",
-  "scripts/manifest/duplicate-drop-allowlist.json",
+  "manifest/governance/duplicate-drop-allowlist.json",
   "manifest/runtime/src/index.ts",
   "apps/api/lib/manifest-runtime.ts",
   "apps/api/lib/manifest-response.ts",
-  "manifest.config.yaml",
-  "scripts/manifest/compile.mjs",
-  "scripts/manifest/generate.mjs",
-  "scripts/manifest/build.mjs",
-  "scripts/manifest/check.mjs",
-  "scripts/manifest/write-route-infra-allowlist.json",
+  "manifest/scripts/compile.mjs",
+  "manifest/scripts/generate.mjs",
+  "manifest/scripts/build.mjs",
+  "manifest/scripts/check.mjs",
+  "manifest/governance/write-route-infra-allowlist.json",
   "scripts/check-staged-write-routes.mjs",
 ];
 
@@ -38,13 +37,13 @@ for (const p of requiredPaths) {
   }
 }
 
-if (existsSync("packages/manifest-adapters/manifests")) {
+if (existsSync("manifest/source")) {
   const manifestFiles = listFiles(
-    "packages/manifest-adapters/manifests"
+    "manifest/source"
   ).filter((f) => f.endsWith(".manifest"));
   if (manifestFiles.length === 0) {
     console.error(
-      "[manifest/check] No .manifest files found under packages/manifest-adapters/manifests."
+      "[manifest/check] No .manifest files found under manifest/source."
     );
     ok = false;
   } else {
@@ -89,7 +88,7 @@ if (!existsSync(irPath)) {
 
 const mergeReportPath =
   "manifest/ir/kitchen.merge-report.json";
-const duplicateAllowlistPath = "scripts/manifest/duplicate-drop-allowlist.json";
+const duplicateAllowlistPath = "manifest/governance/duplicate-drop-allowlist.json";
 if (existsSync(mergeReportPath) && existsSync(duplicateAllowlistPath)) {
   try {
     const mergeReport = JSON.parse(readFileSync(mergeReportPath, "utf-8"));

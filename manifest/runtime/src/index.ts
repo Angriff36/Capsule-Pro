@@ -9,7 +9,7 @@
  * =========================================================
  * For new Manifest features, consider using the code generator:
  *
- * 1. Edit .manifest file in packages/manifest-adapters/manifests/
+ * 1. Edit .manifest file in manifest/source/
  * 2. Run: npx tsx packages/manifest/bin/compile.ts <file>.manifest --output ./generated
  * 3. Review and use the generated code
  * 4. See .specify/memory/AGENTS.md for when to use code generation vs manual integration
