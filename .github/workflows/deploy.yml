@@ -145,7 +145,14 @@ jobs:
       - name: Deploy to Vercel (App)
         run: |
           vercel pull --yes --environment=production
-          set -o allexport; source .vercel/.env.production.local; set +o allexport
+          while IFS= read -r line; do
+            [[ "$line" =~ ^[[:space:]]*# ]] && continue
+            [[ -z "${line// }" ]] && continue
+            key="${line%%=*}"
+            [[ "$key" =~ ^NEXT_PUBLIC_ ]] || continue
+            value="${line#*=}"
+            export "$key"="$value"
+          done < .vercel/.env.production.local
           vercel build --prod && vercel deploy --prebuilt --prod
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
@@ -156,7 +163,14 @@ jobs:
       - name: Deploy to Vercel (API)
         run: |
           vercel pull --yes --environment=production
-          set -o allexport; source .vercel/.env.production.local; set +o allexport
+          while IFS= read -r line; do
+            [[ "$line" =~ ^[[:space:]]*# ]] && continue
+            [[ -z "${line// }" ]] && continue
+            key="${line%%=*}"
+            [[ "$key" =~ ^NEXT_PUBLIC_ ]] || continue
+            value="${line#*=}"
+            export "$key"="$value"
+          done < .vercel/.env.production.local
           vercel build --prod && vercel deploy --prebuilt --prod
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
@@ -168,7 +182,14 @@ jobs:
         continue-on-error: true
         run: |
           vercel pull --yes --environment=production
-          set -o allexport; source .vercel/.env.production.local; set +o allexport
+          while IFS= read -r line; do
+            [[ "$line" =~ ^[[:space:]]*# ]] && continue
+            [[ -z "${line// }" ]] && continue
+            key="${line%%=*}"
+            [[ "$key" =~ ^NEXT_PUBLIC_ ]] || continue
+            value="${line#*=}"
+            export "$key"="$value"
+          done < .vercel/.env.production.local
           vercel build --prod && vercel deploy --prebuilt --prod
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
@@ -216,7 +237,14 @@ jobs:
       - name: Deploy to Vercel (Docs)
         run: |
           vercel pull --yes --environment=production
-          set -o allexport; source .vercel/.env.production.local; set +o allexport
+          while IFS= read -r line; do
+            [[ "$line" =~ ^[[:space:]]*# ]] && continue
+            [[ -z "${line// }" ]] && continue
+            key="${line%%=*}"
+            [[ "$key" =~ ^NEXT_PUBLIC_ ]] || continue
+            value="${line#*=}"
+            export "$key"="$value"
+          done < .vercel/.env.production.local
           vercel build --prod && vercel deploy --prebuilt --prod
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
