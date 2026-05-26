@@ -1,7 +1,18 @@
 name: Deploy
 
-# Production only when you explicitly run this workflow (Actions → Deploy → Run workflow).
-# Git pushes do not deploy. Vercel Git integration builds are skipped via ignoreCommand in each vercel.json.
+# Production only. Triggered manually via Actions → Deploy → Run workflow.
+# Git pushes do not deploy (vercel.json ignoreCommand skips Vercel Git builds).
+#
+# Pipeline follows canonical Vercel CI/CD:
+#   https://vercel.com/docs/git/vercel-for-github#using-github-actions
+#   vercel pull   --yes --environment=production --token=$VERCEL_TOKEN
+#   vercel build  --prod                          --token=$VERCEL_TOKEN
+#   vercel deploy --prebuilt --prod               --token=$VERCEL_TOKEN
+#
+# `vercel pull` writes .vercel/.env.production.local with real per-project
+# secrets from Vercel project settings; `vercel build` auto-loads them.
+# Do NOT mirror DATABASE_URL / CLERK_* / STRIPE_* / etc. in GitHub Actions env.
+
 on:
   workflow_dispatch:
 
@@ -12,397 +23,193 @@ concurrency:
 permissions:
   contents: read
   packages: read
+  pull-requests: read   # for `gh pr list` in check-dependabot
 
 env:
-  # Turbo remote cache credentials. turbo.json declares
-  # `remoteCache: { enabled: true, signature: true }` plus the three vars in
-  # `globalPassThroughEnv`. Without these wired into the workflow env, every
-  # `pnpm turbo run build` is a cache miss against the team cache populated by
-  # ci.yml. Fork PRs and Dependabot do NOT receive repo secrets — the
-  # references resolve to empty strings and turbo silently falls back to
-  # local-only cache (verified locally with all three unset).
+  # Turbo remote cache (turbo.json declares remoteCache + signature).
   TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
   TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
   TURBO_REMOTE_CACHE_SIGNATURE_KEY: ${{ secrets.TURBO_REMOTE_CACHE_SIGNATURE_KEY }}
 
-  # Vercel team/org — shared across all deploy steps.
+  # Vercel team — shared across all deploy steps.
   VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
 
-  # Each Vercel project gets its own GitHub secret so there is a single source
-  # of truth and no .vercel/project.json drift.
-  #   VERCEL_PROJECT_ID_APP  → capsule-pro-app   (prj_lvxrbaREswB2UHPN66csH98drJmg)
-  #   VERCEL_PROJECT_ID_API  → capsule-pro-api   (prj_FxsCebNa4NTEzmnj7yeMjTwUCDmb)
-  #   VERCEL_PROJECT_ID_DOCS → capsule-pro-docs  (prj_Y8NtWCpfZTe180fJff7JAavLiRbj)
-  #   VERCEL_PROJECT_ID_WEB  → capsule-pro-web   (prj_8TNgVLzUR88094Ts1ZjvXtmWpcFl)
+  # GitHub Packages auth for pnpm install.
+  NPM_TOKEN: ${{ secrets.PKG_AUTH_TOKEN }}
+
+  # Per-project Vercel IDs (resolved per matrix entry in deploy job):
+  #   VERCEL_PROJECT_ID_APP  → capsule-pro-app
+  #   VERCEL_PROJECT_ID_API  → capsule-pro-api
+  #   VERCEL_PROJECT_ID_DOCS → capsule-pro-docs
+  #   VERCEL_PROJECT_ID_WEB  → capsule-pro-web
 
 jobs:
+  # --- Gate 1: block on failing Dependabot PRs ----------------------------
   check-dependabot:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     outputs:
-      has-failing-dependabot: ${{ steps.check.outputs.has-failing }}
-
+      has-failing: ${{ steps.check.outputs.has-failing }}
     steps:
-      - name: Check for failing Dependabot PRs
+      - name: Count failing Dependabot PRs
         id: check
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Check if there are any open Dependabot PRs with failing checks
-          FAILING_PRS=$(gh pr list --author dependabot[bot] --json statusCheckRollup --jq '.[] | select(.statusCheckRollup[]?.status == "FAILURE" or .statusCheckRollup[]?.status == "ERROR") | .number' || echo "")
-
-          if [ -n "$FAILING_PRS" ]; then
-            echo "has-failing=true" >> $GITHUB_OUTPUT
-            echo "⚠️ Found failing Dependabot PRs: $FAILING_PRS"
+          set -euo pipefail
+          failing=$(gh pr list \
+            --repo "$GITHUB_REPOSITORY" \
+            --author 'dependabot[bot]' \
+            --json statusCheckRollup \
+            --jq '[.[] | select(.statusCheckRollup[]?.status == "FAILURE" or .statusCheckRollup[]?.status == "ERROR")] | length')
+          if [ "${failing:-0}" -gt 0 ]; then
+            echo "has-failing=true" >> "$GITHUB_OUTPUT"
+            echo "::warning::Deployment blocked: $failing Dependabot PR(s) with failing checks."
           else
-            echo "has-failing=false" >> $GITHUB_OUTPUT
+            echo "has-failing=false" >> "$GITHUB_OUTPUT"
           fi
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  deploy-app:
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    needs: check-dependabot
-    if: needs.check-dependabot.outputs.has-failing-dependabot == 'false'
-    env:
-      NPM_TOKEN: ${{ secrets.PKG_AUTH_TOKEN }}
-      SKIP_ENV_VALIDATION: true
-      NODE_OPTIONS: "--max-old-space-size=8192"
-      DATABASE_URL: "postgresql://dummy:***@localhost:5432/dummy"
-      # CLERK_SECRET_KEY intentionally not set at build time.
-      # `packages/auth/keys.ts` declares it `.optional()`, SKIP_ENV_VALIDATION=true
-      # bypasses zod parsing, and the Clerk SDK falls back to "" when absent.
-      # Real value is injected by Vercel at runtime, not by this workflow.
-      CLERK_WEBHOOK_SECRET: "webhook_secret_placeholder"
-      NEXT_PUBLIC_CLERK_SIGN_IN_URL: "/sign-in"
-      NEXT_PUBLIC_CLERK_SIGN_UP_URL: "/sign-up"
-      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: "pk_test_Y2kuZHVtbXkuYWNjb3VudHMuZGV2JA=="
-      NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL: "/"
-      NEXT_PUBLIC_CLERK_SIGN_IN_FORCE_REDIRECT_URL: "/"
-      NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL: "/"
-      NEXT_PUBLIC_CLERK_SIGN_UP_FORCE_REDIRECT_URL: "/"
-      RESEND_FROM: "noreply@ci-build.local"
-      RESEND_TOKEN: "re_dummy"
-      STRIPE_SECRET_KEY: "not_a_real_stripe_key_dummy_value"
-      STRIPE_WEBHOOK_SECRET: "webhook_secret_placeholder"
-      BETTERSTACK_API_KEY: "dummy"
-      BETTERSTACK_URL: "https://dummy.betterstack.com"
-      FLAGS_SECRET: "dummy"
-      ARCJET_KEY: "ajkey_dummy"
-      SVIX_TOKEN: "api_key_placeholder"
-      LIVEBLOCKS_SECRET: "api_key_placeholder"
-      VERCEL_PROJECT_PRODUCTION_URL: "https://capsule-pro-app.vercel.app"
-      KNOCK_API_KEY: "dummy"
-      KNOCK_FEED_CHANNEL_ID: "dummy"
-      NEXT_PUBLIC_GA_MEASUREMENT_ID: "G-DUMMY"
-      NEXT_PUBLIC_POSTHOG_KEY: "phc_dummy"
-      NEXT_PUBLIC_POSTHOG_HOST: "https://us.i.posthog.com"
-      NEXT_PUBLIC_APP_URL: "https://capsule-pro-app.vercel.app"
-      NEXT_PUBLIC_WEB_URL: "https://capsule-pro-web.vercel.app"
-      NEXT_PUBLIC_API_URL: "https://capsule-pro-api.vercel.app"
-      NEXT_PUBLIC_DOCS_URL: "https://capsule-pro-docs.vercel.app"
-      NEXT_PUBLIC_ABLY_AUTH_URL: "https://capsule-pro-api.vercel.app/ably/auth"
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: '.nvmrc'
-          cache: 'pnpm'
-
-      - name: Install dependencies
-        run: bash scripts/ensure-github-packages-npmrc.sh && pnpm install --frozen-lockfile
-
-      - name: Generate Prisma client
-        run: pnpm prisma:check
-
-      - name: Typecheck (app, api, web)
-        run: pnpm check
-
-      - name: Lint explicit any (app, api, web production code)
-        run: pnpm lint:any
-
-      - name: Run tests
-        run: pnpm test
-
-      # App does NOT depend on @repo/cms — no BASEHUB_TOKEN needed.
-      # The --filter=app flag scopes turbo to app and its dependency graph only.
-      - name: Build app
-        run: pnpm turbo run build --filter=app
-
-      - name: Install Vercel CLI
-        run: npm install -g vercel@53.1.0
-
-      # cd apps/app so vercel reads apps/app/vercel.json (buildCommand etc.)
-      # --project flag selects the correct Vercel project regardless of .vercel state.
-      - name: Deploy to Vercel (App)
-        run: |
-          cd apps/app
-          vercel pull --yes --environment=production --project "$VERCEL_PROJECT_ID" --token "$VERCEL_TOKEN"
-          # Export NEXT_PUBLIC_ vars from pulled env so Vercel build sees them
-          while IFS= read -r line; do
-            [[ "$line" =~ ^[[:space:]*# ]] && continue
-            [[ -z "${line// }" ]] && continue
-            key="${line%%=*}"
-            [[ "$key" =~ ^NEXT_PUBLIC_ ]] || continue
-            value="${line#*=}"
-            export "$key"="$value"
-          done < .vercel/.env.production.local
-          vercel build --prod --token "$VERCEL_TOKEN" && vercel deploy --prebuilt --prod --token "$VERCEL_TOKEN"
-        env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_APP }}
-          NPM_TOKEN: ${{ secrets.PKG_AUTH_TOKEN }}
-
-  deploy-api:
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    needs: check-dependabot
-    if: needs.check-dependabot.outputs.has-failing-dependabot == 'false'
-    env:
-      NPM_TOKEN: ${{ secrets.PKG_AUTH_TOKEN }}
-      SKIP_ENV_VALIDATION: true
-      NODE_OPTIONS: "--max-old-space-size=8192"
-      DATABASE_URL: "postgresql://dummy:***@localhost:5432/dummy"
-      CLERK_WEBHOOK_SECRET: "webhook_secret_placeholder"
-      NEXT_PUBLIC_CLERK_SIGN_IN_URL: "/sign-in"
-      NEXT_PUBLIC_CLERK_SIGN_UP_URL: "/sign-up"
-      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: "pk_test_Y2kuZHVtbXkuYWNjb3VudHMuZGV2JA=="
-      NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL: "/"
-      NEXT_PUBLIC_CLERK_SIGN_IN_FORCE_REDIRECT_URL: "/"
-      NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL: "/"
-      NEXT_PUBLIC_CLERK_SIGN_UP_FORCE_REDIRECT_URL: "/"
-      RESEND_FROM: "noreply@ci-build.local"
-      RESEND_TOKEN: "re_dummy"
-      STRIPE_SECRET_KEY: "not_a_real_stripe_key_dummy_value"
-      STRIPE_WEBHOOK_SECRET: "webhook_secret_placeholder"
-      BETTERSTACK_API_KEY: "dummy"
-      BETTERSTACK_URL: "https://dummy.betterstack.com"
-      FLAGS_SECRET: "dummy"
-      ARCJET_KEY: "ajkey_dummy"
-      SVIX_TOKEN: "api_key_placeholder"
-      LIVEBLOCKS_SECRET: "api_key_placeholder"
-      VERCEL_PROJECT_PRODUCTION_URL: "https://capsule-pro-api.vercel.app"
-      KNOCK_API_KEY: "dummy"
-      KNOCK_FEED_CHANNEL_ID: "dummy"
-      NEXT_PUBLIC_GA_MEASUREMENT_ID: "G-DUMMY"
-      NEXT_PUBLIC_POSTHOG_KEY: "phc_dummy"
-      NEXT_PUBLIC_POSTHOG_HOST: "https://us.i.posthog.com"
-      NEXT_PUBLIC_APP_URL: "https://capsule-pro-app.vercel.app"
-      NEXT_PUBLIC_WEB_URL: "https://capsule-pro-web.vercel.app"
-      NEXT_PUBLIC_API_URL: "https://capsule-pro-api.vercel.app"
-      NEXT_PUBLIC_DOCS_URL: "https://capsule-pro-docs.vercel.app"
-      NEXT_PUBLIC_ABLY_AUTH_URL: "https://capsule-pro-api.vercel.app/ably/auth"
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: '.nvmrc'
-          cache: 'pnpm'
-
-      - name: Install dependencies
-        run: bash scripts/ensure-github-packages-npmrc.sh && pnpm install --frozen-lockfile
-
-      - name: Generate Prisma client
-        run: pnpm prisma:check
-
-      - name: Build api
-        run: pnpm turbo run build --filter=api
-
-      - name: Install Vercel CLI
-        run: npm install -g vercel@53.1.0
-
-      - name: Deploy to Vercel (API)
-        run: |
-          cd apps/api
-          vercel pull --yes --environment=production --project "$VERCEL_PROJECT_ID" --token "$VERCEL_TOKEN"
-          while IFS= read -r line; do
-            [[ "$line" =~ ^[[:space:]*# ]] && continue
-            [[ -z "${line// }" ]] && continue
-            key="${line%%=*}"
-            [[ "$key" =~ ^NEXT_PUBLIC_ ]] || continue
-            value="${line#*=}"
-            export "$key"="$value"
-          done < .vercel/.env.production.local
-          vercel build --prod --token "$VERCEL_TOKEN" && vercel deploy --prebuilt --prod --token "$VERCEL_TOKEN"
-        env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_API }}
-          NPM_TOKEN: ${{ secrets.PKG_AUTH_TOKEN }}
-
-  deploy-web:
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    needs: check-dependabot
-    if: needs.check-dependabot.outputs.has-failing-dependabot == 'false'
-    env:
-      NPM_TOKEN: ${{ secrets.PKG_AUTH_TOKEN }}
-      SKIP_ENV_VALIDATION: true
-      NODE_OPTIONS: "--max-old-space-size=8192"
-      DATABASE_URL: "postgresql://dummy:***@localhost:5432/dummy"
-      CLERK_WEBHOOK_SECRET: "webhook_secret_placeholder"
-      NEXT_PUBLIC_CLERK_SIGN_IN_URL: "/sign-in"
-      NEXT_PUBLIC_CLERK_SIGN_UP_URL: "/sign-up"
-      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: "pk_test_Y2kuZHVtbXkuYWNjb3VudHMuZGV2JA=="
-      NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL: "/"
-      NEXT_PUBLIC_CLERK_SIGN_IN_FORCE_REDIRECT_URL: "/"
-      NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL: "/"
-      NEXT_PUBLIC_CLERK_SIGN_UP_FORCE_REDIRECT_URL: "/"
-      RESEND_FROM: "noreply@ci-build.local"
-      RESEND_TOKEN: "re_dummy"
-      STRIPE_SECRET_KEY: "not_a_real_stripe_key_dummy_value"
-      STRIPE_WEBHOOK_SECRET: "webhook_secret_placeholder"
-      BETTERSTACK_API_KEY: "dummy"
-      BETTERSTACK_URL: "https://dummy.betterstack.com"
-      FLAGS_SECRET: "dummy"
-      ARCJET_KEY: "ajkey_dummy"
-      SVIX_TOKEN: "api_key_placeholder"
-      LIVEBLOCKS_SECRET: "api_key_placeholder"
-      VERCEL_PROJECT_PRODUCTION_URL: "https://capsule-pro-web.vercel.app"
-      KNOCK_API_KEY: "dummy"
-      KNOCK_FEED_CHANNEL_ID: "dummy"
-      NEXT_PUBLIC_GA_MEASUREMENT_ID: "G-DUMMY"
-      NEXT_PUBLIC_POSTHOG_KEY: "phc_dummy"
-      NEXT_PUBLIC_POSTHOG_HOST: "https://us.i.posthog.com"
-      NEXT_PUBLIC_APP_URL: "https://capsule-pro-app.vercel.app"
-      NEXT_PUBLIC_WEB_URL: "https://capsule-pro-web.vercel.app"
-      NEXT_PUBLIC_API_URL: "https://capsule-pro-api.vercel.app"
-      NEXT_PUBLIC_DOCS_URL: "https://capsule-pro-docs.vercel.app"
-      NEXT_PUBLIC_ABLY_AUTH_URL: "https://capsule-pro-api.vercel.app/ably/auth"
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: '.nvmrc'
-          cache: 'pnpm'
-
-      - name: Install dependencies
-        run: bash scripts/ensure-github-packages-npmrc.sh && pnpm install --frozen-lockfile
-
-      - name: Generate Prisma client
-        run: pnpm prisma:check
-
-      # Web depends on @repo/cms which requires BASEHUB_TOKEN.
-      - name: Generate CMS code for web
-        run: |
-          pnpm --filter @repo/cms build
-          cd apps/web && npx basehub
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          BASEHUB_TOKEN: ${{ secrets.BASEHUB_TOKEN }}
-          BASEHUB_DRAFT: false
-
-      - name: Build web
-        run: pnpm turbo run build --filter=web
-
-      - name: Install Vercel CLI
-        run: npm install -g vercel@53.1.0
-
-      # Web is advisory — basehub type drift may break it.
-      - name: Deploy to Vercel (Web)
-        continue-on-error: true
-        run: |
-          cd apps/web
-          vercel pull --yes --environment=production --project "$VERCEL_PROJECT_ID" --token "$VERCEL_TOKEN"
-          while IFS= read -r line; do
-            [[ "$line" =~ ^[[:space:]*# ]] && continue
-            [[ -z "${line// }" ]] && continue
-            key="${line%%=*}"
-            [[ "$key" =~ ^NEXT_PUBLIC_ ]] || continue
-            value="${line#*=}"
-            export "$key"="$value"
-          done < .vercel/.env.production.local
-          vercel build --prod --token "$VERCEL_TOKEN" && vercel deploy --prebuilt --prod --token "$VERCEL_TOKEN"
-        env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_WEB }}
-          NPM_TOKEN: ${{ secrets.PKG_AUTH_TOKEN }}
-
-  deploy-docs:
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    needs: check-dependabot
-    if: needs.check-dependabot.outputs.has-failing-dependabot == 'false'
-    env:
-      NPM_TOKEN: ${{ secrets.PKG_AUTH_TOKEN }}
-      SKIP_ENV_VALIDATION: true
-      DATABASE_URL: "postgresql://dummy:***@localhost:5432/dummy"
-      NEXT_PUBLIC_DOCS_URL: "https://capsule-pro-docs.vercel.app"
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: '.nvmrc'
-          cache: 'pnpm'
-
-      - name: Install dependencies
-        run: bash scripts/ensure-github-packages-npmrc.sh && pnpm install --frozen-lockfile
-
-      - name: Build docs
-        run: pnpm turbo run build --filter=docs
-        env:
-          NODE_OPTIONS: "--max-old-space-size=4096"
-
-      - name: Install Vercel CLI
-        run: npm install -g vercel@53.1.0
-
-      # apps/docs/.vercel/project.json exists and points to the docs project.
-      # --project flag ensures the correct target regardless of local .vercel state.
-      - name: Deploy to Vercel (Docs)
-        run: |
-          cd apps/docs
-          vercel pull --yes --environment=production --project "$VERCEL_PROJECT_ID" --token "$VERCEL_TOKEN"
-          while IFS= read -r line; do
-            [[ "$line" =~ ^[[:space:]*# ]] && continue
-            [[ -z "${line// }" ]] && continue
-            key="${line%%=*}"
-            [[ "$key" =~ ^NEXT_PUBLIC_ ]] || continue
-            value="${line#*=}"
-            export "$key"="$value"
-          done < .vercel/.env.production.local
-          vercel build --prod --token "$VERCEL_TOKEN" && vercel deploy --prebuilt --prod --token "$VERCEL_TOKEN"
-        env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_DOCS }}
-          NPM_TOKEN: ${{ secrets.PKG_AUTH_TOKEN }}
 
   notify-failing-dependabot:
+    needs: check-dependabot
+    if: needs.check-dependabot.outputs.has-failing == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    steps:
+      - name: Report failing Dependabot PRs
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          echo "::error::Deployment blocked by failing Dependabot PRs."
+          gh pr list \
+            --repo "$GITHUB_REPOSITORY" \
+            --author 'dependabot[bot]' \
+            --json number,title,url \
+            --template '{{range .}}#{{.number}} {{.title}} — {{.url}}{{"\n"}}{{end}}'
+          exit 1
+
+  # --- Gate 2: typecheck / lint / test before any deploy ------------------
+  quality:
     needs: check-dependabot
-    if: needs.check-dependabot.outputs.has-failing-dependabot == 'true'
+    if: needs.check-dependabot.outputs.has-failing == 'false'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      SKIP_ENV_VALIDATION: 'true'
+      NODE_OPTIONS: '--max-old-space-size=8192'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install dependencies
+        run: |
+          bash scripts/ensure-github-packages-npmrc.sh
+          pnpm install --frozen-lockfile
+
+      - name: Generate Prisma client
+        run: pnpm prisma:check
+
+      - name: Typecheck
+        run: pnpm check
+
+      - name: Lint explicit any
+        run: pnpm lint:any
+
+      - name: Tests
+        run: pnpm test
+
+  # --- Deploy: one job, one matrix entry per Vercel project ---------------
+  deploy:
+    needs: [check-dependabot, quality]
+    if: needs.check-dependabot.outputs.has-failing == 'false'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    continue-on-error: ${{ matrix.advisory }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - project: app
+            dir: apps/app
+            project_id_secret: VERCEL_PROJECT_ID_APP
+            needs_basehub: false
+            advisory: false
+          - project: api
+            dir: apps/api
+            project_id_secret: VERCEL_PROJECT_ID_API
+            needs_basehub: false
+            advisory: false
+          - project: docs
+            dir: apps/docs
+            project_id_secret: VERCEL_PROJECT_ID_DOCS
+            needs_basehub: false
+            advisory: false
+          # Web depends on @repo/cms. Advisory: basehub type drift may break
+          # the build but should not block the rest of production.
+          - project: web
+            dir: apps/web
+            project_id_secret: VERCEL_PROJECT_ID_WEB
+            needs_basehub: true
+            advisory: true
+
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_PROJECT_ID: ${{ secrets[matrix.project_id_secret] }}
+      NODE_OPTIONS: '--max-old-space-size=8192'
 
     steps:
-      - name: Notify about failing Dependabot PRs
+      - uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install dependencies
         run: |
-          echo "🚫 Deployment blocked by failing Dependabot PRs"
-          echo "Please review and fix the failing Dependabot PRs before deploying"
-          gh pr list --author dependabot[bot] --json number,title,statusCheckRollup --template '{{range .}}{{tablerow .number .title (join .statusCheckRollup " ")}}{{end}}'
+          bash scripts/ensure-github-packages-npmrc.sh
+          pnpm install --frozen-lockfile
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@53.1.0
+
+      # vercel pull reads VERCEL_ORG_ID + VERCEL_PROJECT_ID from env and
+      # writes .vercel/.env.production.local for vercel build to consume.
+      - name: Pull Vercel environment
+        working-directory: ${{ matrix.dir }}
+        run: vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
+
+      # Web only: basehub codegen must run before vercel build.
+      - name: Generate CMS code (web)
+        if: matrix.needs_basehub
+        working-directory: ${{ matrix.dir }}
         env:
-          GITHUB_TOKEN: ${{ github.token }}
+          BASEHUB_TOKEN: ${{ secrets.BASEHUB_TOKEN }}
+          BASEHUB_DRAFT: 'false'
+        run: |
+          pnpm --filter @repo/cms build
+          npx basehub
+
+      # vercel build runs the project's buildCommand (turbo-aware) and writes
+      # .vercel/output. It auto-loads .vercel/.env.production.local — no
+      # manual NEXT_PUBLIC_* export needed.
+      - name: Build (vercel build)
+        working-directory: ${{ matrix.dir }}
+        run: vercel build --prod --token="$VERCEL_TOKEN"
+
+      - name: Deploy prebuilt artifacts
+        working-directory: ${{ matrix.dir }}
+        run: vercel deploy --prebuilt --prod --token="$VERCEL_TOKEN"
