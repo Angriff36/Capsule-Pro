@@ -204,7 +204,7 @@ describe("Shipment Persistence (write → read alignment)", () => {
         userId: TEST_CLERK_ID,
       } as any);
       vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-      vi.mocked(database.shipment.findUnique).mockResolvedValue(
+      vi.mocked(database.shipment.findFirst).mockResolvedValue(
         mockShipment as never
       );
 
@@ -222,13 +222,13 @@ describe("Shipment Persistence (write → read alignment)", () => {
       expect(data.shipment.id).toBe("ship-002");
       expect(data.shipment.status).toBe("in_transit");
 
-      expect(database.shipment.findUnique).toHaveBeenCalledWith(
+      expect(database.shipment.findFirst).toHaveBeenCalledWith(
         expect.objectContaining({
-          where: expect.objectContaining({
+          where: {
             id: "ship-002",
             tenantId: TEST_TENANT_ID,
             deletedAt: null,
-          }),
+          },
         })
       );
     });
@@ -239,7 +239,7 @@ describe("Shipment Persistence (write → read alignment)", () => {
         userId: TEST_CLERK_ID,
       } as any);
       vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-      vi.mocked(database.shipment.findUnique).mockResolvedValue(null);
+      vi.mocked(database.shipment.findFirst).mockResolvedValue(null);
 
       const { GET } = await import("@/app/api/shipments/shipment/[id]/route");
 
