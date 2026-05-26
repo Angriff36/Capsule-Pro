@@ -15,7 +15,7 @@ permissions:
   packages: read
 
 env:
-  NPM_TOKEN: ${{ secrets.PKG_AUTH_TOKEN }}
+  NPM_TOKEN: ${{ github.token }}
 
 jobs:
   sync:
@@ -37,7 +37,7 @@ jobs:
       - name: Install dependencies
         run: bash scripts/ensure-github-packages-npmrc.sh && pnpm install --frozen-lockfile
         env:
-          NPM_TOKEN: ${{ secrets.PKG_AUTH_TOKEN }}
+          NPM_TOKEN: ${{ github.token }}
 
       - name: Sync Sentry errors (no AI)
         run: pnpm logging:sentry --no-ai

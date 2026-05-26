@@ -19,7 +19,7 @@ permissions:
   security-events: write
 
 env:
-  NPM_TOKEN: ${{ secrets.PKG_AUTH_TOKEN }}
+  NPM_TOKEN: ${{ github.token }}
   DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
 
 jobs:
@@ -46,7 +46,7 @@ jobs:
       - name: Install dependencies
         run: bash scripts/ensure-github-packages-npmrc.sh && pnpm install --frozen-lockfile
         env:
-          NPM_TOKEN: ${{ secrets.PKG_AUTH_TOKEN }}
+          NPM_TOKEN: ${{ github.token }}
 
       - name: Run pnpm audit (baseline-and-block-new)
         # 144 pre-existing moderate+ advisories at 2026-05-22 (mostly transitive

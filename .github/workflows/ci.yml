@@ -1,6 +1,7 @@
 name: CI
 
-# Repo secret PKG_AUTH_TOKEN: GitHub PAT with read:packages (for @angriff36 on npm.pkg.github.com).
+# Capsule-Pro is an authorized repo for @angriff36 packages on GitHub Packages.
+# The built-in GITHUB_TOKEN (with packages:read permission) handles auth.
 
 on:
   push:
@@ -18,7 +19,7 @@ permissions:
   packages: read
 
 env:
-  NPM_TOKEN: ${{ secrets.PKG_AUTH_TOKEN }}
+  NPM_TOKEN: ${{ github.token }}
   DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
   # Turbo remote cache credentials. turbo.json declares
   # `remoteCache: { enabled: true, signature: true }` plus the three vars in
@@ -42,10 +43,10 @@ jobs:
     # Sentry, Knock, Liveblocks, etc.) throw at module load on empty or
     # malformed keys even with SKIP_ENV_VALIDATION=true. CI never reaches
     # any of these services. The only real secrets pulled from
-    # ${{ secrets.* }} are BASEHUB_TOKEN and PKG_AUTH_TOKEN.
+    # ${{ secrets.* }} are BASEHUB_TOKEN and GITHUB_TOKEN (built-in).
     env:
       DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
-      NPM_TOKEN: ${{ secrets.PKG_AUTH_TOKEN }}
+      NPM_TOKEN: ${{ github.token }}
       SKIP_ENV_VALIDATION: "true"
       NODE_OPTIONS: "--max-old-space-size=8192"
       BASEHUB_TOKEN: ${{ secrets.BASEHUB_TOKEN }}
@@ -177,7 +178,7 @@ jobs:
       - name: Install dependencies
         run: bash scripts/ensure-github-packages-npmrc.sh && pnpm install --frozen-lockfile
         env:
-          NPM_TOKEN: ${{ secrets.PKG_AUTH_TOKEN }}
+          NPM_TOKEN: ${{ github.token }}
 
       - name: Wait for PostgreSQL
         run: until pg_isready -h localhost -U testuser -d capsule_test; do sleep 2; done

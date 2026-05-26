@@ -22,7 +22,7 @@ env:
   TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
   TURBO_REMOTE_CACHE_SIGNATURE_KEY: ${{ secrets.TURBO_REMOTE_CACHE_SIGNATURE_KEY }}
   VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-  NPM_TOKEN: ${{ secrets.PKG_AUTH_TOKEN }}
+  NPM_TOKEN: ${{ github.token }}
 
 jobs:
   deploy-app:
@@ -49,7 +49,7 @@ jobs:
       - name: Install dependencies
         env:
           NPM_CONFIG_REGISTRY: "https://npm.pkg.github.com"
-          NODE_AUTH_TOKEN: ${{ secrets.PKG_AUTH_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ github.token }}
         run: pnpm install --frozen-lockfile
 
       - name: Deploy app to Vercel
@@ -90,7 +90,7 @@ jobs:
       - name: Install dependencies
         env:
           NPM_CONFIG_REGISTRY: "https://npm.pkg.github.com"
-          NODE_AUTH_TOKEN: ${{ secrets.PKG_AUTH_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ github.token }}
         run: pnpm install --frozen-lockfile
 
       - name: Deploy API to Vercel
@@ -132,7 +132,7 @@ jobs:
       - name: Install dependencies
         env:
           NPM_CONFIG_REGISTRY: "https://npm.pkg.github.com"
-          NODE_AUTH_TOKEN: ${{ secrets.PKG_AUTH_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ github.token }}
         run: pnpm install --frozen-lockfile
 
       - name: Deploy web to Vercel
@@ -175,7 +175,7 @@ jobs:
       - name: Install dependencies
         env:
           NPM_CONFIG_REGISTRY: "https://npm.pkg.github.com"
-          NODE_AUTH_TOKEN: ${{ secrets.PKG_AUTH_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ github.token }}
         run: pnpm install --frozen-lockfile
 
       - name: Deploy docs to Vercel

@@ -24,7 +24,7 @@ if [ -n "$token" ]; then
 fi
 
 if [ -n "${VERCEL:-}" ] || [ -n "${CI:-}" ]; then
-  echo "Missing PKG_AUTH_TOKEN, GITHUB_PACKAGES_TOKEN, or NPM_TOKEN for GitHub Packages auth." >&2
+  echo "Missing PKG_AUTH_TOKEN, GITHUB_PACKAGES_TOKEN, GITHUB_TOKEN, or NPM_TOKEN for GitHub Packages auth." >&2
   exit 1
 fi
 
