@@ -3,15 +3,8 @@ name: Deploy
 # Production only. Triggered manually via Actions → Deploy → Run workflow.
 # Git pushes do not deploy (vercel.json ignoreCommand skips Vercel Git builds).
 #
-# Pipeline follows canonical Vercel CI/CD:
-#   https://vercel.com/docs/git/vercel-for-github#using-github-actions
-#   vercel pull   --yes --environment=production --token=$VERCEL_TOKEN
-#   vercel build  --prod                          --token=$VERCEL_TOKEN
-#   vercel deploy --prebuilt --prod               --token=$VERCEL_TOKEN
-#
-# `vercel pull` writes .vercel/.env.production.local with secrets from
-# Vercel project settings. Runtime secrets (DATABASE_URL, CLERK_*, etc.)
-# live in Vercel — NOT in GitHub Actions env.
+# Deploy through Vercel's remote builder. Runtime secrets (DATABASE_URL,
+# CLERK_*, etc.) live in Vercel project settings, not GitHub Actions env.
 
 on:
   workflow_dispatch:
@@ -65,8 +58,7 @@ jobs:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: |
           vercel pull --yes --environment=production --token "$VERCEL_TOKEN"
-          vercel build --prod --token "$VERCEL_TOKEN"
-          vercel deploy --prebuilt --prod --token "$VERCEL_TOKEN"
+          vercel deploy --prod --yes --token "$VERCEL_TOKEN"
 
   deploy-api:
     runs-on: ubuntu-latest
@@ -101,8 +93,7 @@ jobs:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: |
           vercel pull --yes --environment=production --token "$VERCEL_TOKEN"
-          vercel build --prod --token "$VERCEL_TOKEN"
-          vercel deploy --prebuilt --prod --token "$VERCEL_TOKEN"
+          vercel deploy --prod --yes --token "$VERCEL_TOKEN"
 
   deploy-web:
     runs-on: ubuntu-latest
@@ -138,8 +129,7 @@ jobs:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: |
           vercel pull --yes --environment=production --token "$VERCEL_TOKEN"
-          vercel build --prod --token "$VERCEL_TOKEN"
-          vercel deploy --prebuilt --prod --token "$VERCEL_TOKEN"
+          vercel deploy --prod --yes --token "$VERCEL_TOKEN"
 
   deploy-docs:
     runs-on: ubuntu-latest
@@ -174,5 +164,4 @@ jobs:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: |
           vercel pull --yes --environment=production --token "$VERCEL_TOKEN"
-          vercel build --prod --token "$VERCEL_TOKEN"
-          vercel deploy --prebuilt --prod --token "$VERCEL_TOKEN"
+          vercel deploy --prod --yes --token "$VERCEL_TOKEN"
