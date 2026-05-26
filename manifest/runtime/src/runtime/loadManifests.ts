@@ -263,6 +263,7 @@ async function compileManifestSet(
     events: compiledIRs.flatMap((ir) => ir.events || []),
     commands: compiledIRs.flatMap((ir) => ir.commands || []),
     policies: compiledIRs.flatMap((ir) => ir.policies || []),
+    values: compiledIRs.flatMap((ir) => ir.values || []),
   };
 
   return {

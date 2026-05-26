@@ -777,6 +777,7 @@ export async function createKitchenOpsRuntime(context: KitchenOpsContext) {
       ...menuIR.policies,
       ...prepListIR.policies,
     ],
+    values: [],
   };
 
   const options =
