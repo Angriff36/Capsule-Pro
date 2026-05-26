@@ -59,9 +59,11 @@ jobs:
         run: |
           vercel pull --yes --environment=production --token "$VERCEL_TOKEN"
           vercel deploy --prod --yes \
+            --build-env SKIP_ENV_VALIDATION=true \
             --build-env PKG_AUTH_TOKEN="$GITHUB_PACKAGES_TOKEN" \
             --build-env NPM_TOKEN="$GITHUB_PACKAGES_TOKEN" \
             --build-env NODE_AUTH_TOKEN="$GITHUB_PACKAGES_TOKEN" \
+            --build-env TURBO_REMOTE_CACHE_SIGNATURE_KEY="$TURBO_REMOTE_CACHE_SIGNATURE_KEY" \
             --token "$VERCEL_TOKEN"
 
   deploy-api:
@@ -98,9 +100,11 @@ jobs:
         run: |
           vercel pull --yes --environment=production --token "$VERCEL_TOKEN"
           vercel deploy --prod --yes \
+            --build-env SKIP_ENV_VALIDATION=true \
             --build-env PKG_AUTH_TOKEN="$GITHUB_PACKAGES_TOKEN" \
             --build-env NPM_TOKEN="$GITHUB_PACKAGES_TOKEN" \
             --build-env NODE_AUTH_TOKEN="$GITHUB_PACKAGES_TOKEN" \
+            --build-env TURBO_REMOTE_CACHE_SIGNATURE_KEY="$TURBO_REMOTE_CACHE_SIGNATURE_KEY" \
             --token "$VERCEL_TOKEN"
 
   deploy-web:
@@ -138,9 +142,11 @@ jobs:
         run: |
           vercel pull --yes --environment=production --token "$VERCEL_TOKEN"
           vercel deploy --prod --yes \
+            --build-env SKIP_ENV_VALIDATION=true \
             --build-env PKG_AUTH_TOKEN="$GITHUB_PACKAGES_TOKEN" \
             --build-env NPM_TOKEN="$GITHUB_PACKAGES_TOKEN" \
             --build-env NODE_AUTH_TOKEN="$GITHUB_PACKAGES_TOKEN" \
+            --build-env TURBO_REMOTE_CACHE_SIGNATURE_KEY="$TURBO_REMOTE_CACHE_SIGNATURE_KEY" \
             --token "$VERCEL_TOKEN"
 
   deploy-docs:
@@ -177,7 +183,9 @@ jobs:
         run: |
           vercel pull --yes --environment=production --token "$VERCEL_TOKEN"
           vercel deploy --prod --yes \
+            --build-env SKIP_ENV_VALIDATION=true \
             --build-env PKG_AUTH_TOKEN="$GITHUB_PACKAGES_TOKEN" \
             --build-env NPM_TOKEN="$GITHUB_PACKAGES_TOKEN" \
             --build-env NODE_AUTH_TOKEN="$GITHUB_PACKAGES_TOKEN" \
+            --build-env TURBO_REMOTE_CACHE_SIGNATURE_KEY="$TURBO_REMOTE_CACHE_SIGNATURE_KEY" \
             --token "$VERCEL_TOKEN"
