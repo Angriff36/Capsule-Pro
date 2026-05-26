@@ -53,7 +53,6 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Deploy app to Vercel
-        working-directory: apps/app
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: |
@@ -88,7 +87,6 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Deploy API to Vercel
-        working-directory: apps/api
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: |
@@ -124,7 +122,6 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Deploy web to Vercel
-        working-directory: apps/web
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: |
@@ -159,7 +156,6 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Deploy docs to Vercel
-        working-directory: apps/docs
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: |
