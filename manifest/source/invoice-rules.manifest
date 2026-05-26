@@ -55,6 +55,8 @@ entity Invoice {
   computed isPaidInFull: boolean = self.amountDue <= 0
   computed isOverdue: boolean = self.status in ["SENT", "VIEWED", "PARTIALLY_PAID"] and self.dueDate < now()
 
+  relationship belongsTo linkedEvent: Event with eventId
+  relationship hasMany payments: Payment
   // Constraints
   constraint amount_non_negative: self.subtotal >= 0 and self.total >= 0 "Amounts cannot be negative"
 

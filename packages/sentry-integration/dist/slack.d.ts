@@ -1,7 +1,7 @@
 /**
  * Slack notification configuration
  */
-export interface SlackConfig {
+interface SlackConfig {
     /** Bot token (xoxb-...) for Web API */
     botToken?: string;
     /** Webhook URL for incoming webhooks */
@@ -12,7 +12,7 @@ export interface SlackConfig {
 /**
  * PR notification payload
  */
-export interface PRNotificationPayload {
+interface PRNotificationPayload {
     prUrl: string;
     prNumber: number;
     issueTitle: string;
@@ -23,7 +23,7 @@ export interface PRNotificationPayload {
 /**
  * Error notification payload
  */
-export interface ErrorNotificationPayload {
+interface ErrorNotificationPayload {
     issueTitle: string;
     issueUrl: string;
     errorMessage: string;
@@ -33,7 +33,7 @@ export interface ErrorNotificationPayload {
 /**
  * Slack notifier for Sentry fixer pipeline
  */
-export declare class SlackNotifier {
+declare class SlackNotifier {
     private readonly client;
     private readonly config;
     constructor(config: SlackConfig);
@@ -73,5 +73,6 @@ export declare class SlackNotifier {
 /**
  * Create a Slack notifier
  */
-export declare const createSlackNotifier: (config: SlackConfig) => SlackNotifier;
-//# sourceMappingURL=slack.d.ts.map
+declare const createSlackNotifier: (config: SlackConfig) => SlackNotifier;
+
+export { type ErrorNotificationPayload, type PRNotificationPayload, type SlackConfig, SlackNotifier, createSlackNotifier };

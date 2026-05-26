@@ -38,6 +38,10 @@ entity Event {
   computed isActive: boolean = self.status == "draft" or self.status == "confirmed"
   computed isLargeEvent: boolean = self.guestCount > 200
 
+  relationship hasMany invoices: Invoice
+  relationship hasMany payments: Payment
+  relationship hasMany budgets: EventBudget
+
   constraint validTitle: self.title != null and self.title != "" "Event title is required"
   constraint validEventType: self.eventType != null and self.eventType != "" "Event type is required"
   constraint validStatus: self.status in ["draft", "confirmed", "completed", "archived", "cancelled"] "Status must be valid"

@@ -1,8 +1,10 @@
-import type { ParsedSentryIssue, StackFrame } from "./types.js";
+import { b as StackFrame, P as ParsedSentryIssue } from './types-CTOtwTcZ.js';
+import 'zod';
+
 /**
  * Configuration for the AI fixer
  */
-export interface FixerConfig {
+interface FixerConfig {
     /** OpenAI API key */
     openaiApiKey: string;
     /** Model to use for analysis */
@@ -19,7 +21,7 @@ export interface FixerConfig {
 /**
  * A single file edit returned by the AI
  */
-export interface FileEdit {
+interface FileEdit {
     filePath: string;
     originalContent: string;
     newContent: string;
@@ -28,7 +30,7 @@ export interface FileEdit {
 /**
  * Result of the AI fix attempt
  */
-export interface FixResult {
+interface FixResult {
     success: boolean;
     edits: FileEdit[];
     analysis: string;
@@ -44,11 +46,11 @@ export interface FixResult {
  * - webpack-internal:///path/to/file.ts
  * - node_modules/...
  */
-export declare function resolveFramePath(frame: StackFrame, workingDir: string): string | null;
+declare function resolveFramePath(frame: StackFrame, workingDir: string): string | null;
 /**
  * Revert applied edits (used when tests fail after applying a fix)
  */
-export declare function revertEdits(edits: FileEdit[], workingDir: string): Promise<void>;
+declare function revertEdits(edits: FileEdit[], workingDir: string): Promise<void>;
 /**
  * Attempt to fix a Sentry issue using AI analysis.
  *
@@ -61,5 +63,6 @@ export declare function revertEdits(edits: FileEdit[], workingDir: string): Prom
  * 4. Apply edits via search-and-replace
  * 5. Return result (caller handles git commit, tests, PR)
  */
-export declare function attemptAIFix(issue: ParsedSentryIssue, config: Partial<FixerConfig> & Pick<FixerConfig, "openaiApiKey" | "workingDir">): Promise<FixResult>;
-//# sourceMappingURL=fixer.d.ts.map
+declare function attemptAIFix(issue: ParsedSentryIssue, config: Partial<FixerConfig> & Pick<FixerConfig, "openaiApiKey" | "workingDir">): Promise<FixResult>;
+
+export { type FileEdit, type FixResult, type FixerConfig, attemptAIFix, resolveFramePath, revertEdits };

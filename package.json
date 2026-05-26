@@ -2,7 +2,7 @@
   "name": "capsule-pro",
   "private": true,
   "dependencies": {
-    "@angriff36/manifest": "1.0.5",
+    "@angriff36/manifest": "1.0.15",
     "@prisma/adapter-neon": "7.3.0",
     "@prisma/client": "7.3.0",
     "ai": "^6.0.70",
@@ -111,6 +111,7 @@
     "manifest:route-audit": "pnpm exec manifest audit-routes --root apps/api --commands-manifest manifest/runtime/commands.registry.json --exemptions manifest/governance/audit-routes-exemptions.json",
     "manifest:routes:ir": "tsx manifest/scripts/generate-route-manifest.ts",
     "manifest:validate": "pnpm exec manifest validate manifest/ir/kitchen.ir.json",
+    "manifest:validate-ai": "pnpm exec manifest validate-ai manifest/ir/kitchen.ir.json --min-score 80",
     "manifest:registries": "node manifest/scripts/emit-registries.mjs",
     "manifest:audit-direct-writes": "node manifest/scripts/audit-direct-writes.mjs",
     "manifest:audit-direct-writes:strict": "node manifest/scripts/audit-direct-writes.mjs --strict",

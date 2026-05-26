@@ -80,13 +80,13 @@ export async function getTimelineTasks(eventId: string) {
         t.event_id,
         t.title,
         t.description,
-        t.startTime,
-        t.endTime,
+        t.start_time,
+        t.end_time,
         t.status,
         t.priority,
         t.category,
         t.assignee_id,
-        u.first_name || '' || u.last_name || '' as assignee_name,
+        u.first_name || ' ' || u.last_name as assignee_name,
         t.progress,
         COALESCE(t.dependencies, ARRAY[]::text[]) as dependencies,
         t.is_on_critical_path,
@@ -99,7 +99,7 @@ export async function getTimelineTasks(eventId: string) {
       WHERE t.tenant_id = $1
         AND t.event_id = $2
         AND t.deleted_at IS NULL
-      ORDER BY t.startTime ASC`,
+      ORDER BY t.start_time ASC`,
     tenantId,
     eventId
   );

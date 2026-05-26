@@ -14,6 +14,7 @@ import { database, type Prisma } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { type NextRequest, NextResponse } from "next/server";
 import { requireTenantId } from "@/app/lib/tenant";
+import { createManifestRuntime } from "@/lib/manifest-runtime";
 import {
   extractIdempotencyKey,
   IdempotencyKeyError,
@@ -244,6 +245,129 @@ export async function POST(request: NextRequest) {
         gatewayTransactionId: paymentNumber,
         processor: body.processor || null,
         processedAt: new Date(),
+      },
+    });
+
+    // ── Manifest-governed payment processing ──
+    // Process the payment through Manifest's command layer, which handles
+    // status transitions, event emission, and cross-entity updates.
+    const manifestRuntime = await createManifestRuntime({
+      user: {
+        id: invoice.clientId,
+        tenantId,
+        role: "manager", // TODO: derive from actual auth context
+      },
+    });
+
+    const processResult = await manifestRuntime.runCommand(
+      "process",
+      { gatewayTransactionId: paymentNumber },
+      { entityName: "Payment", instanceId: payment.id }
+    );
+
+    if (!processResult.success) {
+      // Payment could not be processed — mark as FAILED and return error.
+      // The row exists (created via Prisma) but Manifest rejected the command.
+      await database.payment.update({
+        where: { id: payment.id },
+        data: { status: "FAILED" },
+      });
+      log.error("Payment.process via Manifest failed", {
+        paymentId: payment.id,
+        invoiceId: body.invoiceId,
+        error: processResult.error,
+      });
+      return NextResponse.json(
+        { error: `Payment processing failed: ${processResult.error ?? "manifest rejection"}` },
+        { status: 500 }
+      );
+    }
+
+    // Apply payment to the linked invoice
+    const applyResult = await manifestRuntime.runCommand(
+      "applyPayment",
+      { paymentAmount: body.amount, paymentId: payment.id },
+      { entityName: "Invoice", instanceId: body.invoiceId }
+    );
+
+    if (!applyResult.success) {
+      // Payment is COMPLETED but couldn't be applied to the invoice.
+      // Common cause: invoice is DRAFT (guard requires SENT/VIEWED/OVERDUE/PARTIALLY_PAID).
+      // Mark as accepted-but-not-applied so this state is visible and recoverable.
+      await database.payment.update({
+        where: { id: payment.id },
+        data: { status: "ACCEPTED_NOT_APPLIED" },
+      });
+      log.warn("Invoice.applyPayment via Manifest failed — payment accepted but not applied to invoice", {
+        invoiceId: body.invoiceId,
+        paymentId: payment.id,
+        error: applyResult.error,
+      });
+
+      // Write activity feed entry for the partial success
+      await database.activityFeed.create({
+        data: {
+          tenantId,
+          activityType: "payment",
+          entityType: "Payment",
+          entityId: payment.id,
+          action: "process",
+          title: `Payment of $${body.amount} accepted (not applied to invoice)`,
+          description: `Payment for invoice ${body.invoiceId} on event ${body.eventId} via ${body.methodType}. Apply failed: ${applyResult.error}`,
+          metadata: {
+            invoiceId: body.invoiceId,
+            eventId: body.eventId,
+            amount: body.amount,
+            paymentNumber,
+            manifestProcessed: true,
+            invoiceUpdated: false,
+            applyError: applyResult.error,
+          },
+          performedBy: invoice.clientId,
+          sourceType: "Payment",
+          sourceId: payment.id,
+          importance: "high",
+          visibility: "all",
+          createdAt: new Date(),
+        },
+      });
+
+      const acceptedResponse: PaymentResponse = {
+        ...payment,
+        amount: payment.amount.toString(),
+        status: "ACCEPTED_NOT_APPLIED" as PaymentResponse["status"],
+      };
+
+      return NextResponse.json<PaymentResponse & { warning: string }>(
+        { ...acceptedResponse, warning: `Payment accepted but not applied to invoice: ${applyResult.error}` },
+        { status: 201 }
+      );
+    }
+
+    // ── Activity feed audit entry (full success path) ──
+    await database.activityFeed.create({
+      data: {
+        tenantId,
+        activityType: "payment",
+        entityType: "Payment",
+        entityId: payment.id,
+        action: "process",
+        title: `Payment of $${body.amount} processed`,
+        description: `Payment for invoice ${body.invoiceId} on event ${body.eventId} via ${body.methodType}`,
+        metadata: {
+          invoiceId: body.invoiceId,
+          eventId: body.eventId,
+          amount: body.amount,
+          paymentNumber,
+          manifestProcessed: true,
+          invoiceUpdated: true,
+        },
+        performedBy: invoice.clientId,
+        sourceType: "Payment",
+        sourceId: payment.id,
+        importance: "normal",
+        visibility: "all",
+        createdAt: new Date(),
       },
     });
 

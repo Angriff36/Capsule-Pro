@@ -1,7 +1,7 @@
 /**
  * Environment keys for Sentry integration
  */
-export declare const keys: () => Readonly<{
+declare const keys: () => Readonly<{
     SENTRY_CLIENT_SECRET?: string | undefined;
     SLACK_BOT_TOKEN?: string | undefined;
     SLACK_WEBHOOK_URL?: string | undefined;
@@ -19,5 +19,6 @@ export declare const keys: () => Readonly<{
     SENTRY_FIXER_MAX_EXECUTION_MS: number;
     SENTRY_FIXER_BLOCKED_PATHS: string;
 }>;
-export type SentryEnv = ReturnType<typeof keys>;
-//# sourceMappingURL=keys.d.ts.map
+type SentryEnv = ReturnType<typeof keys>;
+
+export { type SentryEnv, keys };

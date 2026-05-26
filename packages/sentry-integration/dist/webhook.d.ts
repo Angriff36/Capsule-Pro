@@ -1,5 +1,6 @@
-import type { ParsedSentryIssue, SentryIssueAlertPayload } from "./types.js";
-export type { SentryIssueAlertPayload };
+import { a as SentryIssueAlertPayload, P as ParsedSentryIssue } from './types-CTOtwTcZ.js';
+import 'zod';
+
 /**
  * Verify Sentry webhook signature using HMAC-SHA256
  *
@@ -11,29 +12,29 @@ export type { SentryIssueAlertPayload };
  * @param secret - Your Sentry internal integration client secret
  * @returns true if signature is valid
  */
-export declare const verifySentrySignature: (body: string, signature: string, secret: string) => boolean;
+declare const verifySentrySignature: (body: string, signature: string, secret: string) => boolean;
 /**
  * Validate and parse Sentry webhook payload
  *
  * @param payload - Raw JSON payload from webhook
  * @returns Parsed and validated payload or throws on validation error
  */
-export declare const parseSentryWebhookPayload: (payload: unknown) => SentryIssueAlertPayload;
+declare const parseSentryWebhookPayload: (payload: unknown) => SentryIssueAlertPayload;
 /**
  * Parse Sentry Issue Alert payload into a structured format for job processing
  *
  * @param payload - Validated Sentry webhook payload
  * @returns Structured data for job processing
  */
-export declare const parseSentryIssue: (payload: SentryIssueAlertPayload) => ParsedSentryIssue;
+declare const parseSentryIssue: (payload: SentryIssueAlertPayload) => ParsedSentryIssue;
 /**
  * Check if webhook resource type is an issue alert
  */
-export declare const isIssueAlertWebhook: (resourceHeader: string | null) => boolean;
+declare const isIssueAlertWebhook: (resourceHeader: string | null) => boolean;
 /**
  * Webhook headers expected from Sentry
  */
-export interface SentryWebhookHeaders {
+interface SentryWebhookHeaders {
     sentryHookSignature: string | null;
     sentryHookTimestamp: string | null;
     sentryHookResource: string | null;
@@ -42,5 +43,6 @@ export interface SentryWebhookHeaders {
 /**
  * Extract Sentry webhook headers from request headers
  */
-export declare const extractSentryHeaders: (headers: Headers) => SentryWebhookHeaders;
-//# sourceMappingURL=webhook.d.ts.map
+declare const extractSentryHeaders: (headers: Headers) => SentryWebhookHeaders;
+
+export { SentryIssueAlertPayload, type SentryWebhookHeaders, extractSentryHeaders, isIssueAlertWebhook, parseSentryIssue, parseSentryWebhookPayload, verifySentrySignature };

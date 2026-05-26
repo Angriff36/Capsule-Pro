@@ -20,6 +20,7 @@ entity EventBudget {
   computed isApproved: boolean = self.status == "approved"
   computed isFinalized: boolean = self.status == "finalized"
   computed isOverBudget: boolean = self.totalActualAmount > self.totalBudgetAmount
+  relationship belongsTo linkedEvent: Event with eventId
   computed hasVariance: boolean = self.varianceAmount != 0
   computed varianceExceedsThreshold: boolean = self.variancePercentage > 10 or self.variancePercentage < -10
 

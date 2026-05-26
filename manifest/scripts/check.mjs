@@ -164,6 +164,40 @@ if (withCli) {
   }
 }
 
+// AI-assisted IR validation (schema, semantic checks, coverage scoring)
+const aiResult = spawnSync(
+  process.platform === "win32" ? "pnpm.cmd" : "pnpm",
+  ["exec", "manifest", "validate-ai", "manifest/ir/kitchen.ir.json", "--min-score", "80", "--format", "json"],
+  { stdio: "pipe", shell: process.platform === "win32" }
+);
+if (aiResult.status !== 0) {
+  try {
+    const parsed = JSON.parse(aiResult.stdout.toString());
+    const report = parsed.reports?.[0];
+    console.error(
+      `[manifest/check] AI IR validation FAILED (score ${parsed.overallScore}, min ${parsed.minScore})`
+    );
+    if (report?.diagnostics) {
+      for (const d of report.diagnostics.filter(d => d.severity !== 'info')) {
+        console.error(`  [${d.severity}] ${d.message}`);
+      }
+    }
+    ok = false;
+  } catch {
+    console.error("[manifest/check] AI IR validation FAILED. Check manifest/ir/kitchen.ir.json integrity.");
+    ok = false;
+  }
+} else {
+  try {
+    const parsed = JSON.parse(aiResult.stdout.toString());
+    console.log(
+      `[manifest/check] AI IR validation PASSED (score ${parsed.overallScore}, threshold ${parsed.minScore})`
+    );
+  } catch {
+    console.log("[manifest/check] AI IR validation PASSED");
+  }
+}
+
 if (ok) {
   console.log("[manifest/check] All checks passed!");
 }

@@ -272,6 +272,12 @@ export function mergeIrs(irsOrEntries, provenance) {
     (command) => `${command.entity}.${command.name}`,
     "command"
   );
+  const enumsResult = mergeBy(
+    entries,
+    (ir) => ir.enums ?? [],
+    (en) => en.name,
+    "enum"
+  );
   const policiesResult = mergeBy(
     entries,
     (ir) => ir.policies ?? [],
@@ -286,6 +292,7 @@ export function mergeIrs(irsOrEntries, provenance) {
     ...eventsResult.drops,
     ...commandsResult.drops,
     ...policiesResult.drops,
+    ...enumsResult.drops,
   ].sort((a, b) => {
     const typeCompare = a.type.localeCompare(b.type);
     if (typeCompare !== 0) {
@@ -311,6 +318,7 @@ export function mergeIrs(irsOrEntries, provenance) {
       events: eventsResult.keptItems.length,
       commands: commandsResult.keptItems.length,
       policies: policiesResult.keptItems.length,
+      enums: enumsResult.keptItems.length,
     },
     droppedDuplicates,
   };
@@ -320,6 +328,7 @@ export function mergeIrs(irsOrEntries, provenance) {
       version: "1.0",
       provenance,
       modules: modulesResult.keptItems,
+      enums: enumsResult.keptItems,
       entities: entitiesResult.keptItems,
       stores: storesResult.keptItems,
       events: eventsResult.keptItems,

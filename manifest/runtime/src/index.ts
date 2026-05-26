@@ -737,6 +737,14 @@ export async function createKitchenOpsRuntime(context: KitchenOpsContext) {
       ...menuIR.entities,
       ...prepListIR.entities,
     ],
+    enums: [
+      ...(prepTaskIR.enums || []),
+      ...(stationIR.enums || []),
+      ...(inventoryIR.enums || []),
+      ...(recipeIR.enums || []),
+      ...(menuIR.enums || []),
+      ...(prepListIR.enums || []),
+    ],
     stores: [
       ...(prepTaskIR.stores || []),
       ...(stationIR.stores || []),

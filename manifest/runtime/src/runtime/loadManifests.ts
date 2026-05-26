@@ -258,6 +258,7 @@ async function compileManifestSet(
     },
     modules: compiledIRs.flatMap((ir) => ir.modules || []),
     entities: compiledIRs.flatMap((ir) => ir.entities || []),
+    enums: compiledIRs.flatMap((ir) => ir.enums || []),
     stores: compiledIRs.flatMap((ir) => ir.stores || []),
     events: compiledIRs.flatMap((ir) => ir.events || []),
     commands: compiledIRs.flatMap((ir) => ir.commands || []),

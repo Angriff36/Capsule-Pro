@@ -1,9 +1,12 @@
-import type { PrismaClient } from "@repo/database";
-import type { CreateJobInput, JobQueueStore, SentryFixJobRecord, UpdateJobInput } from "./queue.js";
+import { PrismaClient } from '@repo/database';
+import { JobQueueStore, CreateJobInput, SentryFixJobRecord, UpdateJobInput } from './queue.js';
+import './types-CTOtwTcZ.js';
+import 'zod';
+
 /**
  * Prisma-based job store for persistent queue
  */
-export declare class PrismaJobStore implements JobQueueStore {
+declare class PrismaJobStore implements JobQueueStore {
     private readonly prisma;
     constructor(prisma: PrismaClient);
     create(input: CreateJobInput): Promise<SentryFixJobRecord>;
@@ -22,5 +25,6 @@ export declare class PrismaJobStore implements JobQueueStore {
 /**
  * Create a Prisma-backed job store
  */
-export declare const createPrismaJobStore: (prisma: PrismaClient) => PrismaJobStore;
-//# sourceMappingURL=prisma-store.d.ts.map
+declare const createPrismaJobStore: (prisma: PrismaClient) => PrismaJobStore;
+
+export { PrismaJobStore, createPrismaJobStore };

@@ -68,6 +68,12 @@ export const COMMAND_PERMISSION_MAP: Record<string, Permission> = {
   "PrepTask.claim": "prep_tasks.claim",
   "PrepTask.delete": "prep_tasks.delete",
 
+  // Payments
+  "Payment.process": "payments.process",
+  "Payment.refund": "payments.refund",
+  "Invoice.applyPayment": "payments.process",
+  "Invoice.markAsPaid": "payments.process",
+
   // Settings
   "RolePolicy.update": "settings.manage",
   "RolePolicy.grant": "settings.manage",
