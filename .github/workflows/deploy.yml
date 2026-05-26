@@ -41,21 +41,21 @@ jobs:
 
       - name: Verify Infisical access
         run: |
-          infisical run --env="$INFISICAL_ENV" --path="$INFISICAL_TARGET_PATH" --path="$INFISICAL_SHARED_PATH" -- printenv VERCEL_PROJECT_ID >/dev/null
-          infisical run --env="$INFISICAL_ENV" --path="$INFISICAL_TARGET_PATH" --path="$INFISICAL_SHARED_PATH" -- printenv VERCEL_ORG_ID >/dev/null
-          infisical run --env="$INFISICAL_ENV" --path="$INFISICAL_TARGET_PATH" --path="$INFISICAL_SHARED_PATH" -- printenv VERCEL_TOKEN >/dev/null
-          infisical run --env="$INFISICAL_ENV" --path="$INFISICAL_TARGET_PATH" --path="$INFISICAL_SHARED_PATH" -- printenv NPM_TOKEN >/dev/null
+          infisical run --projectId=d8319856-8caf-4c22-8717-57ab28b326b3 --env="$INFISICAL_ENV" --path="$INFISICAL_TARGET_PATH" --path="$INFISICAL_SHARED_PATH" -- printenv VERCEL_PROJECT_ID >/dev/null
+          infisical run --projectId=d8319856-8caf-4c22-8717-57ab28b326b3 --env="$INFISICAL_ENV" --path="$INFISICAL_TARGET_PATH" --path="$INFISICAL_SHARED_PATH" -- printenv VERCEL_ORG_ID >/dev/null
+          infisical run --projectId=d8319856-8caf-4c22-8717-57ab28b326b3 --env="$INFISICAL_ENV" --path="$INFISICAL_TARGET_PATH" --path="$INFISICAL_SHARED_PATH" -- printenv VERCEL_TOKEN >/dev/null
+          infisical run --projectId=d8319856-8caf-4c22-8717-57ab28b326b3 --env="$INFISICAL_ENV" --path="$INFISICAL_TARGET_PATH" --path="$INFISICAL_SHARED_PATH" -- printenv NPM_TOKEN >/dev/null
 
       - name: Install dependencies
         run: |
-          infisical run --env="$INFISICAL_ENV" --path="$INFISICAL_TARGET_PATH" --path="$INFISICAL_SHARED_PATH" -- bash -lc '
+          infisical run --projectId=d8319856-8caf-4c22-8717-57ab28b326b3 --env="$INFISICAL_ENV" --path="$INFISICAL_TARGET_PATH" --path="$INFISICAL_SHARED_PATH" -- bash -lc '
             bash scripts/ensure-github-packages-npmrc.sh
             pnpm install --frozen-lockfile
           '
 
       - name: Deploy app to Vercel
         run: |
-          infisical run --env="$INFISICAL_ENV" --path="$INFISICAL_TARGET_PATH" --path="$INFISICAL_SHARED_PATH" -- bash -lc '
+          infisical run --projectId=d8319856-8caf-4c22-8717-57ab28b326b3 --env="$INFISICAL_ENV" --path="$INFISICAL_TARGET_PATH" --path="$INFISICAL_SHARED_PATH" -- bash -lc '
             cd apps/app
             vercel pull --yes --environment=production --token "$VERCEL_TOKEN"
             vercel build --prod --token "$VERCEL_TOKEN"
@@ -86,21 +86,21 @@ jobs:
 
       - name: Verify Infisical access
         run: |
-          infisical run --env="$INFISICAL_ENV" --path="$INFISICAL_TARGET_PATH" --path="$INFISICAL_SHARED_PATH" -- printenv VERCEL_PROJECT_ID >/dev/null
-          infisical run --env="$INFISICAL_ENV" --path="$INFISICAL_TARGET_PATH" --path="$INFISICAL_SHARED_PATH" -- printenv VERCEL_ORG_ID >/dev/null
-          infisical run --env="$INFISICAL_ENV" --path="$INFISICAL_TARGET_PATH" --path="$INFISICAL_SHARED_PATH" -- printenv VERCEL_TOKEN >/dev/null
-          infisical run --env="$INFISICAL_ENV" --path="$INFISICAL_TARGET_PATH" --path="$INFISICAL_SHARED_PATH" -- printenv NPM_TOKEN >/dev/null
+          infisical run --projectId=d8319856-8caf-4c22-8717-57ab28b326b3 --env="$INFISICAL_ENV" --path="$INFISICAL_TARGET_PATH" --path="$INFISICAL_SHARED_PATH" -- printenv VERCEL_PROJECT_ID >/dev/null
+          infisical run --projectId=d8319856-8caf-4c22-8717-57ab28b326b3 --env="$INFISICAL_ENV" --path="$INFISICAL_TARGET_PATH" --path="$INFISICAL_SHARED_PATH" -- printenv VERCEL_ORG_ID >/dev/null
+          infisical run --projectId=d8319856-8caf-4c22-8717-57ab28b326b3 --env="$INFISICAL_ENV" --path="$INFISICAL_TARGET_PATH" --path="$INFISICAL_SHARED_PATH" -- printenv VERCEL_TOKEN >/dev/null
+          infisical run --projectId=d8319856-8caf-4c22-8717-57ab28b326b3 --env="$INFISICAL_ENV" --path="$INFISICAL_TARGET_PATH" --path="$INFISICAL_SHARED_PATH" -- printenv NPM_TOKEN >/dev/null
 
       - name: Install dependencies
         run: |
-          infisical run --env="$INFISICAL_ENV" --path="$INFISICAL_TARGET_PATH" --path="$INFISICAL_SHARED_PATH" -- bash -lc '
+          infisical run --projectId=d8319856-8caf-4c22-8717-57ab28b326b3 --env="$INFISICAL_ENV" --path="$INFISICAL_TARGET_PATH" --path="$INFISICAL_SHARED_PATH" -- bash -lc '
             bash scripts/ensure-github-packages-npmrc.sh
             pnpm install --frozen-lockfile
           '
 
       - name: Deploy api to Vercel
         run: |
-          infisical run --env="$INFISICAL_ENV" --path="$INFISICAL_TARGET_PATH" --path="$INFISICAL_SHARED_PATH" -- bash -lc '
+          infisical run --projectId=d8319856-8caf-4c22-8717-57ab28b326b3 --env="$INFISICAL_ENV" --path="$INFISICAL_TARGET_PATH" --path="$INFISICAL_SHARED_PATH" -- bash -lc '
             cd apps/api
             vercel pull --yes --environment=production --token "$VERCEL_TOKEN"
             vercel build --prod --token "$VERCEL_TOKEN"
@@ -131,21 +131,21 @@ jobs:
 
       - name: Verify Infisical access
         run: |
-          infisical run --env="$INFISICAL_ENV" --path="$INFISICAL_TARGET_PATH" --path="$INFISICAL_SHARED_PATH" -- printenv VERCEL_PROJECT_ID >/dev/null
-          infisical run --env="$INFISICAL_ENV" --path="$INFISICAL_TARGET_PATH" --path="$INFISICAL_SHARED_PATH" -- printenv VERCEL_ORG_ID >/dev/null
-          infisical run --env="$INFISICAL_ENV" --path="$INFISICAL_TARGET_PATH" --path="$INFISICAL_SHARED_PATH" -- printenv VERCEL_TOKEN >/dev/null
-          infisical run --env="$INFISICAL_ENV" --path="$INFISICAL_TARGET_PATH" --path="$INFISICAL_SHARED_PATH" -- printenv NPM_TOKEN >/dev/null
+          infisical run --projectId=d8319856-8caf-4c22-8717-57ab28b326b3 --env="$INFISICAL_ENV" --path="$INFISICAL_TARGET_PATH" --path="$INFISICAL_SHARED_PATH" -- printenv VERCEL_PROJECT_ID >/dev/null
+          infisical run --projectId=d8319856-8caf-4c22-8717-57ab28b326b3 --env="$INFISICAL_ENV" --path="$INFISICAL_TARGET_PATH" --path="$INFISICAL_SHARED_PATH" -- printenv VERCEL_ORG_ID >/dev/null
+          infisical run --projectId=d8319856-8caf-4c22-8717-57ab28b326b3 --env="$INFISICAL_ENV" --path="$INFISICAL_TARGET_PATH" --path="$INFISICAL_SHARED_PATH" -- printenv VERCEL_TOKEN >/dev/null
+          infisical run --projectId=d8319856-8caf-4c22-8717-57ab28b326b3 --env="$INFISICAL_ENV" --path="$INFISICAL_TARGET_PATH" --path="$INFISICAL_SHARED_PATH" -- printenv NPM_TOKEN >/dev/null
 
       - name: Install dependencies
         run: |
-          infisical run --env="$INFISICAL_ENV" --path="$INFISICAL_TARGET_PATH" --path="$INFISICAL_SHARED_PATH" -- bash -lc '
+          infisical run --projectId=d8319856-8caf-4c22-8717-57ab28b326b3 --env="$INFISICAL_ENV" --path="$INFISICAL_TARGET_PATH" --path="$INFISICAL_SHARED_PATH" -- bash -lc '
             bash scripts/ensure-github-packages-npmrc.sh
             pnpm install --frozen-lockfile
           '
 
       - name: Deploy docs to Vercel
         run: |
-          infisical run --env="$INFISICAL_ENV" --path="$INFISICAL_TARGET_PATH" --path="$INFISICAL_SHARED_PATH" -- bash -lc '
+          infisical run --projectId=d8319856-8caf-4c22-8717-57ab28b326b3 --env="$INFISICAL_ENV" --path="$INFISICAL_TARGET_PATH" --path="$INFISICAL_SHARED_PATH" -- bash -lc '
             cd apps/docs
             vercel pull --yes --environment=production --token "$VERCEL_TOKEN"
             vercel build --prod --token "$VERCEL_TOKEN"
@@ -176,22 +176,22 @@ jobs:
 
       - name: Verify Infisical access
         run: |
-          infisical run --env="$INFISICAL_ENV" --path="$INFISICAL_TARGET_PATH" --path="$INFISICAL_SHARED_PATH" -- printenv VERCEL_PROJECT_ID >/dev/null
-          infisical run --env="$INFISICAL_ENV" --path="$INFISICAL_TARGET_PATH" --path="$INFISICAL_SHARED_PATH" -- printenv VERCEL_ORG_ID >/dev/null
-          infisical run --env="$INFISICAL_ENV" --path="$INFISICAL_TARGET_PATH" --path="$INFISICAL_SHARED_PATH" -- printenv VERCEL_TOKEN >/dev/null
-          infisical run --env="$INFISICAL_ENV" --path="$INFISICAL_TARGET_PATH" --path="$INFISICAL_SHARED_PATH" -- printenv NPM_TOKEN >/dev/null
-          infisical run --env="$INFISICAL_ENV" --path="$INFISICAL_TARGET_PATH" --path="$INFISICAL_SHARED_PATH" -- printenv BASEHUB_TOKEN >/dev/null
+          infisical run --projectId=d8319856-8caf-4c22-8717-57ab28b326b3 --env="$INFISICAL_ENV" --path="$INFISICAL_TARGET_PATH" --path="$INFISICAL_SHARED_PATH" -- printenv VERCEL_PROJECT_ID >/dev/null
+          infisical run --projectId=d8319856-8caf-4c22-8717-57ab28b326b3 --env="$INFISICAL_ENV" --path="$INFISICAL_TARGET_PATH" --path="$INFISICAL_SHARED_PATH" -- printenv VERCEL_ORG_ID >/dev/null
+          infisical run --projectId=d8319856-8caf-4c22-8717-57ab28b326b3 --env="$INFISICAL_ENV" --path="$INFISICAL_TARGET_PATH" --path="$INFISICAL_SHARED_PATH" -- printenv VERCEL_TOKEN >/dev/null
+          infisical run --projectId=d8319856-8caf-4c22-8717-57ab28b326b3 --env="$INFISICAL_ENV" --path="$INFISICAL_TARGET_PATH" --path="$INFISICAL_SHARED_PATH" -- printenv NPM_TOKEN >/dev/null
+          infisical run --projectId=d8319856-8caf-4c22-8717-57ab28b326b3 --env="$INFISICAL_ENV" --path="$INFISICAL_TARGET_PATH" --path="$INFISICAL_SHARED_PATH" -- printenv BASEHUB_TOKEN >/dev/null
 
       - name: Install dependencies
         run: |
-          infisical run --env="$INFISICAL_ENV" --path="$INFISICAL_TARGET_PATH" --path="$INFISICAL_SHARED_PATH" -- bash -lc '
+          infisical run --projectId=d8319856-8caf-4c22-8717-57ab28b326b3 --env="$INFISICAL_ENV" --path="$INFISICAL_TARGET_PATH" --path="$INFISICAL_SHARED_PATH" -- bash -lc '
             bash scripts/ensure-github-packages-npmrc.sh
             pnpm install --frozen-lockfile
           '
 
       - name: Generate CMS code
         run: |
-          infisical run --env="$INFISICAL_ENV" --path="$INFISICAL_TARGET_PATH" --path="$INFISICAL_SHARED_PATH" -- bash -lc '
+          infisical run --projectId=d8319856-8caf-4c22-8717-57ab28b326b3 --env="$INFISICAL_ENV" --path="$INFISICAL_TARGET_PATH" --path="$INFISICAL_SHARED_PATH" -- bash -lc '
             pnpm --filter @repo/cms build
             cd apps/web
             npx basehub
@@ -199,7 +199,7 @@ jobs:
 
       - name: Deploy web to Vercel
         run: |
-          infisical run --env="$INFISICAL_ENV" --path="$INFISICAL_TARGET_PATH" --path="$INFISICAL_SHARED_PATH" -- bash -lc '
+          infisical run --projectId=d8319856-8caf-4c22-8717-57ab28b326b3 --env="$INFISICAL_ENV" --path="$INFISICAL_TARGET_PATH" --path="$INFISICAL_SHARED_PATH" -- bash -lc '
             cd apps/web
             vercel pull --yes --environment=production --token "$VERCEL_TOKEN"
             vercel build --prod --token "$VERCEL_TOKEN"
