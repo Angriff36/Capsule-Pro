@@ -1,5 +1,3 @@
-import type { LegalPost } from "@repo/cms";
-
 export interface NavigationItem {
   title: string;
   href?: string;
@@ -12,11 +10,16 @@ export interface SubNavigationItem {
   href: string;
 }
 
+interface FooterLegalPage {
+  _slug: string;
+  _title?: string;
+}
+
 /**
  * Build footer navigation items with legal pages from CMS
  */
 export function buildFooterNavigationItems(
-  legalPages: LegalPost[],
+  legalPages: FooterLegalPage[],
   docsUrl?: string
 ): NavigationItem[] {
   const navigationItems: NavigationItem[] = [
@@ -39,7 +42,7 @@ export function buildFooterNavigationItems(
       title: "Legal",
       description: "We stay on top of the latest legal requirements.",
       items: legalPages.map((post) => ({
-        title: post._title,
+        title: post._title ?? post._slug,
         href: `/legal/${post._slug}`,
       })),
     },
