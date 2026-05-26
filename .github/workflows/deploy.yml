@@ -1,5 +1,18 @@
 name: Deploy
 
+# Production only. Triggered manually via Actions → Deploy → Run workflow.
+# Git pushes do not deploy (vercel.json ignoreCommand skips Vercel Git builds).
+#
+# Pipeline follows canonical Vercel CI/CD:
+#   https://vercel.com/docs/git/vercel-for-github#using-github-actions
+#   vercel pull   --yes --environment=production --token=$VERCEL_TOKEN
+#   vercel build  --prod                          --token=$VERCEL_TOKEN
+#   vercel deploy --prebuilt --prod               --token=$VERCEL_TOKEN
+#
+# `vercel pull` writes .vercel/.env.production.local with secrets from
+# Vercel project settings. Runtime secrets (DATABASE_URL, CLERK_*, etc.)
+# live in Vercel — NOT in GitHub Actions env.
+
 on:
   workflow_dispatch:
 
@@ -12,17 +25,18 @@ permissions:
   packages: read
 
 env:
-  INFISICAL_DISABLE_UPDATE_CHECK: "true"
-  INFISICAL_ENV: prod
-  INFISICAL_SHARED_PATH: /apps/capsule-pro/shared
+  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+  TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
+  TURBO_REMOTE_CACHE_SIGNATURE_KEY: ${{ secrets.TURBO_REMOTE_CACHE_SIGNATURE_KEY }}
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  NPM_TOKEN: ${{ secrets.PKG_AUTH_TOKEN }}
 
 jobs:
   deploy-app:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
-      INFISICAL_TOKEN: ${{ secrets.INFISICAL_TOKEN }}
-      INFISICAL_TARGET_PATH: /apps/capsule-pro/app
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_APP }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -36,38 +50,29 @@ jobs:
           node-version-file: '.nvmrc'
           cache: 'pnpm'
 
-      - name: Install CLIs
-        run: npm install -g @infisical/cli vercel@53.1.0
-
-      - name: Verify Infisical access
-        run: |
-          infisical run --projectId=d8319856-8caf-4c22-8717-57ab28b326b3 --env="$INFISICAL_ENV" --path="$INFISICAL_TARGET_PATH" --path="$INFISICAL_SHARED_PATH" -- printenv VERCEL_PROJECT_ID >/dev/null
-          infisical run --projectId=d8319856-8caf-4c22-8717-57ab28b326b3 --env="$INFISICAL_ENV" --path="$INFISICAL_TARGET_PATH" --path="$INFISICAL_SHARED_PATH" -- printenv VERCEL_ORG_ID >/dev/null
-          infisical run --projectId=d8319856-8caf-4c22-8717-57ab28b326b3 --env="$INFISICAL_ENV" --path="$INFISICAL_TARGET_PATH" --path="$INFISICAL_SHARED_PATH" -- printenv VERCEL_TOKEN >/dev/null
-          infisical run --projectId=d8319856-8caf-4c22-8717-57ab28b326b3 --env="$INFISICAL_ENV" --path="$INFISICAL_TARGET_PATH" --path="$INFISICAL_SHARED_PATH" -- printenv NPM_TOKEN >/dev/null
+      - name: Install Vercel CLI
+        run: npm install -g vercel@53.1.0
 
       - name: Install dependencies
-        run: |
-          infisical run --projectId=d8319856-8caf-4c22-8717-57ab28b326b3 --env="$INFISICAL_ENV" --path="$INFISICAL_TARGET_PATH" --path="$INFISICAL_SHARED_PATH" -- bash -lc '
-            bash scripts/ensure-github-packages-npmrc.sh
-            pnpm install --frozen-lockfile
-          '
+        env:
+          NPM_CONFIG_REGISTRY: "https://npm.pkg.github.com"
+          NODE_AUTH_TOKEN: ${{ secrets.PKG_AUTH_TOKEN }}
+        run: pnpm install --frozen-lockfile
 
       - name: Deploy app to Vercel
+        working-directory: apps/app
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: |
-          infisical run --projectId=d8319856-8caf-4c22-8717-57ab28b326b3 --env="$INFISICAL_ENV" --path="$INFISICAL_TARGET_PATH" --path="$INFISICAL_SHARED_PATH" -- bash -lc '
-            cd apps/app
-            vercel pull --yes --environment=production --token "$VERCEL_TOKEN"
-            vercel build --prod --token "$VERCEL_TOKEN"
-            vercel deploy --prebuilt --prod --token "$VERCEL_TOKEN"
-          '
+          vercel pull --yes --environment=production --token "$VERCEL_TOKEN"
+          vercel build --prod --token "$VERCEL_TOKEN"
+          vercel deploy --prebuilt --prod --token "$VERCEL_TOKEN"
 
   deploy-api:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
-      INFISICAL_TOKEN: ${{ secrets.INFISICAL_TOKEN }}
-      INFISICAL_TARGET_PATH: /apps/capsule-pro/api
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_API }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -81,83 +86,30 @@ jobs:
           node-version-file: '.nvmrc'
           cache: 'pnpm'
 
-      - name: Install CLIs
-        run: npm install -g @infisical/cli vercel@53.1.0
-
-      - name: Verify Infisical access
-        run: |
-          infisical run --projectId=d8319856-8caf-4c22-8717-57ab28b326b3 --env="$INFISICAL_ENV" --path="$INFISICAL_TARGET_PATH" --path="$INFISICAL_SHARED_PATH" -- printenv VERCEL_PROJECT_ID >/dev/null
-          infisical run --projectId=d8319856-8caf-4c22-8717-57ab28b326b3 --env="$INFISICAL_ENV" --path="$INFISICAL_TARGET_PATH" --path="$INFISICAL_SHARED_PATH" -- printenv VERCEL_ORG_ID >/dev/null
-          infisical run --projectId=d8319856-8caf-4c22-8717-57ab28b326b3 --env="$INFISICAL_ENV" --path="$INFISICAL_TARGET_PATH" --path="$INFISICAL_SHARED_PATH" -- printenv VERCEL_TOKEN >/dev/null
-          infisical run --projectId=d8319856-8caf-4c22-8717-57ab28b326b3 --env="$INFISICAL_ENV" --path="$INFISICAL_TARGET_PATH" --path="$INFISICAL_SHARED_PATH" -- printenv NPM_TOKEN >/dev/null
+      - name: Install Vercel CLI
+        run: npm install -g vercel@53.1.0
 
       - name: Install dependencies
+        env:
+          NPM_CONFIG_REGISTRY: "https://npm.pkg.github.com"
+          NODE_AUTH_TOKEN: ${{ secrets.PKG_AUTH_TOKEN }}
+        run: pnpm install --frozen-lockfile
+
+      - name: Deploy API to Vercel
+        working-directory: apps/api
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: |
-          infisical run --projectId=d8319856-8caf-4c22-8717-57ab28b326b3 --env="$INFISICAL_ENV" --path="$INFISICAL_TARGET_PATH" --path="$INFISICAL_SHARED_PATH" -- bash -lc '
-            bash scripts/ensure-github-packages-npmrc.sh
-            pnpm install --frozen-lockfile
-          '
-
-      - name: Deploy api to Vercel
-        run: |
-          infisical run --projectId=d8319856-8caf-4c22-8717-57ab28b326b3 --env="$INFISICAL_ENV" --path="$INFISICAL_TARGET_PATH" --path="$INFISICAL_SHARED_PATH" -- bash -lc '
-            cd apps/api
-            vercel pull --yes --environment=production --token "$VERCEL_TOKEN"
-            vercel build --prod --token "$VERCEL_TOKEN"
-            vercel deploy --prebuilt --prod --token "$VERCEL_TOKEN"
-          '
-
-  deploy-docs:
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    env:
-      INFISICAL_TOKEN: ${{ secrets.INFISICAL_TOKEN }}
-      INFISICAL_TARGET_PATH: /apps/capsule-pro/docs
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: '.nvmrc'
-          cache: 'pnpm'
-
-      - name: Install CLIs
-        run: npm install -g @infisical/cli vercel@53.1.0
-
-      - name: Verify Infisical access
-        run: |
-          infisical run --projectId=d8319856-8caf-4c22-8717-57ab28b326b3 --env="$INFISICAL_ENV" --path="$INFISICAL_TARGET_PATH" --path="$INFISICAL_SHARED_PATH" -- printenv VERCEL_PROJECT_ID >/dev/null
-          infisical run --projectId=d8319856-8caf-4c22-8717-57ab28b326b3 --env="$INFISICAL_ENV" --path="$INFISICAL_TARGET_PATH" --path="$INFISICAL_SHARED_PATH" -- printenv VERCEL_ORG_ID >/dev/null
-          infisical run --projectId=d8319856-8caf-4c22-8717-57ab28b326b3 --env="$INFISICAL_ENV" --path="$INFISICAL_TARGET_PATH" --path="$INFISICAL_SHARED_PATH" -- printenv VERCEL_TOKEN >/dev/null
-          infisical run --projectId=d8319856-8caf-4c22-8717-57ab28b326b3 --env="$INFISICAL_ENV" --path="$INFISICAL_TARGET_PATH" --path="$INFISICAL_SHARED_PATH" -- printenv NPM_TOKEN >/dev/null
-
-      - name: Install dependencies
-        run: |
-          infisical run --projectId=d8319856-8caf-4c22-8717-57ab28b326b3 --env="$INFISICAL_ENV" --path="$INFISICAL_TARGET_PATH" --path="$INFISICAL_SHARED_PATH" -- bash -lc '
-            bash scripts/ensure-github-packages-npmrc.sh
-            pnpm install --frozen-lockfile
-          '
-
-      - name: Deploy docs to Vercel
-        run: |
-          infisical run --projectId=d8319856-8caf-4c22-8717-57ab28b326b3 --env="$INFISICAL_ENV" --path="$INFISICAL_TARGET_PATH" --path="$INFISICAL_SHARED_PATH" -- bash -lc '
-            cd apps/docs
-            vercel pull --yes --environment=production --token "$VERCEL_TOKEN"
-            vercel build --prod --token "$VERCEL_TOKEN"
-            vercel deploy --prebuilt --prod --token "$VERCEL_TOKEN"
-          '
+          vercel pull --yes --environment=production --token "$VERCEL_TOKEN"
+          vercel build --prod --token "$VERCEL_TOKEN"
+          vercel deploy --prebuilt --prod --token "$VERCEL_TOKEN"
 
   deploy-web:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    continue-on-error: true
     env:
-      INFISICAL_TOKEN: ${{ secrets.INFISICAL_TOKEN }}
-      INFISICAL_TARGET_PATH: /apps/capsule-pro/web
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_WEB }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -171,37 +123,56 @@ jobs:
           node-version-file: '.nvmrc'
           cache: 'pnpm'
 
-      - name: Install CLIs
-        run: npm install -g @infisical/cli vercel@53.1.0
-
-      - name: Verify Infisical access
-        run: |
-          infisical run --projectId=d8319856-8caf-4c22-8717-57ab28b326b3 --env="$INFISICAL_ENV" --path="$INFISICAL_TARGET_PATH" --path="$INFISICAL_SHARED_PATH" -- printenv VERCEL_PROJECT_ID >/dev/null
-          infisical run --projectId=d8319856-8caf-4c22-8717-57ab28b326b3 --env="$INFISICAL_ENV" --path="$INFISICAL_TARGET_PATH" --path="$INFISICAL_SHARED_PATH" -- printenv VERCEL_ORG_ID >/dev/null
-          infisical run --projectId=d8319856-8caf-4c22-8717-57ab28b326b3 --env="$INFISICAL_ENV" --path="$INFISICAL_TARGET_PATH" --path="$INFISICAL_SHARED_PATH" -- printenv VERCEL_TOKEN >/dev/null
-          infisical run --projectId=d8319856-8caf-4c22-8717-57ab28b326b3 --env="$INFISICAL_ENV" --path="$INFISICAL_TARGET_PATH" --path="$INFISICAL_SHARED_PATH" -- printenv NPM_TOKEN >/dev/null
-          infisical run --projectId=d8319856-8caf-4c22-8717-57ab28b326b3 --env="$INFISICAL_ENV" --path="$INFISICAL_TARGET_PATH" --path="$INFISICAL_SHARED_PATH" -- printenv BASEHUB_TOKEN >/dev/null
+      - name: Install Vercel CLI
+        run: npm install -g vercel@53.1.0
 
       - name: Install dependencies
-        run: |
-          infisical run --projectId=d8319856-8caf-4c22-8717-57ab28b326b3 --env="$INFISICAL_ENV" --path="$INFISICAL_TARGET_PATH" --path="$INFISICAL_SHARED_PATH" -- bash -lc '
-            bash scripts/ensure-github-packages-npmrc.sh
-            pnpm install --frozen-lockfile
-          '
-
-      - name: Generate CMS code
-        run: |
-          infisical run --projectId=d8319856-8caf-4c22-8717-57ab28b326b3 --env="$INFISICAL_ENV" --path="$INFISICAL_TARGET_PATH" --path="$INFISICAL_SHARED_PATH" -- bash -lc '
-            pnpm --filter @repo/cms build
-            cd apps/web
-            npx basehub
-          '
+        env:
+          NPM_CONFIG_REGISTRY: "https://npm.pkg.github.com"
+          NODE_AUTH_TOKEN: ${{ secrets.PKG_AUTH_TOKEN }}
+        run: pnpm install --frozen-lockfile
 
       - name: Deploy web to Vercel
+        working-directory: apps/web
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: |
-          infisical run --projectId=d8319856-8caf-4c22-8717-57ab28b326b3 --env="$INFISICAL_ENV" --path="$INFISICAL_TARGET_PATH" --path="$INFISICAL_SHARED_PATH" -- bash -lc '
-            cd apps/web
-            vercel pull --yes --environment=production --token "$VERCEL_TOKEN"
-            vercel build --prod --token "$VERCEL_TOKEN"
-            vercel deploy --prebuilt --prod --token "$VERCEL_TOKEN"
-          '
+          vercel pull --yes --environment=production --token "$VERCEL_TOKEN"
+          vercel build --prod --token "$VERCEL_TOKEN"
+          vercel deploy --prebuilt --prod --token "$VERCEL_TOKEN"
+
+  deploy-docs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_DOCS }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'pnpm'
+
+      - name: Install Vercel CLI
+        run: npm install -g vercel@53.1.0
+
+      - name: Install dependencies
+        env:
+          NPM_CONFIG_REGISTRY: "https://npm.pkg.github.com"
+          NODE_AUTH_TOKEN: ${{ secrets.PKG_AUTH_TOKEN }}
+        run: pnpm install --frozen-lockfile
+
+      - name: Deploy docs to Vercel
+        working-directory: apps/docs
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          vercel pull --yes --environment=production --token "$VERCEL_TOKEN"
+          vercel build --prod --token "$VERCEL_TOKEN"
+          vercel deploy --prebuilt --prod --token "$VERCEL_TOKEN"
