@@ -15,6 +15,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
+import {
+  OperationalColumn,
+  PageBody,
+  PageCanvas,
+  SectionHeader,
+} from "@repo/design-system/components/blocks/page-shell";
 import { useState } from "react";
 import {
   type FinanceAlert,
@@ -36,44 +42,49 @@ const PERIOD_OPTIONS: Array<{ value: Period; label: string }> = [
 
 function LoadingSkeleton() {
   return (
-    <section className="space-y-4">
-      <h2 className="text-sm font-medium text-muted-foreground">
-        Performance Overview
-      </h2>
-      <div className="grid gap-6 md:grid-cols-3">
-        {[1, 2, 3].map((i) => (
-          <Card className="animate-pulse" key={i}>
-            <CardHeader>
-              <div className="h-6 bg-muted rounded w-24" />
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <div className="h-4 bg-muted rounded w-32" />
-                <div className="h-3 bg-muted rounded w-24" />
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    </section>
+    <PageCanvas>
+      <PageBody>
+        <OperationalColumn>
+          <section className="space-y-4">
+            <div className="grid gap-6 md:grid-cols-3">
+              {[1, 2, 3].map((i) => (
+                <Card className="animate-pulse" key={i}>
+                  <CardHeader>
+                    <div className="h-6 bg-muted rounded w-24" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2">
+                      <div className="h-4 bg-muted rounded w-32" />
+                      <div className="h-3 bg-muted rounded w-24" />
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </section>
+        </OperationalColumn>
+      </PageBody>
+    </PageCanvas>
   );
 }
 
 function ErrorState({ error, refetch }: { error: Error; refetch: () => void }) {
   return (
-    <div className="flex flex-col items-center justify-center p-12 text-center">
-      <p className="text-lg font-medium text-destructive">
-        Failed to load finance analytics
-      </p>
-      <p className="text-sm text-muted-foreground mt-2">{error.message}</p>
-      <button
-        className="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
-        onClick={() => refetch()}
-        type="button"
-      >
-        Retry
-      </button>
-    </div>
+    <PageCanvas>
+      <div className="flex flex-col items-center justify-center p-12 text-center">
+        <p className="text-lg font-medium text-destructive">
+          Failed to load finance analytics
+        </p>
+        <p className="text-sm text-muted-foreground mt-2">{error.message}</p>
+        <button
+          className="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
+          onClick={() => refetch()}
+          type="button"
+        >
+          Retry
+        </button>
+      </div>
+    </PageCanvas>
   );
 }
 
@@ -146,9 +157,7 @@ function PerformanceOverview({
 }) {
   return (
     <section className="space-y-4">
-      <h2 className="text-sm font-medium text-muted-foreground">
-        Performance Overview
-      </h2>
+      <SectionHeader title="Performance Overview" />
       <div className="grid gap-6 md:grid-cols-3">
         {financeHighlights.map((item: FinanceHighlight) => (
           <Card key={item.label}>
@@ -203,7 +212,7 @@ function FinanceAlertsCard({
       <CardContent className="space-y-3 text-sm">
         {financeAlerts.map((alert: FinanceAlert) => (
           <div
-            className="flex items-center justify-between rounded-md border border-border/70 px-4 py-3"
+            className="flex items-center justify-between rounded-[22px] border border-hairline bg-soft-stone px-4 py-3"
             key={`${alert.message}-${alert.severity}`}
           >
             <p>{alert.message}</p>
@@ -226,9 +235,7 @@ function FinancialAnalysis({
 }) {
   return (
     <section className="space-y-4">
-      <h2 className="text-sm font-medium text-muted-foreground">
-        Financial Analysis
-      </h2>
+      <SectionHeader title="Financial Analysis" />
       <div className="grid gap-6 lg:grid-cols-2">
         <LedgerSummaryCard ledgerSummary={ledgerSummary} />
         <FinanceAlertsCard financeAlerts={financeAlerts} />
@@ -251,16 +258,18 @@ function Filters({
   locations: TenantLocation[];
 }) {
   return (
-    <div className="flex items-center justify-end gap-4">
-      <LocationSelect
-        locations={locations}
-        selectedLocationId={selectedLocationId}
-        setSelectedLocationId={setSelectedLocationId}
-      />
-      <PeriodSelect
-        selectedPeriod={selectedPeriod}
-        setSelectedPeriod={setSelectedPeriod}
-      />
+    <div className="rounded-[22px] border border-hairline bg-soft-stone p-6">
+      <div className="flex items-center justify-end gap-4">
+        <LocationSelect
+          locations={locations}
+          selectedLocationId={selectedLocationId}
+          setSelectedLocationId={setSelectedLocationId}
+        />
+        <PeriodSelect
+          selectedPeriod={selectedPeriod}
+          setSelectedPeriod={setSelectedPeriod}
+        />
+      </div>
     </div>
   );
 }
@@ -285,22 +294,22 @@ function AnalyticsContent({
   locations: TenantLocation[];
 }) {
   return (
-    <div className="space-y-6">
-      <Filters
-        locations={locations}
-        selectedLocationId={selectedLocationId}
-        selectedPeriod={selectedPeriod}
-        setSelectedLocationId={setSelectedLocationId}
-        setSelectedPeriod={setSelectedPeriod}
-      />
-      <div className="space-y-8">
+    <PageBody>
+      <OperationalColumn>
+        <Filters
+          locations={locations}
+          selectedLocationId={selectedLocationId}
+          selectedPeriod={selectedPeriod}
+          setSelectedLocationId={setSelectedLocationId}
+          setSelectedPeriod={setSelectedPeriod}
+        />
         <PerformanceOverview financeHighlights={financeHighlights} />
         <FinancialAnalysis
           financeAlerts={financeAlerts}
           ledgerSummary={ledgerSummary}
         />
-      </div>
-    </div>
+      </OperationalColumn>
+    </PageBody>
   );
 }
 
