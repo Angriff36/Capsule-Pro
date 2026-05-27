@@ -2,7 +2,6 @@
 
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
-import { Card, CardContent } from "@repo/design-system/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -18,7 +17,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
-import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   Table,
   TableBody,
@@ -28,6 +26,22 @@ import {
   TableRow,
 } from "@repo/design-system/components/ui/table";
 import { formatCurrency } from "@repo/design-system/lib/format-currency";
+import {
+  CommandBand,
+  CommandBandActions,
+  CommandBandBody,
+  CommandBandHeader,
+  CommandBandLede,
+  DisplayHeading,
+  MetricBand,
+  MetricCell,
+  MetricLabel,
+  MetricValue,
+  MonoLabel,
+  OperationalColumn,
+  PageCanvas,
+  SectionHeader,
+} from "@repo/design-system/components/blocks/page-shell";
 import {
   AlertTriangleIcon,
   CheckCircleIcon,
@@ -281,179 +295,202 @@ export default function PayrollRunsPage() {
     return ["completed", "approved", "paid"].includes(run.status);
   };
 
+  // Computed metric counts from runs
+  const pendingCount = runs.filter((r) => r.status === "pending").length;
+  const processingCount = runs.filter(
+    (r) => r.status === "processing"
+  ).length;
+  const completedCount = runs.filter(
+    (r) => r.status === "completed" || r.status === "approved"
+  ).length;
+  const failedCount = runs.filter((r) => r.status === "failed").length;
+
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="font-semibold text-2xl text-foreground">
-            Payroll Runs
-          </h1>
-          <p className="text-muted-foreground text-sm">
-            Review, approve, and manage payroll runs
-          </p>
-        </div>
-        <Button disabled={actionLoading} onClick={handleGeneratePayroll}>
-          {actionLoading ? (
-            <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
-          ) : (
-            <PlayIcon className="mr-2 h-4 w-4" />
-          )}
-          Generate Payroll
-        </Button>
-      </div>
-
-      <Separator />
-
-      <section>
-        <h2 className="font-medium text-sm text-muted-foreground mb-4">
-          Filters
-        </h2>
-        <Card className="bg-card/60">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-4">
-              <Select onValueChange={handleStatusChange} value={statusFilter}>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Filter by status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Runs</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="processing">Processing</SelectItem>
-                  <SelectItem value="completed">Completed</SelectItem>
-                  <SelectItem value="approved">Approved</SelectItem>
-                  <SelectItem value="paid">Paid</SelectItem>
-                  <SelectItem value="failed">Failed</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </CardContent>
-        </Card>
-      </section>
-
-      {loading ? (
-        <Card className="p-8 text-center">
-          <Loader2Icon className="mx-auto h-8 w-8 animate-spin text-muted-foreground" />
-        </Card>
-      ) : runs.length === 0 ? (
-        <Card className="p-8 text-center">
-          <CircleDollarSignIcon className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-          <p className="text-muted-foreground text-lg mb-2">
-            No payroll runs found
-          </p>
-          <p className="text-muted-foreground text-sm">
-            Generate your first payroll to get started
-          </p>
-        </Card>
-      ) : (
-        <section>
-          <h2 className="font-medium text-sm text-muted-foreground mb-4">
-            Runs ({pagination.total})
-          </h2>
-          <Card>
-            <CardContent className="p-0">
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Run Date</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead className="text-right">Gross Pay</TableHead>
-                      <TableHead className="text-right">Deductions</TableHead>
-                      <TableHead className="text-right">Net Pay</TableHead>
-                      <TableHead>Approved</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {runs.map((run) => (
-                      <TableRow key={run.id}>
-                        <TableCell className="font-medium">
-                          {formatDate(run.runDate)}
-                        </TableCell>
-                        <TableCell>{getStatusBadge(run.status)}</TableCell>
-                        <TableCell className="text-right">
-                          {formatCurrency(run.totalGross)}
-                        </TableCell>
-                        <TableCell className="text-right text-muted-foreground">
-                          {formatCurrency(run.totalDeductions)}
-                        </TableCell>
-                        <TableCell className="text-right font-medium">
-                          {formatCurrency(run.totalNet)}
-                        </TableCell>
-                        <TableCell>
-                          {run.approvedAt ? (
-                            <div className="text-xs">
-                              <div className="text-green-600 font-medium">
-                                Approved
-                              </div>
-                              <div className="text-muted-foreground">
-                                {formatDate(run.approvedAt)}
-                              </div>
-                            </div>
-                          ) : (
-                            <span className="text-muted-foreground text-sm">
-                              Not approved
-                            </span>
-                          )}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex items-center justify-end gap-2">
-                            {canApprove(run) && (
-                              <Button
-                                onClick={() => openApproveDialog(run)}
-                                size="sm"
-                                variant="default"
-                              >
-                                Approve
-                              </Button>
-                            )}
-                            {canExport(run) && (
-                              <Button
-                                onClick={() => handleExportReport(run.id)}
-                                size="sm"
-                                variant="outline"
-                              >
-                                <DownloadIcon className="h-4 w-4" />
-                              </Button>
-                            )}
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            </CardContent>
-          </Card>
-
-          <div className="flex items-center justify-between">
-            <p className="text-muted-foreground text-sm">
-              Showing {runs.length} of {pagination.total} runs
-            </p>
-            <div className="flex items-center gap-2">
-              <Button
-                disabled={pagination.page <= 1}
-                onClick={() => handlePageChange(pagination.page - 1)}
-                size="sm"
-                variant="outline"
-              >
-                Previous
-              </Button>
-              <span className="text-sm">
-                Page {pagination.page} of {pagination.totalPages}
-              </span>
-              <Button
-                disabled={pagination.page >= pagination.totalPages}
-                onClick={() => handlePageChange(pagination.page + 1)}
-                size="sm"
-                variant="outline"
-              >
-                Next
-              </Button>
-            </div>
+    <PageCanvas>
+      <CommandBand>
+        <CommandBandHeader>
+          <div className="space-y-4">
+            <MonoLabel tone="dark">Operations / Payroll</MonoLabel>
+            <DisplayHeading size="md">Payroll runs</DisplayHeading>
+            <CommandBandLede>
+              Review, approve, and manage payroll runs.
+            </CommandBandLede>
           </div>
-        </section>
-      )}
+          <CommandBandActions>
+            <Button
+              disabled={actionLoading}
+              onClick={handleGeneratePayroll}
+              variant="on-dark"
+            >
+              {actionLoading ? (
+                <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <PlayIcon className="mr-2 h-4 w-4" />
+              )}
+              Generate Payroll
+            </Button>
+          </CommandBandActions>
+        </CommandBandHeader>
+        <CommandBandBody>
+          <MetricBand>
+            <MetricCell>
+              <MetricLabel>Pending</MetricLabel>
+              <MetricValue>{pendingCount}</MetricValue>
+            </MetricCell>
+            <MetricCell>
+              <MetricLabel>Processing</MetricLabel>
+              <MetricValue>{processingCount}</MetricValue>
+            </MetricCell>
+            <MetricCell>
+              <MetricLabel>Completed</MetricLabel>
+              <MetricValue>{completedCount}</MetricValue>
+            </MetricCell>
+            <MetricCell>
+              <MetricLabel>Failed</MetricLabel>
+              <MetricValue>{failedCount}</MetricValue>
+            </MetricCell>
+          </MetricBand>
+        </CommandBandBody>
+      </CommandBand>
+
+      <OperationalColumn>
+        <SectionHeader title="Runs" count={`${pagination.total} runs`} />
+
+        <div className="rounded-[22px] border border-hairline bg-soft-stone p-6 sm:p-8">
+          <Select onValueChange={handleStatusChange} value={statusFilter}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Filter by status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Runs</SelectItem>
+              <SelectItem value="pending">Pending</SelectItem>
+              <SelectItem value="processing">Processing</SelectItem>
+              <SelectItem value="completed">Completed</SelectItem>
+              <SelectItem value="approved">Approved</SelectItem>
+              <SelectItem value="paid">Paid</SelectItem>
+              <SelectItem value="failed">Failed</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {loading ? (
+          <div className="flex flex-1 items-center justify-center py-24">
+            <Loader2Icon className="h-8 w-8 animate-spin text-muted-foreground" />
+          </div>
+        ) : runs.length === 0 ? (
+          <div className="flex flex-1 flex-col items-center justify-center py-24 text-center">
+            <CircleDollarSignIcon className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+            <p className="text-muted-foreground text-lg mb-2">
+              No payroll runs found
+            </p>
+            <p className="text-muted-foreground text-sm">
+              Generate your first payroll to get started
+            </p>
+          </div>
+        ) : (
+          <>
+            <div className="overflow-hidden rounded-[22px] border border-hairline bg-canvas">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Run Date</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Gross Pay</TableHead>
+                    <TableHead className="text-right">Deductions</TableHead>
+                    <TableHead className="text-right">Net Pay</TableHead>
+                    <TableHead>Approved</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {runs.map((run) => (
+                    <TableRow key={run.id}>
+                      <TableCell className="font-medium">
+                        {formatDate(run.runDate)}
+                      </TableCell>
+                      <TableCell>{getStatusBadge(run.status)}</TableCell>
+                      <TableCell className="text-right">
+                        {formatCurrency(run.totalGross)}
+                      </TableCell>
+                      <TableCell className="text-right text-muted-foreground">
+                        {formatCurrency(run.totalDeductions)}
+                      </TableCell>
+                      <TableCell className="text-right font-medium">
+                        {formatCurrency(run.totalNet)}
+                      </TableCell>
+                      <TableCell>
+                        {run.approvedAt ? (
+                          <div className="text-xs">
+                            <div className="text-green-600 font-medium">
+                              Approved
+                            </div>
+                            <div className="text-muted-foreground">
+                              {formatDate(run.approvedAt)}
+                            </div>
+                          </div>
+                        ) : (
+                          <span className="text-muted-foreground text-sm">
+                            Not approved
+                          </span>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          {canApprove(run) && (
+                            <Button
+                              onClick={() => openApproveDialog(run)}
+                              size="sm"
+                              variant="default"
+                            >
+                              Approve
+                            </Button>
+                          )}
+                          {canExport(run) && (
+                            <Button
+                              onClick={() => handleExportReport(run.id)}
+                              size="sm"
+                              variant="outline"
+                            >
+                              <DownloadIcon className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <p className="text-muted-foreground text-sm">
+                Showing {runs.length} of {pagination.total} runs
+              </p>
+              <div className="flex items-center gap-2">
+                <Button
+                  disabled={pagination.page <= 1}
+                  onClick={() => handlePageChange(pagination.page - 1)}
+                  size="sm"
+                  variant="outline"
+                >
+                  Previous
+                </Button>
+                <span className="text-sm">
+                  Page {pagination.page} of {pagination.totalPages}
+                </span>
+                <Button
+                  disabled={pagination.page >= pagination.totalPages}
+                  onClick={() => handlePageChange(pagination.page + 1)}
+                  size="sm"
+                  variant="outline"
+                >
+                  Next
+                </Button>
+              </div>
+            </div>
+          </>
+        )}
+      </OperationalColumn>
 
       {/* Approval Dialog */}
       <Dialog onOpenChange={setApproveDialogOpen} open={approveDialogOpen}>
@@ -507,6 +544,6 @@ export default function PayrollRunsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </PageCanvas>
   );
 }
