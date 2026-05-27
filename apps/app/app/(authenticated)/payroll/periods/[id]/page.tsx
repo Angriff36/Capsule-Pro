@@ -8,7 +8,15 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
-import { Separator } from "@repo/design-system/components/ui/separator";
+import {
+  CommandBand,
+  CommandBandHeader,
+  CommandBandLede,
+  DisplayHeading,
+  MonoLabel,
+  OperationalColumn,
+  PageCanvas,
+} from "@repo/design-system/components/blocks/page-shell";
 import { AlertCircle, ArrowLeft, Calendar, Clock, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
@@ -129,95 +137,102 @@ export default function PayrollPeriodDetailPage() {
   const duration = getDaysBetween(period.period_start, period.period_end);
 
   return (
-    <div className="space-y-6 p-6">
-      <div className="flex items-center gap-4">
-        <Link href="/payroll/periods">
-          <Button size="icon" variant="ghost">
-            <ArrowLeft className="size-4" />
-          </Button>
-        </Link>
-        <div className="flex-1">
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-semibold tracking-tight">
-              Payroll Period
-            </h1>
-            <Badge className={status.className}>{status.label}</Badge>
+    <PageCanvas>
+      <CommandBand>
+        <CommandBandHeader>
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <Link href="/payroll/periods">
+                <Button size="icon" variant="ghost">
+                  <ArrowLeft className="size-4" />
+                </Button>
+              </Link>
+              <div className="space-y-1">
+                <MonoLabel>Payroll</MonoLabel>
+                <div className="flex items-center gap-3">
+                  <DisplayHeading size="md">Payroll Period</DisplayHeading>
+                  <Badge className={status.className}>{status.label}</Badge>
+                </div>
+              </div>
+            </div>
+            <CommandBandLede>
+              {formatDate(period.period_start)} — {formatDate(period.period_end)}
+            </CommandBandLede>
           </div>
-          <p className="text-sm text-muted-foreground">
-            {formatDate(period.period_start)} — {formatDate(period.period_end)}
-          </p>
+        </CommandBandHeader>
+      </CommandBand>
+
+      <OperationalColumn>
+        <div className="grid gap-4 md:grid-cols-3">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                <Calendar className="size-4" />
+                Period Start
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-normal tracking-[-0.02em]">
+                {formatDate(period.period_start)}
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                <Calendar className="size-4" />
+                Period End
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-normal tracking-[-0.02em]">
+                {formatDate(period.period_end)}
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                <Clock className="size-4" />
+                Duration
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-normal tracking-[-0.02em]">
+                {duration} days
+              </p>
+            </CardContent>
+          </Card>
         </div>
-      </div>
-
-      <Separator />
-
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-              <Calendar className="size-4" />
-              Period Start
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-semibold">
-              {formatDate(period.period_start)}
-            </p>
-          </CardContent>
-        </Card>
 
         <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-              <Calendar className="size-4" />
-              Period End
-            </CardTitle>
+          <CardHeader>
+            <CardTitle>Period Details</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-semibold">
-              {formatDate(period.period_end)}
-            </p>
+            <div className="grid gap-3 md:grid-cols-2">
+              <div>
+                <p className="text-sm text-muted-foreground">Period ID</p>
+                <p className="font-mono text-sm">{period.id}</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Status</p>
+                <Badge className={status.className}>{status.label}</Badge>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Created</p>
+                <p className="text-sm">{formatDateTime(period.created_at)}</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Last Updated</p>
+                <p className="text-sm">{formatDateTime(period.updated_at)}</p>
+              </div>
+            </div>
           </CardContent>
         </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-              <Clock className="size-4" />
-              Duration
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-semibold">{duration} days</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Period Details</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-3 md:grid-cols-2">
-            <div>
-              <p className="text-sm text-muted-foreground">Period ID</p>
-              <p className="font-mono text-sm">{period.id}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Status</p>
-              <Badge className={status.className}>{status.label}</Badge>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Created</p>
-              <p className="text-sm">{formatDateTime(period.created_at)}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Last Updated</p>
-              <p className="text-sm">{formatDateTime(period.updated_at)}</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+      </OperationalColumn>
+    </PageCanvas>
   );
 }
