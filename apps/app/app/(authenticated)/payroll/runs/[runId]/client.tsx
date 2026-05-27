@@ -13,7 +13,7 @@ import {
 } from "@repo/design-system/components/ui/dialog";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
-import { Separator } from "@repo/design-system/components/ui/separator";
+import { PageCanvas } from "@repo/design-system/components/blocks/page-shell";
 import {
   AlertTriangleIcon,
   ArrowLeftIcon,
@@ -335,7 +335,8 @@ export default function PayrollRunDetailClient({
   const canFinalize = runData.status === "approved";
 
   return (
-    <div className="space-y-8">
+    <PageCanvas>
+      <div className="space-y-8">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
@@ -349,7 +350,7 @@ export default function PayrollRunDetailClient({
           </Button>
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="font-semibold text-2xl text-foreground">
+              <h1 className="font-display text-3xl sm:text-4xl font-normal leading-[1.05] tracking-[-0.02em] text-foreground">
                 Payroll Run Details
               </h1>
               {getStatusBadge(runData.status)}
@@ -368,8 +369,6 @@ export default function PayrollRunDetailClient({
           )}
         </div>
       </div>
-
-      <Separator />
 
       {/* Payroll Run Details */}
       <PayrollRunDetails run={runData} />
@@ -439,6 +438,7 @@ export default function PayrollRunDetailClient({
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+      </div>
+    </PageCanvas>
   );
 }
