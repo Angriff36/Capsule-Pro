@@ -15,9 +15,21 @@ import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
   CardContent,
-  CardHeader,
-  CardTitle,
 } from "@repo/design-system/components/ui/card";
+import {
+  CommandBand,
+  CommandBandBody,
+  CommandBandHeader,
+  CommandBandLede,
+  DisplayHeading,
+  MetricBand,
+  MetricCell,
+  MetricLabel,
+  MetricValue,
+  MonoLabel,
+  OperationalColumn,
+  PageCanvas,
+} from "@repo/design-system/components/blocks/page-shell";
 import {
   Dialog,
   DialogContent,
@@ -33,7 +45,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
-import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   Table,
   TableBody,
@@ -464,57 +475,38 @@ export default function PayrollApprovalsPage() {
   // --- Render ---
 
   return (
-    <div className="space-y-6">
-      {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Pending Review
-            </CardTitle>
-            <ClockIcon className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{pendingCount}</div>
-            <p className="text-xs text-muted-foreground">Awaiting approval</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Approved</CardTitle>
-            <CheckCircleIcon className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{approvedCount}</div>
-            <p className="text-xs text-muted-foreground">
-              Ready for processing
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Gross</CardTitle>
-            <span className="text-xs text-muted-foreground">USD</span>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {formatCurrency(approvals.reduce((s, a) => s + a.totalGross, 0))}
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Net</CardTitle>
-            <span className="text-xs text-muted-foreground">USD</span>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {formatCurrency(approvals.reduce((s, a) => s + a.totalNet, 0))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+    <PageCanvas>
+      <CommandBand>
+        <CommandBandHeader>
+          <div className="space-y-4">
+            <MonoLabel tone="dark">Operations / Payroll</MonoLabel>
+            <DisplayHeading size="md">Payroll approvals</DisplayHeading>
+            <CommandBandLede>Review, approve, or reject payroll runs before payout.</CommandBandLede>
+          </div>
+        </CommandBandHeader>
+        <CommandBandBody>
+          <MetricBand cols={4}>
+            <MetricCell>
+              <MetricLabel>Pending Review</MetricLabel>
+              <MetricValue>{pendingCount}</MetricValue>
+            </MetricCell>
+            <MetricCell>
+              <MetricLabel>Approved</MetricLabel>
+              <MetricValue>{approvedCount}</MetricValue>
+            </MetricCell>
+            <MetricCell>
+              <MetricLabel>Total Gross</MetricLabel>
+              <MetricValue>{formatCurrency(approvals.reduce((s, a) => s + a.totalGross, 0))}</MetricValue>
+            </MetricCell>
+            <MetricCell>
+              <MetricLabel>Total Net</MetricLabel>
+              <MetricValue>{formatCurrency(approvals.reduce((s, a) => s + a.totalNet, 0))}</MetricValue>
+            </MetricCell>
+          </MetricBand>
+        </CommandBandBody>
+      </CommandBand>
 
+      <OperationalColumn>
       {/* Tab Switcher */}
       <div className="flex gap-1">
         <button
@@ -605,7 +597,7 @@ export default function PayrollApprovalsPage() {
             </Card>
           ) : (
             <>
-              <div className="rounded-md border">
+              <div className="overflow-hidden rounded-[22px] border border-hairline">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -797,7 +789,7 @@ export default function PayrollApprovalsPage() {
               </Card>
             ) : (
               <>
-                <div className="rounded-md border">
+                <div className="overflow-hidden rounded-[22px] border border-hairline">
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -957,8 +949,6 @@ export default function PayrollApprovalsPage() {
                 </div>
               )}
 
-              <Separator />
-
               {/* Approval History Timeline */}
               <div>
                 <h4 className="font-medium text-sm mb-3">Approval History</h4>
@@ -1030,7 +1020,7 @@ export default function PayrollApprovalsPage() {
               {(detailRun.status === "pending" ||
                 detailRun.status === "completed") && (
                 <>
-                  <Separator />
+                  <div className="border-t border-hairline pt-4">
                   <div className="flex justify-end gap-2">
                     <Button
                       disabled={actionLoading !== null}
@@ -1052,6 +1042,7 @@ export default function PayrollApprovalsPage() {
                       <ThumbsUpIcon className="mr-2 h-4 w-4" />
                       Approve Payroll Run
                     </Button>
+                  </div>
                   </div>
                 </>
               )}
@@ -1108,6 +1099,7 @@ export default function PayrollApprovalsPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+      </OperationalColumn>
+    </PageCanvas>
   );
 }
