@@ -20,7 +20,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
-import { Separator } from "@repo/design-system/components/ui/separator";
+import {
+  CommandBand,
+  CommandBandActions,
+  CommandBandBody,
+  CommandBandHeader,
+  CommandBandLede,
+  DisplayHeading,
+  MetricBand,
+  MetricCell,
+  MetricLabel,
+  MetricValue,
+  MonoLabel,
+  OperationalColumn,
+  PageCanvas,
+} from "@repo/design-system/components/blocks/page-shell";
 import {
   AlertTriangle,
   ArrowLeftRight,
@@ -306,88 +320,52 @@ export default function DirectDepositPage() {
   ).length;
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="font-semibold text-2xl text-foreground">
-            Direct Deposit
-          </h1>
-          <p className="text-muted-foreground text-sm">
-            Manage employee bank accounts and payout preferences
-          </p>
-        </div>
-        <Button onClick={openCreateModal} size="sm">
-          <Plus className="mr-2 h-4 w-4" />
-          Add Bank Account
-        </Button>
-      </div>
+    <PageCanvas>
+      <CommandBand>
+        <CommandBandHeader>
+          <div className="space-y-4">
+            <MonoLabel tone="dark">Operations / Payroll</MonoLabel>
+            <DisplayHeading size="md">Direct deposit</DisplayHeading>
+            <CommandBandLede>
+              Manage employee bank accounts and payout preferences.
+            </CommandBandLede>
+          </div>
+          <CommandBandActions>
+            <Button onClick={openCreateModal} size="sm" variant="on-dark">
+              <Plus className="mr-2 h-4 w-4" />
+              Add Bank Account
+            </Button>
+          </CommandBandActions>
+        </CommandBandHeader>
+        <CommandBandBody>
+          <MetricBand cols={4}>
+            <MetricCell>
+              <MetricLabel>Total Accounts</MetricLabel>
+              <MetricValue>{totalAccounts}</MetricValue>
+              <p className="text-sm text-white/70">Bank accounts on file</p>
+            </MetricCell>
+            <MetricCell>
+              <MetricLabel>Verified</MetricLabel>
+              <MetricValue>{verifiedAccounts}</MetricValue>
+              <p className="text-sm text-white/70">Confirmed accounts</p>
+            </MetricCell>
+            <MetricCell>
+              <MetricLabel>Pending</MetricLabel>
+              <MetricValue>{pendingAccounts}</MetricValue>
+              <p className="text-sm text-white/70">Awaiting verification</p>
+            </MetricCell>
+            <MetricCell>
+              <MetricLabel>Direct Deposit</MetricLabel>
+              <MetricValue>{directDepositEmployees}</MetricValue>
+              <p className="text-sm text-white/70">Employees enrolled</p>
+            </MetricCell>
+          </MetricBand>
+        </CommandBandBody>
+      </CommandBand>
 
-      <Separator />
-
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card tone="soft-stone">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-muted/50 rounded-lg">
-                <Landmark className="h-4 w-4 text-foreground" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{totalAccounts}</p>
-                <p className="text-xs text-muted-foreground">Total Accounts</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card tone="soft-stone">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-muted/50 rounded-lg">
-                <CheckCircle2 className="h-4 w-4 text-foreground" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{verifiedAccounts}</p>
-                <p className="text-xs text-muted-foreground">Verified</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card tone="soft-stone">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-muted/50 rounded-lg">
-                <Clock className="h-4 w-4 text-foreground" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{pendingAccounts}</p>
-                <p className="text-xs text-muted-foreground">
-                  Pending Verification
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card tone="soft-stone">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-muted/50 rounded-lg">
-                <Users className="h-4 w-4 text-foreground" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{directDepositEmployees}</p>
-                <p className="text-xs text-muted-foreground">
-                  Direct Deposit Enabled
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Employee Filter */}
-      <Card tone="canvas">
-        <CardContent className="p-4">
+      <OperationalColumn>
+        {/* Employee Filter */}
+        <div className="rounded-[22px] border border-hairline bg-soft-stone p-6 mb-6">
           <div className="flex items-center gap-4">
             <div className="flex-1 max-w-md">
               <Label className="text-xs text-muted-foreground mb-1.5 block">
@@ -419,17 +397,15 @@ export default function DirectDepositPage() {
               </Badge>
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
 
-      {/* Accounts List */}
-      {loading ? (
-        <Card className="p-8 text-center" tone="canvas">
-          <Loader2 className="mx-auto h-6 w-6 animate-spin text-muted-foreground" />
-        </Card>
-      ) : displayAccounts.length === 0 ? (
-        <Card>
-          <CardContent className="py-8">
+        {/* Accounts List */}
+        {loading ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          </div>
+        ) : displayAccounts.length === 0 ? (
+          <div className="rounded-[22px] border border-hairline bg-soft-stone p-8">
             <Empty>
               <EmptyHeader>
                 <EmptyMedia variant="icon">
@@ -443,15 +419,16 @@ export default function DirectDepositPage() {
                 </EmptyDescription>
               </EmptyHeader>
             </Empty>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="space-y-3">
-          {displayAccounts.map((account) => {
-            const employee = employees.find((e) => e.id === account.employeeId);
-            return (
-              <Card key={account.id} tone="canvas">
-                <CardContent className="p-4">
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {displayAccounts.map((account) => {
+              const employee = employees.find((e) => e.id === account.employeeId);
+              return (
+                <div
+                  key={account.id}
+                  className="rounded-[22px] border border-hairline bg-soft-stone p-4"
+                >
                   <div className="flex items-start justify-between">
                     <div className="flex items-start gap-4">
                       <div
@@ -593,12 +570,12 @@ export default function DirectDepositPage() {
                       </Button>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-      )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </OperationalColumn>
 
       {/* Add/Edit Modal */}
       <Dialog onOpenChange={setModalOpen} open={modalOpen}>
@@ -794,6 +771,6 @@ export default function DirectDepositPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </PageCanvas>
   );
 }
