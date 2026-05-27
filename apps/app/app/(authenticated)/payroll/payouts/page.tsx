@@ -3,20 +3,12 @@
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@repo/design-system/components/ui/card";
-import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
-import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   Table,
   TableBody,
@@ -43,6 +35,22 @@ import {
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
+import {
+  CommandBand,
+  CommandBandActions,
+  CommandBandBody,
+  CommandBandHeader,
+  CommandBandLede,
+  DisplayHeading,
+  MetricBand,
+  MetricCell,
+  MetricLabel,
+  MetricValue,
+  MonoLabel,
+  OperationalColumn,
+  PageCanvas,
+  SectionHeader,
+} from "@repo/design-system/components/blocks/page-shell";
 
 interface PayrollRun {
   id: string;
@@ -136,118 +144,98 @@ const PayrollPayoutsPage = () => {
     .filter((r) => r.status === "approved")
     .reduce((sum, r) => sum + r.totalNet, 0);
 
-  return (
-    <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
-      {/* Page Header */}
-      <div className="flex items-center justify-between">
-        <div className="space-y-0.5">
-          <h1 className="text-2xl font-semibold tracking-tight">Payouts</h1>
-          <p className="text-muted-foreground">
-            Manage payout channels and statuses for payroll runs.
-          </p>
+  if (loading) {
+    return (
+      <PageCanvas>
+        <div className="flex flex-1 items-center justify-center py-24">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
-        <Button onClick={loadRuns} size="sm" variant="outline">
-          <RefreshCw className="mr-2 h-4 w-4" />
-          Refresh
-        </Button>
-      </div>
+      </PageCanvas>
+    );
+  }
 
-      <Separator />
+  return (
+    <PageCanvas>
+      <CommandBand>
+        <CommandBandHeader>
+          <div className="space-y-4">
+            <MonoLabel tone="dark">Operations / Payroll</MonoLabel>
+            <DisplayHeading size="md">Payouts</DisplayHeading>
+            <CommandBandLede>
+              Manage payout channels and statuses for payroll runs.
+            </CommandBandLede>
+          </div>
+          <CommandBandActions>
+            <Button onClick={loadRuns} size="sm" variant="on-dark">
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Refresh
+            </Button>
+          </CommandBandActions>
+        </CommandBandHeader>
+        <CommandBandBody>
+          <MetricBand>
+            <MetricCell>
+              <MetricLabel>Total Paid</MetricLabel>
+              <MetricValue>{formatCurrency(totalPaid)}</MetricValue>
+            </MetricCell>
+            <MetricCell>
+              <MetricLabel>Awaiting Payment</MetricLabel>
+              <MetricValue>{formatCurrency(totalApproved)}</MetricValue>
+            </MetricCell>
+            <MetricCell>
+              <MetricLabel>Processing</MetricLabel>
+              <MetricValue>{formatCurrency(totalPending)}</MetricValue>
+            </MetricCell>
+          </MetricBand>
+        </CommandBandBody>
+      </CommandBand>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Paid</CardTitle>
-            <CheckCircle2 className="text-muted-foreground h-4 w-4" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {formatCurrency(totalPaid)}
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Awaiting Payment
-            </CardTitle>
-            <Clock className="text-muted-foreground h-4 w-4" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {formatCurrency(totalApproved)}
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Processing</CardTitle>
-            <DollarSign className="text-muted-foreground h-4 w-4" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {formatCurrency(totalPending)}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      <OperationalColumn>
+        <SectionHeader
+          title="Payroll Runs"
+          description="All payroll runs with payout status and amounts."
+          count={`${runs.length} run${runs.length !== 1 ? "s" : ""}`}
+        />
 
-      {/* Filter */}
-      <div className="flex items-center gap-4">
-        <Select
-          onValueChange={(v) => setStatusFilter(v as StatusFilter)}
-          value={statusFilter}
-        >
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Filter by status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Statuses</SelectItem>
-            <SelectItem value="pending">Pending</SelectItem>
-            <SelectItem value="processing">Processing</SelectItem>
-            <SelectItem value="approved">Approved</SelectItem>
-            <SelectItem value="paid">Paid</SelectItem>
-          </SelectContent>
-        </Select>
-        <span className="text-muted-foreground text-sm">
-          {runs.length} run{runs.length !== 1 ? "s" : ""}
-        </span>
-      </div>
+        <div className="rounded-[22px] border border-hairline bg-soft-stone p-6 sm:p-8">
+          <Select
+            onValueChange={(v) => setStatusFilter(v as StatusFilter)}
+            value={statusFilter}
+          >
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Filter by status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Statuses</SelectItem>
+              <SelectItem value="pending">Pending</SelectItem>
+              <SelectItem value="processing">Processing</SelectItem>
+              <SelectItem value="approved">Approved</SelectItem>
+              <SelectItem value="paid">Paid</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
 
-      {/* Payroll Runs Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Payroll Runs</CardTitle>
-          <CardDescription>
-            All payroll runs with payout status and amounts.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="overflow-x-auto">
-          {loading ? (
-            <div className="flex items-center justify-center py-8">
-              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-            </div>
-          ) : runs.length === 0 ? (
-            <Empty>
-              <EmptyHeader>
-                <EmptyMedia variant="icon">
-                  <DollarSign />
-                </EmptyMedia>
-                <EmptyTitle>No payroll runs found</EmptyTitle>
-                <EmptyDescription>
-                  {statusFilter !== "all"
-                    ? "No runs match the selected filter. Try changing the status filter."
-                    : "Runs will appear here once payroll periods are processed."}
-                </EmptyDescription>
-              </EmptyHeader>
-              <EmptyContent>
-                <p className="text-muted-foreground text-xs">
-                  Process a payroll period to generate a payout run.
-                </p>
-              </EmptyContent>
-            </Empty>
-          ) : (
+        {runs.length === 0 ? (
+          <Empty>
+            <EmptyHeader>
+              <EmptyMedia variant="icon">
+                <DollarSign />
+              </EmptyMedia>
+              <EmptyTitle>No payroll runs found</EmptyTitle>
+              <EmptyDescription>
+                {statusFilter !== "all"
+                  ? "No runs match the selected filter. Try changing the status filter."
+                  : "Runs will appear here once payroll periods are processed."}
+              </EmptyDescription>
+            </EmptyHeader>
+            <EmptyContent>
+              <p className="text-muted-foreground text-xs">
+                Process a payroll period to generate a payout run.
+              </p>
+            </EmptyContent>
+          </Empty>
+        ) : (
+          <div className="overflow-hidden rounded-[22px] border border-hairline bg-canvas">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -288,10 +276,10 @@ const PayrollPayoutsPage = () => {
                 ))}
               </TableBody>
             </Table>
-          )}
-        </CardContent>
-      </Card>
-    </div>
+          </div>
+        )}
+      </OperationalColumn>
+    </PageCanvas>
   );
 };
 
