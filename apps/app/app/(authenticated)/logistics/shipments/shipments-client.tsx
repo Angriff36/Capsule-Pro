@@ -33,6 +33,14 @@ import {
   TabsTrigger,
 } from "@repo/design-system/components/ui/tabs";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@repo/design-system/components/ui/empty";
 import { formatCurrency } from "@repo/design-system/lib/format-currency";
 import {
   AlertCircle,
@@ -508,12 +516,33 @@ export function ShipmentsClient() {
         <TabsContent value={activeTab}>
           {filteredShipments.length === 0 ? (
             <Card tone="canvas">
-              <CardContent className="py-12 text-center text-muted-foreground">
-                <Package className="mx-auto h-12 w-12 mb-4 opacity-50" />
-                <p>No shipments found.</p>
-                {searchQuery && (
-                  <p className="text-sm mt-1">Try adjusting your search.</p>
-                )}
+              <CardContent className="py-8">
+                <Empty>
+                  <EmptyHeader>
+                    <EmptyMedia variant="icon">
+                      <Package />
+                    </EmptyMedia>
+                    <EmptyTitle>No shipments found</EmptyTitle>
+                    <EmptyDescription>
+                      {searchQuery
+                        ? "Try adjusting your search or clear the filter."
+                        : "Create shipments to track incoming and outgoing deliveries."}
+                    </EmptyDescription>
+                  </EmptyHeader>
+                  <EmptyContent>
+                    <p className="text-muted-foreground text-xs">
+                      {searchQuery
+                        ? "Modify your search terms above."
+                        : "Click "}
+                      {!searchQuery && (
+                        <>
+                          <strong>New Shipment</strong> above to create your
+                          first shipment.
+                        </>
+                      )}
+                    </p>
+                  </EmptyContent>
+                </Empty>
               </CardContent>
             </Card>
           ) : (

@@ -11,9 +11,9 @@ entity EmailTemplate {
   property mergeFields: string = "[]"
   property isActive: boolean = true
   property isDefault: boolean = false
-  property createdAt: number = 0
-  property updatedAt: number = 0
-  property deletedAt: number = 0
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
+  property deletedAt: datetime = now()
 
   computed isDeleted: boolean = self.deletedAt > 0
 

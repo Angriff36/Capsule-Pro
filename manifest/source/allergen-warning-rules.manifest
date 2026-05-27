@@ -12,10 +12,10 @@ entity AllergenWarning {
   property severity: string = "warning"
   property isAcknowledged: boolean = false
   property acknowledgedBy: string = ""
-  property acknowledgedAt: number = 0
+  property acknowledgedAt: datetime = now()
   property overrideReason: string = ""
   property resolved: boolean = false
-  property resolvedAt: number = 0
+  property resolvedAt: datetime = now()
   property notes: string = ""
   property createdAt: datetime = now()
   property updatedAt: datetime = now()

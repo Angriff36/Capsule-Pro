@@ -954,7 +954,7 @@ async function setEventMenuTool(
 
   // First, create a menu for the event
   const menuResult = await executeManifestCommandRoute(
-    "/api/menus/commands/create",
+    "/api/manifest/Menu/commands/create",
     "Menu.create",
     {
       entityName: "Menu",
@@ -1007,7 +1007,7 @@ async function setEventMenuTool(
       }
 
       const dishResult = await executeManifestCommandRoute(
-        "/api/events/dish/commands/create",
+        "/api/manifest/EventDish/commands/create",
         "EventDish.create",
         {
           entityName: "EventDish",

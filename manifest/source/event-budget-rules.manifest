@@ -12,9 +12,9 @@ entity EventBudget {
   property varianceAmount: number = 0
   property variancePercentage: number = 0
   property notes: string = ""
-  property createdAt: number = 0
-  property updatedAt: number = 0
-  property deletedAt: number = 0
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
+  property deletedAt: datetime = now()
 
   computed isDraft: boolean = self.status == "draft"
   computed isApproved: boolean = self.status == "approved"
@@ -143,9 +143,9 @@ entity BudgetLineItem {
   property varianceAmount: number = 0
   property sortOrder: number = 0
   property notes: string = ""
-  property createdAt: number = 0
-  property updatedAt: number = 0
-  property deletedAt: number = 0
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
+  property deletedAt: datetime = now()
 
   computed isOverBudget: boolean = self.actualAmount > self.budgetedAmount
   computed hasVariance: boolean = self.varianceAmount != 0

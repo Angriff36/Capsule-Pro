@@ -11,10 +11,10 @@ entity KitchenTask {
   property priority: number = 5
   property complexity: number = 5
   property tags: string = ""
-  property dueDate: number = 0
-  property completedAt: number = 0
-  property createdAt: number = 0
-  property updatedAt: number = 0
+  property dueDate: datetime = now()
+  property completedAt: datetime = now()
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
 
   computed isOverdue: boolean = self.dueDate != 0 and now() > self.dueDate and self.status != "done"
   computed isCompleted: boolean = self.status == "done"

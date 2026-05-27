@@ -26,13 +26,20 @@ import {
   TableRow,
 } from "@repo/design-system/components/ui/table";
 import {
-  AlertCircle,
   CheckCircle2,
   Clock,
   DollarSign,
   Loader2,
   RefreshCw,
 } from "lucide-react";
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@repo/design-system/components/ui/empty";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
@@ -222,56 +229,65 @@ const PayrollPayoutsPage = () => {
               <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
             </div>
           ) : runs.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-8 text-center">
-              <AlertCircle className="mb-2 h-8 w-8 text-muted-foreground" />
-              <p className="text-muted-foreground">No payroll runs found</p>
-              <p className="text-muted-foreground text-sm">
-                Runs will appear here once payroll periods are processed.
-              </p>
-            </div>
+            <Empty>
+              <EmptyHeader>
+                <EmptyMedia variant="icon">
+                  <DollarSign />
+                </EmptyMedia>
+                <EmptyTitle>No payroll runs found</EmptyTitle>
+                <EmptyDescription>
+                  {statusFilter !== "all"
+                    ? "No runs match the selected filter. Try changing the status filter."
+                    : "Runs will appear here once payroll periods are processed."}
+                </EmptyDescription>
+              </EmptyHeader>
+              <EmptyContent>
+                <p className="text-muted-foreground text-xs">
+                  Process a payroll period to generate a payout run.
+                </p>
+              </EmptyContent>
+            </Empty>
           ) : (
-            <div className="rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Run Date</TableHead>
-                    <TableHead className="text-right">Gross</TableHead>
-                    <TableHead className="text-right">Deductions</TableHead>
-                    <TableHead className="text-right">Net Pay</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Paid At</TableHead>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Run Date</TableHead>
+                  <TableHead className="text-right">Gross</TableHead>
+                  <TableHead className="text-right">Deductions</TableHead>
+                  <TableHead className="text-right">Net Pay</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Paid At</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {runs.map((run) => (
+                  <TableRow key={run.id}>
+                    <TableCell>{formatDate(run.runDate)}</TableCell>
+                    <TableCell className="text-right">
+                      {formatCurrency(run.totalGross)}
+                    </TableCell>
+                    <TableCell className="text-right text-muted-foreground">
+                      ({formatCurrency(run.totalDeductions)})
+                    </TableCell>
+                    <TableCell className="text-right font-medium">
+                      {formatCurrency(run.totalNet)}
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={
+                          STATUS_BADGE_VARIANT[run.status] ?? "outline"
+                        }
+                      >
+                        {STATUS_LABEL[run.status] ?? run.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {run.paidAt ? formatDate(run.paidAt) : "—"}
+                    </TableCell>
                   </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {runs.map((run) => (
-                    <TableRow key={run.id}>
-                      <TableCell>{formatDate(run.runDate)}</TableCell>
-                      <TableCell className="text-right">
-                        {formatCurrency(run.totalGross)}
-                      </TableCell>
-                      <TableCell className="text-right text-muted-foreground">
-                        ({formatCurrency(run.totalDeductions)})
-                      </TableCell>
-                      <TableCell className="text-right font-medium">
-                        {formatCurrency(run.totalNet)}
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          variant={
-                            STATUS_BADGE_VARIANT[run.status] ?? "outline"
-                          }
-                        >
-                          {STATUS_LABEL[run.status] ?? run.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {run.paidAt ? formatDate(run.paidAt) : "—"}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+                ))}
+              </TableBody>
+            </Table>
           )}
         </CardContent>
       </Card>

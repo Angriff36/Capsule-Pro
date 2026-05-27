@@ -10,6 +10,14 @@ import {
   CardTitle,
 } from "@repo/design-system/components/ui/card";
 import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@repo/design-system/components/ui/empty";
+import {
   Table,
   TableBody,
   TableCell,
@@ -17,6 +25,7 @@ import {
   TableHeader,
   TableRow,
 } from "@repo/design-system/components/ui/table";
+import { BookOpen } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -122,12 +131,26 @@ export default async function ChartOfAccountsPage() {
 
       {accounts.length === 0 ? (
         <Card>
-          <CardHeader>
-            <CardTitle>No chart of accounts records yet</CardTitle>
-            <CardDescription>
-              This tenant does not have any ledger accounts in the database yet.
-            </CardDescription>
-          </CardHeader>
+          <CardContent className="py-8">
+            <Empty>
+              <EmptyHeader>
+                <EmptyMedia variant="icon">
+                  <BookOpen />
+                </EmptyMedia>
+                <EmptyTitle>No accounts in your chart yet</EmptyTitle>
+                <EmptyDescription>
+                  Set up your ledger structure with asset, liability, equity,
+                  revenue, and expense accounts to start tracking balances.
+                </EmptyDescription>
+              </EmptyHeader>
+              <EmptyContent>
+                <p className="text-muted-foreground text-xs">
+                  Click <strong>Add Account</strong> above to create your first
+                  ledger account.
+                </p>
+              </EmptyContent>
+            </Empty>
+          </CardContent>
         </Card>
       ) : (
         <Card>

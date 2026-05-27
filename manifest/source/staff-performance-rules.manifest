@@ -15,9 +15,9 @@ entity StaffPerformance {
   property improvements: string = ""
   property goals: string = ""
   property notes: string = ""
-  property completedAt: number = 0
-  property createdAt: number = 0
-  property updatedAt: number = 0
+  property completedAt: datetime = now()
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
 
   constraint validReviewType: self.reviewType in ["quarterly", "annual", "probation", "promotion", "self"] "Invalid review type"
   constraint validStatus: self.status in ["draft", "in_review", "completed", "acknowledged", "cancelled"] "Invalid review status"

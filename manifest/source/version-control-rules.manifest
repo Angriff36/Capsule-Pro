@@ -10,8 +10,8 @@ entity VersionedEntity {
   property required entityName: string
   property isLocked: boolean = false
   property currentVersionId: string = ""
-  property createdAt: number = 0
-  property updatedAt: number = 0
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
 
   // Derived from EntityVersion count
   computed versionCount: number = 0
@@ -93,9 +93,9 @@ entity EntityVersion {
   property snapshotData: string = {}
   property metadata: string = {}
   property isApproved: boolean = false
-  property approvedAt: number = 0
+  property approvedAt: datetime = now()
   property approvedBy: string = ""
-  property createdAt: number = 0
+  property createdAt: datetime = now()
   property createdBy: string = ""
 
   computed isInitialVersion: boolean = self.versionNumber == 1
@@ -165,8 +165,8 @@ entity VersionApproval {
   property required approverId: string
   property required status: string
   property comments: string = ""
-  property reviewedAt: number = 0
-  property createdAt: number = 0
+  property reviewedAt: datetime = now()
+  property createdAt: datetime = now()
 
   computed isPending: boolean = self.status == "pending"
   computed isApproved: boolean = self.status == "approved"

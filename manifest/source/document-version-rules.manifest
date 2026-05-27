@@ -9,8 +9,8 @@ entity DocumentVersion {
   property required content: string
   property changeDescription: string = ""
   property createdBy: string = ""
-  property createdAt: number = 0
-  property updatedAt: number = 0
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
 
   computed isLatest: boolean = false
 

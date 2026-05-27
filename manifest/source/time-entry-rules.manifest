@@ -12,7 +12,7 @@ entity TimeEntry {
   property breakMinutes: number = 0
   property notes: string = ""
   property approvedBy: string = ""
-  property approvedAt: number = 0
+  property approvedAt: datetime = now()
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
   property deletedAt: datetime = now()

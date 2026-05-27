@@ -11,18 +11,18 @@ entity Equipment {
   property serialNumber: string = ""
   property manufacturer: string = ""
   property model: string = ""
-  property purchaseDate: number = 0
+  property purchaseDate: datetime = now()
   property warrantyExpiry: number = 0
-  property lastMaintenanceDate: number = 0
-  property nextMaintenanceDate: number = 0
+  property lastMaintenanceDate: datetime = now()
+  property nextMaintenanceDate: datetime = now()
   property maintenanceIntervalDays: number = 90
   property usageHours: number = 0
   property maxUsageHours: number = 1000
   property condition: string = "good"
   property notes: string = ""
   property isActive: boolean = true
-  property createdAt: number = 0
-  property updatedAt: number = 0
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
 
   computed isOverdueForMaintenance: boolean = self.nextMaintenanceDate > 0 and now() > self.nextMaintenanceDate
   computed daysUntilMaintenance: number = self.nextMaintenanceDate > 0 ? (self.nextMaintenanceDate - now()) / 86400000 : -1
@@ -215,12 +215,12 @@ entity MaintenanceWorkOrder {
   property assignedTo: string = ""
   property estimatedCost: number = 0
   property actualCost: number = 0
-  property scheduledDate: number = 0
-  property completedDate: number = 0
+  property scheduledDate: datetime = now()
+  property completedDate: datetime = now()
   property partsUsed: string = ""
   property vendorId: string = ""
-  property createdAt: number = 0
-  property updatedAt: number = 0
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
 
   computed isOverdue: boolean = self.scheduledDate > 0 and self.status in ["open", "in_progress"] and now() > self.scheduledDate
   computed daysUntilDue: number = self.scheduledDate > 0 ? (self.scheduledDate - now()) / 86400000 : -1

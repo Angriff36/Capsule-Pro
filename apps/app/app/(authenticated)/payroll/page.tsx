@@ -7,6 +7,7 @@ import { ModuleLanding } from "../components/module-landing";
 
 const PayrollPage = () => (
   <ModuleLanding
+    eyebrow="Operations / Payroll"
     highlights={[
       {
         title: "Timecards",

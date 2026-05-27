@@ -11,11 +11,11 @@ entity InventoryTransfer {
   property approvedBy: string = ""
   property shippedBy: string = ""
   property receivedBy: string = ""
-  property shipDate: number = 0
-  property receiveDate: number = 0
+  property shipDate: datetime = now()
+  property receiveDate: datetime = now()
   property notes: string = ""
-  property createdAt: number = 0
-  property updatedAt: number = 0
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
   // items: JSON-array-as-string payload. The InventoryTransferPrismaStore
   // accepts both a real array (from the UI dispatcher) and a JSON string
   // (from server-to-server callers), parses it, and fans out to

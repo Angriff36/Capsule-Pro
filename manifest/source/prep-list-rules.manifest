@@ -12,8 +12,8 @@ entity PrepList {
   property totalItems: int = 0
   property totalEstimatedTime: number = 0
   property notes: string = ""
-  property generatedAt: number = 0
-  property finalizedAt: number = 0
+  property generatedAt: datetime = now()
+  property finalizedAt: datetime = now()
   property isActive: boolean = true
 
   computed isDraft: boolean = self.status == "draft"
@@ -216,7 +216,7 @@ entity PrepListItem {
   property recipeVersionId: string = ""
   property sortOrder: int = 0
   property isCompleted: boolean = false
-  property completedAt: number = 0
+  property completedAt: datetime = now()
   property completedBy: string = ""
 
   computed hasAllergens: boolean = self.allergens != null and self.allergens != ""

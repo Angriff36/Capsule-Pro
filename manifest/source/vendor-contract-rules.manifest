@@ -14,8 +14,8 @@ entity VendorContract {
   property vendorName: string = ""
   property contractType: string = "purchase"
   property status: string = "draft"
-  property startDate: number = 0
-  property endDate: number = 0
+  property startDate: datetime = now()
+  property endDate: datetime = now()
   property autoRenew: boolean = false
   property renewalTermDays: number = 0
   property noticeDaysBeforeRenewal: number = 30
@@ -26,9 +26,9 @@ entity VendorContract {
   property spendToPeriod: number = 0
   property currencyCode: string = "USD"
   property approvedBy: string = ""
-  property approvedAt: number = 0
+  property approvedAt: datetime = now()
   property terminatedBy: string = ""
-  property terminatedAt: number = 0
+  property terminatedAt: datetime = now()
   property terminationReason: string = ""
   property contractUrl: string = ""
   property notes: string = ""

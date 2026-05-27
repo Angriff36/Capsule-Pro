@@ -34,7 +34,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
-import { Play, Plus, RotateCcw, X } from "lucide-react";
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@repo/design-system/components/ui/empty";
+import { Input } from "@repo/design-system/components/ui/input";
+import { Label } from "@repo/design-system/components/ui/label";
+import { Play, Plus, RotateCcw, X, TrendingUp } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useMemo, useState } from "react";
 
@@ -382,11 +392,8 @@ export function RevenueRecognitionClient({
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
                   <div className="grid gap-2">
-                    <label className="text-sm font-medium" htmlFor="cr-invoice">
-                      Invoice ID
-                    </label>
-                    <input
-                      className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                    <Label htmlFor="cr-invoice">Invoice ID</Label>
+                    <Input
                       id="cr-invoice"
                       onChange={(e) =>
                         setCreateForm((f) => ({
@@ -399,11 +406,8 @@ export function RevenueRecognitionClient({
                     />
                   </div>
                   <div className="grid gap-2">
-                    <label className="text-sm font-medium" htmlFor="cr-client">
-                      Client ID
-                    </label>
-                    <input
-                      className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                    <Label htmlFor="cr-client">Client ID</Label>
+                    <Input
                       id="cr-client"
                       onChange={(e) =>
                         setCreateForm((f) => ({
@@ -416,9 +420,7 @@ export function RevenueRecognitionClient({
                     />
                   </div>
                   <div className="grid gap-2">
-                    <label className="text-sm font-medium" htmlFor="cr-method">
-                      Method
-                    </label>
+                    <Label htmlFor="cr-method">Method</Label>
                     <Select
                       onValueChange={(v) =>
                         setCreateForm((f) => ({ ...f, method: v }))
@@ -439,14 +441,8 @@ export function RevenueRecognitionClient({
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="grid gap-2">
-                      <label
-                        className="text-sm font-medium"
-                        htmlFor="cr-amount"
-                      >
-                        Total Amount
-                      </label>
-                      <input
-                        className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                      <Label htmlFor="cr-amount">Total Amount</Label>
+                      <Input
                         id="cr-amount"
                         inputMode="decimal"
                         onChange={(e) =>
@@ -461,14 +457,8 @@ export function RevenueRecognitionClient({
                       />
                     </div>
                     <div className="grid gap-2">
-                      <label
-                        className="text-sm font-medium"
-                        htmlFor="cr-period"
-                      >
-                        Recognition Period
-                      </label>
-                      <input
-                        className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                      <Label htmlFor="cr-period">Recognition Period</Label>
+                      <Input
                         id="cr-period"
                         inputMode="numeric"
                         min="1"
@@ -486,11 +476,8 @@ export function RevenueRecognitionClient({
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="grid gap-2">
-                      <label className="text-sm font-medium" htmlFor="cr-start">
-                        Start Date
-                      </label>
-                      <input
-                        className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                      <Label htmlFor="cr-start">Start Date</Label>
+                      <Input
                         id="cr-start"
                         onChange={(e) =>
                           setCreateForm((f) => ({
@@ -503,11 +490,8 @@ export function RevenueRecognitionClient({
                       />
                     </div>
                     <div className="grid gap-2">
-                      <label className="text-sm font-medium" htmlFor="cr-end">
-                        End Date
-                      </label>
-                      <input
-                        className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                      <Label htmlFor="cr-end">End Date</Label>
+                      <Input
                         id="cr-end"
                         onChange={(e) =>
                           setCreateForm((f) => ({
@@ -521,11 +505,8 @@ export function RevenueRecognitionClient({
                     </div>
                   </div>
                   <div className="grid gap-2">
-                    <label className="text-sm font-medium" htmlFor="cr-desc">
-                      Description
-                    </label>
-                    <input
-                      className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                    <Label htmlFor="cr-desc">Description</Label>
+                    <Input
                       id="cr-desc"
                       onChange={(e) =>
                         setCreateForm((f) => ({
@@ -643,8 +624,30 @@ export function RevenueRecognitionClient({
           </div>
 
           {filtered.length === 0 ? (
-            <div className="rounded-[22px] border border-dashed border-hairline bg-canvas p-8 text-sm text-muted-foreground">
-              No revenue recognition schedules found.
+            <div className="rounded-[22px] border border-hairline bg-canvas py-8">
+              <Empty>
+                <EmptyHeader>
+                  <EmptyMedia variant="icon">
+                    <TrendingUp />
+                  </EmptyMedia>
+                  <EmptyTitle>
+                    {statusFilter !== "ALL" || methodFilter !== "ALL"
+                      ? "No schedules match your filters"
+                      : "No recognition schedules yet"}
+                  </EmptyTitle>
+                  <EmptyDescription>
+                    {statusFilter !== "ALL" || methodFilter !== "ALL"
+                      ? "Try adjusting the status or method filter to find what you're looking for."
+                      : "Create a schedule to start tracking revenue recognition against invoices."}
+                  </EmptyDescription>
+                </EmptyHeader>
+                <EmptyContent>
+                  <p className="text-muted-foreground text-xs">
+                    Click <strong>New Schedule</strong> above to set up ASC 606
+                    compliant revenue recognition.
+                  </p>
+                </EmptyContent>
+              </Empty>
             </div>
           ) : (
             <div className="overflow-hidden rounded-[22px] border border-hairline bg-canvas">
@@ -769,8 +772,7 @@ export function RevenueRecognitionClient({
                               </DialogDescription>
                             </DialogHeader>
                             <div className="py-4">
-                              <input
-                                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                              <Input
                                 inputMode="decimal"
                                 max={schedule.remainingAmount}
                                 min="0.01"

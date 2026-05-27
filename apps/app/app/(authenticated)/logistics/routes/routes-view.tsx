@@ -35,6 +35,14 @@ import {
   TabsList,
   TabsTrigger,
 } from "@repo/design-system/components/ui/tabs";
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@repo/design-system/components/ui/empty";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
 import {
   CheckCircle2,
@@ -372,8 +380,25 @@ export function RoutesView() {
         <TabsContent className="space-y-4" value={activeTab}>
           {filteredRoutes.length === 0 ? (
             <Card tone="canvas">
-              <CardContent className="py-8 text-center text-muted-foreground">
-                No routes found. Create a new route to get started.
+              <CardContent className="py-8">
+                <Empty>
+                  <EmptyHeader>
+                    <EmptyMedia variant="icon">
+                      <Route />
+                    </EmptyMedia>
+                    <EmptyTitle>No routes found</EmptyTitle>
+                    <EmptyDescription>
+                      {activeTab !== "all"
+                        ? `No ${activeTab.replace("_", " ")} routes. Try a different filter or create a new route.`
+                        : "Create delivery routes to optimize multi-venue logistics."}
+                    </EmptyDescription>
+                  </EmptyHeader>
+                  <EmptyContent>
+                    <p className="text-muted-foreground text-xs">
+                      Click <strong>New Route</strong> above to get started.
+                    </p>
+                  </EmptyContent>
+                </Empty>
               </CardContent>
             </Card>
           ) : (

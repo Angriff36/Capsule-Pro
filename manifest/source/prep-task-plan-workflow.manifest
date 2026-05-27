@@ -24,13 +24,13 @@ entity PrepTaskPlanWorkflow {
   property approvedCount: int = 0
   property instantiatedCount: int = 0
   property reviewedBy: string = ""
-  property reviewedAt: number = 0
+  property reviewedAt: datetime = now()
   property approvedBy: string = ""
-  property approvedAt: number = 0
-  property startedAt: number = 0
-  property completedAt: number = 0
-  property createdAt: number = 0
-  property updatedAt: number = 0
+  property approvedAt: datetime = now()
+  property startedAt: datetime = now()
+  property completedAt: datetime = now()
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
 
   // Computed properties for state checks
   computed isActive: boolean = self.status in ["generating", "reviewing", "approving", "instantiating", "scheduling"]

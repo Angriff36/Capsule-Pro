@@ -11,7 +11,7 @@ entity WasteEntry {
   property locationId: string = ""
   property eventId: string = ""
   property loggedBy: string = ""
-  property loggedAt: number = 0
+  property loggedAt: datetime = now()
   property unitCost: number = 0
   property totalCost: number = 0
   property notes: string = ""

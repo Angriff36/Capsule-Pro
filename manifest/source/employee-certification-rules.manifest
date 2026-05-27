@@ -10,9 +10,9 @@ entity EmployeeCertification {
   property issuedDate: string = ""
   property expiryDate: string = ""
   property documentUrl: string = ""
-  property createdAt: number = 0
-  property updatedAt: number = 0
-  property deletedAt: number = 0
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
+  property deletedAt: datetime = now()
 
   computed isDeleted: boolean = self.deletedAt > 0
 

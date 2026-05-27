@@ -8,11 +8,11 @@ entity PrepComment {
   property required employeeId: string
   property required commentText: string
   property isResolved: boolean = false
-  property resolvedAt: number = 0
+  property resolvedAt: datetime = now()
   property resolvedBy: string = ""
-  property createdAt: number = 0
-  property updatedAt: number = 0
-  property deletedAt: number = 0
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
+  property deletedAt: datetime = now()
 
   computed isActive: boolean = self.deletedAt == 0
   computed hasBeenResolved: boolean = self.resolvedAt != 0

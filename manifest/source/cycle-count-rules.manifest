@@ -8,10 +8,10 @@ entity CycleCountSession {
   property required sessionId: string
   property required sessionName: string
   property countType: string = "ad_hoc"
-  property scheduledDate: number = 0
+  property scheduledDate: datetime = now()
   property startedAt: datetime = now()
   property completedAt: datetime = now()
-  property finalizedAt: number = 0
+  property finalizedAt: datetime = now()
   property status: string = "draft"
   property totalItems: int = 0
   property countedItems: int = 0
@@ -130,13 +130,13 @@ entity CycleCountRecord {
   property countedQuantity: number = 0
   property variance: number = 0
   property variancePct: number = 0
-  property countDate: number = 0
+  property countDate: datetime = now()
   property countedById: string = ""
   property barcode: string = ""
   property notes: string = ""
   property isVerified: boolean = false
   property verifiedById: string = ""
-  property verifiedAt: number = 0
+  property verifiedAt: datetime = now()
   property syncStatus: string = "synced"
   property offlineId: string = ""
   property createdAt: datetime = now()
@@ -240,12 +240,12 @@ entity VarianceReport {
   property status: string = "pending"
   property adjustmentType: string = ""
   property adjustmentAmount: number = 0
-  property adjustmentDate: number = 0
+  property adjustmentDate: datetime = now()
   property notes: string = ""
-  property generatedAt: number = 0
-  property createdAt: number = 0
-  property updatedAt: number = 0
-  property deletedAt: number = 0
+  property generatedAt: datetime = now()
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
+  property deletedAt: datetime = now()
 
   computed isPending: boolean = self.status == "pending"
   computed isReviewed: boolean = self.status == "reviewed"

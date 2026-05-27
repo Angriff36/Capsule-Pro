@@ -8,10 +8,10 @@ entity ClientInteraction {
   property leadId: string = ""
   property employeeId: string = ""
   property interactionType: string = "note"
-  property interactionDate: number = 0
+  property interactionDate: datetime = now()
   property subject: string = ""
   property description: string = ""
-  property followUpDate: number = 0
+  property followUpDate: datetime = now()
   property followUpCompleted: boolean = false
   property correlationId: string = ""
   property createdAt: datetime = now()

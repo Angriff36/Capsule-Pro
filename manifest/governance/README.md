@@ -8,6 +8,10 @@ gates (audit-governance, audit-bypasses, integration-check, enforce-surface).
 | `commands.json` | `pnpm manifest:registries` (wraps `manifest emit registries --ir manifest/ir/kitchen.ir.json --out manifest/governance`) | Wrapped envelope `{irHash, compilerVersion, commands: [...]}`. |
 | `entities.json` | Same | Wrapped envelope. |
 | `bypasses.json` | Hand-authored. Schema validated by `pnpm exec manifest audit-bypasses`. | `{ version, bypasses[] }`. |
+| `generated-surfaces.md` | Hand-authored governance reference. | Generated artifacts and drift response. |
+| `ai-surfaces.md` | Hand-authored governance reference. | Agent SDK/MCP/AI boundaries and forbidden bypasses. |
+| `projection-conformance.md` | Hand-authored governance reference. | Deterministic, dispatcher-aligned, non-authoritative projection proof. |
+| `audit-checklist.md` | Hand-authored review checklist. | Lightweight checks until mechanical gates exist. |
 
 ## Rules
 

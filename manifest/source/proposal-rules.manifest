@@ -9,7 +9,7 @@ entity Proposal {
   property leadId: string = ""
   property eventId: string = ""
   property title: string = ""
-  property eventDate: number = 0
+  property eventDate: datetime = now()
   property eventType: string = ""
   property guestCount: int = 0
   property venueName: string = ""
@@ -21,10 +21,10 @@ entity Proposal {
   property total: number = 0
   property status: string = "draft"
   property validUntil: number = 0
-  property sentAt: number = 0
-  property viewedAt: number = 0
-  property acceptedAt: number = 0
-  property rejectedAt: number = 0
+  property sentAt: datetime = now()
+  property viewedAt: datetime = now()
+  property acceptedAt: datetime = now()
+  property rejectedAt: datetime = now()
   property notes: string = ""
   property termsAndConditions: string = ""
   property lineItemCount: int = 0
@@ -250,9 +250,9 @@ entity ProposalLineItem {
   property totalPrice: number = 0
   property sortOrder: int = 0
   property notes: string = ""
-  property createdAt: number = 0
-  property updatedAt: number = 0
-  property deletedAt: number = 0
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
+  property deletedAt: datetime = now()
 
   computed calculatedTotal: number = self.quantity * self.unitPrice
 

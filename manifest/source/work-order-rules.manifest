@@ -11,7 +11,7 @@ entity WorkOrder {
   property priority: string = "medium"
   property status: string = "open"
   property description: string = ""
-  property scheduledDate: number = 0
+  property scheduledDate: datetime = now()
   property assignedTo: string = ""
   property completedAt: datetime = now()
   property createdAt: datetime = now()

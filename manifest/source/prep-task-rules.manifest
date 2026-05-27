@@ -16,13 +16,13 @@ entity PrepTask {
   property quantityCompleted: number = 0
   property quantityUnitId: string = ""
   property servingsTotal: int = 0
-  property startByDate: number = 0
-  property dueByDate: number = 0
+  property startByDate: datetime = now()
+  property dueByDate: datetime = now()
   property priority: number = 5
   property notes: string = ""
   property ingredients: string = ""
-  property createdAt: number = 0
-  property updatedAt: number = 0
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
 
   computed isClaimed: boolean = self.claimedBy != ""
   computed isOverdue: boolean = self.dueByDate != 0 and now() > self.dueByDate and self.status != "done"

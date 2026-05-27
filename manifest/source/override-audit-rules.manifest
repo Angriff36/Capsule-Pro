@@ -11,8 +11,8 @@ entity OverrideAudit {
   property overriddenBy: string = ""
   property overrideReason: string = ""
   property authorizedBy: string = ""
-  property authorizedAt: number = 0
-  property createdAt: number = 0
+  property authorizedAt: datetime = now()
+  property createdAt: datetime = now()
 
   computed isAuthorized: boolean = self.authorizedBy != ""
   computed isPendingAuthorization: boolean = self.authorizedBy == ""

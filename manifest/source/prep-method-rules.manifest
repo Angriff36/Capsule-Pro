@@ -10,9 +10,9 @@ entity PrepMethod {
   property estimatedDurationMinutes: decimal = 0
   property requiresCertification: string = ""
   property isActive: boolean = true
-  property createdAt: number = 0
-  property updatedAt: number = 0
-  property deletedAt: number = 0
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
+  property deletedAt: datetime = now()
 
   computed hasDuration: boolean = self.estimatedDurationMinutes > 0
   computed hasCertification: boolean = self.requiresCertification != ""

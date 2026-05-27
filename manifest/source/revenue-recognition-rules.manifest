@@ -21,13 +21,13 @@ entity RevenueRecognitionSchedule {
   property required status: string = "PENDING"
 
   // Timing
-  property required startDate: number = 0
-  property required endDate: number = 0
+  property required startDate: datetime = now()
+  property required endDate: datetime = now()
   property recognitionPeriod: number = 0
 
   // Service period (for SERVICE_PERIOD method)
-  property serviceStartDate: number = 0
-  property serviceEndDate: number = 0
+  property serviceStartDate: datetime = now()
+  property serviceEndDate: datetime = now()
 
   // Milestone tracking (for MILESTONE_BASED method)
   property totalMilestones: int = 0
@@ -202,8 +202,8 @@ entity RevenueRecognitionLine {
   property required status: string = "PENDING"
 
   // Timing
-  property required dueDate: number = 0
-  property recognizedAt: number = 0
+  property required dueDate: datetime = now()
+  property recognizedAt: datetime = now()
 
   // Milestone info (for milestone-based recognition)
   property milestoneId: string = ""

@@ -35,7 +35,23 @@ import {
   TableRow,
 } from "@repo/design-system/components/ui/table";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
-import { Check, Package, Plus, Truck, X } from "lucide-react";
+import {
+  ArrowRightLeft,
+  Check,
+  Loader2Icon,
+  Package,
+  Plus,
+  Truck,
+  X,
+} from "lucide-react";
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@repo/design-system/components/ui/empty";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
@@ -308,13 +324,35 @@ export function InventoryTransfersClient() {
         </CardHeader>
         <CardContent>
           {loading ? (
-            <div className="text-center py-8 text-muted-foreground">
-              Loading...
+            <div className="flex items-center justify-center py-12">
+              <Loader2Icon className="h-8 w-8 animate-spin text-muted-foreground" />
             </div>
           ) : transfers.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              No transfers found
-            </div>
+            <Empty>
+              <EmptyHeader>
+                <EmptyMedia variant="icon">
+                  <ArrowRightLeft />
+                </EmptyMedia>
+                <EmptyTitle>
+                  {statusFilter !== "all"
+                    ? "No matching transfers"
+                    : "No transfers yet"}
+                </EmptyTitle>
+                <EmptyDescription>
+                  {statusFilter !== "all"
+                    ? "No transfers match the selected status filter. Try a different filter."
+                    : "Create your first inventory transfer to move stock between locations."}
+                </EmptyDescription>
+              </EmptyHeader>
+              {statusFilter === "all" && (
+                <EmptyContent>
+                  <Button onClick={() => setIsCreateOpen(true)} size="sm">
+                    <Plus className="mr-2 h-4 w-4" />
+                    New Transfer
+                  </Button>
+                </EmptyContent>
+              )}
+            </Empty>
           ) : (
             <Table>
               <TableHeader>

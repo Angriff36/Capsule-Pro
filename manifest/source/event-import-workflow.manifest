@@ -16,10 +16,10 @@ entity EventImportWorkflow {
   property errors: string = "[]"
   property warnings: string = "[]"
   property confidence: number = 0
-  property startedAt: number = 0
-  property completedAt: number = 0
-  property createdAt: number = 0
-  property updatedAt: number = 0
+  property startedAt: datetime = now()
+  property completedAt: datetime = now()
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
 
   // Computed properties for state checks
   computed isActive: boolean = self.status in ["parsing", "extracting", "validating", "proposing", "reserving", "activating"]

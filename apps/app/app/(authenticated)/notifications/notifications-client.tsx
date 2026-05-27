@@ -16,6 +16,10 @@ import {
   DialogTitle,
 } from "@repo/design-system/components/ui/dialog";
 import { Input } from "@repo/design-system/components/ui/input";
+import {
+  FilteredEmptyState,
+  NoNotificationsState,
+} from "@repo/design-system/components/blocks/illustrated-empty-states";
 import { Bell, BellOff, CheckCircle, Eye, Loader2, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useMemo, useState } from "react";
@@ -473,15 +477,14 @@ export function NotificationsClient({
           <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
         </div>
       ) : filtered.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-12 text-center">
-          <Bell className="mb-4 h-12 w-12 text-muted-foreground" />
-          <p className="text-lg font-medium text-ink">No notifications found</p>
-          <p className="text-sm text-ink/50">
-            {statusFilter !== "all"
-              ? "Try changing the filter to see more notifications."
-              : "Notifications will appear here when you receive them."}
-          </p>
-        </div>
+        statusFilter !== "all" ? (
+          <FilteredEmptyState
+            itemName="notifications"
+            onClearFilters={() => setStatusFilter("all")}
+          />
+        ) : (
+          <NoNotificationsState />
+        )
       ) : (
         <ResearchTable
           caption={

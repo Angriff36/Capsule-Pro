@@ -8,9 +8,9 @@ entity QACheck {
   property result: string = "pass"
   property inspector: string = ""
   property notes: string = ""
-  property completedAt: number = 0
-  property createdAt: number = 0
-  property updatedAt: number = 0
+  property completedAt: datetime = now()
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
 
   constraint validCheckType: self.checkType in ["temperature", "sanitation", "storage", "labeling", "equipment"] "Invalid check type"
   constraint validResult: self.result in ["pass", "fail", "na"] "Invalid check result"
@@ -51,10 +51,10 @@ entity QACorrectiveAction {
   property priority: string = "medium"
   property status: string = "open"
   property resolutionNotes: string = ""
-  property dueDate: number = 0
-  property resolvedAt: number = 0
-  property createdAt: number = 0
-  property updatedAt: number = 0
+  property dueDate: datetime = now()
+  property resolvedAt: datetime = now()
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
 
   constraint validPriority: self.priority in ["low", "medium", "high", "critical"] "Invalid priority"
   constraint validStatus: self.status in ["open", "in_progress", "resolved", "dismissed"] "Invalid action status"
@@ -96,9 +96,9 @@ entity QATemperatureLog {
   property equipment: string = ""
   property recordedBy: string = ""
   property notes: string = ""
-  property loggedAt: number = 0
-  property createdAt: number = 0
-  property updatedAt: number = 0
+  property loggedAt: datetime = now()
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
 
   computed isInSafeRange: boolean = self.unit == "fahrenheit" ? (self.temperature >= 0 and self.temperature <= 40) : (self.temperature >= -18 and self.temperature <= 4)
 

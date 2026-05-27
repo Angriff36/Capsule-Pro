@@ -37,6 +37,14 @@ import {
 } from "@repo/design-system/components/ui/select";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
 import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@repo/design-system/components/ui/empty";
+import {
   AlertTriangle,
   CheckCircle2,
   Fuel,
@@ -319,10 +327,24 @@ export default function VehiclesPage() {
 
       {/* Vehicle List */}
       {vehicles.length === 0 ? (
-        <Card tone="canvas">
-          <CardContent className="py-12 text-center text-muted-foreground">
-            <Truck className="h-12 w-12 mx-auto mb-4 opacity-50" />
-            <p>No vehicles found. Add a vehicle to get started.</p>
+        <Card>
+          <CardContent className="py-8">
+            <Empty>
+              <EmptyHeader>
+                <EmptyMedia variant="icon">
+                  <Truck />
+                </EmptyMedia>
+                <EmptyTitle>No vehicles yet</EmptyTitle>
+                <EmptyDescription>
+                  Add fleet vehicles to manage capacity, maintenance status, and driver assignments.
+                </EmptyDescription>
+              </EmptyHeader>
+              <EmptyContent>
+                <p className="text-muted-foreground text-xs">
+                  Click <strong>Add Vehicle</strong> above to register your first vehicle.
+                </p>
+              </EmptyContent>
+            </Empty>
           </CardContent>
         </Card>
       ) : (

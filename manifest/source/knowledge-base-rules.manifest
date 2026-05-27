@@ -10,10 +10,10 @@ entity KnowledgeBaseEntry {
   property tags: string = ""
   property status: string = "draft"
   property authorId: string = ""
-  property publishedAt: number = 0
+  property publishedAt: datetime = now()
   property viewCount: number = 0
-  property createdAt: number = 0
-  property updatedAt: number = 0
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
 
   computed isPublished: boolean = self.status == "published"
   computed isDraft: boolean = self.status == "draft"

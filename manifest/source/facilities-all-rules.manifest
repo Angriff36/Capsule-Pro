@@ -14,8 +14,8 @@ entity Facility {
   property status: string = "active"
   property capacity: number = 0
   property description: string = ""
-  property createdAt: number = 0
-  property updatedAt: number = 0
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
 
   computed isActive: boolean = self.status == "active"
   computed hasCapacityInfo: boolean = self.capacity > 0
@@ -81,8 +81,8 @@ entity FacilityArea {
   property description: string = ""
   property squareFeet: number = 0
   property status: string = "active"
-  property createdAt: number = 0
-  property updatedAt: number = 0
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
 
   constraint validAreaType: self.areaType in ["kitchen", "storage", "dining", "prep", "office", "loading_dock", "restroom", "other"] "Invalid area type"
 
@@ -134,14 +134,14 @@ entity FacilityAsset {
   property assetType: string = "other"
   property assetClass: string = "fixed"
   property status: string = "operational"
-  property purchaseDate: number = 0
+  property purchaseDate: datetime = now()
   property purchasePrice: number = 0
   property currentValue: number = 0
   property depreciationRate: number = 0
   property serialNumber: string = ""
   property notes: string = ""
-  property createdAt: number = 0
-  property updatedAt: number = 0
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
 
   constraint validAssetType: self.assetType in ["equipment", "furniture", "vehicle", "technology", "other"] "Invalid asset type"
   constraint validStatus: self.status in ["operational", "maintenance", "retired", "sold"] "Invalid asset status"
@@ -193,12 +193,12 @@ entity FacilitySchedule {
   property description: string = ""
   property scheduleType: string = "maintenance"
   property status: string = "scheduled"
-  property startDate: number = 0
-  property endDate: number = 0
+  property startDate: datetime = now()
+  property endDate: datetime = now()
   property assignedTo: string = ""
   property notes: string = ""
-  property createdAt: number = 0
-  property updatedAt: number = 0
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
 
   constraint validScheduleType: self.scheduleType in ["maintenance", "cleaning", "inspection", "renovation", "other"] "Invalid schedule type"
   constraint validStatus: self.status in ["scheduled", "in_progress", "completed", "cancelled"] "Invalid schedule status"
@@ -271,11 +271,11 @@ entity FacilityWorkOrder {
   property assignedTo: string = ""
   property estimatedCost: number = 0
   property actualCost: number = 0
-  property scheduledDate: number = 0
-  property completedDate: number = 0
+  property scheduledDate: datetime = now()
+  property completedDate: datetime = now()
   property notes: string = ""
-  property createdAt: number = 0
-  property updatedAt: number = 0
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
 
   constraint validPriority: self.priority in ["low", "medium", "high", "critical"] "Invalid priority"
   constraint validStatus: self.status in ["open", "in_progress", "completed", "cancelled"] "Invalid work order status"

@@ -36,6 +36,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@repo/design-system/components/ui/empty";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
 import {
   CheckCircle2,
@@ -291,10 +299,24 @@ export default function DriversPage() {
       </div>
 
       {drivers.length === 0 ? (
-        <Card tone="canvas">
-          <CardContent className="py-12 text-center text-muted-foreground">
-            <User className="h-12 w-12 mx-auto mb-4 opacity-50" />
-            <p>No drivers found. Add a driver to get started.</p>
+        <Card>
+          <CardContent className="py-8">
+            <Empty>
+              <EmptyHeader>
+                <EmptyMedia variant="icon">
+                  <User />
+                </EmptyMedia>
+                <EmptyTitle>No drivers yet</EmptyTitle>
+                <EmptyDescription>
+                  Add delivery drivers to manage assignments and track availability.
+                </EmptyDescription>
+              </EmptyHeader>
+              <EmptyContent>
+                <p className="text-muted-foreground text-xs">
+                  Click <strong>Add Driver</strong> above to create your first driver.
+                </p>
+              </EmptyContent>
+            </Empty>
           </CardContent>
         </Card>
       ) : (

@@ -7,7 +7,7 @@ entity AdminChatParticipant {
   property threadId: string = ""
   property userId: string = ""
   property archivedAt: datetime = now()
-  property clearedAt: number = 0
+  property clearedAt: datetime = now()
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
   property deletedAt: datetime = now()

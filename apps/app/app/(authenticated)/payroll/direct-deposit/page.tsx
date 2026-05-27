@@ -36,6 +36,14 @@ import {
   Trash2,
   Users,
 } from "lucide-react";
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@repo/design-system/components/ui/empty";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
@@ -420,16 +428,22 @@ export default function DirectDepositPage() {
           <Loader2 className="mx-auto h-6 w-6 animate-spin text-muted-foreground" />
         </Card>
       ) : displayAccounts.length === 0 ? (
-        <Card className="p-8 text-center" tone="canvas">
-          <Landmark className="mx-auto h-10 w-10 text-muted-foreground/50 mb-3" />
-          <p className="text-muted-foreground font-medium">
-            No bank accounts found
-          </p>
-          <p className="text-xs text-muted-foreground mt-1">
-            {selectedEmployeeId
-              ? "Add a bank account for this employee to get started"
-              : "Select an employee or add a bank account to get started"}
-          </p>
+        <Card>
+          <CardContent className="py-8">
+            <Empty>
+              <EmptyHeader>
+                <EmptyMedia variant="icon">
+                  <Landmark />
+                </EmptyMedia>
+                <EmptyTitle>No bank accounts found</EmptyTitle>
+                <EmptyDescription>
+                  {selectedEmployeeId
+                    ? "Add a bank account for this employee to get started."
+                    : "Select an employee or add a bank account to get started."}
+                </EmptyDescription>
+              </EmptyHeader>
+            </Empty>
+          </CardContent>
         </Card>
       ) : (
         <div className="space-y-3">

@@ -12,10 +12,10 @@ entity EventContract {
   property documentUrl: string = ""
   property documentType: string = ""
   property notes: string = ""
-  property expiresAt: number = 0
-  property createdAt: number = 0
-  property updatedAt: number = 0
-  property deletedAt: number = 0
+  property expiresAt: datetime = now()
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
+  property deletedAt: datetime = now()
 
   computed isDraft: boolean = self.status == "draft"
   computed isSent: boolean = self.status == "sent"
@@ -123,14 +123,14 @@ entity ContractSignature {
   property required id: string
   property required tenantId: string
   property required contractId: string
-  property signedAt: number = 0
+  property signedAt: datetime = now()
   property signatureData: string = ""
   property signerName: string = ""
   property signerEmail: string = ""
   property ipAddress: string = ""
-  property createdAt: number = 0
-  property updatedAt: number = 0
-  property deletedAt: number = 0
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
+  property deletedAt: datetime = now()
 
   computed hasEmail: boolean = self.signerEmail != ""
   computed hasIpAddress: boolean = self.ipAddress != ""

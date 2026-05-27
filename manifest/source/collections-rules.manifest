@@ -28,7 +28,7 @@ entity CollectionCase {
 
   // Assignment
   property assignedTo: string = ""
-  property assignedAt: number = 0
+  property assignedAt: datetime = now()
 
   // Payment plan
   property hasPaymentPlan: boolean = false
@@ -38,7 +38,7 @@ entity CollectionCase {
   // Dispute handling
   property isDisputed: boolean = false
   property disputeReason: string = ""
-  property disputeResolvedAt: number = 0
+  property disputeResolvedAt: datetime = now()
 
   // Legal escalation
   property isEscalatedToLegal: boolean = false
@@ -48,14 +48,14 @@ entity CollectionCase {
   // Metadata
   property notes: string = ""
   property internalNotes: string = ""
-  property lastActivityAt: number = 0
+  property lastActivityAt: datetime = now()
   property metadata: string = "{}"
 
   // Timestamps
-  property required createdAt: number = 0
-  property required updatedAt: number = 0
-  property resolvedAt: number = 0
-  property closedAt: number = 0
+  property required createdAt: datetime = now()
+  property required updatedAt: datetime = now()
+  property resolvedAt: datetime = now()
+  property closedAt: datetime = now()
 
   // Computed properties
   computed collectionPercentage: number = self.originalAmount > 0 ? (self.collectedAmount / self.originalAmount) * 100 : 0
@@ -233,11 +233,11 @@ entity CollectionAction {
   property subject: string = ""
   property description: string = ""
   property outcome: string = ""
-  property nextActionDate: number = 0
+  property nextActionDate: datetime = now()
 
   // Promise to pay
   property promiseAmount: number = 0
-  property promiseDate: number = 0
+  property promiseDate: datetime = now()
 
   // Metadata
   property notes: string = ""
@@ -245,9 +245,9 @@ entity CollectionAction {
 
   // Timestamps
   property required scheduledFor: number = 0
-  property completedAt: number = 0
-  property required createdAt: number = 0
-  property required updatedAt: number = 0
+  property completedAt: datetime = now()
+  property required createdAt: datetime = now()
+  property required updatedAt: datetime = now()
 
   // Computed properties
   computed isCompleted: boolean = self.status == "COMPLETED"
@@ -313,20 +313,20 @@ entity CollectionPaymentPlan {
   property required status: string = "ACTIVE"
 
   // Schedule
-  property required startDate: number = 0
-  property required endDate: number = 0
+  property required startDate: datetime = now()
+  property required endDate: datetime = now()
   property frequency: string = ""
-  property nextPaymentDate: number = 0
+  property nextPaymentDate: datetime = now()
 
   // Metadata
   property notes: string = ""
   property metadata: string = "{}"
 
   // Timestamps
-  property required createdAt: number = 0
-  property required updatedAt: number = 0
-  property completedAt: number = 0
-  property defaultedAt: number = 0
+  property required createdAt: datetime = now()
+  property required updatedAt: datetime = now()
+  property completedAt: datetime = now()
+  property defaultedAt: datetime = now()
 
   // Computed properties
   computed isCompleted: boolean = self.status == "COMPLETED"

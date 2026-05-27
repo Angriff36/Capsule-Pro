@@ -31,7 +31,15 @@ import {
   SelectValue,
 } from "@repo/design-system/components/ui/select";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
-import { Loader2, Pencil, Plus, Trash2 } from "lucide-react";
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@repo/design-system/components/ui/empty";
+import { LayoutGrid, Loader2, Pencil, Plus, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
 import { createFacilityArea } from "../actions";
@@ -222,8 +230,25 @@ export default function AreasPage() {
 
         {areas.length === 0 ? (
           <Card>
-            <CardContent className="py-8 text-center text-muted-foreground">
-              No facility areas found. Create one to get started.
+            <CardContent className="py-8">
+              <Empty>
+                <EmptyHeader>
+                  <EmptyMedia variant="icon">
+                    <LayoutGrid />
+                  </EmptyMedia>
+                  <EmptyTitle>No facility areas yet</EmptyTitle>
+                  <EmptyDescription>
+                    Define areas within your facility — kitchens, storage
+                    rooms, dining halls, and more — to organize operations.
+                  </EmptyDescription>
+                </EmptyHeader>
+                <EmptyContent>
+                  <Button onClick={openCreate} size="sm">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add your first area
+                  </Button>
+                </EmptyContent>
+              </Empty>
             </CardContent>
           </Card>
         ) : (

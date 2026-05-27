@@ -10,9 +10,9 @@ entity Notification {
   property body: string = ""
   property actionUrl: string = ""
   property isRead: boolean = false
-  property readAt: number = 0
+  property readAt: datetime = now()
   property correlationId: string = ""
-  property createdAt: number = 0
+  property createdAt: datetime = now()
 
   computed isUnread: boolean = self.isRead == false
   computed hasAction: boolean = self.actionUrl != null and self.actionUrl != ""

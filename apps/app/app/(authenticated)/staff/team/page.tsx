@@ -27,6 +27,7 @@ import {
   TableHeader,
   TableRow,
 } from "@repo/design-system/components/ui/table";
+import { Plus, Users } from "lucide-react";
 import { notFound } from "next/navigation";
 import { getTenantIdForOrg } from "../../../lib/tenant";
 import { AddStaffForm } from "./components/add-staff-form";
@@ -164,8 +165,17 @@ const StaffTeamPage = async () => {
             />
 
             {employees.length === 0 ? (
-              <div className="rounded-[22px] border border-hairline bg-canvas p-10 text-center text-muted-foreground text-sm">
-                No staff members yet. Add your first team member to get started.
+              <div className="rounded-[22px] border border-hairline bg-canvas p-12 text-center">
+                <Users className="mx-auto mb-3 h-10 w-10 text-muted-foreground/50" />
+                <p className="font-medium text-ink">No staff yet</p>
+                <p className="mt-1 text-muted-foreground text-xs">
+                  Add your first team member to get started.
+                </p>
+                <Button asChild className="mt-4" size="sm">
+                  <a href="#add-staff">
+                    Add staff <Plus className="ml-2 h-4 w-4" />
+                  </a>
+                </Button>
               </div>
             ) : (
               <div className="overflow-hidden rounded-[22px] border border-hairline bg-canvas">

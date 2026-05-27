@@ -13,8 +13,8 @@ entity Budget {
   property status: string = "draft"
   property category: string = "general"
   property departmentId: string = ""
-  property createdAt: number = 0
-  property updatedAt: number = 0
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
 
   computed remainingAmount: number = self.allocatedAmount - self.spentAmount
   computed percentUsed: number = self.allocatedAmount > 0 ? (self.spentAmount / self.allocatedAmount) * 100 : 0

@@ -19,8 +19,8 @@ entity Vendor {
   property rating: number = 0
   property ratingCount: number = 0
   property notes: string = ""
-  property createdAt: number = 0
-  property updatedAt: number = 0
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
 
   computed averageRating: number = self.ratingCount > 0 ? self.rating / self.ratingCount : 0
 

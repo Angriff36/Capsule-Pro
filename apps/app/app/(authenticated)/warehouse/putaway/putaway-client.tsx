@@ -2,13 +2,20 @@
 
 import { StatusPill } from "@repo/design-system/components/blocks/page-shell";
 import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@repo/design-system/components/ui/empty";
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
-import { MapPin, Package } from "lucide-react";
+import { Loader2, MapPin, Package } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
 
@@ -146,17 +153,22 @@ export function PutawayClient({ initialMetrics }: PutawayClientProps) {
 
       {/* Table */}
       {isLoading ? (
-        <div className="flex items-center justify-center py-16 text-ink/50">
-          Loading putaway tasks...
+        <div className="flex items-center justify-center gap-3 py-16 text-muted-foreground">
+          <Loader2 className="h-5 w-5 animate-spin" />
+          <span className="text-sm">Loading putaway tasks...</span>
         </div>
       ) : tasks.length === 0 ? (
-        <div className="flex flex-col items-center justify-center gap-3 py-16 text-ink/50">
-          <Package className="size-10 opacity-30" />
-          <p className="text-sm">No putaway tasks found</p>
-          <p className="text-xs text-ink/40">
-            Receive stock to generate putaway tasks
-          </p>
-        </div>
+        <Empty>
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <Package />
+            </EmptyMedia>
+            <EmptyTitle>No putaway tasks found</EmptyTitle>
+            <EmptyDescription>
+              Receive stock to generate putaway tasks automatically.
+            </EmptyDescription>
+          </EmptyHeader>
+        </Empty>
       ) : (
         <div className="overflow-x-auto rounded-lg border border-hairline">
           <table className="w-full text-sm">

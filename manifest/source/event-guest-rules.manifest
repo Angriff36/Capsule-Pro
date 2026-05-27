@@ -16,9 +16,9 @@ entity EventGuest {
   property specialMealNotes: string = ""
   property tableAssignment: string = ""
   property mealPreference: string = ""
-  property createdAt: number = 0
-  property updatedAt: number = 0
-  property deletedAt: number = 0
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
+  property deletedAt: datetime = now()
 
   computed hasDietaryRestrictions: boolean = self.dietaryRestrictions != ""
   computed hasAllergenRestrictions: boolean = self.allergenRestrictions != ""

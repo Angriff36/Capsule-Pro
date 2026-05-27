@@ -92,7 +92,7 @@ entity RecipeVersion {
   property stepCount: int = 0
   property totalCost: number = 0
   property costPerYield: number = 0
-  property createdAt: number = 0
+  property createdAt: datetime = now()
 
   computed totalTimeMinutes: number = self.prepTimeMinutes + self.cookTimeMinutes + self.restTimeMinutes
   computed isVersion1: boolean = self.versionNumber == 1
@@ -177,7 +177,7 @@ entity RecipeIngredient {
   property preparationNotes: string = ""
   property isOptional: boolean = false
   property wasteFactor: number = 1.0
-  property deletedAt: number = 0
+  property deletedAt: datetime = now()
 
   constraint positiveQuantity: self.quantity > 0 "Ingredient quantity must be positive"
   constraint validOrder: self.sortOrder > 0 "Sort order must be positive"
@@ -256,7 +256,7 @@ entity RecipeStep {
   property tips: string = ""
   property videoUrl: string = ""
   property imageUrl: string = ""
-  property deletedAt: number = 0
+  property deletedAt: datetime = now()
 
   constraint positiveStepNumber: self.stepNumber > 0 "Step number must be positive"
   constraint validInstruction: self.instruction != null and self.instruction != "" "Instruction is required"

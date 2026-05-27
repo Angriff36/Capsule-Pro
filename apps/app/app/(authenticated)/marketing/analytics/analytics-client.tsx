@@ -1,6 +1,9 @@
 "use client";
 
 import { MonoLabel } from "@repo/design-system/components/blocks/page-shell";
+import { Button } from "@repo/design-system/components/ui/button";
+import { Loader2, AlertTriangle, RotateCcw, Settings } from "lucide-react";
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
 interface Metrics {
@@ -61,14 +64,26 @@ export function AnalyticsClient({ initialMetrics }: AnalyticsClientProps) {
   );
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
+
+  const fetchData = () => {
+    setLoading(true);
+    setError(false);
+    fetch(`/api/marketing/analytics?window=${windowPeriod}`)
+      .then((r) => {
+        if (!r.ok) throw new Error("Request failed");
+        return r.json();
+      })
+      .then((d) => setData(d))
+      .catch(() => {
+        setData(null);
+        setError(true);
+      })
+      .finally(() => setLoading(false));
+  };
 
   useEffect(() => {
-    setLoading(true);
-    fetch(`/api/marketing/analytics?window=${windowPeriod}`)
-      .then((r) => r.json())
-      .then((d) => setData(d))
-      .catch(() => setData(null))
-      .finally(() => setLoading(false));
+    fetchData();
   }, [windowPeriod]);
 
   const metrics = data?.metrics ?? null;
@@ -98,9 +113,27 @@ export function AnalyticsClient({ initialMetrics }: AnalyticsClientProps) {
         ))}
       </div>
 
-      {loading && <p className="text-sm text-muted-foreground">Loading...</p>}
+      {loading && (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        </div>
+      )}
 
-      {!loading && metrics && data && (
+      {!loading && error && (
+        <div className="flex flex-col items-center justify-center rounded-[22px] border border-dashed border-hairline bg-soft-stone px-6 py-16 text-center">
+          <AlertTriangle className="mb-3 h-10 w-10 text-amber-500/60" />
+          <p className="text-lg font-medium">Failed to load analytics</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Something went wrong fetching marketing data. Try again.
+          </p>
+          <Button className="mt-4" onClick={fetchData} size="sm" variant="outline">
+            <RotateCcw className="mr-2 h-4 w-4" />
+            Retry
+          </Button>
+        </div>
+      )}
+
+      {!loading && !error && metrics && data && (
         <>
           {/* Window-scoped headline metrics */}
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-6">
@@ -268,6 +301,12 @@ export function AnalyticsClient({ initialMetrics }: AnalyticsClientProps) {
                 <p className="mt-1 text-sm text-muted-foreground">
                   Activate a workflow or create leads to begin tracking.
                 </p>
+                <Button asChild className="mt-4" size="sm" variant="outline">
+                  <Link href="/settings/email-workflows">
+                    <Settings className="mr-2 h-4 w-4" />
+                    Set up email workflows
+                  </Link>
+                </Button>
               </div>
             )}
         </>

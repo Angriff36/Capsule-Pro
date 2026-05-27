@@ -17,8 +17,8 @@ entity SampleData {
   property required tenantId: string
   
   // Timestamps for tracking
-  property seededAt: number = 0
-  property clearedAt: number = 0
+  property seededAt: datetime = now()
+  property clearedAt: datetime = now()
   
   // Status tracking
   property isSeeded: boolean = false

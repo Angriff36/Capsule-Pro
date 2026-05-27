@@ -19,9 +19,9 @@ entity InventoryItem {
   property fsa_temp_logged: boolean = false
   property fsa_allergen_info: boolean = false
   property fsa_traceable: boolean = false
-  property createdAt: number = 0
-  property updatedAt: number = 0
-  property deletedAt: number = 0
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
+  property deletedAt: datetime = now()
 
   computed isBelowPar: boolean = self.parLevel > 0 and self.quantityOnHand < self.parLevel
   computed isBelowReorderPoint: boolean = self.reorder_level > 0 and self.quantityOnHand < self.reorder_level

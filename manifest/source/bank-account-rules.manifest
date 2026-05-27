@@ -12,9 +12,9 @@ entity BankAccount {
   property bankName: string = ""
   property isDefault: boolean = false
   property status: string = "active"
-  property verifiedAt: number = 0
-  property createdAt: number = 0
-  property updatedAt: number = 0
+  property verifiedAt: datetime = now()
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
 
   constraint validAccountType: self.accountType in ["checking", "savings"] "Invalid account type"
   constraint validStatus: self.status in ["active", "inactive", "pending_verification"] "Invalid bank account status"

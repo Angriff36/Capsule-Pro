@@ -6,15 +6,15 @@ entity AutomatedFollowup {
   property required eventId: string
   property type: string = "email"
   property status: string = "pending"
-  property scheduledDate: number = 0
-  property sentDate: number = 0
+  property scheduledDate: datetime = now()
+  property sentDate: datetime = now()
   property recipientId: string = ""
   property subject: string = ""
   property body: string = ""
   property templateId: string = ""
   property errorMessage: string = ""
-  property createdAt: number = 0
-  property updatedAt: number = 0
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
 
   constraint validType: self.type in ["email", "sms", "push"] "Invalid followup type"
   constraint validStatus: self.status in ["pending", "sent", "failed", "skipped"] "Invalid followup status"
@@ -75,11 +75,11 @@ entity EventTimelineItem {
   property itemType: string = "task"
   property status: string = "pending"
   property assignedTo: string = ""
-  property dueDate: number = 0
-  property completedAt: number = 0
+  property dueDate: datetime = now()
+  property completedAt: datetime = now()
   property sortOrder: number = 0
-  property createdAt: number = 0
-  property updatedAt: number = 0
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
 
   computed isCompleted: boolean = self.status == "completed"
   computed isOverdue: boolean = self.dueDate > 0 and self.status != "completed" and now() > self.dueDate
@@ -145,10 +145,10 @@ entity EventWaitlistEntry {
   property partySize: number = 1
   property status: string = "waiting"
   property notes: string = ""
-  property joinedAt: number = 0
-  property notifiedAt: number = 0
-  property createdAt: number = 0
-  property updatedAt: number = 0
+  property joinedAt: datetime = now()
+  property notifiedAt: datetime = now()
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
 
   constraint validStatus: self.status in ["waiting", "notified", "confirmed", "seated", "cancelled"] "Invalid waitlist status"
 

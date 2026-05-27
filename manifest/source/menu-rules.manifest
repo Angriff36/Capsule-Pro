@@ -118,7 +118,7 @@ entity MenuDish {
   property course: string = ""
   property sortOrder: number = 0
   property isOptional: boolean = false
-  property deletedAt: number = 0
+  property deletedAt: datetime = now()
 
   constraint validMenuId: self.menuId != null and self.menuId != "" "Menu ID is required"
   constraint validDishId: self.dishId != null and self.dishId != "" "Dish ID is required"

@@ -11,12 +11,12 @@ entity Deal {
   property stage: string = "new"
   property status: string = "open"
   property probability: number = 0
-  property expectedCloseDate: number = 0
-  property actualCloseDate: number = 0
+  property expectedCloseDate: datetime = now()
+  property actualCloseDate: datetime = now()
   property assignedTo: string = ""
   property notes: string = ""
-  property createdAt: number = 0
-  property updatedAt: number = 0
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
 
   computed isWon: boolean = self.status == "won"
   computed isLost: boolean = self.status == "lost"

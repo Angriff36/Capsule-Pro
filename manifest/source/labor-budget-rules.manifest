@@ -11,9 +11,9 @@ entity LaborBudget {
   property budgetType: string = "weekly"
   property notes: string = ""
   property createdBy: string = ""
-  property createdAt: number = 0
-  property updatedAt: number = 0
-  property deletedAt: number = 0
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
+  property deletedAt: datetime = now()
 
   computed isDeleted: boolean = self.deletedAt > 0
 
@@ -66,11 +66,11 @@ entity BudgetAlert {
   property alertType: string = ""
   property isAcknowledged: boolean = false
   property acknowledgedBy: string = ""
-  property acknowledgedAt: number = 0
+  property acknowledgedAt: datetime = now()
   property resolved: boolean = false
-  property resolvedAt: number = 0
-  property createdAt: number = 0
-  property updatedAt: number = 0
+  property resolvedAt: datetime = now()
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
 
   command acknowledge(acknowledgedBy: string) {
     guard self.isAcknowledged == false "Alert is already acknowledged"

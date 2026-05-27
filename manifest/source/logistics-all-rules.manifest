@@ -8,13 +8,13 @@ entity Driver {
   property email: string = ""
   property phone: string = ""
   property licenseNumber: string = ""
-  property licenseExpiry: number = 0
+  property licenseExpiry: datetime = now()
   property status: string = "active"
   property currentVehicleId: string = ""
   property rating: number = 0
   property notes: string = ""
-  property createdAt: number = 0
-  property updatedAt: number = 0
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
 
   computed fullName: string = self.firstName + " " + self.lastName
   computed isActive: boolean = self.status == "active"
@@ -88,11 +88,11 @@ entity Vehicle {
   property capacity: string = ""
   property status: string = "available"
   property currentDriverId: string = ""
-  property lastMaintenanceDate: number = 0
-  property nextMaintenanceDate: number = 0
+  property lastMaintenanceDate: datetime = now()
+  property nextMaintenanceDate: datetime = now()
   property notes: string = ""
-  property createdAt: number = 0
-  property updatedAt: number = 0
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
 
   constraint validType: self.type in ["delivery", "cargo", "refrigerated", "passenger"] "Invalid vehicle type"
   constraint validStatus: self.status in ["available", "in_use", "maintenance", "out_of_service"] "Invalid vehicle status"
@@ -154,15 +154,15 @@ entity LogisticsRoute {
   property endLocation: string = ""
   property distance: number = 0
   property estimatedDuration: number = 0
-  property scheduledStart: number = 0
-  property scheduledEnd: number = 0
-  property actualStart: number = 0
-  property actualEnd: number = 0
+  property scheduledStart: datetime = now()
+  property scheduledEnd: datetime = now()
+  property actualStart: datetime = now()
+  property actualEnd: datetime = now()
   property stops: number = 0
   property completedStops: number = 0
   property notes: string = ""
-  property createdAt: number = 0
-  property updatedAt: number = 0
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
 
   computed isActive: boolean = self.status == "in_progress"
   computed completionPercent: number = self.stops > 0 ? (self.completedStops / self.stops) * 100 : 0
@@ -245,11 +245,11 @@ entity LogisticsDispatch {
   property vehicleId: string = ""
   property status: string = "pending"
   property priority: string = "normal"
-  property estimatedDeliveryTime: number = 0
-  property actualDeliveryTime: number = 0
+  property estimatedDeliveryTime: datetime = now()
+  property actualDeliveryTime: datetime = now()
   property notes: string = ""
-  property createdAt: number = 0
-  property updatedAt: number = 0
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
 
   constraint validStatus: self.status in ["pending", "assigned", "in_transit", "delivered", "failed"] "Invalid dispatch status"
   constraint validPriority: self.priority in ["low", "normal", "high", "urgent"] "Invalid priority"

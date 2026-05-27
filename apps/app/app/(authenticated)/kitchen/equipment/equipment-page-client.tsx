@@ -27,10 +27,19 @@ import {
   TabsTrigger,
 } from "@repo/design-system/components/ui/tabs";
 import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@repo/design-system/components/ui/empty";
+import {
   AlertTriangle,
   Bell,
   Calendar,
   Clock,
+  Loader2,
   Plus,
   Wrench,
 } from "lucide-react";
@@ -714,14 +723,26 @@ export function EquipmentPageClient() {
             </CardHeader>
             <CardContent>
               {loading ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  Loading equipment...
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
                 </div>
               ) : equipment.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  No equipment found. Add your first piece of equipment to get
-                  started.
-                </div>
+                <Empty>
+                  <EmptyHeader>
+                    <EmptyMedia variant="icon">
+                      <Wrench />
+                    </EmptyMedia>
+                    <EmptyTitle>No equipment yet</EmptyTitle>
+                    <EmptyDescription>
+                      Add kitchen equipment to track maintenance schedules, usage hours, and condition.
+                    </EmptyDescription>
+                  </EmptyHeader>
+                  <EmptyContent>
+                    <p className="text-muted-foreground text-xs">
+                      Click <strong>Add Equipment</strong> above to register your first piece of equipment.
+                    </p>
+                  </EmptyContent>
+                </Empty>
               ) : (
                 <div className="space-y-4">
                   {equipment.map((equip) => {

@@ -10,17 +10,17 @@ entity Lead {
   property contactEmail: string = ""
   property contactPhone: string = ""
   property eventType: string = ""
-  property eventDate: number = 0
+  property eventDate: datetime = now()
   property estimatedGuests: number = 0
   property estimatedValue: number = 0
   property status: string = "new"
   property assignedTo: string = ""
   property notes: string = ""
   property convertedToClientId: string = ""
-  property convertedAt: number = 0
-  property createdAt: number = 0
-  property updatedAt: number = 0
-  property deletedAt: number = 0
+  property convertedAt: datetime = now()
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
+  property deletedAt: datetime = now()
 
   computed isConverted: boolean = self.convertedToClientId != "" and self.convertedAt > 0
   computed isHighValue: boolean = self.estimatedValue >= 10000

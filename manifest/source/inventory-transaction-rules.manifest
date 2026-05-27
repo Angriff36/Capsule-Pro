@@ -16,8 +16,8 @@ entity InventoryTransaction {
   property reason: string = ""
   property employeeId: string = ""
   property storageLocationId: string = ""
-  property transactionDate: number = 0
-  property createdAt: number = 0
+  property transactionDate: datetime = now()
+  property createdAt: datetime = now()
 
   computed isReceipt: boolean = self.transactionType == "receipt"
   computed isIssue: boolean = self.transactionType == "issue"

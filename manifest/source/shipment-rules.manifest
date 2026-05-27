@@ -10,10 +10,10 @@ entity Shipment {
   property eventId: string = ""
   property supplierId: string = ""
   property locationId: string = ""
-  property scheduledDate: number = 0
-  property shippedDate: number = 0
-  property estimatedDeliveryDate: number = 0
-  property actualDeliveryDate: number = 0
+  property scheduledDate: datetime = now()
+  property shippedDate: datetime = now()
+  property estimatedDeliveryDate: datetime = now()
+  property actualDeliveryDate: datetime = now()
   property totalItems: int = 0
   property shippingCost: number = 0
   property totalValue: number = 0
@@ -169,7 +169,7 @@ entity ShipmentItem {
   property condition: string = "good"
   property conditionNotes: string = ""
   property lotNumber: string = ""
-  property expirationDate: number = 0
+  property expirationDate: datetime = now()
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
   property deletedAt: datetime = now()

@@ -19,7 +19,7 @@ import { loadPrecompiledIR } from "@repo/manifest-runtime/runtime/loadManifests"
 // Constants
 // ---------------------------------------------------------------------------
 
-const DEFAULT_IR_PATH = "manifest/ir/kitchen/kitchen.ir.json";
+const DEFAULT_IR_PATH = "manifest/ir/kitchen.ir.json";
 
 // ---------------------------------------------------------------------------
 // State

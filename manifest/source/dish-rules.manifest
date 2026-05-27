@@ -19,9 +19,9 @@ entity Dish {
   property pricePerPerson: number = 0
   property costPerPerson: number = 0
   property isActive: boolean = true
-  property createdAt: number = 0
-  property updatedAt: number = 0
-  property deletedAt: number = 0
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
+  property deletedAt: datetime = now()
 
   computed hasPrice: boolean = self.pricePerPerson > 0
   computed hasCost: boolean = self.costPerPerson > 0

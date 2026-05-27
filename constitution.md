@@ -5,7 +5,7 @@
 
 Manifest Integration Charter
 
-Version: 3  
+Version: 4
 Status: Binding  
 Audience: Humans, agents, CI checks, repo auditors, implementation plans
 
@@ -399,6 +399,23 @@ Read paths must not:
 
 If a read model implies behavior not defined by Manifest IR/runtime, the read model is wrong.
 
+### Generated and AI surface boundary
+
+Generated artifacts, MCP descriptors, Agent SDK schemas, generated clients, generated route shells, generated registries, generated reports, and read projections are derived surfaces. They are not semantic authority.
+
+If any generated or AI-facing surface disagrees with compiled IR or runtime behavior, compiled IR/runtime wins. The surface must be classified as stale, generated-surface drift, projection drift, or missing enforcement. The fix is to update the producer/projection/wrapper and regenerate, not to hand-edit generated output or route around runtime.
+
+AI surfaces may inspect, explain, plan, and invoke approved command paths. They must not directly mutate governed state, fabricate semantic events, treat tool availability as bypass approval, or retry runtime denials through Prisma/raw SQL. Governed AI-triggered writes must follow the same command path as application writes: command/entity resolution → canonical dispatcher/wrapper → `RuntimeEngine.runCommand` → approved adapters/effects.
+
+Projection conformance requires minimum proof that output is deterministic from the same IR/config/package version, dispatcher-aligned for governed writes, and explicitly non-authoritative when compared with IR/runtime.
+
+See:
+
+* `manifest/governance/generated-surfaces.md`
+* `manifest/governance/ai-surfaces.md`
+* `manifest/governance/projection-conformance.md`
+* `manifest/governance/audit-checklist.md`
+
 ---
 
 ## 11. Events and Outbox Discipline
@@ -456,6 +473,10 @@ CI must include checks for:
 * bypass registry violations
 * conformance test failures
 * tenant-scoped entity coverage gaps
+* generated surface drift against IR/runtime
+* AI/MCP/Agent SDK write bypass paths
+* projection dispatcher alignment
+* migration boundary misuse where persistence shape is treated as command authority
 
 ---
 
@@ -580,6 +601,22 @@ Capsule-Pro must maintain these artifacts or equivalent machine-readable replace
 ### Event audit
 
 `manifest/governance/` or `manifest/reports/` — Identifies semantic event creation and verifies runtime origin.
+
+### Generated surface governance
+
+`manifest/governance/generated-surfaces.md` — Defines derived artifacts and the required response when generated output disagrees with IR/runtime.
+
+### AI surface governance
+
+`manifest/governance/ai-surfaces.md` — Defines allowed Agent SDK/MCP/AI behavior and forbidden AI bypass paths.
+
+### Projection conformance governance
+
+`manifest/governance/projection-conformance.md` — Defines minimum proof that projections are deterministic, dispatcher-aligned, and non-authoritative.
+
+### Governance audit checklist
+
+`manifest/governance/audit-checklist.md` — Lightweight review checklist for generated surface drift, AI bypass paths, projection dispatcher alignment, migration boundary misuse, relocation guardrails, and route guardrails.
 
 ### Conformance test index
 
