@@ -2,14 +2,6 @@ import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@repo/design-system/components/ui/card";
-import { Separator } from "@repo/design-system/components/ui/separator";
-import {
   Table,
   TableBody,
   TableCell,
@@ -18,6 +10,22 @@ import {
   TableRow,
 } from "@repo/design-system/components/ui/table";
 import { Button } from "@repo/design-system/components/ui/button";
+import {
+  CommandBand,
+  CommandBandActions,
+  CommandBandHeader,
+  CommandBandLede,
+  DisplayHeading,
+  MetricBand,
+  MetricCell,
+  MetricLabel,
+  MetricValue,
+  MonoLabel,
+  OperationalColumn,
+  PageBody,
+  PageCanvas,
+  SectionHeader,
+} from "@repo/design-system/components/blocks/page-shell";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -191,199 +199,180 @@ const AnalyticsEventsPage = async () => {
     events.length > 0 ? summary.totalVariance / events.length : 0;
 
   return (
-    <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
-      <div className="flex items-start justify-between gap-4">
-        <div className="space-y-0.5">
-          <h1 className="text-2xl font-semibold tracking-tight">
-            Event analytics
-          </h1>
-          <p className="text-muted-foreground">
+    <PageCanvas>
+      <CommandBand>
+        <CommandBandHeader>
+          <MonoLabel tone="dark">Analytics</MonoLabel>
+          <DisplayHeading size="md">Event analytics</DisplayHeading>
+          <CommandBandLede>
             Live event budget, invoicing, and report status for the latest 12
             events.
-          </p>
-        </div>
-        <Button asChild size="sm" variant="outline">
-          <Link href="/analytics/events/advanced">Advanced analytics</Link>
-        </Button>
-      </div>
+          </CommandBandLede>
+        </CommandBandHeader>
+        <CommandBandActions>
+          <Button asChild variant="on-dark" size="sm">
+            <Link href="/analytics/events/advanced">Advanced analytics</Link>
+          </Button>
+        </CommandBandActions>
+      </CommandBand>
 
-      <Separator />
+      <MetricBand>
+        <MetricCell>
+          <MetricValue>{events.length}</MetricValue>
+          <MetricLabel>
+            Tracked events · {summary.confirmedCount} confirmed
+          </MetricLabel>
+        </MetricCell>
+        <MetricCell>
+          <MetricValue>
+            {currencyFormatter.format(summary.totalBudget)}
+          </MetricValue>
+          <MetricLabel>
+            Planned budget · actuals {currencyFormatter.format(summary.totalActual)}
+          </MetricLabel>
+        </MetricCell>
+        <MetricCell>
+          <MetricValue>
+            {currencyFormatter.format(summary.totalPaid)}
+          </MetricValue>
+          <MetricLabel>
+            Paid · {currencyFormatter.format(summary.totalInvoiced)} invoiced
+          </MetricLabel>
+        </MetricCell>
+        <MetricCell>
+          <MetricValue>
+            {currencyFormatter.format(averageBudgetVariance)}
+          </MetricValue>
+          <MetricLabel>
+            Avg budget variance · {summary.completedReports} reports done
+          </MetricLabel>
+        </MetricCell>
+      </MetricBand>
 
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <Card>
-          <CardHeader>
-            <CardDescription>Tracked events</CardDescription>
-            <CardTitle className="text-2xl">{events.length}</CardTitle>
-          </CardHeader>
-          <CardContent className="text-muted-foreground text-sm">
-            {summary.confirmedCount} confirmed and ready to execute.
-          </CardContent>
-        </Card>
+      <PageBody>
+        <OperationalColumn>
+          <SectionHeader
+            title="Recent event performance"
+            description="Budget, settlement, and checklist health from live tenant data."
+            actions={
+              <Link
+                className="text-sm font-medium text-primary underline-offset-4 hover:underline"
+                href="/events"
+              >
+                Open events roster
+              </Link>
+            }
+          />
 
-        <Card>
-          <CardHeader>
-            <CardDescription>Planned budget</CardDescription>
-            <CardTitle className="text-2xl">
-              {currencyFormatter.format(summary.totalBudget)}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="text-muted-foreground text-sm">
-            Actuals logged: {currencyFormatter.format(summary.totalActual)}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardDescription>Invoiced vs paid</CardDescription>
-            <CardTitle className="text-2xl">
-              {currencyFormatter.format(summary.totalPaid)}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="text-muted-foreground text-sm">
-            {currencyFormatter.format(summary.totalInvoiced)} invoiced across
-            recent events.
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardDescription>Average budget variance</CardDescription>
-            <CardTitle className="text-2xl">
-              {currencyFormatter.format(averageBudgetVariance)}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="text-muted-foreground text-sm">
-            Completed reports: {summary.completedReports}
-          </CardContent>
-        </Card>
-      </section>
-
-      <section className="space-y-4">
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <h2 className="text-sm font-medium text-muted-foreground">
-              Recent event performance
-            </h2>
-            <p className="text-muted-foreground text-sm">
-              Budget, settlement, and checklist health from live tenant data.
-            </p>
-          </div>
-          <Link
-            className="text-sm font-medium text-primary underline-offset-4 hover:underline"
-            href="/events"
-          >
-            Open events roster
-          </Link>
-        </div>
-
-        <div className="overflow-hidden rounded-lg border bg-card">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Event</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Client</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Budget</TableHead>
-                <TableHead className="text-right">Paid</TableHead>
-                <TableHead className="text-right">Variance</TableHead>
-                <TableHead className="text-right">Report</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {events.length === 0 ? (
+          <div className="overflow-hidden rounded-[22px] border border-hairline bg-canvas">
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell
-                    className="py-8 text-center text-muted-foreground"
-                    colSpan={8}
-                  >
-                    No events found for this tenant yet.
-                  </TableCell>
+                  <TableHead>Event</TableHead>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Client</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Budget</TableHead>
+                  <TableHead className="text-right">Paid</TableHead>
+                  <TableHead className="text-right">Variance</TableHead>
+                  <TableHead className="text-right">Report</TableHead>
                 </TableRow>
-              ) : (
-                events.map((event) => {
-                  const latestBudget = event.budgets[0] ?? null;
-                  const latestReport = event.reports[0] ?? null;
-                  const budgetValue = Number(
-                    latestBudget?.totalBudgetAmount ?? event.budget ?? 0
-                  );
-                  const paidValue = event.payments.reduce(
-                    (sum, payment) => sum + Number(payment.amount ?? 0),
-                    0
-                  );
-                  const varianceValue = Number(
-                    latestBudget?.varianceAmount ?? 0
-                  );
-                  const clientName = formatClientName(event.client);
-                  const budgetStatus = latestBudget?.status ?? "No budget";
-                  const reportStatus = latestReport
-                    ? `${latestReport.completion}% ${latestReport.status.replaceAll("_", " ")}`
-                    : "No report";
-                  const paymentProgress =
-                    budgetValue > 0
-                      ? percentFormatter.format((paidValue / budgetValue) * 100)
-                      : "0.0";
+              </TableHeader>
+              <TableBody>
+                {events.length === 0 ? (
+                  <TableRow>
+                    <TableCell
+                      className="py-8 text-center text-muted-foreground"
+                      colSpan={8}
+                    >
+                      No events found for this tenant yet.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  events.map((event) => {
+                    const latestBudget = event.budgets[0] ?? null;
+                    const latestReport = event.reports[0] ?? null;
+                    const budgetValue = Number(
+                      latestBudget?.totalBudgetAmount ?? event.budget ?? 0
+                    );
+                    const paidValue = event.payments.reduce(
+                      (sum, payment) => sum + Number(payment.amount ?? 0),
+                      0
+                    );
+                    const varianceValue = Number(
+                      latestBudget?.varianceAmount ?? 0
+                    );
+                    const clientName = formatClientName(event.client);
+                    const budgetStatus = latestBudget?.status ?? "No budget";
+                    const reportStatus = latestReport
+                      ? `${latestReport.completion}% ${latestReport.status.replaceAll("_", " ")}`
+                      : "No report";
+                    const paymentProgress =
+                      budgetValue > 0
+                        ? percentFormatter.format((paidValue / budgetValue) * 100)
+                        : "0.0";
 
-                  return (
-                    <TableRow key={event.id}>
-                      <TableCell>
-                        <div className="font-medium">{event.title}</div>
-                        <div className="text-muted-foreground text-xs">
-                          {event.eventNumber || "No event number"} ·{" "}
-                          {event.guestCount} guests
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        {dateFormatter.format(event.eventDate)}
-                      </TableCell>
-                      <TableCell>{clientName}</TableCell>
-                      <TableCell>
-                        <div className="flex flex-col gap-2">
-                          <Badge
-                            className="w-fit"
-                            variant={statusVariant(event.status)}
+                    return (
+                      <TableRow key={event.id}>
+                        <TableCell>
+                          <div className="font-medium">{event.title}</div>
+                          <div className="text-muted-foreground text-xs">
+                            {event.eventNumber || "No event number"} ·{" "}
+                            {event.guestCount} guests
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          {dateFormatter.format(event.eventDate)}
+                        </TableCell>
+                        <TableCell>{clientName}</TableCell>
+                        <TableCell>
+                          <div className="flex flex-col gap-2">
+                            <Badge
+                              className="w-fit"
+                              variant={statusVariant(event.status)}
+                            >
+                              {event.status}
+                            </Badge>
+                            <span className="text-muted-foreground text-xs">
+                              Budget: {budgetStatus}
+                            </span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {currencyFormatter.format(budgetValue)}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div>{currencyFormatter.format(paidValue)}</div>
+                          <div className="text-muted-foreground text-xs">
+                            {paymentProgress}% funded
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <span
+                            className={
+                              varianceValue > 0
+                                ? "text-amber-600"
+                                : varianceValue < 0
+                                  ? "text-emerald-600"
+                                  : "text-foreground"
+                            }
                           >
-                            {event.status}
-                          </Badge>
-                          <span className="text-muted-foreground text-xs">
-                            Budget: {budgetStatus}
+                            {currencyFormatter.format(varianceValue)}
                           </span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        {currencyFormatter.format(budgetValue)}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div>{currencyFormatter.format(paidValue)}</div>
-                        <div className="text-muted-foreground text-xs">
-                          {paymentProgress}% funded
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <span
-                          className={
-                            varianceValue > 0
-                              ? "text-amber-600"
-                              : varianceValue < 0
-                                ? "text-emerald-600"
-                                : "text-foreground"
-                          }
-                        >
-                          {currencyFormatter.format(varianceValue)}
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-right text-sm text-muted-foreground">
-                        {reportStatus}
-                      </TableCell>
-                    </TableRow>
-                  );
-                })
-              )}
-            </TableBody>
-          </Table>
-        </div>
-      </section>
-    </div>
+                        </TableCell>
+                        <TableCell className="text-right text-sm text-muted-foreground">
+                          {reportStatus}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </OperationalColumn>
+      </PageBody>
+    </PageCanvas>
   );
 };
 

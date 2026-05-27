@@ -21,7 +21,7 @@
     "./bottleneck-detector": "./src/bottleneck-detector/index.ts"
   },
   "dependencies": {
-    "@angriff36/manifest": "1.0.25",
+    "@angriff36/manifest": "1.0.32",
     "@repo/database": "workspace:*",
     "@repo/realtime": "workspace:*",
     "@sentry/node": "^10.38.0",

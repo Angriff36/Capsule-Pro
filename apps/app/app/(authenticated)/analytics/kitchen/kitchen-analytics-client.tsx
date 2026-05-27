@@ -11,7 +11,6 @@ import {
   ChartContainer,
   ChartTooltipContent,
 } from "@repo/design-system/components/ui/chart";
-import { Separator } from "@repo/design-system/components/ui/separator";
 import { Skeleton } from "@repo/design-system/components/ui/skeleton";
 import {
   AlertCircle,
@@ -30,29 +29,34 @@ import {
   getCompletionColor,
   useKitchenAnalytics,
 } from "./lib/use-kitchen-analytics";
+import {
+  CommandBand,
+  CommandBandHeader,
+  CommandBandLede,
+  DisplayHeading,
+  MonoLabel,
+  OperationalColumn,
+  PageCanvas,
+  SectionHeader,
+} from "@repo/design-system/components/blocks/page-shell";
 
 const AnalyticsKitchenPage = () => {
   const { data, isLoading, error } = useKitchenAnalytics({ period: "30d" });
 
   if (isLoading) {
     return (
-      <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
-        {/* Page Header */}
-        <div className="space-y-0.5">
-          <h1 className="text-2xl font-semibold tracking-tight">
-            Kitchen Operations
-          </h1>
-          <p className="text-muted-foreground">
-            Measure throughput, completion rates, and station balance.
-          </p>
-        </div>
-        <Separator />
-
-        {/* Loading Content */}
-        <section className="space-y-4">
-          <h2 className="text-sm font-medium text-muted-foreground">
-            Performance Overview
-          </h2>
+      <PageCanvas>
+        <CommandBand>
+          <CommandBandHeader>
+            <MonoLabel tone="dark">ANALYTICS</MonoLabel>
+            <DisplayHeading size="md">Kitchen Operations</DisplayHeading>
+            <CommandBandLede>
+              Measure throughput, completion rates, and station balance.
+            </CommandBandLede>
+          </CommandBandHeader>
+        </CommandBand>
+        <OperationalColumn>
+          <SectionHeader title="Performance Overview" />
           <div className="grid gap-6 lg:grid-cols-2">
             <Card className="space-y-3">
               <CardHeader>
@@ -78,35 +82,34 @@ const AnalyticsKitchenPage = () => {
               </CardContent>
             </Card>
           </div>
-        </section>
-      </div>
+        </OperationalColumn>
+      </PageCanvas>
     );
   }
 
   if (error || !data) {
     return (
-      <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
-        {/* Page Header */}
-        <div className="space-y-0.5">
-          <h1 className="text-2xl font-semibold tracking-tight">
-            Kitchen Operations
-          </h1>
-          <p className="text-muted-foreground">
-            Measure throughput, completion rates, and station balance.
-          </p>
-        </div>
-        <Separator />
-
-        {/* Error Content */}
-        <Card className="border-destructive/50 bg-destructive/10">
-          <CardContent className="flex items-center gap-2 p-6">
-            <AlertCircle className="size-5 text-destructive" />
-            <p className="text-sm text-destructive-foreground">
-              Failed to load kitchen analytics. Please try again later.
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+      <PageCanvas>
+        <CommandBand>
+          <CommandBandHeader>
+            <MonoLabel tone="dark">ANALYTICS</MonoLabel>
+            <DisplayHeading size="md">Kitchen Operations</DisplayHeading>
+            <CommandBandLede>
+              Measure throughput, completion rates, and station balance.
+            </CommandBandLede>
+          </CommandBandHeader>
+        </CommandBand>
+        <OperationalColumn>
+          <Card className="border-destructive/50 bg-destructive/10">
+            <CardContent className="flex items-center gap-2 p-6">
+              <AlertCircle className="size-5 text-destructive" />
+              <p className="text-sm text-destructive-foreground">
+                Failed to load kitchen analytics. Please try again later.
+              </p>
+            </CardContent>
+          </Card>
+        </OperationalColumn>
+      </PageCanvas>
     );
   }
 
@@ -131,23 +134,19 @@ const AnalyticsKitchenPage = () => {
       : 0;
 
   return (
-    <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
-      {/* Page Header */}
-      <div className="space-y-0.5">
-        <h1 className="text-2xl font-semibold tracking-tight">
-          Kitchen Operations
-        </h1>
-        <p className="text-muted-foreground">
-          Measure throughput, completion rates, and station balance.
-        </p>
-      </div>
-      <Separator />
+    <PageCanvas>
+      <CommandBand>
+        <CommandBandHeader>
+          <MonoLabel tone="dark">ANALYTICS</MonoLabel>
+          <DisplayHeading size="md">Kitchen Operations</DisplayHeading>
+          <CommandBandLede>
+            Measure throughput, completion rates, and station balance.
+          </CommandBandLede>
+        </CommandBandHeader>
+      </CommandBand>
 
-      {/* Performance Overview Section */}
-      <section className="space-y-4">
-        <h2 className="text-sm font-medium text-muted-foreground">
-          Performance Overview
-        </h2>
+      <OperationalColumn>
+          <SectionHeader title="Performance Overview" />
         <div className="grid gap-6 lg:grid-cols-2">
           {/* Station Throughput */}
           <Card className="space-y-3">
@@ -348,119 +347,116 @@ const AnalyticsKitchenPage = () => {
             </Card>
           )}
         </div>
-      </section>
 
-      {/* Performance Trends Section */}
-      {trends.length > 0 && (
-        <section className="space-y-4">
-          <h2 className="text-sm font-medium text-muted-foreground">
-            Performance Trends
-          </h2>
+        {/* Performance Trends Section */}
+        {trends.length > 0 && (
+          <>
+            <SectionHeader title="Performance Trends" />
 
-          {/* Prepare chart data - get unique station names and prepare data for line chart */}
-          {(() => {
-            // Get all unique station names across all trends
-            const allStationNames = new Set<string>();
-            trends.forEach((trend: KitchenTrend) => {
-              trend.stations.forEach((station: KitchenTrendStation) => {
-                allStationNames.add(station.stationName);
-              });
-            });
-
-            const stationNames = Array.from(allStationNames);
-            const chartColors = [
-              "hsl(var(--chart-1))",
-              "hsl(var(--chart-2))",
-              "hsl(var(--chart-3))",
-              "hsl(var(--chart-4))",
-              "hsl(var(--chart-5))",
-            ];
-
-            // Build chart data by date
-            const chartData = trends
-              .slice()
-              .reverse()
-              .map((trend: KitchenTrend) => {
-                const dataPoint: Record<string, string | number> = {
-                  date: new Date(trend.date).toLocaleDateString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                  }),
-                };
-
+            {(() => {
+              // Get all unique station names across all trends
+              const allStationNames = new Set<string>();
+              trends.forEach((trend: KitchenTrend) => {
                 trend.stations.forEach((station: KitchenTrendStation) => {
-                  dataPoint[station.stationName] = station.completionRate;
+                  allStationNames.add(station.stationName);
+                });
+              });
+
+              const stationNames = Array.from(allStationNames);
+              const chartColors = [
+                "hsl(var(--chart-1))",
+                "hsl(var(--chart-2))",
+                "hsl(var(--chart-3))",
+                "hsl(var(--chart-4))",
+                "hsl(var(--chart-5))",
+              ];
+
+              // Build chart data by date
+              const chartData = trends
+                .slice()
+                .reverse()
+                .map((trend: KitchenTrend) => {
+                  const dataPoint: Record<string, string | number> = {
+                    date: new Date(trend.date).toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                    }),
+                  };
+
+                  trend.stations.forEach((station: KitchenTrendStation) => {
+                    dataPoint[station.stationName] = station.completionRate;
+                  });
+
+                  return dataPoint;
                 });
 
-                return dataPoint;
+              // Build chart config
+              const chartConfig: Record<
+                string,
+                { label: string; color: string }
+              > = {};
+              stationNames.forEach((name, index) => {
+                chartConfig[name] = {
+                  label: name,
+                  color: chartColors[index % chartColors.length],
+                };
               });
 
-            // Build chart config
-            const chartConfig: Record<
-              string,
-              { label: string; color: string }
-            > = {};
-            stationNames.forEach((name, index) => {
-              chartConfig[name] = {
-                label: name,
-                color: chartColors[index % chartColors.length],
-              };
-            });
-
-            return (
-              <Card className="lg:col-span-2">
-                <CardHeader>
-                  <CardTitle>Station Completion Rate Trends</CardTitle>
-                  <p className="text-sm text-muted-foreground">
-                    Daily completion rate percentage by station over time
-                  </p>
-                </CardHeader>
-                <CardContent>
-                  <ChartContainer
-                    className="h-[300px] w-full"
-                    config={chartConfig}
-                  >
-                    <LineChart data={chartData}>
-                      <CartesianGrid
-                        className="stroke-muted"
-                        strokeDasharray="3 3"
-                      />
-                      <XAxis
-                        axisLine={false}
-                        className="text-xs fill-muted-foreground"
-                        dataKey="date"
-                        tickLine={false}
-                      />
-                      <YAxis
-                        axisLine={false}
-                        className="text-xs fill-muted-foreground"
-                        domain={[0, 100]}
-                        tickLine={false}
-                      />
-                      <ChartTooltipContent
-                        labelFormatter={(label) => {
-                          return `Date: ${label}`;
-                        }}
-                      />
-                      {stationNames.map((stationName) => (
-                        <Line
-                          dataKey={stationName}
-                          dot={false}
-                          key={stationName}
-                          stroke={`var(--color-${stationName})`}
-                          strokeWidth={2}
-                          type="monotone"
+              return (
+                <Card className="lg:col-span-2">
+                  <CardHeader>
+                    <CardTitle>Station Completion Rate Trends</CardTitle>
+                    <p className="text-sm text-muted-foreground">
+                      Daily completion rate percentage by station over time
+                    </p>
+                  </CardHeader>
+                  <CardContent>
+                    <ChartContainer
+                      className="h-[300px] w-full"
+                      config={chartConfig}
+                    >
+                      <LineChart data={chartData}>
+                        <CartesianGrid
+                          className="stroke-muted"
+                          strokeDasharray="3 3"
                         />
-                      ))}
-                    </LineChart>
-                  </ChartContainer>
-                </CardContent>
-              </Card>
-            );
-          })()}
-        </section>
-      )}
-    </div>
+                        <XAxis
+                          axisLine={false}
+                          className="text-xs fill-muted-foreground"
+                          dataKey="date"
+                          tickLine={false}
+                        />
+                        <YAxis
+                          axisLine={false}
+                          className="text-xs fill-muted-foreground"
+                          domain={[0, 100]}
+                          tickLine={false}
+                        />
+                        <ChartTooltipContent
+                          labelFormatter={(label) => {
+                            return `Date: ${label}`;
+                          }}
+                        />
+                        {stationNames.map((stationName) => (
+                          <Line
+                            dataKey={stationName}
+                            dot={false}
+                            key={stationName}
+                            stroke={`var(--color-${stationName})`}
+                            strokeWidth={2}
+                            type="monotone"
+                          />
+                        ))}
+                      </LineChart>
+                    </ChartContainer>
+                  </CardContent>
+                </Card>
+              );
+            })()}
+          </>
+        )}
+      </OperationalColumn>
+    </PageCanvas>
   );
 };
 

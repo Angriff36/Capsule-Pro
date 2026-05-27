@@ -16,6 +16,9 @@ import {
   SectionHeader,
 } from "@repo/design-system/components/blocks/page-shell";
 import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
+import { ArrowRightIcon } from "lucide-react";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTenantIdForOrg } from "../../../lib/tenant";
 
@@ -238,6 +241,14 @@ const PayrollOverviewPage = async () => {
       <OperationalColumn>
         <section className="space-y-6">
           <SectionHeader
+            actions={
+              <Button asChild size="sm" variant="ghost">
+                <Link href="/payroll/timecards">
+                  View all
+                  <ArrowRightIcon className="ml-1 h-3 w-3" />
+                </Link>
+              </Button>
+            }
             count={`${approvalRows.length} pending`}
             description="Timecards awaiting sign-off before payroll can close."
             eyebrow="Approvals"
