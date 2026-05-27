@@ -1,13 +1,17 @@
 import { auth } from "@repo/auth/server";
+import {
+  CommandBand,
+  CommandBandActions,
+  CommandBandHeader,
+  CommandBandLede,
+  DisplayHeading,
+  MonoLabel,
+  OperationalColumn,
+  PageCanvas,
+  SectionHeader,
+} from "@repo/design-system/components/blocks/page-shell";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@repo/design-system/components/ui/card";
 import {
   Table,
   TableBody,
@@ -34,46 +38,43 @@ export default async function ProposalTemplatesPage() {
   const templates = await getProposalTemplates();
 
   return (
-    <div className="space-y-6 p-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">
-            Proposal Templates
-          </h1>
-          <p className="text-muted-foreground">
-            Manage reusable templates for creating proposals
-          </p>
-        </div>
-        <Button asChild>
-          <Link href="/crm/proposals/templates/new">
-            <Plus className="mr-2 h-4 w-4" />
-            New Template
-          </Link>
-        </Button>
-      </div>
+    <PageCanvas>
+      <CommandBand>
+        <CommandBandHeader>
+          <div className="space-y-4">
+            <MonoLabel tone="dark">CRM / Proposals / Templates</MonoLabel>
+            <DisplayHeading size="md">Proposal Templates</DisplayHeading>
+            <CommandBandLede>
+              Manage reusable templates for creating proposals
+            </CommandBandLede>
+          </div>
+          <CommandBandActions>
+            <Button asChild size="default" variant="on-dark">
+              <Link href="/crm/proposals/templates/new">
+                <Plus className="mr-2 h-4 w-4" />
+                New Template
+              </Link>
+            </Button>
+          </CommandBandActions>
+        </CommandBandHeader>
+      </CommandBand>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Templates</CardTitle>
-          <CardDescription>
-            Create templates for different event types to speed up proposal
-            creation
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {templates.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground mb-4">
-                No templates yet. Create your first template to get started.
-              </p>
-              <Button asChild>
-                <Link href="/crm/proposals/templates/new">
-                  <Plus className="mr-2 h-4 w-4" />
-                  Create Template
-                </Link>
-              </Button>
-            </div>
-          ) : (
+      <OperationalColumn>
+        {templates.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground mb-4">
+              No templates yet. Create your first template to get started.
+            </p>
+            <Button asChild>
+              <Link href="/crm/proposals/templates/new">
+                <Plus className="mr-2 h-4 w-4" />
+                Create Template
+              </Link>
+            </Button>
+          </div>
+        ) : (
+          <>
+            <SectionHeader title="Templates" />
             <Table>
               <TableHeader>
                 <TableRow>
@@ -153,9 +154,9 @@ export default async function ProposalTemplatesPage() {
                 })}
               </TableBody>
             </Table>
-          )}
-        </CardContent>
-      </Card>
-    </div>
+          </>
+        )}
+      </OperationalColumn>
+    </PageCanvas>
   );
 }

@@ -26,7 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
-import { Separator } from "@repo/design-system/components/ui/separator";
+import { Textarea } from "@repo/design-system/components/ui/textarea";
 import {
   Table,
   TableBody,
@@ -35,7 +35,6 @@ import {
   TableHeader,
   TableRow,
 } from "@repo/design-system/components/ui/table";
-import { Textarea } from "@repo/design-system/components/ui/textarea";
 import { format } from "date-fns";
 import { Plus, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -719,7 +718,7 @@ export function ProposalForm({
                 />
               </div>
 
-              <Separator />
+              <div className="border-t my-2" />
 
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
@@ -740,7 +739,7 @@ export function ProposalForm({
                     </span>
                   </div>
                 )}
-                <Separator />
+                <div className="border-t my-1" />
                 <div className="flex justify-between text-lg font-bold">
                   <span>Total</span>
                   <span>${total.toFixed(2)}</span>

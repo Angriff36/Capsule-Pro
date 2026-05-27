@@ -4,6 +4,16 @@
  * Displays a single proposal with all details and line items
  */
 
+import {
+  CommandBand,
+  CommandBandActions,
+  CommandBandHeader,
+  CommandBandLede,
+  DisplayHeading,
+  MonoLabel,
+  OperationalColumn,
+  PageCanvas,
+} from "@repo/design-system/components/blocks/page-shell";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -13,7 +23,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
-import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   Table,
   TableBody,
@@ -188,20 +197,22 @@ export default async function ProposalDetailPage({
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button asChild size="icon" variant="ghost">
-            <Link href="/crm/proposals">
-              <ArrowLeft className="h-4 w-4" />
-            </Link>
-          </Button>
-          <div>
+    <PageCanvas>
+      <CommandBand>
+        <CommandBandHeader>
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <Button asChild size="icon" variant="ghost">
+                <Link href="/crm/proposals">
+                  <ArrowLeft className="h-4 w-4" />
+                </Link>
+              </Button>
+              <MonoLabel tone="dark">
+                CRM / Proposals / {proposal.proposalNumber}
+              </MonoLabel>
+            </div>
             <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-semibold tracking-tight">
-                {proposal.title}
-              </h1>
+              <DisplayHeading size="md">{proposal.title}</DisplayHeading>
               <Badge
                 variant={
                   (proposal.status && statusVariants[proposal.status]) ||
@@ -213,36 +224,42 @@ export default async function ProposalDetailPage({
                   "Unknown"}
               </Badge>
             </div>
-            <p className="text-muted-foreground">
+            <CommandBandLede>
               {proposal.proposalNumber} • Created{" "}
               {format(new Date(proposal.createdAt), "MMM d, yyyy")}
-            </p>
+            </CommandBandLede>
           </div>
-        </div>
-        <div className="flex items-center gap-2">
-          {proposal.status === "draft" && (
-            <SendProposalButton
-              clientEmail={getClientEmail()}
-              clientName={getClientName()}
+          <CommandBandActions>
+            {proposal.status === "draft" && (
+              <SendProposalButton
+                clientEmail={getClientEmail()}
+                clientName={getClientName()}
+                proposalId={proposal.id}
+              />
+            )}
+            <Button
+              asChild
+              className="border-white/25 bg-transparent text-white hover:bg-white/10"
+              size="sm"
+              variant="outline"
+            >
+              <Link href={`/crm/proposals/${proposal.id}/edit`}>
+                <Edit className="mr-2 h-4 w-4" />
+                Edit
+              </Link>
+            </Button>
+            <ProposalExportButton
               proposalId={proposal.id}
+              proposalNumber={proposal.proposalNumber}
             />
-          )}
-          <Button asChild variant="outline">
-            <Link href={`/crm/proposals/${proposal.id}/edit`}>
-              <Edit className="mr-2 h-4 w-4" />
-              Edit
-            </Link>
-          </Button>
-          <ProposalExportButton
-            proposalId={proposal.id}
-            proposalNumber={proposal.proposalNumber}
-          />
-        </div>
-      </div>
+          </CommandBandActions>
+        </CommandBandHeader>
+      </CommandBand>
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        {/* Main Content */}
-        <div className="lg:col-span-2 space-y-6">
+      <OperationalColumn>
+        <div className="grid gap-6 lg:grid-cols-3">
+          {/* Main Content */}
+          <div className="lg:col-span-2 space-y-6">
           {/* Event Details */}
           <Card tone="canvas">
             <CardHeader>
@@ -459,7 +476,7 @@ export default async function ProposalDetailPage({
                   </span>
                 </div>
               )}
-              <Separator />
+              <div className="border-t my-1" />
               <div className="flex justify-between text-lg font-bold">
                 <span>Total</span>
                 <span>${proposal.total?.toFixed(2) ?? "0.00"}</span>
@@ -524,7 +541,8 @@ export default async function ProposalDetailPage({
             </CardContent>
           </Card>
         </div>
-      </div>
-    </div>
+        </div>
+      </OperationalColumn>
+    </PageCanvas>
   );
 }

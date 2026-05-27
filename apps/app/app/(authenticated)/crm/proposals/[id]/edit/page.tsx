@@ -5,6 +5,15 @@
  */
 
 import type { Proposal } from "@repo/database";
+import {
+  CommandBand,
+  CommandBandHeader,
+  CommandBandLede,
+  DisplayHeading,
+  MonoLabel,
+  OperationalColumn,
+  PageCanvas,
+} from "@repo/design-system/components/blocks/page-shell";
 import { Button } from "@repo/design-system/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import type { Metadata } from "next";
@@ -117,28 +126,33 @@ export default async function EditProposalPage({
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex items-center gap-4">
-        <Button asChild size="icon" variant="ghost">
-          <Link href={`/crm/proposals/${proposal.id}`}>
-            <ArrowLeft className="h-4 w-4" />
-          </Link>
-        </Button>
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">
-            Edit Proposal
-          </h1>
-          <p className="text-muted-foreground">
-            Update proposal details and pricing
-          </p>
-        </div>
-      </div>
+    <PageCanvas>
+      <CommandBand>
+        <CommandBandHeader>
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <Button asChild size="icon" variant="ghost">
+                <Link href={`/crm/proposals/${proposal.id}`}>
+                  <ArrowLeft className="h-4 w-4" />
+                </Link>
+              </Button>
+              <MonoLabel tone="dark">CRM / Proposals / Edit</MonoLabel>
+            </div>
+            <DisplayHeading size="md">Edit Proposal</DisplayHeading>
+            <CommandBandLede>
+              Update proposal details and pricing
+            </CommandBandLede>
+          </div>
+        </CommandBandHeader>
+      </CommandBand>
 
-      <ProposalForm
-        action={handleUpdate}
-        proposal={proposal}
-        submitLabel="Save Changes"
-      />
-    </div>
+      <OperationalColumn>
+        <ProposalForm
+          action={handleUpdate}
+          proposal={proposal}
+          submitLabel="Save Changes"
+        />
+      </OperationalColumn>
+    </PageCanvas>
   );
 }

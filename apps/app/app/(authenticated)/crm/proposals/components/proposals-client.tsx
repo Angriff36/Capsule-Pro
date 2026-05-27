@@ -522,7 +522,7 @@ export function ProposalsClient({
   });
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Filters Section */}
       <section>
         <div className="flex items-center justify-between mb-4">
@@ -565,64 +565,62 @@ export function ProposalsClient({
             Proposals ({pagination.total})
           </h2>
         </div>
-        <div className="rounded-md border">
-          <Table>
-            <TableHeader>
-              {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                    </TableHead>
+        <Table>
+          <TableHeader>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map((header) => (
+                  <TableHead key={header.id}>
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
+                  </TableHead>
+                ))}
+              </TableRow>
+            ))}
+          </TableHeader>
+          <TableBody>
+            {isLoading ? (
+              <TableRow>
+                <TableCell className="text-center" colSpan={columns.length}>
+                  Loading proposals...
+                </TableCell>
+              </TableRow>
+            ) : proposals.length === 0 ? (
+              <TableRow>
+                <TableCell className="text-center" colSpan={columns.length}>
+                  <div className="flex flex-col items-center gap-2 py-8">
+                    <FileText className="size-12 text-muted-foreground" />
+                    <p className="text-muted-foreground">
+                      No proposals found
+                    </p>
+                    <Button asChild variant="outline">
+                      <Link href="/crm/proposals/new">
+                        Create your first proposal
+                      </Link>
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ) : (
+              table.getRowModel().rows.map((row) => (
+                <TableRow key={row.id}>
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell key={cell.id}>
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
+                    </TableCell>
                   ))}
                 </TableRow>
-              ))}
-            </TableHeader>
-            <TableBody>
-              {isLoading ? (
-                <TableRow>
-                  <TableCell className="text-center" colSpan={columns.length}>
-                    Loading proposals...
-                  </TableCell>
-                </TableRow>
-              ) : proposals.length === 0 ? (
-                <TableRow>
-                  <TableCell className="text-center" colSpan={columns.length}>
-                    <div className="flex flex-col items-center gap-2 py-8">
-                      <FileText className="size-12 text-muted-foreground" />
-                      <p className="text-muted-foreground">
-                        No proposals found
-                      </p>
-                      <Button asChild variant="outline">
-                        <Link href="/crm/proposals/new">
-                          Create your first proposal
-                        </Link>
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ) : (
-                table.getRowModel().rows.map((row) => (
-                  <TableRow key={row.id}>
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id}>
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
-                        )}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </div>
+              ))
+            )}
+          </TableBody>
+        </Table>
 
         {pagination.totalPages > 1 && (
           <div className="flex items-center justify-between">
