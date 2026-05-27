@@ -22,8 +22,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
-import { Separator } from "@repo/design-system/components/ui/separator";
 import { Switch } from "@repo/design-system/components/ui/switch";
+import {
+  PageCanvas,
+  CommandBand,
+  CommandBandHeader,
+  CommandBandActions,
+  CommandBandLede,
+  DisplayHeading,
+  MonoLabel,
+  PageBody,
+  OperationalColumn,
+  SectionHeader,
+} from "@repo/design-system/components/blocks/page-shell";
 import { AlertCircle, Download, FileUp } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
@@ -57,7 +68,6 @@ const MAX_PLAUSIBLE_DATE = (() => {
 })();
 
 const parseExcelSerialDate = (value: number): Date | null => {
-  // Excel serial day 1 is 1899-12-31 (with 25569 offset from unix epoch days)
   const epoch = Math.round((value - 25_569) * 86_400 * 1000);
   const parsed = new Date(epoch);
   return Number.isNaN(parsed.getTime()) ? null : parsed;
@@ -222,7 +232,7 @@ export default function SalesReportingPage() {
     }
     const allColumns = Array.from(columnsSet);
 
-    // Score each column for date likelihood (from your sales module)
+    // Score each column for date likelihood
     const scoredColumns: Array<{
       name: string;
       score: number;
@@ -235,7 +245,6 @@ export default function SalesReportingPage() {
       let score = 0;
       const hasDateSignal = DATE_SIGNAL_REGEX.test(normalized);
 
-      // Name-based scoring
       if (normalized.includes("date")) {
         score += 3;
       }
@@ -250,7 +259,6 @@ export default function SalesReportingPage() {
         score += 1;
       }
 
-      // Date coverage calculation
       const values = allRows
         .map((row) => row[column])
         .filter(
@@ -263,14 +271,12 @@ export default function SalesReportingPage() {
 
       const allNumeric = values.every((value) => typeof value === "number");
       if (allNumeric && !hasDateSignal) {
-        continue; // Numeric columns need explicit date-like naming
+        continue;
       }
 
-      // Try to parse each value as a date
       let validDates = 0;
       for (const value of values) {
         const date = parseCandidateDate(value, hasDateSignal);
-
         if (date) {
           validDates++;
         }
@@ -281,7 +287,6 @@ export default function SalesReportingPage() {
         continue;
       }
 
-      // Bonus if all values are dates
       const allDates = values.every((value) => value instanceof Date);
       if (allDates) {
         score += 4;
@@ -292,7 +297,6 @@ export default function SalesReportingPage() {
       scoredColumns.push({ name: column, score, coverage, hasDateSignal });
     }
 
-    // Sort by score (descending), then by coverage
     scoredColumns.sort((a, b) => {
       if (b.score !== a.score) {
         return b.score - a.score;
@@ -300,13 +304,11 @@ export default function SalesReportingPage() {
       return b.coverage - a.coverage;
     });
 
-    // Detect date column with a stricter threshold to avoid false positives.
     const detected = scoredColumns.find(
       (col) => col.score >= 3 || (col.score >= 2 && col.coverage >= 0.6)
     );
     const detectedDateColumn = detected?.name ?? null;
 
-    // Calculate date range from detected column
     let dateRange: DateRange | null = null;
     if (detectedDateColumn) {
       const dates: Date[] = [];
@@ -339,7 +341,6 @@ export default function SalesReportingPage() {
       }
     }
 
-    // Format columns for display
     const columns: ColumnOption[] = scoredColumns.slice(0, 10).map((col) => ({
       name: col.name,
       coverage: col.coverage,
@@ -424,12 +425,10 @@ export default function SalesReportingPage() {
     try {
       const formData = new FormData();
 
-      // Add files
       Array.from(files).forEach((file) => {
         formData.append("files", file);
       });
 
-      // Add configuration
       const config = {
         reportType,
         dateRange: {
@@ -442,7 +441,6 @@ export default function SalesReportingPage() {
 
       formData.append("config", JSON.stringify(config));
 
-      // Call the API
       const response = await fetch("/api/sales-reporting/generate", {
         method: "POST",
         body: formData,
@@ -470,7 +468,6 @@ export default function SalesReportingPage() {
         throw new Error(errorMessage);
       }
 
-      // Download the PDF
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -514,262 +511,269 @@ export default function SalesReportingPage() {
   const canGenerate = parsedData !== null && startDate && endDate;
 
   return (
-    <div className="container mx-auto py-8 max-w-4xl">
-      {/* Header */}
-      <div className="mb-8">
-        <div className="flex items-start justify-between">
+    <PageCanvas>
+      <CommandBand>
+        <CommandBandHeader>
           <div>
-            <h1 className="text-3xl font-bold mb-2">Sales Reporting</h1>
-            <p className="text-muted-foreground">
+            <MonoLabel tone="dark">Reports</MonoLabel>
+            <DisplayHeading size="md">Sales Reporting</DisplayHeading>
+            <CommandBandLede>
               Generate professional PDF sales reports from your data files.
-            </p>
+            </CommandBandLede>
           </div>
-          <Button onClick={downloadSampleData} variant="outline">
-            <Download className="mr-2 h-4 w-4" />
-            Sample Data
-          </Button>
-        </div>
-      </div>
+          <CommandBandActions>
+            <Button onClick={downloadSampleData} variant="on-dark">
+              <Download className="mr-2 h-4 w-4" />
+              Sample Data
+            </Button>
+          </CommandBandActions>
+        </CommandBandHeader>
+      </CommandBand>
 
-      {/* Main Card */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Generate Sales Report</CardTitle>
-          <CardDescription>
-            Upload your sales data and configure your report settings
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {/* File Upload */}
-          <div className="space-y-2">
-            <Label htmlFor="file-upload">Sales Data File (CSV or XLSX)</Label>
-            <div className="flex items-center gap-2">
-              <Input
-                accept=".csv,.xlsx,.xls"
-                disabled={isGenerating}
-                id="file-upload"
-                onChange={handleFileChange}
-                type="file"
-              />
-              <FileUp className="h-5 w-5 text-muted-foreground" />
-            </div>
-            {parsedData && (
-              <p className="text-sm text-muted-foreground">
-                Loaded {parsedData.rowCount} rows from file
-              </p>
-            )}
-          </div>
-
-          {/* Report Type */}
-          <div className="space-y-2">
-            <Label htmlFor="report-type">Report Type</Label>
-            <Select
-              disabled={isGenerating}
-              onValueChange={(value) => setReportType(value as ReportType)}
-              value={reportType}
-            >
-              <SelectTrigger id="report-type">
-                <SelectValue placeholder="Select report type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="weekly">Weekly Report</SelectItem>
-                <SelectItem value="monthly">Monthly Report</SelectItem>
-                <SelectItem value="quarterly">Quarterly Report</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Date Range Display */}
-          {parsedData?.dateRange && (
-            <Alert>
-              <AlertDescription className="space-y-1">
+      <PageBody>
+        <OperationalColumn>
+          {/* Main Card */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Generate Sales Report</CardTitle>
+              <CardDescription>
+                Upload your sales data and configure your report settings
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* File Upload */}
+              <div className="space-y-2">
+                <Label htmlFor="file-upload">
+                  Sales Data File (CSV or XLSX)
+                </Label>
                 <div className="flex items-center gap-2">
-                  <span>📅</span>
-                  <span>
-                    Data found from <strong>{parsedData.dateRange.min}</strong>{" "}
-                    to <strong>{parsedData.dateRange.max}</strong>
-                  </span>
+                  <Input
+                    accept=".csv,.xlsx,.xls"
+                    disabled={isGenerating}
+                    id="file-upload"
+                    onChange={handleFileChange}
+                    type="file"
+                  />
+                  <FileUp className="h-5 w-5 text-muted-foreground" />
                 </div>
-                <div className="text-xs text-muted-foreground">
-                  {Math.ceil(
-                    (new Date(parsedData.dateRange.max).getTime() -
-                      new Date(parsedData.dateRange.min).getTime()) /
-                      (1000 * 60 * 60 * 24)
-                  )}{" "}
-                  days of data
-                </div>
-              </AlertDescription>
-            </Alert>
-          )}
-
-          {/* Date Range Controls */}
-          <div className="space-y-2">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="start-date">Start Date</Label>
-                <Input
-                  disabled={isGenerating || isAnalyzing}
-                  id="start-date"
-                  max={parsedData?.dateRange?.max}
-                  min={parsedData?.dateRange?.min}
-                  onChange={(e) => setStartDate(e.target.value)}
-                  type="date"
-                  value={startDate}
-                />
+                {parsedData && (
+                  <p className="text-sm text-muted-foreground">
+                    Loaded {parsedData.rowCount} rows from file
+                  </p>
+                )}
               </div>
+
+              {/* Report Type */}
               <div className="space-y-2">
-                <Label htmlFor="end-date">End Date</Label>
-                <Input
-                  disabled={isGenerating || isAnalyzing}
-                  id="end-date"
-                  max={parsedData?.dateRange?.max}
-                  min={parsedData?.dateRange?.min}
-                  onChange={(e) => setEndDate(e.target.value)}
-                  type="date"
-                  value={endDate}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Advanced Mode Toggle */}
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label htmlFor="advanced-mode">Advanced Options</Label>
-              <p className="text-xs text-muted-foreground">
-                Customize date column selection
-              </p>
-            </div>
-            <Switch
-              checked={showAdvanced}
-              disabled={isAnalyzing}
-              id="advanced-mode"
-              onCheckedChange={setShowAdvanced}
-            />
-          </div>
-
-          {/* Advanced Section */}
-          {showAdvanced && parsedData && parsedData.columns.length > 0 && (
-            <div className="space-y-3 rounded-lg border p-4">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="date-column">Date Column</Label>
+                <Label htmlFor="report-type">Report Type</Label>
                 <Select
                   disabled={isGenerating}
-                  onValueChange={setSelectedDateColumn}
-                  value={selectedDateColumn}
+                  onValueChange={(value) => setReportType(value as ReportType)}
+                  value={reportType}
                 >
-                  <SelectTrigger className="w-[200px]" id="date-column">
-                    <SelectValue placeholder="Select column" />
+                  <SelectTrigger id="report-type">
+                    <SelectValue placeholder="Select report type" />
                   </SelectTrigger>
                   <SelectContent>
-                    {parsedData.columns.map((col) => (
-                      <SelectItem key={col.name} value={col.name}>
-                        <div className="flex items-center gap-2">
-                          <span>{col.name}</span>
-                          {col.isDetected && (
-                            <Badge className="text-xs" variant="secondary">
-                              {(col.coverage * 100).toFixed(0)}%
-                            </Badge>
-                          )}
-                        </div>
-                      </SelectItem>
-                    ))}
+                    <SelectItem value="weekly">Weekly Report</SelectItem>
+                    <SelectItem value="monthly">Monthly Report</SelectItem>
+                    <SelectItem value="quarterly">Quarterly Report</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
-              <Separator />
+              {/* Date Range Display */}
+              {parsedData?.dateRange && (
+                <Alert>
+                  <AlertDescription className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span>📅</span>
+                      <span>
+                        Data found from{" "}
+                        <strong>{parsedData.dateRange.min}</strong> to{" "}
+                        <strong>{parsedData.dateRange.max}</strong>
+                      </span>
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      {Math.ceil(
+                        (new Date(parsedData.dateRange.max).getTime() -
+                          new Date(parsedData.dateRange.min).getTime()) /
+                          (1000 * 60 * 60 * 24)
+                      )}{" "}
+                      days of data
+                    </div>
+                  </AlertDescription>
+                </Alert>
+              )}
 
+              {/* Date Range Controls */}
               <div className="space-y-2">
-                <p className="text-sm font-medium">Detected Columns</p>
-                <div className="flex flex-wrap gap-2">
-                  {parsedData.columns.map((col) => (
-                    <Badge
-                      className="cursor-pointer"
-                      key={col.name}
-                      onClick={() => setSelectedDateColumn(col.name)}
-                      variant={col.isDetected ? "default" : "outline"}
-                    >
-                      {col.name} ({(col.coverage * 100).toFixed(0)}%)
-                    </Badge>
-                  ))}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="start-date">Start Date</Label>
+                    <Input
+                      disabled={isGenerating || isAnalyzing}
+                      id="start-date"
+                      max={parsedData?.dateRange?.max}
+                      min={parsedData?.dateRange?.min}
+                      onChange={(e) => setStartDate(e.target.value)}
+                      type="date"
+                      value={startDate}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="end-date">End Date</Label>
+                    <Input
+                      disabled={isGenerating || isAnalyzing}
+                      id="end-date"
+                      max={parsedData?.dateRange?.max}
+                      min={parsedData?.dateRange?.min}
+                      onChange={(e) => setEndDate(e.target.value)}
+                      type="date"
+                      value={endDate}
+                    />
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
 
-          {/* Company Name */}
-          <div className="space-y-2">
-            <Label htmlFor="company-name">Company Name (Optional)</Label>
-            <Input
-              disabled={isGenerating}
-              id="company-name"
-              onChange={(e) => setCompanyName(e.target.value)}
-              placeholder="Mangia Catering Co."
-              type="text"
-              value={companyName}
-            />
+              {/* Advanced Mode Toggle */}
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="advanced-mode">Advanced Options</Label>
+                  <p className="text-xs text-muted-foreground">
+                    Customize date column selection
+                  </p>
+                </div>
+                <Switch
+                  checked={showAdvanced}
+                  disabled={isAnalyzing}
+                  id="advanced-mode"
+                  onCheckedChange={setShowAdvanced}
+                />
+              </div>
+
+              {/* Advanced Section */}
+              {showAdvanced && parsedData && parsedData.columns.length > 0 && (
+                <div className="space-y-3 rounded-lg border p-4">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="date-column">Date Column</Label>
+                    <Select
+                      disabled={isGenerating}
+                      onValueChange={setSelectedDateColumn}
+                      value={selectedDateColumn}
+                    >
+                      <SelectTrigger className="w-[200px]" id="date-column">
+                        <SelectValue placeholder="Select column" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {parsedData.columns.map((col) => (
+                          <SelectItem key={col.name} value={col.name}>
+                            <div className="flex items-center gap-2">
+                              <span>{col.name}</span>
+                              {col.isDetected && (
+                                <Badge className="text-xs" variant="secondary">
+                                  {(col.coverage * 100).toFixed(0)}%
+                                </Badge>
+                              )}
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium">Detected Columns</p>
+                    <div className="flex flex-wrap gap-2">
+                      {parsedData.columns.map((col) => (
+                        <Badge
+                          className="cursor-pointer"
+                          key={col.name}
+                          onClick={() => setSelectedDateColumn(col.name)}
+                          variant={col.isDetected ? "default" : "outline"}
+                        >
+                          {col.name} ({(col.coverage * 100).toFixed(0)}%)
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Company Name */}
+              <div className="space-y-2">
+                <Label htmlFor="company-name">Company Name (Optional)</Label>
+                <Input
+                  disabled={isGenerating}
+                  id="company-name"
+                  onChange={(e) => setCompanyName(e.target.value)}
+                  placeholder="Mangia Catering Co."
+                  type="text"
+                  value={companyName}
+                />
+              </div>
+
+              {/* Error Alert */}
+              {error && (
+                <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
+
+              {/* Generate Button */}
+              <Button
+                className="w-full"
+                disabled={isGenerating || !canGenerate}
+                onClick={handleGenerateReport}
+                size="lg"
+              >
+                {isGenerating ? (
+                  <>Generating Report...</>
+                ) : (
+                  <>
+                    <Download className="mr-2 h-5 w-5" />
+                    Generate PDF Report
+                  </>
+                )}
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Info Cards */}
+          <div className="grid gap-4 md:grid-cols-3">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Weekly Reports</CardTitle>
+              </CardHeader>
+              <CardContent className="text-sm text-muted-foreground">
+                Revenue by event type, leads received, proposals sent, closing
+                ratio, lost opportunities, top pending deals
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Monthly Reports</CardTitle>
+              </CardHeader>
+              <CardContent className="text-sm text-muted-foreground">
+                Total revenue vs previous month and YoY, avg event value, lead
+                source breakdown, funnel metrics, win/loss trends
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Quarterly Reports</CardTitle>
+              </CardHeader>
+              <CardContent className="text-sm text-muted-foreground">
+                Customer segment analysis, sales cycle length, pricing trends,
+                referral performance, recommendations
+              </CardContent>
+            </Card>
           </div>
-
-          {/* Error Alert */}
-          {error && (
-            <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
-
-          {/* Generate Button */}
-          <Button
-            className="w-full"
-            disabled={isGenerating || !canGenerate}
-            onClick={handleGenerateReport}
-            size="lg"
-          >
-            {isGenerating ? (
-              <>Generating Report...</>
-            ) : (
-              <>
-                <Download className="mr-2 h-5 w-5" />
-                Generate PDF Report
-              </>
-            )}
-          </Button>
-        </CardContent>
-      </Card>
-
-      {/* Info Cards */}
-      <div className="mt-8 grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Weekly Reports</CardTitle>
-          </CardHeader>
-          <CardContent className="text-sm text-muted-foreground">
-            Revenue by event type, leads received, proposals sent, closing
-            ratio, lost opportunities, top pending deals
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Monthly Reports</CardTitle>
-          </CardHeader>
-          <CardContent className="text-sm text-muted-foreground">
-            Total revenue vs previous month and YoY, avg event value, lead
-            source breakdown, funnel metrics, win/loss trends
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Quarterly Reports</CardTitle>
-          </CardHeader>
-          <CardContent className="text-sm text-muted-foreground">
-            Customer segment analysis, sales cycle length, pricing trends,
-            referral performance, recommendations
-          </CardContent>
-        </Card>
-      </div>
-    </div>
+        </OperationalColumn>
+      </PageBody>
+    </PageCanvas>
   );
 }
