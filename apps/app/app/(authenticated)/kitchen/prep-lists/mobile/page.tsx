@@ -20,7 +20,7 @@ import {
   Wifi,
   WifiOff,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
 import { Header } from "../../../components/header";
 
@@ -82,7 +82,7 @@ export default function PrepListsMobilePage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isOnline, setIsOnline] = useState(true);
 
-  const fetchPrepLists = async () => {
+  const fetchPrepLists = useCallback(async () => {
     setIsLoading(true);
     try {
       const response = await apiFetch("/api/kitchen/prep-lists");
@@ -95,7 +95,7 @@ export default function PrepListsMobilePage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchPrepLists();

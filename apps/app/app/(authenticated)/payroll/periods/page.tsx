@@ -161,14 +161,14 @@ export default function PayrollPeriodsPage() {
 
       const data = await response.json();
       setPeriods(data.data || []);
-      setPagination(data.pagination || pagination);
+      setPagination((previous) => data.pagination ?? previous);
     } catch (error) {
       console.error("Error fetching payroll periods:", error);
       toast.error("Failed to load payroll periods");
     } finally {
       setLoading(false);
     }
-  }, [statusFilter, pagination.page, pagination.limit, pagination]);
+  }, [statusFilter, pagination.page, pagination.limit]);
 
   useEffect(() => {
     fetchPeriods();

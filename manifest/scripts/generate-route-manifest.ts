@@ -134,58 +134,46 @@ function toKebabCase(value: string): string {
 }
 
 /**
- * Patch route paths to match the actual Next.js filesystem layout.
- *
- * RoutesProjection generates flat paths like /api/event/create, but the
- * actual Next.js routes live at /api/events/event/commands/create.
- * This function rewrites each command route's path using ENTITY_DOMAIN_MAP.
+ * Command POST routes use the singular manifest dispatcher.
+ * Read routes keep domain-scoped paths.
  */
-function applyDomainPaths(manifest: any): any {
+function applyRoutePaths(manifest: any): any {
   const routes = Array.isArray(manifest.routes) ? manifest.routes : [];
   const patched = routes.map((route: any) => {
     if (!route.source || route.source.kind !== "command") return route;
     const { entity, command } = route.source;
-    const domain = ENTITY_DOMAIN_MAP[entity];
-    if (!domain) return route;
     const commandSegment = toKebabCase(command);
     return {
       ...route,
-      path: `/api/${domain}/commands/${commandSegment}`,
+      path: `/api/manifest/${entity}/commands/${commandSegment}`,
     };
   });
   return { ...manifest, routes: patched };
 }
 
 /**
- * Patch paths in the generated routes.ts source code.
- *
- * The TS output contains string literals like return "/api/event/archive"
- * and JSDoc comments like POST /api/event/archive. This rewrites each
- * command path using ENTITY_DOMAIN_MAP so the TS helpers return correct URLs.
+ * Patch command URL helpers in routes.ts to point at the manifest dispatcher.
  */
-function applyDomainPathsTs(tsCode: string): string {
+function applyManifestDispatcherPathsTs(tsCode: string): string {
   let result = tsCode;
-  for (const [entity, domain] of Object.entries(ENTITY_DOMAIN_MAP)) {
-    // Match the entity's kebab-case root segment (e.g. "event" for Event)
-    const entityKebab = toKebabCase(entity);
-    // Replace return "/api/{entityKebab}/{command}" with the domain path
-    // This handles both the return statement and JSDoc comments
-    const returnRegex = new RegExp(
-      `"/api/${entityKebab}/([a-z0-9-]+)"`,
-      "g"
-    );
-    result = result.replace(returnRegex, (_match, command: string) => {
-      return `"/api/${domain}/commands/${command}"`;
-    });
-    // Also fix JSDoc comments: POST /api/{entityKebab}/{command}
-    const jsdocRegex = new RegExp(
-      `POST /api/${entityKebab}/([a-z0-9-]+)`,
-      "g"
-    );
-    result = result.replace(jsdocRegex, (_match, command: string) => {
-      return `POST /api/${domain}/commands/${command}`;
-    });
-  }
+  const returnRegex = /"\/api\/([a-z0-9-]+)\/([a-z0-9-]+)"/g;
+  result = result.replace(returnRegex, (_match, entityKebab: string, command: string) => {
+    const entity =
+      Object.keys(ENTITY_DOMAIN_MAP).find(
+        (name) => toKebabCase(name) === entityKebab
+      ) ?? entityKebab;
+    return `"/api/manifest/${entity}/commands/${command}"`;
+  });
+
+  const jsdocRegex = /POST \/api\/([a-z0-9-]+)\/([a-z0-9-]+)/g;
+  result = result.replace(jsdocRegex, (_match, entityKebab: string, command: string) => {
+    const entity =
+      Object.keys(ENTITY_DOMAIN_MAP).find(
+        (name) => toKebabCase(name) === entityKebab
+      ) ?? entityKebab;
+    return `POST /api/manifest/${entity}/commands/${command}`;
+  });
+
   return result;
 }
 
@@ -236,13 +224,13 @@ function main() {
 
   // Apply domain path overrides so routes.manifest.json reflects actual Next.js paths
   const rawManifest = JSON.parse(manifestResult.artifacts[0].code);
-  const patchedManifest = applyDomainPaths(rawManifest);
+  const patchedManifest = applyRoutePaths(rawManifest);
 
   mkdirSync(outDir, { recursive: true });
   writeFileSync(manifestOut, JSON.stringify(patchedManifest, null, 2));
   // routes.ts path helpers are derived from the same IR — patch them too
   // by regenerating from the patched manifest paths
-  const patchedTsCode = applyDomainPathsTs(routesTsResult.artifacts[0].code);
+  const patchedTsCode = applyManifestDispatcherPathsTs(routesTsResult.artifacts[0].code);
   writeFileSync(routesTsOut, patchedTsCode);
 
   if (format === "summary") {

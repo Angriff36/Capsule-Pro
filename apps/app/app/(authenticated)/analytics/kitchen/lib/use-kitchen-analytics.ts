@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
 import { invariant } from "@/app/lib/invariant";
 
@@ -321,12 +321,14 @@ export async function fetchKitchenAnalytics(
 export function useKitchenAnalytics(
   options: UseKitchenAnalyticsOptions = {}
 ): UseKitchenAnalyticsReturn {
-  const { enabled = true, ...fetchOptions } = options;
+  const period = options.period ?? "30d";
+  const locationId = options.locationId;
+  const enabled = options.enabled ?? true;
   const [data, setData] = useState<KitchenAnalyticsData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     if (!enabled) {
       return;
     }
@@ -335,7 +337,7 @@ export function useKitchenAnalytics(
     setError(null);
 
     try {
-      const result = await fetchKitchenAnalytics(fetchOptions);
+      const result = await fetchKitchenAnalytics({ period, locationId });
       setData(result);
     } catch (err) {
       setError(
@@ -346,7 +348,7 @@ export function useKitchenAnalytics(
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [enabled, period, locationId]);
 
   useEffect(() => {
     fetchData();

@@ -21,7 +21,7 @@ import {
   UserCheckIcon,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import {
@@ -61,7 +61,7 @@ export function AutoAssignmentModal({
     useState<AssignmentSuggestion | null>(null);
   const [_forceMode, setForceMode] = useState(false);
 
-  const loadSuggestions = async () => {
+  const loadSuggestions = useCallback(async () => {
     setLoading(true);
     setError(null);
     setSelectedSuggestion(null);
@@ -81,7 +81,7 @@ export function AutoAssignmentModal({
     } finally {
       setLoading(false);
     }
-  };
+  }, [shiftId]);
 
   useEffect(() => {
     if (open && shiftId) {

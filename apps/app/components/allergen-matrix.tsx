@@ -38,7 +38,7 @@ import {
   Search,
   X,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
 import { DietaryBadges } from "./dietary-badges";
@@ -195,12 +195,9 @@ export function AllergenMatrix({
   const [recipes, setRecipes] = useState<RecipeWithAllergens[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterAllergens, setFilterAllergens] = useState<AllergenKey[]>([]);
+  const itemIdsKey = itemIds?.join(",") ?? "";
 
-  useEffect(() => {
-    fetchAllergenMatrix();
-  }, [itemType, itemIds]);
-
-  const fetchAllergenMatrix = async () => {
+  const fetchAllergenMatrix = useCallback(async () => {
     setLoading(true);
     try {
       const params = new URLSearchParams();
@@ -228,7 +225,11 @@ export function AllergenMatrix({
     } finally {
       setLoading(false);
     }
-  };
+  }, [itemType, itemIdsKey]);
+
+  useEffect(() => {
+    void fetchAllergenMatrix();
+  }, [fetchAllergenMatrix]);
 
   const filteredRecipes = useMemo(() => {
     let filtered = recipes;

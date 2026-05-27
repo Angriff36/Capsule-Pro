@@ -14,8 +14,7 @@ import {
   RefreshCwIcon,
   SearchIcon,
 } from "lucide-react";
-import type { FormEvent } from "react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState, type FormEvent } from "react";
 
 /**
  * Override audit log entry from the API
@@ -104,7 +103,7 @@ export const AuditLogsClient = () => {
   /**
    * Fetch audit logs from the API
    */
-  const fetchAuditLogs = async (showRefreshLoading = false) => {
+  const fetchAuditLogs = useCallback(async (showRefreshLoading = false) => {
     if (showRefreshLoading) {
       setRefreshing(true);
     } else {
@@ -185,7 +184,7 @@ export const AuditLogsClient = () => {
       setLoading(false);
       setRefreshing(false);
     }
-  };
+  }, [entityType, entityId]);
 
   useEffect(() => {
     void fetchAuditLogs();

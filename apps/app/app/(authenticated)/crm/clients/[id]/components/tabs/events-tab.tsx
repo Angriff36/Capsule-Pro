@@ -4,7 +4,7 @@ import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Card, CardContent } from "@repo/design-system/components/ui/card";
 import { CalendarIcon, ChevronRightIcon, DollarSignIcon } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { getClientEventHistory } from "../../../actions";
 
@@ -29,7 +29,7 @@ export function EventsTab({ clientId }: EventsTabProps) {
     total: 0,
   });
 
-  const fetchEvents = async () => {
+  const fetchEvents = useCallback(async () => {
     setLoading(true);
     try {
       const data = await getClientEventHistory(
@@ -46,7 +46,7 @@ export function EventsTab({ clientId }: EventsTabProps) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [clientId, pagination.limit, pagination.offset]);
 
   useEffect(() => {
     fetchEvents();

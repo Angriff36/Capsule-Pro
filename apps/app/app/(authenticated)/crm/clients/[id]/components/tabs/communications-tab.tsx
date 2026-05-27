@@ -124,9 +124,15 @@ export function CommunicationsTab({ clientId }: CommunicationsTabProps) {
     }
   }, [clientId, filterType, searchQuery]);
 
+  const loadedAttachmentIdsRef = useRef<Set<string>>(new Set());
+
   useEffect(() => {
     fetchInteractions();
   }, [fetchInteractions]);
+
+  useEffect(() => {
+    loadedAttachmentIdsRef.current.clear();
+  }, [clientId]);
 
   const fetchAttachments = useCallback(async (interactionIds: string[]) => {
     const results: Record<string, Attachment[]> = {};
@@ -139,9 +145,11 @@ export function CommunicationsTab({ clientId }: CommunicationsTabProps) {
           if (response.ok) {
             const data = await response.json();
             results[id] = data.attachments || [];
+          } else {
+            results[id] = [];
           }
         } catch {
-          // Silently skip failed attachment fetches
+          results[id] = [];
         }
       })
     );
@@ -149,15 +157,23 @@ export function CommunicationsTab({ clientId }: CommunicationsTabProps) {
   }, []);
 
   useEffect(() => {
-    if (interactions.length > 0) {
-      const idsWithoutAttachments = interactions.filter(
-        (i) => !interactionAttachments[i.id]
-      );
-      if (idsWithoutAttachments.length > 0) {
-        fetchAttachments(idsWithoutAttachments.map((i) => i.id));
-      }
+    if (interactions.length === 0) {
+      return;
     }
-  }, [interactions, fetchAttachments, interactionAttachments]);
+
+    const idsToFetch = interactions
+      .map((interaction) => interaction.id)
+      .filter((id) => !loadedAttachmentIdsRef.current.has(id));
+
+    if (idsToFetch.length === 0) {
+      return;
+    }
+
+    for (const id of idsToFetch) {
+      loadedAttachmentIdsRef.current.add(id);
+    }
+    void fetchAttachments(idsToFetch);
+  }, [interactions, fetchAttachments]);
 
   const uploadAttachments = async (interactionId: string, files: File[]) => {
     const form = new FormData();

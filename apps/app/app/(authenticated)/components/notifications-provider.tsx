@@ -1,7 +1,7 @@
 "use client";
 
 import { NotificationsProvider as RawNotificationsProvider } from "@repo/notifications/components/provider";
-import { useTheme } from "next-themes";
+import { useTheme } from "@repo/design-system";
 import { type ReactNode, useEffect, useState } from "react";
 
 interface NotificationsProviderProperties {

@@ -37,7 +37,7 @@ import {
 // biome-ignore lint/performance/noBarrelFile: Sentry requires namespace import for logger
 import * as Sentry from "@sentry/nextjs";
 import { AlertTriangle, CheckCircle2, Loader2, SearchIcon } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
 import { AllergenMatrix } from "@/components/allergen-matrix";
@@ -113,8 +113,8 @@ export default function AllergenManagementPage() {
   const [dishes, setDishes] = useState<Dish[]>([]);
   const [recipes, setRecipes] = useState<Recipe[]>([]);
 
-  // Fetch function declarations (must be before useEffect hooks that use them)
-  const fetchWarnings = async () => {
+  // Fetch helpers — stable refs (empty deps) so mount effects don't re-fire every render
+  const fetchWarnings = useCallback(async () => {
     try {
       const response = await apiFetch("/api/kitchen/allergens/warnings");
       if (!response.ok) {
@@ -130,9 +130,9 @@ export default function AllergenManagementPage() {
       logger.warn(logger.fmt`Error fetching warnings: ${String(error)}`);
       setWarnings([]);
     }
-  };
+  }, []);
 
-  const fetchEvents = async () => {
+  const fetchEvents = useCallback(async () => {
     try {
       const response = await apiFetch("/api/events?limit=50");
       if (!response.ok) {
@@ -146,9 +146,9 @@ export default function AllergenManagementPage() {
       logger.warn(logger.fmt`Error fetching events: ${String(error)}`);
       setEvents([]);
     }
-  };
+  }, []);
 
-  const fetchDishes = async () => {
+  const fetchDishes = useCallback(async () => {
     try {
       const response = await apiFetch("/api/kitchen/dishes?limit=100");
       if (!response.ok) {
@@ -162,9 +162,9 @@ export default function AllergenManagementPage() {
       logger.warn(logger.fmt`Error fetching dishes: ${String(error)}`);
       setDishes([]);
     }
-  };
+  }, []);
 
-  const fetchRecipes = async () => {
+  const fetchRecipes = useCallback(async () => {
     try {
       const response = await apiFetch("/api/kitchen/recipes?limit=100");
       if (!response.ok) {
@@ -178,7 +178,7 @@ export default function AllergenManagementPage() {
       logger.warn(logger.fmt`Error fetching recipes: ${String(error)}`);
       setRecipes([]);
     }
-  };
+  }, []);
 
   // Fetch all data on mount
   useEffect(() => {

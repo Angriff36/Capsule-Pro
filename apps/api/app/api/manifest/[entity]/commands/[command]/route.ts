@@ -6,7 +6,6 @@ import type { NextRequest } from "next/server";
 import { captureException } from "@sentry/nextjs";
 import { resolveCommand } from "@/lib/manifest/command-resolver";
 import { requireCurrentUser } from "@/app/lib/tenant";
-import { InvariantError } from "@/app/lib/invariant";
 import { manifestErrorResponse, manifestSuccessResponse } from "@/lib/manifest-response";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
 
@@ -47,17 +46,6 @@ export async function POST(
       bodyKeys: Object.keys(body),
     });
 
-    // ── Resolve instanceId from body ──
-    // Instance-scoped commands need to identify the target entity row.
-    // Convention: Shipment.* uses body.id; ShipmentItem.updateReceived uses
-    // body.shipmentItemId. Create commands are entity-scoped (no instanceId).
-    let instanceId: string | undefined;
-    if (body.shipmentItemId) {
-      instanceId = body.shipmentItemId;
-    } else if (body.id && command !== "create") {
-      instanceId = body.id;
-    }
-
     // ── Build runtime + execute command ──
     const runtime = await createManifestRuntime({
       user: {
@@ -68,14 +56,9 @@ export async function POST(
       entityName: entity,
     });
 
-    const runArgs: { entityName: string; instanceId?: string } = {
+    const result = await runtime.runCommand(command, body, {
       entityName: entity,
-    };
-    if (instanceId) {
-      runArgs.instanceId = instanceId;
-    }
-
-    const result = await runtime.runCommand(command, body, runArgs);
+    });
 
     // ── Handle failures ──
     if (!result.success) {
@@ -107,10 +90,6 @@ export async function POST(
       events: result.emittedEvents,
     });
   } catch (error) {
-    // Auth/tenant invariant violations must surface as 401, not 500.
-    if (error instanceof InvariantError) {
-      return manifestErrorResponse(error.message, 401);
-    }
     console.error(`[manifest/dispatcher] Error:`, error);
     captureException(error);
     return manifestErrorResponse("Internal server error", 500);

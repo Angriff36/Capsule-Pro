@@ -283,7 +283,7 @@ export async function updateEventBudgets(
 // React Hooks
 // ============================================================================
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
 
 export interface UseRecipeCostResult {
@@ -299,7 +299,7 @@ export function useRecipeCost(recipeVersionId: string): UseRecipeCostResult {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  const fetchCost = async () => {
+  const fetchCost = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -310,7 +310,7 @@ export function useRecipeCost(recipeVersionId: string): UseRecipeCostResult {
     } finally {
       setLoading(false);
     }
-  };
+  }, [recipeVersionId]);
 
   const recalculate = async () => {
     setLoading(true);
@@ -348,6 +348,15 @@ export interface UseRecipesResult {
 }
 
 export function useRecipes(filters: RecipeListFilters = {}): UseRecipesResult {
+  const {
+    search,
+    category,
+    cuisineType,
+    tag,
+    isActive,
+    page,
+    limit,
+  } = filters;
   const [data, setData] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -358,11 +367,19 @@ export function useRecipes(filters: RecipeListFilters = {}): UseRecipesResult {
     totalPages: number;
   } | null>(null);
 
-  const fetchRecipes = async () => {
+  const fetchRecipes = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const result = await listRecipes(filters);
+      const result = await listRecipes({
+        search,
+        category,
+        cuisineType,
+        tag,
+        isActive,
+        page,
+        limit,
+      });
       setData(result.data);
       setPagination(result.pagination);
     } catch (err) {
@@ -370,7 +387,7 @@ export function useRecipes(filters: RecipeListFilters = {}): UseRecipesResult {
     } finally {
       setLoading(false);
     }
-  };
+  }, [search, category, cuisineType, tag, isActive, page, limit]);
 
   useEffect(() => {
     fetchRecipes();

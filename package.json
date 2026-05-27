@@ -175,7 +175,8 @@
     "build:infisical": "turbo run build:infisical",
     "knip": "knip",
     "manifest:audit-schema-drift": "node manifest/scripts/audit-schema-drift.mjs",
-    "manifest:audit-schema-drift:strict": "node manifest/scripts/audit-schema-drift.mjs --strict"
+    "manifest:audit-schema-drift:strict": "node manifest/scripts/audit-schema-drift.mjs --strict",
+    "manifest:mcp": "manifest-mcp"
   },
   "type": "module"
 }

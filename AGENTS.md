@@ -15,6 +15,8 @@ Your training data is outdated — the docs are the source of truth.
 
 ## MCP Tools (use mcporter)
 
+### Next.js devtools (HTTP, app must be running on 2221)
+
 ```bash
 # List available tools
 mcporter list --http-url http://127.0.0.1:2221/_next/mcp --allow-http --name next-devtools
@@ -26,6 +28,26 @@ mcporter call --http-url http://127.0.0.1:2221/_next/mcp --allow-http 'next-devt
 ```
 
 Available tools: `get_project_metadata`, `get_errors`, `get_page_metadata`, `get_logs`, `get_server_action_by_id`, `get_routes`
+
+### Manifest MCP (stdio, `@angriff36/manifest@1.0.32+`)
+
+Project config: `.cursor/mcp.json` registers three stdio servers:
+
+| Server | Command | Purpose |
+|--------|---------|---------|
+| `manifest` | `pnpm exec manifest-mcp` | Upstream compile / execute / validate / explain (from npm tarball) |
+| `capsule-pro` | `pnpm --filter @repo/mcp-server start` | Tenant-scoped IR introspection, route resolution, governed queries |
+| `capsule-pro-admin` | `pnpm --filter @repo/mcp-server start:admin` | Admin mode (future plugins) |
+
+Manual start (outside Cursor):
+
+```bash
+pnpm manifest:mcp
+# or: pnpm exec manifest-mcp
+# or: npx --package @angriff36/manifest manifest-mcp
+```
+
+**Not** `npx @manifest/mcp-server` — that package was never published. Use `@angriff36/manifest` with the `manifest-mcp` bin.
 
 ## Start Dev Server
 

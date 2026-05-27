@@ -1,5 +1,6 @@
 "use client";
 
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
 
@@ -342,6 +343,10 @@ export async function deleteLineItem(
 
 // React Hook
 export function useEventBudgets(filters?: EventBudgetFilters) {
+  const eventId = filters?.eventId;
+  const status = filters?.status;
+  const page = filters?.page;
+  const limit = filters?.limit;
   const [budgets, setBudgets] = useState<EventBudget[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -350,7 +355,7 @@ export function useEventBudgets(filters?: EventBudgetFilters) {
     setLoading(true);
     setError(null);
     try {
-      const data = await getBudgets(filters);
+      const data = await getBudgets({ eventId, status, page, limit });
       setBudgets(data);
     } catch (err) {
       const error = err instanceof Error ? err : new Error("Unknown error");
@@ -359,7 +364,7 @@ export function useEventBudgets(filters?: EventBudgetFilters) {
     } finally {
       setLoading(false);
     }
-  }, [filters]);
+  }, [eventId, status, page, limit]);
 
   useEffect(() => {
     fetchBudgets();
@@ -372,5 +377,3 @@ export function useEventBudgets(filters?: EventBudgetFilters) {
     refetch: fetchBudgets,
   };
 }
-
-import { useCallback, useEffect, useState } from "react";

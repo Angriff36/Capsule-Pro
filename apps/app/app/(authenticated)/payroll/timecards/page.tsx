@@ -244,7 +244,7 @@ export default function TimecardsPage() {
 
       const data = await response.json();
       setTimeEntries(data.timeEntries || []);
-      setPagination(data.pagination || pagination);
+      setPagination((previous) => data.pagination ?? previous);
     } catch (error) {
       console.error("Error fetching timecards:", error);
       toast.error("Failed to load timecards");
@@ -258,7 +258,6 @@ export default function TimecardsPage() {
     searchQuery,
     startDate,
     endDate,
-    pagination,
   ]);
 
   useEffect(() => {

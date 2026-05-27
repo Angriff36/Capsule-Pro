@@ -120,7 +120,7 @@ export function ShiftsClient() {
         limit: pagination.limit,
       });
       setShifts(data.shifts || []);
-      setPagination(data.pagination || pagination);
+      setPagination((previous) => data.pagination ?? previous);
     } catch (error) {
       toast.error("Failed to load shifts", {
         description: error instanceof Error ? error.message : "Unknown error",

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
 
 // TypeScript types for Finance Analytics
@@ -115,12 +115,14 @@ export async function fetchFinanceAnalytics(
 export function useFinanceAnalytics(
   options: UseFinanceAnalyticsOptions = {}
 ): UseFinanceAnalyticsReturn {
-  const { enabled = true, ...fetchOptions } = options;
+  const period = options.period ?? "30d";
+  const locationId = options.locationId;
+  const enabled = options.enabled ?? true;
   const [data, setData] = useState<FinanceAnalyticsData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     if (!enabled) {
       return;
     }
@@ -129,7 +131,7 @@ export function useFinanceAnalytics(
     setError(null);
 
     try {
-      const result = await fetchFinanceAnalytics(fetchOptions);
+      const result = await fetchFinanceAnalytics({ period, locationId });
       setData(result);
     } catch (err) {
       setError(
@@ -140,7 +142,7 @@ export function useFinanceAnalytics(
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [enabled, period, locationId]);
 
   useEffect(() => {
     fetchData();

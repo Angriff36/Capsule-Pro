@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
 
 // Types for kitchen analytics data
@@ -98,7 +98,7 @@ export function useKitchenAnalytics(
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
@@ -109,7 +109,7 @@ export function useKitchenAnalytics(
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [period, locationId]);
 
   useEffect(() => {
     fetchData();

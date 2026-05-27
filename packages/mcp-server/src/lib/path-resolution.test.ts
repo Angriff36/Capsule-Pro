@@ -104,7 +104,7 @@ describe("ir-loader MCP_PROJECT_ROOT", () => {
     // Mock the transitive imports that ir-loader needs
     vi.doMock("@angriff36/manifest/ir", () => ({}));
     vi.doMock("@repo/manifest-runtime/runtime/loadManifests", () => ({
-      loadPrecompiledIR: vi.fn(() => ({
+      loadMergedPrecompiledIR: vi.fn(() => ({
         ir: {
           entities: [],
           commands: [],
@@ -113,6 +113,7 @@ describe("ir-loader MCP_PROJECT_ROOT", () => {
           version: "test",
         },
       })),
+      invalidateMergedIRCache: vi.fn(),
     }));
 
     const { getIR, invalidateIRCache } = await import("./ir-loader.js");

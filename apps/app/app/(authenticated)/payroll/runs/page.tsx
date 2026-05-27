@@ -169,14 +169,14 @@ export default function PayrollRunsPage() {
 
       const data = await response.json();
       setRuns(data.data || []);
-      setPagination(data.pagination || pagination);
+      setPagination((previous) => data.pagination ?? previous);
     } catch (error) {
       console.error("Error fetching payroll runs:", error);
       toast.error("Failed to load payroll runs");
     } finally {
       setLoading(false);
     }
-  }, [statusFilter, pagination.page, pagination.limit, pagination]);
+  }, [statusFilter, pagination.page, pagination.limit]);
 
   useEffect(() => {
     fetchRuns();

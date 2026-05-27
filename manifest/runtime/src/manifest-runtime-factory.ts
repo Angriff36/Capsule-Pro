@@ -26,7 +26,7 @@ import { PrismaIdempotencyStore } from "./prisma-idempotency-store";
 import { PrismaJsonStore } from "./prisma-json-store";
 import type { PrismaStoreConfig } from "./prisma-store";
 import { createPrismaOutboxWriter, PrismaStore } from "./prisma-store";
-import { loadPrecompiledIR } from "./runtime/loadManifests";
+import { loadMergedPrecompiledIR, loadPrecompiledIR } from "./runtime/loadManifests";
 import { ManifestRuntimeEngine } from "./runtime-engine";
 
 // ---------------------------------------------------------------------------
@@ -231,23 +231,19 @@ const ENTITIES_WITH_SPECIFIC_STORES = new Set([
   "InventoryTransfer",
 ]);
 
-/** Default precompiled IR path (relative to monorepo root). */
-const DEFAULT_IR_PATH = "manifest/ir/kitchen.ir.json";
-
 // ---------------------------------------------------------------------------
 // Internal helpers
 // ---------------------------------------------------------------------------
 
 /**
- * Load the precompiled manifest IR from the build artifact.
- *
- * Uses loadPrecompiledIR which anchors to the monorepo root via
- * pnpm-workspace.yaml — safe regardless of what directory Next.js
- * started the server from.
+ * Load merged precompiled IR from `manifest/ir/*.ir.json` via the official
+ * `@angriff36/manifest` IR types. Optional irPath loads a single file for tests.
  */
 function getManifestIR(irPath?: string): IR {
-  const { ir } = loadPrecompiledIR(irPath ?? DEFAULT_IR_PATH);
-  return ir;
+  if (irPath) {
+    return loadPrecompiledIR(irPath).ir;
+  }
+  return loadMergedPrecompiledIR().ir;
 }
 
 /**

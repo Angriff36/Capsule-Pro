@@ -363,27 +363,31 @@ const baseConfig: NextConfig = withToolbar(
             },
           ],
         },
-        {
-          // Cache static assets aggressively
-          source:
-            "/(.*)\\.(ico|png|jpg|jpeg|gif|svg|webp|avif|woff|woff2|ttf|eot)",
-          headers: [
-            {
-              key: "Cache-Control",
-              value: "public, max-age=31536000, immutable",
-            },
-          ],
-        },
-        {
-          // Cache JS/CSS with content hash
-          source: "/_next/static/(.*)",
-          headers: [
-            {
-              key: "Cache-Control",
-              value: "public, max-age=31536000, immutable",
-            },
-          ],
-        },
+        ...(process.env.NODE_ENV === "production"
+          ? [
+              {
+                // Cache static assets aggressively in production only.
+                source:
+                  "/(.*)\\.(ico|png|jpg|jpeg|gif|svg|webp|avif|woff|woff2|ttf|eot)",
+                headers: [
+                  {
+                    key: "Cache-Control",
+                    value: "public, max-age=31536000, immutable",
+                  },
+                ],
+              },
+              {
+                // Cache JS/CSS with content hash in production only.
+                source: "/_next/static/(.*)",
+                headers: [
+                  {
+                    key: "Cache-Control",
+                    value: "public, max-age=31536000, immutable",
+                  },
+                ],
+              },
+            ]
+          : []),
       ];
     },
     // Externalize heavy packages with native deps / dynamic requires.

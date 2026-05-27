@@ -19,7 +19,7 @@ import {
 import { Textarea } from "@repo/design-system/components/ui/textarea";
 import { captureException } from "@sentry/nextjs";
 import { Trash2, Wifi, WifiOff } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
 import { Header } from "../../../components/header";
 
@@ -76,7 +76,7 @@ export default function WasteLoggingMobilePage() {
   >({});
   const [successMessage, setSuccessMessage] = useState("");
 
-  const fetchInventoryItems = async () => {
+  const fetchInventoryItems = useCallback(async () => {
     try {
       const response = await apiFetch("/api/inventory/items?limit=100");
       if (response.ok) {
@@ -86,9 +86,9 @@ export default function WasteLoggingMobilePage() {
     } catch (error) {
       captureException(error);
     }
-  };
+  }, []);
 
-  const fetchWasteReasons = async () => {
+  const fetchWasteReasons = useCallback(async () => {
     try {
       const response = await apiFetch("/api/kitchen/waste/reasons");
       if (response.ok) {
@@ -98,7 +98,7 @@ export default function WasteLoggingMobilePage() {
     } catch (error) {
       captureException(error);
     }
-  };
+  }, []);
 
   const syncOfflineEntries = async () => {
     for (const entry of syncQueue) {

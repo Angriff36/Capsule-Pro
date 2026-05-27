@@ -38,7 +38,7 @@ import {
   Trash2Icon,
   UserIcon,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import {
   createClientContact,
@@ -83,7 +83,7 @@ export function ContactsTab({ client }: ContactsTabProps) {
     useState<ClientContactData | null>(null);
   const [formData, setFormData] = useState({ ...emptyForm });
 
-  const fetchContacts = async () => {
+  const fetchContacts = useCallback(async () => {
     setLoading(true);
     try {
       const data = await getClientContacts(client.id);
@@ -93,7 +93,7 @@ export function ContactsTab({ client }: ContactsTabProps) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [client.id]);
 
   useEffect(() => {
     fetchContacts();

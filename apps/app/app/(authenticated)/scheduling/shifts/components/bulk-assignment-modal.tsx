@@ -24,7 +24,7 @@ import {
   UserCheckIcon,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import {
@@ -65,7 +65,13 @@ export function BulkAssignmentModal({
   const [expandedShifts, setExpandedShifts] = useState<ExpandedShifts>({});
   const [forceMode, setForceMode] = useState(false);
 
-  const loadSuggestions = async () => {
+  const shiftIdsKey = shiftIds?.join(",") ?? "";
+  const scheduleId = filters?.scheduleId;
+  const locationId = filters?.locationId;
+  const startDate = filters?.startDate;
+  const endDate = filters?.endDate;
+
+  const loadSuggestions = useCallback(async () => {
     setLoading(true);
     setError(null);
     setSelectedShifts(new Set());
@@ -85,7 +91,12 @@ export function BulkAssignmentModal({
         };
       } else {
         // Get suggestions based on filters
-        result = await getBulkAssignmentSuggestions(filters);
+        result = await getBulkAssignmentSuggestions({
+          scheduleId,
+          locationId,
+          startDate,
+          endDate,
+        });
       }
 
       setData(result);
@@ -109,7 +120,7 @@ export function BulkAssignmentModal({
     } finally {
       setLoading(false);
     }
-  };
+  }, [shiftIdsKey, scheduleId, locationId, startDate, endDate]);
 
   useEffect(() => {
     if (open) {

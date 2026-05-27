@@ -1,7 +1,7 @@
 {
   "$schema": "https://manifest.lang/spec/routes-v1.schema.json",
   "version": "1.0",
-  "generatedAt": "2026-05-25T05:49:21.626Z",
+  "generatedAt": "2026-05-27T12:58:53.780Z",
   "basePath": "/api",
   "routes": [
     {
@@ -3936,7 +3936,7 @@
     },
     {
       "id": "AdminChatParticipant.archive",
-      "path": "/api/administrative/chat/participants/commands/archive",
+      "path": "/api/manifest/AdminChatParticipant/commands/archive",
       "method": "POST",
       "params": [],
       "source": {
@@ -3949,7 +3949,7 @@
     },
     {
       "id": "AdminChatParticipant.clearHistory",
-      "path": "/api/administrative/chat/participants/commands/clear-history",
+      "path": "/api/manifest/AdminChatParticipant/commands/clear-history",
       "method": "POST",
       "params": [],
       "source": {
@@ -3962,7 +3962,7 @@
     },
     {
       "id": "AdminChatParticipant.unarchive",
-      "path": "/api/administrative/chat/participants/commands/unarchive",
+      "path": "/api/manifest/AdminChatParticipant/commands/unarchive",
       "method": "POST",
       "params": [],
       "source": {
@@ -3975,7 +3975,7 @@
     },
     {
       "id": "AdminTask.cancel",
-      "path": "/api/administrative/tasks/commands/cancel",
+      "path": "/api/manifest/AdminTask/commands/cancel",
       "method": "POST",
       "params": [],
       "source": {
@@ -3988,7 +3988,7 @@
     },
     {
       "id": "AdminTask.complete",
-      "path": "/api/administrative/tasks/commands/complete",
+      "path": "/api/manifest/AdminTask/commands/complete",
       "method": "POST",
       "params": [],
       "source": {
@@ -4001,7 +4001,7 @@
     },
     {
       "id": "AdminTask.create",
-      "path": "/api/administrative/tasks/commands/create",
+      "path": "/api/manifest/AdminTask/commands/create",
       "method": "POST",
       "params": [
         {
@@ -4063,7 +4063,7 @@
     },
     {
       "id": "AdminTask.moveToTodo",
-      "path": "/api/administrative/tasks/commands/move-to-todo",
+      "path": "/api/manifest/AdminTask/commands/move-to-todo",
       "method": "POST",
       "params": [],
       "source": {
@@ -4076,7 +4076,7 @@
     },
     {
       "id": "AdminTask.reopen",
-      "path": "/api/administrative/tasks/commands/reopen",
+      "path": "/api/manifest/AdminTask/commands/reopen",
       "method": "POST",
       "params": [],
       "source": {
@@ -4089,7 +4089,7 @@
     },
     {
       "id": "AdminTask.softDelete",
-      "path": "/api/administrative/tasks/commands/soft-delete",
+      "path": "/api/manifest/AdminTask/commands/soft-delete",
       "method": "POST",
       "params": [],
       "source": {
@@ -4102,7 +4102,7 @@
     },
     {
       "id": "AdminTask.startProgress",
-      "path": "/api/administrative/tasks/commands/start-progress",
+      "path": "/api/manifest/AdminTask/commands/start-progress",
       "method": "POST",
       "params": [],
       "source": {
@@ -4115,7 +4115,7 @@
     },
     {
       "id": "AdminTask.update",
-      "path": "/api/administrative/tasks/commands/update",
+      "path": "/api/manifest/AdminTask/commands/update",
       "method": "POST",
       "params": [
         {
@@ -4165,7 +4165,7 @@
     },
     {
       "id": "AiEventSetupSession.cancel",
-      "path": "/api/aieventsetupsession/cancel",
+      "path": "/api/manifest/AiEventSetupSession/commands/cancel",
       "method": "POST",
       "params": [
         {
@@ -4185,7 +4185,7 @@
     },
     {
       "id": "AiEventSetupSession.confirm",
-      "path": "/api/aieventsetupsession/confirm",
+      "path": "/api/manifest/AiEventSetupSession/commands/confirm",
       "method": "POST",
       "params": [
         {
@@ -4247,7 +4247,7 @@
     },
     {
       "id": "AiEventSetupSession.markCreated",
-      "path": "/api/aieventsetupsession/mark-created",
+      "path": "/api/manifest/AiEventSetupSession/commands/mark-created",
       "method": "POST",
       "params": [
         {
@@ -4267,7 +4267,7 @@
     },
     {
       "id": "AiEventSetupSession.parse",
-      "path": "/api/aieventsetupsession/parse",
+      "path": "/api/manifest/AiEventSetupSession/commands/parse",
       "method": "POST",
       "params": [
         {
@@ -4287,7 +4287,7 @@
     },
     {
       "id": "AiEventSetupSession.updateConfidence",
-      "path": "/api/aieventsetupsession/update-confidence",
+      "path": "/api/manifest/AiEventSetupSession/commands/update-confidence",
       "method": "POST",
       "params": [
         {
@@ -4319,7 +4319,7 @@
     },
     {
       "id": "AlertsConfig.create",
-      "path": "/api/kitchen/alerts-config/commands/create",
+      "path": "/api/manifest/AlertsConfig/commands/create",
       "method": "POST",
       "params": [
         {
@@ -4345,7 +4345,7 @@
     },
     {
       "id": "AlertsConfig.remove",
-      "path": "/api/kitchen/alerts-config/commands/remove",
+      "path": "/api/manifest/AlertsConfig/commands/remove",
       "method": "POST",
       "params": [
         {
@@ -4365,7 +4365,7 @@
     },
     {
       "id": "AlertsConfig.update",
-      "path": "/api/kitchen/alerts-config/commands/update",
+      "path": "/api/manifest/AlertsConfig/commands/update",
       "method": "POST",
       "params": [
         {
@@ -4391,7 +4391,7 @@
     },
     {
       "id": "AllergenWarning.acknowledge",
-      "path": "/api/kitchen/allergen-warnings/commands/acknowledge",
+      "path": "/api/manifest/AllergenWarning/commands/acknowledge",
       "method": "POST",
       "params": [
         {
@@ -4417,7 +4417,7 @@
     },
     {
       "id": "AllergenWarning.applyOverride",
-      "path": "/api/kitchen/allergen-warnings/commands/apply-override",
+      "path": "/api/manifest/AllergenWarning/commands/apply-override",
       "method": "POST",
       "params": [
         {
@@ -4443,7 +4443,7 @@
     },
     {
       "id": "AllergenWarning.create",
-      "path": "/api/kitchen/allergen-warnings/commands/create",
+      "path": "/api/manifest/AllergenWarning/commands/create",
       "method": "POST",
       "params": [
         {
@@ -4499,7 +4499,7 @@
     },
     {
       "id": "AllergenWarning.resolve",
-      "path": "/api/kitchen/allergen-warnings/commands/resolve",
+      "path": "/api/manifest/AllergenWarning/commands/resolve",
       "method": "POST",
       "params": [
         {
@@ -4519,7 +4519,7 @@
     },
     {
       "id": "AllergenWarning.softDelete",
-      "path": "/api/kitchen/allergen-warnings/commands/soft-delete",
+      "path": "/api/manifest/AllergenWarning/commands/soft-delete",
       "method": "POST",
       "params": [
         {
@@ -4545,7 +4545,7 @@
     },
     {
       "id": "ApiKey.create",
-      "path": "/api/settings/api-keys/commands/create",
+      "path": "/api/manifest/ApiKey/commands/create",
       "method": "POST",
       "params": [
         {
@@ -4595,7 +4595,7 @@
     },
     {
       "id": "ApiKey.recordUsage",
-      "path": "/api/settings/api-keys/commands/record-usage",
+      "path": "/api/manifest/ApiKey/commands/record-usage",
       "method": "POST",
       "params": [],
       "source": {
@@ -4608,7 +4608,7 @@
     },
     {
       "id": "ApiKey.revoke",
-      "path": "/api/settings/api-keys/commands/revoke",
+      "path": "/api/manifest/ApiKey/commands/revoke",
       "method": "POST",
       "params": [
         {
@@ -4634,7 +4634,7 @@
     },
     {
       "id": "ApiKey.softDelete",
-      "path": "/api/settings/api-keys/commands/soft-delete",
+      "path": "/api/manifest/ApiKey/commands/soft-delete",
       "method": "POST",
       "params": [
         {
@@ -4660,7 +4660,7 @@
     },
     {
       "id": "ApiKey.update",
-      "path": "/api/settings/api-keys/commands/update",
+      "path": "/api/manifest/ApiKey/commands/update",
       "method": "POST",
       "params": [
         {
@@ -4692,7 +4692,7 @@
     },
     {
       "id": "AutomatedFollowup.complete",
-      "path": "/api/automatedfollowup/complete",
+      "path": "/api/manifest/AutomatedFollowup/commands/complete",
       "method": "POST",
       "params": [
         {
@@ -4712,7 +4712,7 @@
     },
     {
       "id": "AutomatedFollowup.create",
-      "path": "/api/automatedfollowup/create",
+      "path": "/api/manifest/AutomatedFollowup/commands/create",
       "method": "POST",
       "params": [
         {
@@ -4768,7 +4768,7 @@
     },
     {
       "id": "AutomatedFollowup.generate",
-      "path": "/api/automatedfollowup/generate",
+      "path": "/api/manifest/AutomatedFollowup/commands/generate",
       "method": "POST",
       "params": [],
       "source": {
@@ -4781,7 +4781,7 @@
     },
     {
       "id": "AutomatedFollowup.skip",
-      "path": "/api/automatedfollowup/skip",
+      "path": "/api/manifest/AutomatedFollowup/commands/skip",
       "method": "POST",
       "params": [
         {
@@ -4801,7 +4801,7 @@
     },
     {
       "id": "BankAccount.create",
-      "path": "/api/bankaccount/create",
+      "path": "/api/manifest/BankAccount/commands/create",
       "method": "POST",
       "params": [
         {
@@ -4857,7 +4857,7 @@
     },
     {
       "id": "BankAccount.markDefault",
-      "path": "/api/bankaccount/mark-default",
+      "path": "/api/manifest/BankAccount/commands/mark-default",
       "method": "POST",
       "params": [],
       "source": {
@@ -4870,7 +4870,7 @@
     },
     {
       "id": "BankAccount.remove",
-      "path": "/api/bankaccount/remove",
+      "path": "/api/manifest/BankAccount/commands/remove",
       "method": "POST",
       "params": [],
       "source": {
@@ -4883,7 +4883,7 @@
     },
     {
       "id": "BankAccount.update",
-      "path": "/api/bankaccount/update",
+      "path": "/api/manifest/BankAccount/commands/update",
       "method": "POST",
       "params": [
         {
@@ -4927,7 +4927,7 @@
     },
     {
       "id": "BankAccount.verify",
-      "path": "/api/bankaccount/verify",
+      "path": "/api/manifest/BankAccount/commands/verify",
       "method": "POST",
       "params": [],
       "source": {
@@ -4940,7 +4940,7 @@
     },
     {
       "id": "BattleBoard.addDish",
-      "path": "/api/events/battle-boards/commands/add-dish",
+      "path": "/api/manifest/BattleBoard/commands/add-dish",
       "method": "POST",
       "params": [
         {
@@ -4966,7 +4966,7 @@
     },
     {
       "id": "BattleBoard.create",
-      "path": "/api/events/battle-boards/commands/create",
+      "path": "/api/manifest/BattleBoard/commands/create",
       "method": "POST",
       "params": [
         {
@@ -5022,7 +5022,7 @@
     },
     {
       "id": "BattleBoard.finalize",
-      "path": "/api/events/battle-boards/commands/finalize",
+      "path": "/api/manifest/BattleBoard/commands/finalize",
       "method": "POST",
       "params": [
         {
@@ -5042,7 +5042,7 @@
     },
     {
       "id": "BattleBoard.open",
-      "path": "/api/events/battle-boards/commands/open",
+      "path": "/api/manifest/BattleBoard/commands/open",
       "method": "POST",
       "params": [
         {
@@ -5062,7 +5062,7 @@
     },
     {
       "id": "BattleBoard.removeDish",
-      "path": "/api/events/battle-boards/commands/remove-dish",
+      "path": "/api/manifest/BattleBoard/commands/remove-dish",
       "method": "POST",
       "params": [
         {
@@ -5088,7 +5088,7 @@
     },
     {
       "id": "BattleBoard.startVoting",
-      "path": "/api/events/battle-boards/commands/start-voting",
+      "path": "/api/manifest/BattleBoard/commands/start-voting",
       "method": "POST",
       "params": [
         {
@@ -5108,7 +5108,7 @@
     },
     {
       "id": "BattleBoard.vote",
-      "path": "/api/events/battle-boards/commands/vote",
+      "path": "/api/manifest/BattleBoard/commands/vote",
       "method": "POST",
       "params": [
         {
@@ -5134,7 +5134,7 @@
     },
     {
       "id": "Budget.create",
-      "path": "/api/budget/create",
+      "path": "/api/manifest/Budget/commands/create",
       "method": "POST",
       "params": [
         {
@@ -5184,7 +5184,7 @@
     },
     {
       "id": "Budget.refresh",
-      "path": "/api/budget/refresh",
+      "path": "/api/manifest/Budget/commands/refresh",
       "method": "POST",
       "params": [],
       "source": {
@@ -5197,7 +5197,7 @@
     },
     {
       "id": "Budget.remove",
-      "path": "/api/budget/remove",
+      "path": "/api/manifest/Budget/commands/remove",
       "method": "POST",
       "params": [],
       "source": {
@@ -5210,7 +5210,7 @@
     },
     {
       "id": "Budget.update",
-      "path": "/api/budget/update",
+      "path": "/api/manifest/Budget/commands/update",
       "method": "POST",
       "params": [
         {
@@ -5260,7 +5260,7 @@
     },
     {
       "id": "BudgetAlert.acknowledge",
-      "path": "/api/events/budget-alerts/commands/acknowledge",
+      "path": "/api/manifest/BudgetAlert/commands/acknowledge",
       "method": "POST",
       "params": [
         {
@@ -5280,7 +5280,7 @@
     },
     {
       "id": "BudgetAlert.resolve",
-      "path": "/api/events/budget-alerts/commands/resolve",
+      "path": "/api/manifest/BudgetAlert/commands/resolve",
       "method": "POST",
       "params": [],
       "source": {
@@ -5293,7 +5293,7 @@
     },
     {
       "id": "BudgetLineItem.create",
-      "path": "/api/events/budget-line-items/commands/create",
+      "path": "/api/manifest/BudgetLineItem/commands/create",
       "method": "POST",
       "params": [
         {
@@ -5349,7 +5349,7 @@
     },
     {
       "id": "BudgetLineItem.remove",
-      "path": "/api/events/budget-line-items/commands/remove",
+      "path": "/api/manifest/BudgetLineItem/commands/remove",
       "method": "POST",
       "params": [
         {
@@ -5369,7 +5369,7 @@
     },
     {
       "id": "BudgetLineItem.update",
-      "path": "/api/events/budget-line-items/commands/update",
+      "path": "/api/manifest/BudgetLineItem/commands/update",
       "method": "POST",
       "params": [
         {
@@ -5407,7 +5407,7 @@
     },
     {
       "id": "BulkOrderRule.create",
-      "path": "/api/inventory/bulk-order-rules/commands/create",
+      "path": "/api/manifest/BulkOrderRule/commands/create",
       "method": "POST",
       "params": [
         {
@@ -5493,7 +5493,7 @@
     },
     {
       "id": "BulkOrderRule.softDelete",
-      "path": "/api/inventory/bulk-order-rules/commands/soft-delete",
+      "path": "/api/manifest/BulkOrderRule/commands/soft-delete",
       "method": "POST",
       "params": [
         {
@@ -5513,7 +5513,7 @@
     },
     {
       "id": "BulkOrderRule.update",
-      "path": "/api/inventory/bulk-order-rules/commands/update",
+      "path": "/api/manifest/BulkOrderRule/commands/update",
       "method": "POST",
       "params": [
         {
@@ -5605,7 +5605,7 @@
     },
     {
       "id": "CateringOrder.cancel",
-      "path": "/api/events/catering-orders/commands/cancel",
+      "path": "/api/manifest/CateringOrder/commands/cancel",
       "method": "POST",
       "params": [
         {
@@ -5625,7 +5625,7 @@
     },
     {
       "id": "CateringOrder.confirm",
-      "path": "/api/events/catering-orders/commands/confirm",
+      "path": "/api/manifest/CateringOrder/commands/confirm",
       "method": "POST",
       "params": [
         {
@@ -5645,7 +5645,7 @@
     },
     {
       "id": "CateringOrder.create",
-      "path": "/api/events/catering-orders/commands/create",
+      "path": "/api/manifest/CateringOrder/commands/create",
       "method": "POST",
       "params": [
         {
@@ -5755,7 +5755,7 @@
     },
     {
       "id": "CateringOrder.markComplete",
-      "path": "/api/events/catering-orders/commands/mark-complete",
+      "path": "/api/manifest/CateringOrder/commands/mark-complete",
       "method": "POST",
       "params": [
         {
@@ -5775,7 +5775,7 @@
     },
     {
       "id": "CateringOrder.startPrep",
-      "path": "/api/events/catering-orders/commands/start-prep",
+      "path": "/api/manifest/CateringOrder/commands/start-prep",
       "method": "POST",
       "params": [
         {
@@ -5795,7 +5795,7 @@
     },
     {
       "id": "CateringOrder.update",
-      "path": "/api/events/catering-orders/commands/update",
+      "path": "/api/manifest/CateringOrder/commands/update",
       "method": "POST",
       "params": [
         {
@@ -5875,7 +5875,7 @@
     },
     {
       "id": "ChartOfAccount.create",
-      "path": "/api/accounting/chart-of-accounts/commands/create",
+      "path": "/api/manifest/ChartOfAccount/commands/create",
       "method": "POST",
       "params": [
         {
@@ -5919,7 +5919,7 @@
     },
     {
       "id": "ChartOfAccount.deactivate",
-      "path": "/api/accounting/chart-of-accounts/commands/deactivate",
+      "path": "/api/manifest/ChartOfAccount/commands/deactivate",
       "method": "POST",
       "params": [],
       "source": {
@@ -5932,7 +5932,7 @@
     },
     {
       "id": "ChartOfAccount.update",
-      "path": "/api/accounting/chart-of-accounts/commands/update",
+      "path": "/api/manifest/ChartOfAccount/commands/update",
       "method": "POST",
       "params": [
         {
@@ -5982,7 +5982,7 @@
     },
     {
       "id": "Client.archive",
-      "path": "/api/crm/clients/commands/archive",
+      "path": "/api/manifest/Client/commands/archive",
       "method": "POST",
       "params": [
         {
@@ -6008,7 +6008,7 @@
     },
     {
       "id": "Client.create",
-      "path": "/api/crm/clients/commands/create",
+      "path": "/api/manifest/Client/commands/create",
       "method": "POST",
       "params": [
         {
@@ -6142,7 +6142,7 @@
     },
     {
       "id": "Client.reactivate",
-      "path": "/api/crm/clients/commands/reactivate",
+      "path": "/api/manifest/Client/commands/reactivate",
       "method": "POST",
       "params": [
         {
@@ -6162,7 +6162,7 @@
     },
     {
       "id": "Client.update",
-      "path": "/api/crm/clients/commands/update",
+      "path": "/api/manifest/Client/commands/update",
       "method": "POST",
       "params": [
         {
@@ -6290,7 +6290,7 @@
     },
     {
       "id": "ClientContact.create",
-      "path": "/api/crm/client-contacts/commands/create",
+      "path": "/api/manifest/ClientContact/commands/create",
       "method": "POST",
       "params": [
         {
@@ -6364,7 +6364,7 @@
     },
     {
       "id": "ClientContact.remove",
-      "path": "/api/crm/client-contacts/commands/remove",
+      "path": "/api/manifest/ClientContact/commands/remove",
       "method": "POST",
       "params": [
         {
@@ -6390,7 +6390,7 @@
     },
     {
       "id": "ClientContact.setPrimary",
-      "path": "/api/crm/client-contacts/commands/set-primary",
+      "path": "/api/manifest/ClientContact/commands/set-primary",
       "method": "POST",
       "params": [
         {
@@ -6410,7 +6410,7 @@
     },
     {
       "id": "ClientContact.update",
-      "path": "/api/crm/client-contacts/commands/update",
+      "path": "/api/manifest/ClientContact/commands/update",
       "method": "POST",
       "params": [
         {
@@ -6472,7 +6472,7 @@
     },
     {
       "id": "ClientInteraction.complete",
-      "path": "/api/crm/client-interactions/commands/complete",
+      "path": "/api/manifest/ClientInteraction/commands/complete",
       "method": "POST",
       "params": [
         {
@@ -6498,7 +6498,7 @@
     },
     {
       "id": "ClientInteraction.create",
-      "path": "/api/crm/client-interactions/commands/create",
+      "path": "/api/manifest/ClientInteraction/commands/create",
       "method": "POST",
       "params": [
         {
@@ -6566,7 +6566,7 @@
     },
     {
       "id": "ClientInteraction.update",
-      "path": "/api/crm/client-interactions/commands/update",
+      "path": "/api/manifest/ClientInteraction/commands/update",
       "method": "POST",
       "params": [
         {
@@ -6616,7 +6616,7 @@
     },
     {
       "id": "ClientPreference.create",
-      "path": "/api/crm/client-preferences/commands/create",
+      "path": "/api/manifest/ClientPreference/commands/create",
       "method": "POST",
       "params": [
         {
@@ -6660,7 +6660,7 @@
     },
     {
       "id": "ClientPreference.remove",
-      "path": "/api/crm/client-preferences/commands/remove",
+      "path": "/api/manifest/ClientPreference/commands/remove",
       "method": "POST",
       "params": [
         {
@@ -6680,7 +6680,7 @@
     },
     {
       "id": "ClientPreference.update",
-      "path": "/api/crm/client-preferences/commands/update",
+      "path": "/api/manifest/ClientPreference/commands/update",
       "method": "POST",
       "params": [
         {
@@ -6706,7 +6706,7 @@
     },
     {
       "id": "CollectionAction.complete",
-      "path": "/api/collectionaction/complete",
+      "path": "/api/manifest/CollectionAction/commands/complete",
       "method": "POST",
       "params": [
         {
@@ -6744,7 +6744,7 @@
     },
     {
       "id": "CollectionAction.fail",
-      "path": "/api/collectionaction/fail",
+      "path": "/api/manifest/CollectionAction/commands/fail",
       "method": "POST",
       "params": [
         {
@@ -6764,7 +6764,7 @@
     },
     {
       "id": "CollectionAction.reschedule",
-      "path": "/api/collectionaction/reschedule",
+      "path": "/api/manifest/CollectionAction/commands/reschedule",
       "method": "POST",
       "params": [
         {
@@ -6790,7 +6790,7 @@
     },
     {
       "id": "CollectionAction.skip",
-      "path": "/api/collectionaction/skip",
+      "path": "/api/manifest/CollectionAction/commands/skip",
       "method": "POST",
       "params": [
         {
@@ -6810,7 +6810,7 @@
     },
     {
       "id": "CollectionCase.assignTo",
-      "path": "/api/collectioncase/assign-to",
+      "path": "/api/manifest/CollectionCase/commands/assign-to",
       "method": "POST",
       "params": [
         {
@@ -6830,7 +6830,7 @@
     },
     {
       "id": "CollectionCase.close",
-      "path": "/api/collectioncase/close",
+      "path": "/api/manifest/CollectionCase/commands/close",
       "method": "POST",
       "params": [
         {
@@ -6850,7 +6850,7 @@
     },
     {
       "id": "CollectionCase.createPaymentPlan",
-      "path": "/api/collectioncase/create-payment-plan",
+      "path": "/api/manifest/CollectionCase/commands/create-payment-plan",
       "method": "POST",
       "params": [
         {
@@ -6876,7 +6876,7 @@
     },
     {
       "id": "CollectionCase.escalateDunning",
-      "path": "/api/collectioncase/escalate-dunning",
+      "path": "/api/manifest/CollectionCase/commands/escalate-dunning",
       "method": "POST",
       "params": [],
       "source": {
@@ -6889,7 +6889,7 @@
     },
     {
       "id": "CollectionCase.escalateToLegal",
-      "path": "/api/collectioncase/escalate-to-legal",
+      "path": "/api/manifest/CollectionCase/commands/escalate-to-legal",
       "method": "POST",
       "params": [],
       "source": {
@@ -6902,7 +6902,7 @@
     },
     {
       "id": "CollectionCase.escalateToLegalWithDetails",
-      "path": "/api/collectioncase/escalate-to-legal-with-details",
+      "path": "/api/manifest/CollectionCase/commands/escalate-to-legal-with-details",
       "method": "POST",
       "params": [
         {
@@ -6928,7 +6928,7 @@
     },
     {
       "id": "CollectionCase.markDisputed",
-      "path": "/api/collectioncase/mark-disputed",
+      "path": "/api/manifest/CollectionCase/commands/mark-disputed",
       "method": "POST",
       "params": [
         {
@@ -6948,7 +6948,7 @@
     },
     {
       "id": "CollectionCase.markResolved",
-      "path": "/api/collectioncase/mark-resolved",
+      "path": "/api/manifest/CollectionCase/commands/mark-resolved",
       "method": "POST",
       "params": [],
       "source": {
@@ -6961,7 +6961,7 @@
     },
     {
       "id": "CollectionCase.recordPayment",
-      "path": "/api/collectioncase/record-payment",
+      "path": "/api/manifest/CollectionCase/commands/record-payment",
       "method": "POST",
       "params": [
         {
@@ -6993,7 +6993,7 @@
     },
     {
       "id": "CollectionCase.resetDunning",
-      "path": "/api/collectioncase/reset-dunning",
+      "path": "/api/manifest/CollectionCase/commands/reset-dunning",
       "method": "POST",
       "params": [
         {
@@ -7019,7 +7019,7 @@
     },
     {
       "id": "CollectionCase.resolve",
-      "path": "/api/collectioncase/resolve",
+      "path": "/api/manifest/CollectionCase/commands/resolve",
       "method": "POST",
       "params": [
         {
@@ -7039,7 +7039,7 @@
     },
     {
       "id": "CollectionCase.resolveDispute",
-      "path": "/api/collectioncase/resolve-dispute",
+      "path": "/api/manifest/CollectionCase/commands/resolve-dispute",
       "method": "POST",
       "params": [
         {
@@ -7059,7 +7059,7 @@
     },
     {
       "id": "CollectionCase.setHighPriority",
-      "path": "/api/collectioncase/set-high-priority",
+      "path": "/api/manifest/CollectionCase/commands/set-high-priority",
       "method": "POST",
       "params": [],
       "source": {
@@ -7072,7 +7072,7 @@
     },
     {
       "id": "CollectionCase.setPriority",
-      "path": "/api/collectioncase/set-priority",
+      "path": "/api/manifest/CollectionCase/commands/set-priority",
       "method": "POST",
       "params": [
         {
@@ -7098,7 +7098,7 @@
     },
     {
       "id": "CollectionCase.setUrgentPriority",
-      "path": "/api/collectioncase/set-urgent-priority",
+      "path": "/api/manifest/CollectionCase/commands/set-urgent-priority",
       "method": "POST",
       "params": [],
       "source": {
@@ -7111,7 +7111,7 @@
     },
     {
       "id": "CollectionCase.updateAging",
-      "path": "/api/collectioncase/update-aging",
+      "path": "/api/manifest/CollectionCase/commands/update-aging",
       "method": "POST",
       "params": [
         {
@@ -7137,7 +7137,7 @@
     },
     {
       "id": "CollectionCase.updateStatus",
-      "path": "/api/collectioncase/update-status",
+      "path": "/api/manifest/CollectionCase/commands/update-status",
       "method": "POST",
       "params": [
         {
@@ -7163,7 +7163,7 @@
     },
     {
       "id": "CollectionCase.writeOff",
-      "path": "/api/collectioncase/write-off",
+      "path": "/api/manifest/CollectionCase/commands/write-off",
       "method": "POST",
       "params": [
         {
@@ -7195,7 +7195,7 @@
     },
     {
       "id": "CollectionPaymentPlan.cancel",
-      "path": "/api/collectionpaymentplan/cancel",
+      "path": "/api/manifest/CollectionPaymentPlan/commands/cancel",
       "method": "POST",
       "params": [
         {
@@ -7215,7 +7215,7 @@
     },
     {
       "id": "CollectionPaymentPlan.markCompleted",
-      "path": "/api/collectionpaymentplan/mark-completed",
+      "path": "/api/manifest/CollectionPaymentPlan/commands/mark-completed",
       "method": "POST",
       "params": [],
       "source": {
@@ -7228,7 +7228,7 @@
     },
     {
       "id": "CollectionPaymentPlan.markDefaulted",
-      "path": "/api/collectionpaymentplan/mark-defaulted",
+      "path": "/api/manifest/CollectionPaymentPlan/commands/mark-defaulted",
       "method": "POST",
       "params": [
         {
@@ -7248,7 +7248,7 @@
     },
     {
       "id": "CollectionPaymentPlan.modify",
-      "path": "/api/collectionpaymentplan/modify",
+      "path": "/api/manifest/CollectionPaymentPlan/commands/modify",
       "method": "POST",
       "params": [
         {
@@ -7280,7 +7280,7 @@
     },
     {
       "id": "CollectionPaymentPlan.recordInstallment",
-      "path": "/api/collectionpaymentplan/record-installment",
+      "path": "/api/manifest/CollectionPaymentPlan/commands/record-installment",
       "method": "POST",
       "params": [
         {
@@ -7306,7 +7306,7 @@
     },
     {
       "id": "CommandBoard.activate",
-      "path": "/api/command-board/boards/commands/activate",
+      "path": "/api/manifest/CommandBoard/commands/activate",
       "method": "POST",
       "params": [
         {
@@ -7326,7 +7326,7 @@
     },
     {
       "id": "CommandBoard.create",
-      "path": "/api/command-board/boards/commands/create",
+      "path": "/api/manifest/CommandBoard/commands/create",
       "method": "POST",
       "params": [
         {
@@ -7370,7 +7370,7 @@
     },
     {
       "id": "CommandBoard.deactivate",
-      "path": "/api/command-board/boards/commands/deactivate",
+      "path": "/api/manifest/CommandBoard/commands/deactivate",
       "method": "POST",
       "params": [
         {
@@ -7396,7 +7396,7 @@
     },
     {
       "id": "CommandBoard.update",
-      "path": "/api/command-board/boards/commands/update",
+      "path": "/api/manifest/CommandBoard/commands/update",
       "method": "POST",
       "params": [
         {
@@ -7428,7 +7428,7 @@
     },
     {
       "id": "CommandBoardCard.create",
-      "path": "/api/command-board/cards/commands/create",
+      "path": "/api/manifest/CommandBoardCard/commands/create",
       "method": "POST",
       "params": [
         {
@@ -7526,7 +7526,7 @@
     },
     {
       "id": "CommandBoardCard.move",
-      "path": "/api/command-board/cards/commands/move",
+      "path": "/api/manifest/CommandBoardCard/commands/move",
       "method": "POST",
       "params": [
         {
@@ -7558,7 +7558,7 @@
     },
     {
       "id": "CommandBoardCard.remove",
-      "path": "/api/command-board/cards/commands/remove",
+      "path": "/api/manifest/CommandBoardCard/commands/remove",
       "method": "POST",
       "params": [
         {
@@ -7578,7 +7578,7 @@
     },
     {
       "id": "CommandBoardCard.resize",
-      "path": "/api/command-board/cards/commands/resize",
+      "path": "/api/manifest/CommandBoardCard/commands/resize",
       "method": "POST",
       "params": [
         {
@@ -7604,7 +7604,7 @@
     },
     {
       "id": "CommandBoardCard.update",
-      "path": "/api/command-board/cards/commands/update",
+      "path": "/api/manifest/CommandBoardCard/commands/update",
       "method": "POST",
       "params": [
         {
@@ -7660,7 +7660,7 @@
     },
     {
       "id": "CommandBoardConnection.create",
-      "path": "/api/command-board/connections/commands/create",
+      "path": "/api/manifest/CommandBoardConnection/commands/create",
       "method": "POST",
       "params": [
         {
@@ -7704,7 +7704,7 @@
     },
     {
       "id": "CommandBoardConnection.remove",
-      "path": "/api/command-board/connections/commands/remove",
+      "path": "/api/manifest/CommandBoardConnection/commands/remove",
       "method": "POST",
       "params": [
         {
@@ -7724,7 +7724,7 @@
     },
     {
       "id": "CommandBoardGroup.create",
-      "path": "/api/command-board/groups/commands/create",
+      "path": "/api/manifest/CommandBoardGroup/commands/create",
       "method": "POST",
       "params": [
         {
@@ -7780,7 +7780,7 @@
     },
     {
       "id": "CommandBoardGroup.remove",
-      "path": "/api/command-board/groups/commands/remove",
+      "path": "/api/manifest/CommandBoardGroup/commands/remove",
       "method": "POST",
       "params": [
         {
@@ -7800,7 +7800,7 @@
     },
     {
       "id": "CommandBoardGroup.update",
-      "path": "/api/command-board/groups/commands/update",
+      "path": "/api/manifest/CommandBoardGroup/commands/update",
       "method": "POST",
       "params": [
         {
@@ -7856,7 +7856,7 @@
     },
     {
       "id": "CommandBoardLayout.create",
-      "path": "/api/command-board/layouts/commands/create",
+      "path": "/api/manifest/CommandBoardLayout/commands/create",
       "method": "POST",
       "params": [
         {
@@ -7918,7 +7918,7 @@
     },
     {
       "id": "CommandBoardLayout.remove",
-      "path": "/api/command-board/layouts/commands/remove",
+      "path": "/api/manifest/CommandBoardLayout/commands/remove",
       "method": "POST",
       "params": [
         {
@@ -7938,7 +7938,7 @@
     },
     {
       "id": "CommandBoardLayout.update",
-      "path": "/api/command-board/layouts/commands/update",
+      "path": "/api/manifest/CommandBoardLayout/commands/update",
       "method": "POST",
       "params": [
         {
@@ -7988,7 +7988,7 @@
     },
     {
       "id": "Container.create",
-      "path": "/api/kitchen/containers/commands/create",
+      "path": "/api/manifest/Container/commands/create",
       "method": "POST",
       "params": [
         {
@@ -8050,7 +8050,7 @@
     },
     {
       "id": "Container.deactivate",
-      "path": "/api/kitchen/containers/commands/deactivate",
+      "path": "/api/manifest/Container/commands/deactivate",
       "method": "POST",
       "params": [
         {
@@ -8076,7 +8076,7 @@
     },
     {
       "id": "Container.update",
-      "path": "/api/kitchen/containers/commands/update",
+      "path": "/api/manifest/Container/commands/update",
       "method": "POST",
       "params": [
         {
@@ -8138,7 +8138,7 @@
     },
     {
       "id": "ContractSignature.create",
-      "path": "/api/events/contract-signatures/commands/create",
+      "path": "/api/manifest/ContractSignature/commands/create",
       "method": "POST",
       "params": [
         {
@@ -8182,7 +8182,7 @@
     },
     {
       "id": "ContractSignature.softDelete",
-      "path": "/api/events/contract-signatures/commands/soft-delete",
+      "path": "/api/manifest/ContractSignature/commands/soft-delete",
       "method": "POST",
       "params": [
         {
@@ -8208,7 +8208,7 @@
     },
     {
       "id": "CycleCountRecord.create",
-      "path": "/api/inventory/cycle-count/records/commands/create",
+      "path": "/api/manifest/CycleCountRecord/commands/create",
       "method": "POST",
       "params": [
         {
@@ -8282,7 +8282,7 @@
     },
     {
       "id": "CycleCountRecord.remove",
-      "path": "/api/inventory/cycle-count/records/commands/remove",
+      "path": "/api/manifest/CycleCountRecord/commands/remove",
       "method": "POST",
       "params": [
         {
@@ -8302,7 +8302,7 @@
     },
     {
       "id": "CycleCountRecord.update",
-      "path": "/api/inventory/cycle-count/records/commands/update",
+      "path": "/api/manifest/CycleCountRecord/commands/update",
       "method": "POST",
       "params": [
         {
@@ -8334,7 +8334,7 @@
     },
     {
       "id": "CycleCountRecord.verify",
-      "path": "/api/inventory/cycle-count/records/commands/verify",
+      "path": "/api/manifest/CycleCountRecord/commands/verify",
       "method": "POST",
       "params": [
         {
@@ -8354,7 +8354,7 @@
     },
     {
       "id": "CycleCountSession.cancel",
-      "path": "/api/inventory/cycle-count/sessions/commands/cancel",
+      "path": "/api/manifest/CycleCountSession/commands/cancel",
       "method": "POST",
       "params": [
         {
@@ -8380,7 +8380,7 @@
     },
     {
       "id": "CycleCountSession.complete",
-      "path": "/api/inventory/cycle-count/sessions/commands/complete",
+      "path": "/api/manifest/CycleCountSession/commands/complete",
       "method": "POST",
       "params": [
         {
@@ -8400,7 +8400,7 @@
     },
     {
       "id": "CycleCountSession.create",
-      "path": "/api/inventory/cycle-count/sessions/commands/create",
+      "path": "/api/manifest/CycleCountSession/commands/create",
       "method": "POST",
       "params": [
         {
@@ -8456,7 +8456,7 @@
     },
     {
       "id": "CycleCountSession.finalize",
-      "path": "/api/inventory/cycle-count/sessions/commands/finalize",
+      "path": "/api/manifest/CycleCountSession/commands/finalize",
       "method": "POST",
       "params": [
         {
@@ -8476,7 +8476,7 @@
     },
     {
       "id": "CycleCountSession.start",
-      "path": "/api/inventory/cycle-count/sessions/commands/start",
+      "path": "/api/manifest/CycleCountSession/commands/start",
       "method": "POST",
       "params": [
         {
@@ -8496,7 +8496,7 @@
     },
     {
       "id": "Deal.close",
-      "path": "/api/deal/close",
+      "path": "/api/manifest/Deal/commands/close",
       "method": "POST",
       "params": [
         {
@@ -8516,7 +8516,7 @@
     },
     {
       "id": "Deal.updateStage",
-      "path": "/api/deal/update-stage",
+      "path": "/api/manifest/Deal/commands/update-stage",
       "method": "POST",
       "params": [
         {
@@ -8542,7 +8542,7 @@
     },
     {
       "id": "Dish.create",
-      "path": "/api/kitchen/dishes/commands/create",
+      "path": "/api/manifest/Dish/commands/create",
       "method": "POST",
       "params": [
         {
@@ -8640,7 +8640,7 @@
     },
     {
       "id": "Dish.deactivate",
-      "path": "/api/kitchen/dishes/commands/deactivate",
+      "path": "/api/manifest/Dish/commands/deactivate",
       "method": "POST",
       "params": [
         {
@@ -8666,7 +8666,7 @@
     },
     {
       "id": "Dish.update",
-      "path": "/api/kitchen/dishes/commands/update",
+      "path": "/api/manifest/Dish/commands/update",
       "method": "POST",
       "params": [
         {
@@ -8734,7 +8734,7 @@
     },
     {
       "id": "Dish.updateLeadTime",
-      "path": "/api/kitchen/dishes/commands/update-lead-time",
+      "path": "/api/manifest/Dish/commands/update-lead-time",
       "method": "POST",
       "params": [
         {
@@ -8766,7 +8766,7 @@
     },
     {
       "id": "Dish.updatePricing",
-      "path": "/api/kitchen/dishes/commands/update-pricing",
+      "path": "/api/manifest/Dish/commands/update-pricing",
       "method": "POST",
       "params": [
         {
@@ -8798,7 +8798,7 @@
     },
     {
       "id": "DocumentVersion.create",
-      "path": "/api/documentversion/create",
+      "path": "/api/manifest/DocumentVersion/commands/create",
       "method": "POST",
       "params": [
         {
@@ -8836,7 +8836,7 @@
     },
     {
       "id": "DocumentVersion.restore",
-      "path": "/api/documentversion/restore",
+      "path": "/api/manifest/DocumentVersion/commands/restore",
       "method": "POST",
       "params": [],
       "source": {
@@ -8849,7 +8849,7 @@
     },
     {
       "id": "Driver.create",
-      "path": "/api/driver/create",
+      "path": "/api/manifest/Driver/commands/create",
       "method": "POST",
       "params": [
         {
@@ -8905,7 +8905,7 @@
     },
     {
       "id": "Driver.remove",
-      "path": "/api/driver/remove",
+      "path": "/api/manifest/Driver/commands/remove",
       "method": "POST",
       "params": [],
       "source": {
@@ -8918,7 +8918,7 @@
     },
     {
       "id": "Driver.update",
-      "path": "/api/driver/update",
+      "path": "/api/manifest/Driver/commands/update",
       "method": "POST",
       "params": [
         {
@@ -8974,7 +8974,7 @@
     },
     {
       "id": "EmailTemplate.create",
-      "path": "/api/communications/email-templates/commands/create",
+      "path": "/api/manifest/EmailTemplate/commands/create",
       "method": "POST",
       "params": [
         {
@@ -9030,7 +9030,7 @@
     },
     {
       "id": "EmailTemplate.softDelete",
-      "path": "/api/communications/email-templates/commands/soft-delete",
+      "path": "/api/manifest/EmailTemplate/commands/soft-delete",
       "method": "POST",
       "params": [],
       "source": {
@@ -9043,7 +9043,7 @@
     },
     {
       "id": "EmailTemplate.update",
-      "path": "/api/communications/email-templates/commands/update",
+      "path": "/api/manifest/EmailTemplate/commands/update",
       "method": "POST",
       "params": [
         {
@@ -9099,7 +9099,7 @@
     },
     {
       "id": "EmailWorkflow.create",
-      "path": "/api/communications/email-workflows/commands/create",
+      "path": "/api/manifest/EmailWorkflow/commands/create",
       "method": "POST",
       "params": [
         {
@@ -9149,7 +9149,7 @@
     },
     {
       "id": "EmailWorkflow.softDelete",
-      "path": "/api/communications/email-workflows/commands/soft-delete",
+      "path": "/api/manifest/EmailWorkflow/commands/soft-delete",
       "method": "POST",
       "params": [],
       "source": {
@@ -9162,7 +9162,7 @@
     },
     {
       "id": "EmailWorkflow.update",
-      "path": "/api/communications/email-workflows/commands/update",
+      "path": "/api/manifest/EmailWorkflow/commands/update",
       "method": "POST",
       "params": [
         {
@@ -9206,7 +9206,7 @@
     },
     {
       "id": "EmployeeAvailability.create",
-      "path": "/api/staff/availability/commands/create",
+      "path": "/api/manifest/EmployeeAvailability/commands/create",
       "method": "POST",
       "params": [
         {
@@ -9262,7 +9262,7 @@
     },
     {
       "id": "EmployeeAvailability.softDelete",
-      "path": "/api/staff/availability/commands/soft-delete",
+      "path": "/api/manifest/EmployeeAvailability/commands/soft-delete",
       "method": "POST",
       "params": [],
       "source": {
@@ -9275,7 +9275,7 @@
     },
     {
       "id": "EmployeeAvailability.update",
-      "path": "/api/staff/availability/commands/update",
+      "path": "/api/manifest/EmployeeAvailability/commands/update",
       "method": "POST",
       "params": [
         {
@@ -9325,7 +9325,7 @@
     },
     {
       "id": "EmployeeCertification.create",
-      "path": "/api/staff/certifications/commands/create",
+      "path": "/api/manifest/EmployeeCertification/commands/create",
       "method": "POST",
       "params": [
         {
@@ -9375,7 +9375,7 @@
     },
     {
       "id": "EmployeeCertification.softDelete",
-      "path": "/api/staff/certifications/commands/soft-delete",
+      "path": "/api/manifest/EmployeeCertification/commands/soft-delete",
       "method": "POST",
       "params": [],
       "source": {
@@ -9388,7 +9388,7 @@
     },
     {
       "id": "EmployeeCertification.update",
-      "path": "/api/staff/certifications/commands/update",
+      "path": "/api/manifest/EmployeeCertification/commands/update",
       "method": "POST",
       "params": [
         {
@@ -9432,7 +9432,7 @@
     },
     {
       "id": "EmployeeDeduction.create",
-      "path": "/api/payroll/deductions/commands/create",
+      "path": "/api/manifest/EmployeeDeduction/commands/create",
       "method": "POST",
       "params": [
         {
@@ -9500,7 +9500,7 @@
     },
     {
       "id": "EntityVersion.approve",
-      "path": "/api/entityversion/approve",
+      "path": "/api/manifest/EntityVersion/commands/approve",
       "method": "POST",
       "params": [
         {
@@ -9526,7 +9526,7 @@
     },
     {
       "id": "EntityVersion.create",
-      "path": "/api/entityversion/create",
+      "path": "/api/manifest/EntityVersion/commands/create",
       "method": "POST",
       "params": [
         {
@@ -9582,7 +9582,7 @@
     },
     {
       "id": "EntityVersion.reject",
-      "path": "/api/entityversion/reject",
+      "path": "/api/manifest/EntityVersion/commands/reject",
       "method": "POST",
       "params": [
         {
@@ -9608,7 +9608,7 @@
     },
     {
       "id": "EntityVersion.restore",
-      "path": "/api/entityversion/restore",
+      "path": "/api/manifest/EntityVersion/commands/restore",
       "method": "POST",
       "params": [
         {
@@ -9634,7 +9634,7 @@
     },
     {
       "id": "Equipment.create",
-      "path": "/api/equipment/create",
+      "path": "/api/manifest/Equipment/commands/create",
       "method": "POST",
       "params": [
         {
@@ -9714,7 +9714,7 @@
     },
     {
       "id": "Equipment.recordMaintenance",
-      "path": "/api/equipment/record-maintenance",
+      "path": "/api/manifest/Equipment/commands/record-maintenance",
       "method": "POST",
       "params": [
         {
@@ -9758,7 +9758,7 @@
     },
     {
       "id": "Equipment.recordUsage",
-      "path": "/api/equipment/record-usage",
+      "path": "/api/manifest/Equipment/commands/record-usage",
       "method": "POST",
       "params": [
         {
@@ -9784,7 +9784,7 @@
     },
     {
       "id": "Equipment.retire",
-      "path": "/api/equipment/retire",
+      "path": "/api/manifest/Equipment/commands/retire",
       "method": "POST",
       "params": [
         {
@@ -9810,7 +9810,7 @@
     },
     {
       "id": "Equipment.scheduleMaintenance",
-      "path": "/api/equipment/schedule-maintenance",
+      "path": "/api/manifest/Equipment/commands/schedule-maintenance",
       "method": "POST",
       "params": [
         {
@@ -9848,7 +9848,7 @@
     },
     {
       "id": "Equipment.updateCondition",
-      "path": "/api/equipment/update-condition",
+      "path": "/api/manifest/Equipment/commands/update-condition",
       "method": "POST",
       "params": [
         {
@@ -9880,7 +9880,7 @@
     },
     {
       "id": "Equipment.updateStatus",
-      "path": "/api/equipment/update-status",
+      "path": "/api/manifest/Equipment/commands/update-status",
       "method": "POST",
       "params": [
         {
@@ -10249,7 +10249,7 @@
     },
     {
       "id": "EventBudget.approve",
-      "path": "/api/events/budgets/commands/approve",
+      "path": "/api/manifest/EventBudget/commands/approve",
       "method": "POST",
       "params": [
         {
@@ -10269,7 +10269,7 @@
     },
     {
       "id": "EventBudget.create",
-      "path": "/api/events/budgets/commands/create",
+      "path": "/api/manifest/EventBudget/commands/create",
       "method": "POST",
       "params": [
         {
@@ -10301,7 +10301,7 @@
     },
     {
       "id": "EventBudget.finalize",
-      "path": "/api/events/budgets/commands/finalize",
+      "path": "/api/manifest/EventBudget/commands/finalize",
       "method": "POST",
       "params": [
         {
@@ -10321,7 +10321,7 @@
     },
     {
       "id": "EventBudget.update",
-      "path": "/api/events/budgets/commands/update",
+      "path": "/api/manifest/EventBudget/commands/update",
       "method": "POST",
       "params": [
         {
@@ -10353,7 +10353,7 @@
     },
     {
       "id": "EventContract.cancel",
-      "path": "/api/events/contracts/commands/cancel",
+      "path": "/api/manifest/EventContract/commands/cancel",
       "method": "POST",
       "params": [
         {
@@ -10379,7 +10379,7 @@
     },
     {
       "id": "EventContract.create",
-      "path": "/api/events/contracts/commands/create",
+      "path": "/api/manifest/EventContract/commands/create",
       "method": "POST",
       "params": [
         {
@@ -10441,7 +10441,7 @@
     },
     {
       "id": "EventContract.expire",
-      "path": "/api/events/contracts/commands/expire",
+      "path": "/api/manifest/EventContract/commands/expire",
       "method": "POST",
       "params": [],
       "source": {
@@ -10454,7 +10454,7 @@
     },
     {
       "id": "EventContract.markViewed",
-      "path": "/api/events/contracts/commands/mark-viewed",
+      "path": "/api/manifest/EventContract/commands/mark-viewed",
       "method": "POST",
       "params": [],
       "source": {
@@ -10467,7 +10467,7 @@
     },
     {
       "id": "EventContract.send",
-      "path": "/api/events/contracts/commands/send",
+      "path": "/api/manifest/EventContract/commands/send",
       "method": "POST",
       "params": [
         {
@@ -10487,7 +10487,7 @@
     },
     {
       "id": "EventContract.sign",
-      "path": "/api/events/contracts/commands/sign",
+      "path": "/api/manifest/EventContract/commands/sign",
       "method": "POST",
       "params": [],
       "source": {
@@ -10500,7 +10500,7 @@
     },
     {
       "id": "EventContract.softDelete",
-      "path": "/api/events/contracts/commands/soft-delete",
+      "path": "/api/manifest/EventContract/commands/soft-delete",
       "method": "POST",
       "params": [
         {
@@ -10526,7 +10526,7 @@
     },
     {
       "id": "EventContract.update",
-      "path": "/api/events/contracts/commands/update",
+      "path": "/api/manifest/EventContract/commands/update",
       "method": "POST",
       "params": [
         {
@@ -10570,7 +10570,7 @@
     },
     {
       "id": "EventDish.create",
-      "path": "/api/events/event-dishes/commands/create",
+      "path": "/api/manifest/EventDish/commands/create",
       "method": "POST",
       "params": [
         {
@@ -10620,7 +10620,7 @@
     },
     {
       "id": "EventDish.remove",
-      "path": "/api/events/event-dishes/commands/remove",
+      "path": "/api/manifest/EventDish/commands/remove",
       "method": "POST",
       "params": [
         {
@@ -10646,7 +10646,7 @@
     },
     {
       "id": "EventGuest.create",
-      "path": "/api/events/guests/commands/create",
+      "path": "/api/manifest/EventGuest/commands/create",
       "method": "POST",
       "params": [
         {
@@ -10732,7 +10732,7 @@
     },
     {
       "id": "EventGuest.softDelete",
-      "path": "/api/events/guests/commands/soft-delete",
+      "path": "/api/manifest/EventGuest/commands/soft-delete",
       "method": "POST",
       "params": [
         {
@@ -10758,7 +10758,7 @@
     },
     {
       "id": "EventGuest.update",
-      "path": "/api/events/guests/commands/update",
+      "path": "/api/manifest/EventGuest/commands/update",
       "method": "POST",
       "params": [
         {
@@ -10838,7 +10838,7 @@
     },
     {
       "id": "EventImportWorkflow.cancel",
-      "path": "/api/events/import-workflows/commands/cancel",
+      "path": "/api/manifest/EventImportWorkflow/commands/cancel",
       "method": "POST",
       "params": [
         {
@@ -10858,7 +10858,7 @@
     },
     {
       "id": "EventImportWorkflow.completeActivating",
-      "path": "/api/events/import-workflows/commands/complete-activating",
+      "path": "/api/manifest/EventImportWorkflow/commands/complete-activating",
       "method": "POST",
       "params": [
         {
@@ -10878,7 +10878,7 @@
     },
     {
       "id": "EventImportWorkflow.completeExtraction",
-      "path": "/api/events/import-workflows/commands/complete-extraction",
+      "path": "/api/manifest/EventImportWorkflow/commands/complete-extraction",
       "method": "POST",
       "params": [
         {
@@ -10898,7 +10898,7 @@
     },
     {
       "id": "EventImportWorkflow.completeParsing",
-      "path": "/api/events/import-workflows/commands/complete-parsing",
+      "path": "/api/manifest/EventImportWorkflow/commands/complete-parsing",
       "method": "POST",
       "params": [
         {
@@ -10924,7 +10924,7 @@
     },
     {
       "id": "EventImportWorkflow.completeProposing",
-      "path": "/api/events/import-workflows/commands/complete-proposing",
+      "path": "/api/manifest/EventImportWorkflow/commands/complete-proposing",
       "method": "POST",
       "params": [
         {
@@ -10944,7 +10944,7 @@
     },
     {
       "id": "EventImportWorkflow.completeReserving",
-      "path": "/api/events/import-workflows/commands/complete-reserving",
+      "path": "/api/manifest/EventImportWorkflow/commands/complete-reserving",
       "method": "POST",
       "params": [
         {
@@ -10964,7 +10964,7 @@
     },
     {
       "id": "EventImportWorkflow.completeValidation",
-      "path": "/api/events/import-workflows/commands/complete-validation",
+      "path": "/api/manifest/EventImportWorkflow/commands/complete-validation",
       "method": "POST",
       "params": [
         {
@@ -10990,7 +10990,7 @@
     },
     {
       "id": "EventImportWorkflow.create",
-      "path": "/api/events/import-workflows/commands/create",
+      "path": "/api/manifest/EventImportWorkflow/commands/create",
       "method": "POST",
       "params": [
         {
@@ -11016,7 +11016,7 @@
     },
     {
       "id": "EventImportWorkflow.fail",
-      "path": "/api/events/import-workflows/commands/fail",
+      "path": "/api/manifest/EventImportWorkflow/commands/fail",
       "method": "POST",
       "params": [
         {
@@ -11042,7 +11042,7 @@
     },
     {
       "id": "EventImportWorkflow.pause",
-      "path": "/api/events/import-workflows/commands/pause",
+      "path": "/api/manifest/EventImportWorkflow/commands/pause",
       "method": "POST",
       "params": [
         {
@@ -11062,7 +11062,7 @@
     },
     {
       "id": "EventImportWorkflow.resume",
-      "path": "/api/events/import-workflows/commands/resume",
+      "path": "/api/manifest/EventImportWorkflow/commands/resume",
       "method": "POST",
       "params": [],
       "source": {
@@ -11075,7 +11075,7 @@
     },
     {
       "id": "EventImportWorkflow.retry",
-      "path": "/api/events/import-workflows/commands/retry",
+      "path": "/api/manifest/EventImportWorkflow/commands/retry",
       "method": "POST",
       "params": [],
       "source": {
@@ -11088,7 +11088,7 @@
     },
     {
       "id": "EventImportWorkflow.startActivating",
-      "path": "/api/events/import-workflows/commands/start-activating",
+      "path": "/api/manifest/EventImportWorkflow/commands/start-activating",
       "method": "POST",
       "params": [],
       "source": {
@@ -11101,7 +11101,7 @@
     },
     {
       "id": "EventImportWorkflow.startExtracting",
-      "path": "/api/events/import-workflows/commands/start-extracting",
+      "path": "/api/manifest/EventImportWorkflow/commands/start-extracting",
       "method": "POST",
       "params": [],
       "source": {
@@ -11114,7 +11114,7 @@
     },
     {
       "id": "EventImportWorkflow.startParsing",
-      "path": "/api/events/import-workflows/commands/start-parsing",
+      "path": "/api/manifest/EventImportWorkflow/commands/start-parsing",
       "method": "POST",
       "params": [],
       "source": {
@@ -11127,7 +11127,7 @@
     },
     {
       "id": "EventImportWorkflow.startProposing",
-      "path": "/api/events/import-workflows/commands/start-proposing",
+      "path": "/api/manifest/EventImportWorkflow/commands/start-proposing",
       "method": "POST",
       "params": [],
       "source": {
@@ -11140,7 +11140,7 @@
     },
     {
       "id": "EventImportWorkflow.startReserving",
-      "path": "/api/events/import-workflows/commands/start-reserving",
+      "path": "/api/manifest/EventImportWorkflow/commands/start-reserving",
       "method": "POST",
       "params": [],
       "source": {
@@ -11153,7 +11153,7 @@
     },
     {
       "id": "EventImportWorkflow.startValidating",
-      "path": "/api/events/import-workflows/commands/start-validating",
+      "path": "/api/manifest/EventImportWorkflow/commands/start-validating",
       "method": "POST",
       "params": [],
       "source": {
@@ -11166,7 +11166,7 @@
     },
     {
       "id": "EventProfitability.create",
-      "path": "/api/events/profitability/commands/create",
+      "path": "/api/manifest/EventProfitability/commands/create",
       "method": "POST",
       "params": [
         {
@@ -11216,7 +11216,7 @@
     },
     {
       "id": "EventProfitability.recalculate",
-      "path": "/api/events/profitability/commands/recalculate",
+      "path": "/api/manifest/EventProfitability/commands/recalculate",
       "method": "POST",
       "params": [
         {
@@ -11236,7 +11236,7 @@
     },
     {
       "id": "EventProfitability.update",
-      "path": "/api/events/profitability/commands/update",
+      "path": "/api/manifest/EventProfitability/commands/update",
       "method": "POST",
       "params": [
         {
@@ -11280,7 +11280,7 @@
     },
     {
       "id": "EventReport.approve",
-      "path": "/api/events/reports/commands/approve",
+      "path": "/api/manifest/EventReport/commands/approve",
       "method": "POST",
       "params": [
         {
@@ -11306,7 +11306,7 @@
     },
     {
       "id": "EventReport.complete",
-      "path": "/api/events/reports/commands/complete",
+      "path": "/api/manifest/EventReport/commands/complete",
       "method": "POST",
       "params": [
         {
@@ -11326,7 +11326,7 @@
     },
     {
       "id": "EventReport.create",
-      "path": "/api/events/reports/commands/create",
+      "path": "/api/manifest/EventReport/commands/create",
       "method": "POST",
       "params": [
         {
@@ -11376,7 +11376,7 @@
     },
     {
       "id": "EventReport.submit",
-      "path": "/api/events/reports/commands/submit",
+      "path": "/api/manifest/EventReport/commands/submit",
       "method": "POST",
       "params": [
         {
@@ -11396,7 +11396,7 @@
     },
     {
       "id": "EventStaff.assign",
-      "path": "/api/events/staff/commands/assign",
+      "path": "/api/manifest/EventStaff/commands/assign",
       "method": "POST",
       "params": [
         {
@@ -11446,7 +11446,7 @@
     },
     {
       "id": "EventStaff.unassign",
-      "path": "/api/events/staff/commands/unassign",
+      "path": "/api/manifest/EventStaff/commands/unassign",
       "method": "POST",
       "params": [
         {
@@ -11466,7 +11466,7 @@
     },
     {
       "id": "EventSummary.create",
-      "path": "/api/events/summaries/commands/create",
+      "path": "/api/manifest/EventSummary/commands/create",
       "method": "POST",
       "params": [
         {
@@ -11522,7 +11522,7 @@
     },
     {
       "id": "EventSummary.refresh",
-      "path": "/api/events/summaries/commands/refresh",
+      "path": "/api/manifest/EventSummary/commands/refresh",
       "method": "POST",
       "params": [],
       "source": {
@@ -11535,7 +11535,7 @@
     },
     {
       "id": "EventSummary.update",
-      "path": "/api/events/summaries/commands/update",
+      "path": "/api/manifest/EventSummary/commands/update",
       "method": "POST",
       "params": [
         {
@@ -11585,7 +11585,7 @@
     },
     {
       "id": "EventTimelineItem.completeItem",
-      "path": "/api/eventtimelineitem/complete-item",
+      "path": "/api/manifest/EventTimelineItem/commands/complete-item",
       "method": "POST",
       "params": [],
       "source": {
@@ -11598,7 +11598,7 @@
     },
     {
       "id": "EventTimelineItem.createItem",
-      "path": "/api/eventtimelineitem/create-item",
+      "path": "/api/manifest/EventTimelineItem/commands/create-item",
       "method": "POST",
       "params": [
         {
@@ -11654,7 +11654,7 @@
     },
     {
       "id": "EventTimelineItem.deleteItem",
-      "path": "/api/eventtimelineitem/delete-item",
+      "path": "/api/manifest/EventTimelineItem/commands/delete-item",
       "method": "POST",
       "params": [],
       "source": {
@@ -11667,7 +11667,7 @@
     },
     {
       "id": "EventTimelineItem.updateItem",
-      "path": "/api/eventtimelineitem/update-item",
+      "path": "/api/manifest/EventTimelineItem/commands/update-item",
       "method": "POST",
       "params": [
         {
@@ -11717,7 +11717,7 @@
     },
     {
       "id": "EventWaitlistEntry.addGuest",
-      "path": "/api/eventwaitlistentry/add-guest",
+      "path": "/api/manifest/EventWaitlistEntry/commands/add-guest",
       "method": "POST",
       "params": [
         {
@@ -11767,7 +11767,7 @@
     },
     {
       "id": "EventWaitlistEntry.promote",
-      "path": "/api/eventwaitlistentry/promote",
+      "path": "/api/manifest/EventWaitlistEntry/commands/promote",
       "method": "POST",
       "params": [],
       "source": {
@@ -11780,7 +11780,7 @@
     },
     {
       "id": "EventWaitlistEntry.updateRsvp",
-      "path": "/api/eventwaitlistentry/update-rsvp",
+      "path": "/api/manifest/EventWaitlistEntry/commands/update-rsvp",
       "method": "POST",
       "params": [
         {
@@ -11800,7 +11800,7 @@
     },
     {
       "id": "Facility.create",
-      "path": "/api/facility/create",
+      "path": "/api/manifest/Facility/commands/create",
       "method": "POST",
       "params": [
         {
@@ -11868,7 +11868,7 @@
     },
     {
       "id": "Facility.edit",
-      "path": "/api/facility/edit",
+      "path": "/api/manifest/Facility/commands/edit",
       "method": "POST",
       "params": [
         {
@@ -11936,7 +11936,7 @@
     },
     {
       "id": "Facility.remove",
-      "path": "/api/facility/remove",
+      "path": "/api/manifest/Facility/commands/remove",
       "method": "POST",
       "params": [],
       "source": {
@@ -11949,7 +11949,7 @@
     },
     {
       "id": "FacilityArea.create",
-      "path": "/api/facilityarea/create",
+      "path": "/api/manifest/FacilityArea/commands/create",
       "method": "POST",
       "params": [
         {
@@ -12005,7 +12005,7 @@
     },
     {
       "id": "FacilityArea.edit",
-      "path": "/api/facilityarea/edit",
+      "path": "/api/manifest/FacilityArea/commands/edit",
       "method": "POST",
       "params": [
         {
@@ -12055,7 +12055,7 @@
     },
     {
       "id": "FacilityArea.remove",
-      "path": "/api/facilityarea/remove",
+      "path": "/api/manifest/FacilityArea/commands/remove",
       "method": "POST",
       "params": [],
       "source": {
@@ -12068,7 +12068,7 @@
     },
     {
       "id": "FacilityAsset.create",
-      "path": "/api/facilityasset/create",
+      "path": "/api/manifest/FacilityAsset/commands/create",
       "method": "POST",
       "params": [
         {
@@ -12130,7 +12130,7 @@
     },
     {
       "id": "FacilityAsset.remove",
-      "path": "/api/facilityasset/remove",
+      "path": "/api/manifest/FacilityAsset/commands/remove",
       "method": "POST",
       "params": [],
       "source": {
@@ -12143,7 +12143,7 @@
     },
     {
       "id": "FacilityAsset.update",
-      "path": "/api/facilityasset/update",
+      "path": "/api/manifest/FacilityAsset/commands/update",
       "method": "POST",
       "params": [
         {
@@ -12187,7 +12187,7 @@
     },
     {
       "id": "FacilitySchedule.complete",
-      "path": "/api/facilityschedule/complete",
+      "path": "/api/manifest/FacilitySchedule/commands/complete",
       "method": "POST",
       "params": [
         {
@@ -12207,7 +12207,7 @@
     },
     {
       "id": "FacilitySchedule.create",
-      "path": "/api/facilityschedule/create",
+      "path": "/api/manifest/FacilitySchedule/commands/create",
       "method": "POST",
       "params": [
         {
@@ -12275,7 +12275,7 @@
     },
     {
       "id": "FacilitySchedule.edit",
-      "path": "/api/facilityschedule/edit",
+      "path": "/api/manifest/FacilitySchedule/commands/edit",
       "method": "POST",
       "params": [
         {
@@ -12331,7 +12331,7 @@
     },
     {
       "id": "FacilitySchedule.remove",
-      "path": "/api/facilityschedule/remove",
+      "path": "/api/manifest/FacilitySchedule/commands/remove",
       "method": "POST",
       "params": [],
       "source": {
@@ -12344,7 +12344,7 @@
     },
     {
       "id": "FacilityWorkOrder.create",
-      "path": "/api/facilityworkorder/create",
+      "path": "/api/manifest/FacilityWorkOrder/commands/create",
       "method": "POST",
       "params": [
         {
@@ -12424,7 +12424,7 @@
     },
     {
       "id": "FacilityWorkOrder.updateStatus",
-      "path": "/api/facilityworkorder/update-status",
+      "path": "/api/manifest/FacilityWorkOrder/commands/update-status",
       "method": "POST",
       "params": [
         {
@@ -12450,7 +12450,7 @@
     },
     {
       "id": "Ingredient.create",
-      "path": "/api/kitchen/ingredients/commands/create",
+      "path": "/api/manifest/Ingredient/commands/create",
       "method": "POST",
       "params": [
         {
@@ -12506,7 +12506,7 @@
     },
     {
       "id": "Ingredient.deactivate",
-      "path": "/api/kitchen/ingredients/commands/deactivate",
+      "path": "/api/manifest/Ingredient/commands/deactivate",
       "method": "POST",
       "params": [
         {
@@ -12532,7 +12532,7 @@
     },
     {
       "id": "Ingredient.update",
-      "path": "/api/kitchen/ingredients/commands/update",
+      "path": "/api/manifest/Ingredient/commands/update",
       "method": "POST",
       "params": [
         {
@@ -12576,7 +12576,7 @@
     },
     {
       "id": "Ingredient.updateAllergens",
-      "path": "/api/kitchen/ingredients/commands/update-allergens",
+      "path": "/api/manifest/Ingredient/commands/update-allergens",
       "method": "POST",
       "params": [
         {
@@ -12602,7 +12602,7 @@
     },
     {
       "id": "Ingredient.updateShelfLife",
-      "path": "/api/kitchen/ingredients/commands/update-shelf-life",
+      "path": "/api/manifest/Ingredient/commands/update-shelf-life",
       "method": "POST",
       "params": [
         {
@@ -12634,7 +12634,7 @@
     },
     {
       "id": "InventoryItem.adjust",
-      "path": "/api/kitchen/inventory/commands/adjust",
+      "path": "/api/manifest/InventoryItem/commands/adjust",
       "method": "POST",
       "params": [
         {
@@ -12666,7 +12666,7 @@
     },
     {
       "id": "InventoryItem.consume",
-      "path": "/api/kitchen/inventory/commands/consume",
+      "path": "/api/manifest/InventoryItem/commands/consume",
       "method": "POST",
       "params": [
         {
@@ -12698,7 +12698,7 @@
     },
     {
       "id": "InventoryItem.create",
-      "path": "/api/kitchen/inventory/commands/create",
+      "path": "/api/manifest/InventoryItem/commands/create",
       "method": "POST",
       "params": [
         {
@@ -12802,7 +12802,7 @@
     },
     {
       "id": "InventoryItem.releaseReservation",
-      "path": "/api/kitchen/inventory/commands/release-reservation",
+      "path": "/api/manifest/InventoryItem/commands/release-reservation",
       "method": "POST",
       "params": [
         {
@@ -12834,7 +12834,7 @@
     },
     {
       "id": "InventoryItem.reserve",
-      "path": "/api/kitchen/inventory/commands/reserve",
+      "path": "/api/manifest/InventoryItem/commands/reserve",
       "method": "POST",
       "params": [
         {
@@ -12866,7 +12866,7 @@
     },
     {
       "id": "InventoryItem.restock",
-      "path": "/api/kitchen/inventory/commands/restock",
+      "path": "/api/manifest/InventoryItem/commands/restock",
       "method": "POST",
       "params": [
         {
@@ -12898,7 +12898,7 @@
     },
     {
       "id": "InventoryItem.waste",
-      "path": "/api/kitchen/inventory/commands/waste",
+      "path": "/api/manifest/InventoryItem/commands/waste",
       "method": "POST",
       "params": [
         {
@@ -12936,7 +12936,7 @@
     },
     {
       "id": "InventorySupplier.create",
-      "path": "/api/inventory/suppliers/commands/create",
+      "path": "/api/manifest/InventorySupplier/commands/create",
       "method": "POST",
       "params": [
         {
@@ -12998,7 +12998,7 @@
     },
     {
       "id": "InventorySupplier.deactivate",
-      "path": "/api/inventory/suppliers/commands/deactivate",
+      "path": "/api/manifest/InventorySupplier/commands/deactivate",
       "method": "POST",
       "params": [
         {
@@ -13024,7 +13024,7 @@
     },
     {
       "id": "InventorySupplier.update",
-      "path": "/api/inventory/suppliers/commands/update",
+      "path": "/api/manifest/InventorySupplier/commands/update",
       "method": "POST",
       "params": [
         {
@@ -13080,7 +13080,7 @@
     },
     {
       "id": "InventoryTransaction.create",
-      "path": "/api/inventory/transactions/commands/create",
+      "path": "/api/manifest/InventoryTransaction/commands/create",
       "method": "POST",
       "params": [
         {
@@ -13154,7 +13154,7 @@
     },
     {
       "id": "InventoryTransfer.approve",
-      "path": "/api/inventorytransfer/approve",
+      "path": "/api/manifest/InventoryTransfer/commands/approve",
       "method": "POST",
       "params": [
         {
@@ -13174,7 +13174,7 @@
     },
     {
       "id": "InventoryTransfer.cancel",
-      "path": "/api/inventorytransfer/cancel",
+      "path": "/api/manifest/InventoryTransfer/commands/cancel",
       "method": "POST",
       "params": [
         {
@@ -13194,7 +13194,7 @@
     },
     {
       "id": "InventoryTransfer.create",
-      "path": "/api/inventorytransfer/create",
+      "path": "/api/manifest/InventoryTransfer/commands/create",
       "method": "POST",
       "params": [
         {
@@ -13232,7 +13232,7 @@
     },
     {
       "id": "InventoryTransfer.receive",
-      "path": "/api/inventorytransfer/receive",
+      "path": "/api/manifest/InventoryTransfer/commands/receive",
       "method": "POST",
       "params": [
         {
@@ -13252,7 +13252,7 @@
     },
     {
       "id": "InventoryTransfer.ship",
-      "path": "/api/inventorytransfer/ship",
+      "path": "/api/manifest/InventoryTransfer/commands/ship",
       "method": "POST",
       "params": [
         {
@@ -13272,7 +13272,7 @@
     },
     {
       "id": "Invoice.applyPayment",
-      "path": "/api/invoice/apply-payment",
+      "path": "/api/manifest/Invoice/commands/apply-payment",
       "method": "POST",
       "params": [
         {
@@ -13298,7 +13298,7 @@
     },
     {
       "id": "Invoice.markAsPaid",
-      "path": "/api/invoice/mark-as-paid",
+      "path": "/api/manifest/Invoice/commands/mark-as-paid",
       "method": "POST",
       "params": [],
       "source": {
@@ -13311,7 +13311,7 @@
     },
     {
       "id": "Invoice.markOverdue",
-      "path": "/api/invoice/mark-overdue",
+      "path": "/api/manifest/Invoice/commands/mark-overdue",
       "method": "POST",
       "params": [],
       "source": {
@@ -13324,7 +13324,7 @@
     },
     {
       "id": "Invoice.markViewed",
-      "path": "/api/invoice/mark-viewed",
+      "path": "/api/manifest/Invoice/commands/mark-viewed",
       "method": "POST",
       "params": [],
       "source": {
@@ -13337,7 +13337,7 @@
     },
     {
       "id": "Invoice.recordRefund",
-      "path": "/api/invoice/record-refund",
+      "path": "/api/manifest/Invoice/commands/record-refund",
       "method": "POST",
       "params": [
         {
@@ -13363,7 +13363,7 @@
     },
     {
       "id": "Invoice.send",
-      "path": "/api/invoice/send",
+      "path": "/api/manifest/Invoice/commands/send",
       "method": "POST",
       "params": [
         {
@@ -13383,7 +13383,7 @@
     },
     {
       "id": "Invoice.sendReminder",
-      "path": "/api/invoice/send-reminder",
+      "path": "/api/manifest/Invoice/commands/send-reminder",
       "method": "POST",
       "params": [],
       "source": {
@@ -13396,7 +13396,7 @@
     },
     {
       "id": "Invoice.updateLineItems",
-      "path": "/api/invoice/update-line-items",
+      "path": "/api/manifest/Invoice/commands/update-line-items",
       "method": "POST",
       "params": [
         {
@@ -13416,7 +13416,7 @@
     },
     {
       "id": "Invoice.voidInvoice",
-      "path": "/api/invoice/void-invoice",
+      "path": "/api/manifest/Invoice/commands/void-invoice",
       "method": "POST",
       "params": [
         {
@@ -13436,7 +13436,7 @@
     },
     {
       "id": "Invoice.writeOff",
-      "path": "/api/invoice/write-off",
+      "path": "/api/manifest/Invoice/commands/write-off",
       "method": "POST",
       "params": [
         {
@@ -13462,7 +13462,7 @@
     },
     {
       "id": "KitchenTask.addTag",
-      "path": "/api/kitchen/kitchen-tasks/commands/add-tag",
+      "path": "/api/manifest/KitchenTask/commands/add-tag",
       "method": "POST",
       "params": [
         {
@@ -13482,7 +13482,7 @@
     },
     {
       "id": "KitchenTask.cancel",
-      "path": "/api/kitchen/kitchen-tasks/commands/cancel",
+      "path": "/api/manifest/KitchenTask/commands/cancel",
       "method": "POST",
       "params": [
         {
@@ -13508,7 +13508,7 @@
     },
     {
       "id": "KitchenTask.claim",
-      "path": "/api/kitchen/kitchen-tasks/commands/claim",
+      "path": "/api/manifest/KitchenTask/commands/claim",
       "method": "POST",
       "params": [
         {
@@ -13528,7 +13528,7 @@
     },
     {
       "id": "KitchenTask.complete",
-      "path": "/api/kitchen/kitchen-tasks/commands/complete",
+      "path": "/api/manifest/KitchenTask/commands/complete",
       "method": "POST",
       "params": [
         {
@@ -13548,7 +13548,7 @@
     },
     {
       "id": "KitchenTask.create",
-      "path": "/api/kitchen/kitchen-tasks/commands/create",
+      "path": "/api/manifest/KitchenTask/commands/create",
       "method": "POST",
       "params": [
         {
@@ -13598,7 +13598,7 @@
     },
     {
       "id": "KitchenTask.reassign",
-      "path": "/api/kitchen/kitchen-tasks/commands/reassign",
+      "path": "/api/manifest/KitchenTask/commands/reassign",
       "method": "POST",
       "params": [
         {
@@ -13624,7 +13624,7 @@
     },
     {
       "id": "KitchenTask.release",
-      "path": "/api/kitchen/kitchen-tasks/commands/release",
+      "path": "/api/manifest/KitchenTask/commands/release",
       "method": "POST",
       "params": [
         {
@@ -13650,7 +13650,7 @@
     },
     {
       "id": "KitchenTask.removeTag",
-      "path": "/api/kitchen/kitchen-tasks/commands/remove-tag",
+      "path": "/api/manifest/KitchenTask/commands/remove-tag",
       "method": "POST",
       "params": [
         {
@@ -13670,7 +13670,7 @@
     },
     {
       "id": "KitchenTask.start",
-      "path": "/api/kitchen/kitchen-tasks/commands/start",
+      "path": "/api/manifest/KitchenTask/commands/start",
       "method": "POST",
       "params": [
         {
@@ -13690,7 +13690,7 @@
     },
     {
       "id": "KitchenTask.updateComplexity",
-      "path": "/api/kitchen/kitchen-tasks/commands/update-complexity",
+      "path": "/api/manifest/KitchenTask/commands/update-complexity",
       "method": "POST",
       "params": [
         {
@@ -13710,7 +13710,7 @@
     },
     {
       "id": "KitchenTask.updateDueDate",
-      "path": "/api/kitchen/kitchen-tasks/commands/update-due-date",
+      "path": "/api/manifest/KitchenTask/commands/update-due-date",
       "method": "POST",
       "params": [
         {
@@ -13730,7 +13730,7 @@
     },
     {
       "id": "KitchenTask.updatePriority",
-      "path": "/api/kitchen/kitchen-tasks/commands/update-priority",
+      "path": "/api/manifest/KitchenTask/commands/update-priority",
       "method": "POST",
       "params": [
         {
@@ -13750,7 +13750,7 @@
     },
     {
       "id": "KitchenTask.updateSummary",
-      "path": "/api/kitchen/kitchen-tasks/commands/update-summary",
+      "path": "/api/manifest/KitchenTask/commands/update-summary",
       "method": "POST",
       "params": [
         {
@@ -13770,7 +13770,7 @@
     },
     {
       "id": "KitchenTask.updateTags",
-      "path": "/api/kitchen/kitchen-tasks/commands/update-tags",
+      "path": "/api/manifest/KitchenTask/commands/update-tags",
       "method": "POST",
       "params": [
         {
@@ -13790,7 +13790,7 @@
     },
     {
       "id": "KitchenTask.updateTitle",
-      "path": "/api/kitchen/kitchen-tasks/commands/update-title",
+      "path": "/api/manifest/KitchenTask/commands/update-title",
       "method": "POST",
       "params": [
         {
@@ -13810,7 +13810,7 @@
     },
     {
       "id": "KnowledgeBaseEntry.create",
-      "path": "/api/knowledgebaseentry/create",
+      "path": "/api/manifest/KnowledgeBaseEntry/commands/create",
       "method": "POST",
       "params": [
         {
@@ -13854,7 +13854,7 @@
     },
     {
       "id": "KnowledgeBaseEntry.publishEntry",
-      "path": "/api/knowledgebaseentry/publish-entry",
+      "path": "/api/manifest/KnowledgeBaseEntry/commands/publish-entry",
       "method": "POST",
       "params": [],
       "source": {
@@ -13867,7 +13867,7 @@
     },
     {
       "id": "KnowledgeBaseEntry.remove",
-      "path": "/api/knowledgebaseentry/remove",
+      "path": "/api/manifest/KnowledgeBaseEntry/commands/remove",
       "method": "POST",
       "params": [],
       "source": {
@@ -13880,7 +13880,7 @@
     },
     {
       "id": "KnowledgeBaseEntry.update",
-      "path": "/api/knowledgebaseentry/update",
+      "path": "/api/manifest/KnowledgeBaseEntry/commands/update",
       "method": "POST",
       "params": [
         {
@@ -13918,7 +13918,7 @@
     },
     {
       "id": "LaborBudget.create",
-      "path": "/api/payroll/labor-budgets/commands/create",
+      "path": "/api/manifest/LaborBudget/commands/create",
       "method": "POST",
       "params": [
         {
@@ -13974,7 +13974,7 @@
     },
     {
       "id": "LaborBudget.softDelete",
-      "path": "/api/payroll/labor-budgets/commands/soft-delete",
+      "path": "/api/manifest/LaborBudget/commands/soft-delete",
       "method": "POST",
       "params": [],
       "source": {
@@ -13987,7 +13987,7 @@
     },
     {
       "id": "LaborBudget.update",
-      "path": "/api/payroll/labor-budgets/commands/update",
+      "path": "/api/manifest/LaborBudget/commands/update",
       "method": "POST",
       "params": [
         {
@@ -14037,7 +14037,7 @@
     },
     {
       "id": "Lead.archive",
-      "path": "/api/crm/leads/commands/archive",
+      "path": "/api/manifest/Lead/commands/archive",
       "method": "POST",
       "params": [
         {
@@ -14063,7 +14063,7 @@
     },
     {
       "id": "Lead.convertToClient",
-      "path": "/api/crm/leads/commands/convert-to-client",
+      "path": "/api/manifest/Lead/commands/convert-to-client",
       "method": "POST",
       "params": [
         {
@@ -14089,7 +14089,7 @@
     },
     {
       "id": "Lead.create",
-      "path": "/api/crm/leads/commands/create",
+      "path": "/api/manifest/Lead/commands/create",
       "method": "POST",
       "params": [
         {
@@ -14169,7 +14169,7 @@
     },
     {
       "id": "Lead.disqualify",
-      "path": "/api/crm/leads/commands/disqualify",
+      "path": "/api/manifest/Lead/commands/disqualify",
       "method": "POST",
       "params": [
         {
@@ -14195,7 +14195,7 @@
     },
     {
       "id": "Lead.update",
-      "path": "/api/crm/leads/commands/update",
+      "path": "/api/manifest/Lead/commands/update",
       "method": "POST",
       "params": [
         {
@@ -14275,7 +14275,7 @@
     },
     {
       "id": "LogisticsDispatch.assign",
-      "path": "/api/logisticsdispatch/assign",
+      "path": "/api/manifest/LogisticsDispatch/commands/assign",
       "method": "POST",
       "params": [
         {
@@ -14325,7 +14325,7 @@
     },
     {
       "id": "LogisticsRoute.create",
-      "path": "/api/logisticsroute/create",
+      "path": "/api/manifest/LogisticsRoute/commands/create",
       "method": "POST",
       "params": [
         {
@@ -14405,7 +14405,7 @@
     },
     {
       "id": "LogisticsRoute.optimize",
-      "path": "/api/logisticsroute/optimize",
+      "path": "/api/manifest/LogisticsRoute/commands/optimize",
       "method": "POST",
       "params": [],
       "source": {
@@ -14418,7 +14418,7 @@
     },
     {
       "id": "LogisticsRoute.remove",
-      "path": "/api/logisticsroute/remove",
+      "path": "/api/manifest/LogisticsRoute/commands/remove",
       "method": "POST",
       "params": [],
       "source": {
@@ -14431,7 +14431,7 @@
     },
     {
       "id": "LogisticsRoute.update",
-      "path": "/api/logisticsroute/update",
+      "path": "/api/manifest/LogisticsRoute/commands/update",
       "method": "POST",
       "params": [
         {
@@ -14511,7 +14511,7 @@
     },
     {
       "id": "LogisticsRoute.updateStatus",
-      "path": "/api/logisticsroute/update-status",
+      "path": "/api/manifest/LogisticsRoute/commands/update-status",
       "method": "POST",
       "params": [
         {
@@ -14531,7 +14531,7 @@
     },
     {
       "id": "MaintenanceWorkOrder.assign",
-      "path": "/api/maintenanceworkorder/assign",
+      "path": "/api/manifest/MaintenanceWorkOrder/commands/assign",
       "method": "POST",
       "params": [
         {
@@ -14563,7 +14563,7 @@
     },
     {
       "id": "MaintenanceWorkOrder.completeWork",
-      "path": "/api/maintenanceworkorder/complete-work",
+      "path": "/api/manifest/MaintenanceWorkOrder/commands/complete-work",
       "method": "POST",
       "params": [
         {
@@ -14601,7 +14601,7 @@
     },
     {
       "id": "MaintenanceWorkOrder.create",
-      "path": "/api/maintenanceworkorder/create",
+      "path": "/api/manifest/MaintenanceWorkOrder/commands/create",
       "method": "POST",
       "params": [
         {
@@ -14663,7 +14663,7 @@
     },
     {
       "id": "MaintenanceWorkOrder.startWork",
-      "path": "/api/maintenanceworkorder/start-work",
+      "path": "/api/manifest/MaintenanceWorkOrder/commands/start-work",
       "method": "POST",
       "params": [
         {
@@ -14683,7 +14683,7 @@
     },
     {
       "id": "MaintenanceWorkOrder.updateStatus",
-      "path": "/api/maintenanceworkorder/update-status",
+      "path": "/api/manifest/MaintenanceWorkOrder/commands/update-status",
       "method": "POST",
       "params": [
         {
@@ -14715,7 +14715,7 @@
     },
     {
       "id": "Menu.activate",
-      "path": "/api/kitchen/menus/commands/activate",
+      "path": "/api/manifest/Menu/commands/activate",
       "method": "POST",
       "params": [],
       "source": {
@@ -14728,7 +14728,7 @@
     },
     {
       "id": "Menu.create",
-      "path": "/api/kitchen/menus/commands/create",
+      "path": "/api/manifest/Menu/commands/create",
       "method": "POST",
       "params": [
         {
@@ -14784,7 +14784,7 @@
     },
     {
       "id": "Menu.deactivate",
-      "path": "/api/kitchen/menus/commands/deactivate",
+      "path": "/api/manifest/Menu/commands/deactivate",
       "method": "POST",
       "params": [],
       "source": {
@@ -14797,7 +14797,7 @@
     },
     {
       "id": "Menu.update",
-      "path": "/api/kitchen/menus/commands/update",
+      "path": "/api/manifest/Menu/commands/update",
       "method": "POST",
       "params": [
         {
@@ -14859,7 +14859,7 @@
     },
     {
       "id": "MenuDish.create",
-      "path": "/api/kitchen/menu-dishes/commands/create",
+      "path": "/api/manifest/MenuDish/commands/create",
       "method": "POST",
       "params": [
         {
@@ -14903,7 +14903,7 @@
     },
     {
       "id": "MenuDish.remove",
-      "path": "/api/kitchen/menu-dishes/commands/remove",
+      "path": "/api/manifest/MenuDish/commands/remove",
       "method": "POST",
       "params": [
         {
@@ -14923,7 +14923,7 @@
     },
     {
       "id": "MenuDish.updateCourse",
-      "path": "/api/kitchen/menu-dishes/commands/update-course",
+      "path": "/api/manifest/MenuDish/commands/update-course",
       "method": "POST",
       "params": [
         {
@@ -14955,7 +14955,7 @@
     },
     {
       "id": "Notification.create",
-      "path": "/api/collaboration/notifications/commands/create",
+      "path": "/api/manifest/Notification/commands/create",
       "method": "POST",
       "params": [
         {
@@ -15005,7 +15005,7 @@
     },
     {
       "id": "Notification.markDismissed",
-      "path": "/api/collaboration/notifications/commands/mark-dismissed",
+      "path": "/api/manifest/Notification/commands/mark-dismissed",
       "method": "POST",
       "params": [
         {
@@ -15025,7 +15025,7 @@
     },
     {
       "id": "Notification.markRead",
-      "path": "/api/collaboration/notifications/commands/mark-read",
+      "path": "/api/manifest/Notification/commands/mark-read",
       "method": "POST",
       "params": [
         {
@@ -15045,7 +15045,7 @@
     },
     {
       "id": "Notification.remove",
-      "path": "/api/collaboration/notifications/commands/remove",
+      "path": "/api/manifest/Notification/commands/remove",
       "method": "POST",
       "params": [
         {
@@ -15065,7 +15065,7 @@
     },
     {
       "id": "OverrideAudit.authorize",
-      "path": "/api/kitchen/override-audits/commands/authorize",
+      "path": "/api/manifest/OverrideAudit/commands/authorize",
       "method": "POST",
       "params": [
         {
@@ -15085,7 +15085,7 @@
     },
     {
       "id": "OverrideAudit.create",
-      "path": "/api/kitchen/override-audits/commands/create",
+      "path": "/api/manifest/OverrideAudit/commands/create",
       "method": "POST",
       "params": [
         {
@@ -15135,7 +15135,7 @@
     },
     {
       "id": "Payment.markChargeback",
-      "path": "/api/payment/mark-chargeback",
+      "path": "/api/manifest/Payment/commands/mark-chargeback",
       "method": "POST",
       "params": [
         {
@@ -15155,7 +15155,7 @@
     },
     {
       "id": "Payment.markFraudFailed",
-      "path": "/api/payment/mark-fraud-failed",
+      "path": "/api/manifest/Payment/commands/mark-fraud-failed",
       "method": "POST",
       "params": [
         {
@@ -15175,7 +15175,7 @@
     },
     {
       "id": "Payment.markFraudPassed",
-      "path": "/api/payment/mark-fraud-passed",
+      "path": "/api/manifest/Payment/commands/mark-fraud-passed",
       "method": "POST",
       "params": [
         {
@@ -15195,7 +15195,7 @@
     },
     {
       "id": "Payment.markFraudReviewed",
-      "path": "/api/payment/mark-fraud-reviewed",
+      "path": "/api/manifest/Payment/commands/mark-fraud-reviewed",
       "method": "POST",
       "params": [
         {
@@ -15221,7 +15221,7 @@
     },
     {
       "id": "Payment.partialRefund",
-      "path": "/api/payment/partial-refund",
+      "path": "/api/manifest/Payment/commands/partial-refund",
       "method": "POST",
       "params": [
         {
@@ -15247,7 +15247,7 @@
     },
     {
       "id": "Payment.process",
-      "path": "/api/payment/process",
+      "path": "/api/manifest/Payment/commands/process",
       "method": "POST",
       "params": [
         {
@@ -15267,7 +15267,7 @@
     },
     {
       "id": "Payment.processFailed",
-      "path": "/api/payment/process-failed",
+      "path": "/api/manifest/Payment/commands/process-failed",
       "method": "POST",
       "params": [],
       "source": {
@@ -15280,7 +15280,7 @@
     },
     {
       "id": "Payment.refund",
-      "path": "/api/payment/refund",
+      "path": "/api/manifest/Payment/commands/refund",
       "method": "POST",
       "params": [
         {
@@ -15306,7 +15306,7 @@
     },
     {
       "id": "Payment.updateFraudStatus",
-      "path": "/api/payment/update-fraud-status",
+      "path": "/api/manifest/Payment/commands/update-fraud-status",
       "method": "POST",
       "params": [
         {
@@ -15332,7 +15332,7 @@
     },
     {
       "id": "PaymentMethod.flagForFraud",
-      "path": "/api/paymentmethod/flag-for-fraud",
+      "path": "/api/manifest/PaymentMethod/commands/flag-for-fraud",
       "method": "POST",
       "params": [
         {
@@ -15352,7 +15352,7 @@
     },
     {
       "id": "PaymentMethod.markAsDefault",
-      "path": "/api/paymentmethod/mark-as-default",
+      "path": "/api/manifest/PaymentMethod/commands/mark-as-default",
       "method": "POST",
       "params": [],
       "source": {
@@ -15365,7 +15365,7 @@
     },
     {
       "id": "PaymentMethod.markExpired",
-      "path": "/api/paymentmethod/mark-expired",
+      "path": "/api/manifest/PaymentMethod/commands/mark-expired",
       "method": "POST",
       "params": [],
       "source": {
@@ -15378,7 +15378,7 @@
     },
     {
       "id": "PaymentMethod.markInvalid",
-      "path": "/api/paymentmethod/mark-invalid",
+      "path": "/api/manifest/PaymentMethod/commands/mark-invalid",
       "method": "POST",
       "params": [
         {
@@ -15398,7 +15398,7 @@
     },
     {
       "id": "PaymentMethod.markNotDefault",
-      "path": "/api/paymentmethod/mark-not-default",
+      "path": "/api/manifest/PaymentMethod/commands/mark-not-default",
       "method": "POST",
       "params": [],
       "source": {
@@ -15411,7 +15411,7 @@
     },
     {
       "id": "PaymentMethod.updateToken",
-      "path": "/api/paymentmethod/update-token",
+      "path": "/api/manifest/PaymentMethod/commands/update-token",
       "method": "POST",
       "params": [
         {
@@ -15431,7 +15431,7 @@
     },
     {
       "id": "PaymentMethod.verify",
-      "path": "/api/paymentmethod/verify",
+      "path": "/api/manifest/PaymentMethod/commands/verify",
       "method": "POST",
       "params": [
         {
@@ -15451,7 +15451,7 @@
     },
     {
       "id": "PayrollApprovalHistory.create",
-      "path": "/api/payroll/approval-history/commands/create",
+      "path": "/api/manifest/PayrollApprovalHistory/commands/create",
       "method": "POST",
       "params": [
         {
@@ -15501,7 +15501,7 @@
     },
     {
       "id": "PayrollPeriod.create",
-      "path": "/api/payroll/periods/commands/create",
+      "path": "/api/manifest/PayrollPeriod/commands/create",
       "method": "POST",
       "params": [
         {
@@ -15527,7 +15527,7 @@
     },
     {
       "id": "PayrollRun.updateStatus",
-      "path": "/api/payroll/runs/commands/update-status",
+      "path": "/api/manifest/PayrollRun/commands/update-status",
       "method": "POST",
       "params": [
         {
@@ -15559,7 +15559,7 @@
     },
     {
       "id": "PerformancePrediction.create",
-      "path": "/api/performanceprediction/create",
+      "path": "/api/manifest/PerformancePrediction/commands/create",
       "method": "POST",
       "params": [
         {
@@ -15609,7 +15609,7 @@
     },
     {
       "id": "PrepComment.create",
-      "path": "/api/kitchen/prep-comments/commands/create",
+      "path": "/api/manifest/PrepComment/commands/create",
       "method": "POST",
       "params": [
         {
@@ -15641,7 +15641,7 @@
     },
     {
       "id": "PrepComment.resolve",
-      "path": "/api/kitchen/prep-comments/commands/resolve",
+      "path": "/api/manifest/PrepComment/commands/resolve",
       "method": "POST",
       "params": [
         {
@@ -15661,7 +15661,7 @@
     },
     {
       "id": "PrepComment.softDelete",
-      "path": "/api/kitchen/prep-comments/commands/soft-delete",
+      "path": "/api/manifest/PrepComment/commands/soft-delete",
       "method": "POST",
       "params": [
         {
@@ -15681,7 +15681,7 @@
     },
     {
       "id": "PrepComment.unresolve",
-      "path": "/api/kitchen/prep-comments/commands/unresolve",
+      "path": "/api/manifest/PrepComment/commands/unresolve",
       "method": "POST",
       "params": [
         {
@@ -15701,7 +15701,7 @@
     },
     {
       "id": "PrepList.activate",
-      "path": "/api/kitchen/prep-lists/commands/activate",
+      "path": "/api/manifest/PrepList/commands/activate",
       "method": "POST",
       "params": [],
       "source": {
@@ -15714,7 +15714,7 @@
     },
     {
       "id": "PrepList.cancel",
-      "path": "/api/kitchen/prep-lists/commands/cancel",
+      "path": "/api/manifest/PrepList/commands/cancel",
       "method": "POST",
       "params": [
         {
@@ -15734,7 +15734,7 @@
     },
     {
       "id": "PrepList.create",
-      "path": "/api/kitchen/prep-lists/commands/create",
+      "path": "/api/manifest/PrepList/commands/create",
       "method": "POST",
       "params": [
         {
@@ -15790,7 +15790,7 @@
     },
     {
       "id": "PrepList.createFromSeed",
-      "path": "/api/kitchen/prep-lists/commands/create-from-seed",
+      "path": "/api/manifest/PrepList/commands/create-from-seed",
       "method": "POST",
       "params": [
         {
@@ -15852,7 +15852,7 @@
     },
     {
       "id": "PrepList.deactivate",
-      "path": "/api/kitchen/prep-lists/commands/deactivate",
+      "path": "/api/manifest/PrepList/commands/deactivate",
       "method": "POST",
       "params": [],
       "source": {
@@ -15865,7 +15865,7 @@
     },
     {
       "id": "PrepList.finalize",
-      "path": "/api/kitchen/prep-lists/commands/finalize",
+      "path": "/api/manifest/PrepList/commands/finalize",
       "method": "POST",
       "params": [],
       "source": {
@@ -15878,7 +15878,7 @@
     },
     {
       "id": "PrepList.markCompleted",
-      "path": "/api/kitchen/prep-lists/commands/mark-completed",
+      "path": "/api/manifest/PrepList/commands/mark-completed",
       "method": "POST",
       "params": [],
       "source": {
@@ -15891,7 +15891,7 @@
     },
     {
       "id": "PrepList.reopen",
-      "path": "/api/kitchen/prep-lists/commands/reopen",
+      "path": "/api/manifest/PrepList/commands/reopen",
       "method": "POST",
       "params": [
         {
@@ -15911,7 +15911,7 @@
     },
     {
       "id": "PrepList.update",
-      "path": "/api/kitchen/prep-lists/commands/update",
+      "path": "/api/manifest/PrepList/commands/update",
       "method": "POST",
       "params": [
         {
@@ -15943,7 +15943,7 @@
     },
     {
       "id": "PrepList.updateBatchMultiplier",
-      "path": "/api/kitchen/prep-lists/commands/update-batch-multiplier",
+      "path": "/api/manifest/PrepList/commands/update-batch-multiplier",
       "method": "POST",
       "params": [
         {
@@ -15963,7 +15963,7 @@
     },
     {
       "id": "PrepListItem.create",
-      "path": "/api/kitchen/prep-list-items/commands/create",
+      "path": "/api/manifest/PrepListItem/commands/create",
       "method": "POST",
       "params": [
         {
@@ -16085,7 +16085,7 @@
     },
     {
       "id": "PrepListItem.markCompleted",
-      "path": "/api/kitchen/prep-list-items/commands/mark-completed",
+      "path": "/api/manifest/PrepListItem/commands/mark-completed",
       "method": "POST",
       "params": [
         {
@@ -16105,7 +16105,7 @@
     },
     {
       "id": "PrepListItem.markUncompleted",
-      "path": "/api/kitchen/prep-list-items/commands/mark-uncompleted",
+      "path": "/api/manifest/PrepListItem/commands/mark-uncompleted",
       "method": "POST",
       "params": [],
       "source": {
@@ -16118,7 +16118,7 @@
     },
     {
       "id": "PrepListItem.updatePrepNotes",
-      "path": "/api/kitchen/prep-list-items/commands/update-prep-notes",
+      "path": "/api/manifest/PrepListItem/commands/update-prep-notes",
       "method": "POST",
       "params": [
         {
@@ -16144,7 +16144,7 @@
     },
     {
       "id": "PrepListItem.updateQuantity",
-      "path": "/api/kitchen/prep-list-items/commands/update-quantity",
+      "path": "/api/manifest/PrepListItem/commands/update-quantity",
       "method": "POST",
       "params": [
         {
@@ -16182,7 +16182,7 @@
     },
     {
       "id": "PrepListItem.updateStation",
-      "path": "/api/kitchen/prep-list-items/commands/update-station",
+      "path": "/api/manifest/PrepListItem/commands/update-station",
       "method": "POST",
       "params": [
         {
@@ -16208,7 +16208,7 @@
     },
     {
       "id": "PrepMethod.create",
-      "path": "/api/kitchen/prep-methods/commands/create",
+      "path": "/api/manifest/PrepMethod/commands/create",
       "method": "POST",
       "params": [
         {
@@ -16252,7 +16252,7 @@
     },
     {
       "id": "PrepMethod.deactivate",
-      "path": "/api/kitchen/prep-methods/commands/deactivate",
+      "path": "/api/manifest/PrepMethod/commands/deactivate",
       "method": "POST",
       "params": [
         {
@@ -16278,7 +16278,7 @@
     },
     {
       "id": "PrepMethod.update",
-      "path": "/api/kitchen/prep-methods/commands/update",
+      "path": "/api/manifest/PrepMethod/commands/update",
       "method": "POST",
       "params": [
         {
@@ -16322,7 +16322,7 @@
     },
     {
       "id": "PrepTask.cancel",
-      "path": "/api/kitchen/prep-tasks/commands/cancel",
+      "path": "/api/manifest/PrepTask/commands/cancel",
       "method": "POST",
       "params": [
         {
@@ -16348,7 +16348,7 @@
     },
     {
       "id": "PrepTask.claim",
-      "path": "/api/kitchen/prep-tasks/commands/claim",
+      "path": "/api/manifest/PrepTask/commands/claim",
       "method": "POST",
       "params": [
         {
@@ -16374,7 +16374,7 @@
     },
     {
       "id": "PrepTask.complete",
-      "path": "/api/kitchen/prep-tasks/commands/complete",
+      "path": "/api/manifest/PrepTask/commands/complete",
       "method": "POST",
       "params": [
         {
@@ -16406,7 +16406,7 @@
     },
     {
       "id": "PrepTask.create",
-      "path": "/api/kitchen/prep-tasks/commands/create",
+      "path": "/api/manifest/PrepTask/commands/create",
       "method": "POST",
       "params": [
         {
@@ -16492,7 +16492,7 @@
     },
     {
       "id": "PrepTask.reassign",
-      "path": "/api/kitchen/prep-tasks/commands/reassign",
+      "path": "/api/manifest/PrepTask/commands/reassign",
       "method": "POST",
       "params": [
         {
@@ -16518,7 +16518,7 @@
     },
     {
       "id": "PrepTask.release",
-      "path": "/api/kitchen/prep-tasks/commands/release",
+      "path": "/api/manifest/PrepTask/commands/release",
       "method": "POST",
       "params": [
         {
@@ -16544,7 +16544,7 @@
     },
     {
       "id": "PrepTask.start",
-      "path": "/api/kitchen/prep-tasks/commands/start",
+      "path": "/api/manifest/PrepTask/commands/start",
       "method": "POST",
       "params": [
         {
@@ -16564,7 +16564,7 @@
     },
     {
       "id": "PrepTask.unclaim",
-      "path": "/api/kitchen/prep-tasks/commands/unclaim",
+      "path": "/api/manifest/PrepTask/commands/unclaim",
       "method": "POST",
       "params": [
         {
@@ -16590,7 +16590,7 @@
     },
     {
       "id": "PrepTask.updateAssignment",
-      "path": "/api/kitchen/prep-tasks/commands/update-assignment",
+      "path": "/api/manifest/PrepTask/commands/update-assignment",
       "method": "POST",
       "params": [
         {
@@ -16610,7 +16610,7 @@
     },
     {
       "id": "PrepTask.updateDueDate",
-      "path": "/api/kitchen/prep-tasks/commands/update-due-date",
+      "path": "/api/manifest/PrepTask/commands/update-due-date",
       "method": "POST",
       "params": [
         {
@@ -16630,7 +16630,7 @@
     },
     {
       "id": "PrepTask.updatePriority",
-      "path": "/api/kitchen/prep-tasks/commands/update-priority",
+      "path": "/api/manifest/PrepTask/commands/update-priority",
       "method": "POST",
       "params": [
         {
@@ -16650,7 +16650,7 @@
     },
     {
       "id": "PrepTask.updateQuantity",
-      "path": "/api/kitchen/prep-tasks/commands/update-quantity",
+      "path": "/api/manifest/PrepTask/commands/update-quantity",
       "method": "POST",
       "params": [
         {
@@ -16676,7 +16676,7 @@
     },
     {
       "id": "PrepTask.updateStatus",
-      "path": "/api/kitchen/prep-tasks/commands/update-status",
+      "path": "/api/manifest/PrepTask/commands/update-status",
       "method": "POST",
       "params": [
         {
@@ -16696,7 +16696,7 @@
     },
     {
       "id": "PrepTaskPlanWorkflow.approvePlan",
-      "path": "/api/kitchen/prep-task-plan-workflows/commands/approve-plan",
+      "path": "/api/manifest/PrepTaskPlanWorkflow/commands/approve-plan",
       "method": "POST",
       "params": [],
       "source": {
@@ -16709,7 +16709,7 @@
     },
     {
       "id": "PrepTaskPlanWorkflow.cancel",
-      "path": "/api/kitchen/prep-task-plan-workflows/commands/cancel",
+      "path": "/api/manifest/PrepTaskPlanWorkflow/commands/cancel",
       "method": "POST",
       "params": [
         {
@@ -16729,7 +16729,7 @@
     },
     {
       "id": "PrepTaskPlanWorkflow.completeGeneration",
-      "path": "/api/kitchen/prep-task-plan-workflows/commands/complete-generation",
+      "path": "/api/manifest/PrepTaskPlanWorkflow/commands/complete-generation",
       "method": "POST",
       "params": [
         {
@@ -16761,7 +16761,7 @@
     },
     {
       "id": "PrepTaskPlanWorkflow.completeInstantiation",
-      "path": "/api/kitchen/prep-task-plan-workflows/commands/complete-instantiation",
+      "path": "/api/manifest/PrepTaskPlanWorkflow/commands/complete-instantiation",
       "method": "POST",
       "params": [
         {
@@ -16793,7 +16793,7 @@
     },
     {
       "id": "PrepTaskPlanWorkflow.completeReview",
-      "path": "/api/kitchen/prep-task-plan-workflows/commands/complete-review",
+      "path": "/api/manifest/PrepTaskPlanWorkflow/commands/complete-review",
       "method": "POST",
       "params": [
         {
@@ -16837,7 +16837,7 @@
     },
     {
       "id": "PrepTaskPlanWorkflow.completeScheduling",
-      "path": "/api/kitchen/prep-task-plan-workflows/commands/complete-scheduling",
+      "path": "/api/manifest/PrepTaskPlanWorkflow/commands/complete-scheduling",
       "method": "POST",
       "params": [
         {
@@ -16857,7 +16857,7 @@
     },
     {
       "id": "PrepTaskPlanWorkflow.create",
-      "path": "/api/kitchen/prep-task-plan-workflows/commands/create",
+      "path": "/api/manifest/PrepTaskPlanWorkflow/commands/create",
       "method": "POST",
       "params": [
         {
@@ -16889,7 +16889,7 @@
     },
     {
       "id": "PrepTaskPlanWorkflow.fail",
-      "path": "/api/kitchen/prep-task-plan-workflows/commands/fail",
+      "path": "/api/manifest/PrepTaskPlanWorkflow/commands/fail",
       "method": "POST",
       "params": [
         {
@@ -16915,7 +16915,7 @@
     },
     {
       "id": "PrepTaskPlanWorkflow.quickApprove",
-      "path": "/api/kitchen/prep-task-plan-workflows/commands/quick-approve",
+      "path": "/api/manifest/PrepTaskPlanWorkflow/commands/quick-approve",
       "method": "POST",
       "params": [
         {
@@ -16935,7 +16935,7 @@
     },
     {
       "id": "PrepTaskPlanWorkflow.rejectPlan",
-      "path": "/api/kitchen/prep-task-plan-workflows/commands/reject-plan",
+      "path": "/api/manifest/PrepTaskPlanWorkflow/commands/reject-plan",
       "method": "POST",
       "params": [
         {
@@ -16955,7 +16955,7 @@
     },
     {
       "id": "PrepTaskPlanWorkflow.retry",
-      "path": "/api/kitchen/prep-task-plan-workflows/commands/retry",
+      "path": "/api/manifest/PrepTaskPlanWorkflow/commands/retry",
       "method": "POST",
       "params": [],
       "source": {
@@ -16968,7 +16968,7 @@
     },
     {
       "id": "PrepTaskPlanWorkflow.startApproving",
-      "path": "/api/kitchen/prep-task-plan-workflows/commands/start-approving",
+      "path": "/api/manifest/PrepTaskPlanWorkflow/commands/start-approving",
       "method": "POST",
       "params": [
         {
@@ -16988,7 +16988,7 @@
     },
     {
       "id": "PrepTaskPlanWorkflow.startGenerating",
-      "path": "/api/kitchen/prep-task-plan-workflows/commands/start-generating",
+      "path": "/api/manifest/PrepTaskPlanWorkflow/commands/start-generating",
       "method": "POST",
       "params": [],
       "source": {
@@ -17001,7 +17001,7 @@
     },
     {
       "id": "PrepTaskPlanWorkflow.startInstantiating",
-      "path": "/api/kitchen/prep-task-plan-workflows/commands/start-instantiating",
+      "path": "/api/manifest/PrepTaskPlanWorkflow/commands/start-instantiating",
       "method": "POST",
       "params": [],
       "source": {
@@ -17014,7 +17014,7 @@
     },
     {
       "id": "PrepTaskPlanWorkflow.startReviewing",
-      "path": "/api/kitchen/prep-task-plan-workflows/commands/start-reviewing",
+      "path": "/api/manifest/PrepTaskPlanWorkflow/commands/start-reviewing",
       "method": "POST",
       "params": [
         {
@@ -17034,7 +17034,7 @@
     },
     {
       "id": "PrepTaskPlanWorkflow.startScheduling",
-      "path": "/api/kitchen/prep-task-plan-workflows/commands/start-scheduling",
+      "path": "/api/manifest/PrepTaskPlanWorkflow/commands/start-scheduling",
       "method": "POST",
       "params": [],
       "source": {
@@ -17047,7 +17047,7 @@
     },
     {
       "id": "PricingTier.create",
-      "path": "/api/inventory/pricing-tiers/commands/create",
+      "path": "/api/manifest/PricingTier/commands/create",
       "method": "POST",
       "params": [
         {
@@ -17109,7 +17109,7 @@
     },
     {
       "id": "PricingTier.softDelete",
-      "path": "/api/inventory/pricing-tiers/commands/soft-delete",
+      "path": "/api/manifest/PricingTier/commands/soft-delete",
       "method": "POST",
       "params": [
         {
@@ -17129,7 +17129,7 @@
     },
     {
       "id": "PricingTier.update",
-      "path": "/api/inventory/pricing-tiers/commands/update",
+      "path": "/api/manifest/PricingTier/commands/update",
       "method": "POST",
       "params": [
         {
@@ -17197,7 +17197,7 @@
     },
     {
       "id": "Proposal.accept",
-      "path": "/api/crm/proposals/commands/accept",
+      "path": "/api/manifest/Proposal/commands/accept",
       "method": "POST",
       "params": [
         {
@@ -17217,7 +17217,7 @@
     },
     {
       "id": "Proposal.create",
-      "path": "/api/crm/proposals/commands/create",
+      "path": "/api/manifest/Proposal/commands/create",
       "method": "POST",
       "params": [
         {
@@ -17315,7 +17315,7 @@
     },
     {
       "id": "Proposal.markViewed",
-      "path": "/api/crm/proposals/commands/mark-viewed",
+      "path": "/api/manifest/Proposal/commands/mark-viewed",
       "method": "POST",
       "params": [
         {
@@ -17335,7 +17335,7 @@
     },
     {
       "id": "Proposal.reject",
-      "path": "/api/crm/proposals/commands/reject",
+      "path": "/api/manifest/Proposal/commands/reject",
       "method": "POST",
       "params": [
         {
@@ -17361,7 +17361,7 @@
     },
     {
       "id": "Proposal.send",
-      "path": "/api/crm/proposals/commands/send",
+      "path": "/api/manifest/Proposal/commands/send",
       "method": "POST",
       "params": [
         {
@@ -17381,7 +17381,7 @@
     },
     {
       "id": "Proposal.update",
-      "path": "/api/crm/proposals/commands/update",
+      "path": "/api/manifest/Proposal/commands/update",
       "method": "POST",
       "params": [
         {
@@ -17479,7 +17479,7 @@
     },
     {
       "id": "Proposal.withdraw",
-      "path": "/api/crm/proposals/commands/withdraw",
+      "path": "/api/manifest/Proposal/commands/withdraw",
       "method": "POST",
       "params": [
         {
@@ -17505,7 +17505,7 @@
     },
     {
       "id": "ProposalLineItem.create",
-      "path": "/api/crm/proposal-line-items/commands/create",
+      "path": "/api/manifest/ProposalLineItem/commands/create",
       "method": "POST",
       "params": [
         {
@@ -17573,7 +17573,7 @@
     },
     {
       "id": "ProposalLineItem.remove",
-      "path": "/api/crm/proposal-line-items/commands/remove",
+      "path": "/api/manifest/ProposalLineItem/commands/remove",
       "method": "POST",
       "params": [
         {
@@ -17593,7 +17593,7 @@
     },
     {
       "id": "ProposalLineItem.update",
-      "path": "/api/crm/proposal-line-items/commands/update",
+      "path": "/api/manifest/ProposalLineItem/commands/update",
       "method": "POST",
       "params": [
         {
@@ -17655,7 +17655,7 @@
     },
     {
       "id": "PurchaseOrder.approve",
-      "path": "/api/inventory/purchase-orders/commands/approve",
+      "path": "/api/manifest/PurchaseOrder/commands/approve",
       "method": "POST",
       "params": [
         {
@@ -17675,7 +17675,7 @@
     },
     {
       "id": "PurchaseOrder.cancel",
-      "path": "/api/inventory/purchase-orders/commands/cancel",
+      "path": "/api/manifest/PurchaseOrder/commands/cancel",
       "method": "POST",
       "params": [
         {
@@ -17701,7 +17701,7 @@
     },
     {
       "id": "PurchaseOrder.create",
-      "path": "/api/inventory/purchase-orders/commands/create",
+      "path": "/api/manifest/PurchaseOrder/commands/create",
       "method": "POST",
       "params": [
         {
@@ -17739,7 +17739,7 @@
     },
     {
       "id": "PurchaseOrder.markOrdered",
-      "path": "/api/inventory/purchase-orders/commands/mark-ordered",
+      "path": "/api/manifest/PurchaseOrder/commands/mark-ordered",
       "method": "POST",
       "params": [
         {
@@ -17759,7 +17759,7 @@
     },
     {
       "id": "PurchaseOrder.markReceived",
-      "path": "/api/inventory/purchase-orders/commands/mark-received",
+      "path": "/api/manifest/PurchaseOrder/commands/mark-received",
       "method": "POST",
       "params": [
         {
@@ -17779,7 +17779,7 @@
     },
     {
       "id": "PurchaseOrder.reject",
-      "path": "/api/inventory/purchase-orders/commands/reject",
+      "path": "/api/manifest/PurchaseOrder/commands/reject",
       "method": "POST",
       "params": [
         {
@@ -17805,7 +17805,7 @@
     },
     {
       "id": "PurchaseOrder.submit",
-      "path": "/api/inventory/purchase-orders/commands/submit",
+      "path": "/api/manifest/PurchaseOrder/commands/submit",
       "method": "POST",
       "params": [
         {
@@ -17825,7 +17825,7 @@
     },
     {
       "id": "PurchaseOrderItem.create",
-      "path": "/api/inventory/purchase-order-items/commands/create",
+      "path": "/api/manifest/PurchaseOrderItem/commands/create",
       "method": "POST",
       "params": [
         {
@@ -17875,7 +17875,7 @@
     },
     {
       "id": "PurchaseOrderItem.remove",
-      "path": "/api/inventory/purchase-order-items/commands/remove",
+      "path": "/api/manifest/PurchaseOrderItem/commands/remove",
       "method": "POST",
       "params": [
         {
@@ -17895,7 +17895,7 @@
     },
     {
       "id": "PurchaseOrderItem.update",
-      "path": "/api/inventory/purchase-order-items/commands/update",
+      "path": "/api/manifest/PurchaseOrderItem/commands/update",
       "method": "POST",
       "params": [
         {
@@ -17927,7 +17927,7 @@
     },
     {
       "id": "PurchaseRequisition.approveFinance",
-      "path": "/api/procurement/requisitions/commands/approve-finance",
+      "path": "/api/manifest/PurchaseRequisition/commands/approve-finance",
       "method": "POST",
       "params": [
         {
@@ -17947,7 +17947,7 @@
     },
     {
       "id": "PurchaseRequisition.approveManager",
-      "path": "/api/procurement/requisitions/commands/approve-manager",
+      "path": "/api/manifest/PurchaseRequisition/commands/approve-manager",
       "method": "POST",
       "params": [
         {
@@ -17967,7 +17967,7 @@
     },
     {
       "id": "PurchaseRequisition.cancel",
-      "path": "/api/procurement/requisitions/commands/cancel",
+      "path": "/api/manifest/PurchaseRequisition/commands/cancel",
       "method": "POST",
       "params": [
         {
@@ -17993,7 +17993,7 @@
     },
     {
       "id": "PurchaseRequisition.convertToPo",
-      "path": "/api/procurement/requisitions/commands/convert-to-po",
+      "path": "/api/manifest/PurchaseRequisition/commands/convert-to-po",
       "method": "POST",
       "params": [
         {
@@ -18019,7 +18019,7 @@
     },
     {
       "id": "PurchaseRequisition.create",
-      "path": "/api/procurement/requisitions/commands/create",
+      "path": "/api/manifest/PurchaseRequisition/commands/create",
       "method": "POST",
       "params": [
         {
@@ -18081,7 +18081,7 @@
     },
     {
       "id": "PurchaseRequisition.reject",
-      "path": "/api/procurement/requisitions/commands/reject",
+      "path": "/api/manifest/PurchaseRequisition/commands/reject",
       "method": "POST",
       "params": [
         {
@@ -18107,7 +18107,7 @@
     },
     {
       "id": "PurchaseRequisition.submit",
-      "path": "/api/procurement/requisitions/commands/submit",
+      "path": "/api/manifest/PurchaseRequisition/commands/submit",
       "method": "POST",
       "params": [
         {
@@ -18127,7 +18127,7 @@
     },
     {
       "id": "PurchaseRequisition.update",
-      "path": "/api/procurement/requisitions/commands/update",
+      "path": "/api/manifest/PurchaseRequisition/commands/update",
       "method": "POST",
       "params": [
         {
@@ -18165,7 +18165,7 @@
     },
     {
       "id": "PurchaseRequisitionItem.create",
-      "path": "/api/procurement/requisition-items/commands/create",
+      "path": "/api/manifest/PurchaseRequisitionItem/commands/create",
       "method": "POST",
       "params": [
         {
@@ -18239,7 +18239,7 @@
     },
     {
       "id": "PurchaseRequisitionItem.remove",
-      "path": "/api/procurement/requisition-items/commands/remove",
+      "path": "/api/manifest/PurchaseRequisitionItem/commands/remove",
       "method": "POST",
       "params": [
         {
@@ -18259,7 +18259,7 @@
     },
     {
       "id": "PurchaseRequisitionItem.update",
-      "path": "/api/procurement/requisition-items/commands/update",
+      "path": "/api/manifest/PurchaseRequisitionItem/commands/update",
       "method": "POST",
       "params": [
         {
@@ -18309,7 +18309,7 @@
     },
     {
       "id": "QACheck.complete",
-      "path": "/api/qacheck/complete",
+      "path": "/api/manifest/QACheck/commands/complete",
       "method": "POST",
       "params": [
         {
@@ -18341,7 +18341,7 @@
     },
     {
       "id": "QACheck.create",
-      "path": "/api/qacheck/create",
+      "path": "/api/manifest/QACheck/commands/create",
       "method": "POST",
       "params": [
         {
@@ -18379,7 +18379,7 @@
     },
     {
       "id": "QACorrectiveAction.create",
-      "path": "/api/qacorrectiveaction/create",
+      "path": "/api/manifest/QACorrectiveAction/commands/create",
       "method": "POST",
       "params": [
         {
@@ -18423,7 +18423,7 @@
     },
     {
       "id": "QACorrectiveAction.resolve",
-      "path": "/api/qacorrectiveaction/resolve",
+      "path": "/api/manifest/QACorrectiveAction/commands/resolve",
       "method": "POST",
       "params": [
         {
@@ -18443,7 +18443,7 @@
     },
     {
       "id": "QATemperatureLog.log",
-      "path": "/api/qatemperaturelog/log",
+      "path": "/api/manifest/QATemperatureLog/commands/log",
       "method": "POST",
       "params": [
         {
@@ -18493,7 +18493,7 @@
     },
     {
       "id": "RateLimitConfig.create",
-      "path": "/api/administrative/rate-limits/commands/create",
+      "path": "/api/manifest/RateLimitConfig/commands/create",
       "method": "POST",
       "params": [
         {
@@ -18543,7 +18543,7 @@
     },
     {
       "id": "RateLimitConfig.softDelete",
-      "path": "/api/administrative/rate-limits/commands/soft-delete",
+      "path": "/api/manifest/RateLimitConfig/commands/soft-delete",
       "method": "POST",
       "params": [
         {
@@ -18563,7 +18563,7 @@
     },
     {
       "id": "RateLimitConfig.turnOff",
-      "path": "/api/administrative/rate-limits/commands/turn-off",
+      "path": "/api/manifest/RateLimitConfig/commands/turn-off",
       "method": "POST",
       "params": [],
       "source": {
@@ -18576,7 +18576,7 @@
     },
     {
       "id": "RateLimitConfig.turnOn",
-      "path": "/api/administrative/rate-limits/commands/turn-on",
+      "path": "/api/manifest/RateLimitConfig/commands/turn-on",
       "method": "POST",
       "params": [],
       "source": {
@@ -18589,7 +18589,7 @@
     },
     {
       "id": "RateLimitConfig.update",
-      "path": "/api/administrative/rate-limits/commands/update",
+      "path": "/api/manifest/RateLimitConfig/commands/update",
       "method": "POST",
       "params": [
         {
@@ -18645,7 +18645,7 @@
     },
     {
       "id": "Recipe.activate",
-      "path": "/api/kitchen/recipes/commands/activate",
+      "path": "/api/manifest/Recipe/commands/activate",
       "method": "POST",
       "params": [],
       "source": {
@@ -18658,7 +18658,7 @@
     },
     {
       "id": "Recipe.create",
-      "path": "/api/kitchen/recipes/commands/create",
+      "path": "/api/manifest/Recipe/commands/create",
       "method": "POST",
       "params": [
         {
@@ -18702,7 +18702,7 @@
     },
     {
       "id": "Recipe.deactivate",
-      "path": "/api/kitchen/recipes/commands/deactivate",
+      "path": "/api/manifest/Recipe/commands/deactivate",
       "method": "POST",
       "params": [
         {
@@ -18722,7 +18722,7 @@
     },
     {
       "id": "Recipe.update",
-      "path": "/api/kitchen/recipes/commands/update",
+      "path": "/api/manifest/Recipe/commands/update",
       "method": "POST",
       "params": [
         {
@@ -18766,7 +18766,7 @@
     },
     {
       "id": "RecipeIngredient.create",
-      "path": "/api/kitchen/recipe-ingredients/commands/create",
+      "path": "/api/manifest/RecipeIngredient/commands/create",
       "method": "POST",
       "params": [
         {
@@ -18822,7 +18822,7 @@
     },
     {
       "id": "RecipeIngredient.remove",
-      "path": "/api/kitchen/recipe-ingredients/commands/remove",
+      "path": "/api/manifest/RecipeIngredient/commands/remove",
       "method": "POST",
       "params": [
         {
@@ -18842,7 +18842,7 @@
     },
     {
       "id": "RecipeIngredient.updateQuantity",
-      "path": "/api/kitchen/recipe-ingredients/commands/update-quantity",
+      "path": "/api/manifest/RecipeIngredient/commands/update-quantity",
       "method": "POST",
       "params": [
         {
@@ -18868,7 +18868,7 @@
     },
     {
       "id": "RecipeIngredient.updateWasteFactor",
-      "path": "/api/kitchen/recipe-ingredients/commands/update-waste-factor",
+      "path": "/api/manifest/RecipeIngredient/commands/update-waste-factor",
       "method": "POST",
       "params": [
         {
@@ -18888,7 +18888,7 @@
     },
     {
       "id": "RecipeStep.create",
-      "path": "/api/kitchen/recipe-steps/commands/create",
+      "path": "/api/manifest/RecipeStep/commands/create",
       "method": "POST",
       "params": [
         {
@@ -18962,7 +18962,7 @@
     },
     {
       "id": "RecipeStep.remove",
-      "path": "/api/kitchen/recipe-steps/commands/remove",
+      "path": "/api/manifest/RecipeStep/commands/remove",
       "method": "POST",
       "params": [
         {
@@ -18982,7 +18982,7 @@
     },
     {
       "id": "RecipeStep.updateInstruction",
-      "path": "/api/kitchen/recipe-steps/commands/update-instruction",
+      "path": "/api/manifest/RecipeStep/commands/update-instruction",
       "method": "POST",
       "params": [
         {
@@ -19014,7 +19014,7 @@
     },
     {
       "id": "RecipeVersion.create",
-      "path": "/api/kitchen/recipe-versions/commands/create",
+      "path": "/api/manifest/RecipeVersion/commands/create",
       "method": "POST",
       "params": [
         {
@@ -19076,7 +19076,7 @@
     },
     {
       "id": "RecipeVersion.restore",
-      "path": "/api/kitchen/recipe-versions/commands/restore",
+      "path": "/api/manifest/RecipeVersion/commands/restore",
       "method": "POST",
       "params": [
         {
@@ -19102,7 +19102,7 @@
     },
     {
       "id": "RecipeVersion.updateCosts",
-      "path": "/api/kitchen/recipe-versions/commands/update-costs",
+      "path": "/api/manifest/RecipeVersion/commands/update-costs",
       "method": "POST",
       "params": [
         {
@@ -19128,7 +19128,7 @@
     },
     {
       "id": "RevenueRecognitionLine.cancel",
-      "path": "/api/revenuerecognitionline/cancel",
+      "path": "/api/manifest/RevenueRecognitionLine/commands/cancel",
       "method": "POST",
       "params": [],
       "source": {
@@ -19141,7 +19141,7 @@
     },
     {
       "id": "RevenueRecognitionLine.create",
-      "path": "/api/revenuerecognitionline/create",
+      "path": "/api/manifest/RevenueRecognitionLine/commands/create",
       "method": "POST",
       "params": [
         {
@@ -19203,7 +19203,7 @@
     },
     {
       "id": "RevenueRecognitionLine.recognize",
-      "path": "/api/revenuerecognitionline/recognize",
+      "path": "/api/manifest/RevenueRecognitionLine/commands/recognize",
       "method": "POST",
       "params": [
         {
@@ -19229,7 +19229,7 @@
     },
     {
       "id": "RevenueRecognitionLine.skip",
-      "path": "/api/revenuerecognitionline/skip",
+      "path": "/api/manifest/RevenueRecognitionLine/commands/skip",
       "method": "POST",
       "params": [
         {
@@ -19249,7 +19249,7 @@
     },
     {
       "id": "RevenueRecognitionSchedule.adjustSchedule",
-      "path": "/api/revenuerecognitionschedule/adjust-schedule",
+      "path": "/api/manifest/RevenueRecognitionSchedule/commands/adjust-schedule",
       "method": "POST",
       "params": [
         {
@@ -19275,7 +19275,7 @@
     },
     {
       "id": "RevenueRecognitionSchedule.cancel",
-      "path": "/api/revenuerecognitionschedule/cancel",
+      "path": "/api/manifest/RevenueRecognitionSchedule/commands/cancel",
       "method": "POST",
       "params": [
         {
@@ -19295,7 +19295,7 @@
     },
     {
       "id": "RevenueRecognitionSchedule.completeIfAllMilestones",
-      "path": "/api/revenuerecognitionschedule/complete-if-all-milestones",
+      "path": "/api/manifest/RevenueRecognitionSchedule/commands/complete-if-all-milestones",
       "method": "POST",
       "params": [],
       "source": {
@@ -19308,7 +19308,7 @@
     },
     {
       "id": "RevenueRecognitionSchedule.completeIfFullyRecognized",
-      "path": "/api/revenuerecognitionschedule/complete-if-fully-recognized",
+      "path": "/api/manifest/RevenueRecognitionSchedule/commands/complete-if-fully-recognized",
       "method": "POST",
       "params": [],
       "source": {
@@ -19321,7 +19321,7 @@
     },
     {
       "id": "RevenueRecognitionSchedule.completeIfPercentageFull",
-      "path": "/api/revenuerecognitionschedule/complete-if-percentage-full",
+      "path": "/api/manifest/RevenueRecognitionSchedule/commands/complete-if-percentage-full",
       "method": "POST",
       "params": [],
       "source": {
@@ -19334,7 +19334,7 @@
     },
     {
       "id": "RevenueRecognitionSchedule.create",
-      "path": "/api/revenuerecognitionschedule/create",
+      "path": "/api/manifest/RevenueRecognitionSchedule/commands/create",
       "method": "POST",
       "params": [
         {
@@ -19414,7 +19414,7 @@
     },
     {
       "id": "RevenueRecognitionSchedule.pause",
-      "path": "/api/revenuerecognitionschedule/pause",
+      "path": "/api/manifest/RevenueRecognitionSchedule/commands/pause",
       "method": "POST",
       "params": [],
       "source": {
@@ -19427,7 +19427,7 @@
     },
     {
       "id": "RevenueRecognitionSchedule.recognizeAmount",
-      "path": "/api/revenuerecognitionschedule/recognize-amount",
+      "path": "/api/manifest/RevenueRecognitionSchedule/commands/recognize-amount",
       "method": "POST",
       "params": [
         {
@@ -19453,7 +19453,7 @@
     },
     {
       "id": "RevenueRecognitionSchedule.recognizeMilestone",
-      "path": "/api/revenuerecognitionschedule/recognize-milestone",
+      "path": "/api/manifest/RevenueRecognitionSchedule/commands/recognize-milestone",
       "method": "POST",
       "params": [
         {
@@ -19479,7 +19479,7 @@
     },
     {
       "id": "RevenueRecognitionSchedule.recognizePercentage",
-      "path": "/api/revenuerecognitionschedule/recognize-percentage",
+      "path": "/api/manifest/RevenueRecognitionSchedule/commands/recognize-percentage",
       "method": "POST",
       "params": [
         {
@@ -19499,7 +19499,7 @@
     },
     {
       "id": "RevenueRecognitionSchedule.resume",
-      "path": "/api/revenuerecognitionschedule/resume",
+      "path": "/api/manifest/RevenueRecognitionSchedule/commands/resume",
       "method": "POST",
       "params": [],
       "source": {
@@ -19512,7 +19512,7 @@
     },
     {
       "id": "RevenueRecognitionSchedule.startRecognition",
-      "path": "/api/revenuerecognitionschedule/start-recognition",
+      "path": "/api/manifest/RevenueRecognitionSchedule/commands/start-recognition",
       "method": "POST",
       "params": [],
       "source": {
@@ -19525,7 +19525,7 @@
     },
     {
       "id": "RolePolicy.grant",
-      "path": "/api/rolepolicy/policies/commands/grant",
+      "path": "/api/manifest/RolePolicy/commands/grant",
       "method": "POST",
       "params": [
         {
@@ -19551,7 +19551,7 @@
     },
     {
       "id": "RolePolicy.revoke",
-      "path": "/api/rolepolicy/policies/commands/revoke",
+      "path": "/api/manifest/RolePolicy/commands/revoke",
       "method": "POST",
       "params": [
         {
@@ -19577,7 +19577,7 @@
     },
     {
       "id": "RolePolicy.update",
-      "path": "/api/rolepolicy/policies/commands/update",
+      "path": "/api/manifest/RolePolicy/commands/update",
       "method": "POST",
       "params": [
         {
@@ -19615,7 +19615,7 @@
     },
     {
       "id": "SampleData.clear",
-      "path": "/api/sampledata/clear",
+      "path": "/api/manifest/SampleData/commands/clear",
       "method": "POST",
       "params": [
         {
@@ -19641,7 +19641,7 @@
     },
     {
       "id": "SampleData.reseed",
-      "path": "/api/sampledata/reseed",
+      "path": "/api/manifest/SampleData/commands/reseed",
       "method": "POST",
       "params": [
         {
@@ -19661,7 +19661,7 @@
     },
     {
       "id": "SampleData.seed",
-      "path": "/api/sampledata/seed",
+      "path": "/api/manifest/SampleData/commands/seed",
       "method": "POST",
       "params": [
         {
@@ -19681,7 +19681,7 @@
     },
     {
       "id": "Schedule.close",
-      "path": "/api/staff/schedules/commands/close",
+      "path": "/api/manifest/Schedule/commands/close",
       "method": "POST",
       "params": [
         {
@@ -19701,7 +19701,7 @@
     },
     {
       "id": "Schedule.create",
-      "path": "/api/staff/schedules/commands/create",
+      "path": "/api/manifest/Schedule/commands/create",
       "method": "POST",
       "params": [
         {
@@ -19733,7 +19733,7 @@
     },
     {
       "id": "Schedule.release",
-      "path": "/api/staff/schedules/commands/release",
+      "path": "/api/manifest/Schedule/commands/release",
       "method": "POST",
       "params": [
         {
@@ -19753,7 +19753,7 @@
     },
     {
       "id": "Schedule.update",
-      "path": "/api/staff/schedules/commands/update",
+      "path": "/api/manifest/Schedule/commands/update",
       "method": "POST",
       "params": [
         {
@@ -19785,7 +19785,7 @@
     },
     {
       "id": "ScheduleShift.create",
-      "path": "/api/staff/shifts/commands/create",
+      "path": "/api/manifest/ScheduleShift/commands/create",
       "method": "POST",
       "params": [
         {
@@ -19841,7 +19841,7 @@
     },
     {
       "id": "ScheduleShift.remove",
-      "path": "/api/staff/shifts/commands/remove",
+      "path": "/api/manifest/ScheduleShift/commands/remove",
       "method": "POST",
       "params": [
         {
@@ -19861,7 +19861,7 @@
     },
     {
       "id": "ScheduleShift.update",
-      "path": "/api/staff/shifts/commands/update",
+      "path": "/api/manifest/ScheduleShift/commands/update",
       "method": "POST",
       "params": [
         {
@@ -19911,7 +19911,7 @@
     },
     {
       "id": "Shipment.cancel",
-      "path": "/api/shipments/shipment/commands/cancel",
+      "path": "/api/manifest/Shipment/commands/cancel",
       "method": "POST",
       "params": [
         {
@@ -19937,7 +19937,7 @@
     },
     {
       "id": "Shipment.create",
-      "path": "/api/shipments/shipment/commands/create",
+      "path": "/api/manifest/Shipment/commands/create",
       "method": "POST",
       "params": [
         {
@@ -19999,7 +19999,7 @@
     },
     {
       "id": "Shipment.markDelivered",
-      "path": "/api/shipments/shipment/commands/mark-delivered",
+      "path": "/api/manifest/Shipment/commands/mark-delivered",
       "method": "POST",
       "params": [
         {
@@ -20031,7 +20031,7 @@
     },
     {
       "id": "Shipment.schedule",
-      "path": "/api/shipments/shipment/commands/schedule",
+      "path": "/api/manifest/Shipment/commands/schedule",
       "method": "POST",
       "params": [
         {
@@ -20057,7 +20057,7 @@
     },
     {
       "id": "Shipment.ship",
-      "path": "/api/shipments/shipment/commands/ship",
+      "path": "/api/manifest/Shipment/commands/ship",
       "method": "POST",
       "params": [
         {
@@ -20083,7 +20083,7 @@
     },
     {
       "id": "Shipment.startPreparing",
-      "path": "/api/shipments/shipment/commands/start-preparing",
+      "path": "/api/manifest/Shipment/commands/start-preparing",
       "method": "POST",
       "params": [
         {
@@ -20103,7 +20103,7 @@
     },
     {
       "id": "Shipment.update",
-      "path": "/api/shipments/shipment/commands/update",
+      "path": "/api/manifest/Shipment/commands/update",
       "method": "POST",
       "params": [
         {
@@ -20153,7 +20153,7 @@
     },
     {
       "id": "ShipmentItem.create",
-      "path": "/api/shipments/shipment-items/commands/create",
+      "path": "/api/manifest/ShipmentItem/commands/create",
       "method": "POST",
       "params": [
         {
@@ -20209,7 +20209,7 @@
     },
     {
       "id": "ShipmentItem.updateReceived",
-      "path": "/api/shipments/shipment-items/commands/update-received",
+      "path": "/api/manifest/ShipmentItem/commands/update-received",
       "method": "POST",
       "params": [
         {
@@ -20253,7 +20253,7 @@
     },
     {
       "id": "SmsAutomationRule.activate",
-      "path": "/api/smsautomationrule/activate",
+      "path": "/api/manifest/SmsAutomationRule/commands/activate",
       "method": "POST",
       "params": [],
       "source": {
@@ -20266,7 +20266,7 @@
     },
     {
       "id": "SmsAutomationRule.create",
-      "path": "/api/smsautomationrule/create",
+      "path": "/api/manifest/SmsAutomationRule/commands/create",
       "method": "POST",
       "params": [
         {
@@ -20340,7 +20340,7 @@
     },
     {
       "id": "SmsAutomationRule.deactivate",
-      "path": "/api/smsautomationrule/deactivate",
+      "path": "/api/manifest/SmsAutomationRule/commands/deactivate",
       "method": "POST",
       "params": [],
       "source": {
@@ -20353,7 +20353,7 @@
     },
     {
       "id": "SmsAutomationRule.softDelete",
-      "path": "/api/smsautomationrule/soft-delete",
+      "path": "/api/manifest/SmsAutomationRule/commands/soft-delete",
       "method": "POST",
       "params": [],
       "source": {
@@ -20366,7 +20366,7 @@
     },
     {
       "id": "SmsAutomationRule.update",
-      "path": "/api/smsautomationrule/update",
+      "path": "/api/manifest/SmsAutomationRule/commands/update",
       "method": "POST",
       "params": [
         {
@@ -20434,7 +20434,7 @@
     },
     {
       "id": "StaffPerformance.complete",
-      "path": "/api/staffperformance/complete",
+      "path": "/api/manifest/StaffPerformance/commands/complete",
       "method": "POST",
       "params": [
         {
@@ -20460,7 +20460,7 @@
     },
     {
       "id": "StaffPerformance.create",
-      "path": "/api/staffperformance/create",
+      "path": "/api/manifest/StaffPerformance/commands/create",
       "method": "POST",
       "params": [
         {
@@ -20528,7 +20528,7 @@
     },
     {
       "id": "StaffPerformance.remove",
-      "path": "/api/staffperformance/remove",
+      "path": "/api/manifest/StaffPerformance/commands/remove",
       "method": "POST",
       "params": [],
       "source": {
@@ -20541,7 +20541,7 @@
     },
     {
       "id": "StaffPerformance.update",
-      "path": "/api/staffperformance/update",
+      "path": "/api/manifest/StaffPerformance/commands/update",
       "method": "POST",
       "params": [
         {
@@ -20609,7 +20609,7 @@
     },
     {
       "id": "Station.activate",
-      "path": "/api/kitchen/stations/commands/activate",
+      "path": "/api/manifest/Station/commands/activate",
       "method": "POST",
       "params": [
         {
@@ -20629,7 +20629,7 @@
     },
     {
       "id": "Station.assignTask",
-      "path": "/api/kitchen/stations/commands/assign-task",
+      "path": "/api/manifest/Station/commands/assign-task",
       "method": "POST",
       "params": [
         {
@@ -20655,7 +20655,7 @@
     },
     {
       "id": "Station.create",
-      "path": "/api/kitchen/stations/commands/create",
+      "path": "/api/manifest/Station/commands/create",
       "method": "POST",
       "params": [
         {
@@ -20705,7 +20705,7 @@
     },
     {
       "id": "Station.deactivate",
-      "path": "/api/kitchen/stations/commands/deactivate",
+      "path": "/api/manifest/Station/commands/deactivate",
       "method": "POST",
       "params": [
         {
@@ -20731,7 +20731,7 @@
     },
     {
       "id": "Station.removeTask",
-      "path": "/api/kitchen/stations/commands/remove-task",
+      "path": "/api/manifest/Station/commands/remove-task",
       "method": "POST",
       "params": [
         {
@@ -20757,7 +20757,7 @@
     },
     {
       "id": "Station.updateCapacity",
-      "path": "/api/kitchen/stations/commands/update-capacity",
+      "path": "/api/manifest/Station/commands/update-capacity",
       "method": "POST",
       "params": [
         {
@@ -20783,7 +20783,7 @@
     },
     {
       "id": "Station.updateEquipment",
-      "path": "/api/kitchen/stations/commands/update-equipment",
+      "path": "/api/manifest/Station/commands/update-equipment",
       "method": "POST",
       "params": [
         {
@@ -20809,7 +20809,7 @@
     },
     {
       "id": "TimecardEditRequest.approve",
-      "path": "/api/timecards/edit-requests/commands/approve",
+      "path": "/api/manifest/TimecardEditRequest/commands/approve",
       "method": "POST",
       "params": [
         {
@@ -20829,7 +20829,7 @@
     },
     {
       "id": "TimecardEditRequest.create",
-      "path": "/api/timecards/edit-requests/commands/create",
+      "path": "/api/manifest/TimecardEditRequest/commands/create",
       "method": "POST",
       "params": [
         {
@@ -20879,7 +20879,7 @@
     },
     {
       "id": "TimecardEditRequest.reject",
-      "path": "/api/timecards/edit-requests/commands/reject",
+      "path": "/api/manifest/TimecardEditRequest/commands/reject",
       "method": "POST",
       "params": [
         {
@@ -20905,7 +20905,7 @@
     },
     {
       "id": "TimeEntry.addEntry",
-      "path": "/api/timecards/entries/commands/add-entry",
+      "path": "/api/manifest/TimeEntry/commands/add-entry",
       "method": "POST",
       "params": [
         {
@@ -20961,7 +20961,7 @@
     },
     {
       "id": "TimeEntry.clockIn",
-      "path": "/api/timecards/entries/commands/clock-in",
+      "path": "/api/manifest/TimeEntry/commands/clock-in",
       "method": "POST",
       "params": [
         {
@@ -20999,7 +20999,7 @@
     },
     {
       "id": "TimeEntry.clockOut",
-      "path": "/api/timecards/entries/commands/clock-out",
+      "path": "/api/manifest/TimeEntry/commands/clock-out",
       "method": "POST",
       "params": [
         {
@@ -21025,7 +21025,7 @@
     },
     {
       "id": "TimeEntry.softDelete",
-      "path": "/api/timecards/entries/commands/soft-delete",
+      "path": "/api/manifest/TimeEntry/commands/soft-delete",
       "method": "POST",
       "params": [
         {
@@ -21051,7 +21051,7 @@
     },
     {
       "id": "TimeOffRequest.approve",
-      "path": "/api/timecards/time-off-requests/commands/approve",
+      "path": "/api/manifest/TimeOffRequest/commands/approve",
       "method": "POST",
       "params": [
         {
@@ -21071,7 +21071,7 @@
     },
     {
       "id": "TimeOffRequest.cancel",
-      "path": "/api/timecards/time-off-requests/commands/cancel",
+      "path": "/api/manifest/TimeOffRequest/commands/cancel",
       "method": "POST",
       "params": [],
       "source": {
@@ -21084,7 +21084,7 @@
     },
     {
       "id": "TimeOffRequest.create",
-      "path": "/api/timecards/time-off-requests/commands/create",
+      "path": "/api/manifest/TimeOffRequest/commands/create",
       "method": "POST",
       "params": [
         {
@@ -21128,7 +21128,7 @@
     },
     {
       "id": "TimeOffRequest.reject",
-      "path": "/api/timecards/time-off-requests/commands/reject",
+      "path": "/api/manifest/TimeOffRequest/commands/reject",
       "method": "POST",
       "params": [
         {
@@ -21154,7 +21154,7 @@
     },
     {
       "id": "TimeOffRequest.softDelete",
-      "path": "/api/timecards/time-off-requests/commands/soft-delete",
+      "path": "/api/manifest/TimeOffRequest/commands/soft-delete",
       "method": "POST",
       "params": [],
       "source": {
@@ -21167,7 +21167,7 @@
     },
     {
       "id": "TrainingAssignment.create",
-      "path": "/api/training/assignments/commands/create",
+      "path": "/api/manifest/TrainingAssignment/commands/create",
       "method": "POST",
       "params": [
         {
@@ -21211,7 +21211,7 @@
     },
     {
       "id": "TrainingAssignment.softDelete",
-      "path": "/api/training/assignments/commands/soft-delete",
+      "path": "/api/manifest/TrainingAssignment/commands/soft-delete",
       "method": "POST",
       "params": [],
       "source": {
@@ -21224,7 +21224,7 @@
     },
     {
       "id": "TrainingModule.create",
-      "path": "/api/training/modules/commands/create",
+      "path": "/api/manifest/TrainingModule/commands/create",
       "method": "POST",
       "params": [
         {
@@ -21286,7 +21286,7 @@
     },
     {
       "id": "TrainingModule.softDelete",
-      "path": "/api/training/modules/commands/soft-delete",
+      "path": "/api/manifest/TrainingModule/commands/soft-delete",
       "method": "POST",
       "params": [],
       "source": {
@@ -21299,7 +21299,7 @@
     },
     {
       "id": "TrainingModule.update",
-      "path": "/api/training/modules/commands/update",
+      "path": "/api/manifest/TrainingModule/commands/update",
       "method": "POST",
       "params": [
         {
@@ -21361,7 +21361,7 @@
     },
     {
       "id": "User.create",
-      "path": "/api/staff/employees/commands/create",
+      "path": "/api/manifest/User/commands/create",
       "method": "POST",
       "params": [
         {
@@ -21435,7 +21435,7 @@
     },
     {
       "id": "User.deactivate",
-      "path": "/api/staff/employees/commands/deactivate",
+      "path": "/api/manifest/User/commands/deactivate",
       "method": "POST",
       "params": [
         {
@@ -21461,7 +21461,7 @@
     },
     {
       "id": "User.terminate",
-      "path": "/api/staff/employees/commands/terminate",
+      "path": "/api/manifest/User/commands/terminate",
       "method": "POST",
       "params": [
         {
@@ -21493,7 +21493,7 @@
     },
     {
       "id": "User.update",
-      "path": "/api/staff/employees/commands/update",
+      "path": "/api/manifest/User/commands/update",
       "method": "POST",
       "params": [
         {
@@ -21549,7 +21549,7 @@
     },
     {
       "id": "User.updateRole",
-      "path": "/api/staff/employees/commands/update-role",
+      "path": "/api/manifest/User/commands/update-role",
       "method": "POST",
       "params": [
         {
@@ -21575,7 +21575,7 @@
     },
     {
       "id": "VarianceReport.approve",
-      "path": "/api/inventory/cycle-count/variance-reports/commands/approve",
+      "path": "/api/manifest/VarianceReport/commands/approve",
       "method": "POST",
       "params": [
         {
@@ -21607,7 +21607,7 @@
     },
     {
       "id": "VarianceReport.create",
-      "path": "/api/inventory/cycle-count/variance-reports/commands/create",
+      "path": "/api/manifest/VarianceReport/commands/create",
       "method": "POST",
       "params": [
         {
@@ -21687,7 +21687,7 @@
     },
     {
       "id": "VarianceReport.review",
-      "path": "/api/inventory/cycle-count/variance-reports/commands/review",
+      "path": "/api/manifest/VarianceReport/commands/review",
       "method": "POST",
       "params": [
         {
@@ -21713,7 +21713,7 @@
     },
     {
       "id": "Vehicle.create",
-      "path": "/api/vehicle/create",
+      "path": "/api/manifest/Vehicle/commands/create",
       "method": "POST",
       "params": [
         {
@@ -21781,7 +21781,7 @@
     },
     {
       "id": "Vehicle.remove",
-      "path": "/api/vehicle/remove",
+      "path": "/api/manifest/Vehicle/commands/remove",
       "method": "POST",
       "params": [],
       "source": {
@@ -21794,7 +21794,7 @@
     },
     {
       "id": "Vehicle.update",
-      "path": "/api/vehicle/update",
+      "path": "/api/manifest/Vehicle/commands/update",
       "method": "POST",
       "params": [
         {
@@ -21862,7 +21862,7 @@
     },
     {
       "id": "Vendor.addContact",
-      "path": "/api/vendor/add-contact",
+      "path": "/api/manifest/Vendor/commands/add-contact",
       "method": "POST",
       "params": [
         {
@@ -21900,7 +21900,7 @@
     },
     {
       "id": "Vendor.create",
-      "path": "/api/vendor/create",
+      "path": "/api/manifest/Vendor/commands/create",
       "method": "POST",
       "params": [
         {
@@ -21986,7 +21986,7 @@
     },
     {
       "id": "Vendor.rate",
-      "path": "/api/vendor/rate",
+      "path": "/api/manifest/Vendor/commands/rate",
       "method": "POST",
       "params": [
         {
@@ -22012,7 +22012,7 @@
     },
     {
       "id": "Vendor.remove",
-      "path": "/api/vendor/remove",
+      "path": "/api/manifest/Vendor/commands/remove",
       "method": "POST",
       "params": [],
       "source": {
@@ -22025,7 +22025,7 @@
     },
     {
       "id": "Vendor.update",
-      "path": "/api/vendor/update",
+      "path": "/api/manifest/Vendor/commands/update",
       "method": "POST",
       "params": [
         {
@@ -22111,7 +22111,7 @@
     },
     {
       "id": "VendorCatalog.create",
-      "path": "/api/inventory/vendor-catalogs/commands/create",
+      "path": "/api/manifest/VendorCatalog/commands/create",
       "method": "POST",
       "params": [
         {
@@ -22233,7 +22233,7 @@
     },
     {
       "id": "VendorCatalog.softDelete",
-      "path": "/api/inventory/vendor-catalogs/commands/soft-delete",
+      "path": "/api/manifest/VendorCatalog/commands/soft-delete",
       "method": "POST",
       "params": [
         {
@@ -22253,7 +22253,7 @@
     },
     {
       "id": "VendorCatalog.update",
-      "path": "/api/inventory/vendor-catalogs/commands/update",
+      "path": "/api/manifest/VendorCatalog/commands/update",
       "method": "POST",
       "params": [
         {
@@ -22387,7 +22387,7 @@
     },
     {
       "id": "VendorContract.activate",
-      "path": "/api/procurement/vendor-contracts/commands/activate",
+      "path": "/api/manifest/VendorContract/commands/activate",
       "method": "POST",
       "params": [
         {
@@ -22407,7 +22407,7 @@
     },
     {
       "id": "VendorContract.approve",
-      "path": "/api/procurement/vendor-contracts/commands/approve",
+      "path": "/api/manifest/VendorContract/commands/approve",
       "method": "POST",
       "params": [
         {
@@ -22427,7 +22427,7 @@
     },
     {
       "id": "VendorContract.create",
-      "path": "/api/procurement/vendor-contracts/commands/create",
+      "path": "/api/manifest/VendorContract/commands/create",
       "method": "POST",
       "params": [
         {
@@ -22525,7 +22525,7 @@
     },
     {
       "id": "VendorContract.recordSlaBreach",
-      "path": "/api/procurement/vendor-contracts/commands/record-sla-breach",
+      "path": "/api/manifest/VendorContract/commands/record-sla-breach",
       "method": "POST",
       "params": [
         {
@@ -22557,7 +22557,7 @@
     },
     {
       "id": "VendorContract.reject",
-      "path": "/api/procurement/vendor-contracts/commands/reject",
+      "path": "/api/manifest/VendorContract/commands/reject",
       "method": "POST",
       "params": [
         {
@@ -22583,7 +22583,7 @@
     },
     {
       "id": "VendorContract.renew",
-      "path": "/api/procurement/vendor-contracts/commands/renew",
+      "path": "/api/manifest/VendorContract/commands/renew",
       "method": "POST",
       "params": [
         {
@@ -22609,7 +22609,7 @@
     },
     {
       "id": "VendorContract.submit",
-      "path": "/api/procurement/vendor-contracts/commands/submit",
+      "path": "/api/manifest/VendorContract/commands/submit",
       "method": "POST",
       "params": [
         {
@@ -22629,7 +22629,7 @@
     },
     {
       "id": "VendorContract.terminate",
-      "path": "/api/procurement/vendor-contracts/commands/terminate",
+      "path": "/api/manifest/VendorContract/commands/terminate",
       "method": "POST",
       "params": [
         {
@@ -22655,7 +22655,7 @@
     },
     {
       "id": "VendorContract.update",
-      "path": "/api/procurement/vendor-contracts/commands/update",
+      "path": "/api/manifest/VendorContract/commands/update",
       "method": "POST",
       "params": [
         {
@@ -22723,7 +22723,7 @@
     },
     {
       "id": "VendorContract.updateCompliance",
-      "path": "/api/procurement/vendor-contracts/commands/update-compliance",
+      "path": "/api/manifest/VendorContract/commands/update-compliance",
       "method": "POST",
       "params": [
         {
@@ -22767,7 +22767,7 @@
     },
     {
       "id": "VersionApproval.approve",
-      "path": "/api/versionapproval/approve",
+      "path": "/api/manifest/VersionApproval/commands/approve",
       "method": "POST",
       "params": [
         {
@@ -22787,7 +22787,7 @@
     },
     {
       "id": "VersionApproval.cancel",
-      "path": "/api/versionapproval/cancel",
+      "path": "/api/manifest/VersionApproval/commands/cancel",
       "method": "POST",
       "params": [],
       "source": {
@@ -22800,7 +22800,7 @@
     },
     {
       "id": "VersionApproval.create",
-      "path": "/api/versionapproval/create",
+      "path": "/api/manifest/VersionApproval/commands/create",
       "method": "POST",
       "params": [
         {
@@ -22826,7 +22826,7 @@
     },
     {
       "id": "VersionApproval.reject",
-      "path": "/api/versionapproval/reject",
+      "path": "/api/manifest/VersionApproval/commands/reject",
       "method": "POST",
       "params": [
         {
@@ -22846,7 +22846,7 @@
     },
     {
       "id": "VersionedEntity.lock",
-      "path": "/api/versionedentity/lock",
+      "path": "/api/manifest/VersionedEntity/commands/lock",
       "method": "POST",
       "params": [
         {
@@ -22866,7 +22866,7 @@
     },
     {
       "id": "VersionedEntity.register",
-      "path": "/api/versionedentity/register",
+      "path": "/api/manifest/VersionedEntity/commands/register",
       "method": "POST",
       "params": [
         {
@@ -22904,7 +22904,7 @@
     },
     {
       "id": "VersionedEntity.unlock",
-      "path": "/api/versionedentity/unlock",
+      "path": "/api/manifest/VersionedEntity/commands/unlock",
       "method": "POST",
       "params": [],
       "source": {
@@ -22917,7 +22917,7 @@
     },
     {
       "id": "VersionedEntity.updateName",
-      "path": "/api/versionedentity/update-name",
+      "path": "/api/manifest/VersionedEntity/commands/update-name",
       "method": "POST",
       "params": [
         {
@@ -22937,7 +22937,7 @@
     },
     {
       "id": "WasteEntry.create",
-      "path": "/api/kitchen/waste-entries/commands/create",
+      "path": "/api/manifest/WasteEntry/commands/create",
       "method": "POST",
       "params": [
         {
@@ -23005,7 +23005,7 @@
     },
     {
       "id": "WasteEntry.softDelete",
-      "path": "/api/kitchen/waste-entries/commands/soft-delete",
+      "path": "/api/manifest/WasteEntry/commands/soft-delete",
       "method": "POST",
       "params": [
         {
@@ -23031,7 +23031,7 @@
     },
     {
       "id": "WasteEntry.update",
-      "path": "/api/kitchen/waste-entries/commands/update",
+      "path": "/api/manifest/WasteEntry/commands/update",
       "method": "POST",
       "params": [
         {
@@ -23075,7 +23075,7 @@
     },
     {
       "id": "Workflow.activate",
-      "path": "/api/collaboration/workflows/commands/activate",
+      "path": "/api/manifest/Workflow/commands/activate",
       "method": "POST",
       "params": [
         {
@@ -23095,7 +23095,7 @@
     },
     {
       "id": "Workflow.create",
-      "path": "/api/collaboration/workflows/commands/create",
+      "path": "/api/manifest/Workflow/commands/create",
       "method": "POST",
       "params": [
         {
@@ -23133,7 +23133,7 @@
     },
     {
       "id": "Workflow.deactivate",
-      "path": "/api/collaboration/workflows/commands/deactivate",
+      "path": "/api/manifest/Workflow/commands/deactivate",
       "method": "POST",
       "params": [
         {
@@ -23159,7 +23159,7 @@
     },
     {
       "id": "Workflow.update",
-      "path": "/api/collaboration/workflows/commands/update",
+      "path": "/api/manifest/Workflow/commands/update",
       "method": "POST",
       "params": [
         {
@@ -23197,7 +23197,7 @@
     },
     {
       "id": "WorkforceOptimization.complete",
-      "path": "/api/workforceoptimization/complete",
+      "path": "/api/manifest/WorkforceOptimization/commands/complete",
       "method": "POST",
       "params": [
         {
@@ -23217,7 +23217,7 @@
     },
     {
       "id": "WorkforceOptimization.create",
-      "path": "/api/workforceoptimization/create",
+      "path": "/api/manifest/WorkforceOptimization/commands/create",
       "method": "POST",
       "params": [
         {
@@ -23243,7 +23243,7 @@
     },
     {
       "id": "WorkforceOptimization.fail",
-      "path": "/api/workforceoptimization/fail",
+      "path": "/api/manifest/WorkforceOptimization/commands/fail",
       "method": "POST",
       "params": [
         {
@@ -23263,7 +23263,7 @@
     },
     {
       "id": "WorkforceOptimization.start",
-      "path": "/api/workforceoptimization/start",
+      "path": "/api/manifest/WorkforceOptimization/commands/start",
       "method": "POST",
       "params": [],
       "source": {
@@ -23276,7 +23276,7 @@
     },
     {
       "id": "WorkOrder.cancel",
-      "path": "/api/workorder/cancel",
+      "path": "/api/manifest/WorkOrder/commands/cancel",
       "method": "POST",
       "params": [
         {
@@ -23302,7 +23302,7 @@
     },
     {
       "id": "WorkOrder.complete",
-      "path": "/api/workorder/complete",
+      "path": "/api/manifest/WorkOrder/commands/complete",
       "method": "POST",
       "params": [
         {
@@ -23322,7 +23322,7 @@
     },
     {
       "id": "WorkOrder.create",
-      "path": "/api/workorder/create",
+      "path": "/api/manifest/WorkOrder/commands/create",
       "method": "POST",
       "params": [
         {
@@ -23378,7 +23378,7 @@
     },
     {
       "id": "WorkOrder.reschedule",
-      "path": "/api/workorder/reschedule",
+      "path": "/api/manifest/WorkOrder/commands/reschedule",
       "method": "POST",
       "params": [
         {
@@ -23404,7 +23404,7 @@
     },
     {
       "id": "WorkOrder.start",
-      "path": "/api/workorder/start",
+      "path": "/api/manifest/WorkOrder/commands/start",
       "method": "POST",
       "params": [
         {
@@ -23424,7 +23424,7 @@
     },
     {
       "id": "WorkOrder.updatePriority",
-      "path": "/api/workorder/update-priority",
+      "path": "/api/manifest/WorkOrder/commands/update-priority",
       "method": "POST",
       "params": [
         {

@@ -1,288 +1,77 @@
 /**
- * IR introspection tools and resources — Phase 1.
+ * IR introspection — tenant-facing tools.
  *
- * Tools:
- * - `query_ir_summary`: Query IR for entities, commands, constraints (excludes policies)
- * - `inspect_command`: Get detailed command info (params, guards, constraints)
- *
- * Resources:
- * - `ir://entities`: Full entity catalog
- *
- * Policy expressions are EXCLUDED from the tenant-facing server.
- * Admin-only tools (Phase 4+) will expose full IR including policies.
- *
- * @packageDocumentation
+ * Heavy formatting delegates to upstream @angriff36/manifest explain tooling.
+ * Policies are admin-only (see ir-admin plugin).
  */
 
-import type { IRCommand, IREntity, IRExpression } from "@angriff36/manifest/ir";
 import { z } from "zod";
 import { getAllowedCommands, getCommandAccess } from "../lib/command-policy.js";
 import {
   getCommand,
-  getCommands,
   getCommandsForEntity,
   getEntity,
   getEntityNames,
   getEvents,
   getIR,
-  getPolicies,
+  listIrSources,
 } from "../lib/ir-loader.js";
-import type {
-  IrCommandSummary,
-  IrEntitySummary,
-  McpPlugin,
-  PluginContext,
-} from "../types.js";
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-/** Stringify an IR expression for display (not for execution). */
-export function expressionToString(expr: IRExpression): string {
-  if (!expr) {
-    return "";
-  }
-  if (typeof expr === "string") {
-    return expr;
-  }
-  if ("kind" in expr) {
-    switch (expr.kind) {
-      case "literal": {
-        const literalValue = (expr as { value: unknown }).value;
-        if (
-          literalValue &&
-          typeof literalValue === "object" &&
-          "kind" in literalValue
-        ) {
-          const nestedLiteral = literalValue as {
-            kind?: string;
-            value?: unknown;
-          };
-          if (nestedLiteral.kind === "null") {
-            return "null";
-          }
-          if (nestedLiteral.kind === "string") {
-            return `"${String(nestedLiteral.value ?? "")}"`;
-          }
-          if (
-            nestedLiteral.kind === "number" ||
-            nestedLiteral.kind === "boolean"
-          ) {
-            return String(nestedLiteral.value ?? "");
-          }
-          return JSON.stringify(literalValue);
-        }
-        return String(literalValue ?? "");
-      }
-      case "identifier":
-        return (expr as { name: string }).name ?? "";
-      case "binary":
-        return `${expressionToString((expr as { left: IRExpression }).left)} ${(expr as { operator: string }).operator} ${expressionToString((expr as { right: IRExpression }).right)}`;
-      case "member":
-        return `${expressionToString((expr as { object: IRExpression }).object)}.${(expr as { property: string }).property}`;
-      default:
-        return JSON.stringify(expr);
-    }
-  }
-  return JSON.stringify(expr);
-}
-
-function summarizeEntity(entity: IREntity | undefined): IrEntitySummary | null {
-  if (!entity) {
-    return null;
-  }
-
-  const commands = getCommandsForEntity(entity.name);
-
-  return {
-    name: entity.name,
-    properties: (entity.properties ?? []).map((p) => ({
-      name: p.name,
-      type: p.type?.name ?? "unknown",
-      required: (p.modifiers ?? []).includes("required"),
-      nullable: p.type?.nullable ?? false,
-    })),
-    computedProperties: (entity.computedProperties ?? []).map((c) => c.name),
-    commands: commands.map((c) => c.name),
-    constraints: (entity.constraints ?? []).map((c) => ({
-      name: c.name ?? "",
-      severity: c.severity ?? "block",
-      message: c.message ?? "",
-    })),
-  };
-}
-
-function summarizeCommand(cmd: IRCommand | undefined): IrCommandSummary | null {
-  if (!cmd) {
-    return null;
-  }
-
-  return {
-    name: cmd.name,
-    entity: cmd.entity ?? "",
-    parameters: (cmd.parameters ?? []).map((p) => ({
-      name: p.name,
-      type: p.type?.name ?? "unknown",
-      required: p.required ?? false,
-    })),
-    guards: (cmd.guards ?? []).map((g) => ({
-      expression: expressionToString(g),
-      message: "", // Guards in IR are expressions, not objects with messages
-    })),
-    constraints: (cmd.constraints ?? []).map((c) => ({
-      name: c.name ?? "",
-      severity: c.severity ?? "block",
-      message: c.message ?? "",
-    })),
-    emits: cmd.emits ?? [],
-  };
-}
-
-// ---------------------------------------------------------------------------
-// Plugin
-// ---------------------------------------------------------------------------
+import { explainManifestTarget } from "../lib/upstream-manifest-mcp.js";
+import type { McpPlugin, PluginContext } from "../types.js";
 
 export const irIntrospectionPlugin: McpPlugin = {
   name: "ir-introspection",
-  version: "1.0.0",
+  version: "2.0.0",
 
   register(ctx: PluginContext) {
     const { server } = ctx;
 
-    // ── query_ir_summary ──────────────────────────────────────────────
     server.registerTool(
       "query_ir_summary",
       {
         title: "Query IR Summary",
         description:
-          "Query the Manifest IR for entities, commands, and constraints. " +
-          "Use this to understand the domain model — what entities exist, " +
-          "what commands are available, and what constraints are enforced. " +
-          "Policies are excluded from this view.",
+          "Summarize merged manifest IR: entities, commands, events. " +
+          "Use explain_entity / explain_command for full detail.",
         inputSchema: z.object({
           filter: z
             .object({
-              entities: z
-                .array(z.string())
-                .optional()
-                .describe("Filter to specific entity names"),
+              entities: z.array(z.string()).optional(),
             })
-            .optional()
-            .describe("Optional filters to narrow the IR view"),
-          include: z
-            .array(
-              z.enum([
-                "properties",
-                "constraints",
-                "guards",
-                "events",
-                "commands",
-              ])
-            )
-            .optional()
-            .describe(
-              "What to include in the response (default: all except policies)"
-            ),
-          format: z
-            .enum(["summary", "full"])
-            .optional()
-            .describe(
-              "Response format: 'summary' (names only) or 'full' (with details)"
-            ),
+            .optional(),
         }),
       },
-      (args: {
-        filter?: { entities?: string[] };
-        include?: Array<
-          "properties" | "constraints" | "guards" | "events" | "commands"
-        >;
-        format?: "summary" | "full";
-      }) => {
-        const { filter, include, format } = args;
+      (args: { filter?: { entities?: string[] } }) => {
         const ir = getIR();
-        const entityFilter = filter?.entities;
-        const isSummary = format === "summary" || !format;
-        const includeSet = new Set(
-          include ?? [
-            "properties",
-            "constraints",
-            "guards",
-            "events",
-            "commands",
-          ]
-        );
-
-        // Filter entities
+        const entityFilter = args.filter?.entities;
         let entities = ir.entities ?? [];
         if (entityFilter?.length) {
-          entities = entities.filter((e) => entityFilter.includes(e.name));
+          entities = entities.filter((entity) =>
+            entityFilter.includes(entity.name)
+          );
         }
 
-        // Build response
-        const result: Record<string, unknown> = {
+        const result = {
+          irSources: listIrSources(),
           schemaVersion: ir.version,
-          entityCount: (ir.entities ?? []).length,
-          commandCount: (ir.commands ?? []).length,
-          eventCount: (ir.events ?? []).length,
+          entityCount: ir.entities?.length ?? 0,
+          commandCount: ir.commands?.length ?? 0,
+          eventCount: ir.events?.length ?? 0,
+          entities: entities.map((entity) => ({
+            name: entity.name,
+            propertyCount: (entity.properties ?? []).length,
+            commands: getCommandsForEntity(entity.name).map((command) => ({
+              name: command.name,
+              mcpAccess: getCommandAccess(entity.name, command.name),
+            })),
+            constraintCount: (entity.constraints ?? []).length,
+          })),
+          events: getEvents().map((event) => ({
+            name: event.name,
+            channel: event.channel,
+          })),
+          mcpAllowedCommands: getAllowedCommands(),
         };
-
-        if (isSummary) {
-          result.entities = entities.map((e) => {
-            const summary: Record<string, unknown> = { name: e.name };
-            if (includeSet.has("properties")) {
-              summary.propertyCount = (e.properties ?? []).length;
-            }
-            if (includeSet.has("commands")) {
-              summary.commands = getCommandsForEntity(e.name).map((c) => ({
-                name: c.name,
-                mcpAccess: getCommandAccess(e.name, c.name),
-              }));
-            }
-            if (includeSet.has("constraints")) {
-              summary.constraintCount = (e.constraints ?? []).length;
-            }
-            return summary;
-          });
-        } else {
-          result.entities = entities.map((e) => summarizeEntity(e));
-          // Flat commands list: name, entity, parameter names, emits
-          if (includeSet.has("commands")) {
-            const allCommands = getCommands();
-            result.commands = allCommands
-              .filter(
-                (c) =>
-                  !entityFilter?.length || entityFilter.includes(c.entity ?? "")
-              )
-              .map((c) => ({
-                name: c.name,
-                entity: c.entity ?? "",
-                parameterNames: (c.parameters ?? []).map((p) => p.name),
-                emits: c.emits ?? [],
-              }));
-          }
-        }
-
-        // Events: name, channel (always in summary format per spec)
-        if (includeSet.has("events")) {
-          result.events = getEvents().map((ev) => ({
-            name: ev.name,
-            channel: ev.channel,
-          }));
-        }
-
-        // Policies: name, action, entity (if set) — excluded from tenant view by default
-        const policies = getPolicies();
-        if (policies.length > 0) {
-          result.policies = policies.map((p) => ({
-            name: (p as { name?: string }).name,
-            action: (p as { action?: string }).action,
-            entity: (p as { entity?: string }).entity,
-          }));
-        }
-
-        // Include MCP command access info
-        result.mcpAllowedCommands = getAllowedCommands();
 
         return {
           content: [
@@ -295,40 +84,65 @@ export const irIntrospectionPlugin: McpPlugin = {
       }
     );
 
-    // ── inspect_command ───────────────────────────────────────────────
     server.registerTool(
-      "inspect_command",
+      "explain_entity",
       {
-        title: "Inspect Command",
+        title: "Explain Entity",
         description:
-          "Get detailed information about a specific manifest command, " +
-          "including parameters, guards, constraints, and emitted events. " +
-          "Policy expressions are excluded. Use this to understand what a " +
-          "command does before executing it.",
+          "Human-readable entity definition via official @angriff36/manifest explain tooling.",
         inputSchema: z.object({
           entity: z
             .string()
-            .describe(
-              "Entity name (e.g. 'PrepTask'). " +
-                `Available: ${getEntityNames().join(", ")}`
-            ),
-          command: z.string().describe("Command name (e.g. 'claim', 'create')"),
+            .describe(`Entity name. Available: ${getEntityNames().join(", ")}`),
         }),
       },
-      (args: { entity: string; command: string }) => {
-        const { entity, command } = args;
-        const cmd = getCommand(entity, command);
+      async (args: { entity: string }) => {
+        if (!getEntity(args.entity)) {
+          return {
+            content: [
+              {
+                type: "text" as const,
+                text: `Entity ${args.entity} not found in merged IR.`,
+              },
+            ],
+            isError: true,
+          };
+        }
 
+        const explanation = await explainManifestTarget(getIR(), {
+          target: "entity",
+          name: args.entity,
+        });
+
+        return {
+          content: [{ type: "text" as const, text: explanation }],
+        };
+      }
+    );
+
+    server.registerTool(
+      "explain_command",
+      {
+        title: "Explain Command",
+        description:
+          "Human-readable command definition via official @angriff36/manifest explain tooling.",
+        inputSchema: z.object({
+          entity: z.string(),
+          command: z.string(),
+        }),
+      },
+      async (args: { entity: string; command: string }) => {
+        const cmd = getCommand(args.entity, args.command);
         if (!cmd) {
           return {
             content: [
               {
                 type: "text" as const,
                 text:
-                  `Command ${entity}.${command} not found in IR. ` +
-                  `Available commands for ${entity}: ${
-                    getCommandsForEntity(entity)
-                      .map((c) => c.name)
+                  `Command ${args.entity}.${args.command} not found. ` +
+                  `Available: ${
+                    getCommandsForEntity(args.entity)
+                      .map((command) => command.name)
                       .join(", ") || "none"
                   }`,
               },
@@ -337,49 +151,30 @@ export const irIntrospectionPlugin: McpPlugin = {
           };
         }
 
-        const summary = summarizeCommand(cmd);
-        const access = getCommandAccess(entity, command);
+        const explanation = await explainManifestTarget(getIR(), {
+          target: "command",
+          name: args.command,
+          entityName: args.entity,
+        });
 
-        let accessDescription: string;
-        if (access === "ALLOW") {
-          accessDescription =
-            "This command can be executed immediately via execute_command.";
-        } else if (access === "CONFIRM") {
-          accessDescription =
-            "This command requires confirmation before execution (destructive operation).";
-        } else {
-          accessDescription =
-            "This command is not available via MCP (not in allowlist).";
-        }
-
-        const response = {
-          ...summary,
-          mcpAccess: access,
-          mcpAccessDescription: accessDescription,
-        };
+        const access = getCommandAccess(args.entity, args.command);
 
         return {
           content: [
             {
               type: "text" as const,
-              text: JSON.stringify(response, null, 2),
+              text: `${explanation}\n\nMCP access: ${access}`,
             },
           ],
         };
       }
     );
 
-    // ── IR Resources ──────────────────────────────────────────────────
-
-    // Entity catalog resource
     server.registerResource(
       "ir-entities",
       "ir://entities",
       {
-        description:
-          "Domain entity catalog — all entities with property counts, " +
-          "command counts, and constraint counts. Use this to discover " +
-          "what entities are available in the system.",
+        description: "Entity catalog from merged manifest/ir/*.ir.json",
         mimeType: "application/json",
       },
       (uri: URL) => {
@@ -397,7 +192,7 @@ export const irIntrospectionPlugin: McpPlugin = {
           contents: [
             {
               uri: uri.href,
-              text: JSON.stringify(entities, null, 2),
+              text: JSON.stringify({ irSources: listIrSources(), entities }, null, 2),
               mimeType: "application/json",
             },
           ],
@@ -406,3 +201,33 @@ export const irIntrospectionPlugin: McpPlugin = {
     );
   },
 };
+
+/** @deprecated Use upstream explain tooling — kept for existing tests only. */
+export function expressionToString(expr: unknown): string {
+  if (!expr || typeof expr !== "object") {
+    return JSON.stringify(expr);
+  }
+  const node = expr as Record<string, unknown>;
+  if (node.kind === "literal") {
+    const value = node.value;
+    if (value && typeof value === "object" && "kind" in value) {
+      const literal = value as { kind?: string; value?: unknown };
+      if (literal.kind === "null") return "null";
+      if (literal.kind === "string") return `"${String(literal.value ?? "")}"`;
+      if (literal.kind === "number" || literal.kind === "boolean") {
+        return String(literal.value ?? "");
+      }
+    }
+    return String(value ?? "");
+  }
+  if (node.kind === "identifier") {
+    return String(node.name ?? "");
+  }
+  if (node.kind === "binary") {
+    return `${expressionToString(node.left)} ${String(node.operator)} ${expressionToString(node.right)}`;
+  }
+  if (node.kind === "member") {
+    return `${expressionToString(node.object)}.${String(node.property)}`;
+  }
+  return JSON.stringify(expr);
+}

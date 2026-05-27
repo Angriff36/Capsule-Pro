@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { readdir, readFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import type { IR } from "@angriff36/manifest/ir";
@@ -300,6 +300,98 @@ export async function getCompiledManifestBundle(
 
 let cachedPrecompiledBundle: CompiledManifestBundle | null = null;
 let cachedPrecompiledPath = "";
+let cachedMergedBundle: CompiledManifestBundle | null = null;
+
+function mergeIrDocuments(compiledIRs: IR[], manifestFiles: string[]): IR {
+  const { valid, errors } = validateNoDuplicates(compiledIRs, manifestFiles);
+  if (!valid) {
+    throw new Error(`Duplicate name validation failed: ${errors.join(" | ")}`);
+  }
+
+  const contentHash = createHash("sha256")
+    .update(compiledIRs.map((ir) => ir.provenance?.contentHash ?? "").join(":"))
+    .digest("hex");
+
+  return {
+    version: "1.0",
+    provenance: {
+      contentHash,
+      irHash: "",
+      compilerVersion: compiledIRs[0]?.provenance?.compilerVersion ?? "unknown",
+      schemaVersion: compiledIRs[0]?.provenance?.schemaVersion ?? "1.0",
+      compiledAt: compiledIRs[0]?.provenance?.compiledAt ?? new Date().toISOString(),
+    },
+    modules: compiledIRs.flatMap((ir) => ir.modules || []),
+    entities: compiledIRs.flatMap((ir) => ir.entities || []),
+    enums: compiledIRs.flatMap((ir) => ir.enums || []),
+    stores: compiledIRs.flatMap((ir) => ir.stores || []),
+    events: compiledIRs.flatMap((ir) => ir.events || []),
+    commands: compiledIRs.flatMap((ir) => ir.commands || []),
+    policies: compiledIRs.flatMap((ir) => ir.policies || []),
+    values: compiledIRs.flatMap((ir) => ir.values || []),
+  };
+}
+
+/**
+ * Load and merge every `*.ir.json` file under `manifest/ir/`.
+ *
+ * Falls back to `kitchen.ir.json` when the directory is missing or empty.
+ * Cached for the process lifetime — call `invalidateMergedIRCache()` to refresh.
+ */
+export function loadMergedPrecompiledIR(
+  irDir = "manifest/ir"
+): CompiledManifestBundle {
+  if (cachedMergedBundle) {
+    return cachedMergedBundle;
+  }
+
+  const repoRoot =
+    process.env.MCP_PROJECT_ROOT ??
+    process.env.REPO_ROOT ??
+    findRepoRoot(process.cwd());
+  const absDir = resolve(repoRoot, irDir);
+
+  if (!existsSync(absDir)) {
+    cachedMergedBundle = loadPrecompiledIR("manifest/ir/kitchen.ir.json");
+    return cachedMergedBundle;
+  }
+
+  const irFiles = readdirSync(absDir)
+    .filter((name) => name.endsWith(".ir.json"))
+    .sort();
+
+  if (irFiles.length === 0) {
+    cachedMergedBundle = loadPrecompiledIR("manifest/ir/kitchen.ir.json");
+    return cachedMergedBundle;
+  }
+
+  if (irFiles.length === 1) {
+    cachedMergedBundle = loadPrecompiledIR(join(irDir, irFiles[0]!));
+    return cachedMergedBundle;
+  }
+
+  const bundles = irFiles.map((file) =>
+    loadPrecompiledIR(join(irDir, file))
+  );
+  const mergedIr = mergeIrDocuments(
+    bundles.map((bundle) => bundle.ir),
+    irFiles
+  );
+
+  cachedMergedBundle = {
+    files: bundles.flatMap((bundle) => bundle.files),
+    hash: mergedIr.provenance?.contentHash ?? "",
+    ir: mergedIr,
+  };
+  return cachedMergedBundle;
+}
+
+/** Invalidate merged IR cache (e.g. after hot-reload). */
+export function invalidateMergedIRCache(): void {
+  cachedMergedBundle = null;
+  cachedPrecompiledBundle = null;
+  cachedPrecompiledPath = "";
+}
 
 /**
  * Load a precompiled IR JSON file and return it as a CompiledManifestBundle.

@@ -37,9 +37,8 @@ describe("resolveIdentity (stdio)", () => {
   const originalEnv = { ...process.env };
 
   beforeEach(() => {
-    // Clear MCP env vars before each test
-    process.env.MCP_SERVICE_ACCOUNT_ID = "";
-    process.env.MCP_SERVICE_TENANT_ID = "";
+    delete process.env.MCP_SERVICE_ACCOUNT_ID;
+    delete process.env.MCP_SERVICE_TENANT_ID;
   });
 
   afterEach(() => {

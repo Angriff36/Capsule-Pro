@@ -176,9 +176,12 @@ export const routeResolutionPlugin: McpPlugin = {
 
           const result = {
             routeId: matched.id,
-            routeFile: `apps/api/app/api/${matched.path
-              .replace("/api/", "")
-              .replace(/:([^/]+)/g, "[$1]")}/route.ts`,
+            routeFile:
+              matched.source.kind === "command"
+                ? "apps/api/app/api/manifest/[entity]/commands/[command]/route.ts"
+                : `apps/api/app/api/${matched.path
+                    .replace("/api/", "")
+                    .replace(/:([^/]+)/g, "[$1]")}/route.ts`,
             handler: matched.method,
             method: matched.method,
             path: matched.path,
