@@ -60,66 +60,64 @@ export function ClientTable({ clients, className }: ClientTableProps) {
         <CardDescription>Highest lifetime value clients</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="rounded-md border">
-          <Table>
-            <TableHeader>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Client</TableHead>
+              <TableHead className="text-right">Orders</TableHead>
+              <TableHead className="text-right">LTV</TableHead>
+              <TableHead className="text-right">AOV</TableHead>
+              <TableHead>Last Order</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {clients.length === 0 ? (
               <TableRow>
-                <TableHead>Client</TableHead>
-                <TableHead className="text-right">Orders</TableHead>
-                <TableHead className="text-right">LTV</TableHead>
-                <TableHead className="text-right">AOV</TableHead>
-                <TableHead>Last Order</TableHead>
+                <TableCell
+                  className="text-center text-muted-foreground"
+                  colSpan={5}
+                >
+                  No client data available
+                </TableCell>
               </TableRow>
-            </TableHeader>
-            <TableBody>
-              {clients.length === 0 ? (
-                <TableRow>
-                  <TableCell
-                    className="text-center text-muted-foreground"
-                    colSpan={5}
-                  >
-                    No client data available
+            ) : (
+              clients.map((client, index) => (
+                <TableRow key={client.id}>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">{client.name}</span>
+                      {index < 3 && (
+                        <Badge
+                          className="text-xs"
+                          variant={getBadgeVariant(index)}
+                        >
+                          #{index + 1}
+                        </Badge>
+                      )}
+                    </div>
+                    {client.email && (
+                      <span className="text-xs text-muted-foreground">
+                        {client.email}
+                      </span>
+                    )}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {client.orderCount}
+                  </TableCell>
+                  <TableCell className="text-right font-medium">
+                    {formatCurrency(client.lifetimeValue)}
+                  </TableCell>
+                  <TableCell className="text-right text-muted-foreground">
+                    {formatCurrency(client.averageOrderValue)}
+                  </TableCell>
+                  <TableCell className="text-muted-foreground text-sm">
+                    {formatDate(client.lastOrderDate)}
                   </TableCell>
                 </TableRow>
-              ) : (
-                clients.map((client, index) => (
-                  <TableRow key={client.id}>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium">{client.name}</span>
-                        {index < 3 && (
-                          <Badge
-                            className="text-xs"
-                            variant={getBadgeVariant(index)}
-                          >
-                            #{index + 1}
-                          </Badge>
-                        )}
-                      </div>
-                      {client.email && (
-                        <span className="text-xs text-muted-foreground">
-                          {client.email}
-                        </span>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {client.orderCount}
-                    </TableCell>
-                    <TableCell className="text-right font-medium">
-                      {formatCurrency(client.lifetimeValue)}
-                    </TableCell>
-                    <TableCell className="text-right text-muted-foreground">
-                      {formatCurrency(client.averageOrderValue)}
-                    </TableCell>
-                    <TableCell className="text-muted-foreground text-sm">
-                      {formatDate(client.lastOrderDate)}
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </div>
+              ))
+            )}
+          </TableBody>
+        </Table>
       </CardContent>
     </Card>
   );

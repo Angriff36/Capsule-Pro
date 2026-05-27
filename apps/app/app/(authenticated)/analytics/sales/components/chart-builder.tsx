@@ -11,7 +11,6 @@ import {
 } from "@repo/design-system/components/ui/card";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
-import { Separator } from "@repo/design-system/components/ui/separator";
 import { Search } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import type { TopLevelSpec } from "vega-lite";
@@ -164,8 +163,6 @@ function ChartBuilder({ data }: ChartBuilderProps) {
           ))}
         </div>
 
-        <Separator />
-
         {/* Chart type grid */}
         <div className="max-h-[600px] overflow-y-auto space-y-1 pr-1">
           {filteredCharts.map((chart) => (
@@ -286,8 +283,6 @@ function ChartBuilder({ data }: ChartBuilderProps) {
                     value={chartTitle}
                   />
                 </div>
-
-                <Separator />
 
                 <div className="space-y-1">
                   <Label className="text-xs font-medium">Column Mappings</Label>

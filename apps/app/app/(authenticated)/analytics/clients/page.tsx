@@ -1,6 +1,13 @@
+import {
+  CommandBand,
+  CommandBandHeader,
+  CommandBandLede,
+  DisplayHeading,
+  MonoLabel,
+  PageCanvas,
+} from "@repo/design-system/components/blocks/page-shell";
 import { Spinner } from "@repo/design-system/components/ui/spinner";
 import { Suspense } from "react";
-import { ModuleSection } from "../../components/module-section";
 import { getClientLTVMetrics } from "./actions/get-client-ltv";
 import { CLVDashboard } from "./components/clv-dashboard";
 
@@ -12,15 +19,23 @@ async function ClientAnalyticsContent() {
 }
 
 const ClientAnalyticsPage = () => (
-  <ModuleSection
-    summary="Analyze client profitability, lifetime value, retention rates, and lifetime value analysis."
-    title="Client Analytics"
-  />
+  <CommandBand>
+    <CommandBandHeader>
+      <div className="space-y-4">
+        <MonoLabel tone="dark">Analytics / Clients</MonoLabel>
+        <DisplayHeading>Client Analytics</DisplayHeading>
+        <CommandBandLede>
+          Analyze client profitability, lifetime value, retention rates, and
+          lifetime value analysis.
+        </CommandBandLede>
+      </div>
+    </CommandBandHeader>
+  </CommandBand>
 );
 
 export default function ClientAnalyticsPageWithData() {
   return (
-    <>
+    <PageCanvas>
       <ClientAnalyticsPage />
       <Suspense
         fallback={
@@ -31,6 +46,6 @@ export default function ClientAnalyticsPageWithData() {
       >
         <ClientAnalyticsContent />
       </Suspense>
-    </>
+    </PageCanvas>
   );
 }

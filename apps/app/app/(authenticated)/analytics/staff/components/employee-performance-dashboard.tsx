@@ -14,7 +14,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
-import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   Table,
   TableBody,
@@ -23,6 +22,18 @@ import {
   TableHeader,
   TableRow,
 } from "@repo/design-system/components/ui/table";
+import {
+  CommandBand,
+  CommandBandActions,
+  CommandBandHeader,
+  CommandBandLede,
+  DisplayHeading,
+  MonoLabel,
+  OperationalColumn,
+  PageCanvas,
+  PageBody,
+  SectionHeader,
+} from "@repo/design-system/components/blocks/page-shell";
 import { useEffect, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
 import type {
@@ -37,12 +48,8 @@ interface EmployeePerformanceDashboardProps {
 export function EmployeePerformanceDashboard({
   employeeId,
 }: EmployeePerformanceDashboardProps) {
-  const [metrics, setMetrics] = useState<EmployeePerformanceMetrics | null>(
-    null
-  );
-  const [summary, setSummary] = useState<EmployeePerformanceSummary | null>(
-    null
-  );
+  const [metrics, setMetrics] = useState<EmployeePerformanceMetrics | null>(null);
+  const [summary, setSummary] = useState<EmployeePerformanceSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedPeriod, setSelectedPeriod] = useState<string>("3m");
 
@@ -50,7 +57,6 @@ export function EmployeePerformanceDashboard({
     async function loadData() {
       try {
         setLoading(true);
-
         if (employeeId) {
           const response = await apiFetch(
             `/api/analytics/staff/employees/${employeeId}?period=${selectedPeriod}`
@@ -70,7 +76,6 @@ export function EmployeePerformanceDashboard({
         setLoading(false);
       }
     }
-
     loadData();
   }, [employeeId, selectedPeriod]);
 
@@ -94,615 +99,399 @@ export function EmployeePerformanceDashboard({
 
   if (employeeId && metrics) {
     return (
-      <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
-        <div className="flex items-center justify-between">
-          <div className="space-y-0.5">
-            <h2 className="text-2xl font-semibold tracking-tight">
+      <PageCanvas>
+        <CommandBand>
+          <CommandBandHeader>
+            <MonoLabel tone="dark">STAFF</MonoLabel>
+            <DisplayHeading size="md">
               {metrics.firstName} {metrics.lastName}
-            </h2>
-            <p className="text-sm text-muted-foreground">
+            </DisplayHeading>
+            <CommandBandLede>
               {metrics.role} • Hired: {metrics.hireDate.toLocaleDateString()}
-            </p>
-          </div>
-        </div>
+            </CommandBandLede>
+          </CommandBandHeader>
+        </CommandBand>
 
-        <Separator />
-
-        <section className="space-y-4">
-          <h3 className="text-sm font-medium text-muted-foreground">
-            Performance Overview
-          </h3>
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-            <Card tone="canvas">
-              <CardHeader>
-                <CardTitle className="text-sm font-medium">
-                  Task Completion Rate
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  {metrics.taskCompletionRate.toFixed(1)}%
-                </div>
-                <div className="text-xs text-muted-foreground mt-1">
-                  {metrics.completedTasks} of {metrics.totalTasks} tasks
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card tone="canvas">
-              <CardHeader>
-                <CardTitle className="text-sm font-medium">
-                  Quality Score
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div
-                  className={`text-2xl font-bold ${
-                    metrics.qualityScore >= 80
-                      ? "text-emerald-600"
-                      : metrics.qualityScore >= 60
-                        ? "text-amber-600"
-                        : "text-rose-600"
-                  }`}
-                >
-                  {metrics.qualityScore.toFixed(1)}
-                </div>
-                <div className="text-xs text-muted-foreground mt-1">
-                  Rework rate: {metrics.reworkRate.toFixed(1)}%
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card tone="canvas">
-              <CardHeader>
-                <CardTitle className="text-sm font-medium">
-                  Efficiency Score
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div
-                  className={`text-2xl font-bold ${
-                    metrics.efficiencyScore >= 80
-                      ? "text-emerald-600"
-                      : metrics.efficiencyScore >= 60
-                        ? "text-amber-600"
-                        : "text-rose-600"
-                  }`}
-                >
-                  {metrics.efficiencyScore.toFixed(1)}
-                </div>
-                <div className="text-xs text-muted-foreground mt-1">
-                  {metrics.tasksPerHour.toFixed(1)} tasks/hour
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card tone="canvas">
-              <CardHeader>
-                <CardTitle className="text-sm font-medium">
-                  Punctuality Rate
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div
-                  className={`text-2xl font-bold ${
-                    metrics.punctualityRate >= 95
-                      ? "text-emerald-600"
-                      : metrics.punctualityRate >= 90
-                        ? "text-amber-600"
-                        : "text-rose-600"
-                  }`}
-                >
-                  {metrics.punctualityRate.toFixed(1)}%
-                </div>
-                <div className="text-xs text-muted-foreground mt-1">
-                  Attendance: {metrics.attendanceRate.toFixed(1)}%
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </section>
-
-        <section className="space-y-4">
-          <h3 className="text-sm font-medium text-muted-foreground">
-            Performance Details
-          </h3>
-          <div className="grid gap-6 md:grid-cols-2">
-            <Card tone="canvas">
-              <CardHeader>
-                <CardTitle>Task Performance</CardTitle>
-                <CardDescription>
-                  Task completion and quality metrics
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  <div>
-                    <div className="flex justify-between text-sm">
-                      <span>Task Completion</span>
-                      <span className="font-medium">
-                        {metrics.taskCompletionRate.toFixed(1)}%
-                      </span>
-                    </div>
-                    <div className="mt-1 h-2 w-full bg-muted rounded-full overflow-hidden">
-                      <div
-                        className={`h-full transition-all ${
-                          metrics.taskCompletionRate >= 80
-                            ? "bg-emerald-600"
-                            : metrics.taskCompletionRate >= 60
-                              ? "bg-amber-600"
-                              : "bg-rose-600"
-                        }`}
-                        style={{ width: `${metrics.taskCompletionRate}%` }}
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="flex justify-between text-sm">
-                      <span>On-Time Delivery</span>
-                      <span className="font-medium">
-                        {metrics.onTimeTaskRate.toFixed(1)}%
-                      </span>
-                    </div>
-                    <div className="mt-1 h-2 w-full bg-muted rounded-full overflow-hidden">
-                      <div
-                        className={`h-full transition-all ${
-                          metrics.onTimeTaskRate >= 80
-                            ? "bg-emerald-600"
-                            : metrics.onTimeTaskRate >= 60
-                              ? "bg-amber-600"
-                              : "bg-rose-600"
-                        }`}
-                        style={{ width: `${metrics.onTimeTaskRate}%` }}
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="flex justify-between text-sm">
-                      <span>Quality Score</span>
-                      <span className="font-medium">
-                        {metrics.qualityScore.toFixed(1)}
-                      </span>
-                    </div>
-                    <div className="mt-1 h-2 w-full bg-muted rounded-full overflow-hidden">
-                      <div
-                        className={`h-full transition-all ${
-                          metrics.qualityScore >= 80
-                            ? "bg-emerald-600"
-                            : metrics.qualityScore >= 60
-                              ? "bg-amber-600"
-                              : "bg-rose-600"
-                        }`}
-                        style={{ width: `${metrics.qualityScore}%` }}
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="flex justify-between text-sm">
-                      <span>Efficiency Score</span>
-                      <span className="font-medium">
-                        {metrics.efficiencyScore.toFixed(1)}
-                      </span>
-                    </div>
-                    <div className="mt-1 h-2 w-full bg-muted rounded-full overflow-hidden">
-                      <div
-                        className={`h-full transition-all ${
-                          metrics.efficiencyScore >= 80
-                            ? "bg-emerald-600"
-                            : metrics.efficiencyScore >= 60
-                              ? "bg-amber-600"
-                              : "bg-rose-600"
-                        }`}
-                        style={{ width: `${metrics.efficiencyScore}%` }}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card tone="canvas">
-              <CardHeader>
-                <CardTitle>Attendance & Punctuality</CardTitle>
-                <CardDescription>
-                  Work schedule adherence and reliability
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  <div>
-                    <div className="flex justify-between text-sm">
-                      <span>Attendance Rate</span>
-                      <span className="font-medium">
-                        {metrics.attendanceRate.toFixed(1)}%
-                      </span>
-                    </div>
-                    <div className="mt-1 h-2 w-full bg-muted rounded-full overflow-hidden">
-                      <div
-                        className={`h-full transition-all ${
-                          metrics.attendanceRate >= 95
-                            ? "bg-emerald-600"
-                            : metrics.attendanceRate >= 90
-                              ? "bg-amber-600"
-                              : "bg-rose-600"
-                        }`}
-                        style={{ width: `${metrics.attendanceRate}%` }}
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="flex justify-between text-sm">
-                      <span>Punctuality Rate</span>
-                      <span className="font-medium">
-                        {metrics.punctualityRate.toFixed(1)}%
-                      </span>
-                    </div>
-                    <div className="mt-1 h-2 w-full bg-muted rounded-full overflow-hidden">
-                      <div
-                        className={`h-full transition-all ${
-                          metrics.punctualityRate >= 95
-                            ? "bg-emerald-600"
-                            : metrics.punctualityRate >= 90
-                              ? "bg-amber-600"
-                              : "bg-rose-600"
-                        }`}
-                        style={{ width: `${metrics.punctualityRate}%` }}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="pt-2 border-t">
-                    <div className="grid grid-cols-2 gap-6">
-                      <div>
-                        <div className="text-xs text-muted-foreground">
-                          Total Shifts
-                        </div>
-                        <div className="text-lg font-bold">
-                          {metrics.totalShifts}
-                        </div>
-                      </div>
-                      <div>
-                        <div className="text-xs text-muted-foreground">
-                          Avg Hours/Week
-                        </div>
-                        <div className="text-lg font-bold">
-                          {metrics.averageHoursPerWeek.toFixed(1)}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </section>
-
-        <section className="space-y-4">
-          <h3 className="text-sm font-medium text-muted-foreground">
-            Activity Summary
-          </h3>
-          <Card tone="canvas">
-            <CardHeader>
-              <CardTitle>Activity Summary</CardTitle>
-              <CardDescription>
-                Overall work activity and contributions
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-6 md:grid-cols-4">
-                <div>
-                  <div className="text-xs text-muted-foreground">
-                    Total Tasks
-                  </div>
-                  <div className="text-2xl font-bold">{metrics.totalTasks}</div>
-                </div>
-                <div>
-                  <div className="text-xs text-muted-foreground">
-                    Completed Tasks
-                  </div>
-                  <div className="text-2xl font-bold">
-                    {metrics.completedTasks}
-                  </div>
-                </div>
-                <div>
-                  <div className="text-xs text-muted-foreground">
-                    Total Hours Worked
-                  </div>
-                  <div className="text-2xl font-bold">
-                    {metrics.totalHoursWorked.toFixed(1)}
-                  </div>
-                </div>
-                <div>
-                  <div className="text-xs text-muted-foreground">
-                    Avg Task Duration
-                  </div>
-                  <div className="text-2xl font-bold">
-                    {metrics.averageTaskDuration.toFixed(1)}h
-                  </div>
-                </div>
-              </div>
-              <div className="grid gap-6 md:grid-cols-2 mt-4 pt-4 border-t">
-                <div>
-                  <div className="text-xs text-muted-foreground">
-                    Client Interactions
-                  </div>
-                  <div className="text-2xl font-bold">
-                    {metrics.clientInteractions}
-                  </div>
-                </div>
-                <div>
-                  <div className="text-xs text-muted-foreground">
-                    Event Participation
-                  </div>
-                  <div className="text-2xl font-bold">
-                    {metrics.eventParticipation}
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </section>
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
-      <div className="flex items-center justify-between">
-        <div className="space-y-0.5">
-          <h2 className="text-2xl font-semibold tracking-tight">
-            Employee Performance Dashboard
-          </h2>
-        </div>
-        <Select onValueChange={setSelectedPeriod} value={selectedPeriod}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Select period" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="3m">Last 3 months</SelectItem>
-            <SelectItem value="6m">Last 6 months</SelectItem>
-            <SelectItem value="12m">Last 12 months</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      <Separator />
-
-      {summary && (
-        <>
-          <section className="space-y-4">
-            <h3 className="text-sm font-medium text-muted-foreground">
-              Performance Overview
-            </h3>
-            <div className="grid gap-6 md:grid-cols-4">
+        <PageBody>
+          <OperationalColumn>
+            <SectionHeader title="Performance Overview" />
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
               <Card tone="canvas">
                 <CardHeader>
-                  <CardTitle className="text-sm font-medium">
-                    Total Employees
-                  </CardTitle>
+                  <CardTitle className="text-sm font-medium">Task Completion Rate</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">
-                    {summary.totalEmployees}
+                    {metrics.taskCompletionRate.toFixed(1)}%
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    {metrics.completedTasks} of {metrics.totalTasks} tasks
                   </div>
                 </CardContent>
               </Card>
 
               <Card tone="canvas">
                 <CardHeader>
-                  <CardTitle className="text-sm font-medium">
-                    Avg Task Completion
-                  </CardTitle>
+                  <CardTitle className="text-sm font-medium">Quality Score</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">
-                    {summary.averageTaskCompletionRate.toFixed(1)}%
+                  <div className={`text-2xl font-bold ${metrics.qualityScore >= 80 ? "text-emerald-600" : metrics.qualityScore >= 60 ? "text-amber-600" : "text-rose-600"}`}>
+                    {metrics.qualityScore.toFixed(1)}
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    Rework rate: {metrics.reworkRate.toFixed(1)}%
                   </div>
                 </CardContent>
               </Card>
 
               <Card tone="canvas">
                 <CardHeader>
-                  <CardTitle className="text-sm font-medium">
-                    Avg Quality Score
-                  </CardTitle>
+                  <CardTitle className="text-sm font-medium">Efficiency Score</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">
-                    {summary.averageQualityScore.toFixed(1)}
+                  <div className={`text-2xl font-bold ${metrics.efficiencyScore >= 80 ? "text-emerald-600" : metrics.efficiencyScore >= 60 ? "text-amber-600" : "text-rose-600"}`}>
+                    {metrics.efficiencyScore.toFixed(1)}
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    {metrics.tasksPerHour.toFixed(1)} tasks/hour
                   </div>
                 </CardContent>
               </Card>
 
               <Card tone="canvas">
                 <CardHeader>
-                  <CardTitle className="text-sm font-medium">
-                    Avg Efficiency Score
-                  </CardTitle>
+                  <CardTitle className="text-sm font-medium">Punctuality Rate</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">
-                    {summary.averageEfficiencyScore.toFixed(1)}
+                  <div className={`text-2xl font-bold ${metrics.punctualityRate >= 95 ? "text-emerald-600" : metrics.punctualityRate >= 90 ? "text-amber-600" : "text-rose-600"}`}>
+                    {metrics.punctualityRate.toFixed(1)}%
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    Attendance: {metrics.attendanceRate.toFixed(1)}%
                   </div>
                 </CardContent>
               </Card>
             </div>
-          </section>
 
-          <section className="space-y-4">
-            <h3 className="text-sm font-medium text-muted-foreground">
-              Top Performers
-            </h3>
-            <Card tone="canvas">
-              <CardHeader>
-                <CardTitle>Top Performers</CardTitle>
-                <CardDescription>
-                  Employees with the highest performance scores by category
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {summary.topPerformers.map((performer) => (
-                    <div
-                      className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
-                      key={performer.employeeId}
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white font-bold">
-                          {performer.name.charAt(0)}
-                        </div>
-                        <div>
-                          <div className="font-medium">{performer.name}</div>
-                          <div className="text-sm text-muted-foreground">
-                            {performer.category}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-xl font-bold">
-                          {performer.score.toFixed(1)}
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          Score
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </section>
-
-          <section className="space-y-4">
-            <h3 className="text-sm font-medium text-muted-foreground">
-              Metrics Analysis
-            </h3>
+            <SectionHeader title="Performance Details" />
             <div className="grid gap-6 md:grid-cols-2">
               <Card tone="canvas">
                 <CardHeader>
-                  <CardTitle>Metrics by Role</CardTitle>
-                  <CardDescription>
-                    Performance breakdown by employee role
-                  </CardDescription>
+                  <CardTitle>Task Performance</CardTitle>
+                  <CardDescription>Task completion and quality metrics</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Role</TableHead>
-                        <TableHead className="text-right">Employees</TableHead>
-                        <TableHead className="text-right">
-                          Completion %
-                        </TableHead>
-                        <TableHead className="text-right">Quality</TableHead>
-                        <TableHead className="text-right">Efficiency</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {summary.metricsByRole.map((roleMetrics) => (
-                        <TableRow key={roleMetrics.role}>
-                          <TableCell>{roleMetrics.role}</TableCell>
-                          <TableCell className="text-right">
-                            {roleMetrics.employeeCount}
-                          </TableCell>
-                          <TableCell className="text-right">
-                            {roleMetrics.avgTaskCompletionRate.toFixed(1)}%
-                          </TableCell>
-                          <TableCell
-                            className={`text-right font-medium ${
-                              roleMetrics.avgQualityScore >= 80
-                                ? "text-emerald-600"
-                                : roleMetrics.avgQualityScore >= 60
-                                  ? "text-amber-600"
-                                  : "text-rose-600"
-                            }`}
-                          >
-                            {roleMetrics.avgQualityScore.toFixed(1)}
-                          </TableCell>
-                          <TableCell
-                            className={`text-right font-medium ${
-                              roleMetrics.avgEfficiencyScore >= 80
-                                ? "text-emerald-600"
-                                : roleMetrics.avgEfficiencyScore >= 60
-                                  ? "text-amber-600"
-                                  : "text-rose-600"
-                            }`}
-                          >
-                            {roleMetrics.avgEfficiencyScore.toFixed(1)}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </CardContent>
-              </Card>
-
-              <Card tone="canvas">
-                <CardHeader>
-                  <CardTitle>Performance Trends</CardTitle>
-                  <CardDescription>
-                    Monthly performance metrics over time
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    {summary.monthlyTrends.map((trend, _index) => (
-                      <div
-                        className="flex items-center gap-2 text-sm"
-                        key={trend.month}
-                      >
-                        <div className="w-16 text-xs text-muted-foreground">
-                          {new Date(`${trend.month}-01`).toLocaleDateString(
-                            "en-US",
-                            { month: "short" }
-                          )}
+                  <div className="space-y-3">
+                    {[
+                      { label: "Task Completion", value: metrics.taskCompletionRate, color: metrics.taskCompletionRate },
+                      { label: "On-Time Delivery", value: metrics.onTimeTaskRate, color: metrics.onTimeTaskRate },
+                      { label: "Quality Score", value: metrics.qualityScore, color: metrics.qualityScore },
+                      { label: "Efficiency Score", value: metrics.efficiencyScore, color: metrics.efficiencyScore },
+                    ].map((item) => (
+                      <div key={item.label}>
+                        <div className="flex justify-between text-sm">
+                          <span>{item.label}</span>
+                          <span className="font-medium">{item.value.toFixed(1)}{item.label.includes("Score") ? "" : "%"}</span>
                         </div>
-                        <div className="flex-1 space-y-1">
-                          <div className="flex items-center gap-1">
-                            <div className="w-24 text-xs">Completion:</div>
-                            <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
-                              <div
-                                className="h-full bg-blue-600 transition-all"
-                                style={{
-                                  width: `${Math.min(
-                                    trend.avgTaskCompletionRate,
-                                    100
-                                  )}%`,
-                                }}
-                              />
-                            </div>
-                            <div className="w-10 text-right text-xs">
-                              {trend.avgTaskCompletionRate.toFixed(0)}%
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <div className="w-24 text-xs">Quality:</div>
-                            <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
-                              <div
-                                className="h-full bg-emerald-600 transition-all"
-                                style={{
-                                  width: `${Math.min(trend.avgQualityScore, 100)}%`,
-                                }}
-                              />
-                            </div>
-                            <div className="w-10 text-right text-xs">
-                              {trend.avgQualityScore.toFixed(0)}%
-                            </div>
-                          </div>
+                        <div className="mt-1 h-2 w-full bg-muted rounded-full overflow-hidden">
+                          <div
+                            className={`h-full transition-all ${item.color >= 80 ? "bg-emerald-600" : item.color >= 60 ? "bg-amber-600" : "bg-rose-600"}`}
+                            style={{ width: `${item.color}%` }}
+                          />
                         </div>
                       </div>
                     ))}
                   </div>
                 </CardContent>
               </Card>
+
+              <Card tone="canvas">
+                <CardHeader>
+                  <CardTitle>Attendance & Punctuality</CardTitle>
+                  <CardDescription>Work schedule adherence and reliability</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {[
+                      { label: "Attendance Rate", value: metrics.attendanceRate, threshold: [95, 90] },
+                      { label: "Punctuality Rate", value: metrics.punctualityRate, threshold: [95, 90] },
+                    ].map((item) => (
+                      <div key={item.label}>
+                        <div className="flex justify-between text-sm">
+                          <span>{item.label}</span>
+                          <span className="font-medium">{item.value.toFixed(1)}%</span>
+                        </div>
+                        <div className="mt-1 h-2 w-full bg-muted rounded-full overflow-hidden">
+                          <div
+                            className={`h-full transition-all ${item.value >= item.threshold[0] ? "bg-emerald-600" : item.value >= item.threshold[1] ? "bg-amber-600" : "bg-rose-600"}`}
+                            style={{ width: `${item.value}%` }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                    <div className="pt-2 border-t">
+                      <div className="grid grid-cols-2 gap-6">
+                        <div>
+                          <div className="text-xs text-muted-foreground">Total Shifts</div>
+                          <div className="text-lg font-bold">{metrics.totalShifts}</div>
+                        </div>
+                        <div>
+                          <div className="text-xs text-muted-foreground">Avg Hours/Week</div>
+                          <div className="text-lg font-bold">{metrics.averageHoursPerWeek.toFixed(1)}</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
-          </section>
-        </>
-      )}
-    </div>
+
+            <SectionHeader title="Activity Summary" />
+            <Card tone="canvas">
+              <CardHeader>
+                <CardTitle>Activity Summary</CardTitle>
+                <CardDescription>Overall work activity and contributions</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-6 md:grid-cols-4">
+                  <div>
+                    <div className="text-xs text-muted-foreground">Total Tasks</div>
+                    <div className="text-2xl font-bold">{metrics.totalTasks}</div>
+                  </div>
+                  <div>
+                    <div className="text-xs text-muted-foreground">Completed Tasks</div>
+                    <div className="text-2xl font-bold">{metrics.completedTasks}</div>
+                  </div>
+                  <div>
+                    <div className="text-xs text-muted-foreground">Total Hours Worked</div>
+                    <div className="text-2xl font-bold">{metrics.totalHoursWorked.toFixed(1)}</div>
+                  </div>
+                  <div>
+                    <div className="text-xs text-muted-foreground">Avg Task Duration</div>
+                    <div className="text-2xl font-bold">{metrics.averageTaskDuration.toFixed(1)}h</div>
+                  </div>
+                </div>
+                <div className="grid gap-6 md:grid-cols-2 mt-4 pt-4 border-t">
+                  <div>
+                    <div className="text-xs text-muted-foreground">Client Interactions</div>
+                    <div className="text-2xl font-bold">{metrics.clientInteractions}</div>
+                  </div>
+                  <div>
+                    <div className="text-xs text-muted-foreground">Event Participation</div>
+                    <div className="text-2xl font-bold">{metrics.eventParticipation}</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </OperationalColumn>
+        </PageBody>
+      </PageCanvas>
+    );
+  }
+
+  return (
+    <PageCanvas>
+      <CommandBand>
+        <CommandBandHeader>
+          <MonoLabel tone="dark">STAFF</MonoLabel>
+          <DisplayHeading size="md">Employee Performance Dashboard</DisplayHeading>
+        </CommandBandHeader>
+        <CommandBandActions>
+          <Select onValueChange={setSelectedPeriod} value={selectedPeriod}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Select period" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="3m">Last 3 months</SelectItem>
+              <SelectItem value="6m">Last 6 months</SelectItem>
+              <SelectItem value="12m">Last 12 months</SelectItem>
+            </SelectContent>
+          </Select>
+        </CommandBandActions>
+      </CommandBand>
+
+      <PageBody>
+        <OperationalColumn>
+          {summary && (
+            <>
+              <SectionHeader title="Performance Overview" />
+              <div className="grid gap-6 md:grid-cols-4">
+                <Card tone="canvas">
+                  <CardHeader>
+                    <CardTitle className="text-sm font-medium">Total Employees</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{summary.totalEmployees}</div>
+                  </CardContent>
+                </Card>
+
+                <Card tone="canvas">
+                  <CardHeader>
+                    <CardTitle className="text-sm font-medium">Avg Task Completion</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">
+                      {summary.averageTaskCompletionRate.toFixed(1)}%
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card tone="canvas">
+                  <CardHeader>
+                    <CardTitle className="text-sm font-medium">Avg Quality Score</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">
+                      {summary.averageQualityScore.toFixed(1)}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card tone="canvas">
+                  <CardHeader>
+                    <CardTitle className="text-sm font-medium">Avg Efficiency Score</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">
+                      {summary.averageEfficiencyScore.toFixed(1)}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              <SectionHeader title="Top Performers" />
+              <Card tone="canvas">
+                <CardHeader>
+                  <CardTitle>Top Performers</CardTitle>
+                  <CardDescription>
+                    Employees with the highest performance scores by category
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {summary.topPerformers.map((performer) => (
+                      <div
+                        className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
+                        key={performer.employeeId}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white font-bold">
+                            {performer.name.charAt(0)}
+                          </div>
+                          <div>
+                            <div className="font-medium">{performer.name}</div>
+                            <div className="text-sm text-muted-foreground">
+                              {performer.category}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-xl font-bold">
+                            {performer.score.toFixed(1)}
+                          </div>
+                          <div className="text-xs text-muted-foreground">Score</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <SectionHeader title="Metrics Analysis" />
+              <div className="grid gap-6 md:grid-cols-2">
+                <Card tone="canvas">
+                  <CardHeader>
+                    <CardTitle>Metrics by Role</CardTitle>
+                    <CardDescription>Performance breakdown by employee role</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Role</TableHead>
+                          <TableHead className="text-right">Employees</TableHead>
+                          <TableHead className="text-right">Completion %</TableHead>
+                          <TableHead className="text-right">Quality</TableHead>
+                          <TableHead className="text-right">Efficiency</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {summary.metricsByRole.map((roleMetrics) => (
+                          <TableRow key={roleMetrics.role}>
+                            <TableCell>{roleMetrics.role}</TableCell>
+                            <TableCell className="text-right">
+                              {roleMetrics.employeeCount}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              {roleMetrics.avgTaskCompletionRate.toFixed(1)}%
+                            </TableCell>
+                            <TableCell
+                              className={`text-right font-medium ${
+                                roleMetrics.avgQualityScore >= 80
+                                  ? "text-emerald-600"
+                                  : roleMetrics.avgQualityScore >= 60
+                                    ? "text-amber-600"
+                                    : "text-rose-600"
+                              }`}
+                            >
+                              {roleMetrics.avgQualityScore.toFixed(1)}
+                            </TableCell>
+                            <TableCell
+                              className={`text-right font-medium ${
+                                roleMetrics.avgEfficiencyScore >= 80
+                                  ? "text-emerald-600"
+                                  : roleMetrics.avgEfficiencyScore >= 60
+                                    ? "text-amber-600"
+                                    : "text-rose-600"
+                              }`}
+                            >
+                              {roleMetrics.avgEfficiencyScore.toFixed(1)}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </CardContent>
+                </Card>
+
+                <Card tone="canvas">
+                  <CardHeader>
+                    <CardTitle>Performance Trends</CardTitle>
+                    <CardDescription>Monthly performance metrics over time</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2">
+                      {summary.monthlyTrends.map((trend) => (
+                        <div className="flex items-center gap-2 text-sm" key={trend.month}>
+                          <div className="w-16 text-xs text-muted-foreground">
+                            {new Date(`${trend.month}-01`).toLocaleDateString("en-US", { month: "short" })}
+                          </div>
+                          <div className="flex-1 space-y-1">
+                            <div className="flex items-center gap-1">
+                              <div className="w-24 text-xs">Completion:</div>
+                              <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                                <div className="h-full bg-blue-600 transition-all" style={{ width: `${Math.min(trend.avgTaskCompletionRate, 100)}%` }} />
+                              </div>
+                              <div className="w-10 text-right text-xs">{trend.avgTaskCompletionRate.toFixed(0)}%</div>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <div className="w-24 text-xs">Quality:</div>
+                              <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                                <div className="h-full bg-emerald-600 transition-all" style={{ width: `${Math.min(trend.avgQualityScore, 100)}%` }} />
+                              </div>
+                              <div className="w-10 text-right text-xs">{trend.avgQualityScore.toFixed(0)}%</div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </>
+          )}
+        </OperationalColumn>
+      </PageBody>
+    </PageCanvas>
   );
 }

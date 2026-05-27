@@ -1,6 +1,9 @@
 "use client";
 
-import { Separator } from "@repo/design-system/components/ui/separator";
+import {
+  OperationalColumn,
+  SectionHeader,
+} from "@repo/design-system/components/blocks/page-shell";
 import { Skeleton } from "@repo/design-system/components/ui/skeleton";
 import { cn } from "@repo/design-system/lib/utils";
 import dynamic from "next/dynamic";
@@ -47,20 +50,14 @@ export function CLVDashboard({
   className,
 }: CLVDashboardProps) {
   return (
-    <div className={cn("flex flex-col gap-8", className)}>
-      <Separator />
-
+    <OperationalColumn className={cn("", className)}>
       <section>
-        <h2 className="mb-4 text-sm font-medium text-muted-foreground">
-          Performance Overview
-        </h2>
+        <SectionHeader title="Performance Overview" />
         <MetricsCards metrics={metrics} />
       </section>
 
       <section>
-        <h2 className="mb-4 text-sm font-medium text-muted-foreground">
-          Revenue & Cohort Analysis
-        </h2>
+        <SectionHeader title="Revenue & Cohort Analysis" />
         <div className="grid gap-6 lg:grid-cols-2">
           <RevenueTrends data={metrics.revenueByMonth} />
           <CohortAnalysis data={metrics.cohortData} />
@@ -68,14 +65,12 @@ export function CLVDashboard({
       </section>
 
       <section>
-        <h2 className="mb-4 text-sm font-medium text-muted-foreground">
-          Client Insights
-        </h2>
+        <SectionHeader title="Client Insights" />
         <div className="grid gap-6 lg:grid-cols-2">
           <ClientTable clients={clients} />
           <PredictiveLTV data={metrics.predictiveLTV} />
         </div>
       </section>
-    </div>
+    </OperationalColumn>
   );
 }

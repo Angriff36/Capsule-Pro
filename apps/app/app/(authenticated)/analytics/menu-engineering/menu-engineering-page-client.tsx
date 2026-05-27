@@ -11,7 +11,17 @@ import {
   ChartContainer,
   ChartTooltipContent,
 } from "@repo/design-system/components/ui/chart";
-import { Separator } from "@repo/design-system/components/ui/separator";
+import {
+  CommandBand,
+  CommandBandActions,
+  CommandBandHeader,
+  CommandBandLede,
+  DisplayHeading,
+  MonoLabel,
+  OperationalColumn,
+  PageCanvas,
+  SectionHeader,
+} from "@repo/design-system/components/blocks/page-shell";
 import {
   Select,
   SelectContent,
@@ -55,85 +65,93 @@ const COLORS = {
 };
 
 const MenuEngineeringSkeleton = () => (
-  <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
-    <div className="space-y-0.5">
-      <h1 className="text-3xl font-bold tracking-tight">
-        Menu Engineering
-      </h1>
-      <p className="text-muted-foreground">
-        Analyze contribution margins, popularity, and optimize your menu.
-      </p>
-    </div>
-    <Separator />
+  <PageCanvas>
+    <CommandBand>
+      <CommandBandHeader>
+        <div className="space-y-4">
+          <MonoLabel tone="dark">Analytics / Menu Engineering</MonoLabel>
+          <DisplayHeading>Menu Engineering</DisplayHeading>
+          <CommandBandLede>
+            Analyze contribution margins, popularity, and optimize your menu.
+          </CommandBandLede>
+        </div>
+      </CommandBandHeader>
+    </CommandBand>
 
-    <section className="space-y-4">
-      <h2 className="text-sm font-medium text-muted-foreground">
-        Performance Overview
-      </h2>
-      <div className="grid gap-6 lg:grid-cols-4">
-        {[1, 2, 3, 4].map((i) => (
-          <Card key={i}>
+    <OperationalColumn>
+      <section className="space-y-4">
+        <h2 className="text-sm font-medium text-muted-foreground">
+          Performance Overview
+        </h2>
+        <div className="grid gap-6 lg:grid-cols-4">
+          {[1, 2, 3, 4].map((i) => (
+            <Card key={i}>
+              <CardHeader>
+                <Skeleton className="h-4 w-24" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-8 w-32" />
+                <Skeleton className="mt-2 h-3 w-16" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </section>
+
+      <section className="space-y-4">
+        <h2 className="text-sm font-medium text-muted-foreground">
+          Menu Analysis
+        </h2>
+        <div className="grid gap-6 lg:grid-cols-2">
+          <Card>
             <CardHeader>
-              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-6 w-40" />
             </CardHeader>
             <CardContent>
-              <Skeleton className="h-8 w-32" />
-              <Skeleton className="mt-2 h-3 w-16" />
+              <Skeleton className="h-64 w-full" />
             </CardContent>
           </Card>
-        ))}
-      </div>
-    </section>
-
-    <section className="space-y-4">
-      <h2 className="text-sm font-medium text-muted-foreground">
-        Menu Analysis
-      </h2>
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <Skeleton className="h-6 w-40" />
-          </CardHeader>
-          <CardContent>
-            <Skeleton className="h-64 w-full" />
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <Skeleton className="h-6 w-32" />
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {[1, 2, 3, 4, 5].map((i) => (
-              <Skeleton className="h-12 w-full" key={i} />
-            ))}
-          </CardContent>
-        </Card>
-      </div>
-    </section>
-  </div>
+          <Card>
+            <CardHeader>
+              <Skeleton className="h-6 w-32" />
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <Skeleton className="h-12 w-full" key={i} />
+              ))}
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+    </OperationalColumn>
+  </PageCanvas>
 );
 
 const ErrorState = ({ error }: { error: Error }) => (
-  <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
-    <div className="space-y-0.5">
-      <h1 className="text-3xl font-bold tracking-tight">
-        Menu Engineering
-      </h1>
-      <p className="text-muted-foreground">
-        Analyze contribution margins, popularity, and optimize your menu.
-      </p>
-    </div>
-    <Separator />
+  <PageCanvas>
+    <CommandBand>
+      <CommandBandHeader>
+        <div className="space-y-4">
+          <MonoLabel tone="dark">Analytics / Menu Engineering</MonoLabel>
+          <DisplayHeading>Menu Engineering</DisplayHeading>
+          <CommandBandLede>
+            Analyze contribution margins, popularity, and optimize your menu.
+          </CommandBandLede>
+        </div>
+      </CommandBandHeader>
+    </CommandBand>
 
-    <Card className="border-destructive/50 bg-destructive/10">
-      <CardContent className="flex items-center gap-2 p-6">
-        <AlertCircle className="size-5 text-destructive" />
-        <p className="text-sm text-destructive-foreground">
-          Failed to load menu engineering data. {error.message}
-        </p>
-      </CardContent>
-    </Card>
-  </div>
+    <OperationalColumn>
+      <Card className="border-destructive/50 bg-destructive/10">
+        <CardContent className="flex items-center gap-2 p-6">
+          <AlertCircle className="size-5 text-destructive" />
+          <p className="text-sm text-destructive-foreground">
+            Failed to load menu engineering data. {error.message}
+          </p>
+        </CardContent>
+      </Card>
+    </OperationalColumn>
+  </PageCanvas>
 );
 
 interface MetricCardProps {
@@ -415,6 +433,187 @@ const RecommendationsPanel = ({
   );
 };
 
+const EmptyState = () => (
+  <div className="flex flex-col items-center justify-center py-16 text-center">
+    <PieChartIcon className="size-16 text-muted-foreground/50 mb-4" />
+    <h3 className="text-lg font-semibold mb-2">No Menu Data Available</h3>
+    <p className="text-muted-foreground text-sm max-w-md">
+      Start adding dishes to your events to see menu engineering insights. The
+      analysis will show contribution margins, popularity scores, and strategic
+      recommendations.
+    </p>
+  </div>
+);
+
+const MenuEngineeringPageClient = () => {
+  const [period, setPeriod] = useState<"7d" | "30d" | "90d" | "12m">("30d");
+  const { data, isLoading, error, refetch } = useMenuEngineering({
+    period,
+    enabled: true,
+  });
+
+  const handlePeriodChange = (value: string) => {
+    setPeriod(value as "7d" | "30d" | "90d" | "12m");
+    refetch();
+  };
+
+  if (isLoading) {
+    return <MenuEngineeringSkeleton />;
+  }
+
+  if (error || !data) {
+    return <ErrorState error={error || new Error("No data available")} />;
+  }
+
+  const hasData = data.menuItems.length > 0;
+
+  return (
+    <PageCanvas>
+      <CommandBand>
+        <CommandBandHeader>
+          <div className="space-y-4">
+            <MonoLabel tone="dark">Analytics / Menu Engineering</MonoLabel>
+            <DisplayHeading>Menu Engineering</DisplayHeading>
+            <CommandBandLede>
+              Analyze contribution margins, popularity, and optimize your menu.
+            </CommandBandLede>
+          </div>
+          <CommandBandActions>
+            <Select value={period} onValueChange={handlePeriodChange}>
+              <SelectTrigger className="w-[180px] border-white/25 bg-transparent text-white">
+                <SelectValue placeholder="Select period" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="7d">Last 7 days</SelectItem>
+                <SelectItem value="30d">Last 30 days</SelectItem>
+                <SelectItem value="90d">Last 90 days</SelectItem>
+                <SelectItem value="12m">Last 12 months</SelectItem>
+              </SelectContent>
+            </Select>
+          </CommandBandActions>
+        </CommandBandHeader>
+      </CommandBand>
+
+      <OperationalColumn>
+        {!hasData ? (
+          <EmptyState />
+        ) : (
+          <>
+            {/* Performance Overview */}
+            <section className="space-y-4">
+              <SectionHeader title="Performance Overview" />
+              <div className="grid gap-6 lg:grid-cols-4">
+                <MetricCard
+                  title="Total Revenue"
+                  value={data.summary.totalRevenue}
+                  icon={<DollarSign className="size-4" />}
+                  format="currency"
+                />
+                <MetricCard
+                  title="Contribution Margin"
+                  value={data.summary.totalContributionMargin}
+                  icon={<TrendingUp className="size-4" />}
+                  format="currency"
+                />
+                <MetricCard
+                  title="Average Margin"
+                  value={data.summary.averageMarginPercent}
+                  icon={<PercentIcon />}
+                  format="percent"
+                />
+                <MetricCard
+                  title="Total Orders"
+                  value={data.summary.totalOrders}
+                  icon={<OrderIcon />}
+                  format="number"
+                />
+              </div>
+            </section>
+
+            {/* Main Analysis Grid */}
+            <div className="grid gap-6 lg:grid-cols-2">
+              {/* Quadrant Distribution */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Menu Matrix Distribution</CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    Distribution of items by performance quadrant
+                  </p>
+                </CardHeader>
+                <CardContent>
+                  <QuadrantDistributionChart
+                    distribution={data.quadrantDistribution}
+                  />
+                </CardContent>
+              </Card>
+
+              {/* Recommendations */}
+              <RecommendationsPanel
+                recommendations={data.recommendations}
+                quadrantDistribution={data.quadrantDistribution}
+              />
+            </div>
+
+            {/* Menu Items Table */}
+            <section className="space-y-4">
+              <SectionHeader title="Menu Item Analysis" />
+              <Card>
+                <CardContent className="p-0">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b bg-muted/50">
+                          <th className="p-3 text-left font-medium">Dish</th>
+                          <th className="p-3 text-right font-medium">Revenue</th>
+                          <th className="p-3 text-right font-medium">Margin</th>
+                          <th className="p-3 text-center font-medium">Popularity</th>
+                          <th className="p-3 text-center font-medium">Quadrant</th>
+                          <th className="p-3 text-right font-medium">
+                            Contribution
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {data.menuItems.map((item) => (
+                          <MenuItemTableRow
+                            key={item.dishId}
+                            item={item}
+                            avgMargin={data.summary.averageMarginPercent}
+                          />
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </CardContent>
+              </Card>
+            </section>
+
+            {/* Category Analysis */}
+            <CategoryAnalysisSection
+              categoryAnalysis={data.categoryAnalysis}
+            />
+          </>
+        )}
+      </OperationalColumn>
+    </PageCanvas>
+  );
+};
+
+function CategoryAnalysisSection({
+  categoryAnalysis,
+}: {
+  categoryAnalysis: MenuEngineeringData["categoryAnalysis"];
+}) {
+  if (categoryAnalysis.length === 0) return null;
+
+  return (
+    <section className="space-y-4">
+      <SectionHeader title="Category Analysis" />
+      <CategoryAnalysisTable categoryAnalysis={categoryAnalysis} />
+    </section>
+  );
+}
+
 interface CategoryAnalysisTableProps {
   categoryAnalysis: MenuEngineeringData["categoryAnalysis"];
 }
@@ -476,178 +675,6 @@ const CategoryAnalysisTable = ({
         </div>
       </CardContent>
     </Card>
-  );
-};
-
-const EmptyState = () => (
-  <div className="flex flex-col items-center justify-center py-16 text-center">
-    <PieChartIcon className="size-16 text-muted-foreground/50 mb-4" />
-    <h3 className="text-lg font-semibold mb-2">No Menu Data Available</h3>
-    <p className="text-muted-foreground text-sm max-w-md">
-      Start adding dishes to your events to see menu engineering insights. The
-      analysis will show contribution margins, popularity scores, and strategic
-      recommendations.
-    </p>
-  </div>
-);
-
-const MenuEngineeringPageClient = () => {
-  const [period, setPeriod] = useState<"7d" | "30d" | "90d" | "12m">("30d");
-  const { data, isLoading, error, refetch } = useMenuEngineering({
-    period,
-    enabled: true,
-  });
-
-  const handlePeriodChange = (value: string) => {
-    setPeriod(value as "7d" | "30d" | "90d" | "12m");
-    refetch();
-  };
-
-  if (isLoading) {
-    return <MenuEngineeringSkeleton />;
-  }
-
-  if (error || !data) {
-    return <ErrorState error={error || new Error("No data available")} />;
-  }
-
-  const hasData = data.menuItems.length > 0;
-
-  return (
-    <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
-      {/* Page Header */}
-      <div className="flex items-center justify-between">
-        <div className="space-y-0.5">
-          <h1 className="text-3xl font-bold tracking-tight">
-            Menu Engineering
-          </h1>
-          <p className="text-muted-foreground">
-            Analyze contribution margins, popularity, and optimize your menu.
-          </p>
-        </div>
-        <Select value={period} onValueChange={handlePeriodChange}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Select period" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="7d">Last 7 days</SelectItem>
-            <SelectItem value="30d">Last 30 days</SelectItem>
-            <SelectItem value="90d">Last 90 days</SelectItem>
-            <SelectItem value="12m">Last 12 months</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-      <Separator />
-
-      {!hasData ? (
-        <EmptyState />
-      ) : (
-        <>
-          {/* Performance Overview */}
-          <section className="space-y-4">
-            <h2 className="text-sm font-medium text-muted-foreground">
-              Performance Overview
-            </h2>
-            <div className="grid gap-6 lg:grid-cols-4">
-              <MetricCard
-                title="Total Revenue"
-                value={data.summary.totalRevenue}
-                icon={<DollarSign className="size-4" />}
-                format="currency"
-              />
-              <MetricCard
-                title="Contribution Margin"
-                value={data.summary.totalContributionMargin}
-                icon={<TrendingUp className="size-4" />}
-                format="currency"
-              />
-              <MetricCard
-                title="Average Margin"
-                value={data.summary.averageMarginPercent}
-                icon={<PercentIcon />}
-                format="percent"
-              />
-              <MetricCard
-                title="Total Orders"
-                value={data.summary.totalOrders}
-                icon={<OrderIcon />}
-                format="number"
-              />
-            </div>
-          </section>
-
-          {/* Main Analysis Grid */}
-          <div className="grid gap-6 lg:grid-cols-2">
-            {/* Quadrant Distribution */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Menu Matrix Distribution</CardTitle>
-                <p className="text-sm text-muted-foreground">
-                  Distribution of items by performance quadrant
-                </p>
-              </CardHeader>
-              <CardContent>
-                <QuadrantDistributionChart
-                  distribution={data.quadrantDistribution}
-                />
-              </CardContent>
-            </Card>
-
-            {/* Recommendations */}
-            <RecommendationsPanel
-              recommendations={data.recommendations}
-              quadrantDistribution={data.quadrantDistribution}
-            />
-          </div>
-
-          {/* Menu Items Table */}
-          <section className="space-y-4">
-            <h2 className="text-sm font-medium text-muted-foreground">
-              Menu Item Analysis
-            </h2>
-            <Card>
-              <CardContent className="p-0">
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b bg-muted/50">
-                        <th className="p-3 text-left font-medium">Dish</th>
-                        <th className="p-3 text-right font-medium">Revenue</th>
-                        <th className="p-3 text-right font-medium">Margin</th>
-                        <th className="p-3 text-center font-medium">Popularity</th>
-                        <th className="p-3 text-center font-medium">Quadrant</th>
-                        <th className="p-3 text-right font-medium">
-                          Contribution
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {data.menuItems.map((item) => (
-                        <MenuItemTableRow
-                          key={item.dishId}
-                          item={item}
-                          avgMargin={data.summary.averageMarginPercent}
-                        />
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </CardContent>
-            </Card>
-          </section>
-
-          {/* Category Analysis */}
-          {data.categoryAnalysis.length > 0 && (
-            <section className="space-y-4">
-              <h2 className="text-sm font-medium text-muted-foreground">
-                Category Analysis
-              </h2>
-              <CategoryAnalysisTable categoryAnalysis={data.categoryAnalysis} />
-            </section>
-          )}
-        </>
-      )}
-    </div>
   );
 };
 

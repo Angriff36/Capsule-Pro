@@ -2,13 +2,21 @@ import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@repo/design-system/components/ui/card";
-import { Separator } from "@repo/design-system/components/ui/separator";
+  PageCanvas,
+  CommandBand,
+  CommandBandHeader,
+  CommandBandActions,
+  CommandBandLede,
+  DisplayHeading,
+  MonoLabel,
+  MetricBand,
+  MetricCell,
+  MetricLabel,
+  MetricValue,
+  PageBody,
+  OperationalColumn,
+  SectionHeader,
+} from "@repo/design-system/components/blocks/page-shell";
 import {
   Table,
   TableBody,
@@ -226,237 +234,217 @@ const AnalyticsSalesPage = async () => {
   const collectedRevenue = Number(paymentSummary._sum.amount ?? 0);
 
   return (
-    <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
-      <div className="flex items-start justify-between gap-4">
-        <div className="space-y-0.5">
-          <h1 className="text-2xl font-semibold tracking-tight">
-            Sales analytics
-          </h1>
-          <p className="text-muted-foreground">
-            Live pipeline, proposal, invoice, and payment activity for this
-            tenant.
-          </p>
-        </div>
-        <Button asChild size="sm" variant="outline">
-          <Link href="/analytics/sales/chart-builder">Chart builder</Link>
-        </Button>
-      </div>
-
-      <Separator />
-
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <Card>
-          <CardHeader>
-            <CardDescription>Lead pipeline</CardDescription>
-            <CardTitle className="text-2xl">{leadCount}</CardTitle>
-          </CardHeader>
-          <CardContent className="text-muted-foreground text-sm">
-            {currencyFormatter.format(estimatedPipelineValue)} estimated across
-            all active leads.
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardDescription>Proposals in play</CardDescription>
-            <CardTitle className="text-2xl">{proposalCount}</CardTitle>
-          </CardHeader>
-          <CardContent className="text-muted-foreground text-sm">
-            {currencyFormatter.format(proposedRevenue)} proposed revenue on
-            record.
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardDescription>Invoices issued</CardDescription>
-            <CardTitle className="text-2xl">
-              {currencyFormatter.format(invoicedRevenue)}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="text-muted-foreground text-sm">
-            {invoiceCount} invoices tracked with{" "}
-            {currencyFormatter.format(outstandingRevenue)} still due.
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardDescription>Cash collected</CardDescription>
-            <CardTitle className="text-2xl">
-              {currencyFormatter.format(collectedRevenue)}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="text-muted-foreground text-sm">
-            {paymentCount} payments recorded for this tenant.
-          </CardContent>
-        </Card>
-      </section>
-
-      <section className="space-y-4">
-        <div className="flex items-center justify-between gap-4">
+    <PageCanvas>
+      <CommandBand>
+        <CommandBandHeader>
           <div>
-            <h2 className="text-sm font-medium text-muted-foreground">
-              Recent proposals
-            </h2>
-            <p className="text-muted-foreground text-sm">
-              Current opportunities linked to leads, clients, and upcoming
-              events.
-            </p>
+            <MonoLabel tone="dark">Analytics</MonoLabel>
+            <DisplayHeading size="md">Sales analytics</DisplayHeading>
+            <CommandBandLede>
+              Live pipeline, proposal, invoice, and payment activity for this
+              tenant.
+            </CommandBandLede>
           </div>
-          <Link
-            className="text-sm font-medium text-primary underline-offset-4 hover:underline"
-            href="/crm/pipeline"
-          >
-            Open CRM pipeline
-          </Link>
-        </div>
+          <CommandBandActions>
+            <Button asChild size="sm" variant="on-dark">
+              <Link href="/analytics/sales/chart-builder">Chart builder</Link>
+            </Button>
+          </CommandBandActions>
+        </CommandBandHeader>
 
-        <div className="overflow-hidden rounded-lg border bg-card">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Proposal</TableHead>
-                <TableHead>Account</TableHead>
-                <TableHead>Event</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead className="text-right">Total</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {recentProposals.length === 0 ? (
-                <TableRow>
-                  <TableCell
-                    className="py-8 text-center text-muted-foreground"
-                    colSpan={6}
-                  >
-                    No proposals found for this tenant yet.
-                  </TableCell>
-                </TableRow>
-              ) : (
-                recentProposals.map((proposal) => {
-                  const accountLabel = proposal.client
-                    ? formatClientName(proposal.client)
-                    : proposal.lead
-                      ? formatLeadLabel(proposal.lead)
-                      : "Unassigned";
+        <MetricBand cols={4}>
+          <MetricCell>
+            <MetricLabel>Lead pipeline</MetricLabel>
+            <MetricValue>{leadCount}</MetricValue>
+          </MetricCell>
+          <MetricCell>
+            <MetricLabel>Proposals in play</MetricLabel>
+            <MetricValue>{proposalCount}</MetricValue>
+          </MetricCell>
+          <MetricCell>
+            <MetricLabel>Invoices issued</MetricLabel>
+            <MetricValue>
+              {currencyFormatter.format(invoicedRevenue)}
+            </MetricValue>
+          </MetricCell>
+          <MetricCell>
+            <MetricLabel>Cash collected</MetricLabel>
+            <MetricValue>
+              {currencyFormatter.format(collectedRevenue)}
+            </MetricValue>
+          </MetricCell>
+        </MetricBand>
+      </CommandBand>
 
-                  return (
-                    <TableRow key={proposal.id}>
-                      <TableCell>
-                        <div className="font-medium">{proposal.title}</div>
-                        <div className="text-muted-foreground text-xs">
-                          {proposal.proposalNumber}
-                        </div>
-                      </TableCell>
-                      <TableCell>{accountLabel}</TableCell>
-                      <TableCell>
-                        {proposal.event?.title ?? "Not linked"}
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          className="w-fit"
-                          variant={statusVariant(proposal.status)}
-                        >
-                          {titleCase(proposal.status)}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        {proposal.eventDate
-                          ? dateFormatter.format(proposal.eventDate)
-                          : "TBD"}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        {currencyFormatter.format(Number(proposal.total ?? 0))}
+      <PageBody>
+        <OperationalColumn>
+          <section className="space-y-4">
+            <SectionHeader
+              title="Recent proposals"
+              description="Current opportunities linked to leads, clients, and upcoming events."
+              actions={
+                <Link
+                  className="text-sm font-medium text-primary underline-offset-4 hover:underline"
+                  href="/crm/pipeline"
+                >
+                  Open CRM pipeline
+                </Link>
+              }
+            />
+
+            <div className="overflow-hidden rounded-lg border bg-card">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Proposal</TableHead>
+                    <TableHead>Account</TableHead>
+                    <TableHead>Event</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead className="text-right">Total</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {recentProposals.length === 0 ? (
+                    <TableRow>
+                      <TableCell
+                        className="py-8 text-center text-muted-foreground"
+                        colSpan={6}
+                      >
+                        No proposals found for this tenant yet.
                       </TableCell>
                     </TableRow>
-                  );
-                })
-              )}
-            </TableBody>
-          </Table>
-        </div>
-      </section>
+                  ) : (
+                    recentProposals.map((proposal) => {
+                      const accountLabel = proposal.client
+                        ? formatClientName(proposal.client)
+                        : proposal.lead
+                          ? formatLeadLabel(proposal.lead)
+                          : "Unassigned";
 
-      <section className="space-y-4">
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <h2 className="text-sm font-medium text-muted-foreground">
-              Latest invoices
-            </h2>
-            <p className="text-muted-foreground text-sm">
-              Collection visibility for the newest billed events.
-            </p>
-          </div>
-          <Link
-            className="text-sm font-medium text-primary underline-offset-4 hover:underline"
-            href="/accounting/payments"
-          >
-            Open payments dashboard
-          </Link>
-        </div>
+                      return (
+                        <TableRow key={proposal.id}>
+                          <TableCell>
+                            <div className="font-medium">{proposal.title}</div>
+                            <div className="text-muted-foreground text-xs">
+                              {proposal.proposalNumber}
+                            </div>
+                          </TableCell>
+                          <TableCell>{accountLabel}</TableCell>
+                          <TableCell>
+                            {proposal.event?.title ?? "Not linked"}
+                          </TableCell>
+                          <TableCell>
+                            <Badge
+                              className="w-fit"
+                              variant={statusVariant(proposal.status)}
+                            >
+                              {titleCase(proposal.status)}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            {proposal.eventDate
+                              ? dateFormatter.format(proposal.eventDate)
+                              : "TBD"}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            {currencyFormatter.format(
+                              Number(proposal.total ?? 0)
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          </section>
 
-        <div className="overflow-hidden rounded-lg border bg-card">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Invoice</TableHead>
-                <TableHead>Client</TableHead>
-                <TableHead>Event</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Issued</TableHead>
-                <TableHead>Due</TableHead>
-                <TableHead className="text-right">Outstanding</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {recentInvoices.length === 0 ? (
-                <TableRow>
-                  <TableCell
-                    className="py-8 text-center text-muted-foreground"
-                    colSpan={7}
-                  >
-                    No invoices found for this tenant yet.
-                  </TableCell>
-                </TableRow>
-              ) : (
-                recentInvoices.map((invoice) => (
-                  <TableRow key={invoice.id}>
-                    <TableCell>
-                      <div className="font-medium">{invoice.invoiceNumber}</div>
-                      <div className="text-muted-foreground text-xs">
-                        {titleCase(invoice.invoiceType)} ·{" "}
-                        {currencyFormatter.format(Number(invoice.total ?? 0))}
-                      </div>
-                    </TableCell>
-                    <TableCell>{formatClientName(invoice.client)}</TableCell>
-                    <TableCell>{invoice.event.title}</TableCell>
-                    <TableCell>
-                      <Badge
-                        className="w-fit"
-                        variant={statusVariant(invoice.status)}
-                      >
-                        {titleCase(invoice.status)}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      {dateFormatter.format(invoice.issuedAt)}
-                    </TableCell>
-                    <TableCell>
-                      {dateFormatter.format(invoice.dueDate)}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {currencyFormatter.format(Number(invoice.amountDue ?? 0))}
-                    </TableCell>
+          <section className="space-y-4">
+            <SectionHeader
+              title="Latest invoices"
+              description="Collection visibility for the newest billed events."
+              actions={
+                <Link
+                  className="text-sm font-medium text-primary underline-offset-4 hover:underline"
+                  href="/accounting/payments"
+                >
+                  Open payments dashboard
+                </Link>
+              }
+            />
+
+            <div className="overflow-hidden rounded-lg border bg-card">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Invoice</TableHead>
+                    <TableHead>Client</TableHead>
+                    <TableHead>Event</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Issued</TableHead>
+                    <TableHead>Due</TableHead>
+                    <TableHead className="text-right">Outstanding</TableHead>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </div>
-      </section>
-    </div>
+                </TableHeader>
+                <TableBody>
+                  {recentInvoices.length === 0 ? (
+                    <TableRow>
+                      <TableCell
+                        className="py-8 text-center text-muted-foreground"
+                        colSpan={7}
+                      >
+                        No invoices found for this tenant yet.
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    recentInvoices.map((invoice) => (
+                      <TableRow key={invoice.id}>
+                        <TableCell>
+                          <div className="font-medium">
+                            {invoice.invoiceNumber}
+                          </div>
+                          <div className="text-muted-foreground text-xs">
+                            {titleCase(invoice.invoiceType)} ·{" "}
+                            {currencyFormatter.format(
+                              Number(invoice.total ?? 0)
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          {formatClientName(invoice.client)}
+                        </TableCell>
+                        <TableCell>{invoice.event.title}</TableCell>
+                        <TableCell>
+                          <Badge
+                            className="w-fit"
+                            variant={statusVariant(invoice.status)}
+                          >
+                            {titleCase(invoice.status)}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          {dateFormatter.format(invoice.issuedAt)}
+                        </TableCell>
+                        <TableCell>
+                          {dateFormatter.format(invoice.dueDate)}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {currencyFormatter.format(
+                            Number(invoice.amountDue ?? 0)
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          </section>
+        </OperationalColumn>
+      </PageBody>
+    </PageCanvas>
   );
 };
 
