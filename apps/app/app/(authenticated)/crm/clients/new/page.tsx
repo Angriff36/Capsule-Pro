@@ -1,5 +1,14 @@
 "use client";
 
+import {
+  CommandBand,
+  CommandBandActions,
+  CommandBandHeader,
+  CommandBandLede,
+  DisplayHeading,
+  MonoLabel,
+  PageCanvas,
+} from "@repo/design-system/components/blocks/page-shell";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
@@ -115,18 +124,21 @@ export default function NewClientPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Button asChild size="icon" variant="ghost">
-          <Link href="/crm/clients">
-            <ArrowLeftIcon className="h-4 w-4" />
-          </Link>
-        </Button>
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">New Client</h1>
-          <p className="text-muted-foreground">Add a new client to your CRM.</p>
-        </div>
-      </div>
+    <PageCanvas>
+      <CommandBand>
+        <CommandBandHeader>
+          <MonoLabel tone="dark">CRM</MonoLabel>
+          <DisplayHeading size="md">New Client</DisplayHeading>
+          <CommandBandLede>Add a new client to your CRM.</CommandBandLede>
+        </CommandBandHeader>
+        <CommandBandActions>
+          <Button asChild variant="on-dark" size="icon">
+            <Link href="/crm/clients">
+              <ArrowLeftIcon className="h-4 w-4" />
+            </Link>
+          </Button>
+        </CommandBandActions>
+      </CommandBand>
 
       <form onSubmit={handleSubmit}>
         <Card>
@@ -448,6 +460,6 @@ export default function NewClientPage() {
           </CardContent>
         </Card>
       </form>
-    </div>
+    </PageCanvas>
   );
 }
