@@ -8,6 +8,22 @@ import {
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Card, CardContent } from "@repo/design-system/components/ui/card";
+import {
+  CommandBand,
+  CommandBandActions,
+  CommandBandBody,
+  CommandBandHeader,
+  CommandBandLede,
+  DisplayHeading,
+  MetricBand,
+  MetricCell,
+  MetricLabel,
+  MetricValue,
+  MonoLabel,
+  OperationalColumn,
+  PageCanvas,
+  SectionHeader,
+} from "@repo/design-system/components/blocks/page-shell";
 import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import {
   Dialog,
@@ -26,7 +42,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
-import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   Table,
   TableBody,
@@ -521,101 +536,113 @@ export default function TimecardsPage() {
   };
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="font-semibold text-2xl text-foreground">Timecards</h1>
-          <p className="text-muted-foreground text-sm">
-            Review and approve employee time entries
-          </p>
-        </div>
-        <Button
-          disabled={generateLoading || !startDate || !endDate}
-          onClick={handleGenerateFromSchedules}
-          size="sm"
-          variant="outline"
-        >
-          {generateLoading ? (
-            <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
-          ) : (
-            <CalendarIcon className="mr-2 h-4 w-4" />
-          )}
-          Generate from Schedules
-        </Button>
-      </div>
+    <PageCanvas>
+      <CommandBand>
+        <CommandBandHeader>
+          <div className="space-y-4">
+            <MonoLabel tone="dark">Operations / Payroll</MonoLabel>
+            <DisplayHeading size="md">Timecards</DisplayHeading>
+            <CommandBandLede>Track, approve, and manage employee time entries.</CommandBandLede>
+          </div>
+          <CommandBandActions>
+            <Button
+              disabled={generateLoading || !startDate || !endDate}
+              onClick={handleGenerateFromSchedules}
+              size="sm"
+              variant="on-dark"
+            >
+              {generateLoading ? (
+                <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <CalendarIcon className="mr-2 h-4 w-4" />
+              )}
+              Generate from Schedules
+            </Button>
+          </CommandBandActions>
+        </CommandBandHeader>
+        <CommandBandBody>
+          <MetricBand>
+            <MetricCell>
+              <MetricValue>{timeEntries.filter((e) => !e.approved_at && e.clock_out).length}</MetricValue>
+              <MetricLabel>Pending</MetricLabel>
+            </MetricCell>
+            <MetricCell>
+              <MetricValue>{timeEntries.filter((e) => e.approved_at).length}</MetricValue>
+              <MetricLabel>Approved</MetricLabel>
+            </MetricCell>
+            <MetricCell>
+              <MetricValue>{timeEntries.filter((e) => e.exception_type).length}</MetricValue>
+              <MetricLabel>Exceptions</MetricLabel>
+            </MetricCell>
+            <MetricCell>
+              <MetricValue>{timeEntries.filter((e) => e.is_overtime).length}</MetricValue>
+              <MetricLabel>Overtime</MetricLabel>
+            </MetricCell>
+          </MetricBand>
+        </CommandBandBody>
+      </CommandBand>
 
-      <Separator />
-
-      <section>
-        <h2 className="mb-4 font-medium text-muted-foreground text-sm">
-          Filters
-        </h2>
-        <Card className="bg-card/60">
-          <CardContent className="p-4">
-            <div className="flex flex-wrap items-center gap-4">
-              <div className="min-w-[200px] flex-1">
-                <Input
-                  onChange={(e) => handleSearch(e.target.value)}
-                  placeholder="Search employees..."
-                  value={searchQuery}
-                />
-              </div>
-
-              <Select onValueChange={handleStatusChange} value={statusFilter}>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="pending">Pending Approval</SelectItem>
-                  <SelectItem value="approved">Approved</SelectItem>
-                  <SelectItem value="open">Open Entries</SelectItem>
-                  <SelectItem value="all">All Entries</SelectItem>
-                </SelectContent>
-              </Select>
-
-              <DatePicker
-                className="w-[160px]"
-                onChange={(e) => setStartDate(e.target.value)}
-                value={startDate}
-              />
-
-              <DatePicker
-                className="w-[160px]"
-                onChange={(e) => setEndDate(e.target.value)}
-                value={endDate}
+      <OperationalColumn>
+        <SectionHeader title="Filters" count={`${pagination.total} entries`} />
+        <div className="rounded-[22px] border border-hairline bg-soft-stone p-6 sm:p-8">
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="min-w-[200px] flex-1">
+              <Input
+                onChange={(e) => handleSearch(e.target.value)}
+                placeholder="Search employees..."
+                value={searchQuery}
               />
             </div>
-          </CardContent>
-        </Card>
-      </section>
 
-      <TimecardBulkActions
-        loading={actionLoading}
-        onBulkApprove={handleBulkApprove}
-        onBulkEditRequest={handleBulkEditRequest}
-        onBulkFlagExceptions={handleBulkFlagExceptions}
-        onBulkReject={handleBulkReject}
-        selectedCount={selectedEntries.size}
-        totalEntries={pagination.total}
-      />
+            <Select onValueChange={handleStatusChange} value={statusFilter}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="pending">Pending Approval</SelectItem>
+                <SelectItem value="approved">Approved</SelectItem>
+                <SelectItem value="open">Open Entries</SelectItem>
+                <SelectItem value="all">All Entries</SelectItem>
+              </SelectContent>
+            </Select>
 
-      {loading ? (
-        <Card className="p-8 text-center">
-          <Loader2Icon className="mx-auto h-8 w-8 animate-spin text-muted-foreground" />
-        </Card>
-      ) : timeEntries.length === 0 ? (
-        <Card className="p-8 text-center">
-          <p className="text-lg text-muted-foreground">
-            No time entries found for selected criteria
-          </p>
-        </Card>
-      ) : (
-        <section>
-          <h2 className="mb-4 font-medium text-muted-foreground text-sm">
-            Timecards ({pagination.total})
-          </h2>
-          <Card>
-            <CardContent className="p-0">
+            <DatePicker
+              className="w-[160px]"
+              onChange={(e) => setStartDate(e.target.value)}
+              value={startDate}
+            />
+
+            <DatePicker
+              className="w-[160px]"
+              onChange={(e) => setEndDate(e.target.value)}
+              value={endDate}
+            />
+          </div>
+        </div>
+
+        <TimecardBulkActions
+          loading={actionLoading}
+          onBulkApprove={handleBulkApprove}
+          onBulkEditRequest={handleBulkEditRequest}
+          onBulkFlagExceptions={handleBulkFlagExceptions}
+          onBulkReject={handleBulkReject}
+          selectedCount={selectedEntries.size}
+          totalEntries={pagination.total}
+        />
+
+        {loading ? (
+          <div className="flex flex-1 items-center justify-center py-24">
+            <Loader2Icon className="h-8 w-8 animate-spin text-muted-foreground" />
+          </div>
+        ) : timeEntries.length === 0 ? (
+          <div className="rounded-[22px] border border-hairline bg-canvas p-8 text-center">
+            <p className="text-lg text-muted-foreground">
+              No time entries found for selected criteria
+            </p>
+          </div>
+        ) : (
+          <section>
+            <div className="overflow-hidden rounded-[22px] border border-hairline bg-canvas">
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
@@ -855,37 +882,37 @@ export default function TimecardsPage() {
                   </TableBody>
                 </Table>
               </div>
-            </CardContent>
-          </Card>
-
-          <div className="flex items-center justify-between">
-            <p className="text-muted-foreground text-sm">
-              Showing {timeEntries.length} of {pagination.total} entries
-            </p>
-            <div className="flex items-center gap-2">
-              <Button
-                disabled={pagination.page <= 1}
-                onClick={() => handlePageChange(pagination.page - 1)}
-                size="sm"
-                variant="outline"
-              >
-                Previous
-              </Button>
-              <span className="text-sm">
-                Page {pagination.page} of {pagination.totalPages}
-              </span>
-              <Button
-                disabled={pagination.page >= pagination.totalPages}
-                onClick={() => handlePageChange(pagination.page + 1)}
-                size="sm"
-                variant="outline"
-              >
-                Next
-              </Button>
             </div>
-          </div>
-        </section>
-      )}
+
+            <div className="flex items-center justify-between">
+              <p className="text-muted-foreground text-sm">
+                Showing {timeEntries.length} of {pagination.total} entries
+              </p>
+              <div className="flex items-center gap-2">
+                <Button
+                  disabled={pagination.page <= 1}
+                  onClick={() => handlePageChange(pagination.page - 1)}
+                  size="sm"
+                  variant="outline"
+                >
+                  Previous
+                </Button>
+                <span className="text-sm">
+                  Page {pagination.page} of {pagination.totalPages}
+                </span>
+                <Button
+                  disabled={pagination.page >= pagination.totalPages}
+                  onClick={() => handlePageChange(pagination.page + 1)}
+                  size="sm"
+                  variant="outline"
+                >
+                  Next
+                </Button>
+              </div>
+            </div>
+          </section>
+        )}
+      </OperationalColumn>
 
       {selectedTimeEntry && (
         <TimecardDetailModal
@@ -1100,6 +1127,6 @@ export default function TimecardsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </PageCanvas>
   );
 }
