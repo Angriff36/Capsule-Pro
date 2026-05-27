@@ -10,8 +10,11 @@ import {
 } from "@repo/design-system/components/ui/card";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
-import { Separator } from "@repo/design-system/components/ui/separator";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
+import {
+  OperationalColumn,
+  SectionHeader,
+} from "@repo/design-system/components/blocks/page-shell";
 import {
   Building2Icon,
   CheckIcon,
@@ -167,14 +170,10 @@ export function ContactInfoTab({ client, onEdit }: ContactInfoTabProps) {
 
   if (isEditing) {
     return (
-      <div className="space-y-8">
+      <OperationalColumn>
         {/* Basic Info Section */}
         <section>
-          <div className="mb-4 flex items-center gap-2">
-            <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground">
-              Basic Information
-            </p>
-          </div>
+          <SectionHeader title="Basic Information" />
           <div className="rounded-2xl border bg-card p-6">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -215,15 +214,9 @@ export function ContactInfoTab({ client, onEdit }: ContactInfoTabProps) {
           </div>
         </section>
 
-        <Separator />
-
         {/* Contact Details Section */}
         <section>
-          <div className="mb-4 flex items-center gap-2">
-            <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground">
-              Contact Details
-            </p>
-          </div>
+          <SectionHeader title="Contact Details" />
           <div className="rounded-2xl border bg-card p-6">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -266,15 +259,9 @@ export function ContactInfoTab({ client, onEdit }: ContactInfoTabProps) {
           </div>
         </section>
 
-        <Separator />
-
         {/* Address Section */}
         <section>
-          <div className="mb-4 flex items-center gap-2">
-            <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground">
-              Address
-            </p>
-          </div>
+          <SectionHeader title="Address" />
           <div className="rounded-2xl border bg-card p-6">
             <div className="grid grid-cols-2 gap-4">
               <div className="col-span-2 space-y-2">

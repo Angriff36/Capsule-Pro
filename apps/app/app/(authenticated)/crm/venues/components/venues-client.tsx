@@ -10,7 +10,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
-import { Separator } from "@repo/design-system/components/ui/separator";
+import {
+  CommandBand,
+  CommandBandActions,
+  CommandBandHeader,
+  CommandBandLede,
+  DisplayHeading,
+  MonoLabel,
+  OperationalColumn,
+  PageCanvas,
+  SectionHeader,
+} from "@repo/design-system/components/blocks/page-shell";
 import {
   Table,
   TableBody,
@@ -273,26 +283,27 @@ export function VenuesClient() {
   });
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="font-semibold text-2xl tracking-tight">
-            Venue Management
-          </h1>
-          <p className="text-muted-foreground">
+    <PageCanvas>
+      <CommandBand>
+        <CommandBandHeader>
+          <MonoLabel tone="dark">Operations / CRM</MonoLabel>
+          <DisplayHeading size="md">Venue Management</DisplayHeading>
+          <CommandBandLede>
             Manage venues, capacity, and coordination notes for every site.
-          </p>
-        </div>
-        <Button asChild>
-          <Link href="/crm/venues/new">
-            <PlusIcon className="mr-2 h-4 w-4" />
-            Add Venue
-          </Link>
-        </Button>
-      </div>
+          </CommandBandLede>
+          <CommandBandActions>
+            <Button asChild variant="on-dark">
+              <Link href="/crm/venues/new">
+                <PlusIcon className="mr-2 h-4 w-4" />
+                Add Venue
+              </Link>
+            </Button>
+          </CommandBandActions>
+        </CommandBandHeader>
+      </CommandBand>
 
-      <Separator />
+      <OperationalColumn>
+        <SectionHeader title="Filters" />
 
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-4">
@@ -345,8 +356,8 @@ export function VenuesClient() {
       </div>
 
       {/* Table */}
-      <div className="rounded-md border">
-        <Table>
+      <SectionHeader title="All Venues" />
+      <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
@@ -411,7 +422,6 @@ export function VenuesClient() {
             )}
           </TableBody>
         </Table>
-      </div>
 
       {/* Pagination */}
       {pagination.totalPages > 1 && (
@@ -445,6 +455,7 @@ export function VenuesClient() {
           </div>
         </div>
       )}
-    </div>
+      </OperationalColumn>
+    </PageCanvas>
   );
 }

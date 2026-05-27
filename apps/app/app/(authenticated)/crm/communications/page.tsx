@@ -1,8 +1,17 @@
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
+import {
+  CommandBand,
+  CommandBandHeader,
+  CommandBandLede,
+  DisplayHeading,
+  MonoLabel,
+  OperationalColumn,
+  PageCanvas,
+  SectionHeader,
+} from "@repo/design-system/components/blocks/page-shell";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Card, CardContent } from "@repo/design-system/components/ui/card";
-import { Separator } from "@repo/design-system/components/ui/separator";
 import { notFound } from "next/navigation";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
@@ -118,25 +127,20 @@ const CrmCommunicationsPage = async () => {
   );
 
   return (
-    <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
-      {/* Page Header */}
-      <div className="space-y-0.5">
-        <h1 className="text-2xl font-semibold tracking-tight">
-          Communications Timeline
-        </h1>
-        <p className="text-muted-foreground">
-          Maintain a single source of truth for client, venue, and command
-          updates.
-        </p>
-      </div>
+    <PageCanvas>
+      <CommandBand>
+        <CommandBandHeader>
+          <MonoLabel tone="dark">Operations / CRM</MonoLabel>
+          <DisplayHeading size="md">Communications Timeline</DisplayHeading>
+          <CommandBandLede>
+            Maintain a single source of truth for client, venue, and command
+            updates.
+          </CommandBandLede>
+        </CommandBandHeader>
+      </CommandBand>
 
-      <Separator />
-
-      {/* Recent Touchpoints Section */}
-      <section className="space-y-4">
-        <h2 className="text-sm font-medium text-muted-foreground">
-          Recent Touchpoints
-        </h2>
+      <OperationalColumn>
+        <SectionHeader title="Recent Touchpoints" />
         <Card tone="canvas">
           <CardContent className="space-y-4 pt-6">
             {interactions.length === 0 ? (
@@ -182,8 +186,8 @@ const CrmCommunicationsPage = async () => {
             )}
           </CardContent>
         </Card>
-      </section>
-    </div>
+      </OperationalColumn>
+    </PageCanvas>
   );
 };
 

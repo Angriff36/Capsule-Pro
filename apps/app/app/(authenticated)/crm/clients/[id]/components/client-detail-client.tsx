@@ -14,7 +14,20 @@ import {
 } from "@repo/design-system/components/ui/alert-dialog";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
-import { Separator } from "@repo/design-system/components/ui/separator";
+import {
+  CommandBand,
+  CommandBandActions,
+  CommandBandHeader,
+  CommandBandLede,
+  DisplayHeading,
+  MetricBand,
+  MetricCell,
+  MetricLabel,
+  MetricValue,
+  MonoLabel,
+  PageCanvas,
+  PageBody,
+} from "@repo/design-system/components/blocks/page-shell";
 import {
   Tabs,
   TabsContent,
@@ -173,112 +186,99 @@ export function ClientDetailClient({ client }: ClientDetailProps) {
   };
 
   return (
-    <div className="flex flex-col gap-6">
-      {/* Header */}
-      <div className="flex items-start justify-between">
-        <div className="flex items-start gap-4">
-          <Button
-            className="mt-1"
-            onClick={() => router.back()}
-            size="sm"
-            variant="ghost"
-          >
-            <ArrowLeftIcon className="h-4 w-4 mr-2" />
-            Back
-          </Button>
-          <div className="flex-1">
-            <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-semibold tracking-tight">
-                {getClientDisplayName()}
-              </h1>
+    <PageCanvas>
+      <CommandBand>
+        <CommandBandHeader>
+          <div>
+            <MonoLabel tone="dark">Client Detail</MonoLabel>
+            <div className="flex items-center gap-3 mt-1">
+              <DisplayHeading size="md">{getClientDisplayName()}</DisplayHeading>
               <Badge variant="outline">{client.clientType}</Badge>
             </div>
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground mt-2">
-              {client.email && (
-                <div className="flex items-center gap-1.5">
-                  <MailIcon className="h-3.5 w-3.5" />
-                  {client.email}
-                </div>
-              )}
-              {client.phone && (
-                <div className="flex items-center gap-1.5">
-                  <PhoneIcon className="h-3.5 w-3.5" />
-                  {client.phone}
-                </div>
-              )}
-              {client.source && (
-                <span className="text-xs">via {client.source}</span>
-              )}
-            </div>
+            <CommandBandLede className="mt-2">
+              <span className="inline-flex flex-wrap items-center gap-x-4 gap-y-1">
+                {client.email && (
+                  <span className="inline-flex items-center gap-1.5">
+                    <MailIcon className="h-3.5 w-3.5" />
+                    {client.email}
+                  </span>
+                )}
+                {client.phone && (
+                  <span className="inline-flex items-center gap-1.5">
+                    <PhoneIcon className="h-3.5 w-3.5" />
+                    {client.phone}
+                  </span>
+                )}
+                {client.source && (
+                  <span className="text-xs">via {client.source}</span>
+                )}
+              </span>
+            </CommandBandLede>
           </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button disabled={isDeleting} variant="outline">
-                <TrashIcon className="h-4 w-4 mr-2" />
-                Delete
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Delete client?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Are you sure you want to delete this client? This action
-                  cannot be undone.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction
-                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                  onClick={handleDelete}
-                >
+          <CommandBandActions>
+            <Button
+              className="mt-1"
+              onClick={() => router.back()}
+              size="sm"
+              variant="on-dark"
+            >
+              <ArrowLeftIcon className="h-4 w-4 mr-2" />
+              Back
+            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button disabled={isDeleting} variant="on-dark">
+                  <TrashIcon className="h-4 w-4 mr-2" />
                   Delete
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        </div>
-      </div>
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete client?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Are you sure you want to delete this client? This action
+                    cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    onClick={handleDelete}
+                  >
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </CommandBandActions>
+        </CommandBandHeader>
 
-      <Separator />
-
-      {/* Quick Stats */}
-      <section>
-        <h2 className="text-sm font-medium text-muted-foreground mb-3">
-          Overview
-        </h2>
-        <ClientQuickStatsBlock
-          stats={[
-            {
-              label: "Total Events",
-              value: client.eventCount,
-              icon: CalendarIcon,
-            },
-            {
-              label: "Interactions",
-              value: client.interactionCount,
-              icon: MessageSquareIcon,
-            },
-            {
-              label: "Total Revenue",
-              value: client.totalRevenue
+        <MetricBand cols={4}>
+          <MetricCell>
+            <MetricLabel>Total Events</MetricLabel>
+            <MetricValue>{client.eventCount}</MetricValue>
+          </MetricCell>
+          <MetricCell>
+            <MetricLabel>Interactions</MetricLabel>
+            <MetricValue>{client.interactionCount}</MetricValue>
+          </MetricCell>
+          <MetricCell>
+            <MetricLabel>Total Revenue</MetricLabel>
+            <MetricValue>
+              {client.totalRevenue
                 ? `$${Number(client.totalRevenue.total).toLocaleString()}`
-                : "$0",
-              icon: DollarSignIcon,
-            },
-            {
-              label: "Contacts",
-              value: client.contacts.length,
-              icon: UsersIcon,
-            },
-          ]}
-        />
-      </section>
+                : "$0"}
+            </MetricValue>
+          </MetricCell>
+          <MetricCell>
+            <MetricLabel>Contacts</MetricLabel>
+            <MetricValue>{client.contacts.length}</MetricValue>
+          </MetricCell>
+        </MetricBand>
+      </CommandBand>
 
-      <Separator />
-
+      <PageBody>
       {/* Tabs */}
       <Tabs onValueChange={setActiveTab} value={activeTab}>
         <TabsList className="grid w-full grid-cols-6">
@@ -332,6 +332,7 @@ export function ClientDetailClient({ client }: ClientDetailProps) {
           <FinancialTab client={client} />
         </TabsContent>
       </Tabs>
-    </div>
+      </PageBody>
+    </PageCanvas>
   );
 }

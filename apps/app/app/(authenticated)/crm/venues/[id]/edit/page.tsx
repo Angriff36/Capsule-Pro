@@ -8,6 +8,15 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
+import {
+  CommandBand,
+  CommandBandHeader,
+  CommandBandLede,
+  DisplayHeading,
+  MonoLabel,
+  OperationalColumn,
+  PageCanvas,
+} from "@repo/design-system/components/blocks/page-shell";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
 import {
@@ -154,17 +163,22 @@ export default function EditVenuePage() {
   }
 
   return (
-    <div className="space-y-6">
+    <PageCanvas>
+      <CommandBand>
+        <CommandBandHeader>
+          <MonoLabel tone="dark">Operations / CRM / Venues</MonoLabel>
+          <DisplayHeading size="md">Edit Venue</DisplayHeading>
+          <CommandBandLede>Update venue information.</CommandBandLede>
+        </CommandBandHeader>
+      </CommandBand>
+
+      <OperationalColumn>
       <div className="flex items-center gap-4">
         <Button asChild size="icon" variant="ghost">
           <Link href={`/crm/venues/${venueId}`}>
             <ArrowLeftIcon className="h-4 w-4" />
           </Link>
         </Button>
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Edit Venue</h1>
-          <p className="text-muted-foreground">Update venue information.</p>
-        </div>
       </div>
 
       <form onSubmit={handleSubmit}>
@@ -443,6 +457,7 @@ export default function EditVenuePage() {
           </CardContent>
         </Card>
       </form>
-    </div>
+      </OperationalColumn>
+    </PageCanvas>
   );
 }

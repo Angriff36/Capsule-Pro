@@ -18,6 +18,21 @@ import {
   CardTitle,
 } from "@repo/design-system/components/ui/card";
 import {
+  CommandBand,
+  CommandBandActions,
+  CommandBandHeader,
+  CommandBandLede,
+  DisplayHeading,
+  MetricBand,
+  MetricCell,
+  MetricLabel,
+  MetricValue,
+  MonoLabel,
+  OperationalColumn,
+  PageCanvas,
+  SectionHeader,
+} from "@repo/design-system/components/blocks/page-shell";
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -33,7 +48,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
-import { Separator } from "@repo/design-system/components/ui/separator";
 import { Switch } from "@repo/design-system/components/ui/switch";
 import {
   Table,
@@ -48,7 +62,6 @@ import {
   PlusIcon,
   RefreshCw,
   Snowflake,
-  Sun,
   Thermometer,
   Trash2,
 } from "lucide-react";
@@ -259,25 +272,39 @@ export function ScoringRulesClient({
 
   return (
     <>
-      <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
-        {/* Page Header */}
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">
-            Lead Scoring
-          </h1>
-          <p className="text-muted-foreground">
-            Configure scoring rules to automatically prioritize leads based on
-            custom criteria.
-          </p>
-        </div>
+      <PageCanvas>
+        <CommandBand>
+          <CommandBandHeader>
+            <MonoLabel tone="dark">Operations / CRM</MonoLabel>
+            <DisplayHeading size="md">Lead Scoring</DisplayHeading>
+            <CommandBandLede>
+              Configure scoring rules to automatically prioritize leads based on
+              custom criteria.
+            </CommandBandLede>
+            <CommandBandActions>
+              <Button
+                disabled={isCalculating || activeRules === 0}
+                onClick={handleCalculateScores}
+                size="sm"
+                variant="on-dark"
+              >
+                {isCalculating ? (
+                  <RefreshCw className="mr-2 size-4 animate-spin" />
+                ) : (
+                  <RefreshCw className="mr-2 size-4" />
+                )}
+                Calculate Scores
+              </Button>
+              <Button onClick={() => setIsDialogOpen(true)} size="sm" variant="on-dark">
+                <PlusIcon className="mr-2 size-4" />
+                Add Rule
+              </Button>
+            </CommandBandActions>
+          </CommandBandHeader>
+        </CommandBand>
 
-        <Separator />
-
-        {/* Summary Cards */}
-        <section>
-          <h2 className="text-sm font-medium text-muted-foreground mb-4">
-            Overview
-          </h2>
+        <OperationalColumn>
+          <SectionHeader title="Overview" />
           <div className="grid gap-4 md:grid-cols-4">
             <Card tone="soft-stone">
               <CardHeader className="pb-2">
@@ -319,44 +346,9 @@ export function ScoringRulesClient({
               </CardHeader>
             </Card>
           </div>
-        </section>
 
-        {/* Actions Bar */}
-        <section>
-          <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border bg-card p-4">
-            <div className="flex items-center gap-2">
-              <Sun className="size-5 text-muted-foreground" />
-              <span className="text-sm text-muted-foreground">
-                Scoring rules automatically evaluate leads and assign points
-                based on field values.
-              </span>
-            </div>
-            <div className="flex gap-2">
-              <Button
-                disabled={isCalculating || activeRules === 0}
-                onClick={handleCalculateScores}
-                variant="outline"
-              >
-                {isCalculating ? (
-                  <RefreshCw className="mr-2 size-4 animate-spin" />
-                ) : (
-                  <RefreshCw className="mr-2 size-4" />
-                )}
-                Calculate Scores
-              </Button>
-              <Button onClick={() => setIsDialogOpen(true)}>
-                <PlusIcon className="mr-2 size-4" />
-                Add Rule
-              </Button>
-            </div>
-          </div>
-        </section>
-
-        {/* Rules Table */}
-        <section>
-          <h2 className="text-sm font-medium text-muted-foreground mb-4">
-            Scoring Rules ({rules.length})
-          </h2>
+          {/* Rules Table */}
+          <SectionHeader title={`Scoring Rules (${rules.length})`} />
 
           {isLoading && (
             <div className="flex items-center justify-center py-12">
@@ -478,18 +470,8 @@ export function ScoringRulesClient({
               </Table>
             </div>
           )}
-        </section>
-
-        {/* Help Text */}
-        <section className="text-sm text-muted-foreground">
-          <p>
-            <strong>How scoring works:</strong> Each lead is evaluated against
-            all active rules. Points are added when conditions match. Leads with
-            scores ≥80 are "Hot", ≥50 are "Warm", and below 50 are "Cold". Click
-            "Calculate Scores" to re-evaluate all leads after changing rules.
-          </p>
-        </section>
-      </div>
+      </OperationalColumn>
+      </PageCanvas>
 
       {/* Add Rule Dialog */}
       <Dialog onOpenChange={setIsDialogOpen} open={isDialogOpen}>

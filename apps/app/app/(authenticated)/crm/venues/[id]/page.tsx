@@ -20,7 +20,16 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
-import { Separator } from "@repo/design-system/components/ui/separator";
+import {
+  CommandBand,
+  CommandBandActions,
+  CommandBandHeader,
+  CommandBandLede,
+  DisplayHeading,
+  MonoLabel,
+  OperationalColumn,
+  PageCanvas,
+} from "@repo/design-system/components/blocks/page-shell";
 import {
   Table,
   TableBody,
@@ -118,20 +127,14 @@ export default function VenuePage() {
 
   if (!venue) {
     return (
-      <div className="space-y-6">
-        <div className="flex items-center gap-4">
-          <Button asChild size="icon" variant="ghost">
-            <Link href="/crm/venues">
-              <ArrowLeftIcon className="h-4 w-4" />
-            </Link>
-          </Button>
-          <div>
-            <h1 className="text-2xl font-semibold tracking-tight">
-              Venue Not Found
-            </h1>
-          </div>
-        </div>
-      </div>
+      <PageCanvas>
+        <CommandBand>
+          <CommandBandHeader>
+            <MonoLabel tone="dark">Operations / CRM / Venues</MonoLabel>
+            <DisplayHeading size="md">Venue Not Found</DisplayHeading>
+          </CommandBandHeader>
+        </CommandBand>
+      </PageCanvas>
     );
   }
 
@@ -147,70 +150,65 @@ export default function VenuePage() {
     .join(", ");
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button asChild size="icon" variant="ghost">
-            <Link href="/crm/venues">
-              <ArrowLeftIcon className="h-4 w-4" />
-            </Link>
-          </Button>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-semibold tracking-tight">
-                {venue.name}
-              </h1>
-              <Badge variant={venue.isActive ? "default" : "secondary"}>
-                {venue.isActive ? "Active" : "Inactive"}
-              </Badge>
-            </div>
-            <p className="text-muted-foreground">
-              {VENUE_TYPE_LABELS[venue.venueType as VenueType] ||
-                venue.venueType}
-            </p>
-          </div>
-        </div>
-        <div className="flex gap-2">
-          <Button asChild variant="outline">
-            <Link href={`/crm/venues/${venueId}/edit`}>
-              <PencilIcon className="mr-2 h-4 w-4" />
-              Edit
-            </Link>
-          </Button>
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button disabled={deleting} variant="destructive">
-                {deleting && (
-                  <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
-                )}
-                <TrashIcon className="mr-2 h-4 w-4" />
-                Delete
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Delete venue?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Are you sure you want to delete this venue? This action cannot
-                  be undone.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction
-                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                  onClick={handleDelete}
-                >
-                  Delete
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        </div>
-      </div>
+    <PageCanvas>
+      <CommandBand>
+        <CommandBandHeader>
+          <MonoLabel tone="dark">Operations / CRM / Venues</MonoLabel>
+          <DisplayHeading size="md">{venue.name}</DisplayHeading>
+          <CommandBandLede>
+            {VENUE_TYPE_LABELS[venue.venueType as VenueType] ||
+              venue.venueType}
+            {venue.isActive ? " · Active" : " · Inactive"}
+          </CommandBandLede>
+          <CommandBandActions>
+            <Button asChild size="sm" variant="on-dark">
+              <Link href={`/crm/venues/${venueId}/edit`}>
+                <PencilIcon className="mr-2 h-4 w-4" />
+                Edit
+              </Link>
+            </Button>
+          </CommandBandActions>
+        </CommandBandHeader>
+      </CommandBand>
 
-      <Separator />
+      <OperationalColumn>
+      <div className="flex items-center gap-4">
+        <Button asChild size="icon" variant="ghost">
+          <Link href="/crm/venues">
+            <ArrowLeftIcon className="h-4 w-4" />
+          </Link>
+        </Button>
+        <div className="flex-1" />
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button disabled={deleting} variant="destructive">
+              {deleting && (
+                <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
+              )}
+              <TrashIcon className="mr-2 h-4 w-4" />
+              Delete
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete venue?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to delete this venue? This action cannot
+                be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                onClick={handleDelete}
+              >
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </div>
 
       <div className="grid gap-6 md:grid-cols-2">
         {/* Location & Capacity */}
@@ -362,6 +360,7 @@ export default function VenuePage() {
           </CardContent>
         </Card>
       </div>
-    </div>
+      </OperationalColumn>
+    </PageCanvas>
   );
 }

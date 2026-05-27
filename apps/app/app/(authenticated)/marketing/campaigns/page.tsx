@@ -1,15 +1,16 @@
 import { auth } from "@repo/auth/server";
 import {
-  Empty,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from "@repo/design-system/components/ui/empty";
-import { Separator } from "@repo/design-system/components/ui/separator";
+  CommandBand,
+  CommandBandBody,
+  CommandBandHeader,
+  CommandBandLede,
+  DisplayHeading,
+  MonoLabel,
+  OperationalColumn,
+  PageCanvas,
+} from "@repo/design-system/components/blocks/page-shell";
 import { Megaphone } from "lucide-react";
 import { notFound } from "next/navigation";
-import { Header } from "../../components/header";
 
 const CampaignsPage = async () => {
   const { orgId } = await auth();
@@ -19,35 +20,34 @@ const CampaignsPage = async () => {
   }
 
   return (
-    <>
-      <Header
-        page="Campaigns"
-        pages={[{ href: "/marketing", label: "Marketing" }]}
-      />
+    <PageCanvas>
+      <CommandBand>
+        <CommandBandHeader>
+          <div className="space-y-4">
+            <MonoLabel tone="dark">Operations / Marketing</MonoLabel>
+            <DisplayHeading>Campaigns</DisplayHeading>
+            <CommandBandLede>
+              Create and manage multi-channel marketing campaigns with
+              performance tracking.
+            </CommandBandLede>
+          </div>
+        </CommandBandHeader>
+        <CommandBandBody />
+      </CommandBand>
 
-      <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
-        <div className="space-y-0.5">
-          <h1 className="text-2xl font-semibold tracking-tight">Campaigns</h1>
-          <p className="text-muted-foreground">
-            Manage your multi-channel marketing campaigns
+      <OperationalColumn>
+        <div className="flex flex-col items-center justify-center rounded-[22px] border border-dashed border-hairline bg-soft-stone px-6 py-16 text-center">
+          <Megaphone className="mb-4 size-10 text-muted-foreground" />
+          <h3 className="text-lg font-medium text-ink">
+            Campaigns — Coming Soon
+          </h3>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Campaign management features are currently in development. Check
+            back soon for multi-channel campaign tools.
           </p>
         </div>
-
-        <Separator />
-
-        <Empty>
-          <EmptyMedia>
-            <Megaphone className="h-16 w-16 text-muted-foreground/50" />
-          </EmptyMedia>
-          <EmptyHeader>
-            <EmptyTitle>Campaigns — Coming Soon</EmptyTitle>
-            <EmptyDescription>
-              Campaign management features are currently in development.
-            </EmptyDescription>
-          </EmptyHeader>
-        </Empty>
-      </div>
-    </>
+      </OperationalColumn>
+    </PageCanvas>
   );
 };
 

@@ -24,7 +24,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
-import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   Table,
   TableBody,
@@ -33,6 +32,17 @@ import {
   TableHeader,
   TableRow,
 } from "@repo/design-system/components/ui/table";
+import {
+  CommandBand,
+  CommandBandActions,
+  CommandBandHeader,
+  CommandBandLede,
+  DisplayHeading,
+  MonoLabel,
+  PageCanvas,
+  PageBody,
+  SectionHeader,
+} from "@repo/design-system/components/blocks/page-shell";
 import {
   type ColumnDef,
   flexRender,
@@ -339,23 +349,26 @@ export function ClientsClient() {
   const selectedTagsCount = filters.tags?.length || 0;
 
   return (
-    <div className="flex flex-col gap-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="font-semibold text-2xl tracking-tight">Clients</h1>
-          <p className="text-muted-foreground">
-            Manage your client relationships and contact information.
-          </p>
-        </div>
-        <Button onClick={() => router.push("/crm/clients/new")}>
-          <PlusIcon className="mr-2 h-4 w-4" />
-          New Client
-        </Button>
-      </div>
+    <PageCanvas>
+      <CommandBand>
+        <CommandBandHeader>
+          <div>
+            <MonoLabel tone="dark">CRM</MonoLabel>
+            <DisplayHeading size="md">Clients</DisplayHeading>
+            <CommandBandLede>
+              Manage your client relationships and contact information.
+            </CommandBandLede>
+          </div>
+          <CommandBandActions>
+            <Button onClick={() => router.push("/crm/clients/new")} variant="on-dark">
+              <PlusIcon className="mr-2 h-4 w-4" />
+              New Client
+            </Button>
+          </CommandBandActions>
+        </CommandBandHeader>
+      </CommandBand>
 
-      <Separator />
-
+      <PageBody>
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-3 rounded-lg border bg-muted/30 p-4">
         <FilterIcon className="h-4 w-4 shrink-0 text-muted-foreground" />
@@ -376,7 +389,7 @@ export function ClientsClient() {
           </Button>
         </form>
 
-        <Separator className="h-6 shrink-0" orientation="vertical" />
+        <div className="h-6 w-px shrink-0 bg-border" />
 
         <Select
           onValueChange={(value) =>
@@ -449,7 +462,7 @@ export function ClientsClient() {
 
         {hasFilters && (
           <>
-            <Separator className="h-6 shrink-0" orientation="vertical" />
+            <div className="h-6 w-px shrink-0 bg-border" />
             <Button onClick={clearFilters} size="sm" variant="ghost">
               <XIcon className="mr-2 h-4 w-4" />
               Clear
@@ -487,7 +500,7 @@ export function ClientsClient() {
           </div>
 
           {/* Table */}
-          <div className="rounded-md border">
+          <div className="overflow-hidden rounded-[22px] border border-hairline bg-canvas">
             <Table>
               <TableHeader>
                 {table.getHeaderGroups().map((headerGroup) => (
@@ -577,6 +590,7 @@ export function ClientsClient() {
           )}
         </>
       )}
-    </div>
+      </PageBody>
+    </PageCanvas>
   );
 }
