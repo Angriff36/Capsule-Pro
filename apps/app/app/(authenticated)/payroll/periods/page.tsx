@@ -1,5 +1,21 @@
 "use client";
 
+import {
+  CommandBand,
+  CommandBandActions,
+  CommandBandBody,
+  CommandBandHeader,
+  CommandBandLede,
+  DisplayHeading,
+  MetricBand,
+  MetricCell,
+  MetricLabel,
+  MetricValue,
+  MonoLabel,
+  OperationalColumn,
+  PageCanvas,
+  SectionHeader,
+} from "@repo/design-system/components/blocks/page-shell";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Card, CardContent } from "@repo/design-system/components/ui/card";
@@ -13,6 +29,14 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@repo/design-system/components/ui/dialog";
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@repo/design-system/components/ui/empty";
 import { Label } from "@repo/design-system/components/ui/label";
 import {
   Select,
@@ -21,7 +45,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
-import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   Table,
   TableBody,
@@ -196,182 +219,227 @@ export default function PayrollPeriodsPage() {
 
   const isFormValid = periodStart && periodEnd;
 
-  return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="font-semibold text-2xl text-foreground">
-            Payroll Periods
-          </h1>
-          <p className="text-muted-foreground text-sm">
-            Manage pay periods for payroll processing
-          </p>
+  // Computed metrics from existing state
+  const openCount = periods.filter((p) => p.status === "open").length;
+  const processingCount = periods.filter(
+    (p) => p.status === "processing"
+  ).length;
+  const closedCount = periods.filter((p) => p.status === "closed").length;
+
+  if (loading) {
+    return (
+      <PageCanvas>
+        <div className="flex flex-1 items-center justify-center py-24">
+          <Loader2Icon className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
-        <Dialog onOpenChange={setCreateDialogOpen} open={createDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <PlusIcon className="mr-2 h-4 w-4" />
-              New Period
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Create Payroll Period</DialogTitle>
-              <DialogDescription>
-                Define the start and end dates for a new payroll period. Periods
-                cannot exceed 31 days.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <Label htmlFor="periodStart">Period Start Date</Label>
-                <DatePicker
-                  id="periodStart"
-                  onChange={(e) => setPeriodStart(e.target.value)}
-                  value={periodStart}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="periodEnd">Period End Date</Label>
-                <DatePicker
-                  id="periodEnd"
-                  onChange={(e) => setPeriodEnd(e.target.value)}
-                  value={periodEnd}
-                />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button
-                disabled={!isFormValid || actionLoading}
-                onClick={handleCreatePeriod}
-              >
-                {actionLoading && (
-                  <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
-                )}
-                Create Period
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      </div>
+      </PageCanvas>
+    );
+  }
 
-      <Separator />
-
-      <section>
-        <h2 className="font-medium text-sm text-muted-foreground mb-4">
-          Filters
-        </h2>
-        <Card className="bg-card/60">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-4">
-              <Select onValueChange={handleStatusChange} value={statusFilter}>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Filter by status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Periods</SelectItem>
-                  <SelectItem value="open">Open</SelectItem>
-                  <SelectItem value="processing">Processing</SelectItem>
-                  <SelectItem value="closed">Closed</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </CardContent>
-        </Card>
-      </section>
-
-      {loading ? (
-        <Card className="p-8 text-center">
-          <Loader2Icon className="mx-auto h-8 w-8 animate-spin text-muted-foreground" />
-        </Card>
-      ) : periods.length === 0 ? (
-        <Card className="p-8 text-center">
-          <CalendarIcon className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-          <p className="text-muted-foreground text-lg mb-2">
-            No payroll periods found
-          </p>
-          <p className="text-muted-foreground text-sm">
-            Create your first payroll period to get started
-          </p>
-        </Card>
-      ) : (
-        <section>
-          <h2 className="font-medium text-sm text-muted-foreground mb-4">
-            Periods ({pagination.total})
-          </h2>
-          <Card>
-            <CardContent className="p-0">
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Period</TableHead>
-                      <TableHead>Start Date</TableHead>
-                      <TableHead>End Date</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Created</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {periods.map((period, index) => (
-                      <TableRow key={period.id}>
-                        <TableCell className="font-medium">
-                          Period {pagination.total - index}
-                        </TableCell>
-                        <TableCell>{formatDate(period.periodStart)}</TableCell>
-                        <TableCell>{formatDate(period.periodEnd)}</TableCell>
-                        <TableCell>{getStatusBadge(period.status)}</TableCell>
-                        <TableCell className="text-muted-foreground text-sm">
-                          {formatDate(period.createdAt)}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <Button
-                            onClick={() =>
-                              router.push(`/payroll/periods/${period.id}`)
-                            }
-                            size="sm"
-                            variant="outline"
-                          >
-                            View Details
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            </CardContent>
-          </Card>
-
-          <div className="flex items-center justify-between">
-            <p className="text-muted-foreground text-sm">
-              Showing {periods.length} of {pagination.total} periods
-            </p>
-            <div className="flex items-center gap-2">
-              <Button
-                disabled={pagination.page <= 1}
-                onClick={() => handlePageChange(pagination.page - 1)}
-                size="sm"
-                variant="outline"
-              >
-                Previous
-              </Button>
-              <span className="text-sm">
-                Page {pagination.page} of {pagination.totalPages}
-              </span>
-              <Button
-                disabled={pagination.page >= pagination.totalPages}
-                onClick={() => handlePageChange(pagination.page + 1)}
-                size="sm"
-                variant="outline"
-              >
-                Next
-              </Button>
-            </div>
+  return (
+    <PageCanvas>
+      <CommandBand>
+        <CommandBandHeader>
+          <div className="space-y-4">
+            <MonoLabel tone="dark">Operations / Payroll</MonoLabel>
+            <DisplayHeading size="md">Payroll periods</DisplayHeading>
+            <CommandBandLede>
+              Define pay period date ranges, track open and closed cycles, and
+              drill into period details for payroll processing.
+            </CommandBandLede>
           </div>
+          <CommandBandActions>
+            <Dialog onOpenChange={setCreateDialogOpen} open={createDialogOpen}>
+              <DialogTrigger asChild>
+                <Button size="default" variant="on-dark">
+                  <PlusIcon className="mr-2 h-4 w-4" />
+                  New Period
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Create Payroll Period</DialogTitle>
+                  <DialogDescription>
+                    Define the start and end dates for a new payroll period.
+                    Periods cannot exceed 31 days.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="periodStart">Period Start Date</Label>
+                    <DatePicker
+                      id="periodStart"
+                      onChange={(e) => setPeriodStart(e.target.value)}
+                      value={periodStart}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="periodEnd">Period End Date</Label>
+                    <DatePicker
+                      id="periodEnd"
+                      onChange={(e) => setPeriodEnd(e.target.value)}
+                      value={periodEnd}
+                    />
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button
+                    disabled={!isFormValid || actionLoading}
+                    onClick={handleCreatePeriod}
+                  >
+                    {actionLoading && (
+                      <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
+                    )}
+                    Create Period
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </CommandBandActions>
+        </CommandBandHeader>
+
+        <CommandBandBody>
+          <MetricBand>
+            <MetricCell>
+              <MetricLabel>Open</MetricLabel>
+              <MetricValue>{String(openCount)}</MetricValue>
+              <div className="text-xs text-white/55">Awaiting processing</div>
+            </MetricCell>
+            <MetricCell>
+              <MetricLabel>Processing</MetricLabel>
+              <MetricValue>{String(processingCount)}</MetricValue>
+              <div className="text-xs text-white/55">In progress</div>
+            </MetricCell>
+            <MetricCell>
+              <MetricLabel>Closed</MetricLabel>
+              <MetricValue>{String(closedCount)}</MetricValue>
+              <div className="text-xs text-white/55">Finalized</div>
+            </MetricCell>
+            <MetricCell>
+              <MetricLabel>Total</MetricLabel>
+              <MetricValue>{String(pagination.total)}</MetricValue>
+              <div className="text-xs text-white/55">All periods</div>
+            </MetricCell>
+          </MetricBand>
+        </CommandBandBody>
+      </CommandBand>
+
+      <OperationalColumn>
+        <SectionHeader
+          count={`${pagination.total} periods`}
+          description="Filter by status, then view details for any period."
+          eyebrow="Operational list"
+          title="Payroll periods"
+        />
+
+        <section className="rounded-[22px] border border-hairline bg-soft-stone p-6 sm:p-8">
+          <Select onValueChange={handleStatusChange} value={statusFilter}>
+            <SelectTrigger className="w-[200px] rounded-[16px] border-hairline bg-canvas">
+              <SelectValue placeholder="Filter by status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Periods</SelectItem>
+              <SelectItem value="open">Open</SelectItem>
+              <SelectItem value="processing">Processing</SelectItem>
+              <SelectItem value="closed">Closed</SelectItem>
+            </SelectContent>
+          </Select>
         </section>
-      )}
-    </div>
+
+        {periods.length === 0 ? (
+          <div className="rounded-[22px] border border-dashed border-hairline bg-canvas px-6 py-16 text-center">
+            <Empty>
+              <EmptyHeader>
+                <EmptyMedia variant="icon">
+                  <CalendarIcon />
+                </EmptyMedia>
+                <EmptyTitle>No payroll periods found</EmptyTitle>
+                <EmptyDescription>
+                  {statusFilter !== "all"
+                    ? "No periods match the selected filter. Try changing the status filter."
+                    : "Create your first payroll period to get started."}
+                </EmptyDescription>
+              </EmptyHeader>
+              <EmptyContent>
+                <p className="text-muted-foreground text-xs">
+                  Click <strong>New Period</strong> above to define a pay period
+                  date range.
+                </p>
+              </EmptyContent>
+            </Empty>
+          </div>
+        ) : (
+          <>
+            <div className="overflow-hidden rounded-[22px] border border-hairline bg-canvas">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Period</TableHead>
+                    <TableHead>Start Date</TableHead>
+                    <TableHead>End Date</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Created</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {periods.map((period, index) => (
+                    <TableRow key={period.id}>
+                      <TableCell className="font-medium text-ink">
+                        Period {pagination.total - index}
+                      </TableCell>
+                      <TableCell>{formatDate(period.periodStart)}</TableCell>
+                      <TableCell>{formatDate(period.periodEnd)}</TableCell>
+                      <TableCell>{getStatusBadge(period.status)}</TableCell>
+                      <TableCell className="text-muted-foreground text-sm">
+                        {formatDate(period.createdAt)}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Button
+                          onClick={() =>
+                            router.push(`/payroll/periods/${period.id}`)
+                          }
+                          size="sm"
+                          variant="outline"
+                        >
+                          View Details
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <p className="text-muted-foreground text-sm">
+                Showing {periods.length} of {pagination.total} periods
+              </p>
+              <div className="flex items-center gap-2">
+                <Button
+                  disabled={pagination.page <= 1}
+                  onClick={() => handlePageChange(pagination.page - 1)}
+                  size="sm"
+                  variant="outline"
+                >
+                  Previous
+                </Button>
+                <span className="text-sm">
+                  Page {pagination.page} of {pagination.totalPages}
+                </span>
+                <Button
+                  disabled={pagination.page >= pagination.totalPages}
+                  onClick={() => handlePageChange(pagination.page + 1)}
+                  size="sm"
+                  variant="outline"
+                >
+                  Next
+                </Button>
+              </div>
+            </div>
+          </>
+        )}
+      </OperationalColumn>
+    </PageCanvas>
   );
 }
