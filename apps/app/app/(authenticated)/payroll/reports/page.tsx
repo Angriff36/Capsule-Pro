@@ -2,7 +2,6 @@
 
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
-import { Card, CardContent } from "@repo/design-system/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -19,7 +18,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
-import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   Table,
   TableBody,
@@ -37,6 +35,21 @@ import {
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
+import {
+  CommandBand,
+  CommandBandBody,
+  CommandBandHeader,
+  CommandBandLede,
+  DisplayHeading,
+  MetricBand,
+  MetricCell,
+  MetricLabel,
+  MetricValue,
+  MonoLabel,
+  OperationalColumn,
+  PageCanvas,
+  SectionHeader,
+} from "@repo/design-system/components/blocks/page-shell";
 
 type ReportFormat = "csv" | "qbxml" | "qbOnlineCsv" | "json";
 
@@ -197,85 +210,101 @@ export default function PayrollReportsPage() {
     return `${formatDate(period.periodStart)} - ${formatDate(period.periodEnd)}`;
   };
 
+  const openPeriods = periods.filter((p) => p.status === "open").length;
+  const closedPeriods = periods.filter((p) => p.status === "closed").length;
+
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="font-semibold text-2xl text-foreground">
-            Payroll Reports
-          </h1>
-          <p className="text-muted-foreground text-sm">
-            Export payroll reports in various formats
-          </p>
-        </div>
-      </div>
+    <PageCanvas>
+      <CommandBand>
+        <CommandBandHeader>
+          <div className="space-y-4">
+            <MonoLabel tone="dark">Operations / Payroll</MonoLabel>
+            <DisplayHeading size="md">Payroll Reports</DisplayHeading>
+            <CommandBandLede>
+              Export payroll reports in CSV, QuickBooks, and JSON formats.
+            </CommandBandLede>
+          </div>
+        </CommandBandHeader>
+        <CommandBandBody>
+          <MetricBand cols={3}>
+            <MetricCell>
+              <MetricLabel>Open</MetricLabel>
+              <MetricValue>{openPeriods}</MetricValue>
+            </MetricCell>
+            <MetricCell>
+              <MetricLabel>Closed</MetricLabel>
+              <MetricValue>{closedPeriods}</MetricValue>
+            </MetricCell>
+            <MetricCell>
+              <MetricLabel>Total</MetricLabel>
+              <MetricValue>{periods.length}</MetricValue>
+            </MetricCell>
+          </MetricBand>
+        </CommandBandBody>
+      </CommandBand>
 
-      <Separator />
-
-      <section>
-        <h2 className="font-medium text-sm text-muted-foreground mb-4">
-          Export by Period
-        </h2>
+      <OperationalColumn>
+        <SectionHeader
+          eyebrow="Periods"
+          title="Export by Period"
+          count={periods.length > 0 ? `${periods.length}` : undefined}
+        />
         {loading ? (
-          <Card className="p-8 text-center">
-            <Loader2Icon className="mx-auto h-8 w-8 animate-spin text-muted-foreground" />
-          </Card>
+          <div className="flex items-center justify-center rounded-[22px] border border-hairline bg-canvas p-12">
+            <Loader2Icon className="h-8 w-8 animate-spin text-muted-foreground" />
+          </div>
         ) : periods.length === 0 ? (
-          <Card className="p-8 text-center">
-            <FileTextIcon className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-            <p className="text-muted-foreground text-lg mb-2">
+          <div className="flex flex-col items-center justify-center rounded-[22px] border border-hairline bg-canvas p-12 text-center">
+            <FileTextIcon className="mb-4 h-12 w-12 text-muted-foreground" />
+            <p className="mb-2 text-lg text-muted-foreground">
               No payroll periods found
             </p>
-            <p className="text-muted-foreground text-sm">
+            <p className="text-sm text-muted-foreground">
               Create a payroll period and generate payroll to export reports
             </p>
-          </Card>
+          </div>
         ) : (
-          <Card>
-            <CardContent className="p-0">
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Period</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {periods.map((period) => (
-                      <TableRow key={period.id}>
-                        <TableCell className="font-medium">
-                          {getPeriodLabel(period)}
-                        </TableCell>
-                        <TableCell>
-                          <Badge
-                            variant={
-                              period.status === "open" ? "default" : "outline"
-                            }
-                          >
-                            {period.status}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <Button
-                            onClick={() => openExportDialog(period.id)}
-                            size="sm"
-                            variant="outline"
-                          >
-                            <DownloadIcon className="mr-2 h-4 w-4" />
-                            Export
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            </CardContent>
-          </Card>
+          <div className="overflow-hidden rounded-[22px] border border-hairline bg-canvas">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Period</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {periods.map((period) => (
+                  <TableRow key={period.id}>
+                    <TableCell className="font-medium">
+                      {getPeriodLabel(period)}
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={
+                          period.status === "open" ? "default" : "outline"
+                        }
+                      >
+                        {period.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button
+                        onClick={() => openExportDialog(period.id)}
+                        size="sm"
+                        variant="outline"
+                      >
+                        <DownloadIcon className="mr-2 h-4 w-4" />
+                        Export
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         )}
-      </section>
+      </OperationalColumn>
 
       {/* Export Dialog */}
       <Dialog onOpenChange={setExportDialogOpen} open={exportDialogOpen}>
@@ -343,69 +372,54 @@ export default function PayrollReportsPage() {
       </Dialog>
 
       {/* Format Guide Section */}
-      <section className="space-y-4">
-        <h2 className="font-medium text-sm text-muted-foreground">
-          Export Format Guide
-        </h2>
+      <OperationalColumn>
+        <SectionHeader
+          eyebrow="Reference"
+          title="Export Format Guide"
+        />
         <div className="grid gap-4 md:grid-cols-2">
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-start gap-3">
-                <FileSpreadsheetIcon className="h-5 w-5 text-muted-foreground mt-0.5" />
-                <div>
-                  <h3 className="font-semibold mb-1">CSV</h3>
-                  <p className="text-muted-foreground text-sm">
-                    Standard CSV format compatible with Excel, Google Sheets,
-                    and most spreadsheet applications.
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-start gap-3">
-                <FileTextIcon className="h-5 w-5 text-muted-foreground mt-0.5" />
-                <div>
-                  <h3 className="font-semibold mb-1">QuickBooks XML</h3>
-                  <p className="text-muted-foreground text-sm">
-                    QBXML format for importing into QuickBooks Desktop. Supports
-                    aggregate import option.
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-start gap-3">
-                <FileSpreadsheetIcon className="h-5 w-5 text-muted-foreground mt-0.5" />
-                <div>
-                  <h3 className="font-semibold mb-1">QuickBooks Online CSV</h3>
-                  <p className="text-muted-foreground text-sm">
-                    Specialized CSV format for QuickBooks Online imports.
-                    Supports aggregate import option.
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-start gap-3">
-                <FileTextIcon className="h-5 w-5 text-muted-foreground mt-0.5" />
-                <div>
-                  <h3 className="font-semibold mb-1">JSON</h3>
-                  <p className="text-muted-foreground text-sm">
-                    Machine-readable JSON format for integration with other
-                    systems and custom processing.
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <div className="flex items-start gap-3 rounded-[22px] border border-hairline bg-canvas p-4">
+            <FileSpreadsheetIcon className="mt-0.5 h-5 w-5 text-muted-foreground" />
+            <div>
+              <h3 className="mb-1 font-semibold">CSV</h3>
+              <p className="text-sm text-muted-foreground">
+                Standard CSV format compatible with Excel, Google Sheets,
+                and most spreadsheet applications.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-start gap-3 rounded-[22px] border border-hairline bg-canvas p-4">
+            <FileTextIcon className="mt-0.5 h-5 w-5 text-muted-foreground" />
+            <div>
+              <h3 className="mb-1 font-semibold">QuickBooks XML</h3>
+              <p className="text-sm text-muted-foreground">
+                QBXML format for importing into QuickBooks Desktop. Supports
+                aggregate import option.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-start gap-3 rounded-[22px] border border-hairline bg-canvas p-4">
+            <FileSpreadsheetIcon className="mt-0.5 h-5 w-5 text-muted-foreground" />
+            <div>
+              <h3 className="mb-1 font-semibold">QuickBooks Online CSV</h3>
+              <p className="text-sm text-muted-foreground">
+                Specialized CSV format for QuickBooks Online imports.
+                Supports aggregate import option.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-start gap-3 rounded-[22px] border border-hairline bg-canvas p-4">
+            <FileTextIcon className="mt-0.5 h-5 w-5 text-muted-foreground" />
+            <div>
+              <h3 className="mb-1 font-semibold">JSON</h3>
+              <p className="text-sm text-muted-foreground">
+                Machine-readable JSON format for integration with other
+                systems and custom processing.
+              </p>
+            </div>
+          </div>
         </div>
-      </section>
-    </div>
+      </OperationalColumn>
+    </PageCanvas>
   );
 }
