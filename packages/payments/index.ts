@@ -8,7 +8,7 @@ export const stripe = new Proxy({} as Stripe, {
   get(_target, prop) {
     if (!_stripe) {
       _stripe = new Stripe(keys().STRIPE_SECRET_KEY, {
-        apiVersion: "2026-01-28.clover",
+        apiVersion: "2026-04-22.dahlia",
       });
     }
     return (_stripe as any)[prop];

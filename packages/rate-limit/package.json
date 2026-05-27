@@ -2,14 +2,14 @@
   "name": "@repo/rate-limit",
   "version": "0.0.0",
   "dependencies": {
-    "@t3-oss/env-nextjs": "^0.13.10",
+    "@t3-oss/env-nextjs": "^0.13.11",
     "@upstash/ratelimit": "^2.0.8",
-    "@upstash/redis": "^1.36.2",
-    "zod": "^4.3.6"
+    "@upstash/redis": "^1.38.0",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",
-    "typescript": "^5.9.3"
+    "typescript": "^6.0.3"
   },
   "main": "./index.ts",
   "types": "./index.ts",

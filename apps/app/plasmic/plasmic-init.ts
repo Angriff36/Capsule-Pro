@@ -26,7 +26,7 @@ export const getPlasmicLoader = () => {
     preview: process.env.NODE_ENV !== "production",
   });
 
-  registerPlasmicComponents(loader.registerComponent, "loader");
+  registerPlasmicComponents(loader.registerComponent.bind(loader) as any, "loader");
 
   return loader;
 };

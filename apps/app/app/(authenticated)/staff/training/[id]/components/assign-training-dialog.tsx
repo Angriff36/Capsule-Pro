@@ -241,7 +241,6 @@ export function AssignTrainingDialog({
                     <PopoverContent align="start" className="w-auto p-0">
                       <Calendar
                         disabled={(date) => date < new Date()}
-                        initialFocus
                         mode="single"
                         onSelect={field.onChange}
                         selected={field.value}

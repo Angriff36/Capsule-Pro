@@ -47,18 +47,18 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@ai-sdk/openai": "^3.0.25",
+    "@ai-sdk/openai": "^3.0.65",
     "@repo/database": "workspace:*",
     "@repo/observability": "workspace:*",
-    "@slack/web-api": "^7.0.0",
-    "@t3-oss/env-nextjs": "^0.13.10",
-    "ai": "^6.0.70",
-    "zod": "^4.3.6"
+    "@slack/web-api": "^7.16.0",
+    "@t3-oss/env-nextjs": "^0.13.11",
+    "ai": "^6.0.191",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",
-    "@types/node": "25.2.0",
-    "tsup": "^8.0.0",
-    "typescript": "^5.9.3"
+    "@types/node": "25.9.1",
+    "tsup": "^8.5.1",
+    "typescript": "^6.0.3"
   }
 }

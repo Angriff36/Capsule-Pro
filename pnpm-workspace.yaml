@@ -2,3 +2,6 @@ packages:
   - "apps/*"
   - "packages/*"
   - "manifest/runtime"
+
+overrides:
+  "@types/react": "19.2.15"

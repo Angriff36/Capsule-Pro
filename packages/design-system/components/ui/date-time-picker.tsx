@@ -170,7 +170,6 @@ export function DateTimePicker({
                 return false;
               }}
               defaultMonth={date ?? new Date()}
-              initialFocus
             />
           </PopoverContent>
         </Popover>

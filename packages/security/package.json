@@ -2,15 +2,15 @@
   "name": "@repo/security",
   "version": "0.0.0",
   "dependencies": {
-    "@arcjet/next": "1.0.0",
-    "@nosecone/next": "1.0.0",
-    "@t3-oss/env-nextjs": "^0.13.10",
-    "zod": "^4.3.6"
+    "@arcjet/next": "1.4.0",
+    "@nosecone/next": "1.4.0",
+    "@t3-oss/env-nextjs": "^0.13.11",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",
     "next": "16.2.6",
-    "typescript": "^5.9.3"
+    "typescript": "^6.0.3"
   },
   "peerDependencies": {
     "next": "16.2.6"

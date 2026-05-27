@@ -2,12 +2,12 @@
   "name": "@repo/realtime",
   "version": "0.0.0",
   "dependencies": {
-    "zod": "^4.3.6"
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",
-    "typescript": "^5.9.3",
-    "vitest": "^4.0.18"
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.7"
   },
   "exports": {
     ".": {

@@ -21,6 +21,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@repo/design-system/components/ui/empty";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
 import {
   AlertTriangle,
@@ -28,6 +36,7 @@ import {
   Clock,
   Loader2,
   Plus,
+  Wrench,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
@@ -300,8 +309,23 @@ export default function FacilitiesWorkOrdersPage() {
 
             {workOrders.length === 0 ? (
               <Card>
-                <CardContent className="py-8 text-center text-muted-foreground">
-                  No work orders found. Create a new work order to get started.
+                <CardContent className="py-8">
+                  <Empty>
+                    <EmptyHeader>
+                      <EmptyMedia variant="icon">
+                        <Wrench />
+                      </EmptyMedia>
+                      <EmptyTitle>No work orders yet</EmptyTitle>
+                      <EmptyDescription>
+                        Create work orders to track maintenance issues, repairs, and inspections.
+                      </EmptyDescription>
+                    </EmptyHeader>
+                    <EmptyContent>
+                      <p className="text-muted-foreground text-xs">
+                        Click <strong>New Work Order</strong> above to report your first issue.
+                      </p>
+                    </EmptyContent>
+                  </Empty>
                 </CardContent>
               </Card>
             ) : (

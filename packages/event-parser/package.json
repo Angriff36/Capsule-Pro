@@ -38,11 +38,11 @@
     }
   },
   "dependencies": {
-    "pdf2json": "^4.0.2"
+    "pdf2json": "^4.0.3"
   },
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",
-    "typescript": "^5.9.3"
+    "typescript": "^6.0.3"
   },
   "scripts": {
     "build": "tsc",
