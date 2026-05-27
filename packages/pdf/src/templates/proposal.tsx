@@ -5,7 +5,7 @@ import {
   StyleSheet,
   Text,
   View,
-} from "@react-pdf/renderer";
+} from "../lib/react-pdf-primitives";
 import type React from "react";
 import type { ProposalPDFData } from "../types";
 

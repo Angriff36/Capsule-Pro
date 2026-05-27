@@ -1,4 +1,4 @@
-import { Document, Page, StyleSheet, Text, View } from "@react-pdf/renderer";
+import { Document, Page, StyleSheet, Text, View } from "../lib/react-pdf-primitives";
 import type React from "react";
 import type { BattleBoardPDFData } from "../types";
 

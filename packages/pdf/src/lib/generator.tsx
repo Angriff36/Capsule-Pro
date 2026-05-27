@@ -1,4 +1,4 @@
-import { Document, Page, pdf, StyleSheet } from "@react-pdf/renderer";
+import { Document, Page, pdf, StyleSheet } from "./react-pdf-primitives";
 import type React from "react";
 import type { PDFConfig, PDFGenerationOptions } from "../types";
 
