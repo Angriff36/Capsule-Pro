@@ -342,19 +342,17 @@ export function AdvancedEventAnalyticsDashboard() {
   }));
 
   return (
-    <div className="space-y-8">
-      {/* Page Header */}
-      <div className="flex items-center justify-between">
-        <div className="space-y-0.5">
-          <h1 className="text-3xl font-bold tracking-tight">
-            Advanced Event Analytics
-          </h1>
-          <p className="text-muted-foreground">
+    <>
+      <CommandBand>
+        <CommandBandHeader>
+          <MonoLabel tone="dark">Analytics</MonoLabel>
+          <DisplayHeading size="md">Advanced Event Analytics</DisplayHeading>
+          <CommandBandLede>
             Comprehensive insights into event performance, profitability trends,
             and predictive analytics.
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
+          </CommandBandLede>
+        </CommandBandHeader>
+        <CommandBandActions>
           <Select onValueChange={setSelectedPeriod} value={selectedPeriod}>
             <SelectTrigger className="w-[180px]">
               <SelectValue />
@@ -365,100 +363,50 @@ export function AdvancedEventAnalyticsDashboard() {
               <SelectItem value="12m">Last 12 months</SelectItem>
             </SelectContent>
           </Select>
-          <Button onClick={handleExportCSV} variant="outline" size="sm">
+          <Button onClick={handleExportCSV} variant="on-dark" size="sm">
             <Download className="h-4 w-4 mr-2" />
             Export CSV
           </Button>
-        </div>
-      </div>
+        </CommandBandActions>
+      </CommandBand>
 
-      <Separator />
+      <MetricBand>
+        <MetricCell>
+          <MetricValue>{data.summary.totalEvents}</MetricValue>
+          <MetricLabel>Total events · in selected period</MetricLabel>
+        </MetricCell>
+        <MetricCell>
+          <MetricValue>{formatCurrency(data.summary.totalRevenue)}</MetricValue>
+          <MetricLabel>
+            Total revenue ·{" "}
+            {data.summary.revenueTrend === "up"
+              ? "Growing"
+              : data.summary.revenueTrend === "down"
+                ? "Declining"
+                : "Stable"}
+          </MetricLabel>
+        </MetricCell>
+        <MetricCell>
+          <MetricValue>{data.summary.averageMargin.toFixed(1)}%</MetricValue>
+          <MetricLabel>
+            Avg margin ·{" "}
+            {data.summary.marginTrend === "up"
+              ? "Improving"
+              : data.summary.marginTrend === "down"
+                ? "Declining"
+                : "Stable"}
+          </MetricLabel>
+        </MetricCell>
+        <MetricCell>
+          <MetricValue>{data.summary.averageGuestCount.toFixed(0)}</MetricValue>
+          <MetricLabel>Avg guests · per event</MetricLabel>
+        </MetricCell>
+      </MetricBand>
 
-      {/* Summary Metrics */}
-      <section className="space-y-4">
-        <h3 className="text-sm font-medium text-muted-foreground">
-          Performance Overview
-        </h3>
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardDescription>Total Events</CardDescription>
-              <Calendar className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{data.summary.totalEvents}</div>
-              <p className="text-xs text-muted-foreground mt-1">
-                in selected period
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardDescription>Total Revenue</CardDescription>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {formatCurrency(data.summary.totalRevenue)}
-              </div>
-              <div className="flex items-center mt-1">
-                <TrendIcon trend={data.summary.revenueTrend} />
-                <span className="text-xs text-muted-foreground ml-1">
-                  {data.summary.revenueTrend === "up"
-                    ? "Growing"
-                    : data.summary.revenueTrend === "down"
-                      ? "Declining"
-                      : "Stable"}
-                </span>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardDescription>Average Margin</CardDescription>
-              <Percent className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {data.summary.averageMargin.toFixed(1)}%
-              </div>
-              <div className="flex items-center mt-1">
-                <TrendIcon trend={data.summary.marginTrend} />
-                <span className="text-xs text-muted-foreground ml-1">
-                  {data.summary.marginTrend === "up"
-                    ? "Improving"
-                    : data.summary.marginTrend === "down"
-                      ? "Declining"
-                      : "Stable"}
-                </span>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardDescription>Average Guests</CardDescription>
-              <Users className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {data.summary.averageGuestCount.toFixed(0)}
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">per event</p>
-            </CardContent>
-          </Card>
-        </div>
-      </section>
-
-      <Separator />
-
-      {/* Profitability Trends Charts */}
-      <section className="space-y-4">
-        <h3 className="text-sm font-medium text-muted-foreground">
-          Profitability Trends
-        </h3>
+      <PageBody>
+        <OperationalColumn>
+          {/* Profitability Trends Charts */}
+          <SectionHeader title="Profitability Trends" />
         <div className="grid gap-6 md:grid-cols-2">
           <VegaChart
             spec={lineChartSpec({
@@ -484,15 +432,8 @@ export function AdvancedEventAnalyticsDashboard() {
             height={250}
           />
         </div>
-      </section>
 
-      <Separator />
-
-      {/* Event Type & Menu Analysis */}
-      <section className="space-y-4">
-        <h3 className="text-sm font-medium text-muted-foreground">
-          Event & Menu Analysis
-        </h3>
+          <SectionHeader title="Event & Menu Analysis" />
         <div className="grid gap-6 md:grid-cols-2">
           <VegaChart
             spec={barChartSpec({
@@ -517,15 +458,8 @@ export function AdvancedEventAnalyticsDashboard() {
             height={300}
           />
         </div>
-      </section>
 
-      <Separator />
-
-      {/* Client Analysis */}
-      <section className="space-y-4">
-        <h3 className="text-sm font-medium text-muted-foreground">
-          Client Revenue Analysis
-        </h3>
+          <SectionHeader title="Client Revenue Analysis" />
         <VegaChart
           spec={barChartSpec({
             xTitle: "Client",
@@ -591,16 +525,11 @@ export function AdvancedEventAnalyticsDashboard() {
             </CardContent>
           </Card>
         )}
-      </section>
 
-      <Separator />
-
-      {/* Predictive Insights */}
-      <section className="space-y-4">
-        <h3 className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-          <Lightbulb className="h-4 w-4" />
-          Predictive Insights & Recommendations
-        </h3>
+          <SectionHeader
+            title="Predictive Insights & Recommendations"
+            icon={<Lightbulb className="h-4 w-4" />}
+          />
 
         <div className="grid gap-6 md:grid-cols-3">
           {/* Forecast Card */}
@@ -722,7 +651,8 @@ export function AdvancedEventAnalyticsDashboard() {
             </CardContent>
           </Card>
         )}
-      </section>
-    </div>
+        </OperationalColumn>
+      </PageBody>
+    </>
   );
 }
