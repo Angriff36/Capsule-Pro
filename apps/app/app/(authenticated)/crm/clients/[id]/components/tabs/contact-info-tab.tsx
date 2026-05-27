@@ -347,15 +347,9 @@ export function ContactInfoTab({ client, onEdit }: ContactInfoTabProps) {
           </div>
         </section>
 
-        <Separator />
-
         {/* Additional Info Section */}
         <section>
-          <div className="mb-4 flex items-center gap-2">
-            <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground">
-              Additional Information
-            </p>
-          </div>
+          <SectionHeader title="Additional Information" />
           <div className="rounded-2xl border bg-card p-6">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -407,7 +401,7 @@ export function ContactInfoTab({ client, onEdit }: ContactInfoTabProps) {
             Cancel
           </Button>
         </div>
-      </div>
+      </OperationalColumn>
     );
   }
 
