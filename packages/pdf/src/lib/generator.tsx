@@ -1,4 +1,4 @@
-import { Document, Page, pdf, StyleSheet } from "./react-pdf-primitives";
+import { Document, Page, renderToPdf, StyleSheet } from "./react-pdf-primitives";
 import type React from "react";
 import type { PDFConfig, PDFGenerationOptions } from "../types";
 
@@ -77,8 +77,7 @@ export async function generatePDF(
   _filename?: string
 ): Promise<Uint8Array> {
   try {
-    // @ts-expect-error
-    const doc = await pdf(component);
+    const doc = await renderToPdf(component);
     const blob = await doc.toBlob();
     return new Uint8Array(await blob.arrayBuffer());
   } catch (error) {
@@ -105,8 +104,7 @@ export async function downloadPDF(
   }
 
   try {
-    // @ts-expect-error
-    const doc = await pdf(component);
+    const doc = await renderToPdf(component);
     const blob = await doc.toBlob();
 
     // Create download link
@@ -140,8 +138,7 @@ export async function getPDFAsBase64(
   component: React.ReactElement
 ): Promise<string> {
   try {
-    // @ts-expect-error
-    const doc = await pdf(component);
+    const doc = await renderToPdf(component);
     const blob = await doc.toBlob();
     const arrayBuffer = await blob.arrayBuffer();
     const uint8Array = new Uint8Array(arrayBuffer);

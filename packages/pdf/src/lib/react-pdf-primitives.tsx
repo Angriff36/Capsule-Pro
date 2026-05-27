@@ -17,7 +17,7 @@ import {
   View as ReactPdfView,
   pdf,
 } from "@react-pdf/renderer";
-import type { ComponentType, ReactNode } from "react";
+import type { ComponentType, ReactElement, ReactNode } from "react";
 
 type WithChildren<P> = P & { children?: ReactNode };
 
@@ -73,3 +73,8 @@ export const Link = asComponent<WithChildren<{ src?: string; style?: PdfStyle }>
 );
 
 export { StyleSheet, pdf };
+
+/** Bridge workspace ReactElement to react-pdf's pdf() input type. */
+export function renderToPdf(component: ReactElement) {
+  return pdf(component as Parameters<typeof pdf>[0]);
+}
