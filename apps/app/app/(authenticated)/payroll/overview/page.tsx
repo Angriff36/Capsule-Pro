@@ -1,14 +1,21 @@
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
-import { Badge } from "@repo/design-system/components/ui/badge";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@repo/design-system/components/ui/card";
-import { Separator } from "@repo/design-system/components/ui/separator";
+  CommandBand,
+  CommandBandBody,
+  CommandBandHeader,
+  CommandBandLede,
+  DisplayHeading,
+  MetricBand,
+  MetricCell,
+  MetricLabel,
+  MetricValue,
+  MonoLabel,
+  OperationalColumn,
+  PageCanvas,
+  SectionHeader,
+} from "@repo/design-system/components/blocks/page-shell";
+import { Badge } from "@repo/design-system/components/ui/badge";
 import { notFound } from "next/navigation";
 import { getTenantIdForOrg } from "../../../lib/tenant";
 
@@ -201,66 +208,56 @@ const PayrollOverviewPage = async () => {
   const payrollRisks = buildPayrollRisks(missingRateCount, approvalRows.length);
 
   return (
-    <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
-      {/* Page Header */}
-      <div className="space-y-0.5">
-        <h1 className="text-2xl font-semibold tracking-tight">
-          Payroll Overview
-        </h1>
-        <p className="text-muted-foreground">
-          Confirm totals, approvals, and risks before the next payout.
-        </p>
-      </div>
+    <PageCanvas>
+      <CommandBand>
+        <CommandBandHeader>
+          <div className="space-y-4">
+            <MonoLabel tone="dark">Operations / Payroll</MonoLabel>
+            <DisplayHeading size="md">Payroll overview</DisplayHeading>
+            <CommandBandLede>
+              Confirm totals, approvals, and risks before the next payout.
+            </CommandBandLede>
+          </div>
+        </CommandBandHeader>
 
-      <Separator />
+        <CommandBandBody>
+          <MetricBand>
+            {summaryCards.map((summary) => (
+              <MetricCell key={summary.label}>
+                <MetricLabel>{summary.label}</MetricLabel>
+                <MetricValue>{summary.value}</MetricValue>
+                {summary.detail ? (
+                  <div className="text-white/55 text-xs">{summary.detail}</div>
+                ) : null}
+              </MetricCell>
+            ))}
+          </MetricBand>
+        </CommandBandBody>
+      </CommandBand>
 
-      {/* Performance Overview Section */}
-      <section className="space-y-4">
-        <h2 className="text-sm font-medium text-muted-foreground">
-          Performance Overview
-        </h2>
-        <div className="grid gap-6 md:grid-cols-3">
-          {summaryCards.map((summary) => (
-            <Card key={summary.label}>
-              <CardHeader>
-                <CardDescription>{summary.label}</CardDescription>
-                <CardTitle>{summary.value}</CardTitle>
-              </CardHeader>
-              {summary.detail ? (
-                <CardContent>
-                  <span className="text-xs text-muted-foreground">
-                    {summary.detail}
-                  </span>
-                </CardContent>
-              ) : null}
-            </Card>
-          ))}
-        </div>
-      </section>
+      <OperationalColumn>
+        <section className="space-y-6">
+          <SectionHeader
+            count={`${approvalRows.length} pending`}
+            description="Timecards awaiting sign-off before payroll can close."
+            eyebrow="Approvals"
+            title="Pending Approvals"
+          />
 
-      {/* Approvals & Risks Section */}
-      <section className="space-y-4">
-        <h2 className="text-sm font-medium text-muted-foreground">
-          Approvals & Risks
-        </h2>
-        <div className="grid gap-6 lg:grid-cols-2">
-          <Card>
-            <CardHeader>
-              <CardTitle>Pending Approvals</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {approvalRows.length === 0 ? (
-                <p className="text-sm text-muted-foreground">
-                  No pending timecard approvals.
-                </p>
-              ) : (
-                approvalRows.map((approval) => (
+          <div className="rounded-[22px] border border-hairline bg-canvas p-6">
+            {approvalRows.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-4">
+                No pending timecard approvals.
+              </p>
+            ) : (
+              <div className="space-y-3">
+                {approvalRows.map((approval) => (
                   <div
-                    className="rounded-md border border-border/60 px-4 py-3"
+                    className="rounded-[14px] border border-hairline bg-canvas px-4 py-3"
                     key={approval.id}
                   >
                     <div className="flex items-center justify-between">
-                      <p className="font-semibold">
+                      <p className="font-semibold text-ink">
                         {`${approval.first_name} ${approval.last_name}`.trim()}
                       </p>
                       <Badge variant="secondary">{approval.status}</Badge>
@@ -269,22 +266,28 @@ const PayrollOverviewPage = async () => {
                       Submitted {dateTimeFormatter.format(approval.created_at)}
                     </p>
                   </div>
-                ))
-              )}
-            </CardContent>
-          </Card>
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Payroll Risks</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3 text-sm">
-              {payrollRisks.length === 0 ? (
-                <p className="text-muted-foreground">
-                  No payroll risks detected.
-                </p>
-              ) : (
-                payrollRisks.map((issue) => (
+        <section className="space-y-6">
+          <SectionHeader
+            count={`${payrollRisks.length} issue${payrollRisks.length === 1 ? "" : "s"}`}
+            description="Conditions that may block or delay the next payout."
+            eyebrow="Risks"
+            title="Payroll Risks"
+          />
+
+          <div className="rounded-[22px] border border-hairline bg-canvas p-6">
+            {payrollRisks.length === 0 ? (
+              <p className="text-muted-foreground text-sm text-center py-4">
+                No payroll risks detected.
+              </p>
+            ) : (
+              <div className="space-y-3">
+                {payrollRisks.map((issue) => (
                   <div
                     className="flex items-center justify-between"
                     key={issue.label}
@@ -298,13 +301,13 @@ const PayrollOverviewPage = async () => {
                       {issue.severity}
                     </Badge>
                   </div>
-                ))
-              )}
-            </CardContent>
-          </Card>
-        </div>
-      </section>
-    </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
+      </OperationalColumn>
+    </PageCanvas>
   );
 };
 
