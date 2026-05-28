@@ -97,7 +97,7 @@ export async function saveBoardFull(boardId: string, full: BattleBoardFull): Pro
       board_name: full.event_name || 'Untitled',
       status: full.status,
       notes: full.notes,
-      boardData: fullToBoardData(full),
+      boardData: fullToBoardData(full) as never,
     },
   });
 
@@ -130,6 +130,6 @@ export async function recordImportAction(
 
   await database.battleBoard.updateMany({
     where: { id: boardId, tenantId, deletedAt: null },
-    data: { boardData: { ...data, imports: [...existingImports, newImport] } },
+    data: { boardData: { ...data, imports: [...existingImports, newImport] } as never },
   });
 }
