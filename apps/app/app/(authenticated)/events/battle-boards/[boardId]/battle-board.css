@@ -1,0 +1,23 @@
+/* Bolt-generated styles — scoped to the battle-board editor */
+
+@layer base {
+  .bb-root {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    line-height: 1.5;
+  }
+
+  .bb-root input,
+  .bb-root textarea,
+  .bb-root select {
+    font-family: inherit;
+  }
+}
+
+@layer utilities {
+  .bb-root .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 transparent;
+  }
+}
