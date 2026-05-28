@@ -3,18 +3,23 @@
  *
  * Validates the architectural rule: ALL command writes MUST route through
  * a single dynamic dispatcher at `app/api/manifest/[entity]/commands/[command]/route.ts`.
- * Per-command concrete route files are architecturally illegal.
+ * Per-command concrete route files are architecturally illegal unless listed
+ * in `apps/api/lib/manifest/custom-command-routes-allowlist.ts`.
  *
  * @see manifest/ir/kitchen.commands.json
  * @see packages/manifest-runtime/packages/cli/src/commands/audit-routes.ts
  */
 
-import { execSync } from "node:child_process";
-import { existsSync, readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { readdirSync, readFileSync, statSync } from "node:fs";
+import { join, relative, resolve } from "node:path";
 import { describe, expect, it } from "vitest";
+import {
+  CUSTOM_COMMAND_ROUTE_ALLOWLIST,
+  isCustomCommandRoute,
+} from "@/lib/manifest/custom-command-routes-allowlist";
 
 const PROJECT_ROOT = resolve(import.meta.dirname, "../../../..");
+const API_DIR = resolve(PROJECT_ROOT, "apps/api/app/api");
 const COMMANDS_JSON = resolve(
   PROJECT_ROOT,
   "manifest/ir/kitchen.commands.json"
@@ -55,14 +60,39 @@ function getCommandsForEntity(entity: string): CommandEntry[] {
   return loadCommands().filter((c) => c.entity === entity);
 }
 
+function findConcreteCommandRoutes(): string[] {
+  const routes: string[] = [];
+
+  function walk(dir: string) {
+    for (const entry of readdirSync(dir)) {
+      const fullPath = join(dir, entry);
+      if (statSync(fullPath).isDirectory()) {
+        walk(fullPath);
+        continue;
+      }
+      if (entry !== "route.ts") {
+        continue;
+      }
+      const relativePath = relative(API_DIR, fullPath).replace(/\\/g, "/");
+      if (!relativePath.includes("/commands/")) {
+        continue;
+      }
+      if (relativePath.includes("[command]/route.ts")) {
+        continue;
+      }
+      routes.push(relativePath);
+    }
+  }
+
+  walk(API_DIR);
+  return routes;
+}
+
 // ── Tests ──
 
 describe("Manifest Command Registry (kitchen.commands.json)", () => {
   it("is present and parseable", () => {
-    expect(existsSync(COMMANDS_JSON)).toBe(true);
-    const cmds = loadCommands();
-    expect(Array.isArray(cmds)).toBe(true);
-    expect(cmds.length).toBeGreaterThan(500);
+    expect(loadCommands().length).toBeGreaterThan(500);
   });
 
   it("every entry has entity and command", () => {
@@ -73,11 +103,8 @@ describe("Manifest Command Registry (kitchen.commands.json)", () => {
   });
 
   it("every entity has at least one command", () => {
-    const entities = getEntities();
-    expect(entities.length).toBeGreaterThan(0);
-    for (const entity of entities) {
-      const cmdCount = getCommandsForEntity(entity).length;
-      expect(cmdCount).toBeGreaterThan(0);
+    for (const entity of getEntities()) {
+      expect(getCommandsForEntity(entity).length).toBeGreaterThan(0);
     }
   });
 
@@ -111,8 +138,7 @@ describe("Manifest Command Registry (kitchen.commands.json)", () => {
 
     for (const entity of expectedEntities) {
       it(entity, () => {
-        const cmds = getCommandsForEntity(entity);
-        expect(cmds.length).toBeGreaterThan(0);
+        expect(getCommandsForEntity(entity).length).toBeGreaterThan(0);
       });
     }
   });
@@ -125,21 +151,22 @@ describe("Manifest Command Registry (kitchen.commands.json)", () => {
     });
 
     it("KnowledgeBaseEntry uses publishEntry not publish", () => {
-      const kbe = getCommandsForEntity("KnowledgeBaseEntry");
-      const cmdNames = kbe.map((c) => c.command);
+      const cmdNames = getCommandsForEntity("KnowledgeBaseEntry").map(
+        (c) => c.command
+      );
       expect(cmdNames).toContain("publishEntry");
       expect(cmdNames).not.toContain("publish");
     });
 
     it("StaffPerformance has remove command", () => {
-      const cmds = getCommandsForEntity("StaffPerformance");
-      const cmdNames = cmds.map((c) => c.command);
+      const cmdNames = getCommandsForEntity("StaffPerformance").map(
+        (c) => c.command
+      );
       expect(cmdNames).toContain("remove");
     });
 
     it("Deal has close command", () => {
-      const cmds = getCommandsForEntity("Deal");
-      const cmdNames = cmds.map((c) => c.command);
+      const cmdNames = getCommandsForEntity("Deal").map((c) => c.command);
       expect(cmdNames).toContain("close");
     });
   });
@@ -147,7 +174,7 @@ describe("Manifest Command Registry (kitchen.commands.json)", () => {
 
 describe("Dynamic Dispatcher Route", () => {
   it("exists at the canonical path", () => {
-    expect(existsSync(DISPATCHER)).toBe(true);
+    expect(readFileSync(DISPATCHER, "utf-8")).toBeTruthy();
   });
 
   it("imports runManifestCommand from execute-command", () => {
@@ -156,10 +183,19 @@ describe("Dynamic Dispatcher Route", () => {
     expect(content).toMatch(/execute-command/);
   });
 
-  it("extracts entity and command from route params", () => {
+  it("does not import or call createManifestRuntime directly", () => {
     const content = readFileSync(DISPATCHER, "utf-8");
-    expect(content).toMatch(/\[entity\]/);
-    expect(content).toMatch(/\[command\]/);
+    expect(content).not.toMatch(/createManifestRuntime/);
+    expect(content).not.toMatch(/runtime\.runCommand/);
+    expect(content).not.toMatch(/resolveCommand/);
+  });
+
+  it("delegates execution to runManifestCommand with route params", () => {
+    const content = readFileSync(DISPATCHER, "utf-8");
+    expect(content).toMatch(/requireCurrentUser/);
+    expect(content).toMatch(/runManifestCommand\s*\(/);
+    expect(content).toMatch(/entity,/);
+    expect(content).toMatch(/command:\s*commandSlug/);
   });
 
   it("exports only POST", () => {
@@ -170,30 +206,46 @@ describe("Dynamic Dispatcher Route", () => {
   });
 });
 
-describe("Concrete Command Route Prohibition", () => {
-  function findConcreteRoutes(): string[] {
-    const apiDir = resolve(PROJECT_ROOT, "apps/api/app/api");
-    try {
-      const result = execSync(
-        `find "${apiDir}" -path '*/commands/*/route.ts' ! -path '*[command]*' 2>/dev/null`,
-        { encoding: "utf-8" }
-      );
-      return result.trim().split("\n").filter(Boolean);
-    } catch {
-      return [];
-    }
-  }
+describe("execute-command wrapper", () => {
+  it("delegates to runManifestCommandCore with API runtime factory", () => {
+    const executeCommandPath = resolve(
+      PROJECT_ROOT,
+      "apps/api/lib/manifest/execute-command.ts"
+    );
+    const content = readFileSync(executeCommandPath, "utf-8");
+    expect(content).toMatch(/runManifestCommandCore/);
+    expect(content).toMatch(/createManifestRuntime/);
+    expect(content).toMatch(/manifestErrorResponse/);
+    expect(content).toMatch(/manifestSuccessResponse/);
+  });
+});
 
-  it("reports illegal concrete routes", () => {
-    const routes = findConcreteRoutes();
-    // ~300 auto-generated routes still exist — architectural debt
-    // tracked by manifest audit-routes CLI with CONCRETE_COMMAND_ROUTE_NOT_DISPATCHED
-    if (routes.length > 0) {
+describe("Concrete Command Route Prohibition", () => {
+  it("allowlists only routes with documented custom behavior", () => {
+    for (const route of CUSTOM_COMMAND_ROUTE_ALLOWLIST) {
+      expect(isCustomCommandRoute(route)).toBe(true);
+    }
+  });
+
+  it("has no thin wrapper routes outside the dispatcher", () => {
+    const routes = findConcreteCommandRoutes();
+    const illegal = routes.filter((route) => !isCustomCommandRoute(route));
+
+    if (illegal.length > 0) {
       console.warn(
-        `[INFO] ${routes.length} illegal concrete command routes detected (to be removed by generator cleanup)`
+        `[FAIL] Thin command wrapper routes must be removed:\n${illegal.map((r) => `  - ${r}`).join("\n")}`
       );
     }
-    // This is documentation — real enforcement via CLI audit
-    expect(routes).toBeTruthy();
+
+    expect(illegal).toEqual([]);
+  });
+
+  it("documents every remaining non-dispatcher command route", () => {
+    const routes = findConcreteCommandRoutes();
+    const undocumented = routes.filter((route) => !isCustomCommandRoute(route));
+    expect(undocumented).toEqual([]);
+    expect(routes.sort()).toEqual(
+      [...CUSTOM_COMMAND_ROUTE_ALLOWLIST].sort()
+    );
   });
 });

@@ -1,7 +1,7 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { createBottleneckDetector, BottleneckCategory } from "@repo/manifest-runtime/bottleneck-detector";
+import { createBottleneckDetector, BottleneckCategory } from "@ma";
 import { NextResponse } from "next/server";
 
 /**

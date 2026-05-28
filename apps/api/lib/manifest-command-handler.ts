@@ -13,6 +13,7 @@
  * @packageDocumentation
  */
 
+import { randomUUID } from "node:crypto";
 import {
   manifestErrorResponse,
   manifestSuccessResponse,
@@ -22,6 +23,7 @@ import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { resolveCurrentUser } from "@/app/lib/tenant";
 import { dispatchWebhooks } from "@/app/lib/webhook-dispatch";
+import { logManifestIssue } from "@/lib/manifest/issue-log";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
 
 /**
@@ -106,7 +108,7 @@ export async function executeManifestCommand(
     }
 
     // 5. Transform body if needed
-    const commandPayload = transformBody
+    let commandPayload = transformBody
       ? transformBody(body, {
           userId: currentUser.id,
           tenantId: currentUser.tenantId,
@@ -133,6 +135,23 @@ export async function executeManifestCommand(
       entityName,
     });
 
+    let createInstanceId: string | undefined;
+    if (commandName === "create") {
+      const id =
+        typeof commandPayload.id === "string" && commandPayload.id.length > 0
+          ? commandPayload.id
+          : randomUUID();
+      const seeded = await runtime.createInstance(entityName, { id });
+      if (!seeded) {
+        return manifestErrorResponse(
+          "Failed to initialize entity instance for create",
+          500
+        );
+      }
+      commandPayload = { ...commandPayload, id };
+      createInstanceId = id;
+    }
+
     // Extract idempotency key from header (if provided).
     // When present, retried commands with the same key return the cached result
     // without re-execution — preventing duplicate side effects.
@@ -144,22 +163,15 @@ export async function executeManifestCommand(
     const result = await runtime.runCommand(commandName, commandPayload, {
       entityName,
       ...(idempotencyKey ? { idempotencyKey } : {}),
-      // Pass instanceId for instance-scoped (non-create) commands so the
-      // runtime engine targets the correct entity for mutate/update.
-      ...(commandName !== "create" && (commandPayload.id ?? params?.id)
-        ? { instanceId: String(commandPayload.id ?? params?.id) }
-        : {}),
+      ...(createInstanceId
+        ? { instanceId: createInstanceId }
+        : commandName !== "create" && (commandPayload.id ?? params?.id)
+          ? { instanceId: String(commandPayload.id ?? params?.id) }
+          : {}),
     });
 
-    // 7. Handle failures
+    // 7. Handle failures (issue-log telemetry records details centrally)
     if (!result.success) {
-      log.error(`${logPrefix} Command failed`, {
-        policyDenial: result.policyDenial,
-        guardFailure: result.guardFailure,
-        error: result.error,
-        userRole: currentUser.role,
-      });
-
       if (result.policyDenial) {
         return manifestErrorResponse(
           `Access denied: ${result.policyDenial.policyName} (role=${currentUser.role})`,
@@ -178,6 +190,7 @@ export async function executeManifestCommand(
     // 8. Success — fire-and-forget webhook dispatch
     const entityId = String(
       (result.result as Record<string, unknown>)?.id ??
+        createInstanceId ??
         commandPayload.id ??
         params?.id ??
         ""
@@ -201,14 +214,37 @@ export async function executeManifestCommand(
       },
     }).catch(() => {});
 
+    let successResult = result.result;
+    if (commandName === "create" && createInstanceId) {
+      if (
+        !(
+          typeof successResult === "object" &&
+          successResult !== null &&
+          typeof (successResult as Record<string, unknown>).id === "string"
+        )
+      ) {
+        const instance = await runtime.getInstance(
+          entityName,
+          createInstanceId
+        );
+        successResult = instance ?? { id: createInstanceId };
+      }
+    }
+
     return manifestSuccessResponse({
-      result: result.result,
+      result: successResult,
       events: result.emittedEvents,
     });
   } catch (error) {
     // InvariantError from requireCurrentUser means auth or tenant resolution failed
     if (error instanceof Error && error.name === "InvariantError") {
-      log.error(`${logPrefix} Auth/tenant error`, { error: error.message });
+      logManifestIssue({
+        kind: "auth_error",
+        entity: entityName,
+        command: commandName,
+        httpStatus: 401,
+        message: error.message,
+      });
       return manifestErrorResponse("Unauthorized", 401);
     }
 
@@ -229,7 +265,16 @@ export async function executeManifestCommand(
       return manifestErrorResponse(error.message, 401);
     }
 
-    log.error(`${logPrefix} Error`, { error });
+    logManifestIssue({
+      kind: "runtime_error",
+      entity: entityName,
+      command: commandName,
+      httpStatus: 500,
+      message: error instanceof Error ? error.message : "Internal server error",
+      details: {
+        stack: error instanceof Error ? error.stack : undefined,
+      },
+    });
     captureException(error);
     return manifestErrorResponse("Internal server error", 500);
   }

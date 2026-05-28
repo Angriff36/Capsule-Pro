@@ -96,6 +96,7 @@
     "start": "next start",
     "test": "cross-env NODE_ENV=test vitest run --passWithNoTests",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false",
-    "dev:infisical": "node -e \"const fs=require('node:fs'); for (const d of ['.next-dev','.next-dev/types','.next-dev-webpack/types']) fs.rmSync(d, { recursive: true, force: true });\" && infisical run --env=dev --path=/apps/capsule-pro/app --project-config-dir=../.. -- cross-env SKIP_ENV_VALIDATION=true NEXT_DIST_DIR=.next-dev next dev --turbopack -p 2221"
+    "dev:infisical": "node -e \"const fs=require('node:fs'); for (const d of ['.next-dev','.next-dev/types','.next-dev-webpack/types']) fs.rmSync(d, { recursive: true, force: true });\" && infisical run --env=dev --path=/apps/capsule-pro/app --project-config-dir=../.. -- cross-env SKIP_ENV_VALIDATION=true NEXT_DIST_DIR=.next-dev next dev --turbopack -p 2221",
+    "dev:webpack": "node -e \"const fs=require('node:fs'); for (const d of ['.next-dev','.next-dev/types','.next-dev-webpack/types']) fs.rmSync(d, { recursive: true, force: true });\" && infisical run --env=dev --path=/apps/capsule-pro/app --project-config-dir=../.. -- cross-env SKIP_ENV_VALIDATION=true NEXT_DIST_DIR=.next-dev next dev -p 2221"
   }
 }

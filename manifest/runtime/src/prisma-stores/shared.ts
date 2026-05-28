@@ -142,6 +142,14 @@ export function asNullableString(value: unknown): string | null {
   return String(value);
 }
 
+/** ISO 3166-1 alpha-2 country code — DB column is CHAR(2). */
+export function asCountryCode(value: unknown): string | null {
+  const raw = asNullableString(value);
+  if (!raw) return null;
+  const normalized = raw.toUpperCase();
+  return normalized.length === 2 ? normalized : null;
+}
+
 /** Coerce a manifest field to number | null. */
 export function asNullableNumber(value: unknown): number | null {
   if (value === null || value === undefined || value === "") return null;
@@ -165,6 +173,19 @@ export function asNullableDate(value: unknown): Date | null {
 export function asStringArray(value: unknown): string[] {
   if (Array.isArray(value)) {
     return value.filter((v) => v !== null && v !== undefined).map(String);
+  }
+  if (typeof value === "string" && value.trim().startsWith("[")) {
+    try {
+      const parsed = JSON.parse(value) as unknown;
+      if (Array.isArray(parsed)) {
+        return parsed.filter((v) => v !== null && v !== undefined).map(String);
+      }
+    } catch {
+      return [];
+    }
+  }
+  if (typeof value === "string" && value.trim().length > 0) {
+    return [value.trim()];
   }
   return [];
 }

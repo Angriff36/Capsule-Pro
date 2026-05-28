@@ -9,6 +9,8 @@
     "./instrumentation": "./instrumentation.ts",
     "./keys": "./keys.ts",
     "./log": "./log.ts",
+    "./manifest-issue-log": "./manifest-issue-log.ts",
+    "./request-error-log": "./request-error-log.ts",
     "./next-config": "./next-config.ts",
     "./sentry": "./sentry.ts",
     "./server": "./server.ts",

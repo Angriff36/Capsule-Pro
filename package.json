@@ -56,6 +56,7 @@
     },
     "overrides": {
       "parse5": "^7.2.1",
+      "@babel/core": "7.29.7",
       "next": "16.2.6",
       "react": "19.2.6",
       "react-dom": "19.2.6",
@@ -96,6 +97,7 @@
     "build:email": "turbo build --filter=./apps/email",
     "build:all": "pnpm prisma:check && turbo build",
     "check": "turbo typecheck --filter=./apps/app --filter=./apps/api --filter=./apps/web",
+    "check:manifest": "pnpm check:manifest:structure && pnpm check:manifest:domain",
     "check:all": "turbo typecheck",
     "check:ci": "pnpm check && pnpm lint:any",
     "check:staged-write-routes": "node scripts/check-staged-write-routes.mjs",
@@ -173,11 +175,16 @@
     "e2e:lint": "bash e2e/scripts/lint-workflow-specs.sh",
     "install:infisical": "infisical run --env=dev --path=/apps/capsule-pro/app --project-config-dir=. -- pnpm install",
     "dev:web:infisical": "turbo run dev:infisical --filter=./apps/api --filter=./apps/app --parallel --continue",
+    "dev:web:infisical:manifest-log": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/dev-web-infisical-manifest-log.ps1",
     "build:infisical": "turbo run build:infisical",
     "knip": "knip",
     "manifest:audit-schema-drift": "node manifest/scripts/audit-schema-drift.mjs",
     "manifest:audit-schema-drift:strict": "node manifest/scripts/audit-schema-drift.mjs --strict",
-    "manifest:mcp": "manifest-mcp"
+    "manifest:mcp": "manifest-mcp",
+    "scripts:audit": "node tools/audit-package-scripts.mjs",
+    "check:scripts": "node tools/audit-package-scripts.mjs",
+    "check:manifest:structure": "node tools/manifest-structure-audit.mjs",
+    "check:manifest:domain": "node tools/manifest-domain-drift-audit.mjs"
   },
   "type": "module"
 }

@@ -247,12 +247,7 @@ const baseConfig: NextConfig = withToolbar(
       resolveExtensions: [".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs", ".json"],
     },
     experimental: {
-      optimizePackageImports: [
-        "lucide-react",
-        "date-fns",
-        "recharts",
-        "@repo/design-system",
-      ],
+      optimizePackageImports: ["lucide-react", "date-fns", "recharts"],
       serverActions: {
         bodySizeLimit: "2mb",
         // Allow Tailscale proxy origins for Server Actions in dev/staging.
@@ -366,7 +361,6 @@ const baseConfig: NextConfig = withToolbar(
         ...(process.env.NODE_ENV === "production"
           ? [
               {
-                // Cache static assets aggressively in production only.
                 source:
                   "/(.*)\\.(ico|png|jpg|jpeg|gif|svg|webp|avif|woff|woff2|ttf|eot)",
                 headers: [
@@ -377,7 +371,6 @@ const baseConfig: NextConfig = withToolbar(
                 ],
               },
               {
-                // Cache JS/CSS with content hash in production only.
                 source: "/_next/static/(.*)",
                 headers: [
                   {
@@ -398,6 +391,9 @@ const baseConfig: NextConfig = withToolbar(
       "vega-lite",
       "@repo/sales-reporting",
       "@clerk/backend",
+      "@sentry/nextjs",
+      "import-in-the-middle",
+      "require-in-the-middle",
     ],
     // Include manifest file in Vercel deployments for command-board chat
     outputFileTracingIncludes: {

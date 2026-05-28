@@ -36,6 +36,17 @@ interface ManifestRoute {
 }
 
 const ROUTE_FILE_PATTERN = /route\.ts$/;
+
+/** Relative to `apps/api/app/api/` — must match apps/api custom allowlist. */
+const CUSTOM_COMMAND_ROUTE_ALLOWLIST = new Set([
+  "communications/email-templates/commands/create/route.ts",
+  "events/profitability/commands/recalculate/route.ts",
+  "procurement/purchase-orders/commands/update-status/route.ts",
+  "procurement/purchase-orders/commands/receive/route.ts",
+  "staff/shifts/commands/create-validated/route.ts",
+  "staff/shifts/commands/update-validated/route.ts",
+]);
+
 const INFRA_PREFIXES = [
   "/api/webhooks/",
   "/api/integrations/webhooks/",
@@ -244,7 +255,10 @@ export function scanRouteConformance(
     const relativeApiPath = relative(apiDir, file);
     const routePath = routePathFromFile(apiDir, file);
 
-    if (isConcreteCommandRouteFile(relativeApiPath)) {
+    if (
+      isConcreteCommandRouteFile(relativeApiPath) &&
+      !CUSTOM_COMMAND_ROUTE_ALLOWLIST.has(relativeApiPath.replace(/\\/g, "/"))
+    ) {
       findings.push({
         code: "CONCRETE_COMMAND_ROUTE_NOT_DISPATCHED",
         severity: "error",

@@ -1,0 +1,4521 @@
+{
+  "root": "C:\\Projects\\capsule-pro",
+  "counts": {
+    "FAIL": 44,
+    "WARN": 198,
+    "PASS": 461,
+    "INFO": 47
+  },
+  "results": [
+    {
+      "level": "INFO",
+      "id": "packages.count",
+      "message": "Found 48 package.json files",
+      "details": []
+    },
+    {
+      "level": "INFO",
+      "id": "package.scripts",
+      "message": "apps/api/package.json has 15 scripts",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "apps/api/package.json scripts.analyze exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.unknown-command",
+      "message": "apps/api/package.json scripts.analyze uses unclassified command: next",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "apps/api/package.json scripts.analyze:serve exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.unknown-command",
+      "message": "apps/api/package.json scripts.analyze:serve uses unclassified command: next",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "apps/api/package.json scripts.build exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "apps/api/package.json scripts.build uses external command: node",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.unknown-command",
+      "message": "apps/api/package.json scripts.build uses unclassified command: for",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.unknown-command",
+      "message": "apps/api/package.json scripts.build uses unclassified command: \"",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.unknown-command",
+      "message": "apps/api/package.json scripts.build uses unclassified command: next",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "apps/api/package.json scripts.build:dev exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "apps/api/package.json scripts.build:dev uses external command: node",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.unknown-command",
+      "message": "apps/api/package.json scripts.build:dev uses unclassified command: for",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.unknown-command",
+      "message": "apps/api/package.json scripts.build:dev uses unclassified command: \"",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.unknown-command",
+      "message": "apps/api/package.json scripts.build:dev uses unclassified command: dotenv",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "apps/api/package.json scripts.clean exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "apps/api/package.json scripts.clean uses external command: git",
+      "details": []
+    },
+    {
+      "level": "FAIL",
+      "id": "script.danger",
+      "message": "apps/api/package.json scripts.clean: git clean can delete untracked files; -x also deletes ignored files",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "apps/api/package.json scripts.dev exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.unknown-command",
+      "message": "apps/api/package.json scripts.dev uses unclassified command: concurrently",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "apps/api/package.json scripts.next exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.unknown-command",
+      "message": "apps/api/package.json scripts.next uses unclassified command: dotenv",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "apps/api/package.json scripts.start exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.unknown-command",
+      "message": "apps/api/package.json scripts.start uses unclassified command: next",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "apps/api/package.json scripts.stripe exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.file-ref.exists",
+      "message": "apps/api/package.json scripts.stripe references existing file: apps/api/scripts/stripe-listen.mjs",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "apps/api/package.json scripts.stripe uses external command: node",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "apps/api/package.json scripts.test exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "apps/api/package.json scripts.test uses vitest; vitest is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "apps/api/package.json scripts.test:quarantine exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "apps/api/package.json scripts.test:quarantine uses vitest; vitest is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.unknown-command",
+      "message": "apps/api/package.json scripts.test:quarantine uses unclassified command: true",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "apps/api/package.json scripts.test:integration exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "apps/api/package.json scripts.test:integration uses vitest; vitest is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "apps/api/package.json scripts.typecheck exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "apps/api/package.json scripts.typecheck uses tsc; typescript is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "apps/api/package.json scripts.next:infisical exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.unknown-command",
+      "message": "apps/api/package.json scripts.next:infisical uses unclassified command: next",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "apps/api/package.json scripts.dev:infisical exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "apps/api/package.json scripts.dev:infisical uses external command: infisical",
+      "details": []
+    },
+    {
+      "level": "INFO",
+      "id": "package.scripts",
+      "message": "apps/app/package.json has 9 scripts",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "apps/app/package.json scripts.analyze exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.unknown-command",
+      "message": "apps/app/package.json scripts.analyze uses unclassified command: next",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "apps/app/package.json scripts.analyze:serve exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.unknown-command",
+      "message": "apps/app/package.json scripts.analyze:serve uses unclassified command: next",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "apps/app/package.json scripts.build exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "apps/app/package.json scripts.build uses external command: node",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.unknown-command",
+      "message": "apps/app/package.json scripts.build uses unclassified command: for",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.unknown-command",
+      "message": "apps/app/package.json scripts.build uses unclassified command: \"",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.unknown-command",
+      "message": "apps/app/package.json scripts.build uses unclassified command: next",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "apps/app/package.json scripts.clean exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "apps/app/package.json scripts.clean uses external command: git",
+      "details": []
+    },
+    {
+      "level": "FAIL",
+      "id": "script.danger",
+      "message": "apps/app/package.json scripts.clean: git clean can delete untracked files; -x also deletes ignored files",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "apps/app/package.json scripts.dev exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "apps/app/package.json scripts.dev uses external command: node",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.unknown-command",
+      "message": "apps/app/package.json scripts.dev uses unclassified command: for",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.unknown-command",
+      "message": "apps/app/package.json scripts.dev uses unclassified command: \"",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.unknown-command",
+      "message": "apps/app/package.json scripts.dev uses unclassified command: dotenv",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "apps/app/package.json scripts.start exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.unknown-command",
+      "message": "apps/app/package.json scripts.start uses unclassified command: next",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "apps/app/package.json scripts.test exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "apps/app/package.json scripts.test uses vitest; vitest is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "apps/app/package.json scripts.typecheck exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "apps/app/package.json scripts.typecheck uses tsc; typescript is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "apps/app/package.json scripts.dev:infisical exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "apps/app/package.json scripts.dev:infisical uses external command: node",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.unknown-command",
+      "message": "apps/app/package.json scripts.dev:infisical uses unclassified command: for",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.unknown-command",
+      "message": "apps/app/package.json scripts.dev:infisical uses unclassified command: \"",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "apps/app/package.json scripts.dev:infisical uses external command: infisical",
+      "details": []
+    },
+    {
+      "level": "INFO",
+      "id": "package.scripts",
+      "message": "apps/docs/package.json has 3 scripts",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "apps/docs/package.json scripts.build exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.unknown-command",
+      "message": "apps/docs/package.json scripts.build uses unclassified command: next",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "apps/docs/package.json scripts.dev exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.unknown-command",
+      "message": "apps/docs/package.json scripts.dev uses unclassified command: next",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "apps/docs/package.json scripts.start exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.unknown-command",
+      "message": "apps/docs/package.json scripts.start uses unclassified command: next",
+      "details": []
+    },
+    {
+      "level": "INFO",
+      "id": "package.scripts",
+      "message": "apps/email/.react-email/package.json has 8 scripts",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "apps/email/.react-email/package.json scripts.build exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.unknown-command",
+      "message": "apps/email/.react-email/package.json scripts.build uses unclassified command: --disable-warning=ExperimentalWarning\"",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "apps/email/.react-email/package.json scripts.caniemail:fetch exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.file-ref.exists",
+      "message": "apps/email/.react-email/package.json scripts.caniemail:fetch references existing file: apps/email/.react-email/scripts/fill-caniemail-data.mts",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "apps/email/.react-email/package.json scripts.caniemail:fetch uses tsx; tsx is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "apps/email/.react-email/package.json scripts.clean exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.unknown-command",
+      "message": "apps/email/.react-email/package.json scripts.clean uses unclassified command: rimraf",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "apps/email/.react-email/package.json scripts.dev exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.file-ref.exists",
+      "message": "apps/email/.react-email/package.json scripts.dev references existing file: apps/email/.react-email/scripts/dev.mts",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.unknown-command",
+      "message": "apps/email/.react-email/package.json scripts.dev uses unclassified command: --disable-warning=ExperimentalWarning\"",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "apps/email/.react-email/package.json scripts.dev:seed exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.file-ref.exists",
+      "message": "apps/email/.react-email/package.json scripts.dev:seed references existing file: apps/email/.react-email/scripts/seed.mts",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "apps/email/.react-email/package.json scripts.dev:seed uses tsx; tsx is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "apps/email/.react-email/package.json scripts.test exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.unknown-command",
+      "message": "apps/email/.react-email/package.json scripts.test uses unclassified command: --disable-warning=ExperimentalWarning\"",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "apps/email/.react-email/package.json scripts.test:watch exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.unknown-command",
+      "message": "apps/email/.react-email/package.json scripts.test:watch uses unclassified command: --disable-warning=ExperimentalWarning\"",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "apps/email/.react-email/package.json scripts.start exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.unknown-command",
+      "message": "apps/email/.react-email/package.json scripts.start uses unclassified command: --disable-warning=ExperimentalWarning\"",
+      "details": []
+    },
+    {
+      "level": "INFO",
+      "id": "package.scripts",
+      "message": "apps/email/package.json has 5 scripts",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "apps/email/package.json scripts.build exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.unknown-command",
+      "message": "apps/email/package.json scripts.build uses unclassified command: email",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "apps/email/package.json scripts.clean exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "apps/email/package.json scripts.clean uses external command: git",
+      "details": []
+    },
+    {
+      "level": "FAIL",
+      "id": "script.danger",
+      "message": "apps/email/package.json scripts.clean: git clean can delete untracked files; -x also deletes ignored files",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "apps/email/package.json scripts.dev exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.unknown-command",
+      "message": "apps/email/package.json scripts.dev uses unclassified command: email",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "apps/email/package.json scripts.export exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.unknown-command",
+      "message": "apps/email/package.json scripts.export uses unclassified command: email",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "apps/email/package.json scripts.typecheck exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "apps/email/package.json scripts.typecheck uses external command: exit",
+      "details": []
+    },
+    {
+      "level": "INFO",
+      "id": "package.scripts",
+      "message": "apps/mobile/package.json has 6 scripts",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "apps/mobile/package.json scripts.start exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.unknown-command",
+      "message": "apps/mobile/package.json scripts.start uses unclassified command: expo",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "apps/mobile/package.json scripts.android exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.unknown-command",
+      "message": "apps/mobile/package.json scripts.android uses unclassified command: expo",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "apps/mobile/package.json scripts.ios exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.unknown-command",
+      "message": "apps/mobile/package.json scripts.ios uses unclassified command: expo",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "apps/mobile/package.json scripts.web exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.unknown-command",
+      "message": "apps/mobile/package.json scripts.web uses unclassified command: expo",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "apps/mobile/package.json scripts.dev exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.unknown-command",
+      "message": "apps/mobile/package.json scripts.dev uses unclassified command: expo",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "apps/mobile/package.json scripts.clean exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "apps/mobile/package.json scripts.clean uses external command: git",
+      "details": []
+    },
+    {
+      "level": "FAIL",
+      "id": "script.danger",
+      "message": "apps/mobile/package.json scripts.clean: git clean can delete untracked files; -x also deletes ignored files",
+      "details": []
+    },
+    {
+      "level": "INFO",
+      "id": "package.scripts",
+      "message": "apps/mobile/studio/package.json has 3 scripts",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "apps/mobile/studio/package.json scripts.clean exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "apps/mobile/studio/package.json scripts.clean uses external command: git",
+      "details": []
+    },
+    {
+      "level": "FAIL",
+      "id": "script.danger",
+      "message": "apps/mobile/studio/package.json scripts.clean: git clean can delete untracked files; -x also deletes ignored files",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "apps/mobile/studio/package.json scripts.dev exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.file-ref.exists",
+      "message": "apps/mobile/studio/package.json scripts.dev references existing file: packages/database/prisma.config.ts",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.unknown-command",
+      "message": "apps/mobile/studio/package.json scripts.dev uses unclassified command: dotenv",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "apps/mobile/studio/package.json scripts.typecheck exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "apps/mobile/studio/package.json scripts.typecheck uses external command: exit",
+      "details": []
+    },
+    {
+      "level": "INFO",
+      "id": "package.scripts",
+      "message": "apps/storybook/package.json has 5 scripts",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "apps/storybook/package.json scripts.build exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.unknown-command",
+      "message": "apps/storybook/package.json scripts.build uses unclassified command: storybook",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "apps/storybook/package.json scripts.chromatic exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.unknown-command",
+      "message": "apps/storybook/package.json scripts.chromatic uses unclassified command: chromatic",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "apps/storybook/package.json scripts.clean exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "apps/storybook/package.json scripts.clean uses external command: git",
+      "details": []
+    },
+    {
+      "level": "FAIL",
+      "id": "script.danger",
+      "message": "apps/storybook/package.json scripts.clean: git clean can delete untracked files; -x also deletes ignored files",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "apps/storybook/package.json scripts.dev exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.unknown-command",
+      "message": "apps/storybook/package.json scripts.dev uses unclassified command: storybook",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "apps/storybook/package.json scripts.typecheck exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "apps/storybook/package.json scripts.typecheck uses tsc; typescript is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "INFO",
+      "id": "package.scripts",
+      "message": "apps/web/package.json has 8 scripts",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "apps/web/package.json scripts.analyze exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.unknown-command",
+      "message": "apps/web/package.json scripts.analyze uses unclassified command: next",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "apps/web/package.json scripts.analyze:serve exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.unknown-command",
+      "message": "apps/web/package.json scripts.analyze:serve uses unclassified command: next",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "apps/web/package.json scripts.build exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.unknown-command",
+      "message": "apps/web/package.json scripts.build uses unclassified command: dotenv",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.unknown-command",
+      "message": "apps/web/package.json scripts.build uses unclassified command: dotenv",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "apps/web/package.json scripts.clean exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "apps/web/package.json scripts.clean uses external command: git",
+      "details": []
+    },
+    {
+      "level": "FAIL",
+      "id": "script.danger",
+      "message": "apps/web/package.json scripts.clean: git clean can delete untracked files; -x also deletes ignored files",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "apps/web/package.json scripts.dev exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.unknown-command",
+      "message": "apps/web/package.json scripts.dev uses unclassified command: concurrently",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "apps/web/package.json scripts.start exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.unknown-command",
+      "message": "apps/web/package.json scripts.start uses unclassified command: next",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "apps/web/package.json scripts.test exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "apps/web/package.json scripts.test uses vitest; vitest is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "apps/web/package.json scripts.typecheck exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "apps/web/package.json scripts.typecheck uses tsc; typescript is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "INFO",
+      "id": "package.scripts",
+      "message": "manifest/runtime/package.json has 3 scripts",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "manifest/runtime/package.json scripts.build exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "manifest/runtime/package.json scripts.build uses tsc; typescript is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "manifest/runtime/package.json scripts.typecheck exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "manifest/runtime/package.json scripts.typecheck uses tsc; typescript is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "manifest/runtime/package.json scripts.test exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "manifest/runtime/package.json scripts.test uses vitest; vitest is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "INFO",
+      "id": "package.scripts",
+      "message": "package.json has 95 scripts",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.analyze exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "package.json scripts.analyze uses turbo; turbo is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "turbo.task.exists",
+      "message": "package.json scripts.analyze: turbo task exists: analyze",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "turbo.filter.ok",
+      "message": "package.json scripts.analyze: turbo filter looks valid: app",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "turbo.filter.ok",
+      "message": "package.json scripts.analyze: turbo filter looks valid: api",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "turbo.filter.ok",
+      "message": "package.json scripts.analyze: turbo filter looks valid: web",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.boundaries exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "package.json scripts.boundaries uses turbo; turbo is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "turbo.task.missing",
+      "message": "package.json scripts.boundaries: turbo task not found in turbo.json: boundaries",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.browser-tools exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.unknown-command",
+      "message": "package.json scripts.browser-tools uses unclassified command: @modelcontextprotocol/server-playwright",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.build exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "package.json scripts.build uses external command: pnpm",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "package.json scripts.build uses turbo; turbo is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "turbo.task.exists",
+      "message": "package.json scripts.build: turbo task exists: build",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "turbo.filter.ok",
+      "message": "package.json scripts.build: turbo filter looks valid: ./apps/app",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "turbo.filter.ok",
+      "message": "package.json scripts.build: turbo filter looks valid: ./apps/api",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "turbo.filter.ok",
+      "message": "package.json scripts.build: turbo filter looks valid: ./apps/web",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.pnpm-ref.exists",
+      "message": "package.json scripts.build: references existing pnpm script prisma:check",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.build:docs exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "package.json scripts.build:docs uses turbo; turbo is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "turbo.task.exists",
+      "message": "package.json scripts.build:docs: turbo task exists: build",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "turbo.filter.ok",
+      "message": "package.json scripts.build:docs: turbo filter looks valid: ./apps/docs",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.build:storybook exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "package.json scripts.build:storybook uses turbo; turbo is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "turbo.task.exists",
+      "message": "package.json scripts.build:storybook: turbo task exists: build",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "turbo.filter.ok",
+      "message": "package.json scripts.build:storybook: turbo filter looks valid: ./apps/storybook",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.build:email exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "package.json scripts.build:email uses turbo; turbo is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "turbo.task.exists",
+      "message": "package.json scripts.build:email: turbo task exists: build",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "turbo.filter.ok",
+      "message": "package.json scripts.build:email: turbo filter looks valid: ./apps/email",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.build:all exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "package.json scripts.build:all uses external command: pnpm",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "package.json scripts.build:all uses turbo; turbo is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "turbo.task.exists",
+      "message": "package.json scripts.build:all: turbo task exists: build",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.pnpm-ref.exists",
+      "message": "package.json scripts.build:all: references existing pnpm script prisma:check",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.check exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "package.json scripts.check uses turbo; turbo is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "turbo.task.exists",
+      "message": "package.json scripts.check: turbo task exists: typecheck",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "turbo.filter.ok",
+      "message": "package.json scripts.check: turbo filter looks valid: ./apps/app",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "turbo.filter.ok",
+      "message": "package.json scripts.check: turbo filter looks valid: ./apps/api",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "turbo.filter.ok",
+      "message": "package.json scripts.check: turbo filter looks valid: ./apps/web",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.check:manifest exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.file-ref.exists",
+      "message": "package.json scripts.check:manifest references existing file: tools/manifest-structure-audit.mjs",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "package.json scripts.check:manifest uses external command: node",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.check:all exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "package.json scripts.check:all uses turbo; turbo is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "turbo.task.exists",
+      "message": "package.json scripts.check:all: turbo task exists: typecheck",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.check:ci exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "package.json scripts.check:ci uses external command: pnpm",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "package.json scripts.check:ci uses external command: pnpm",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.pnpm-ref.exists",
+      "message": "package.json scripts.check:ci: references existing pnpm script check",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.pnpm-ref.exists",
+      "message": "package.json scripts.check:ci: references existing pnpm script lint:any",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.check:staged-write-routes exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.file-ref.exists",
+      "message": "package.json scripts.check:staged-write-routes references existing file: scripts/check-staged-write-routes.mjs",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "package.json scripts.check:staged-write-routes uses external command: node",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.manifest:build exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.file-ref.exists",
+      "message": "package.json scripts.manifest:build references existing file: manifest/scripts/build.mjs",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "package.json scripts.manifest:build uses external command: node",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.manifest:check exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.file-ref.exists",
+      "message": "package.json scripts.manifest:check references existing file: manifest/scripts/check.mjs",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "package.json scripts.manifest:check uses external command: node",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.manifest:compile exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.file-ref.exists",
+      "message": "package.json scripts.manifest:compile references existing file: manifest/scripts/compile.mjs",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "package.json scripts.manifest:compile uses external command: node",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.manifest:generate exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.file-ref.exists",
+      "message": "package.json scripts.manifest:generate references existing file: manifest/scripts/generate.mjs",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "package.json scripts.manifest:generate uses external command: node",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.manifest:doctor exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "package.json scripts.manifest:doctor uses manifest; @angriff36/manifest is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.manifest:inspect exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "package.json scripts.manifest:inspect uses manifest; @angriff36/manifest is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.manifest:diff exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "package.json scripts.manifest:diff uses manifest; @angriff36/manifest is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.manifest:duplicates exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "package.json scripts.manifest:duplicates uses manifest; @angriff36/manifest is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.manifest:runtime-check exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "package.json scripts.manifest:runtime-check uses manifest; @angriff36/manifest is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.manifest:cache-status exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "package.json scripts.manifest:cache-status uses manifest; @angriff36/manifest is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.manifest:route-audit exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "package.json scripts.manifest:route-audit uses manifest; @angriff36/manifest is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.manifest:routes:ir exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.file-ref.exists",
+      "message": "package.json scripts.manifest:routes:ir references existing file: manifest/scripts/generate-route-manifest.ts",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "package.json scripts.manifest:routes:ir uses tsx; tsx is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.manifest:validate exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "package.json scripts.manifest:validate uses manifest; @angriff36/manifest is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.manifest:validate-ai exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "package.json scripts.manifest:validate-ai uses manifest; @angriff36/manifest is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.manifest:registries exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.file-ref.exists",
+      "message": "package.json scripts.manifest:registries references existing file: manifest/scripts/emit-registries.mjs",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "package.json scripts.manifest:registries uses external command: node",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.manifest:audit-direct-writes exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.file-ref.exists",
+      "message": "package.json scripts.manifest:audit-direct-writes references existing file: manifest/scripts/audit-direct-writes.mjs",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "package.json scripts.manifest:audit-direct-writes uses external command: node",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.manifest:audit-direct-writes:strict exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.file-ref.exists",
+      "message": "package.json scripts.manifest:audit-direct-writes:strict references existing file: manifest/scripts/audit-direct-writes.mjs",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "package.json scripts.manifest:audit-direct-writes:strict uses external command: node",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.manifest:audit-direct-writes:baseline exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.file-ref.exists",
+      "message": "package.json scripts.manifest:audit-direct-writes:baseline references existing file: manifest/scripts/audit-direct-writes-baseline.mjs",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "package.json scripts.manifest:audit-direct-writes:baseline uses external command: node",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.bump-deps exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.unknown-command",
+      "message": "package.json scripts.bump-deps uses unclassified command: npm-check-updates",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "package.json scripts.bump-deps uses external command: pnpm",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.danger",
+      "message": "package.json scripts.bump-deps: updates package.json dependency ranges",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.danger",
+      "message": "package.json scripts.bump-deps: runs install as part of script",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.bump-ui exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "package.json scripts.bump-ui uses external command: cd",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.unknown-command",
+      "message": "package.json scripts.bump-ui uses unclassified command: shadcn@latest",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.danger",
+      "message": "package.json scripts.bump-ui: overwrites UI source files",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.clean:hard exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "package.json scripts.clean:hard uses external command: git",
+      "details": []
+    },
+    {
+      "level": "FAIL",
+      "id": "script.danger",
+      "message": "package.json scripts.clean:hard: git clean can delete untracked files; -x also deletes ignored files",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.clean:node_modules exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "package.json scripts.clean:node_modules uses external command: git",
+      "details": []
+    },
+    {
+      "level": "FAIL",
+      "id": "script.danger",
+      "message": "package.json scripts.clean:node_modules: git clean can delete untracked files; -x also deletes ignored files",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.clean:preview exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "package.json scripts.clean:preview uses external command: git",
+      "details": []
+    },
+    {
+      "level": "INFO",
+      "id": "script.danger",
+      "message": "package.json scripts.clean:preview: git clean dry-run only",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.ports exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "package.json scripts.ports uses external command: pwsh",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.unknown-command",
+      "message": "package.json scripts.ports uses unclassified command: Get-NetTCPConnection",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.portability",
+      "message": "package.json scripts.ports: Windows/PowerShell-specific",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.db:check exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.file-ref.exists",
+      "message": "package.json scripts.db:check references existing file: scripts/db-drift-check.mjs",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "package.json scripts.db:check uses external command: node",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.db:validate-migrations exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.file-ref.exists",
+      "message": "package.json scripts.db:validate-migrations references existing file: scripts/validate-migration-table-schemas.mjs",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "package.json scripts.db:validate-migrations uses external command: node",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.db:validate-migrations:test exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.file-ref.exists",
+      "message": "package.json scripts.db:validate-migrations:test references existing file: scripts/__tests__/validate-migration-table-schemas.test.mjs",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "package.json scripts.db:validate-migrations:test uses external command: node",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.db:neon-shadow exists",
+      "details": []
+    },
+    {
+      "level": "FAIL",
+      "id": "script.file-ref.missing",
+      "message": "package.json scripts.db:neon-shadow references missing file: scripts/neon-shadow-database-setup.mjs",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "package.json scripts.db:neon-shadow uses external command: node",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.db:neon-backup-schema exists",
+      "details": []
+    },
+    {
+      "level": "FAIL",
+      "id": "script.file-ref.missing",
+      "message": "package.json scripts.db:neon-backup-schema references missing file: scripts/neon-schema-backup-pgdump.mjs",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "package.json scripts.db:neon-backup-schema uses external command: node",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.db:neon-audit exists",
+      "details": []
+    },
+    {
+      "level": "FAIL",
+      "id": "script.file-ref.missing",
+      "message": "package.json scripts.db:neon-audit references missing file: scripts/neon-audit-readonly.mjs",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "package.json scripts.db:neon-audit uses external command: node",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.db:neon-backup-and-audit exists",
+      "details": []
+    },
+    {
+      "level": "FAIL",
+      "id": "script.file-ref.missing",
+      "message": "package.json scripts.db:neon-backup-and-audit references missing file: scripts/neon-audit-readonly.mjs",
+      "details": []
+    },
+    {
+      "level": "FAIL",
+      "id": "script.file-ref.missing",
+      "message": "package.json scripts.db:neon-backup-and-audit references missing file: scripts/neon-schema-backup-pgdump.mjs",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "package.json scripts.db:neon-backup-and-audit uses external command: node",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "package.json scripts.db:neon-backup-and-audit uses external command: node",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.db:deploy exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "package.json scripts.db:deploy uses external command: pnpm",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.danger",
+      "message": "package.json scripts.db:deploy: Prisma migrate deploy mutates target DB",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.db:dev exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "package.json scripts.db:dev uses external command: pnpm",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.danger",
+      "message": "package.json scripts.db:dev: Prisma migrate dev is development-only and mutates DB",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.db:push exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "package.json scripts.db:push uses external command: echo",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "package.json scripts.db:push uses external command: exit",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.pnpm-ref.exists",
+      "message": "package.json scripts.db:push: references existing pnpm script migrate",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.pnpm-ref.exists",
+      "message": "package.json scripts.db:push: references existing pnpm script migrate:deploy",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.db:repair exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.file-ref.exists",
+      "message": "package.json scripts.db:repair references existing file: scripts/db-drift-repair.mjs",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "package.json scripts.db:repair uses external command: node",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.dev exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "package.json scripts.dev uses turbo; turbo is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "turbo.task.exists",
+      "message": "package.json scripts.dev: turbo task exists: dev",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.dev:app exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "package.json scripts.dev:app uses turbo; turbo is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "turbo.task.exists",
+      "message": "package.json scripts.dev:app: turbo task exists: dev",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "turbo.filter.ok",
+      "message": "package.json scripts.dev:app: turbo filter looks valid: ./apps/app",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.dev:api exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "package.json scripts.dev:api uses turbo; turbo is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "turbo.task.exists",
+      "message": "package.json scripts.dev:api: turbo task exists: dev",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "turbo.filter.ok",
+      "message": "package.json scripts.dev:api: turbo filter looks valid: ./apps/api",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.dev:web exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "package.json scripts.dev:web uses turbo; turbo is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "turbo.task.exists",
+      "message": "package.json scripts.dev:web: turbo task exists: dev",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "turbo.filter.ok",
+      "message": "package.json scripts.dev:web: turbo filter looks valid: ./apps/api",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "turbo.filter.ok",
+      "message": "package.json scripts.dev:web: turbo filter looks valid: ./apps/app",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.dev:apps exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "package.json scripts.dev:apps uses turbo; turbo is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "turbo.task.exists",
+      "message": "package.json scripts.dev:apps: turbo task exists: dev",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "turbo.filter.ok",
+      "message": "package.json scripts.dev:apps: turbo filter looks valid: ./apps/api",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "turbo.filter.ok",
+      "message": "package.json scripts.dev:apps: turbo filter looks valid: ./apps/app",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "turbo.filter.ok",
+      "message": "package.json scripts.dev:apps: turbo filter looks valid: ./apps/mobile",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.dev:mobile exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.file-ref.exists",
+      "message": "package.json scripts.dev:mobile references existing file: scripts/mobile-dev.cmd",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.unknown-command",
+      "message": "package.json scripts.dev:mobile uses unclassified command: scripts\\mobile-dev.cmd",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.portability",
+      "message": "package.json scripts.dev:mobile: Windows cmd/backslash-specific",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.dev:mobile:stack exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.file-ref.exists",
+      "message": "package.json scripts.dev:mobile:stack references existing file: scripts/dev-mobile-stack.cmd",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.unknown-command",
+      "message": "package.json scripts.dev:mobile:stack uses unclassified command: scripts\\dev-mobile-stack.cmd",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.portability",
+      "message": "package.json scripts.dev:mobile:stack: Windows cmd/backslash-specific",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.dev:check exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.file-ref.exists",
+      "message": "package.json scripts.dev:check references existing file: scripts/dev.mjs",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "package.json scripts.dev:check uses external command: node",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.docs:list exists",
+      "details": []
+    },
+    {
+      "level": "FAIL",
+      "id": "script.file-ref.missing",
+      "message": "package.json scripts.docs:list references missing file: tools/scripts/docs-list.ts",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "package.json scripts.docs:list uses tsx; tsx is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.logging:sync exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.file-ref.exists",
+      "message": "package.json scripts.logging:sync references existing file: scripts/logging/sync-all.ts",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "package.json scripts.logging:sync uses tsx; tsx is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.logging:sentry exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.file-ref.exists",
+      "message": "package.json scripts.logging:sentry references existing file: scripts/logging/sync-sentry.ts",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "package.json scripts.logging:sentry uses tsx; tsx is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.logging:todos exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.file-ref.exists",
+      "message": "package.json scripts.logging:todos references existing file: scripts/logging/scan-todos.ts",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "package.json scripts.logging:todos uses tsx; tsx is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.logging:arch exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.file-ref.exists",
+      "message": "package.json scripts.logging:arch references existing file: scripts/logging/analyze-architecture.ts",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "package.json scripts.logging:arch uses tsx; tsx is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.lint exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "package.json scripts.lint uses ultracite; ultracite is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.lint:any exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.file-ref.exists",
+      "message": "package.json scripts.lint:any references existing file: scripts/lint-explicit-any.mjs",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "package.json scripts.lint:any uses external command: node",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.lint:fix exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "package.json scripts.lint:fix uses ultracite; ultracite is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.migrate exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "package.json scripts.migrate uses external command: pnpm",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "package.json scripts.migrate uses external command: pnpm",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "package.json scripts.migrate uses external command: pnpm",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "package.json scripts.migrate uses external command: pnpm",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "package.json scripts.migrate uses external command: pnpm",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.danger",
+      "message": "package.json scripts.migrate: Prisma migrate dev is development-only and mutates DB",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.pnpm-ref.exists",
+      "message": "package.json scripts.migrate: references existing pnpm script db:validate-migrations",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.pnpm-ref.exists",
+      "message": "package.json scripts.migrate: references existing pnpm script db:check",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.pnpm-ref.exists",
+      "message": "package.json scripts.migrate: references existing pnpm script prisma:format",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.pnpm-ref.exists",
+      "message": "package.json scripts.migrate: references existing pnpm script prisma:check",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.pnpm-ref.exists",
+      "message": "package.json scripts.migrate: references existing pnpm script db:dev",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.migrate:deploy exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "package.json scripts.migrate:deploy uses external command: pnpm",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "package.json scripts.migrate:deploy uses external command: pnpm",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "package.json scripts.migrate:deploy uses external command: pnpm",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.danger",
+      "message": "package.json scripts.migrate:deploy: Prisma migrate deploy mutates target DB",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.pnpm-ref.exists",
+      "message": "package.json scripts.migrate:deploy: references existing pnpm script db:validate-migrations",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.pnpm-ref.exists",
+      "message": "package.json scripts.migrate:deploy: references existing pnpm script prisma:check",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.pnpm-ref.exists",
+      "message": "package.json scripts.migrate:deploy: references existing pnpm script db:deploy",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.migrate:resolve exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "package.json scripts.migrate:resolve uses external command: pnpm",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.danger",
+      "message": "package.json scripts.migrate:resolve: Prisma migrate resolve changes migration history state",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.migrate:baseline exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.file-ref.exists",
+      "message": "package.json scripts.migrate:baseline references existing file: scripts/migrate-baseline.mjs",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "package.json scripts.migrate:baseline uses external command: node",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.migrate:status exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "package.json scripts.migrate:status uses external command: pnpm",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.predev exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "package.json scripts.predev uses external command: pnpm",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.pnpm-ref.exists",
+      "message": "package.json scripts.predev: references existing pnpm script db:check",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.prepare exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "package.json scripts.prepare uses husky; husky is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.prisma:format exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "package.json scripts.prisma:format uses external command: pnpm",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.prisma:check exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "package.json scripts.prisma:check uses prisma; prisma is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.secrets:scan exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "package.json scripts.secrets:scan uses secretlint; secretlint is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.danger",
+      "message": "package.json scripts.secrets:scan: secret scan over entire repo may scan generated/build files unless ignored",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.security:audit-baseline exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.file-ref.exists",
+      "message": "package.json scripts.security:audit-baseline references existing file: scripts/security/audit-baseline.mjs",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "package.json scripts.security:audit-baseline uses external command: node",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.security:audit-baseline:save exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.file-ref.exists",
+      "message": "package.json scripts.security:audit-baseline:save references existing file: scripts/security/audit-baseline.mjs",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "package.json scripts.security:audit-baseline:save uses external command: node",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.test exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "package.json scripts.test uses turbo; turbo is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "turbo.task.exists",
+      "message": "package.json scripts.test: turbo task exists: test",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "turbo.filter.ok",
+      "message": "package.json scripts.test: turbo filter looks valid: ./apps/app",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "turbo.filter.ok",
+      "message": "package.json scripts.test: turbo filter looks valid: ./apps/api",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.test:all exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "package.json scripts.test:all uses turbo; turbo is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "turbo.task.exists",
+      "message": "package.json scripts.test:all: turbo task exists: test",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.test:e2e exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "package.json scripts.test:e2e uses playwright; @playwright/test is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.test:kitchen exists",
+      "details": []
+    },
+    {
+      "level": "FAIL",
+      "id": "script.file-ref.missing",
+      "message": "package.json scripts.test:kitchen references missing file: e2e/kitchen-workflow.spec.ts",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "package.json scripts.test:kitchen uses playwright; @playwright/test is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.translate exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "package.json scripts.translate uses turbo; turbo is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "turbo.task.exists",
+      "message": "package.json scripts.translate: turbo task exists: translate",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.audit:theatre exists",
+      "details": []
+    },
+    {
+      "level": "FAIL",
+      "id": "script.file-ref.missing",
+      "message": "package.json scripts.audit:theatre references missing file: scripts/audit-implementation-theatre.mjs",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "package.json scripts.audit:theatre uses external command: node",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.governance:verify-routes exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.file-ref.exists",
+      "message": "package.json scripts.governance:verify-routes references existing file: scripts/verify-governance-route-findings.mjs",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "package.json scripts.governance:verify-routes uses tsx; tsx is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.vercel:bisect exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.file-ref.exists",
+      "message": "package.json scripts.vercel:bisect references existing file: scripts/vercel-bisect.mjs",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "package.json scripts.vercel:bisect uses external command: node",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.e2e:lint exists",
+      "details": []
+    },
+    {
+      "level": "FAIL",
+      "id": "script.file-ref.missing",
+      "message": "package.json scripts.e2e:lint references missing file: e2e/scripts/lint-workflow-specs.sh",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "package.json scripts.e2e:lint uses external command: bash",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.portability",
+      "message": "package.json scripts.e2e:lint: Unix shell-specific",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.install:infisical exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "package.json scripts.install:infisical uses external command: infisical",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.dev:web:infisical exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "package.json scripts.dev:web:infisical uses turbo; turbo is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "turbo.task.exists",
+      "message": "package.json scripts.dev:web:infisical: turbo task exists: dev:infisical",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "turbo.filter.ok",
+      "message": "package.json scripts.dev:web:infisical: turbo filter looks valid: ./apps/api",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "turbo.filter.ok",
+      "message": "package.json scripts.dev:web:infisical: turbo filter looks valid: ./apps/app",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.dev:web:infisical:manifest-log exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.file-ref.exists",
+      "message": "package.json scripts.dev:web:infisical:manifest-log references existing file: scripts/dev-web-infisical-manifest-log.ps1",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "package.json scripts.dev:web:infisical:manifest-log uses external command: powershell",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.portability",
+      "message": "package.json scripts.dev:web:infisical:manifest-log: Windows/PowerShell-specific",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.build:infisical exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "package.json scripts.build:infisical uses turbo; turbo is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "turbo.task.missing",
+      "message": "package.json scripts.build:infisical: turbo task not found in turbo.json: build:infisical",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.knip exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "package.json scripts.knip uses knip; knip is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.manifest:audit-schema-drift exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.file-ref.exists",
+      "message": "package.json scripts.manifest:audit-schema-drift references existing file: manifest/scripts/audit-schema-drift.mjs",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "package.json scripts.manifest:audit-schema-drift uses external command: node",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.manifest:audit-schema-drift:strict exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.file-ref.exists",
+      "message": "package.json scripts.manifest:audit-schema-drift:strict references existing file: manifest/scripts/audit-schema-drift.mjs",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "package.json scripts.manifest:audit-schema-drift:strict uses external command: node",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.manifest:mcp exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "package.json scripts.manifest:mcp uses manifest-mcp; @angriff36/manifest is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.scripts:audit exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.file-ref.exists",
+      "message": "package.json scripts.scripts:audit references existing file: tools/audit-package-scripts.mjs",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "package.json scripts.scripts:audit uses external command: node",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "package.json scripts.check:scripts exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.file-ref.exists",
+      "message": "package.json scripts.check:scripts references existing file: tools/audit-package-scripts.mjs",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "package.json scripts.check:scripts uses external command: node",
+      "details": []
+    },
+    {
+      "level": "INFO",
+      "id": "package.scripts",
+      "message": "packages/ai/package.json has 4 scripts",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "packages/ai/package.json scripts.build exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.unknown-command",
+      "message": "packages/ai/package.json scripts.build uses unclassified command: tsup",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "packages/ai/package.json scripts.clean exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "packages/ai/package.json scripts.clean uses external command: git",
+      "details": []
+    },
+    {
+      "level": "FAIL",
+      "id": "script.danger",
+      "message": "packages/ai/package.json scripts.clean: git clean can delete untracked files; -x also deletes ignored files",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "packages/ai/package.json scripts.dev exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.unknown-command",
+      "message": "packages/ai/package.json scripts.dev uses unclassified command: tsup",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "packages/ai/package.json scripts.typecheck exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "packages/ai/package.json scripts.typecheck uses tsc; typescript is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "INFO",
+      "id": "package.scripts",
+      "message": "packages/analytics/package.json has 2 scripts",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "packages/analytics/package.json scripts.clean exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "packages/analytics/package.json scripts.clean uses external command: git",
+      "details": []
+    },
+    {
+      "level": "FAIL",
+      "id": "script.danger",
+      "message": "packages/analytics/package.json scripts.clean: git clean can delete untracked files; -x also deletes ignored files",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "packages/analytics/package.json scripts.typecheck exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "packages/analytics/package.json scripts.typecheck uses tsc; typescript is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "INFO",
+      "id": "package.scripts",
+      "message": "packages/auth/package.json has 2 scripts",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "packages/auth/package.json scripts.clean exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "packages/auth/package.json scripts.clean uses external command: git",
+      "details": []
+    },
+    {
+      "level": "FAIL",
+      "id": "script.danger",
+      "message": "packages/auth/package.json scripts.clean: git clean can delete untracked files; -x also deletes ignored files",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "packages/auth/package.json scripts.typecheck exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "packages/auth/package.json scripts.typecheck uses tsc; typescript is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "INFO",
+      "id": "package.scripts",
+      "message": "packages/cms/package.json has 4 scripts",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "packages/cms/package.json scripts.build exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.unknown-command",
+      "message": "packages/cms/package.json scripts.build uses unclassified command: basehub",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "packages/cms/package.json scripts.clean exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "packages/cms/package.json scripts.clean uses external command: git",
+      "details": []
+    },
+    {
+      "level": "FAIL",
+      "id": "script.danger",
+      "message": "packages/cms/package.json scripts.clean: git clean can delete untracked files; -x also deletes ignored files",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "packages/cms/package.json scripts.dev exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.unknown-command",
+      "message": "packages/cms/package.json scripts.dev uses unclassified command: basehub",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "packages/cms/package.json scripts.typecheck exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "packages/cms/package.json scripts.typecheck uses tsc; typescript is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "INFO",
+      "id": "package.scripts",
+      "message": "packages/collaboration/package.json has 2 scripts",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "packages/collaboration/package.json scripts.clean exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "packages/collaboration/package.json scripts.clean uses external command: git",
+      "details": []
+    },
+    {
+      "level": "FAIL",
+      "id": "script.danger",
+      "message": "packages/collaboration/package.json scripts.clean: git clean can delete untracked files; -x also deletes ignored files",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "packages/collaboration/package.json scripts.typecheck exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "packages/collaboration/package.json scripts.typecheck uses tsc; typescript is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "INFO",
+      "id": "package.scripts",
+      "message": "packages/database/package.json has 6 scripts",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "packages/database/package.json scripts.build exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "packages/database/package.json scripts.build uses prisma; prisma is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "packages/database/package.json scripts.clean exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "packages/database/package.json scripts.clean uses external command: git",
+      "details": []
+    },
+    {
+      "level": "FAIL",
+      "id": "script.danger",
+      "message": "packages/database/package.json scripts.clean: git clean can delete untracked files; -x also deletes ignored files",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "packages/database/package.json scripts.generate exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "packages/database/package.json scripts.generate uses prisma; prisma is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "packages/database/package.json scripts.postinstall exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "packages/database/package.json scripts.postinstall uses external command: node",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.unknown-command",
+      "message": "packages/database/package.json scripts.postinstall uses unclassified command: process.env.CI)",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.unknown-command",
+      "message": "packages/database/package.json scripts.postinstall uses unclassified command: !process.env.DATABASE_URL",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "packages/database/package.json scripts.postinstall uses prisma; prisma is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "packages/database/package.json scripts.test exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "packages/database/package.json scripts.test uses vitest; vitest is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "packages/database/package.json scripts.typecheck exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "packages/database/package.json scripts.typecheck uses tsc; typescript is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "INFO",
+      "id": "package.scripts",
+      "message": "packages/design-system/package.json has 2 scripts",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "packages/design-system/package.json scripts.clean exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "packages/design-system/package.json scripts.clean uses external command: git",
+      "details": []
+    },
+    {
+      "level": "FAIL",
+      "id": "script.danger",
+      "message": "packages/design-system/package.json scripts.clean: git clean can delete untracked files; -x also deletes ignored files",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "packages/design-system/package.json scripts.typecheck exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "packages/design-system/package.json scripts.typecheck uses tsc; typescript is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "INFO",
+      "id": "package.scripts",
+      "message": "packages/email/package.json has 2 scripts",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "packages/email/package.json scripts.clean exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "packages/email/package.json scripts.clean uses external command: git",
+      "details": []
+    },
+    {
+      "level": "FAIL",
+      "id": "script.danger",
+      "message": "packages/email/package.json scripts.clean: git clean can delete untracked files; -x also deletes ignored files",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "packages/email/package.json scripts.typecheck exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "packages/email/package.json scripts.typecheck uses tsc; typescript is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "INFO",
+      "id": "package.scripts",
+      "message": "packages/event-parser/package.json has 2 scripts",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "packages/event-parser/package.json scripts.build exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "packages/event-parser/package.json scripts.build uses tsc; typescript is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "packages/event-parser/package.json scripts.typecheck exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "packages/event-parser/package.json scripts.typecheck uses tsc; typescript is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "INFO",
+      "id": "package.scripts",
+      "message": "packages/feature-flags/package.json has 2 scripts",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "packages/feature-flags/package.json scripts.clean exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "packages/feature-flags/package.json scripts.clean uses external command: git",
+      "details": []
+    },
+    {
+      "level": "FAIL",
+      "id": "script.danger",
+      "message": "packages/feature-flags/package.json scripts.clean: git clean can delete untracked files; -x also deletes ignored files",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "packages/feature-flags/package.json scripts.typecheck exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "packages/feature-flags/package.json scripts.typecheck uses tsc; typescript is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "INFO",
+      "id": "package.scripts",
+      "message": "packages/internationalization/package.json has 3 scripts",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "packages/internationalization/package.json scripts.clean exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "packages/internationalization/package.json scripts.clean uses external command: git",
+      "details": []
+    },
+    {
+      "level": "FAIL",
+      "id": "script.danger",
+      "message": "packages/internationalization/package.json scripts.clean: git clean can delete untracked files; -x also deletes ignored files",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "packages/internationalization/package.json scripts.translate exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "packages/internationalization/package.json scripts.translate uses external command: npx",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "packages/internationalization/package.json scripts.typecheck exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "packages/internationalization/package.json scripts.typecheck uses tsc; typescript is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "INFO",
+      "id": "package.scripts",
+      "message": "packages/kitchen-state-transitions/package.json has 2 scripts",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "packages/kitchen-state-transitions/package.json scripts.clean exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "packages/kitchen-state-transitions/package.json scripts.clean uses external command: git",
+      "details": []
+    },
+    {
+      "level": "FAIL",
+      "id": "script.danger",
+      "message": "packages/kitchen-state-transitions/package.json scripts.clean: git clean can delete untracked files; -x also deletes ignored files",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "packages/kitchen-state-transitions/package.json scripts.typecheck exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "packages/kitchen-state-transitions/package.json scripts.typecheck uses tsc; typescript is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "INFO",
+      "id": "package.scripts",
+      "message": "packages/mcp-server/package.json has 5 scripts",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "packages/mcp-server/package.json scripts.start exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.file-ref.exists",
+      "message": "packages/mcp-server/package.json scripts.start references existing file: packages/mcp-server/src/index.ts",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "packages/mcp-server/package.json scripts.start uses tsx; tsx is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "packages/mcp-server/package.json scripts.start:admin exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.file-ref.exists",
+      "message": "packages/mcp-server/package.json scripts.start:admin references existing file: packages/mcp-server/src/index.ts",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.portability",
+      "message": "packages/mcp-server/package.json scripts.start:admin: POSIX env assignment without cross-env",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "packages/mcp-server/package.json scripts.build exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "packages/mcp-server/package.json scripts.build uses tsc; typescript is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "packages/mcp-server/package.json scripts.typecheck exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "packages/mcp-server/package.json scripts.typecheck uses tsc; typescript is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "packages/mcp-server/package.json scripts.test exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "packages/mcp-server/package.json scripts.test uses vitest; vitest is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "INFO",
+      "id": "package.scripts",
+      "message": "packages/next-config/package.json has 2 scripts",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "packages/next-config/package.json scripts.clean exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "packages/next-config/package.json scripts.clean uses external command: git",
+      "details": []
+    },
+    {
+      "level": "FAIL",
+      "id": "script.danger",
+      "message": "packages/next-config/package.json scripts.clean: git clean can delete untracked files; -x also deletes ignored files",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "packages/next-config/package.json scripts.typecheck exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "packages/next-config/package.json scripts.typecheck uses tsc; typescript is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "INFO",
+      "id": "package.scripts",
+      "message": "packages/notifications/package.json has 3 scripts",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "packages/notifications/package.json scripts.clean exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "packages/notifications/package.json scripts.clean uses external command: git",
+      "details": []
+    },
+    {
+      "level": "FAIL",
+      "id": "script.danger",
+      "message": "packages/notifications/package.json scripts.clean: git clean can delete untracked files; -x also deletes ignored files",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "packages/notifications/package.json scripts.typecheck exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "packages/notifications/package.json scripts.typecheck uses tsc; typescript is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "packages/notifications/package.json scripts.test exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "packages/notifications/package.json scripts.test uses vitest; vitest is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "INFO",
+      "id": "package.scripts",
+      "message": "packages/observability/package.json has 2 scripts",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "packages/observability/package.json scripts.clean exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "packages/observability/package.json scripts.clean uses external command: git",
+      "details": []
+    },
+    {
+      "level": "FAIL",
+      "id": "script.danger",
+      "message": "packages/observability/package.json scripts.clean: git clean can delete untracked files; -x also deletes ignored files",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "packages/observability/package.json scripts.typecheck exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "packages/observability/package.json scripts.typecheck uses tsc; typescript is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "INFO",
+      "id": "package.scripts",
+      "message": "packages/payments/package.json has 2 scripts",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "packages/payments/package.json scripts.clean exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "packages/payments/package.json scripts.clean uses external command: git",
+      "details": []
+    },
+    {
+      "level": "FAIL",
+      "id": "script.danger",
+      "message": "packages/payments/package.json scripts.clean: git clean can delete untracked files; -x also deletes ignored files",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "packages/payments/package.json scripts.typecheck exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "packages/payments/package.json scripts.typecheck uses tsc; typescript is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "INFO",
+      "id": "package.scripts",
+      "message": "packages/payroll-engine/package.json has 3 scripts",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "packages/payroll-engine/package.json scripts.clean exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "packages/payroll-engine/package.json scripts.clean uses external command: git",
+      "details": []
+    },
+    {
+      "level": "FAIL",
+      "id": "script.danger",
+      "message": "packages/payroll-engine/package.json scripts.clean: git clean can delete untracked files; -x also deletes ignored files",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "packages/payroll-engine/package.json scripts.test exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "packages/payroll-engine/package.json scripts.test uses vitest; vitest is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "packages/payroll-engine/package.json scripts.typecheck exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "packages/payroll-engine/package.json scripts.typecheck uses tsc; typescript is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "INFO",
+      "id": "package.scripts",
+      "message": "packages/pdf/package.json has 2 scripts",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "packages/pdf/package.json scripts.clean exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "packages/pdf/package.json scripts.clean uses external command: git",
+      "details": []
+    },
+    {
+      "level": "FAIL",
+      "id": "script.danger",
+      "message": "packages/pdf/package.json scripts.clean: git clean can delete untracked files; -x also deletes ignored files",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "packages/pdf/package.json scripts.typecheck exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "packages/pdf/package.json scripts.typecheck uses tsc; typescript is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "INFO",
+      "id": "package.scripts",
+      "message": "packages/rate-limit/package.json has 2 scripts",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "packages/rate-limit/package.json scripts.clean exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "packages/rate-limit/package.json scripts.clean uses external command: git",
+      "details": []
+    },
+    {
+      "level": "FAIL",
+      "id": "script.danger",
+      "message": "packages/rate-limit/package.json scripts.clean: git clean can delete untracked files; -x also deletes ignored files",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "packages/rate-limit/package.json scripts.typecheck exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "packages/rate-limit/package.json scripts.typecheck uses tsc; typescript is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "INFO",
+      "id": "package.scripts",
+      "message": "packages/realtime/package.json has 4 scripts",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "packages/realtime/package.json scripts.build exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "packages/realtime/package.json scripts.build uses tsc; typescript is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "packages/realtime/package.json scripts.clean exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "packages/realtime/package.json scripts.clean uses external command: git",
+      "details": []
+    },
+    {
+      "level": "FAIL",
+      "id": "script.danger",
+      "message": "packages/realtime/package.json scripts.clean: git clean can delete untracked files; -x also deletes ignored files",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "packages/realtime/package.json scripts.test exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "packages/realtime/package.json scripts.test uses vitest; vitest is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "packages/realtime/package.json scripts.typecheck exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "packages/realtime/package.json scripts.typecheck uses tsc; typescript is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "INFO",
+      "id": "package.scripts",
+      "message": "packages/sales-reporting/package.json has 3 scripts",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "packages/sales-reporting/package.json scripts.build exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "packages/sales-reporting/package.json scripts.build uses tsc; typescript is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "packages/sales-reporting/package.json scripts.example exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.file-ref.exists",
+      "message": "packages/sales-reporting/package.json scripts.example references existing file: packages/sales-reporting/examples/generate-report.ts",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "packages/sales-reporting/package.json scripts.example uses external command: npx",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "packages/sales-reporting/package.json scripts.test exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "packages/sales-reporting/package.json scripts.test uses vitest; vitest is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "INFO",
+      "id": "package.scripts",
+      "message": "packages/security/package.json has 2 scripts",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "packages/security/package.json scripts.clean exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "packages/security/package.json scripts.clean uses external command: git",
+      "details": []
+    },
+    {
+      "level": "FAIL",
+      "id": "script.danger",
+      "message": "packages/security/package.json scripts.clean: git clean can delete untracked files; -x also deletes ignored files",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "packages/security/package.json scripts.typecheck exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "packages/security/package.json scripts.typecheck uses tsc; typescript is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "INFO",
+      "id": "package.scripts",
+      "message": "packages/sentry-integration/package.json has 3 scripts",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "packages/sentry-integration/package.json scripts.build exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.unknown-command",
+      "message": "packages/sentry-integration/package.json scripts.build uses unclassified command: tsup",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "packages/sentry-integration/package.json scripts.dev exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.unknown-command",
+      "message": "packages/sentry-integration/package.json scripts.dev uses unclassified command: tsup",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "packages/sentry-integration/package.json scripts.typecheck exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "packages/sentry-integration/package.json scripts.typecheck uses tsc; typescript is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "INFO",
+      "id": "package.scripts",
+      "message": "packages/seo/package.json has 2 scripts",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "packages/seo/package.json scripts.clean exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "packages/seo/package.json scripts.clean uses external command: git",
+      "details": []
+    },
+    {
+      "level": "FAIL",
+      "id": "script.danger",
+      "message": "packages/seo/package.json scripts.clean: git clean can delete untracked files; -x also deletes ignored files",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "packages/seo/package.json scripts.typecheck exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "packages/seo/package.json scripts.typecheck uses tsc; typescript is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "INFO",
+      "id": "package.scripts",
+      "message": "packages/storage/package.json has 2 scripts",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "packages/storage/package.json scripts.clean exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "packages/storage/package.json scripts.clean uses external command: git",
+      "details": []
+    },
+    {
+      "level": "FAIL",
+      "id": "script.danger",
+      "message": "packages/storage/package.json scripts.clean: git clean can delete untracked files; -x also deletes ignored files",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "packages/storage/package.json scripts.typecheck exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "packages/storage/package.json scripts.typecheck uses tsc; typescript is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "INFO",
+      "id": "package.scripts",
+      "message": "packages/supplier-connectors/package.json has 3 scripts",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "packages/supplier-connectors/package.json scripts.build exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "packages/supplier-connectors/package.json scripts.build uses tsc; typescript is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "packages/supplier-connectors/package.json scripts.clean exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "packages/supplier-connectors/package.json scripts.clean uses external command: git",
+      "details": []
+    },
+    {
+      "level": "FAIL",
+      "id": "script.danger",
+      "message": "packages/supplier-connectors/package.json scripts.clean: git clean can delete untracked files; -x also deletes ignored files",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "packages/supplier-connectors/package.json scripts.typecheck exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "packages/supplier-connectors/package.json scripts.typecheck uses tsc; typescript is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "INFO",
+      "id": "package.scripts",
+      "message": "packages/types/package.json has 1 scripts",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "packages/types/package.json scripts.clean exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "packages/types/package.json scripts.clean uses external command: git",
+      "details": []
+    },
+    {
+      "level": "FAIL",
+      "id": "script.danger",
+      "message": "packages/types/package.json scripts.clean: git clean can delete untracked files; -x also deletes ignored files",
+      "details": []
+    },
+    {
+      "level": "INFO",
+      "id": "package.scripts",
+      "message": "packages/typescript-config/package.json has 1 scripts",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "packages/typescript-config/package.json scripts.clean exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "packages/typescript-config/package.json scripts.clean uses external command: git",
+      "details": []
+    },
+    {
+      "level": "FAIL",
+      "id": "script.danger",
+      "message": "packages/typescript-config/package.json scripts.clean: git clean can delete untracked files; -x also deletes ignored files",
+      "details": []
+    },
+    {
+      "level": "INFO",
+      "id": "package.scripts",
+      "message": "packages/webhooks/package.json has 2 scripts",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "packages/webhooks/package.json scripts.clean exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "packages/webhooks/package.json scripts.clean uses external command: git",
+      "details": []
+    },
+    {
+      "level": "FAIL",
+      "id": "script.danger",
+      "message": "packages/webhooks/package.json scripts.clean: git clean can delete untracked files; -x also deletes ignored files",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "packages/webhooks/package.json scripts.typecheck exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "packages/webhooks/package.json scripts.typecheck uses tsc; typescript is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "INFO",
+      "id": "package.scripts",
+      "message": "tools/document-parser/project/package.json has 5 scripts",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "tools/document-parser/project/package.json scripts.dev exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.unknown-command",
+      "message": "tools/document-parser/project/package.json scripts.dev uses unclassified command: vite",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "tools/document-parser/project/package.json scripts.build exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.unknown-command",
+      "message": "tools/document-parser/project/package.json scripts.build uses unclassified command: vite",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "tools/document-parser/project/package.json scripts.lint exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.unknown-command",
+      "message": "tools/document-parser/project/package.json scripts.lint uses unclassified command: eslint",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "tools/document-parser/project/package.json scripts.preview exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.unknown-command",
+      "message": "tools/document-parser/project/package.json scripts.preview uses unclassified command: vite",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "tools/document-parser/project/package.json scripts.typecheck exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "tools/document-parser/project/package.json scripts.typecheck uses tsc; typescript is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "INFO",
+      "id": "package.scripts",
+      "message": "tools/document-parser/project/packages/document-parser/package.json has 4 scripts",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "tools/document-parser/project/packages/document-parser/package.json scripts.build exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "tools/document-parser/project/packages/document-parser/package.json scripts.build uses tsc; typescript is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "tools/document-parser/project/packages/document-parser/package.json scripts.test exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "tools/document-parser/project/packages/document-parser/package.json scripts.test uses vitest; vitest is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "tools/document-parser/project/packages/document-parser/package.json scripts.test:watch exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "tools/document-parser/project/packages/document-parser/package.json scripts.test:watch uses vitest; vitest is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "tools/document-parser/project/packages/document-parser/package.json scripts.typecheck exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "tools/document-parser/project/packages/document-parser/package.json scripts.typecheck uses tsc; typescript is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "INFO",
+      "id": "package.scripts",
+      "message": "tools/event-and-menu-intake/project/package.json has 5 scripts",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "tools/event-and-menu-intake/project/package.json scripts.dev exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.unknown-command",
+      "message": "tools/event-and-menu-intake/project/package.json scripts.dev uses unclassified command: vite",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "tools/event-and-menu-intake/project/package.json scripts.build exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.unknown-command",
+      "message": "tools/event-and-menu-intake/project/package.json scripts.build uses unclassified command: vite",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "tools/event-and-menu-intake/project/package.json scripts.lint exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.unknown-command",
+      "message": "tools/event-and-menu-intake/project/package.json scripts.lint uses unclassified command: eslint",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "tools/event-and-menu-intake/project/package.json scripts.preview exists",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.unknown-command",
+      "message": "tools/event-and-menu-intake/project/package.json scripts.preview uses unclassified command: vite",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "tools/event-and-menu-intake/project/package.json scripts.typecheck exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "tools/event-and-menu-intake/project/package.json scripts.typecheck uses tsc; typescript is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "INFO",
+      "id": "package.scripts",
+      "message": "tools/sales-reporting-pdf-engine/project/package.json has 2 scripts",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "tools/sales-reporting-pdf-engine/project/package.json scripts.build exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.bin.declared",
+      "message": "tools/sales-reporting-pdf-engine/project/package.json scripts.build uses tsc; typescript is dependency-visible",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.exists",
+      "message": "tools/sales-reporting-pdf-engine/project/package.json scripts.example exists",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "script.file-ref.exists",
+      "message": "tools/sales-reporting-pdf-engine/project/package.json scripts.example references existing file: tools/sales-reporting-pdf-engine/project/examples/generate-report.ts",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "script.external-command",
+      "message": "tools/sales-reporting-pdf-engine/project/package.json scripts.example uses external command: npx",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "root.check-manifest.exists",
+      "message": "root has check:manifest",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "root.check.misses-manifest",
+      "message": "root check does not include check:manifest",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "root.check-ci.includes-check-chain",
+      "message": "check:ci includes check or check:manifest",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "root.clean.preview-exists",
+      "message": "clean:preview exists next to clean:hard",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "root.db-push.disabled",
+      "message": "db:push is intentionally disabled",
+      "details": []
+    },
+    {
+      "level": "WARN",
+      "id": "manifest.exec-scripts",
+      "message": "9 manifest scripts call pnpm exec manifest; verify CLI subcommands still exist after package upgrades",
+      "details": [
+        "manifest:doctor: pnpm exec manifest doctor",
+        "manifest:inspect: pnpm exec manifest inspect entity",
+        "manifest:diff: pnpm exec manifest diff source-vs-ir",
+        "manifest:duplicates: pnpm exec manifest duplicates",
+        "manifest:runtime-check: pnpm exec manifest runtime-check",
+        "manifest:cache-status: pnpm exec manifest cache-status",
+        "manifest:route-audit: pnpm exec manifest audit-routes --root apps/api --commands-manifest manifest/runtime/commands.registry.json --exemptions manifest/governance/audit-routes-exemptions.json",
+        "manifest:validate: pnpm exec manifest validate manifest/ir/kitchen.ir.json",
+        "manifest:validate-ai: pnpm exec manifest validate-ai manifest/ir/kitchen.ir.json --min-score 80"
+      ]
+    }
+  ]
+}

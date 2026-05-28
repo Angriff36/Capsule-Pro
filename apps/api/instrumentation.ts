@@ -10,4 +10,19 @@ export async function register() {
   }
 }
 
-export const onRequestError = Sentry.captureRequestError;
+export const onRequestError = (
+  error: Error & { digest?: string },
+  request: { path: string; method: string; headers: Record<string, string | string[]> },
+  context: {
+    routerKind: "Pages Router" | "App Router";
+    routePath: string;
+    routeType: "render" | "route" | "action" | "middleware" | "proxy";
+  }
+) => {
+  if (process.env.NEXT_RUNTIME === "nodejs") {
+    void import("./instrumentation.node").then(({ logApiRequestError }) => {
+      logApiRequestError(error, request, context);
+    });
+  }
+  return Sentry.captureRequestError(error, request, context);
+};

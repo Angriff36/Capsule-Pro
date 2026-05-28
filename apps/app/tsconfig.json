@@ -22,6 +22,11 @@
     ".next-dev-webpack/types/**/*.ts"
   ],
   "exclude": [
+    "node_modules",
+    ".next",
+    ".next-dev",
+    ".next-dev-webpack",
+    "dist",
     "prisma",
     "__tests__/command-board/**",
     "app/api/command-board/**",

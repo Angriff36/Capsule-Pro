@@ -12,6 +12,7 @@ import { PrismaNeon } from "@prisma/adapter-neon";
 import ws from "ws";
 import { PrismaClient } from "./generated/client";
 import { keys } from "./keys";
+import { withManifestIssueLog } from "./manifest-issue-log";
 import { createTenantClient } from "./tenant";
 
 const globalForPrisma = global as unknown as { prisma: PrismaClient };
@@ -38,7 +39,9 @@ if (process.env.NODE_ENV !== "production" && typeof process !== "undefined") {
 }
 const adapter = new PrismaNeon({ connectionString });
 
-export const database = globalForPrisma.prisma || new PrismaClient({ adapter });
+const baseClient = new PrismaClient({ adapter });
+export const database =
+  globalForPrisma.prisma || withManifestIssueLog(baseClient);
 export const db = database;
 
 if (process.env.NODE_ENV !== "production") {

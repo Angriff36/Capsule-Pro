@@ -20,6 +20,7 @@
     "node_modules",
     "test-scripts",
     ".next",
+    ".next-dev",
     "dist",
     "app/api/command-board/**"
   ]

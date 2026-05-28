@@ -13,12 +13,29 @@
 import type { RuntimeEngine } from "@angriff36/manifest";
 import { database } from "@repo/database";
 import { createManifestRuntime as createSharedRuntime } from "@repo/manifest-runtime/manifest-runtime-factory";
-import { log } from "@repo/observability/log";
+import { registerManifestStoreIssueReporter } from "@repo/manifest-runtime/prisma-store";
 import { captureException } from "@sentry/nextjs";
+import {
+  createIssueLogTelemetry,
+  mergeTelemetryHooks,
+} from "./manifest/issue-log-telemetry";
+import { logManifestIssue } from "./manifest/issue-log";
+import { createManifestRuntimeLogger } from "./manifest/manifest-runtime-log";
 import { createSentryTelemetry } from "./manifest/telemetry";
 
-// Singleton Sentry telemetry hooks — created once, reused across all runtimes.
-const sentryTelemetry = createSentryTelemetry();
+registerManifestStoreIssueReporter((entityName) => {
+  logManifestIssue({
+    kind: "store_missing",
+    entity: entityName,
+    message: "No Prisma store registered — commands will fail",
+  });
+});
+
+const manifestTelemetry = mergeTelemetryHooks(
+  createSentryTelemetry(),
+  createIssueLogTelemetry()
+);
+const manifestRuntimeLog = createManifestRuntimeLogger();
 
 /**
  * Context for creating a manifest runtime.
@@ -65,9 +82,9 @@ export async function createManifestRuntime(
     {
       prisma: database,
       prismaOverride: ctx.prismaOverride,
-      log,
+      log: manifestRuntimeLog,
       captureException,
-      telemetry: sentryTelemetry,
+      telemetry: manifestTelemetry,
     },
     ctx
   );

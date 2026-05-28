@@ -32,8 +32,73 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { createClient, getAvailableTags } from "../actions";
+import { apiFetch } from "@/app/lib/api";
+import { getAvailableTags } from "../actions";
 import { TagInput } from "../components/tag-input";
+
+function optionalString(value: string): string | undefined {
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : undefined;
+}
+
+function optionalCountryCode(value: string): string | undefined {
+  const trimmed = value.trim().toUpperCase();
+  return trimmed.length === 2 ? trimmed : undefined;
+}
+
+function buildClientCreatePayload(
+  clientId: string,
+  clientType: "company" | "individual",
+  formData: {
+    company_name: string;
+    first_name: string;
+    last_name: string;
+    email: string;
+    phone: string;
+    website: string;
+    addressLine1: string;
+    addressLine2: string;
+    city: string;
+    stateProvince: string;
+    postalCode: string;
+    countryCode: string;
+    notes: string;
+    tags: string[];
+    source: string;
+    defaultPaymentTerms: string;
+    taxId: string;
+    taxExempt: boolean;
+  }
+): Record<string, unknown> {
+  const str = (value: string) => optionalString(value) ?? "";
+
+  return {
+    id: clientId,
+    clientType,
+    companyName: str(formData.company_name),
+    firstName: str(formData.first_name),
+    lastName: str(formData.last_name),
+    email: str(formData.email),
+    phone: str(formData.phone),
+    website: str(formData.website),
+    addressLine1: str(formData.addressLine1),
+    addressLine2: str(formData.addressLine2),
+    city: str(formData.city),
+    stateProvince: str(formData.stateProvince),
+    postalCode: str(formData.postalCode),
+    countryCode: optionalCountryCode(formData.countryCode) ?? "",
+    defaultPaymentTerms: formData.defaultPaymentTerms
+      ? Number.parseInt(formData.defaultPaymentTerms, 10)
+      : 30,
+    taxExempt: formData.taxExempt,
+    taxId: str(formData.taxId),
+    notes: str(formData.notes),
+    tags:
+      formData.tags.length > 0 ? JSON.stringify(formData.tags) : "",
+    source: str(formData.source),
+    assignedTo: "",
+  };
+}
 
 export default function NewClientPage() {
   const router = useRouter();
@@ -79,41 +144,50 @@ export default function NewClientPage() {
     }
     if (
       clientType === "individual" &&
-      !formData.first_name.trim() &&
-      !formData.last_name.trim()
+      !formData.first_name.trim()
     ) {
-      toast.error("First name or last name is required");
+      toast.error("First name is required for individual clients");
       return;
     }
 
     setLoading(true);
     try {
-      const client = await createClient({
-        clientType,
-        company_name: formData.company_name || undefined,
-        first_name: formData.first_name || undefined,
-        last_name: formData.last_name || undefined,
-        email: formData.email || undefined,
-        phone: formData.phone || undefined,
-        website: formData.website || undefined,
-        addressLine1: formData.addressLine1 || undefined,
-        addressLine2: formData.addressLine2 || undefined,
-        city: formData.city || undefined,
-        stateProvince: formData.stateProvince || undefined,
-        postalCode: formData.postalCode || undefined,
-        countryCode: formData.countryCode || undefined,
-        notes: formData.notes || undefined,
-        tags: formData.tags.length > 0 ? formData.tags : undefined,
-        source: formData.source || undefined,
-        defaultPaymentTerms: formData.defaultPaymentTerms
-          ? Number.parseInt(formData.defaultPaymentTerms, 10)
-          : undefined,
-        taxId: formData.taxId || undefined,
-        taxExempt: formData.taxExempt || undefined,
+      const clientId = crypto.randomUUID();
+      const res = await apiFetch("/api/manifest/Client/commands/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(
+          buildClientCreatePayload(clientId, clientType, formData)
+        ),
       });
 
+      const body = (await res.json()) as {
+        success?: boolean;
+        message?: string;
+        error?: string;
+        result?: { id?: string; instanceId?: string } | number | string;
+      };
+
+      if (!res.ok || body.success === false) {
+        throw new Error(body.message ?? body.error ?? "Create failed");
+      }
+
+      const resultPayload = body.result;
+      const createdId =
+        typeof resultPayload === "object" &&
+        resultPayload !== null &&
+        "id" in resultPayload &&
+        typeof resultPayload.id === "string"
+          ? resultPayload.id
+          : typeof resultPayload === "object" &&
+              resultPayload !== null &&
+              "instanceId" in resultPayload &&
+              typeof resultPayload.instanceId === "string"
+            ? resultPayload.instanceId
+            : clientId;
+
       toast.success("Client created successfully");
-      router.push(`/crm/clients/${client.id}`);
+      router.push(`/crm/clients/${createdId}`);
     } catch (error) {
       toast.error("Failed to create client", {
         description: error instanceof Error ? error.message : "Unknown error",
@@ -207,13 +281,16 @@ export default function NewClientPage() {
                 )}
 
                 <div className="space-y-2">
-                  <Label htmlFor="first_name">First Name</Label>
+                  <Label htmlFor="first_name">
+                    First Name{clientType === "individual" ? " *" : ""}
+                  </Label>
                   <Input
                     id="first_name"
                     onChange={(e) =>
                       setFormData({ ...formData, first_name: e.target.value })
                     }
                     placeholder="John"
+                    required={clientType === "individual"}
                     value={formData.first_name}
                   />
                 </div>
@@ -353,11 +430,17 @@ export default function NewClientPage() {
                     id="countryCode"
                     maxLength={2}
                     onChange={(e) =>
-                      setFormData({ ...formData, countryCode: e.target.value })
+                      setFormData({
+                        ...formData,
+                        countryCode: e.target.value.toUpperCase(),
+                      })
                     }
-                    placeholder="e.g., US"
+                    placeholder="US"
                     value={formData.countryCode}
                   />
+                  <p className="text-muted-foreground text-xs">
+                    ISO 3166-1 alpha-2 only (2 letters). Leave blank if unknown.
+                  </p>
                 </div>
               </div>
             </div>

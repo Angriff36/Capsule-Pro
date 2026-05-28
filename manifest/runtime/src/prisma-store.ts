@@ -1646,6 +1646,24 @@ function timestampToDate(value: unknown): Date | null {
  * This returns a function that provides the appropriate Store implementation
  * for each entity type, backed by Prisma.
  */
+const loggedMissingStoreEntities = new Set<string>();
+
+export type ManifestStoreIssueKind = "missing";
+
+export type ManifestStoreIssueReporter = (
+  entityName: string,
+  kind: ManifestStoreIssueKind
+) => void;
+
+let manifestStoreIssueReporter: ManifestStoreIssueReporter | undefined;
+
+/** Optional hook for apps to persist missing-store diagnostics. */
+export function registerManifestStoreIssueReporter(
+  reporter: ManifestStoreIssueReporter
+): void {
+  manifestStoreIssueReporter = reporter;
+}
+
 export function createPrismaStoreProvider(
   prisma: PrismaClient,
   tenantId: string,
@@ -1841,11 +1859,16 @@ export function createPrismaStoreProvider(
         return new TimeOffRequestPrismaStore(prisma, tenantId);
       case "InventoryTransfer":
         return new InventoryTransferPrismaStore(prisma, tenantId, userId);
-      default:
-        console.error(
-          `[createPrismaStoreProvider] No store for entity "${entityName}" — commands will fail`
-        );
+      default: {
+        if (!loggedMissingStoreEntities.has(entityName)) {
+          loggedMissingStoreEntities.add(entityName);
+          console.error(
+            `[createPrismaStoreProvider] No store for entity "${entityName}" — commands will fail`
+          );
+          manifestStoreIssueReporter?.(entityName, "missing");
+        }
         return undefined;
+      }
     }
   };
 }

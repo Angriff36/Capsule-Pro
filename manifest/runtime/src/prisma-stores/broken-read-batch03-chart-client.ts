@@ -13,6 +13,7 @@ import type { Store } from "@angriff36/manifest";
 import type { PrismaClient } from "@repo/database/standalone";
 import {
   asBool,
+  asCountryCode,
   asNullableNumber,
   asNullableString,
   asString,
@@ -187,7 +188,7 @@ export class ClientPrismaStore implements Store<EntityInstance> {
         city: asNullableString(data.city),
         stateProvince: asNullableString(data.stateProvince),
         postalCode: asNullableString(data.postalCode),
-        countryCode: asNullableString(data.countryCode),
+        countryCode: asCountryCode(data.countryCode),
         defaultPaymentTerms: asNullableNumber(data.defaultPaymentTerms) ?? 30,
         taxExempt: asBool(data.taxExempt, false),
         taxId: asNullableString(data.taxId),
@@ -234,7 +235,7 @@ export class ClientPrismaStore implements Store<EntityInstance> {
       if (data.postalCode !== undefined)
         patch.postalCode = asNullableString(data.postalCode);
       if (data.countryCode !== undefined)
-        patch.countryCode = asNullableString(data.countryCode);
+        patch.countryCode = asCountryCode(data.countryCode);
       if (data.defaultPaymentTerms !== undefined)
         patch.defaultPaymentTerms =
           asNullableNumber(data.defaultPaymentTerms) ?? 30;

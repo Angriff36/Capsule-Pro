@@ -133,6 +133,9 @@ export interface ManifestRuntimeContext {
  * Entities that have dedicated Prisma models with hand-written field mappings.
  * All other entities fall back to the generic PrismaJsonStore (JSON blob storage).
  */
+/** Dedupe JsonStore notices — storeProvider runs per entity per runtime. */
+const loggedJsonStoreEntities = new Set<string>();
+
 const ENTITIES_WITH_SPECIFIC_STORES = new Set([
   "PrepTask",
   "Recipe",
@@ -393,9 +396,12 @@ export async function createManifestRuntime(
     }
 
     // Fall back to generic JSON store for entities without dedicated models.
-    deps.log.info(
-      `[manifest-runtime] Using PrismaJsonStore for entity: ${entityName}`
-    );
+    if (!loggedJsonStoreEntities.has(entityName)) {
+      loggedJsonStoreEntities.add(entityName);
+      deps.log.info(
+        `[manifest-runtime] Using PrismaJsonStore for entity: ${entityName}`
+      );
+    }
     // biome-ignore lint/suspicious/noExplicitAny: PrismaJsonStore expects the full PrismaClient; callers inject a structurally-compatible superset.
     return new PrismaJsonStore({
       prisma: prismaForWrites as any,

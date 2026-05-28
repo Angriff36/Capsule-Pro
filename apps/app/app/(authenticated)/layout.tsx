@@ -1,15 +1,9 @@
 import { auth, currentUser } from "@repo/auth/server";
-import { SidebarProvider } from "@repo/design-system/components/ui/sidebar";
 import { showBetaFeature } from "@repo/feature-flags";
 import { secure } from "@repo/security";
 import type { ReactNode } from "react";
 import { env } from "@/env";
-import {
-  AiAssistantButton,
-  AiAssistantPanel,
-  AiAssistantProvider,
-} from "./components/ai-assistant";
-import { GlobalSidebar } from "./components/sidebar";
+import { AuthenticatedAppShell } from "./components/authenticated-app-shell";
 
 interface AppLayoutProperties {
   readonly children: ReactNode;
@@ -47,20 +41,9 @@ const AppLayout = async ({ children }: AppLayoutProperties) => {
   }
 
   return (
-    <SidebarProvider>
-      <AiAssistantProvider>
-        <GlobalSidebar userId={user.id}>
-          {betaFeature && (
-            <div className="m-4 rounded-full bg-blue-500 p-1.5 text-center text-sm text-white">
-              Beta feature now available
-            </div>
-          )}
-          {children}
-        </GlobalSidebar>
-        <AiAssistantButton />
-        <AiAssistantPanel />
-      </AiAssistantProvider>
-    </SidebarProvider>
+    <AuthenticatedAppShell betaFeature={betaFeature} userId={user.id}>
+      {children}
+    </AuthenticatedAppShell>
   );
 };
 

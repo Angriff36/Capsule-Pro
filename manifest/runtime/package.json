@@ -18,6 +18,8 @@
     "./prisma-idempotency-store": "./src/prisma-idempotency-store.ts",
     "./manifest-runtime-factory": "./src/manifest-runtime-factory.ts",
     "./commands-registry": "./src/commands-registry.ts",
+    "./command-resolver": "./src/command-resolver.ts",
+    "./run-manifest-command-core": "./src/run-manifest-command-core.ts",
     "./bottleneck-detector": "./src/bottleneck-detector/index.ts"
   },
   "dependencies": {

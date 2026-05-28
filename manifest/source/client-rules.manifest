@@ -54,15 +54,10 @@ entity Client {
   command create(clientType: string, companyName: string, firstName: string, lastName: string, email: string, phone: string, website: string, addressLine1: string, addressLine2: string, city: string, stateProvince: string, postalCode: string, countryCode: string, defaultPaymentTerms: number, taxExempt: boolean, taxId: string, notes: string, tags: string, source: string, assignedTo: string) {
     guard clientType != null and clientType != "" "Client type is required"
 
-    constraint blockCompanyNoName:block clientType == "company" and (companyName == null or companyName == "") {
-      messageTemplate: "Company clients require a company name"
-      details: {}
-    }
-
-    constraint blockIndividualNoName:block clientType == "individual" and (firstName == null or firstName == "") {
-      messageTemplate: "Individual clients require a first name"
-      details: {}
-    }
+    // Guards (command params) — not block constraints on `self`, which still
+    // carries entity defaults (clientType=company, companyName="") before mutates.
+    guard clientType != "company" or (companyName != null and companyName != "") "Company clients require a company name"
+    guard clientType != "individual" or (firstName != null and firstName != "") "Individual clients require a first name"
 
     mutate clientType = clientType
     mutate companyName = companyName

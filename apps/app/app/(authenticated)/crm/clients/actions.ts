@@ -302,57 +302,13 @@ export async function getClientById(id: string) {
 }
 
 /**
- * Create a new client
+ * @deprecated Use POST /api/manifest/Client/commands/create from the client UI.
+ * Direct Prisma bypass is not supported — it skips manifest guards/policies/events.
  */
-export async function createClient(input: CreateClientInput) {
-  const { orgId } = await auth();
-  invariant(orgId, "Unauthorized");
-
-  const tenantId = await getTenantId();
-
-  // Check for duplicate email
-  if (input.email?.trim()) {
-    const existingClient = await database.client.findFirst({
-      where: {
-        AND: [{ tenantId }, { email: input.email.trim() }, { deletedAt: null }],
-      },
-    });
-
-    invariant(!existingClient, "A client with this email already exists");
-  }
-
-  const clientType =
-    input.clientType || (input.company_name ? "company" : "individual");
-
-  const client = await database.client.create({
-    data: {
-      tenantId,
-      clientType,
-      company_name: input.company_name?.trim() || null,
-      first_name: input.first_name?.trim() || null,
-      last_name: input.last_name?.trim() || null,
-      email: input.email?.trim() || null,
-      phone: input.phone?.trim() || null,
-      website: input.website?.trim() || null,
-      addressLine1: input.addressLine1?.trim() || null,
-      addressLine2: input.addressLine2?.trim() || null,
-      city: input.city?.trim() || null,
-      stateProvince: input.stateProvince?.trim() || null,
-      postalCode: input.postalCode?.trim() || null,
-      countryCode: input.countryCode?.trim() || null,
-      defaultPaymentTerms: input.defaultPaymentTerms ?? 30,
-      taxExempt: input.taxExempt ?? false,
-      taxId: input.taxId?.trim() || null,
-      notes: input.notes?.trim() || null,
-      tags: input.tags || [],
-      source: input.source?.trim() || null,
-      assignedTo: input.assignedTo || null,
-    },
-  });
-
-  revalidatePath("/crm/clients");
-
-  return client;
+export async function createClient(_input: CreateClientInput): Promise<never> {
+  throw new Error(
+    "createClient() server action is disabled. Client create must go through POST /api/manifest/Client/commands/create."
+  );
 }
 
 /**

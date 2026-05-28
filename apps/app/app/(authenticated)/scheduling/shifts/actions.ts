@@ -1,38 +1,40 @@
 "use server";
 
-import type { RuntimeEngine } from "@angriff36/manifest";
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
 import { revalidatePath } from "next/cache";
 import { getTenantIdForOrg, requireCurrentUser } from "@/app/lib/tenant";
-import { createManifestRuntime } from "@/lib/manifest-runtime";
+import {
+  runManifestCommand,
+  type RunManifestCommandResult,
+} from "@/lib/manifest-command";
 
 // ---------------------------------------------------------------------------
 // Shared helpers for manifest-wired mutations
 // ---------------------------------------------------------------------------
 
-/**
- * Resolve auth context + create a manifest runtime wired to ScheduleShift.
- *
- * Combines Clerk auth → tenant → internal user into a runtime ready for
- * `runCommand("create"|"update"|"remove", body, { entityName: "ScheduleShift" })`.
- */
-async function resolveScheduleRuntime(): Promise<{
-  runtime: RuntimeEngine;
-  tenantId: string;
-  userId: string;
-}> {
-  const { userId: clerkId } = await auth();
+async function resolveScheduleContext() {
   const user = await requireCurrentUser();
-  const { orgId } = await auth();
-  const tenantId = user.tenantId;
+  return {
+    tenantId: user.tenantId,
+    userId: user.id,
+    user: {
+      id: user.id,
+      tenantId: user.tenantId,
+      role: user.role,
+    },
+  };
+}
 
-  const runtime = await createManifestRuntime({
-    user: { id: user.id, tenantId, role: user.role },
-    entityName: "ScheduleShift",
-  });
-
-  return { runtime, tenantId, userId: user.id };
+function formatManifestFailure(
+  action: string,
+  result: Extract<RunManifestCommandResult, { ok: false }>
+): string {
+  const detail =
+    (result.guardFailure as { formatted?: string } | undefined)?.formatted ??
+    (result.policyDenial as { policyName?: string } | undefined)?.policyName ??
+    result.message;
+  return `Failed to ${action} shift: ${detail}`;
 }
 
 // ---------------------------------------------------------------------------
@@ -358,7 +360,7 @@ export async function getAvailableEmployees(params: {
  * guards (non-null scheduleId, employeeId) and policies.
  */
 export async function createShift(formData: FormData) {
-  const { runtime, tenantId } = await resolveScheduleRuntime();
+  const { tenantId, user } = await resolveScheduleContext();
 
   const scheduleId = formData.get("scheduleId") as string;
   const employeeId = formData.get("employeeId") as string;
@@ -419,17 +421,15 @@ export async function createShift(formData: FormData) {
     notes: notes || "",
   };
 
-  const result = await runtime.runCommand("create", body, {
-    entityName: "ScheduleShift",
+  const result = await runManifestCommand({
+    entity: "ScheduleShift",
+    command: "create",
+    body,
+    user,
   });
 
-  if (!result.success) {
-    const detail =
-      result.guardFailure?.formatted ??
-      result.policyDenial ??
-      result.error ??
-      "Unknown error";
-    throw new Error(`Failed to create shift: ${detail}`);
+  if (!result.ok) {
+    throw new Error(formatManifestFailure("create", result));
   }
 
   revalidatePath("/scheduling/shifts");
@@ -440,7 +440,7 @@ export async function createShift(formData: FormData) {
  * Update an existing shift via manifest runtime.
  */
 export async function updateShift(shiftId: string, formData: FormData) {
-  const { runtime, tenantId } = await resolveScheduleRuntime();
+  const { tenantId, user } = await resolveScheduleContext();
 
   // The manifest update command does NOT accept scheduleId —
   // a shift's parent schedule is immutable.
@@ -493,18 +493,16 @@ export async function updateShift(shiftId: string, formData: FormData) {
     notes: notes || "",
   };
 
-  const result = await runtime.runCommand("update", body, {
-    entityName: "ScheduleShift",
+  const result = await runManifestCommand({
+    entity: "ScheduleShift",
+    command: "update",
+    body,
+    user,
     instanceId: shiftId,
   });
 
-  if (!result.success) {
-    const detail =
-      result.guardFailure?.formatted ??
-      result.policyDenial ??
-      result.error ??
-      "Unknown error";
-    throw new Error(`Failed to update shift: ${detail}`);
+  if (!result.ok) {
+    throw new Error(formatManifestFailure("update", result));
   }
 
   revalidatePath("/scheduling/shifts");
@@ -515,22 +513,18 @@ export async function updateShift(shiftId: string, formData: FormData) {
  * Soft-delete a shift via manifest runtime's remove command.
  */
 export async function deleteShift(shiftId: string) {
-  const { runtime, userId } = await resolveScheduleRuntime();
+  const { user, userId } = await resolveScheduleContext();
 
-  const body = { userId };
-
-  const result = await runtime.runCommand("remove", body, {
-    entityName: "ScheduleShift",
+  const result = await runManifestCommand({
+    entity: "ScheduleShift",
+    command: "remove",
+    body: { userId },
+    user,
     instanceId: shiftId,
   });
 
-  if (!result.success) {
-    const detail =
-      result.guardFailure?.formatted ??
-      result.policyDenial ??
-      result.error ??
-      "Unknown error";
-    throw new Error(`Failed to delete shift: ${detail}`);
+  if (!result.ok) {
+    throw new Error(formatManifestFailure("delete", result));
   }
 
   revalidatePath("/scheduling/shifts");
