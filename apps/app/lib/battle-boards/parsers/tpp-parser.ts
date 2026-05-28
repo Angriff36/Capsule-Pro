@@ -816,18 +816,6 @@ function normalizeWhitespace(value: string): string {
   return value ? value.replace(/\s+/g, ' ').trim() : '';
 }
 
-function isItemBoundary(line: string): boolean {
-  const normalized = line.toLowerCase();
-  if (
-    /^category$/.test(normalized) ||
-    /^item$/.test(normalized) ||
-    /^printed date/.test(normalized)
-  ) {
-    return true;
-  }
-  return /^P:\s*/i.test(line);
-}
-
 function deriveHeadcount(menuItems: MenuItem[], allLines: string[]): number {
   const candidates: number[] = [];
 
