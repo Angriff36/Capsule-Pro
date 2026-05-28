@@ -1,7 +1,4 @@
-import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
-import { notFound } from "next/navigation";
-import { getTenantIdForOrg } from "../../../../lib/tenant";
+import { getBoardFull } from "../actions";
 import { Header } from "../../../components/header";
 import { BattleBoardEditorClient } from "./battle-board-editor-client";
 
@@ -10,93 +7,20 @@ interface PageProps {
 }
 
 const BattleBoardDetailPage = async ({ params }: PageProps) => {
-  const { orgId } = await auth();
   const { boardId } = await params;
-
-  if (!orgId) {
-    notFound();
-  }
-
-  const tenantId = await getTenantIdForOrg(orgId);
-
-  let board;
-  try {
-    board = await database.battleBoard.findFirst({
-      where: {
-        id: boardId,
-        tenantId,
-        deletedAt: null,
-      },
-    });
-  } catch {
-    notFound();
-  }
-
-  if (!board) {
-    notFound();
-  }
-
-  // Fetch event data if linked
-  let event = null;
-  if (board.eventId) {
-    try {
-      event = await database.event.findFirst({
-        where: {
-          id: board.eventId,
-          tenantId,
-          deletedAt: null,
-        },
-        select: {
-          id: true,
-          eventNumber: true,
-          title: true,
-          eventDate: true,
-          venueName: true,
-          venueAddress: true,
-          guestCount: true,
-        },
-      });
-    } catch {
-      event = null;
-    }
-  }
+  const full = await getBoardFull(boardId);
 
   return (
     <>
       <Header
-        page={board.board_name}
+        page={full.event_name || "Battle Board"}
         pages={[
           { label: "Events", href: "/events" },
           { label: "Battle Boards", href: "/events/battle-boards" },
         ]}
       />
       <div className="flex flex-1 flex-col p-4 pt-0">
-        <BattleBoardEditorClient
-          board={{
-            id: board.id,
-            boardName: board.board_name,
-            boardType: board.board_type,
-            status: board.status,
-            boardData: board.boardData as Record<string, unknown>,
-            notes: board.notes,
-            isTemplate: board.is_template,
-            createdAt: board.createdAt.toISOString(),
-            updatedAt: board.updatedAt.toISOString(),
-          }}
-          event={
-            event
-              ? {
-                  id: event.id,
-                  eventNumber: event.eventNumber,
-                  title: event.title,
-                  eventDate: event.eventDate.toISOString(),
-                  venueName: event.venueName,
-                  venueAddress: event.venueAddress,
-                  guestCount: event.guestCount,
-                }
-              : null
-          }
-        />
+        <BattleBoardEditorClient boardId={boardId} initialBoard={full} />
       </div>
     </>
   );
