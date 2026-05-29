@@ -391,7 +391,11 @@ const baseConfig: NextConfig = withToolbar(
       "vega-lite",
       "@repo/sales-reporting",
       "@clerk/backend",
-      "@sentry/nextjs",
+      // NOTE: @sentry/nextjs must NOT be listed here. withSentry() (see
+      // @repo/observability/next-config) adds it to transpilePackages on Vercel,
+      // and Turbopack forbids a package being in both transpilePackages and
+      // serverExternalPackages. import-in-the-middle / require-in-the-middle are
+      // Sentry's instrumentation deps and are safe to externalize.
       "import-in-the-middle",
       "require-in-the-middle",
     ],
