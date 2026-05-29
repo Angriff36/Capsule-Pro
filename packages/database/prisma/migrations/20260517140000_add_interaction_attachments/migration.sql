@@ -19,7 +19,7 @@ CREATE INDEX "interaction_attachments_interaction_id_idx" ON "tenant_crm"."inter
 -- AddForeignKey
 ALTER TABLE "tenant_crm"."interaction_attachments"
     ADD CONSTRAINT "interaction_attachments_tenant_id_fkey"
-    FOREIGN KEY ("tenant_id") REFERENCES "core"."accounts"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+    FOREIGN KEY ("tenant_id") REFERENCES "platform"."accounts"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "tenant_crm"."interaction_attachments"

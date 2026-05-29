@@ -17,22 +17,23 @@ export type ModuleKey =
   | "inventory"
   | "accounting"
   | "marketing"
+  | "tools"
   | "search";
 
 interface ModuleSidebarItem {
-  title: string;
   href?: string;
+  title: string;
 }
 
 interface ModuleSidebarSection {
-  label: string;
   items: ModuleSidebarItem[];
+  label: string;
 }
 
 export interface ModuleDefinition {
+  href: string;
   key: ModuleKey;
   label: string;
-  href: string;
   sidebar: ModuleSidebarSection[];
 }
 
@@ -104,6 +105,7 @@ export const modules: ModuleDefinition[] = [
           { title: "Prep Lists", href: "/kitchen/prep-lists" },
           { title: "Inventory", href: "/kitchen/inventory" },
           { title: "Waste Tracking", href: "/kitchen/waste" },
+          { title: "Mobile Waste", href: "/kitchen/waste/mobile" },
           { title: "Allergens", href: "/kitchen/allergens" },
           { title: "Stations", href: "/kitchen/stations" },
           { title: "Tasks", href: "/kitchen/tasks" },
@@ -165,8 +167,24 @@ export const modules: ModuleDefinition[] = [
           { title: "Shifts", href: "/scheduling/shifts" },
           { title: "Availability", href: "/scheduling/availability" },
           { title: "Requests", href: "/scheduling/requests" },
+          { title: "Time Off", href: "/scheduling/time-off" },
           { title: "Budgets", href: "/scheduling/budgets" },
           { title: "Optimization", href: "/scheduling/optimization" },
+          { title: "Leaderboard", href: "/scheduling/leaderboard" },
+          { title: "Notifications", href: "/scheduling/notifications" },
+        ],
+      },
+      {
+        label: "Settings",
+        items: [
+          {
+            title: "Rules Explorer",
+            href: "/scheduling/settings/manifest-editor",
+          },
+          {
+            title: "Rules Playground",
+            href: "/scheduling/settings/manifest-playground",
+          },
         ],
       },
     ],
@@ -183,9 +201,11 @@ export const modules: ModuleDefinition[] = [
           { title: "Team", href: "/staff/team" },
           { title: "Schedule", href: "/scheduling" },
           { title: "Availability", href: "/scheduling/availability" },
-          { title: "Time Off", href: "/scheduling/time-off" },
+          { title: "Time Off", href: "/staff/time-off" },
+          { title: "Mobile Timeclock", href: "/staff/mobile/timeclock" },
           { title: "Performance", href: "/staff/performance" },
           { title: "Training", href: "/staff/training" },
+          { title: "My Training", href: "/staff/my-training" },
         ],
       },
     ],
@@ -216,6 +236,7 @@ export const modules: ModuleDefinition[] = [
         label: "Payroll",
         items: [
           { title: "Overview", href: "/payroll" },
+          { title: "Payroll Overview", href: "/payroll/overview" },
           { title: "Timecards", href: "/payroll/timecards" },
           { title: "Payouts", href: "/payroll/payouts" },
           { title: "Pay Runs", href: "/payroll/runs" },
@@ -223,6 +244,7 @@ export const modules: ModuleDefinition[] = [
           { title: "Direct Deposit", href: "/payroll/direct-deposit" },
           { title: "Tax Setup", href: "/payroll/tax-setup" },
           { title: "Reports", href: "/payroll/reports" },
+          { title: "Approvals", href: "/payroll/approvals" },
         ],
       },
     ],
@@ -294,10 +316,14 @@ export const modules: ModuleDefinition[] = [
           { title: "Events", href: "/analytics/events" },
           { title: "Sales", href: "/analytics/sales" },
           { title: "Chart Builder", href: "/analytics/sales/chart-builder" },
+          { title: "Executive", href: "/analytics/executive" },
           { title: "Finance", href: "/analytics/finance" },
           { title: "Staff", href: "/analytics/staff" },
           { title: "Clients", href: "/analytics/clients" },
           { title: "Activity Feed", href: "/analytics/activity-feed" },
+          { title: "Menu Engineering", href: "/analytics/menu-engineering" },
+          { title: "Multi-location", href: "/analytics/multi-location" },
+          { title: "Bottlenecks", href: "/analytics/bottlenecks" },
         ],
       },
     ],
@@ -429,6 +455,24 @@ export const modules: ModuleDefinition[] = [
         items: [
           { title: "Overview", href: "/marketing" },
           { title: "Campaigns", href: "/marketing/campaigns" },
+        ],
+      },
+    ],
+  },
+  {
+    key: "tools",
+    label: "Tools",
+    href: "/tools",
+    sidebar: [
+      {
+        label: "Tools",
+        items: [
+          { title: "Tools Overview", href: "/tools" },
+          { title: "AI", href: "/tools/ai" },
+          { title: "Autofill Reports", href: "/tools/autofill-reports" },
+          { title: "Battleboards", href: "/tools/battleboards" },
+          { title: "Conflicts", href: "/tools/conflicts" },
+          { title: "Inventory Import", href: "/tools/inventory-import" },
         ],
       },
     ],

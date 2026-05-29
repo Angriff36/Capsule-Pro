@@ -1,7 +1,11 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { createBottleneckDetector, BottleneckCategory } from "@ma";
+import { createBottleneckDetector } from "@repo/manifest-runtime/bottleneck-detector";
+import type {
+  BottleneckAnalysis,
+  BottleneckCategory,
+} from "@repo/manifest-runtime/bottleneck-detector";
 import { NextResponse } from "next/server";
 
 /**
@@ -39,7 +43,7 @@ export async function GET(request: Request) {
       sampleRate: 1.0,
     });
 
-    let analysis;
+    let analysis: BottleneckAnalysis;
 
     // Filter by category if specified
     if (category) {
@@ -107,6 +111,7 @@ export async function GET(request: Request) {
               reasoning: b.suggestion.reasoning,
               estimatedImpact: b.suggestion.estimatedImpact,
               implementation: b.suggestion.implementation,
+              steps: b.suggestion.steps,
               aiGenerated: b.suggestion.aiGenerated,
             }
           : null,

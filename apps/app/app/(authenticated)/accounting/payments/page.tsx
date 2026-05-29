@@ -31,7 +31,9 @@ const dateFormatter = new Intl.DateTimeFormat("en-US", {
 });
 
 function formatDate(value: Date | null) {
-  if (!value) return "—";
+  if (!value) {
+    return "—";
+  }
   return dateFormatter.format(value);
 }
 
@@ -42,7 +44,9 @@ function getClientLabel(
     last_name: string | null;
   } | null
 ) {
-  if (!client) return "No client";
+  if (!client) {
+    return "No client";
+  }
 
   const personName = [client.first_name, client.last_name]
     .filter(Boolean)
@@ -54,10 +58,14 @@ function getClientLabel(
 
 export default async function PaymentsPage() {
   const { userId, orgId } = await auth();
-  if (!(userId && orgId)) redirect("/sign-in");
+  if (!(userId && orgId)) {
+    redirect("/sign-in");
+  }
 
   const tenantId = await getTenantIdForOrg(orgId);
-  if (!tenantId) redirect("/");
+  if (!tenantId) {
+    redirect("/");
+  }
 
   const [
     paymentCount,
@@ -161,6 +169,14 @@ export default async function PaymentsPage() {
             </Button>
             <Button
               asChild
+              className="border-white/25 bg-transparent text-white hover:bg-white/10"
+              size="sm"
+              variant="outline"
+            >
+              <Link href="/accounting/payments/new">Record payment</Link>
+            </Button>
+            <Button
+              asChild
               className="bg-white text-deep-green hover:bg-white/90"
               size="sm"
             >
@@ -211,12 +227,12 @@ export default async function PaymentsPage() {
           />
 
           {recentPayments.length === 0 ? (
-            <div className="rounded-[22px] border border-dashed border-hairline bg-canvas p-8 text-sm text-muted-foreground">
+            <div className="rounded-[22px] border border-hairline border-dashed bg-canvas p-8 text-muted-foreground text-sm">
               No payments have been recorded for this tenant yet.
             </div>
           ) : (
             <div className="overflow-hidden rounded-[22px] border border-hairline bg-canvas">
-              <div className="grid grid-cols-[1fr_1.15fr_1.1fr_0.7fr_0.85fr_0.8fr] gap-4 border-b border-hairline px-5 py-3 font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+              <div className="grid grid-cols-[1fr_1.15fr_1.1fr_0.7fr_0.85fr_0.8fr] gap-4 border-hairline border-b px-5 py-3 font-mono text-[11px] text-muted-foreground uppercase tracking-[0.18em]">
                 <span>Invoice</span>
                 <span>Client / Event</span>
                 <span>Method</span>
@@ -226,7 +242,7 @@ export default async function PaymentsPage() {
               </div>
               {recentPayments.map((payment) => (
                 <div
-                  className="grid grid-cols-[1fr_1.15fr_1.1fr_0.7fr_0.85fr_0.8fr] gap-4 border-b border-hairline px-5 py-4 text-sm last:border-b-0"
+                  className="grid grid-cols-[1fr_1.15fr_1.1fr_0.7fr_0.85fr_0.8fr] gap-4 border-hairline border-b px-5 py-4 text-sm last:border-b-0"
                   key={payment.id}
                 >
                   <div className="space-y-1">

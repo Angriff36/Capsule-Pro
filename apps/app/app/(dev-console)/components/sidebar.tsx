@@ -2,6 +2,7 @@
 
 import { cn } from "@repo/design-system/lib/utils";
 import {
+  ActivityIcon,
   BoxesIcon,
   KeyIcon,
   LayoutDashboardIcon,
@@ -30,6 +31,11 @@ const navSections = [
         title: "Audit Logs",
         href: "/dev-console/audit-logs",
         icon: ShieldCheckIcon,
+      },
+      {
+        title: "Constraint Diagnostics",
+        href: "/dev-console/constraint-diagnostics",
+        icon: ActivityIcon,
       },
     ],
   },

@@ -1,5 +1,21 @@
 "use client";
 
+import {
+  CommandBand,
+  CommandBandActions,
+  CommandBandBody,
+  CommandBandHeader,
+  CommandBandLede,
+  DisplayHeading,
+  MetricBand,
+  MetricCell,
+  MetricLabel,
+  MetricValue,
+  MonoLabel,
+  OperationalColumn,
+  PageCanvas,
+  SectionHeader,
+} from "@repo/design-system/components/blocks/page-shell";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -27,38 +43,27 @@ import {
 } from "@repo/design-system/components/ui/table";
 import { formatCurrency } from "@repo/design-system/lib/format-currency";
 import {
-  CommandBand,
-  CommandBandActions,
-  CommandBandBody,
-  CommandBandHeader,
-  CommandBandLede,
-  DisplayHeading,
-  MetricBand,
-  MetricCell,
-  MetricLabel,
-  MetricValue,
-  MonoLabel,
-  OperationalColumn,
-  PageCanvas,
-  SectionHeader,
-} from "@repo/design-system/components/blocks/page-shell";
-import {
   AlertTriangleIcon,
   CheckCircleIcon,
   CircleDollarSignIcon,
   ClockIcon,
   DownloadIcon,
+  EyeIcon,
   Loader2Icon,
   PlayIcon,
 } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
 
 interface PayrollRun {
+  approvedAt: Date | null;
+  approvedBy: string | null;
+  createdAt: Date;
   id: string;
-  tenantId: string;
+  paidAt: Date | null;
   payrollPeriodId: string;
   runDate: Date;
   status:
@@ -68,19 +73,16 @@ interface PayrollRun {
     | "approved"
     | "paid"
     | "failed";
-  totalGross: number;
+  tenantId: string;
   totalDeductions: number;
+  totalGross: number;
   totalNet: number;
-  approvedBy: string | null;
-  approvedAt: Date | null;
-  paidAt: Date | null;
-  createdAt: Date;
   updatedAt: Date;
 }
 
 interface PaginationInfo {
-  page: number;
   limit: number;
+  page: number;
   total: number;
   totalPages: number;
 }
@@ -287,19 +289,14 @@ export default function PayrollRunsPage() {
     setPagination((prev) => ({ ...prev, page: newPage }));
   };
 
-  const canApprove = (run: PayrollRun) => {
-    return run.status === "completed";
-  };
+  const canApprove = (run: PayrollRun) => run.status === "completed";
 
-  const canExport = (run: PayrollRun) => {
-    return ["completed", "approved", "paid"].includes(run.status);
-  };
+  const canExport = (run: PayrollRun) =>
+    ["completed", "approved", "paid"].includes(run.status);
 
   // Computed metric counts from runs
   const pendingCount = runs.filter((r) => r.status === "pending").length;
-  const processingCount = runs.filter(
-    (r) => r.status === "processing"
-  ).length;
+  const processingCount = runs.filter((r) => r.status === "processing").length;
   const completedCount = runs.filter(
     (r) => r.status === "completed" || r.status === "approved"
   ).length;
@@ -354,7 +351,7 @@ export default function PayrollRunsPage() {
       </CommandBand>
 
       <OperationalColumn>
-        <SectionHeader title="Runs" count={`${pagination.total} runs`} />
+        <SectionHeader count={`${pagination.total} runs`} title="Runs" />
 
         <div className="rounded-[22px] border border-hairline bg-soft-stone p-6 sm:p-8">
           <Select onValueChange={handleStatusChange} value={statusFilter}>
@@ -379,8 +376,8 @@ export default function PayrollRunsPage() {
           </div>
         ) : runs.length === 0 ? (
           <div className="flex flex-1 flex-col items-center justify-center py-24 text-center">
-            <CircleDollarSignIcon className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-            <p className="text-muted-foreground text-lg mb-2">
+            <CircleDollarSignIcon className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+            <p className="mb-2 text-lg text-muted-foreground">
               No payroll runs found
             </p>
             <p className="text-muted-foreground text-sm">
@@ -421,7 +418,7 @@ export default function PayrollRunsPage() {
                       <TableCell>
                         {run.approvedAt ? (
                           <div className="text-xs">
-                            <div className="text-green-600 font-medium">
+                            <div className="font-medium text-green-600">
                               Approved
                             </div>
                             <div className="text-muted-foreground">
@@ -436,6 +433,12 @@ export default function PayrollRunsPage() {
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-2">
+                          <Button asChild size="sm" variant="outline">
+                            <Link href={`/payroll/runs/${run.id}`}>
+                              <EyeIcon className="h-4 w-4" />
+                              <span className="sr-only">View payroll run</span>
+                            </Link>
+                          </Button>
                           {canApprove(run) && (
                             <Button
                               onClick={() => openApproveDialog(run)}
@@ -525,7 +528,7 @@ export default function PayrollRunsPage() {
                 </div>
               </div>
               <div className="rounded-md bg-muted p-3">
-                <p className="text-muted-foreground text-sm mb-1">Run Date</p>
+                <p className="mb-1 text-muted-foreground text-sm">Run Date</p>
                 <p className="font-medium">{formatDate(selectedRun.runDate)}</p>
               </div>
             </div>

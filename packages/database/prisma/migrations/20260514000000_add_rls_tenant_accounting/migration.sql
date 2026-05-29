@@ -13,7 +13,7 @@
 
 -- ============================================================================
 -- tenant_accounting.chart_of_accounts
--- tenant_id: UUID | deleted_at: YES | updated_at: YES
+-- tenant_id: UUID | deleted_at: NO | updated_at: YES
 -- ============================================================================
 
 ALTER TABLE "tenant_accounting"."chart_of_accounts" ENABLE ROW LEVEL SECURITY;
@@ -23,7 +23,6 @@ DROP POLICY IF EXISTS "chart_of_accounts_select" ON "tenant_accounting"."chart_o
 CREATE POLICY "chart_of_accounts_select" ON "tenant_accounting"."chart_of_accounts"
     FOR SELECT USING (
         "tenant_id" = (auth.jwt() ->> 'tenant_id')::uuid
-        AND "deleted_at" IS NULL
     );
 
 DROP POLICY IF EXISTS "chart_of_accounts_insert" ON "tenant_accounting"."chart_of_accounts";
@@ -37,7 +36,6 @@ DROP POLICY IF EXISTS "chart_of_accounts_update" ON "tenant_accounting"."chart_o
 CREATE POLICY "chart_of_accounts_update" ON "tenant_accounting"."chart_of_accounts"
     FOR UPDATE USING (
         "tenant_id" = (auth.jwt() ->> 'tenant_id')::uuid
-        AND "deleted_at" IS NULL
     ) WITH CHECK (
         "tenant_id" = (auth.jwt() ->> 'tenant_id')::uuid
     );
