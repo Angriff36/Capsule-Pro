@@ -66,6 +66,15 @@ export const sentryConfig: Parameters<typeof withSentryConfig>[1] = {
 
   // Disable telemetry to speed up builds
   telemetry: false,
+
+  // Never fail the production build/deploy because of a source-map upload or
+  // release-creation problem (e.g. a 403 from a token missing release scope).
+  // Monitoring instrumentation is best-effort; log and continue instead.
+  errorHandler: (error) => {
+    console.warn(
+      `[observability] Sentry build step failed (non-fatal): ${error.message}`
+    );
+  },
 };
 
 export const withSentry = (sourceConfig: object): object => {

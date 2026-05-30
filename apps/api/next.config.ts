@@ -136,6 +136,14 @@ export default withSentryConfig(nextConfig, {
   // Only print logs for uploading source maps in CI
   silent: !process.env.CI,
 
+  // Don't fail the deploy if source-map upload / release creation 403s
+  // (e.g. SENTRY_AUTH_TOKEN missing release scope). Best-effort monitoring.
+  errorHandler: (error) => {
+    console.warn(
+      `[sentry] build step failed (non-fatal): ${error.message}`
+    );
+  },
+
   // For all available options, see:
   // https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/
 
