@@ -1,11 +1,11 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { createBottleneckDetector } from "@repo/manifest-runtime/bottleneck-detector";
-import type {
-  BottleneckAnalysis,
+import {
   BottleneckCategory,
+  createBottleneckDetector,
 } from "@repo/manifest-runtime/bottleneck-detector";
+import type { BottleneckAnalysis } from "@repo/manifest-runtime/bottleneck-detector";
 import { NextResponse } from "next/server";
 
 /**
@@ -66,14 +66,18 @@ export async function GET(request: Request) {
             acc[b.severity] = (acc[b.severity] || 0) + 1;
             return acc;
           }, {} as Record<string, number>),
-          byCategory: { [category]: bottlenecks.length },
+          byCategory: {
+            ...createEmptyCategoryCounts(),
+            [category as BottleneckCategory]: bottlenecks.length,
+          },
           topAffectedEntities: [],
         },
         healthScore: {
           overall: bottlenecks.length > 0 ? 70 : 100,
           byCategory: {
-            [category]: bottlenecks.length > 0 ? 70 : 100,
-          } as Record<string, number>,
+            ...createEmptyCategoryCounts(100),
+            [category as BottleneckCategory]: bottlenecks.length > 0 ? 70 : 100,
+          },
         },
         analyzedAt: new Date(),
       };
@@ -131,6 +135,23 @@ export async function GET(request: Request) {
       { status: 500 }
     );
   }
+}
+
+/**
+ * Build a fully-populated category map with every BottleneckCategory key,
+ * initialized to `value` (defaults to 0). Required so the partial
+ * category-filtered result still satisfies Record<BottleneckCategory, number>.
+ */
+function createEmptyCategoryCounts(
+  value = 0
+): Record<BottleneckCategory, number> {
+  return Object.values(BottleneckCategory).reduce(
+    (acc, key) => {
+      acc[key] = value;
+      return acc;
+    },
+    {} as Record<BottleneckCategory, number>
+  );
 }
 
 /**
