@@ -1,0 +1,58 @@
+{
+  "mcpServers": {
+    "manifest": {
+      "command": "C:\\Program Files\\nodejs\\pnpm.cmd",
+      "args": ["--dir", "C:\\projects\\capsule-pro", "exec", "manifest-mcp"]
+    },
+    "capsule-pro": {
+      "command": "C:\\Program Files\\nodejs\\pnpm.cmd",
+      "args": ["--dir", "C:\\projects\\capsule-pro", "--filter", "@repo/mcp-server", "start"]
+    },
+    "capsule-pro-admin": {
+      "command": "C:\\Program Files\\nodejs\\pnpm.cmd",
+      "args": ["--dir", "C:\\projects\\capsule-pro", "--filter", "@repo/mcp-server", "start:admin"],
+      "env": { "MCP_SERVER_MODE": "admin" }
+    }
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "shell": "bash",
+            "command": "bash .claude/hooks/guardrail/inject-directive.sh",
+            "timeout": 15,
+            "statusMessage": "Loading repo guardrail"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Read",
+        "hooks": [
+          {
+            "type": "command",
+            "shell": "bash",
+            "command": "bash .claude/hooks/guardrail/record-read.sh",
+            "timeout": 15
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "shell": "bash",
+            "command": "bash .claude/hooks/guardrail/gate.sh",
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  }
+}

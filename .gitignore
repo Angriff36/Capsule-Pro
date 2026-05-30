@@ -597,3 +597,7 @@ WqZ9vMhG6z.png
 activity-feed-verification.spec.ts
 collaboration-workspace-verification.spec.ts
 playwright-verify-suggestions.spec.ts
+
+# Claude Code guardrail per-session read-tracking state (machine-local)
+.claude/.guardrail/
+
