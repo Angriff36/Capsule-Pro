@@ -105,6 +105,7 @@
     "manifest:check": "node manifest/scripts/check.mjs",
     "manifest:compile": "node manifest/scripts/compile.mjs",
     "manifest:generate": "node manifest/scripts/generate.mjs",
+    "manifest:try-prisma": "node manifest/scripts/try-prisma.mjs",
     "manifest:doctor": "pnpm exec manifest doctor",
     "manifest:inspect": "pnpm exec manifest inspect entity",
     "manifest:diff": "pnpm exec manifest diff source-vs-ir",
