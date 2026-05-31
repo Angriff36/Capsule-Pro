@@ -435,12 +435,19 @@ export async function createManifestRuntime(
           resolvedUser.tenantId
         );
 
-        const aggregateId = (result.result as { id?: string })?.id || "unknown";
-
+        // Prefer the runtime's canonical subject metadata (@angriff36/manifest
+        // >= 1.6.0): subject.id is resolved deterministically
+        // (instanceId → created-id → payload.id), and subject.entity names the
+        // originating entity. Fall back to the command result id / the command's
+        // entityName for older events that carry no subject.
         const eventsToWrite = result.emittedEvents.map((event) => ({
           eventType: event.name || "unknown",
           payload: event.payload,
-          aggregateId,
+          aggregateType: event.subject?.entity || entityName || "unknown",
+          aggregateId:
+            event.subject?.id ||
+            (result.result as { id?: string })?.id ||
+            "unknown",
         }));
 
         try {

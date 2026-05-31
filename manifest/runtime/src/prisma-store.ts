@@ -3058,11 +3058,12 @@ export function createPrismaOutboxWriter(
         eventType?: string;
         payload: { id?: string; taskId?: string };
         aggregateId?: string;
+        aggregateType?: string;
       };
       await tx.outboxEvent.create({
         data: {
           tenantId,
-          aggregateType: entityName,
+          aggregateType: eventData.aggregateType || entityName,
           eventType: eventData.eventType || eventData.name || "unknown",
           payload: eventData.payload as Prisma.InputJsonValue,
           aggregateId:
