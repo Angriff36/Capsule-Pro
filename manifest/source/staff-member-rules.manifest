@@ -1,0 +1,85 @@
+// Staff - StaffMember Rules
+// Manifest spec for catering staff members assignable to events.
+// Distinct from `User` (auth/employee lifecycle): StaffMember is the domain entity
+// that EventStaff assignments reference. Authored 2026-05-30 for the Manifest vertical slice.
+
+entity StaffMember {
+  property required id: string
+  property required tenantId: string
+  property required displayName: string = "Unnamed"
+  property email: string = ""
+  property phone: string = ""
+  property role: string = "server"
+  property required status: string = "active"
+  property notes: string = ""
+  property required createdAt: datetime = now()
+  property required updatedAt: datetime = now()
+  property deletedAt: datetime
+
+  computed isActive: boolean = self.status == "active"
+
+  constraint requireDisplayName: self.displayName != null and self.displayName != "" "Display name is required"
+  constraint validStatus: self.status in ["active", "inactive"] "Status must be active or inactive"
+
+  command create(displayName: string, email: string, phone: string, role: string) {
+    guard displayName != null and displayName != "" "Display name is required"
+
+    mutate displayName = displayName
+    mutate email = email
+    mutate phone = phone
+    mutate role = role
+    mutate status = "active"
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit StaffMemberCreated
+  }
+
+  command updateProfile(displayName: string, email: string, phone: string, role: string) {
+    guard self.isActive "Cannot update an inactive staff member"
+
+    mutate displayName = displayName
+    mutate email = email
+    mutate phone = phone
+    mutate role = role
+    mutate updatedAt = now()
+
+    emit StaffMemberUpdated
+  }
+
+  command deactivate(reason: string) {
+    guard self.isActive "Staff member is already inactive"
+
+    mutate status = "inactive"
+    mutate updatedAt = now()
+
+    emit StaffMemberDeactivated
+  }
+
+  store StaffMember in durable
+}
+
+policy StaffMemberManagement execute: user.role in ["event_coordinator", "manager", "admin"] "Event coordinators and above can manage staff members"
+
+event StaffMemberCreated: "staff.staff-member.created" {
+  staffMemberId: string
+  tenantId: string
+  displayName: string
+  role: string
+  createdAt: number
+}
+
+event StaffMemberUpdated: "staff.staff-member.updated" {
+  staffMemberId: string
+  tenantId: string
+  displayName: string
+  role: string
+  updatedAt: number
+}
+
+event StaffMemberDeactivated: "staff.staff-member.deactivated" {
+  staffMemberId: string
+  tenantId: string
+  reason: string
+  deactivatedAt: number
+}

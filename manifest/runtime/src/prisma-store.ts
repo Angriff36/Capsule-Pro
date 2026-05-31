@@ -102,10 +102,11 @@ import {
   EventProfitabilityPrismaStore,
   EventReportPrismaStore,
 } from "./prisma-stores/broken-read-batch08-event-profit-report";
+import { EventSummaryPrismaStore } from "./prisma-stores/broken-read-batch09-event-staff-summary";
 import {
-  EventStaffAssignmentPrismaStore,
-  EventSummaryPrismaStore,
-} from "./prisma-stores/broken-read-batch09-event-staff-summary";
+  EventStaffPrismaStore,
+  StaffMemberPrismaStore,
+} from "./prisma-stores/staff-slice";
 import { IngredientPrismaStore } from "./prisma-stores/broken-read-batch09-ingredient";
 export { IngredientPrismaStore };
 
@@ -1786,7 +1787,9 @@ export function createPrismaStoreProvider(
       case "EventReport":
         return new EventReportPrismaStore(prisma, tenantId);
       case "EventStaff":
-        return new EventStaffAssignmentPrismaStore(prisma, tenantId);
+        return new EventStaffPrismaStore(prisma, tenantId);
+      case "StaffMember":
+        return new StaffMemberPrismaStore(prisma, tenantId);
       case "EventSummary":
         return new EventSummaryPrismaStore(prisma, tenantId);
       case "InventorySupplier":

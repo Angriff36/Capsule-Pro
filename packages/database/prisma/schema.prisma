@@ -6390,3 +6390,40 @@ model ProviderSync {
   @@map("provider_syncs")
   @@schema("tenant_admin")
 }
+
+// ===== Manifest-generated durable models (additive; no hand twin) =====
+
+model EventStaff {
+  id String
+  tenantId String
+  eventId String
+  staffMemberId String
+  role String? @default("")
+  notes String? @default("")
+  shiftStart Int? @default(0)
+  shiftEnd Int? @default(0)
+  status String? @default("assigned")
+  createdAt DateTime?
+  updatedAt DateTime?
+  deletedAt DateTime?
+  @@map("event_staff")
+  @@id([tenantId, id])
+  @@schema("tenant_events")
+}
+
+model StaffMember {
+  id String
+  tenantId String
+  displayName String @default("")
+  email String? @default("")
+  phone String? @default("")
+  role String? @default("server")
+  status String @default("active")
+  notes String? @default("")
+  createdAt DateTime
+  updatedAt DateTime
+  deletedAt DateTime?
+  @@map("staff_members")
+  @@id([tenantId, id])
+  @@schema("tenant_staff")
+}

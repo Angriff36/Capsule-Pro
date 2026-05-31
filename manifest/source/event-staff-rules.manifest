@@ -5,11 +5,11 @@ entity EventStaff {
   property required id: string
   property required tenantId: string
   property required eventId: string
-  property required userId: string
+  property required staffMemberId: string
   property role: string = ""
   property notes: string = ""
-  property shiftStart: number = 0
-  property shiftEnd: number = 0
+  property shiftStart: int = 0
+  property shiftEnd: int = 0
   property status: string = "assigned"
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
@@ -21,15 +21,15 @@ entity EventStaff {
   computed hasShift: boolean = self.shiftStart > 0 and self.shiftEnd > 0
 
   constraint requireEvent: self.eventId != null and self.eventId != "" "Event ID is required"
-  constraint requireUser: self.userId != null and self.userId != "" "User ID is required"
+  constraint requireStaffMember: self.staffMemberId != null and self.staffMemberId != "" "Staff member ID is required"
   constraint validStatus: self.status in ["assigned", "unassigned"] "Status must be valid"
 
-  command assign(eventId: string, userId: string, role: string, notes: string, shiftStart: number, shiftEnd: number) {
+  command assign(eventId: string, staffMemberId: string, role: string, notes: string, shiftStart: number, shiftEnd: number) {
     guard eventId != null and eventId != "" "Event ID is required"
-    guard userId != null and userId != "" "User ID is required"
+    guard staffMemberId != null and staffMemberId != "" "Staff member ID is required"
 
     mutate eventId = eventId
-    mutate userId = userId
+    mutate staffMemberId = staffMemberId
     mutate role = role
     mutate notes = notes
     mutate shiftStart = shiftStart
@@ -50,7 +50,7 @@ entity EventStaff {
     emit EventStaffUnassigned
   }
 
-  store EventStaff in memory
+  store EventStaff in durable
 }
 
 policy EventStaffManagement execute: user.role in ["event_coordinator", "manager", "admin"] "Event coordinators and above can manage event staff"
@@ -59,7 +59,7 @@ event EventStaffAssigned: "events.event-staff.assigned" {
   eventStaffId: string
   tenantId: string
   eventId: string
-  userId: string
+  staffMemberId: string
   role: string
   shiftStart: number
   shiftEnd: number
@@ -70,7 +70,7 @@ event EventStaffUnassigned: "events.event-staff.unassigned" {
   eventStaffId: string
   tenantId: string
   eventId: string
-  userId: string
+  staffMemberId: string
   reason: string
   unassignedAt: number
 }

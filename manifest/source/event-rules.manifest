@@ -7,12 +7,12 @@ entity Event {
   property clientId: string = ""
   property eventNumber: string = ""
   property required title: string = "Untitled Event"
-  property required eventType: string = ""
+  property required eventType: string = "general"
   property required eventDate: datetime
   property required guestCount: int = 1
   property required status: string = "confirmed"
-  property budget: number = 0
-  property ticketPrice: number = 0
+  property budget: money = 0
+  property ticketPrice: money = 0
   property ticketTier: string = ""
   property eventFormat: string = ""
   property required accessibilityOptions: array<string>
@@ -55,21 +55,14 @@ entity Event {
     }
   }
 
-  constraint blockCancelIfFinalized:block self.status == "completed" or self.status == "archived" {
-    messageTemplate: "Cannot cancel event '{eventTitle}' - event is {status}"
-    details: {
-      eventTitle: self.title
-      status: self.status
-    }
-  }
-
-  constraint blockArchiveIfNotCompleted:block self.status != "completed" {
-    messageTemplate: "Cannot archive event '{eventTitle}' - event must be completed first (current: {status})"
-    details: {
-      eventTitle: self.title
-      status: self.status
-    }
-  }
+  // NOTE (2026-05-30): the former entity-level `blockCancelIfFinalized` and
+  // `blockArchiveIfNotCompleted` block-constraints were removed. As entity
+  // invariants they asserted every event must already be completed/archived,
+  // which made Event un-instantiable (createInstance validates block-severity
+  // entity constraints against the default seed → confirmed events were
+  // blocked). The rules are state-transition guards, not invariants, and are
+  // already enforced on the relevant commands: `cancel` guards
+  // status != completed/archived/cancelled; `archive` guards status == completed.
 
   command create(clientId: string, eventNumber: string, title: string, eventType: string, eventDate: number, guestCount: number, venueName: string, venueAddress: string, notes: string, tags: string, status: string) {
     // All params are optional — AI and forms can provide any subset

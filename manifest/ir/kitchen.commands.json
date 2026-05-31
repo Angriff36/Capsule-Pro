@@ -2540,6 +2540,21 @@
     "commandId": "SmsAutomationRule.update"
   },
   {
+    "entity": "StaffMember",
+    "command": "create",
+    "commandId": "StaffMember.create"
+  },
+  {
+    "entity": "StaffMember",
+    "command": "deactivate",
+    "commandId": "StaffMember.deactivate"
+  },
+  {
+    "entity": "StaffMember",
+    "command": "updateProfile",
+    "commandId": "StaffMember.updateProfile"
+  },
+  {
     "entity": "StaffPerformance",
     "command": "complete",
     "commandId": "StaffPerformance.complete"

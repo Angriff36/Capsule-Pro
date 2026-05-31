@@ -192,6 +192,7 @@ const ENTITIES_WITH_SPECIFIC_STORES = new Set([
   "EventProfitability",
   "EventReport",
   "EventStaff",
+  "StaffMember",
   "EventSummary",
   "InventorySupplier",
   "AllergenWarning",
