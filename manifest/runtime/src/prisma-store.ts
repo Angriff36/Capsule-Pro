@@ -25,6 +25,7 @@ import type {
   Station,
 } from "@repo/database/standalone";
 import { Prisma } from "@repo/database/standalone";
+import { GenericPrismaStore } from "./prisma-stores/generic-prisma-store";
 import {
   ContainerPrismaStore,
   PrepMethodPrismaStore,
@@ -2980,11 +2981,22 @@ export class PrismaStore implements Store<EntityInstance> {
   private readonly eventCollector?: unknown[];
 
   constructor(config: PrismaStoreConfig) {
-    this.store = createPrismaStoreProvider(
-      config.prisma,
-      config.tenantId,
-      config.userId ?? ""
-    )(config.entityName) as Store<EntityInstance>;
+    // Resolve a bespoke per-entity store from the switch; if none exists for
+    // this entity (the switch returns undefined), fall back to the generic
+    // metadata-driven store so a memory→durable flip needs only an
+    // ENTITIES_WITH_SPECIFIC_STORES entry — no new switch case. Existing
+    // entities all have a case, so this fallback never changes their behavior.
+    this.store =
+      (createPrismaStoreProvider(
+        config.prisma,
+        config.tenantId,
+        config.userId ?? ""
+      )(config.entityName) as Store<EntityInstance> | undefined) ??
+      new GenericPrismaStore(
+        config.prisma,
+        config.entityName,
+        config.tenantId
+      );
     this.outboxWriter = config.outboxWriter;
     this.eventCollector = config.eventCollector;
   }
