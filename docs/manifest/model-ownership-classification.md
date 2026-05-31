@@ -6,27 +6,30 @@ Live Prisma models: **226** · IR entities: **132** · IR store entries: **100**
 
 | Bucket | Meaning | Count |
 |---|---|---|
-| A durable_generated | IR entity, store=durable (projection emits) | 16 |
-| B manifest_memory | IR entity, store=non-durable (flip candidates) | 78 |
+| A durable_generated | IR entity, store=durable (projection emits) | 19 |
+| B manifest_memory | IR entity, store=non-durable (flip candidates) | 75 |
 | C manifest_no_store | IR entity, no store entry | 14 |
 | D prisma_only_legacy | Prisma model, no IR entity | 118 |
 | — irNoModel | IR entity, no live Prisma model | 24 |
 
-B split: **73** with a `create` command (flip candidates) · 5 without.
+B split: **70** with a `create` command (flip candidates) · 5 without.
 irNoModel split: 0 durable · 6 memory · 18 no-store.
 
 
-## A — durable_generated (16)
+## A — durable_generated (19)
 
 | name | table | pgSchema | commands |
 |---|---|---|---|
+| AlertsConfig | alerts_config | tenant_inventory | create remove update |
 | ApiKey | api_keys | platform | create recordUsage revoke softDelete update |
 | Client | clients | tenant_crm | archive create reactivate update |
+| Container | containers | tenant_kitchen | create deactivate update |
 | Event | events | tenant_events | archive cancel confirm create finalize unfinalize update updateDate updateGuestCount updateLocation |
 | EventStaff | event_staff | tenant_events | assign unassign |
 | Invoice | invoices | tenant_accounting | applyPayment markAsPaid markOverdue markViewed recordRefund send sendReminder updateLineItems voidInvoice writeOff |
 | Payment | payments | tenant_accounting | markChargeback markFraudFailed markFraudPassed markFraudReviewed partialRefund process processFailed refund updateFraudStatus |
 | PaymentMethod | payment_methods | tenant_accounting | flagForFraud markAsDefault markExpired markInvalid markNotDefault updateToken verify |
+| PrepMethod | prep_methods | tenant_kitchen | create deactivate update |
 | PurchaseOrder | purchase_orders | tenant_inventory | approve cancel create markOrdered markReceived reject submit |
 | PurchaseOrderItem | purchase_order_items | tenant_inventory | create remove update |
 | PurchaseRequisition | purchase_requisitions | tenant_inventory | approveFinance approveManager cancel convertToPo create reject submit update |
@@ -37,13 +40,12 @@ irNoModel split: 0 durable · 6 memory · 18 no-store.
 | User | employees | tenant_staff | create deactivate terminate update updateRole |
 | VendorCatalog | vendor_catalogs | tenant_inventory | create softDelete update |
 
-## B — manifest entity but non-durable (memory) (78)
+## B — manifest entity but non-durable (memory) (75)
 
 | name | table | pgSchema | create | commands |
 |---|---|---|---|---|
 | AdminChatParticipant | admin_chat_participants | tenant_admin | false | archive clearHistory unarchive |
 | AdminTask | admin_tasks | tenant_admin | true | cancel complete create moveToTodo reopen softDelete startProgress update |
-| AlertsConfig | alerts_config | tenant_inventory | true | create remove update |
 | AllergenWarning | allergen_warnings | tenant_kitchen | true | acknowledge applyOverride create resolve softDelete |
 | BattleBoard | battle_boards | tenant_events | true | addDish create finalize open removeDish startVoting vote |
 | BudgetAlert | budget_alerts | tenant_staff | false | acknowledge resolve |
@@ -59,7 +61,6 @@ irNoModel split: 0 durable · 6 memory · 18 no-store.
 | CommandBoardConnection | command_board_connections | tenant_events | true | create remove |
 | CommandBoardGroup | command_board_groups | tenant_events | true | create remove update |
 | CommandBoardLayout | command_board_layouts | tenant_events | true | create remove update |
-| Container | containers | tenant_kitchen | true | create deactivate update |
 | ContractSignature | contract_signatures | tenant_events | true | create softDelete |
 | CycleCountRecord | cycle_count_records | tenant_inventory | true | create remove update verify |
 | CycleCountSession | cycle_count_sessions | tenant_inventory | true | cancel complete create finalize start |
@@ -92,7 +93,6 @@ irNoModel split: 0 durable · 6 memory · 18 no-store.
 | PrepComment | prep_comments | tenant_kitchen | true | create resolve softDelete unresolve |
 | PrepList | prep_lists | tenant_kitchen | true | activate cancel create createFromSeed deactivate finalize markCompleted reopen update updateBatchMultiplier |
 | PrepListItem | prep_list_items | tenant_kitchen | true | create markCompleted markUncompleted updatePrepNotes updateQuantity updateStation |
-| PrepMethod | prep_methods | tenant_kitchen | true | create deactivate update |
 | PrepTask | prep_tasks | tenant_kitchen | true | cancel claim complete create reassign release start unclaim updateAssignment updateDueDate updatePriority updateQuantity updateStatus |
 | PrepTaskPlanWorkflow | prep_task_plan_workflows | tenant_kitchen | true | approvePlan cancel completeGeneration completeInstantiation completeReview completeScheduling create fail quickApprove rejectPlan retry startApproving startGenerating startInstantiating startReviewing startScheduling |
 | PricingTier | pricing_tiers | tenant_inventory | true | create softDelete update |
