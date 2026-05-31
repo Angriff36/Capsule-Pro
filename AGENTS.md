@@ -7,6 +7,12 @@ Your training data is outdated — the docs are the source of truth.
 
 <!-- END:nextjs-agent-rules -->
 
+You must also read the constitution.md and the planning with files documentation at "C:\Projects\capsule-pro\manifest\IMPLEMENTATION_PROMPT.md"
+"C:\Projects\capsule-pro\manifest\notes.md"
+"C:\Projects\capsule-pro\manifest\phase-out-registry.md"
+"C:\Projects\capsule-pro\manifest\task_plan.md"
+"C:\Projects\capsule-pro\manifest\AGENTS.md"
+
 ## Capsule Pro Dev Server
 
 - **App**: `http://localhost:2221` (Tailscale: `https://pop-os.tail78dd9e.ts.net`)
