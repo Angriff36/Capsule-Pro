@@ -69,7 +69,7 @@ entity PrepMethod {
     emit PrepMethodDeactivated
   }
 
-  store PrepMethod in memory
+  store PrepMethod in durable
 }
 
 policy KitchenStaffCanManage execute: user.role in ["kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen staff can manage prep methods"

@@ -87,7 +87,7 @@ entity Container {
     emit ContainerDeactivated
   }
 
-  store Container in memory
+  store Container in durable
 }
 
 policy KitchenStaffCanManage execute: user.role in ["kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen staff can manage containers"
