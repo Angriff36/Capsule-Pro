@@ -126,7 +126,9 @@ next-env.d.ts
 
 ### Node ###
 # Logs
-logs
+# Anchored to repo root so it only ignores a top-level log-output dir, not
+# legitimate API route directories named "logs" (e.g. app/api/vercel/logs).
+/logs/
 *.log
 lerna-debug.log*
 

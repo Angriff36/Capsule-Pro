@@ -2,7 +2,6 @@
 
 import { spawnSync } from "node:child_process";
 import {
-  copyFileSync,
   existsSync,
   mkdirSync,
   readdirSync,
@@ -11,6 +10,11 @@ import {
   writeFileSync,
 } from "node:fs";
 import { join, relative, resolve } from "node:path";
+import {
+  ENTITY_DOMAIN_MAP,
+  FLAT_SEGMENT_TO_ENTITY,
+  resolveAccessor,
+} from "./entity-domain-map.mjs";
 
 const repoRoot = resolve(process.cwd());
 const defaultIr = resolve(
@@ -40,114 +44,8 @@ const baseArgs =
 
 const pnpmBin = process.platform === "win32" ? "pnpm.cmd" : "pnpm";
 
-// Maps each entity to its actual domain directory under apps/api/app/api/.
-// Must stay in sync with ENTITY_DOMAIN_MAP in scripts/manifest/generate-all-routes.mjs
-// and ENTITY_DOMAIN_MAP in scripts/manifest/generate-route-manifest.ts.
-const ENTITY_DOMAIN_MAP = {
-  // ─── Kitchen Operations ───
-  PrepTask: "kitchen/prep-tasks",
-  PrepTaskPlanWorkflow: "kitchen/prep-task-plan-workflows",
-  KitchenTask: "kitchen/kitchen-tasks",
-  Recipe: "kitchen/recipes",
-  RecipeVersion: "kitchen/recipe-versions",
-  RecipeIngredient: "kitchen/recipe-ingredients",
-  RecipeStep: "kitchen/recipe-steps",
-  Ingredient: "kitchen/ingredients",
-  Dish: "kitchen/dishes",
-  Menu: "kitchen/menus",
-  MenuDish: "kitchen/menu-dishes",
-  PrepList: "kitchen/prep-lists",
-  PrepListItem: "kitchen/prep-list-items",
-  Station: "kitchen/stations",
-  InventoryItem: "kitchen/inventory",
-  PrepComment: "kitchen/prep-comments",
-  Container: "kitchen/containers",
-  PrepMethod: "kitchen/prep-methods",
-  WasteEntry: "kitchen/waste-entries",
-  AllergenWarning: "kitchen/allergen-warnings",
-  AlertsConfig: "kitchen/alerts-config",
-  OverrideAudit: "kitchen/override-audits",
-  // ─── Events & Catering ───
-  Event: "events/event",
-  EventProfitability: "events/profitability",
-  EventSummary: "events/summaries",
-  EventReport: "events/reports",
-  EventBudget: "events/budgets",
-  BudgetLineItem: "events/budget-line-items",
-  BudgetAlert: "events/budget-alerts",
-  CateringOrder: "events/catering-orders",
-  BattleBoard: "events/battle-boards",
-  EventGuest: "events/guests",
-  EventContract: "events/contracts",
-  ContractSignature: "events/contract-signatures",
-  EventDish: "events/event-dishes",
-  EventStaff: "events/staff",
-  EventImportWorkflow: "events/import-workflows",
-  // ─── CRM & Sales ───
-  Client: "crm/clients",
-  ClientContact: "crm/client-contacts",
-  ClientPreference: "crm/client-preferences",
-  Lead: "crm/leads",
-  Proposal: "crm/proposals",
-  ProposalLineItem: "crm/proposal-line-items",
-  ClientInteraction: "crm/client-interactions",
-  // ─── Purchasing & Inventory ───
-  PurchaseOrder: "inventory/purchase-orders",
-  PurchaseOrderItem: "inventory/purchase-order-items",
-  PurchaseRequisition: "procurement/requisitions",
-  PurchaseRequisitionItem: "procurement/requisition-items",
-  VendorContract: "procurement/vendor-contracts",
-  Shipment: "shipments/shipment",
-  ShipmentItem: "shipments/shipment-items",
-  InventoryTransaction: "inventory/transactions",
-  InventorySupplier: "inventory/suppliers",
-  CycleCountSession: "inventory/cycle-count/sessions",
-  CycleCountRecord: "inventory/cycle-count/records",
-  VarianceReport: "inventory/cycle-count/variance-reports",
-  BulkOrderRule: "inventory/bulk-order-rules",
-  PricingTier: "inventory/pricing-tiers",
-  VendorCatalog: "inventory/vendor-catalogs",
-  // ─── Staff & Scheduling ───
-  User: "staff/employees",
-  Schedule: "staff/schedules",
-  ScheduleShift: "staff/shifts",
-  TimeEntry: "timecards/entries",
-  TimecardEditRequest: "timecards/edit-requests",
-  TimeOffRequest: "timecards/time-off-requests",
-  EmployeeAvailability: "staff/availability",
-  EmployeeCertification: "staff/certifications",
-  // ─── Payroll ───
-  PayrollPeriod: "payroll/periods",
-  PayrollRun: "payroll/runs",
-  PayrollApprovalHistory: "payroll/approval-history",
-  EmployeeDeduction: "payroll/deductions",
-  LaborBudget: "payroll/labor-budgets",
-  // ─── Training ───
-  TrainingAssignment: "training/assignments",
-  TrainingModule: "training/modules",
-  // ─── Command Board ───
-  CommandBoard: "command-board/boards",
-  CommandBoardCard: "command-board/cards",
-  CommandBoardGroup: "command-board/groups",
-  CommandBoardConnection: "command-board/connections",
-  CommandBoardLayout: "command-board/layouts",
-  // ─── Workflows & Notifications ───
-  Workflow: "collaboration/workflows",
-  Notification: "collaboration/notifications",
-  EmailTemplate: "communications/email-templates",
-  EmailWorkflow: "communications/email-workflows",
-  // ─── Administrative ───
-  AdminTask: "administrative/tasks",
-  AdminChatParticipant: "administrative/chat/participants",
-  // ─── Settings ───
-  ApiKey: "settings/api-keys",
-  // ─── Rate Limiting ───
-  RateLimitConfig: "administrative/rate-limits",
-  // ─── Accounting ───
-  ChartOfAccount: "accounting/chart-of-accounts",
-  // ─── Role Policy ───
-  RolePolicy: "rolepolicy/policies",
-};
+// ENTITY_DOMAIN_MAP is imported from ./entity-domain-map.mjs (canonical single source).
+// It maps each Manifest entity to its domain directory under apps/api/app/api/.
 
 // Build a reverse map: flat entity segment → domain path
 // The CLI generates paths like "event/create/route.ts" — we need to remap to "events/event/commands/create/route.ts"
@@ -208,6 +106,19 @@ function remapToDomainPath(relativePath) {
     : `${domain}/commands/${commandOrAction}/${routeFile}`;
 
   return domainPath;
+}
+
+/**
+ * Recover the Manifest entity name for a staged route path produced by the CLI.
+ * The CLI emits flat paths like "apps/api/app/api/eventstaff/list/route.ts" where the first
+ * segment is entityName.toLowerCase(). Returns null for non-route / unmapped paths.
+ */
+function entityForStagedPath(relativePath) {
+  const normalized = relativePath.replace(/\\/g, "/").replace(/^\/+/, "");
+  const apiPrefix = "apps/api/app/api/";
+  if (!normalized.startsWith(apiPrefix)) return null;
+  const segment = normalized.slice(apiPrefix.length).split("/")[0];
+  return FLAT_SEGMENT_TO_ENTITY[segment] ?? null;
 }
 
 const GENERATED_MARKERS = [
@@ -307,6 +218,8 @@ const detectExportedMethods = (content) => {
 
 const materializeRemappedOutput = (stagingDir, outputDir) => {
   const copiedFiles = [];
+  const droppedFiles = [];
+  const rewrittenAccessors = [];
   let skippedOverwriteCount = 0;
 
   // Load commands manifest (used for dispatcher validation messaging only)
@@ -338,7 +251,9 @@ const materializeRemappedOutput = (stagingDir, outputDir) => {
       );
     }
 
-    stagedRoutes.push({ stagedFile, stagedContent, safeRelativePath });
+    const entity = entityForStagedPath(stagedRelativePath);
+
+    stagedRoutes.push({ stagedFile, stagedContent, safeRelativePath, entity });
   }
 
   // Validation pass: forward, mirror, and method checks
@@ -376,12 +291,37 @@ const materializeRemappedOutput = (stagingDir, outputDir) => {
   }
 
   // Copy pass: write read routes only (list/detail). Commands use dispatcher.
-  for (const { stagedFile, safeRelativePath } of stagedRoutes) {
+  for (const {
+    stagedContent,
+    safeRelativePath,
+    entity,
+  } of stagedRoutes) {
     if (isCommandsNamespacePath(safeRelativePath)) {
       continue;
     }
 
     const destinationPath = join(outputDir, safeRelativePath);
+
+    // Resolve the correct Prisma accessor for this entity. The upstream nextjs projection
+    // emits `database.<camelCase(entity)>` with no model-existence check, which produces
+    // phantom accessors for entities whose Prisma model name differs (e.g. EventStaff →
+    // model EventStaffAssignment) and breaks api typecheck/build. Rewrite drifted accessors
+    // here; drop the route entirely for entities that map to no Prisma table.
+    const { naive, accessor, drop, overridden } = entity
+      ? resolveAccessor(entity)
+      : { naive: null, accessor: null, drop: false, overridden: false };
+
+    if (drop) {
+      // No backing Prisma table — never emit a database.* read route for this entity.
+      if (existsSync(destinationPath)) {
+        const existing = readFileSync(destinationPath, "utf8");
+        if (hasGeneratedMarker(existing)) {
+          rmSync(destinationPath, { force: true });
+          droppedFiles.push(safeRelativePath);
+        }
+      }
+      continue;
+    }
 
     if (existsSync(destinationPath)) {
       const destinationContent = readFileSync(destinationPath, "utf8");
@@ -393,12 +333,27 @@ const materializeRemappedOutput = (stagingDir, outputDir) => {
         continue;
       }
     }
+
+    let outputContent = stagedContent;
+    if (overridden && accessor && naive) {
+      const before = outputContent;
+      outputContent = outputContent.replace(
+        new RegExp(`database\\.${naive}\\b`, "g"),
+        `database.${accessor}`
+      );
+      if (outputContent !== before) {
+        rewrittenAccessors.push(
+          `${safeRelativePath} (database.${naive} → database.${accessor})`
+        );
+      }
+    }
+
     mkdirSync(resolve(destinationPath, ".."), { recursive: true });
-    copyFileSync(stagedFile, destinationPath);
+    writeFileSync(destinationPath, outputContent, "utf8");
     copiedFiles.push(destinationPath.replace(/\\/g, "/"));
   }
 
-  return { copiedFiles, skippedOverwriteCount };
+  return { copiedFiles, skippedOverwriteCount, droppedFiles, rewrittenAccessors };
 };
 
 /**
@@ -573,6 +528,24 @@ if (routeResult.status === 0 && detailResult.status === 0) {
     const materializeResult = materializeRemappedOutput(stagingDir, outputDir);
     copiedFiles = materializeResult.copiedFiles;
     skippedOverwriteCount = materializeResult.skippedOverwriteCount;
+
+    if (materializeResult.rewrittenAccessors.length > 0) {
+      console.log(
+        `[manifest/generate] Rewrote ${materializeResult.rewrittenAccessors.length} drifted Prisma accessor(s):`
+      );
+      for (const rel of materializeResult.rewrittenAccessors) {
+        console.log(`  - ${rel}`);
+      }
+    }
+
+    if (materializeResult.droppedFiles.length > 0) {
+      console.log(
+        `[manifest/generate] Dropped ${materializeResult.droppedFiles.length} read route(s) for entities with no Prisma table:`
+      );
+      for (const rel of materializeResult.droppedFiles) {
+        console.log(`  - ${rel}`);
+      }
+    }
 
     const pruned = pruneLegacyCommandRoutes(outputDir);
     if (pruned.length > 0) {

@@ -30,10 +30,11 @@ Replaced by: a generic IR-driven store provider OR a generated store projection 
 ## C. Route accessor hack → schema-aware accessor resolution (Phase 1)
 | Path | What changes | Status |
 |---|---|---|
-| Naive `camelCase` accessor in generated routes | Producer (`generate.mjs`) resolves accessor from the authoritative entity→model map or skips/deletes routes for table-less entities. | READY (Phase 1 — smallest fix) |
-| `apps/api/app/api/events/import-workflows/{list,[id]}/route.ts` | DELETE — `EventImportWorkflow` has no table by design. | READY |
-| `apps/api/app/api/audit/logs/route.ts` | DELETE or rewrite against the real `audit_log` model — hand-written, references non-existent `tenantAuditLog`. | READY |
-| Broken generated routes for the other ~22 table-less/misnamed entities | Regenerate after producer fix; delete any that map to no model. | BLOCKED (Phase 1 regen) |
+| Naive `camelCase` accessor in generated routes | Producer (`generate.mjs`) resolves accessor via `resolveAccessor()` from the canonical `manifest/scripts/entity-domain-map.mjs` (`ENTITY_ACCESSOR_OVERRIDES`); rewrites drifted `database.<naive>`, drops routes for table-less entities. | DONE (2026-05-30) |
+| `apps/api/app/api/events/import-workflows/{list,[id]}/route.ts` | **REMAP, not delete.** Stale claim corrected: `EventImportWorkflow` **does** have a table — `model EventImport @@map("event_imports")` (schema.prisma:1437), confirmed by store header `broken-read-batch08-event-guest-import.ts`. Producer now rewrites `database.eventImportWorkflow → database.eventImport`. | DONE (2026-05-30) |
+| `apps/api/app/api/events/staff/{list,[id]}/route.ts` | REMAP `database.eventStaff → database.eventStaffAssignment` (`model EventStaffAssignment @@map("event_staff_assignments")`, schema.prisma:1394; store header `broken-read-batch09-event-staff-summary.ts`). | DONE (2026-05-30) |
+| `apps/api/app/api/audit/logs/route.ts` | **DELETED.** Hand-written (no DO-NOT-EDIT marker), GET-only, referenced non-existent `database.tenantAuditLog`. No audit model in schema carries its selected columns (`operationType`/`immutableHash`/`aiConfidence`/`performedAt`); rewriting would invent semantics (constitution §10). Not referenced by any app code (the dev-console audit page uses `OverrideAudit`). Was gitignored by the broad `logs` rule (.gitignore:129), now tightened to `/logs/`. | DONE (2026-05-30) |
+| Broken generated routes for "the other ~22 table-less/misnamed entities" | **Re-scoped.** Empirical scan (ENTITY_DOMAIN_MAP's 89 entities vs the 224 real Prisma model accessors) found the blast radius is exactly **2** entities — `EventStaff` + `EventImportWorkflow` — both handled above. notes.md §1's "~25" counted IR entities the producer never emits routes for (they hit "No domain mapping … skipping"), not actual broken generated routes. No further accessor fixes needed for Phase 1. | DONE (2026-05-30) |
 
 ## D. Adjacent hand-written code potentially retired by unused projections (Phase 5, evaluate)
 Only delete after confirming the projection output covers the real usage.
@@ -42,7 +43,14 @@ Only delete after confirming the projection output covers the real usage.
 | Hand-written Zod input schemas for manifest entities | `projections/zod` | BLOCKED (Phase 5 eval) |
 | Hand-written React Query hooks for manifest entities | `projections/react-query` | BLOCKED (Phase 5 eval) |
 | Hand-written/partial OpenAPI specs for manifest routes | `projections/openapi` | BLOCKED (Phase 5 eval) |
-| `ENTITY_DOMAIN_MAP` duplicated across 3 files (`generate.mjs`, `generate-all-routes.mjs`, `generate-route-manifest.ts`) | single shared source | BLOCKED (consolidate during Phase 1/2) |
+| `ENTITY_DOMAIN_MAP` duplication | single shared source (`manifest/scripts/entity-domain-map.mjs`) | PARTIAL (2026-05-30) |
+
+**ENTITY_DOMAIN_MAP consolidation status (corrected):** the "3 files" claim is stale.
+- `manifest/scripts/generate.mjs` — **now imports** the canonical map from `entity-domain-map.mjs`. DONE.
+- `manifest/scripts/generate-all-routes.mjs` — no longer contains the map; it was refactored into a validation-only script (no `ENTITY_DOMAIN_MAP`). Nothing to consolidate.
+- `manifest/scripts/generate-route-manifest.ts` — still has its own copy (note: it has a pre-existing quirk `Event: "manifest/Event"` that differs from the others — needs reconciliation, not a blind copy). Run by `manifest:routes:ir`. **STILL TO DO.**
+- `packages/mcp-server/src/lib/entity-domain-map.ts` — a 4th copy (TS, in a different workspace package). **STILL TO DO.**
+Deferred deliberately: those two are separate scripts/packages with their own typing + the `manifest/Event` quirk; folding them in is out of scope for the deploy-unblock PR (one concern per PR). Tracked here.
 
 ## E. Explicitly NOT for phase-out (keep)
 - The singular command dispatcher `apps/api/app/api/manifest/[entity]/commands/[command]/route.ts` (canonical write path, constitution §6).
