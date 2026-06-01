@@ -20,6 +20,20 @@ entity RolePolicy {
 
   constraint requireRole: self.roleId != null and self.roleId != "" "Role ID is required"
 
+  command create(roleId: string, roleName: string, permissions: string, description: string) {
+    guard roleId != null and roleId != "" "Role ID is required"
+
+    mutate roleId = roleId
+    mutate roleName = roleName
+    mutate permissions = permissions
+    mutate description = description
+    mutate isActive = true
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit RolePolicyCreated
+  }
+
   command update(roleName: string, permissions: string, description: string, isActive: boolean) {
     guard self.deletedAt == null "Cannot update a deleted role policy"
 
@@ -56,6 +70,14 @@ entity RolePolicy {
 // SECURITY REQUIREMENT: Every RolePolicy command MUST be admin/owner only.
 // This policy applies to ALL commands in this manifest.
 policy adminOnly execute: user.role in ["admin", "owner"] "Only admins and owners can manage role policies"
+
+event RolePolicyCreated: "admin.role-policy.created" {
+  rolePolicyId: string
+  tenantId: string
+  roleId: string
+  roleName: string
+  createdAt: number
+}
 
 event RolePolicyUpdated: "admin.role-policy.updated" {
   rolePolicyId: string

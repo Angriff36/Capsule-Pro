@@ -11,7 +11,7 @@ entity Notification {
   property body: string = ""
   property actionUrl: string = ""
   property isRead: boolean = false
-  property readAt: datetime = now()
+  property readAt: datetime
   property correlationId: string = ""
   property createdAt: datetime = now()
 
@@ -35,7 +35,6 @@ entity Notification {
     mutate actionUrl = actionUrl
     mutate correlationId = correlationId
     mutate isRead = false
-    mutate readAt = 0
     mutate createdAt = now()
 
     emit NotificationCreated

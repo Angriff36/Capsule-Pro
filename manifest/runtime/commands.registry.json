@@ -2411,8 +2411,18 @@
   },
   {
     "entity": "KnowledgeBaseEntry",
+    "command": "recordView",
+    "commandId": "KnowledgeBaseEntry.recordView"
+  },
+  {
+    "entity": "KnowledgeBaseEntry",
     "command": "remove",
     "commandId": "KnowledgeBaseEntry.remove"
+  },
+  {
+    "entity": "KnowledgeBaseEntry",
+    "command": "unpublish",
+    "commandId": "KnowledgeBaseEntry.unpublish"
   },
   {
     "entity": "KnowledgeBaseEntry",
@@ -3768,6 +3778,11 @@
     "entity": "RevenueRecognitionSchedule",
     "command": "startRecognition",
     "commandId": "RevenueRecognitionSchedule.startRecognition"
+  },
+  {
+    "entity": "RolePolicy",
+    "command": "create",
+    "commandId": "RolePolicy.create"
   },
   {
     "entity": "RolePolicy",

@@ -11,7 +11,7 @@ entity KnowledgeBaseEntry {
   property tags: string = ""
   property status: string = "draft"
   property authorId: string = ""
-  property publishedAt: datetime = now()
+  property publishedAt: datetime
   property viewCount: int = 0
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
@@ -69,6 +69,26 @@ entity KnowledgeBaseEntry {
 
     emit KnowledgeBaseEntryPublished
   }
+
+  // Pull a published entry back to draft for revision.
+  command unpublish(reason: string) {
+    guard self.status == "published" "Only a published entry can be unpublished"
+
+    mutate status = "draft"
+    mutate updatedAt = now()
+
+    emit KnowledgeBaseEntryUnpublished
+  }
+
+  // Track readership of published articles.
+  command recordView() {
+    guard self.status == "published" "Only published entries accrue views"
+
+    mutate viewCount = self.viewCount + 1
+
+    emit KnowledgeBaseEntryViewed
+  }
+
   store KnowledgeBaseEntry in durable
 }
 
@@ -99,4 +119,16 @@ event KnowledgeBaseEntryPublished: "knowledgebase.entry.published" {
   entryId: string
   title: string
   publishedAt: number
+}
+
+event KnowledgeBaseEntryUnpublished: "knowledgebase.entry.unpublished" {
+  entryId: string
+  title: string
+  reason: string
+  unpublishedAt: number
+}
+
+event KnowledgeBaseEntryViewed: "knowledgebase.entry.viewed" {
+  entryId: string
+  viewCount: number
 }
