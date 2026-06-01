@@ -1072,6 +1072,9 @@ model EventGuest {
   specialMealNotes String? @default("")
   tableAssignment String? @default("")
   mealPreference String? @default("")
+  rsvpStatus String? @default("pending")
+  rsvpAt DateTime?
+  checkedInAt DateTime?
   createdAt DateTime?
   updatedAt DateTime?
   deletedAt DateTime?
@@ -1221,6 +1224,10 @@ model EventStaff {
   shiftStart Int? @default(0)
   shiftEnd Int? @default(0)
   status String? @default("assigned")
+  confirmedAt DateTime?
+  checkedInAt DateTime?
+  checkedOutAt DateTime?
+  noShowReason String? @default("")
   createdAt DateTime?
   updatedAt DateTime?
   deletedAt DateTime?

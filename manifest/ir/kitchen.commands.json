@@ -1190,6 +1190,21 @@
     "commandId": "EventDish.remove"
   },
   {
+    "entity": "EventDish",
+    "command": "updateCourse",
+    "commandId": "EventDish.updateCourse"
+  },
+  {
+    "entity": "EventDish",
+    "command": "updateNotes",
+    "commandId": "EventDish.updateNotes"
+  },
+  {
+    "entity": "EventDish",
+    "command": "updateQuantity",
+    "commandId": "EventDish.updateQuantity"
+  },
+  {
     "entity": "EventFollowup",
     "command": "cancel",
     "commandId": "EventFollowup.cancel"
@@ -1206,8 +1221,28 @@
   },
   {
     "entity": "EventGuest",
+    "command": "assignTable",
+    "commandId": "EventGuest.assignTable"
+  },
+  {
+    "entity": "EventGuest",
+    "command": "checkIn",
+    "commandId": "EventGuest.checkIn"
+  },
+  {
+    "entity": "EventGuest",
     "command": "create",
     "commandId": "EventGuest.create"
+  },
+  {
+    "entity": "EventGuest",
+    "command": "rsvpConfirm",
+    "commandId": "EventGuest.rsvpConfirm"
+  },
+  {
+    "entity": "EventGuest",
+    "command": "rsvpDecline",
+    "commandId": "EventGuest.rsvpDecline"
   },
   {
     "entity": "EventGuest",
@@ -1371,8 +1406,38 @@
   },
   {
     "entity": "EventStaff",
+    "command": "checkIn",
+    "commandId": "EventStaff.checkIn"
+  },
+  {
+    "entity": "EventStaff",
+    "command": "checkOut",
+    "commandId": "EventStaff.checkOut"
+  },
+  {
+    "entity": "EventStaff",
+    "command": "confirm",
+    "commandId": "EventStaff.confirm"
+  },
+  {
+    "entity": "EventStaff",
+    "command": "markNoShow",
+    "commandId": "EventStaff.markNoShow"
+  },
+  {
+    "entity": "EventStaff",
     "command": "unassign",
     "commandId": "EventStaff.unassign"
+  },
+  {
+    "entity": "EventStaff",
+    "command": "updateRole",
+    "commandId": "EventStaff.updateRole"
+  },
+  {
+    "entity": "EventStaff",
+    "command": "updateShift",
+    "commandId": "EventStaff.updateShift"
   },
   {
     "entity": "EventStaffAssignment",

@@ -1,5 +1,6 @@
 // Events & Catering - Event Staff Rules
-// Manifest spec for event staff assignment and scheduling
+// Manifest spec for event staff assignment, day-of attendance, and labor tracking.
+// Lifecycle: assigned -> confirmed -> checked_in -> checked_out (or no_show / unassigned).
 
 entity EventStaff {
   key [tenantId, id]
@@ -12,18 +13,29 @@ entity EventStaff {
   property shiftStart: int = 0
   property shiftEnd: int = 0
   property status: string = "assigned"
+  // Day-of attendance timestamps — null until the transition actually happens.
+  property confirmedAt: datetime
+  property checkedInAt: datetime
+  property checkedOutAt: datetime
+  property noShowReason: string = ""
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
   property deletedAt: datetime
 
   computed isAssigned: boolean = self.status == "assigned"
+  computed isConfirmed: boolean = self.status == "confirmed"
+  computed isCheckedIn: boolean = self.status == "checked_in"
+  computed isCheckedOut: boolean = self.status == "checked_out"
+  computed isNoShow: boolean = self.status == "no_show"
   computed isUnassigned: boolean = self.status == "unassigned"
   computed isDeleted: boolean = self.deletedAt != null
   computed hasShift: boolean = self.shiftStart > 0 and self.shiftEnd > 0
+  // Staff who committed to working but never showed — surfaces in labor reports.
+  computed didWork: boolean = self.checkedInAt != null and self.checkedOutAt != null
 
   constraint requireEvent: self.eventId != null and self.eventId != "" "Event ID is required"
   constraint requireStaffMember: self.staffMemberId != null and self.staffMemberId != "" "Staff member ID is required"
-  constraint validStatus: self.status in ["assigned", "unassigned"] "Status must be valid"
+  constraint validStatus: self.status in ["assigned", "confirmed", "checked_in", "checked_out", "no_show", "unassigned"] "Status must be valid"
 
   command assign(eventId: string, staffMemberId: string, role: string, notes: string, shiftStart: number, shiftEnd: number) {
     guard eventId != null and eventId != "" "Event ID is required"
@@ -42,10 +54,72 @@ entity EventStaff {
     emit EventStaffAssigned
   }
 
+  command confirm() {
+    guard self.status == "assigned" "Only an assigned staff member can confirm"
+
+    mutate status = "confirmed"
+    mutate confirmedAt = now()
+    mutate updatedAt = now()
+
+    emit EventStaffConfirmed
+  }
+
+  command updateShift(shiftStart: number, shiftEnd: number) {
+    guard self.status in ["assigned", "confirmed"] "Cannot change shift after check-in"
+    guard shiftEnd > shiftStart "Shift end must be after shift start"
+
+    mutate shiftStart = shiftStart
+    mutate shiftEnd = shiftEnd
+    mutate updatedAt = now()
+
+    emit EventStaffShiftUpdated
+  }
+
+  command updateRole(role: string) {
+    guard self.status in ["assigned", "confirmed", "checked_in"] "Cannot change role for completed assignment"
+    guard role != "" "Role is required"
+
+    mutate role = role
+    mutate updatedAt = now()
+
+    emit EventStaffRoleUpdated
+  }
+
+  command checkIn() {
+    guard self.status in ["assigned", "confirmed"] "Staff member must be assigned or confirmed to check in"
+
+    mutate status = "checked_in"
+    mutate checkedInAt = now()
+    mutate updatedAt = now()
+
+    emit EventStaffCheckedIn
+  }
+
+  command checkOut() {
+    guard self.status == "checked_in" "Staff member must be checked in to check out"
+
+    mutate status = "checked_out"
+    mutate checkedOutAt = now()
+    mutate updatedAt = now()
+
+    emit EventStaffCheckedOut
+  }
+
+  command markNoShow(reason: string) {
+    guard self.status in ["assigned", "confirmed"] "Can only mark a no-show for staff who never checked in"
+
+    mutate status = "no_show"
+    mutate noShowReason = reason
+    mutate updatedAt = now()
+
+    emit EventStaffNoShow
+  }
+
   command unassign(reason: string) {
-    guard self.status == "assigned" "Staff member is not currently assigned"
+    guard self.status in ["assigned", "confirmed"] "Cannot unassign a staff member who has already checked in"
 
     mutate status = "unassigned"
+    mutate notes = reason
     mutate updatedAt = now()
 
     emit EventStaffUnassigned
@@ -65,6 +139,56 @@ event EventStaffAssigned: "events.event-staff.assigned" {
   shiftStart: number
   shiftEnd: number
   assignedAt: number
+}
+
+event EventStaffConfirmed: "events.event-staff.confirmed" {
+  eventStaffId: string
+  tenantId: string
+  eventId: string
+  staffMemberId: string
+  confirmedAt: number
+}
+
+event EventStaffShiftUpdated: "events.event-staff.shift-updated" {
+  eventStaffId: string
+  tenantId: string
+  eventId: string
+  shiftStart: number
+  shiftEnd: number
+  updatedAt: number
+}
+
+event EventStaffRoleUpdated: "events.event-staff.role-updated" {
+  eventStaffId: string
+  tenantId: string
+  eventId: string
+  role: string
+  updatedAt: number
+}
+
+event EventStaffCheckedIn: "events.event-staff.checked-in" {
+  eventStaffId: string
+  tenantId: string
+  eventId: string
+  staffMemberId: string
+  checkedInAt: number
+}
+
+event EventStaffCheckedOut: "events.event-staff.checked-out" {
+  eventStaffId: string
+  tenantId: string
+  eventId: string
+  staffMemberId: string
+  checkedOutAt: number
+}
+
+event EventStaffNoShow: "events.event-staff.no-show" {
+  eventStaffId: string
+  tenantId: string
+  eventId: string
+  staffMemberId: string
+  reason: string
+  markedAt: number
 }
 
 event EventStaffUnassigned: "events.event-staff.unassigned" {

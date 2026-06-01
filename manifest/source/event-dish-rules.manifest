@@ -1,5 +1,6 @@
 // Events & Catering - Event Dish Rules
-// Manifest spec for event-to-dish associations (event menu composition)
+// Manifest spec for event-to-dish associations (event menu composition).
+// Day-of quantity/course adjustments are common as final headcounts firm up.
 
 entity EventDish {
   key [tenantId, id]
@@ -38,6 +39,35 @@ entity EventDish {
     emit EventDishCreated
   }
 
+  command updateQuantity(quantity: number) {
+    guard self.deletedAt == null "Cannot change quantity on a removed event dish"
+    guard quantity > 0 "Quantity must be positive"
+
+    mutate quantity = quantity
+    mutate updatedAt = now()
+
+    emit EventDishQuantityUpdated
+  }
+
+  command updateCourse(courseLabel: string, sortOrder: number) {
+    guard self.deletedAt == null "Cannot re-course a removed event dish"
+
+    mutate courseLabel = courseLabel
+    mutate sortOrder = sortOrder
+    mutate updatedAt = now()
+
+    emit EventDishCourseUpdated
+  }
+
+  command updateNotes(notes: string) {
+    guard self.deletedAt == null "Cannot annotate a removed event dish"
+
+    mutate notes = notes
+    mutate updatedAt = now()
+
+    emit EventDishNotesUpdated
+  }
+
   command remove(reason: string, userId: string) {
     guard self.deletedAt == null "Event dish is already removed"
 
@@ -60,6 +90,32 @@ event EventDishCreated: "events.event-dish.created" {
   quantity: number
   courseLabel: string
   createdAt: number
+}
+
+event EventDishQuantityUpdated: "events.event-dish.quantity-updated" {
+  eventDishId: string
+  tenantId: string
+  eventId: string
+  dishId: string
+  quantity: number
+  updatedAt: number
+}
+
+event EventDishCourseUpdated: "events.event-dish.course-updated" {
+  eventDishId: string
+  tenantId: string
+  eventId: string
+  courseLabel: string
+  sortOrder: number
+  updatedAt: number
+}
+
+event EventDishNotesUpdated: "events.event-dish.notes-updated" {
+  eventDishId: string
+  tenantId: string
+  eventId: string
+  notes: string
+  updatedAt: number
 }
 
 event EventDishRemoved: "events.event-dish.removed" {

@@ -10,6 +10,35 @@ Manifest is now the source of truth for the DB: 189 domain entities authored as 
 Runtime store layer typechecks. Remaining: **965 compile-time typecheck errors** in ~198 app
 route/service files (old field shapes vs new IR models) — these do NOT block the app at runtime.
 
+## UPDATE 2026-06-01 (cont.) — business-logic ENRICHMENT track (user directive)
+User directive: "define business logic with common sense for a catering company" — author real
+command semantics in `.manifest` source; do NOT derive from old route code (aligns w/ constitution
+§3/§15). Track chosen: **enrich entity command logic, entity-by-entity**. A sonnet triage classified
+all 189 entities RICH/THIN/STUB/BUGGY (invoice/event-budget = the RICH calibration baseline).
+
+- **COMMITTED `e92614d99`** — systematic `deletedAt` bug fix. 50 files / 168 replacements: the broken
+  convention `property deletedAt: datetime = now()` (every row born deleted) + guards `== 0`/`> 0`
+  (datetime tested as epoch) → aligned to the working nullable convention `deletedAt: datetime` +
+  `== null`/`!= null` (api-key/rate-limit/crm-admin/vendor-catalog). proposal-rules was fully bricked
+  (every mutation guard `deletedAt == 0` permanently false). Generated schema **byte-identical** → the
+  bug was IR/runtime-guard only, NO DB impact. IR 189 ent/760 cmds; no new typecheck errors.
+- **UNCOMMITTED — Events day-of-ops enrichment (3 entities):** event-staff (lifecycle assigned→
+  confirmed→checked_in→checked_out + no_show/unassign; +confirmedAt/checkedInAt/checkedOutAt/noShowReason
+  cols), event-guest (RSVP pending/confirmed/declined + check-in; +rsvpStatus/rsvpAt/checkedInAt cols),
+  event-dish (+updateQuantity/updateCourse/updateNotes). IR 189 ent/**773 cmds**; schema valid; client
+  generates; runtime typecheck **96 errors (was ~98 — NO regression; new cols are nullable/additive)**.
+  **OPEN: needs an additive migration** (`db:dev --create-only` for the new event cols) — the create-only
+  run was backgrounded/stalled; not yet committed. Pre-existing runtime store errors (~96 across 37
+  `prisma-stores/broken-read-*` files, the store-field-shape class) are SEPARATE and pre-date this work.
+
+### Pending bugs still to fix during enrichment (from the triage, NOT yet done)
+- Other lifecycle timestamps wrongly `= now()` (sentAt/viewedAt/acceptedAt in proposal; convertedAt in
+  lead; PO/payroll dates) — fix per-entity (NOT a blanket sweep; a few like nextRunAt are legit).
+- inventory-rules InventoryItem: guards reference UNDECLARED props quantityAvailable/quantityReserved/
+  baseUnit. revenue-recognition: `timestamp` param type → datetime. payroll PayrollRun.updateStatus(raw
+  string) → explicit guarded commands. kitchen-task reassign is a no-op (never mutates claimedBy).
+  purchase-order blockEditAfterSubmit entity-constraint fires on create.
+
 ## ✅ DONE & COMMITTED (11 commits this branch, each verified)
 1. `35f5bb7e7` adopt @angriff36/manifest 1.7 engine auto-create; remove create bootstrap.
 2. `46a073644` tracked manifest.config.yaml (descriptive; scripts don't read it yet).

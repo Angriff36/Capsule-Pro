@@ -1,5 +1,6 @@
 // Kitchen Ops - Event Guest Rules
-// Manifest spec for event guest management, dietary tracking, and meal preferences
+// Manifest spec for event guest management, dietary tracking, RSVP, and day-of check-in.
+// RSVP drives the final headcount the kitchen cooks for; check-in tracks actual attendance.
 
 entity EventGuest {
   key [tenantId, id]
@@ -17,6 +18,9 @@ entity EventGuest {
   property specialMealNotes: string = ""
   property tableAssignment: string = ""
   property mealPreference: string = ""
+  property rsvpStatus: string = "pending"
+  property rsvpAt: datetime
+  property checkedInAt: datetime
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
   property deletedAt: datetime
@@ -26,9 +30,13 @@ entity EventGuest {
   computed needsSpecialMeal: boolean = self.specialMealRequired == true
   computed isDeleted: boolean = self.deletedAt != null
   computed hasTableAssignment: boolean = self.tableAssignment != ""
+  computed rsvpConfirmed: boolean = self.rsvpStatus == "confirmed"
+  computed rsvpDeclined: boolean = self.rsvpStatus == "declined"
+  computed hasCheckedIn: boolean = self.checkedInAt != null
 
   constraint requireEvent: self.eventId != "" "Event ID is required"
   constraint requireGuestName: self.guestName != "" "Guest name is required"
+  constraint validRsvpStatus: self.rsvpStatus in ["pending", "confirmed", "declined"] "RSVP status must be valid"
 
   command create(eventId: string, guestName: string, guestEmail: string, guestPhone: string, isPrimaryContact: boolean, dietaryRestrictions: string, allergenRestrictions: string, notes: string, specialMealRequired: boolean, specialMealNotes: string, tableAssignment: string, mealPreference: string) {
     guard eventId != null and eventId != "" "Event ID is required"
@@ -46,6 +54,7 @@ entity EventGuest {
     mutate specialMealNotes = specialMealNotes
     mutate tableAssignment = tableAssignment
     mutate mealPreference = mealPreference
+    mutate rsvpStatus = "pending"
     mutate createdAt = now()
     mutate updatedAt = now()
 
@@ -70,6 +79,50 @@ entity EventGuest {
     mutate updatedAt = now()
 
     emit EventGuestUpdated
+  }
+
+  command rsvpConfirm() {
+    guard self.deletedAt == null "Cannot RSVP for a deleted guest"
+    guard self.rsvpStatus != "declined" "Guest has already declined; re-invite before confirming"
+
+    mutate rsvpStatus = "confirmed"
+    mutate rsvpAt = now()
+    mutate updatedAt = now()
+
+    emit EventGuestRsvpConfirmed
+  }
+
+  command rsvpDecline(reason: string) {
+    guard self.deletedAt == null "Cannot RSVP for a deleted guest"
+    guard self.checkedInAt == null "Cannot decline after the guest has checked in"
+
+    mutate rsvpStatus = "declined"
+    mutate rsvpAt = now()
+    mutate notes = reason
+    mutate updatedAt = now()
+
+    emit EventGuestRsvpDeclined
+  }
+
+  command checkIn() {
+    guard self.deletedAt == null "Cannot check in a deleted guest"
+    guard self.rsvpStatus != "declined" "Guest declined and is not expected to attend"
+    guard self.checkedInAt == null "Guest has already checked in"
+
+    mutate checkedInAt = now()
+    mutate updatedAt = now()
+
+    emit EventGuestCheckedIn
+  }
+
+  command assignTable(tableAssignment: string) {
+    guard self.deletedAt == null "Cannot assign a table to a deleted guest"
+    guard tableAssignment != "" "Table assignment is required"
+
+    mutate tableAssignment = tableAssignment
+    mutate updatedAt = now()
+
+    emit EventGuestTableAssigned
   }
 
   command softDelete(reason: string, userId: string) {
@@ -110,6 +163,39 @@ event EventGuestUpdated: "kitchen.event-guest.updated" {
   allergenRestrictions: string
   specialMealRequired: boolean
   mealPreference: string
+  tableAssignment: string
+  updatedAt: number
+}
+
+event EventGuestRsvpConfirmed: "kitchen.event-guest.rsvp-confirmed" {
+  guestId: string
+  tenantId: string
+  eventId: string
+  guestName: string
+  rsvpAt: number
+}
+
+event EventGuestRsvpDeclined: "kitchen.event-guest.rsvp-declined" {
+  guestId: string
+  tenantId: string
+  eventId: string
+  guestName: string
+  reason: string
+  rsvpAt: number
+}
+
+event EventGuestCheckedIn: "kitchen.event-guest.checked-in" {
+  guestId: string
+  tenantId: string
+  eventId: string
+  guestName: string
+  checkedInAt: number
+}
+
+event EventGuestTableAssigned: "kitchen.event-guest.table-assigned" {
+  guestId: string
+  tenantId: string
+  eventId: string
   tableAssignment: string
   updatedAt: number
 }
